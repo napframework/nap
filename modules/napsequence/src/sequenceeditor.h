@@ -35,26 +35,26 @@ namespace nap
 
     RTTI_ENABLE(Resource)
     public:
-        SequenceEditor(SequenceService &service);
+        SequenceEditor(SequenceService& service);
 
         /**
          * initializes editor
          * @param errorState contains any errors
          * @return returns true on successful initialization
         */
-        bool init(utility::ErrorState &errorState) override;
+        bool init(utility::ErrorState& errorState) override;
 
         /**
          * saves sequence of player to file
          * @param file filename
          */
-        void save(const std::string &file);
+        void save(const std::string& file);
 
         /**
          * loads sequence of file
          * @param file filename
          */
-        void load(const std::string &file);
+        void load(const std::string& file);
 
         /**
          * changes sequence duration
@@ -75,7 +75,7 @@ namespace nap
          * @param trackID the track id of the track to find controller for
          * @return ptr to controller base class, null ptr when not found
          */
-        SequenceController *getControllerWithTrackID(const std::string &trackID);
+        SequenceController* getControllerWithTrackID(const std::string& trackID);
 
 
         /**
@@ -96,27 +96,27 @@ namespace nap
          * @param time the time at where to insert the new marker in seconds
          * @param message const reference to the message that the new marker should contain
          */
-        void insertMarker(double time, const std::string &message);
+        void insertMarker(double time, const std::string& message);
 
         /**
          * changes marker time, assert when markerID not found
          * @param markerID the id of the marker
          * @param time the new time in seconds for the marker
          */
-        void changeMarkerTime(const std::string &markerID, double time);
+        void changeMarkerTime(const std::string& markerID, double time);
 
         /**
          * deletes marker with specified id, assert when markerID not found
          * @param markerID the id of the marker to delete
          */
-        void deleteMarker(const std::string &markerID);
+        void deleteMarker(const std::string& markerID);
 
         /**
          * changes marker message of specified marker id, asserts when marker not found
          * @param markerID the id of the marker to edit
          * @param markerMessage const reference to string value of marker message
          */
-        void changeMarkerMessage(const std::string &markerID, const std::string &markerMessage);
+        void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
 
         // properties
         ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
@@ -135,7 +135,7 @@ namespace nap
         std::atomic_bool mPerformingEditAction = {false};
 
         // service reference
-        SequenceService &mService;
+        SequenceService& mService;
     };
 
     using SequenceEditorObjectCreator = rtti::ObjectCreator<SequenceEditor, SequenceService>;

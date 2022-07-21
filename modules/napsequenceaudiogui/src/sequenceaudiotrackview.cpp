@@ -28,8 +28,8 @@ namespace nap
     using namespace sequenceguiclipboard;
 
 
-    SequenceAudioTrackView::SequenceAudioTrackView(SequenceGUIService &service, SequenceEditorGUIView &view,
-                                                   SequenceEditorGUIState &state)
+    SequenceAudioTrackView::SequenceAudioTrackView(SequenceGUIService& service, SequenceEditorGUIView& view,
+                                                   SequenceEditorGUIState& state)
         : SequenceTrackView(view, state)
     {
         mAudioGUIService = mService.getCore().getService<SequenceAudioGUIService>();
@@ -77,7 +77,7 @@ namespace nap
     }
 
 
-    void SequenceAudioTrackView::showInspectorContent(const SequenceTrack &track)
+    void SequenceAudioTrackView::showInspectorContent(const SequenceTrack& track)
     {
         ImGui::Text("Assigned Audio Output");
 
@@ -95,7 +95,7 @@ namespace nap
 
         int count = 0;
 
-        for(const auto &output: getEditor().mSequencePlayer->mOutputs)
+        for(const auto& output: getEditor().mSequencePlayer->mOutputs)
         {
             if(output.get()->get_type().is_derived_from<SequencePlayerAudioOutput>())
             {
@@ -140,7 +140,7 @@ namespace nap
     }
 
 
-    void SequenceAudioTrackView::showTrackContent(const SequenceTrack &track, const ImVec2 &trackTopLeft)
+    void SequenceAudioTrackView::showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft)
     {
         // if dirty, clear waveform cache
         if(mState.mDirty)
@@ -908,7 +908,7 @@ namespace nap
     }
 
 
-    SequencePlayerAudioOutput *SequenceAudioTrackView::getAudioOutputForTrack(const std::string &trackID)
+    SequencePlayerAudioOutput* SequenceAudioTrackView::getAudioOutputForTrack(const std::string& trackID)
     {
         // get audio controller
         auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
@@ -938,7 +938,7 @@ namespace nap
     }
 
 
-    std::vector<std::string> SequenceAudioTrackView::getAudioBuffersForTrack(const std::string &trackID)
+    std::vector<std::string> SequenceAudioTrackView::getAudioBuffersForTrack(const std::string& trackID)
     {
         // get audio controller
         auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
@@ -1119,7 +1119,7 @@ namespace nap
     }
 
 
-    bool SequenceAudioTrackView::pasteClipboard(const std::string &trackID, double time, utility::ErrorState &errorState)
+    bool SequenceAudioTrackView::pasteClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
     {
         auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
 
@@ -1130,7 +1130,7 @@ namespace nap
             // if success on deserialization, get the first segment start time
             double first_segment_time = math::max<double>();
 
-            for(const auto *deserialized_audio_segment: deserialized_audio_segments)
+            for (const auto* deserialized_audio_segment: deserialized_audio_segments)
             {
                 if(deserialized_audio_segment->mStartTime < first_segment_time)
                 {
@@ -1139,7 +1139,7 @@ namespace nap
             }
 
             // do appropriate calls to the controller to copy deserialized segments
-            for(const auto *deserialized_audio_segment: deserialized_audio_segments)
+            for (const auto* deserialized_audio_segment: deserialized_audio_segments)
             {
                 double time_offset = deserialized_audio_segment->mStartTime - first_segment_time;
                 assert(time_offset >= 0.0);

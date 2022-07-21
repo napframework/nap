@@ -34,7 +34,7 @@ namespace nap
              * Constructor
              * @param trackType expects tracktype
              */
-            explicit Clipboard(const rttr::type &trackType);
+            explicit Clipboard(const rttr::type& trackType);
 
             /**
              * Default decontructor
@@ -47,14 +47,14 @@ namespace nap
              * @param sequenceName sequence name currently used, if sequence name is different from previous, clears previously added objects
              * @param errorState holds information about any errors
              */
-            void addObject(const rtti::Object *object, const std::string &sequenceName, utility::ErrorState &errorState);
+            void addObject(const rtti::Object* object, const std::string& sequenceName, utility::ErrorState& errorState);
 
             /**
              * Serialize an object
              * @param object pointer object to serialize
              * @param errorState holds information about any errors
              */
-            void addObject(const rtti::Object *object, utility::ErrorState &errorState);
+            void addObject(const rtti::Object* object, utility::ErrorState& errorState);
 
             /**
              * Deserialize clipboard content to object of type T
@@ -64,7 +64,7 @@ namespace nap
              * @return pointer to root object, can be null and must be of type T
              */
             template<typename T>
-            std::vector<T *> deserialize(std::vector<std::unique_ptr<rtti::Object>> &createdObjects, utility::ErrorState &errorState);
+            std::vector<T*> deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState);
 
 
             /**
@@ -86,10 +86,10 @@ namespace nap
              * @return pointer to T
              */
             template<typename T>
-            T *getDerived()
+            T* getDerived()
             {
                 assert(isClipboard<T>());
-                return static_cast<T *>(this);
+                return static_cast<T*>(this);
             }
 
 
@@ -104,30 +104,25 @@ namespace nap
              * @param objectID the object id of serialized object
              * @return true if clipboard contains serialized object
              */
-            bool containsObject(const std::string &objectID, const std::string &sequenceName) const;
+            bool containsObject(const std::string& objectID, const std::string& sequenceName) const;
 
             /**
              * removes specified object from clipboard when it is contained, no assert when not present
              * @param objectID the object id of the object to remove
              */
-            void removeObject(const std::string &objectID);
-
+            void removeObject(const std::string& objectID);
 
             /**
              * returns amount of stored serialized objects
              * @return amount of stored serialized objects
              */
-            int getObjectCount() const
-            { return mSerializedObjects.size(); }
-
+            int getObjectCount() const{ return mSerializedObjects.size(); }
 
             /**
              * returns rtti track type info that was passed to clipboard upon construction
              * @return rtti track type info
              */
-            rttr::type getTrackType() const
-            { return mTrackType; }
-
+            rttr::type getTrackType() const{ return mTrackType; }
 
             /**
              * Writes current serialized segments to disk, return true on success, errorState contains any errors
@@ -136,7 +131,7 @@ namespace nap
              * @param errorState contains any errors that may occur during this operation
              * @return true on success
              */
-            bool save(const std::string &filePath, utility::ErrorState &errorState);
+            bool save(const std::string& filePath, utility::ErrorState& errorState);
 
             /**
              * Loads serialized segments to clipboard, return true on success, errorState contains any errors
@@ -144,7 +139,7 @@ namespace nap
              * @param errorState contains any errors that may occur during this operation
              * @return true on success
              */
-            bool load(const std::string &filePath, utility::ErrorState &errorState);
+            bool load(const std::string& filePath, utility::ErrorState& errorState);
 
         protected:
             // the serialized objects
@@ -182,7 +177,7 @@ namespace nap
         //////////////////////////////////////////////////////////////////////////
 
         template<typename T>
-        std::vector<T *> Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>> &createdObjects, utility::ErrorState &errorState)
+        std::vector<T*> Clipboard::deserialize(std::vector<std::unique_ptr<rtti::Object>>& createdObjects, utility::ErrorState& errorState)
         {
             std::vector<T *> deserialized_objects;
 

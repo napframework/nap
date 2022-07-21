@@ -30,7 +30,7 @@ namespace nap
          * Constructor
          * @param service reference to SequenceService
          */
-        explicit SequencePlayerOutput(SequenceService &service);
+        explicit SequencePlayerOutput(SequenceService& service);
 
         /**
          * Default deconstructor
@@ -42,7 +42,7 @@ namespace nap
          * @param errorState contains any errors
          * @return true if succeed
          */
-        bool init(utility::ErrorState &errorState) override;
+        bool init(utility::ErrorState& errorState) override;
 
         /**
          * upon destruction, removes itself from service
@@ -59,6 +59,6 @@ namespace nap
         };
 
         // ptr to service
-        SequenceService *mService = nullptr;
+        SequenceService* mService = nullptr;
     };
 }

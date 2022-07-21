@@ -57,13 +57,13 @@ namespace nap
          * @param moveUp reference to bool indicating to move the track upwards
          * @param moveDown reference to bool indicating to move the track downwards
          */
-        virtual void showInspector(const SequenceTrack &track);
+        virtual void showInspector(const SequenceTrack& track);
 
         /**
          * shows track contents
          * @param track reference to track
          */
-        virtual void showTrack(const SequenceTrack &track);
+        virtual void showTrack(const SequenceTrack& track);
 
         /////////////////////////////////////////////////////////////////////////////
         // static utility methods
@@ -76,7 +76,7 @@ namespace nap
          * @param values vector of string values
          * @return true if something is selected
          */
-        static bool Combo(const char *label, int *currIndex, std::vector<std::string> &values);
+        static bool Combo(const char* label, int* currIndex, std::vector<std::string>& values);
 
         /**
          * ListBox that takes std::vector as input
@@ -85,7 +85,7 @@ namespace nap
          * @param values vector of string values
          * @return true if something is selected
          */
-        static bool ListBox(const char *label, int *currIndex, std::vector<std::string> &values);
+        static bool ListBox(const char* label, int* currIndex, std::vector<std::string>& values);
 
         /**
          * formats time ( seconds ) to human readable time
@@ -104,36 +104,36 @@ namespace nap
          * this methods needs to be overloaded, contents for the inspector of a specific track type can be drawn in this function
          * @param track reference to track
          */
-        virtual void showInspectorContent(const SequenceTrack &track) = 0;
+        virtual void showInspectorContent(const SequenceTrack& track) = 0;
 
         /**
          * this method needs to be overloaded, contents for the track can be drawn in this function
          * @param track reference to track
          * @param trackTopLeft orientation for drawing stuff in track window
          */
-        virtual void showTrackContent(const SequenceTrack &track, const ImVec2 &trackTopLeft) = 0;
+        virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) = 0;
 
         /**
          * registers an action handler for a certain action
          * @param type action type info
          * @param handler handler function
          */
-        void registerActionHandler(const rttr::type &type, const std::function<void()> &handler);
+        void registerActionHandler(const rttr::type& type, const std::function<void()>& handler);
 
         // reference to gui view
-        SequenceEditorGUIView &mView;
+        SequenceEditorGUIView& mView;
 
         // reference to sequence player
-        const SequencePlayer &getPlayer();
+        const SequencePlayer& getPlayer();
 
         // reference to editor
-        SequenceEditor &getEditor();
+        SequenceEditor& getEditor();
 
         // reference to gui state
-        SequenceEditorGUIState &mState;
+        SequenceEditorGUIState& mState;
         // map of action handlers
         std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
         // reference to service
-        SequenceGUIService &mService;
+        SequenceGUIService& mService;
     };
 }

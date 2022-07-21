@@ -29,7 +29,7 @@ namespace nap
          * @param errorState contains information about eventual failure of evaluation
          * @return bool indicating successfull initialization
          */
-        bool init(utility::ErrorState &errorState) override;
+        bool init(utility::ErrorState& errorState) override;
 
         /**
          * Gets the value of the first point of the curve, translated into the type
@@ -83,7 +83,7 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     template<typename T>
-    bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState &errorState)
+    bool nap::SequenceTrackSegmentCurve<T>::init(utility::ErrorState& errorState)
     {
         if(!SequenceTrackSegment::init(errorState))
             return false;

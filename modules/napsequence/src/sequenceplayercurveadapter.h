@@ -45,11 +45,10 @@ namespace nap
          * @param track reference to sequence track that holds curve information
          * @param output reference to curve output
          */
-        SequencePlayerCurveAdapter(const SequenceTrack &track, SequencePlayerCurveOutput &output)
-            : mParameter(static_cast<PARAMETER_TYPE &>(*output.mParameter.get())), mOutput(output)
-        {
+        SequencePlayerCurveAdapter(const SequenceTrack& track, SequencePlayerCurveOutput& output)
+                : mParameter(static_cast<PARAMETER_TYPE&>(*output.mParameter.get())), mOutput(output) {
             assert(track.get_type().is_derived_from(RTTI_OF(SequenceTrackCurve<CURVE_TYPE>)));
-            mTrack = static_cast<const SequenceTrackCurve<CURVE_TYPE> *>(&track);
+            mTrack = static_cast<const SequenceTrackCurve<CURVE_TYPE>*>(&track);
 
             if(mOutput.mUseMainThread)
             {
@@ -83,7 +82,7 @@ namespace nap
                 {
                     // get the segment we need
                     assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
-                    const auto &source = *rtti_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>>(segment.get());
+                    const auto &source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
 
                     // retrieve the source value
                     CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
@@ -116,7 +115,7 @@ namespace nap
          * Directly sets parameter value, not thread safe
          * @param value the value
          */
-        void setParameterValue(PARAMETER_VALUE_TYPE &value)
+        void setParameterValue(PARAMETER_VALUE_TYPE& value)
         {
             mParameter.setValue(value);
         }
@@ -126,20 +125,20 @@ namespace nap
          * Uses SequencePlayerCurveOutput  to set parameter value, value will be set from main thread with function setValue(), thread safe
          * @param value the value
          */
-        void storeParameterValue(PARAMETER_VALUE_TYPE &value)
+        void storeParameterValue(PARAMETER_VALUE_TYPE& value)
         {
             std::unique_lock<std::mutex> l(mMutex);
             mStoredValue = value;
         }
 
 
-        PARAMETER_TYPE &mParameter;
-        const SequenceTrackCurve<CURVE_TYPE> *mTrack;
+        PARAMETER_TYPE& mParameter;
+        const SequenceTrackCurve<CURVE_TYPE>* mTrack;
         bool mUseMainThread{};
-        SequencePlayerCurveOutput &mOutput;
+        SequencePlayerCurveOutput& mOutput;
         std::mutex mMutex;
         PARAMETER_VALUE_TYPE mStoredValue;
 
-        void (SequencePlayerCurveAdapter::* mSetFunction)(PARAMETER_VALUE_TYPE &value);
+        void (SequencePlayerCurveAdapter::* mSetFunction)(PARAMETER_VALUE_TYPE& value);
     };
 }

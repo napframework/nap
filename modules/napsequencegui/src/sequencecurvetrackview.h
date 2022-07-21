@@ -27,12 +27,11 @@ namespace nap
          * @param view reference to editor view
          * @param state reference to editor state
          */
-        SequenceCurveTrackView(SequenceGUIService &service, SequenceEditorGUIView &view, SequenceEditorGUIState &state);
+        SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
         // make this class explicitly non-copyable
-        SequenceCurveTrackView(const SequenceCurveTrackView &) = delete;
-
-        SequenceCurveTrackView &operator=(const SequenceCurveTrackView &) = delete;
+        SequenceCurveTrackView(const SequenceCurveTrackView&) = delete;
+        SequenceCurveTrackView& operator=(const SequenceCurveTrackView&) = delete;
 
         /**
          * Handles any actions
@@ -53,7 +52,7 @@ namespace nap
          * @param drawStartValue should we draw the start value ? only used in first segment of track
          */
         template<typename T>
-        void drawSegmentContent(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2 &trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList *drawList, bool drawStartValue);
+        void drawSegmentContent(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList, bool drawStartValue);
 
         /**
          * draws a segments value
@@ -67,7 +66,7 @@ namespace nap
          * @param drawList pointer to window drawlist
          */
         template<typename T>
-        void drawSegmentValue(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, sequencecurveenums::ESegmentValueTypes segmentType, ImDrawList *drawList);
+        void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, sequencecurveenums::ESegmentValueTypes segmentType, ImDrawList* drawList);
 
         /**
          * draws segment handler
@@ -78,7 +77,7 @@ namespace nap
          * @param segmentWidth width of segment
          * @param drawList pointer to window drawlist
          */
-        void drawSegmentHandler(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, ImDrawList *drawList);
+        void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
 
         /**
          * draws control points of curve segment
@@ -90,7 +89,7 @@ namespace nap
          * @param drawList pointer to window drawlist
          */
         template<typename T>
-        void drawControlPoints(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2 &trackTopLeft, float segmentX, float segmentWidth, ImDrawList *drawList);
+        void drawControlPoints(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
 
         /**
          * draws curves of segment
@@ -104,7 +103,7 @@ namespace nap
          * @param drawList pointer to drawlist of this track window
          */
         template<typename T>
-        void drawCurves(const SequenceTrack &track, const SequenceTrackSegment &segment, const ImVec2 &trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList *drawList);
+        void drawCurves(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float previousSegmentX, float segmentWidth, float segmentX, ImDrawList* drawList);
 
         /**
          * draws handlers of curve point
@@ -121,15 +120,15 @@ namespace nap
          * @param drawList pointer to window drawlist
          */
         template<typename T>
-        void drawTanHandler(const SequenceTrack &track,
-                            const SequenceTrackSegment &segment,
-                            std::ostringstream &stringStream,
+        void drawTanHandler(const SequenceTrack& track,
+                            const SequenceTrackSegment& segment,
+                            std::ostringstream& stringStream,
                             float segmentWidth,
-                            const math::FCurvePoint<float, float> &curvePoint,
-                            const ImVec2 &circlePoint, int controlPointIndex,
+                            const math::FCurvePoint<float, float>& curvePoint,
+                            const ImVec2& circlePoint, int controlPointIndex,
                             int curveIndex,
                             sequencecurveenums::ETanPointTypes type,
-                            ImDrawList *drawList);
+                            ImDrawList* drawList);
 
         /**
          * handles insert segment popup
@@ -210,7 +209,7 @@ namespace nap
          * @param track reference to track
          */
         template<typename T>
-        void drawInspectorRange(const SequenceTrack &track);
+        void drawInspectorRange(const SequenceTrack& track);
 
         /**
          * @tparam T type of value
@@ -221,7 +220,7 @@ namespace nap
          * @param curveIndex curve index
          */
         template<typename T>
-        void showValue(const SequenceTrack &track, const SequenceTrackSegmentCurve<T> &segment, float x, double time, int curveIndex);
+        void showValue(const SequenceTrack& track, const SequenceTrackSegmentCurve<T>& segment, float x, double time, int curveIndex);
 
         /**
          * input float that takes type T as input
@@ -230,20 +229,20 @@ namespace nap
          * @return true if dragged
          */
         template<typename T>
-        bool inputFloat(T &, int precision);
+        bool inputFloat(T&, int precision);
 
         /**
          * show inspector content
          * @param track reference to track
          */
-        void showInspectorContent(const SequenceTrack &track) override;
+        void showInspectorContent(const SequenceTrack& track) override;
 
         /**
          * shows track content
          * @param track reference to track
          * @param trackTopLeft orientation
          */
-        void showTrackContent(const SequenceTrack &track, const ImVec2 &trackTopLeft) override;
+        void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) override;
 
         /**
          * pastes current clipboard as new segments at given time
@@ -254,7 +253,7 @@ namespace nap
          * @return true on success
          */
         template<typename T>
-        bool pasteClipboardSegments(const std::string &trackId, double time, utility::ErrorState &errorState);
+        bool pasteClipboardSegments(const std::string& trackId, double time, utility::ErrorState& errorState);
 
         /**
          * pastes content of clipboard segment into another segment
@@ -263,20 +262,20 @@ namespace nap
          * @param segmentID the segment id of the segment to replace
          */
         template<typename T>
-        void pasteClipboardSegmentInto(const std::string &trackID, const std::string &segmentID);
+        void pasteClipboardSegmentInto(const std::string& trackID, const std::string& segmentID);
 
         /**
          * updates segment in clipboard with contents of segment in track
          * @param trackID the track id of the segment in clipboard
          * @param segmentID the segment id of the segment in clipboard
          */
-        void updateSegmentInClipboard(const std::string &trackID, const std::string &segmentID);
+        void updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID);
 
         /**
          * iterates of all segments in clipboard of specified track and updates them with the ones in the specified track
          * @param trackID the track id containing segments in clipboard
          */
-        void updateSegmentsInClipboard(const std::string &trackID);
+        void updateSegmentsInClipboard(const std::string& trackID);
 
         // curve cache holds evaluated curves, needs to be cleared when view changes and curves need to be redrawn
         std::unordered_map<std::string, std::vector<std::vector<ImVec2>>> mCurveCache;
@@ -323,16 +322,14 @@ namespace nap
              * returns track id
              * @return the track id that contains the segment
              */
-            const std::string &getTrackID() const
-            { return mTrackID; }
+            const std::string& getTrackID() const{ return mTrackID; }
 
 
             /**
              * returns sequence name that contains the segment
              * @return the sequence name that contains the segment
              */
-            const std::string &getSequenceName() const
-            { return mSequenceName; }
+            const std::string& getSequenceName() const { return mSequenceName; }
 
 
         private:
@@ -353,28 +350,30 @@ namespace nap
     void SequenceCurveTrackView::handleSegmentValueActionPopup<float>();
 
     template<>
-    void SequenceCurveTrackView::showValue<float>(const SequenceTrack &track, const SequenceTrackSegmentCurve<float> &segment, float x, double time, int curveIndex);
+    void SequenceCurveTrackView::showValue<float>(const SequenceTrack& track,
+                                                  const SequenceTrackSegmentCurve<float>& segment, float x, double time,
+                                                  int curveIndex);
 
     template<>
-    void SequenceCurveTrackView::showValue<glm::vec2>(const SequenceTrack &track, const SequenceTrackSegmentCurve<glm::vec2> &segment, float x, double time, int curveIndex);
+    void SequenceCurveTrackView::showValue<glm::vec2>(const SequenceTrack& track, const SequenceTrackSegmentCurve<glm::vec2>& segment, float x, double time, int curveIndex);
 
     template<>
-    void SequenceCurveTrackView::showValue<glm::vec3>(const SequenceTrack &track, const SequenceTrackSegmentCurve<glm::vec3> &segment, float x, double time, int curveIndex);
+    void SequenceCurveTrackView::showValue<glm::vec3>(const SequenceTrack& track, const SequenceTrackSegmentCurve<glm::vec3>& segment, float x, double time, int curveIndex);
 
     template<>
-    void SequenceCurveTrackView::showValue<glm::vec4>(const SequenceTrack &track, const SequenceTrackSegmentCurve<glm::vec4> &segment, float x, double time, int curveIndex);
+    void SequenceCurveTrackView::showValue<glm::vec4>(const SequenceTrack& track, const SequenceTrackSegmentCurve<glm::vec4>& segment, float x, double time, int curveIndex);
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<float>(float &v, int precision);
+    bool SequenceCurveTrackView::inputFloat<float>(float& v, int precision);
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision);
+    bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2& v, int precision);
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision);
+    bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3& v, int precision);
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision);
+    bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4& v, int precision);
 }
 
 // Include all template definitions

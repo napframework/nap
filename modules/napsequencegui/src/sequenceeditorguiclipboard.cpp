@@ -10,13 +10,13 @@ namespace nap
     using namespace sequenceguiclipboard;
 
 
-    Clipboard::Clipboard(const rttr::type &trackType)
+    Clipboard::Clipboard(const rttr::type& trackType)
         : mTrackType(trackType)
     {
     }
 
 
-    void Clipboard::addObject(const rtti::Object *object, const std::string &sequenceName, utility::ErrorState &errorState)
+    void Clipboard::addObject(const rtti::Object* object, const std::string& sequenceName, utility::ErrorState& errorState)
     {
         // clear serialized objects if we loaded another show and add a segment from that sequence
         if(sequenceName != mSequenceName)
@@ -29,7 +29,7 @@ namespace nap
     }
 
 
-    void Clipboard::addObject(const rtti::Object *object, utility::ErrorState &errorState)
+    void Clipboard::addObject(const rtti::Object* object, utility::ErrorState& errorState)
     {
         // first remove the object if it already exists in the clipboard
         if(containsObject(object->mID, mSequenceName))
@@ -46,7 +46,7 @@ namespace nap
 
         // serialize the object
         rtti::JSONWriter writer;
-        if(!rtti::serializeObjects(rtti::ObjectList{const_cast<rtti::Object *>(object)}, writer, errorState))
+        if(!rtti::serializeObjects(rtti::ObjectList{const_cast<rtti::Object*>(object)}, writer, errorState))
         {
             nap::Logger::error("Error serializing object %s , error : ", object->mID.c_str(), errorState.toString().c_str());
         } else
@@ -57,7 +57,7 @@ namespace nap
     }
 
 
-    bool Clipboard::containsObject(const std::string &objectID, const std::string &sequenceName) const
+    bool Clipboard::containsObject(const std::string& objectID, const std::string& sequenceName) const
     {
         // different sequence so, does not contain
         if(sequenceName != mSequenceName)
@@ -67,7 +67,7 @@ namespace nap
     }
 
 
-    void Clipboard::removeObject(const std::string &objectID)
+    void Clipboard::removeObject(const std::string& objectID)
     {
         auto it = mSerializedObjects.find(objectID);
         if(it != mSerializedObjects.end())
@@ -89,7 +89,7 @@ namespace nap
     }
 
 
-    bool Clipboard::save(const std::string &filePath, utility::ErrorState &errorState)
+    bool Clipboard::save(const std::string& filePath, utility::ErrorState& errorState)
     {
         // Get file name and ensure it gets a '.json' extension
         std::string file_name = utility::getFileNameWithoutExtension(filePath);
@@ -138,7 +138,7 @@ namespace nap
     }
 
 
-    bool Clipboard::load(const std::string &filePath, utility::ErrorState &errorState)
+    bool Clipboard::load(const std::string& filePath, utility::ErrorState& errorState)
     {
         rtti::DeserializeResult result;
 

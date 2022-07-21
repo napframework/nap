@@ -43,7 +43,7 @@ namespace nap
         /**
          * Constructor used by factory
          */
-        SequencePlayer(SequenceService &service);
+        SequencePlayer(SequenceService& service);
 
         /**
          * Evaluates the data of the player. It loads the linked default sequence.
@@ -51,7 +51,7 @@ namespace nap
          * @param errorState contains information about eventual failure
          * @return true if data valid
          */
-        bool init(utility::ErrorState &errorState) override;
+        bool init(utility::ErrorState& errorState) override;
 
         /**
          * Saves current sequence to disk
@@ -59,7 +59,7 @@ namespace nap
          * @param errorState contains error upon failure
          * @return true on success
          */
-        bool save(const std::string &name, utility::ErrorState &errorState);
+        bool save(const std::string& name, utility::ErrorState& errorState);
 
         /**
          * Load a sequence
@@ -67,7 +67,7 @@ namespace nap
          * @param errorState contains error upon failure
          * @return true on success
          */
-        bool load(const std::string &name, utility::ErrorState &errorState);
+        bool load(const std::string& name, utility::ErrorState& errorState);
 
         /**
          * Play or stop the player. Note that player can still be paused, so adapters will be called but time will not advance
@@ -138,18 +138,18 @@ namespace nap
          * starts player thread, called after successfully initialization
          * This starts the actual player thread
          */
-        bool start(utility::ErrorState &errorState) override;
+        bool start(utility::ErrorState& errorState) override;
 
         /**
          * returns a const reference to the current sequence, not thread-safe. Only call this from the main thread
          * @return get const reference to sequence
          */
-        const Sequence &getSequenceConst() const;
+        const Sequence& getSequenceConst() const;
 
         /**
          * @return returns current sequence filename, not thread-safe. Only call this from the main thread
          */
-        const std::string &getSequenceFilename() const;
+        const std::string& getSequenceFilename() const;
 
         // signals
         /***
@@ -157,14 +157,14 @@ namespace nap
          * This is useful when you want to sync or invoke other methods with the SequencePlayer
          * Note: Signal is dispatched from whichever thread is calling the setPlaybackSpeed(float) method on SequencePlayer
          */
-        Signal<SequencePlayer &, float> playbackSpeedChanged;
+        Signal<SequencePlayer&, float> playbackSpeedChanged;
 
         /***
          * playerTimeChanged signal is dispatched when setPlayerTime(double) method is called on SequencePlayer
          * This is useful when you want to sync or invoke other methods with the SequencePlayer
          * Note: Signal is dispatched from whichever thread is calling the setPlayerTime(double) method on SequencePlayer
          */
-        Signal<SequencePlayer &, double> playerTimeChanged;
+        Signal<SequencePlayer&, double> playerTimeChanged;
 
         /***
          * playStateChanged signal is dispatched when setIsPlaying(bool) method is called on SequencePlayer
@@ -172,7 +172,7 @@ namespace nap
          * Note: Signal is dispatched from whichever thread is calling the setIsPlaying(bool) method on SequencePlayer
          * Note: Play state doesn't mean Paused or not. The SequencePlayer can be Paused but still be Playing, in which case time doesn't get updated but adapter will still be called
          */
-        Signal<SequencePlayer &, bool> playStateChanged;
+        Signal<SequencePlayer&, bool> playStateChanged;
 
         /***
          * pauseStateChanged signal is dispatched when setIsPaused(bool) method is called on SequencePlayer
@@ -180,27 +180,27 @@ namespace nap
          * Note: Signal is dispatched from whichever thread is calling the setIsPaused(bool) method on SequencePlayer
          * Note: Play state doesn't mean Paused or not. The SequencePlayer can be Paused but still be Playing, in which case time doesn't get updated but adapter will still be called
          */
-        Signal<SequencePlayer &, bool> pauseStateChanged;
+        Signal<SequencePlayer&, bool> pauseStateChanged;
 
         /***
          *	preTick Signal is triggered on player thread, before updating the adapters
          */
-        Signal<SequencePlayer &> preTick;
+        Signal<SequencePlayer&> preTick;
 
         /**
          * postTick Signal is triggered on player thread, after updating the adapters
          */
-        Signal<SequencePlayer &> postTick;
+        Signal<SequencePlayer&> postTick;
 
         /***
          * sequenceLoaded signal is dispatched when the load(name) method succeeds on SequencePlayer
          */
-        Signal<SequencePlayer &, std::string> sequenceLoaded;
+        Signal<SequencePlayer&, std::string> sequenceLoaded;
 
         /**
          * edited Signal is dispatched when the Sequence has been edited
          */
-        Signal<SequencePlayer &> edited;
+        Signal<SequencePlayer&> edited;
 
         // properties
         std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
@@ -215,15 +215,15 @@ namespace nap
          * It passes a reference to a lambda function that you can call to add an adapter to mAdapters member of
          * SequencePlayer
          */
-        Signal<std::function<void(const std::string &, std::unique_ptr<SequencePlayerAdapter>)> &> adaptersCreated;
+        Signal<std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)>&> adaptersCreated;
 
         // Reference to sequence service
-        SequenceService &mService;
+        SequenceService& mService;
     private:
         /**
          * returns reference to sequence, can only be called internally or by friend class ( SequenceEditor or SequenceController )
          */
-        Sequence &getSequence();
+        Sequence& getSequence();
 
         /**
          * creates an adapter with string objectID for track with trackid.
@@ -231,7 +231,7 @@ namespace nap
          * @param objectID the id of the adapter object
          * @param trackID the id of the track
          */
-        bool createAdapter(const std::string &objectID, const std::string &trackID);
+        bool createAdapter(const std::string& objectID, const std::string& trackID);
 
         void tick(double deltaTime);
 

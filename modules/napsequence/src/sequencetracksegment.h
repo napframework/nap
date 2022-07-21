@@ -25,7 +25,7 @@ namespace nap
          * @param errorState contains information about eventual failure of evaluation
          * @return true if data valid
          */
-        virtual bool init(utility::ErrorState &errorState) override;
+        virtual bool init(utility::ErrorState& errorState) override;
 
 
         /**

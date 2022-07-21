@@ -9,7 +9,7 @@
 
 namespace nap
 {
-    SequenceControllerCurve::SequenceControllerCurve(SequenceService &service, SequencePlayer &player, SequenceEditor &editor)
+    SequenceControllerCurve::SequenceControllerCurve(SequenceService& service, SequencePlayer& player, SequenceEditor& editor)
         : SequenceController(service, player, editor)
     {
         mUpdateSegmentFunctionMap = {{RTTI_OF(SequenceTrackCurveFloat), [this](SequenceTrack &track)
@@ -226,7 +226,8 @@ namespace nap
     }
 
 
-    double SequenceControllerCurve::segmentDurationChange(const std::string &trackID, const std::string &segmentID, float duration)
+    double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID,
+                                                          float duration)
     {
         double return_duration = duration;
 
@@ -282,7 +283,7 @@ namespace nap
     }
 
 
-    const SequenceTrackSegment *SequenceControllerCurve::insertSegment(const std::string &trackID, double time)
+    const SequenceTrackSegment* SequenceControllerCurve::insertSegment(const std::string& trackID, double time)
     {
         auto *track = findTrack(trackID);
         assert(track != nullptr); // track not found
@@ -295,60 +296,55 @@ namespace nap
     }
 
 
-    void SequenceControllerCurve::deleteSegment(const std::string &trackID, const std::string &segmentID)
+    void SequenceControllerCurve::deleteSegment(const std::string& trackID, const std::string& segmentID)
     {
         // pause player thread
         performEditAction([this, trackID, segmentID]()
                           {
-                              Sequence &sequence = getSequence();
+                              Sequence& sequence = getSequence();
+                              auto* track = findTrack(trackID);
 
-                              for(auto &track: sequence.mTracks)
+                              if(track!= nullptr)
                               {
-                                  if(track->mID == trackID)
+                                  int segment_index = 0;
+                                  for(auto &segment: track->mSegments)
                                   {
-                                      int segment_index = 0;
-                                      for(auto &segment: track->mSegments)
+                                      if(segment->mID == segmentID)
                                       {
-                                          if(segment->mID == segmentID)
+                                          // store the duration of the segment that we are deleting
+                                          double duration = segment->mDuration;
+
+                                          // erase it from the list
+                                          track->mSegments.erase(track->mSegments.begin() + segment_index);
+
+                                          // get the segment that is now at the previous deleted segments position
+                                          if(track->mSegments.begin() + segment_index != track->mSegments.end())
                                           {
-                                              // store the duration of the segment that we are deleting
-                                              double duration = segment->mDuration;
-
-                                              // erase it from the list
-                                              track->mSegments.erase(track->mSegments.begin() + segment_index);
-
-                                              // get the segment that is now at the previous deleted segments position
-                                              if(track->mSegments.begin() + segment_index != track->mSegments.end())
-                                              {
-                                                  // add the duration
-                                                  track->mSegments[segment_index]->mDuration += duration;
-                                              }
-
-                                              deleteObjectFromSequencePlayer(segmentID);
-
-                                              // update segments
-                                              auto it = mUpdateSegmentFunctionMap.find(track->get_type());
-                                              assert (it != mUpdateSegmentFunctionMap.end());
-                                              it->second(*track);
-
-                                              break;
+                                              // add the duration
+                                              track->mSegments[segment_index]->mDuration += duration;
                                           }
 
-                                          updateTracks();
-                                          segment_index++;
+                                          deleteObjectFromSequencePlayer(segmentID);
+
+                                          // update segments
+                                          auto it = mUpdateSegmentFunctionMap.find(track->get_type());
+                                          assert (it != mUpdateSegmentFunctionMap.end());
+                                          it->second(*track);
+
+                                          break;
                                       }
 
-                                      break;
+                                      updateTracks();
+                                      segment_index++;
                                   }
                               }
                           });
     }
 
 
-    void SequenceControllerCurve::changeCurveType(const std::string &trackID, const std::string &segmentID, math::ECurveInterp type, int curveIndex)
+    void SequenceControllerCurve::changeCurveType(const std::string& trackID, const std::string& segmentID,
+                                                  math::ECurveInterp type, int curveIndex)
     {
-
-
         performEditAction([this, trackID, segmentID, type, curveIndex]()
                           {
                               auto *segment = findSegment(trackID, segmentID);
@@ -364,7 +360,9 @@ namespace nap
     }
 
 
-    void SequenceControllerCurve::changeCurveSegmentValue(const std::string &trackID, const std::string &segmentID, float newValue, int curveIndex, sequencecurveenums::ESegmentValueTypes valueType)
+    void SequenceControllerCurve::changeCurveSegmentValue(const std::string& trackID, const std::string& segmentID,
+                                                          float newValue, int curveIndex,
+                                                          sequencecurveenums::ESegmentValueTypes valueType)
     {
         performEditAction([this, trackID, segmentID, newValue, curveIndex, valueType]()
                           {
@@ -387,7 +385,8 @@ namespace nap
     }
 
 
-    void SequenceControllerCurve::insertCurvePoint(const std::string &trackID, const std::string &segmentID, float pos, int curveIndex)
+    void SequenceControllerCurve::insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos,
+                                                   int curveIndex)
     {
         performEditAction([this, trackID, segmentID, pos, curveIndex]()
                           {
@@ -405,7 +404,7 @@ namespace nap
     }
 
 
-    void SequenceControllerCurve::deleteCurvePoint(const std::string &trackID, const std::string &segmentID, const int index, int curveIndex)
+    void SequenceControllerCurve::deleteCurvePoint(const std::string& trackID, const std::string& segmentID, const int index, int curveIndex)
     {
         performEditAction([this, trackID, segmentID, index, curveIndex]()
                           {
@@ -423,7 +422,8 @@ namespace nap
     }
 
 
-    void SequenceControllerCurve::changeCurvePoint(const std::string &trackID, const std::string &segmentID, const int pointIndex, const int curveIndex, float time, float value)
+    void SequenceControllerCurve::changeCurvePoint(const std::string& trackID, const std::string& segmentID,
+                                                   const int pointIndex, const int curveIndex, float time, float value)
     {
         performEditAction([this, trackID, segmentID, pointIndex, curveIndex, time, value]()
                           {
@@ -469,7 +469,9 @@ namespace nap
     }
 
 
-    bool SequenceControllerCurve::changeTanPoint(const std::string &trackID, const std::string &segmentID, const int pointIndex, const int curveIndex, sequencecurveenums::ETanPointTypes tanType, float time, float value)
+    bool SequenceControllerCurve::changeTanPoint(const std::string& trackID, const std::string& segmentID,
+                                                 const int pointIndex, const int curveIndex,
+                                                 sequencecurveenums::ETanPointTypes tanType, float time, float value)
     {
         bool tangents_flipped = false;
         performEditAction([this, trackID, segmentID, pointIndex, curveIndex, tanType, time, value, &tangents_flipped]()
@@ -499,7 +501,7 @@ namespace nap
     }
 
 
-    void SequenceControllerCurve::updateCurveSegments(const std::string &trackID)
+    void SequenceControllerCurve::updateCurveSegments(const std::string& trackID)
     {
         auto *track = findTrack(trackID);
         auto it = mUpdateSegmentFunctionMap.find(track->get_type());
@@ -509,7 +511,7 @@ namespace nap
 
 
     template<>
-    void SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string &trackID, float minimum, float maximum)
+    void SequenceControllerCurve::changeMinMaxCurveTrack<float>(const std::string& trackID, float minimum, float maximum)
     {
         performEditAction([this, trackID, minimum, maximum]()
                           {

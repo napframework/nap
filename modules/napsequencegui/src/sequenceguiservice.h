@@ -72,7 +72,7 @@ namespace nap
              * Initialize palette against configurable ImGUI color palette
              * @param palette ImGUI color palette
              */
-            void init(const gui::ColorPalette &palette);
+            void init(const gui::ColorPalette& palette);
 
             ImU32 mHigh1 = 0;        ///< First highlight color
             ImU32 mHigh2 = 0;        ///< Second highlight color
@@ -88,7 +88,7 @@ namespace nap
             ImU32 mCurveColors[4] = {4285098440, 4278255360, 4294901760, 4278255615};
         };
 
-        SequenceGUIService(ServiceConfiguration *configuration);
+        SequenceGUIService(ServiceConfiguration* configuration);
 
         ~SequenceGUIService() override;
 
@@ -96,7 +96,7 @@ namespace nap
          * registers object creator method that can be passed on to the rtti factory
          * @param objectCreator unique pointer to method
          */
-        static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceGUIService *));
+        static bool registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(* objectCreator)(SequenceGUIService*));
 
         /**
          * call this method to register a custom view for a custom event type
@@ -130,7 +130,7 @@ namespace nap
          * @param state reference to gui state
          * @return unique ptr to created track view
          */
-        std::unique_ptr<SequenceTrackView> invokeTrackViewFactory(rtti::TypeInfo viewType, SequenceEditorGUIView &view, SequenceEditorGUIState &state);
+        std::unique_ptr<SequenceTrackView> invokeTrackViewFactory(rtti::TypeInfo viewType, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
         /**
          * invoke this method to create a event segment view for a certain event type, assert when event type is not found
@@ -150,14 +150,14 @@ namespace nap
          * returns all registered event segment types (SequenceTrackSegmentEvent<T>)
          * @return the vector containing type info of all registered event segment types
          */
-        const std::vector<rtti::TypeInfo> &getRegisteredSegmentEventTypes() const;
+        const std::vector<rtti::TypeInfo>& getRegisteredSegmentEventTypes() const;
 
         /**
          * call this method to invoke the edit event handler for a specific event action
          * @param actionType type info of the action (f.e. EditingEventSegment<T>)
          * @param view reference to the view invoking the edit event handler
          */
-        void invokeEditEventHandler(rtti::TypeInfo actionType, SequenceEventTrackView &view) const;
+        void invokeEditEventHandler(rtti::TypeInfo actionType, SequenceEventTrackView& view) const;
 
 
         /**
@@ -168,7 +168,8 @@ namespace nap
          * @param eventBase reference to base of event
          * @param time time at which to paste the event
          */
-        void invokePasteEvent(rtti::TypeInfo eventType, SequenceEventTrackView &view, const std::string &trackID, const SequenceTrackSegmentEventBase &eventBase, double time) const;
+        void invokePasteEvent(rtti::TypeInfo eventType, SequenceEventTrackView& view, const std::string& trackID,
+                              const SequenceTrackSegmentEventBase& eventBase, double time) const;
 
         /**
          * returns a vector containing type info of all registered track types
@@ -185,35 +186,33 @@ namespace nap
         /**
          * @return gui service
          */
-        nap::IMGuiService &getGui();
+        nap::IMGuiService& getGui();
 
         /**
          * @return gui service
          */
-        const nap::IMGuiService &getGui() const;
+        const nap::IMGuiService& getGui() const;
 
 
         /**
          * Returns the sequencer GUI color palette
          * @return sequencer GUI color palette
          */
-        const Colors &getColors() const
-        { return mColors; }
-
+        const Colors &getColors() const{ return mColors; }
 
     protected:
         /**
          * registers all objects that need a specific way of construction
          * @param factory the factory to register the object creators with
          */
-        void registerObjectCreators(rtti::Factory &factory) override;
+        void registerObjectCreators(rtti::Factory& factory) override;
 
         /**
          * initializes service
          * @param errorState contains any errors
          * @return returns true on successful initialization
          */
-        bool init(nap::utility::ErrorState &errorState) override;
+        bool init(nap::utility::ErrorState& errorState) override;
 
         /**
          * Override this function to register service dependencies
@@ -222,7 +221,7 @@ namespace nap
          * SequenceGUIService depends on SequenceService
          * @param dependencies rtti information of the services this service depends on
          */
-        virtual void getDependentServices(std::vector<rtti::TypeInfo> &dependencies);
+        virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies);
 
     private:
         // map of segment view types
@@ -244,7 +243,7 @@ namespace nap
         SequenceTrackTypeForViewTypeMap mTrackViewTypeMap;
 
         // Link to the gui service
-        IMGuiService *mGuiService = nullptr;
+        IMGuiService* mGuiService = nullptr;
 
         // Colors
         Colors mColors;

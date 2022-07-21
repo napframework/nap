@@ -15,7 +15,7 @@ namespace nap
 {
     //////////////////////////////////////////////////////////////////////////
 
-    void SequenceController::changeTrackName(const std::string &trackID, const std::string &name)
+    void SequenceController::changeTrackName(const std::string& trackID, const std::string& name)
     {
         performEditAction([this, trackID, name]()
                           {
@@ -26,7 +26,8 @@ namespace nap
     }
 
 
-    void SequenceController::changeSegmentLabel(const std::string &trackID, const std::string &segmentID, const std::string &newLabel)
+    void SequenceController::changeSegmentLabel(const std::string& trackID, const std::string& segmentID,
+                                                const std::string& newLabel)
     {
         performEditAction([this, trackID, segmentID, newLabel]()
                           {
@@ -37,7 +38,7 @@ namespace nap
     }
 
 
-    void SequenceController::changeTrackHeight(const std::string &trackID, float newHeight)
+    void SequenceController::changeTrackHeight(const std::string& trackID, float newHeight)
     {
         performEditAction([this, trackID, newHeight]()
                           {
@@ -75,21 +76,30 @@ namespace nap
     }
 
 
-    SequenceTrackSegment *SequenceController::findSegment(const std::string &trackID, const std::string &segmentID)
+    SequenceTrackSegment* SequenceController::findSegment(const std::string& trackID, const std::string& segmentID)
     {
-        Sequence &sequence = mPlayer.getSequence();
+        Sequence& sequence = mPlayer.getSequence();
+        const auto& tracks = sequence.mTracks;
+        auto track_it = std::find_if(tracks.cbegin(),
+                                     tracks.cend(),
+                                     [trackID](const rtti::ObjectPtr<SequenceTrack> &other) -> bool
+                                     {
+                                         return trackID == other->mID;
+                                     });
 
-        for(auto &track: sequence.mTracks)
+        if(track_it!=tracks.cend())
         {
-            if(track->mID == trackID)
+            const auto& segments = track_it->get()->mSegments;
+            auto segment_it = std::find_if(segments.cbegin(),
+                                           segments.cend(),
+                                           [segmentID](const rtti::ObjectPtr<SequenceTrackSegment> &other) -> bool
+                                           {
+                                               return segmentID == other->mID;
+                                           });
+
+            if(segment_it!=segments.cend())
             {
-                for(auto &segment: track->mSegments)
-                {
-                    if(segment->mID == segmentID)
-                    {
-                        return segment.get();
-                    }
-                }
+                return segment_it->get();
             }
         }
 
@@ -97,15 +107,50 @@ namespace nap
     }
 
 
-    const SequenceTrack *SequenceController::getTrack(const std::string &trackID) const
+    const SequenceTrack* SequenceController::getTrack(const std::string& trackID) const
     {
-        const Sequence &sequence = mPlayer.getSequenceConst();
+        Sequence& sequence = mPlayer.getSequence();
+        const auto& tracks = sequence.mTracks;
+        auto track_it = std::find_if(tracks.cbegin(),
+                                     tracks.cend(),
+                                     [trackID](const rtti::ObjectPtr<SequenceTrack> &other) -> bool
+                                     {
+                                         return trackID == other->mID;
+                                     });
 
-        for(const auto &track: sequence.mTracks)
+        if(track_it!=tracks.cend())
         {
-            if(track->mID == trackID)
+            return track_it->get();
+        }
+
+        return nullptr;
+    }
+
+
+    const SequenceTrackSegment* SequenceController::getSegment(const std::string& trackID, const std::string& segmentID) const
+    {
+        Sequence& sequence = mPlayer.getSequence();
+        const auto& tracks = sequence.mTracks;
+        auto track_it = std::find_if(tracks.cbegin(),
+                                     tracks.cend(),
+                                     [trackID](const rtti::ObjectPtr<SequenceTrack> &other) -> bool
+                                     {
+                                         return trackID == other->mID;
+                                     });
+
+        if(track_it!=tracks.cend())
+        {
+            const auto& segments = track_it->get()->mSegments;
+            auto segment_it = std::find_if(segments.cbegin(),
+                                           segments.cend(),
+                                           [segmentID](const rtti::ObjectPtr<SequenceTrackSegment> &other) -> bool
+                                           {
+                                               return segmentID == other->mID;
+                                           });
+
+            if(segment_it!=segments.cend())
             {
-                return track.get();
+                return segment_it->get();
             }
         }
 
@@ -113,46 +158,27 @@ namespace nap
     }
 
 
-    const SequenceTrackSegment *
-    SequenceController::getSegment(const std::string &trackID, const std::string &segmentID) const
+    SequenceTrack* SequenceController::findTrack(const std::string& trackID)
     {
-        const Sequence &sequence = mPlayer.getSequenceConst();
+        Sequence& sequence = mPlayer.getSequence();
+        const auto& tracks = sequence.mTracks;
+        auto track_it = std::find_if(tracks.cbegin(),
+                                     tracks.cend(),
+                                     [trackID](const rtti::ObjectPtr<SequenceTrack> &other) -> bool
+                                     {
+                                         return trackID == other->mID;
+                                     });
 
-        for(const auto &track: sequence.mTracks)
+        if(track_it!=tracks.cend())
         {
-            if(track->mID == trackID)
-            {
-                for(auto &segment: track->mSegments)
-                {
-                    if(segment->mID == segmentID)
-                    {
-                        return segment.get();
-                    }
-                }
-            }
+            return track_it->get();
         }
 
         return nullptr;
     }
 
 
-    SequenceTrack *SequenceController::findTrack(const std::string &trackID)
-    {
-        Sequence &sequence = mPlayer.getSequence();
-
-        for(auto &track: sequence.mTracks)
-        {
-            if(track->mID == trackID)
-            {
-                return track.get();
-            }
-        }
-
-        return nullptr;
-    }
-
-
-    void SequenceController::assignNewOutputID(const std::string &trackID, const std::string &outputID)
+    void SequenceController::assignNewOutputID(const std::string& trackID, const std::string& outputID)
     {
         performEditAction([this, trackID, outputID]()
                           {
@@ -165,34 +191,32 @@ namespace nap
     }
 
 
-    void SequenceController::deleteTrack(const std::string &deleteTrackID)
+    void SequenceController::deleteTrack(const std::string& deleteTrackID)
     {
         performEditAction([this, deleteTrackID]()
                           {
                               Sequence &sequence = mPlayer.getSequence();
+                              auto& tracks = sequence.mTracks;
 
-                              mPlayer.destroyAdapters();
+                              auto track_it = std::find_if(tracks.cbegin(),
+                                                           tracks.cend(),
+                                                           [deleteTrackID](const rtti::ObjectPtr<SequenceTrack> &other) -> bool
+                                                           {
+                                                               return deleteTrackID == other->mID;
+                                                           });
 
-                              int index = 0;
-                              for(const auto &track: sequence.mTracks)
+                              if(track_it!= tracks.end())
                               {
-                                  if(track->mID == deleteTrackID)
-                                  {
-                                      sequence.mTracks.erase(sequence.mTracks.begin() + index);
-
-                                      deleteObjectFromSequencePlayer(deleteTrackID);
-
-                                      break;
-                                  }
-                                  index++;
+                                  tracks.erase(track_it);
+                                  mPlayer.destroyAdapters();
+                                  deleteObjectFromSequencePlayer(deleteTrackID);
+                                  mPlayer.createAdapters();
                               }
-
-                              mPlayer.createAdapters();
                           });
     }
 
 
-    void SequenceController::moveTrackUp(const std::string &trackID)
+    void SequenceController::moveTrackUp(const std::string& trackID)
     {
         performEditAction([this, trackID]()
                           {
@@ -219,7 +243,7 @@ namespace nap
     }
 
 
-    void SequenceController::moveTrackDown(const std::string &trackID)
+    void SequenceController::moveTrackDown(const std::string& trackID)
     {
         performEditAction([this, trackID]()
                           {
@@ -246,7 +270,7 @@ namespace nap
     }
 
 
-    void SequenceController::deleteObjectFromSequencePlayer(const std::string &id)
+    void SequenceController::deleteObjectFromSequencePlayer(const std::string& id)
     {
         if(mPlayer.mReadObjectIDs.find(id) != mPlayer.mReadObjectIDs.end())
         {

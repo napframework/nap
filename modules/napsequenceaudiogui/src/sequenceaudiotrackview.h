@@ -33,26 +33,25 @@ namespace nap
          * @param view reference to SequenceEditorGUIView
          * @param state reference to SequenceEditorGUIState
          */
-        SequenceAudioTrackView(SequenceGUIService &service, SequenceEditorGUIView &view, SequenceEditorGUIState &state);
+        SequenceAudioTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state);
 
         // make this class explicitly non-copyable
-        SequenceAudioTrackView(const SequenceAudioTrackView &) = delete;
-
-        SequenceAudioTrackView &operator=(const SequenceAudioTrackView &) = delete;
+        SequenceAudioTrackView(const SequenceAudioTrackView&) = delete;
+        SequenceAudioTrackView& operator=(const SequenceAudioTrackView&) = delete;
 
     protected:
         /**
          * showInspectorContent is called when inspector for AudioTrack needs to be drawn
          * @param track reference to SequenceTrack, must be of SequenceAudioTrack type
          */
-        virtual void showInspectorContent(const SequenceTrack &track) override;
+        virtual void showInspectorContent(const SequenceTrack& track) override;
 
         /**
          * showTrackContent is called when contents of AudioTrack needs to be drawn
          * @param track reference to SequenceTrack, must be of SequenceAudioTrack type
          * @param trackTopLeft top left position of window containing the view
          */
-        virtual void showTrackContent(const SequenceTrack &track, const ImVec2 &trackTopLeft) override;
+        virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) override;
 
     private:
         /**
@@ -63,7 +62,7 @@ namespace nap
          * @param errorState contains any errors
          * @return true on success
          */
-        bool pasteClipboard(const std::string &trackID, double time, utility::ErrorState &errorState);
+        bool pasteClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
 
         /**
          * handles action when output id of track needs to be changed
@@ -110,17 +109,17 @@ namespace nap
          * @param trackID the track id
          * @return pointer to audio output, can be nullptr when not found
          */
-        SequencePlayerAudioOutput *getAudioOutputForTrack(const std::string &trackID);
+        SequencePlayerAudioOutput* getAudioOutputForTrack(const std::string& trackID);
 
         /**
          * returns vector of audio buffers ids that can be assigned by an AudioTrack
          * @param trackID the track id
          * @return vector of audio buffers ids that can be assigned by an AudioTrack
          */
-        std::vector<std::string> getAudioBuffersForTrack(const std::string &trackID);
+        std::vector<std::string> getAudioBuffersForTrack(const std::string& trackID);
 
         // pointer to sequence audio gui service
-        SequenceAudioGUIService *mAudioGUIService = nullptr;
+        SequenceAudioGUIService* mAudioGUIService = nullptr;
     };
 
     //////////////////////////////////////////////////////////////////////////
@@ -141,8 +140,8 @@ namespace nap
              * @param type the segment type, must be of SequenceTrackSegmentAudio
              * @param sequenceName the sequence name
              */
-            AudioSegmentClipboard(const rttr::type &type, std::string sequenceName)
-                : Clipboard(type), mSequenceName(std::move(sequenceName))
+            AudioSegmentClipboard(const rttr::type& type, std::string sequenceName)
+                    : Clipboard(type), mSequenceName(std::move(sequenceName))
             {
             };
 
@@ -151,7 +150,7 @@ namespace nap
              * returns sequence name that contains serialized segments
              * @return sequence name
              */
-            const std::string &getSequenceName() const
+            const std::string& getSequenceName() const
             {
                 return mSequenceName;
             }

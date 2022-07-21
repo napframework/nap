@@ -11,9 +11,10 @@
 
 namespace nap
 {
-    SequencePlayerEventAdapter::SequencePlayerEventAdapter(const SequenceTrack &track,
-                                                           SequencePlayerEventOutput &output, const SequencePlayer &player)
-        : mTrack(track), mOutput(output)
+    SequencePlayerEventAdapter::SequencePlayerEventAdapter(const SequenceTrack& track,
+                                                           SequencePlayerEventOutput& output,
+                                                           const SequencePlayer& player)
+            : mTrack(track), mOutput(output)
     {
         double time = player.getPlayerTime();
 

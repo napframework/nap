@@ -43,7 +43,7 @@ namespace nap
          * @param errorState contains any errors
          * @return returns true on successful initialization
          */
-        virtual bool init(utility::ErrorState &errorState) override;
+        virtual bool init(utility::ErrorState& errorState) override;
 
         T mMaximum = T(1); ///< Property: 'Maximum' maximum value of track
         T mMinimum = T(0); ///< Property: 'Minimum' minimum value of track
@@ -64,7 +64,7 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     template<typename T>
-    bool nap::SequenceTrackCurve<T>::init(utility::ErrorState &errorState)
+    bool nap::SequenceTrackCurve<T>::init(utility::ErrorState& errorState)
     {
         // Initialize base class
         if(!SequenceTrack::init(errorState))

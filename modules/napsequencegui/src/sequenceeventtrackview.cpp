@@ -19,7 +19,7 @@ namespace nap
     using namespace sequenceguiclipboard;
 
 
-    SequenceEventTrackView::SequenceEventTrackView(SequenceGUIService &service, SequenceEditorGUIView &view, SequenceEditorGUIState &state)
+    SequenceEventTrackView::SequenceEventTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
         : SequenceTrackView(view, state)
     {
         // register applicable action handlers
@@ -57,7 +57,7 @@ namespace nap
     }
 
 
-    void SequenceEventTrackView::showInspectorContent(const SequenceTrack &track)
+    void SequenceEventTrackView::showInspectorContent(const SequenceTrack& track)
     {
         // draw the assigned receiver
         ImGui::Text("Assigned Output");
@@ -109,7 +109,7 @@ namespace nap
     }
 
 
-    void SequenceEventTrackView::showTrackContent(const SequenceTrack &track, const ImVec2 &trackTopLeft)
+    void SequenceEventTrackView::showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft)
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
@@ -306,12 +306,12 @@ namespace nap
 
 
     void SequenceEventTrackView::drawSegmentHandler(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segment,
-        const ImVec2 &trackTopLeft,
-        const float segmentX,
-        const float segmentWidth,
-        ImDrawList *drawList)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segment,
+            const ImVec2& trackTopLeft,
+            const float segmentX,
+            const float segmentWidth,
+            ImDrawList* drawList)
     {
         const float track_height = track.mTrackHeight * mState.mScale;
         float seg_bounds = 10.0f * mState.mScale;
@@ -617,7 +617,7 @@ namespace nap
     }
 
 
-    bool SequenceEventTrackView::pasteEventsFromClipboard(const std::string &trackID, double time, utility::ErrorState &errorState)
+    bool SequenceEventTrackView::pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
     {
         auto *paste_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::EventSegmentClipboard>();
 
@@ -672,7 +672,7 @@ namespace nap
     }
 
 
-    void SequenceEventTrackView::updateSegmentInClipboard(const std::string &trackID, const std::string &segmentID)
+    void SequenceEventTrackView::updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID)
     {
         if(mState.mClipboard->isClipboard<EventSegmentClipboard>())
         {
@@ -829,7 +829,7 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     template<>
-    void SequenceEventTrackSegmentView<std::string>::handleEditPopupContent(sequenceguiactions::Action &action)
+    void SequenceEventTrackSegmentView<std::string>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<std::string>>();
         auto &message = static_cast<std::string &>(edit_action->mValue);
@@ -845,7 +845,8 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<std::string>::drawEvent(const SequenceTrackSegment &segment, ImDrawList *drawList, const ImVec2 &topLeft, float x, ImU32 color)
+    void
+    SequenceEventTrackSegmentView<std::string>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventString>());
         const auto &segment_event = static_cast<const SequenceTrackSegmentEventString &>(segment);
@@ -860,7 +861,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<float>::handleEditPopupContent(sequenceguiactions::Action &action)
+    void SequenceEventTrackSegmentView<float>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *editAction = action.getDerived<sequenceguiactions::EditingEventSegment<float>>();
         auto &value = static_cast<float &>(editAction->mValue);
@@ -870,7 +871,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<float>::drawEvent(const SequenceTrackSegment &segment, ImDrawList *drawList, const ImVec2 &topLeft, float x, ImU32 color)
+    void SequenceEventTrackSegmentView<float>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventFloat>());
         const auto &segment_event = static_cast<const SequenceTrackSegmentEventFloat &>(segment);
@@ -890,7 +891,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<int>::handleEditPopupContent(sequenceguiactions::Action &action)
+    void SequenceEventTrackSegmentView<int>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<int>>();
         int &value = static_cast<int &>(edit_action->mValue);
@@ -900,7 +901,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<int>::drawEvent(const SequenceTrackSegment &segment, ImDrawList *drawList, const ImVec2 &topLeft, float x, ImU32 color)
+    void SequenceEventTrackSegmentView<int>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventInt>());
         const auto &segment_event = static_cast<const SequenceTrackSegmentEventInt &>(segment);
@@ -922,7 +923,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<glm::vec2>::handleEditPopupContent(sequenceguiactions::Action &action)
+    void SequenceEventTrackSegmentView<glm::vec2>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<glm::vec2>>();
         auto &value = static_cast<glm::vec2 &>(edit_action->mValue);
@@ -931,7 +932,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<glm::vec2>::drawEvent(const SequenceTrackSegment &segment, ImDrawList *drawList, const ImVec2 &topLeft, float x, ImU32 color)
+    void SequenceEventTrackSegmentView<glm::vec2>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec2>());
         const auto &segment_event = static_cast<const SequenceTrackSegmentEventVec2 &>(segment);
@@ -946,7 +947,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<glm::vec3>::handleEditPopupContent(sequenceguiactions::Action &action)
+    void SequenceEventTrackSegmentView<glm::vec3>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<glm::vec3>>();
         auto &value = static_cast<glm::vec3 &>(edit_action->mValue);
@@ -956,7 +957,7 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<glm::vec3>::drawEvent(const SequenceTrackSegment &segment, ImDrawList *drawList, const ImVec2 &topLeft, float x, ImU32 color)
+    void SequenceEventTrackSegmentView<glm::vec3>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec3>());
         const auto &segment_event = static_cast<const SequenceTrackSegmentEventVec3 &>(segment);

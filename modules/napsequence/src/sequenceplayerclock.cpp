@@ -14,13 +14,13 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService &service)
+    SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService& service)
         : mService(service)
     {
     }
 
 
-    void SequencePlayerStandardClock::start(Slot<double> &updateSlot)
+    void SequencePlayerStandardClock::start(Slot<double>& updateSlot)
     {
         mSlot = updateSlot;
         mService.registerStandardClock(this);
@@ -39,7 +39,7 @@ namespace nap
     }
 
 
-    bool SequencePlayerIndependentClock::init(utility::ErrorState &errorState)
+    bool SequencePlayerIndependentClock::init(utility::ErrorState& errorState)
     {
         if(!errorState.check(mFrequency > 0.0f, "Frequency must be bigger then zero!"))
         {
@@ -50,7 +50,7 @@ namespace nap
     }
 
 
-    void SequencePlayerIndependentClock::start(Slot<double> &updateSlot)
+    void SequencePlayerIndependentClock::start(Slot<double>& updateSlot)
     {
         mRunning.store(true);
         mSlot = updateSlot;

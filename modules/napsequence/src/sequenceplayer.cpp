@@ -34,7 +34,7 @@ namespace nap
     }
 
 
-    bool SequencePlayer::init(utility::ErrorState &errorState)
+    bool SequencePlayer::init(utility::ErrorState& errorState)
     {
         if(!Resource::init(errorState))
             return false;
@@ -67,7 +67,7 @@ namespace nap
     }
 
 
-    bool SequencePlayer::start(utility::ErrorState &errorState)
+    bool SequencePlayer::start(utility::ErrorState& errorState)
     {
         Slot<double> slot(this, &SequencePlayer::tick);
         mClock->start(slot);
@@ -123,7 +123,7 @@ namespace nap
     }
 
 
-    bool SequencePlayer::save(const std::string &name, utility::ErrorState &errorState)
+    bool SequencePlayer::save(const std::string& name, utility::ErrorState& errorState)
     {
         std::lock_guard<std::mutex> lock(mMutex);
 
@@ -154,7 +154,7 @@ namespace nap
     }
 
 
-    bool SequencePlayer::load(const std::string &name, utility::ErrorState &errorState)
+    bool SequencePlayer::load(const std::string& name, utility::ErrorState& errorState)
     {
         std::lock_guard<std::mutex> lock(mMutex);
         rtti::DeserializeResult result;
@@ -363,7 +363,7 @@ namespace nap
     }
 
 
-    bool SequencePlayer::createAdapter(const std::string &inputID, const std::string &trackID)
+    bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID)
     {
         // bail if empty output id
         if(inputID.empty())
@@ -425,7 +425,7 @@ namespace nap
     }
 
 
-    void SequencePlayer::performEditAction(std::function<void()> &action)
+    void SequencePlayer::performEditAction(std::function<void()>& action)
     {
         {
             std::lock_guard<std::mutex> lock(mMutex);
@@ -435,7 +435,7 @@ namespace nap
     }
 
 
-    const std::string &SequencePlayer::getSequenceFilename() const
+    const std::string& SequencePlayer::getSequenceFilename() const
     {
         return mSequenceFileName;
     }

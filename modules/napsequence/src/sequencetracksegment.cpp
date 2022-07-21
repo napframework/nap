@@ -16,7 +16,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    bool SequenceTrackSegment::init(utility::ErrorState &errorState)
+    bool SequenceTrackSegment::init(utility::ErrorState& errorState)
     {
         if(!Resource::init(errorState))
         {

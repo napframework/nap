@@ -24,12 +24,12 @@ namespace nap
     class SequencePlayerStandardClock;
 
     // shortcuts
-    using SequenceControllerFactoryFunc = std::function<std::unique_ptr<SequenceController>(SequencePlayer &, SequenceEditor &)>;
+    using SequenceControllerFactoryFunc = std::function<std::unique_ptr<SequenceController>(SequencePlayer&, SequenceEditor &)>;
     using SequenceControllerFactoryMap = std::unordered_map<rtti::TypeInfo, SequenceControllerFactoryFunc>;
-    using DefaultSequenceTrackFactoryMap = std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput *)>>;
-    using SequencePlayerAdapterFactoryFunc = std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack &,
-                                                                                                  SequencePlayerOutput &,
-                                                                                                  const SequencePlayer &)>;
+    using DefaultSequenceTrackFactoryMap = std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)>>;
+    using SequencePlayerAdapterFactoryFunc = std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack&,
+                                                                                                  SequencePlayerOutput&,
+                                                                                                  const SequencePlayer&)>;
     using SequencePlayerAdapterFactoryMap = std::unordered_map<rtti::TypeInfo, SequencePlayerAdapterFactoryFunc>;
 
     /**
@@ -63,7 +63,7 @@ namespace nap
          * @return true on successful creation
          */
         bool registerDefaultTrackCreatorForOutput(rtti::TypeInfo outputType,
-                                                  std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput *)> func);
+                                                  std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)> func);
 
         /**
          * creates a default sequence based on given outputs
@@ -72,9 +72,9 @@ namespace nap
          * @param outputs a list of player outputs
          * @return a raw pointer to the newly created sequence, ownership of sequence is stored as a unique pointer in createdObjects
          */
-        Sequence *createDefaultSequence(std::vector<std::unique_ptr<rtti::Object>> &createdObjects,
-                                        std::unordered_set<std::string> &objectIDs,
-                                        const std::vector<ResourcePtr<SequencePlayerOutput>> &outputs);
+        Sequence *createDefaultSequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
+                                        std::unordered_set<std::string>& objectIDs,
+                                        const std::vector<ResourcePtr<SequencePlayerOutput>>& outputs);
 
         /**
          * Method that registers a certain controller type for a certain view type, this can be used by views to map controller types to view types
@@ -115,9 +115,9 @@ namespace nap
          * @param player sequence player creating adapter
          * @return unique ptr to created adapter, nullptr upon failure
          */
-        std::unique_ptr<SequencePlayerAdapter> invokeAdapterFactory(rtti::TypeInfo type, const SequenceTrack &track,
-                                                                    SequencePlayerOutput &output,
-                                                                    const SequencePlayer &player);
+        std::unique_ptr<SequencePlayerAdapter> invokeAdapterFactory(rtti::TypeInfo type, const SequenceTrack& track,
+                                                                    SequencePlayerOutput& output,
+                                                                    const SequencePlayer& player);
 
         /**
          * Invokes controller factory method and returns unique_ptr to controller, asserts when controller type is not found
@@ -127,7 +127,7 @@ namespace nap
          * @return unique_ptr to controller
          */
         std::unique_ptr<SequenceController> invokeControllerFactory(rtti::TypeInfo controllerType,
-                                                                    SequencePlayer &player, SequenceEditor &editor);
+                                                                    SequencePlayer& player, SequenceEditor& editor);
 
         /**
          * returns all registered controller types that have registered factory functions
@@ -141,34 +141,34 @@ namespace nap
          * @param baseID base id
          * @return unique id
          */
-        std::string generateUniqueID(std::unordered_set<std::string> &objectIDs,
-                                     const std::string &baseID = "Generated");
+        std::string generateUniqueID(std::unordered_set<std::string>& objectIDs,
+                                     const std::string& baseID = "Generated");
 
         /**
          * registers a standard clock for updating
          * @param standardClock pointer to standard clock
          */
-        void registerStandardClock(SequencePlayerStandardClock *standardClock);
+        void registerStandardClock(SequencePlayerStandardClock* standardClock);
 
         /**
          * unregisters a standard clock
          * @param standardClock pointer to standard clock
          */
-        void unregisterStandardClock(SequencePlayerStandardClock *standardClock);
+        void unregisterStandardClock(SequencePlayerStandardClock* standardClock);
 
     protected:
         /**
          * registers all objects that need a specific way of construction
          * @param factory the factory to register the object creators with
          */
-        void registerObjectCreators(rtti::Factory &factory) override;
+        void registerObjectCreators(rtti::Factory& factory) override;
 
         /**
          * initializes service
          * @param errorState contains any errors
          * @return returns true on successful initialization
          */
-        bool init(nap::utility::ErrorState &errorState) override;
+        bool init(nap::utility::ErrorState& errorState) override;
 
         /**
          * updates any outputs and editors
@@ -181,16 +181,16 @@ namespace nap
          * registers an output
          * @param output reference to output
          */
-        void registerOutput(SequencePlayerOutput &output);
+        void registerOutput(SequencePlayerOutput& output);
 
         /**
          * removes an output
          * @param output reference to output
          */
-        void removeOutput(SequencePlayerOutput &output);
+        void removeOutput(SequencePlayerOutput& output);
 
         // vector holding raw pointers to outputs
-        std::vector<SequencePlayerOutput *> mOutputs;
+        std::vector<SequencePlayerOutput*> mOutputs;
 
         // factory map for default creation of tracks
         DefaultSequenceTrackFactoryMap mDefaultTrackCreatorMap;
@@ -205,6 +205,6 @@ namespace nap
         SequencePlayerAdapterFactoryMap mAdapterFactory;
 
         // clocks that need updating
-        std::vector<SequencePlayerStandardClock *> mClocks;
+        std::vector<SequencePlayerStandardClock*> mClocks;
     };
 }

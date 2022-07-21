@@ -16,36 +16,33 @@ using namespace nap::sequenceguiactions;
 
 namespace nap
 {
-    SequenceTrackView::SequenceTrackView(SequenceEditorGUIView &view, SequenceEditorGUIState &state) :
-        mView(view), mState(state), mService(view.getService())
+    SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
+            mView(view), mState(state), mService(view.getService())
     {
         registerActionHandler(RTTI_OF(ResizeTrackHeight), [this] { handleResizeTrackHeight(); });
     }
 
 
-    static bool vector_getter(void *vec, int idx, const char **out_text)
+    static bool vector_getter(void* vec, int idx, const char** out_text)
     {
         auto &vector = *static_cast<std::vector<std::string> *>(vec);
-        if(idx < 0 || idx >= static_cast<int>(vector.size()))
-        { return false; }
+        if(idx < 0 || idx >= static_cast<int>(vector.size())){ return false; }
         *out_text = vector.at(idx).c_str();
         return true;
     }
 
 
-    bool SequenceTrackView::Combo(const char *label, int *currIndex, std::vector<std::string> &values)
+    bool SequenceTrackView::Combo(const char* label, int* currIndex, std::vector<std::string>& values)
     {
-        if(values.empty())
-        { return false; }
+        if(values.empty()){ return false; }
         return ImGui::Combo(label, currIndex, vector_getter,
                             static_cast<void *>(&values), values.size());
     }
 
 
-    bool SequenceTrackView::ListBox(const char *label, int *currIndex, std::vector<std::string> &values)
+    bool SequenceTrackView::ListBox(const char* label, int* currIndex, std::vector<std::string>& values)
     {
-        if(values.empty())
-        { return false; }
+        if(values.empty()){ return false; }
         return ImGui::ListBox(label, currIndex, vector_getter,
                               static_cast<void *>(&values), values.size());
     }
@@ -63,7 +60,7 @@ namespace nap
     }
 
 
-    void SequenceTrackView::showInspector(const SequenceTrack &track)
+    void SequenceTrackView::showInspector(const SequenceTrack& track)
     {
         bool delete_track = false;
         bool move_track_up = false;
@@ -224,7 +221,7 @@ namespace nap
     }
 
 
-    void SequenceTrackView::showTrack(const SequenceTrack &track)
+    void SequenceTrackView::showTrack(const SequenceTrack& track)
     {
         ImVec2 cursor_pos = ImGui::GetCursorPos();
         float offset = 5.0f * mState.mScale;
@@ -399,15 +396,13 @@ namespace nap
     }
 
 
-    const SequencePlayer &SequenceTrackView::getPlayer()
-    { return *mView.mEditor.mSequencePlayer.get(); }
+    const SequencePlayer &SequenceTrackView::getPlayer(){ return *mView.mEditor.mSequencePlayer.get(); }
 
 
-    SequenceEditor &SequenceTrackView::getEditor()
-    { return mView.mEditor; }
+    SequenceEditor &SequenceTrackView::getEditor(){ return mView.mEditor; }
 
 
-    void SequenceTrackView::registerActionHandler(const rttr::type &type, const std::function<void()> &handler)
+    void SequenceTrackView::registerActionHandler(const rttr::type& type, const std::function<void()>& handler)
     {
         // Assert is triggered when element with same key already exists
         auto it = mActionHandlers.emplace(std::make_pair(type, handler));

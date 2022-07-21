@@ -11,8 +11,8 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayerEventOutput::SequencePlayerEventOutput(SequenceService &service)
-        : SequencePlayerOutput(service)
+    SequencePlayerEventOutput::SequencePlayerEventOutput(SequenceService& service)
+            : SequencePlayerOutput(service)
     {
     }
 

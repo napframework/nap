@@ -43,7 +43,7 @@ namespace nap
          * @return reference to derived class
          */
         template<typename T>
-        T &getEventType()
+        T& getEventType()
         {
             assert(this->get_type() == RTTI_OF(T)); // type mismatch
             return static_cast<T &>(*this);
@@ -63,7 +63,7 @@ namespace nap
          * Constructor
          * @param value reference to value, is copied
          */
-        SequenceEvent(const T &value)
+        SequenceEvent(const T& value)
             : mValue(value)
         {
         }
@@ -72,7 +72,7 @@ namespace nap
         /**
          * @return value of event
          */
-        const T &getValue() const
+        const T& getValue() const
         {
             return mValue;
         }

@@ -29,11 +29,11 @@ using namespace nap::sequenceguiclipboard;
 
 namespace nap
 {
-    SequenceEditorGUI::SequenceEditorGUI(SequenceGUIService &service) : mService(service)
+    SequenceEditorGUI::SequenceEditorGUI(SequenceGUIService& service) : mService(service)
     {}
 
 
-    bool SequenceEditorGUI::init(utility::ErrorState &errorState)
+    bool SequenceEditorGUI::init(utility::ErrorState& errorState)
     {
         // Initialize base
         if(!Resource::init(errorState))
@@ -44,7 +44,7 @@ namespace nap
         mView->hideMarkerLabels(mHideMarkerLabels);
 
         auto &sequence_player = mSequenceEditor->mSequencePlayer;
-        sequence_player->sequenceLoaded.connect([this](SequencePlayer &player, std::string sequence_name)
+        sequence_player->sequenceLoaded.connect([this](SequencePlayer& player, std::string sequence_name)
                                                 {
                                                     mRenderWindow->setTitle(sequence_name);
                                                 });
@@ -66,7 +66,7 @@ namespace nap
     }
 
 
-    SequenceEditorGUIView::SequenceEditorGUIView(SequenceGUIService &service, SequenceEditor &editor, std::string id, RenderWindow *renderWindow, bool drawFullWindow)
+    SequenceEditorGUIView::SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow)
         : mService(service), mEditor(editor), mID(std::move(id)), mRenderWindow(renderWindow), mDrawFullWindow(drawFullWindow)
     {
         // start with empty clipboard and empty action
@@ -533,7 +533,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawTracks(const SequencePlayer &sequencePlayer, const Sequence &sequence)
+    void SequenceEditorGUIView::drawTracks(const SequencePlayer& sequencePlayer, const Sequence& sequence)
     {
         // define consts
         const float track_spacing = 20.0f * mState.mScale;
@@ -566,7 +566,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawInspectors(const SequencePlayer &sequencePlayer, const Sequence &sequence)
+    void SequenceEditorGUIView::drawInspectors(const SequencePlayer& sequencePlayer, const Sequence& sequence)
     {
         // define consts
         const float track_spacing = 20.0f * mState.mScale;
@@ -600,7 +600,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawMarkers(const SequencePlayer &sequencePlayer, const Sequence &sequence)
+    void SequenceEditorGUIView::drawMarkers(const SequencePlayer& sequencePlayer, const Sequence& sequence)
     {
         const float sequence_controller_height = 30.0f * mState.mScale;
 
@@ -779,7 +779,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawPlayerController(SequencePlayer &player)
+    void SequenceEditorGUIView::drawPlayerController(SequencePlayer& player)
     {
         const float sequence_controller_height = 30.0f * mState.mScale;
 
@@ -1021,7 +1021,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawTimelinePlayerPosition(const Sequence &sequence, SequencePlayer &player) const
+    void SequenceEditorGUIView::drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const
     {
         const float line_thickness = 2.0f * mState.mScale;
         const ImVec2 player_offset = {5.0f * mState.mScale, 50.0f * mState.mScale};
@@ -1057,7 +1057,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawMarkerLines(const Sequence &sequence, SequencePlayer &player) const
+    void SequenceEditorGUIView::drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const
     {
         const float line_thickness = 2.0f * mState.mScale;
         const ImVec4 white_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mFro3);
@@ -1107,7 +1107,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::drawEndOfSequence(const Sequence &sequence, SequencePlayer &player)
+    void SequenceEditorGUIView::drawEndOfSequence(const Sequence& sequence, SequencePlayer& player)
     {
         std::ostringstream string_stream;
         string_stream << mID << "timelinesequenceduration";
@@ -1775,7 +1775,7 @@ namespace nap
     }
 
 
-    void SequenceEditorGUIView::registerActionHandler(const rttr::type &actionType, const std::function<void()> &action)
+    void SequenceEditorGUIView::registerActionHandler(const rttr::type& actionType, const std::function<void()>& action)
     {
         auto it = mActionHandlers.find(actionType);
         assert(it == mActionHandlers.end()); // key already present

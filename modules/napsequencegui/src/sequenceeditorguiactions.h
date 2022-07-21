@@ -29,20 +29,17 @@ namespace nap
         public:
             virtual ~Action() = default;
 
-
             /**
              * @return true of action is of type
              */
             template<typename T>
-            bool isAction()
-            { return this->get_type() == RTTI_OF(T); }
-
+            bool isAction(){ return this->get_type() == RTTI_OF(T); }
 
             /**
              * @return pointer to derived class. Static cast so will crash when not of derived type, use isAction<T> to check before calling this method
              */
             template<typename T>
-            T *getDerived()
+            T* getDerived()
             {
                 assert(isAction<T>());
                 return static_cast<T *>(this);
@@ -489,7 +486,7 @@ namespace nap
              * @param trackID the track id
              * @param outputID the output id
              */
-            AssignOutputIDToTrack(const std::string &trackID, std::string outputID)
+            AssignOutputIDToTrack(const std::string& trackID, std::string outputID)
                 : TrackAction(trackID), mOutputID(std::move(outputID))
             {}
 
@@ -543,7 +540,7 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            DeleteTrack(const std::string &id) : TrackAction(id)
+            DeleteTrack(const std::string& id) : TrackAction(id)
             {}
         };
 
@@ -554,7 +551,7 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            MoveTrackUp(const std::string &id) : TrackAction(id)
+            MoveTrackUp(const std::string& id) : TrackAction(id)
             {}
         };
 
@@ -565,7 +562,7 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            MoveTrackDown(const std::string &id) : TrackAction(id)
+            MoveTrackDown(const std::string& id) : TrackAction(id)
             {}
         };
 
@@ -576,7 +573,7 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            ChangeTrackName(const std::string &id, const std::string &newName) : TrackAction(id), mNewTrackName(newName)
+            ChangeTrackName(const std::string& id, const std::string& newName) : TrackAction(id), mNewTrackName(newName)
             {}
 
 
@@ -620,7 +617,7 @@ namespace nap
         {
         RTTI_ENABLE(Action)
         public:
-            ShowSavePresetPopup(const std::string &filePath)
+            ShowSavePresetPopup(const std::string& filePath)
                 : mFilePath(filePath)
             {}
 
@@ -637,7 +634,7 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            ShowLoadPresetPopup(const std::string &id, double time, rtti::TypeInfo trackType)
+            ShowLoadPresetPopup(const std::string& id, double time, rtti::TypeInfo trackType)
                 : TrackAction(id), mTime(time), mTrackType(trackType)
             {}
 
@@ -656,7 +653,7 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            ResizeTrackHeight(const std::string &trackID, float newHeight)
+            ResizeTrackHeight(const std::string& trackID, float newHeight)
                 : TrackAction(trackID), mNewTrackHeight(newHeight)
             {}
 

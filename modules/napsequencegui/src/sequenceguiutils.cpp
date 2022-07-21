@@ -17,7 +17,7 @@ namespace nap
     }
 
 
-    double convertMMSSMSArrayToTime(const std::vector<int> &timeArray)
+    double convertMMSSMSArrayToTime(const std::vector<int>& timeArray)
     {
         assert(timeArray.size() == 3);
         return (((double) timeArray[2]) / 100.0f) + (double) timeArray[1] + ((double) timeArray[0] * 60.0);

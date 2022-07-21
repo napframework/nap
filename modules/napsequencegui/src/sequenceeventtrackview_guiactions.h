@@ -22,7 +22,7 @@ namespace nap
              * @param trackID the track id of the track where the new segment should be inserted
              * @param time the time at which to insert the track
              */
-            OpenInsertEventSegmentPopup(const std::string &trackID, double time)
+            OpenInsertEventSegmentPopup(const std::string& trackID, double time)
                 : TrackAction(trackID), mTime(time)
             {}
 
@@ -42,7 +42,7 @@ namespace nap
              * @param trackID the track id of the track where the new segment should be inserted
              * @param time the time at which to insert the track
              */
-            InsertingEventSegment(const std::string &trackID, double time)
+            InsertingEventSegment(const std::string& trackID, double time)
                 : TrackAction(trackID), mTime(time)
             {}
 
@@ -69,7 +69,7 @@ namespace nap
              * @param value the new value of the event segment
              * @param startTime the new start time of the event segment
              */
-            OpenEditEventSegmentPopup(const std::string &trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
+            OpenEditEventSegmentPopup(const std::string& trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
                 : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime)
             {}
 
@@ -97,7 +97,7 @@ namespace nap
              * @param value the new value of the event segment
              * @param startTime the new start time of the event segment
              */
-            EditingEventSegment(const std::string &trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
+            EditingEventSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
                 : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime)
             {}
 

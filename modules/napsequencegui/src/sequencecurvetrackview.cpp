@@ -25,7 +25,7 @@ namespace nap
     using namespace sequenceguiclipboard;
 
 
-    SequenceCurveTrackView::SequenceCurveTrackView(SequenceGUIService &service, SequenceEditorGUIView &view, SequenceEditorGUIState &state)
+    SequenceCurveTrackView::SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
         : SequenceTrackView(view, state)
     {
         registerActionHandler(RTTI_OF(OpenInsertSegmentPopup), std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
@@ -67,7 +67,7 @@ namespace nap
     }
 
 
-    std::unordered_map<rttr::type, SequenceCurveTrackView::DrawSegmentMemFunPtr> &SequenceCurveTrackView::getDrawCurveSegmentsMap()
+    std::unordered_map<rttr::type, SequenceCurveTrackView::DrawSegmentMemFunPtr>& SequenceCurveTrackView::getDrawCurveSegmentsMap()
     {
         static std::unordered_map<rttr::type, SequenceCurveTrackView::DrawSegmentMemFunPtr> map =
             {
@@ -89,7 +89,7 @@ namespace nap
         };
 
 
-    static bool isParameterTypeAllowed(const rttr::type &curveType, const rttr::type &parameterType)
+    static bool isParameterTypeAllowed(const rttr::type& curveType, const rttr::type& parameterType)
     {
         auto it = parameter_types_for_curve_types.find(curveType);
         if(it != parameter_types_for_curve_types.end())
@@ -120,7 +120,7 @@ namespace nap
     }
 
 
-    void SequenceCurveTrackView::showInspectorContent(const SequenceTrack &track)
+    void SequenceCurveTrackView::showInspectorContent(const SequenceTrack& track)
     {
         // draw the assigned parameter
         ImGui::Text("Assigned Output");
@@ -210,7 +210,7 @@ namespace nap
     }
 
 
-    void SequenceCurveTrackView::showTrackContent(const SequenceTrack &track, const ImVec2 &trackTopLeft)
+    void SequenceCurveTrackView::showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft)
     {
         // if dirty, redraw all curves
         if(mState.mDirty)
@@ -342,12 +342,12 @@ namespace nap
 
 
     void SequenceCurveTrackView::drawSegmentHandler(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segment,
-        const ImVec2 &trackTopLeft,
-        const float segmentX,
-        const float segmentWidth,
-        ImDrawList *drawList)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segment,
+            const ImVec2& trackTopLeft,
+            const float segmentX,
+            const float segmentWidth,
+            ImDrawList* drawList)
     {
         // const values
         const float seg_bounds = 10.0f * mState.mScale;
@@ -493,10 +493,10 @@ namespace nap
     void SequenceCurveTrackView::handleInsertSegmentPopup()
     {
         static const std::vector<rtti::TypeInfo> allowed_types =
-            {RTTI_OF(SequenceTrackCurveFloat),
-             RTTI_OF(SequenceTrackCurveVec2),
-             RTTI_OF(SequenceTrackCurveVec3),
-             RTTI_OF(SequenceTrackCurveVec4)};
+                {RTTI_OF(SequenceTrackCurveFloat),
+                 RTTI_OF(SequenceTrackCurveVec2),
+                 RTTI_OF(SequenceTrackCurveVec3),
+                 RTTI_OF(SequenceTrackCurveVec4)};
 
         if(mState.mAction->isAction<OpenInsertSegmentPopup>())
         {
@@ -971,8 +971,7 @@ namespace nap
 
                     // see if we can replace the contents of this segment with the one from the clipboard
                     // this can only happen when we have 1 segment in the clipboard
-                    bool display_replace =
-                        mState.mClipboard->isClipboard<CurveSegmentClipboard>() && mState.mClipboard->getObjectCount();
+                    bool display_replace = mState.mClipboard->isClipboard<CurveSegmentClipboard>() && mState.mClipboard->getObjectCount();
                     if(display_replace)
                     {
                         display_replace = mState.mClipboard->getObjectCount() == 1;
@@ -1091,11 +1090,11 @@ namespace nap
 
     template<>
     void SequenceCurveTrackView::showValue<float>(
-        const SequenceTrack &track,
-        const SequenceTrackSegmentCurve<float> &segment,
-        float x,
-        double time,
-        int curveIndex)
+            const SequenceTrack& track,
+            const SequenceTrackSegmentCurve<float>& segment,
+            float x,
+            double time,
+            int curveIndex)
     {
         assert(track.get_type().is_derived_from<SequenceTrackCurve<float>>());
         const auto &curve_track = static_cast<const SequenceTrackCurve<float> &>(track);
@@ -1142,11 +1141,11 @@ namespace nap
 
     template<>
     void SequenceCurveTrackView::showValue<glm::vec3>(
-        const SequenceTrack &track,
-        const SequenceTrackSegmentCurve<glm::vec3> &segment,
-        float x,
-        double time,
-        int curveIndex)
+            const SequenceTrack& track,
+            const SequenceTrackSegmentCurve<glm::vec3>& segment,
+            float x,
+            double time,
+            int curveIndex)
     {
         assert(curveIndex >= 0);
         assert(curveIndex < 3);
@@ -1174,11 +1173,11 @@ namespace nap
 
     template<>
     void SequenceCurveTrackView::showValue<glm::vec4>(
-        const SequenceTrack &track,
-        const SequenceTrackSegmentCurve<glm::vec4> &segment,
-        float x,
-        double time,
-        int curveIndex)
+            const SequenceTrack& track,
+            const SequenceTrackSegmentCurve<glm::vec4>& segment,
+            float x,
+            double time,
+            int curveIndex)
     {
         assert(curveIndex >= 0);
         assert(curveIndex < 4);
@@ -1206,7 +1205,7 @@ namespace nap
 
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<float>(float &v, int precision)
+    bool SequenceCurveTrackView::inputFloat<float>(float& v, int precision)
     {
         ImGui::PushItemWidth(100.0f * mState.mScale);
         return ImGui::InputFloat("", &v, 0.0f, 0.0f, precision);
@@ -1214,7 +1213,7 @@ namespace nap
 
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2 &v, int precision)
+    bool SequenceCurveTrackView::inputFloat<glm::vec2>(glm::vec2& v, int precision)
     {
         ImGui::PushItemWidth(145.0f * mState.mScale);
         return ImGui::InputFloat2("", &v[0], precision);
@@ -1222,7 +1221,7 @@ namespace nap
 
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3 &v, int precision)
+    bool SequenceCurveTrackView::inputFloat<glm::vec3>(glm::vec3& v, int precision)
     {
         ImGui::PushItemWidth(180.0f * mState.mScale);
         return ImGui::InputFloat3("", &v[0], precision);
@@ -1230,7 +1229,7 @@ namespace nap
 
 
     template<>
-    bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4 &v, int precision)
+    bool SequenceCurveTrackView::inputFloat<glm::vec4>(glm::vec4& v, int precision)
     {
         ImGui::PushItemWidth(225.0f * mState.mScale);
         return ImGui::InputFloat4("", &v[0], precision);
@@ -1411,7 +1410,7 @@ namespace nap
     }
 
 
-    void SequenceCurveTrackView::updateSegmentInClipboard(const std::string &trackID, const std::string &segmentID)
+    void SequenceCurveTrackView::updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID)
     {
         if(mState.mClipboard->isClipboard<CurveSegmentClipboard>())
         {
@@ -1432,7 +1431,7 @@ namespace nap
     }
 
 
-    void SequenceCurveTrackView::updateSegmentsInClipboard(const std::string &trackID)
+    void SequenceCurveTrackView::updateSegmentsInClipboard(const std::string& trackID)
     {
         if(mState.mClipboard->isClipboard<CurveSegmentClipboard>())
         {

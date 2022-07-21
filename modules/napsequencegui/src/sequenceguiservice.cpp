@@ -34,7 +34,7 @@ namespace nap
     {
         namespace sequencer
         {
-            static const std::vector<std::string> &get()
+            static const std::vector<std::string>& get()
             {
                 const static std::vector<std::string> map =
                     {
@@ -56,7 +56,7 @@ namespace nap
     // Object Creators
     //////////////////////////////////////////////////////////////////////////
 
-    static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService *)> &getObjectCreators()
+    static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService*)>& getObjectCreators()
     {
         static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService *service)> vector;
         return vector;
@@ -67,14 +67,14 @@ namespace nap
     // SequenceGUIService
     //////////////////////////////////////////////////////////////////////////
 
-    bool SequenceGUIService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceGUIService *service))
+    bool SequenceGUIService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(* objectCreator)(SequenceGUIService* service))
     {
         getObjectCreators().emplace_back(objectCreator);
         return true;
     }
 
 
-    SequenceGUIService::SequenceGUIService(ServiceConfiguration *configuration) :
+    SequenceGUIService::SequenceGUIService(ServiceConfiguration* configuration) :
         Service(configuration)
     {}
 
@@ -82,7 +82,7 @@ namespace nap
     SequenceGUIService::~SequenceGUIService() = default;
 
 
-    void SequenceGUIService::registerObjectCreators(rtti::Factory &factory)
+    void SequenceGUIService::registerObjectCreators(rtti::Factory& factory)
     {
         for(auto &objectCreator: getObjectCreators())
         {
@@ -93,7 +93,7 @@ namespace nap
     }
 
 
-    bool SequenceGUIService::init(nap::utility::ErrorState &errorState)
+    bool SequenceGUIService::init(nap::utility::ErrorState& errorState)
     {
         // Get gui service and colors
         mGuiService = getCore().getService<IMGuiService>();
@@ -141,8 +141,8 @@ namespace nap
             return false;
 
         if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView),
-                                     [](SequenceGUIService &service,
-                                        SequenceEditorGUIView &editorGuiView,
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
                                         SequenceEditorGUIState &state) -> std::unique_ptr<SequenceTrackView>
                                      {
                                          return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
@@ -153,8 +153,8 @@ namespace nap
         }
 
         if(!registerTrackViewFactory(RTTI_OF(SequenceEventTrackView),
-                                     [](SequenceGUIService &service,
-                                        SequenceEditorGUIView &editorGuiView,
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
                                         SequenceEditorGUIState &state) -> std::unique_ptr<SequenceTrackView>
                                      {
                                          return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
@@ -181,9 +181,9 @@ namespace nap
 
 
     std::unique_ptr<SequenceTrackView> SequenceGUIService::invokeTrackViewFactory(
-        rtti::TypeInfo viewType,
-        SequenceEditorGUIView &view,
-        SequenceEditorGUIState &state)
+            rtti::TypeInfo viewType,
+            SequenceEditorGUIView& view,
+            SequenceEditorGUIState& state)
     {
         assert(mTrackViewFactoryMap.find(viewType) != mTrackViewFactoryMap.end()); // entry not found
         return mTrackViewFactoryMap.find(viewType)->second(*this, view, state);
@@ -252,7 +252,7 @@ namespace nap
     }
 
 
-    void SequenceGUIService::invokeEditEventHandler(rtti::TypeInfo eventType, SequenceEventTrackView &view) const
+    void SequenceGUIService::invokeEditEventHandler(rtti::TypeInfo eventType, SequenceEventTrackView& view) const
     {
         assert(mEditEventHandlerMap.find(eventType) != mEditEventHandlerMap.end());
         mEditEventHandlerMap.find(eventType)->second(view);
@@ -260,9 +260,9 @@ namespace nap
 
 
     void SequenceGUIService::invokePasteEvent(rtti::TypeInfo eventType,
-                                              SequenceEventTrackView &view,
-                                              const std::string &trackID,
-                                              const SequenceTrackSegmentEventBase &eventBase,
+                                              SequenceEventTrackView& view,
+                                              const std::string& trackID,
+                                              const SequenceTrackSegmentEventBase& eventBase,
                                               double time) const
     {
         assert(mPasteEventMap.find(eventType) != mPasteEventMap.end());
@@ -273,7 +273,7 @@ namespace nap
     std::vector<rtti::TypeInfo> SequenceGUIService::getAllTrackTypes() const
     {
         std::vector<rtti::TypeInfo> track_types;
-        for(const auto &it: mTrackViewTypeMap)
+        for(const auto& it: mTrackViewTypeMap)
         {
             track_types.emplace_back(it.first);
         }
@@ -284,7 +284,7 @@ namespace nap
     std::vector<rtti::TypeInfo> SequenceGUIService::getAllRegisteredEventActions() const
     {
         std::vector<rtti::TypeInfo> event_actions;
-        for(const auto &it: mEditEventHandlerMap)
+        for(const auto& it: mEditEventHandlerMap)
         {
             event_actions.emplace_back(it.first);
         }
@@ -292,14 +292,14 @@ namespace nap
     }
 
 
-    void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo> &dependencies)
+    void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
     {
         dependencies.emplace_back(RTTI_OF(SequenceService));
         dependencies.emplace_back(RTTI_OF(IMGuiService));
     }
 
 
-    nap::IMGuiService &SequenceGUIService::getGui()
+    nap::IMGuiService& SequenceGUIService::getGui()
     {
         assert(mGuiService != nullptr);
         return *mGuiService;

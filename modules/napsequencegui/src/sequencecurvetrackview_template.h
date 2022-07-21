@@ -197,13 +197,13 @@ namespace nap
 
     template<typename T>
     void SequenceCurveTrackView::drawCurves(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segmentBase,
-        const ImVec2 &trackTopLeft,
-        const float previousSegmentX,
-        const float segmentWidth,
-        const float segmentX,
-        ImDrawList *drawList)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segmentBase,
+            const ImVec2& trackTopLeft,
+            const float previousSegmentX,
+            const float segmentWidth,
+            const float segmentX,
+            ImDrawList* drawList)
     {
         const auto &segment = static_cast<const SequenceTrackSegmentCurve<T> &>(segmentBase);
         const float points_per_pixel = 0.5f * mState.mScale;
@@ -348,14 +348,14 @@ namespace nap
 
     template<typename T>
     void SequenceCurveTrackView::drawSegmentContent(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segment,
-        const ImVec2 &trackTopLeft,
-        float previousSegmentX,
-        float segmentWidth,
-        float segmentX,
-        ImDrawList *drawList,
-        bool drawStartValue)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segment,
+            const ImVec2& trackTopLeft,
+            float previousSegmentX,
+            float segmentWidth,
+            float segmentX,
+            ImDrawList* drawList,
+            bool drawStartValue)
     {
         // TODO : do this without the elif statement
         /**
@@ -502,13 +502,13 @@ namespace nap
 
     template<typename T>
     void SequenceCurveTrackView::drawSegmentValue(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segmentBase,
-        const ImVec2 &trackTopLeft,
-        const float segmentX,
-        const float segmentWidth,
-        const sequencecurveenums::ESegmentValueTypes segmentType,
-        ImDrawList *drawList)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segmentBase,
+            const ImVec2& trackTopLeft,
+            const float segmentX,
+            const float segmentWidth,
+            const sequencecurveenums::ESegmentValueTypes segmentType,
+            ImDrawList* drawList)
     {
         static std::unordered_map<rttr::type, std::function<float(const SequenceTrackSegment &, int, sequencecurveenums::ESegmentValueTypes)>> get_value_map
             {
@@ -664,12 +664,12 @@ namespace nap
 
     template<typename T>
     void SequenceCurveTrackView::drawControlPoints(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segmentBase,
-        const ImVec2 &trackTopLeft,
-        const float segmentX,
-        const float segmentWidth,
-        ImDrawList *drawList)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segmentBase,
+            const ImVec2& trackTopLeft,
+            const float segmentX,
+            const float segmentWidth,
+            ImDrawList* drawList)
     {
 
         const auto &segment = static_cast<const SequenceTrackSegmentCurve<T> &>(segmentBase);
@@ -900,16 +900,16 @@ namespace nap
 
     template<typename T>
     void SequenceCurveTrackView::drawTanHandler(
-        const SequenceTrack &track,
-        const SequenceTrackSegment &segment,
-        std::ostringstream &stringStream,
-        const float segmentWidth,
-        const math::FCurvePoint<float, float> &curvePoint,
-        const ImVec2 &circlePoint,
-        const int controlPointIndex,
-        const int curveIndex,
-        const sequencecurveenums::ETanPointTypes type,
-        ImDrawList *drawList)
+            const SequenceTrack& track,
+            const SequenceTrackSegment& segment,
+            std::ostringstream& stringStream,
+            const float segmentWidth,
+            const math::FCurvePoint<float, float>& curvePoint,
+            const ImVec2& circlePoint,
+            const int controlPointIndex,
+            const int curveIndex,
+            const sequencecurveenums::ETanPointTypes type,
+            ImDrawList* drawList)
     {
         const float track_height = track.mTrackHeight * mState.mScale;
 
@@ -1141,7 +1141,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string &trackId, const std::string &segmentId)
+    void SequenceCurveTrackView::pasteClipboardSegmentInto(const std::string& trackId, const std::string& segmentId)
     {
         // get clipboard action
         auto *curve_segment_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::CurveSegmentClipboard>();

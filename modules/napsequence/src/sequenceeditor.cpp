@@ -20,13 +20,13 @@ using namespace nap::sequencecurveenums;
 
 namespace nap
 {
-    SequenceEditor::SequenceEditor(SequenceService &service)
+    SequenceEditor::SequenceEditor(SequenceService& service)
         : mService(service)
     {
     }
 
 
-    bool SequenceEditor::init(utility::ErrorState &errorState)
+    bool SequenceEditor::init(utility::ErrorState& errorState)
     {
         if(!Resource::init(errorState))
         {
@@ -44,7 +44,7 @@ namespace nap
     }
 
 
-    SequenceController *SequenceEditor::getControllerWithTrackID(const std::string &trackID)
+    SequenceController* SequenceEditor::getControllerWithTrackID(const std::string& trackID)
     {
         const auto &sequence = mSequencePlayer->getSequence();
         for(const auto &track: sequence.mTracks)
@@ -62,7 +62,7 @@ namespace nap
     }
 
 
-    void SequenceEditor::save(const std::string &file)
+    void SequenceEditor::save(const std::string& file)
     {
         utility::ErrorState error_state;
         if(!mSequencePlayer->save(file, error_state))
@@ -72,7 +72,7 @@ namespace nap
     }
 
 
-    void SequenceEditor::load(const std::string &file)
+    void SequenceEditor::load(const std::string& file)
     {
         performEdit([this, file]()
                     {
@@ -117,7 +117,7 @@ namespace nap
     }
 
 
-    void SequenceEditor::insertMarker(double time, const std::string &message)
+    void SequenceEditor::insertMarker(double time, const std::string& message)
     {
         performEdit([this, time, message]()
                     {
@@ -132,7 +132,7 @@ namespace nap
     }
 
 
-    void SequenceEditor::changeMarkerTime(const std::string &markerID, double time)
+    void SequenceEditor::changeMarkerTime(const std::string& markerID, double time)
     {
         // clamp time
         if(time < 0.0)
@@ -140,11 +140,11 @@ namespace nap
         
         performEdit([this, markerID, time]()
                     {
-                        auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](
-                            ResourcePtr<SequenceMarker> &a) -> bool
-                        {
-                            return markerID == a->mID;
-                        });
+                        auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(),
+                                               mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a) -> bool
+                                               {
+                                                   return markerID == a->mID;
+                                               });
 
                         assert(it != mSequencePlayer->mSequence->mMarkers.end());
 
@@ -153,19 +153,18 @@ namespace nap
                             it->get()->mTime = time;
                         }
                     });
-
     }
 
 
-    void SequenceEditor::deleteMarker(const std::string &markerID)
+    void SequenceEditor::deleteMarker(const std::string& markerID)
     {
         performEdit([this, markerID]()
                     {
-                        auto it_1 = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](
-                            ResourcePtr<SequenceMarker> &a) -> bool
-                        {
-                            return markerID == a->mID;
-                        });
+                        auto it_1 = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(),
+                                                 mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a) -> bool
+                                                 {
+                                                     return markerID == a->mID;
+                                                 });
                         assert(it_1 != mSequencePlayer->mSequence->mMarkers.end());
 
                         if(it_1 != mSequencePlayer->mSequence->mMarkers.end())
@@ -173,11 +172,11 @@ namespace nap
                             mSequencePlayer->mSequence->mMarkers.erase(it_1);
                         }
 
-                        auto it_2 = std::find_if(mSequencePlayer->mReadObjects.begin(), mSequencePlayer->mReadObjects.end(), [markerID](
-                            std::unique_ptr<rtti::Object> &a) -> bool
-                        {
-                            return markerID == a->mID;
-                        });
+                        auto it_2 = std::find_if(mSequencePlayer->mReadObjects.begin(),
+                                                 mSequencePlayer->mReadObjects.end(), [markerID](std::unique_ptr<rtti::Object>& a) -> bool
+                                                 {
+                                                     return markerID == a->mID;
+                                                 });
                         assert(it_2 != mSequencePlayer->mReadObjects.end());
 
                         if(it_2 != mSequencePlayer->mReadObjects.end())
@@ -188,15 +187,15 @@ namespace nap
     }
 
 
-    void SequenceEditor::changeMarkerMessage(const std::string &markerID, const std::string &markerMessage)
+    void SequenceEditor::changeMarkerMessage(const std::string& markerID, const std::string& markerMessage)
     {
         performEdit([this, markerID, markerMessage]()
                     {
-                        auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(), mSequencePlayer->mSequence->mMarkers.end(), [markerID](
-                            ResourcePtr<SequenceMarker> &a) -> bool
-                        {
-                            return markerID == a->mID;
-                        });
+                        auto it = std::find_if(mSequencePlayer->mSequence->mMarkers.begin(),
+                                               mSequencePlayer->mSequence->mMarkers.end(), [markerID](ResourcePtr<SequenceMarker>& a) -> bool
+                                               {
+                                                   return markerID == a->mID;
+                                               });
 
                         assert(it != mSequencePlayer->mSequence->mMarkers.end());
 

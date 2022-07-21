@@ -15,7 +15,7 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayerCurveOutput::SequencePlayerCurveOutput(SequenceService &service)
+    SequencePlayerCurveOutput::SequencePlayerCurveOutput(SequenceService& service)
         : SequencePlayerOutput(service)
     {
     }
@@ -30,7 +30,7 @@ namespace nap
     }
 
 
-    void SequencePlayerCurveOutput::registerAdapter(SequencePlayerCurveAdapterBase *curveAdapter)
+    void SequencePlayerCurveOutput::registerAdapter(SequencePlayerCurveAdapterBase* curveAdapter)
     {
         auto found_it = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto &it)
         {
@@ -45,7 +45,7 @@ namespace nap
     }
 
 
-    void SequencePlayerCurveOutput::removeAdapter(SequencePlayerCurveAdapterBase *curveAdapter)
+    void SequencePlayerCurveOutput::removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter)
     {
         auto found_it = std::find_if(mAdapters.begin(), mAdapters.end(), [&](const auto &it)
         {

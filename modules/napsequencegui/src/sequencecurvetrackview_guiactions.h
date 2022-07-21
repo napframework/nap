@@ -171,7 +171,7 @@ namespace nap
              * @param minimum minimum value of the curve point
              * @param maximum maximum value of the curve point
              */
-            OpenCurvePointActionPopup(const std::string &trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
+            OpenCurvePointActionPopup(const std::string& trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
                 : TrackAction(trackID), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mValue(value), mTime(time), mMinimum(minimum), mMaximum(maximum)
             {}
 
@@ -205,7 +205,7 @@ namespace nap
              * @param minimum minimum value of the curve point
              * @param maximum maximum value of the curve point
              */
-            CurvePointActionPopup(const std::string &trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
+            CurvePointActionPopup(const std::string& trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
                 : TrackAction(trackID), mSegmentID(std::move(segmentID)),
                   mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex),
                   mValue(value), mMinimum(minimum), mMaximum(maximum), mTime(time)
@@ -441,7 +441,7 @@ namespace nap
              * @param minimum the new minimum
              * @param maximum the new maximum
              */
-            OpenEditSegmentCurveValuePopup(const std::string &trackId, std::string segmentID,
+            OpenEditSegmentCurveValuePopup(const std::string& trackId, std::string segmentID,
                                            sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value,
                                            T minimum, T maximum) :
                 TrackAction(trackId), mSegmentID(std::move(segmentID)),
@@ -477,7 +477,7 @@ namespace nap
              * @param minimum the new minimum
              * @param maximum the new maximum
              */
-            EditingSegmentCurveValue(const std::string &trackId, std::string segmentID, sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
+            EditingSegmentCurveValue(const std::string& trackId, std::string segmentID,sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value, T minimum, T maximum)
                 : TrackAction(trackId), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mValue(value), mMinimum(minimum), mMaximum(maximum)
             {}
 

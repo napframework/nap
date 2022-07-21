@@ -26,8 +26,8 @@ namespace nap
 
 
     template<typename T>
-    const SequenceTrackSegment *SequenceControllerCurve::insertCurveSegment(
-        const std::string &trackID, double time)
+    const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment(
+            const std::string& trackID, double time)
     {
         static std::unordered_map<rttr::type, int> s_curve_count_map
             {
@@ -224,7 +224,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::changeCurveType(SequenceTrackSegment &segment,
+    void SequenceControllerCurve::changeCurveType(SequenceTrackSegment& segment,
                                                   math::ECurveInterp type, int curveIndex)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
@@ -240,8 +240,8 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack &track,
-                                                          SequenceTrackSegment &segment, float newValue, int curveIndex,
+    void SequenceControllerCurve::changeCurveSegmentValue(SequenceTrack& track,
+                                                          SequenceTrackSegment& segment, float newValue, int curveIndex,
                                                           sequencecurveenums::ESegmentValueTypes valueType)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
@@ -270,7 +270,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::insertCurvePoint(SequenceTrackSegment &segment, float pos, int curveIndex)
+    void SequenceControllerCurve::insertCurvePoint(SequenceTrackSegment& segment, float pos, int curveIndex)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
 
@@ -306,7 +306,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::deleteCurvePoint(SequenceTrackSegment &segment, const int index,
+    void SequenceControllerCurve::deleteCurvePoint(SequenceTrackSegment& segment, const int index,
                                                    int curveIndex)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
@@ -324,7 +324,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::changeCurvePoint(SequenceTrackSegment &segment,
+    void SequenceControllerCurve::changeCurvePoint(SequenceTrackSegment& segment,
                                                    const int pointIndex, const int curveIndex, float time, float value)
     {
         // obtain curve segment
@@ -343,7 +343,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment &segment,
+    void SequenceControllerCurve::changeLastCurvePoint(SequenceTrackSegment& segment,
                                                        const int curveIndex, float time, float value)
     {
 
@@ -364,8 +364,8 @@ namespace nap
 
 
     template<typename T>
-    bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment &segment,
-                                                 const std::string &trackID, const int pointIndex, const int curveIndex,
+    bool SequenceControllerCurve::changeTanPoint(SequenceTrackSegment& segment,
+                                                 const std::string& trackID, const int pointIndex, const int curveIndex,
                                                  sequencecurveenums::ETanPointTypes tanType, float time, float value)
     {
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurve<T>>()); // type mismatch
@@ -450,7 +450,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::updateCurveSegments(SequenceTrack &track)
+    void SequenceControllerCurve::updateCurveSegments(SequenceTrack& track)
     {
         // update start time and duration of all segments
         ResourcePtr<SequenceTrackSegmentCurve<T>> prev_segment = nullptr;
@@ -484,7 +484,7 @@ namespace nap
 
 
     template<typename T>
-    void SequenceControllerCurve::changeMinMaxCurveTrack(const std::string &trackID, T minimum, T maximum)
+    void SequenceControllerCurve::changeMinMaxCurveTrack(const std::string& trackID, T minimum, T maximum)
     {
         performEditAction([this, trackID, minimum, maximum]()
                           {

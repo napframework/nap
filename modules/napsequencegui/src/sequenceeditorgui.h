@@ -34,13 +34,13 @@ namespace nap
     {
     RTTI_ENABLE(Resource)
     public:
-        SequenceEditorGUI(SequenceGUIService &service);
+        SequenceEditorGUI(SequenceGUIService& service);
 
         /**
          * @param errorState contains any errors
          * @return true on success
          */
-        bool init(utility::ErrorState &errorState) override;
+        bool init(utility::ErrorState& errorState) override;
 
         /**
          * called before deconstruction
@@ -57,7 +57,7 @@ namespace nap
         /**
          * @return sequence editor gui service
          */
-        SequenceGUIService &getService(){ return mService; }
+        SequenceGUIService& getService() { return mService; }
 
 
         // properties
@@ -90,7 +90,7 @@ namespace nap
          * @param renderWindow the render window
          * @param drawFullWindow if the editor occupies the entire window space
          */
-        SequenceEditorGUIView(SequenceGUIService &service, SequenceEditor &editor, std::string id, RenderWindow *renderWindow, bool drawFullWindow);
+        SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
         /**
          * Shows the editor interface
@@ -106,7 +106,7 @@ namespace nap
         void hideMarkerLabels(bool hide){ mHideMarkerLabels = hide; }
 
 
-        SequenceGUIService &getService(){ return mService; }
+        SequenceGUIService& getService() { return mService; }
 
 
     protected:
@@ -115,48 +115,48 @@ namespace nap
          * @param sequencePlayer reference to sequenceplayer
          * @param sequence reference to sequence
          */
-        void drawTracks(const SequencePlayer &sequencePlayer, const Sequence &sequence);
+        void drawTracks(const SequencePlayer& sequencePlayer, const Sequence& sequence);
 
         /**
          * Draws inspectors of the sequence tracks
          * @param sequencePlayer reference to sequenceplayer
          * @param sequence reference to sequence
          */
-        void drawInspectors(const SequencePlayer &sequencePlayer, const Sequence &sequence);
+        void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence& sequence);
 
         /**
          * Draws markers
          * @param sequencePlayer reference to sequenceplayer
          * @param sequence reference to sequence
          */
-        void drawMarkers(const SequencePlayer &sequencePlayer, const Sequence &sequence);
+        void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence& sequence);
 
         /**
          * Draw lines of markers
          * @param sequencePlayer reference to sequenceplayer
          * @param sequence reference to sequence
          */
-        void drawMarkerLines(const Sequence &sequence, SequencePlayer &player) const;
+        void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
 
         /**
          * draws player controller bar
          * @param player reference to player
          */
-        void drawPlayerController(SequencePlayer &player);
+        void drawPlayerController(SequencePlayer& player);
 
         /**
          * draws line of player position
          * @param sequence reference to sequence
          * @param player reference to player
          */
-        void drawTimelinePlayerPosition(const Sequence &sequence, SequencePlayer &player) const;
+        void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const;
 
         /**
          * draws end of sequence
          * @param sequence reference to sequence
          * @param player reference to player
          */
-        void drawEndOfSequence(const Sequence &sequence, SequencePlayer &player);
+        void drawEndOfSequence(const Sequence& sequence, SequencePlayer& player);
 
         /**
          * Handles insertion of track popup
@@ -208,7 +208,7 @@ namespace nap
          * @param actionType the action type to register a handler function for
          * @param action the handler function
          */
-        void registerActionHandler(const rttr::type &actionType, const std::function<void()> &action);
+        void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
 
     protected:
         void registerActionHandlers();

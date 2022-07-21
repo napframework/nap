@@ -22,20 +22,20 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService *)> &getObjectCreators()
+    static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService*)>& getObjectCreators()
     {
         static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceAudioGUIService *service)> vector;
         return vector;
     }
 
 
-    SequenceAudioGUIService::SequenceAudioGUIService(ServiceConfiguration *configuration)
+    SequenceAudioGUIService::SequenceAudioGUIService(ServiceConfiguration* configuration)
         : Service(configuration)
     {
     }
 
 
-    void SequenceAudioGUIService::Colors::init(const SequenceGUIService::Colors &palette)
+    void SequenceAudioGUIService::Colors::init(const SequenceGUIService::Colors& palette)
     {
         // audio segment background
         ImVec4 audio_segment_background_float4 = ImGui::ColorConvertU32ToFloat4(palette.mFro1);
@@ -62,7 +62,7 @@ namespace nap
     SequenceAudioGUIService::~SequenceAudioGUIService() = default;
 
 
-    void SequenceAudioGUIService::registerObjectCreators(rtti::Factory &factory)
+    void SequenceAudioGUIService::registerObjectCreators(rtti::Factory& factory)
     {
         for(auto &objectCreator: getObjectCreators())
         {
@@ -71,7 +71,7 @@ namespace nap
     }
 
 
-    bool SequenceAudioGUIService::init(nap::utility::ErrorState &errorState)
+    bool SequenceAudioGUIService::init(nap::utility::ErrorState& errorState)
     {
         auto *service_gui = getCore().getService<SequenceGUIService>();
         assert(service_gui != nullptr);
@@ -99,7 +99,7 @@ namespace nap
     }
 
 
-    void SequenceAudioGUIService::getDependentServices(std::vector<rtti::TypeInfo> &dependencies)
+    void SequenceAudioGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
     {
         dependencies.emplace_back(RTTI_OF(SequenceGUIService));
         dependencies.emplace_back(RTTI_OF(SequenceServiceAudio));

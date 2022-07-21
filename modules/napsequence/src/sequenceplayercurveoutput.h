@@ -26,7 +26,7 @@ namespace nap
     {
     RTTI_ENABLE(SequencePlayerOutput)
     public:
-        SequencePlayerCurveOutput(SequenceService &service);
+        SequencePlayerCurveOutput(SequenceService& service);
 
         // properties
         ResourcePtr<Parameter> mParameter = nullptr;    ///< Property: 'Parameter' parameter resource
@@ -36,13 +36,13 @@ namespace nap
          * registers a parameter setter to the output. Parameter setters are called from main thread
          * @param curveAdapter adapter to register
          */
-        void registerAdapter(SequencePlayerCurveAdapterBase *curveAdapter);
+        void registerAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
 
         /**
          * removes parameter setter
          * @param curveAdapter ptr to parameter setter
          */
-        void removeAdapter(SequencePlayerCurveAdapterBase *curveAdapter);
+        void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
 
     protected:
         /**
@@ -52,7 +52,7 @@ namespace nap
         void update(double deltaTime) override;
 
         // vector holding registered parameter setters
-        std::vector<SequencePlayerCurveAdapterBase *> mAdapters;
+        std::vector<SequencePlayerCurveAdapterBase*> mAdapters;
     };
 
     using SequencePlayerCurveOutputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveOutput, SequenceService>;
