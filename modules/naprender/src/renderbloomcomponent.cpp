@@ -216,22 +216,22 @@ namespace nap
 		mViewMatrixUniform = ensureUniform(uniform::viewMatrix, *mMVPStruct, view_error);
 
 		// Get UBO struct
-		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::uboStruct);
-		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to find uniform UBO struct: %s in material: %s", this->mID.c_str(), uniform::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
+		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::blur::uboStruct);
+		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to find uniform UBO struct: %s in material: %s", this->mID.c_str(), uniform::blur::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
 		// Get direction uniform
-		mDirectionUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::direction);
+		mDirectionUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::blur::direction);
 		if (!errorState.check(mDirectionUniform != nullptr, "Missing uniform vec2 'direction' in uniform UBO"))
 			return false;
 
 		// Get texture size uniform
-		mTextureSizeUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::textureSize);
+		mTextureSizeUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::blur::textureSize);
 		if (!errorState.check(mDirectionUniform != nullptr, "Missing uniform vec2 'direction' in uniform UBO"))
 			return false;
 
 		// Get color texture sampler
-		mColorTextureSampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::sampler::colorTexture);
+		mColorTextureSampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::blur::sampler::colorTexture);
 		if (!errorState.check(mColorTextureSampler != nullptr, "Missing uniform sampler2D 'colorTexture'"))
 			return false;
 

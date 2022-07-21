@@ -27,14 +27,17 @@ namespace nap
 	 */
 	namespace uniform
 	{
-		namespace sampler
-		{	
-			inline constexpr const char* colorTexture	= "colorTexture";		///< Name of the color texture sampler
-		}
+		namespace blur
+		{
+			namespace sampler
+			{	
+				inline constexpr const char* colorTexture	= "colorTexture";		///< Name of the color texture sampler
+			}
 
-		inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
-		inline constexpr const char* textureSize = "textureSize";				///< Size of the texture
-		inline constexpr const char* direction = "direction";					///< Direction of the blur e.g. {1.0, 0.0} for horizontal, {0.0, 1.0} for vertical 
+			inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
+			inline constexpr const char* textureSize = "textureSize";				///< Size of the texture
+			inline constexpr const char* direction = "direction";					///< Direction of the blur e.g. {1.0, 0.0} for horizontal, {0.0, 1.0} for vertical 
+		}
 	}
 
 	/**

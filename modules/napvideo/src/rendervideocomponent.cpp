@@ -128,9 +128,9 @@ namespace nap
 			return false;
 
 		// Get sampler inputs to update from video material
-		mYSampler = ensureSampler(uniform::video::YSampler, errorState);
-		mUSampler = ensureSampler(uniform::video::USampler, errorState);
-		mVSampler = ensureSampler(uniform::video::VSampler, errorState);
+		mYSampler = ensureSampler(uniform::video::sampler::YSampler, errorState);
+		mUSampler = ensureSampler(uniform::video::sampler::USampler, errorState);
+		mVSampler = ensureSampler(uniform::video::sampler::VSampler, errorState);
 
 		if (mYSampler == nullptr || mUSampler == nullptr || mVSampler == nullptr)
 			return false;
