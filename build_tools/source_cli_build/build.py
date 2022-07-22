@@ -45,7 +45,7 @@ def get_nap_root():
     script_to_nap_root = os.path.join(os.pardir, os.pardir)
     return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))    
 
-def main(target, clean_build, build_type):
+def main(target, clean_build, build_type, enable_python):
     build_dir = None
     if platform.startswith('linux'):
         build_dir = LINUX_BUILD_DIR
@@ -60,13 +60,21 @@ def main(target, clean_build, build_type):
     if clean_build and os.path.exists(build_dir):
         shutil.rmtree(build_dir)
 
-    # Generate solution
+    # Get arguments to generate solution
+    solution_args = []
     if platform.startswith('linux'):
-        rc = call(nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type.lower()])
+        solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type.lower()]
     elif platform == 'darwin':
-        rc = call(nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir])
+        solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir]
     else:
-        rc = call(nap_root, ['generate_solution.bat', '--build-path=%s' % build_dir])        
+        solution_args = ['generate_solution.bat', '--build-path=%s' % build_dir]
+
+    # Enable python if requested 
+    if enable_python:
+        solution_args.append('-p')
+    
+    # Generate solution
+    rc = call(nap_root, solution_args)
         
     # Build
     build_config = build_type.capitalize()
@@ -88,10 +96,12 @@ if __name__ == '__main__':
     parser.add_argument('-t', '--build-type', type=str.lower, default=DEFAULT_BUILD_TYPE,
             choices=['release', 'debug'], help="Build configuration (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     parser.add_argument('-c', '--clean', default=False, action="store_true", help="Clean before build")
+    parser.add_argument('-p', '--enable-python', action="store_true", help="Enable python integration using pybind (deprecated)")
+
     args = parser.parse_args()
 
     print("Project to build: {0}, clean: {1}, type: {2}".format(
         args.PROJECT_NAME, args.clean, args.build_type))
 
     # Run main
-    main(args.PROJECT_NAME, args.clean, args.build_type)
+    main(args.PROJECT_NAME, args.clean, args.build_type, args.enable_python)

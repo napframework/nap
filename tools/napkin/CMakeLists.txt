@@ -39,7 +39,12 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 set_target_properties(${NAPKIN_LIB} PROPERTIES FOLDER Tools)
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_nappython mod_napcolor)
+set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_napcolor)
+
+# Add python if enabled
+if(NAP_ENABLE_PYTHON)
+    list(APPEND NAP_MODULES_DEPENDENCIES mod_nappython)
+endif()
 
 # Add module lib dependencies
 add_dependencies(${PROJECT_NAME} ${NAP_MODULES_DEPENDENCIES})
@@ -116,8 +121,10 @@ if(MSVC)
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
 
     # Python
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
-    copy_files_to_target_file_dir(${PYTHON_DLLS})
+    if(NAP_ENABLE_PYTHON)
+        file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
+        copy_files_to_target_file_dir(${PYTHON_DLLS})
+    endif()
 
     ########################################################################
 

@@ -4,6 +4,7 @@
 
 #include "surfacedescriptor.h"
 #include <rtti/typeinfo.h>
+#include <assert.h>
 
 RTTI_BEGIN_CLASS(nap::SurfaceDescriptor)
 	RTTI_PROPERTY("Width",		&nap::SurfaceDescriptor::mWidth,		nap::rtti::EPropertyMetaData::Default)
