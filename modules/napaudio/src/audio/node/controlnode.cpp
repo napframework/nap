@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "controlnode.h"
+#include <assert.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::ControlNode)
 		RTTI_PROPERTY("output", &nap::audio::ControlNode::output, nap::rtti::EPropertyMetaData::Embedded)
@@ -87,9 +88,7 @@ namespace nap
 				else
 					mValue.setValue(mNewDestination.load());
 			}
-		}
-		
-		
+		}		
 	}
 	
 }

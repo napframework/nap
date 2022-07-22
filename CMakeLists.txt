@@ -51,14 +51,26 @@ elseif(UNIX)
     endif()
 endif()
 
+# We don't actively support and work on macOS anymore.
+# This is not because we don't like their hardware, but because of the continuous tightening of restrictions of macOS,
+# Including aggressive gate-keeping, required app singing, forcing specific data structures, vague licence policies,
+# proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
+# Feel free to continue support for macOS on your end.
 if(APPLE)
+    message(DEPRECATION "macOS (as a target) is no longer in active development or supported")
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
-# enable python
-set(NAP_ENABLE_PYTHON 1)
-add_definitions(-DNAP_ENABLE_PYTHON)
+# We don't actively support and work on python bindings anymore.
+if(NAP_ENABLE_PYTHON)
+    message(DEPRECATION "Python bindings are no longer in active development or supported")
+    add_definitions(-DNAP_ENABLE_PYTHON)
+endif()
+
+# Automatically link Qt executables to qtmain target on Windows.
 cmake_policy(SET CMP0020 NEW)
+
+# Ignore COMPILE_DEFINITIONS
 cmake_policy(SET CMP0043 NEW)
 
 # Restrict to debug and release build types
@@ -128,7 +140,6 @@ add_subdirectory(demos/curveball)
 add_subdirectory(demos/curveball/module)
 add_subdirectory(demos/copystamp)
 add_subdirectory(demos/copystamp/module)
-add_subdirectory(demos/python)
 add_subdirectory(demos/websocketserver)
 add_subdirectory(demos/websocketserver/module)
 add_subdirectory(demos/facedetection)
@@ -142,6 +153,7 @@ add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/artnetreceive/module)
 add_subdirectory(demos/pipins)
 add_subdirectory(demos/webportal)
+add_subdirectory(demos/python)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

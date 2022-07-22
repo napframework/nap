@@ -91,10 +91,10 @@ namespace nap
 			}
 		}
 
-		// Determine image usage
-		VkImageUsageFlags usage = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
+		// Ensure texture can be used as an attachment for a render pass
+		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		// Create render texture
-		return Texture2D::init(settings, false, mClearColor.toVec4(), usage, errorState);
+		return Texture2D::init(settings, false, mClearColor.toVec4(), required_flags, errorState);
 	}
 }

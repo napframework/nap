@@ -19,8 +19,8 @@ RTTI_BEGIN_ENUM(nap::ETextureUsage)
 	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
 
+// Texture2D class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
-	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -357,11 +357,11 @@ namespace nap
 
 		// Create GPU image
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mTextureImage, mImageData.mTextureAllocation, mImageData.mTextureAllocationInfo, errorState))
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
 		// Create GPU image view
-		if (!create2DImageView(mRenderService->getDevice(), mImageData.mTextureImage, mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mTextureView, errorState))
+		if (!create2DImageView(mRenderService->getDevice(), mImageData.getImage(), mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mView, errorState))
 			return false;
 
 		// Initialize buffer indexing
@@ -449,7 +449,7 @@ namespace nap
 		}
 
 		// Get image ready for clear, applied to all mipmap layers
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+		transitionImageLayout(commandBuffer, mImageData.mImage,
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask, dstMask,
 			srcStage, dstStage,
@@ -462,10 +462,10 @@ namespace nap
 		image_subresource_range.baseArrayLayer = 0;
 		image_subresource_range.layerCount = 1;
 
-		vkCmdClearColorImage(commandBuffer, mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
+		vkCmdClearColorImage(commandBuffer, mImageData.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
 
 		// Transition image layout
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+		transitionImageLayout(commandBuffer, mImageData.mImage,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
@@ -497,23 +497,23 @@ namespace nap
 		}
 
 		// Get image ready for copy, applied to all mipmap layers
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+		transitionImageLayout(commandBuffer, mImageData.mImage, 
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			srcMask,	dstMask,
 			srcStage,	dstStage,
 			0,			mMipLevels);
 		
 		// Copy staging buffer to image
-		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mTextureImage, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mImage, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			createMipmaps(commandBuffer, mImageData.mTextureImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			createMipmaps(commandBuffer, mImageData.mImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
-			transitionImageLayout(commandBuffer, mImageData.mTextureImage,
+			transitionImageLayout(commandBuffer, mImageData.mImage,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
@@ -548,17 +548,17 @@ namespace nap
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+		transitionImageLayout(commandBuffer, mImageData.mImage, 
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
 			0,											1);
 		
 		// Copy to buffer
-		copyImageToBuffer(commandBuffer, mImageData.mTextureImage, buffer.mBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
-		transitionImageLayout(commandBuffer, mImageData.mTextureImage, 
+		transitionImageLayout(commandBuffer, mImageData.mImage, 
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,

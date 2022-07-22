@@ -177,17 +177,17 @@ namespace nap
 
 	void destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
-		if (data.mTextureView != VK_NULL_HANDLE)
+		if (data.mView != VK_NULL_HANDLE)
 		{
-			vkDestroyImageView(device, data.mTextureView, nullptr);
-			data.mTextureView = VK_NULL_HANDLE;
+			vkDestroyImageView(device, data.mView, nullptr);
+			data.mView = VK_NULL_HANDLE;
 		}
 
-		if (data.mTextureImage != VK_NULL_HANDLE)
+		if (data.mImage != VK_NULL_HANDLE)
 		{
-			vmaDestroyImage(allocator, data.mTextureImage, data.mTextureAllocation);
-			data.mTextureImage = VK_NULL_HANDLE;
-			data.mTextureAllocation = VK_NULL_HANDLE;
+			vmaDestroyImage(allocator, data.mImage, data.mAllocation);
+			data.mImage = VK_NULL_HANDLE;
+			data.mAllocation = VK_NULL_HANDLE;
 		}
 	}
 
@@ -260,8 +260,8 @@ namespace nap
 
 	void nap::ImageData::release()
 	{
-		mTextureView = VK_NULL_HANDLE;
-		mTextureImage = VK_NULL_HANDLE;
-		mTextureAllocation = VK_NULL_HANDLE;
+		mView = VK_NULL_HANDLE;
+		mImage = VK_NULL_HANDLE;
+		mAllocation = VK_NULL_HANDLE;
 	}
 }

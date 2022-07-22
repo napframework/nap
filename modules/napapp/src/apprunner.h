@@ -197,10 +197,10 @@ namespace nap
 			// Process app specific messages
 			app_event_handler.process();
 
-			// update
+			// Update services & application
 			mCore.update(update_call);
 
-			// render
+			// Render
 			app.render();
 
 			// Only sleep when there is at least 1 millisecond that needs to be compensated for

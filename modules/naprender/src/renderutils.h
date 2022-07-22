@@ -16,8 +16,8 @@
 namespace nap
 {
 	/**
-	 * Vulkan Image Structure.
-	 * Binds an image, view and memory allocation information together for easy usage.
+	 * Vulkan Image Data Structure.
+	 * Binds image data, view and memory allocation information together for easy usage.
 	 */
 	struct NAPAPI ImageData
 	{
@@ -25,20 +25,35 @@ namespace nap
 		ImageData() = default;
 
 		/**
+		 * @return Handle to Vulkan Image View
+		 */
+		VkImageView getView() const			{ return mView; }
+
+		/**
+		 * @return Handle to Vulkan Image Data
+		 */
+		VkImage getImage() const			{ return mImage; }
+
+		/**
+		 * @return Current Vulkan image layout.
+		 */
+		VkImageLayout getLayout() const		{ return mCurrentLayout; }
+
+		/**
 		 * Releases the image and view, resetting all the handles to null. Does not delete it.
 		 */
-		void				release();
+		void release();
 
-		VkImage				mTextureImage = VK_NULL_HANDLE;					///< Vulkan Image
-		VkImageView			mTextureView = VK_NULL_HANDLE;					///< Vulkan Image view
-		VmaAllocation		mTextureAllocation = VK_NULL_HANDLE;			///< Vulkan single memory allocation
-		VmaAllocationInfo	mTextureAllocationInfo;							///< Vulkan memory allocation information
+		VkImage				mImage = VK_NULL_HANDLE;						///< Vulkan Image
+		VkImageView			mView = VK_NULL_HANDLE;							///< Vulkan Image view
+		VmaAllocation		mAllocation = VK_NULL_HANDLE;					///< Vulkan single memory allocation
+		VmaAllocationInfo	mAllocationInfo;								///< Vulkan memory allocation information
 		VkImageLayout		mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;		///< Vulkan image layout
 	};
 
 
 	/**
-	 * Vulkan Buffer Structure
+	 * Vulkan Buffer Data Structure
 	 * Binds a buffer, usage information, memory allocation and allocation information together.
 	 */
 	struct NAPAPI BufferData
@@ -47,8 +62,7 @@ namespace nap
 		BufferData() = default;
 
 		/**
-		 * Releases the buffer, resetting all the handles to null.
-		 * Does not delete it.
+		 * Releases the buffer, resetting all the handles to null. Does not delete it.
 		 */
 		void					release();
 

@@ -5,6 +5,7 @@
 #include "logger.h"
 #include <iostream>
 #include <utility/fileutils.h>
+#include <assert.h>
 
 namespace nap
 {
