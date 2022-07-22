@@ -35,30 +35,29 @@ namespace nap
 
 
 	/**
-	 * GPU representation of a 2D image.
-	 * This class does not own any CPU data, it offers an interface to upload / download texture data from and to a bitmap.
-	 * When usage is set to 'Static' (default) or 'DynamicRead' data can be uploaded only once!
-	 * Only when usage is set to 'DynamicWrite' can the texture be updated frequently from CPU to GPU.
+	 * GPU representation of a 2D image. This class does not own any CPU data.
+	 * It offers the user an interface to upload & download texture data, from and to a bitmap.
+	 * When usage is set to 'Static' (default) or 'DynamicRead' data can be uploaded only once.
+	 * When usage is set to 'DynamicWrite' the texture be updated frequently from CPU to GPU.
 	 */
 	class NAPAPI Texture2D : public Resource
 	{
 		friend class RenderService;
-		friend class RenderBloomComponentInstance;
 		RTTI_ENABLE(Resource)
 	public:
 		Texture2D(Core& core);
 		~Texture2D() override;
 
 		/**
-		* Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
-		* The Vulkan image usage flags are derived from texture usage.
-		* @param descriptor texture description.
-		* @param generateMipMaps if mip maps are generated when data is uploaded.
-		* @param clearColor the color to clear the texture with.
-		* @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
-		* @param errorState contains the error if the texture can't be initialized.
-		* @return if the texture initialized successfully.
-		*/
+		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
+		 * The Vulkan image usage flags are derived from texture usage.
+		 * @param descriptor texture description.
+		 * @param generateMipMaps if mip maps are generated when data is uploaded.
+		 * @param clearColor the color to clear the texture with.
+		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
+		 * @param errorState contains the error if the texture can't be initialized.
+		 * @return if the texture initialized successfully.
+		 */
 		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 		
 		/**
@@ -130,9 +129,9 @@ namespace nap
 		VkFormat getFormat() const							{ return mFormat; }
 
 		/**
-		 * @return Vulkan image view
+		 * @return Vulkan GPU data handle, including image and view.
 		 */
-		VkImageView getImageView() const					{ return mImageData.mTextureView; }
+		const ImageData& getHandle() const					{ return mImageData; }
 
 		/**
 		 * @return number of mip-map levels
@@ -157,13 +156,21 @@ namespace nap
 		void asyncGetData(Bitmap& bitmap);
 
 		/**
-		* Starts a transfer of texture data from GPU to CPU. Use this overload to pass your own copy function.
-		* This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
-		* @param copyFunction the copy function to call when the texture data is available for download.
-		*/
+		 * Starts a transfer of texture data from GPU to CPU. Use this overload to pass your own copy function.
+		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
+		 * @param copyFunction the copy function to call when the texture data is available for download.
+		 */
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
+		/**
+		 * @return Handle to Vulkan image view
+		 */
+		VkImageView getImageView() const					{ return mImageData.mView; }
+
 		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
+
+	protected:
+		RenderService* mRenderService = nullptr;
 
 	private:
 		/**
@@ -201,14 +208,10 @@ namespace nap
 		 * Clears queued texture downloads
 		 */
 		void clearDownloads();
-        
-        // Hide resource init explicitly
+
+        // Hide default resource init. Use specialized initialization functions instead.
         using Resource::init;
 
-	protected:
-		RenderService*						mRenderService = nullptr;
-
-	private:
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
 		ImageData							mImageData;									///< 2D Texture vulkan image buffers

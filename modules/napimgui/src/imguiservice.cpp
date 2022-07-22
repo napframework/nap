@@ -621,7 +621,7 @@ namespace nap
 		// Update description set
 		VkDescriptorImageInfo desc_image[1] = {};
 		desc_image[0].sampler = gSampler;
-		desc_image[0].imageView = texture.getImageView();
+		desc_image[0].imageView = texture.getHandle().getView();
 		desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
 		// Create write structure and update  descriptor set

@@ -341,10 +341,10 @@ namespace nap
 	void RenderBloomComponentInstance::blit(VkCommandBuffer commandBuffer, nap::Texture2D& srcTexture, nap::Texture2D& dstTexture)
 	{
 		// Transition to transfer src
-		VkImageLayout src_tex_layout = srcTexture.mImageData.mCurrentLayout;
+		VkImageLayout src_tex_layout = srcTexture.getHandle().getLayout();
 		if (src_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
 		{
-			transitionImageLayout(commandBuffer, srcTexture.mImageData.mTextureImage,
+			transitionImageLayout(commandBuffer, srcTexture.getHandle().getImage(),
 				src_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -352,10 +352,10 @@ namespace nap
 		}
 
 		// Transition to transfer dst
-		VkImageLayout dst_tex_layout = dstTexture.mImageData.mCurrentLayout;
+		VkImageLayout dst_tex_layout = dstTexture.getHandle().getLayout();
 		if (dst_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
-			transitionImageLayout(commandBuffer, dstTexture.mImageData.mTextureImage,
+			transitionImageLayout(commandBuffer, dstTexture.getHandle().getImage(),
 				dst_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -380,19 +380,19 @@ namespace nap
 
 		// Blit to output
 		vkCmdBlitImage(commandBuffer,
-			srcTexture.mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			dstTexture.mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			srcTexture.getHandle().getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			dstTexture.getHandle().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1, &blit, VK_FILTER_LINEAR);
 
 		// Transition to shader read
-		transitionImageLayout(commandBuffer, srcTexture.mImageData.mTextureImage,
+		transitionImageLayout(commandBuffer, srcTexture.getHandle().getImage(),
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0, 1);
 
 		// Transition to shader read
-		transitionImageLayout(commandBuffer, dstTexture.mImageData.mTextureImage,
+		transitionImageLayout(commandBuffer, dstTexture.getHandle().getImage(),
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
