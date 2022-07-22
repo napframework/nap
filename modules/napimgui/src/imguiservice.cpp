@@ -95,7 +95,8 @@ namespace nap
 				icon::edit,
 				icon::remove,
 				icon::add,
-				icon::change
+				icon::change,
+                icon::subtract
 			};
 			return map;
 		}

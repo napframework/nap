@@ -18,9 +18,9 @@
 #include <fstream>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
-    RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded)
-    RTTI_PROPERTY("Clock", &nap::SequencePlayer::mClock, nap::rtti::EPropertyMetaData::Embedded);
+        RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded)
+        RTTI_PROPERTY("Clock", &nap::SequencePlayer::mClock, nap::rtti::EPropertyMetaData::Embedded);
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -28,15 +28,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    SequencePlayer::SequencePlayer(SequenceService& service) :
-		mService(service)
+    SequencePlayer::SequencePlayer(SequenceService &service) :
+        mService(service)
     {
     }
 
 
     bool SequencePlayer::init(utility::ErrorState& errorState)
     {
-        if (!Resource::init(errorState))
+        if(!Resource::init(errorState))
             return false;
 
         // Try to load default show
@@ -44,14 +44,14 @@ namespace nap
         bool loaded = load(mSequenceFileName, load_error);
 
         // Cancel if can't be loaded and we're not allowed to create an empty sequence on failure
-        if (!loaded && !mCreateEmptySequenceOnLoadFail)
+        if(!loaded && !mCreateEmptySequenceOnLoadFail)
         {
             errorState.fail(load_error.toString());
             return false;
         }
 
         // Otherwise create an empty show if loading fails
-        if (!loaded)
+        if(!loaded)
         {
             nap::Logger::info(*this, load_error.toString());
             nap::Logger::info(*this, "Unable to load default show, creating default sequence");
@@ -60,7 +60,7 @@ namespace nap
         }
 
         //
-        if (!errorState.check(mClock.get()!=nullptr, "Clock cannot be null"))
+        if(!errorState.check(mClock.get() != nullptr, "Clock cannot be null"))
             return false;
 
         return true;
@@ -94,15 +94,14 @@ namespace nap
         auto lock = std::unique_lock<std::mutex>(mMutex);
         bool was_playing = mIsPlaying;
 
-        if (isPlaying)
+        if(isPlaying)
         {
-            if (!was_playing)
+            if(!was_playing)
                 createAdapters();
 
             mIsPlaying = true;
             mIsPaused = false;
-        }
-        else
+        } else
         {
             destroyAdapters();
 
@@ -132,21 +131,24 @@ namespace nap
         const std::string dir = "sequences";
         utility::makeDirs(utility::getAbsolutePath(dir));
 
-        std::string show_path = dir+'/'+name;
+        std::string show_path = dir + '/' + name;
 
         // Serialize current set of parameters to json
         rtti::JSONWriter writer;
-        if (!rtti::serializeObjects(rtti::ObjectList{mSequence}, writer, errorState))
+        if(!rtti::serializeObjects(rtti::ObjectList{mSequence}, writer, errorState))
             return false;
 
         // Open output file
         std::ofstream output(show_path, std::ios::binary | std::ios::out | std::ios::trunc);
-        if (!errorState.check(output.is_open() && output.good(), "Failed to open %s for writing", show_path.c_str()))
+        if(!errorState.check(output.is_open() && output.good(), "Failed to open %s for writing", show_path.c_str()))
             return false;
 
         // Write to disk
         std::string json = writer.GetJSON();
         output.write(json.data(), json.size());
+
+        // update sequence file name
+        mSequenceFileName = name;
 
         return true;
     }
@@ -159,27 +161,27 @@ namespace nap
 
         const std::string dir = "sequences";
         utility::makeDirs(utility::getAbsolutePath(dir));
-        std::string show_path = dir+'/'+name;
+        std::string show_path = dir + '/' + name;
 
         // Ensure file exists
-        if (!errorState.check(!name.empty() && utility::fileExists(show_path), "Show does not exist"))
+        if(!errorState.check(!name.empty() && utility::fileExists(show_path), "Show does not exist"))
             return false;
 
         std::string timeline_name = utility::getFileNameWithoutExtension(name);
 
         //
         rtti::Factory factory;
-        if (!rtti::deserializeJSONFile(show_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, result, errorState))
+        if(!rtti::deserializeJSONFile(show_path, rtti::EPropertyValidationMode::DisallowMissingProperties, rtti::EPointerPropertyMode::NoRawPointers, factory, result, errorState))
             return false;
 
         // Resolve links
-        if (!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
+        if(!rtti::DefaultLinkResolver::sResolveLinks(result.mReadObjects, result.mUnresolvedPointers, errorState))
             return false;
 
         // Move ownership of read objects
         mReadObjects.clear();
         mReadObjectIDs.clear();
-        for (auto& read_object : result.mReadObjects)
+        for(auto &read_object: result.mReadObjects)
         {
             if (read_object->get_type().is_derived_from<Sequence>())
             {
@@ -191,23 +193,23 @@ namespace nap
         }
 
         // init objects
-        for (auto& object_ptr : mReadObjects)
+        for(auto &object_ptr: mReadObjects)
         {
-            if (!object_ptr->init(errorState))
+            if(!object_ptr->init(errorState))
                 return false;
         }
 
         // check if we have deserialized a sequence
-        if (!errorState.check(mSequence!=nullptr, "sequence is null"))
+        if(!errorState.check(mSequence != nullptr, "sequence is null"))
         {
             return false;
         }
 
         mSequenceFileName = name;
-		sequenceLoaded.trigger(*this, mSequenceFileName);
+        sequenceLoaded.trigger(*this, mSequenceFileName);
 
         // if the sequencer is playing, we need to re-create adapters because assigned outputs probably have changed
-        if (mIsPlaying)
+        if(mIsPlaying)
         {
             createAdapters();
         }
@@ -220,14 +222,14 @@ namespace nap
     {
         // create adapters
         destroyAdapters();
-        for (auto& track : mSequence->mTracks)
+        for(auto &track: mSequence->mTracks)
         {
             createAdapter(track->mAssignedOutputID, track->mID);
         }
 
         // add adapter function to be dispatched by signal, in case a custom adapter is to be added
-        std::function<void(const std::string&, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function = [this](
-                const std::string& outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
+        std::function<void(const std::string &, std::unique_ptr<SequencePlayerAdapter>)> add_adapter_function = [this](
+            const std::string &outputID, std::unique_ptr<SequencePlayerAdapter> adapter)
         {
             mAdapters.emplace(outputID, std::move(adapter));
         };
@@ -239,7 +241,7 @@ namespace nap
 
     void SequencePlayer::destroyAdapters()
     {
-        for (auto& pair : mAdapters)
+        for(auto &pair: mAdapters)
         {
             pair.second->destroy();
         }
@@ -247,13 +249,13 @@ namespace nap
     }
 
 
-    Sequence& SequencePlayer::getSequence()
+    Sequence &SequencePlayer::getSequence()
     {
         return *mSequence;
     }
 
 
-    const Sequence& SequencePlayer::getSequenceConst() const
+    const Sequence &SequencePlayer::getSequenceConst() const
     {
         return *mSequence;
     }
@@ -324,7 +326,7 @@ namespace nap
 
     void SequencePlayer::tick(double deltaTime)
     {
-        if (mIsPlaying)
+        if(mIsPlaying)
         {
             // notify lister, so data model of sequence and data of player can be modified by listeners to this signal
             preTick.trigger(*this);
@@ -332,28 +334,26 @@ namespace nap
             // Update time and adapters thread safe
             {
                 std::lock_guard<std::mutex> lock(mMutex);
-                if (!mIsPaused)
+                if(!mIsPaused)
                 {
-                    mTime += deltaTime*(double) mSpeed;
-                    if (mIsLooping)
+                    mTime += deltaTime * (double) mSpeed;
+                    if(mIsLooping)
                     {
-                        if (mTime<0.0)
+                        if(mTime < 0.0)
                         {
-                            mTime = mSequence->mDuration+mTime;
-                        }
-                        else if (mTime>mSequence->mDuration)
+                            mTime = mSequence->mDuration + mTime;
+                        } else if(mTime > mSequence->mDuration)
                         {
                             mTime = fmod(mTime, mSequence->mDuration);
                         }
-                    }
-                    else
+                    } else
                     {
                         mTime = math::clamp<double>(mTime, 0.0, mSequence->mDuration);
                     }
                 }
 
                 // Update adapters
-                for (auto& adapter : mAdapters)
+                for(auto &adapter: mAdapters)
                     adapter.second->tick(mTime);
             }
 
@@ -366,44 +366,44 @@ namespace nap
     bool SequencePlayer::createAdapter(const std::string& inputID, const std::string& trackID)
     {
         // bail if empty output id
-        if (inputID.empty())
+        if(inputID.empty())
             return false;
 
         // find track
-        SequenceTrack* track = nullptr;
+        SequenceTrack *track = nullptr;
 
-        for (auto& a_track : mSequence->mTracks)
+        for(auto &a_track: mSequence->mTracks)
         {
-            if (a_track->mID==trackID)
+            if(a_track->mID == trackID)
             {
                 track = a_track.get();
                 break;
             }
         }
 
-        if (track==nullptr)
+        if(track == nullptr)
         {
             nap::Logger::error("No track found with id %s", trackID.c_str());
             return false;
         }
 
         // erase previous adapter
-        if (mAdapters.find(track->mID)!=mAdapters.end())
+        if(mAdapters.find(track->mID) != mAdapters.end())
         {
             mAdapters.erase(track->mID);
         }
 
-        SequencePlayerOutput* output = nullptr;
-        for (auto& a_output : mOutputs)
+        SequencePlayerOutput *output = nullptr;
+        for(auto &a_output: mOutputs)
         {
-            if (a_output->mID==inputID)
+            if(a_output->mID == inputID)
             {
                 output = a_output.get();
                 break;
             }
         }
 
-        if (output==nullptr)
+        if(output == nullptr)
         {
             // No output found
             // We don't print an error here, because it could be that this track is assigned to a custom output when the
@@ -413,7 +413,7 @@ namespace nap
 
         auto adapter = mService.invokeAdapterFactory(track->get_type(), *track, *output, *this);
 
-        if (adapter==nullptr)
+        if(adapter == nullptr)
         {
             nap::Logger::error("Unable to create adapter with track id %s and output id %s", trackID.c_str(), inputID.c_str());
             return false;
@@ -427,11 +427,11 @@ namespace nap
 
     void SequencePlayer::performEditAction(std::function<void()>& action)
     {
-		{
-			std::lock_guard<std::mutex> lock(mMutex);
-			action();
-		}
-		edited.trigger(*this);
+        {
+            std::lock_guard<std::mutex> lock(mMutex);
+            action();
+        }
+        edited.trigger(*this);
     }
 
 

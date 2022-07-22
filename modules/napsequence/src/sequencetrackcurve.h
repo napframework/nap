@@ -22,7 +22,7 @@ namespace nap
      */
     class NAPAPI BaseSequenceTrackCurve : public SequenceTrack
     {
-        RTTI_ENABLE(SequenceTrack)
+    RTTI_ENABLE(SequenceTrack)
     public:
         virtual ~BaseSequenceTrackCurve()
         {
@@ -36,7 +36,7 @@ namespace nap
     template<typename T>
     class SequenceTrackCurve : public BaseSequenceTrackCurve
     {
-        RTTI_ENABLE(BaseSequenceTrackCurve)
+    RTTI_ENABLE(BaseSequenceTrackCurve)
     public:
         /**
          * initializes the curve segment and validates its data.
@@ -63,19 +63,20 @@ namespace nap
     // Template definitions
     //////////////////////////////////////////////////////////////////////////
 
-    template<typename T> bool nap::SequenceTrackCurve<T>::init(utility::ErrorState& errorState)
+    template<typename T>
+    bool nap::SequenceTrackCurve<T>::init(utility::ErrorState& errorState)
     {
         // Initialize base class
-        if (!SequenceTrack::init(errorState))
+        if(!SequenceTrack::init(errorState))
             return false;
 
         // Validate type of segment, needs to be of same type as this class!
-        for (const auto& segment : mSegments)
+        for(const auto &segment: mSegments)
         {
-            if (!errorState.check(segment->get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>(),
-                    "segment not derived from correct type, expected: %s, got: %s",
-                    get_type().get_name().to_string().c_str(),
-                    segment->get_type().get_name().to_string().c_str()))
+            if(!errorState.check(segment->get_type().template is_derived_from<SequenceTrackSegmentCurve<T>>(),
+                                 "segment not derived from correct type, expected: %s, got: %s",
+                                 RTTI_OF(SequenceTrackSegmentCurve<T>).get_name().data(),
+                                 segment->get_type().get_name().data()))
             {
                 return false;
             }

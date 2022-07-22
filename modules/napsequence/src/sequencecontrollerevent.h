@@ -20,7 +20,7 @@ namespace nap
      */
     class NAPAPI SequenceControllerEvent : public SequenceController
     {
-        RTTI_ENABLE(SequenceController)
+    RTTI_ENABLE(SequenceController)
     public:
         /**
          * Constructor
@@ -29,7 +29,7 @@ namespace nap
          * @param editor reference to the sequence editor
          */
         SequenceControllerEvent(SequenceService& service, SequencePlayer& player, SequenceEditor& editor)
-                :SequenceController(service, player, editor)
+            : SequenceController(service, player, editor)
         {
         }
 
@@ -89,25 +89,25 @@ namespace nap
     template<typename SEGMENT_TYPE>
     const SequenceTrackSegment* SequenceControllerEvent::insertEventSegment(const std::string& trackID, double time)
     {
-        SequenceTrackSegment* return_ptr = nullptr;
+        SequenceTrackSegment *return_ptr = nullptr;
 
         performEditAction([this, trackID, time, &return_ptr]() mutable
-        {
-            // create new segment & set parameters
-            std::unique_ptr<SEGMENT_TYPE> new_segment = std::make_unique<SEGMENT_TYPE>();
-            new_segment->mStartTime = time;
-            new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
-            new_segment->mDuration = 0.0;
+                          {
+                              // create new segment & set parameters
+                              std::unique_ptr<SEGMENT_TYPE> new_segment = std::make_unique<SEGMENT_TYPE>();
+                              new_segment->mStartTime = time;
+                              new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+                              new_segment->mDuration = 0.0;
 
-            //
-            SequenceTrack* track = findTrack(trackID);
-            assert(track!=nullptr); // track not found
+                              //
+                              SequenceTrack *track = findTrack(trackID);
+                              assert(track != nullptr); // track not found
 
-            track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
+                              track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
 
-            return_ptr = new_segment.get();
-            getPlayerOwnedObjects().emplace_back(std::move(new_segment));
-        });
+                              return_ptr = new_segment.get();
+                              getPlayerOwnedObjects().emplace_back(std::move(new_segment));
+                          });
 
         return return_ptr;
     }
@@ -117,17 +117,17 @@ namespace nap
     void SequenceControllerEvent::editEventSegment(const std::string& trackID, const std::string& segmentID, const T& value)
     {
         performEditAction([this, trackID, segmentID, value]()
-        {
-            SequenceTrack* track = findTrack(trackID);
-            assert(track!=nullptr); // track not found
+                          {
+                              SequenceTrack *track = findTrack(trackID);
+                              assert(track != nullptr); // track not found
 
-            SequenceTrackSegment* segment = findSegment(trackID, segmentID);
-            assert(segment!=nullptr); // segment not found
+                              SequenceTrackSegment *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
 
-            assert(segment->get_type().template is_derived_from<SequenceTrackSegmentEvent<T>>());
-            auto* event_segment = static_cast<SequenceTrackSegmentEvent<T>*>(segment);
+                              assert(segment->get_type().template is_derived_from<SequenceTrackSegmentEvent<T>>());
+                              auto *event_segment = static_cast<SequenceTrackSegmentEvent<T> *>(segment);
 
-            event_segment->mValue = value;
-        });
+                              event_segment->mValue = value;
+                          });
     }
 }

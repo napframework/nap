@@ -17,7 +17,7 @@ namespace nap
      */
     class NAPAPI SequenceMarker : public Resource
     {
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         ~SequenceMarker() override = default;
 

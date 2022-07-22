@@ -22,211 +22,221 @@
 
 namespace nap
 {
-	// forward declares
-	class SequenceEditorGUIView;
-	class SequenceEditorView;
-	class SequenceTrackView;
+    // forward declares
+    class SequenceEditorGUIView;
+    class SequenceEditorView;
+    class SequenceTrackView;
 
-	/**
-	 * A GUI resource that can be instantiated to draw a GUI (view) for the sequence editor
-	 */
-	class NAPAPI SequenceEditorGUI : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		SequenceEditorGUI(SequenceGUIService& service);
+    /**
+     * A GUI resource that can be instantiated to draw a GUI (view) for the sequence editor
+     */
+    class NAPAPI SequenceEditorGUI : public Resource
+    {
+    RTTI_ENABLE(Resource)
+    public:
+        SequenceEditorGUI(SequenceGUIService& service);
 
-		/**
-		 * @param errorState contains any errors
-		 * @return true on success
-		 */
-		bool init(utility::ErrorState& errorState) override;
+        /**
+         * @param errorState contains any errors
+         * @return true on success
+         */
+        bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * called before deconstruction
-		 */
-		void onDestroy() override;
+        /**
+         * called before deconstruction
+         */
+        void onDestroy() override;
 
         /**
          * Shows the editor interface
          * @param newWindow when true interface will be drawn in a new ImGUI window
          */
-		virtual void show(bool newWindow = true);
+        virtual void show(bool newWindow = true);
 
-		/**
-		 * @return sequence editor gui service
-		 */
-		SequenceGUIService& getService()	{ return mService; }
 
-		// properties
-		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
-		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
-		bool mDrawFullWindow = false; ///< Property: 'Draw Full Window' if true, gui will span entire window size
-		bool mHideMarkerLabels = false; ///< Property: 'Hide Marker Labels' if true, hides marker labels when not hovered
-	protected:
-		// instantiated view
-		std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
+        /**
+         * @return sequence editor gui service
+         */
+        SequenceGUIService& getService() { return mService; }
 
-		// reference to service
-		SequenceGUIService& mService;
-	};
 
-	using SequenceEditorGUIObjectCreator = rtti::ObjectCreator<SequenceEditorGUI, SequenceGUIService>;
+        // properties
+        ResourcePtr<RenderWindow> mRenderWindow = nullptr;
+        ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
+        bool mDrawFullWindow = false; ///< Property: 'Draw Full Window' if true, gui will span entire window size
+        bool mHideMarkerLabels = false; ///< Property: 'Hide Marker Labels' if true, hides marker labels when not hovered
+    protected:
+        // instantiated view
+        std::unique_ptr<SequenceEditorGUIView> mView = nullptr;
 
-	/**
-	 * Responsible for drawing the GUI for the sequence editor
-	 * Needs reference to editor
-	 */
-	class NAPAPI SequenceEditorGUIView
-	{
-		friend class SequenceTrackView;
-	public:
-		/**
-		 * Constructor
-		 * @param editor reference to editor
-		 * @param id id of the GUI resource, used to push ID by IMGUI
-		 * @param renderWindow the render window
-		 * @param drawFullWindow if the editor occupies the entire window space
-		 */
-		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
+        // reference to service
+        SequenceGUIService &mService;
+    };
 
-		/**
-		 * Shows the editor interface
-		 * @param newWindow when true interface will be drawn in a new ImGUI window
-		 */
-		virtual void show(bool newWindow = true);
+    using SequenceEditorGUIObjectCreator = rtti::ObjectCreator<SequenceEditorGUI, SequenceGUIService>;
 
-		/**
-		 * Hides marker labels when not hovered
-		 * @param hide when true, hides marker labels when not hovered
-		 */
-		void hideMarkerLabels(bool hide) { mHideMarkerLabels = hide; }
+    /**
+     * Responsible for drawing the GUI for the sequence editor
+     * Needs reference to editor
+     */
+    class NAPAPI SequenceEditorGUIView
+    {
+        friend class SequenceTrackView;
+    public:
+        /**
+         * Constructor
+         * @param editor reference to editor
+         * @param id id of the GUI resource, used to push ID by IMGUI
+         * @param renderWindow the render window
+         * @param drawFullWindow if the editor occupies the entire window space
+         */
+        SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
-		SequenceGUIService& getService()	{ return mService; }
+        /**
+         * Shows the editor interface
+         * @param newWindow when true interface will be drawn in a new ImGUI window
+         */
+        virtual void show(bool newWindow = true);
 
-	protected:
-		/**
-		 * Draws the tracks of the sequence
-		 * @param sequencePlayer reference to sequenceplayer
-		 * @param sequence reference to sequence
-		 */
-		void drawTracks(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
-		/**
-		 * Draws inspectors of the sequence tracks
-		 * @param sequencePlayer reference to sequenceplayer
-		 * @param sequence reference to sequence
-		 */
-		void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence &sequence);
+        /**
+         * Hides marker labels when not hovered
+         * @param hide when true, hides marker labels when not hovered
+         */
+        void hideMarkerLabels(bool hide){ mHideMarkerLabels = hide; }
 
-		/**
-		 * Draws markers
-		 * @param sequencePlayer reference to sequenceplayer
-		 * @param sequence reference to sequence
-		 */
-		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
-		/**
-		 * Draw lines of markers
-		 * @param sequencePlayer reference to sequenceplayer
-		 * @param sequence reference to sequence
-		 */
-		void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
+        SequenceGUIService& getService() { return mService; }
 
-		/**
-		 * draws player controller bar
-		 * @param player reference to player
-		 */
-		void drawPlayerController(SequencePlayer& player);
 
-		/**
-		 * draws line of player position
-		 * @param sequence reference to sequence
-		 * @param player reference to player
-		 */
-		void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const;
+    protected:
+        /**
+         * Draws the tracks of the sequence
+         * @param sequencePlayer reference to sequenceplayer
+         * @param sequence reference to sequence
+         */
+        void drawTracks(const SequencePlayer& sequencePlayer, const Sequence& sequence);
 
-		/**
-		 * draws end of sequence
-		 * @param sequence reference to sequence
-		 * @param player reference to player
-		 */
-		void drawEndOfSequence(const Sequence& sequence, SequencePlayer& player);
+        /**
+         * Draws inspectors of the sequence tracks
+         * @param sequencePlayer reference to sequenceplayer
+         * @param sequence reference to sequence
+         */
+        void drawInspectors(const SequencePlayer& sequencePlayer, const Sequence& sequence);
 
-		/**
-		 * Handles insertion of track popup
-		 */
-		void handleInsertTrackPopup();
+        /**
+         * Draws markers
+         * @param sequencePlayer reference to sequenceplayer
+         * @param sequence reference to sequence
+         */
+        void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence& sequence);
 
-		/**
-		 * handles load popup
-		 */
-		void handleLoadPopup();
+        /**
+         * Draw lines of markers
+         * @param sequencePlayer reference to sequenceplayer
+         * @param sequence reference to sequence
+         */
+        void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
 
-		/**
-		 * handles save as popup
-		 */
-		void handleSaveAsPopup();
+        /**
+         * draws player controller bar
+         * @param player reference to player
+         */
+        void drawPlayerController(SequencePlayer& player);
 
-		/**
-		 * handle editing of sequence duration
-		 */
-		void handleSequenceDurationPopup();
+        /**
+         * draws line of player position
+         * @param sequence reference to sequence
+         * @param player reference to player
+         */
+        void drawTimelinePlayerPosition(const Sequence& sequence, SequencePlayer& player) const;
 
-		/**
-		 * handle editing of markers
-		 */
-		void handleEditMarkerPopup();
+        /**
+         * draws end of sequence
+         * @param sequence reference to sequence
+         * @param player reference to player
+         */
+        void drawEndOfSequence(const Sequence& sequence, SequencePlayer& player);
 
-		/**
-		 * handle insertion of new markers
-		 */
-		void handleInsertMarkerPopup();
+        /**
+         * Handles insertion of track popup
+         */
+        void handleInsertTrackPopup();
 
-		 /**
-		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
-		  */
-		 void handleHorizontalZoom();
+        /**
+         * handles load popup
+         */
+        void handleLoadPopup();
 
-		 /**
-		  * when show help popup is pressed, show modal help popup
-		  */
-		 void handleHelpPopup();
+        /**
+         * handles save as popup
+         */
+        void handleSaveAsPopup();
 
-		 /**
-		  * registers handlers for actions
-		  * @param actionType the action type to register a handler function for
-		  * @param action the handler function
-		  */
-		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
+        /**
+         * handle editing of sequence duration
+         */
+        void handleSequenceDurationPopup();
 
-	protected:
+        /**
+         * handle editing of markers
+         */
+        void handleEditMarkerPopup();
+
+        /**
+         * handle insertion of new markers
+         */
+        void handleInsertMarkerPopup();
+
+        /**
+         * when zooming, zoom around the center of the timeline, keeping the focus in the middle
+         */
+        void handleHorizontalZoom();
+
+        /**
+         * when show help popup is pressed, show modal help popup
+         */
+        void handleHelpPopup();
+
+        /**
+         * when save clipboard is pressed, show save clipboard popup
+         */
+        void handleSaveClipboardPopup();
+
+        /**
+         * registers handlers for actions
+         * @param actionType the action type to register a handler function for
+         * @param action the handler function
+         */
+        void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
+
+    protected:
         void registerActionHandlers();
 
-		// reference to editor
-		SequenceEditor& mEditor;
+        // reference to editor
+        SequenceEditor &mEditor;
 
-		// holds current gui state information
-		SequenceEditorGUIState mState;
+        // holds current gui state information
+        SequenceEditorGUIState mState;
 
-		// id
-		std::string mID;
+        // id
+        std::string mID;
 
-		// set to true if we draw full window
-		bool mDrawFullWindow = false;
+        // set to true if we draw full window
+        bool mDrawFullWindow = false;
 
-		// set to true when marker labels should be hidden when not hovered
-		bool mHideMarkerLabels = false;
+        // set to true when marker labels should be hidden when not hovered
+        bool mHideMarkerLabels = false;
 
-		// pointer to render window
-		RenderWindow* mRenderWindow = nullptr;
+        // pointer to render window
+        RenderWindow *mRenderWindow = nullptr;
 
-		// map of action handlers
-		std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
+        // map of action handlers
+        std::unordered_map<rttr::type, std::function<void()>> mActionHandlers;
 
-		std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
+        std::unordered_map<rttr::type, std::unique_ptr<SequenceTrackView>> mViews;
 
-		// reference to service
-		SequenceGUIService& mService;
-	};
+        // reference to service
+        SequenceGUIService &mService;
+    };
 }

@@ -30,7 +30,7 @@ namespace nap
     {
         friend class SequencePlayerEventAdapter;
 
-        RTTI_ENABLE(SequencePlayerOutput);
+    RTTI_ENABLE(SequencePlayerOutput);
     public:
         /**
          * Constructor

@@ -33,7 +33,7 @@ namespace nap
     {
         friend class SequenceController;
 
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         SequenceEditor(SequenceService& service);
 
@@ -67,7 +67,7 @@ namespace nap
          * @param type rttr::type information of controller type to be returned
          * @return ptr to controller base class, null ptr when not found
          */
-        SequenceController* getControllerWithTrackType(rtti::TypeInfo trackType);
+        SequenceController *getControllerWithTrackType(rtti::TypeInfo trackType);
 
         /**
          * Returns pointer to base class of controller type that is used for specified track type of track id
@@ -84,10 +84,10 @@ namespace nap
          * @return reference to controller type
          */
         template<typename T>
-        T& getController()
+        T &getController()
         {
-            assert(mControllers.find(RTTI_OF(T))!=mControllers.end()); // type not found
-            return static_cast<T&>(*mControllers[RTTI_OF(T)].get());
+            assert(mControllers.find(RTTI_OF(T)) != mControllers.end()); // type not found
+            return static_cast<T &>(*mControllers[RTTI_OF(T)].get());
         }
 
 

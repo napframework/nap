@@ -18,7 +18,7 @@ namespace nap
      */
     class NAPAPI SequenceTrackSegment : public Resource
     {
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         /**
          * init evaluates the data of the segment
@@ -26,6 +26,7 @@ namespace nap
          * @return true if data valid
          */
         virtual bool init(utility::ErrorState& errorState) override;
+
 
         /**
          * Deconstructor

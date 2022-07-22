@@ -24,7 +24,7 @@ namespace nap
      */
     class NAPAPI SequencePlayerCurveOutput final : public SequencePlayerOutput
     {
-        RTTI_ENABLE(SequencePlayerOutput)
+    RTTI_ENABLE(SequencePlayerOutput)
     public:
         SequencePlayerCurveOutput(SequenceService& service);
 
@@ -43,6 +43,7 @@ namespace nap
          * @param curveAdapter ptr to parameter setter
          */
         void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
+
     protected:
         /**
          * called from update loop sequence service main thread

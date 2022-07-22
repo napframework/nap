@@ -38,7 +38,7 @@ namespace nap
         friend class SequenceEditor;
         friend class SequenceController;
 
-        RTTI_ENABLE(Device)
+    RTTI_ENABLE(Device)
     public:
         /**
          * Constructor used by factory
@@ -192,15 +192,15 @@ namespace nap
          */
         Signal<SequencePlayer&> postTick;
 
-		/***
-		 * sequenceLoaded signal is dispatched when the load(name) method succeeds on SequencePlayer
-		 */
-		Signal<SequencePlayer&, std::string> sequenceLoaded;
+        /***
+         * sequenceLoaded signal is dispatched when the load(name) method succeeds on SequencePlayer
+         */
+        Signal<SequencePlayer&, std::string> sequenceLoaded;
 
-		/**
-		 * edited Signal is dispatched when the Sequence has been edited
-		 */
-		Signal<SequencePlayer&> edited;
+        /**
+         * edited Signal is dispatched when the Sequence has been edited
+         */
+        Signal<SequencePlayer&> edited;
 
         // properties
         std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
@@ -256,13 +256,13 @@ namespace nap
          * performs given action when mutex is unlocked, makes sure edit action on sequence are thread safe
          * @param action the edit action
          */
-        void performEditAction(std::function<void()>& action);
+        void performEditAction(std::function<void()> &action);
 
         // mutex
         std::mutex mMutex;
 
         // raw pointer to loaded sequence
-        Sequence* mSequence = nullptr;
+        Sequence *mSequence = nullptr;
 
         // is playing
         bool mIsPlaying = false;
