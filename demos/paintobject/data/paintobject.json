@@ -10,9 +10,10 @@
                     "Visible": true,
                     "OutputTexture": "BrushRenderTexture",
                     "MaterialInstance": {
-                        "Material": "BrushMaterial",
                         "Uniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "BrushMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -24,7 +25,9 @@
                             0,
                             255
                         ]
-                    }
+                    },
+                    "SampleShading": true,
+                    "PreserveAspect": false
                 }
             ],
             "Children": []
@@ -110,7 +113,6 @@
                     "Visible": true,
                     "OutputTexture": "PaintRenderTextureB",
                     "MaterialInstance": {
-                        "Material": "PaintMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -127,6 +129,8 @@
                                 "Texture": "PaintRenderTextureA"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "PaintMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -138,7 +142,9 @@
                             0,
                             255
                         ]
-                    }
+                    },
+                    "SampleShading": true,
+                    "PreserveAspect": false
                 }
             ],
             "Children": []
@@ -153,7 +159,6 @@
                     "Visible": true,
                     "OutputTexture": "PaintRenderTextureA",
                     "MaterialInstance": {
-                        "Material": "PaintMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -170,6 +175,8 @@
                                 "Texture": "PaintRenderTextureB"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "PaintMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -181,7 +188,9 @@
                             0,
                             255
                         ]
-                    }
+                    },
+                    "SampleShading": true,
+                    "PreserveAspect": false
                 }
             ],
             "Children": []
@@ -247,7 +256,9 @@
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    }
+                    },
+                    "MinimumZoomDistance": 0.5,
+                    "LimitZoomDistance": false
                 }
             ],
             "Children": [
@@ -264,7 +275,6 @@
                     "Visible": true,
                     "Mesh": "PigMesh",
                     "MaterialInstance": {
-                        "Material": "ObjectMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -281,6 +291,8 @@
                                 "Texture": "PigHeadTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "ObjectMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -324,7 +336,6 @@
                     "Visible": true,
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
-                        "Material": "ObjectMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -341,6 +352,8 @@
                                 "Texture": "WorldTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "ObjectMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -362,7 +375,6 @@
                     "Visible": true,
                     "Mesh": "BearMesh",
                     "MaterialInstance": {
-                        "Material": "ObjectMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -379,6 +391,8 @@
                                 "Texture": "BearTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "ObjectMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -399,161 +413,6 @@
                 "PaintEntityA",
                 "PaintEntityB"
             ]
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "BearTexture",
-            "Usage": "Static",
-            "ImagePath": "difuse.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "PigHeadTexture",
-            "Usage": "Static",
-            "ImagePath": "pig_head.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "WorldTexture",
-            "Usage": "Static",
-            "ImagePath": "world_texture.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "BrushMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Shader": "BrushShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "ObjectMaterial",
-            "Uniforms": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "object_texture",
-                    "Name": "inTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "PigHeadTexture"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "object_paint_texture",
-                    "Name": "inPaintTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "PaintRenderTextureB"
-                }
-            ],
-            "Shader": "ObjectShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "PaintMaterial",
-            "Uniforms": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "RenderTextureBrush",
-                    "Name": "inBrushTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "BrushRenderTexture"
-                }
-            ],
-            "Shader": "PaintShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color0"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "BearMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Path": "bear.mesh"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "PigMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Fill",
-            "Path": "optimized_pig.mesh"
         },
         {
             "Type": "nap::ParameterFloat",
@@ -628,60 +487,6 @@
             "Maximum": 2
         },
         {
-            "Type": "nap::RenderTexture2D",
-            "mID": "BrushRenderTexture",
-            "Usage": "Static",
-            "Fill": true,
-            "Width": 512,
-            "Height": 512,
-            "Format": "RGBA8",
-            "ColorSpace": "sRGB",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "PaintRenderTextureA",
-            "Usage": "Static",
-            "Fill": true,
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "RGBA8",
-            "ColorSpace": "sRGB",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "PaintRenderTextureB",
-            "Usage": "Static",
-            "Fill": true,
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "RGBA8",
-            "ColorSpace": "sRGB",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Borderless": false,
@@ -704,6 +509,302 @@
             "AdditionalSwapImages": 1
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "Rendering",
+            "Members": [],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Paint",
+                    "Members": [
+                        {
+                            "Type": "nap::Material",
+                            "mID": "PaintMaterial",
+                            "Uniforms": [],
+                            "Samplers": [
+                                {
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "RenderTextureBrush",
+                                    "Name": "inBrushTexture",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MaxLodLevel": 1000,
+                                    "AnisotropicSamples": "Default",
+                                    "Texture": "BrushRenderTexture"
+                                }
+                            ],
+                            "Buffers": [],
+                            "Shader": "PaintShader",
+                            "VertexAttributeBindings": [
+                                {
+                                    "MeshAttributeID": "Position",
+                                    "ShaderAttributeID": "in_Position"
+                                },
+                                {
+                                    "MeshAttributeID": "Normal",
+                                    "ShaderAttributeID": "in_Normal"
+                                },
+                                {
+                                    "MeshAttributeID": "UV0",
+                                    "ShaderAttributeID": "in_UV0"
+                                },
+                                {
+                                    "MeshAttributeID": "Color0",
+                                    "ShaderAttributeID": "in_Color0"
+                                }
+                            ],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::RenderTexture2D",
+                            "mID": "PaintRenderTextureA",
+                            "Usage": "Static",
+                            "Width": 2048,
+                            "Height": 2048,
+                            "Format": "RGBA8",
+                            "ColorSpace": "sRGB",
+                            "ClearColor": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::RenderTexture2D",
+                            "mID": "PaintRenderTextureB",
+                            "Usage": "Static",
+                            "Width": 2048,
+                            "Height": 2048,
+                            "Format": "RGBA8",
+                            "ColorSpace": "sRGB",
+                            "ClearColor": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "PaintShader",
+                            "VertShader": "shaders/renderPaint.vert",
+                            "FragShader": "shaders/renderPaint.frag"
+                        }
+                    ],
+                    "Children": [
+                        {
+                            "Type": "nap::ResourceGroup",
+                            "mID": "Brushes",
+                            "Members": [
+                                {
+                                    "Type": "nap::Material",
+                                    "mID": "BrushMaterial",
+                                    "Uniforms": [],
+                                    "Samplers": [],
+                                    "Buffers": [],
+                                    "Shader": "BrushShader",
+                                    "VertexAttributeBindings": [
+                                        {
+                                            "MeshAttributeID": "Position",
+                                            "ShaderAttributeID": "in_Position"
+                                        },
+                                        {
+                                            "MeshAttributeID": "UV0",
+                                            "ShaderAttributeID": "in_UV0"
+                                        },
+                                        {
+                                            "MeshAttributeID": "Normal",
+                                            "ShaderAttributeID": "in_Normal"
+                                        },
+                                        {
+                                            "MeshAttributeID": "Color0",
+                                            "ShaderAttributeID": "in_Color0"
+                                        }
+                                    ],
+                                    "BlendMode": "Opaque",
+                                    "DepthMode": "InheritFromBlendMode"
+                                },
+                                {
+                                    "Type": "nap::ShaderFromFile",
+                                    "mID": "BrushShader",
+                                    "VertShader": "shaders/renderBrush.vert",
+                                    "FragShader": "shaders/renderBrush.frag"
+                                },
+                                {
+                                    "Type": "nap::RenderTexture2D",
+                                    "mID": "BrushRenderTexture",
+                                    "Usage": "Static",
+                                    "Width": 512,
+                                    "Height": 512,
+                                    "Format": "RGBA8",
+                                    "ColorSpace": "sRGB",
+                                    "ClearColor": {
+                                        "Values": [
+                                            0.0,
+                                            0.0,
+                                            0.0,
+                                            0.0
+                                        ]
+                                    }
+                                }
+                            ],
+                            "Children": []
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Meshes",
+                    "Members": [
+                        {
+                            "Type": "nap::Material",
+                            "mID": "ObjectMaterial",
+                            "Uniforms": [],
+                            "Samplers": [
+                                {
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "object_texture",
+                                    "Name": "inTexture",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MaxLodLevel": 1000,
+                                    "AnisotropicSamples": "Default",
+                                    "Texture": "PigHeadTexture"
+                                },
+                                {
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "object_paint_texture",
+                                    "Name": "inPaintTexture",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MaxLodLevel": 1000,
+                                    "AnisotropicSamples": "Default",
+                                    "Texture": "PaintRenderTextureB"
+                                }
+                            ],
+                            "Buffers": [],
+                            "Shader": "ObjectShader",
+                            "VertexAttributeBindings": [
+                                {
+                                    "MeshAttributeID": "Position",
+                                    "ShaderAttributeID": "in_Position"
+                                },
+                                {
+                                    "MeshAttributeID": "UV0",
+                                    "ShaderAttributeID": "in_UV0"
+                                },
+                                {
+                                    "MeshAttributeID": "Normal",
+                                    "ShaderAttributeID": "in_Normal"
+                                }
+                            ],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "ObjectShader",
+                            "VertShader": "shaders/paintedObject.vert",
+                            "FragShader": "shaders/paintedObject.frag"
+                        }
+                    ],
+                    "Children": [
+                        {
+                            "Type": "nap::ResourceGroup",
+                            "mID": "Bear",
+                            "Members": [
+                                {
+                                    "Type": "nap::MeshFromFile",
+                                    "mID": "BearMesh",
+                                    "Usage": "Static",
+                                    "CullMode": "Back",
+                                    "PolygonMode": "Fill",
+                                    "Path": "bear.mesh"
+                                },
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "BearTexture",
+                                    "Usage": "Static",
+                                    "ImagePath": "difuse.jpg",
+                                    "GenerateLods": true
+                                }
+                            ],
+                            "Children": []
+                        },
+                        {
+                            "Type": "nap::ResourceGroup",
+                            "mID": "Sphere",
+                            "Members": [
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "WorldTexture",
+                                    "Usage": "Static",
+                                    "ImagePath": "world_texture.png",
+                                    "GenerateLods": true
+                                },
+                                {
+                                    "Type": "nap::SphereMesh",
+                                    "mID": "SphereMesh",
+                                    "Usage": "Static",
+                                    "CullMode": "None",
+                                    "PolygonMode": "Fill",
+                                    "Radius": 1.0,
+                                    "Rings": 25.0,
+                                    "Sectors": 25.0,
+                                    "Color": {
+                                        "Values": [
+                                            1.0,
+                                            1.0,
+                                            1.0,
+                                            1.0
+                                        ]
+                                    }
+                                }
+                            ],
+                            "Children": []
+                        },
+                        {
+                            "Type": "nap::ResourceGroup",
+                            "mID": "Pig",
+                            "Members": [
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "PigHeadTexture",
+                                    "Usage": "Static",
+                                    "ImagePath": "pig_head.jpg",
+                                    "GenerateLods": true
+                                },
+                                {
+                                    "Type": "nap::MeshFromFile",
+                                    "mID": "PigMesh",
+                                    "Usage": "Static",
+                                    "CullMode": "None",
+                                    "PolygonMode": "Fill",
+                                    "Path": "optimized_pig.mesh"
+                                }
+                            ],
+                            "Children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
@@ -724,42 +825,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "BrushShader",
-            "VertShader": "shaders/renderBrush.vert",
-            "FragShader": "shaders/renderBrush.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "ObjectShader",
-            "VertShader": "shaders/paintedObject.vert",
-            "FragShader": "shaders/paintedObject.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "PaintShader",
-            "VertShader": "shaders/renderPaint.vert",
-            "FragShader": "shaders/renderPaint.frag"
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "SphereMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Fill",
-            "Radius": 1.0,
-            "Rings": 25.0,
-            "Sectors": 25.0,
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
         }
     ]
 }
