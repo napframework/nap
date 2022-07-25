@@ -103,9 +103,10 @@ nap::IGroup* napkin::Document::getOwner(const nap::IGroup& group, int& outIndex)
 			continue;
 
 		// Resolve child group property against current object
-		auto property_path = Path::fromString(nap::IGroup::childrenPropertyName());
+		auto obj_group = static_cast<nap::IGroup*>(obj.get());
+		auto property_path = Path::fromString(obj_group->childrenPropertyName());
 		ResolvedPath resolved_path;
-		property_path.resolve(obj.get(), resolved_path);
+		property_path.resolve(obj_group, resolved_path);
 		assert(resolved_path.isValid());
 
 		// Get array value
@@ -123,7 +124,7 @@ nap::IGroup* napkin::Document::getOwner(const nap::IGroup& group, int& outIndex)
 			if (child_obj == &group)
 			{
 				outIndex = i;
-				return static_cast<nap::IGroup*>(obj.get());
+				return obj_group;
 			}
 		}
 	}
@@ -143,7 +144,8 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 			continue;
 
 		// Resolve child group property against current object
-		auto property_path = Path::fromString(nap::IGroup::membersPropertyName());
+		nap::IGroup* obj_group = static_cast<nap::IGroup*>(obj.get());
+		auto property_path = Path::fromString(obj_group->membersPropertyName());
 		ResolvedPath resolved_path;
 		property_path.resolve(obj.get(), resolved_path);
 		assert(resolved_path.isValid());

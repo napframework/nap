@@ -688,12 +688,12 @@
         {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
-            "Members": [],
-            "Children": [
+            "Parameters": [],
+            "Groups": [
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "Flock Group",
-                    "Members": [
+                    "mID": "Flocking",
+                    "Parameters": [
                         {
                             "Type": "nap::ParameterInt",
                             "mID": "MeshIndexParameter",
@@ -791,12 +791,12 @@
                             "Maximum": 25.0
                         }
                     ],
-                    "Children": []
+                    "Groups": []
                 },
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "Render Group",
-                    "Members": [
+                    "mID": "Visualization",
+                    "Parameters": [
                         {
                             "Type": "nap::ParameterBool",
                             "mID": "ShowBoundsParameter",
@@ -979,7 +979,7 @@
                             "Maximum": 1.0
                         }
                     ],
-                    "Children": []
+                    "Groups": []
                 }
             ]
         },

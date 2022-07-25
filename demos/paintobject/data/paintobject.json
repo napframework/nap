@@ -431,7 +431,7 @@
         {
             "Type": "nap::ParameterGroup",
             "mID": "Brush Parameters",
-            "Members": [
+            "Parameters": [
                 {
                     "Type": "nap::ParameterRGBAColor8",
                     "mID": "BrushColorParam",
@@ -476,7 +476,7 @@
                     "Value": false
                 }
             ],
-            "Children": []
+            "Groups": []
         },
         {
             "Type": "nap::ParameterInt",

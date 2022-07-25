@@ -184,12 +184,12 @@
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
-            "Group": "ParameterGroup"
+            "Group": "Parameters"
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "ParameterGroup",
-            "Members": [
+            "mID": "Parameters",
+            "Parameters": [
                 {
                     "Type": "nap::ParameterInt",
                     "mID": "ParameterInt",
@@ -354,7 +354,7 @@
                     "Maximum": 128
                 }
             ],
-            "Children": []
+            "Groups": []
         },
         {
             "Type": "nap::PortalWebSocketServer",

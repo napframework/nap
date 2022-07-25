@@ -30,7 +30,7 @@
         {
             "Type": "nap::ParameterGroup",
             "mID": "ParameterGroup",
-            "Members": [
+            "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "Float1",
@@ -73,7 +73,7 @@
                     "Maximum": 100
                 }
             ],
-            "Children": []
+            "Groups": []
         },
         {
             "Type": "nap::RenderWindow",

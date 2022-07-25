@@ -13,18 +13,18 @@ DEFINE_GROUP(nap::ResourceGroup)
 namespace nap
 {
 
-	IGroup::IGroup(rtti::TypeInfo memberType) : mMemberType(memberType)
-	{ }
-
-
 	rttr::property IGroup::getMembersProperty() const
 	{
-		return get_type().get_property(IGroup::membersPropertyName());
+		auto prop = get_type().get_property(mMembersPropertyName.data());
+		assert(prop.is_valid());
+		return prop;
 	}
 
 
 	rttr::property IGroup::getChildrenProperty() const
 	{
-		return get_type().get_property(IGroup::childrenPropertyName());
+		auto prop = get_type().get_property(mChildrenPropertyName.data());
+		assert(prop.is_valid());
+		return prop;
 	}
 }

@@ -12,6 +12,13 @@
 
 namespace nap
 {
+	namespace group
+	{
+		constexpr const char* members  = "Members";						///< Default group members property name
+		constexpr const char* children = "Children";					///< Default group children property name
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Group Interface
 	//////////////////////////////////////////////////////////////////////////
@@ -25,8 +32,13 @@ namespace nap
 	public:
 		/**
 		 * @param memberType the group member type
+		 * @param membersName members rtti property name
+		 * @param childrenName children rtti property name
 		 */
-		IGroup(rtti::TypeInfo memberType);
+		IGroup(rtti::TypeInfo memberType, std::string&& membersName, std::string&& childrenName) :
+			mMemberType(memberType),
+			mMembersPropertyName(std::move(membersName)),
+			mChildrenPropertyName(std::move(childrenName))				{ }
 
 		/**
 		 * @return group member type
@@ -34,27 +46,29 @@ namespace nap
 		rtti::TypeInfo getMemberType() const							{ return mMemberType; }
 
 		/**
-		 * @return member property name
-		 */
-		static constexpr const char* membersPropertyName()				{ return "Members"; }
-
-		/**
 		 * @return 'Members' rtti property
 		 */
 		rttr::property getMembersProperty() const;
-
-		/**
-		 * @return children property name
-		 */
-		static constexpr const char* childrenPropertyName()				{ return "Children"; }
 
 		/**
 		 * @return 'Children' rtti property
 		 */
 		rttr::property getChildrenProperty() const;
 
+		/**
+		 * @return member property name
+		 */
+		const std::string& membersPropertyName() const					{ return mMembersPropertyName; }
+
+		/**
+		 * @return children property name
+		 */
+		const std::string& childrenPropertyName() const					{ return mChildrenPropertyName; }
+
 	private:
 		rtti::TypeInfo mMemberType;
+		std::string mMembersPropertyName;
+		std::string mChildrenPropertyName;
 	};
 
 
@@ -73,7 +87,7 @@ namespace nap
 		/**
 		 * Constructs a group with members of type T
 		 */
-		Group() : IGroup(RTTI_OF(T)) { }
+		Group() : IGroup(RTTI_OF(T), group::members, group::children) { }
 
 		/**
 		 * Initialize this group
@@ -205,8 +219,8 @@ namespace nap
  * DEFINE_GROUP(nap::ResourceGroup)
  * ~~~~~ 
  */
-#define DEFINE_GROUP(Type)																																			\
-	RTTI_BEGIN_CLASS(Type)																																			\
-		RTTI_PROPERTY(nap::IGroup::membersPropertyName(),	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)	\
-		RTTI_PROPERTY(nap::IGroup::childrenPropertyName(),	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)	\
+#define DEFINE_GROUP(Type)																																\
+	RTTI_BEGIN_CLASS(Type)																																\
+		RTTI_PROPERTY(nap::group::members,	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
+		RTTI_PROPERTY(nap::group::children,	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
 	RTTI_END_CLASS
