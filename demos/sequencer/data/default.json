@@ -25,11 +25,11 @@
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": false,
-            "Group": "ParameterGroup"
+            "Group": "Parameters"
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "ParameterGroup",
+            "mID": "Parameters",
             "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
