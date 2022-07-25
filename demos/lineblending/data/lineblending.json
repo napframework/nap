@@ -327,20 +327,14 @@
             "AllowFailure": true
         },
         {
-            "Type": "nap::ParameterGUI",
-            "mID": "ParameterGUI",
-            "Serializable": true,
-            "Group": "Parameters"
-        },
-        {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
-            "Parameters": [],
-            "Groups": [
+            "Members": [],
+            "Children": [
                 {
                     "Type": "nap::ParameterGroup",
                     "mID": "Line Settings",
-                    "Parameters": [
+                    "Members": [
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "line_colortwo",
@@ -386,12 +380,12 @@
                             "Maximum": 1.0
                         }
                     ],
-                    "Groups": []
+                    "Children": []
                 },
                 {
                     "Type": "nap::ParameterGroup",
                     "mID": "Blending",
-                    "Parameters": [
+                    "Members": [
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "line_blendspeed",
@@ -401,12 +395,12 @@
                             "Maximum": 1.0
                         }
                     ],
-                    "Groups": []
+                    "Children": []
                 },
                 {
                     "Type": "nap::ParameterGroup",
                     "mID": "Noise",
-                    "Parameters": [
+                    "Members": [
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "line_noiseamp",
@@ -440,7 +434,7 @@
                             "Maximum": 10.0
                         }
                     ],
-                    "Groups": []
+                    "Children": []
                 }
             ]
         },
@@ -792,6 +786,12 @@
                     "Usage": "Static",
                     "ImagePath": "laser_canvas.png",
                     "GenerateLods": true
+                },
+                {
+                    "Type": "nap::ParameterGUI",
+                    "mID": "ParameterGUI",
+                    "Serializable": true,
+                    "Group": "Parameters"
                 }
             ],
             "Children": []

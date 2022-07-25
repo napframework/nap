@@ -189,7 +189,7 @@
         {
             "Type": "nap::ParameterGroup",
             "mID": "ParameterGroup",
-            "Parameters": [
+            "Members": [
                 {
                     "Type": "nap::ParameterInt",
                     "mID": "ParameterInt",
@@ -354,7 +354,7 @@
                     "Maximum": 128
                 }
             ],
-            "Groups": []
+            "Children": []
         },
         {
             "Type": "nap::PortalWebSocketServer",
