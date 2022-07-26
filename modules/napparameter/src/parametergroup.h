@@ -28,6 +28,5 @@ namespace nap
 	// For backwards compatibility reasons, override the default 'Members' and 'Children' property names
 	// of the 'nap::ParameterGroup' to the property names introduced before the arrival of the generic nap::Group<T>.
 	template<>
-	nap::Group<Parameter>::Group() :
-		IGroup(RTTI_OF(Parameter), group::parameter::members, group::parameter::children)	{ }
+	nap::Group<Parameter>::Group();
 }

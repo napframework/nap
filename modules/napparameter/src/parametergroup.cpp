@@ -10,3 +10,10 @@ RTTI_BEGIN_CLASS(nap::ParameterGroup)
 	RTTI_PROPERTY(nap::group::parameter::members,	&nap::ParameterGroup::mMembers,		nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)
 	RTTI_PROPERTY(nap::group::parameter::children,	&nap::ParameterGroup::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)
 RTTI_END_CLASS
+
+namespace nap
+{
+	template<> 
+	nap::Group<Parameter>::Group() : IGroup(RTTI_OF(Parameter),
+		group::parameter::members, group::parameter::children) { }
+}
