@@ -2,8 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
 #include <parameterservice.h>
-#include <parameter.h>
+
+// External Includes
 #include <nap/core.h>
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
@@ -103,6 +105,7 @@ namespace nap
 		{
 			if (object->get_type().is_derived_from<ParameterGroup>() && object->mID == group.mID)
 			{
+				// set parameters & notify listeners
 				setParametersRecursive(*rtti_cast<ParameterGroup>(object.get()), group);
 				presetLoaded();
 				return true;
@@ -145,24 +148,36 @@ namespace nap
 	}
 
 
-	void ParameterService::setParametersRecursive(const ParameterGroup& sourceParameters, ParameterGroup& destinationParameters)
+	void ParameterService::setParametersRecursive(const ParameterGroup& sourceGroup, ParameterGroup& destinationGroup)
 	{
 		// Apply all parameters in the source to the destination. 
 		// Note that it's not considered an error if a parameter is preset in the source, but not in the destination. 
 		// This is to ensure that changes in the parameter structure for a project don't invalidate entire presets; they just invalidate the changed parts.
-		for (auto& param : destinationParameters.mParameters)
+		for (auto& dst_member : destinationGroup.mMembers)
 		{
-			const ResourcePtr<Parameter>& new_param = sourceParameters.findParameter(param->mID);
-			if (new_param != nullptr)
-				param->setValue(*new_param);
+			auto src_it = std::find_if(sourceGroup.mMembers.begin(), sourceGroup.mMembers.end(), [&dst_member](const auto& src_member)
+				{
+					return src_member->mID == dst_member->mID;
+				});
+
+			if (src_it != sourceGroup.mMembers.end())
+			{
+				dst_member->setValue(**src_it);
+			}
 		}
 
 		// Recursively apply the parameters of all child groups
-		for (auto& dest_child : destinationParameters.mChildren)
+		for (auto& dst_child : destinationGroup.mChildren)
 		{
-			const ResourcePtr<ParameterGroup>& source_child = sourceParameters.findChild(dest_child->mID);
-			if (source_child != nullptr)
-				setParametersRecursive(*source_child, *dest_child);
+			auto src_it = std::find_if(sourceGroup.mChildren.begin(), sourceGroup.mChildren.end(), [&dst_child](const auto& src_child)
+				{
+					return src_child->mID == dst_child->mID;
+				});
+
+			if (src_it != sourceGroup.mChildren.end())
+			{
+				setParametersRecursive(**src_it, *dst_child);
+			}
 		}
 	}
 }

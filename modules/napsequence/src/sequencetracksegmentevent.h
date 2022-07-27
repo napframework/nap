@@ -22,7 +22,7 @@ namespace nap
     {
         friend class SequencePlayerEventAdapter;
 
-        RTTI_ENABLE(SequenceTrackSegment)
+    RTTI_ENABLE(SequenceTrackSegment)
     private:
         /**
          * creates an SequenceEventPtr.
@@ -38,7 +38,7 @@ namespace nap
     template<typename T>
     class SequenceTrackSegmentEvent : public SequenceTrackSegmentEventBase
     {
-        RTTI_ENABLE(SequenceTrackSegmentEventBase)
+    RTTI_ENABLE(SequenceTrackSegmentEventBase)
     public:
         T mValue;
     private:

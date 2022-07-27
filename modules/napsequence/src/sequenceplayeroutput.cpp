@@ -12,7 +12,7 @@ RTTI_END_CLASS
 namespace nap
 {
     SequencePlayerOutput::SequencePlayerOutput(SequenceService& service)
-            : mService(&service)
+        : mService(&service)
     {
     }
 

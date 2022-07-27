@@ -25,7 +25,7 @@ namespace nap
      */
     class NAPAPI SequenceAudioTrackView final : public SequenceTrackView
     {
-        RTTI_ENABLE(SequenceTrackView)
+    RTTI_ENABLE(SequenceTrackView)
     public:
         /**
          * Constructor
@@ -37,7 +37,6 @@ namespace nap
 
         // make this class explicitly non-copyable
         SequenceAudioTrackView(const SequenceAudioTrackView&) = delete;
-
         SequenceAudioTrackView& operator=(const SequenceAudioTrackView&) = delete;
 
     protected:
@@ -55,6 +54,16 @@ namespace nap
         virtual void showTrackContent(const SequenceTrack& track, const ImVec2& trackTopLeft) override;
 
     private:
+        /**
+         * Pastes clipboard contents to track from given time on given track with track id. Return true on success.
+         * Given errorState contains any errors
+         * @param trackID the track id of the track to paste on
+         * @param time the time from which to insert the first clipboard segment
+         * @param errorState contains any errors
+         * @return true on success
+         */
+        bool pasteClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
+
         /**
          * handles action when output id of track needs to be changed
          */
@@ -84,6 +93,11 @@ namespace nap
          * handles dragging of right handler of audio segment
          */
         void handleRightHandlerDrag();
+
+        /**
+         * handles load preset popup
+         */
+        void handleLoadPresetPopup();
 
         /**
          * cache of drawn waveforms
@@ -119,7 +133,7 @@ namespace nap
          */
         class AudioSegmentClipboard : public Clipboard
         {
-            RTTI_ENABLE(Clipboard)
+        RTTI_ENABLE(Clipboard)
         public:
             /**
              * Constructor
@@ -127,7 +141,7 @@ namespace nap
              * @param sequenceName the sequence name
              */
             AudioSegmentClipboard(const rttr::type& type, std::string sequenceName)
-                    :Clipboard(type), mSequenceName(std::move(sequenceName))
+                    : Clipboard(type), mSequenceName(std::move(sequenceName))
             {
             };
 
@@ -140,6 +154,8 @@ namespace nap
             {
                 return mSequenceName;
             }
+
+
         private:
             std::string mSequenceName;
         };

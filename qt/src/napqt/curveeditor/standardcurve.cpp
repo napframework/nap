@@ -168,7 +168,7 @@ void nap::qt::StandardCurve::removePoint(int index)
 
 StandardCurveModel* StandardCurve::model()
 {
-	return dynamic_cast<StandardCurveModel*>(parent());
+	return qobject_cast<StandardCurveModel*>(parent());
 }
 
 void StandardCurve::removePoints(const QList<int>& indices)

@@ -206,9 +206,11 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 	mCurvePanel.editCurve(nullptr);
 	if (!paths.isEmpty())
 	{
-		auto ob = dynamic_cast<nap::math::FloatFCurve*>(paths.first().getObject());
-		if (ob)
+		auto ob = rtti_cast<nap::math::FloatFCurve>(paths.first().getObject());
+		if (ob != nullptr)
+		{
 			mCurvePanel.editCurve(ob);
+		}
 	}
 }
 
@@ -282,7 +284,7 @@ bool MainWindow::confirmSaveCurrentFile()
 	if (!getContext().getDocument()->isDirty())
 		return true;
 
-	auto result = QMessageBox::question(this, "Confirm save unsaved change",
+	auto result = QMessageBox::question(this, "Save changes?",
 									"The current document has unsaved changes.\n"
 									"Save the changes before exit?",
 									QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
@@ -299,7 +301,6 @@ bool MainWindow::confirmSaveCurrentFile()
 void MainWindow::rebuildRecentMenu()
 {
 	mRecentProjectsMenu->clear();
-
 	auto recentFiles = getContext().getRecentlyOpenedProjects();
 	for (const auto& filename : recentFiles)
 	{
@@ -310,14 +311,13 @@ void MainWindow::rebuildRecentMenu()
 				getContext().loadProject(filename);
 		});
 	}
-
 	mRecentProjectsMenu->setEnabled(!mRecentProjectsMenu->isEmpty());
 }
 
 
 void MainWindow::onDocked(QDockWidget *dockWidget)
-{
-}
+{ }
+
 
 AppContext& MainWindow::getContext() const
 {

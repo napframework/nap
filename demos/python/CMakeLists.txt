@@ -1,7 +1,12 @@
 cmake_minimum_required(VERSION 3.18.4)
+if(NOT NAP_ENABLE_PYTHON)
+	return()
+endif()
+
+# Python demo
 project(python)
 
-#add all cpp files to SOURCES
+# Add all cpp files to SOURCES
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h)
 file(GLOB DATA data/*)
@@ -22,4 +27,4 @@ target_link_libraries(${PROJECT_NAME} ${NAP_MODULES})
 add_dependencies(${PROJECT_NAME} fbxconverter)
 
 # Package into release, export FBX, other shared source project fixes
-nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "demos" TRUE)
+nap_source_project_packaging_and_shared_postprocessing(TRUE FALSE "demos" FALSE)

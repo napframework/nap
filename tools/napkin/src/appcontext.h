@@ -327,7 +327,7 @@ namespace napkin
 		 * @param newEntity The newly added Entity
 		 * @param parent The parent the new Entity was added to
 		 */
-		void entityAdded(nap::Entity* newEntity, nap::Entity* parent = nullptr);
+		void childEntityAdded(nap::Entity* newEntity, nap::Entity* parent = nullptr);
 
 		/**
 		 * Qt Signal
@@ -341,11 +341,9 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked after any object has been added (this includes Entities)
 		 * @param obj The newly added object
-		 * TODO: Get rid of the following parameter, the client itself must decide how to react to this event.
-		 * 		This is a notification, not a directive.
-		 * @param selectNewObject Whether the newly created object should be selected in any views watching for object addition
+		 * @param parent the parent of the newly added object, can be nullptr
 		 */
-		void objectAdded(nap::rtti::Object* obj, bool selectNewObject);
+		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent);
 
 		/**
 		 * Qt Signal
@@ -355,10 +353,35 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked just before an object is removed (including Entities)
+		 * Invoked just before resource is removed, including entities, components and regular resources
+		 * @param object The object about to be removed
+		 */
+		void removingObject(nap::rtti::Object* object);
+
+		/**
+		 * Qt Signal
+		 * Invoked just after a resource is removed, including entities, components and regular resources
 		 * @param object The object about to be removed
 		 */
 		void objectRemoved(nap::rtti::Object* object);
+
+		/**
+		 * Qt Signal
+		 * Invoked after an object (Resource or Group) moved to a new group.
+		 * @param object The object that moved to a new group
+		 * @param oldParent The previous parent
+		 * @param newParent The new parent
+		 */
+		void objectReparented(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
+
+		/**
+		 * Qt Signal
+		 * Invoked before an object (Resource or Group) moves to a new group.
+		 * @param object The object that moves to a new group
+		 * @param currentParent The current parent
+		 * @param newParent The new parent
+		 */
+		void objectReparenting(nap::rtti::Object& object, PropertyPath oldParent, PropertyPath newParent);
 
 		/**
 		 * Qt Signal

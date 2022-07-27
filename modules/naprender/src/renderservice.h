@@ -57,18 +57,20 @@ namespace nap
 		};
 
 		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
-		bool						mCompute = true;												///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
-		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
-		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected.
 		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
+		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
+		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
+		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		bool						mEnableCompute = true;											///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
+		bool						mEnableCaching = true;											///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
+		bool						mEnableRobustBufferAccess = false;								///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
-		bool						mEnableRobustBufferAccess = false;								///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
-		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		virtual rtti::TypeInfo		getServiceType() const override { return RTTI_OF(RenderService); }
+
+		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
 	};
 
 
@@ -138,8 +140,7 @@ namespace nap
 	{
 	public:
 		/**
-		 * Extracts display information.
-		 * Index must be >= 0 && < SDL::getDisplayCount()
+		 * Extracts display information. Index must be >= 0 && < SDL::getDisplayCount()
 		 * @param index display index
 		 */
 		Display(int index);
@@ -150,22 +151,26 @@ namespace nap
 		int getIndex() const { return mIndex; }
 
 		/**
-		 * @return diagonal dpi
+		 * Returns diagonal dots per inch. 0 if diagonal DPI not available. 
+		 * @return diagonal dots per inch. 0 if diagonal DPI not available.
 		 */
 		float getDiagonalDPI() const { return mDDPI; }
 
 		/**
-		 * @return horizontal dpi
+		 * Returns horizontal dots per inch. 0 if horizontal DPI not available. 
+		 * @return horizontal dots per inch. 0 if horizontal DPI not available. 
 		 */
 		float getHorizontalDPI() const { return mHDPI; }
 
 		/**
-		 * @return vertical dpi
+		 * Returns vertical dots per inch. 0 if vertical DPI not available.   
+		 * @return vertical dots per inch. 0 if vertical DPI not available.
 		 */
 		float getVerticalDPI() const { return mVDPI; }
 
 		/**
-		 * @return display name
+		 * Returns display name, empty if not available. 
+		 * @return display name, empty if not available. 
 		 */
 		const std::string& getName() const { return mName; }
 
@@ -185,7 +190,8 @@ namespace nap
 		math::Rect getBounds() const;
 
 		/**
-		 * @return if display information was extracted successfully on construction
+		 * Returns if this display has valid bounds.
+		 * @return if this display has valid bounds.
 		 */
 		bool isValid() const { return mValid; }
 
@@ -1154,6 +1160,7 @@ namespace nap
 		};
 
 		bool									mEnableHighDPIMode = true;
+		bool									mEnableCaching = true;
 		bool									mSampleShadingSupported = false;
 		bool									mAnisotropicFilteringSupported = false;
 		bool									mWideLinesSupported = false;

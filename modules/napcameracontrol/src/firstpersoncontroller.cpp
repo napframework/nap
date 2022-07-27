@@ -91,9 +91,9 @@ namespace nap
 
 		float movement = mMovementSpeed * deltaTime;
 
-		glm::vec3 side(1.0, 0.0, 0.0);
-		glm::vec3 up(0.0, 1.0, 0.0);
-		glm::vec3 forward(0.0, 0.0, 1.0);
+		glm::vec3 side{ 1.0f, 0.0f, 0.0f };
+		glm::vec3 up{ 0.0f, 1.0f, 0.0f };
+		glm::vec3 forward{ 0.0f, 0.0f, 1.0f};
 
 		glm::vec3 dir_forward = glm::rotate(mTransformComponent->getRotate(), forward);
 		glm::vec3 movement_forward = dir_forward * movement;
@@ -156,10 +156,10 @@ namespace nap
 		float yaw = -(pointerMoveEvent.mRelX  * mRotateSpeed);
 		float pitch = pointerMoveEvent.mRelY  * mRotateSpeed;
 
-		glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
+		glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3{ 0.0f, 1.0f, 0.0f });
 
-		glm::vec4 right = mTransformComponent->getLocalTransform()[0];
-		glm::mat4 pitch_rotation = glm::rotate(pitch, glm::vec3(right.x, right.y, right.z));
+		const glm::vec3& right = mTransformComponent->getLocalTransform()[0];
+		glm::mat4 pitch_rotation = glm::rotate(pitch, right);
 
 		mTransformComponent->setRotate(yaw_rotation * pitch_rotation * glm::toMat4(mTransformComponent->getRotate()));
 	}
@@ -245,6 +245,6 @@ namespace nap
 	{
 		components.emplace_back(RTTI_OF(TransformComponent));
 		components.emplace_back(RTTI_OF(KeyInputComponent));
+		components.emplace_back(RTTI_OF(PointerInputComponent));
 	}
-
 }

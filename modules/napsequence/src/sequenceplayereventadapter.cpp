@@ -12,21 +12,22 @@
 namespace nap
 {
     SequencePlayerEventAdapter::SequencePlayerEventAdapter(const SequenceTrack& track,
-            SequencePlayerEventOutput& output, const SequencePlayer& player)
+                                                           SequencePlayerEventOutput& output,
+                                                           const SequencePlayer& player)
             : mTrack(track), mOutput(output)
     {
         double time = player.getPlayerTime();
 
         // mark all events before 'time' as already dispatched
         assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-        const auto* event_track = static_cast<const SequenceTrackEvent*>(&mTrack);
-        for (const auto& event_segment : event_track->mSegments)
+        const auto *event_track = static_cast<const SequenceTrackEvent *>(&mTrack);
+        for(const auto &event_segment: event_track->mSegments)
         {
             assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
-            auto& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
-            if (time>event.mStartTime)
+            auto &event = static_cast<SequenceTrackSegmentEventBase &>(*event_segment.get());
+            if(time > event.mStartTime)
             {
-                if (mDispatchedEvents.find(&event)==mDispatchedEvents.end())
+                if(mDispatchedEvents.find(&event) == mDispatchedEvents.end())
                 {
                     mDispatchedEvents.emplace(&event);
                 }
@@ -37,11 +38,11 @@ namespace nap
 
     void SequencePlayerEventAdapter::tick(double time)
     {
-        double deltaTime = time-mPrevTime;
+        double deltaTime = time - mPrevTime;
         mPrevTime = time;
-        if (deltaTime<0.0)
+        if(deltaTime < 0.0)
         {
-            if (!mPlayingBackwards)
+            if(!mPlayingBackwards)
             {
                 mPlayingBackwards = true;
 
@@ -49,24 +50,23 @@ namespace nap
 
                 // mark all events after 'time' as already dispatched
                 assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-                const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
-                for (const auto& event_segment : event_track.mSegments)
+                const auto &event_track = static_cast<const SequenceTrackEvent &>(mTrack);
+                for(const auto &event_segment: event_track.mSegments)
                 {
                     assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
-                    auto& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
-                    if (time<event.mStartTime)
+                    auto &event = static_cast<SequenceTrackSegmentEventBase &>(*event_segment.get());
+                    if(time < event.mStartTime)
                     {
-                        if (mDispatchedEvents.find(&event)==mDispatchedEvents.end())
+                        if(mDispatchedEvents.find(&event) == mDispatchedEvents.end())
                         {
                             mDispatchedEvents.emplace(&event);
                         }
                     }
                 }
             }
-        }
-        else
+        } else
         {
-            if (mPlayingBackwards)
+            if(mPlayingBackwards)
             {
                 mPlayingBackwards = false;
 
@@ -74,14 +74,14 @@ namespace nap
 
                 // mark all events before 'time' as already dispatched
                 assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-                const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
-                for (const auto& event_segment : event_track.mSegments)
+                const auto &event_track = static_cast<const SequenceTrackEvent &>(mTrack);
+                for(const auto &event_segment: event_track.mSegments)
                 {
                     assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
-                    auto& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
-                    if (time>event.mStartTime)
+                    auto &event = static_cast<SequenceTrackSegmentEventBase &>(*event_segment.get());
+                    if(time > event.mStartTime)
                     {
-                        if (mDispatchedEvents.find(&event)==mDispatchedEvents.end())
+                        if(mDispatchedEvents.find(&event) == mDispatchedEvents.end())
                         {
                             mDispatchedEvents.emplace(&event);
                         }
@@ -91,23 +91,22 @@ namespace nap
         }
 
         assert(mTrack.get_type().is_derived_from(RTTI_OF(SequenceTrackEvent)));
-        const auto& event_track = static_cast<const SequenceTrackEvent&>(mTrack);
-        for (const auto& event_segment : event_track.mSegments)
+        const auto &event_track = static_cast<const SequenceTrackEvent &>(mTrack);
+        for(const auto &event_segment: event_track.mSegments)
         {
             assert(event_segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentEventBase)));
-            auto& event = static_cast<SequenceTrackSegmentEventBase&>(*event_segment.get());
+            auto &event = static_cast<SequenceTrackSegmentEventBase &>(*event_segment.get());
 
-            if ((!mPlayingBackwards && time>event.mStartTime) || (mPlayingBackwards && time<event.mStartTime))
+            if((!mPlayingBackwards && time > event.mStartTime) || (mPlayingBackwards && time < event.mStartTime))
             {
-                if (mDispatchedEvents.find(&event)==mDispatchedEvents.end())
+                if(mDispatchedEvents.find(&event) == mDispatchedEvents.end())
                 {
                     mOutput.addEvent(event.createEvent());
                     mDispatchedEvents.emplace(&event);
                 }
-            }
-            else if ((!mPlayingBackwards && time<event.mStartTime) || (mPlayingBackwards && time>event.mStartTime))
+            } else if((!mPlayingBackwards && time < event.mStartTime) || (mPlayingBackwards && time > event.mStartTime))
             {
-                if (mDispatchedEvents.find(&event)!=mDispatchedEvents.end())
+                if(mDispatchedEvents.find(&event) != mDispatchedEvents.end())
                 {
                     mDispatchedEvents.erase(&event);
                 }
@@ -115,19 +114,19 @@ namespace nap
         }
 
         // remove dispatchedEvents that have been deleted
-        for (auto* dispatched_event : mDispatchedEvents)
+        for(auto *dispatched_event: mDispatchedEvents)
         {
             bool found_segment = false;
-            for (const auto& event_segment : event_track.mSegments)
+            for(const auto &event_segment: event_track.mSegments)
             {
-                if (event_segment.get()==dispatched_event)
+                if(event_segment.get() == dispatched_event)
                 {
                     found_segment = true;
                     break;
                 }
             }
 
-            if (!found_segment)
+            if(!found_segment)
             {
                 mDispatchedEvents.erase(dispatched_event);
                 break;

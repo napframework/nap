@@ -7,22 +7,39 @@
 #include "commands.h"
 #include "naputils.h"
 #include "napkinutils.h"
+#include "napkin-resources.h"
 
 #include <QMessageBox>
 #include <QHBoxLayout>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonwriter.h>
 #include <utility/errorstate.h>
+#include <entity.h>
 
 using namespace napkin;
 
-Action::Action() : QAction() { connect(this, &QAction::triggered, this, &Action::perform); }
+Action::Action(const char* text, const char* iconName) :
+	QAction(), mIconName(iconName)
+{
+	setText(text);
+	connect(this, &QAction::triggered, this, &Action::perform);
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &Action::onThemeChanged);
+	loadIcon();
+}
+
+
+void napkin::Action::loadIcon()
+{
+	if (!mIconName.isEmpty())
+	{
+		setIcon(AppContext::get().getResourceFactory().getIcon(mIconName));
+	}
+}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-NewFileAction::NewFileAction()
+NewFileAction::NewFileAction() : Action("New", QRC_ICONS_EDIT)
 {
-	setText("New");
 	setShortcut(QKeySequence::New);
 }
 
@@ -69,28 +86,27 @@ void NewFileAction::perform()
 	}
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenProjectAction::OpenProjectAction()
-{
-	setText("Open...");
-}
+OpenProjectAction::OpenProjectAction() : Action("Open...", QRC_ICONS_FILE)
+{ }
+
 
 void OpenProjectAction::perform()
 {
-	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Project", "", JSON_PROJECT_FILTER);
+	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Project", "", JSON_PROJECT_FILTER);
 	if (filename.isNull())
 		return;
 
 	AppContext::get().loadProject(filename);
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 
-napkin::UpdateDefaultFileAction::UpdateDefaultFileAction()
-{
-	setText("Set as project default");
-}
+napkin::UpdateDefaultFileAction::UpdateDefaultFileAction() : Action("Set as project default", QRC_ICONS_CHANGE)
+{ }
 
 
 void napkin::UpdateDefaultFileAction::perform()
@@ -145,10 +161,8 @@ void napkin::UpdateDefaultFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ReloadFileAction::ReloadFileAction()
-{
-	setText("Reload");
-}
+ReloadFileAction::ReloadFileAction() : Action("Reload", QRC_ICONS_RELOAD)
+{ }
 
 
 void ReloadFileAction::perform()
@@ -156,13 +170,14 @@ void ReloadFileAction::perform()
 	AppContext::get().reloadDocument();
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SaveFileAction::SaveFileAction()
+SaveFileAction::SaveFileAction() : Action("Save", QRC_ICONS_SAVE)
 {
-	setText("Save");
 	setShortcut(QKeySequence::Save);
 }
+
 
 void SaveFileAction::perform()
 {
@@ -193,9 +208,8 @@ void SaveFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SaveFileAsAction::SaveFileAsAction()
+SaveFileAsAction::SaveFileAsAction() : Action("Save as...", QRC_ICONS_SAVE_AS)
 {
-	setText("Save as...");
 	setShortcut(QKeySequence::SaveAs);
 }
 
@@ -249,9 +263,8 @@ void SaveFileAsAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-napkin::OpenFileAction::OpenFileAction()
+napkin::OpenFileAction::OpenFileAction() : Action("Open...", QRC_ICONS_FILE)
 {
-	setText("Open...");
 	setShortcut(QKeySequence::Open);
 }
 
@@ -271,7 +284,7 @@ void napkin::OpenFileAction::perform()
 	}
 
 	// Get file to open
-	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Data File", dir, JSON_DATA_FILTER);
+	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Data File", dir, JSON_DATA_FILTER);
 	if (filename.isNull())
 		return;
 
@@ -294,47 +307,303 @@ void napkin::OpenFileAction::perform()
 	}
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CreateResourceAction::CreateResourceAction()
-{
-	setText("Create Resource...");
-}
+CreateResourceAction::CreateResourceAction() : Action("Create Resource...", QRC_ICONS_RTTIOBJECT)
+{ }
 
 
 void CreateResourceAction::perform()
 {
 	auto parentWidget = AppContext::get().getMainWindow();
-
 	auto type = napkin::showTypeSelector(parentWidget, [](auto t)
 	{
-		if (t.is_derived_from(RTTI_OF(nap::Component)))
-			return false;
-		return t.is_derived_from(RTTI_OF(nap::Resource));
+		return t.is_derived_from(RTTI_OF(nap::Resource)) &&
+			!t.is_derived_from(RTTI_OF(nap::Component))  &&
+			!t.is_derived_from(RTTI_OF(nap::Entity));
 	});
 
 	if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
 		AppContext::get().executeCommand(new AddObjectCommand(type));
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CreateEntityAction::CreateEntityAction()
+napkin::CreateGroupAction::CreateGroupAction() : Action("Create Group...", QRC_ICONS_GROUP)
+{ }
+
+
+void napkin::CreateGroupAction::perform()
 {
-	setText("Create Entity");
+	auto parentWidget = AppContext::get().getMainWindow();
+	auto type = napkin::showTypeSelector(parentWidget, [](auto t)
+		{
+			return t.is_derived_from(RTTI_OF(nap::IGroup));
+		});
+
+	if (type.is_valid())
+		AppContext::get().executeCommand(new AddObjectCommand(type));
 }
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddNewResourceToGroupAction::AddNewResourceToGroupAction(nap::IGroup& group) :
+	Action("Create Resource...", QRC_ICONS_RTTIOBJECT), mGroup(&group)
+{ }
+
+void AddNewResourceToGroupAction::perform()
+{
+	// Get path to resources array property
+	PropertyPath array_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
+
+	// Select type to add
+	auto type = array_path.getArrayElementType();
+	TypePredicate predicate = [type](auto t)
+	{
+		return t.is_derived_from(type) &&
+			!t.is_derived_from(RTTI_OF(nap::Component)) &&
+			!t.is_derived_from(RTTI_OF(nap::IGroup)) &&
+			!t.is_derived_from(RTTI_OF(nap::Entity));
+	};
+
+	auto parentWidget = AppContext::get().getMainWindow();
+	rttr::type elementType = showTypeSelector(parentWidget, predicate);
+	if (elementType.is_valid())
+	{
+		AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::AddChildGroupAction::AddChildGroupAction(nap::IGroup& group) :
+	Action("Create Group...", QRC_ICONS_GROUP), mGroup(&group)
+{ }
+
+
+void napkin::AddChildGroupAction::perform()
+{
+	// Get path to resources array property
+	PropertyPath array_path(*mGroup, mGroup->getChildrenProperty(), *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, mGroup->get_type()));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::MoveResourceToGroupAction::MoveResourceToGroupAction(nap::rtti::Object& resource, nap::IGroup* currentGroup) :
+	Action("Move to Group...", QRC_ICONS_CHANGE), mObject(&resource), mCurrentGroup(currentGroup)
+{ }
+
+
+
+void napkin::MoveResourceToGroupAction::perform()
+{
+	// Get group to move to
+	auto groups = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::IGroup));
+
+	// Filter out groups that cannot hold the item of the given type,
+	// and the group that holds the item, if the item is parented.
+	auto it = groups.begin();
+	while(it != groups.end())
+	{
+		nap::IGroup* group = static_cast<nap::IGroup*>(*it);
+		if (group == mObject || group == mCurrentGroup || !mObject->get_type().is_derived_from(group->getMemberType()))
+		{
+			it = groups.erase(it);
+			continue;
+		}
+		it++;
+	}
+
+	// Let the user select the group
+	auto parent_widget = AppContext::get().getMainWindow();
+	auto selected_group = showObjectSelector(parent_widget, groups);
+
+	// Operation canceled
+	if (selected_group == nullptr)
+		return;
+
+	// Create origin path
+	PropertyPath current_path = {};
+	if (mCurrentGroup != nullptr)
+		current_path = PropertyPath(*mCurrentGroup, mCurrentGroup->getMembersProperty(), *AppContext::get().getDocument());
+
+	// Create target
+	auto target_group = rtti_cast<nap::IGroup>(selected_group);
+	PropertyPath target_path(*target_group, target_group->getMembersProperty(), *AppContext::get().getDocument());
+
+	// Move
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, current_path, target_path));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::MoveGroupAction::MoveGroupAction(nap::IGroup& group, nap::IGroup* parentGroup) :
+	Action("Move to Group...", QRC_ICONS_CHANGE), mGroup(&group), mParentGroup(parentGroup)
+{ }
+
+
+void napkin::MoveGroupAction::perform()
+{
+	// Get all groups of the same type
+	auto groups = AppContext::get().getDocument()->getObjects(mGroup->get_type());
+
+	// Moving the group to a child is not allowed
+	PropertyPath group_path(*mGroup, mGroup->getChildrenProperty(), *AppContext::get().getDocument());
+	auto sub_groups = group_path.getChildren(IterFlag::Resursive | IterFlag::FollowEmbeddedPointers);
+
+	// Filter out groups that are not eligible. 
+	// This includes child groups, itself and the current parent
+	auto it = groups.begin();
+	while (it != groups.end())
+	{
+		// Skip self and parent
+		nap::IGroup* group = static_cast<nap::IGroup*>(*it);
+		if (group == mParentGroup || group == mGroup)
+		{
+			it = groups.erase(it);
+			continue;
+		}
+
+		// Check if the group is a child of the group to move
+		PropertyPath current_path(*group, *AppContext::get().getDocument());
+		auto child_it = std::find_if(sub_groups.begin(), sub_groups.end(), [&](const PropertyPath& sub_path)
+			{
+				return nap::utility::contains(sub_path.toString(), current_path.toString());
+			});
+
+		// If so, remove as option
+		if (child_it != sub_groups.end())
+		{
+			it = groups.erase(it);
+			continue;
+		}
+
+		it++;
+	}
+
+	// Let the user select the group
+	auto parent_widget = AppContext::get().getMainWindow();
+	nap::rtti::Object* selected_group = showObjectSelector(parent_widget, groups);
+
+	// Operation canceled
+	if (selected_group == nullptr)
+		return;
+
+	// Create origin path
+	PropertyPath current_path = {};
+	if (mParentGroup != nullptr)
+		current_path = PropertyPath(*mParentGroup, mParentGroup->getChildrenProperty(), *AppContext::get().getDocument());
+
+	// Create target path
+	auto target_group = rtti_cast<nap::IGroup>(selected_group);
+	PropertyPath target_path(*target_group, target_group->getChildrenProperty(), *AppContext::get().getDocument());
+
+	// Move
+	auto new_group = rtti_cast<nap::IGroup>(selected_group);
+	AppContext::get().executeCommand(new GroupReparentCommand(*mGroup, current_path, target_path));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+AddExistingResourceToGroupAction::AddExistingResourceToGroupAction(nap::IGroup& group) :
+	Action("Add Resource...", QRC_ICONS_ADD), mGroup(&group)
+{ }
+
+
+void AddExistingResourceToGroupAction::perform()
+{
+	// We know the group, find a resource to add
+	PropertyPath members_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
+
+	// Select type to add
+	auto base_type = members_path.getArrayElementType();
+
+	// Get objects to select from
+	auto objects = topLevelObjects(AppContext::get().getDocument()->getObjectPointers());
+
+	std::vector<nap::rtti::Object*> object_selection;
+	object_selection.reserve(objects.size());
+	for (const auto& object : objects)
+	{
+		nap::rtti::TypeInfo obj_type = object->get_type();
+		if (obj_type.is_derived_from(base_type) &&
+			!obj_type.is_derived_from(RTTI_OF(nap::Entity)) &&
+			!obj_type.is_derived_from(RTTI_OF(nap::Component)) &&
+			!obj_type.is_derived_from(RTTI_OF(nap::IGroup)))
+		{
+			object_selection.emplace_back(object);
+		}
+	}
+
+	// Get object to add
+	auto parent_widget = AppContext::get().getMainWindow();
+	nap::rtti::Object* selected_object = showObjectSelector(parent_widget, object_selection);
+	if (selected_object != nullptr)
+	{
+		// Move selected object from root to group
+		AppContext::get().executeCommand(new GroupReparentCommand(*selected_object, {}, members_path));
+	}
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
+	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+	mGroup(&group), mObject(&resource)
+{ }
+
+
+void napkin::RemoveResourceFromGroupAction::perform()
+{
+	// Remove from group
+	PropertyPath members_path(*mGroup, mGroup->getMembersProperty(), *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, members_path, {}));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+napkin::RemoveGroupFromGroupAction::RemoveGroupFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
+	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+	mGroup(&group), mObject(&resource)
+{ }
+
+
+void napkin::RemoveGroupFromGroupAction::perform()
+{
+	// Remove from group
+	PropertyPath group_path(*mGroup, mGroup->getChildrenProperty(), *AppContext::get().getDocument());
+	AppContext::get().executeCommand(new GroupReparentCommand(*mObject, group_path, {}));
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+CreateEntityAction::CreateEntityAction() : Action("Create Entity", QRC_ICONS_ENTITY)
+{ }
+
 
 void CreateEntityAction::perform()
 {
 	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddChildEntityAction::AddChildEntityAction(nap::Entity& entity) : entity(&entity)
-{
-	setText("Add Child Entity...");
-}
+AddChildEntityAction::AddChildEntityAction(nap::Entity& entity) :
+	Action("Add Child Entity...", QRC_ICONS_ADD), mEntity(&entity)
+{ }
+
 
 void AddChildEntityAction::perform()
 {
@@ -344,50 +613,51 @@ void AddChildEntityAction::perform()
 	for (auto e : doc->getObjects<nap::Entity>())
 	{
 		// Omit self and entities that have self as a child
-		if (e == entity || doc->hasChild(*e, *entity, true))
+		if (e == mEntity || doc->hasChild(*e, *mEntity, true))
 			continue;
 		filteredEntities.emplace_back(e);
 	}
 
 	auto parentWidget = AppContext::get().getMainWindow();
-	auto child = dynamic_cast<nap::Entity*>(napkin::showObjectSelector(parentWidget, filteredEntities));
+	auto child = rtti_cast<nap::Entity>(napkin::showObjectSelector(parentWidget, filteredEntities));
 	if (!child)
 		return;
 
-	AppContext::get().executeCommand(new AddChildEntityCommand(*entity, *child));
+	AppContext::get().executeCommand(new AddChildEntityCommand(*mEntity, *child));
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddComponentAction::AddComponentAction(nap::Entity& entity) : entity(&entity)
-{
-	setText("Add Component...");
-}
+AddComponentAction::AddComponentAction(nap::Entity& entity) :
+	Action("Add Component...", QRC_ICONS_ADD), mEntity(&entity)
+{ }
+
 
 void AddComponentAction::perform()
 {
 	auto parent = AppContext::get().getMainWindow();
-
 	auto comptype = napkin::showTypeSelector(parent, [](auto t)
 	{
 		return t.is_derived_from(RTTI_OF(nap::Component));
 	});
 
 	if (comptype.is_valid())
-		AppContext::get().executeCommand(new AddComponentCommand(*entity, comptype));
+		AppContext::get().executeCommand(new AddComponentCommand(*mEntity, comptype));
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) : mObject(object)
-{
-    setText("Delete");
-}
+DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) :
+	Action(nap::utility::stringFormat("Delete '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DELETE),
+	mObject(object)
+{ }
+
 
 void DeleteObjectAction::perform()
 {
 	auto pointers = AppContext::get().getDocument()->getPointersTo(mObject, false, true);
-
 	if (!pointers.empty())
 	{
 		QString message = "The following properties are still pointing to this object,\n"
@@ -399,54 +669,109 @@ void DeleteObjectAction::perform()
     AppContext::get().executeCommand(new DeleteObjectCommand(mObject));
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) : entityItem(&entityItem)
+napkin::DeleteGroupAction::DeleteGroupAction(nap::IGroup& group) :
+	Action(nap::utility::stringFormat("Delete '%s'", group.mID.c_str()).c_str(), QRC_ICONS_DELETE),
+	mGroup(group)
+{ }
+
+
+static void getObjectPointers(nap::IGroup& group, QList<PropertyPath>& outPointers)
 {
-	setText("Remove");
+	// Get members
+	PropertyPath mem_property(group, group.getMembersProperty(), *AppContext::get().getDocument());
+	int mem_count = mem_property.getArrayLength();
+	for (int i = 0; i < mem_count; i++)
+	{
+		// Get links to member
+		auto array_el = mem_property.getArrayElement(i);
+		auto* member = array_el.getPointee();
+		assert(member != nullptr);
+		outPointers.append(AppContext::get().getDocument()->getPointersTo(*member, false, true));
+	}
+
+	// Do the same for every child group
+	PropertyPath chi_property(group, group.getChildrenProperty(), *AppContext::get().getDocument());
+	int chi_count = chi_property.getArrayLength();
+	for (int i = 0; i < chi_count; i++)
+	{
+		auto array_el = chi_property.getArrayElement(i);
+		auto child = rtti_cast<nap::IGroup>(array_el.getPointee());
+		assert(child != nullptr);
+		getObjectPointers(*child, outPointers);
+	}
 }
+
+
+
+void napkin::DeleteGroupAction::perform()
+{
+	QList<PropertyPath> pointers;
+	getObjectPointers(mGroup, pointers);
+	if (!pointers.empty())
+	{
+		QString message = "The following properties are still pointing to members in this group,\n"
+			"your data might end up in a broken state.\n\n"
+			"Do you want to delete anyway?";
+		if (!showPropertyListConfirmDialog(parentWidget(), pointers, "Warning", message))
+			return;
+	}
+	AppContext::get().executeCommand(new DeleteObjectCommand(mGroup));
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) :
+	Action(nap::utility::stringFormat("Remove '%s'", entityItem.getEntity()->mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+	mEntityItem(&entityItem)
+{ }
+
 
 void RemoveChildEntityAction::perform()
 {
 	// TODO: Move into Command
-	auto parentItem = dynamic_cast<EntityItem*>(entityItem->parentItem());
-
+	auto parentItem = qobject_cast<EntityItem*>(mEntityItem->parentItem());
 	auto doc = AppContext::get().getDocument();
-	auto index = parentItem->childIndex(*entityItem);
+	auto index = parentItem->childIndex(*mEntityItem);
 	assert(index >= 0);
 
 	// Grab all component paths for later instance property removal
 	QStringList componentPaths;
 	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
 	{
-		auto compItem = dynamic_cast<ComponentItem*>(item);
+		auto compItem = qobject_cast<ComponentItem*>(static_cast<RTTIItem*>(item));
 		if (compItem)
+		{
 			componentPaths << QString::fromStdString(compItem->componentPath());
-
+		}
 		return true;
-	}, entityItem->index());
+	}, mEntityItem->index());
 
 	doc->removeChildEntity(*parentItem->getEntity(), index);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemovePathAction::RemovePathAction(const PropertyPath& path)
-	: mPath(path)
-{
-	setText("Remove");
-}
+RemovePathAction::RemovePathAction(const PropertyPath& path) :
+	Action(nap::utility::stringFormat("Remove '%s'", path.getName().c_str()).c_str(), QRC_ICONS_REMOVE), mPath(path)
+{ }
+
 
 void RemovePathAction::perform()
 {
 	AppContext::get().getDocument()->remove(mPath);
 }
 
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SetThemeAction::SetThemeAction(const QString& themeName) : Action(), mTheme(themeName)
+SetThemeAction::SetThemeAction(const QString& themeName) :
+	Action(themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName.toStdString().c_str(), nullptr),
+	mTheme(themeName)
 {
-    setText(themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName);
     setCheckable(true);
 }
 
@@ -456,10 +781,8 @@ void SetThemeAction::perform()
 }
 
 
-napkin::NewServiceConfigAction::NewServiceConfigAction()
-{
-	setText("New");
-}
+napkin::NewServiceConfigAction::NewServiceConfigAction() : Action("New", QRC_ICONS_EDIT)
+{ }
 
 
 void napkin::NewServiceConfigAction::perform()
@@ -471,10 +794,8 @@ void napkin::NewServiceConfigAction::perform()
 }
 
 
-napkin::SaveServiceConfigAction::SaveServiceConfigAction()
-{
-	setText("Save");
-}
+napkin::SaveServiceConfigAction::SaveServiceConfigAction() : Action("Save", QRC_ICONS_SAVE)
+{ }
 
 
 void napkin::SaveServiceConfigAction::perform()
@@ -499,10 +820,8 @@ void napkin::SaveServiceConfigAction::perform()
 }
 
  
-napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs()
-{
-	setText("Save as...");
-}
+napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs() : Action("Save as...", QRC_ICONS_SAVE_AS)
+{ }
 
 
 void napkin::SaveServiceConfigurationAs::perform()
@@ -547,10 +866,8 @@ void napkin::SaveServiceConfigurationAs::perform()
 }
 
 
-napkin::OpenServiceConfigAction::OpenServiceConfigAction()
-{
-	setText("Open...");
-}
+napkin::OpenServiceConfigAction::OpenServiceConfigAction() : Action("Open...", QRC_ICONS_FILE)
+{ }
 
 
 void napkin::OpenServiceConfigAction::perform()
@@ -566,7 +883,7 @@ void napkin::OpenServiceConfigAction::perform()
 		ctx.getServiceConfig()->getFilename();
 
 	// Get file to open
-	QString filename = napkinutils::getOpenFilename(nullptr, "Open NAP Config File", dir, JSON_CONFIG_FILTER);
+	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Config File", dir, JSON_CONFIG_FILTER);
 	if (filename.isNull())
 		return;
 	
@@ -586,10 +903,8 @@ void napkin::OpenServiceConfigAction::perform()
 }
 
 
-napkin::SetAsDefaultServiceConfigAction::SetAsDefaultServiceConfigAction()
-{
-	setText("Set as project default");
-}
+napkin::SetAsDefaultServiceConfigAction::SetAsDefaultServiceConfigAction() : Action("Set as project default", QRC_ICONS_CHANGE)
+{ }
 
 
 void napkin::SetAsDefaultServiceConfigAction::perform()
@@ -611,16 +926,4 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 
 	// Set as default in project
 	ctx.getServiceConfig()->makeProjectDefault();
-}
-
-
-napkin::ClearServiceConfigAction::ClearServiceConfigAction()
-{
-	setText("Clear");
-}
-
-
-void napkin::ClearServiceConfigAction::perform()
-{
-		
 }

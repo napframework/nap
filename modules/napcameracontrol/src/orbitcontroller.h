@@ -38,10 +38,12 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		float		mMovementSpeed = 0.5f;		///< Property: "MovementSpeed" The speed with which to move
-		float		mRotateSpeed = 0.005f;		///< Property: "RotateSpeed" The speed with which to rotate
-		glm::vec3	mLookAtPos;					///< Property: "LookAtPosition" The world space position to look at
-		 
+		float		mMovementSpeed = 0.5f;			///< Property: "MovementSpeed" The speed with which to move
+		float		mRotateSpeed = 0.005f;			///< Property: "RotateSpeed" The speed with which to rotate
+		float		mMinZoomDistance = 0.5f;		///< Property: "MinimumZoomDistance" Limits the camera from moving too close to the lookat position, to use 'LimitZoomDistance' must be enabled
+		bool		mLimitZoomDistance = false;		///< Property: "LimitZoomDistance" Whether to limit the camera from moving past the lookat position
+		glm::vec3	mLookAtPos;						///< Property: "LookAtPosition" The world space position to look at
+
 		ComponentPtr<PerspCameraComponent>	mPerspCameraComponent;	///< Property: "PerspCameraComponent" Link to perspective camera that we are controlling
 	};
 

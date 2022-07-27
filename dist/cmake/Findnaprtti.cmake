@@ -4,14 +4,14 @@ if(NOT TARGET RTTR::Core)
     find_package(RTTR CONFIG REQUIRED Core)
 endif()
 
-# Find Python
-# Let find_python find our prepackaged Python in thirdparty
-find_python_in_thirdparty()
-set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
-find_package(pybind11 REQUIRED)
-
 # Find rapidjson
 find_package(rapidjson)
+
+# Let find_python find our prepackaged Python in thirdparty,
+# Note that this operation is allowed to fail because, by default, python support is disabled.
+find_python_in_thirdparty()
+set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
+find_package(pybind11 QUIET)
 
 if (WIN32)
     find_path(
@@ -46,6 +46,7 @@ endif()
 add_library(naprtti INTERFACE)
 target_link_libraries(naprtti INTERFACE debug ${NAPRTTI_LIBS_DEBUG} RTTR::Core)
 target_link_libraries(naprtti INTERFACE optimized ${NAPRTTI_LIBS_RELEASE} RTTR::Core)
+target_link_directories(naprtti INTERFACE ${PYTHON_LIB_DIR})
 set_target_properties(naprtti PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${NAP_ROOT}/include;${pybind11_INCLUDE_DIRS};${RAPIDJSON_INCLUDE_DIRS}")
 
 # Show headers in IDE
@@ -56,6 +57,7 @@ source_group(NAP\\RTTI FILES ${rtti_headers})
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(naprtti REQUIRED_VARS NAPRTTI_LIBS_DIR)
 
+# Package naprtti and RTTR into projects for Windows
 if (WIN32)
     # Copy over DLL post-build
     add_custom_command(
@@ -80,7 +82,9 @@ if (WIN32)
     )
 
     # Copy Python DLLs post-build on Windows
-    win64_copy_python_dlls_postbuild(FALSE)
+    if(pybind11_FOUND)
+        win64_copy_python_dlls_postbuild(FALSE)
+    endif()
 endif()
 
 # Package naprtti and RTTR into projects for macOS/Linux
@@ -110,21 +114,23 @@ if(NOT WIN32)
                       ")
     endif()   
 
-    # Package our Python dylib from thirdparty.  Doing this here instead of in mod_nappython as RTTI (and as a result Core)
+    # Package our Python dylib from thirdparty. Doing this here instead of in mod_nappython as RTTI (and as a result Core)
     # depend on Python. The Python modules however are only installed if we're using mod_nappython as they're not required 
     # for RTTI/Core.
-    file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-    install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
-
-    # Package Python license into packaged project
-    install(FILES ${THIRDPARTY_DIR}/python/LICENSE DESTINATION licenses/python/)    
+    if(pybind11_FOUND)
+        file(GLOB PYTHON_DYLIBS ${THIRDPARTY_DIR}/python/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        install(FILES ${PYTHON_DYLIBS} DESTINATION lib/)
+        install(FILES ${THIRDPARTY_DIR}/python/LICENSE DESTINATION licenses/python/)    
+    endif()
 endif()
 
 # Package RTTR license into packaged project
 install(FILES ${THIRDPARTY_DIR}/rttr/LICENSE.txt DESTINATION licenses/RTTR/)
 
 # Package pybind license into packaged project
-install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION licenses/pybind11/)
+if(pybind11_FOUND)
+    install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION licenses/pybind11/)
+endif()
 
 # Package rapidjson license into packaged project
 install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt DESTINATION licenses/rapidjson)

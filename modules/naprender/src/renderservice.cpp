@@ -101,12 +101,13 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mCompute,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -1155,7 +1156,8 @@ namespace nap
 	bool RenderService::addWindow(RenderWindow& window, utility::ErrorState& errorState)
 	{
 		// Attempt to restore cached settings
-		restoreWindow(window);
+		if (mEnableCaching)
+			restoreWindow(window);
 
 		// Add and notify listeners
 		mWindows.emplace_back(&window);
@@ -1501,6 +1503,9 @@ namespace nap
 		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
 		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
 
+		// Check if we need to cache state between sessions
+		mEnableCaching = render_config->mEnableCaching;
+
 #ifdef _WIN32
 		if (mEnableHighDPIMode)
 		{
@@ -1598,7 +1603,7 @@ namespace nap
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
 
 		// Get the required queue capabilities
-		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mCompute);
+		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mEnableCompute);
 
 		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
 		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
@@ -1909,7 +1914,7 @@ namespace nap
 		    waitDeviceIdle();
 
 		utility::ErrorState write_error;
-		if (!writeIni(getIniFilePath(), write_error))
+		if (mEnableCaching && !writeIni(getIniFilePath(), write_error))
 		{
 			write_error.fail("Unable to write: %s", getIniFilePath().c_str());
 			nap::Logger::warn(write_error.toString());
@@ -2490,10 +2495,9 @@ namespace nap
 	nap::Display::Display(int index) : mIndex(index)
 	{
 		assert(index < SDL::getDisplayCount());
-		int dr = SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
-		bool name = SDL::getDisplayName(index, mName);
-		int br = SDL::getDisplayBounds(index, mMin, mMax);
-		mValid = dr == 0 && name && br == 0;
+		SDL::getDisplayDPI(index, &mDDPI, &mHDPI, &mVDPI);
+		SDL::getDisplayName(index, mName);
+		mValid = SDL::getDisplayBounds(index, mMin, mMax) == 0;
 	}
 
 

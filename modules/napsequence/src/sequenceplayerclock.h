@@ -25,7 +25,7 @@ namespace nap
      */
     class NAPAPI SequencePlayerClock : public Resource
     {
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         // default constructor and deconstructor
         SequencePlayerClock() = default;
@@ -33,7 +33,7 @@ namespace nap
 
         // make this class explicitly non-copyable
         SequencePlayerClock(const SequencePlayerClock&) = delete;
-        SequencePlayerClock& operator =(const SequencePlayerClock&) = delete;
+        SequencePlayerClock& operator=(const SequencePlayerClock&) = delete;
 
         /**
          * Start needs to be overloaded. The update slot is the slot that needs to be called on update with a delta time
@@ -60,7 +60,7 @@ namespace nap
     {
         friend class SequenceService;
 
-        RTTI_ENABLE(SequencePlayerClock)
+    RTTI_ENABLE(SequencePlayerClock)
     public:
         /**
          * Constructor
@@ -70,7 +70,7 @@ namespace nap
 
         // make this class explicitly non-copyable
         SequencePlayerStandardClock(const SequencePlayerStandardClock&) = delete;
-        SequencePlayerStandardClock& operator =(const SequencePlayerStandardClock&) = delete;
+        SequencePlayerStandardClock& operator=(const SequencePlayerStandardClock&) = delete;
 
         /**
          * Called by sequence player upon initialization
@@ -103,7 +103,7 @@ namespace nap
      */
     class NAPAPI SequencePlayerIndependentClock : public SequencePlayerClock
     {
-        RTTI_ENABLE(SequencePlayerClock)
+    RTTI_ENABLE(SequencePlayerClock)
     public:
         /**
          * Constructor
@@ -117,7 +117,7 @@ namespace nap
 
         // make this class explicitly non-copyable
         SequencePlayerIndependentClock(const SequencePlayerIndependentClock&) = delete;
-        SequencePlayerIndependentClock& operator =(const SequencePlayerIndependentClock&) = delete;
+        SequencePlayerIndependentClock& operator=(const SequencePlayerIndependentClock&) = delete;
 
         /**
          * Initialization method

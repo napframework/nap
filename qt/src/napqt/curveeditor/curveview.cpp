@@ -139,12 +139,12 @@ void HandleItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option
 
 CurveSegmentItem& HandleItem::curveSegmentItem()
 {
-	return *dynamic_cast<CurveSegmentItem*>(parentItem());
+	return *static_cast<CurveSegmentItem*>(parentItem());
 }
 
 const CurveSegmentItem& HandleItem::curveSegmentItem() const
 {
-	return *dynamic_cast<CurveSegmentItem*>(parentItem());
+	return *static_cast<CurveSegmentItem*>(parentItem());
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -1287,7 +1287,10 @@ const QList<PointHandleItem*> CurveView::pointsFromSelection()
 	for (auto item : scene()->selectedItems())
 	{
 		// If we have a point, include and on to the next
-		auto point = dynamic_cast<PointHandleItem*>(item);
+		assert(dynamic_cast<HandleItem*>(item) != nullptr);
+		auto handle_item = static_cast<HandleItem*>(item);
+
+		auto point = qobject_cast<PointHandleItem*>(handle_item);
 		if (point && !points.contains(point))
 		{
 			points << point;
@@ -1295,7 +1298,7 @@ const QList<PointHandleItem*> CurveView::pointsFromSelection()
 		}
 
 		// No point, get point from selected tangent
-		auto tan = dynamic_cast<TangentHandleItem*>(item);
+		auto tan = qobject_cast<TangentHandleItem*>(handle_item);
 		if (tan)
 		{
 			auto pt = &tan->pointHandle();

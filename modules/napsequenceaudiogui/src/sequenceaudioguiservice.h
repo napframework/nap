@@ -17,7 +17,7 @@ namespace nap
      */
     class NAPAPI SequenceAudioGUIService final : public Service
     {
-        RTTI_ENABLE(Service)
+    RTTI_ENABLE(Service)
     public:
         /**
          * Colors palette used by all sequencer audio gui
@@ -55,8 +55,6 @@ namespace nap
         {
             return mColors;
         }
-
-
     protected:
         /**
          * registers all objects that need a specific way of construction

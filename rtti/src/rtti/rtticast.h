@@ -12,12 +12,10 @@
 template<typename T, typename Arg>
 T* rtti_cast(Arg object) 
 {
-    if (!object)
-        return nullptr;
-    if (object->get_type().template is_derived_from<T>())
-        return reinterpret_cast<T*>(object);
-    return nullptr;
+	return object && object->get_type().template is_derived_from<T>() ?
+		reinterpret_cast<T*>(object) : nullptr;
 };
+
 
 /**
  * Cast a unique ptr to another unique ptr when the given pointer is derived from 'Derived'.

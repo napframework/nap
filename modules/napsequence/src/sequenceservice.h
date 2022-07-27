@@ -24,7 +24,7 @@ namespace nap
     class SequencePlayerStandardClock;
 
     // shortcuts
-    using SequenceControllerFactoryFunc = std::function<std::unique_ptr<SequenceController>(SequencePlayer & , SequenceEditor & )>;
+    using SequenceControllerFactoryFunc = std::function<std::unique_ptr<SequenceController>(SequencePlayer&, SequenceEditor &)>;
     using SequenceControllerFactoryMap = std::unordered_map<rtti::TypeInfo, SequenceControllerFactoryFunc>;
     using DefaultSequenceTrackFactoryMap = std::unordered_map<rtti::TypeInfo, std::function<std::unique_ptr<SequenceTrack>(const SequencePlayerOutput*)>>;
     using SequencePlayerAdapterFactoryFunc = std::function<std::unique_ptr<SequencePlayerAdapter>(const SequenceTrack&,
@@ -43,12 +43,12 @@ namespace nap
     {
         friend class SequencePlayerOutput;
 
-        RTTI_ENABLE(Service)
+    RTTI_ENABLE(Service)
     public:
         /**
          * Constructor
          */
-        SequenceService(ServiceConfiguration* configuration);
+        SequenceService(ServiceConfiguration *configuration);
 
         /**
          * Deconstructor
@@ -72,7 +72,7 @@ namespace nap
          * @param outputs a list of player outputs
          * @return a raw pointer to the newly created sequence, ownership of sequence is stored as a unique pointer in createdObjects
          */
-        Sequence* createDefaultSequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
+        Sequence *createDefaultSequence(std::vector<std::unique_ptr<rtti::Object>>& createdObjects,
                                         std::unordered_set<std::string>& objectIDs,
                                         const std::vector<ResourcePtr<SequencePlayerOutput>>& outputs);
 

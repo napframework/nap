@@ -227,13 +227,20 @@ namespace nap
 	}
 
 
-	void destroyImageAndView(const ImageData& data, VkDevice device, VmaAllocator allocator)
+	void destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
-		if (data.mTextureView != VK_NULL_HANDLE)
-			vkDestroyImageView(device, data.mTextureView, nullptr);
+		if (data.mView != VK_NULL_HANDLE)
+		{
+			vkDestroyImageView(device, data.mView, nullptr);
+			data.mView = VK_NULL_HANDLE;
+		}
 
-		if (data.mTextureImage != VK_NULL_HANDLE)
-			vmaDestroyImage(allocator, data.mTextureImage, data.mTextureAllocation);
+		if (data.mImage != VK_NULL_HANDLE)
+		{
+			vmaDestroyImage(allocator, data.mImage, data.mAllocation);
+			data.mImage = VK_NULL_HANDLE;
+			data.mAllocation = VK_NULL_HANDLE;
+		}
 	}
 
 
@@ -274,10 +281,13 @@ namespace nap
 	}
 
 
-	void destroyBuffer(VmaAllocator allocator, const BufferData& buffer)
+	void destroyBuffer(VmaAllocator allocator, BufferData& buffer)
 	{
-		if(buffer.mBuffer != VK_NULL_HANDLE)
+		if (buffer.mBuffer != VK_NULL_HANDLE)
+		{
 			vmaDestroyBuffer(allocator, buffer.mBuffer, buffer.mAllocation);
+			buffer.mBuffer = VK_NULL_HANDLE;
+		}
 	}
 
 
@@ -295,7 +305,15 @@ namespace nap
 
 	void nap::BufferData::release()
 	{
-		mAllocation = VK_NULL_HANDLE;
 		mBuffer = VK_NULL_HANDLE;
+		mAllocation = VK_NULL_HANDLE;
+	}
+
+
+	void nap::ImageData::release()
+	{
+		mView = VK_NULL_HANDLE;
+		mImage = VK_NULL_HANDLE;
+		mAllocation = VK_NULL_HANDLE;
 	}
 }

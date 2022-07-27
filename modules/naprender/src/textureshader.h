@@ -12,7 +12,7 @@ namespace nap
 	// Video shader sampler names 
 	namespace uniform
 	{
-		namespace constant
+		namespace texture
 		{	
 			namespace sampler
 			{

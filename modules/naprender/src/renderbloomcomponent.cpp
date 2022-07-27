@@ -216,22 +216,22 @@ namespace nap
 		mViewMatrixUniform = ensureUniform(uniform::viewMatrix, *mMVPStruct, view_error);
 
 		// Get UBO struct
-		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::uboStruct);
-		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to find uniform UBO struct: %s in material: %s", this->mID.c_str(), uniform::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
+		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::blur::uboStruct);
+		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to find uniform UBO struct: %s in material: %s", this->mID.c_str(), uniform::blur::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
 		// Get direction uniform
-		mDirectionUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::direction);
+		mDirectionUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::blur::direction);
 		if (!errorState.check(mDirectionUniform != nullptr, "Missing uniform vec2 'direction' in uniform UBO"))
 			return false;
 
 		// Get texture size uniform
-		mTextureSizeUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::textureSize);
+		mTextureSizeUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::blur::textureSize);
 		if (!errorState.check(mDirectionUniform != nullptr, "Missing uniform vec2 'direction' in uniform UBO"))
 			return false;
 
 		// Get color texture sampler
-		mColorTextureSampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::sampler::colorTexture);
+		mColorTextureSampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>(uniform::blur::sampler::colorTexture);
 		if (!errorState.check(mColorTextureSampler != nullptr, "Missing uniform sampler2D 'colorTexture'"))
 			return false;
 
@@ -341,10 +341,10 @@ namespace nap
 	void RenderBloomComponentInstance::blit(VkCommandBuffer commandBuffer, nap::Texture2D& srcTexture, nap::Texture2D& dstTexture)
 	{
 		// Transition to transfer src
-		VkImageLayout src_tex_layout = srcTexture.mImageData.mCurrentLayout;
+		VkImageLayout src_tex_layout = srcTexture.getHandle().getLayout();
 		if (src_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
 		{
-			transitionImageLayout(commandBuffer, srcTexture.mImageData.mTextureImage,
+			transitionImageLayout(commandBuffer, srcTexture.getHandle().getImage(),
 				src_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -352,10 +352,10 @@ namespace nap
 		}
 
 		// Transition to transfer dst
-		VkImageLayout dst_tex_layout = dstTexture.mImageData.mCurrentLayout;
+		VkImageLayout dst_tex_layout = dstTexture.getHandle().getLayout();
 		if (dst_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
 		{
-			transitionImageLayout(commandBuffer, dstTexture.mImageData.mTextureImage,
+			transitionImageLayout(commandBuffer, dstTexture.getHandle().getImage(),
 				dst_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
 				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -380,19 +380,19 @@ namespace nap
 
 		// Blit to output
 		vkCmdBlitImage(commandBuffer,
-			srcTexture.mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			dstTexture.mImageData.mTextureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			srcTexture.getHandle().getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+			dstTexture.getHandle().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			1, &blit, VK_FILTER_LINEAR);
 
 		// Transition to shader read
-		transitionImageLayout(commandBuffer, srcTexture.mImageData.mTextureImage,
+		transitionImageLayout(commandBuffer, srcTexture.getHandle().getImage(),
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0, 1);
 
 		// Transition to shader read
-		transitionImageLayout(commandBuffer, dstTexture.mImageData.mTextureImage,
+		transitionImageLayout(commandBuffer, dstTexture.getHandle().getImage(),
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,

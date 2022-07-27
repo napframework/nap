@@ -21,7 +21,7 @@ namespace nap
      */
     class NAPAPI Sequence : public Resource
     {
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         std::vector<ResourcePtr<SequenceTrack>> mTracks; ///< Property: 'Sequence Tracks' Vector holding resourceptrs to the SequenceTracks
         std::vector<ResourcePtr<SequenceMarker>> mMarkers; ///< Property: 'Sequence Markers' Vector holding resourceptrs to the SequenceMarkers

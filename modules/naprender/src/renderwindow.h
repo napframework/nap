@@ -137,6 +137,11 @@ namespace nap
 		const std::string& getTitle() const										{ return mTitle; }
 
 		/**
+		 *	Sets the window title
+		 */
+		void setTitle(std::string newTitle);
+
+		/**
 		 *	@return if the window is resizable
 		 */
 		bool isResizable() const												{ return mResizable; }
@@ -294,6 +299,8 @@ namespace nap
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
+		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
+		VkExtent2D						mSwapchainExtent = {0,0};
 
 		/**
 		 * Called by the render service. 
@@ -315,6 +322,11 @@ namespace nap
 		void handleEvent(const Event& event);
 
 		/**
+		 * Obtain the surface properties that are required for the creation of the swap chain 
+		 */
+		bool getSurfaceCapabilities(utility::ErrorState& error);
+
+		/**
 		 * Destroys currently active swapchain and creates a new one based on the current window size and settings.
 		 * @param errorState contains the error if creation fails
 		 * @return if the swapchain has been recreated.
@@ -332,5 +344,10 @@ namespace nap
 		 * Destroys all Vulkan swapchain related resources.
 		 */
 		void destroySwapChainResources();
+
+		/**
+		 * @return if the swapchain extent is higher than zero in both axis
+		 */
+		bool validSwapchainExtent() const;
 	};
 }

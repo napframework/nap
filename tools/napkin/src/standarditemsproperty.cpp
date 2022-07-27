@@ -14,10 +14,19 @@
 #include <color.h>
 #include <mathutils.h>
 
+RTTI_DEFINE_BASE(napkin::PropertyPathItem)
+RTTI_DEFINE_BASE(napkin::PropertyItem)
+RTTI_DEFINE_BASE(napkin::CompoundPropertyItem)
+RTTI_DEFINE_BASE(napkin::ArrayPropertyItem)
+RTTI_DEFINE_BASE(napkin::PointerItem)
+RTTI_DEFINE_BASE(napkin::PointerValueItem)
+RTTI_DEFINE_BASE(napkin::ColorValueItem)
+RTTI_DEFINE_BASE(napkin::EmbeddedPointerItem)
+RTTI_DEFINE_BASE(napkin::PropertyValueItem)
+
 QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 {
 	QList<QStandardItem*> items;
-
 	auto type = path.getType();
 
 	if (path.isArray())
@@ -68,10 +77,9 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 	return items;
 }
 
-napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path)
-	: QStandardItem(QString::fromStdString(path.getName())), mPath(path)
+napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(path)
 {
-
+	setText(QString::fromStdString(path.getName()));
 }
 
 QVariant napkin::PropertyPathItem::data(int role) const
@@ -79,9 +87,9 @@ QVariant napkin::PropertyPathItem::data(int role) const
 	if (role == Qt::DisplayRole)
 	{
 		// If the parent is an array, display the index of this item
-		if (auto parentPath = dynamic_cast<PropertyPathItem*>(parent()))
+		auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
+		if (parent_path != nullptr && parent_path->getPath().isArray())
 		{
-			if (parentPath->getPath().isArray())
 				return row();
 		}
 	}

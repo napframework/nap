@@ -60,8 +60,10 @@ def package(zip_release,
             archive_source, 
             archive_source_zipped,
             archive_source_only,
-            overwrite):
-    
+            overwrite,
+            additional_dirs,
+            enable_python):
+
     """Package a NAP platform release - main entry point"""
     nap_root = get_nap_root()
     os.chdir(nap_root)
@@ -105,6 +107,9 @@ def package(zip_release,
         if clean:
             clean_the_build()
 
+        # Convert additional sub directories to CMAKE list type
+        sub_dirs = ';'.join(additional_dirs)
+
         # Do the packaging
         if platform.startswith('linux'):    
             package_path = package_for_linux(package_basename, 
@@ -117,7 +122,9 @@ def package(zip_release,
                                              include_docs, 
                                              zip_release, 
                                              include_debug_symbols,
-                                             build_projects
+                                             build_projects,
+                                             sub_dirs,
+                                             enable_python
                                              )
         elif platform == 'darwin':
             package_path = package_for_macos(package_basename, 
@@ -130,7 +137,9 @@ def package(zip_release,
                                              include_docs, 
                                              zip_release, 
                                              include_debug_symbols,
-                                             build_projects
+                                             build_projects,
+                                             sub_dirs,
+                                             enable_python
                                              )
         else:
             package_path = package_for_win64(package_basename, 
@@ -143,7 +152,9 @@ def package(zip_release,
                                              include_docs, 
                                              zip_release, 
                                              include_debug_symbols,
-                                             build_projects
+                                             build_projects,
+                                             sub_dirs,
+                                             enable_python
                                              )
 
     # Archive source
@@ -206,7 +217,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             sys.exit(ERROR_PACKAGE_EXISTS)
 
 
-def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
+def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects, additional_dirs, enable_python):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -222,7 +233,9 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
                            '-DBUILD_GIT_REVISION=%s' % git_revision,
                            '-DBUILD_LABEL=%s' % build_label,
                            '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                           '-DBUILD_PROJECTS=%s' % int(build_projects)
+                           '-DBUILD_PROJECTS=%s' % int(build_projects),
+                           '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
+                           '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                            ])
 
         d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
@@ -242,7 +255,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
+def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects, additional_dirs, enable_python):
     """Package NAP platform release for macOS"""
 
     # Generate project
@@ -257,7 +270,9 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DBUILD_PROJECTS=%s' % int(build_projects)
+                       '-DBUILD_PROJECTS=%s' % int(build_projects),
+                       '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
+                       '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                        ])
 
     # Build & install to packaging dir
@@ -282,7 +297,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects):
+def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects, additional_dirs, enable_python):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -295,14 +310,15 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
                        '-B%s' % BUILD_DIR, 
                        '-G', 'Visual Studio 16 2019',
                        '-DNAP_PACKAGED_BUILD=1',
-                       '-DPYBIND11_PYTHON_VERSION=3.5',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DBUILD_PROJECTS=%s' % int(build_projects)
+                       '-DBUILD_PROJECTS=%s' % int(build_projects),
+                       '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
+                       '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                        ])
 
     # Build & install to packaging dir
@@ -672,11 +688,13 @@ if __name__ == '__main__':
     core_group.add_argument("-ds", "--include-debug-symbols", action="store_true",
                         help="Include debug symbols")
     core_group.add_argument("-o", "--overwrite", action="store_true",
-                    help="Overwrite any existing framework or source package")
+                        help="Overwrite any existing framework or source package")
     core_group.add_argument("-c", "--clean", action="store_true",
                         help="Clean build")
     core_group.add_argument("--build-projects", action="store_true",
-                        help="Build projects while packaging (does not include in package)")
+                        help="Build projects while packaging (not included in package)")
+    core_group.add_argument('-p', '--enable-python', action="store_true", 
+                       help="Enable python integration using pybind (deprecated)")
 
     source_archive_group = parser.add_argument_group('Source Archiving')
     source_archive_group.add_argument("-as", "--archive-source", action="store_true",
@@ -686,10 +704,12 @@ if __name__ == '__main__':
     source_archive_group.add_argument("-aso", "--source-archive-only", action="store_true",
                         help="Only create a source archive")        
 
-    naivi_apps_group = parser.add_argument_group('Applications')
-    naivi_apps_group.add_argument("-a", "--include-apps", action="store_true",
+    nap_apps_group = parser.add_argument_group('Applications')
+    nap_apps_group.add_argument("-d", "--additional_dirs", nargs='+', type=str, default=[], 
+                        help="List of additional sub directories to add to the build")
+    nap_apps_group.add_argument("-a", "--include-apps", action="store_true",
                         help="Include apps, packaging them as projects")
-    naivi_apps_group.add_argument("-sna", "--include-single-app",
+    nap_apps_group.add_argument("-sna", "--include-single-app",
                         type=str,
                         help="A single app to include, packaged as project. Conflicts with --include-apps.")
 
@@ -723,6 +743,7 @@ if __name__ == '__main__':
                                      or args.include_apps
                                      or args.include_debug_symbols
                                      or args.build_projects
+                                     or args.additional_dirs
                                      ):
         print("Error: You have specified options that don't make sense if only creating a source archive")
         sys.exit(ERROR_BAD_INPUT)
@@ -741,4 +762,6 @@ if __name__ == '__main__':
             args.archive_source or args.source_archive_only, 
             args.source_archive_zipped,
             args.source_archive_only,            
-            args.overwrite)
+            args.overwrite,
+            args.additional_dirs,
+            args.enable_python)

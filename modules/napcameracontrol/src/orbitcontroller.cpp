@@ -21,6 +21,8 @@ RTTI_BEGIN_CLASS(nap::OrbitController)
 	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LookAtPosition",			&nap::OrbitController::mLookAtPos,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("MinimumZoomDistance",	&nap::OrbitController::mMinZoomDistance,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LimitZoomDistance",		&nap::OrbitController::mLimitZoomDistance,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbitControllerInstance)
@@ -66,7 +68,7 @@ namespace nap
 		// Construct a lookat matrix. Note that if this is currently called when facing up or downward, the
 		// camera may flip around the y axis. Currently this is only called when starting orbit so it isn't
 		// much of a problem, but if it is, we need to find another way of constructing a lookat camera.
-		glm::vec3 up(0.0f, 1.0f, 0.0f);
+		glm::vec3 up{ 0.0f, 1.0f, 0.0f };
 		glm::mat4 rotation = glm::lookAt(cameraPos, lookAtPos, up);
 		rotation = glm::inverse(rotation);
 		mTransformComponent->setRotate(rotation);
@@ -77,7 +79,7 @@ namespace nap
 
 	void OrbitControllerInstance::enable(const glm::vec3& lookAtPos)
 	{
-		glm::vec3 translate = mTransformComponent->getLocalTransform()[3];
+		const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
 		enable(translate, lookAtPos);
 	}
 
@@ -115,17 +117,18 @@ namespace nap
 		if (!mEnabled)
 			return;
 
+		auto* resource = getComponent<OrbitController>();
 		if (mMode == EMode::Rotating)
 		{
 			// We are using the relative movement of the mouse to update the camera
-			float yaw = -(pointerMoveEvent.mRelX)  * getComponent<OrbitController>()->mRotateSpeed;
-			float pitch = pointerMoveEvent.mRelY * getComponent<OrbitController>()->mRotateSpeed;
+			float yaw = -(pointerMoveEvent.mRelX)  * resource->mRotateSpeed;
+			float pitch = pointerMoveEvent.mRelY * resource->mRotateSpeed;
 
 			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
 			// we rotate around the y axis (yaw).
-			glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3(0.0f, 1.0f, 0.0f));
-			glm::vec4 right = mTransformComponent->getLocalTransform()[0];
-			glm::mat4 pitch_rotation = glm::rotate(pitch, glm::vec3(right.x, right.y, right.z));
+			glm::mat4 yaw_rotation = glm::rotate(yaw, glm::vec3{ 0.0f, 1.0f, 0.0f });
+			const glm::vec3& right = mTransformComponent->getLocalTransform()[0];
+			glm::mat4 pitch_rotation = glm::rotate(pitch, right);
 
 			// To rotate around the target point, we take the current transform, then bring it into local target space (only translation), then first rotate pitch,
 			// then rotate yaw, and then bring it back to worldspace.
@@ -152,14 +155,33 @@ namespace nap
 			const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
 			const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
 
-			mTransformComponent->setTranslate(translate - direction * distance);
+			glm::vec3 new_translate = translate - direction * distance;
+
+			// Limit the zoom distance
+			if (resource->mLimitZoomDistance)
+			{
+				// Evaluate the change in translation
+				const glm::vec3 lookdir_prevframe = glm::normalize(mLookAtPos - translate);
+				const glm::vec3 lookdir_curframe = glm::normalize(mLookAtPos - new_translate);
+
+				// Ensure the look direction does not flip
+				if (glm::dot(lookdir_prevframe, lookdir_curframe) < 0.0f)
+					return;
+
+				// Ensure the distance to the target does not exceed the specified minimum
+				if (glm::length(mLookAtPos - new_translate) < resource->mMinZoomDistance)
+					new_translate = -lookdir_prevframe * resource->mMinZoomDistance;
+			}
+
+			mTransformComponent->setTranslate(new_translate);
 		}
 	}
 
 
 	void OrbitController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.push_back(RTTI_OF(TransformComponent));
-		components.push_back(RTTI_OF(KeyInputComponent));
+		components.emplace_back(RTTI_OF(TransformComponent));
+		components.emplace_back(RTTI_OF(KeyInputComponent));
+		components.emplace_back(RTTI_OF(PointerInputComponent));
 	}
 }

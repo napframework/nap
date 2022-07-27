@@ -10,7 +10,6 @@
                     "Visible": true,
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
-                        "Material": "BackgroundMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -27,6 +26,8 @@
                                 "Texture": "VideoColorTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "BackgroundMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "ReadOnly"
                     },
@@ -88,7 +89,6 @@
                     "Visible": true,
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
-                        "Material": "DisplacementMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -118,6 +118,8 @@
                                 "Texture": "VideoColorTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "DisplacementMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -274,7 +276,9 @@
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    }
+                    },
+                    "MinimumZoomDistance": 0.5,
+                    "LimitZoomDistance": false
                 }
             ],
             "Children": []
@@ -305,7 +309,6 @@
                     "Visible": true,
                     "OutputTexture": "OutputTexture",
                     "MaterialInstance": {
-                        "Material": "FXMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -336,6 +339,8 @@
                                 "Texture": "VideoColorTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "FXMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "NoReadWrite"
                     },
@@ -347,7 +352,9 @@
                             0,
                             255
                         ]
-                    }
+                    },
+                    "SampleShading": true,
+                    "PreserveAspect": false
                 },
                 {
                     "Type": "nap::RenderVideoComponent",
@@ -367,134 +374,6 @@
                 }
             ],
             "Children": []
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "BackgroundMaterial",
-            "Uniforms": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "nap::Sampler2D",
-                    "Name": "videoTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "VideoColorTexture"
-                }
-            ],
-            "Shader": "BackgroundShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "DisplacementMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct_2",
-                    "Name": "DisplacementUBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_1234",
-                            "Name": "value",
-                            "Value": 0.30000001192092898
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_123",
-                            "Name": "randomness",
-                            "Value": 0.05000000074505806
-                        }
-                    ]
-                },
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct_3",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformStruct",
-                            "mID": "UniformStruct_af2d9fe4",
-                            "Name": "light",
-                            "Uniforms": [
-                                {
-                                    "Type": "nap::UniformVec3",
-                                    "mID": "UniformVec3_de59dce3",
-                                    "Name": "mPosition",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 3.0,
-                                        "z": 5.0
-                                    }
-                                },
-                                {
-                                    "Type": "nap::UniformFloat",
-                                    "mID": "UniformVec3_dfee004c",
-                                    "Name": "mIntensity",
-                                    "Value": 1.0
-                                }
-                            ]
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Shader": "DisplacementShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                },
-                {
-                    "MeshAttributeID": "UVCenter",
-                    "ShaderAttributeID": "in_CenterUV"
-                },
-                {
-                    "MeshAttributeID": "DisplacementDirection",
-                    "ShaderAttributeID": "in_DisplacementDirection"
-                },
-                {
-                    "MeshAttributeID": "Color0",
-                    "ShaderAttributeID": "in_Color"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "FXMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Shader": "FXShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::PlaneMesh",
@@ -522,42 +401,6 @@
             "Columns": 1
         },
         {
-            "Type": "nap::RenderTexture2D",
-            "mID": "OutputTexture",
-            "Usage": "Static",
-            "Fill": false,
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "RGBA8",
-            "ColorSpace": "Linear",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        {
-            "Type": "nap::RenderTexture2D",
-            "mID": "VideoColorTexture",
-            "Usage": "Static",
-            "Fill": false,
-            "Width": 1920,
-            "Height": 1080,
-            "Format": "RGBA8",
-            "ColorSpace": "Linear",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    0.0
-                ]
-            }
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,
@@ -578,6 +421,251 @@
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Rendering",
+            "Members": [],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Meshes",
+                    "Members": [
+                        {
+                            "Type": "nap::VideoMeshFromFile",
+                            "mID": "IsocahedronMesh",
+                            "Path": "isocahedron.mesh"
+                        },
+                        {
+                            "Type": "nap::VideoMeshFromFile",
+                            "mID": "OctahedronMesh",
+                            "Path": "octahedron.mesh"
+                        },
+                        {
+                            "Type": "nap::VideoMeshFromFile",
+                            "mID": "SphereMesh",
+                            "Path": "sphere.mesh"
+                        },
+                        {
+                            "Type": "nap::VideoMeshFromFile",
+                            "mID": "CubeMesh",
+                            "Path": "cube.mesh"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Background",
+                    "Members": [
+                        {
+                            "Type": "nap::Material",
+                            "mID": "BackgroundMaterial",
+                            "Uniforms": [],
+                            "Samplers": [
+                                {
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "nap::Sampler2D",
+                                    "Name": "videoTexture",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MaxLodLevel": 1000,
+                                    "AnisotropicSamples": "Default",
+                                    "Texture": "VideoColorTexture"
+                                }
+                            ],
+                            "Buffers": [],
+                            "Shader": "BackgroundShader",
+                            "VertexAttributeBindings": [
+                                {
+                                    "MeshAttributeID": "Position",
+                                    "ShaderAttributeID": "in_Position"
+                                },
+                                {
+                                    "MeshAttributeID": "UV0",
+                                    "ShaderAttributeID": "in_UV0"
+                                }
+                            ],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "BackgroundShader",
+                            "VertShader": "shaders/videomodulation/background.vert",
+                            "FragShader": "shaders/videomodulation/background.frag"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "FX",
+                    "Members": [
+                        {
+                            "Type": "nap::Material",
+                            "mID": "FXMaterial",
+                            "Uniforms": [],
+                            "Samplers": [],
+                            "Buffers": [],
+                            "Shader": "FXShader",
+                            "VertexAttributeBindings": [],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "FXShader",
+                            "VertShader": "shaders/videomodulation/fxshader.vert",
+                            "FragShader": "shaders/videomodulation/fxshader.frag"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Displacement",
+                    "Members": [
+                        {
+                            "Type": "nap::Material",
+                            "mID": "DisplacementMaterial",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "nap::UniformStruct_2",
+                                    "Name": "DisplacementUBO",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformFloat",
+                                            "mID": "UniformFloat_1234",
+                                            "Name": "value",
+                                            "Value": 0.30000001192092898
+                                        },
+                                        {
+                                            "Type": "nap::UniformFloat",
+                                            "mID": "UniformFloat_123",
+                                            "Name": "randomness",
+                                            "Value": 0.05000000074505806
+                                        }
+                                    ]
+                                },
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "nap::UniformStruct_3",
+                                    "Name": "UBO",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformStruct",
+                                            "mID": "UniformStruct_af2d9fe4",
+                                            "Name": "light",
+                                            "Uniforms": [
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "UniformVec3_de59dce3",
+                                                    "Name": "mPosition",
+                                                    "Value": {
+                                                        "x": 0.0,
+                                                        "y": 3.0,
+                                                        "z": 5.0
+                                                    }
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "UniformVec3_dfee004c",
+                                                    "Name": "mIntensity",
+                                                    "Value": 1.0
+                                                }
+                                            ]
+                                        }
+                                    ]
+                                }
+                            ],
+                            "Samplers": [],
+                            "Buffers": [],
+                            "Shader": "DisplacementShader",
+                            "VertexAttributeBindings": [
+                                {
+                                    "MeshAttributeID": "Position",
+                                    "ShaderAttributeID": "in_Position"
+                                },
+                                {
+                                    "MeshAttributeID": "UV0",
+                                    "ShaderAttributeID": "in_UV0"
+                                },
+                                {
+                                    "MeshAttributeID": "Normal",
+                                    "ShaderAttributeID": "in_Normal"
+                                },
+                                {
+                                    "MeshAttributeID": "UVCenter",
+                                    "ShaderAttributeID": "in_CenterUV"
+                                },
+                                {
+                                    "MeshAttributeID": "DisplacementDirection",
+                                    "ShaderAttributeID": "in_DisplacementDirection"
+                                },
+                                {
+                                    "MeshAttributeID": "Color0",
+                                    "ShaderAttributeID": "in_Color"
+                                }
+                            ],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "DisplacementShader",
+                            "VertShader": "shaders/videomodulation/displacement.vert",
+                            "FragShader": "shaders/videomodulation/displacement.frag"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Targets",
+                    "Members": [
+                        {
+                            "Type": "nap::RenderTexture2D",
+                            "mID": "VideoColorTexture",
+                            "Usage": "Static",
+                            "Width": 1920,
+                            "Height": 1080,
+                            "Format": "RGBA8",
+                            "ColorSpace": "Linear",
+                            "ClearColor": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::RenderTexture2D",
+                            "mID": "OutputTexture",
+                            "Usage": "Static",
+                            "Width": 1920,
+                            "Height": 1080,
+                            "Format": "RGBA8",
+                            "ColorSpace": "Linear",
+                            "ClearColor": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            }
+                        }
+                    ],
+                    "Children": []
+                }
+            ]
         },
         {
             "Type": "nap::Scene",
@@ -604,44 +692,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "BackgroundShader",
-            "VertShader": "shaders/videomodulation/background.vert",
-            "FragShader": "shaders/videomodulation/background.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "DisplacementShader",
-            "VertShader": "shaders/videomodulation/displacement.vert",
-            "FragShader": "shaders/videomodulation/displacement.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "FXShader",
-            "VertShader": "shaders/videomodulation/fxshader.vert",
-            "FragShader": "shaders/videomodulation/fxshader.frag"
-        },
-        {
-            "Type": "nap::VideoMeshFromFile",
-            "mID": "CubeMesh",
-            "Path": "cube.mesh"
-        },
-        {
-            "Type": "nap::VideoMeshFromFile",
-            "mID": "IsocahedronMesh",
-            "Path": "isocahedron.mesh"
-        },
-        {
-            "Type": "nap::VideoMeshFromFile",
-            "mID": "OctahedronMesh",
-            "Path": "octahedron.mesh"
-        },
-        {
-            "Type": "nap::VideoMeshFromFile",
-            "mID": "SphereMesh",
-            "Path": "sphere.mesh"
         },
         {
             "Type": "nap::VideoPlayer",

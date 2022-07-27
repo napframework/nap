@@ -22,7 +22,7 @@ namespace nap
      */
     class NAPAPI SequenceTrackEvent : public SequenceTrack
     {
-        RTTI_ENABLE(SequenceTrack)
+    RTTI_ENABLE(SequenceTrack)
     public:
         virtual ~SequenceTrackEvent()
         {

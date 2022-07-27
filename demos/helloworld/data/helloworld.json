@@ -103,7 +103,9 @@
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    }
+                    },
+                    "MinimumZoomDistance": 0.5,
+                    "LimitZoomDistance": false
                 }
             ],
             "Children": []
@@ -169,9 +171,10 @@
                     "Visible": true,
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
-                        "Material": "WorldMaterial",
                         "Uniforms": [],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "WorldMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -234,50 +237,6 @@
             "Font": "fonts/Manrope-Light.otf"
         },
         {
-            "Type": "nap::ImageFromFile",
-            "mID": "WorldTexture",
-            "Usage": "Static",
-            "ImagePath": "world_texture.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "WorldMaterial",
-            "Uniforms": [],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "world_input_tex_uniform",
-                    "Name": "inWorldTexture",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToEdge",
-                    "AddressModeHorizontal": "ClampToEdge",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "Texture": "WorldTexture"
-                }
-            ],
-            "Shader": "WorldShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Window0",
             "Borderless": false,
@@ -300,6 +259,90 @@
             "AdditionalSwapImages": 1
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "Rendering",
+            "Members": [
+                {
+                    "Type": "nap::ShaderFromFile",
+                    "mID": "WorldShader",
+                    "VertShader": "shaders/helloworld/world.vert",
+                    "FragShader": "shaders/helloworld/world.frag"
+                },
+                {
+                    "Type": "nap::SphereMesh",
+                    "mID": "WorldMesh",
+                    "Usage": "Static",
+                    "CullMode": "None",
+                    "PolygonMode": "Fill",
+                    "Radius": 1.0,
+                    "Rings": 50.0,
+                    "Sectors": 50.0,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "WorldMaterial",
+                    "Uniforms": [],
+                    "Samplers": [
+                        {
+                            "Type": "nap::Sampler2D",
+                            "mID": "world_input_tex_uniform",
+                            "Name": "inWorldTexture",
+                            "MinFilter": "Linear",
+                            "MaxFilter": "Linear",
+                            "MipMapMode": "Linear",
+                            "AddressModeVertical": "ClampToEdge",
+                            "AddressModeHorizontal": "ClampToEdge",
+                            "MaxLodLevel": 1000,
+                            "AnisotropicSamples": "Default",
+                            "Texture": "WorldTexture"
+                        }
+                    ],
+                    "Buffers": [],
+                    "Shader": "WorldShader",
+                    "VertexAttributeBindings": [
+                        {
+                            "MeshAttributeID": "Position",
+                            "ShaderAttributeID": "in_Position"
+                        },
+                        {
+                            "MeshAttributeID": "UV0",
+                            "ShaderAttributeID": "in_UV0"
+                        },
+                        {
+                            "MeshAttributeID": "Normal",
+                            "ShaderAttributeID": "in_Normal"
+                        }
+                    ],
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                }
+            ],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Textures",
+                    "Members": [
+                        {
+                            "Type": "nap::ImageFromFile",
+                            "mID": "WorldTexture",
+                            "Usage": "Static",
+                            "ImagePath": "world_texture.png",
+                            "GenerateLods": true
+                        }
+                    ],
+                    "Children": []
+                }
+            ]
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
@@ -320,30 +363,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "WorldShader",
-            "VertShader": "shaders/helloworld/world.vert",
-            "FragShader": "shaders/helloworld/world.frag"
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "WorldMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Fill",
-            "Radius": 1.0,
-            "Rings": 50.0,
-            "Sectors": 50.0,
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
         }
     ]
 }

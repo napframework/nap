@@ -57,12 +57,15 @@ namespace nap
 
 	CameraComponentInstance& CameraControllerInstance::getCameraComponent()
 	{
-		if (mMode == ECameraMode::FirstPerson)
+		switch (mMode)
+		{
+		case ECameraMode::FirstPerson:
 			return mFirstPersonComponent->getCameraComponent();
-		else if (mMode == ECameraMode::Orbit)
+		case ECameraMode::Orbit:
 			return mFirstPersonComponent->getCameraComponent();
-		else
+		default:
 			return mOrthoComponent->getCameraComponent();
+		}
 	}
 
 
@@ -83,81 +86,86 @@ namespace nap
 	 */
 	void CameraControllerInstance::switchMode(ECameraMode targetMode)
 	{
-		if (targetMode == ECameraMode::FirstPerson)
+		switch (targetMode)
 		{
-			// If we're switching back from orthographic camera, enable controller while resetting position to last know position
-			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
-				mFirstPersonComponent->enable(mLastPerspPos, mLastPerspRotate);
-			else
-				mFirstPersonComponent->enable();
-
-			mOrbitComponent->disable();
-			mOrthoComponent->disable();
-		}
-		else if (targetMode == ECameraMode::Orbit)
-		{
-			nap::TransformComponentInstance& lookAtTransform = mLookAtTarget->getComponent<nap::TransformComponentInstance>();
-
-			// If we're switching back from orthographic camera, enable controller while resetting position to last know position
-			if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
-				mOrbitComponent->enable(mLastPerspPos, lookAtTransform.getTranslate());
-			else
-				mOrbitComponent->enable(lookAtTransform.getTranslate());
-
-			mFirstPersonComponent->disable();
-			mOrthoComponent->disable();
-		}
-		else
-		{
-			// Remember the current perspective transform before we alter the transform
-			if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
-				storeLastPerspTransform();
-
-			// Depending on orthographic mode, make a rotation. 
-			glm::vec3 camera_translate_axis;
-			glm::quat rotation;
-			switch (targetMode)
+			case ECameraMode::FirstPerson:
 			{
+				// If we're switching back from orthographic camera, enable controller while resetting position to last know position
+				if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
+					mFirstPersonComponent->enable(mLastPerspPos, mLastPerspRotate);
+				else
+					mFirstPersonComponent->enable();
+
+				mOrbitComponent->disable();
+				mOrthoComponent->disable();
+				break;
+			}
+			case ECameraMode::Orbit:
+			{
+				nap::TransformComponentInstance& lookAtTransform = mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+
+				// If we're switching back from orthographic camera, enable controller while resetting position to last know position
+				if ((mMode & ECameraMode::Orthographic) != ECameraMode::None)
+					mOrbitComponent->enable(mLastPerspPos, lookAtTransform.getTranslate());
+				else
+					mOrbitComponent->enable(lookAtTransform.getTranslate());
+
+				mFirstPersonComponent->disable();
+				mOrthoComponent->disable();
+				break;
+			}
+			default:
+			{
+				// Remember the current perspective transform before we alter the transform
+				if ((mMode & ECameraMode::Perspective) != ECameraMode::None)
+					storeLastPerspTransform();
+
+				// Depending on orthographic mode, make a rotation. 
+				glm::vec3 camera_translate_axis;
+				glm::quat rotation;
+				switch (targetMode)
+				{
 				case ECameraMode::OrthographicTop:
-					camera_translate_axis = glm::vec3(0.0f, -1.0f, 0.0f);
-					rotation = glm::angleAxis((float)-math::PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+					camera_translate_axis = glm::vec3{ 0.0f, -1.0f, 0.0f };
+					rotation = glm::angleAxis(static_cast<float>(-math::PI_2), glm::vec3{ 1.0f, 0.0f, 0.0f });
 					break;
 
 				case ECameraMode::OrthographicBottom:
-					camera_translate_axis = glm::vec3(0.0f, 1.0f, 0.0f);
-					rotation = glm::angleAxis((float)math::PI_2, glm::vec3(1.0f, 0.0f, 0.0f));
+					camera_translate_axis = glm::vec3{ 0.0f, 1.0f, 0.0f };
+					rotation = glm::angleAxis(static_cast<float>(math::PI_2), glm::vec3{ 1.0f, 0.0f, 0.0f });
 					break;
 
 				case ECameraMode::OrthographicLeft:
-					camera_translate_axis = glm::vec3(1.0f, 0.0f, 0.0f);
-					rotation = glm::angleAxis((float)-math::PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
+					camera_translate_axis = glm::vec3{ 1.0f, 0.0f, 0.0f };
+					rotation = glm::angleAxis(static_cast<float>(-math::PI_2), glm::vec3{ 0.0f, 1.0f, 0.0f });
 					break;
 
 				case ECameraMode::OrthographicRight:
-					camera_translate_axis = glm::vec3(-1.0f, 0.0f, 0.0f);
-					rotation = glm::angleAxis((float)math::PI_2, glm::vec3(0.0f, 1.0f, 0.0f));
+					camera_translate_axis = glm::vec3{ -1.0f, 0.0f, 0.0f };
+					rotation = glm::angleAxis(static_cast<float>(math::PI_2), glm::vec3{ 0.0f, 1.0f, 0.0f });
 					break;
 
 				case ECameraMode::OrthographicFront:
-					camera_translate_axis = glm::vec3(0.0f, 0.0f, -1.0f);
-					rotation = glm::angleAxis((float)0.0f, glm::vec3(0.0f, 1.0f, 0.0f));
+					camera_translate_axis = glm::vec3{ 0.0f, 0.0f, -1.0f };
+					rotation = glm::angleAxis(0.0f, glm::vec3{ 0.0f, 1.0f, 0.0f });
 					break;
 
 				case ECameraMode::OrthographicBack:
-					camera_translate_axis = glm::vec3(0.0f, 0.0f, 1.0f);
-					rotation = glm::angleAxis((float)math::PI, glm::vec3(0.0f, 1.0f, 0.0f));
+					camera_translate_axis = glm::vec3{ 0.0f, 0.0f, 1.0f };
+					rotation = glm::angleAxis(static_cast<float>(math::PI), glm::vec3{ 0.0f, 1.0f, 0.0f });
 					break;
+				}
+
+				// The translation is placed some distance from the lookat target
+				nap::TransformComponentInstance& lookat_transform = mLookAtTarget->getComponent<nap::TransformComponentInstance>();
+				const glm::vec3& target_pos = lookat_transform.getTranslate();
+				const float distance = 100.0f;
+				glm::vec3 camera_translate = target_pos - camera_translate_axis * distance;
+
+				mOrthoComponent->enable(camera_translate, rotation);
+				mFirstPersonComponent->disable();
+				mOrbitComponent->disable();
 			}
-
-			// The translation is placed some distance from the lookat target
-			nap::TransformComponentInstance& lookat_transform = mLookAtTarget->getComponent<nap::TransformComponentInstance>();
-			glm::vec3 target_pos(lookat_transform.getTranslate());
-			const float distance = 100.0f;
-			glm::vec3 camera_translate = target_pos - camera_translate_axis * distance;
-
-			mOrthoComponent->enable(camera_translate, rotation);
-			mFirstPersonComponent->disable();
-			mOrbitComponent->disable();
 		}
 		mMode = targetMode;
 	}
@@ -212,5 +220,14 @@ namespace nap
 			switchMode(ECameraMode::OrthographicBack);
 			break;
 		}
+	}
+
+
+	void CameraController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.emplace_back(RTTI_OF(OrbitController));
+		components.emplace_back(RTTI_OF(FirstPersonController));
+		components.emplace_back(RTTI_OF(OrthoController));
+		components.emplace_back(RTTI_OF(KeyInputComponent));
 	}
 }

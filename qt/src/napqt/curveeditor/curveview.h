@@ -76,6 +76,7 @@ namespace nap
 		 */
 		class PointHandleItem : public HandleItem
 		{
+			Q_OBJECT
 		public:
 			explicit PointHandleItem(CurveSegmentItem& parent);
 
@@ -87,6 +88,7 @@ namespace nap
 		 */
 		class TangentHandleItem : public HandleItem
 		{
+			Q_OBJECT
 		public:
 			explicit TangentHandleItem(CurveSegmentItem& parent);
 			void setValue(const QPointF& value) { mValue = value; }

@@ -41,7 +41,7 @@ def update_module(module_name, build_type):
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 16 2019', '-DPYBIND11_PYTHON_VERSION=3.5'], cwd=module_path)
+        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 16 2019'], cwd=module_path)
 
     if exit_code == 0:
         print("Solution generated in %s" % os.path.relpath(os.path.join(module_path, BUILD_DIR)))
@@ -52,9 +52,9 @@ def update_module(module_name, build_type):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("MODULE_NAME", type=str, help="The module to regenerate")
-    # Linux: if we've specified a build type let's grab that, otherwise default to debug
+    # Linux: if we've specified a build type let's grab that, otherwise default to release
     if sys.platform.startswith('linux'):
-        parser.add_argument('BUILD_TYPE', nargs='?', default='Debug')
+        parser.add_argument('BUILD_TYPE', nargs='?', default='Release')
     args = parser.parse_args()
 
     if sys.platform.startswith('linux'):

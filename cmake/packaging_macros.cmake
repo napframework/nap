@@ -72,9 +72,7 @@ macro(package_nap)
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/user_modules)")
 
     # Package thirdparty Python into release
-    if (NAP_ENABLE_PYTHON)
-        package_python()
-    endif ()
+    package_python()
 
     # Package documentation
     if(INCLUDE_DOCS)
@@ -140,11 +138,13 @@ macro(package_python)
                 CONFIGURATIONS Release)
 
         # Install framework for Napkin
-        install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
-                DESTINATION tools/napkin/
-                CONFIGURATIONS Release)
+        if(NAP_ENABLE_PYTHON)
+                install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
+                        DESTINATION tools/napkin/
+                        CONFIGURATIONS Release)
+        endif()
 
-        # Install license
+        # Install license   
         install(FILES ${THIRDPARTY_DIR}/python/msvc/LICENSE.txt
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)

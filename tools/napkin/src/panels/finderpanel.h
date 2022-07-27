@@ -5,6 +5,7 @@
 #pragma once
 
 #include "propertypath.h"
+#include "rttiitem.h"
 
 #include <QWidget>
 #include <QStandardItemModel>
@@ -12,11 +13,11 @@
 
 namespace napkin
 {
-	class PropertyDisplayItem : public QStandardItem
+	class PropertyDisplayItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		explicit PropertyDisplayItem(const PropertyPath& prop);
-
 		const PropertyPath& getPath() const { return mProp; }
 
 	private:
@@ -28,9 +29,7 @@ namespace napkin
 	{
 	public:
 		FinderPanel();
-
 		void setPropertyList(const QList<PropertyPath>& properties);
-
 		nap::qt::FilterTreeView& getTreeView();
 
 	private:

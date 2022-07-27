@@ -76,18 +76,6 @@ namespace nap
 
 
 	/**
-	 * Obtain the surface properties that are required for the creation of the swap chain
-	 */
-	static bool getSurfaceProperties(VkPhysicalDevice device, VkSurfaceKHR surface, VkSurfaceCapabilitiesKHR& capabilities, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(device, surface, &capabilities) == VK_SUCCESS, "Unable to acquire surface capabilities"))
-			return false;
-
-		return true;
-	}
-
-
-	/**
 	 *	Creates the vulkan surface that is rendered to by the device using SDL
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
@@ -170,34 +158,6 @@ namespace nap
 
 		// Fall back on FIFO if requested mode is not supported
 		outMode = VK_PRESENT_MODE_FIFO_KHR;
-		return true;
-	}
-
-
-	/**
-	 * Returns the size of a swapchain image based on the current surface
-	 */
-	bool getSwapImageSize(glm::ivec2 bufferSize, VkPhysicalDevice device, VkSurfaceKHR surface, VkExtent2D& outExtent, nap::utility::ErrorState& error)
-	{
-		VkSurfaceCapabilitiesKHR capabilities;
-		if(!getSurfaceProperties(device, surface, capabilities, error))
-		{
-			outExtent = {0,0};
-			return false;
-		}
-
-
-		outExtent = capabilities.currentExtent;
-		if (capabilities.currentExtent.width == UINT32_MAX)
-		{
-			outExtent = {
-				static_cast<uint32>(bufferSize.x),
-				static_cast<uint32>(bufferSize.y)
-			};
-		}
-
-		outExtent.width  = math::clamp<uint32>(outExtent.width,  capabilities.minImageExtent.width,  capabilities.maxImageExtent.width);
-		outExtent.height = math::clamp<uint32>(outExtent.height, capabilities.minImageExtent.height, capabilities.maxImageExtent.height);
 		return true;
 	}
 
@@ -298,7 +258,7 @@ namespace nap
 	* creates the swap chain using utility functions above to retrieve swap chain properties
 	* Swap chain is associated with a single window (surface) and allows us to display images to screen
 	*/
-	static bool createSwapChain(glm::ivec2 bufferSize, VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkSwapchainKHR& outSwapChain, VkExtent2D& outSwapChainExtent, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
+	static bool createSwapChain(VkPresentModeKHR presentMode, VkSurfaceKHR surface, VkPhysicalDevice physicalDevice, VkDevice device, uint32 swapImageCount, const VkSurfaceCapabilitiesKHR& surfaceCapabilities, VkExtent2D extent, VkSwapchainKHR& outSwapChain, VkFormat& outSwapChainFormat, utility::ErrorState& errorState)
 	{
 		// Get image usage (color etc.)
 		VkImageUsageFlags usage_flags;
@@ -316,9 +276,8 @@ namespace nap
 		// Sharing mode = exclusive, graphics and presentation queue must be the same. Sharing not supported.
 		VkSharingMode sharing_mode = VK_SHARING_MODE_EXCLUSIVE;
 
-		// Size of swapchain images, queried just before creation to avoid potential race condition.
-		// This is a known Vulkan limitiation, that otherwise results in an image extent warning during resize
-		if(!getSwapImageSize(bufferSize, physicalDevice, surface, outSwapChainExtent, errorState))
+		// Ensure extent is valid
+		if (!errorState.check(extent.width > 0 && extent.height > 0, "Image extent members 'width' and 'height' must be higher than 0"))
 			return false;
 
 		// Populate swapchain creation info
@@ -329,7 +288,7 @@ namespace nap
 		swap_info.minImageCount = swapImageCount;
 		swap_info.imageFormat = image_format.format;
 		swap_info.imageColorSpace = image_format.colorSpace;
-		swap_info.imageExtent = outSwapChainExtent;
+		swap_info.imageExtent = extent;
 		swap_info.imageArrayLayers = 1;
 		swap_info.imageUsage = usage_flags;
 		swap_info.imageSharingMode = sharing_mode;
@@ -462,10 +421,10 @@ namespace nap
 
 	static bool createColorResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
 			return false;
 
 		return true;
@@ -474,10 +433,10 @@ namespace nap
 
 	static bool createDepthResource(const RenderService& renderer, VkExtent2D swapchainExtent, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), swapchainExtent.width, swapchainExtent.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -580,6 +539,10 @@ namespace nap
 		// Get presentation queue
 		vkGetDeviceQueue(mDevice, mRenderService->getQueueIndex(), 0, &mPresentQueue);
 
+		// Update surface capabilities
+		if (!getSurfaceCapabilities(errorState))
+			return false;
+
 		// Create swapchain based on current window properties
 		if (!createSwapChainResources(errorState))
 			return false;
@@ -620,6 +583,12 @@ namespace nap
 	void RenderWindow::hide()
 	{
 		SDL::showWindow(mSDLWindow, false);
+	}
+
+
+	void RenderWindow::setTitle(std::string newTitle)
+	{
+		SDL::setWindowTitle(mSDLWindow, newTitle);
 	}
 
 
@@ -724,33 +693,33 @@ namespace nap
 
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
-		// Check if the window has a zero size. Note that in the case where the window is minimized, it seems SDL still reports
-		// the window as having a non-zero size. However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
-		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
-		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
-		glm::ivec2 window_size = getSize();
-		uint32 window_state = SDL::getWindowFlags(mSDLWindow);
-		if (window_size.x == 0 || window_size.y == 0 || (window_state & SDL_WINDOW_MINIMIZED) != 0)
-			return VK_NULL_HANDLE;
-
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
-		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is ouf of date or when
+		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date or when
 		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
 		// therefore we need to handle both situations explicitly.
 		if (mRecreateSwapchain)
 		{
 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
-			{
-				Logger::error("Failed to recreate swapchain: %s", errorState.toString().c_str());
-				return VK_NULL_HANDLE;
-			}
+				Logger::error("Unable to recreate swapchain: %s", errorState.toString().c_str());
 			return VK_NULL_HANDLE;
 		}
+
+		// Check if the current extent has a valid (non-zero) size.
+		if (!validSwapchainExtent())
+			return VK_NULL_HANDLE;
+
+		// The swapchain extent can have a valid (higher than zero) size when the window is minimized.
+		// However, Vulkan internally knows this is not the case (it sees it as a zero-sized window), which will result in 
+		// errors being thrown by vkAcquireNextImageKHR etc if we try to render anyway. So, to workaround this issue, we also consider minimized windows to be of zero size.
+		// In either case, when the window is zero-sized, we can't render to it since there is no valid swap chain. So, we return a nullptr to signal this to the client.
+		if ((SDL::getWindowFlags(mSDLWindow) & SDL_WINDOW_MINIMIZED) != 0)
+			return VK_NULL_HANDLE;
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
 		// This situation is unlikely but could occur when in between frame buffer creation and acquire the window is resized.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
+		assert(mSwapchain != VK_NULL_HANDLE);
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		if(result == VK_ERROR_OUT_OF_DATE_KHR)
         {
@@ -870,6 +839,15 @@ namespace nap
 		mRecreateSwapchain = false;
 		destroySwapChainResources();
 
+		// Update surface capabilities
+		if (!getSurfaceCapabilities(errorState))
+			return false;
+
+		// Don't create a swapchain if width or height is invalid. 
+		// Vulkan requires the 'imageExtent' members width and height to be non zero.
+		if (mSwapchainExtent.width == 0 || mSwapchainExtent.height == 0)
+			return true;
+
 		// Create new swapchain based on current window properties
 		return createSwapChainResources(errorState);
 	}
@@ -877,23 +855,17 @@ namespace nap
 
 	bool RenderWindow::createSwapChainResources(utility::ErrorState& errorState)
 	{
-		// Get surface capabilities
-		VkSurfaceCapabilitiesKHR surface_capabilities;
-		if (!getSurfaceProperties(mRenderService->getPhysicalDevice(), mSurface, surface_capabilities, errorState))
-			return false;
-
 		// Check if number of requested images is supported based on queried abilities
 		// When maxImageCount == 0 there is no theoretical limit, otherwise it has to fall within the range of min-max
-		mSwapChainImageCount = surface_capabilities.minImageCount + mAddedSwapImages;
-		if (surface_capabilities.maxImageCount != 0 && mSwapChainImageCount > surface_capabilities.maxImageCount)
+		mSwapChainImageCount = mSurfaceCapabilities.minImageCount + mAddedSwapImages;
+		if (mSurfaceCapabilities.maxImageCount != 0 && mSwapChainImageCount > mSurfaceCapabilities.maxImageCount)
 		{
-			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, surface_capabilities.maxImageCount);
-			mSwapChainImageCount = surface_capabilities.maxImageCount;
+			nap::Logger::warn("%s: Requested number of swap chain images: %d exceeds hardware limit", mID.c_str(), mSwapChainImageCount, mSurfaceCapabilities.maxImageCount);
+			mSwapChainImageCount = mSurfaceCapabilities.maxImageCount;
 		}
 
 		// Create swapchain, allowing us to acquire images to render to.
-		VkExtent2D swap_chain_extent;
-		if (!createSwapChain(getBufferSize(), mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, surface_capabilities, mSwapchain, swap_chain_extent, mSwapchainFormat, errorState))
+		if (!createSwapChain(mPresentationMode, mSurface, mRenderService->getPhysicalDevice(), mDevice, mSwapChainImageCount, mSurfaceCapabilities, mSwapchainExtent, mSwapchain, mSwapchainFormat, errorState))
 			return false;
 
 		// Get image handles from swap chain
@@ -912,19 +884,19 @@ namespace nap
 
 		if (mRasterizationSamples == VkSampleCountFlagBits::VK_SAMPLE_COUNT_1_BIT)
 		{
-			if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
+			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 		}
 		else
 		{
-			if (!createDepthResource(*mRenderService, swap_chain_extent, mRasterizationSamples, mDepthImage, errorState))
+			if (!createDepthResource(*mRenderService, mSwapchainExtent, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 
-			if (!createColorResource(*mRenderService, swap_chain_extent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
+			if (!createColorResource(*mRenderService, mSwapchainExtent, mSwapchainFormat, mRasterizationSamples, mColorImage, errorState))
 				return false;
 		}
 
-		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.mTextureView, mDepthImage.mTextureView, mSwapChainImageViews, mRenderPass, swap_chain_extent, mRasterizationSamples, errorState))
+		if (!createFramebuffers(mDevice, mSwapChainFramebuffers, mColorImage.getView(), mDepthImage.getView(), mSwapChainImageViews, mRenderPass, mSwapchainExtent, mRasterizationSamples, errorState))
 			return false;
 
 		if (!createCommandBuffers(mDevice, mRenderService->getCommandPool(), mCommandBuffers, mRenderService->getMaxFramesInFlight(), errorState))
@@ -959,21 +931,28 @@ namespace nap
 			mRenderPass = VK_NULL_HANDLE;
 		}
 
-		// Destroy swapchain image views
-		for(VkImageView view : mSwapChainImageViews)
+		// Destroy swapchain image views if present
+		for (VkImageView& view : mSwapChainImageViews)
 			vkDestroyImageView(mDevice, view, nullptr);
+		mSwapChainImageViews.clear();
 
-		// Destroy owned depth and color images
+		// Destroy depth and color image
 		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
 		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
 
 		// finally, destroy swapchain
-		// Nothing to destroy
 		if (mSwapchain != VK_NULL_HANDLE)
 		{
 			vkDestroySwapchainKHR(mDevice, mSwapchain, nullptr);
 			mSwapchain = VK_NULL_HANDLE;
 		}
+		mSwapchainExtent = { 0,0 };
+	}
+
+
+	bool RenderWindow::validSwapchainExtent() const
+	{
+		return mSwapchainExtent.width > 0 && mSwapchainExtent.height > 0;
 	}
 
 
@@ -1036,5 +1015,39 @@ namespace nap
 	nap::ECullWindingOrder RenderWindow::getWindingOrder() const
 	{
 		return ECullWindingOrder::CounterClockwise;
+	}
+
+
+	bool RenderWindow::getSurfaceCapabilities(utility::ErrorState& errorState)
+	{
+		// Query the basic capabilities of a surface, needed in order to create a swapchain
+		if (!errorState.check(vkGetPhysicalDeviceSurfaceCapabilitiesKHR(mRenderService->getPhysicalDevice(), mSurface, &mSurfaceCapabilities) == VK_SUCCESS,
+			"Unable to acquire surface capabilities"))
+			return false;
+
+		// Based on surface capabilities, determine swap image size
+		glm::ivec2 buffer_size = this->getBufferSize();
+		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
+		{
+			mSwapchainExtent =
+			{
+				math::clamp<uint32>((uint32)buffer_size.x, mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
+				math::clamp<uint32>((uint32)buffer_size.y, mSurfaceCapabilities.minImageExtent.height, mSurfaceCapabilities.maxImageExtent.height),
+			};
+		}
+		else
+		{
+			mSwapchainExtent = mSurfaceCapabilities.currentExtent;
+		}
+
+		// Notify if current swapchain extent differs from current buffer size
+		if (mSwapchainExtent.width != buffer_size.x || mSwapchainExtent.height != buffer_size.y)
+			nap::Logger::warn("Swap chain size mismatch: extent of surface (%d:%d) does not match size of buffer (%d:%d)",
+				mSwapchainExtent.width,
+				mSwapchainExtent.height,
+				buffer_size.x,
+				buffer_size.y);
+
+		return true;
 	}
 }

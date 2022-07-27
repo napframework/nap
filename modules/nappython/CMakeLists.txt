@@ -14,9 +14,9 @@ source_group("sources" FILES ${SOURCES})
 
 # Get our NAP modules dependencies from module.json
 module_json_to_cmake()
-
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
+
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 

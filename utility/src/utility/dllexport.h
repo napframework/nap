@@ -17,5 +17,5 @@
 		#define NAPAPI __declspec(dllimport)	// Import the symbols
 	#endif // NAP_SHARED_LIBRARY
 #else
-	#define NAPAPI								// Empty statement, does nothing
+    #define NAPAPI __attribute__ ((visibility ("default")))
 #endif // _WIN32

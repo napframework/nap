@@ -12,7 +12,7 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GeometryFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("Path",			&nap::GeometryFromFile::mPath,				nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
+	RTTI_PROPERTY("Path",					&nap::GeometryFromFile::mPath,				nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("GenerateNormals",		&nap::GeometryFromFile::mGenerateNormals,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CalculateTangents",		&nap::GeometryFromFile::mCalculateTangents, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("NormalSmoothingAngle",	&nap::GeometryFromFile::mSmoothingAngle,	nap::rtti::EPropertyMetaData::Default)
