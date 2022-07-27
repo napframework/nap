@@ -154,6 +154,8 @@ add_subdirectory(demos/artnetreceive/module)
 add_subdirectory(demos/pipins)
 add_subdirectory(demos/webportal)
 add_subdirectory(demos/python)
+add_subdirectory(demos/orb)
+add_subdirectory(demos/orb/module)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

@@ -31,13 +31,13 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, VkImageAspectFlags aspect, uint32_t width, uint32_t height)
 	{
 		VkBufferImageCopy region = {};
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.aspectMask = aspect;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
 		region.imageSubresource.layerCount = 1;
@@ -52,13 +52,13 @@ namespace nap
 	}
 
 
-	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
+	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, VkImageAspectFlags aspect, uint32_t width, uint32_t height)
 	{
 		VkBufferImageCopy region = {};
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.aspectMask = aspect;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
 		region.imageSubresource.layerCount = 1;
@@ -119,7 +119,18 @@ namespace nap
 				}
 				break;
 			}
-			assert(false);
+			case ESurfaceChannels::D:
+			{
+				switch (dataType)
+				{
+				case nap::ESurfaceDataType::FLOAT:
+					return VK_FORMAT_D32_SFLOAT;
+				case nap::ESurfaceDataType::USHORT:
+					return VK_FORMAT_D16_UNORM;
+				}
+				break;
+			}
+			NAP_ASSERT_MSG(false, "Surface descriptor could not be resolved to valid/supported texture format");
 		}
 		return VK_FORMAT_UNDEFINED;
 	}
@@ -149,7 +160,8 @@ namespace nap
 		VkImageLayout oldLayout,		VkImageLayout newLayout,
 		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
 		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
-		uint32 mipLevel,				uint32 mipLevelCount)
+		uint32 mipLevel,				uint32 mipLevelCount,
+		VkImageAspectFlags aspect)
 	{
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
 		barrier.oldLayout = oldLayout;
@@ -157,7 +169,7 @@ namespace nap
 		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		barrier.image = image;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		barrier.subresourceRange.aspectMask = aspect;
 		barrier.subresourceRange.baseMipLevel = mipLevel;
 		barrier.subresourceRange.levelCount = mipLevelCount;
 		barrier.subresourceRange.baseArrayLayer = 0;
@@ -172,23 +184,24 @@ namespace nap
 	 * Transition image to a new layout using an image barrier.
 	 */
 	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount)
+		VkImageLayout oldLayout,		VkImageLayout newLayout,
+		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
+		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
+		uint32 mipLevel,				uint32 mipLevelCount,
+		VkImageAspectFlags aspect)
 	{
 		VkImageMemoryBarrier barrier = {};
 		transitionImageLayout(commandBuffer, image, barrier,
 			oldLayout,		newLayout,
 			srcAccessMask,	dstAccessMask,
 			srcStage,		dstStage,
-			mipLevel,		mipLevelCount);
+			mipLevel,		mipLevelCount,
+			aspect);
 	}
 
 
-	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
+	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
 	{
-
 		int32 mipWidth  = static_cast<int32>(texWidth);
 		int32 mipHeight = static_cast<int32>(texHeight);
 
@@ -200,19 +213,20 @@ namespace nap
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT,
-				i - 1,									1);
+				i - 1,									1,
+				aspect);
 
 			// Create blit structure
 			VkImageBlit blit{};
 			blit.srcOffsets[0] = { 0, 0, 0 };
 			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.srcSubresource.aspectMask = aspect;
 			blit.srcSubresource.mipLevel = i - 1;
 			blit.srcSubresource.baseArrayLayer = 0;
 			blit.srcSubresource.layerCount = 1;
 			blit.dstOffsets[0] = { 0, 0, 0 };
 			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			blit.dstSubresource.aspectMask = aspect;
 			blit.dstSubresource.mipLevel = i;
 			blit.dstSubresource.baseArrayLayer = 0;
 			blit.dstSubresource.layerCount = 1;
@@ -226,10 +240,11 @@ namespace nap
 
 			// Prepare LOD for shader read
 			transitionImageLayout(buffer, image, barrier,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	targetLayout,
 				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				i - 1,									1);
+				i - 1,									1,
+				aspect);
 
 			if (mipWidth  > 1) mipWidth  /= 2;
 			if (mipHeight > 1) mipHeight /= 2;
@@ -237,10 +252,11 @@ namespace nap
 
 		// Prepare final LOD for shader read
 		transitionImageLayout(buffer, image, barrier,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	targetLayout,
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			mipLevels - 1,							1);
+			mipLevels - 1,							1,
+			aspect);
 	}
 
 
@@ -360,8 +376,12 @@ namespace nap
 			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
+		// Check whether the texture is flagged as depth
+		bool is_depth = descriptor.getChannels() == ESurfaceChannels::D;
+
 		// Create GPU image view
-		if (!create2DImageView(mRenderService->getDevice(), mImageData.getImage(), mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mView, errorState))
+		VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (!create2DImageView(mRenderService->getDevice(), mImageData.getImage(), mFormat, mMipLevels, aspect, mImageData.mView, errorState))
 			return false;
 
 		// Initialize buffer indexing
@@ -435,6 +455,16 @@ namespace nap
 
 	void Texture2D::clear(VkCommandBuffer commandBuffer)
 	{
+		// Do not clear if this is an attachment
+		// Attachments use vkCmdClearAttachments for clear operations
+		// But should really be cleared in a renderpass with VK_ATTACHMENT_LOAD_OP_CLEAR 
+		if (getImageLayout() & VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
+			getImageLayout() & VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
+			getImageLayout() > VK_IMAGE_LAYOUT_PREINITIALIZED)
+		{
+			return;
+		}
+
 		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
 		// Therefore, the initial layout transition waits for nothing
 		VkAccessFlags srcMask = 0;
@@ -449,30 +479,40 @@ namespace nap
 		}
 
 		// Get image ready for clear, applied to all mipmap layers
+		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		transitionImageLayout(commandBuffer, mImageData.mImage,
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask, dstMask,
 			srcStage, dstStage,
-			0, mMipLevels);
+			0, mMipLevels, aspect);
 
 		VkImageSubresourceRange image_subresource_range = {};
-		image_subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		image_subresource_range.aspectMask = aspect;
 		image_subresource_range.baseMipLevel = 0;
 		image_subresource_range.levelCount = mMipLevels;
 		image_subresource_range.baseArrayLayer = 0;
 		image_subresource_range.layerCount = 1;
 
-		vkCmdClearColorImage(commandBuffer, mImageData.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
+		// Clear color or depth/stencil
+		if (mDescriptor.getChannels() != ESurfaceChannels::D)
+		{
+			vkCmdClearColorImage(commandBuffer, mImageData.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
+		}
+		else
+		{
+			VkClearDepthStencilValue clear_depthstencil = { 1.0f, 0 };
+			vkCmdClearDepthStencilImage(commandBuffer, mImageData.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clear_depthstencil, 1, &image_subresource_range);
+		}
 
 		// Transition image layout
 		transitionImageLayout(commandBuffer, mImageData.mImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				0, 1);
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, getImageLayout(),
+			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
+			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
+			0, 1, aspect);
 
 		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		mImageData.mCurrentLayout = getImageLayout();
 	}
 
 
@@ -497,19 +537,21 @@ namespace nap
 		}
 
 		// Get image ready for copy, applied to all mipmap layers
+		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		transitionImageLayout(commandBuffer, mImageData.mImage, 
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			srcMask,	dstMask,
 			srcStage,	dstStage,
-			0,			mMipLevels);
+			0,			mMipLevels,
+			aspect);
 		
 		// Copy staging buffer to image
-		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mImage, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mImage, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			createMipmaps(commandBuffer, mImageData.mImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			createMipmaps(commandBuffer, mImageData.mImage, mFormat, getImageLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
@@ -517,11 +559,12 @@ namespace nap
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				0,										1);
+				0,										1,
+				aspect);
 		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		mImageData.mCurrentLayout = getImageLayout();
 
 		// Destroy staging buffer when usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
@@ -548,21 +591,24 @@ namespace nap
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
+		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 		transitionImageLayout(commandBuffer, mImageData.mImage, 
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0,											1);
+			0,											1,
+			aspect);
 		
 		// Copy to buffer
-		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
 		transitionImageLayout(commandBuffer, mImageData.mImage, 
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0,											1);
+			0,											1,
+			aspect);
 	}
 
 
