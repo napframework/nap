@@ -426,11 +426,11 @@
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
-            "Group": "Parameters"
+            "Group": "Brush Parameters"
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "Parameters",
+            "mID": "Brush Parameters",
             "Parameters": [
                 {
                     "Type": "nap::ParameterRGBAColor8",

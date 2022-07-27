@@ -228,7 +228,7 @@ namespace nap
 			const nap::Parameter& source_param = blender->getParameter();
 
 			// Find matching target parameter in preset
-			ResourcePtr<Parameter> found_param = preset_group.findParameterRecursive(source_param.mID);
+			ResourcePtr<Parameter> found_param = preset_group.findObjectRecursive(source_param.mID);
 			
 			// If no parameter with a matching id is found, notify and clear
 			// This ensures the blender is not updated

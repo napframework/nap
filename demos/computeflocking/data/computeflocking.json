@@ -683,16 +683,16 @@
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
-            "Group": "FlockingParameters"
+            "Group": "Parameters"
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "FlockingParameters",
+            "mID": "Parameters",
             "Parameters": [],
             "Groups": [
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "FlockGroup",
+                    "mID": "Flocking",
                     "Parameters": [
                         {
                             "Type": "nap::ParameterInt",
@@ -795,7 +795,7 @@
                 },
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "RenderGroup",
+                    "mID": "Visualization",
                     "Parameters": [
                         {
                             "Type": "nap::ParameterBool",
