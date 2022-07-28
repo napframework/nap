@@ -725,22 +725,6 @@ namespace nap
 		return mResource->mMaterial->getDepthMode();
 	}
 
-
-	void MaterialInstance::setDepthCompareMode(EDepthCompareMode depthCompareMode)
-	{
-		mResource->mDepthCompareMode = depthCompareMode;
-	}
-
-
-	EDepthCompareMode MaterialInstance::getDepthCompareMode() const
-	{
-		if (mResource->mDepthCompareMode != EDepthCompareMode::NotSet)
-			return mResource->mDepthCompareMode;
-
-		return mResource->mMaterial->getDepthCompareMode();
-	}
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// ComputeMaterialInstance
 	//////////////////////////////////////////////////////////////////////////

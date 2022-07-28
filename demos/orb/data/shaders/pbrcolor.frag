@@ -220,7 +220,7 @@ vec3 pbrPoint(vec3 N, vec3 V, vec3 fragWorldPos, PointLight light, PBRMaterial m
 	float shadow = calcShadow(passShadowCoord, L);
 
 	float distance = length(surf_to_light);
-	float attenuation = 1.0 / (distance * distance);
+	float attenuation = 1.0 / (	distance * distance);
 	vec3 radiance = (1.0-shadow) * light.color * light.intensity * attenuation;
 
 	return computeOutRadiance(N, V, L, radiance, mtl);
@@ -260,7 +260,7 @@ void main()
 	}
 
 	vec3 ambient = BASE_AMBIENT * mtl.albedo;
-	vec3 color = Lo;
+	vec3 color = ambient + Lo;
 
 	// HDR tonemapping
     color = color / (color + vec3(1.0));

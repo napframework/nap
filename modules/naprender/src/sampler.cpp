@@ -8,22 +8,22 @@
 #include "renderservice.h"
 
 RTTI_BEGIN_ENUM(nap::EFilterMode)
-	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest, "Nearest"),
-	RTTI_ENUM_VALUE(nap::EFilterMode::Linear, "Linear")
+	RTTI_ENUM_VALUE(nap::EFilterMode::Nearest,					"Nearest"),
+	RTTI_ENUM_VALUE(nap::EFilterMode::Linear,					"Linear")
 RTTI_END_ENUM
 
 RTTI_BEGIN_ENUM(nap::EAddressMode)
-	RTTI_ENUM_VALUE(nap::EAddressMode::Repeat,			"Repeat"),
-	RTTI_ENUM_VALUE(nap::EAddressMode::MirroredRepeat,	"MirroredRepeat"),
-	RTTI_ENUM_VALUE(nap::EAddressMode::ClampToEdge,		"ClampToEdge"),
-	RTTI_ENUM_VALUE(nap::EAddressMode::ClampToBorder,	"ClampToBorder")
+	RTTI_ENUM_VALUE(nap::EAddressMode::Repeat,					"Repeat"),
+	RTTI_ENUM_VALUE(nap::EAddressMode::MirroredRepeat,			"MirroredRepeat"),
+	RTTI_ENUM_VALUE(nap::EAddressMode::ClampToEdge,				"ClampToEdge"),
+	RTTI_ENUM_VALUE(nap::EAddressMode::ClampToBorder,			"ClampToBorder")
 RTTI_END_ENUM
 
 RTTI_BEGIN_ENUM(nap::EAnisotropicSamples)
-	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Default,	"Default"),
-	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Four,		"Four"),
-	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Eight,	"Eight"),
-	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Sixteen,	"Sixteen")
+	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Default,			"Default"),
+	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Four,				"Four"),
+	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Eight,			"Eight"),
+	RTTI_ENUM_VALUE(nap::EAnisotropicSamples::Sixteen,			"Sixteen")
 RTTI_END_ENUM
 
 RTTI_BEGIN_ENUM(nap::EBorderColor)
@@ -33,6 +33,17 @@ RTTI_BEGIN_ENUM(nap::EBorderColor)
 	RTTI_ENUM_VALUE(nap::EBorderColor::IntOpaqueBlack,			"IntOpaqueBlack"),
 	RTTI_ENUM_VALUE(nap::EBorderColor::FloatOpaqueWhite,		"FloatOpaqueWhite"),
 	RTTI_ENUM_VALUE(nap::EBorderColor::IntOpaqueWhite,			"IntOpaqueWhite")
+RTTI_END_ENUM
+
+RTTI_BEGIN_ENUM(nap::EDepthCompareMode)
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Never,				"Never"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Less,				"Less"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Equal,				"Equal"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::LessOrEqual,		"LessOrEqual"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Greater,			"Greater"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::NotEqual,			"NotEqual"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::GreaterOrEqual,		"GreaterOrEqual"),
+	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Always,				"Always")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler)

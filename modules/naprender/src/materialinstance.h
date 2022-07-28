@@ -262,16 +262,6 @@ namespace nap
 		 */
 		EDepthMode getDepthMode() const;
 
-		/**
-		 *
-		 */
-		void setDepthCompareMode(EDepthCompareMode depthMode);
-
-		/**
-		 *
-		 */
-		EDepthCompareMode getDepthCompareMode() const;
-
 	private:
 		MaterialInstanceResource*				mResource;								// Resource this instance is associated with
 	};

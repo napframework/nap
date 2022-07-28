@@ -269,36 +269,6 @@ namespace nap
 
 
 	/**
-	 * @return depth compare operation
-	 */
-	static VkCompareOp getDepthCompareOp(EDepthCompareMode compareMode)
-	{
-		switch (compareMode)
-		{
-		case EDepthCompareMode::Never:
-			return VK_COMPARE_OP_NEVER;
-		case EDepthCompareMode::Less:
-			return VK_COMPARE_OP_LESS;
-		case EDepthCompareMode::Equal:
-			return VK_COMPARE_OP_EQUAL;
-		case EDepthCompareMode::LessOrEqual:
-			return VK_COMPARE_OP_LESS_OR_EQUAL;
-		case EDepthCompareMode::Greater:
-			return VK_COMPARE_OP_GREATER;
-		case EDepthCompareMode::NotEqual:
-			return VK_COMPARE_OP_NOT_EQUAL;
-		case EDepthCompareMode::GreaterOrEqual:
-			return VK_COMPARE_OP_GREATER_OR_EQUAL;
-		case EDepthCompareMode::Always:
-			return VK_COMPARE_OP_ALWAYS;
-		default:
-			assert(false);
-			return VK_COMPARE_OP_NEVER;
-		}
-	}
-
-
-	/**
 	 * @return the set of required device extension names
 	 */
 	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
@@ -829,9 +799,6 @@ namespace nap
 		depth_stencil.depthCompareOp = VK_COMPARE_OP_LESS_OR_EQUAL;
 		depth_stencil.depthBoundsTestEnable = VK_FALSE;
 		depth_stencil.stencilTestEnable = VK_FALSE;
-
-		// Depth compare operation
-		depth_stencil.depthCompareOp = getDepthCompareOp(materialInstance.getDepthCompareMode());
 
 		// If the depth mode is inherited from the blend mode, determine the correct depth mode to use
 		EDepthMode depth_mode = materialInstance.getDepthMode();

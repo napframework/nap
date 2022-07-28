@@ -30,18 +30,6 @@ RTTI_BEGIN_ENUM(nap::EDepthMode)
 	RTTI_ENUM_VALUE(nap::EDepthMode::NoReadWrite,			"NoReadWrite")
 RTTI_END_ENUM
 
-RTTI_BEGIN_ENUM(nap::EDepthCompareMode)
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Never,			"Never"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Less,			"Less"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Equal,			"Equal"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::LessOrEqual,	"LessOrEqual"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Greater,		"Greater"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::NotEqual,		"NotEqual"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::GreaterOrEqual, "GreaterOrEqual"),
-	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Always,			"Always")
-RTTI_END_ENUM
-
-
 RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
 	RTTI_VALUE_CONSTRUCTOR(const std::string&, const std::string&)
 	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required)
@@ -60,8 +48,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::Material::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthCompareMode",			&nap::Material::mDepthCompareMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableDepthCompare",			&nap::Material::mEnableDepthCompare,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)

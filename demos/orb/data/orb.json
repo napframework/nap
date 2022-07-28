@@ -78,8 +78,8 @@
             "mID": "ShadowMap",
             "Usage": "Static",
             "Fill": false,
-            "Width": 1024,
-            "Height": 1024,
+            "Width": 2048,
+            "Height": 2048,
             "Format": "D32",
             "ColorSpace": "Linear",
             "ClearValue": 1.0
@@ -137,7 +137,9 @@
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    }
+                    },
+                    "MinimumZoomDistance": 2.0,
+                    "LimitZoomDistance": true
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -334,12 +336,12 @@
                     "mID": "ShadowCameraOrtho",
                     "Properties": {
                         "Mode": "Custom",
-                        "LeftPlane": -5.0,
-                        "RightPlane": 5.0,
-                        "TopPlane": 5.0,
-                        "BottomPlane": -5.0,
+                        "LeftPlane": -10.0,
+                        "RightPlane": 10.0,
+                        "TopPlane": 10.0,
+                        "BottomPlane": -10.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 10.0
+                        "FarClippingPlane": 100.0
                     }
                 },
                 {
@@ -630,9 +632,7 @@
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode",
-            "DepthCompareMode": "LessOrEqual",
-            "EnableDepthCompare": false
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -690,9 +690,7 @@
             "Shader": "PBRColorShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode",
-            "DepthCompareMode": "LessOrEqual",
-            "EnableDepthCompare": false
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -844,9 +842,7 @@
                 }
             ],
             "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode",
-            "DepthCompareMode": "LessOrEqual",
-            "EnableDepthCompare": false
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::ParameterGroup",

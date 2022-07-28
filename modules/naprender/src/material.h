@@ -138,16 +138,6 @@ namespace nap
 		void setDepthMode(EDepthMode depthMode)						{ mDepthMode = depthMode; }
 
 		/**
-		 * 
-		 */
-		EDepthCompareMode getDepthCompareMode() const				{ assert(mDepthCompareMode != EDepthCompareMode::NotSet); return mDepthCompareMode; }
-
-		/**
-		 * 
-		 */
-		void setDepthMode(EDepthCompareMode depthCompareMode)		{ mDepthCompareMode = depthCompareMode; }
-
-		/**
 		 * Finds the mesh / shader attribute binding based on the given shader attribute ID.
 		 * @param shaderAttributeID: ID of the shader vertex attribute.
 		 */
@@ -162,8 +152,6 @@ namespace nap
 		ResourcePtr<Shader>							mShader = nullptr;									///< Property: 'Shader' The shader that this material is using
 		EBlendMode									mBlendMode = EBlendMode::Opaque;					///< Property: 'BlendMode' Optional, blend mode for this material
 		EDepthMode									mDepthMode = EDepthMode::InheritFromBlendMode;		///< Property: 'DepthMode' Optional, determines how the Z buffer is used
-		EDepthCompareMode							mDepthCompareMode = EDepthCompareMode::LessOrEqual;	///< Property: 'DepthCompareMode' ...
-		bool										mEnableDepthCompare = false;						///< Property: 'EnableDepthCompare' ...
 	};
 
 

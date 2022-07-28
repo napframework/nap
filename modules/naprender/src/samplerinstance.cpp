@@ -75,6 +75,36 @@ namespace nap
 	}
 
 
+	/**
+	 * @return depth compare operation
+	 */
+	static VkCompareOp getDepthCompareOp(EDepthCompareMode compareMode)
+	{
+		switch (compareMode)
+		{
+		case EDepthCompareMode::Never:
+			return VK_COMPARE_OP_NEVER;
+		case EDepthCompareMode::Less:
+			return VK_COMPARE_OP_LESS;
+		case EDepthCompareMode::Equal:
+			return VK_COMPARE_OP_EQUAL;
+		case EDepthCompareMode::LessOrEqual:
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		case EDepthCompareMode::Greater:
+			return VK_COMPARE_OP_GREATER;
+		case EDepthCompareMode::NotEqual:
+			return VK_COMPARE_OP_NOT_EQUAL;
+		case EDepthCompareMode::GreaterOrEqual:
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
+		case EDepthCompareMode::Always:
+			return VK_COMPARE_OP_ALWAYS;
+		default:
+			assert(false);
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		}
+	}
+
+
 	static float getAnisotropicSamples(const Sampler* sampler, const nap::RenderService& renderer)
 	{
 		// If there is no sampler or setting is derived from system default, use the global setting
@@ -121,8 +151,8 @@ namespace nap
 		samplerInfo.maxAnisotropy			= getAnisotropicSamples(mSampler, *mRenderService);
 		samplerInfo.borderColor				= VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable			= VK_FALSE;
-		samplerInfo.compareOp				= VK_COMPARE_OP_ALWAYS;
+		samplerInfo.compareEnable			= mSampler->mEnableCompare ? VK_TRUE : VK_FALSE;
+		samplerInfo.compareOp				= mSampler == nullptr ? getDepthCompareOp(mSampler->mCompareMode) : VK_COMPARE_OP_LESS_OR_EQUAL;
 		samplerInfo.mipmapMode				= mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
 		samplerInfo.minLod					= 0.0f;
 		samplerInfo.maxLod					= mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
