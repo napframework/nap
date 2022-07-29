@@ -6,7 +6,6 @@
 
 // Local Includes
 #include "irendertarget.h"
-#include "depthtexture2d.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -16,7 +15,7 @@
 namespace nap
 {
 	// Forward Declares
-	class RenderTexture2D;
+	class DepthRenderTexture2D;
 	class RenderService;
 
 	/**
@@ -147,7 +146,7 @@ namespace nap
 		/**
 		 * @return the texture that holds the result of the render pass.
 		 */
-		DepthTexture2D& getDepthTexture();
+		DepthRenderTexture2D& getDepthTexture();
 
 		/**
 		 * @return render target color format. This is the format of the linked in color texture.
@@ -160,14 +159,14 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override;
 
 	public:
-		float							mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
-		ResourcePtr<DepthTexture2D>		mDepthTexture;										///< Property: 'DepthTexture' texture to render to, format needs to be: 'Backbuffer'
+		float								mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
+		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:
-		RenderService*					mRenderService;
-		VkFramebuffer					mFramebuffer = VK_NULL_HANDLE;
-		VkRenderPass					mRenderPass = VK_NULL_HANDLE;
-		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		RGBAColorFloat					mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+		RenderService*						mRenderService;
+		VkFramebuffer						mFramebuffer = VK_NULL_HANDLE;
+		VkRenderPass						mRenderPass = VK_NULL_HANDLE;
+		VkSampleCountFlagBits				mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
+		RGBAColorFloat						mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 	};
 }

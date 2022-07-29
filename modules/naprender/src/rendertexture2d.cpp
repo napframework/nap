@@ -25,8 +25,29 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_ENUM(nap::DepthRenderTexture2D::EDepthFormat)
+	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D8,	"D8"),
+	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D16,	"D16"),
+	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D32,	"D32")
+RTTI_END_ENUM
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTexture2D)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Fill",		&nap::DepthRenderTexture2D::mFill,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",		&nap::DepthRenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Height",		&nap::DepthRenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ColorSpace", &nap::DepthRenderTexture2D::mColorSpace,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearValue", &nap::DepthRenderTexture2D::mClearValue,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// RenderTexture2D
+	//////////////////////////////////////////////////////////////////////////
+
 	RenderTexture2D::RenderTexture2D(Core& core) :
 		Texture2D(core)
 	{ }
@@ -96,5 +117,50 @@ namespace nap
 
 		// Create render texture
 		return Texture2D::init(settings, false, mClearColor.toVec4(), required_flags, errorState);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// DepthRenderTexture2D
+	//////////////////////////////////////////////////////////////////////////
+
+	DepthRenderTexture2D::DepthRenderTexture2D(Core& core) :
+		Texture2D(core)
+	{
+	}
+
+	// Initializes 2D texture. 
+	bool DepthRenderTexture2D::init(utility::ErrorState& errorState)
+	{
+		SurfaceDescriptor settings;
+		settings.mWidth = mWidth;
+		settings.mHeight = mHeight;
+		settings.mColorSpace = mColorSpace;
+		settings.mChannels = ESurfaceChannels::D;
+
+		// Initialize based on selected format
+		switch (mFormat)
+		{
+		case DepthRenderTexture2D::EDepthFormat::D8:
+		{
+			settings.mDataType = ESurfaceDataType::BYTE;
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+		}
+		case DepthRenderTexture2D::EDepthFormat::D16:
+		{
+			settings.mDataType = ESurfaceDataType::USHORT;
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+		}
+		case DepthRenderTexture2D::EDepthFormat::D32:
+		{
+			settings.mDataType = ESurfaceDataType::FLOAT;
+			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
+		}
+		default:
+		{
+			errorState.fail("Unsupported format");
+			return false;
+		}
+		}
 	}
 }

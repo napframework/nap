@@ -281,14 +281,6 @@ namespace nap
 			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
 
 			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex];
-			if (sampler_2d->getTexture().get_type() == RTTI_OF(DepthTexture2D))
-			{
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-			}
-			else
-			{
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			}
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 			imageInfo.imageView = sampler_2d->getTexture().getHandle().getView();
 			imageInfo.sampler = vk_sampler;
@@ -374,14 +366,6 @@ namespace nap
 	void BaseMaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
 	{
 		VkDescriptorImageInfo imageInfo = {};
-		if (texture2D.get_type() == RTTI_OF(DepthTexture2D))
-		{
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-		}
-		else
-		{
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		}
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		imageInfo.imageView = texture2D.getHandle().getView();
 		imageInfo.sampler = sampler;

@@ -52,4 +52,51 @@ namespace nap
 		EFormat				mFormat		= EFormat::RGBA8;					///< Property: 'Format' texture format
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
 	};
+
+
+	/**
+	 * Empty 2D GPU depth texture that can be declared as a resource in JSON or created at runtime.
+	 * You can use this texture to store the result of a render pass by a nap::RenderTarget or
+	 * any other type of render operation. The texture is cleared to 'ClearColor the before first use.
+	 */
+	class NAPAPI DepthRenderTexture2D : public Texture2D
+	{
+		friend class DepthRenderTarget;
+		RTTI_ENABLE(Texture2D)
+	public:
+		/**
+		 * All supported depth texture 2D formats.
+		 */
+		enum class EDepthFormat
+		{
+			D8,				///< 08 bit unsigned, 1 component
+			D16,			///< 16 bit unsigned, 1 component
+			D32				///< 32 bit float, 1 component
+		};
+
+		DepthRenderTexture2D(Core& core);
+
+		/**
+		 * Creates the texture on the GPU.
+		 * @param errorState Contains error state if the function fails.
+		 * @return if the texture was created successfully
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return Vulkan image layout
+		 */
+		virtual VkImageLayout getImageLayout() const override { return mLayout; }
+
+
+		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
+		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
+		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
+		EDepthFormat		mFormat = EDepthFormat::D16;					///< Property: 'Format' texture format
+		float				mClearValue = 1.0f;								///< Property: 'ClearValue' value selection used for clearing the texture
+		bool				mFill = false;									///< Property: 'Fill' if the texture is initialized to black when usage is static
+
+	private:
+		VkImageLayout		mLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+	};
 }

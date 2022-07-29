@@ -4,6 +4,7 @@
 
 // Local Includes
 #include "depthrendertarget.h"
+#include "rendertexture2d.h"
 #include "renderservice.h"
 
 // External Includes
@@ -40,11 +41,6 @@ namespace nap
 
 	bool DepthRenderTarget::init(utility::ErrorState& errorState)
 	{
-		// Set image layout of the target depth texture to depth/stencil read
-		mDepthTexture->mLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_READ_ONLY_OPTIMAL;
-
-		// Must perform layout transition to shader read only before being sampled in fragment shader
-
 		// Set framebuffer size
 		glm::uvec2 size = mDepthTexture->getSize();
 		VkExtent2D framebuffer_size = { size.x, size.y };
@@ -131,7 +127,7 @@ namespace nap
 	}
 
 
-	DepthTexture2D& DepthRenderTarget::getDepthTexture()
+	DepthRenderTexture2D& DepthRenderTarget::getDepthTexture()
 	{
 		return *mDepthTexture;
 	}
