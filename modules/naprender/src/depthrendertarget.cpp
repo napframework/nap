@@ -103,15 +103,6 @@ namespace nap
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
-
-		//// Depth bias (and slope) are used to avoid shadowing artifacts
-		//// Constant depth bias factor (always applied)
-		//float depthBiasConstant = 1.25f;
-
-		//// Slope depth bias factor, applied depending on polygon's slope
-		//float depthBiasSlope = 1.75f;
-
-		//vkCmdSetDepthBias(mRenderService->getCurrentCommandBuffer(), depthBiasConstant, 0, depthBiasSlope);
 	}
 
 
