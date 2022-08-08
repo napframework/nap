@@ -394,7 +394,7 @@ PropertyPath PropertyPath::getParent() const
 	if (hasProperty())
 	{
 		if (mPropertyPath.size() > 1)
-			return { mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1), *mDocument };
+			return { mObjectPath, PPath(mPropertyPath.begin(), mPropertyPath.begin() + mPropertyPath.size() - 1), *mDocument };
 
 		if (mPropertyPath.size() == 1)
 			return { mObjectPath, *mDocument };
