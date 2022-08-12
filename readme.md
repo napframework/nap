@@ -1,6 +1,6 @@
 <br>
 <p align="center">
-  <img width=384 src="https://docs.nap.tech/content/nap_logo_blue.svg">
+  <img width=384 src="https://download.nap.tech/identity/svg/logos/nap_logo_blue.svg">
 </p>
 
 *	[Description](#description)
@@ -52,15 +52,15 @@ NAP documentation can be found online at [docs.nap.tech](https://docs.nap.tech/p
 
 Visit [nap-labs.tech](https://nap-labs.tech) for more examples
 
-![Between Mind and Matter, Nick Verstand](https://docs.nap.tech/additional_content/bmm_1280.jpg)
+![Between Mind and Matter, Nick Verstand](https://download.nap.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
-![Habitat, Heleen Blanken](https://docs.nap.tech/additional_content/habitat_1280.jpg)
+![Habitat, Heleen Blanken](https://download.nap.tech/shared/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://docs.nap.tech/additional_content/shylight_basel_1280.jpg)
+![Shylight, Studio Drift](https://download.nap.tech/shared/shylight_basel_1280.jpg)
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
-![4DSound System](https://docs.nap.tech/additional_content/4D_1280.jpg)
+![4DSound System](https://download.nap.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://docs.nap.tech/additional_content/napkin_1280.jpg)
+![NAP Framework](https://download.nap.tech/shared/napkin_1280.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -117,8 +117,8 @@ To generate a solution and compile the source code you need to have installed:
 		- During installation select **Custom installation** 
 		- Filter on the **LTS** category to download and install Qt 5.12 for your target platform
 	- ARM
-		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
+		- [Download](https://download.nap.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
+		- [Download](https://download.nap.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
