@@ -1,6 +1,6 @@
 <br>
 <p align="center">
-  <img width=384 src="https://docs.nap.tech/content/nap_logo_blue.svg">
+  <img width=384 src="https://download.nap.tech/identity/svg/logos/nap_logo_blue.svg">
 </p>
 
 C++ Style Guide
