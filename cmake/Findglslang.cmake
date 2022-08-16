@@ -100,54 +100,90 @@ elseif(WIN32)
         HINTS ${THIRDPARTY_DIR}/glslang/msvc/x86_64
         )
 
-        # Static libs
-        find_library(GLSLANG_LIBRARY_DEBUG
-             NAMES glslangd
-             PATHS ${GLSLANG_DIR}/lib                   
-             NO_DEFAULT_PATH REQUIRED
+    # Static libs
+    find_library(GENERIC_CODE_GEN_LIBRARY_RELEASE
+            NAMES GenericCodeGen
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
             )
-                
-        find_library(OSDEPENDENT_LIBRARY_DEBUG
-             NAMES OSDependentd
-             PATHS ${GLSLANG_DIR}/lib                   
-             NO_DEFAULT_PATH
-            )
-                
-        find_library(SPIRV_LIBRARY_DEBUG
-             NAMES SPIRVd
-             PATHS ${GLSLANG_DIR}/lib
-             NO_DEFAULT_PATH REQUIRED
-            )
-                
-        find_library(OGLCOMPILER_LIBRARY_DEBUG
-             NAMES OGLCompilerd
-             PATHS ${GLSLANG_DIR}/lib
+
+    find_library(GLSLANG_LIBRARY_RELEASE
+             NAMES glslang
+             PATHS ${GLSLANG_DIR}/lib       
              NO_DEFAULT_PATH REQUIRED
             )
 
-        find_library(GLSLANG_LIBRARY_RELEASE
-             NAMES glslang
-             PATHS ${GLSLANG_DIR}/lib
+    find_library(MACHINE_INDEPENDENT_LIBRARY_RELEASE
+            NAMES MachineIndependent
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(OGLCOMPILER_LIBRARY_RELEASE
+            NAMES OGLCompiler
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(OSDEPENDENT_LIBRARY_RELEASE
+             NAMES OSDependent
+             PATHS ${GLSLANG_DIR}/lib           
              NO_DEFAULT_PATH REQUIRED
             )
                 
-        find_library(OSDEPENDENT_LIBRARY_RELEASE
-             NAMES OSDependent
-             PATHS ${GLSLANG_DIR}/lib
-             NO_DEFAULT_PATH REQUIRED
-            )    
-                
-        find_library(SPIRV_LIBRARY_RELEASE
+    find_library(SPIRV_LIBRARY_RELEASE
              NAMES SPIRV
              PATHS ${GLSLANG_DIR}/lib
              NO_DEFAULT_PATH REQUIRED
             )
+
+    find_library(SPV_REMAPPER_LIBRARY_RELEASE
+            NAMES SPVRemapper
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(GENERIC_CODE_GEN_LIBRARY_DEBUG
+            NAMES GenericCodeGend
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(GLSLANG_LIBRARY_DEBUG
+             NAMES glslangd
+             PATHS ${GLSLANG_DIR}/lib       
+             NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(MACHINE_INDEPENDENT_LIBRARY_DEBUG
+            NAMES MachineIndependentd
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(OGLCOMPILER_LIBRARY_DEBUG
+            NAMES OGLCompilerd
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
+
+    find_library(OSDEPENDENT_LIBRARY_DEBUG
+             NAMES OSDependentd
+             PATHS ${GLSLANG_DIR}/lib           
+             NO_DEFAULT_PATH REQUIRED
+            )
                 
-        find_library(OGLCOMPILER_LIBRARY_RELEASE
-             NAMES OGLCompiler
+    find_library(SPIRV_LIBRARY_DEBUG
+             NAMES SPIRVd
              PATHS ${GLSLANG_DIR}/lib
              NO_DEFAULT_PATH REQUIRED
-            )        
+            )
+
+    find_library(SPV_REMAPPER_LIBRARY_DEBUG
+            NAMES SPVRemapperd
+            PATHS ${GLSLANG_DIR}/lib
+            NO_DEFAULT_PATH REQUIRED
+            )
 endif()
 
 # Include directory
