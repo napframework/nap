@@ -282,7 +282,7 @@ namespace nap
 
                     // insert curve point on click
                     const float maxDist = 0.1f;
-                    if(abs(y_in_curve - y_in_segment) < maxDist)
+                    if(std::abs(y_in_curve - y_in_segment) < maxDist)
                     {
                         mState.mAction = sequenceguiactions::createAction<sequenceguiactions::HoveringCurve>(
                             track.mID,
