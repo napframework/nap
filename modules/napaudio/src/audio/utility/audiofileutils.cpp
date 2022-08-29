@@ -45,16 +45,14 @@ namespace nap
 			}
 			
 			// Set the format settings for the handle
-			errorState.check(mpg123_format_none(mpgHandle) == MPG123_OK, "Error loading mp3 while setting format.");
-			errorState.check(mpg123_format(mpgHandle, 44100, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format.");
-			errorState.check(mpg123_format(mpgHandle, 48000, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format.");
-			
-			// Clean up when an error has occured
-			if (!errorState.toString().empty())
-			{
-				mpg123_delete(mpgHandle);
-				return false;
-			}
+			if(!errorState.check(mpg123_format_none(mpgHandle) == MPG123_OK, "Error loading mp3 while setting format.") ||
+               !errorState.check(mpg123_format(mpgHandle, 44100, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format.") ||
+               !errorState.check(mpg123_format(mpgHandle, 48000, MPG123_MONO | MPG123_STEREO, MPG123_ENC_FLOAT_32) == MPG123_OK, "Error loading mp3 while setting format."))
+            {
+                // Clean up when an error has occured
+                mpg123_delete(mpgHandle);
+                return false;
+            }
 			
 			// Request the buffersize
 			auto bufferSize = mpg123_outblock(mpgHandle);
