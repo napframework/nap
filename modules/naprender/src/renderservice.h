@@ -14,6 +14,7 @@
 #include <windowevent.h>
 #include <rendertarget.h>
 #include <material.h>
+#include <rect.h>
 
 namespace nap
 {
@@ -28,8 +29,10 @@ namespace nap
 	class RenderableMesh;
 	class IMesh;
 	class MaterialInstance;
+	class ComputeMaterialInstance;
+	class ComputeComponentInstance;
 	class Texture2D;
-	class GPUBuffer;
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -43,17 +46,18 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
 		/**
-		 * Supported Vulkan device types. 
+		 * Supported Vulkan device types.
 		 */
 		enum class EPhysicalDeviceType : int
 		{
-			Integrated	= 1,	///< Integrated graphics card
-			Discrete	= 2,	///< Discrete (dedicated) graphics card
-			Virtual		= 3,	///< Virtual graphics card
-			CPU			= 4		///< CPU as graphics card
+			Integrated = 1,	///< Integrated graphics card
+			Discrete = 2,	///< Discrete (dedicated) graphics card
+			Virtual = 3,	///< Virtual graphics card
+			CPU = 4			///< CPU as graphics card
 		};
 
 		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		bool						mCompute = true;												///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected. 
 		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
@@ -62,8 +66,9 @@ namespace nap
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
 		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		bool						mEnableRobustBufferAccess = false;								///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
 		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
+		virtual rtti::TypeInfo		getServiceType() const override { return RTTI_OF(RenderService); }
 	};
 
 
@@ -74,14 +79,14 @@ namespace nap
 	/**
 	 * Vulkan physical device (GPU), binds together physical device information for better management.
 	 */
-	class NAPAPI PhysicalDevice
+	class NAPAPI PhysicalDevice final
 	{
 	public:
 		// Default constructor, invalid object
 		PhysicalDevice() = default;
 
 		// Called by the render service
-		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, int queueIndex);
+		PhysicalDevice(VkPhysicalDevice device, const VkPhysicalDeviceProperties& properties, const VkQueueFlags& queueCapabilities, int queueIndex);
 
 		/**
 		 * @return Physical device handle
@@ -104,16 +109,112 @@ namespace nap
 		const VkPhysicalDeviceFeatures& getFeatures() const { return mFeatures; }
 
 		/**
+		 * @return Queue capabilities of the selected queue
+		 */
+		const VkQueueFlags& getQueueCapabilities() const { return mQueueCapabilities; }
+
+		/**
 		 * @return if the device is valid
 		 */
-		bool isValid() const	{ return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
+		bool isValid() const { return mDevice != VK_NULL_HANDLE && mQueueIndex >= 0; }
 
 	private:
 		VkPhysicalDevice			mDevice = VK_NULL_HANDLE;			///< Handle to physical device
 		VkPhysicalDeviceProperties	mProperties;						///< Properties of the physical device
 		VkPhysicalDeviceFeatures	mFeatures;							///< Physical device features
-		int							mQueueIndex = -1;					///< Graphics queue index
+		VkQueueFlags				mQueueCapabilities;					///< Capabilities of the selected queue
+		int							mQueueIndex = -1;					///< Queue index
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Display
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Groups together important display information
+	 */
+	class NAPAPI Display final
+	{
+	public:
+		/**
+		 * Extracts display information.
+		 * Index must be >= 0 && < SDL::getDisplayCount()
+		 * @param index display index
+		 */
+		Display(int index);
+
+		/**
+		 * @return display index
+		 */
+		int getIndex() const { return mIndex; }
+
+		/**
+		 * @return diagonal dpi
+		 */
+		float getDiagonalDPI() const { return mDDPI; }
+
+		/**
+		 * @return horizontal dpi
+		 */
+		float getHorizontalDPI() const { return mHDPI; }
+
+		/**
+		 * @return vertical dpi
+		 */
+		float getVerticalDPI() const { return mVDPI; }
+
+		/**
+		 * @return display name
+		 */
+		const std::string& getName() const { return mName; }
+
+		/**
+		 * @return min location of desktop area of this display, with the primary display located at 0,0
+		 */
+		const glm::ivec2& getMin()	const { return mMin; }
+
+		/**
+		 * @return max location of desktop area of this display, with the primary display located at 0,0
+		 */
+		const glm::ivec2& getMax() const { return mMax; }
+
+		/**
+		 * @return desktop area of this display, with the primary display located at 0,0
+		 */
+		math::Rect getBounds() const;
+
+		/**
+		 * @return if display information was extracted successfully on construction
+		 */
+		bool isValid() const { return mValid; }
+
+		/**
+		 * @return human readable string
+		 */
+		std::string toString() const;
+
+		/**
+		 * @return if two displays are the same based on hardware index.
+		 */
+		bool operator== (const Display& rhs) const							{ return rhs.getIndex() == this->getIndex(); }
+
+		/**
+		 * @return if two displays values are not the same based on hardware index
+		 */
+		bool operator!=(const Display& rhs) const							{ return !(rhs == *this); }
+
+	private:
+		std::string mName;						///< Display name
+		int mIndex = -1;						///< Display index
+		float mDDPI = 96.0f;					///< Diagonal DPI
+		float mHDPI = 96.0f;					///< Horizontal DPI
+		float mVDPI = 96.0f;					///< Vertical DPI
+		glm::ivec2 mMin = { 0, 0 };				///< Min display bound position
+		glm::ivec2 mMax = { 0, 0 };				///< Max display bound position
+		bool mValid = false;					///< If valid after construction
+	};
+	using DisplayList = std::vector<Display>;
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -121,7 +222,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Main interface for 2D and 3D rendering operations.
+	 * Main interface for Vulkan Render (2D/3D) and Vulkan Compute operations.
 	 *
 	 * This service initializes the Vulkan back-end and provides an interface to render objects to a specific target (screen or back-buffer).
 	 * The service is shut down automatically on exit, and destroys all left over resources.
@@ -162,6 +263,7 @@ namespace nap
 	{
 		friend class Texture2D;
 		friend class GPUBuffer;
+		friend class RenderWindow;
 		RTTI_ENABLE(Service)
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
@@ -176,10 +278,10 @@ namespace nap
 			 * Returns if the pipeline has been created and is set.
 			 * @return if the pipeline has been created and is set.
 			 */
-			bool isValid() const	{ return mPipeline != nullptr && mLayout != nullptr; }
+			bool isValid() const	{ return mPipeline != VK_NULL_HANDLE && mLayout != VK_NULL_HANDLE; }
 
-			VkPipeline				mPipeline = nullptr;	///< Handle to Vulkan pipeline
-			VkPipelineLayout		mLayout = nullptr;		///< Handle to Vulkan pipeline layout
+			VkPipeline				mPipeline = VK_NULL_HANDLE;		///< Handle to Vulkan pipeline
+			VkPipelineLayout		mLayout = VK_NULL_HANDLE;		///< Handle to Vulkan pipeline layout
 		};
 
 		/**
@@ -299,6 +401,42 @@ namespace nap
 		void endRecording();
 
 		/**
+		 * Starts a compute operation. Call this when you want to start recording general purpose computate operations to the compute queue.
+		 * Always call RenderService::endComputeRecording() afterwards, on success.
+		 * Must be called before any (headless) rendering has been recorded in the current frame.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginComputeRecording())
+		 *		{
+		 *			...
+		 *			mRenderService->endComputeRecording();
+		 *		}
+		 *		...
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 * @return if the compute record operation started successfully.
+		 */
+		bool beginComputeRecording();
+
+		/**
+		 * Ends a compute operation, submits the recorded compute command buffer to the compute queue.
+		 * Always call this function after a successful call to nap::RenderService::beginComputeRecording().
+		 * 
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginComputeRecording(*mRenderWindow))
+		 *		{
+		 *			...
+		 *			mRenderService->endComputeRecording();
+		 *		}
+		 *		...
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 */
+		void endComputeRecording();
+
+		/**
 		 * Renders all available nap::RenderableComponent(s) in the scene to a specific renderTarget.
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects).
 		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
@@ -338,6 +476,13 @@ namespace nap
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
+		 * Calls onCompute() on a specific set of compute component instances, in the order specified.
+		 *
+		 * @param comps the compute components to call onCompute
+		 */
+		void computeObjects(const std::vector<ComputeComponentInstance*>& comps);
+
+		/**
 		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
@@ -365,6 +510,32 @@ namespace nap
 		RenderWindow* findWindow(uint id) const;
 
 		/**
+		 * Returns the total number of displays.
+		 * Note that changes to display configuration are not considered when application is running.
+		 * @return total number of displays
+		 */
+		int getDisplayCount() const;
+
+		/**
+		 * Find a display based on the index provided.
+		 * Note that changes to display configuration are not considered when application is running.
+		 * @param index the number of the display to find
+		 * @return the display, nullptr if not found
+		 */
+		const Display* findDisplay(int index) const;
+
+		/**
+		 * Returns the display that currently contains the given window. 
+		 * @return display that contains the given window, nullptr if not found
+		 */
+		const Display* findDisplay(const nap::RenderWindow& window) const;
+
+		/**
+		 * @return all available displays
+		 */
+		const DisplayList& getDisplays() const;
+
+		/**
 		 * Add a window event that is processed later, ownership is transferred here.
 		 * The window number in the event is used to find the right render window to forward the event to.
 		 * @param windowEvent the window event to add.
@@ -386,7 +557,7 @@ namespace nap
 		/**
 		 * Returns a Vulkan pipeline for the given render target, mesh and material combination.
 		 * Internally pipelines are cached, a new pipeline is created when a new combination is encountered.
-		 * Because of this initial frames are slower to render, until all combinations are cached and returned from the pool.
+		 * Because of this, initial frames are slower to render, until all combinations are cached and returned from the pool.
 		 * Pipeline creation is considered to be a heavy operation, take this into account when designing your application.
 		 *
 		 * Use this function inside nap::RenderableComponentInstance::onDraw() to find the right pipeline before rendering.
@@ -402,6 +573,25 @@ namespace nap
 		 * @return new or cached pipeline.
 		 */
 		Pipeline getOrCreatePipeline(const IRenderTarget& renderTarget, const IMesh& mesh, const MaterialInstance& materialInstance, utility::ErrorState& errorState);
+
+		/**
+		 * Returns a Vulkan compute pipeline for the given compute material.
+		 * Internally pipelines are cached, a new compute pipeline is created when a new compute material is encountered.
+		 * Because of this, initial frames are slower to render, until all compute materials are cached and returned from the pool.
+		 * Pipeline creation is considered to be a heavy operation, take this into account when designing your application.
+		 *
+		 * Use this function inside nap::ComputeComponentInstance::onCompute() to find the right pipeline before dispatching
+		 * a compute shader.
+		 * ~~~~~{.cpp}
+		 *		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(compute_material_instance, error_state);
+		 *		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
+		 * ~~~~~
+		 * 
+		 * @param computeMaterialInstance the compute material instance
+		 * @param errorState contains the error if the pipeline can't be created
+		 * @return new or cached compute pipeline.
+		 */
+		Pipeline getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState);
 
 		/**
 		 * Returns a Vulkan pipeline for the given render target and Renderable-mesh combination.
@@ -444,6 +634,7 @@ namespace nap
 		 * Returns a descriptor set cache based on the given layout.
 		 * The cache is used to acquire descriptor sets.
 		 * @param layout the descriptor set layout to create the cache for.
+		 * @param key
 		 * @return descriptor set cache for the given layout.
 		 */
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
@@ -468,14 +659,14 @@ namespace nap
 		 * nap::beginRecording(RenderWindow&) and only valid until the recording operation is ended.
 		 * @return the command buffer that is being recorded.
 		 */
-		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != nullptr); return mCurrentCommandBuffer; }
+		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != VK_NULL_HANDLE); return mCurrentCommandBuffer; }
 		
 		/**
 		 * Returns the window that is being rendered to, only valid between a
 		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
 		 * @return the window currently being rendered to, nullptr if not set.
 		 */
-		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != nullptr); return mCurrentRenderWindow; }
+		RenderWindow* getCurrentRenderWindow()										{ assert(mCurrentRenderWindow != VK_NULL_HANDLE); return mCurrentRenderWindow; }
 
 		/**
 		 * Returns the Vulkan runtime instance.
@@ -503,7 +694,7 @@ namespace nap
 		 * but could be higher.
 		 * @return the version of Vulkan supported by the device
 		 */
-		uint32_t getPhysicalDeviceVersion() const									{ return mPhysicalDevice.getProperties().apiVersion; }
+		uint32 getPhysicalDeviceVersion() const										{ return mPhysicalDevice.getProperties().apiVersion; }
 
 		/**
 		 * All physical device hardware properties.
@@ -553,10 +744,29 @@ namespace nap
 		bool getWideLinesSupported() const											{ return mWideLinesSupported; }
 
 		/**
+		 * Returns if point and wire-frame rasterization fill modes are supported.
+		 * @return if point and wire-frame rasterization fill modes are supported
+		 */
+		bool getNonSolidFillSupported() const										{ return mNonSolidFillModeSupported; }
+
+		/**
+		 * Checks if the selected polygon mode is supported by current selected device.
+		 * @param mode the mode to check.
+		 */
+		bool getPolygonModeSupported(EPolygonMode mode)								{ return mode == EPolygonMode::Fill || mNonSolidFillModeSupported; }
+
+		/**
 		 * Returns if rendering large points is supported.
 		 * @return if rendering large points is supported.
 		 */
 		bool getLargePointsSupported() const										{ return mLargePointsSupported; }
+
+		/**
+		 * Configurable setting.
+		 * When enabled fonts and general scaling is adjusted for high dpi monitors.
+		 * @return if high dpi mode is enabled
+		 */
+		bool getHighDPIEnabled() const												{ return mEnableHighDPIMode; }
 
 		/**
 		 * Returns the (system default) number of anisotropic filter samples. 
@@ -597,8 +807,14 @@ namespace nap
 		VkQueue getQueue() const													{ return mQueue; }
 
 		/**
-		 * Returns an empty texture that is available on the GPU for temporary biding or storage.
-		 * @return empty texture that is available on the GPU
+		 * Returns true if the selected device has compute capability, else returns false.
+		 * @return if the selected device has compute capability
+		 */
+		bool isComputeAvailable() const;
+
+		/**
+		 * Returns an empty texture that is available on the GPU for temporary binding or storage.
+		 * @return empty texture that is available on the GPU.
 		 */
 		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
 
@@ -748,6 +964,11 @@ namespace nap
 		virtual void preResourcesLoaded() override;
 
 		/**
+		 * Invoked when the resource manager is about to load resources.
+		 */
+		virtual void postResourcesLoaded() override;
+
+		/**
 		 * Process all received window events.
 		 * @param deltaTime time in seconds in between frames.
 		 */
@@ -797,10 +1018,22 @@ namespace nap
 		void requestTextureDownload(Texture2D& texture);
 
 		/**
+		 * Request a buffer clear
+		 * @param buffer the buffer to clear.
+		 */
+		void requestBufferClear(GPUBuffer& buffer);
+
+		/**
 		 * Request a Vulkan buffer transfer, from staging buffer to GPU.
-		 * @param buffer the butter to upload to the GPU.
+		 * @param buffer the buffer to upload to the GPU.
 		 */
 		void requestBufferUpload(GPUBuffer& buffer);
+
+		/**
+		 * Request a Vulkan buffer transfer, from GPU buffer to staging buffer.
+		 * @param buffer the buffer to download data into.
+		 */
+		void requestBufferDownload(GPUBuffer& buffer);
 
 		/**
 		 * Deletes all buffer upload requests.
@@ -822,15 +1055,15 @@ namespace nap
 		void downloadData();
 		
 		/**
-		 * Called by transferdata(), uploads all texture and buffer data to the GPU.
+		 * Called by transferdata(), uploads all texture and buffer data to the GPU. Also performs requested clear operations.
 		 */
 		void uploadData();
 
 		/**
-		 * Checks if any pending texture downloads are ready.
-		 * Textures for which the download has completed are notified.
+		 * Checks if any pending texture  and buffer downloads are ready.
+		 * Textures and buffers for which the download has completed are notified.
 		 */
-		void updateTextureDownloads();
+		void updateDownloads();
 		
 		/**
 		 * Called by the render engine at the appropriate time to delete all queued Vulkan resources.
@@ -844,9 +1077,34 @@ namespace nap
 		 */
 		void waitDeviceIdle();
 
+		/**
+		 * Writes the render service .ini file to disk
+		 * The .ini file is used to (re)-store render settings in between sessions.
+		 * @param path path to file to write
+		 * @param error contains the error if the write operation fails
+		 * @return if write operation succeeded
+		 */
+		bool writeIni(const std::string& path, utility::ErrorState error);
+
+		/**
+		 * Loads settings from the .ini file.
+		 * The .ini file is used to (re)-store render settings in between sessions.
+		 * @param path path to file to load
+		 * @param error contains the error if the load operation fails.
+		 * @return if the file is read
+		 */
+		bool loadIni(const std::string& path, utility::ErrorState error);
+
+		/**
+		 * Attempts to restore window from a previous session.
+		 * @param window window to restore
+		 */
+		void restoreWindow(nap::RenderWindow& window);
+
 	private:
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
+		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
 		using TextureSet = std::unordered_set<Texture2D*>;
@@ -855,16 +1113,31 @@ namespace nap
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
 
 		/**
+		 * Bit flags to keep track of what type of queue submissions have occurred within the current frame.
+		 * Each entry represents one of the command buffers that can be used between beginFrame() and endFrame().
+		 */
+		enum EQueueSubmitOp : uint
+		{
+			Rendering			= 0x01,												///< Window rendering queue submission
+			HeadlessRendering	= 0x02,												///< Render target rendering queue submission
+			Compute				= 0x04												///< Compute dispatch compute queue submission
+		};
+		using QueueSubmitOps = uint;
+
+		/**
 		 * Binds together all the Vulkan data for a frame.
 		 */
 		struct Frame
 		{
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
+			std::vector<GPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
-			VkCommandBuffer						mDownloadCommandBuffers;			///< Command buffer used to download data from GPU to CPU
-			VkCommandBuffer						mHeadlessCommandBuffers;			///< Command buffer used to record operations not associated with a window.
+			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
+			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window
+			VkCommandBuffer						mComputeCommandBuffer;				///< Command buffer used to record compute operations
 			VulkanObjectDestructorList			mQueuedVulkanObjectDestructors;		///< All Vulkan resources queued for destruction
+			QueueSubmitOps						mQueueSubmitOps = 0U;				///< Queue submit operations that occurred in the current frame
 		};
 
 		/**
@@ -885,20 +1158,23 @@ namespace nap
 		bool									mAnisotropicFilteringSupported = false;
 		bool									mWideLinesSupported = false;
 		bool									mLargePointsSupported = false;
+		bool									mNonSolidFillModeSupported = false;
 		uint32									mAnisotropicSamples = 1;
-		WindowList								mWindows;												
+		WindowList								mWindows;
+		DisplayList								mDisplays;
 		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
 		std::unique_ptr<Texture2D>				mEmptyTexture;
+
 		TextureSet								mTexturesToClear;
 		TextureSet								mTexturesToUpload;
+		BufferSet								mBuffersToClear;
 		BufferSet								mBuffersToUpload;
 
 		int										mCurrentFrameIndex = 0;
 		std::vector<Frame>						mFramesInFlight;
-		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
-		RenderWindow*							mCurrentRenderWindow = nullptr;		
+		RenderWindow*							mCurrentRenderWindow = nullptr;
 
 		DescriptorSetCacheMap					mDescriptorSetCaches;
 		std::unique_ptr<DescriptorSetAllocator> mDescriptorSetAllocator;
@@ -908,19 +1184,26 @@ namespace nap
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
 		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
+		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
+
 		VkCommandPool							mCommandPool = VK_NULL_HANDLE;
+		VkQueue									mQueue = VK_NULL_HANDLE;
+
+		PipelineCache							mPipelineCache;
+		ComputePipelineCache					mComputePipelineCache;
+
 		VkFormat								mDepthFormat = VK_FORMAT_UNDEFINED;
 		VkSampleCountFlagBits					mMaxRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-		VkQueue									mQueue = VK_NULL_HANDLE;
-		PipelineCache							mPipelineCache;
+
 		uint32									mAPIVersion = 0;
 		bool									mInitialized = false;
 		bool									mSDLInitialized = false;
 		bool									mShInitialized = false;
-		UniqueMaterialCache						mMaterials;
 		bool									mHeadless = false;
+
+		UniqueMaterialCache						mMaterials;
+
+		// Cache read from ini file, contains saved settings
+		std::vector<std::unique_ptr<rtti::Object>> mCache;
 	};
 } // nap
-
-
-

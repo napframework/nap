@@ -38,10 +38,8 @@ namespace nap
 		mVideoService = getCore().getService<VideoService>();
 		mGuiService = getCore().getService<IMGuiService>();
 
-		// Get the resource manager and load our scene / resources
+		// Get the resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("videomodulation.json", error))
-			return false;
 		
 		// Get important entities
 		rtti::ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -61,7 +59,11 @@ namespace nap
 		// Get current video and mesh index for gui later on
 		SelectVideoMeshComponentInstance& mesh_selector = mDisplacementEntity->getComponent<SelectVideoMeshComponentInstance>();
 		mCurrentMesh = mesh_selector.getIndex();
-		
+
+		// Sample theme colors for background
+		mColorOne = mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>();
+		mColorTwo = mGuiService->getPalette().mHighlightColor4.convert<RGBColorFloat>();
+
 		// Start video playback
 		mVideoPlayer->play();
 		
@@ -88,13 +90,21 @@ namespace nap
 
 		// Push background colors to material
 		MaterialInstance& background_material = mBackgroundEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		background_material.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("colorOne")->setValue({ mBackgroundColorOne.getRed(), mBackgroundColorOne.getGreen(), mBackgroundColorOne.getBlue() });		
-		background_material.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("colorTwo")->setValue({ mBackgroundColorTwo.getRed(), mBackgroundColorTwo.getGreen(), mBackgroundColorTwo.getBlue() });
+		auto* ubo = background_material.getOrCreateUniform("UBO");
+		ubo->getOrCreateUniform<UniformVec3Instance>("colorOne")->setValue(mColorOne);		
+		ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
 
 		// Push displacement properties to material
 		MaterialInstance& displaceme_material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-		displaceme_material.getOrCreateUniform("DisplacementUBO")->getOrCreateUniform<UniformFloatInstance>("value")->setValue(mDisplacement);
-		displaceme_material.getOrCreateUniform("DisplacementUBO")->getOrCreateUniform<UniformFloatInstance>("randomness")->setValue(mRandomness);
+		ubo = displaceme_material.getOrCreateUniform("DisplacementUBO");
+		ubo->getOrCreateUniform<UniformFloatInstance>("value")->setValue(mDisplacement);
+		ubo->getOrCreateUniform<UniformFloatInstance>("randomness")->setValue(mRandomness);
+
+		// Push colors
+		ubo = displaceme_material.getOrCreateUniform("UBO");
+		ubo->getOrCreateUniform<UniformVec3Instance>("colorOne")->setValue(mGuiService->getPalette().mFront1Color.convert<RGBColorFloat>());
+		ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo")->setValue(mColorTwo.toVec3());
+		ubo->getOrCreateUniform<UniformVec3Instance>("colorThr")->setValue(mColorOne.toVec3());
 	}
 	
 	
@@ -134,10 +144,10 @@ namespace nap
 
 		// Render everything to screen
 		// Stat recording commands for the main window
+		mRenderWindow->setClearColor({ mColorOne, 1.0f });
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Clear target and begin render pass
-			mRenderWindow->setClearColor({ mClearColor.toVec3(), 1.0f });
 			mRenderWindow->beginRendering();
 
 			// Get background plane to render
@@ -236,8 +246,8 @@ namespace nap
 		}
 		if (ImGui::CollapsingHeader("Background Colors"))
 		{
-			ImGui::ColorEdit3("Color One", mBackgroundColorOne.getData());
-			ImGui::ColorEdit3("Color Two", mBackgroundColorTwo.getData());
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
 		}
 		
 		if (ImGui::CollapsingHeader("Playback"))

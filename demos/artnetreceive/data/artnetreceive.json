@@ -1,0 +1,62 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ArtNetReceiver",
+            "mID": "ArtNetReceiver",
+            "IP Address": "",
+            "Port": 6454
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "ArtNetEntity",
+            "Components": [
+                {
+                    "Type": "nap::ArtNetInputComponent",
+                    "mID": "nap::ArtNetInputComponent",
+                    "Net": 0,
+                    "SubNet": 0,
+                    "Universe": 0,
+                    "Receive All": true
+                },
+                {
+                    "Type": "nap::ArtNetHandlerComponent",
+                    "mID": "nap::ArtNetHandlerComponent",
+                    "Input": "./nap::ArtNetInputComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "ArtNet Receiving Demo",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "ArtNetEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}

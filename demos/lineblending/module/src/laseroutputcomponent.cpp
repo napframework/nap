@@ -10,6 +10,7 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <lineutils.h>
+#include <etherdreaminterface.h>
 
 using namespace nap::math;
 
@@ -36,23 +37,20 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
-static constexpr float etherMin() { return static_cast<float>(std::numeric_limits<int16_t>::min()); }
-static constexpr float etherMax() { return static_cast<float>(std::numeric_limits<int16_t>::max()); }
-
 
 // Interpolate etherdream value between min / max values
 static int16_t sEtherInterpolate(float value, float min, float max, bool flip)
 {
 	return (int16_t)fit<float>(value, min, max, 
-		flip ? etherMax() : etherMin(),
-		flip ? etherMin() : etherMax());
+		flip ? nap::EtherDreamInterface::etherMax() : nap::EtherDreamInterface::etherMin(),
+		flip ? nap::EtherDreamInterface::etherMin() : nap::EtherDreamInterface::etherMax());
 }
 
 
 // Interpolate normalized color channel to min / max laser value 
 static int16_t sEtherInterpolateColor(float inValue)
 {
-	return static_cast<int16_t>(lerp<float>(0.0f, etherMax(), inValue));
+	return static_cast<int16_t>(lerp<float>(0.0f, nap::EtherDreamInterface::etherMax(), inValue));
 }
 
 

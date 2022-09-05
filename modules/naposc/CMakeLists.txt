@@ -39,18 +39,7 @@ endif()
 package_module()
 
 # Package oscpack into platform release
-install(FILES ${THIRDPARTY_DIR}/oscpack/LICENSE DESTINATION thirdparty/oscpack)
-install(FILES ${THIRDPARTY_DIR}/oscpack/README DESTINATION thirdparty/oscpack)
-install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osc 
-                  ${THIRDPARTY_DIR}/oscpack/ip 
-        DESTINATION thirdparty/oscpack/include
-        PATTERN "*.cpp" EXCLUDE)
-if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/msvc64/ DESTINATION thirdparty/oscpack/lib)
-elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/osx/install/lib/ DESTINATION thirdparty/oscpack/lib)
-elseif(ANDROID)
-    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/android/install/lib/ DESTINATION thirdparty/oscpack/lib)
-else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/oscpack/linux/install/lib/ DESTINATION thirdparty/oscpack/lib)
-endif()
+install(FILES ${THIRDPARTY_DIR}/oscpack/source/LICENSE DESTINATION thirdparty/oscpack)
+install(FILES ${THIRDPARTY_DIR}/oscpack/source/README DESTINATION thirdparty/oscpack)
+install(DIRECTORY ${OSCPACK_INCLUDE_DIRS}/ DESTINATION thirdparty/oscpack/include PATTERN "*.cpp" EXCLUDE)
+install(DIRECTORY ${OSCPACK_LIBS_DIR}/ DESTINATION thirdparty/oscpack/lib)

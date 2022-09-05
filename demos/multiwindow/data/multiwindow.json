@@ -186,6 +186,7 @@
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -239,6 +240,7 @@
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [
                             {
                                 "Type": "nap::Sampler2D",
@@ -306,6 +308,7 @@
                     "MaterialInstance": {
                         "Material": "WorldMaterial",
                         "Uniforms": [],
+                        "StorageUniforms": [],
                         "Samplers": [],
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -385,6 +388,7 @@
             "Type": "nap::Material",
             "mID": "PlaneMaterial",
             "Uniforms": [],
+            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -436,6 +440,7 @@
                     ]
                 }
             ],
+            "StorageUniforms": [],
             "Samplers": [
                 {
                     "Type": "nap::Sampler2D",
@@ -474,6 +479,7 @@
             "mID": "PlaneMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -505,10 +511,12 @@
             "Height": 512,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -525,10 +533,12 @@
             "Height": 512,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -545,10 +555,12 @@
             "Height": 512,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -600,6 +612,7 @@
             "mID": "WorldMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0,

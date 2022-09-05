@@ -41,7 +41,7 @@ namespace nap
 
 		/**
 		 * Processes all received web-socket events from all registered web socket servers.
-		 * The events are forwarded to all the the registered websocket components.
+		 * The events are forwarded to all the registered websocket components.
 		 * This function is called automatically by the application loop.
 		 * @param deltaTime time in between calls in seconds.
 		 */

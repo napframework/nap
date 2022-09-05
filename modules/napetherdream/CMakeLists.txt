@@ -4,7 +4,7 @@ project(mod_napetherdream)
 # add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 filter_platform_specific_files(SOURCES)
-add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}" "${NATIVE_SOURCES}" "${ANDROID_SOURCES}")
+add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
 
 # set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY FALSE)
 
@@ -22,7 +22,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src ${ETHERDREAM_INCLUDE_DIR})
 
 # link with external libs
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -52,13 +52,10 @@ endif()
 package_module()
 
 # Package etherdreamlib into platform release
-if(ANDROID)
-    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin/${ANDROID_ABI})
-else()
-    install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
-endif()
+install(FILES $<TARGET_FILE:etherdreamlib> DESTINATION thirdparty/etherdream/bin)
+
 # Package etherdreamlib headers
-install(DIRECTORY ${ETHERDREAM_INCLUDE_DIRS}/ DESTINATION thirdparty/etherdream/include)    
+install(DIRECTORY ${ETHERDREAM_INCLUDE_DIR}/ DESTINATION thirdparty/etherdream/include)    
 if(WIN32)
     # Package etherdream IMPLIB on Windows
     get_target_property(ETHERDREAM_IMPLIB etherdreamlib IMPORTED_IMPLIB_RELEASE)

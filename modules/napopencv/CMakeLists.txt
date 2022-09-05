@@ -1,10 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napopencv)
 
 # add all cpp files to SOURCES
@@ -15,11 +9,11 @@ module_json_to_cmake()
 
 # Find OpenCV
 if(WIN32)
-    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc REQUIRED) 
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/msvc/x86_64 REQUIRED) 
 elseif (APPLE)
-    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/osx/lib/cmake/opencv4 REQUIRED) 
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/macos/x86_64/lib/cmake/opencv4 REQUIRED) 
 elseif(UNIX)
-    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/linux/lib/cmake/opencv4 REQUIRED) 
+    find_package(OpenCV PATHS ${THIRDPARTY_DIR}/opencv/linux/${ARCH}/lib/cmake/opencv4 REQUIRED) 
 endif()
 
 # compile shared lib as target
@@ -55,11 +49,11 @@ package_module()
 
 # Install opencv directory into package
 if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/ DESTINATION thirdparty/opencv)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/msvc/x86_64/ DESTINATION thirdparty/opencv)
 elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/osx/ DESTINATION thirdparty/opencv)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/macos/x86_64/ DESTINATION thirdparty/opencv)
 else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/linux/ DESTINATION thirdparty/opencv)
+    install(DIRECTORY ${THIRDPARTY_DIR}/opencv/linux/${ARCH}/ DESTINATION thirdparty/opencv)
 endif()
 
 # Copy over opencv dll's to build directory 

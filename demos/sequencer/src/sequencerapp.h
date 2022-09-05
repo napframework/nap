@@ -91,6 +91,5 @@ namespace nap
 		
 		ObjectPtr<ParameterGUI> mParameterGUI = nullptr;				///< Displays the parameters
 		ObjectPtr<SequenceEditorGUI> mSequenceEditorGUI = nullptr;		///< Displays the sequence editor gui
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	///< GUI text highlight color
 	};
 }

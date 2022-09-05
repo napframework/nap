@@ -5,7 +5,6 @@
 // Local Includes
 #include <rtti/rtti.h>
 #include <rtti/path.h>
-
 #include <glm/glm.hpp>
 #include <glm/fwd.hpp>
 #include <glm/gtc/quaternion.hpp>
@@ -64,7 +63,10 @@
 
 		cls.def(float() * pybind11::self);
 
-		module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
+		// TODO: This registration, with the upgrade to GLM GLM 0.9.9.8, is no longer available (if I'm not mistaken)
+		// We don't use it, if anyone does, feel free to update it, otherwise it will be removed.
+		// We had to move to a newer version of GLM because of binary compatibility issues with GCC.
+		// module.def("rotate", &glm::rotate<glm::quat::value_type, glm::highp>);
 	}
 
 #endif // NAP_ENABLE_PYTHON

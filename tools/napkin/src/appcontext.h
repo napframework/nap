@@ -115,9 +115,14 @@ namespace napkin
 		const nap::ProjectInfo* loadProject(const QString& projectFilename);
 
 		/**
-		 * @return The currently loaded project or a nullptr when no project is loaded
+		 * @return The current loaded project or a nullptr when no project is loaded
 		 */
 		const nap::ProjectInfo* getProjectInfo() const;
+
+		/**
+		 * @return The current loaded project or a nullptr when no project is loaded
+		 */
+		nap::ProjectInfo* getProjectInfo();
 
 		/**
 		 * Reload the current document from disk
@@ -145,6 +150,12 @@ namespace napkin
 		 * @param filename The file to save the data to.
 		 */
         bool saveDocumentAs(const QString& filename);
+
+		/**
+		 * 
+		 * Returns if the current data file is set as project default, asserts if no document is loaded.
+		 */
+		bool documentIsProjectDefault() const;
 
 		/**
 		 * Serialize the current document to a string
@@ -255,16 +266,6 @@ namespace napkin
 		 * Disable opening of project from recently opened file list on startup
 		 */
 		void setOpenRecentProjectOnStartup(bool b);
-
-		/**
-		 * Set to exit upon failure loading any project
-		 */
-		void setExitOnLoadFailure(bool b);
-
-		/**
-		 * Set to exit upon success loading any project
-		 */
-		void setExitOnLoadSuccess(bool b);
 
 	Q_SIGNALS:
 		/**
@@ -390,11 +391,12 @@ namespace napkin
 		void logMessage(nap::LogMessage msg);
 
 		/**
-		 * Emits when an application-wide blocking operation started, progresses or finishes
-		 * @param fraction How far we are along the process. A value of 0 is indeterminate, 1 means done and anything in-between means it's underway.
+		 * Shows a progress dialog based on given fraction and message.
+		 * Dialog closes automatically when fraction is set to 0.0
+		 * @param fraction How far we are along the process, from 0.0 to 1.0
 		 * @param message A short message describing what's happening.
 		 */
-		void blockingProgressChanged(float fraction, const QString& message = {});
+		void progressChanged(float fraction, const QString& message = {});
 
 		/**
 		 * Qt Signal
@@ -435,10 +437,9 @@ namespace napkin
 		nap::Core mCore;															// The nap::Core
 		ThemeManager mThemeManager;			 										// The theme manager
 		ResourceFactory mResourceFactory;											// Le resource factory
-		bool mExitOnLoadFailure = false;											// Whether to exit on any project load failure
-		bool mExitOnLoadSuccess = false;											// Whether to exit on any project load success
 		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
 
+		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;					// Clone of core project info
 		QString mCurrentFilename;													// The currently opened file
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
 

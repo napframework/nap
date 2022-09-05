@@ -17,6 +17,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
+if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
+   set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
+endif()
+
 # add include dirs
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
@@ -24,10 +28,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link with external libs
-if(NOT WIN32)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-endif()
-
 target_link_libraries(${PROJECT_NAME} ${DEPENDENT_NAP_MODULES} napcore)
 
 # Deploy module.json as MODULENAME.json alongside module post-build

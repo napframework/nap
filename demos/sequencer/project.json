@@ -7,7 +7,9 @@
         "mod_napapp",
         "mod_napparametergui",
         "mod_napsequence",
-        "mod_napsequencegui"
+        "mod_napsequencegui",
+        "mod_napsequenceaudio",
+        "mod_napsequenceaudiogui"
     ],
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json",

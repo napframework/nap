@@ -38,12 +38,16 @@ namespace napkin
 	public:
 		MainWindow();
 		virtual ~MainWindow();
-
 	protected:
 		/**
 		 * Override
 		 */
 		void showEvent(QShowEvent* event) override;
+
+		/**
+		 * Hide event
+		 */
+		void hideEvent(QHideEvent* event) override;
 
 		/**
 		 * Override
@@ -126,7 +130,7 @@ namespace napkin
 		 * @param fraction progress fraction
 		 * @param message message to display
 		 */
-		void onBlockingProgress(float fraction, const QString& message);
+		void onProgress(float fraction, const QString& message);
 
 		/**
 		 * Show a logmessage in the error dialog
@@ -152,8 +156,7 @@ namespace napkin
 		AppContext& getContext() const;
 
 	private:
-		bool mFirstShowEvent = true;
-
+		bool mShown = false;
 		ResourcePanel mResourcePanel;
 //		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;

@@ -37,7 +37,7 @@ namespace nap
 		void setValue(T value);
 
 		/**
-		 * Sets the min/max range of this parameter to the specified values. 
+		 * Sets the min/max range of this parameter to the specified values.
 		 * If the current value is outside of the specified range, it will be clamped.
 		 *
 		 * @param minimum The minimum value for this parameter
@@ -60,7 +60,6 @@ namespace nap
 
 	using ParameterFloat	= ParameterNumeric<float>;
 	using ParameterInt		= ParameterNumeric<int>;
-	using ParameterChar		= ParameterNumeric<char>;
 	using ParameterByte		= ParameterNumeric<uint8_t>;
 	using ParameterDouble	= ParameterNumeric<double>;
 	using ParameterLong		= ParameterNumeric<int64_t>;
@@ -98,18 +97,15 @@ namespace nap
 		mMaximum = maximum;
 		setValue(mValue);
 	}
-
-
-
-	/**
-	 * Helper macro that can be used to define the RTTI for a numeric (vector) parameter type
-	 */
-	#define DEFINE_NUMERIC_PARAMETER(Type)																			\
-		RTTI_BEGIN_CLASS(Type)																						\
-			RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)				\
-			RTTI_FUNCTION("setValue",	static_cast<void (Type::*)(decltype(Type::mValue))>(&Type::setValue))	\
-		RTTI_END_CLASS
-
 }
+
+/**
+ * Helper macro that can be used to define the RTTI for a numeric (vector) parameter type
+ */
+#define DEFINE_NUMERIC_PARAMETER(Type)																		\
+	RTTI_BEGIN_CLASS(Type)																					\
+		RTTI_PROPERTY("Value",		&Type::mValue,			nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_PROPERTY("Minimum",	&Type::mMinimum,		nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_PROPERTY("Maximum",	&Type::mMaximum,		nap::rtti::EPropertyMetaData::Default)			\
+		RTTI_FUNCTION("setValue",	static_cast<void (Type::*)(decltype(Type::mValue))>(&Type::setValue))	\
+	RTTI_END_CLASS

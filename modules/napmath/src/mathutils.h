@@ -6,6 +6,7 @@
 
 // External Includes
 #include <glm/glm.hpp>
+#include <nap/numeric.h>
 #include <limits>
 #include <utility/dllexport.h>
 #include <algorithm>
@@ -15,20 +16,20 @@ namespace nap
 {
 	namespace math
 	{
-		static constexpr double E			= 2.71828182845904523536;   // e
-		static constexpr double LOG2E		= 1.44269504088896340736;   // log2(e)
-		static constexpr double LOG10E		= 0.434294481903251827651;  // log10(e)
-		static constexpr double LN2			= 0.693147180559945309417;  // ln(2)
-		static constexpr double LN10		= 2.30258509299404568402;   // ln(10)
-		static constexpr double PI			= 3.14159265358979323846;   // pi
-		static constexpr double PIX2		= 6.28318530717958647692;	// pi*2
-		static constexpr double PI_2		= 1.57079632679489661923;   // pi/2
-		static constexpr double PI_4		= 0.785398163397448309616;  // pi/4
-		static constexpr double M1_PI		= 0.318309886183790671538;  // 1/pi
-		static constexpr double M2_PI		= 0.636619772367581343076;  // 2/pi
-		static constexpr double M2_SQRTPI	= 1.12837916709551257390;   // 2/sqrt(pi)
-		static constexpr double SQRT2		= 1.41421356237309504880;   // sqrt(2)
-		static constexpr double SQRT1_2		= 0.707106781186547524401;  // 1/sqrt(2)
+		inline constexpr double E			= 2.71828182845904523536;   // e
+		inline constexpr double LOG2E		= 1.44269504088896340736;   // log2(e)
+		inline constexpr double LOG10E		= 0.434294481903251827651;  // log10(e)
+		inline constexpr double LN2			= 0.693147180559945309417;  // ln(2)
+		inline constexpr double LN10		= 2.30258509299404568402;   // ln(10)
+		inline constexpr double PI			= 3.14159265358979323846;   // pi
+		inline constexpr double PIX2		= 6.28318530717958647692;	// pi*2
+		inline constexpr double PI_2		= 1.57079632679489661923;   // pi/2
+		inline constexpr double PI_4		= 0.785398163397448309616;  // pi/4
+		inline constexpr double M1_PI		= 0.318309886183790671538;  // 1/pi
+		inline constexpr double M2_PI		= 0.636619772367581343076;  // 2/pi
+		inline constexpr double M2_SQRTPI	= 1.12837916709551257390;   // 2/sqrt(pi)
+		inline constexpr double SQRT2		= 1.41421356237309504880;   // sqrt(2)
+		inline constexpr double SQRT1_2		= 0.707106781186547524401;  // 1/sqrt(2)
 
 		/**
 		 * Maps a value from min/max to outMin/outMax.
@@ -426,6 +427,9 @@ namespace nap
 		NAPAPI void smooth(glm::vec4& currentValue, const glm::vec4& targetValue, glm::vec4& currentVelocity, float deltaTime, float smoothTime, float maxSpeed);
 
 		template<>
+		NAPAPI uint random(uint min, uint max);
+
+		template<>
 		NAPAPI int random(int min, int max);
 
 		template<>
@@ -448,6 +452,9 @@ namespace nap
 
 		template<>
 		NAPAPI glm::ivec4 random(glm::ivec4 min, glm::ivec4 max);
+
+		template<>
+		NAPAPI glm::mat4 random(glm::mat4 min, glm::mat4 max);
 
 		template<>
 		NAPAPI float abs(float value);

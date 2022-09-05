@@ -16,6 +16,15 @@ namespace nap
 {
 	namespace utility
 	{
+		namespace path
+		{
+#ifdef _WIN32
+			inline constexpr const char* separator = "\\";
+#else
+			inline constexpr const char* separator = "/";
+#endif
+		}
+
 		/**
 		* List all files in a directory
 		* @param directory The directory to search in
@@ -97,14 +106,25 @@ namespace nap
 		bool fileExists(const std::string& filename);
 
 		/**
-		 * Check if a folder exists or not
+		 * Check if a directory exists or not
+		 * @param dirName name of the directory to check for
+		 * @return if the directory exists
 		 */
 		bool dirExists(const std::string& dirName);
 
 		/**
-		 * Ensure the directory exists by making any intermediate directories
-		 * @param directory The directory to create
-		 * @return true on success, false if it failed
+		 * Makes sure the given directory exists,
+		 * attempts to create the directory if it does not exist, recursively
+		 * @param dirName name of the directory to check for
+		 * @return if directory exists
+		 */
+		bool ensureDirExists(const std::string& dirName);
+
+		/**
+		 * Attempts to create a directory with the given name, recursively.
+		 * Creation will fail if the path is invalid or the directory already exists.
+		 * @param directory path to the directory to create, absolute or relative.
+		 * @return If the directory has been created.
 		 */
 		bool makeDirs(const std::string& directory);
 
@@ -129,7 +149,7 @@ namespace nap
 		 * @return returns a string that can be used to compare against other filenames. Is also suitable for use as key in map or set.
 		 * @param filename: the source filename.
 		 */
-		const std::string toComparableFilename(const std::string& filename);
+		std::string toComparableFilename(const std::string& filename);
 
 		/**
 		 * @param filenameA filename to compare against filenameB.
@@ -160,9 +180,10 @@ namespace nap
 		/**
 		 * Change current working directory
 		 *
-		 * @param newDir The directory to change to
+		 * @param newDir The working directory to change to
+		 * @return if working directory changed
 		 */
-		void changeDir(std::string newDir);
+		bool changeDir(const std::string& newDir);
 
 		/**
 		 * Read the contents of a file into a string.
@@ -175,23 +196,20 @@ namespace nap
 
 		/**
 		 * Find a file in one of the given directories.
-		 * @param basefilename The base filename to look for
+		 * @param file The file to look for, including extension
 		 * @param dirs The directories to search in
 		 * @return The absolute path to the found file or an empty string if none was found
 		 */
-		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs);
+		std::string findFileInDirectories(const std::string& filename, const std::vector<std::string>& dirs);
 
 		/**
 		 * Join parts path parts using the correct path separator for the current platform
 		 */
-		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep = "/");
+		std::string joinPath(const std::vector<std::string>& parts);
 
 		/**
-		 * @return The current platform's file path separator
-		 */
-		std::string pathSep();
-
-		/**
+		 * Returns a file path with the correct path separator for the current platform. 
+		 * @param path path name to correct
 		 * @return A file path with the correct path separator for the current platform
 		 */
 		std::string forceSeparator(const std::string& path);

@@ -26,21 +26,7 @@
                                 ]
                             }
                         ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2D",
-                                "mID": "sampler_background_image",
-                                "Name": "backgroundTexture",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MaxLodLevel": 1000,
-                                "AnisotropicSamples": "Default",
-                                "Texture": "BackgroundImage"
-                            }
-                        ],
+                        "Samplers": [],
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
@@ -360,13 +346,6 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "BackgroundImage",
-            "Usage": "Static",
-            "ImagePath": "background.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
             "mID": "CoverImage",
             "Usage": "Static",
             "ImagePath": "cover.png",
@@ -615,6 +594,7 @@
             "mID": "CoverMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Path": "vinyl_cover_Cover.mesh"
         },
         {
@@ -622,6 +602,7 @@
             "mID": "VinylMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Path": "vinyl_cover_Vinyl.mesh"
         },
         {
@@ -629,6 +610,7 @@
             "mID": "BackgroundPlaneMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -660,10 +642,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "Values": [
+                    0.06700000166893006,
+                    0.07800000160932541,
+                    0.14900000393390656,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -707,20 +691,21 @@
         {
             "Type": "nap::Snapshot",
             "mID": "Snapshot",
-            "Width": 1920,
-            "Height": 1080,
-            "MaxCellWidth": 1920,
-            "MaxCellHeight": 1080,
+            "Width": 3840,
+            "Height": 2160,
+            "Divisor": 2,
             "OutputDirectory": "snapshots",
             "ImageFileFormat": "PNG",
             "TextureFormat": "RGBA8",
             "SampleShading": true,
             "RequestedSamples": "Four",
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 0.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
             }
         }
     ]

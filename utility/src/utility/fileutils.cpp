@@ -38,8 +38,6 @@
     #include <fstream>
 #endif
 
-// clang-format on
-
 #ifdef _WIN32
 	#ifdef MAX_PATH
 		#define MAX_PATH_SIZE MAX_PATH
@@ -63,9 +61,11 @@ namespace nap
 		{
 			DIR* dir;
 			struct dirent* ent;
-			if ((dir = opendir(directory)) == nullptr) return false;
+			if ((dir = opendir(directory)) == nullptr)
+				return false;
 
-			while ((ent = readdir(dir)) != nullptr) {
+			while ((ent = readdir(dir)) != nullptr)
+			{
 				if (!strcmp(ent->d_name, ".")) continue;
 				if (!strcmp(ent->d_name, "..")) continue;
 
@@ -117,7 +117,7 @@ namespace nap
 #else
 			char resolved[MAX_PATH_SIZE];
 			realpath(relPath.c_str(), resolved);
-			return std::string(resolved);
+			return resolved;
 #endif
 		}
 
@@ -126,9 +126,7 @@ namespace nap
 		std::string getFileExtension(const std::string &filename)
 		{
 			const size_t idx = filename.find_last_of('.');
-			if (idx == std::string::npos)
-				return "";
-			return filename.substr(idx + 1);
+			return idx == std::string::npos ? "" : filename.substr(idx + 1);
 		}
 
 
@@ -137,6 +135,7 @@ namespace nap
 		{
 			std::string name = file;
 			const size_t last_slash_idx = name.find_last_of("\\/");
+
 			if (last_slash_idx != std::string::npos)
 				name = name.erase(0, last_slash_idx + 1);
 			return name;
@@ -207,7 +206,6 @@ namespace nap
 			struct stat result;
 			if (stat(filename.c_str(), &result) != 0)
 				return false;
-
 			return (result.st_mode & S_IFMT) != 0;
 		}
 
@@ -231,6 +229,12 @@ namespace nap
 		}
 
 
+		bool ensureDirExists(const std::string& dirName)
+		{
+			return dirExists(dirName) ? true : makeDirs(dirName);
+		}
+
+
 		bool makeDirs(const std::string& directory)
 		{
 			std::string parent_dir = getFileDir(directory);
@@ -239,7 +243,6 @@ namespace nap
 				if (!makeDirs(parent_dir))
 					return false;
 			}
-
 			int err= 0;
 #if defined(_WIN32)
 			err = _mkdir(directory.c_str());
@@ -263,7 +266,7 @@ namespace nap
 		}
 
 
-		const std::string toComparableFilename(const std::string& filename)
+		std::string toComparableFilename(const std::string& filename)
 		{
 			std::string comparable = filename;
 			std::transform(comparable.begin(), comparable.end(), comparable.begin(), ::tolower);
@@ -325,12 +328,6 @@ namespace nap
 #error Cannot yet find the executable on this platform
 #endif
 			out_path = &buffer[0];
-
-#if defined(_WIN32)
-			// Replace any Windows-style backslashes with forward slashes
-			replaceAllInstances(out_path, "\\", "/");
-#endif
-
 			return out_path;
 		}
 
@@ -341,14 +338,15 @@ namespace nap
 		}
 
 
-		void changeDir(std::string newDir) 
+		bool changeDir(const std::string& newDir)
 		{
 #if defined(_WIN32)
-			_chdir(newDir.c_str());
+			return _chdir(newDir.c_str()) == 0;
 #else
-			chdir(newDir.c_str());
+			return chdir(newDir.c_str()) == 0;
 #endif
 		}
+
 
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)
 		{
@@ -369,38 +367,32 @@ namespace nap
 			return true;
 		}
 
-		std::string findFileInDirectories(const std::string& basefilename, const std::vector<std::string>& dirs)
+
+		std::string findFileInDirectories(const std::string& file, const std::vector<std::string>& dirs)
         {
 			for (const auto& dir : dirs)
 			{
-				auto filepath = joinPath({dir.c_str(), basefilename.c_str()});
+				auto filepath = joinPath({dir.c_str(), file.c_str()});
 				if (utility::fileExists(filepath))
 					return filepath;
 			}
 			return {};
 		}
 
-		std::string joinPath(const std::vector<std::string>& parts, const std::string& sep)
+
+		std::string joinPath(const std::vector<std::string>& parts)
 		{
-			return joinString(parts, sep);
+			return joinString(parts, path::separator);
 		}
 
-		std::string pathSep() {
-#if defined(_WIN32)
-			return "\\";
-#else
-			return "/";
-#endif
-		}
 
 		std::string forceSeparator(const std::string& path)
 		{
 #if defined(_WIN32)
-			return replaceAllInstances(path, "/", pathSep());
+			return replaceAllInstances(path, "/", path::separator);
 #else
-			return replaceAllInstances(path, "\\", pathSep());
+			return replaceAllInstances(path, "\\", path::separator);
 #endif
 		}
-
 	}
 }

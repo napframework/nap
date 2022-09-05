@@ -100,12 +100,13 @@ namespace nap
 		bool computeNormalizationFactor(const std::string& referenceText);
 
 		/**
-		 * Creates a Renderable2DMipMapGlyph for the given index in the font.
-		 * @param index the index to create the renderable glyph for.
+		 * Creates a Renderable2DMipMapGlyph using the given character index and scale.
+		 * @param index the index to create the render-able glyph for.
+		 * @param scale the render-able glyph scaling factor.
 		 * @param error contains the error if the glyph representation could not be created.
 		 * @return the Renderable2DMipMapGlyph glyph for the given character index.
 		 */
-		virtual RenderableGlyph* getRenderableGlyph(uint index, utility::ErrorState& error) const override;
+		virtual RenderableGlyph* getRenderableGlyph(uint index, float scale, utility::ErrorState& error) const override;
 
 	protected:
 		/**

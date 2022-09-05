@@ -1,32 +1,36 @@
 if(WIN32)
     find_path(
             FREEIMAGE_DIR
-            NAMES msvc/Dist/x64/FreeImage.h
-            HINTS ${THIRDPARTY_DIR}/FreeImage
+            NAMES Dist/x64/FreeImage.h
+            HINTS ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64
     )
-    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/msvc/Dist/x64)
-    set(FREEIMAGE_LIBS_DIRS ${FREEIMAGE_DIR}/msvc/Dist/x64)
-    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIRS}/FreeImage.lib)
-    set(FREEIMAGE_LIBS_RELEASE_DLL ${FREEIMAGE_LIBS_DIRS}/FreeImage.dll)
+    set(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_DIR}/Dist/x64)
+    set(FREEIMAGE_LIBS_DIR ${FREEIMAGE_DIR}/Dist/x64)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/FreeImage.lib)
+    set(FREEIMAGE_LIBS_RELEASE_DLL ${FREEIMAGE_LIBS_DIR}/FreeImage.dll)
+    file(GLOB FREEIMAGE_DIST_FILES ${FREEIMAGE_DIR}/license*.txt)
 elseif(APPLE)
     find_path(
             FREEIMAGE_DIR
             NAMES include/FreeImage.h
             HINTS
-            ${THIRDPARTY_DIR}/FreeImage
-            ${THIRDPARTY_DIR}/FreeImage/osx
+            ${THIRDPARTY_DIR}/FreeImage/macos/x86_64
     )
-    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
-    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage-3.17.0.dylib)
+    set(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_DIR}/include)
+    set(FREEIMAGE_LIBS_DIR ${FREEIMAGE_DIR}/lib)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/libfreeimage-3.18.0.dylib)
+    file(GLOB FREEIMAGE_DIST_FILES ${FREEIMAGE_DIR}/license/license*.txt)
 elseif(UNIX)
     find_path(
             FREEIMAGE_DIR
             NAMES include/FreeImage.h
             HINTS
-            ${THIRDPARTY_DIR}/FreeImage/linux/install
+            ${THIRDPARTY_DIR}/FreeImage/linux/${ARCH}
     )
-    set(FREEIMAGE_INCLUDE_DIRS ${FREEIMAGE_DIR}/include)
-    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_DIR}/lib/libfreeimage.so)
+    set(FREEIMAGE_LIBS_DIR ${FREEIMAGE_DIR}/lib)
+    set(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_DIR}/include)
+    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/libfreeimage.so)
+    file(GLOB FREEIMAGE_DIST_FILES ${FREEIMAGE_DIR}/license/license*.txt)
 endif()
 
 add_library(FreeImage SHARED IMPORTED)
@@ -38,10 +42,15 @@ set_target_properties(FreeImage PROPERTIES
                       IMPORTED_LOCATION_RELWITHDEBINFO ${FREEIMAGE_LIBS_RELEASE_DLL}
                       )
 
-mark_as_advanced(FREEIMAGE_INCLUDE_DIRS)
+mark_as_advanced(FREEIMAGE_INCLUDE_DIR)
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(freeimage REQUIRED_VARS FREEIMAGE_DIR)
+find_package_handle_standard_args(freeimage REQUIRED_VARS 
+    FREEIMAGE_DIR 
+    FREEIMAGE_LIBRARIES 
+    FREEIMAGE_INCLUDE_DIR 
+    FREEIMAGE_LIBS_DIR
+    )
 
 # Copy the freeimage dynamic linked lib into the build directory
 macro(copy_freeimage_dll)

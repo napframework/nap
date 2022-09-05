@@ -32,10 +32,8 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("python.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -71,8 +69,7 @@ namespace nap
         ImGui::Begin("Python demo");
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Controls"))
@@ -106,7 +103,7 @@ namespace nap
 
 			ImGui::Text("The PythonScript returns: ");
 			ImGui::SameLine();
-			ImGui::TextColored(clr, utility::stringFormat("%f", returnValue).c_str());
+			ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, utility::stringFormat("%f", returnValue).c_str());
 		}
         ImGui::End();
 

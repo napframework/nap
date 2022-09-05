@@ -20,7 +20,7 @@ namespace nap
 		class AudioService;
 		
 		/**
-		 * An audio file from disk loaded into memory.
+		 * Loads an audio file from disk into memory.
 		 */
 		class NAPAPI AudioFileResource : public AudioBufferResource
 		{

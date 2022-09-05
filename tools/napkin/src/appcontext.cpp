@@ -13,6 +13,7 @@
 #include <QSettings>
 #include <QTimer>
 #include <QProcess>
+#include <QDir>
 
 // nap
 #include <rtti/jsonreader.h>
@@ -43,6 +44,9 @@ AppContext::~AppContext()
 
 	// Close service configuration
 	closeServiceConfiguration();
+
+	// Clear project info
+	mProjectInfo.reset(nullptr);
 }
 
 
@@ -69,7 +73,6 @@ void AppContext::destroy()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
-	blockingProgressChanged(0, "Loading: " + filename);
 	mCurrentFilename = filename;
 	nap::Logger::info("Loading data '%s'", toLocalURI(filename.toStdString()).c_str());
 
@@ -79,36 +82,29 @@ Document* AppContext::loadDocument(const QString& filename)
 
 	if (!QFile::exists(filename))
 	{
-		blockingProgressChanged(1);
 		nap::Logger::error("File not found: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
 
 	if (!QFileInfo(filename).isFile())
 	{
-		blockingProgressChanged(1);
 		nap::Logger::error("Not a file: %s", filename.toStdString().c_str());
 		return nullptr;
 	}
 
 	if (!readFileToString(filename.toStdString(), buffer, err))
 	{
-		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());
 		return nullptr;
 	}
-
-	blockingProgressChanged(1);
 	return loadDocumentFromString(buffer, filename);
 }
 
 const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
-	// TODO: See if we can run this on a thread so the progress dialog may update live.
-	blockingProgressChanged(0, "Loading: " + projectFilename);
-
 	// If there's a project already loaded in the current context, quit and restart.
 	// The editor can only load 1 project because it needs to load modules that can't be freed.
+	progressChanged(0.25f, "Loading: " + projectFilename);
 	if (getProjectInfo() != nullptr)
 	{
 		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
@@ -120,50 +116,43 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	ErrorState err;
 	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
-		blockingProgressChanged(1);
 		nap::Logger::error(err.toString());
-		if (mExitOnLoadFailure)
-			exit(1);
+		progressChanged(1.0f);
 		return nullptr;
 	}
+	progressChanged(0.5f);
+
+	// Clone current project information, allows us to edit it
+	const auto* project_info = mCore.getProjectInfo();
+	mProjectInfo = nap::rtti::cloneObject(*project_info, mCore.getResourceManager()->getFactory());
+	mProjectInfo->setFilename(project_info->getFilename());
 
 	// Load service configuration
-	mServiceConfig = std::make_unique<ServiceConfig>(mCore);
+	mServiceConfig = std::make_unique<ServiceConfig>(mCore, *mProjectInfo);
 
 	// Signal initialization
 	coreInitialized();
+	progressChanged(0.75f);
 
-	// Exit after successful load if requested
-    if (mExitOnLoadSuccess) 
-	{
-		nap::Logger::info("Loaded successfully, exiting as requested");
-        exit(EXIT_ON_SUCCESS_EXIT_CODE);
-    }
-	addRecentlyOpenedProject(projectFilename);
-	
 	// Load document (data file)
+	addRecentlyOpenedProject(projectFilename);
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
-	{
 		loadDocument(dataFilename);
-	}
 	else
-	{
-		blockingProgressChanged(1);
 		nap::Logger::error("No data file specified");
-		if (mExitOnLoadFailure)
-			exit(1);
-	}
 
 	// All good
-	blockingProgressChanged(1);
+	progressChanged(1.0f);
 	return mCore.getProjectInfo();
 }
+
 
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
-	return mCore.getProjectInfo();
+	return mProjectInfo.get();
 }
+
 
 void AppContext::reloadDocument()
 {
@@ -293,7 +282,6 @@ const QString AppContext::getLastOpenedProjectFilename()
 	auto recent = getRecentlyOpenedProjects();
 	if (recent.isEmpty())
 		return {};
-
 	return recent.last();
 }
 
@@ -322,12 +310,9 @@ void AppContext::restoreUI()
 	getThemeManager().setTheme(recentTheme);
 
 	// Let the ui come up before loading all the recent file and initializing core
-	if (!getProjectInfo() && mOpenRecentProjectAtStartup)
+	if (getProjectInfo() == nullptr && mOpenRecentProjectAtStartup)
 	{
-		QTimer::singleShot(100, [this]()
-		{
-			openRecentProject();
-		});
+		openRecentProject();
 	}
 }
 
@@ -438,6 +423,21 @@ bool napkin::AppContext::isAvailable()
 }
 
 
+nap::ProjectInfo* napkin::AppContext::getProjectInfo()
+{
+	return mProjectInfo.get();
+}
+
+
+bool napkin::AppContext::documentIsProjectDefault() const
+{
+	assert(hasDocument());
+	QDir proj_dir(QString::fromStdString(AppContext::get().getProjectInfo()->getProjectDir()));
+	auto cur_file = proj_dir.relativeFilePath(mDocument->getFilename()).toStdString();
+	return cur_file == getProjectInfo()->mDefaultData;
+}
+
+
 bool napkin::AppContext::hasDocument() const
 {
 	return mDocument != nullptr;
@@ -512,14 +512,3 @@ void AppContext::setOpenRecentProjectOnStartup(bool b)
 	mOpenRecentProjectAtStartup = b;
 }
 
-
-void AppContext::setExitOnLoadFailure(bool b)
-{
-	mExitOnLoadFailure = b;
-}
-
-
-void AppContext::setExitOnLoadSuccess(bool b)
-{
-	mExitOnLoadSuccess = b;
-}

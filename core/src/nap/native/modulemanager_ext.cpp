@@ -83,8 +83,16 @@ namespace nap
 		// Add project directory default search path for modules, used by Windows packaged apps
 		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
 
-		// Patch template variables
-		project.patchPaths(modinfo->mLibSearchPaths, {{"MODULE_DIR", utility::getFileDir(moduleFile)}});
+		// Patch library search paths
+		std::string file_dir = utility::getFileDir(moduleFile);
+		project.patchPaths(modinfo->mLibSearchPaths, {{"MODULE_DIR", file_dir}});
+
+		// Patch library data paths
+		project.patchPaths(modinfo->mDataSearchPaths,
+			{
+				{"MODULE_NAME", moduleName},
+				{"MODULE_DIR", file_dir}
+			});
 
 		// Load module dependencies first
 		for (const auto& modName : modinfo->mRequiredModules)
@@ -104,7 +112,7 @@ namespace nap
 		{
 			auto resolved = utility::getAbsolutePath(moduleFile);
 			err.fail("Failed to load module '%s' (resolved as %s): %s",
-                moduleFile.c_str(), resolved.c_str(), loadModuleError.c_str());
+                utility::forceSeparator(moduleFile).c_str(), resolved.c_str(), loadModuleError.c_str());
 			return false;
 		}
 

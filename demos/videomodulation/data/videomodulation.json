@@ -7,6 +7,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
+                    "Visible": true,
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
                         "Material": "BackgroundMaterial",
@@ -84,6 +85,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_3",
+                    "Visible": true,
                     "Mesh": "SphereMesh",
                     "MaterialInstance": {
                         "Material": "DisplacementMaterial",
@@ -300,6 +302,7 @@
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "nap::RenderToTextureComponent",
+                    "Visible": true,
                     "OutputTexture": "OutputTexture",
                     "MaterialInstance": {
                         "Material": "FXMaterial",
@@ -341,18 +344,21 @@
                         "Values": [
                             255,
                             0,
-                            0
+                            0,
+                            255
                         ]
                     }
                 },
                 {
                     "Type": "nap::RenderVideoComponent",
                     "mID": "nap::RenderVideoComponent",
+                    "Visible": true,
                     "OutputTexture": "VideoColorTexture",
                     "VideoPlayer": "VideoPlayer",
                     "Samples": "One",
                     "ClearColor": {
                         "Values": [
+                            255,
                             255,
                             255,
                             255
@@ -495,6 +501,7 @@
             "mID": "PlaneMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
                 "y": 1.0
@@ -522,7 +529,15 @@
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",
-            "ColorSpace": "Linear"
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -532,7 +547,15 @@
             "Width": 1920,
             "Height": 1080,
             "Format": "RGBA8",
-            "ColorSpace": "Linear"
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderWindow",
@@ -546,10 +569,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1

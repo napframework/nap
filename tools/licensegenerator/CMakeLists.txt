@@ -1,8 +1,3 @@
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(licensegenerator)
 
 file(GLOB sources src/*.cpp src/*.h)

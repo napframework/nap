@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_naplicense)
 
 # add all cpp files to SOURCES
@@ -28,9 +23,6 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${CRYPTOPP_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link with external libs
-if(NOT WIN32)
-	target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-endif()
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} cryptopp)
 
 # copy crypto dll to bin directory
@@ -46,9 +38,9 @@ package_module()
 
 # Package cryptopp into platform release
 if(WIN32)
-    install(DIRECTORY ${THIRDPARTY_DIR}/cryptopp/msvc/lib DESTINATION thirdparty/cryptopp 
+    install(DIRECTORY ${CRYPTOPP_LIB_DIR} DESTINATION thirdparty/cryptopp 
     	FILES_MATCHING PATTERN "*.dll")
 endif()
 
 # install crypto pp license
-install(FILES ${THIRDPARTY_DIR}/cryptopp/License.txt DESTINATION thirdparty/cryptopp)
+install(FILES ${CRYPTOPP_DIST_FILES} DESTINATION thirdparty/cryptopp)

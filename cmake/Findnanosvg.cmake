@@ -1,4 +1,4 @@
-# default artnet directory
+# default nanosvg directory
 find_path(NANOSVG_DIR
           NAMES src/nanosvg.h
           HINTS ${THIRDPARTY_DIR}/nanosvg

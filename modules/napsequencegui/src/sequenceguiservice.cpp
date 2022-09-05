@@ -8,6 +8,8 @@
 #include <nap/logger.h>
 #include <iostream>
 #include <utility/stringutils.h>
+#include <sequenceservice.h>
+#include <imguiservice.h>
 
 // Local Includes
 #include "sequenceguiservice.h"
@@ -24,12 +26,46 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Icons
+	//////////////////////////////////////////////////////////////////////////
+
+	namespace icon
+	{
+		namespace sequencer
+		{
+			static const std::vector<std::string>& get()
+			{
+				const static std::vector<std::string> map =
+				{
+					icon::sequencer::play,
+					icon::sequencer::stop,
+					icon::sequencer::rewind,
+					icon::sequencer::up,
+					icon::sequencer::down,
+					icon::sequencer::pause,
+					icon::sequencer::unpause
+				};
+				return map;
+			}
+		}
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Object Creators
+	//////////////////////////////////////////////////////////////////////////
+
 	static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService*)>& getObjectCreators()
 	{
 		static std::vector<std::unique_ptr<rtti::IObjectCreator>(*)(SequenceGUIService * service)> vector;
 		return vector;
 	}
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// SequenceGUIService
+	//////////////////////////////////////////////////////////////////////////
 
 	bool SequenceGUIService::registerObjectCreator(std::unique_ptr<rtti::IObjectCreator>(*objectCreator)(SequenceGUIService* service))
 	{
@@ -40,8 +76,7 @@ namespace nap
 
 	SequenceGUIService::SequenceGUIService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
 
 
 	SequenceGUIService::~SequenceGUIService() = default;
@@ -60,6 +95,19 @@ namespace nap
 
 	bool SequenceGUIService::init(nap::utility::ErrorState& errorState)
 	{
+		// Get gui service and colors
+		mGuiService = getCore().getService<IMGuiService>();
+		mColors.init(mGuiService->getPalette());
+
+		// Load all icons
+		const auto& icon_names = icon::sequencer::get();
+		for (const auto& icon_name : icon_names)
+		{
+			if (!mGuiService->loadIcon(icon_name, this->getModule(), errorState))
+				return false;
+		}
+
+		// Register all views
 		if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))
 			return false;
 
@@ -75,44 +123,46 @@ namespace nap
 		if(!errorState.check(registerEventView<glm::vec3>(), "Error registering event view"))
 			return false;
 
+		// Register track types
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView)),
-							  "Error registering track view"))
+			"Error registering track view"))
 			return false;
 
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<float>), RTTI_OF(SequenceCurveTrackView)),
-							 "Error registering track view"))
+			"Error registering track view"))
 			return false;
 
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec2>), RTTI_OF(SequenceCurveTrackView)),
-							 "Error registering track view"))
+                        "Error registering track view"))
 			return false;
 
 		if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackCurve<glm::vec3>), RTTI_OF(SequenceCurveTrackView)),
-							 "Error registering track view"))
+                        "Error registering track view"))
 			return false;
 
-		if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView), 	[](	SequenceGUIService& service,
-																			SequenceEditorGUIView& editorGuiView,
-																			SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
-																			{
-																				return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
-																			}))
+		if(!registerTrackViewFactory(RTTI_OF(SequenceCurveTrackView),
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
+                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
+                                        {
+                                            return std::make_unique<SequenceCurveTrackView>(service, editorGuiView, state);
+                                        }))
 		{
 			errorState.fail("Error registering track view factory function");
 			return false;
 		}
 
-		if(!registerTrackViewFactory(RTTI_OF(SequenceEventTrackView), 	[](	SequenceGUIService& service,
-																	  		SequenceEditorGUIView& editorGuiView,
-																	  		SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
-									  									{
-										  									return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
-									  									}))
+		if(!registerTrackViewFactory(RTTI_OF(SequenceEventTrackView),
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
+                                        SequenceEditorGUIState& state)-> std::unique_ptr<SequenceTrackView>
+                                        {
+                                            return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
+                                        }))
 		{
 			errorState.fail("Error registering track view factory function");
 			return false;
 		}
-
 		return true;
 	}
 
@@ -161,13 +211,13 @@ namespace nap
 		mEventSegmentViewFactoryMap.emplace(RTTI_OF(SequenceTrackSegmentEvent<T>), []()->std::unique_ptr<SequenceEventTrackSegmentViewBase>{ return std::make_unique<SequenceEventTrackSegmentView<T>>(); });
 
 		// register popup action handler
-		auto event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>));
+		auto event_it = mEditEventHandlerMap.find(RTTI_OF(sequenceguiactions::OpenEditEventSegmentPopup<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
+		mEditEventHandlerMap.emplace(RTTI_OF(sequenceguiactions::OpenEditEventSegmentPopup<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
-		event_it = mEditEventHandlerMap.find(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>));
+		event_it = mEditEventHandlerMap.find(RTTI_OF(sequenceguiactions::EditingEventSegment<T>));
 		assert(event_it== mEditEventHandlerMap.end()); // type already registered
-		mEditEventHandlerMap.emplace(RTTI_OF(SequenceGUIActions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
+		mEditEventHandlerMap.emplace(RTTI_OF(sequenceguiactions::EditingEventSegment<T>), [](SequenceEventTrackView& view){ view.template handleEditEventSegmentPopup<T>(); });
 
 		// register paste handler
 		auto& handler_paste_events = mPasteEventMap;
@@ -223,7 +273,7 @@ namespace nap
 		std::vector<rtti::TypeInfo> track_types;
 		for(const auto& it : mTrackViewTypeMap)
 		{
-			track_types.emplace_back(it.first);
+            track_types.emplace_back(it.first);
 		}
 		return track_types;
 	}
@@ -234,8 +284,41 @@ namespace nap
 		std::vector<rtti::TypeInfo> event_actions;
 		for(const auto& it : mEditEventHandlerMap)
 		{
-			event_actions.emplace_back(it.first);
+            event_actions.emplace_back(it.first);
 		}
 		return event_actions;
+	}
+
+
+	void SequenceGUIService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
+	{
+	    dependencies.emplace_back(RTTI_OF(SequenceService));
+        dependencies.emplace_back(RTTI_OF(IMGuiService));
+	}
+
+
+	nap::IMGuiService& SequenceGUIService::getGui()
+	{
+		assert(mGuiService != nullptr);
+		return *mGuiService;
+	}
+
+
+	void SequenceGUIService::Colors::init(const gui::ColorPalette& palette)
+	{
+		mHigh1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor1));
+		mHigh2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor2));
+		mHigh3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor3));
+		mHigh4 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mHighlightColor4));
+		mDark = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mDarkColor));
+		mFro1 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront1Color));
+		mFro2 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront2Color));
+		mFro3 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront3Color));
+		mFro4 = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mFront4Color));
+		mBack = ImGui::ColorConvertFloat4ToU32(ImVec4(palette.mBackgroundColor));
+		mCurveColors[0] = mHigh4;
+		mCurveColors[1] = mHigh2;
+		mCurveColors[2] = mHigh1;
+		mCurveColors[3] = mHigh3;
 	}
 }

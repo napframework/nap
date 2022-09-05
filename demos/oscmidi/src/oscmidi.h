@@ -11,8 +11,8 @@
 #include <inputservice.h>
 #include <renderservice.h>
 #include <imguiservice.h>
+#include <entity.h>
 #include <app.h>
-#include <nap/signalslot.h>
 
 // Osc includes
 #include <oscsender.h>

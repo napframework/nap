@@ -11,8 +11,7 @@
 napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 {
 	setLayout(&mLayout);
-	mStartButton.setIcon(QIcon(QRC_ICONS_PLAY_APP));
-	mStopButton.setIcon(QIcon(QRC_ICONS_STOP_APP));
+	themeChanged(nullptr);
 	mStopButton.setEnabled(false);
 
 	mLayout.addWidget(&mFileSelector);
@@ -29,7 +28,10 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	connect(&mProcess, &QProcess::readyReadStandardError, this, &AppRunnerPanel::onReadErr);
 
 	// Cast to tell the compiler which override to use
-	connect(&mProcess, (void (QProcess::*)(int)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
+	connect(&mProcess, (void (QProcess::*)(int, QProcess::ExitStatus)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
+
+	// When theme changes, update icons
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &AppRunnerPanel::themeChanged);
 }
 
 napkin::AppRunnerPanel::~AppRunnerPanel()
@@ -55,7 +57,8 @@ void napkin::AppRunnerPanel::onStartApp()
 
 	if (!QFileInfo::exists(executable))
 	{
-		nap::Logger::fatal("File not found: '%s'", executable.toStdString().c_str());
+		nap::Logger::fatal(executable.isEmpty() ? "No executable specified" :
+			"Executable not found: '%s'", executable.toStdString().c_str());
 		return;
 	}
 
@@ -118,9 +121,16 @@ void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 	nap::Logger::info("App State Changed: %s", nap::qt::QEnumToString(state).toStdString().c_str());
 }
 
-void napkin::AppRunnerPanel::onAppFinished(int exitCode)
+void napkin::AppRunnerPanel::onAppFinished(int exitCode, QProcess::ExitStatus)
 {
 	nap::Logger::info(QString("App Exit with code %1").arg(exitCode).toStdString());
 	mStartButton.setEnabled(true);
 	mStopButton.setEnabled(false);
+}
+
+
+void napkin::AppRunnerPanel::themeChanged(const Theme* theme)
+{
+	mStartButton.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_PLAY_APP));
+	mStopButton.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_STOP_APP));
 }

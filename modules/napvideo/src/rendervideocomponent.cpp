@@ -18,7 +18,7 @@
 RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
 	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -76,7 +76,7 @@ namespace nap
 			return false;
 
 		// Setup render target and initialize
-		mTarget.mClearColor = glm::vec4(resource->mClearColor.convert<RGBColorFloat>().toVec3(), 1.0f);
+		mTarget.mClearColor = resource->mClearColor.convert<RGBAColorFloat>();
 		mTarget.mColorTexture  = resource->mOutputTexture;
 		mTarget.mSampleShading = true;
 		mTarget.mRequestedSamples = resource->mRequestedSamples;
@@ -88,7 +88,7 @@ namespace nap
 		mPlane.mSize = glm::vec2(1.0f, 1.0f);
 		mPlane.mPosition = glm::vec3(0.0f, 0.0f, 0.0f);
 		mPlane.mCullMode = ECullMode::Back;
-		mPlane.mUsage = EMeshDataUsage::Static;
+		mPlane.mUsage = EMemoryUsage::Static;
 		mPlane.mColumns = 1;
 		mPlane.mRows = 1;
 
@@ -191,7 +191,7 @@ namespace nap
 		mViewMatrixUniform->setValue(viewMatrix);
 
 		// Get valid descriptor set
-		VkDescriptorSet descriptor_set = mMaterialInstance.update();
+		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
@@ -201,7 +201,7 @@ namespace nap
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind buffers and draw
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();

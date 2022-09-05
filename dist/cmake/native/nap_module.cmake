@@ -21,7 +21,7 @@ if(NOT MODULE_INTO_PROJ)
     # Set our default build type if we haven't specified one (Linux)
     set_default_build_type()
 
-    set(CMAKE_CXX_STANDARD 14)
+    set(CMAKE_CXX_STANDARD 17)
     set(CMAKE_CXX_STANDARD_REQUIRED ON)
     set_property(GLOBAL PROPERTY USE_FOLDERS ON)
     if (WIN32)
@@ -152,6 +152,11 @@ if(WIN32)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/${MODULE_NAME}.json
         )
+endif()
+
+# Install module data into packaged project
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION modules/${MODULE_NAME} CONFIGURATIONS Release)
 endif()
 
 # On macOS & Linux install module into packaged project

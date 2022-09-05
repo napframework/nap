@@ -469,10 +469,6 @@ namespace napkin
 		 */
 		QUndoStack& getUndoStack() { return mUndoStack; }
 
-		void registerPath(PropertyPath& p);
-
-		void deregisterPath(PropertyPath& p);
-
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -562,7 +558,6 @@ namespace napkin
 		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
 		QString mCurrentFilename;                // This document's filename
 		QUndoStack mUndoStack;                    // This document's undostack
-		std::vector<PropertyPath*> mPropertyPaths;
 
 		/**
 		 * Set object name, but skip checks and optimizations. Does not emit signal.

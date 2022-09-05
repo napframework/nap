@@ -73,6 +73,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "HeightMesh",
                     "MaterialInstance": {
                         "Material": "HeightMaterial",
@@ -81,6 +82,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -95,6 +97,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent_2",
+                    "Visible": true,
                     "Mesh": "VisualizeNormalsMesh",
                     "MaterialInstance": {
                         "Material": "NormalsMaterial",
@@ -103,6 +106,7 @@
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
+                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -157,6 +161,7 @@
             "mID": "HeightMesh",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 512.0,
                 "y": 512.0
@@ -164,6 +169,14 @@
             "Position": {
                 "x": 0.0,
                 "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
             },
             "Rows": 1024,
             "Columns": 1024,
@@ -199,6 +212,7 @@
                     "AddressModeVertical": "ClampToEdge",
                     "AddressModeHorizontal": "ClampToEdge",
                     "MaxLodLevel": 1000,
+                    "AnisotropicSamples": "Default",
                     "Texture": "HeightMapTexture"
                 }
             ],
@@ -267,12 +281,15 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
-            "Samples": "Four"
+            "Samples": "Four",
+            "AdditionalSwapImages": 1
         },
         {
             "Type": "nap::Scene",

@@ -10,7 +10,6 @@
 #include <nap/core.h>
 #include <glm/gtc/matrix_transform.hpp>
 #include <mathutils.h>
-#include <indexbuffer.h>
 #include <renderglobals.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
@@ -44,7 +43,9 @@ namespace nap
 
 
 	RenderableCopyMeshComponentInstance::RenderableCopyMeshComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource), mRenderService(entity.getCore()->getService<RenderService>())
+		RenderableComponentInstance(entity, resource),
+		mRenderService(entity.getCore()->getService<RenderService>()),
+		mGuiService(entity.getCore()->getService<IMGuiService>())
 	{ }
 
 
@@ -123,9 +124,11 @@ namespace nap
 		mRotationSpeed = resource->mRotationSpeed;
 
 		// Add the colors that are randomly picked for every mesh that is drawn
-		mColors.emplace_back(RGBColor8(0x5D, 0x5E, 0x73).convert<RGBColorFloat>());
-		mColors.emplace_back(RGBColor8(0x8B, 0x8C, 0xA0).convert<RGBColorFloat>());
-		mColors.emplace_back(RGBColor8(0xC8, 0x69, 0x69).convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mFront1Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mFront2Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mFront3Color.convert<RGBColorFloat>());
+		mColors.emplace_back(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 
 		// We do a bit of caching here, to ensure we can draw the same mesh, at different positions, using the same pipeline in order.
 		// If we randomly select a mesh for every vertex on draw we switch between pipelines too often, which is heavy for the GPU.
@@ -161,10 +164,10 @@ namespace nap
 	{
 		// Get material to render with and descriptors for material
 		MaterialInstance& mat_instance = renderableMesh.getMaterialInstance();
-		VkDescriptorSet descriptor_set = mat_instance.update();
+		const DescriptorSet& descriptor_set = mat_instance.update();
 
 		// Bind descriptor set for next draw call
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertexBuffers = renderableMesh.getVertexBuffers();
@@ -249,7 +252,7 @@ namespace nap
 			for (const auto& vertex : vertices)
 			{
 				// Pick random color for mesh and push to GPU
-				glm::vec3 color = mColors[math::random<int>(0, max_rand_color)].toVec3();
+				glm::vec3 color = mColors[math::random<int>(0, max_rand_color)];
 				mColorUniform->setValue(color);
 
 				// Calculate model matrix

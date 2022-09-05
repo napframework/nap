@@ -11,21 +11,31 @@ namespace nap
 {
 	// Forward declares
 	class Core;
-	class Material;
 
 	// Video shader sampler names 
 	namespace uniform
 	{
 		namespace font
 		{	
-			constexpr const char* glyphSampler	= "glyph";		///< Name of the 2D sampler that points to the glyph
-			constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
-			constexpr const char* textColor		= "textColor";	///< Text color vec3 
+			inline constexpr const char* glyphSampler	= "glyph";		///< Name of the 2D sampler that points to the glyph
+			inline constexpr const char* uboStruct		= "UBO";		///< UBO that contains all the uniforms
+			inline constexpr const char* textColor		= "textColor";	///< Text color vec3 
 		}
 	}
 
 	/**
 	 * Shader that renders glyphs. Used by the nap::RenderableTextComponent
+	 *
+	 * The font shader exposes the following shader variables:
+	 *
+	 * ~~~~{.frag}
+	 *		uniform UBO
+	 *		{
+	 *			uniform vec3 textColor;
+	 *		};
+	 *
+	 *		uniform sampler2D glyph;
+	 * ~~~~
 	 */
 	class NAPAPI FontShader : public Shader
 	{
@@ -39,5 +49,8 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		RenderService* mRenderService = nullptr;
 	};
 }

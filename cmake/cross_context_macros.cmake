@@ -7,9 +7,7 @@ macro(find_path_mapping SYSTEM_MAPPINGS PROJECT_DIR CONTEXT)
     set(CHECK_PATH_LIST "")
 
     # Provide for greater specificity
-    if(ANDROID)
-        list(APPEND CHECK_PATH_LIST android)
-    elseif(APPLE)
+    if(APPLE)
         list(APPEND CHECK_PATH_LIST macos)
     elseif(UNIX)
         list(APPEND CHECK_PATH_LIST linux)
@@ -57,4 +55,21 @@ macro(ensure_patchelf_installed)
         message(FATAL_ERROR "Could not locate patchelf. Please run check_build_environment.")
     endif()
 endmacro()
+
+# Check existence of bcm_host.h header file to see if we're building on Raspberry
+macro(check_raspbian_os RASPBERRY)
+    if(${ARCH} MATCHES "armhf")
+        MESSAGE(VERBOSE "Looking for bcm_host.h")
+        INCLUDE(CheckIncludeFiles)
+
+        # Raspbian bullseye bcm_host.h location
+        CHECK_INCLUDE_FILES("/usr/include/bcm_host.h" RASPBERRY)
+
+        # otherwise, check previous location of bcm_host.h on older Raspbian OS's
+        if(NOT RASPBERRY)
+            CHECK_INCLUDE_FILES("/opt/vc/include/bcm_host.h" RASPBERRY)
+        endif()
+    endif()
+endmacro()
+
 

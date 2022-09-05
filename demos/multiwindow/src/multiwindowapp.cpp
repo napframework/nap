@@ -36,10 +36,8 @@ namespace nap
 		mInputService  = getCore().getService<nap::InputService>();
 		mGuiService = getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("multiwindow.json", error))
-			return false;
 
 		// Get screen size
 		glm::ivec2 screen_size = SDL::getScreenSize(0);
@@ -73,6 +71,12 @@ namespace nap
 		mPlaneTwoEntity = scene->findEntity("PlaneTwo");
 
 		OrthoCameraComponentInstance& ortho_comp = mOrthoCamera->getComponent<OrthoCameraComponentInstance>();
+
+		// Sample default color values from loaded color palette
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
+		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+
 		return true;
 	}
 	
@@ -111,6 +115,15 @@ namespace nap
 		TransformComponentInstance& plane_xform_two = mPlaneTwoEntity->getComponent<TransformComponentInstance>();
 		positionPlane(*mRenderWindowThree, plane_xform_two);
 
+		// Find uniform buffer that holds the sphere colors
+		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+
+		// Set sphere colors (for all windows)
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
+
 		// Update the gui for all windows
 		updateGUI();
 	}
@@ -128,8 +141,8 @@ namespace nap
 	{
 		// Find the camera uniform we need to set for both render passes that contain a sphere
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* frag_ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -319,12 +332,21 @@ namespace nap
 		// Select window 1
 		mGuiService->selectWindow(mRenderWindowOne);
 
+		// Theme
+		const auto& theme = mGuiService->getPalette();
+
 		// Draw some GUI elements and show used textures
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
+		RGBColorFloat clr = theme.mHighlightColor2.convert<RGBColorFloat>();
 		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+		}
 		if (ImGui::CollapsingHeader("Used Textures 1"))
 		{
 			float col_width = ImGui::GetColumnWidth();

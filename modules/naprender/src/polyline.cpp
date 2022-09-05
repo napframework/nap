@@ -112,8 +112,8 @@ namespace nap
 		// Sweep and fill
 		for (int r = 0; r < vertexCount; r++)
 		{
-			float const y = cos(2 * M_PI * r * R);
-			float const x = sin(2 * M_PI * r * R);
+			float const y = cos(math::PIX2 * r * R);
+			float const x = sin(math::PIX2 * r * R);
 
 			// Set texture coordinates
 			*t++ = {(x + 1.0f) / 2.0f, (y + 1.0) / 2.0f, 0.0f};

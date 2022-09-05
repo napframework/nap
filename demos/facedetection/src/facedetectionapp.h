@@ -104,7 +104,6 @@ namespace nap
 		ObjectPtr<RenderTexture2D>	mCameraOutputTexture = nullptr;		//< Pointer to the camera output texture, which contains the detected blobs
 		ObjectPtr<RenderTexture2D>	mVideoOutputTexture = nullptr;		//< Pointer to the video output texture, which contains the detected blobs
 
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		int mCurrentVideoFrame = 0;										//< Holds currently selected frame from video stream
 		int mCurrentSelection = 0;										//< Holds what to render to render to the viewport (video or camera)
 	};

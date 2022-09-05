@@ -4,6 +4,8 @@
 
 #include "filternode.h"
 
+#include <mathutils.h>
+
 RTTI_BEGIN_ENUM(nap::audio::FilterNode::EMode)
 	RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::LowPass, "LowPass"),
 	RTTI_ENUM_VALUE(nap::audio::FilterNode::EMode::HighPass, "HighPass"),
@@ -32,8 +34,8 @@ namespace nap
 {
 	namespace audio
 	{
-		
-		
+
+
 		void FilterNode::process()
 		{
 			if (mIsDirty.check())
@@ -41,13 +43,13 @@ namespace nap
 
 			auto inputBuffer = audioInput.pull();
 			auto& outputBuffer = getOutputBuffer(audioOutput);
-			
+
 			if (inputBuffer) {
 				for (auto i = 0; i < outputBuffer.size(); ++i) {
 					mInput.write((*inputBuffer)[i]);
 					auto temp = a0.getNextValue() * mInput.read(0) + a1.getNextValue() * mInput.read(1) + a2.getNextValue() * mInput.read(2) - b1.getNextValue() * mOutput.read(0) -
 					            b2.getNextValue() * mOutput.read(1);
-					
+
 					mOutput.write(temp);
 					outputBuffer[i] = temp;
 				}
@@ -57,7 +59,7 @@ namespace nap
 					mInput.write(0);
 					auto temp = a0.getNextValue() * mInput.read(0) + a1.getNextValue() * mInput.read(1) + a2.getNextValue() * mInput.read(2) - b1.getNextValue() * mOutput.read(0) -
 					            b2.getNextValue() * mOutput.read(1);
-					
+
 					mOutput.write(temp);
 					outputBuffer[i] = temp;
 				}
@@ -81,34 +83,32 @@ namespace nap
 
 		}
 
-		
-		
+
+
 		void FilterNode::setMode(EMode mode)
 		{
 			mMode = mode;
 			calcCoeffs();
 			mIsDirty.set();
 		}
-		
-		
+
+
 		void FilterNode::setFrequency(ControllerValue frequency)
 		{
-			mFrequency = frequency;
-			if (mFrequency <= 0)
-				mFrequency = 1;
+			mFrequency = math::max<float>(frequency, 1.f);
 			calcCoeffs();
 			mIsDirty.set();
 		}
-		
-		
+
+
 		void FilterNode::setResonance(ControllerValue resonance)
 		{
 			mResonance = pow(10., -(resonance * 0.1));
 			calcCoeffs();
 			mIsDirty.set();
 		}
-		
-		
+
+
 		void FilterNode::setBand(ControllerValue band)
 		{
 			mBand = band;
@@ -117,16 +117,16 @@ namespace nap
 			calcCoeffs();
 			mIsDirty.set();
 		}
-		
-		
+
+
 		void FilterNode::setGain(ControllerValue gain)
 		{
 			mGain = gain;
 			calcCoeffs();
 			mIsDirty.set();
 		}
-		
-		
+
+
 		void FilterNode::update()
 		{
 			a0.setValue(a0Dest);
@@ -134,8 +134,8 @@ namespace nap
 			b1.setValue(b1Dest);
 			b2.setValue(b2Dest);
 		}
-		
-		
+
+
 		void FilterNode::calcCoeffs()
 		{
 			switch (mMode) {
@@ -203,7 +203,7 @@ namespace nap
 				}
 			}
 		}
-		
-		
+
+
 	}
 }

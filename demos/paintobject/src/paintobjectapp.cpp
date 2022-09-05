@@ -46,10 +46,8 @@ namespace nap
 		mGuiService			= getCore().getService<nap::IMGuiService>();
 		mParameterService	= getCore().getService<nap::ParameterService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("paintobject.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow			= mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -119,9 +117,8 @@ namespace nap
 		ImGui::Begin("Controls");
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "Hold LMB to spray paint on object");
-		ImGui::TextColored(clr, "Hold space + LMB to rotate, RMB to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor1, "Hold LMB to spray paint on object");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Hold space + LMB to rotate, RMB to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		// Mesh Selection

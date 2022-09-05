@@ -4,7 +4,7 @@
 
 #include "renderablemesh.h"
 #include "renderablemeshcomponent.h"
-#include "vertexbuffer.h"
+#include "gpubuffer.h"
 #include "material.h"
 
 namespace nap
@@ -20,7 +20,7 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			VertexBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
+			GPUBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			vertex_buffer.bufferChanged.connect(mVertexBufferDataChangedSlot);
 			mVertexBufferOffsets.push_back(0);
 		}
@@ -74,12 +74,34 @@ namespace nap
 			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
 			assert(material_binding != nullptr);
 
-			VertexBuffer& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
+			GPUBufferNumeric& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
 			mVertexBuffers.push_back(vertex_buffer.getBuffer());
 		}
 
 		mVertexBuffersDirty = false;
 		return mVertexBuffers;
+	}
+
+
+	int RenderableMesh::getVertexBufferBindingIndex(std::string meshVertexAttributeID) const
+	{
+		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();
+		const Material& material = mMaterialInstance->getMaterial();
+
+		int binding = 0;
+		for (auto& kvp : material.getShader().getAttributes())
+		{
+			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
+			assert(material_binding != nullptr);
+
+			// Override the position mesh attribute
+			if (material_binding->mMeshAttributeID == meshVertexAttributeID)
+				return binding;
+
+			++binding;
+		}
+		assert(false);
+		return -1;
 	}
 
 

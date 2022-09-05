@@ -85,10 +85,53 @@ namespace nap
 		// Ensure the bitmap is allocated
 		assert(!bitmap.empty());
 
-		BitmapFileBuffer(bitmap.mSurfaceDescriptor, bitmap.getData(), copyData);
+		utility::ErrorState error_state;
+		if (!setData(bitmap.mSurfaceDescriptor, bitmap.getData(), copyData, error_state))
+		{
+			nap::Logger::error(error_state.toString());
+			assert(false);
+		}
 	}
 
 	BitmapFileBuffer::BitmapFileBuffer(const SurfaceDescriptor& surfaceDescriptor, const void* data, bool copyData)
+	{
+		utility::ErrorState error_state;
+		if (!setData(surfaceDescriptor, data, copyData, error_state))
+		{
+			nap::Logger::error(error_state.toString());
+			assert(false);
+		}
+	}
+
+
+	BitmapFileBuffer::BitmapFileBuffer(const SurfaceDescriptor& surfaceDescriptor)
+	{
+		utility::ErrorState error_state;
+		if (!allocate(surfaceDescriptor, error_state))
+		{
+			nap::Logger::error(error_state.toString());
+			assert(false);
+		}
+	}
+
+
+	bool BitmapFileBuffer::allocate(const SurfaceDescriptor& surfaceDescriptor, utility::ErrorState& errorState)
+	{
+		FREE_IMAGE_TYPE fi_image_type = getFreeImageType(surfaceDescriptor.mDataType, surfaceDescriptor.mChannels);
+		int bpp = surfaceDescriptor.getBytesPerPixel() * 8;
+
+		FIBITMAP* fi_bitmap = FreeImage_AllocateT(fi_image_type, surfaceDescriptor.mWidth, surfaceDescriptor.mHeight, bpp,
+			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
+
+		if (!errorState.check(fi_bitmap != NULL, "Failed to allocate bitmap file buffer"))
+			return false;
+
+		mBitmapHandle = fi_bitmap;
+		return true;
+	}
+
+
+	bool BitmapFileBuffer::setData(const SurfaceDescriptor& surfaceDescriptor, const void* data, bool copyData, utility::ErrorState& errorState)
 	{
 		// Get the FreeImage type
 		FREE_IMAGE_TYPE fi_img_type = getFreeImageType(surfaceDescriptor.mDataType, surfaceDescriptor.mChannels);
@@ -101,31 +144,11 @@ namespace nap
 			copyData, (uint8*)data, fi_img_type, surfaceDescriptor.getWidth(), surfaceDescriptor.getHeight(), pitch, bpp,
 			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
 
-		mBitmapHandle = fi_bitmap;
-	}
-
-
-	BitmapFileBuffer::BitmapFileBuffer(const SurfaceDescriptor& surfaceDescriptor)
-	{
-		FREE_IMAGE_TYPE fi_image_type = getFreeImageType(surfaceDescriptor.mDataType, surfaceDescriptor.mChannels);
-		int bpp = surfaceDescriptor.getBytesPerPixel() * 8;
-
-		 FIBITMAP* fi_bitmap = FreeImage_AllocateT(fi_image_type, surfaceDescriptor.mWidth, surfaceDescriptor.mHeight, bpp,
-			FI_RGBA_RED_MASK, FI_RGBA_GREEN_MASK, FI_RGBA_BLUE_MASK);
+		if (!errorState.check(fi_bitmap != NULL, "Failed to allocate and create bitmap file buffer"))
+			return false;
 
 		mBitmapHandle = fi_bitmap;
-	}
-
-
-	BitmapFileBuffer::~BitmapFileBuffer()
-	{
-		if (mBitmapHandle != nullptr)
-		{
-			FIBITMAP* fi_bitmap = reinterpret_cast<FIBITMAP*>(mBitmapHandle);
-			FreeImage_Unload(fi_bitmap);
-
-			mBitmapHandle = nullptr;
-		}
+		return true;
 	}
 
 
@@ -273,10 +296,10 @@ namespace nap
 	}
 
 
-	const void* BitmapFileBuffer::getData()
+	void* BitmapFileBuffer::getData()
 	{
 		FIBITMAP* fi_bitmap = reinterpret_cast<FIBITMAP*>(getHandle());
-		return static_cast<const void*>(FreeImage_GetBits(fi_bitmap));
+		return FreeImage_GetBits(fi_bitmap);
 	}
 
 
@@ -284,6 +307,24 @@ namespace nap
 	{
 		assert(mBitmapHandle != nullptr);
 		return mBitmapHandle;
+	}
+
+
+	void BitmapFileBuffer::release()
+	{
+		if (mBitmapHandle != nullptr)
+		{
+			FIBITMAP* fi_bitmap = reinterpret_cast<FIBITMAP*>(mBitmapHandle);
+			FreeImage_Unload(fi_bitmap);
+
+			mBitmapHandle = nullptr;
+		}
+	}
+
+
+	BitmapFileBuffer::~BitmapFileBuffer()
+	{
+		release();
 	}
 }
 

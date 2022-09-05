@@ -32,7 +32,7 @@ DOXYFILE_ENCODING      = UTF-8
 # title of most generated pages and in a few other places.
 # The default value is: My Project.
 
-PROJECT_NAME           = NAP
+PROJECT_NAME           = "NAP"
 
 # The PROJECT_NUMBER tag can be used to enter a project or revision number. This
 # could be handy for archiving the generated documentation or if some version
@@ -51,7 +51,7 @@ PROJECT_BRIEF          =
 # pixels and the maximum width should not exceed 200 pixels. Doxygen will copy
 # the logo to the output directory.
 
-PROJECT_LOGO           = C:/naivi/nap/docs/doxygen/content/logo_no_name.png
+PROJECT_LOGO           = ./content/nap_tech_logo.svg
 
 # The OUTPUT_DIRECTORY tag is used to specify the (relative or absolute) path
 # into which the generated documentation will be written. If a relative path is
@@ -212,7 +212,15 @@ STRIP_FROM_INC_PATH    = $(NAP_WORKING_DIR)\core\src \
                          $(NAP_WORKING_DIR)\modules\napsoem\src \
                          $(NAP_WORKING_DIR)\modules\napcolor\src \
                          $(NAP_WORKING_DIR)\modules\napsequence\src \
-                         $(NAP_WORKING_DIR)\modules\naplicense\src
+                         $(NAP_WORKING_DIR)\modules\naplicense\src \
+                         $(NAP_WORKING_DIR)\modules\napsequenceaudio\src \
+                         $(NAP_WORKING_DIR)\modules\napsequenceaudiogui\src \
+                         $(NAP_WORKING_DIR)\modules\napsequencegui\src \
+                         $(NAP_WORKING_DIR)\modules\naptween\src \
+                         $(NAP_WORKING_DIR)\modules\napudp\src \
+                         $(NAP_WORKING_DIR)\modules\napcalendar\src \
+                         $(NAP_WORKING_DIR)\modules\napasio\src \
+                         $(NAP_WORKING_DIR)\modules\napopencv\src \
 
 # If the SHORT_NAMES tag is set to YES, doxygen will generate much shorter (but
 # less readable) file names. This can be useful is your file systems doesn't
@@ -745,7 +753,7 @@ SHOW_FILES             = NO
 # Folder Tree View (if specified).
 # The default value is: YES.
 
-SHOW_NAMESPACES        = NO
+SHOW_NAMESPACES        = YES
 
 # The FILE_VERSION_FILTER tag can be used to specify a program or script that
 # doxygen should invoke to get the current version for each file (typically from
@@ -911,6 +919,7 @@ EXCLUDE                = ../../napkin \
                          ../../modules\napscriptserver \
                          ../../modules\network \
                          ../../modules\sfml \
+                         ../../modules/napmath/src/easing.h \
                          ../../unittests \
                          ../../apps \
                          ../../test \
@@ -936,7 +945,6 @@ EXCLUDE                = ../../napkin \
                          ../../qt \
                          ../../tools\napkin \
                          ../../msvc64 \
-                         ../../core\src\nap\android \
                          ../../dist \
                          ../../packaging \
                          ../../packaging_bin \
@@ -990,7 +998,9 @@ EXCLUDE_SYMBOLS        = pybind* \
                          _wdirent \
                          nap::detail \
                          BaseClassList \
-                         BaseClassList
+                         BaseClassList \
+                         osc \
+                         serial
 
 # The EXAMPLE_PATH tag can be used to specify one or more files or directories
 # that contain example code fragments that are included (see the \include
@@ -1205,7 +1215,7 @@ ALPHABETICAL_INDEX     = YES
 # Minimum value: 1, maximum value: 20, default value: 5.
 # This tag requires that the tag ALPHABETICAL_INDEX is set to YES.
 
-COLS_IN_ALPHA_INDEX    = 5
+COLS_IN_ALPHA_INDEX    = 1
 
 # In case all classes in a project start with a common prefix, all classes will
 # be put under the same header in the alphabetical index. The IGNORE_PREFIX tag
@@ -1373,7 +1383,7 @@ HTML_DYNAMIC_SECTIONS  = NO
 # Minimum value: 0, maximum value: 9999, default value: 100.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-HTML_INDEX_NUM_ENTRIES = 100
+HTML_INDEX_NUM_ENTRIES = 1
 
 # If the GENERATE_DOCSET tag is set to YES, additional index files will be
 # generated that can be used as input for Apple's Xcode 3 integrated development
@@ -1589,7 +1599,7 @@ DISABLE_INDEX          = NO
 # The default value is: NO.
 # This tag requires that the tag GENERATE_HTML is set to YES.
 
-GENERATE_TREEVIEW      = YES
+GENERATE_TREEVIEW      = NO
 
 # The ENUM_VALUES_PER_LINE tag can be used to set the number of enum values that
 # doxygen will group on one line in the generated HTML documentation.
@@ -1794,7 +1804,7 @@ EXTRA_SEARCH_MAPPINGS  =
 # If the GENERATE_LATEX tag is set to YES, doxygen will generate LaTeX output.
 # The default value is: YES.
 
-GENERATE_LATEX         = YES
+GENERATE_LATEX         = NO
 
 # The LATEX_OUTPUT tag is used to specify where the LaTeX docs will be put. If a
 # relative path is entered the value of OUTPUT_DIRECTORY will be put in front of

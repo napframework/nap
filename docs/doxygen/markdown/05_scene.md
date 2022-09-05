@@ -161,7 +161,7 @@ Here we create a perspective camera with a field of view property. Some concepts
 - The `DECLARE_COMPONENT` macro tells the system which instance of this component to create
 - [getDependentComponents()](@ref nap::Component::getDependentComponents) tells the system that this component depends on a transform 
 
-If your component needs another component you can hint at it. In the example above the perspective camera needs a transform to figure out its position in the world. NAP will make sure that a transform is available and initialized before the camera component is initialized. If the entity doesn't have a transform the component can't be created and initialization fails. In JSON we can extend the scene with an entity that holds both the new component and a transform component 
+If your component depends on another component you can `hint` at it. In the example above the perspective camera needs a transform to position itself in the world. NAP will make sure that if a transform is available it is initialized before the camera is initialized. Subsequently: initialization of the camera fails if the transform is not available. In JSON we can extend the scene with an entity that holds both the new component and a transform component 
 
 ```
 {
@@ -283,7 +283,7 @@ public:
 }
 ~~~~~~~~~~~~~~~
 
-The [ComponentInstancePtr](@ref nap::ComponentInstancePtr) is the runtime counterpart of the [ComponentPtr](@ref nap::ComponentPtr). Both links are set before `init()` is called. If the system can't resolve the link NAP will cancel the load operation and return an error message. The template argument is the resource part of the component this member links to. The construction arguments are always 'itself' and a reference to the original link. You don't have to specify anything else. The system will populate both members for you after construction! The registration of the instace part of the component in the .cpp is always the same:
+The [ComponentInstancePtr](@ref nap::ComponentInstancePtr) is the runtime counterpart of the [ComponentPtr](@ref nap::ComponentPtr). Both links are set before `init()` is called. If the system can't resolve the link NAP will cancel the load operation and return an error message. The template argument is the resource part of the component this member links to. The construction arguments are always 'itself' and a reference to the original link. You don't have to specify anything else. The system will populate both members for you after construction! The registration of the instance part of the component in the .cpp is always the same:
 
 ~~~~~~~~~~~~~~~{.cpp}
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineBlendComponentInstance)

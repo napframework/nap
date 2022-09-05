@@ -39,10 +39,8 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load curveball json file
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("curveball.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -80,29 +78,40 @@ namespace nap
 		// Setup some gui elements to be drawn later
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 
 		// Find the camera location uniform in the material of the sphere
 		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* uniform_instance =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		UniformVec3Instance* cam_loc_uniform = uniform_instance->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
+		nap::UniformStructInstance* ubo =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto* cam_loc_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
 
 		// Set it to the current camera location
 		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
 		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
 		cam_loc_uniform->setValue(global_pos);
 
+		// Set sphere color
+		const auto& theme = mGuiService->getPalette();
+		auto* sphere_color = ubo->getOrCreateUniform<UniformVec3Instance>("ballColor");
+		sphere_color->setValue(theme.mHighlightColor4.convert<RGBColorFloat>());
+
 		// Find the animation uniform in the material of the plane.
 		nap::RenderableMeshComponentInstance& plane_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		uniform_instance = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		UniformFloatInstance* animator_uniform = uniform_instance->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
+		ubo = plane_mesh.getMaterialInstance().getOrCreateUniform("UBO");
+		auto* animator_uniform = ubo->getOrCreateUniform<nap::UniformFloatInstance>("animationValue");
 
 		// Set it to the current animation value of the sphere.
 		nap::AnimatorComponentInstance& animator_comp = mSphereEntity->getComponent<nap::AnimatorComponentInstance>();
 		animator_uniform->setValue(animator_comp.getCurveValue());
+
+		// Set plane colors
+		auto* clr_one = ubo->getOrCreateUniform<UniformVec3Instance>("colorOne");
+		clr_one->setValue(theme.mFront4Color.convert<RGBColorFloat>());
+
+		auto* clr_two = ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
+		clr_two->setValue(theme.mBackgroundColor.convert<RGBColorFloat>());
 	}
 
 	

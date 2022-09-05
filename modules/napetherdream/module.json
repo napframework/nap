@@ -6,8 +6,8 @@
         "mod_napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/etherdream/msvc/bin/Release",
-        "{ROOT}/../thirdparty/etherdream/msvc/bin/Debug",
+        "{ROOT}/../thirdparty/etherdream/msvc/x86_64/Release",
+        "{ROOT}/../thirdparty/etherdream/msvc/x86_64/Debug",
         "{ROOT}/thirdparty/etherdream/bin"
     ]
 }

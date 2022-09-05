@@ -30,13 +30,8 @@ namespace nap
 		mSceneService	= getCore().getService<SceneService>();
 		mGuiService		= getCore().getService<IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("dynamicgeo.json", error))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;                
-		}
 		
 		ObjectPtr<Scene> scene		= mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow				= mResourceManager->findObject<RenderWindow>("Window0");
@@ -71,8 +66,7 @@ namespace nap
 
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "wasd keys to move, mouse + left mouse button to look");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 	}

@@ -87,6 +87,7 @@
                 {
                     "Type": "nap::RenderableClassifyComponent",
                     "mID": "3DVisualizeBlobsRenderComponent",
+                    "Visible": true,
                     "MaterialInstance": {
                         "Material": "BlobMaterial",
                         "Uniforms": [],
@@ -131,6 +132,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "3DPlaneRenderableMeshComponent",
+                    "Visible": true,
                     "Mesh": "GroundPlane",
                     "MaterialInstance": {
                         "Material": "PlaneMaterial",
@@ -238,6 +240,7 @@
                 {
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "OpenCVCaptureRenderComponent",
+                    "Visible": true,
                     "OutputTexture": "VideoOutputTexture",
                     "MaterialInstance": {
                         "Material": "VideoClassifyMaterial",
@@ -251,7 +254,8 @@
                         "Values": [
                             0,
                             255,
-                            0
+                            0,
+                            255
                         ]
                     }
                 }
@@ -375,13 +379,14 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "TextRenderableComponent",
+                    "Visible": true,
                     "Text": "Blob#",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
-                            0.8587999939918518,
-                            0.8587999939918518,
-                            0.8587999939918518
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Location": {
@@ -389,7 +394,8 @@
                         "y": 0
                     },
                     "Orientation": "Center",
-                    "DepthMode": "NoReadWrite"
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -423,7 +429,7 @@
                 "Size": 18,
                 "DPI": 96
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::ImageFromFile",
@@ -623,6 +629,7 @@
             "mID": "GroundPlane",
             "Usage": "Static",
             "CullMode": "None",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 640.0,
                 "y": 640.0
@@ -650,7 +657,15 @@
             "Width": 640,
             "Height": 480,
             "Format": "RGBA8",
-            "ColorSpace": "Linear"
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -660,7 +675,15 @@
             "Width": 640,
             "Height": 480,
             "Format": "RGBA8",
-            "ColorSpace": "Linear"
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -670,7 +693,15 @@
             "Width": 640,
             "Height": 360,
             "Format": "RGBA8",
-            "ColorSpace": "Linear"
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -680,7 +711,15 @@
             "Width": 640,
             "Height": 360,
             "Format": "RGBA8",
-            "ColorSpace": "Linear"
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderWindow",
@@ -694,10 +733,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
@@ -918,6 +959,7 @@
             "mID": "BlobMesh",
             "Usage": "Static",
             "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Radius": 1.0,
             "Rings": 50.0,
             "Sectors": 50.0,

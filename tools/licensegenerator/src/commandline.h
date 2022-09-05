@@ -38,6 +38,7 @@ public:
 			ValueArg<std::string>			date					("d",  "date", "Expiry date, format: day/month/year -> 30/12/2025", false, "", "expiry_date");
 			ValueArg<std::string>			tag						("t",  "tag", "Additional information", false, "", "tag");
 			ValueArg<std::string>			uuid					("u",  "uuid", "Generate unique user id", false, "", "uuid");
+			ValueArg<std::string>			signing_scheme			("s",  "signing_scheme", "Signing scheme: RSASS_PKCS1v15_SHA1, RSASS_PKCS1v15_SHA224, RSASS_PKCS1v15_SHA256, RSASS_PKCS1v15_SHA384, RSASS_PKCS1v15_SHA512", false, "", "signing_scheme");
 
 			command.add(output_directory);
 			command.add(private_key);
@@ -48,6 +49,7 @@ public:
 			command.add(date);
 			command.add(tag);
 			command.add(uuid);
+			command.add(signing_scheme);
 			command.parse(argc, argv);
 
 			commandLine.mOutputDirectory = output_directory.getValue();
@@ -59,6 +61,7 @@ public:
 			commandLine.mDate = date.getValue();
 			commandLine.mTag = tag.getValue();
 			commandLine.mUuid = uuid.getValue();
+			commandLine.mSignScheme  = signing_scheme.getValue();
 		}
 		catch (ArgException& e)
 		{
@@ -77,4 +80,5 @@ public:
 	std::string					mApplication;
 	std::string					mTag;
 	std::string					mUuid;
+	std::string					mSignScheme;
 };

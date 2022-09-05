@@ -33,6 +33,7 @@ namespace nap
 	{
 		// Poll for events
 		SDL_Event event;
+		bool quit = false;
 		while (SDL_PollEvent(&event))
 		{
 			// Forward if we're not capturing mouse and it's a pointer event
@@ -76,6 +77,12 @@ namespace nap
 			// Always forward window events
 			else if (mEventConverter->isWindowEvent(event))
 			{
+				// Quit when request to close
+				if (event.window.event == SDL_WINDOWEVENT_CLOSE && getApp<App>().shutdownRequested())
+				{
+					getApp<App>().quit();
+				}
+
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
@@ -84,12 +91,9 @@ namespace nap
 			}
 
 			// Stop if the event tells us to quit
-			else if (event.type == SDL_QUIT)
+			else if (event.type == SDL_QUIT && getApp<App>().shutdownRequested())
 			{
-				if (getApp<App>().shutdownRequested())
-				{
-					getApp<App>().quit();
-				}
+				getApp<App>().quit();
 			}
 		}
 	}

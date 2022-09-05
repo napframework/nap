@@ -266,6 +266,16 @@ namespace nap
 			 */
 			QList<QAction*> auxiliaryActions();
 
+			// All actions
+			QAction mDeleteAction;
+			QAction mSetTangentsAlignedAction;
+			QAction mSetTangentsBrokenAction;
+			QAction mInterpLinearAction;
+			QAction mInterpBezierAction;
+			QAction mInterpSteppedAction;
+			QAction mFlattenTangentsAction;
+			QAction mFrameViewAction;
+
 		Q_SIGNALS:
 			void selectionChanged(QMap<AbstractCurve*, QList<int>> points);
 
@@ -323,15 +333,6 @@ namespace nap
 
 			// Currently editing point list
 			QMap<CurveItem*, QMap<int, QPointF>> mPointEditMap;
-
-			QAction mDeleteAction;
-			QAction mSetTangentsAlignedAction;
-			QAction mSetTangentsBrokenAction;
-			QAction mInterpLinearAction;
-			QAction mInterpBezierAction;
-			QAction mInterpSteppedAction;
-			QAction mFlattenTangentsAction;
-			QAction mFrameViewAction;
 		};
 
 		/**
@@ -345,7 +346,6 @@ namespace nap
 			 * @param parent See QWidget constructor
 			 */
 			CurveEditor(QWidget* parent = nullptr);
-
 			~CurveEditor();
 
 			/**
@@ -355,6 +355,11 @@ namespace nap
 			 */
 			void setModel(AbstractCurveModel* model);
 
+			/**
+			 * @return the curve view
+			 */
+			CurveView& getView()	{ return mCurveView; }
+
 		private:
 			void onTimeChanged(qreal t);
 			void onValueChanged(qreal v);
@@ -362,8 +367,8 @@ namespace nap
 			void onSelectionChanged(QMap<AbstractCurve*, QList<int>> points);
 			void onPointsChanged();
 
-			QVBoxLayout mLayout;
 			CurveView mCurveView;
+			QVBoxLayout mLayout;
 			QWidget mToolbar;
 			FlowLayout mToolbarLayout;
 			FloatLineEdit mTimeSpinbox;

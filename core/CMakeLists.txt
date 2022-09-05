@@ -35,25 +35,6 @@ elseif(MSVC)
                 src/nap/native/core_ext.cpp
                 src/nap/native/resourcemanager_ext.cpp
                 )
-elseif(ANDROID)
-    # Bring in Android libs
-    find_library(android-lib
-                 android)
-    add_library(${PROJECT_NAME} SHARED
-                ${SOURCES}
-                src/nap/android/directorywatcher.cpp
-                src/nap/linux/module.cpp
-                src/nap/android/modulemanager_ext.cpp
-                src/nap/android/logger_ext.cpp
-                src/nap/android/core_ext.cpp
-                src/nap/android/projectinfomanager_ext.cpp
-                src/nap/android/resourcemanager_ext.cpp
-                src/nap/android/androidextension.cpp
-                )
-    target_link_libraries(${PROJECT_NAME} 
-                ${log-lib}
-                ${android-lib}
-                log)
 elseif(UNIX)
     file(GLOB FILEWATCHER_SOURCES
                 src/nap/linux/FileWatcher/*.cpp
@@ -73,6 +54,7 @@ endif()
 
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
+
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
@@ -95,8 +77,6 @@ endif()
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework CoreServices")
-elseif(ANDROID)
-    target_link_libraries(${PROJECT_NAME} dl)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
@@ -110,8 +90,6 @@ if(WIN32)
     endif()
 elseif(APPLE)
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)
-elseif(ANDROID)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}/${ANDROID_ABI})
 else()
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})
 endif()
@@ -134,13 +112,7 @@ install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
         PATTERN "linux" EXCLUDE
         PATTERN "osx" EXCLUDE
         PATTERN "win32" EXCLUDE
-        PATTERN "android" EXCLUDE
         )
-if(ANDROID)
-    install(DIRECTORY "src/nap/android/" DESTINATION "include/nap/android/"
-            FILES_MATCHING PATTERN "*.h"
-    )
-endif()
 
 # Package release version info
 install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h

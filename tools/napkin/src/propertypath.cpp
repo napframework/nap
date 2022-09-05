@@ -12,6 +12,7 @@
 #include <stack>
 #include <cctype>
 #include <mathutils.h>
+#include <color.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -34,7 +35,6 @@ PropertyPath::PropertyPath(Object& obj, Document& doc)
 	: mDocument(&doc)
 {
 	mObjectPath.emplace_back(obj.mID);
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const std::string& abspath, Document& doc) 
@@ -48,8 +48,6 @@ PropertyPath::PropertyPath(const std::string& abspath, Document& doc)
 	if (pathParts.size() > 1)
 		for (auto propElm : nap::utility::splitString(pathParts[1], '/'))
 			mPropertyPath.emplace_back(propElm);
-
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath, Document& doc) 
@@ -61,21 +59,17 @@ PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppa
 
 	for (const auto& propElm : nap::utility::splitString(proppath, '/'))
 		mPropertyPath.emplace_back(propElm);
-
-	mDocument->registerPath(*this);
 }
 
 
 PropertyPath::PropertyPath(const PPath& abspath, Document& doc)
 		: mObjectPath(abspath), mDocument(&doc)
 {
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::PropertyPath(const PPath& absPath, const PPath& propPath, Document& doc)
 		: mObjectPath(absPath), mPropertyPath(propPath), mDocument(&doc)
 {
-	mDocument->registerPath(*this);
 }
 
 
@@ -84,8 +78,6 @@ PropertyPath::PropertyPath(Object& obj, const Path& path, Document& doc) : mDocu
 	auto id = obj.mID;
 	mObjectPath.emplace_back(NameIndex(id));
 	mPropertyPath.emplace_back(path.toString());
-
-	mDocument->registerPath(*this);
 }
 
 
@@ -93,14 +85,10 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document
 {
 	mObjectPath.emplace_back(obj.mID);
 	mPropertyPath.emplace_back(std::string(prop.get_name().data()));
-	mDocument->registerPath(*this);
 }
 
 PropertyPath::~PropertyPath()
-{
-	if(mDocument != nullptr)
-		mDocument->deregisterPath(*this);
-}
+{ }
 
 const std::string PropertyPath::getName() const
 {
@@ -158,6 +146,7 @@ std::string PropertyPath::getComponentInstancePath() const
 		return {};
 
 	// First object must be Scene
+	assert(mDocument != nullptr);
 	auto leadObject = mDocument->getObject(mObjectPath[0].mID);
 	if (!leadObject || !leadObject->get_type().is_derived_from<nap::Scene>())
 		return {};
@@ -181,6 +170,7 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 	if (mObjectPath.size() < 2)
 		return nullptr;
 
+	assert(mDocument != nullptr);
 	auto scene = dynamic_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
 	if (!scene)
 		return nullptr;
@@ -355,6 +345,7 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 
 	// Remove from object list
 	removeInstancePropertyValue(val, this->getType());
+	assert(mDocument != nullptr);
 	mDocument->objectChanged(component);
 	for (auto scene : mDocument->getObjects<nap::Scene>())
 		mDocument->objectChanged(scene);
@@ -384,8 +375,8 @@ void PropertyPath::setPointee(Object* pointee)
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
 		auto targetVal = getValue();
+		assert(mDocument != nullptr);
 		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-
 		assignMethod.invoke(targetVal, path, *pointee);
 
 		// Apply the modified value back to the source property
@@ -403,7 +394,6 @@ PropertyPath PropertyPath::getParent() const
 	assert(mDocument != nullptr);
 	if (hasProperty())
 	{
-		assert(mDocument != nullptr);
 		if (mPropertyPath.size() > 1)
 			return { mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1), *mDocument };
 
@@ -502,6 +492,7 @@ bool PropertyPath::isInstanceProperty() const
 
 PropertyPath PropertyPath::getChild(const std::string& name) const
 {
+	assert(mDocument != nullptr);
 	return {objectPathStr(), propPathStr() + "/" + name, *mDocument};
 }
 
@@ -510,6 +501,7 @@ nap::rtti::Object* PropertyPath::getObject() const
 	if (mObjectPath.empty())
 		return nullptr;
 
+	assert(mDocument != nullptr);
 	return mDocument->getObject(mObjectPath.back().mID);
 }
 
@@ -559,6 +551,10 @@ bool PropertyPath::hasProperty() const
 
 bool PropertyPath::isValid() const
 {
+	// Path must be associated with a document
+	if (mDocument == nullptr)
+		return false;
+
 	// A valid path must always point to an object
 	auto obj = getObject();
 	if (!obj)
@@ -608,6 +604,13 @@ bool PropertyPath::isEnum() const
 {
 	return getWrappedType().is_enumeration();
 }
+
+
+bool PropertyPath::isColor() const
+{
+	return getWrappedType().is_derived_from(RTTI_OF(nap::BaseColor));
+}
+
 
 void PropertyPath::iterateChildren(std::function<bool(const PropertyPath&)> visitor, int flags) const
 {
@@ -823,3 +826,7 @@ void PropertyPath::updateObjectName(const std::string& oldName, const std::strin
 	}
 }
 
+void PropertyPath::invalidate()
+{
+	mDocument = nullptr;
+}

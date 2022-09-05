@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napserial)
 
 # add all cpp files to SOURCES
@@ -23,7 +18,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 # add include dirs
-target_include_directories(${PROJECT_NAME} PUBLIC src ${SERIAL_INCLUDE_DIRS})
+target_include_directories(${PROJECT_NAME} PUBLIC src ${SERIAL_INCLUDE_DIR})
 
 # preprocessor
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
@@ -37,15 +32,7 @@ copy_module_json_to_bin()
 # Package into platform release
 package_module()
 
-# Package oscpack into platform release
-install(FILES ${THIRDPARTY_DIR}/serial/README.md DESTINATION thirdparty/serial)
-install(DIRECTORY ${THIRDPARTY_DIR}/serial/include 
-        DESTINATION thirdparty/serial
-        PATTERN "*.cpp" EXCLUDE)
-if(MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/msvc/x64/ DESTINATION thirdparty/serial/lib)
-elseif(APPLE)
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/osx/ DESTINATION thirdparty/serial/lib)
-else()
-    install(DIRECTORY ${THIRDPARTY_DIR}/serial/linux/ DESTINATION thirdparty/serial/lib)
-endif()
+# Package serial into platform release
+install(FILES ${SERIAL_DIST_FILES} DESTINATION thirdparty/serial)
+install(DIRECTORY ${SERIAL_INCLUDE_DIR} DESTINATION thirdparty/serial PATTERN "*.cpp" EXCLUDE)
+install(DIRECTORY ${SERIAL_LIBS_DIR}/ DESTINATION thirdparty/serial/lib)

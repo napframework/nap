@@ -46,8 +46,9 @@ namespace nap
 		float			mRadius	= 1.0f;							///< Property: 'Radius' of the sphere
 		float			mRings = 50.0f;							///< Property: 'Rings' number of rings
 		float			mSectors = 50.0f;						///< Property: 'Sectors' number of sectors
-		EMeshDataUsage	mUsage = EMeshDataUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		EMemoryUsage	mUsage = EMemoryUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
+		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
 		RGBAColorFloat	mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' the vertex color of the sphere
 
 	private:

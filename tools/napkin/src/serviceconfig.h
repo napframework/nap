@@ -20,7 +20,7 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-		ServiceConfig(nap::Core& core);
+		ServiceConfig(nap::Core& core, nap::ProjectInfo& projectInfo);
 
 		/**
 		 * Returns file name associated with service configuration, can be null (not saved).
@@ -40,8 +40,10 @@ namespace napkin
 		 * On startup service configuration settings are copied from Core, because
 		 * Core already loads the configuration for us, performs additional checks,
 		 * and creates default configurations if there is none specified for a specific service.
+		 * @param serviceConfigFile the service configuration file to load
+		 * @return if loading succeeded
 		 */
-		void load(QString serviceConfigFile);
+		bool load(QString serviceConfigFile);
 
 		/**
 		 * Saves service configuration file to disk
@@ -54,10 +56,16 @@ namespace napkin
 		bool saveAs(const QString& fileName);
 
 		/**
+		 * Returns if the current service configuration is set as project default.
+		 * @return if the current service configuration is set as project default
+		 */
+		bool isProjectDefault() const;
+
+		/**
 		 * Set current configuration as project default.
 		 * For this operation to succeed the filename must be valid.
 		 */
-		bool makeDefault();
+		bool makeProjectDefault();
 
 		/**
 		 * Returns all current service configurations
@@ -80,6 +88,7 @@ namespace napkin
 
 	private:
 		nap::Core& mCore;								// NAP Core reference
+		nap::ProjectInfo& mProjectInfo;					// Editable Project info reference
 		std::unique_ptr<Document> mDocument = nullptr;	// Document that contains all the configurable objects
 
 		/**

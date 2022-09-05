@@ -16,15 +16,20 @@ namespace napkin
 	{
 	public:
 		ModuleItem(const nap::Module& module);
-
+		QVariant data(int role) const override;
 	private:
 		const nap::Module& mModule;
 	};
 
 	class ModuleModel : public QStandardItemModel
 	{
+		Q_OBJECT
 	public:
 		ModuleModel();
+
+	Q_SIGNALS:
+		void populated();
+
 	private:
 		void onCoreInitialized();
 	};

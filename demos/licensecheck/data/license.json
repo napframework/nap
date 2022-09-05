@@ -7,13 +7,14 @@
                 {
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
+                    "Visible": true,
                     "Text": "Hi There! Welcome to NAP",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
-                            0.8587999939918518,
-                            0.8587999939918518,
-                            0.8587999939918518
+                            1.0,
+                            1.0,
+                            1.0
                         ]
                     },
                     "Location": {
@@ -21,7 +22,9 @@
                         "y": 0
                     },
                     "Orientation": "Center",
-                    "DepthMode": "NoReadWrite"
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
                 }
             ],
             "Children": []
@@ -30,10 +33,9 @@
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
-                "Size": 26,
-                "DPI": 96
+                "Size": 26
             },
-            "Font": "fonts/Montserrat-Light.otf"
+            "Font": "fonts/Manrope-Light.otf"
         },
         {
             "Type": "nap::RenderWindow",
@@ -47,10 +49,12 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.066600002348423,
-                "y": 0.07840000092983246,
-                "z": 0.14900000393390656,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1

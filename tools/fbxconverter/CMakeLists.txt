@@ -1,10 +1,4 @@
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(fbxconverter)
-
 file(GLOB sources src/*.cpp src/*.h)
 include_directories(src)
 
@@ -75,15 +69,19 @@ if(UNIX)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/vulkansdk/lib)
 endif()
 
+# Add extra modules for RPATH building on Linux & macOS, likely related to NAP-225
+list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napcolor)
 if (WIN32)   
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/python-embed-amd64/*.dll)
+    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
+    file(GLOB ASSIMP_DLLS ${THIRDPARTY_DIR}/assimp/msvc/x86_64/bin/*.dll)
+
     # TODO Update to find the libraries then install locating them via TARGET_FILE
-    install(FILES ${THIRDPARTY_DIR}/assimp/msvc64/install/bin/assimp-vc140-mt.dll
-                  ${THIRDPARTY_DIR}/FreeImage/msvc/Dist/x64/FreeImage.dll
-                  ${THIRDPARTY_DIR}/rttr/msvc64/install/bin/rttr_core.dll
-                  ${THIRDPARTY_DIR}/SDL2/msvc/lib/x64/SDL2.dll
-                  ${THIRDPARTY_DIR}/freetype/msvc/Release/freetype.dll
+    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
+                  ${THIRDPARTY_DIR}/rttr/msvc/x86_64/bin/rttr_core.dll
+                  ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/SDL2.dll
+                  ${THIRDPARTY_DIR}/freetype/msvc/x86_64/lib/Release/freetype.dll
                   ${PYTHON_DLLS}
+                  ${ASSIMP_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 
     if(PACKAGE_PDBS)
@@ -94,8 +92,6 @@ if (WIN32)
     endif()            
 elseif(APPLE)
     list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
-    # Add extra modules for RPATH building on macOS, likely related to NAP-225
-    list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napcolor)
 
     set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
                                                                             "${DEPENDENT_NAP_MODULES}" 

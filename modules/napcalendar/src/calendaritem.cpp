@@ -51,6 +51,25 @@ namespace nap
 	{ }
 
 
+	std::string CalendarItem::Time::toString() const
+	{
+		return utility::stringFormat("%.2d:%.2d", mHour, mMinute);
+	}
+
+
+	CalendarItem::Time CalendarItem::Time::fromString(const std::string& time)
+	{
+		Time timestruct = { -1, -1 };
+		std::vector<std::string> parts = utility::splitString(time, ':');
+		if (parts.size() == 2)
+		{
+			timestruct.mHour = std::stoi(parts[0]);
+			timestruct.mMinute = std::stoi(parts[1]);
+		}
+		return timestruct;
+	}
+
+
 	nap::CalendarItem::Point::Point(Time time, Time duration) :
 		mTime(std::move(time)), 
 		mDuration(std::move(duration))

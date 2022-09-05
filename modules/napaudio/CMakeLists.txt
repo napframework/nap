@@ -1,9 +1,4 @@
 cmake_minimum_required(VERSION 3.18.4)
-# Exclude for Android
-if(ANDROID)
-    return()
-endif()
-
 project(mod_napaudio)
 
 find_package(portaudio REQUIRED)
@@ -58,9 +53,9 @@ if(WIN32)
 
     # Copy audio DLLs to project build directory
     set(FILES_TO_COPY
-        ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll
-        ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll
-        ${LIBMPG123_LIB_DIR}/libmpg123.dll
+        ${LIBSNDFILE_LIBS_RELEASE_DLL}
+        ${PORTAUDIO_LIBS_RELEASE_DLL}
+        ${LIBMPG123_LIBS_RELEASE_DLL}
         )
 
     copy_files_to_bin(${FILES_TO_COPY})
@@ -83,18 +78,13 @@ endif()
 package_module()
 
 # Package mpg123 into platform release
-install(FILES ${THIRDPARTY_DIR}/mpg123/COPYING DESTINATION thirdparty/mpg123)
+install(FILES ${LIBMPG123_DIST_FILES} DESTINATION thirdparty/mpg123)
 install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
 if(WIN32)
-    file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.dll)
-    install(FILES ${MPG123_DYLIBS}
-            DESTINATION thirdparty/mpg123/bin)
-    file(GLOB MPG123_HEADERS ${THIRDPARTY_DIR}/mpg123/install/msvc/*.h)
-    install(FILES ${MPG123_HEADERS}
-            DESTINATION thirdparty/mpg123/include)
-    file(GLOB MPG123_LIBFILES ${THIRDPARTY_DIR}/mpg123/install/msvc/*.lib)
-    install(FILES ${MPG123_LIBFILES}
-            DESTINATION thirdparty/mpg123/lib)
+    file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/*.dll)
+    install(FILES ${MPG123_DYLIBS} DESTINATION thirdparty/mpg123/bin)
+    file(GLOB MPG123_LIBFILES ${LIBMPG123_LIB_DIR}/*.lib) 
+    install(FILES ${MPG123_LIBFILES} DESTINATION thirdparty/mpg123/lib)
 elseif(APPLE)
     # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
     add_custom_command(TARGET ${PROJECT_NAME}
@@ -110,10 +100,6 @@ elseif(APPLE)
         ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib
                                                "@loader_path/../../../../thirdparty/mpg123/lib")
     endforeach()
-elseif(ANDROID)
-    install(DIRECTORY ${LIBMPG123_DIR}/install/android/lib/
-            DESTINATION thirdparty/mpg123/lib
-            )
 elseif(UNIX)
     file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${MPG123_DYLIBS}
@@ -121,9 +107,8 @@ elseif(UNIX)
 endif()
 
 # Package libsndfile into platform release
-install(FILES ${THIRDPARTY_DIR}/libsndfile/linux/install/COPYING DESTINATION thirdparty/libsndfile)
-install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h
-              ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
+install(FILES ${LIBSNDFILE_DIST_FILES} DESTINATION thirdparty/libsndfile)
+install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
         DESTINATION thirdparty/libsndfile/include)
 if(WIN32)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
@@ -132,10 +117,6 @@ if(WIN32)
     file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
     install(FILES ${LIBSNDFILE_IMPLIBS}
             DESTINATION thirdparty/libsndfile/lib)
-elseif(ANDROID)
-    install(DIRECTORY ${LIBSNDFILE_DIR}/android/install/lib/
-            DESTINATION thirdparty/libsndfile/lib
-            )
 elseif(UNIX)
     file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${LIBSNDFILE_DYLIBS}
@@ -143,17 +124,13 @@ elseif(UNIX)
 endif()
 
 # Package portaudio into platform release
-install(FILES ${THIRDPARTY_DIR}/portaudio/linux/LICENSE.txt DESTINATION thirdparty/portaudio)
+install(FILES ${PORTAUDIO_DIST_FILES} DESTINATION thirdparty/portaudio)
 install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
 if(WIN32)
     install(FILES ${PORTAUDIO_LIBRARIES}
             DESTINATION thirdparty/portaudio/lib)
     install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
             DESTINATION thirdparty/portaudio/bin)
-elseif(ANDROID)
-    install(DIRECTORY ${PORTAUDIO_DIR}/android/lib/
-            DESTINATION thirdparty/portaudio/lib
-            )
 elseif(UNIX)
     file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
     install(FILES ${PORTAUDIO_DYLIBS}

@@ -32,9 +32,21 @@ namespace nap
 		{
 			Time() = default;
 			Time(int hour, int minute);
-			uint mHour	= 0;					///< Property: 'Hour' (0-23)
-			uint mMinute	= 0;				///< Property: 'Minute' (0-59)
-			nap::Minutes toMinutes() const;		///< Convert into minutes
+			uint mHour = 0;							///< Property: 'Hour' (0-23)
+			uint mMinute = 0;						///< Property: 'Minute' (0-59)
+			nap::Minutes toMinutes() const;			///< Convert into minutes
+
+			/**
+			 * @return string representation of calendar point in time ("hh:mm").
+			 */
+			std::string toString() const;
+
+			/**
+			 * Creates calendar point in time from string ("hh:mm")
+			 * @param time string to convert into point in time ("hh:mm)
+			 * @return calendar point in time, hour and minute is negative if conversion fails
+			 */
+			static Time fromString(const std::string& time);
 		};
 
 		/**

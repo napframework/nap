@@ -28,14 +28,8 @@ namespace nap
 		mInputService  = getCore().getService<InputService>();
 		mSceneService  = getCore().getService<SceneService>();
 
-		// Get resource manager and load
-		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("render.json", error))
-		{
-			Logger::fatal("Unable to deserialize resources: \n %s", error.toString().c_str());
-			return false;
-		}
-			
+		// Get resource manager
+		mResourceManager = getCore().getResourceManager();			
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window0"));
 		mRenderWindows.push_back(mResourceManager->findObject<RenderWindow>("Window1"));
 
@@ -111,7 +105,7 @@ namespace nap
 		// Render window 0
 		{
 			RenderWindow* render_window = mRenderWindows[0].get();
-			render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+			render_window->setClearColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 
 			double currentTime = getCore().getElapsedTime();
 			float value = (sin(currentTime) + 1.0) * 0.5;
@@ -169,7 +163,7 @@ namespace nap
 				transform_component.setTranslate(glm::vec3(0.0f, 0.0f, 0.0f));
 				transform_component.update(identity);
 
-				render_window->setClearColor(glm::vec4(0.0f, 0.0f, 1.0f, 1.0f));
+				render_window->setClearColor({ 0.0f, 0.0f, 1.0f, 1.0f });
 				render_window->beginRendering();
 
 				// Render output texture to plane

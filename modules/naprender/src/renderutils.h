@@ -34,22 +34,35 @@ namespace nap
 
 	/**
 	 * Vulkan Buffer Structure
-	 * Binds a buffer, memory allocation and allocation information together.
+	 * Binds a buffer, usage information, memory allocation and allocation information together.
 	 */
 	struct NAPAPI BufferData
 	{
 		// Default constructor
 		BufferData() = default;
 
-		VmaAllocation		mAllocation = VK_NULL_HANDLE;					///< Vulkan memory allocation handle
-		VmaAllocationInfo	mAllocationInfo;								///< Vulkan allocation information
-		VkBuffer			mBuffer = VK_NULL_HANDLE;						///< Vulkan buffer
-		
 		/**
 		 * Releases the buffer, resetting all the handles to null.
-		 * Does not delete it. 
+		 * Does not delete it.
 		 */
-		void				release();
+		void					release();
+
+		VmaAllocation			mAllocation = VK_NULL_HANDLE;				///< Vulkan memory allocation handle
+		VmaAllocationInfo		mAllocationInfo;							///< Vulkan allocation information
+		VkBufferUsageFlags		mUsage = 0;									///< Usage flags
+		VkBuffer				mBuffer = VK_NULL_HANDLE;					///< Vulkan buffer
+	};
+
+
+	/**
+	 * Semaphore wait info
+	 */
+	struct NAPAPI SemaphoreWaitInfo
+	{
+		SemaphoreWaitInfo() = default;
+
+		VkSemaphore				mSemaphore;
+		VkPipelineStageFlags	mFlags;
 	};
 
 
@@ -65,6 +78,11 @@ namespace nap
 		Sixteen = 0x00000010,
 		Max		= 0x00000000		///< Request max available number of rasterization samples.
 	};
+
+	/**
+	 * Creates a single or multi-sample renderpass based on rasterization samples and color/depth formats.
+	 */
+	bool NAPAPI createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState);
 
 	/**
 	 * Creates a Vulkan image based on the described image usage and given properties.
@@ -94,5 +112,5 @@ namespace nap
 	/**
 	 * Uploads data into a staging buffer
 	 */
-	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, void* data, BufferData& buffer);
+	bool NAPAPI uploadToBuffer(VmaAllocator allocator, uint32 size, const void* data, BufferData& buffer);
 }

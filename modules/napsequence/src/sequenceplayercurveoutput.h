@@ -13,49 +13,46 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
+    //////////////////////////////////////////////////////////////////////////
 
-	// forward declares
-	class SequencePlayerCurveAdapterBase;
-	class SequenceService;
+    // forward declares
+    class SequencePlayerCurveAdapterBase;
+    class SequenceService;
 
-	/**
-	 * SequencePlayerCurveOutput is used to link a parameter to a curve track
-	 */
-	class NAPAPI SequencePlayerCurveOutput final : public SequencePlayerOutput
-	{
-		RTTI_ENABLE(SequencePlayerOutput)
-	public:
-		explicit SequencePlayerCurveOutput(SequenceService& service);
+    /**
+     * SequencePlayerCurveOutput is used to link a parameter to a curve track
+     */
+    class NAPAPI SequencePlayerCurveOutput final : public SequencePlayerOutput
+    {
+        RTTI_ENABLE(SequencePlayerOutput)
+    public:
+        SequencePlayerCurveOutput(SequenceService& service);
 
-		// properties
-		ResourcePtr<Parameter>	mParameter = nullptr; 	///< Property: 'Parameter' parameter resource
-		bool					mUseMainThread = true; 	///< Property: 'Use Main Thread' update in main thread or player thread
+        // properties
+        ResourcePtr<Parameter> mParameter = nullptr;    ///< Property: 'Parameter' parameter resource
+        bool mUseMainThread = true;    ///< Property: 'Use Main Thread' update in main thread or player thread
 
-		/**
-		 * registers a parameter setter to the output. Parameter setters are called from main thread
-		 * @param curveAdapter adapter to register
-		 */
-		void registerAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
+        /**
+         * registers a parameter setter to the output. Parameter setters are called from main thread
+         * @param curveAdapter adapter to register
+         */
+        void registerAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
 
-		/**
-		 * removes parameter setter
-		 * @param curveAdapter ptr to parameter setter
-		 */
-		void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
+        /**
+         * removes parameter setter
+         * @param curveAdapter ptr to parameter setter
+         */
+        void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
+    protected:
+        /**
+         * called from update loop sequence service main thread
+         * @param deltaTime time since last update
+         */
+        void update(double deltaTime) override;
 
-	protected:
-		/**
-		 * called from update loop sequence service main thread
-		 * @param deltaTime time since last update
-		 */
-		void update(double deltaTime) override;
+        // vector holding registered parameter setters
+        std::vector<SequencePlayerCurveAdapterBase*> mAdapters;
+    };
 
-		// vector holding registered parameter setters
-		std::vector<SequencePlayerCurveAdapterBase*> mAdapters;
-	private:
-
-	};
-
-	using SequencePlayerCurveOutputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveOutput, SequenceService>;
+    using SequencePlayerCurveOutputObjectCreator = rtti::ObjectCreator<SequencePlayerCurveOutput, SequenceService>;
 }

@@ -36,10 +36,8 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("heightmap.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");		
@@ -52,6 +50,15 @@ namespace nap
 
 		// Select gui window
 		mGuiService->selectWindow(mRenderWindow);
+
+		// Sample initial colors from palette
+		mNormalColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+		mValleyColor = mGuiService->getPalette().mBackgroundColor.convert<RGBColorFloat>();
+		mPeakColor = mGuiService->getPalette().mHighlightColor4.convert<RGBColorFloat>();
+		mHaloColor = mGuiService->getPalette().mFront2Color.convert<RGBColorFloat>();
+
+		// Set clear color
+		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f});
 
 		return true;
 	}
@@ -233,8 +240,7 @@ namespace nap
 		// Draw some gui elements
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBColorFloat clr = mTextHighlightColor.convert<RGBColorFloat>();
-		ImGui::TextColored(clr, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
 		if (ImGui::CollapsingHeader("Blending"))
@@ -265,7 +271,7 @@ namespace nap
 	void HeightmapApp::pushColor(RGBColorFloat& color, MaterialInstance& material, const std::string& uboName, const std::string& uniformName)
 	{
 		UniformStructInstance* frag_ubo = material.getOrCreateUniform(uboName);
-		frag_ubo->getOrCreateUniform<UniformVec3Instance>(uniformName)->setValue(color.toVec3());
+		frag_ubo->getOrCreateUniform<UniformVec3Instance>(uniformName)->setValue(color);
 	}
 
 }

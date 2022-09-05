@@ -7,12 +7,11 @@
 
 // External includes
 #include <assert.h>
-#include <glm/detail/func_common.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 namespace nap
 {
-	float math::getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool closed)
+	float math::getDistancesAlongLine(const std::vector<glm::vec3>& vertexPositions, std::map<float, int>& outDistances, bool loop)
 	{
 		// Get position data
 		const std::vector<glm::vec3>& pos_data = vertexPositions;
@@ -38,7 +37,7 @@ namespace nap
 		}
 
 		// Add extra distance point when dealing with closed shapes
-		if (closed)
+		if (loop)
 		{
 			curre_distance = glm::length(pos_data.back() - pos_data.front());
 			total_distance += curre_distance;

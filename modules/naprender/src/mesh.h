@@ -49,6 +49,17 @@ namespace nap
 	};
 
 
+	/**
+	 * Polygon modes
+	 */
+	enum class EPolygonMode : int32
+	{
+		Fill			= 0,				///< Polygons are interpreted and rendered using the specified 'EDrawMode'
+		Line			= 1,				///< Polygon edges are drawn as line segments.
+		Point			= 2					///< Polygon vertices are drawn as points.
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// MeshShape
 	//////////////////////////////////////////////////////////////////////////
@@ -111,6 +122,20 @@ namespace nap
 		 */
 		void addIndex(int index)										{ mIndices.emplace_back(index); }
 
+		/**
+		 * Array subscript overload.
+		 * @param index lookup index
+		 * @return value at the given index
+		 */
+		uint32& operator[](std::size_t index)							{ return mIndices[index]; }
+		
+		/**
+		 * Const array subscript overload.
+		 * @param index lookup index
+		 * @return value at the given index
+		 */
+		const uint32& operator[](std::size_t index) const				{ return mIndices[index]; }
+
 	public:
 		std::vector<uint32>			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
@@ -136,9 +161,10 @@ namespace nap
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
-		EMeshDataUsage			mUsage = EMeshDataUsage::Static;	///< Property: 'Usage' GPU memory usage
+		EMemoryUsage			mUsage = EMemoryUsage::Static;	///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
+		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be the default
 		VertexAttributeList		mAttributes;						///< Property: 'Attributes' vertex attributes
 		std::vector<MeshShape>	mShapes;							///< Property: 'Shapes' list of managed shapes
 	};
@@ -157,7 +183,7 @@ namespace nap
 	 * A MeshInstance can be created in two ways:
 	 *		1) Manually allocate a MeshInstance object, add attributes to it, and call the regular init() on it. 
 	 *		   This is useful for creation of procedural meshes.
-	 *
+	 * 
 	 *      2) Initialize a MeshInstance object through the init() function that takes an RTTIMeshProperties struct.
 	 *         This is intended for situations where the MeshInstance is created from an RTTI based object (either 
 	 *         rtti-json or rtti-binary).
@@ -207,10 +233,10 @@ namespace nap
 		VertexAttribute<T>* findAttribute(const std::string& id);
 
 		/**
-		* Finds vertex attribute.
-		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
-		* @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
-		*/
+		 * Finds vertex attribute.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Type safe vertex attribute if found, nullptr if not found or if there was a type mismatch.
+		 */
 		template<typename T>
 		const VertexAttribute<T>* findAttribute(const std::string& id) const;
 
@@ -223,10 +249,10 @@ namespace nap
 		VertexAttribute<T>& getAttribute(const std::string& id);
 
 		/**
-		* Gets vertex attribute.
-		* @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
-		* @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
-		*/
+		 * Gets vertex attribute.
+		 * @param id The name of the vertex attribute. For predefined vertex attributions like position, color etc, use the various MeshInstance::VertexAttributeIDs.
+		 * @return Type safe vertex attribute. If not found or in case there is a type mismatch, the function asserts.
+		 */
 		template<typename T>
 		const VertexAttribute<T>& getAttribute(const std::string& id) const;
 
@@ -273,7 +299,7 @@ namespace nap
 		EDrawMode getDrawMode() const											{ return mProperties.mDrawMode; }
 
 		/**
-		 * @return set the cull mode of this mesh (front, back etc.)
+		 * @param mode the cull mode of this mesh (front, back etc.)
 		 */
 		void setCullMode(ECullMode mode)										{ mProperties.mCullMode = mode; }
 
@@ -281,6 +307,19 @@ namespace nap
 		 * @return the cull mode of this mesh (front, back etc.)
 		 */
 		ECullMode getCullMode() const											{ return mProperties.mCullMode; }
+
+		/**
+		 * Sets the polygon mode of this mesh to use (fill, line or point).
+		 * Logs a warning if the requested mode is not supported.
+		 * To ensure a specific mode is supported call: RenderService::getPolygonModeSupported().
+		 * @param mode the polygon mode to use
+		 */
+		void setPolygonMode(EPolygonMode mode);
+
+		/**
+		 * @return the polygon mode of this mesh
+		 */
+		EPolygonMode getPolygonMode() const										{ return mProperties.mPolygonMode; }							
 
 		/**
 		 * Get the shape at the specified index
@@ -306,12 +345,12 @@ namespace nap
 		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
 		 * changing it after init will not have any effect.
 		 */
-		void setUsage(EMeshDataUsage inUsage)									{ mProperties.mUsage = inUsage; }
+		void setUsage(EMemoryUsage inUsage)									{ mProperties.mUsage = inUsage; }
 
 		/**
 		 * @return how this mesh is used at runtime
 		 */
-		EMeshDataUsage getUsage() const											{ return mProperties.mUsage; }
+		EMemoryUsage getUsage() const											{ return mProperties.mUsage; }
 
 		/**
 		 * Pushes all CPU vertex buffers to the GPU. Note that update() is called during init(),
@@ -456,11 +495,13 @@ namespace nap
 	const VertexAttribute<T>* nap::MeshInstance::findAttribute(const std::string& id) const
 	{
 		for (auto& attribute : mProperties.mAttributes)
+		{
 			if (attribute->mAttributeID == id)
 			{
 				assert(attribute->get_type().is_derived_from(RTTI_OF(VertexAttribute<T>)));
 				return static_cast<VertexAttribute<T>*>(attribute.get());
 			}
+		}
 		return nullptr;
 	}
 

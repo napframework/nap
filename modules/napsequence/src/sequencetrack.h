@@ -14,19 +14,24 @@
 
 namespace nap
 {
-	/**
-	 * Holds a collection of track segments
-	 */
-	class NAPAPI SequenceTrack : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		/**
-		 * Deconstructor
-		 */
-        virtual ~SequenceTrack(){};
-        
-		std::string mAssignedOutputID;	///< Property: 'Assigned Output ID' Assigned output to this track id
-		std::vector<ResourcePtr<SequenceTrackSegment>>	mSegments;	///< Property: 'Segments' Vector holding track segments
-	};
+    //////////////////////////////////////////////////////////////////////////
+
+    /**
+     * Holds a collection of track segments
+     */
+    class NAPAPI SequenceTrack : public Resource
+    {
+        RTTI_ENABLE(Resource)
+    public:
+        /**
+         * Deconstructor
+         */
+        virtual ~SequenceTrack()
+        {
+        };
+
+        std::string mName; ///< Property : 'Name' Assigned name to this track
+        std::string mAssignedOutputID;    ///< Property: 'Assigned Output ID' Assigned output to this track id
+        std::vector<ResourcePtr<SequenceTrackSegment>>    mSegments;    ///< Property: 'Segments' Vector holding track segments
+    };
 }

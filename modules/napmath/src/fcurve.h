@@ -28,8 +28,8 @@ namespace nap
 		/**
 		 * A time/value pair to be used in function curves.
 		 * This is not a regular 2D vector because the components may have different types.
-		 * @param T type of the time parameter
-		 * @param V type of the value parameter
+		 * @tparam T type of the time parameter
+		 * @tparam V type of the value parameter
 		 */
 		template<typename T, typename V>
 		struct FComplex
@@ -68,8 +68,8 @@ namespace nap
 
 		/**
 		 * Represents a single handle on an FCurve
-		 * @param T type of the time parameter
-		 * @param V type of the value parameter
+		 * @tparam T type of the time parameter
+		 * @tparam V type of the value parameter
 		 */
 		template<typename T, typename V>
 		struct FCurvePoint
@@ -105,8 +105,8 @@ namespace nap
 		 * A 1-D curve that can be used to map one value to another.
 		 * This resource can be used to animate a value over time.
 		 * The times and values of this curve are unbounded.
-		 * @param T type of the time parameter
-		 * @param V type of the value parameter
+		 * @tparam T type of the time parameter
+		 * @tparam V type of the value parameter
 		 */
 		template<typename T, typename V>
 		class FCurve : public Resource
@@ -257,15 +257,6 @@ namespace nap
 		using Vec2FCurvePoint	= FCurvePoint<float, glm::vec2>;
 		using Vec3FCurvePoint	= FCurvePoint<float, glm::vec3>;
 		using Vec4FCurvePoint	= FCurvePoint<float, glm::vec4>;
-
-
-		//////////////////////////////////////////////////////////////////////////
-		// explicit MSVC template specialization exports
-		//////////////////////////////////////////////////////////////////////////
-		template class NAPAPI FCurve<float, float>;
-		template class NAPAPI FCurve<float, glm::vec2>;
-		// template class NAPAPI FCurve<float, glm::vec3>;
-		// template class NAPAPI FCurve<float, glm::vec4>;
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -438,5 +429,16 @@ namespace nap
 			pb.mValue = ((pb.mValue - pa.mValue) * rb) + pa.mValue;
 			pc.mValue = ((pc.mValue - pd.mValue) * rc) + pd.mValue;
 		}
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Forward Declarations
+		//////////////////////////////////////////////////////////////////////////
+
+		template<>
+		NAPAPI nap::math::FCurve<float, float>::FCurve();
+
+		template<>
+		NAPAPI nap::math::FCurve<float, glm::vec2>::FCurve();
 	}
 }

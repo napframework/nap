@@ -28,7 +28,7 @@ fetch_module_dependencies("${NAP_MODULES}")
 # Set our default build type if we haven't specified one (Linux)
 set_default_build_type()
 
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 if (WIN32)
@@ -141,6 +141,7 @@ deploy_single_path_mapping(${CMAKE_SOURCE_DIR})
 install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
 install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
 install(FILES ${NAP_ROOT}/cmake/project_creator/NAP.txt DESTINATION .)
+
 if(NOT WIN32)
     # Set RPATH to search in ./lib
     if(APPLE)

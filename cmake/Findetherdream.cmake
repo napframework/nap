@@ -1,44 +1,34 @@
 if(WIN32)
     find_path(
             ETHERDREAM_DIR
-            NAMES msvc/include/j4cDAC.h
+            NAMES msvc/source/include/j4cDAC.h
             HINTS ${THIRDPARTY_DIR}/etherdream
     )
-    set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/msvc/include)
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/msvc/bin/Release)
+    set(ETHERDREAM_INCLUDE_DIR ${ETHERDREAM_DIR}/msvc/source/include)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/msvc/x86_64/Release)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/EtherDream.lib)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS_DIR}/EtherDream.dll)
 elseif(APPLE)
     find_path(ETHERDREAM_DIR
-              NAMES osx/include/etherdream.h
+              NAMES macos/source/include/etherdream.h
               HINTS ${THIRDPARTY_DIR}/etherdream
               )
-    set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/osx/include)
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/osx/bin/Release)
+    set(ETHERDREAM_INCLUDE_DIR ${ETHERDREAM_DIR}/macos/source/include)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/macos/x86_64/Release)
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libEtherDream.dylib)
-    set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
-elseif(ANDROID)
-    find_path(ETHERDREAM_DIR
-              NO_CMAKE_FIND_ROOT_PATH
-              NAMES android/include/etherdream.h
-              HINTS ${THIRDPARTY_DIR}/etherdream
-              )
-    set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/android/include)
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/android/bin)
-    set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/Release/${ANDROID_ABI}/libetherdream.so)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
 else()
     find_path(ETHERDREAM_DIR
-              NAMES linux/include/etherdream.h
+              NAMES linux/source/include/etherdream.h
               HINTS ${THIRDPARTY_DIR}/etherdream
               )
-    set(ETHERDREAM_INCLUDE_DIRS ${ETHERDREAM_DIR}/linux/include)
-    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/linux/bin)
+    set(ETHERDREAM_INCLUDE_DIR ${ETHERDREAM_DIR}/linux/source/include)
+    set(ETHERDREAM_LIBS_DIR ${ETHERDREAM_DIR}/linux/${ARCH})
     set(ETHERDREAM_LIBS ${ETHERDREAM_LIBS_DIR}/libetherdream.so)
     set(ETHERDREAM_LIBS_RELEASE_DLL ${ETHERDREAM_LIBS})
 endif()
 
-mark_as_advanced(ETHERDREAM_INCLUDE_DIRS)
+mark_as_advanced(ETHERDREAM_INCLUDE_DIR)
 mark_as_advanced(ETHERDREAM_LIBS_DIR)
 
 add_library(etherdreamlib SHARED IMPORTED)
@@ -57,7 +47,7 @@ endif()
 
 
 include(FindPackageHandleStandardArgs)
-find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR)
+find_package_handle_standard_args(etherdream REQUIRED_VARS ETHERDREAM_DIR ETHERDREAM_LIBS_DIR ETHERDREAM_INCLUDE_DIR)
 
 # Copy the etherdream dynamic linked lib into the build directory
 macro(copy_etherdream_dll)

@@ -22,7 +22,7 @@ int FCurveAdapter::pointCount() const
 void FCurveAdapter::removePoints(const QList<int>& indices)
 {
 	QList<int> indicesSorted = indices;
-	qSort(indicesSorted);
+	std::sort(indicesSorted.begin(), indicesSorted.end());
 	for (int i = indicesSorted.size() - 1; i >= 0; i--)
 	{
 		mCurve.mPoints.erase(mCurve.mPoints.begin() + indicesSorted[i]);
@@ -133,10 +133,11 @@ const PropertyPath FCurveAdapter::pointPath(int pointIndex)
 	assert(AppContext::isAvailable());
 	return {sourceCurve(), nap::rtti::Path::fromString(pointPath), *AppContext::get().getDocument()};
 }
- 
+
+
 const QColor FCurveAdapter::color() const
 {
-	return QColor(200, 105, 105);
+	return QColor::fromRgb(0xFF, 0xFF, 0xFF);
 }
 
 
@@ -154,6 +155,6 @@ nap::qt::AbstractCurve* FloatFCurveModel::curve(int index) const
 
 void FloatFCurveModel::movePoints(QMap<nap::qt::AbstractCurve*, QMap<int, QPointF>> values)
 {
-	for (auto curve : values.keys())
+	for (const auto curve : values.keys())
 		curve->movePoints(values[curve], true);
 }

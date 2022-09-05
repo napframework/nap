@@ -18,11 +18,10 @@
 #include <nap/resourceptr.h>
 #include <renderwindow.h>
 #include <rtti/objectptr.h>
+#include <imagefromfile.h>
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	// forward declares
 	class SequenceEditorGUIView;
 	class SequenceEditorView;
@@ -48,13 +47,17 @@ namespace nap
 		 */
 		void onDestroy() override;
 
-		/**
-		 * Call this method to draw the GUI
-		 */
-		virtual void show();
+        /**
+         * Shows the editor interface
+         * @param newWindow when true interface will be drawn in a new ImGUI window
+         */
+		virtual void show(bool newWindow = true);
 
-		SequenceGUIService& getService(){ return mService; }
-	public:
+		/**
+		 * @return sequence editor gui service
+		 */
+		SequenceGUIService& getService()	{ return mService; }
+
 		// properties
 		ResourcePtr<RenderWindow> mRenderWindow = nullptr;
 		ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource
@@ -87,11 +90,13 @@ namespace nap
 		SequenceEditorGUIView(SequenceGUIService& service, SequenceEditor& editor, std::string id, RenderWindow* renderWindow, bool drawFullWindow);
 
 		/**
-		 * shows the editor interface
+		 * Shows the editor interface
+		 * @param newWindow when true interface will be drawn in a new ImGUI window
 		 */
-		virtual void show();
+		virtual void show(bool newWindow = true);
 
-		SequenceGUIService& getService(){ return mService; }
+		SequenceGUIService& getService()	{ return mService; }
+
 	protected:
 		/**
 		 * Draws the tracks of the sequence
@@ -112,7 +117,7 @@ namespace nap
 		 * @param sequencePlayer reference to sequenceplayer
 		 * @param sequence reference to sequence
 		 */
-		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence );
+		void drawMarkers(const SequencePlayer& sequencePlayer, const Sequence &sequence);
 
 		/**
 		 * Draw lines of markers
@@ -171,16 +176,6 @@ namespace nap
 		 */
 		void handleInsertMarkerPopup();
 
-		/**
-		 * handle no action, when mouse is pressed, ignore any following actions in sequencer window
-		 */
-		void handleNone();
-
-		/**
-		 * when mouse is released, switch back to None action
-		 */
-		 void handleNonePressed();
-
 		 /**
 		  * when zooming, zoom around the center of the timeline, keeping the focus in the middle
 		  */
@@ -197,7 +192,10 @@ namespace nap
 		  * @param action the handler function
 		  */
 		 void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
+
 	protected:
+        void registerActionHandlers();
+
 		// reference to editor
 		SequenceEditor& mEditor;
 

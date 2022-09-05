@@ -32,7 +32,7 @@ namespace nap
 	 *
 	 * Shows an object that can be painted using the left mouse button.
 	 * By holding down the 'space bar' you can rotate the camera around the object
-	 * 
+	 *
 	 * The application uses a nap::RenderToTextureComponent to generate a brush texture.
 	 * Then the brush texture is used to render the brush stroke (paint) in another nap::RenderToTextureComponent.
 	 * The UV location of where to draw is determined by by tracing the position of the mouse on the mesh
@@ -49,12 +49,12 @@ namespace nap
 	 *
 	 * Mouse and key events are forwarded to the input service, the input service collects input events
 	 * and processes all of them on update. Because NAP does not have a default space (objects can
-	 * be rendered in multiple ways), you need to specify what input actually means to the application. 
+	 * be rendered in multiple ways), you need to specify what input actually means to the application.
 	 * The input router does that for you. This demo uses the default one that forwards the events to every input component
 	 * Refer to the cpp-update() call for more information on handling input
 	 */
 	class PaintObjectApp : public App
-	{
+	{	
 		RTTI_ENABLE(App)
 	public:
 		PaintObjectApp(nap::Core& core) : App(core)	{ }
@@ -130,9 +130,6 @@ namespace nap
 		ObjectPtr<ParameterFloat>			mLightIntensityParam	= nullptr;
 		ObjectPtr<ParameterBool>			mEraserModeParam		= nullptr;
 		ObjectPtr<ParameterInt>				mMeshSelectionParam		= nullptr;
-
-		// Text Highlight Color
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 
 		// GUI
 		ObjectPtr<ParameterGUI> mParameterGUI = nullptr;	//< Able to draw parameters to screen

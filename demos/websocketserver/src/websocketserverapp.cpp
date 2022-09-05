@@ -31,10 +31,8 @@ namespace nap
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
 
-		// Get resource manager and load curveball json file
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
-		if (!mResourceManager->loadFile("websocketserver.json", error))
-			return false;
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -57,10 +55,9 @@ namespace nap
 		// Setup some gui elements to be drawn later
 		ImGui::Begin("Information");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
-		RGBAColorFloat clr = mTextHighlightColor.convert<RGBAColorFloat>();
-		ImGui::TextColored(clr, "Connect a client to change the text on screen.");
-		ImGui::TextColored(clr, "Use the javascript client in the 'data/websocket_html_client' directory.");
-		ImGui::TextColored(clr, utility::stringFormat("Server Port: %d", mServerEndPoint->mPort).c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Connect a client to change the text on screen.");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Use the javascript client in the 'data/websocket_html_client' directory.");
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Server Port: %d", mServerEndPoint->mPort).c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		if (ImGui::CollapsingHeader("Connected Clients"))
 		{

@@ -243,12 +243,8 @@ bool ExampleApp::init(utility::ErrorState& error)
 	mRenderService = getCore().getService<nap::RenderService>();
 	mSceneService  = getCore().getService<nap::SceneService>();
 		
-	// Get resource manager and load
+	// Get resource manager
 	mResourceManager = getCore().getResourceManager();
-	if (!mResourceManager->loadFile("data/helloworld/helloworld.json", error))
-	{
-		return false;
-	}
         
 	// Extract loaded resources
 	mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
@@ -301,7 +297,9 @@ void ExampleApp::render()
 
 That's it, you should see a rotating textured sphere in the center of your viewport. This example tried to cover the basics of rendering with NAP but as you might have suspected: modern day rendering is a vast and complex subject. NAP's philosophy is to be open; it doesn't render for you. What NAP does best is getting you set up with the building blocks to render complex scenes. This also applies to many other facets of the framework. But in return you get a very open engine that allows you to render most things without having to write thousands of lines of code. 
 
-To get a better understanding of rendering with NAP continue reading or play around with a render demo that ships with NAP. This example is included as 'HelloWorld'.
+To get a better understanding of rendering with NAP continue reading or play around with a render demo that ships with NAP. This example is part of the 'HelloWorld' demo:
+
+![](@ref content/helloworld.png)
 
 Meshes {#meshes}
 =======================
@@ -547,10 +545,6 @@ A [shader](@ref nap::Shader) is a piece of code that is executed on the GPU. You
 - Stores and updates the uniform shader inputs
 - Stores and updates the sampler shader inputs
 - Controls render settings such as the blend and depth mode
-
-This schematic shows how to bind a shader to a mesh and render it to screen using the [RenderableMeshComponent](@ref nap::RenderableMeshComponent)
-
-![](@ref content/shader_material_binding.png)
 
 Multiple materials can reference the same shader. You can change the properties of a material on a global (resource) and instance level. To change the properties of a material on an instance you use a [MaterialInstance](@ref nap::MaterialInstance) object. A material instance is used to override uniform and sampler inputs and change the render state of a material. This makes it possible to create a complex material with default attribute mappings and uniform inputs but override specific settings for a specific object. 
 
