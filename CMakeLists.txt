@@ -1,6 +1,9 @@
 cmake_minimum_required(VERSION 3.18.4)
 project(NAP)
 
+# Turn on python by default for 4DSOUND framework
+set(NAP_ENABLE_PYTHON 1)
+
 # Keep the current directory as project root
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "Using NAP Root: ${CMAKE_CURRENT_LIST_DIR}")
@@ -218,7 +221,7 @@ endif()
 #add_subdirectory(modules/napsequencegui)
 #add_subdirectory(modules/naplicense)
 add_subdirectory(modules/nappythonparameter)
-add_subdirectory(modules/naplookingglass)
+#add_subdirectory(modules/naplookingglass)
 
 # 4dsound modules
 add_subdirectory(4dsound_modules/spatialdsp)
