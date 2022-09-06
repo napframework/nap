@@ -540,7 +540,7 @@ namespace nap
 
     bool Core::writeConfigFile(utility::ErrorState& errorState)
     {
-	    // Write all available service configurations to a vector
+        // Write all available service configurations to a vector
         std::vector<rtti::Object*> objects;
         for (auto& service : mServices)
         {
@@ -561,14 +561,18 @@ namespace nap
         std::string json = writer.GetJSON();
 
         // Save the config file besides the binary, the first location that NAP searches
-		assert(getProjectInfo() != nullptr);
-        const std::string configFilePath = getProjectInfo()->getProjectDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
+        assert(getProjectInfo() != nullptr);
+
+        // Get path relative to project
+        std::string config_file_path;
+        if (!errorState.check(findProjectFilePath(mProjectInfo->mServiceConfigFilename, config_file_path), "Unable to find: %s", mProjectInfo->mServiceConfigFilename.c_str()))
+            return false;
 
         std::ofstream configFile;
-        configFile.open(configFilePath);
+        configFile.open(config_file_path);
         configFile << json << std::endl;
         configFile.close();
-		nap::Logger::info("Wrote configuration to: %s", configFilePath.c_str());
+        nap::Logger::info("Wrote configuration to: %s", config_file_path.c_str());
 
         return true;
     }
