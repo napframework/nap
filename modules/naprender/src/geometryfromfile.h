@@ -17,8 +17,8 @@ namespace nap
 	 *
 	 * For example: Say the file contains 2 meshes, mesh 1 has color data but mesh 2 does not. This means that the color 
 	 * data of mesh 2 will be initialized to 0. If both meshes carry no color data at all no color attribute is created.
-	 * 
-	 * The operator attempts to extract Vertex, Normal, Color, UV and Tangent information. Up to 8 Color and 
+	 *
+	 * The operator attempts to extract Vertex, Normal, Color, UV and Tangent information. Up to 8 Color and
 	 * UV channels are supported. You can choose to generate normals, tangents and bi-tangents. These are only
 	 * generated when not already present on the mesh and 'GenerateNormals' / 'CalculateTangents' is set to true.
 	 * 
@@ -55,7 +55,7 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 		std::string		mPath;									///< Property: 'Path' path to the geometry (.fbx, .obj, etc.) file on disk
-		EMemoryUsage	mUsage = EMemoryUsage::Static;		///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		EMemoryUsage	mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Mesh polygon mode (fill, wires, points)
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		bool			mGenerateNormals = false;				///< Property: 'GenerateNormals' If normals are generated when not present.

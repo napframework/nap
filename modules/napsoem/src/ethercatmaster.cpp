@@ -8,6 +8,7 @@
 // External Includes
 #include <nap/logger.h>
 #include <soem/ethercat.h>
+#include <assert.h>
 
 //  All available Ethercat slave states
 RTTI_BEGIN_ENUM(nap::EtherCATMaster::ESlaveState)

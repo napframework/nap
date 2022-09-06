@@ -6,7 +6,7 @@
 
 using namespace napkin;
 
-PropertyDisplayItem::PropertyDisplayItem(const PropertyPath& prop) : QStandardItem(), mProp(prop)
+PropertyDisplayItem::PropertyDisplayItem(const PropertyPath& prop) : mProp(prop)
 {
 	setText(QString::fromStdString(prop.toString()));
 	setEditable(false);

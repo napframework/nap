@@ -5,7 +5,18 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
 
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_nappython mod_napmath)
+set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_napmath)
+
+# Let find_python find our prepackaged Python in thirdparty,
+# Note that this operation is allowed to fail because, by default, python support is disabled.
+find_python_in_thirdparty()
+set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
+find_package(pybind11 QUIET)
+
+# Append it if found
+if(pybind11_FOUND)
+    list(APPEND NAPKIN_DEPENDENT_NAP_MODULES mod_nappython)
+endif()
 
 # Qt frameworks which Napkin uses
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)

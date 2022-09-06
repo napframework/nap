@@ -13,6 +13,7 @@
 #include <utility/fileutils.h>
 #include <unistd.h>
 #include <linux/limits.h>
+#include <assert.h>
 
 namespace nap
 {

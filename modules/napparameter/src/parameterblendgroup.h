@@ -4,9 +4,11 @@
 
 #pragma once
 
+// Local Includes
+#include "parametergroup.h"
+
 // External Includes
 #include <nap/resource.h>
-#include <parameter.h>
 #include <nap/resourceptr.h>
 
 namespace nap

@@ -11,7 +11,7 @@
 // External Includes
 #include <rtti/typeinfo.h>
 #include <nap/core.h>
-#include <nap/datetime.h>
+#include <nap/timer.h>
 #include <nap/logger.h>
 #include <thread>
 
@@ -185,7 +185,7 @@ namespace nap
 		mCore.start();
 
 		// Begin running
-		HighResolutionTimer timer;
+		SteadyTimer timer; timer.start();
 		Milliseconds frame_time, delay_time, zero_delay(0);
 		while (!app.shouldQuit() && !mStop)
 		{
@@ -197,10 +197,10 @@ namespace nap
 			// Process app specific messages
 			app_event_handler.process();
 
-			// update
+			// Update services & application
 			mCore.update(update_call);
 
-			// render
+			// Render
 			app.render();
 
 			// Only sleep when there is at least 1 millisecond that needs to be compensated for

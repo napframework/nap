@@ -14,7 +14,7 @@ namespace napkin
 	//////////////////////////////////////////////////////////////////////////
 
 	ServiceConfigItem::ServiceConfigItem(nap::ServiceConfiguration& config, Document& document)
-		: QStandardItem(), mConfig(config), mDocument(&document)
+		: mConfig(config), mDocument(&document)
 	{
 		std::string service_type = nap::utility::stripNamespace(config.getServiceType().get_name().to_string());
 		setText(QString::fromStdString(service_type));
@@ -107,8 +107,8 @@ namespace napkin
 		QList<PropertyPath> paths;
 		for (auto m : mTreeView.getSelectedItems())
 		{
-			auto item = dynamic_cast<ServiceConfigItem*>(m);
-			assert(item != nullptr);
+			assert(qitem_cast<ServiceConfigItem*>(m) != nullptr);
+			auto item = static_cast<ServiceConfigItem*>(m);
 			paths << item->propertyPath();
 		}
 		selectionChanged(paths);

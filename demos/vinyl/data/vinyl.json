@@ -10,7 +10,6 @@
                     "Visible": true,
                     "Mesh": "BackgroundPlaneMesh",
                     "MaterialInstance": {
-                        "Material": "BackgroundMaterial",
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
@@ -27,6 +26,8 @@
                             }
                         ],
                         "Samplers": [],
+                        "Buffers": [],
+                        "Material": "BackgroundMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
@@ -136,7 +137,6 @@
                     "Visible": true,
                     "Mesh": "CoverMesh",
                     "MaterialInstance": {
-                        "Material": "CoverMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -153,6 +153,8 @@
                                 "Texture": "CoverImage"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "CoverMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
@@ -248,7 +250,6 @@
                     "Visible": true,
                     "Mesh": "VinylMesh",
                     "MaterialInstance": {
-                        "Material": "VinylMaterial",
                         "Uniforms": [],
                         "Samplers": [
                             {
@@ -291,6 +292,8 @@
                                 "Texture": "GrooveNormalMap"
                             }
                         ],
+                        "Buffers": [],
+                        "Material": "VinylMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "NotSet"
                     },
@@ -345,292 +348,6 @@
             "Children": []
         },
         {
-            "Type": "nap::ImageFromFile",
-            "mID": "CoverImage",
-            "Usage": "Static",
-            "ImagePath": "cover.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "GrooveNormalMap",
-            "Usage": "Static",
-            "ImagePath": "grooves.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "LabelImage",
-            "Usage": "Static",
-            "ImagePath": "label.png",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "MaskImage",
-            "Usage": "Static",
-            "ImagePath": "label_mask.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "BackgroundMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Shader": "BackgroundShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normals"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "CoverMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct_2",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3_5",
-                            "Name": "lightPosition",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 2.5,
-                                "z": 10.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3_6",
-                            "Name": "lightIntensity",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_6",
-                            "Name": "ambientIntensity",
-                            "Value": 0.10000000149011612
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_7",
-                            "Name": "shininess",
-                            "Value": 15.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_8",
-                            "Name": "specularIntensity",
-                            "Value": 0.25
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_9",
-                            "Name": "attenuationScale",
-                            "Value": 0.000009999999747378752
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3_7",
-                            "Name": "cameraLocation",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 5.0
-                            }
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Shader": "CoverShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normals"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "VinylMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "nap::UniformStruct",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3",
-                            "Name": "lightPosition",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 2.5,
-                                "z": 10.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3_2",
-                            "Name": "lightIntensity",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat",
-                            "Name": "ambientIntensity",
-                            "Value": 0.10000000149011612
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_2",
-                            "Name": "shininess",
-                            "Value": 20.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_3",
-                            "Name": "specularIntensity",
-                            "Value": 0.22499999403953553
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_4",
-                            "Name": "attenuationScale",
-                            "Value": 0.00009999999747378752
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "nap::UniformFloat_5",
-                            "Name": "grooveScale",
-                            "Value": 0.75
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3_3",
-                            "Name": "cameraLocation",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 5.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "nap::UniformVec3_4",
-                            "Name": "recordColor",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Shader": "VinylShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normals"
-                },
-                {
-                    "MeshAttributeID": "Tangent",
-                    "ShaderAttributeID": "in_Tangent"
-                },
-                {
-                    "MeshAttributeID": "Bitangent",
-                    "ShaderAttributeID": "in_Bitangent"
-                }
-            ],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "CoverMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Path": "vinyl_cover_Cover.mesh"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "VinylMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Path": "vinyl_cover_Vinyl.mesh"
-        },
-        {
-            "Type": "nap::PlaneMesh",
-            "mID": "BackgroundPlaneMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Fill",
-            "Size": {
-                "x": 1.0,
-                "y": 1.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rows": 1,
-            "Columns": 1
-        },
-        {
             "Type": "nap::RenderWindow",
             "mID": "Viewport",
             "Borderless": false,
@@ -653,6 +370,348 @@
             "AdditionalSwapImages": 1
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "Rendering",
+            "Members": [],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Background",
+                    "Members": [
+                        {
+                            "Type": "nap::Material",
+                            "mID": "BackgroundMaterial",
+                            "Uniforms": [],
+                            "Samplers": [],
+                            "Buffers": [],
+                            "Shader": "BackgroundShader",
+                            "VertexAttributeBindings": [
+                                {
+                                    "MeshAttributeID": "Position",
+                                    "ShaderAttributeID": "in_Position"
+                                },
+                                {
+                                    "MeshAttributeID": "UV0",
+                                    "ShaderAttributeID": "in_UV0"
+                                },
+                                {
+                                    "MeshAttributeID": "Normal",
+                                    "ShaderAttributeID": "in_Normals"
+                                }
+                            ],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::PlaneMesh",
+                            "mID": "BackgroundPlaneMesh",
+                            "Usage": "Static",
+                            "CullMode": "None",
+                            "PolygonMode": "Fill",
+                            "Size": {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rows": 1,
+                            "Columns": 1
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "BackgroundShader",
+                            "VertShader": "shaders/vinyl/background.vert",
+                            "FragShader": "shaders/vinyl/background.frag"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Vinyl",
+                    "Members": [],
+                    "Children": [
+                        {
+                            "Type": "nap::ResourceGroup",
+                            "mID": "Cover",
+                            "Members": [
+                                {
+                                    "Type": "nap::Material",
+                                    "mID": "CoverMaterial",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformStruct",
+                                            "mID": "nap::UniformStruct_2",
+                                            "Name": "UBO",
+                                            "Uniforms": [
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3_5",
+                                                    "Name": "lightPosition",
+                                                    "Value": {
+                                                        "x": 1.0,
+                                                        "y": 2.5,
+                                                        "z": 10.0
+                                                    }
+                                                },
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3_6",
+                                                    "Name": "lightIntensity",
+                                                    "Value": {
+                                                        "x": 1.0,
+                                                        "y": 1.0,
+                                                        "z": 1.0
+                                                    }
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_6",
+                                                    "Name": "ambientIntensity",
+                                                    "Value": 0.10000000149011612
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_7",
+                                                    "Name": "shininess",
+                                                    "Value": 15.0
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_8",
+                                                    "Name": "specularIntensity",
+                                                    "Value": 0.25
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_9",
+                                                    "Name": "attenuationScale",
+                                                    "Value": 0.000009999999747378752
+                                                },
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3_7",
+                                                    "Name": "cameraLocation",
+                                                    "Value": {
+                                                        "x": 0.0,
+                                                        "y": 0.0,
+                                                        "z": 5.0
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "Samplers": [],
+                                    "Buffers": [],
+                                    "Shader": "CoverShader",
+                                    "VertexAttributeBindings": [
+                                        {
+                                            "MeshAttributeID": "Position",
+                                            "ShaderAttributeID": "in_Position"
+                                        },
+                                        {
+                                            "MeshAttributeID": "UV0",
+                                            "ShaderAttributeID": "in_UV0"
+                                        },
+                                        {
+                                            "MeshAttributeID": "Normal",
+                                            "ShaderAttributeID": "in_Normals"
+                                        }
+                                    ],
+                                    "BlendMode": "Opaque",
+                                    "DepthMode": "InheritFromBlendMode"
+                                },
+                                {
+                                    "Type": "nap::MeshFromFile",
+                                    "mID": "CoverMesh",
+                                    "Usage": "Static",
+                                    "CullMode": "Back",
+                                    "PolygonMode": "Fill",
+                                    "Path": "vinyl_cover_Cover.mesh"
+                                },
+                                {
+                                    "Type": "nap::ShaderFromFile",
+                                    "mID": "CoverShader",
+                                    "VertShader": "shaders/vinyl/cover.vert",
+                                    "FragShader": "shaders/vinyl/cover.frag"
+                                },
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "CoverImage",
+                                    "Usage": "Static",
+                                    "ImagePath": "cover.png",
+                                    "GenerateLods": true
+                                }
+                            ],
+                            "Children": []
+                        },
+                        {
+                            "Type": "nap::ResourceGroup",
+                            "mID": "Disque",
+                            "Members": [
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "GrooveNormalMap",
+                                    "Usage": "Static",
+                                    "ImagePath": "grooves.png",
+                                    "GenerateLods": true
+                                },
+                                {
+                                    "Type": "nap::MeshFromFile",
+                                    "mID": "VinylMesh",
+                                    "Usage": "Static",
+                                    "CullMode": "Back",
+                                    "PolygonMode": "Fill",
+                                    "Path": "vinyl_cover_Vinyl.mesh"
+                                },
+                                {
+                                    "Type": "nap::Material",
+                                    "mID": "VinylMaterial",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformStruct",
+                                            "mID": "nap::UniformStruct",
+                                            "Name": "UBO",
+                                            "Uniforms": [
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3",
+                                                    "Name": "lightPosition",
+                                                    "Value": {
+                                                        "x": 1.0,
+                                                        "y": 2.5,
+                                                        "z": 10.0
+                                                    }
+                                                },
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3_2",
+                                                    "Name": "lightIntensity",
+                                                    "Value": {
+                                                        "x": 1.0,
+                                                        "y": 1.0,
+                                                        "z": 1.0
+                                                    }
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat",
+                                                    "Name": "ambientIntensity",
+                                                    "Value": 0.10000000149011612
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_2",
+                                                    "Name": "shininess",
+                                                    "Value": 20.0
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_3",
+                                                    "Name": "specularIntensity",
+                                                    "Value": 0.22499999403953553
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_4",
+                                                    "Name": "attenuationScale",
+                                                    "Value": 0.00009999999747378752
+                                                },
+                                                {
+                                                    "Type": "nap::UniformFloat",
+                                                    "mID": "nap::UniformFloat_5",
+                                                    "Name": "grooveScale",
+                                                    "Value": 0.75
+                                                },
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3_3",
+                                                    "Name": "cameraLocation",
+                                                    "Value": {
+                                                        "x": 0.0,
+                                                        "y": 0.0,
+                                                        "z": 5.0
+                                                    }
+                                                },
+                                                {
+                                                    "Type": "nap::UniformVec3",
+                                                    "mID": "nap::UniformVec3_4",
+                                                    "Name": "recordColor",
+                                                    "Value": {
+                                                        "x": 0.0,
+                                                        "y": 0.0,
+                                                        "z": 0.0
+                                                    }
+                                                }
+                                            ]
+                                        }
+                                    ],
+                                    "Samplers": [],
+                                    "Buffers": [],
+                                    "Shader": "VinylShader",
+                                    "VertexAttributeBindings": [
+                                        {
+                                            "MeshAttributeID": "Position",
+                                            "ShaderAttributeID": "in_Position"
+                                        },
+                                        {
+                                            "MeshAttributeID": "UV0",
+                                            "ShaderAttributeID": "in_UV0"
+                                        },
+                                        {
+                                            "MeshAttributeID": "Normal",
+                                            "ShaderAttributeID": "in_Normals"
+                                        },
+                                        {
+                                            "MeshAttributeID": "Tangent",
+                                            "ShaderAttributeID": "in_Tangent"
+                                        },
+                                        {
+                                            "MeshAttributeID": "Bitangent",
+                                            "ShaderAttributeID": "in_Bitangent"
+                                        }
+                                    ],
+                                    "BlendMode": "Opaque",
+                                    "DepthMode": "InheritFromBlendMode"
+                                },
+                                {
+                                    "Type": "nap::ShaderFromFile",
+                                    "mID": "VinylShader",
+                                    "VertShader": "shaders/vinyl/vinyl.vert",
+                                    "FragShader": "shaders/vinyl/vinyl.frag"
+                                },
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "MaskImage",
+                                    "Usage": "Static",
+                                    "ImagePath": "label_mask.jpg",
+                                    "GenerateLods": true
+                                },
+                                {
+                                    "Type": "nap::ImageFromFile",
+                                    "mID": "LabelImage",
+                                    "Usage": "Static",
+                                    "ImagePath": "label.png",
+                                    "GenerateLods": true
+                                }
+                            ],
+                            "Children": []
+                        }
+                    ]
+                }
+            ]
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
@@ -669,24 +728,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "BackgroundShader",
-            "VertShader": "shaders/vinyl/background.vert",
-            "FragShader": "shaders/vinyl/background.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "CoverShader",
-            "VertShader": "shaders/vinyl/cover.vert",
-            "FragShader": "shaders/vinyl/cover.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "VinylShader",
-            "VertShader": "shaders/vinyl/vinyl.vert",
-            "FragShader": "shaders/vinyl/vinyl.frag"
         },
         {
             "Type": "nap::Snapshot",

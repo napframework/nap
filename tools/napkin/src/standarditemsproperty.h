@@ -5,17 +5,17 @@
 #pragma once
 
 #include "propertypath.h"
+#include "rttiitem.h"
 
 #include <QStandardItem>
 #include <QVBoxLayout>
 #include <rtti/object.h>
 #include <rtti/path.h>
 #include <panels/inspectorpanel.h>
+#include <rtti/rtti.h>
 
 namespace napkin
 {
-
-
 	/**
 	 * Create a row of items where each item sits in its own column
 	 * @param type The type of the item
@@ -29,10 +29,11 @@ namespace napkin
 	QList<QStandardItem*> createPropertyItemRow(const PropertyPath& path);
 
 	/**
-	 * The base for items that represent a property path
+	 * The base for items that represent a property path, RTTI enabled
 	 */
-	class PropertyPathItem : public QStandardItem
+	class PropertyPathItem : public RTTIItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text on the item.
@@ -60,6 +61,7 @@ namespace napkin
 	 */
 	class PropertyItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -74,6 +76,7 @@ namespace napkin
 	 */
 	class CompoundPropertyItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -94,6 +97,7 @@ namespace napkin
 	 */
 	class ArrayPropertyItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -116,6 +120,7 @@ namespace napkin
 	 */
 	class PointerItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -130,6 +135,7 @@ namespace napkin
      */
 	class PointerValueItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -154,6 +160,7 @@ namespace napkin
 	 */
 	class ColorValueItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param path The path to the property, pointer.
@@ -176,6 +183,7 @@ namespace napkin
 	 */
 	class EmbeddedPointerItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -196,6 +204,7 @@ namespace napkin
 	 */
 	class PropertyValueItem : public PropertyPathItem
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * @param name Text to display.
@@ -214,8 +223,5 @@ namespace napkin
 		 * Reimplemented from QStandardItem
 		 */
 		void setData(const QVariant& value, int role) override;
-
 	};
-
-
 }; // napkin

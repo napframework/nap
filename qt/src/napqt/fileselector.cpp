@@ -46,7 +46,11 @@ void FileSelector::onBrowseButtonClicked()
 {
 	QString dir = getFilename().isEmpty() ? "." : QFileInfo(getFilename()).path();
 
-	QString f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter);
+#ifdef __linux__
+    QString f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter, nullptr, QFileDialog::DontUseNativeDialog);
+#else
+    QString f = QFileDialog::getOpenFileName(this, "Select File", dir, mFileFilter, nullptr);
+#endif
 	if (f.isEmpty())
 		return;
 

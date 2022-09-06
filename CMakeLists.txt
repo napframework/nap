@@ -1,18 +1,6 @@
 cmake_minimum_required(VERSION 3.18.4)
 project(NAP)
 
-#if(WIN32)
-#    find_file(PYEXE
-#              NAMES python.exe
-#              HINTS
-#              c:/python35
-#              c:/python36
-#              )
-#    if(PYEXE)
-#        set(PYTHON_EXECUTABLE ${PYEXE})
-#    endif()
-#endif()
-
 # Keep the current directory as project root
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "Using NAP Root: ${CMAKE_CURRENT_LIST_DIR}")
@@ -51,7 +39,7 @@ if(WIN32)
         #        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse")
     endif()
 elseif(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch -fvisibility=hidden")
     if(DEFINED INCLUDE_DEBUG_SYMBOLS AND NOT INCLUDE_DEBUG_SYMBOLS)
         if (CMAKE_CXX_COMPILER_ID MATCHES "Clang")
             # Verified for AppleClang, expected to also potentially work (at a later date) for Clang on Linux
@@ -63,13 +51,26 @@ elseif(UNIX)
     endif()
 endif()
 
+# We don't actively support and work on macOS anymore.
+# This is not because we don't like their hardware, but because of the continuous tightening of restrictions of macOS,
+# Including aggressive gate-keeping, required app singing, forcing specific data structures, vague licence policies,
+# proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
+# Feel free to continue support for macOS on your end.
 if(APPLE)
+    message(DEPRECATION "macOS (as a target) is no longer in active development or supported")
     set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 endif()
 
-set(NAP_ENABLE_PYTHON 1)
-add_definitions(-DNAP_ENABLE_PYTHON)
+# We don't actively support and work on python bindings anymore.
+if(NAP_ENABLE_PYTHON)
+    message(DEPRECATION "Python bindings are no longer in active development or supported")
+    add_definitions(-DNAP_ENABLE_PYTHON)
+endif()
+
+# Automatically link Qt executables to qtmain target on Windows.
 cmake_policy(SET CMP0020 NEW)
+
+# Ignore COMPILE_DEFINITIONS
 cmake_policy(SET CMP0043 NEW)
 
 # Restrict to debug and release build types
@@ -77,7 +78,6 @@ set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
 # Allow extra Find{project}.cmake files to be found by projects
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake")
-
 
 include(cmake/configure.cmake)
 include(cmake/cross_context_macros.cmake)

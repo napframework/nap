@@ -1,6 +1,6 @@
 <br>
 <p align="center">
-  <img width=384 src="https://docs.nap.tech/content/nap_logo_blue.svg">
+  <img width=384 src="https://download.nap.tech/identity/svg/logos/nap_logo_blue.svg">
 </p>
 
 *	[Description](#description)
@@ -23,9 +23,7 @@
 	
 # Description
 
-[NAP](https://nap.tech) is an open source, low overhead, real-time control & visualization plaform. Create fast, modular and (above all) stable applications to interact with the world around you.
-
-Use any protocol (OSC, MIDI, Artnet, WebSocket etc) in combination with a 3D graphics and sound engine to create real-time content that is transmitted to any device you like. NAP is built to scale up to a large number of input and output devices: many displays, many lights, many speakers, many sensors, many servos.
+[NAP](https://nap.tech) is an [open source](https://github.com/napframework), low overhead, real-time control & visualization plaform. Create fast, modular and responsive applications to interact with the world around you. NAP is built to scale up to a large number of input and output devices: many displays, many lights, many speakers, many sensors, many servos.
 
 ## Features
 
@@ -52,15 +50,15 @@ NAP documentation can be found online at [docs.nap.tech](https://docs.nap.tech/p
 
 Visit [nap-labs.tech](https://nap-labs.tech) for more examples
 
-![Between Mind and Matter, Nick Verstand](https://docs.nap.tech/additional_content/bmm_1280.jpg)
+![Between Mind and Matter, Nick Verstand](https://download.nap.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
-![Habitat, Heleen Blanken](https://docs.nap.tech/additional_content/habitat_1280.jpg)
+![Habitat, Heleen Blanken](https://download.nap.tech/shared/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://docs.nap.tech/additional_content/shylight_basel_1280.jpg)
+![Shylight, Studio Drift](https://download.nap.tech/shared/shylight_basel_1280.jpg)
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
-![4DSound System](https://docs.nap.tech/additional_content/4D_1280.jpg)
+![4DSound System](https://download.nap.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://docs.nap.tech/additional_content/napkin_1280.jpg)
+![NAP Framework](https://download.nap.tech/shared/napkin_1280.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -117,8 +115,8 @@ To generate a solution and compile the source code you need to have installed:
 		- During installation select **Custom installation** 
 		- Filter on the **LTS** category to download and install Qt 5.12 for your target platform
 	- ARM
-		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://docs.nap.tech/additional_content/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
+		- [Download](https://download.nap.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
+		- [Download](https://download.nap.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
 NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
 
@@ -142,11 +140,11 @@ On success, run:
 `generate_solution.bat` to generate a `Visual Studio Solution` (Windows)<br>
 `generate_solution.sh` to generate `make files` (Linux)<br>
 
-The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `debug`. Alternatively you can use `CLion`.
+The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `Release`. Alternatively you can use `CLion`.
 
 ## Run a Demo
 
-Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `sh build.sh target:helloworld`.
+Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `sh build.sh helloworld`.
 
 ---
 

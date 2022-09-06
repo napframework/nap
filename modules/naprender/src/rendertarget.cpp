@@ -28,10 +28,10 @@ namespace nap
 	// Creates the color image and view
 	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
 			return false;
 
 		return true;
@@ -41,10 +41,10 @@ namespace nap
 	// Create the depth image and view
 	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -105,8 +105,8 @@ namespace nap
 				return false;
 
 			// Bind textures as attachments
-			attachments[0] = mColorTexture->getImageView();
-			attachments[1] = mDepthImage.mTextureView;
+			attachments[0] = mColorTexture->getHandle().getView();
+			attachments[1] = mDepthImage.getView();
 			attachments[2] = VK_NULL_HANDLE;
 		}
 		else
@@ -120,9 +120,9 @@ namespace nap
 				return false;
 
 			// Bind textures as attachments
-			attachments[0] = mColorImage.mTextureView;
-			attachments[1] = mDepthImage.mTextureView;
-			attachments[2] = mColorTexture->getImageView();
+			attachments[0] = mColorImage.getView();
+			attachments[1] = mDepthImage.getView();
+			attachments[2] = mColorTexture->getHandle().getView();
 		}
 
 		// Create framebuffer

@@ -114,13 +114,12 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
     else:
         # Generate project
         call_except_on_failure(WORKING_DIR, [cmake,
-                                             '-H%s' % project_path,
-                                             '-B%s' % build_dir_name,
-                                             '-G', 'Visual Studio 16 2019',
-                                             '-DNAP_PACKAGED_APP_BUILD=1',
-                                             '-DPYBIND11_PYTHON_VERSION=3.5',
-                                             '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
-                                             '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+                           '-H%s' % project_path,
+                           '-B%s' % build_dir_name,
+                           '-G', 'Visual Studio 16 2019',
+                           '-DNAP_PACKAGED_APP_BUILD=1',
+#                           '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
+                           '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
         call_except_on_failure(build_dir_name, [cmake, '--build', '.', '--target', 'install', '--config', PACKAGED_BUILD_TYPE])

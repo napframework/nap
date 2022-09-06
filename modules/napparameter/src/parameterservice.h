@@ -4,6 +4,9 @@
 
 #pragma once
 
+// Local Includes
+#include "parametergroup.h"
+
 // External Includes
 #include <nap/service.h>
 #include <nap/resourceptr.h>
@@ -11,8 +14,6 @@
 
 namespace nap
 {
-	class ParameterGroup;
-
 	/**
 	 * The ParameterService manages the Parameters for a project. It provides support for loading/saving presets of Parameters
 	 */

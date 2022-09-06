@@ -23,7 +23,7 @@ namespace nap
 		// Ensure the declared parameters are part of the parameter or parameter group children
 		for (const auto& parameter : mParameters)
 		{
-			ResourcePtr<Parameter> found_param = mRootGroup->findParameterRecursive(parameter);
+			ResourcePtr<Parameter> found_param = mRootGroup->findObjectRecursive(parameter->mID);
 			if (!errorState.check(found_param != nullptr, "%s: parameter %s not part of group or child of group: %s",
 				mID.c_str(), parameter->mID.c_str(), mRootGroup->mID.c_str()))
 			{

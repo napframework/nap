@@ -7,6 +7,7 @@
 // Std includes
 #include <atomic>
 #include <iostream>
+#include <assert.h>
 
 // Nap includes
 #include <nap/signalslot.h>
@@ -15,6 +16,7 @@
 // Audo includes
 #include <audio/utility/audiotypes.h>
 #include <audio/utility/dirtyflag.h>
+#include <cmath>
 
 namespace nap
 {

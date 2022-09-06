@@ -43,9 +43,7 @@ namespace nap
         /**
          * called upon destruction of the adapter
          */
-        void destroy() override
-        {
-        };
+        void destroy() override{};
     private:
         // reference to track linked to adapter
         const SequenceTrack& mTrack;

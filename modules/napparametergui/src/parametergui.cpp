@@ -193,7 +193,7 @@ namespace nap
 
 	void ParameterGUI::showParameters(ParameterGroup& parameterGroup, int depth)
 	{
-		for (auto& parameter : parameterGroup.mParameters)
+		for (auto& parameter : parameterGroup.mMembers)
 		{
 			const rtti::TypeInfo& type = parameter->get_type();
 			auto editor = mParameterGUIService.findEditor(*parameter);

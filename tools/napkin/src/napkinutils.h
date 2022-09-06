@@ -4,15 +4,16 @@
 
 #pragma once
 
+#include "rttiitem.h"
+
 #include <QFileDialog>
+#include <QStandardItem>
+#include <rtti/typeinfo.h>
 
 namespace napkin
 {
 	namespace napkinutils
 	{
-		QString getOpenFilename(QWidget *parent = nullptr,
-								const QString &caption = {},
-								const QString &dir = {},
-								const QString &filter = {});
+		QString getOpenFilename(QWidget *parent = nullptr, const QString &caption = {}, const QString &dir = {}, const QString &filter = {});
 	}
 }

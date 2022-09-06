@@ -13,6 +13,7 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <utility/fileutils.h>
+#include <nap/group.h>
 
 using namespace napkin;
 using namespace nap::rtti;
@@ -36,6 +37,7 @@ void splitNameIndex(const std::string& str, std::string& name, int& index)
 Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 	: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects))
 {
+	nap::Logger::info("Loading");
 }
 
 nap::Entity* Document::getParent(const nap::Entity& child) const
@@ -70,12 +72,12 @@ bool Document::hasChild(const nap::Entity& parentEntity, const nap::Entity& chil
 
 nap::Entity* Document::getOwner(const nap::Component& component) const
 {
-	for (const auto& o : getObjects())
+	for (const auto& obj : getObjects())
 	{
-		if (!o->get_type().is_derived_from<nap::Entity>())
+		if (!obj->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		nap::Entity* owner = rtti_cast<nap::Entity>(o.get());
+		nap::Entity* owner = static_cast<nap::Entity*>(obj.get());
 		auto filter = [&component](ObjectPtr<nap::Component> comp) -> bool
 		{
 			return &component == comp.get();
@@ -87,6 +89,95 @@ nap::Entity* Document::getOwner(const nap::Component& component) const
 	return nullptr;
 }
 
+
+nap::IGroup* napkin::Document::getOwner(const nap::IGroup& group, int& outIndex) const
+{
+	const auto& objects = getObjects();
+	PropertyPath group_children_path = {};
+	for(const auto& obj : objects)
+	{
+		if(!obj->get_type().is_derived_from(group.get_type()))
+			continue;
+
+		if(obj.get() == &group)
+			continue;
+
+		// Resolve child group property against current object
+		auto obj_group = static_cast<nap::IGroup*>(obj.get());
+		auto property_path = Path::fromString(obj_group->childrenPropertyName());
+		ResolvedPath resolved_path;
+		property_path.resolve(obj_group, resolved_path);
+		assert(resolved_path.isValid());
+
+		// Get array value
+		Variant value = resolved_path.getValue();
+		assert(value.is_valid() && value.is_array());
+		VariantArray view = value.create_array_view();
+		assert(view.is_valid());
+
+		// Check if the group is a child of this object
+		for (int i = 0; i < view.get_size(); i++)
+		{
+			Variant child = view.get_value(i);
+			assert(child.get_type().is_wrapper());
+			auto child_obj = child.extract_wrapped_value().get_value<nap::IGroup*>();
+			if (child_obj == &group)
+			{
+				outIndex = i;
+				return obj_group;
+			}
+		}
+	}
+
+	outIndex = -1;
+	return nullptr;
+}
+
+
+nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& outIndex) const
+{
+	const auto& objects = getObjects();
+	PropertyPath group_children_path = {};
+	for (const auto& obj : objects)
+	{
+		if (!obj->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+			continue;
+
+		// Resolve child group property against current object
+		nap::IGroup* obj_group = static_cast<nap::IGroup*>(obj.get());
+		auto property_path = Path::fromString(obj_group->membersPropertyName());
+		ResolvedPath resolved_path;
+		property_path.resolve(obj.get(), resolved_path);
+		assert(resolved_path.isValid());
+
+		// Get array value
+		Variant value = resolved_path.getValue();
+		assert(value.is_valid() && value.is_array());
+		VariantArray view = value.create_array_view();
+		assert(view.is_valid());
+
+		// Check if the group can hold the given type
+		auto element_type = view.get_rank_type(1).get_wrapped_type();
+		if (!object.get_type().is_derived_from(element_type))
+			continue;
+
+		// Check if the group is a child of this object
+		for (int i = 0; i < view.get_size(); i++)
+		{
+			Variant child = view.get_value(i);
+			assert(child.get_type().is_wrapper());
+			auto child_obj = child.extract_wrapped_value().get_value<nap::IGroup*>();
+			if (child_obj == &object)
+			{
+				outIndex = i;
+				return static_cast<nap::IGroup*>(obj.get());
+			}
+		}
+	}
+
+	outIndex = -1;
+	return nullptr;
+}
 
 const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
 {
@@ -111,6 +202,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	return object.mID;
 }
 
+
 const std::string& Document::forceSetObjectName(nap::rtti::Object& object, const std::string& name)
 {
 	auto newName = getUniqueName(name, object, false);
@@ -128,13 +220,17 @@ const std::string& Document::forceSetObjectName(nap::rtti::Object& object, const
 	return object.mID;
 }
 
+
 nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 {
 	auto& factory = mCore.getResourceManager()->getFactory();
 	bool canCreate = factory.canCreate(type);
 
 	if (!canCreate)
+	{
 		nap::Logger::fatal("Cannot create instance of '%s'", type.get_name().data());
+	}
+
 	assert(canCreate);
 	assert(type.is_derived_from<nap::Component>());
 
@@ -144,17 +240,15 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 
 	mObjects.emplace_back(comp);
 	entity.mComponents.emplace_back(comp);
-
 	componentAdded(comp, &entity);
-
 	return comp;
 }
 
 
-nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* parent, bool selectNewObject, const std::string& name)
+nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* parent, const std::string& name)
 {
+	// Make sure it's an rtti Object
 	Factory& factory = mCore.getResourceManager()->getFactory();
-
 	if (!type.is_derived_from<Object>())
 	{
 		nap::Logger::error("Cannot create object of type: %s, type does not derive from",
@@ -162,62 +256,28 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 		return nullptr;
 	}
 
+	// Ensure we can create the object using the factory
 	if (!factory.canCreate(type))
 	{
 		nap::Logger::error("Cannot create object of type: %s", type.get_name().data());
 		return nullptr;
 	}
 
+	// Get initial name
 	std::string base_name = name.empty() ? friendlyTypeName(type) : name;
-
 	std::unique_ptr<Object> obj = std::unique_ptr<Object>(factory.create(type));
-	Object* objptr = obj.get();
-	assert(objptr != nullptr);
-	obj->mID = getUniqueName(base_name, *objptr, true);
+	assert(obj != nullptr);
+	obj->mID = getUniqueName(base_name, *obj, true);
+
+	// Add to managed object list
+	Object* obj_ptr = obj.get();
 	mObjects.emplace_back(std::move(obj));
 
-	// Handle adding to a parent
-	// TODO: Make this a little less hokey
-	if (parent != nullptr)
-	{
-		auto parentEntity = rtti_cast<nap::Entity>(parent);
-
-		auto newEntity = rtti_cast<nap::Entity>(objptr);
-		auto newComponent = rtti_cast<nap::Component>(objptr);
-
-		if (parentEntity != nullptr)
-		{
-			if (newEntity != nullptr)
-			{
-				parentEntity->mChildren.emplace_back(newEntity);
-			}
-			else if (newComponent != nullptr)
-			{
-				parentEntity->mComponents.emplace_back(newComponent);
-			}
-		}
-	}
-
-	objectAdded(objptr, selectNewObject);
-
-	return objptr;
+	// Notify listeners
+	objectAdded(obj_ptr, parent);
+	return obj_ptr;
 }
 
-void Document::reparentEntity(nap::Entity& entity, nap::Entity* newParent)
-{
-	nap::Entity* oldParent = getParent(entity);
-
-	if (oldParent == newParent)
-		return; // nothing to do, already parented
-
-	if (oldParent)
-		oldParent->mChildren.erase(std::remove(oldParent->mChildren.begin(), oldParent->mChildren.end(), &entity));
-
-	if (newParent)
-		newParent->mChildren.emplace_back(&entity);
-
-	entityReparented(&entity, oldParent, newParent);
-}
 
 nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 {
@@ -248,30 +308,29 @@ std::string Document::getUniqueName(const std::string& suggestedName, const nap:
 
 Object* Document::getObject(const std::string& name)
 {
-	for (auto obj : getObjectPointers())
-		if (obj->mID == name)
-			return obj;
-	return nullptr;
+	// TODO: Replace list of owned_objects with an unordered_map
+	// Ensures constant insertion and lookup times per element
+	const nap::rtti::OwnedObjectList& all_objs = getObjects();
+	auto it = std::find_if(all_objs.begin(), all_objs.end(), [&](const auto& obj)
+		{
+			return obj->mID == name;
+		});
+	return it != all_objs.end() ? it->get() : nullptr;
 }
 
 
 Object* Document::getObject(const std::string& name, const rttr::type& type)
 {
 	auto object = getObject(name);
-
-	if (object == nullptr)
-		return nullptr;
-
-	if (object->get_type().is_derived_from(type))
-		return object;
-
-	return nullptr;
+	return object != nullptr && object->get_type().is_derived_from(type) ?
+		object : nullptr;
 }
 
 
 ObjectList Document::getObjectPointers() const
 {
-	ObjectList ret;
+	const auto& owned_objs = getObjects();
+	ObjectList ret; ret.reserve(owned_objs.size());
 	for (auto& ob : getObjects())
 		ret.emplace_back(ob.get());
 	return ret;
@@ -281,49 +340,94 @@ ObjectList Document::getObjectPointers() const
 void Document::removeObject(Object& object)
 {
 	// Emit signal first so observers can act before the change
-	objectRemoved(&object);
+	removingObject(&object);
 
 	// Remove instance properties for this object
 	if (!object.get_type().is_derived_from<nap::InstancePropertyValue>())
 		removeInstanceProperties(object);
 
-	// Start by cleaning up objects that depend on this one
-	if (object.get_type().is_derived_from<nap::Entity>())
+	// Delete embedded objects under the given owner.
+	nap::rtti::ObjectList embedded_objs = getEmbeddedObjects(object);
+	for (auto embedded_obj : embedded_objs)
+		removeObject(*embedded_obj);
+
+	// Remove this object from every group as a member
+	int child_index = -1;
+	auto parent_group = getGroup(object, child_index);
+	if (parent_group != nullptr)
 	{
-		auto entity = rtti_cast<nap::Entity>(&object);
-		// Remove from any scenes
-		for (auto& obj : getObjects())
-		{
-			auto scene = rtti_cast<nap::Scene>(obj.get());
-			if (scene != nullptr)
-				removeEntityFromScene(*scene, *entity);
-		}
-
-		// Delete any components on this Entity
-		std::vector<nap::rtti::ObjectPtr<nap::Component>> comps = entity->getComponents();
-		for (auto compptr : comps)
-			removeObject(*compptr.get());
-
-		reparentEntity(*entity, nullptr);
+		groupRemoveElement(*parent_group, parent_group->getMembersProperty(), child_index);
 	}
 
-	// Remove embedded objects under the given owner
-	for (auto embeddedObject : getEmbeddedObjects(object))
-		removeObject(*embeddedObject);
-
-	// Remove this object's components
-	if (auto component = rtti_cast<nap::Component>(&object))
+	// Handle specific objects.
+	// By default, all items that reference the deleted item will have their handle set to null.
+	// For some items we do a bit of cleanup, to ensure their children remain organized.
+	// TODO: Check if the item that references this item is in an array and a regular pointer
+	// If it is, we can erase that index. Note that that will be slower than handling specific cases.
+	if (object.get_type().is_derived_from<nap::Entity>())
 	{
-		if (auto owner = getOwner(*component))
+		// Remove from every scene
+		auto entity = static_cast<nap::Entity*>(&object);
+		auto scenes = getObjects(RTTI_OF(nap::Scene));
+		for (auto& scene : scenes)
+			removeEntityFromScene(static_cast<nap::Scene&>(*scene), *entity);
+
+		// Remove (every!) reference to the entity
+		// Entities can have multiple references to the same child entity
+		auto parent_entity = getParent(*entity);
+		if (parent_entity != nullptr)
+		{
+			for (auto it = parent_entity->mChildren.begin(); it != parent_entity->mChildren.end(); )
+			{
+				if (it->get() == entity)
+				{
+					it = parent_entity->mChildren.erase(it);
+					continue;
+				}
+				it++;
+			}
+		}
+	}
+
+	// Remove the component from entities that reference it
+	else if (object.get_type().is_derived_from(RTTI_OF(nap::Component)))
+	{
+		auto component = static_cast<nap::Component*>(&object);
+		auto owner = getOwner(*component);
+		if (owner != nullptr)
 		{
 			auto it = std::remove(owner->mComponents.begin(), owner->mComponents.end(), &object);
 			owner->mComponents.erase(it, owner->mComponents.end());
 		}
 	}
 
-	// All clean. Remove our object
-	auto filter = [&](const auto& obj) { return obj.get() == &object; };
-	mObjects.erase(std::remove_if(mObjects.begin(), mObjects.end(), filter), mObjects.end());
+	// Remove the group from parent groups, if any
+	else if (object.get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	{
+		// Get parent group
+		auto group = static_cast<nap::IGroup*>(&object);
+		int child_index = -1;
+		auto owner =  getOwner(*group, child_index);
+
+		// Remove from parent if found
+		if (owner != nullptr)
+			groupRemoveElement(*owner, owner->getChildrenProperty(), child_index);
+	}
+
+	// References to object have been removed, 
+	auto found_it = std::find_if(mObjects.begin(), mObjects.end(), [&](const auto& obj) 
+		{
+			return obj.get() == &object;
+		});
+	assert(found_it != mObjects.end());
+
+	// Erase
+	auto released_obj = found_it->release();
+	mObjects.erase(found_it);
+
+	// Notify listeners this object has been removed
+	objectRemoved(released_obj);
+	delete released_obj;
 }
 
 
@@ -357,7 +461,6 @@ void Document::removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& ob
 		{
 			if (allComponents.contains(props[i].mTargetComponent.get()))
 			{
-//				qInfo() << "Remove instance properties: " << QString::fromStdString(props[i].mTargetComponent.get()->mID);
 				props.erase(props.begin() + i);
 			}
 		}
@@ -371,7 +474,7 @@ void Document::removeInstanceProperties(PropertyPath path)
 	auto parent = path.getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
+	auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
 	assert(parentEntity);
 	auto instIndex = path.getInstanceChildEntityIndex();
 
@@ -497,7 +600,7 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 {
 	auto index = parent.mChildren.size();
 	parent.mChildren.emplace_back(&child);
-	entityAdded(&child, &parent);
+	childEntityAdded(&child, &parent);
 	return index;
 }
 
@@ -520,15 +623,14 @@ void Document::remove(const PropertyPath& path)
 	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		// Removing child Entity from parent Entity
-		auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
+		auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
 		assert(parentEntity);
-		auto childEntity = dynamic_cast<nap::Entity*>(path.getObject());
+		auto childEntity = rtti_cast<nap::Entity>(path.getObject());
 		assert(childEntity);
-		auto realIndex = path.getRealChildEntityIndex();
 
 		// Remove all instanceproperties that refer to this Entity:0 under ParentEntity
+		auto realIndex = path.getRealChildEntityIndex();
 		removeInstanceProperties(path);
-
 		removeChildEntity(*parentEntity, realIndex);
 		return;
 	}
@@ -538,8 +640,8 @@ void Document::remove(const PropertyPath& path)
 
 	if (parent.getType().is_derived_from<nap::Scene>() && path.getType().is_derived_from<nap::Entity>())
 	{
-		auto entity = dynamic_cast<nap::Entity*>(path.getObject());
-		auto scene = dynamic_cast<nap::Scene*>(parent.getObject());
+		auto entity = rtti_cast<nap::Entity>(path.getObject());
+		auto scene = rtti_cast<nap::Scene>(parent.getObject());
 		int idx = 0;
 		int pathidx = path.getInstanceChildEntityIndex();
 		for (int i=0; i<scene->mEntities.size(); i++)
@@ -560,37 +662,39 @@ void Document::remove(const PropertyPath& path)
 
 }
 
-void Document::removeEntityFromScene(nap::Scene& scene, nap::RootEntity& entity)
-{
-	removeInstanceProperties(scene, *entity.mEntity);
-
-	auto& v = scene.mEntities;
-	auto filter = [&](nap::RootEntity& obj) { return &obj == &entity; };
-	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
-	objectChanged(&scene);
-}
-
 void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 {
+	// Remove instance properties associated with this entity
 	removeInstanceProperties(scene, entity);
 
-	auto& v = scene.mEntities;
-	auto filter = [&](nap::RootEntity& obj) { return obj.mEntity == &entity; };
-	v.erase(std::remove_if(v.begin(), v.end(), filter), v.end());
-	objectChanged(&scene);
+	// Remove (every!) child entity from the scene
+	bool changed = false;
+	for (auto it = scene.mEntities.begin(); it != scene.mEntities.end(); )
+	{
+		if (it->mEntity == &entity)
+		{
+			it = scene.mEntities.erase(it);
+			changed = true;
+			continue;
+		}
+		it++;
+	}
+
+	if (changed)
+	{
+		objectChanged(&scene);
+	}
 }
 
 void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
 	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
-
 	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
 
 int Document::arrayAddValue(const PropertyPath& path)
 {
-
 	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
@@ -620,7 +724,6 @@ int Document::arrayAddValue(const PropertyPath& path)
 	size_t index = array_view.get_size();
 	bool inserted = array_view.insert_value(index, new_value);
 	assert(inserted);
-
 	resolved_path.setValue(array);
 
 	propertyChildInserted(path, index);
@@ -703,49 +806,35 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Obj
 
 int Document::arrayAddNewObject(const PropertyPath& path, const TypeInfo& type, size_t index)
 {
+	// Resolve path
 	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
 
-	Variant array = resolved_path.getValue();
-	VariantArray array_view = array.create_array_view();
+	// Get parent
+	PropertyPath parent_path = path.getParent();
+	assert(parent_path.isValid());
+	auto* parent_object = parent_path.getObject();
 
-	Object* new_object = addObject(type, nullptr, false);
+	// Create object
+	Object* new_object = addObject(type, parent_object);
 	if (!new_object)
 	{
 		nap::Logger::error("Did not create object at: %s", path.toString().c_str());
 		return 0;
 	}
 
+	// Insert into array
+	Variant array = resolved_path.getValue();
+	VariantArray array_view = array.create_array_view();
 	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_object);
 	assert(inserted);
 
+	// Set array after modification
 	bool value_set = resolved_path.setValue(array);
 	assert(value_set);
 
-	propertyValueChanged(path);
-	propertyChildInserted(path, index);
-
-	return index;
-}
-
-size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::TypeInfo& type)
-{
-	ResolvedPath resolved_path = path.resolve();
-	assert(resolved_path.isValid());
-
-	Variant array = resolved_path.getValue();
-	VariantArray array_view = array.create_array_view();
-
-	Object* new_object = addObject(type, nullptr, false);
-
-	size_t index = array_view.get_size();
-	bool inserted = array_view.insert_value(index, new_object);
-	assert(inserted);
-
-	bool value_set = resolved_path.setValue(array);
-	assert(value_set);
-
+	// Call listeners
 	propertyValueChanged(path);
 	propertyChildInserted(path, index);
 
@@ -754,29 +843,114 @@ size_t Document::arrayAddNewObject(const PropertyPath& path, const nap::rtti::Ty
 
 void Document::arrayRemoveElement(const PropertyPath& path, size_t index)
 {
-	// If embedded pointer, get pointee so we can delete that too
+	// If embedded pointer, get pointee 
 	auto elementPath = path.getArrayElement(index);
 	nap::rtti::Object* pointee = nullptr;
 	if (elementPath.isEmbeddedPointer())
 		pointee = elementPath.getPointee();
 
+	// Get array from path
 	ResolvedPath resolved_path = path.resolve();
 	Variant value = resolved_path.getValue();
 	VariantArray array = value.create_array_view();
 	assert(index < array.get_size());
 
+	// Remove from array and update
 	bool ok = array.remove_value(index);
 	assert(ok);
-
 	ok = resolved_path.setValue(value);
 	assert(ok);
 
-	if (pointee != nullptr)
-		removeObject(*pointee);
+	// Notify listeners that the array changed
+	propertyValueChanged(path);
+	propertyChildRemoved(path, index);
 
+	// Delete pointee if the resource is embedded
+	if (pointee != nullptr)
+	{
+		removeObject(*pointee);
+	}
+}
+
+
+void napkin::Document::groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index)
+{
+	// Resolve path to property
+	PropertyPath path(group, arrayProperty, *this);
+	ResolvedPath resolved_path = path.resolve();
+	assert(resolved_path.isValid());
+
+	Variant value = resolved_path.getValue();
+	VariantArray array = value.create_array_view();
+	assert(index < array.get_size());
+
+	// Remove from array and update
+	bool ok = array.remove_value(index); assert(ok);
+	ok = resolved_path.setValue(value);  assert(ok);
+
+	// Notify listeners that the array changed
 	propertyValueChanged(path);
 	propertyChildRemoved(path, index);
 }
+
+
+void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath)
+{
+	// Notify users about re-parent operation
+	objectReparenting(object, currentPath, newPath);
+
+	// remove from current parent if it has one
+	if (currentPath.isValid())
+	{
+		// Get index
+		int resource_idx = -1; int length = currentPath.getArrayLength();
+		for (int i = 0; i < length; i++)
+		{
+			auto el_path = currentPath.getArrayElement(i);
+			if (el_path.getPointee() == &object)
+			{
+				resource_idx = i;
+				break;
+			}
+		}
+		assert(resource_idx >= 0);
+
+		// Remove from array
+		ResolvedPath resolved_path = currentPath.resolve();
+		Variant array_value = resolved_path.getValue();
+		VariantArray view = array_value.create_array_view();
+		bool ok = view.remove_value(resource_idx);
+		assert(ok);
+		ok = resolved_path.setValue(array_value);
+		assert(ok);
+
+		// Notify listeners that the array changed
+		propertyValueChanged(currentPath);
+		propertyChildRemoved(currentPath, resource_idx);
+	}
+
+	// Move to new parent
+	if (newPath.isValid())
+	{
+		// Add to existing array
+		ResolvedPath resolved_path = newPath.resolve();
+		Variant target_array_value = resolved_path.getValue();
+		VariantArray view = target_array_value.create_array_view();
+		int index = view.get_size();
+		bool ok = view.insert_value(index, &object);
+		assert(ok);
+		ok = resolved_path.setValue(target_array_value);
+		assert(ok);
+
+		// Call listeners
+		propertyValueChanged(newPath);
+		propertyChildInserted(newPath, index);
+	}
+
+	// Notify users the re-parent operation succeeded
+	objectReparented(object, currentPath, newPath);
+}
+
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
@@ -792,17 +966,12 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	Variant taken_value = array.get_value(fromIndex);
 	bool ok = array.remove_value(fromIndex);
 	assert(ok);
-
 	propertyChildRemoved(path, fromIndex);
-
 	ok = array.insert_value(toIndex, taken_value);
 	assert(ok);
-
 	ok = resolved_path.setValue(array_value);
 	assert(ok);
-
 	propertyValueChanged(path);
-
 	propertyChildInserted(path, toIndex);
 
 	return toIndex;
@@ -821,24 +990,21 @@ void Document::executeCommand(QUndoCommand* cmd)
 	mUndoStack.push(cmd);
 }
 
-QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject,
-		bool excludeArrays,
-		bool excludeParent,
-		bool excludeInstanceProperties)
+QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObject, bool excludeArrays, bool excludeParent, bool excludeInstanceProperties)
 {
 	QList<PropertyPath> properties;
-
 	for (const std::unique_ptr<nap::rtti::Object>& sourceObject : mObjects)
 	{
 		std::vector<nap::rtti::ObjectLink> links;
 		findObjectLinks(*sourceObject, links);
 		for (const auto& link : links)
 		{
+			// Link is target
 			assert(link.mSource == sourceObject.get());
-
 			if (link.mTarget != &targetObject)
 				continue;
 
+			// Construct path
 			PropertyPath propPath(*sourceObject, link.mSourcePath, *this);
 			auto proppathstr = propPath.toString();
 			assert(propPath.isPointer());
@@ -849,22 +1015,41 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 			if (excludeArrays && propPath.isArray())
 				continue;
 
+			if (propPath.getParent().getType().is_derived_from<nap::ComponentInstanceProperties>())
+				continue;
+
 			if (excludeParent)
 			{
-				auto entity = rtti_cast<nap::Entity>(sourceObject.get());
-				if (entity != nullptr)
+				if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::Entity)))
 				{
+					auto* entity = static_cast<nap::Entity*>(sourceObject.get());
 					if (std::find(entity->mChildren.begin(), entity->mChildren.end(), &targetObject) != entity->mChildren.end())
 						continue;
+
 					if (std::find(entity->mComponents.begin(), entity->mComponents.end(), &targetObject) !=
 						entity->mComponents.end())
 						continue;
 				}
+				else if (sourceObject->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+				{
+					// Check if item is part of group
+					auto* group = static_cast<nap::IGroup*>(sourceObject.get());
+					PropertyPath array_path(*group, group->getMembersProperty(), *this);
+					bool part_of_group = false;
+					array_path.iterateChildren([&](const PropertyPath& path)
+						{
+							// Cancel iteration if found 
+							part_of_group = path.getPointee() == &targetObject;
+							return !part_of_group;
+						}, 0);
+
+					// Don't add groups that directly reference the item
+					if (part_of_group)
+						continue;
+				}
 			}
 
-			if (propPath.getParent().getType().is_derived_from<nap::ComponentInstanceProperties>())
-				continue;
-
+			// This property references the item
 			properties << propPath;
 		}
 	}
@@ -873,11 +1058,11 @@ QList<PropertyPath> Document::getPointersTo(const nap::rtti::Object& targetObjec
 
 QList<nap::RootEntity*> Document::getRootEntities(nap::Scene& scene, nap::rtti::Object& object)
 {
-	auto entity = dynamic_cast<nap::Entity*>(&object);
+	auto entity = rtti_cast<nap::Entity>(&object);
 	if (entity == nullptr)
 	{
 		// must be component
-		auto comp = dynamic_cast<nap::Component*>(&object);
+		auto comp = rtti_cast<nap::Component>(&object);
 		entity = getOwner(*comp);
 	}
 	assert(entity);
@@ -932,15 +1117,25 @@ PropertyPath Document::getEmbeddedObjectOwnerPath(const nap::rtti::Object& obj)
 	return {};
 }
 
-std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(const nap::rtti::Object& owner)
+std::vector<nap::rtti::Object*> Document::getEmbeddedObjects(nap::rtti::Object& owner)
 {
-	std::vector<nap::rtti::Object*> embeddedObjects;
-	for (auto& obj : getObjects())
-	{
-		if (getEmbeddedObjectOwner(*obj.get()) == &owner)
-			embeddedObjects.emplace_back(obj.get());
-	}
-	return embeddedObjects;
+	// Iterate over child properties, down from owner
+	// Add every embedded object if not null
+	PropertyPath prop_path(owner, *this);
+	std::vector<nap::rtti::Object*> embedded_objects;
+	prop_path.iterateChildren([&](const PropertyPath& curent_path)
+		{
+			if (curent_path.isEmbeddedPointer() && !curent_path.isArray())
+			{
+				auto pointee = curent_path.getPointee();
+				if (pointee != nullptr)
+				{
+					embedded_objects.emplace_back(pointee);
+				}
+			}
+			return true;
+		}, IterFlag::Resursive);
+	return embedded_objects;
 }
 
 nap::Component* Document::getComponent(nap::Entity& entity, rttr::type componenttype)

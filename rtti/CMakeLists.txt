@@ -10,16 +10,10 @@ set(rapidjson_FIND_QUIETLY TRUE)
 find_package(rapidjson REQUIRED)
 add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 
-# Let find_python find our prepackaged Python in thirdparty
-if (NAP_ENABLE_PYTHON)
-  find_python_in_thirdparty()
-  set(pybind11_DIR ${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11)
-  find_package(pybind11 REQUIRED)
-endif()
-
 add_platform_specific_files("${WIN32_SOURCES}" "${MACOS_SOURCES}" "${LINUX_SOURCES}")
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
+
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
@@ -33,8 +27,17 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
 
 if (NAP_ENABLE_PYTHON)
+    # Find the python interpreter in thirdparty
+    find_python_in_thirdparty()
+
+    # Pybind uses the interpreter to locate the python libraries and includes, next to pybind includes
+    set(pybind11_DIR ${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11)
+    find_package(pybind11 REQUIRED)
+
+    # Add pybind includes and libraries
     target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
     target_link_libraries(${PROJECT_NAME} pybind11::embed)
+    target_link_directories(${PROJECT_NAME} PUBLIC ${PYTHON_LIB_DIR})
 endif()
 
 target_link_libraries(${PROJECT_NAME} naputility)
@@ -52,7 +55,9 @@ if(WIN32)
     copy_files_to_bin($<TARGET_FILE:RTTR::Core>)
 
     # Python
-    copy_windows_python_dlls_to_bin()
+    if(NAP_ENABLE_PYTHON)
+        copy_windows_python_dlls_to_bin()
+    endif()
 endif()
 
 if(APPLE)
@@ -91,8 +96,10 @@ else()
     install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
 endif()
 
+# RTTI headers
 install(DIRECTORY src/rtti/ DESTINATION include/rtti/
         FILES_MATCHING PATTERN "*.h")
+
 
 # Package dependent lib into platform release --
 
@@ -117,6 +124,5 @@ endif()
 # Package rapidjson
 install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt 
               ${THIRDPARTY_DIR}/rapidjson/readme.md
-        DESTINATION thirdparty/rapidjson
-        )
+        DESTINATION thirdparty/rapidjson)
 install(DIRECTORY ${THIRDPARTY_DIR}/rapidjson/include DESTINATION thirdparty/rapidjson)

@@ -24,7 +24,7 @@ namespace nap
     {
         friend class SequenceService;
 
-        RTTI_ENABLE(Resource)
+    RTTI_ENABLE(Resource)
     public:
         /**
          * Constructor

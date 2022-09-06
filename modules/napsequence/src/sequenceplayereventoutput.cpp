@@ -12,7 +12,7 @@ RTTI_END_CLASS
 namespace nap
 {
     SequencePlayerEventOutput::SequencePlayerEventOutput(SequenceService& service)
-            :SequencePlayerOutput(service)
+            : SequencePlayerOutput(service)
     {
     }
 
@@ -32,9 +32,9 @@ namespace nap
         }
 
         // Keep forwarding events until the queue runs out
-        while (!(events.empty()))
+        while(!(events.empty()))
         {
-            SequenceEventBase& sequence_event = *(events.front());
+            SequenceEventBase &sequence_event = *(events.front());
             mSignal.trigger(sequence_event);
 
             events.pop();

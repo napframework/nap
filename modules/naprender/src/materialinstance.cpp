@@ -271,7 +271,7 @@ namespace nap
 
 				VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex + index];
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = texture.getImageView();
+				imageInfo.imageView = texture.getHandle().getView();
 				imageInfo.sampler = vk_sampler;
 			}
 		}
@@ -281,7 +281,7 @@ namespace nap
 
 			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex];
 			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = sampler_2d->getTexture().getImageView();
+			imageInfo.imageView = sampler_2d->getTexture().getHandle().getView();
 			imageInfo.sampler = vk_sampler;
 		}
 	}
@@ -328,6 +328,16 @@ namespace nap
 				auto* instance = static_cast<BufferBindingVec4Instance*>(&bindingInstance);
 				buffer_info.buffer = instance->getBuffer().getBuffer();
 			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingIVec4Instance))
+			{
+				auto* instance = static_cast<BufferBindingIVec4Instance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
+			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingUVec4Instance))
+			{
+				auto* instance = static_cast<BufferBindingUVec4Instance*>(&bindingInstance);
+				buffer_info.buffer = instance->getBuffer().getBuffer();
+			}
 			else if (bindingInstance.get_type() == RTTI_OF(BufferBindingMat4Instance))
 			{
 				auto* instance = static_cast<BufferBindingMat4Instance*>(&bindingInstance);
@@ -356,7 +366,7 @@ namespace nap
 	{
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = texture2D.getImageView();
+		imageInfo.imageView = texture2D.getHandle().getView();
 		imageInfo.sampler = sampler;
 
 		mSamplerDescriptors.push_back(imageInfo);

@@ -171,31 +171,32 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 		return nullptr;
 
 	assert(mDocument != nullptr);
-	auto scene = dynamic_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
+	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
 	if (!scene)
 		return nullptr;
 
-	auto entity = dynamic_cast<nap::Entity*>(mDocument->getObject(mObjectPath[1].mID));
+	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
 	if (!entity)
 		return nullptr;
 
-	auto nameIdx = mObjectPath[1].mIndex;
-
-	int idx = 0;
+	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
 	for (auto& rootEntity : scene->mEntities)
 	{
 		if (idx == nameIdx && rootEntity.mEntity.get() == entity)
 			return &rootEntity;
+
 		if (rootEntity.mEntity.get() == entity)
 			++idx;
 	}
 	return nullptr;
 }
 
+
 nap::Component* PropertyPath::component() const
 {
-	return dynamic_cast<nap::Component*>(getObject());
+	return rtti_cast<nap::Component>(getObject());
 }
+
 
 nap::TargetAttribute* PropertyPath::targetAttribute() const
 {
@@ -248,7 +249,7 @@ rttr::variant PropertyPath::getValue() const
 		{
 			if (isPointer())
 			{
-				auto ptrInstPropValue = dynamic_cast<nap::PointerInstancePropertyValue*>(targetAttr->mValue.get());
+				auto ptrInstPropValue = rtti_cast<nap::PointerInstancePropertyValue>(targetAttr->mValue.get());
 				if (ptrInstPropValue)
 					return ptrInstPropValue->mValue;
 			}
@@ -305,8 +306,7 @@ void PropertyPath::setValue(rttr::variant value)
 			targetAttr = &getOrCreateTargetAttribute();
 			if (isPointer())
 			{
-				std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
-								 + "_" + nap::math::generateUUID());
+				std::string name("instanceProp_" + std::string(value.get_type().get_name().data()) + "_" + nap::math::generateUUID());
 				auto propValue = new nap::PointerInstancePropertyValue();
 				propValue->mID = name;
 				propValue->mValue = value.get_value<nap::rtti::Object*>();
@@ -359,12 +359,11 @@ Object* PropertyPath::getPointee() const
 	auto value = getValue();
 	auto type = value.get_type();
 	auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : type;
-
-	if (wrappedType != type)
-		return value.extract_wrapped_value().get_value<nap::rtti::Object*>();
-	else
-		return value.get_value<nap::rtti::Object*>();
+	return wrappedType != type ?
+		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
+		value.get_value<nap::rtti::Object*>();
 }
+
 
 void PropertyPath::setPointee(Object* pointee)
 {
@@ -395,7 +394,7 @@ PropertyPath PropertyPath::getParent() const
 	if (hasProperty())
 	{
 		if (mPropertyPath.size() > 1)
-			return { mObjectPath, PPath(mPropertyPath.begin(), mObjectPath.begin() + mObjectPath.size() - 1), *mDocument };
+			return { mObjectPath, PPath(mPropertyPath.begin(), mPropertyPath.begin() + mPropertyPath.size() - 1), *mDocument };
 
 		if (mPropertyPath.size() == 1)
 			return { mObjectPath, *mDocument };
@@ -456,8 +455,7 @@ size_t PropertyPath::getArrayLength() const
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
-	assert(array.is_valid());
-	assert(array.is_array());
+	assert(array.is_valid()); assert(array.is_array());
 
 	VariantArray array_view = array.create_array_view();
 	assert(array_view.is_dynamic());
@@ -703,12 +701,11 @@ int PropertyPath::getRealChildEntityIndex() const
 	auto parent = getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = dynamic_cast<nap::Entity*>(parent.getObject());
+	auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
 	assert(parentEntity);
 
-	int instanceIndex = getInstanceChildEntityIndex();
-
 	int foundIDs = 0;
+	int instanceIndex = getInstanceChildEntityIndex();
 	for (int i = 0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
 	{
 		auto currChild = parentEntity->mChildren[i];
