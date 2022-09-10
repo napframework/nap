@@ -16,7 +16,7 @@ namespace nap
 
         struct FloatSetting
         {
-            ImGuiStyleVar_ mVariable; ///< Indicates what ImGui style variable is specified by this setting
+            StyleVar mVariable; ///< Indicates what ImGui style variable is specified by this setting
             float mValue; ///< The value of the style variable
         };
 
@@ -25,7 +25,7 @@ namespace nap
          */
         struct SizeSetting
         {
-            ImGuiStyleVar_ mVariable; ///< Indicates what ImGui style variable is specified by this setting
+            StyleVar mVariable; ///< Indicates what ImGui style variable is specified by this setting
             glm::vec2 mValue; ///< The value of the style vatiable
         };
 
@@ -34,7 +34,7 @@ namespace nap
          */
         struct ColorSetting
         {
-            ImGuiCol_ mVariable; ///< Indicates what ImGui color style variable is speicified by this setting
+            ColorStyleVar mVariable; ///< Indicates what ImGui color style variable is speicified by this setting
             glm::vec4 mValue; ///< The value of the color style variable
         };
 

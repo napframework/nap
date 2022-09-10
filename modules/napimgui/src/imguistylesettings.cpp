@@ -73,7 +73,11 @@ RTTI_BEGIN_ENUM(nap::gui::ColorStyleVar)
 	RTTI_ENUM_VALUE(ImGuiCol_PlotHistogram, "PlotHistogram"),
 	RTTI_ENUM_VALUE(ImGuiCol_PlotHistogramHovered, "PlotHistogramHovered"),
 	RTTI_ENUM_VALUE(ImGuiCol_TextSelectedBg, "TextSelectedBg"),
-	RTTI_ENUM_VALUE(ImGuiCol_DragDropTarget, "DragDropTarget")
+	RTTI_ENUM_VALUE(ImGuiCol_DragDropTarget, "DragDropTarget"),
+    RTTI_ENUM_VALUE(ImGuiCol_NavHighlight, "NavHighlight"),
+    RTTI_ENUM_VALUE(ImGuiCol_NavWindowingHighlight, "NavWindowingHighlight"),
+    RTTI_ENUM_VALUE(ImGuiCol_NavWindowingDimBg, "NavWindowingDimBg"),
+    RTTI_ENUM_VALUE(ImGuiCol_ModalWindowDimBg, "ModalWindowDimBg")
 RTTI_END_ENUM
 
 RTTI_BEGIN_STRUCT(nap::gui::FloatSetting)
