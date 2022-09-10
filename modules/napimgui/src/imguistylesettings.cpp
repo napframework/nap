@@ -16,7 +16,7 @@ RTTI_BEGIN_ENUM(nap::gui::StyleVar)
 	RTTI_ENUM_VALUE(ImGuiStyleVar_IndentSpacing, "IndentSpacing"),
 	RTTI_ENUM_VALUE(ImGuiStyleVar_ScrollbarSize, "ScrollbarSize"),
 	RTTI_ENUM_VALUE(ImGuiStyleVar_ScrollbarRounding, "ScrollbarRounding"),
-	RTTI_ENUM_VALUE(ImGuiStyleVar_GrabMinSize, "grabMinSize"),
+	RTTI_ENUM_VALUE(ImGuiStyleVar_GrabMinSize, "GrabMinSize"),
 	RTTI_ENUM_VALUE(ImGuiStyleVar_GrabRounding, "GrabRounding"),
 	RTTI_ENUM_VALUE(ImGuiStyleVar_TabRounding, "TabRounding"),
 	RTTI_ENUM_VALUE(ImGuiStyleVar_WindowPadding, "WindowPadding (size)"),
@@ -92,7 +92,6 @@ RTTI_BEGIN_STRUCT(nap::gui::ColorSetting)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::gui::StyleSettings)
-    RTTI_PROPERTY("Test", &nap::gui::StyleSettings::mTest, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("FloatSettings", &nap::gui::StyleSettings::mFloatSettings, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SizeSettings", &nap::gui::StyleSettings::mSizeSettings, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ColorSettings", &nap::gui::StyleSettings::mColorSettings, nap::rtti::EPropertyMetaData::Default)

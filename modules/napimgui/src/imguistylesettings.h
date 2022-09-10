@@ -43,7 +43,6 @@ namespace nap
         {
             StyleSettings() = default;
             
-            int mTest = 10;
             std::vector<FloatSetting> mFloatSettings; ///< Property: 'FloatSettings' All style variable settings of type float
             std::vector<SizeSetting> mSizeSettings; ///< Property: 'SizeSettings' All style variable settings of type vec2, indicating a rectangle size
             std::vector<ColorSetting> mColorSettings; ///< Property: 'ColorSettings' All style variable settings specifying a color
