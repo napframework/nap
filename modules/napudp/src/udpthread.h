@@ -49,11 +49,18 @@ namespace nap
 
 		RTTI_ENABLE(Device)
 	public:
+        UDPThread();
+
 		/**
 		 * Constructor
 		 * @param service reference to UDP service
 		 */
 		UDPThread(UDPService& service);
+
+        /**
+         * Destructor
+         */
+        virtual ~UDPThread();
 
 		/**
 		 * Starts the UDPThread, spawns new thread if necessary or registers to UDPService

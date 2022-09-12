@@ -35,6 +35,7 @@ namespace nap
 	// UDPThread
 	//////////////////////////////////////////////////////////////////////////
 
+
 	UDPThread::UDPThread(UDPService & service) : mService(service)
 	{
 		mManualProcessFunc = [this]()
@@ -42,6 +43,9 @@ namespace nap
 			nap::Logger::warn(*this, "calling manual process function when thread update method is not manual!");
 		};
 	}
+
+
+    UDPThread::~UDPThread(){}
 
 
 	bool UDPThread::start(utility::ErrorState& errorState)

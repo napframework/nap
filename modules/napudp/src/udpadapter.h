@@ -11,14 +11,16 @@
 // STD includes
 #include <system_error>
 
+// local includes
+#include "udpthread.h"
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-    // forward declares
-    class UDPThread;
+
 
 	/**
-	 * Base class of specific UDP client and server resources.  
+	 * Base class of specific UDP client and server resources.
 	 * process() is automatically called by the thread this adapter links to.
 	 * Both UDPClient & UDPServer extend UDPAdapter.
 	 */
@@ -28,6 +30,16 @@ namespace nap
 
 		RTTI_ENABLE(Resource)
 	public:
+        /**
+         * Constructor
+         */
+        UDPAdapter();
+
+        /**
+         * Destructor
+         */
+        virtual ~UDPAdapter();
+
 		/**
 		 * Initialization
 		 * @param error contains error information
@@ -39,7 +51,7 @@ namespace nap
 		 * called on destruction
 		 */
 		virtual void onDestroy() override;
-    public:
+
         // Properties
         ResourcePtr<UDPThread> mThread; ///< Property: 'Thread' the udp thread the adapter registers itself to
         bool mAllowFailure = false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization

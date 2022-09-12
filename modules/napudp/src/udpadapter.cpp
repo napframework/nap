@@ -18,6 +18,12 @@ namespace nap
 	// UDPAdapter
 	//////////////////////////////////////////////////////////////////////////
 
+    UDPAdapter::UDPAdapter(){}
+
+
+    UDPAdapter::~UDPAdapter(){}
+
+
 	bool UDPAdapter::init(utility::ErrorState& errorState)
 	{
 		if(!errorState.check(mThread !=nullptr, "Thread cannot be nullptr"))
