@@ -34,7 +34,7 @@ namespace nap
 	}
 
 
-    bool UDPAdapter::handleAsioError(const asio::error_code& errorCode, utility::ErrorState& errorState, bool& success)
+    bool UDPAdapter::handleAsioError(const std::error_code& errorCode, utility::ErrorState& errorState, bool& success)
     {
         if(errorCode)
         {

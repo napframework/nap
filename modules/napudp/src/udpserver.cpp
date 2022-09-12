@@ -6,6 +6,12 @@
 #include "udppacket.h"
 #include "udpthread.h"
 
+// ASIO Includes
+#include <asio/ip/udp.hpp>
+#include <asio/io_service.hpp>
+#include <asio/ts/buffer.hpp>
+#include <asio/ts/internet.hpp>
+
 // External includes
 #include <asio/ts/buffer.hpp>
 #include <asio/ts/internet.hpp>
@@ -15,28 +21,51 @@
 
 #include <thread>
 
-using asio::ip::address;
-using asio::ip::udp;
-
 RTTI_BEGIN_CLASS(nap::UDPServer)
 	RTTI_PROPERTY("Port",			&nap::UDPServer::mPort,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("IP Address",		&nap::UDPServer::mIPAddress,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+using namespace asio::ip;
+
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+    // UDPServerASIO
+    //////////////////////////////////////////////////////////////////////////
+
+    class UDPServerASIO
+    {
+    public:
+        // ASIO
+        asio::io_context 			mIOService;
+        asio::ip::udp::endpoint 	mRemoteEndpoint;
+        asio::ip::udp::socket       mSocket{ mIOService };
+    };
+
 	//////////////////////////////////////////////////////////////////////////
 	// UDPServer
 	//////////////////////////////////////////////////////////////////////////
 
+    UDPServer::UDPServer() : UDPAdapter()
+    {}
+
+
+    UDPServer::~UDPServer()
+    {}
+
+
 	bool UDPServer::init(utility::ErrorState& errorState)
 	{
+        // create asio implementation
+        mASIO = std::make_unique<UDPServerASIO>();
+
         // when asio error occurs, init_success indicates whether initialization should fail or succeed
         bool init_success = false;
 
         // try to open socket
 		asio::error_code asio_error_code;
-		mSocket.open(udp::v4(), asio_error_code);
+        mASIO->mSocket.open(udp::v4(), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
@@ -56,7 +85,7 @@ namespace nap
 
         // try to bind socket
         nap::Logger::info(*this, "Listening at port %i", mPort);
-        mSocket.bind(udp::endpoint(address, mPort), asio_error_code);
+        mASIO->mSocket.bind(udp::endpoint(address, mPort), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
@@ -73,7 +102,7 @@ namespace nap
 		UDPAdapter::onDestroy();
 
         asio::error_code asio_error_code;
-		mSocket.close(asio_error_code);
+        mASIO->mSocket.close(asio_error_code);
 
         if(asio_error_code)
         {
@@ -85,13 +114,13 @@ namespace nap
 	void UDPServer::process()
 	{
 		asio::error_code asio_error;
-		size_t available_bytes = mSocket.available(asio_error);
+		size_t available_bytes = mASIO->mSocket.available(asio_error);
 		if(available_bytes > 0)
 		{
 			// fill buffer
 			std::vector<uint8> buffer;
 			buffer.resize(available_bytes);
-			mSocket.receive(asio::buffer(buffer), 0, asio_error);
+            mASIO->mSocket.receive(asio::buffer(buffer), 0, asio_error);
 
 			if (!asio_error)
 			{

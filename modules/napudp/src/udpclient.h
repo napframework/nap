@@ -9,12 +9,6 @@
 #include <queue>
 #include <mutex>
 
-// ASIO includes
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/io_service.hpp>
-#include <asio/system_error.hpp>
-
 // NAP includes
 #include <utility/threading.h>
 #include <concurrentqueue.h>
@@ -27,6 +21,9 @@ namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
 
+    // forward declares
+    class UDPClientASIO;
+
 	/**
 	 * The UDP Client class is used to send UDP Packets to an endpoint.
 	 */
@@ -34,6 +31,16 @@ namespace nap
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:
+        /**
+         * Constructor
+         */
+        UDPClient();
+
+        /**
+         * Destructor
+         */
+        virtual ~UDPClient();
+
 		/**
 		 * Initializes the UDP client
 		 * @param error contains error information
@@ -67,17 +74,15 @@ namespace nap
 		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
+		bool mBroadcast                     = false;        ///< Property: 'Broadcast' set option to broadcast
 	protected:
 		/**
 		 * The process function
 		 */
 		void process() override;
 	private:
-		// ASIO
-		asio::io_service 			mIOService;
-		asio::ip::udp::socket 		mSocket{mIOService};
-		std::vector<nap::uint8>		mBuffer;
-		asio::ip::udp::endpoint 	mRemoteEndpoint;
+        std::unique_ptr<UDPClientASIO>  mASIO;
+        std::vector<nap::uint8>		    mBuffer;
 
 		// Threading
 		moodycamel::ConcurrentQueue<UDPPacket> 	mQueue;

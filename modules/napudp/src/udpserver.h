@@ -14,12 +14,6 @@
 #include <concurrentqueue.h>
 #include <nap/signalslot.h>
 
-// ASIO includes
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/io_service.hpp>
-#include <asio/system_error.hpp>
-
 // Local includes
 #include "udpadapter.h"
 #include "udppacket.h"
@@ -27,6 +21,9 @@
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
+
+    // forward declares
+    class UDPServerASIO;
 
 	/**
 	 * The UDP Server connects to an endpoint and receives any UDP packets send to the endpoint.
@@ -37,6 +34,16 @@ namespace nap
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:
+        /**
+         * Constructor
+         */
+        UDPServer();
+
+        /*
+         * Destructor
+         */
+        virtual ~UDPServer();
+
 		/**
 		 * initialization
 		 * @param error contains error information
@@ -63,9 +70,6 @@ namespace nap
 		 */
 		void process() override;
 	private:
-		// ASIO
-		asio::io_service 			mIOService;
-		asio::ip::udp::socket 		mSocket{mIOService};
-		asio::ip::udp::endpoint 	mRemoteEndpoint;
+        std::unique_ptr<UDPServerASIO> mASIO;
 	};
 }
