@@ -58,6 +58,8 @@ namespace nap
             {
                 mSetFunction = &SequencePlayerCurveAdapter::setParameterValue;
             }
+
+            mStoredValue = mParameter.mValue;
         }
 
 
