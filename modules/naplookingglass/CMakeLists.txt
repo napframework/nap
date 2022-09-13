@@ -23,7 +23,7 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 
 target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
 
-target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} optimized ${HOLOPLAYCORE_LIB} )
+target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} optimized holoplaycore)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)

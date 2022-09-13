@@ -11,7 +11,7 @@
 #include <renderglobals.h>
 #include <material.h>
 #include <renderservice.h>
-#include <indexbuffer.h>
+//#include <indexbuffer.h>
 #include <renderglobals.h>
 #include <entity.h>
 #include <nap/core.h>
@@ -164,7 +164,7 @@ namespace nap
 
 		// Acquire new / unique descriptor set before rendering
 		MaterialInstance& mat_instance = getMaterialInstance();
-		VkDescriptorSet descriptor_set = mat_instance.update();
+		auto& descriptor_set = mat_instance.update();
 
 		// Fetch and bind pipeline
 		utility::ErrorState error_state;
@@ -172,7 +172,7 @@ namespace nap
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		// Bind shader descriptors
-		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set, 0, nullptr);
+		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind vertex buffers
 		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();

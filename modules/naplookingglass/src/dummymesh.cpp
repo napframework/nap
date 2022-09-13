@@ -17,7 +17,7 @@ namespace nap
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
 		mMeshInstance->setNumVertices(0);
-		mMeshInstance->setUsage(EMeshDataUsage::Static);
+		mMeshInstance->setUsage(EMemoryUsage::Static);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
 		mMeshInstance->setCullMode(ECullMode::None);
 
