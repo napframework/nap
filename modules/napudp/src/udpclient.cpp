@@ -17,7 +17,7 @@
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
 	RTTI_PROPERTY("Endpoint",					&nap::UDPClient::mRemoteIp,						nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Broadcast",					&nap::UDPClient::mBroadcast,						nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Broadcast",					&nap::UDPClient::mBroadcast,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port",						&nap::UDPClient::mPort,							nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxQueueSize",				&nap::UDPClient::mMaxPacketQueueSize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UDPClient::mStopOnMaxQueueSizeExceeded,	nap::rtti::EPropertyMetaData::Default)

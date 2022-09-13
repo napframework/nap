@@ -39,7 +39,7 @@ namespace nap
          */
         UDPServer();
 
-        /*
+        /**
          * Destructor
          */
         virtual ~UDPServer();
