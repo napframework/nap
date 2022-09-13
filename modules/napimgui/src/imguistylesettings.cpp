@@ -106,7 +106,6 @@ namespace nap
 	namespace gui
 	{
     
-        // TODO: re-implement scale
         static void readFloat(const std::vector<FloatSetting>& floatSettings, float& dest, StyleVar variable, bool scale = false)
         {
             auto it = std::find_if(floatSettings.begin(), floatSettings.end(), [&](auto& setting){
@@ -116,7 +115,6 @@ namespace nap
                 dest = it->mValue;
         }
     
-        // TODO: re-implement scale
         static void readSize(const std::vector<SizeSetting>& sizeSettings, ImVec2& dest, StyleVar variable, bool scale = false)
         {
             auto it = std::find_if(sizeSettings.begin(), sizeSettings.end(), [&](auto& setting){
@@ -125,9 +123,7 @@ namespace nap
             if (it != sizeSettings.end())
                 dest = ImVec2(it->mValue.x, it->mValue.y);
         }
-
     
-        // TODO: give scaling factor as argument here?
 		void StyleSettings::apply(ImGuiStyle& imGuiStyle) const
 		{
 			readFloat(mFloatSettings, imGuiStyle.Alpha, StyleVar::ImGuiStyleVar_Alpha);
