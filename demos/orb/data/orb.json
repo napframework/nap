@@ -409,6 +409,10 @@
                             "y": 0
                         }
                     }
+                },
+                {
+                    "Type": "nap::ShadowComponent",
+                    "mID": "ShadowComponent"
                 }
             ],
             "Children": []
