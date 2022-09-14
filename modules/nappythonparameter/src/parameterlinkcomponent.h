@@ -1,8 +1,10 @@
+
 #pragma once
 
 #include <component.h>
 #include <nap/resourceptr.h>
 #include <parameter.h>
+#include <parametergroup.h>
 
 namespace nap
 {
