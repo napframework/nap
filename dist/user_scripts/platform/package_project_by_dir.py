@@ -62,18 +62,17 @@ if __name__ == '__main__':
     if not sys.platform.startswith('linux') and not args.no_pause:
         pause_on_package = True
     bundle = False
+    codesign = None
     if sys.platform.startswith('darwin'):
         if args.bundle:
             bundle = True
+            codesign = args.codesign
             if args.no_zip:
                 print("Warning: --no-zip argument will be ignored because MacOS app bundle output was chosen.")
         else:
             if not args.codesign is None:
                 print("Warning: --codesign argument will be ignored because MacOS app bundle was not chosen.")
-    else:
-        if not args.codesign is None:
-            print("Warning: --codesign argument only applies on MacOS.")
-    exit_code = package_project_by_dir(args.PROJECT_PATH, not args.no_napkin, not args.no_zip, not args.no_show, bundle, args.codesign, pause_on_package)
+    exit_code = package_project_by_dir(args.PROJECT_PATH, not args.no_napkin, not args.no_zip, not args.no_show, bundle, codesign, pause_on_package)
 
     # Expose exit code
     sys.exit(exit_code)
