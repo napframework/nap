@@ -73,14 +73,21 @@ namespace nap {
             // check what type of parameter is being used and create a track that fits the parameter
             // ParameterVec2 = SequenceTrackCurveVec2
             // ParameterVec3 = SequenceTrackCurveVec3
+			// ParameterVec4 = SequenceTrackCurveVec4
             // ParameterFloat, ParameterLong, ParameterInt, ParameterBool & ParameterDouble = SequenceTrackCurveFloat
             if(curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec2))
             {
                 sequence_track = std::make_unique<SequenceTrackCurveVec2>();
-            }else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
+            }
+			else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec3))
             {
                 sequence_track = std::make_unique<SequenceTrackCurveVec3>();
-            }else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterFloat) ||
+            }
+			else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterVec4))
+			{
+				sequence_track = std::make_unique<SequenceTrackCurveVec4>();
+			}
+			else if (curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterFloat) ||
                        curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterLong) ||
                        curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterInt) ||
                        curve_output->mParameter.get()->get_type() == RTTI_OF(ParameterDouble) ||
@@ -239,11 +246,22 @@ namespace nap {
         if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackCurveVec4), [](const SequenceTrack& track,
                                                                                             SequencePlayerOutput& output,
                                                                                             const SequencePlayer& player) -> std::unique_ptr<SequencePlayerAdapter>
-        {
-            nap::Logger::info("adapter not yet implemented!");
-            return nullptr;
-        }), "Error registering adapter factory function"))
-            return false;
+		{
+			assert(track.get_type() == RTTI_OF(SequenceTrackCurveVec4)); // type mismatch
+			assert(output.get_type() == RTTI_OF(SequencePlayerCurveOutput)); //  type mismatch
+
+			auto& curve_output = static_cast<SequencePlayerCurveOutput&>(output);
+
+			assert(curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec4)); // type mismatch
+			if (curve_output.mParameter.get()->get_type() == RTTI_OF(ParameterVec4))
+			{
+				return std::make_unique<SequencePlayerCurveAdapter<glm::vec4, ParameterVec4, glm::vec4>>(track,
+					curve_output);
+			}
+
+			return nullptr;
+		}), "Error registering adapter factory function"))
+			return false;
 
         return true;
     }
