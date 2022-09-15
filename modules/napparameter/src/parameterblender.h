@@ -193,6 +193,7 @@ namespace nap
 	using ParameterDoubleBlender	= ParameterBlender<ParameterDouble, double>;
 	using ParameterVec2Blender		= ParameterBlender<ParameterVec2, glm::vec2>;
 	using ParameterVec3Blender		= ParameterBlender<ParameterVec3, glm::vec3>;
+	using ParameterVec4Blender		= ParameterBlender<ParameterVec4, glm::vec4>;
 	using ParameterRGBAFloatBlender = ParameterBlender<ParameterRGBAColorFloat, RGBAColorFloat>;
 	using ParameterRGBFloatBlender	= ParameterBlender<ParameterRGBColorFloat, RGBColorFloat>;
 	using ParameterRGBA8Blender		= ParameterBlender<ParameterRGBAColor8, RGBAColor8>;
