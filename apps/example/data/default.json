@@ -53,7 +53,9 @@
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    }
+                    },
+                    "MinimumZoomDistance": 0.5,
+                    "LimitZoomDistance": false
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -66,14 +68,6 @@
             "Type": "nap::Entity",
             "mID": "GnomonEntity",
             "Components": [
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon",
-                    "Visible": true,
-                    "Gnomon": "Gnomon",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
-                },
                 {
                     "Type": "nap::TransformComponent",
                     "mID": "PositionGnomon",
@@ -95,6 +89,31 @@
                         },
                         "UniformScale": 1.0
                     }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderVideoTexture",
+                    "Visible": true,
+                    "Mesh": "GroundPlane",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PlaneMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -110,6 +129,16 @@
             }
         },
         {
+            "Type": "nap::Image",
+            "mID": "RealSenseImage",
+            "Usage": "DynamicWrite"
+        },
+        {
+            "Type": "nap::RealSenseCamera",
+            "mID": "RealSenseCamera",
+            "Image": "RealSenseImage"
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,
@@ -121,13 +150,113 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
             "Samples": "Four",
             "AdditionalSwapImages": 1
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Plane",
+            "Members": [
+                {
+                    "Type": "nap::ShaderFromFile",
+                    "mID": "PlaneShader",
+                    "VertShader": "plane.vert",
+                    "FragShader": "plane.frag"
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "PlaneMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "nap::UniformStruct_4",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "LightOne",
+                                    "Name": "light",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "UniformVec3_c1202ff0",
+                                            "Name": "mPosition",
+                                            "Value": {
+                                                "x": 0.0,
+                                                "y": 333.0,
+                                                "z": 0.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "UniformVec3_2c4cde79",
+                                            "Name": "mIntensity",
+                                            "Value": {
+                                                "x": 1.0,
+                                                "y": 1.0,
+                                                "z": 1.0
+                                            }
+                                        }
+                                    ]
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [
+                        {
+                            "Type": "nap::Sampler2D",
+                            "mID": "UniformTexture2D_8ba3bc61",
+                            "Name": "inTexture",
+                            "MinFilter": "Linear",
+                            "MaxFilter": "Linear",
+                            "MipMapMode": "Linear",
+                            "AddressModeVertical": "ClampToEdge",
+                            "AddressModeHorizontal": "ClampToEdge",
+                            "MaxLodLevel": 1000,
+                            "AnisotropicSamples": "Default",
+                            "Texture": "RealSenseImage"
+                        }
+                    ],
+                    "Buffers": [],
+                    "Shader": "PlaneShader",
+                    "VertexAttributeBindings": [],
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                },
+                {
+                    "Type": "nap::PlaneMesh",
+                    "mID": "GroundPlane",
+                    "Usage": "Static",
+                    "CullMode": "None",
+                    "PolygonMode": "Fill",
+                    "Size": {
+                        "x": 1.0,
+                        "y": 1.0
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rows": 1,
+                    "Columns": 1
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Scene",

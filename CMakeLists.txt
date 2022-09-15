@@ -201,6 +201,7 @@ add_subdirectory(modules/napcalendar)
 add_subdirectory(modules/napasio)
 add_subdirectory(modules/nappipins)
 add_subdirectory(modules/napportal)
+add_subdirectory(modules/naprealsense)
 
 # Add additional directories if specified from command line.
 # For example: -DADDITIONAL_SUB_DIRECTORIES="apps/myapp;apps/myapp/module"

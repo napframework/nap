@@ -6,7 +6,8 @@
     "RequiredModules": [
         "mod_example",
         "mod_napapp",
-        "mod_napparametergui"
+        "mod_napparametergui",
+        "mod_naprealsense"
     ],
     "Data": "data/default.json",
     "ServiceConfig": "",
