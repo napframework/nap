@@ -1,0 +1,13 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "mod_napscene",
+        "mod_naprender",
+        "mod_napparameter"
+    ],
+    "DataSearchPaths": [
+        "{ROOT}/modules/naprenderadvanced/data",
+        "{ROOT}/modules/{MODULE_NAME}/data"
+    ]
+}
