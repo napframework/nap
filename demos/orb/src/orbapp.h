@@ -14,7 +14,6 @@
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <rendertarget.h>
-#include <depthrendertarget.h>
 #include <app.h>
 #include <imguiservice.h>
 #include <renderservice.h>
@@ -112,7 +111,6 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mWorldEntity;
 
 		rtti::ObjectPtr<RenderTarget> mRenderTarget;
-		rtti::ObjectPtr<DepthRenderTarget> mDepthRenderTarget;
 
 		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
 		std::unique_ptr<ParameterGUI> mParameterGUI;
@@ -138,9 +136,6 @@ namespace nap
 		// Camera
 		PerspCameraComponentInstance*					mPerspCameraComponent = nullptr;
 		OrbComponentInstance*							mOrbComponent = nullptr;
-		LightComponentInstance*							mLightComponent = nullptr;
-
-		std::vector<RenderableComponentInstance*>		mCachedRenderComponents;
-		std::vector<RenderableComponentInstance*>		mCachedLitRenderComponents;
+		std::vector<LightComponentInstance*>			mLightComponents;
 	};
 }

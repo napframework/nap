@@ -86,6 +86,50 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "BaseLightEntity",
+            "Components": [
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "RotateLightBase",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.10000000149011612,
+                        "Offset": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformLightBase",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "LightEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
                 {
@@ -107,7 +151,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_cff3bfb8",
+                    "mID": "TransformCamera",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -253,11 +297,11 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "y": 2.0,
+                            "z": 5.0
                         },
                         "Rotate": {
-                            "x": -45.0,
+                            "x": -30.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -322,14 +366,16 @@
                     "Type": "nap::LightComponent",
                     "mID": "Light",
                     "LightColor": "LightColorParameter",
-                    "LightPosition": "LightPositionParameter",
                     "LightIntensity": "LightIntensityParameter",
-                    "TargetTransform": "../OrbEntity/OrbTransform",
-                    "EyeCamera": "../../CameraEntity/PerspCamera",
+                    "EyeCamera": "../../../CameraEntity/PerspCamera",
                     "ShadowCameraOrthographic": "./ShadowCameraOrtho",
                     "ShadowCameraPerspective": "./ShadowCameraPersp",
                     "CameraType": "Orthographic",
-                    "EnableShadow": true
+                    "RenderComponents": [
+                        "../../OrbEntity/RenderOrb",
+                        "../../FloorEntity/RenderFloor"
+                    ],
+                    "DepthRenderTarget": "DepthRenderTarget"
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -409,10 +455,6 @@
                             "y": 0
                         }
                     }
-                },
-                {
-                    "Type": "nap::ShadowComponent",
-                    "mID": "ShadowComponent"
                 }
             ],
             "Children": []
@@ -512,7 +554,7 @@
             ],
             "Children": [
                 "OrbEntity",
-                "LightEntity",
+                "BaseLightEntity",
                 "FloorEntity"
             ]
         },
@@ -851,62 +893,55 @@
         {
             "Type": "nap::ParameterGroup",
             "mID": "OrbParameters",
-            "Parameters": [],
-            "Groups": [
+            "Parameters": [
                 {
-                    "Type": "nap::ParameterGroup",
-                    "mID": "ParameterGroup_6b9dc569",
-                    "Parameters": [
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "LightPositionParameter",
-                            "Name": "LightPosition",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            },
-                            "Clamp": true,
-                            "Minimum": -10.0,
-                            "Maximum": 10.0
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "LightIntensityParameter",
-                            "Name": "LightIntensity",
-                            "Value": 0.0,
-                            "Minimum": 0.0,
-                            "Maximum": 10.0
-                        },
-                        {
-                            "Type": "nap::ParameterRGBColorFloat",
-                            "mID": "LightColorParameter",
-                            "Name": "LightColor",
-                            "Value": {
-                                "Values": [
-                                    1.0,
-                                    1.0,
-                                    1.0
-                                ]
-                            }
-                        },
-                        {
-                            "Type": "nap::ParameterVec3",
-                            "mID": "RefractiveIndexParameter",
-                            "Name": "RefractiveIndex",
-                            "Value": {
-                                "x": 0.029999999329447748,
-                                "y": 0.029999999329447748,
-                                "z": 0.029999999329447748
-                            },
-                            "Clamp": true,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        }
-                    ],
-                    "Groups": []
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "LightColorParameter",
+                    "Name": "LightColor",
+                    "Value": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightIntensityParameter",
+                    "Name": "LightIntensity",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "RefractiveIndexParameter",
+                    "Name": "RefractiveIndex",
+                    "Value": {
+                        "x": 0.029999999329447748,
+                        "y": 0.029999999329447748,
+                        "z": 0.029999999329447748
+                    },
+                    "Clamp": true,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 }
-            ]
+            ],
+            "Groups": []
+        },
+        {
+            "Type": "nap::ParameterVec3",
+            "mID": "LightPositionParameter",
+            "Name": "LightPosition",
+            "Value": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Clamp": true,
+            "Minimum": -10.0,
+            "Maximum": 10.0
         },
         {
             "Type": "nap::RenderWindow",
@@ -957,8 +992,8 @@
         {
             "Type": "nap::ShaderFromFile",
             "mID": "PBRTextureShader",
-            "VertShader": "shaders/pbrtexture.vert",
-            "FragShader": "shaders/pbrtexture.frag"
+            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrtexture.vert",
+            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrtexture.frag"
         },
         {
             "Type": "nap::SphereMesh",

@@ -81,11 +81,6 @@ namespace nap
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
 
-		// Get depth render target
-		mDepthRenderTarget = mResourceManager->findObject<DepthRenderTarget>("DepthRenderTarget");
-		if (!errorState.check(mDepthRenderTarget != nullptr, "Missing resource nap::DepthRenderTarget with id 'DepthRenderTarget'"))
-			return false;
-
 		// Get the camera component
 		mPerspCameraComponent = &mCameraEntity->getComponent<PerspCameraComponentInstance>();
 		if (!errorState.check(mPerspCameraComponent != nullptr, "Missing component 'nap::PerspCameraComponent'"))
@@ -117,33 +112,9 @@ namespace nap
 		// Get highlight color from palette
 		mRenderWindow->setClearColor({ mGuiService->getPalette().mDarkColor.convert<RGBColorFloat>(), 1.0f });
 
-		// Cache render components
-		mCachedRenderComponents.clear();
-		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(mCachedRenderComponents);
-		mCachedLitRenderComponents = mCachedRenderComponents;
-
-		// Cache light component
-		std::vector<LightComponentInstance*> light_comps;
-		mWorldEntity->getComponentsOfTypeRecursive<LightComponentInstance>(light_comps);
-
-		if (!light_comps.empty())
-		{
-			mLightComponent = light_comps[0];
-
-			// Exclude gizmos from rendering to the depth buffer
-			std::vector<RenderableComponentInstance*> light_gizmos;
-			mLightComponent->getEntityInstance()->getComponentsOfTypeRecursive<RenderableComponentInstance>(light_gizmos);
-
-			for (auto it = mCachedLitRenderComponents.begin(); it != mCachedLitRenderComponents.end();)
-			{
-				for (auto* gizmo : light_gizmos)
-				{
-					if (*it == gizmo)
-						it = mCachedLitRenderComponents.erase(it);
-				}
-				it++;
-			}
-		}
+		// Cache light components
+		mLightComponents.clear();
+		mWorldEntity->getComponentsOfTypeRecursive<LightComponentInstance>(mLightComponents);
 
 		return true;
 	}
@@ -183,8 +154,13 @@ namespace nap
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
-		// Requires layout transition
-		ImGui::Image(mDepthRenderTarget->getDepthTexture(), { 200.0f, 200.0f });
+		for (auto& light : mLightComponents)
+		{
+			if (!light->isShadowEnabled())
+				continue;
+
+			ImGui::Image(light->getShadowTarget().getDepthTexture(), { 200.0f, 200.0f });
+		}
 
 		mParameterGUI->show(false);
 		ImGui::End();
@@ -202,22 +178,22 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		if (mLightComponent->isCameraEnabled())
+		// Shadow pass
+		if (mRenderService->beginHeadlessRecording())
 		{
-			// Get shadow camera
-			CameraComponentInstance* shadow_camera = mLightComponent->getShadowCamera();
-
-			// Shadow pass
-			if (mRenderService->beginHeadlessRecording())
+			for (auto& light : mLightComponents)
 			{
+				if (!light->isShadowEnabled())
+					continue;
+
 				// Offscreen color pass -> Render all available geometry to ColorTexture
-				mDepthRenderTarget->beginRendering();
-
-				mRenderService->renderObjects(*mDepthRenderTarget, *shadow_camera, mCachedLitRenderComponents);
-				mDepthRenderTarget->endRendering();
-
-				mRenderService->endHeadlessRecording();
+				if (light->beginShadowPass())
+				{
+					mRenderService->renderObjects(light->getShadowTarget(), *light->getShadowCamera(), light->getRenderableComponents());
+					light->endShadowPass();
+				}
 			}
+			mRenderService->endHeadlessRecording();
 		}
 
 		// Begin recording the render commands for the main render window
@@ -229,7 +205,10 @@ namespace nap
 
 			// Render world
 			auto& perspective_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, perspective_camera, mCachedRenderComponents);
+
+			std::vector<RenderableComponentInstance*> render_comps;
+			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
+			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
 
 			// Render composite component
 			//mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { mCompositeComponent });

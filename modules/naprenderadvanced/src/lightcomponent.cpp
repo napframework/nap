@@ -12,17 +12,16 @@
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::LightComponent)
 	RTTI_PROPERTY("LightColor",					&nap::LightComponent::mLightColorParam,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LightPosition",				&nap::LightComponent::mLightPositionParam,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("LightIntensity",				&nap::LightComponent::mLightIntensityParam,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("TargetTransform",			&nap::LightComponent::mTargetTransform,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EyeCamera",					&nap::LightComponent::mEyeCamera,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowCameraOrthographic",	&nap::LightComponent::mShadowCameraOrthographic,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowCameraPerspective",	&nap::LightComponent::mShadowCameraPerspective,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CameraType",					&nap::LightComponent::mCameraType,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableShadow",				&nap::LightComponent::mEnableShadow,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RenderComponents",			&nap::LightComponent::mRenderComponents,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthRenderTarget",			&nap::LightComponent::mDepthRenderTarget,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::LightComponentInstance run time class definition 
+// nap::LightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
@@ -52,14 +51,6 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// Static
 	//////////////////////////////////////////////////////////////////////////
-
-	static EntityInstance* getRootEntityRecursive(EntityInstance* instance)
-	{
-		if (instance->getParent() != nullptr)
-			return getRootEntityRecursive(instance->getParent());
-		return instance;
-	}
-
 
 	/**
 	 * Ensures the value member is created without asserting. Reports a verbose error message if this is not the case.
@@ -92,7 +83,6 @@ namespace nap
 
 		return true;
 	}
-
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -131,37 +121,20 @@ namespace nap
 		}
 
 		mCameraEnabled = mResource->mEyeCamera != nullptr;
+		mShadowEnabled = mCameraEnabled && mResource->mDepthRenderTarget != nullptr;
 
-		auto* entity = getEntityInstance();
-		mTransform = &entity->getComponent<TransformComponentInstance>();
-
-		// Gather renderable mesh components under the parent entity
-		auto* parent_entity = entity->getParent();
-		mCachedRenderComponents.clear();
-		parent_entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(mCachedRenderComponents);
-
-		// But exclude the ones directly under the current entity
-		std::vector<RenderableMeshComponentInstance*> excluded_comps;
-		entity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(excluded_comps);
-
-		for (auto it = mCachedRenderComponents.begin(); it != mCachedRenderComponents.end();)
-		{
-			for (auto* exclude_comp : excluded_comps)
-			{
-				if (*it == exclude_comp)
-					it = mCachedRenderComponents.erase(it);
-			}
-			it++;
-		}
+		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
 
 		// Ensure the material is compatible with nap::LightComponent
-		for (auto* render_comp : mCachedRenderComponents)
+		for (auto& render_comp : mRenderComponents)
 		{
-			if (!ensureValueMember<glm::mat4>(render_comp->getMaterialInstance(), uniform::VERTUBO, uniform::lightSpaceMatrix, mLightViewProjection, errorState))
+			if (!ensureValueMember<glm::mat4>((*render_comp).getMaterialInstance(), uniform::VERTUBO, uniform::lightSpaceMatrix, mLightViewProjection, errorState))
 				return false;
 
-			if (!ensureValueMember<glm::vec3>(render_comp->getMaterialInstance(), uniform::VERTUBO, uniform::lightPosition, mTransform->getTranslate(), errorState))
+			if (!ensureValueMember<glm::vec3>((*render_comp).getMaterialInstance(), uniform::VERTUBO, uniform::lightPosition, mTransform->getTranslate(), errorState))
 				return false;
+
+			mResolvedRenderComponents.emplace_back(&(*render_comp));
 		}
 
 		return true;
@@ -171,16 +144,11 @@ namespace nap
 	void LightComponentInstance::update(double deltaTime)
 	{
 		// Calculate new light direction
-		const glm::vec3 light_position = mResource->mLightPositionParam->mValue;
-		const glm::vec3 light_direction = glm::normalize(mTargetTransformComponent->getTranslate() - light_position);
-		//const glm::vec3 light_direction = mTransform->getRotate() * glm::vec3(0.0f, 0.0f, -1.0f);
-
-		// Get light transformation and update
-		mTransform->setTranslate(light_position);
-		mTransform->setRotate(glm::rotation({ 0.0f, 0.0f, -1.0f }, light_direction));
+		const glm::vec3 light_position = math::extractPosition(mTransform->getGlobalTransform());
+		const glm::vec3 light_direction = -glm::normalize(mTransform->getGlobalTransform()[2]);
 
 		// Only directional light with a orthocamera is currently supported
-		if (mResource->mEnableShadow)
+		if (mShadowEnabled)
 		{
 			// Calculate light view projection matrix
 			switch (mResource->mCameraType)
@@ -202,15 +170,15 @@ namespace nap
 
 		glm::vec3 camera_location = mCameraEnabled ? mEyeCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>().getTranslate() : glm::vec3(0.0f, 0.0f, 0.0f);
 
-		for (auto* render_comp : mCachedRenderComponents)
+		for (auto& render_comp : mRenderComponents)
 		{
-			UniformStructInstance* vert_ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
+			UniformStructInstance* vert_ubo_struct = (*render_comp).getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
 			vert_ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
-			vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
+			vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
 
-			UniformStructInstance* frag_ubo_struct = render_comp->getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
+			UniformStructInstance* frag_ubo_struct = (*render_comp).getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
 			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
-			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mTransform->getTranslate());
+			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
 			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
 			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
 			frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
@@ -218,9 +186,26 @@ namespace nap
 	}
 
 
+	bool LightComponentInstance::beginShadowPass()
+	{
+		if (!mShadowEnabled)
+			return false;
+
+		mResource->mDepthRenderTarget->beginRendering();
+		return true;
+	}
+
+
+	void LightComponentInstance::endShadowPass()
+	{
+		assert(mShadowEnabled);
+		mResource->mDepthRenderTarget->endRendering();
+	}
+
+
 	CameraComponentInstance* LightComponentInstance::getShadowCamera() const
 	{
-		if (mResource->mEnableShadow && mShadowCameraOrthographic != nullptr)
+		if (mShadowEnabled && mShadowCameraOrthographic != nullptr)
 		{
 			switch (mResource->mCameraType)
 			{
@@ -233,5 +218,12 @@ namespace nap
 			}
 		}
 		return nullptr;
+	}
+
+
+	DepthRenderTarget& LightComponentInstance::getShadowTarget() const
+	{
+		assert(mShadowEnabled);
+		return *mResource->mDepthRenderTarget;
 	}
 }
