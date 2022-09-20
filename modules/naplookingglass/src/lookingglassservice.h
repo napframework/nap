@@ -78,6 +78,8 @@ namespace nap
 		 * @return device index of the specified device identified by its serial number, otherwise -1
 		 */
 		int findDeviceIndex(std::string deviceSerial) const;
+
+		bool mAllowFailure = true; ///< Property: 'AllowFailure' Set to true if the app can init when failing to initialize the service. Failure usually indicates that the holoplay service app is not running.
         
     protected:
         virtual void registerObjectCreators(rtti::Factory& factory) override final;
