@@ -67,13 +67,13 @@ namespace nap
 		const float angle_offset_rad = math::radians(angleOffset);
 
 		// Torus structure segment
-		for (int r = 0; r < segmentCount; r++)
+		for (uint r = 0; r < segmentCount; r++)
 		{
 			const float pct0 = r * RX;
 			const float theta = glm::two_pi<float>() * pct0;
 
 			// Torus tube segment
-			for (int rt = 0; rt < tubeSegmentCount; rt++)
+			for (uint rt = 0; rt < tubeSegmentCount; rt++)
 			{
 				const float pct1 = rt * RY;
 				const float phi = glm::two_pi<float>() * pct1 + angle_offset_rad;
@@ -104,13 +104,13 @@ namespace nap
 		indices.resize(index_count);
 		std::vector<uint>::iterator i = indices.begin();
 
-		for (int s = 0; s < i_segments; s++)
+		for (uint s = 0; s < i_segments; s++)
 		{
-			const int s_plus = (s + 1);
+			const uint s_plus = (s + 1);
 
-			for (int ts = 0; ts < i_tube_segments; ts++)
+			for (uint ts = 0; ts < i_tube_segments; ts++)
 			{
-				const int ts_plus = (ts + 1);
+				const uint ts_plus = (ts + 1);
 
 				// Triangle A
 				*i++ = (s * tubeSegmentCount) + ts;

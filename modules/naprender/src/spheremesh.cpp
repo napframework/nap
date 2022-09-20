@@ -53,9 +53,9 @@ namespace nap
 		float const dr = 1.0f / static_cast<float>(mRings - 1);
 		float const ds = 1.0f / static_cast<float>(mSectors - 1);
 
-		for (int r = 0; r < mRings; r++)
+		for (uint r = 0; r < mRings; r++)
 		{
-			for (int s = 0; s < mSectors; s++)
+			for (uint s = 0; s < mSectors; s++)
 			{
 				float const y = sin(-(math::PI_2) + math::PI * r * dr);
 				float const x = cos(math::PIX2 * s * ds) * sin(math::PI * r * dr) * -1.0f;
@@ -80,9 +80,9 @@ namespace nap
 		std::vector<uint32> indices(index_count);
 		std::vector<uint32>::iterator i = indices.begin();
 
-		for (int r = 0; r < irings; r++)
+		for (uint r = 0; r < irings; r++)
 		{
-			for (int s = 0; s < isectors; s++)
+			for (uint s = 0; s < isectors; s++)
 			{
 				// Triangle A
 				*i++ = (r * mSectors) + s;
