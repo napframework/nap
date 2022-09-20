@@ -60,4 +60,6 @@ install(DIRECTORY ${HOLOPLAYCORE_INCLUDE_DIR} DESTINATION thirdparty/holoplaycor
 if(WIN32)
     install(FILES ${HOLOPLAYCORE_LIB} DESTINATION thirdparty/holoplaycore/bin/msvc)
     install(FILES ${HOLOPLAYCORE_DLL} DESTINATION thirdparty/holoplaycore/bin/msvc)
+elseif(APPLE)
+    install(FILES ${HOLOPLAYCORE_DLL} DESTINATION thirdparty/holoplaycore/bin/macos)
 endif()
