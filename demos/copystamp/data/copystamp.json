@@ -298,8 +298,8 @@
                                     "CullMode": "Back",
                                     "PolygonMode": "Fill",
                                     "Radius": 1.0,
-                                    "Rings": 15.0,
-                                    "Sectors": 15.0,
+                                    "Rings": 15,
+                                    "Sectors": 15,
                                     "Color": {
                                         "Values": [
                                             1.0,
@@ -322,8 +322,8 @@
                                     "mID": "CopyTorus",
                                     "Radius": 0.6000000238418579,
                                     "TubeRadius": 0.4000000059604645,
-                                    "Segments": 64,
-                                    "TubeSegments": 32,
+                                    "Segments": 32,
+                                    "TubeSegments": 16,
                                     "AngleOffset": 90.0,
                                     "PolygonMode": "Fill",
                                     "CullMode": "Back"
