@@ -8,7 +8,7 @@
 namespace nap
 {
 	/**
-	 * Parametric TorusMesh
+	 * Predefined torus mesh with additional normal, uv and color vertex attributes.
 	 */
 	class TorusMesh : public IMesh
 	{
@@ -17,13 +17,15 @@ namespace nap
 		TorusMesh(nap::Core& core);
 
 		/**
-		 * @param errorState the error message when initialization fails
+		 * Creates and initializes the mesh on the GPU. 
+		 * @param errorState contains the error if initialization fails.
 		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Setup the mesh but do not init the mesh instance
+		 * Creates the torus without GPU representation. 
+		 * @param errorState contains the error if initialization fails.
 		 */
 		bool setup(utility::ErrorState& errorState);
 
@@ -42,8 +44,10 @@ namespace nap
 		uint							mSegments = 64U;						///< Property: 'Segments' number of segments
 		uint							mTubeSegments = 32U;					///< Property: 'TubeSegments' number of tubular segments
 		float							mAngleOffset = 0.0f;					///< Property: 'AngleOffset' the angle offset in degrees
+		EMemoryUsage					mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		EPolygonMode					mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' the polygon mode
 		ECullMode						mCullMode = ECullMode::Back;			///< Property: 'CullMode' the cull mode
+		RGBAColorFloat					mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' Vertex color
 
 	protected:
 		RenderService*					mRenderService = nullptr;				//< The render service

@@ -7,7 +7,7 @@
 #include <renderglobals.h>
 #include <glm/gtc/constants.hpp>
 
-// nap::TorusMesh run time class definitZion
+// nap::TorusMesh run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TorusMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Radius",			&nap::TorusMesh::mRadius,			nap::rtti::EPropertyMetaData::Default)
@@ -15,8 +15,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TorusMesh)
 	RTTI_PROPERTY("Segments",		&nap::TorusMesh::mSegments,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TubeSegments",	&nap::TorusMesh::mTubeSegments,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AngleOffset",	&nap::TorusMesh::mAngleOffset,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::TorusMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PolygonMode",	&nap::TorusMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CullMode",		&nap::TorusMesh::mCullMode,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",			&nap::TorusMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,18 +31,19 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Creates a torus that consists out of @segmentCount segments
-	 * The torus is considered closed here the last vertex is the one before the start
+	 * Creates a torus that consists out of the given number of segments. 
+	 * The torus is considered closed, the last vertex is the one before the start.
 	 * @param segmentCount the number of circle segments
 	 * @param tubeSegmentCount the number of tubular segments
 	 * @param radius the radius of the torus
 	 * @param tubeRadius the radius of the tube segments
-	 * @param out* the buffers to fill based on the amount of vertices
+	 * @param angleOffset angle offset in degrees
+	 * @param color vertex color
 	 */
-	static void createTorus(MeshInstance& meshInstance, int segmentCount, int tubeSegmentCount, float radius, float tubeRadius, float angleOffset)
+	static void createTorus(MeshInstance& meshInstance, uint segmentCount, uint tubeSegmentCount, float radius, float tubeRadius, float angleOffset, const RGBAColorFloat& color)
 	{
 		// Add an additional segment to generate seamless UVs around the torus
-		const int vertex_count = segmentCount * tubeSegmentCount;
+		uint vertex_count = segmentCount * tubeSegmentCount;
 		meshInstance.setNumVertices(vertex_count);
 
 		auto& pos_attr = meshInstance.getOrCreateAttribute<glm::vec3>(vertexid::position);
@@ -51,6 +54,9 @@ namespace nap
 
 		auto& uv_attr = meshInstance.getOrCreateAttribute<glm::vec3>(vertexid::getUVName(0));
 		uv_attr.resize(vertex_count);
+
+		auto& color_attribute = meshInstance.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
+		color_attribute.setData({ vertex_count, color.toVec4() });
 
 		std::vector<glm::vec3>::iterator v = pos_attr.getData().begin();
 		std::vector<glm::vec3>::iterator n = normal_attr.getData().begin();
@@ -90,8 +96,8 @@ namespace nap
 		}
 
 		// Torus indices
-		int i_segments = segmentCount - 1;
-		int i_tube_segments = tubeSegmentCount - 1;
+		uint i_segments = segmentCount - 1;
+		uint i_tube_segments = tubeSegmentCount - 1;
 		uint index_count = i_segments * i_tube_segments * 6;
 
 		auto& indices = meshInstance.createShape().getIndices();
@@ -149,13 +155,12 @@ namespace nap
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
-		mMeshInstance->setUsage(EMemoryUsage::Static);
+		mMeshInstance->setUsage(mUsage);
 		mMeshInstance->setPolygonMode(mPolygonMode);
 		mMeshInstance->setCullMode(mCullMode);
 
 		// Create torus
-		createTorus(*mMeshInstance, mSegments+1, mTubeSegments+1, mRadius, mTubeRadius, mAngleOffset);
-
+		createTorus(*mMeshInstance, mSegments+1, mTubeSegments+1, mRadius, mTubeRadius, mAngleOffset, mColor);
 		return true;
 	}
 }
