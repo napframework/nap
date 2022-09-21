@@ -123,6 +123,9 @@ namespace nap
         if(!errorState.check(registerEventView<glm::vec3>(), "Error registering event view"))
             return false;
 
+		if (!errorState.check(registerEventView<glm::vec4>(), "Error registering event view"))
+			return false;
+
         // Register track types
         if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackEvent), RTTI_OF(SequenceEventTrackView)),
                              "Error registering track view"))
@@ -321,6 +324,6 @@ namespace nap
         mCurveColors[0] = mHigh4;
         mCurveColors[1] = mHigh2;
         mCurveColors[2] = mHigh1;
-        mCurveColors[3] = mHigh3;
+        mCurveColors[3] = mFro4;
     }
 }

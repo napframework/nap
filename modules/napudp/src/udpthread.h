@@ -15,12 +15,6 @@
 #include <concurrentqueue.h>
 #include <rtti/factory.h>
 
-// ASIO includes
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/io_service.hpp>
-#include <asio/system_error.hpp>
-
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -55,11 +49,18 @@ namespace nap
 
 		RTTI_ENABLE(Device)
 	public:
+        UDPThread();
+
 		/**
 		 * Constructor
 		 * @param service reference to UDP service
 		 */
 		UDPThread(UDPService& service);
+
+        /**
+         * Destructor
+         */
+        virtual ~UDPThread();
 
 		/**
 		 * Starts the UDPThread, spawns new thread if necessary or registers to UDPService

@@ -24,6 +24,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterVec3Blender)
 	RTTI_CONSTRUCTOR(nap::Parameter&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterVec4Blender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGBAFloatBlender)
 	RTTI_CONSTRUCTOR(nap::Parameter&)
 RTTI_END_CLASS
@@ -51,7 +55,7 @@ namespace nap
 		{ RTTI_OF(ParameterDouble),			RTTI_OF(ParameterDoubleBlender)		},
 		{ RTTI_OF(ParameterVec2),			RTTI_OF(ParameterVec2Blender)		},
 		{ RTTI_OF(ParameterVec3),			RTTI_OF(ParameterVec3Blender)		},
-		{ RTTI_OF(ParameterVec3),           RTTI_OF(ParameterVec3Blender)		},
+		{ RTTI_OF(ParameterVec4),           RTTI_OF(ParameterVec4Blender)		},
 		{ RTTI_OF(ParameterRGBAColorFloat),	RTTI_OF(ParameterRGBAFloatBlender)	},
 		{ RTTI_OF(ParameterRGBColorFloat),	RTTI_OF(ParameterRGBFloatBlender)	},
 		{ RTTI_OF(ParameterRGBAColor8),		RTTI_OF(ParameterRGBA8Blender)		},

@@ -2,10 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// local includes
 #include "udpthread.h"
 #include "udpadapter.h"
 #include "udpservice.h"
 
+// ASIO includes
+#include <asio/ts/buffer.hpp>
+#include <asio/ts/internet.hpp>
+#include <asio/io_service.hpp>
+#include <asio/system_error.hpp>
+
+// NAP includes
 #include <nap/logger.h>
 
 using asio::ip::address;
@@ -27,6 +35,7 @@ namespace nap
 	// UDPThread
 	//////////////////////////////////////////////////////////////////////////
 
+
 	UDPThread::UDPThread(UDPService & service) : mService(service)
 	{
 		mManualProcessFunc = [this]()
@@ -34,6 +43,9 @@ namespace nap
 			nap::Logger::warn(*this, "calling manual process function when thread update method is not manual!");
 		};
 	}
+
+
+    UDPThread::~UDPThread(){}
 
 
 	bool UDPThread::start(utility::ErrorState& errorState)

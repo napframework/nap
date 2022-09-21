@@ -35,46 +35,34 @@ namespace nap
 
 	bool SphereMesh::init(utility::ErrorState& errorState)
 	{
-		// Setup plane
-		if (!setup(errorState))
+		// Validate mesh
+		if (!errorState.check(mRings > 2 && mSectors > 2, "The number of rings and sectors must be higher than 2"))
 			return false;
 
-		// Initialize instance
-		return mMeshInstance->init(errorState);
-	}
-
-
-	bool SphereMesh::setup(utility::ErrorState& errorState)
-	{
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
 		// Get total amount of vertices
-		uint32 vertex_count = mRings * mSectors;
+		uint vertex_count = mRings * mSectors;
 
+		// Vertex data
 		std::vector<glm::vec3> vertices(vertex_count);
-		std::vector<glm::vec3> normals(vertex_count);
-		std::vector<glm::vec3> texcoords(vertex_count);
-		std::vector<uint32> indices(vertex_count);
-
-		float const R = 1. / (float)(mRings - 1);
-		float const S = 1. / (float)(mSectors - 1);
-		int r, s;
-
 		std::vector<glm::vec3>::iterator v = vertices.begin();
+		std::vector<glm::vec3> normals(vertex_count);
 		std::vector<glm::vec3> ::iterator n = normals.begin();
+		std::vector<glm::vec3> texcoords(vertex_count);
 		std::vector<glm::vec3>::iterator t = texcoords.begin();
 
-		for (r = 0; r < mRings; r++)
+		float const dr = 1.0f / static_cast<float>(mRings - 1);
+		float const ds = 1.0f / static_cast<float>(mSectors - 1);
+
+		for (uint r = 0; r < mRings; r++)
 		{
-			for (s = 0; s < mSectors; s++)
+			for (uint s = 0; s < mSectors; s++)
 			{
-				float const y = sin(-(M_PI / 2.0) + M_PI * r * R);
-				float const x = cos(2 * M_PI * s * S) * sin(M_PI * r * R) * -1.0f;
-				float const z = sin(2 * M_PI * s * S) * sin(M_PI * r * R);
+				float const y = sin(-(math::PI_2) + math::PI * r * dr);
+				float const x = cos(math::PIX2 * s * ds) * sin(math::PI * r * dr) * -1.0f;
+				float const z = sin(math::PIX2 * s * ds) * sin(math::PI * r * dr);
 
 				// Set texture coordinates
-				*t++ = { s * S, r * R, 0.5f };
+				*t++ = {s*ds, r*dr, 0.5f };
 
 				// Set vertex coordinates
 				*v++ = { x * mRadius, y * mRadius, z * mRadius };
@@ -85,14 +73,16 @@ namespace nap
 		}
 
 		// Calculate sphere indices
-		int irings = mRings - 1;
-		int isectors = mSectors - 1;
-		uint32 index_count = irings * isectors * 6;
-		indices.resize(index_count);
+		uint irings = mRings - 1;
+		uint isectors = mSectors - 1;
+		uint index_count = irings * isectors * 6;
+
+		std::vector<uint32> indices(index_count);
 		std::vector<uint32>::iterator i = indices.begin();
-		for (r = 0; r < irings; r++)
+
+		for (uint r = 0; r < irings; r++)
 		{
-			for (s = 0; s < isectors; s++)
+			for (uint s = 0; s < isectors; s++)
 			{
 				// Triangle A
 				*i++ = (r * mSectors) + s;
@@ -106,6 +96,7 @@ namespace nap
 			}
 		}
 
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		mMeshInstance->setNumVertices(vertex_count);
 		mMeshInstance->setDrawMode(EDrawMode::Triangles);
 		mMeshInstance->setCullMode(mCullMode);
@@ -120,11 +111,11 @@ namespace nap
 		position_attribute.setData(vertices.data(), vertex_count);
 		normal_attribute.setData(normals.data(), vertex_count);
 		uv_attribute.setData(texcoords.data(), vertex_count);
-		color_attribute.setData({ vertex_count, mColor.toVec4() });
-
+		color_attribute.setData({vertex_count, mColor.toVec4()});
+		
 		MeshShape& shape = mMeshInstance->createShape();
 		shape.setIndices(indices.data(), index_count);
 
-		return true;
+		return mMeshInstance->init(errorState);
 	}
 }
