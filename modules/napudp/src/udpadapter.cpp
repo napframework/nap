@@ -18,6 +18,12 @@ namespace nap
 	// UDPAdapter
 	//////////////////////////////////////////////////////////////////////////
 
+    UDPAdapter::UDPAdapter(){}
+
+
+    UDPAdapter::~UDPAdapter(){}
+
+
 	bool UDPAdapter::init(utility::ErrorState& errorState)
 	{
 		if(!errorState.check(mThread !=nullptr, "Thread cannot be nullptr"))
@@ -34,7 +40,7 @@ namespace nap
 	}
 
 
-    bool UDPAdapter::handleAsioError(const asio::error_code& errorCode, utility::ErrorState& errorState, bool& success)
+    bool UDPAdapter::handleAsioError(const std::error_code& errorCode, utility::ErrorState& errorState, bool& success)
     {
         if(errorCode)
         {
