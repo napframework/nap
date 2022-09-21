@@ -62,8 +62,10 @@ namespace nap
 
 	using ParameterVec2		= ParameterVec<glm::vec2>;
 	using ParameterVec3		= ParameterVec<glm::vec3>;
+	using ParameterVec4		= ParameterVec<glm::vec4>;
 	using ParameterIVec2	= ParameterVec<glm::ivec2>;
 	using ParameterIVec3	= ParameterVec<glm::ivec3>;
+	using ParameterIVec4	= ParameterVec<glm::ivec4>;
 
 
 	//////////////////////////////////////////////////////////////////////////
