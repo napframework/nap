@@ -34,7 +34,7 @@ namespace nap
     // UDPServerASIO
     //////////////////////////////////////////////////////////////////////////
 
-    class UDPServerASIO
+    class UDPServer::Impl
     {
     public:
         // ASIO
@@ -58,7 +58,7 @@ namespace nap
 	bool UDPServer::init(utility::ErrorState& errorState)
 	{
         // create asio implementation
-        mASIO = std::make_unique<UDPServerASIO>();
+        mASIO = std::make_unique<UDPServer::Impl>();
 
         // when asio error occurs, init_success indicates whether initialization should fail or succeed
         bool init_success = false;

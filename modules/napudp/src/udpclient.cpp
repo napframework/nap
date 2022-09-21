@@ -12,7 +12,6 @@
 #include <asio/io_service.hpp>
 #include <asio/system_error.hpp>
 #include <nap/logger.h>
-
 #include <thread>
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
@@ -32,7 +31,7 @@ namespace nap
     // UDPClientASIO
     //////////////////////////////////////////////////////////////////////////
 
-    class UDPClientASIO
+    class UDPClient::Impl
     {
     public:
         // ASIO
@@ -56,19 +55,19 @@ namespace nap
 	bool UDPClient::init(utility::ErrorState& errorState)
 	{
         // create asio implementation
-        mASIO = std::make_unique<UDPClientASIO>();
+        mAsio = std::make_unique<UDPClient::Impl>();
 
         // when asio error occurs, init_success indicates whether initialization should fail or succeed
         bool init_success = false;
 
 		// try to open socket
 		asio::error_code asio_error_code;
-        mASIO->mSocket.open(udp::v4(), asio_error_code);
+        mAsio->mSocket.open(udp::v4(), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
         // enable/disable broadcast
-        mASIO->mSocket.set_option(asio::socket_base::broadcast(mBroadcast), asio_error_code);
+        mAsio->mSocket.set_option(asio::socket_base::broadcast(mBroadcast), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
         
@@ -77,7 +76,7 @@ namespace nap
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
-        mASIO->mRemoteEndpoint = udp::endpoint(address, mPort);
+        mAsio->mRemoteEndpoint = udp::endpoint(address, mPort);
 
 		// init UDPAdapter, registering the client to an UDPThread
 		if (!UDPAdapter::init(errorState))
@@ -92,7 +91,7 @@ namespace nap
 		UDPAdapter::onDestroy();
 
 		asio::error_code err;
-        mASIO->mSocket.close(err);
+        mAsio->mSocket.close(err);
 		if (err)
 		{
 			nap::Logger::error(*this, "error closing socket : %s", err.message().c_str());
@@ -147,7 +146,7 @@ namespace nap
 		while(mQueue.try_dequeue(packet_to_send))
 		{
 			asio::error_code err;
-            mASIO->mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mASIO->mRemoteEndpoint, 0, err);
+            mAsio->mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mAsio->mRemoteEndpoint, 0, err);
 
 			if(err)
 			{

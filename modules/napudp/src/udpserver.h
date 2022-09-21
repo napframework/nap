@@ -20,11 +20,6 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
-    // forward declares
-    class UDPServerASIO;
-
 	/**
 	 * The UDP Server connects to an endpoint and receives any UDP packets send to the endpoint.
 	 * The server will invoke the packetReceived signal when packets are received.
@@ -47,7 +42,7 @@ namespace nap
 		/**
 		 * initialization
 		 * @param error contains error information
-		 * @return true on succes
+		 * @return true on success
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -55,21 +50,24 @@ namespace nap
 		 * called on destruction
 		 */
 		virtual void onDestroy() override;
-	public:
-		// properties
-		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
-		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
-	public:
+
 		/**
 		 * packet received signal will be dispatched on the thread this UDPServer is registered to, see UDPThread
 		 */
 		Signal<const UDPPacket&> packetReceived;
+
+		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
+		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
+
 	protected:
 		/**
 		 * The process function
 		 */
 		void process() override;
+
 	private:
-        std::unique_ptr<UDPServerASIO> mASIO;
+		// Server specific ASIO implementation
+		class Impl;
+        std::unique_ptr<Impl> mASIO;
 	};
 }

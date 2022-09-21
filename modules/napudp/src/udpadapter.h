@@ -16,9 +16,6 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
-
 	/**
 	 * Base class of specific UDP client and server resources.
 	 * process() is automatically called by the thread this adapter links to.
@@ -55,6 +52,7 @@ namespace nap
         // Properties
         ResourcePtr<UDPThread> mThread; ///< Property: 'Thread' the udp thread the adapter registers itself to
         bool mAllowFailure = false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
+
 	protected:
 		/**
 		 * called by a UDPThread

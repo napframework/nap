@@ -19,11 +19,6 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
-    // forward declares
-    class UDPClientASIO;
-
 	/**
 	 * The UDP Client class is used to send UDP Packets to an endpoint.
 	 */
@@ -68,21 +63,23 @@ namespace nap
 		 */
 		void send(UDPPacket&& packet);
 
-	public:
-		// properties
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
 		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
 		bool mBroadcast                     = false;        ///< Property: 'Broadcast' set option to broadcast
+
 	protected:
 		/**
 		 * The process function
 		 */
 		void process() override;
+
 	private:
-        std::unique_ptr<UDPClientASIO>  mASIO;
-        std::vector<nap::uint8>		    mBuffer;
+		// Client specific ASIO implementation
+		class Impl;
+        std::unique_ptr<Impl> mAsio;
+        std::vector<nap::uint8> mBuffer;
 
 		// Threading
 		moodycamel::ConcurrentQueue<UDPPacket> 	mQueue;
