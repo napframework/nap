@@ -962,8 +962,33 @@ namespace nap
         assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec3>());
         const auto &segment_event = static_cast<const SequenceTrackSegmentEventVec3 &>(segment);
         std::ostringstream string_stream;
-        string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", "
-                      << segment_event.mValue.z << ")";
+        string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ")";
         drawList->AddText({topLeft.x + x, topLeft.y}, color, string_stream.str().c_str());
     }
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// glm::vec4 event segment view specialization
+	//////////////////////////////////////////////////////////////////////////
+
+
+	template<>
+	void SequenceEventTrackSegmentView<glm::vec4>::handleEditPopupContent(sequenceguiactions::Action& action)
+	{
+		auto* edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<glm::vec4>>();
+		auto& value = static_cast<glm::vec4&>(edit_action->mValue);
+
+		ImGui::InputFloat4("Value", &value.x);
+	}
+
+
+	template<>
+	void SequenceEventTrackSegmentView<glm::vec4>::drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color)
+	{
+		assert(segment.get_type().is_derived_from<SequenceTrackSegmentEventVec4>());
+		const auto& segment_event = static_cast<const SequenceTrackSegmentEventVec4&>(segment);
+		std::ostringstream string_stream;
+		string_stream << "(" << segment_event.mValue.x << ", " << segment_event.mValue.y << ", " << segment_event.mValue.z << ", " << segment_event.mValue.w << ")";
+		drawList->AddText({ topLeft.x + x, topLeft.y }, color, string_stream.str().c_str());
+	}
 }

@@ -222,6 +222,38 @@ namespace nap
 			}
 		});
 
+		registerParameterEditor(RTTI_OF(ParameterVec4), [](Parameter& parameter)
+		{
+			ParameterVec4* vec4_parameter = rtti_cast<ParameterVec4>(&parameter);
+			auto value = vec4_parameter->mValue;
+			if (vec4_parameter->mClamp)
+			{
+				if (ImGui::SliderFloat4(vec4_parameter->getDisplayName().c_str(), &(value[0]), vec4_parameter->mMinimum, vec4_parameter->mMaximum))
+					vec4_parameter->setValue(value);
+			}
+			else
+			{
+				if (ImGui::InputFloat4(vec4_parameter->getDisplayName().c_str(), &(value[0])))
+					vec4_parameter->setValue(value);
+			}
+		});
+
+		registerParameterEditor(RTTI_OF(ParameterIVec4), [](Parameter& parameter)
+		{
+			ParameterIVec4* vec4_parameter = rtti_cast<ParameterIVec4>(&parameter);
+			auto value = vec4_parameter->mValue;
+			if (vec4_parameter->mClamp)
+			{
+				if (ImGui::SliderInt4(vec4_parameter->getDisplayName().c_str(), &value[0], vec4_parameter->mMinimum, vec4_parameter->mMaximum))
+					vec4_parameter->setValue(value);
+			}
+			else
+			{
+				if (ImGui::InputInt4(vec4_parameter->getDisplayName().c_str(), &value[0]))
+					vec4_parameter->setValue(value);
+			}
+		});
+
 		registerParameterEditor(RTTI_OF(ParameterEnumBase), [](Parameter& parameter)
 		{
 			ParameterEnumBase* enum_parameter = rtti_cast<ParameterEnumBase>(&parameter);

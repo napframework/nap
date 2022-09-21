@@ -14,20 +14,12 @@
 #include <concurrentqueue.h>
 #include <nap/signalslot.h>
 
-// ASIO includes
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/io_service.hpp>
-#include <asio/system_error.hpp>
-
 // Local includes
 #include "udpadapter.h"
 #include "udppacket.h"
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	/**
 	 * The UDP Server connects to an endpoint and receives any UDP packets send to the endpoint.
 	 * The server will invoke the packetReceived signal when packets are received.
@@ -37,10 +29,20 @@ namespace nap
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:
+        /**
+         * Constructor
+         */
+        UDPServer();
+
+        /**
+         * Destructor
+         */
+        virtual ~UDPServer();
+
 		/**
 		 * initialization
 		 * @param error contains error information
-		 * @return true on succes
+		 * @return true on success
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -48,24 +50,24 @@ namespace nap
 		 * called on destruction
 		 */
 		virtual void onDestroy() override;
-	public:
-		// properties
-		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
-		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
-	public:
+
 		/**
 		 * packet received signal will be dispatched on the thread this UDPServer is registered to, see UDPThread
 		 */
 		Signal<const UDPPacket&> packetReceived;
+
+		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
+		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
+
 	protected:
 		/**
 		 * The process function
 		 */
 		void process() override;
+
 	private:
-		// ASIO
-		asio::io_service 			mIOService;
-		asio::ip::udp::socket 		mSocket{mIOService};
-		asio::ip::udp::endpoint 	mRemoteEndpoint;
+		// Server specific ASIO implementation
+		class Impl;
+        std::unique_ptr<Impl> mASIO;
 	};
 }

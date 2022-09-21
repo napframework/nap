@@ -48,17 +48,8 @@ namespace nap
 						ImGui::CloseCurrentPopup();
 					}
 					else
-						ImGui::OpenPopup("Failed to load preset");
-
-					if (ImGui::BeginPopupModal("Failed to load preset"))
 					{
-						ImGui::Text(errorState.toString().c_str());
-						if (ImGui::ImageButton(mGUIService.getIcon(icon::ok)))
-						{
-							ImGui::CloseCurrentPopup();
-						}
-
-						ImGui::EndPopup();
+						nap::Logger::warn("Failed to load preset: %s", errorState.toString().c_str());
 					}
 				}
 				ImGui::SameLine();
@@ -69,7 +60,6 @@ namespace nap
 				restorePresetState();
 				ImGui::CloseCurrentPopup();
 			}
-
 			ImGui::EndPopup();
 		}
 	}
