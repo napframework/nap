@@ -31,6 +31,16 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+    // UDPThread::Impl
+    //////////////////////////////////////////////////////////////////////////
+
+    struct UDPThread::Impl
+    {
+    public:
+        asio::io_context mIOContext;
+    };
+
 	//////////////////////////////////////////////////////////////////////////
 	// UDPThread
 	//////////////////////////////////////////////////////////////////////////
@@ -38,6 +48,7 @@ namespace nap
 
 	UDPThread::UDPThread(UDPService & service) : mService(service)
 	{
+        mImpl = std::make_unique<Impl>();
 		mManualProcessFunc = [this]()
 		{
 			nap::Logger::warn(*this, "calling manual process function when thread update method is not manual!");
@@ -138,4 +149,10 @@ namespace nap
 
 		mAdapters.emplace_back(adapter);
 	}
+
+
+    asio::io_service& UDPThread::getIOContext()
+    {
+        return mImpl->mIOContext;
+    }
 }

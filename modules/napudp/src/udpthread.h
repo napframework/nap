@@ -15,6 +15,12 @@
 #include <concurrentqueue.h>
 #include <rtti/factory.h>
 
+// ASIO forward declaration
+namespace asio
+{
+    class io_context;
+}
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -67,12 +73,18 @@ namespace nap
 		 * @param errorState contains any errors
 		 * @return true on succes
 		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		virtual bool start(utility::ErrorState& errorState) override final;
 
 		/**
 		 * Stops the UDPThread, stops own thread or removes itself from service
 		 */
-		virtual void stop() override;
+		virtual void stop() override final;
+
+        /**
+         *
+         * @return
+         */
+        asio::io_context& getIOContext();
 	public:
 		// properties
 		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
@@ -116,6 +128,9 @@ namespace nap
 
 		// adapters
 		std::vector<UDPAdapter*> 	mAdapters;
+
+        struct Impl;
+        std::unique_ptr<Impl> mImpl;
 	};
 
 	// Object creator used for constructing the UDP thread
