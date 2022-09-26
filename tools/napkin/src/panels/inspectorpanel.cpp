@@ -253,7 +253,7 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 		return;
 	}
 
-	// Get parent of property and parent as potential object
+	// ID Changed, get property object and owner of object
 	auto doc = path.getDocument();
 	auto object = path.getObject();
 	auto owner = doc->getEmbeddedObjectOwner(*object);
@@ -267,7 +267,7 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 		{
 			setPath(PropertyPath(*object, *doc));
 		}
-		// Owner is not a group -> rebuild and select
+		// Owner is not a group or entity -> rebuild and select
 		else
 		{
 			rebuild(path);
