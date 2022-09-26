@@ -4,8 +4,8 @@
             "Type": "nap::BoxMesh",
             "mID": "BoxMesh",
             "Usage": "Static",
-            "CullMode": "Front",
-            "PolygonMode": "Line",
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
                 "y": 1.0,
@@ -97,7 +97,7 @@
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": 0.10000000149011612,
+                        "Speed": 0.20000000298023225,
                         "Offset": 1.0
                     }
                 },
@@ -127,6 +127,90 @@
             "Children": [
                 "LightEntity"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BoxEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformBox",
+                    "Properties": {
+                        "Translate": {
+                            "x": 2.0,
+                            "y": -1.0,
+                            "z": -2.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": -45.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.5
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBox",
+                    "Visible": true,
+                    "Mesh": "BoxMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_c702da1f",
+                                "Name": "FRAGUBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_da7e00c9",
+                                        "Name": "albedo",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 0.0,
+                                            "z": 0.10000000149011612
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_1fc4937a",
+                                        "Name": "roughness",
+                                        "Value": 0.75
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_18eea776",
+                                        "Name": "metallic",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PBRColorMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -209,7 +293,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_aaa63dfb",
+                    "mID": "TransformFloor",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -373,7 +457,9 @@
                     "CameraType": "Orthographic",
                     "RenderComponents": [
                         "../../OrbEntity/RenderOrb",
-                        "../../FloorEntity/RenderFloor"
+                        "../../FloorEntity/RenderFloor",
+                        "../../TorusEntity/RenderTorus",
+                        "../../BoxEntity/RenderBox"
                     ],
                     "DepthRenderTarget": "DepthRenderTarget"
                 },
@@ -527,6 +613,90 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "TorusEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformTorus",
+                    "Properties": {
+                        "Translate": {
+                            "x": -2.0,
+                            "y": -1.0,
+                            "z": -2.0
+                        },
+                        "Rotate": {
+                            "x": 100.0,
+                            "y": 0.0,
+                            "z": -20.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.5
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderTorus",
+                    "Visible": true,
+                    "Mesh": "TorusMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_417f3165",
+                                "Name": "FRAGUBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_57aa093e",
+                                        "Name": "albedo",
+                                        "Value": {
+                                            "x": 0.1599999964237213,
+                                            "y": 0.3449999988079071,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_6a5f1be7",
+                                        "Name": "roughness",
+                                        "Value": 0.5
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_997120b6",
+                                        "Name": "metallic",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PBRColorMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "WorldEntity",
             "Components": [
                 {
@@ -555,7 +725,9 @@
             "Children": [
                 "OrbEntity",
                 "BaseLightEntity",
-                "FloorEntity"
+                "FloorEntity",
+                "TorusEntity",
+                "BoxEntity"
             ]
         },
         {
@@ -1022,6 +1194,26 @@
             "Radius": 1.0,
             "Rings": 256,
             "Sectors": 256,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::TorusMesh",
+            "mID": "TorusMesh",
+            "Radius": 0.75,
+            "TubeRadius": 0.25,
+            "Segments": 128,
+            "TubeSegments": 128,
+            "AngleOffset": 0.0,
+            "Usage": "Static",
+            "PolygonMode": "Fill",
+            "CullMode": "Back",
             "Color": {
                 "Values": [
                     1.0,

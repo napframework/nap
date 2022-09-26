@@ -3,6 +3,9 @@
     "mID": "ProjectInfo",
     "Title": "Sequencer",
     "Version": "0.3.0",
+    "Data": "data/default.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
     "RequiredModules": [
         "mod_napapp",
         "mod_napparametergui",
@@ -10,8 +13,5 @@
         "mod_napsequencegui",
         "mod_napsequenceaudio",
         "mod_napsequenceaudiogui"
-    ],
-    "ServiceConfig": "",
-    "PathMapping": "cache/path_mapping.json",
-    "Data": "data/default.json"
+    ]
 }
