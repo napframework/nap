@@ -46,7 +46,8 @@ namespace nap
 
 		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
 		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
-        std::vector<std::string> mMulticastGroups;      ///< Property: 'Mutlicast Groups' multicast groups to join
+        std::vector<std::string> mMulticastGroups;      ///< Property: 'Multicast Groups' multicast groups to join
+
 	protected:
         /**
          * Called when server socket needs to be created

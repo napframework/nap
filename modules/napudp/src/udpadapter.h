@@ -70,6 +70,7 @@ namespace nap
         // Properties
         ResourcePtr<UDPThread> mThread; ///< Property: 'Thread' the udp thread the adapter registers itself to
         bool mAllowFailure = false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
+
 	protected:
         /**
          * Called by start method and needs to be implemented by derived class

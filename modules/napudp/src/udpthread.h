@@ -52,7 +52,6 @@ namespace nap
 	{
 		friend class UDPService;
 		friend class UDPAdapter;
-
 		RTTI_ENABLE(Device)
 	public:
         UDPThread();
@@ -82,18 +81,18 @@ namespace nap
 
         /**
          *
-         * @return
+         * @return asio IO context
          */
         asio::io_context& getIOContext();
-	public:
-		// properties
+
 		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
 
 		/**
 		 * Call this when update method is set to manual.
-		 If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
+		 * If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
 		 */
 		void manualProcess();
+
 	private:
 		/**
 		 * the threaded function
@@ -124,10 +123,10 @@ namespace nap
 		std::function<void()> 								mManualProcessFunc;
 
 		// service
-		UDPService& 				mService;
+		UDPService& mService;
 
 		// adapters
-		std::vector<UDPAdapter*> 	mAdapters;
+		std::vector<UDPAdapter*> mAdapters;
 
         struct Impl;
         std::unique_ptr<Impl> mImpl;

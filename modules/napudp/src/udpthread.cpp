@@ -37,14 +37,13 @@ namespace nap
 
     struct UDPThread::Impl
     {
-    public:
         asio::io_context mIOContext;
     };
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// UDPThread
 	//////////////////////////////////////////////////////////////////////////
-
 
 	UDPThread::UDPThread(UDPService & service) : mService(service)
 	{
