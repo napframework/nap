@@ -4,9 +4,11 @@
 
 #pragma once
 
+ // Local Includes
+#include "mesh.h"
+
 // External Includes
 #include <rtti/object.h>
-#include <spheremesh.h>
 #include <imagefromfile.h>
 #include <nap/resourceptr.h>
 
@@ -26,9 +28,9 @@ namespace nap
 	 * When you displace a vertex the normals need to be recomupted based on it's surrounding triangles. This happens after displacement in the init() call
 	 * This ensures the mesh has correct normals for light / effect calculations inside a shader
 	 */
-	class HeightSphereMesh : public SphereMesh
+	class HeightSphereMesh : public IMesh
 	{
-		RTTI_ENABLE(nap::SphereMesh)
+		RTTI_ENABLE(IMesh)
 	public:
 		HeightSphereMesh(Core& core);
 
@@ -37,6 +39,16 @@ namespace nap
 		 * @param errorState contains the error message when initialization fails
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * @return the mesh instance
+		 */
+		virtual MeshInstance& getMeshInstance() override		{ return *mMeshInstance; };
+
+		/**
+		 * @return the mesh instance
+		 */
+		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; };
 
 		// Height map Properties
 		ResourcePtr<ImageFromFile> mHeightmap;					///< Property: "Heightmap" image resource
@@ -57,7 +69,18 @@ namespace nap
 		 */
 		Vec3VertexAttribute& getDisplacedPosition() const		{ return *mDisplacedPosAttr; }
 
+		float			mRadius = 1.0f;							///< Property: 'Radius' of the sphere
+		uint			mRings = 50;							///< Property: 'Rings' number of rings
+		uint			mSectors = 50;							///< Property: 'Sectors' number of sectors
+		EMemoryUsage	mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
+		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
+		RGBAColorFloat	mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' the vertex color of the sphere
+
 	private:
+		RenderService* mRenderService;
+		std::unique_ptr<MeshInstance> mMeshInstance;
+
 		Vec3VertexAttribute* mOriginalPosAttr  = nullptr;		///< Original vertex positions
 		Vec3VertexAttribute* mOriginalNorAttr  = nullptr;		///< Original vertex normals
 		Vec3VertexAttribute* mDisplacedPosAttr = nullptr;		///< Displaced vertex positions

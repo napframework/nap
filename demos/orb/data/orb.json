@@ -561,12 +561,14 @@
         {
             "Type": "nap::HeightSphereMesh",
             "mID": "HeightSphereMesh",
+            "Heightmap": "PBRDisplacementMap",
+            "Height": 0.25,
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Radius": 1.0,
-            "Rings": 512.0,
-            "Sectors": 512.0,
+            "Rings": 512,
+            "Sectors": 512,
             "Color": {
                 "Values": [
                     1.0,
@@ -574,9 +576,7 @@
                     1.0,
                     1.0
                 ]
-            },
-            "Heightmap": "PBRDisplacementMap",
-            "Height": 0.25
+            }
         },
         {
             "Type": "nap::ImageFromFile",
@@ -1002,8 +1002,8 @@
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Radius": 0.10000000149011612,
-            "Rings": 16.0,
-            "Sectors": 16.0,
+            "Rings": 16,
+            "Sectors": 16,
             "Color": {
                 "Values": [
                     1.0,
@@ -1020,8 +1020,8 @@
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Radius": 1.0,
-            "Rings": 256.0,
-            "Sectors": 256.0,
+            "Rings": 256,
+            "Sectors": 256,
             "Color": {
                 "Values": [
                     1.0,
