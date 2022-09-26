@@ -810,7 +810,7 @@ namespace nap
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
-			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
+            float font_size = mConfiguration->mFontSize * mGuiScale;
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
@@ -994,7 +994,7 @@ namespace nap
 			context.activate();
 			ImGui::GetStyle() = *context.mStyle;
 			ImGui::GetStyle().ScaleAllSizes(gscale);
-			ImGui::GetIO().FontGlobalScale = fscale;
+			ImGui::GetIO().FontGlobalScale = gscale;
 			context.deactivate();
 
 			// Store scale, ensures custom widgets can scale accordingly
