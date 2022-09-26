@@ -549,19 +549,12 @@ bool PropertyPath::hasProperty() const
 
 bool PropertyPath::isValid() const
 {
-	// Path must be associated with a document
-	if (mDocument == nullptr)
+	// Path must be associated with a document and object
+	if (mDocument == nullptr || getObject() == nullptr)
 		return false;
 
-	// A valid path must always point to an object
-	auto obj = getObject();
-	if (!obj)
-		return false;
-
-	if (!hasProperty())
-		return true;
-
-	return resolve().isValid();
+	// If it's a property, resolve and validate
+	return hasProperty() ? resolve().isValid() : true;
 }
 
 bool PropertyPath::operator==(const PropertyPath& other) const

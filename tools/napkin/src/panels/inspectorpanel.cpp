@@ -231,13 +231,14 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 }
 
+
 void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 {
 	// Skip groups, they're not visible in the inspector, only their children
-	if (path.hasProperty() && path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	assert(path.hasProperty());
+	if(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		setPath({});
-		return;
 	}
 
 	// Get vertical scroll pos so we can restore it later (HACK)
@@ -247,40 +248,43 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	if (path.getName() != sIDPropertyName)
 	{
 		rebuild(path);
+		mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
+		return;
 	}
-	// If the object name changed, the property path in the model is now invalid because it's string-based.
+
+	// Get parent of property and parent as potential object
+	auto parent = path.getParent();
+	auto doc = path.getDocument();
+	auto object = parent.getObject();
+
+	// If property is not embedded or part of a group
+	auto embedded_owner = doc->getEmbeddedObjectOwner(*object);
+	if (!embedded_owner || embedded_owner->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	{
+		setPath(parent);
+	}
+	// Otherwise refresh, but make sure to only show the root object.
+	// Walk up embedded owners until the root object, component or group is found.
 	else
 	{
-		// Get parent of property and parent as potential object
-		auto parent = path.getParent();
-		auto object = parent.getObject();
-
-		assert(object != nullptr);
-		auto doc = path.getDocument();
-
-		// If the object is embedded and the owner is not a group, refresh, but make sure to
-		// only show the root object. Walk up embedded owners until the root object or a group is found.
-		auto embedded_owner = doc->getEmbeddedObjectOwner(*object);
-		if (embedded_owner && !embedded_owner->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+		while (true)
 		{
-			while (true)
-			{
-				auto embedded_owner_parent = doc->getEmbeddedObjectOwner(*embedded_owner);
-				if (!embedded_owner_parent || embedded_owner_parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-					break;
-				embedded_owner = embedded_owner_parent;
-			}
-			setPath(PropertyPath(*embedded_owner, *doc));
+			// Component or group
+			if (embedded_owner->get_type().is_derived_from(RTTI_OF(nap::IGroup)) ||
+				embedded_owner->get_type().is_derived_from(RTTI_OF(nap::Component)))
+				break;
+
+			// Root
+			auto parent = doc->getEmbeddedObjectOwner(*embedded_owner);
+			if (parent == nullptr)
+				break;
+			embedded_owner = parent;
 		}
-		else
-		{
-			setPath(parent);
-		}
+		setPath(PropertyPath(*embedded_owner, *doc));
 	}
-
-	// Set scroll pos
 	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
 }
+
 
 void InspectorPanel::setPath(const PropertyPath& path)
 {
