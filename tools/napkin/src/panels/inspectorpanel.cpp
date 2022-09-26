@@ -239,6 +239,7 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	if(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		setPath({});
+		return;
 	}
 
 	// Get vertical scroll pos so we can restore it later (HACK)
