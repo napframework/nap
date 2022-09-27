@@ -6,6 +6,7 @@
 #include "qtutils.h"
 #include <QKeyEvent>
 #include <QtDebug>
+#include <QScreen>
 
 using namespace nap::qt;
 
@@ -23,14 +24,12 @@ FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
 
 	mLayout.addWidget(&mFilterTree);
+	mLayout.activate();
 
 	auto& model = mFilterTree.getProxyModel();
-	connect(&model, &QSortFilterProxyModel::rowsRemoved,
-			[this](const QModelIndex& parent, int first, int last) { updateSize(); });
-	connect(&model, &QSortFilterProxyModel::rowsInserted,
-			[this](const QModelIndex& parent, int first, int last) { updateSize(); });
+	connect(&model, &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
+	connect(&model, &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
 	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this] (auto index) { accept(); });
-	updateSize();
 }
 
 
@@ -42,9 +41,31 @@ QString FilterPopup::show(QWidget* parent, const QStringList& items)
 
 QString FilterPopup::show(QWidget* parent, const QStringList& items, QPoint pos)
 {
+	// Create popup
 	FilterPopup popup(parent);
 	popup.setItems(items);
-	popup.exec(pos);
+
+	// Ensure popup is within display bounds
+	QRect geo = QGuiApplication::screenAt(pos)->geometry();
+	QSize size = popup.size();
+
+	// Within display bounds over x
+	QPoint f_pos = pos;
+	if ((pos.x() + size.width()) > geo.right())
+	{
+		int new_x = pos.x() - (pos.x() - geo.right()) - size.width();
+		f_pos.setX(new_x);
+	}
+
+	// Within display bounds over y
+	if ((pos.y() + size.height()) > geo.bottom())
+	{
+		int new_y = pos.y() - (pos.y() - geo.bottom()) - size.height();
+		f_pos.setY(new_y);
+	}
+
+	// Show
+	popup.exec(f_pos);
 	return popup.mChoice;
 }
 
@@ -89,12 +110,12 @@ void FilterPopup::setItems(const QStringList& items)
 	if (mModel)
 	{
 		mFilterTree.setModel(nullptr);
-		delete mModel;
-		mModel = nullptr;
+		mModel.reset(nullptr);
 	}
 
-	mModel = new QStringListModel(items);
-	mFilterTree.setModel(mModel);
+	mModel = std::make_unique<QStringListModel>(items);
+	mFilterTree.setModel(mModel.get());
+	computeSize();
 }
 
 
@@ -119,27 +140,28 @@ void FilterPopup::accept()
 }
 
 
-void FilterPopup::updateSize()
+void FilterPopup::computeSize()
 {
-	auto& model = mFilterTree.getProxyModel();
+	// Update layout
+	mLayout.update();
 
 	// Ensure there is always something selected
+	auto& model = mFilterTree.getProxyModel();
 	auto& tree = *qobject_cast<FilterTree_*>(&mFilterTree.getTreeView());
 	if (!tree.currentIndex().isValid())
 		tree.setCurrentIndex(model.index(0, 0));
 
 	// Adjust size based on contents
-	int height = mFilterTree.getLineEdit().height() + mBottomMargin;
+	int height = mFilterTree.getLineEdit().sizeHint().height();
 	int rowCount = model.rowCount();
 	if (rowCount > 0)
 	{
 		QItemSelection selection;
-		selection.select(model.index(0, 0), model.index(rowCount - 1, 0));
+		selection.select(model.index(0, 0), model.index(rowCount-1, 0));
 		auto rect = tree.visualRectFor(selection);
 		height += rect.height();
 	}
 
-	height = qMin(height, mMaxHeight);
-	setFixedSize(300, height);
+	setFixedSize(300, qMin(height, 500));
 	adjustSize();
 }

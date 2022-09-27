@@ -13,7 +13,6 @@ namespace nap
 {
 	namespace qt
 	{
-
 		/**
 		 * A popup list of strings that can be filtered
 		 */
@@ -34,12 +33,11 @@ namespace nap
 			void setItems(const QStringList& items);
 			void moveSelection(int d);
 			void accept();
-			void updateSize();
+			void computeSize();
 
 			int mBottomMargin = 10;
-			int mMaxHeight = 500;
 			QVBoxLayout mLayout;
-			QStringListModel* mModel = nullptr;
+			std::unique_ptr<QStringListModel> mModel = nullptr;
 			FilterTreeView mFilterTree;
 			QString mChoice;
 		};
