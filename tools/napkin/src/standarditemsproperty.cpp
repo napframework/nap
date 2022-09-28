@@ -138,7 +138,8 @@ napkin::ArrayPropertyItem::ArrayPropertyItem(const PropertyPath& path)
 {
 	std::string pathStr = path.getPath().toString();
 	populateChildren();
-	connect(this, &PropertyPathItem::valueChanged, this, &ArrayPropertyItem::onValueChanged);
+	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &ArrayPropertyItem::onChildInserted);
+	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &ArrayPropertyItem::onChildRemoved);
 }
 
 
@@ -149,10 +150,25 @@ void napkin::ArrayPropertyItem::populateChildren()
 }
 
 
-void napkin::ArrayPropertyItem::onValueChanged()
+void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, size_t childIndex)
 {
-	this->removeRows(0, this->rowCount());
-	populateChildren();
+	if (mPath == parentPath)
+	{
+		auto children = mPath.getChildren();
+		assert(childIndex < children.size());
+		QList<QStandardItem*> row = createPropertyItemRow(children[childIndex]);
+		insertRow(childIndex, row);
+	}
+}
+
+
+void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, size_t childIndex)
+{
+	if (mPath == parentPath)
+	{
+		assert(childIndex < rowCount());
+		removeRow(childIndex);
+	}
 }
 
 

@@ -125,9 +125,14 @@ namespace napkin
 		void populateChildren();
 
 		/**
-		 * Called when value changes
+		 * Called when a child item is inserted
 		 */
-		void onValueChanged();
+		void onChildInserted(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Called when a child item is removed
+		 */
+		void onChildRemoved(const PropertyPath& parentPath, size_t childIndex);
 	};
 
 	/**

@@ -684,12 +684,14 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 	}
 }
 
+
 void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
 	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
 	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
+
 
 int Document::arrayAddValue(const PropertyPath& path)
 {
@@ -724,8 +726,8 @@ int Document::arrayAddValue(const PropertyPath& path)
 	assert(inserted);
 	resolved_path.setValue(array);
 
-	propertyChildInserted(path, index);
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }
