@@ -118,6 +118,14 @@ namespace napkin
 		 */
 		ArrayPropertyItem(const PropertyPath& path);
 
+	Q_SIGNALS:
+		/**
+		 * Called when a child is inserted
+		 * @param path to the property that was inserted
+		 * @param items the Q row items 
+		 */
+		void childInserted(const PropertyPath& path, const QList<QStandardItem*> items);
+
 	private:
         /**
          * Generate child items
@@ -134,6 +142,7 @@ namespace napkin
 		 */
 		void onChildRemoved(const PropertyPath& parentPath, size_t childIndex);
 	};
+
 
 	/**
 	 * This item shows an object pointer

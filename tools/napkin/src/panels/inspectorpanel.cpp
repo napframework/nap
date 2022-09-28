@@ -307,9 +307,8 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	doc = path.getDocument();
 	if (doc != nullptr)
 		connect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
-
-	//mTreeView.getTreeView().expandAll();
 }
+
 
 void InspectorPanel::clear()
 {
@@ -317,25 +316,6 @@ void InspectorPanel::clear()
 	mPathField.setText("");
 	mTitle.setText("");
 	mSubTitle.setText("");
-}
-
-void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
-{
-	// Rebuild model
-	mModel.clearItems();
-	mModel.populateItems();
-	//mTreeView.getTreeView().expandAll();
-
-	// Find item based on path name
-	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)
-	{
-		auto pitem = qitem_cast<PropertyPathItem*>(item);
-		return pitem != nullptr ? pitem->getPath().toString() == selection.toString() :
-			false;
-	});
-
-	if (pathItem != nullptr)
-		mTreeView.selectAndReveal(pathItem);
 }
 
 
@@ -360,12 +340,14 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 	mTreeView.selectAndReveal(pathItem);
 }
 
+
 void InspectorPanel::onObjectRemoved(Object* obj)
 {
 	// If the currently edited object is being removed, clear the view
 	if (obj == mModel.path().getObject())
 		setPath({});
 }
+
 
 void napkin::InspectorModel::clearPath()
 {
@@ -378,17 +360,24 @@ bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
 	return prop.getName() == nap::rtti::sIDPropertyName;
 }
 
+
 void InspectorModel::populateItems()
 {
-	if (rtti_cast<nap::Entity>(mPath.getObject()))
+	// Skip entities
+	if (rtti_cast<nap::Entity>(mPath.getObject()) != nullptr)
 		return;
 
+	// Create items (and child items) for every property
 	for (const auto& propPath : mPath.getChildren())
 	{
 		if (!isPropertyIgnored(propPath))
-			appendRow(createPropertyItemRow(propPath));
+		{
+			auto row_items = createPropertyItemRow(propPath);
+			appendRow(row_items);
+		}
 	}
 }
+
 
 QVariant InspectorModel::data(const QModelIndex& index, int role) const
 {
@@ -428,15 +417,18 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 	return QStandardItemModel::data(index, role);
 }
 
+
 bool InspectorModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
 	return QStandardItemModel::setData(index, value, role);
 }
 
+
 nap::rtti::Object* InspectorModel::getObject()
 {
 	return mPath.getObject();
 }
+
 
 Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 {
@@ -465,6 +457,7 @@ Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 	return flags;
 }
 
+
 QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 {
 	if (indexes.empty())
@@ -489,6 +482,7 @@ QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 
 	return mime_data;
 }
+
 
 QStringList InspectorModel::mimeTypes() const
 {

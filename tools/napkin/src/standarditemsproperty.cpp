@@ -93,7 +93,7 @@ QVariant napkin::PropertyPathItem::data(int role) const
 		auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
 		if (parent_path != nullptr && parent_path->getPath().isArray())
 		{
-				return row();
+			return row();
 		}
 	}
 	return QStandardItem::data(role);
@@ -158,6 +158,7 @@ void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, 
 		assert(childIndex < children.size());
 		QList<QStandardItem*> row = createPropertyItemRow(children[childIndex]);
 		insertRow(childIndex, row);
+		childInserted(children[childIndex], row);
 	}
 }
 

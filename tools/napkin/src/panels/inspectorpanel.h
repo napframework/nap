@@ -156,14 +156,6 @@ namespace napkin
 		 * Called when an object has been removed
 		 */
 	 	void onObjectRemoved(nap::rtti::Object* obj);
-
-		/**
-		 * Rebuilds view and model and applies path as selection
-		 * This is a temp work-around to ensure selection remains valid
-		 * @param selection the property path that should be selected after rebuilding the model
-		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
-		 */
-		void rebuild(const PropertyPath& selection);
 		
 		/**
 		 * Called just before the current document is closed
