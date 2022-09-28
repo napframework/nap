@@ -107,11 +107,8 @@ void FilterPopup::showEvent(QShowEvent* event)
 
 void FilterPopup::setItems(const QStringList& items)
 {
-	if (mModel)
-	{
+	if (mModel != nullptr)
 		mFilterTree.setModel(nullptr);
-		mModel.reset(nullptr);
-	}
 
 	mModel = std::make_unique<QStringListModel>(items);
 	mFilterTree.setModel(mModel.get());
