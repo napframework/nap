@@ -6,6 +6,7 @@
 
 #include <QDialog>
 #include <QStringListModel>
+#include <memory>
 
 #include "filtertreeview.h"
 
