@@ -15,6 +15,12 @@
 #include <concurrentqueue.h>
 #include <rtti/factory.h>
 
+// ASIO forward declaration
+namespace asio
+{
+    class io_context;
+}
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -46,7 +52,6 @@ namespace nap
 	{
 		friend class UDPService;
 		friend class UDPAdapter;
-
 		RTTI_ENABLE(Device)
 	public:
         UDPThread();
@@ -67,21 +72,27 @@ namespace nap
 		 * @param errorState contains any errors
 		 * @return true on succes
 		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		virtual bool start(utility::ErrorState& errorState) override final;
 
 		/**
 		 * Stops the UDPThread, stops own thread or removes itself from service
 		 */
-		virtual void stop() override;
-	public:
-		// properties
+		virtual void stop() override final;
+
+        /**
+         *
+         * @return asio IO context
+         */
+        asio::io_context& getIOContext();
+
 		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
 
 		/**
 		 * Call this when update method is set to manual.
-		 If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
+		 * If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
 		 */
 		void manualProcess();
+
 	private:
 		/**
 		 * the threaded function
@@ -112,10 +123,13 @@ namespace nap
 		std::function<void()> 								mManualProcessFunc;
 
 		// service
-		UDPService& 				mService;
+		UDPService& mService;
 
 		// adapters
-		std::vector<UDPAdapter*> 	mAdapters;
+		std::vector<UDPAdapter*> mAdapters;
+
+        struct Impl;
+        std::unique_ptr<Impl> mImpl;
 	};
 
 	// Object creator used for constructing the UDP thread
