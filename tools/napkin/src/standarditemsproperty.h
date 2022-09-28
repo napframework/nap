@@ -123,6 +123,11 @@ namespace napkin
          * Generate child items
          */
 		void populateChildren();
+
+		/**
+		 * Called when value changes
+		 */
+		void onValueChanged();
 	};
 
 	/**
@@ -233,8 +238,5 @@ namespace napkin
 		 * Reimplemented from QStandardItem
 		 */
 		void setData(const QVariant& value, int role) override;
-
-	private:
-		void onValueChanged();
 	};
 }; // napkin

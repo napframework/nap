@@ -121,11 +121,26 @@ void napkin::CompoundPropertyItem::populateChildren()
 		appendRow(createPropertyItemRow(childPath));
 }
 
+
 napkin::CompoundPropertyItem::CompoundPropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 	populateChildren();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// ArrayPropertyItem
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ArrayPropertyItem::ArrayPropertyItem(const PropertyPath& path)
+	: PropertyPathItem(path)
+{
+	std::string pathStr = path.getPath().toString();
+	populateChildren();
+	connect(this, &PropertyPathItem::valueChanged, this, &ArrayPropertyItem::onValueChanged);
+}
+
 
 void napkin::ArrayPropertyItem::populateChildren()
 {
@@ -133,12 +148,17 @@ void napkin::ArrayPropertyItem::populateChildren()
 		appendRow(createPropertyItemRow(childPath));
 }
 
-napkin::ArrayPropertyItem::ArrayPropertyItem(const PropertyPath& path)
-	: PropertyPathItem(path)
+
+void napkin::ArrayPropertyItem::onValueChanged()
 {
-	std::string pathStr = path.getPath().toString();
+	this->removeRows(0, this->rowCount());
 	populateChildren();
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// PointerItem
+//////////////////////////////////////////////////////////////////////////
 
 napkin::PointerItem::PointerItem(const PropertyPath& path)
 	: PropertyPathItem(path)
@@ -348,14 +368,6 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 }
 
 
-void napkin::PropertyValueItem::onValueChanged()
-{
-	//this->model()->dataChanged()
-}
-
-
 napkin::PropertyValueItem::PropertyValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{
-	connect(this, &PropertyPathItem::valueChanged, this, &PropertyValueItem::onValueChanged);
-}
+{ }
