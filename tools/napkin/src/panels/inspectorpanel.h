@@ -29,6 +29,7 @@ namespace napkin
      */
 	class InspectorModel : public QStandardItemModel
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * This is a constructor
@@ -101,6 +102,9 @@ namespace napkin
 		 */
 		Qt::ItemFlags flags(const QModelIndex& index) const override;
 
+	Q_SIGNALS:
+		void childInserted(const PropertyPath& path, const QList<QStandardItem*> items);
+
 	private:
 		/**
 		 * Check if a property is to be included in the inspector view
@@ -108,6 +112,18 @@ namespace napkin
 		 * @return True when the property should not be displayed, false otherwise
 		 */
 		bool isPropertyIgnored(const PropertyPath& prop) const;
+
+		/**
+		 * Recursively installs required callbacks on items
+		 */
+		void installCallbacks(QStandardItem& item);
+
+		/**
+		 * Called when a child is inserted
+		 * @param path path to property that is inserted
+		 * @param items new row items
+		 */
+		void onChildInserted(const PropertyPath& path, const QList<QStandardItem*> items);
 
 		PropertyPath mPath; // the path currently being edited by the property editor
 	};
@@ -156,6 +172,13 @@ namespace napkin
 		 * Called when an object has been removed
 		 */
 	 	void onObjectRemoved(nap::rtti::Object* obj);
+
+		/**
+		 * Called when a child is inserted into the model
+		 * @param path path to the newly inserted child
+		 * @param items row items
+		 */
+		void onChildInserted(const PropertyPath& path, QList<QStandardItem*> items);
 		
 		/**
 		 * Called just before the current document is closed

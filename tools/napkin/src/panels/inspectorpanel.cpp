@@ -83,6 +83,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &InspectorPanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
+	connect(&mModel, &InspectorModel::childInserted, this, &InspectorPanel::onChildInserted);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -319,6 +320,13 @@ void InspectorPanel::clear()
 }
 
 
+void napkin::InspectorPanel::onChildInserted(const PropertyPath& path, QList<QStandardItem*> items)
+{
+	assert(items.size() > 0);
+	mTreeView.selectAndReveal(items[0]);
+}
+
+
 void napkin::InspectorPanel::onFileClosing(const QString& filename)
 {
 	mModel.clearPath();
@@ -355,9 +363,29 @@ void napkin::InspectorModel::clearPath()
 	clearItems();
 }
 
+
 bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
 {
 	return prop.getName() == nap::rtti::sIDPropertyName;
+}
+
+
+// TODO: Install on creation
+void napkin::InspectorModel::installCallbacks(QStandardItem& item)
+{
+	ArrayPropertyItem* array_item = qitem_cast<ArrayPropertyItem*>(&item);
+	if (array_item != nullptr)
+		connect(array_item, &ArrayPropertyItem::childInserted, this, &InspectorModel::onChildInserted);
+
+	// Install callbacks for children
+	for (int r = 0; r < item.rowCount(); r++)
+		installCallbacks(*item.child(r, 0));
+}
+
+
+void napkin::InspectorModel::onChildInserted(const PropertyPath& path, const QList<QStandardItem*> items)
+{
+	childInserted(path, items);
 }
 
 
@@ -372,8 +400,9 @@ void InspectorModel::populateItems()
 	{
 		if (!isPropertyIgnored(propPath))
 		{
-			auto row_items = createPropertyItemRow(propPath);
-			appendRow(row_items);
+			auto row = createPropertyItemRow(propPath);
+			installCallbacks(*row[0]);
+			appendRow(row);
 		}
 	}
 }

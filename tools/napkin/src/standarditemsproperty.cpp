@@ -154,6 +154,8 @@ void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, 
 {
 	if (mPath == parentPath)
 	{
+		QModelIndex idx = this->index();
+		std::cout << "row: " << idx.row() << " col: " << idx.column() << std::endl;
 		auto children = mPath.getChildren();
 		assert(childIndex < children.size());
 		QList<QStandardItem*> row = createPropertyItemRow(children[childIndex]);
