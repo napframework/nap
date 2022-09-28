@@ -77,10 +77,13 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 	return items;
 }
 
+
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(path)
 {
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
 	setText(QString::fromStdString(path.getName()));
 }
+
 
 QVariant napkin::PropertyPathItem::data(int role) const
 {
@@ -95,6 +98,16 @@ QVariant napkin::PropertyPathItem::data(int role) const
 	}
 	return QStandardItem::data(role);
 }
+
+
+void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
+{
+	if (this->mPath == path)
+	{
+		valueChanged();
+	}
+}
+
 
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
@@ -287,11 +300,13 @@ void napkin::EmbeddedPointerItem::populateChildren()
 	}
 }
 
+
 napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 	populateChildren();
 }
+
 
 QVariant napkin::PropertyValueItem::data(int role) const
 {
@@ -307,6 +322,7 @@ QVariant napkin::PropertyValueItem::data(int role) const
 	}
 	return QStandardItem::data(role);
 }
+
 
 void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 {
@@ -331,7 +347,15 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 	}
 }
 
+
+void napkin::PropertyValueItem::onValueChanged()
+{
+	//this->model()->dataChanged()
+}
+
+
 napkin::PropertyValueItem::PropertyValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
+	connect(this, &PropertyPathItem::valueChanged, this, &PropertyValueItem::onValueChanged);
 }

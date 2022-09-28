@@ -242,6 +242,8 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 		return;
 	}
 
+	/*
+
 	// Get vertical scroll pos so we can restore it later (HACK)
 	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
 
@@ -278,6 +280,7 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 		setPath(path.getParent());
 	}
 	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
+	*/
 }
 
 
@@ -305,7 +308,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	if (doc != nullptr)
 		connect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
 
-	mTreeView.getTreeView().expandAll();
+	//mTreeView.getTreeView().expandAll();
 }
 
 void InspectorPanel::clear()
@@ -321,7 +324,7 @@ void napkin::InspectorPanel::rebuild(const PropertyPath& selection)
 	// Rebuild model
 	mModel.clearItems();
 	mModel.populateItems();
-	mTreeView.getTreeView().expandAll();
+	//mTreeView.getTreeView().expandAll();
 
 	// Find item based on path name
 	auto pathItem = nap::qt::findItemInModel(mModel, [selection](QStandardItem* item)

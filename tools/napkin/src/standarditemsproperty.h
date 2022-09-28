@@ -52,8 +52,18 @@ namespace napkin
 		 */
 		const PropertyPath& getPath() const { return mPath; }
 
+	Q_SIGNALS:
+		/**
+		 * Called when a value changes
+		 */
+		void valueChanged();
+
 	protected:
 		PropertyPath mPath; // The path to the property
+
+	private:
+		// Called when a property value changes
+		void onPropertyValueChanged(const PropertyPath& path);
 	};
 
 	/**
@@ -223,5 +233,8 @@ namespace napkin
 		 * Reimplemented from QStandardItem
 		 */
 		void setData(const QVariant& value, int role) override;
+
+	private:
+		void onValueChanged();
 	};
 }; // napkin
