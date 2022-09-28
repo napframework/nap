@@ -36,9 +36,7 @@ void splitNameIndex(const std::string& str, std::string& name, int& index)
 
 Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 	: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects))
-{
-	nap::Logger::info("Loading");
-}
+{ }
 
 nap::Entity* Document::getParent(const nap::Entity& child) const
 {
