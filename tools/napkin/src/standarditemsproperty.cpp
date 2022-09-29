@@ -169,8 +169,19 @@ void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, s
 {
 	if (mPath == parentPath)
 	{
+		// Every child item beyond the one that was deleted now maps to the wrong index.
+		// Instead of deleting (and re-creating) all items beyong the item that was removed, update their paths
 		assert(childIndex < rowCount());
-		removeRow(childIndex);
+		auto idx = childIndex + 1;
+		while (idx < this->rowCount())
+		{
+			auto a = qitem_cast<PropertyPathItem*>(this->child(idx - 1, 0));
+			auto b = qitem_cast<PropertyPathItem*>(this->child(idx, 0));
+			b->setPath(a->getPath());
+			idx++;
+		}
+		// Now remove the item
+		this->removeRows(childIndex, 1);
 	}
 }
 
