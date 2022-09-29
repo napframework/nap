@@ -167,7 +167,12 @@ void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, 
 			appendRow(createPropertyItemRow(children[idx]));
 
 		// Notify listeners
-		childInserted(children[childIndex], { this->child(childIndex, 0) });
+		QList<QStandardItem*> child_items;
+		child_items.reserve(3);
+		for (int c = 0; c < this->columnCount(); c++)
+			child_items.append(this->child(childIndex, c));
+
+		childInserted(children[childIndex], child_items);
 	}
 }
 
