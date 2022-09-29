@@ -179,24 +179,26 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 
 const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
 {
-	if (name.empty())
+	assert(!name.empty());
+	auto new_name = getUniqueName(name, object, false);
+	if (new_name == object.mID)
 		return object.mID;
 
-	auto newName = getUniqueName(name, object, false);
-	if (newName == object.mID)
-		return object.mID;
+	// Set name and update all pointers (in data model) that point to this object
+	auto old_name = object.mID;
 
-	auto oldName = object.mID;
-	object.mID = newName;
-
-	// Update pointers to this object
+	// Update all pointers (in data model) to this object
+	object.mID = new_name;
 	for (auto propPath : getPointersTo(object, false, false, false))
 		propPath.setPointee(&object);
 
+	// Notify listeners
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());
 	propertyValueChanged(path);
+	objectRenamed(object, PropertyPath(old_name, *this), PropertyPath(new_name, *this));
 
+	// New name
 	return object.mID;
 }
 

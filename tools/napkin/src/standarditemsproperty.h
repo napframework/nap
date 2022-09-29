@@ -72,6 +72,7 @@ namespace napkin
 		void onPropertyValueChanged(const PropertyPath& path);
 	};
 
+
 	/**
 	 * This item shows the name of an object's property
 	 */
@@ -86,6 +87,7 @@ namespace napkin
 		 */
 		PropertyItem(const PropertyPath& path);
 	};
+
 
 	/**
 	 * This property is has child properties
@@ -107,6 +109,7 @@ namespace napkin
          */
 		void populateChildren();
 	};
+
 
 	/**
 	 * The property is an editable list of child properties
@@ -165,6 +168,7 @@ namespace napkin
 		PointerItem(const PropertyPath& path);
 	};
 
+
     /**
      * This item allows for editing a pointer value
      */
@@ -190,6 +194,7 @@ namespace napkin
 		void setData(const QVariant& value, int role) override;
 	};
 
+
 	/**
 	 * This item allows for editing a color value
 	 */
@@ -213,6 +218,7 @@ namespace napkin
 		void setData(const QVariant& value, int role) override;
 	};
 
+
 	/**
 	 * Creates children, data under the embedded pointer
 	 */
@@ -233,6 +239,7 @@ namespace napkin
 		 */
 		void populateChildren();
 	};
+
 
 	/**
 	 * This item displays the value of an object property and allows the user to change it

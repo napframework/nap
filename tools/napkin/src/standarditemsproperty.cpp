@@ -182,9 +182,15 @@ void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, s
 		auto idx = childIndex + 1;
 		while (idx < this->rowCount())
 		{
-			auto a = qitem_cast<PropertyPathItem*>(this->child(idx - 1, 0));
-			auto b = qitem_cast<PropertyPathItem*>(this->child(idx, 0));
-			b->setPath(a->getPath());
+			for (int c = 0; c < this->columnCount(); c++)
+			{
+				auto a = qitem_cast<PropertyPathItem*>(this->child(idx - 1, c));
+				auto b = qitem_cast<PropertyPathItem*>(this->child(idx - 0, c));
+				if (a != nullptr && b != nullptr)
+				{
+					b->setPath(a->getPath());
+				}
+			}
 			idx++;
 		}
 		// Now remove the item
