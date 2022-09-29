@@ -196,7 +196,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());
 	propertyValueChanged(path);
-	objectRenamed(object, PropertyPath(old_name, *this), PropertyPath(new_name, *this));
+	objectRenamed(object, old_name, new_name);
 
 	// New name
 	return object.mID;

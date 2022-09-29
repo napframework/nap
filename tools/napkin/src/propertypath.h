@@ -83,7 +83,7 @@ namespace napkin
 		~PropertyPath();
 
 		/**
-		 * @return The last part of the property name (not including the path)
+		 * @return The last part of the property name
 		 */
 		const std::string getName() const;
 
@@ -280,8 +280,16 @@ namespace napkin
 		 */
 		int getRealChildEntityIndex() const;
 
+		/**
+		 * Replaces every occurrence of oldName with newName
+		 * @param oldName old object name
+		 * @param newName new object name
+		 */
 		void updateObjectName(const std::string& oldName, const std::string& newName);
 
+		/**
+		 * @return data model
+		 */
 		Document* getDocument() const { return mDocument; }
 
 	private:

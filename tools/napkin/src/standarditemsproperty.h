@@ -64,12 +64,22 @@ namespace napkin
 		 */
 		void valueChanged();
 
+		/**
+		 * Called when the object name changed.
+		 * @param oldName the old (now invalid) object name
+		 * @param newName the new (now valid) object name
+		 */
+		void objectRenamed(const std::string& oldName, PropertyPath newName);
+
 	protected:
 		PropertyPath mPath; // The path to the property
 
 	private:
 		// Called when a property value changes
 		void onPropertyValueChanged(const PropertyPath& path);
+
+		// Called when an object name changes
+		void onObjectRenamed(const nap::rtti::Object& object, const std::string& oldName, const std::string& newName);
 	};
 
 

@@ -546,10 +546,10 @@ namespace napkin
 		 * Qt Signal
 		 * Invoked after an object has been renamed.
 		 * @param object the object that has been renamed
-		 * @param old object property name
-		 * @param new object property name
+		 * @param oldName old (now invalid) object property name
+		 * @param newName new (now valid) object property name
 		 */
-		void objectRenamed(nap::rtti::Object& object, PropertyPath oldPath, PropertyPath newPath);
+		void objectRenamed(nap::rtti::Object& object, const std::string& oldName, const std::string& newName);
 
 		/**
 		 * Qt Signal

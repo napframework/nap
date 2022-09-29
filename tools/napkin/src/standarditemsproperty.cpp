@@ -81,8 +81,9 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(path)
 {
-	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
 	setText(QString::fromStdString(path.getName()));
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::objectRenamed, this, &PropertyPathItem::onObjectRenamed);
 }
 
 
@@ -110,11 +111,18 @@ void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
 }
 
 
+void napkin::PropertyPathItem::onObjectRenamed(const nap::rtti::Object& object, const std::string& oldName, const std::string& newName)
+{
+	mPath.updateObjectName(oldName, newName);
+}
+
+
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 	setEditable(false);
 }
+
 
 void napkin::CompoundPropertyItem::populateChildren()
 {
