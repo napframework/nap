@@ -13,6 +13,7 @@
 #include <rtti/object.h>
 #include <color.h>
 #include <mathutils.h>
+#include <nap/assert.h>
 
 RTTI_DEFINE_BASE(napkin::PropertyPathItem)
 RTTI_DEFINE_BASE(napkin::PropertyItem)
@@ -154,13 +155,19 @@ void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, 
 {
 	if (mPath == parentPath)
 	{
-		QModelIndex idx = this->index();
-		std::cout << "row: " << idx.row() << " col: " << idx.column() << std::endl;
+		// Delete everything at and beyond the item that was inserted
+		NAP_ASSERT_MSG(childIndex == this->rowCount(), "Item not appended to end of array");
+		if (childIndex < this->rowCount())
+			this->removeRows(childIndex, this->rowCount() - 1);
+
+		// Create items for children from that point onwards
 		auto children = mPath.getChildren();
-		assert(childIndex < children.size());
-		QList<QStandardItem*> row = createPropertyItemRow(children[childIndex]);
-		insertRow(childIndex, row);
-		childInserted(children[childIndex], row);
+		auto idx = childIndex;
+		for (auto idx = childIndex; idx < children.size(); idx++)
+			appendRow(createPropertyItemRow(children[idx]));
+
+		// Notify listeners
+		childInserted(children[childIndex], { this->child(childIndex, 0) });
 	}
 }
 
@@ -170,7 +177,7 @@ void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, s
 	if (mPath == parentPath)
 	{
 		// Every child item beyond the one that was deleted now maps to the wrong index.
-		// Instead of deleting (and re-creating) all items beyong the item that was removed, update their paths
+		// Instead of deleting (and re-creating) all items beyond the item that was removed, update their paths
 		assert(childIndex < rowCount());
 		auto idx = childIndex + 1;
 		while (idx < this->rowCount())
