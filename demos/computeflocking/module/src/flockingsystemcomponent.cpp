@@ -234,6 +234,7 @@ namespace nap
 	void FlockingSystemComponentInstance::compute()
 	{
 		// Update current compute instance and index
+		assert(mComputeInstanceIndex >= -1);
 		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
 		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 
