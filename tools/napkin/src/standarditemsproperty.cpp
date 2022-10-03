@@ -84,6 +84,7 @@ napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(pat
 	setText(QString::fromStdString(path.getName()));
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &PropertyPathItem::onObjectRenamed);
+	connect(&AppContext::get(), &AppContext::removingObject, this, &PropertyPathItem::onRemovingObject);
 }
 
 
@@ -114,6 +115,17 @@ void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
 void napkin::PropertyPathItem::onObjectRenamed(const nap::rtti::Object& object, const std::string& oldName, const std::string& newName)
 {
 	mPath.updateObjectName(oldName, newName);
+}
+
+
+void napkin::PropertyPathItem::onRemovingObject(const nap::rtti::Object* object)
+{
+	if (mPath.getObject() == object)
+	{
+		QStandardItem* parent_item = QStandardItem::parent();
+		this->model()->removeRow(this->row(), parent_item != nullptr ?
+			parent_item->index() : QModelIndex());
+	}
 }
 
 
@@ -353,16 +365,11 @@ void napkin::EmbeddedPointerItem::populateChildren()
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 	bool is_wrapper = wrapped_type != value_type;
-	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
-												: value.get_value<nap::rtti::Object*>();
-	if (nullptr == pointee)
-	{
-		nap::Logger::warn("Embedded pointer was null: %s", mPath.toString().c_str());
+	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
+	if (pointee == nullptr)
 		return;
-	}
 
 	auto object = pointee;
-
 	for (auto childprop : object->get_type().get_properties())
 	{
 		auto childValue = childprop.get_value(object);
@@ -371,7 +378,6 @@ void napkin::EmbeddedPointerItem::populateChildren()
 
 		nap::rtti::Path path;
 		path.pushAttribute(name);
-
 		appendRow(createPropertyItemRow({ *object, path, *(AppContext::get().getDocument())}));
 	}
 }

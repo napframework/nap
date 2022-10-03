@@ -80,6 +80,9 @@ namespace napkin
 
 		// Called when an object name changes
 		void onObjectRenamed(const nap::rtti::Object& object, const std::string& oldName, const std::string& newName);
+
+		// Called just before an object is removed
+		void onRemovingObject(const nap::rtti::Object* object);
 	};
 
 
