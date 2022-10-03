@@ -242,46 +242,6 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 		setPath({});
 		return;
 	}
-
-	/*
-
-	// Get vertical scroll pos so we can restore it later (HACK)
-	int verticalScrollPos = mTreeView.getTreeView().verticalScrollBar()->value();
-
-	// Regular property changed, not the ID. Rebuild the model and apply selection
-	if (path.getName() != sIDPropertyName)
-	{
-		rebuild(path);
-		mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
-		return;
-	}
-
-	// ID Changed, get property object and owner of object
-	auto doc = path.getDocument();
-	auto object = path.getObject();
-	auto owner = doc->getEmbeddedObjectOwner(*object);
-
-	// Object (that holds the property) is embedded
-	if (owner != nullptr)
-	{
-		// Owner is a component or group -> update entire path
-		if (owner->get_type().is_derived_from(RTTI_OF(nap::IGroup)) ||
-			owner->get_type().is_derived_from(RTTI_OF(nap::Entity)))
-		{
-			setPath(PropertyPath(*object, *doc));
-		}
-		// Owner is not a group or entity -> rebuild and select
-		else
-		{
-			rebuild(path);
-		}
-	}
-	else
-	{
-		setPath(path.getParent());
-	}
-	mTreeView.getTreeView().verticalScrollBar()->setValue(verticalScrollPos);
-	*/
 }
 
 
@@ -323,7 +283,7 @@ void InspectorPanel::clear()
 void napkin::InspectorPanel::onChildInserted(const PropertyPath& path, QList<QStandardItem*> items)
 {
 	assert(items.size() > 0);
-	mTreeView.selectAndReveal(items[0]);
+	mTreeView.select(items[0], false);
 }
 
 
@@ -345,7 +305,7 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 		return pitem != nullptr ? pitem->getPath() == prop : false;
 	});
 
-	mTreeView.selectAndReveal(pathItem);
+	mTreeView.select(pathItem, true);
 }
 
 

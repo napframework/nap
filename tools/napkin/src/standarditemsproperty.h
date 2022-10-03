@@ -236,9 +236,7 @@ namespace napkin
 		Q_OBJECT
 	public:
 		/**
-		 * @param name Text to display.
-		 * @param object The object to keep track of.
-		 * @param path The path to the property, pointer.
+		 * @param path The path to the embedded pointer property
 		 */
 		EmbeddedPointerItem(const PropertyPath& path);
 
@@ -250,6 +248,22 @@ namespace napkin
 
 		// Called when this property value changes
 		void onValueChanged();
+	};
+
+
+	/**
+	 * Embedded object pointer value
+	 */
+	class EmbeddedPointerValueItem : public PropertyPathItem
+	{
+	public:
+		/**
+		 * @param path The path to the embedded pointer property
+		 */
+		EmbeddedPointerValueItem(const PropertyPath& path);
+
+	private:
+		QVariant data(int role) const override;
 	};
 
 

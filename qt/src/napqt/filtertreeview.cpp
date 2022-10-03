@@ -66,7 +66,7 @@ QStandardItemModel* FilterTreeView::getModel() const
 	return qobject_cast<QStandardItemModel*>(mProxyModel.sourceModel());
 }
 
-void FilterTreeView::selectAndReveal(const QStandardItem* item)
+void FilterTreeView::select(const QStandardItem* item, bool expand)
 {
 	if (item == nullptr)
 		return;
@@ -84,7 +84,7 @@ void FilterTreeView::selectAndReveal(const QStandardItem* item)
 	// We are going to select an entire row
 	auto botRight = getProxyModel().index(idx.row(), getProxyModel().columnCount(idx.parent()) - 1, idx.parent());
     getTreeView().selectionModel()->select(QItemSelection(idx, botRight), QItemSelectionModel::ClearAndSelect);
-	getTreeView().expand(idx);
+	if (expand) { getTreeView().expand(idx); }
     getTreeView().scrollTo(idx);
 }
 

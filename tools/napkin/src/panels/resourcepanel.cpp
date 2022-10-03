@@ -269,19 +269,19 @@ void napkin::ResourcePanel::populate()
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 {
 	if (obj.size() > 0)
-		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
+		mTreeView.select(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]), true);
 }
 
 
 void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& item)
 {
-	mTreeView.selectAndReveal(&item);
+	mTreeView.select(&item, true);
 }
 
 
 void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem& item)
 {
-	mTreeView.selectAndReveal(&item);
+	mTreeView.select(&item, true);
 }
 
 

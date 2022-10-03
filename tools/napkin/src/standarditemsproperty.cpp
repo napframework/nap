@@ -23,6 +23,7 @@ RTTI_DEFINE_BASE(napkin::PointerItem)
 RTTI_DEFINE_BASE(napkin::PointerValueItem)
 RTTI_DEFINE_BASE(napkin::ColorValueItem)
 RTTI_DEFINE_BASE(napkin::EmbeddedPointerItem)
+RTTI_DEFINE_BASE(napkin::EmbeddedPointerValueItem)
 RTTI_DEFINE_BASE(napkin::PropertyValueItem)
 
 QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
@@ -46,7 +47,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 		if (path.isEmbeddedPointer())
 		{
 			items << new EmbeddedPointerItem(path);
-			items << new EmptyItem();
+			items << new EmbeddedPointerValueItem(path);
 			items << new RTTITypeItem(type);
 		}
 		else
@@ -107,7 +108,6 @@ void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	if (this->mPath == path)
 	{
-		nap::Logger::info("Property value changed: %s", path.toString().c_str());
 		valueChanged();
 	}
 }
@@ -405,6 +405,43 @@ void napkin::EmbeddedPointerItem::onValueChanged()
 	populateChildren();
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+// EmbeddedPointerValueItem
+//////////////////////////////////////////////////////////////////////////
+
+napkin::EmbeddedPointerValueItem::EmbeddedPointerValueItem(const PropertyPath& path)
+	: PropertyPathItem(path)
+{
+	setEditable(false);
+}
+
+
+QVariant napkin::EmbeddedPointerValueItem::data(int role) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		{
+			// Show ID of embedded resource
+			nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
+			assert(resolvedPath.isValid());
+			auto value = resolvedPath.getValue();
+			auto value_type = value.get_type();
+			auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+			bool is_wrapper = wrapped_type != value_type;
+			nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
+			return pointee != nullptr ? pointee->mID.c_str() : "NULL";
+		}
+		default:
+			return PropertyPathItem::data(role);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// PropertyValueItem
+//////////////////////////////////////////////////////////////////////////
 
 QVariant napkin::PropertyValueItem::data(int role) const
 {
