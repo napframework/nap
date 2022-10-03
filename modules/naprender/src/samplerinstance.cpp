@@ -152,7 +152,7 @@ namespace nap
 		samplerInfo.borderColor				= VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
 		samplerInfo.compareEnable			= mSampler == nullptr ? VK_FALSE : mSampler->mEnableCompare ? VK_TRUE : VK_FALSE;
-		samplerInfo.compareOp				= mSampler == nullptr ? getDepthCompareOp(mSampler->mCompareMode) : VK_COMPARE_OP_LESS_OR_EQUAL;
+		samplerInfo.compareOp				= mSampler == nullptr ? VK_COMPARE_OP_LESS_OR_EQUAL : getDepthCompareOp(mSampler->mCompareMode);
 		samplerInfo.mipmapMode				= mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
 		samplerInfo.minLod					= 0.0f;
 		samplerInfo.maxLod					= mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
