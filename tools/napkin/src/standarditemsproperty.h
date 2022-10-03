@@ -18,15 +18,11 @@ namespace napkin
 {
 	/**
 	 * Create a row of items where each item sits in its own column
-	 * @param type The type of the item
-	 * @param name The name of the item
-	 * @param object The object owning the property this item row represents
 	 * @param path The path to the property this row represents
-	 * @param prop The property this item row represents
-	 * @param value The value of the property in this row
 	 * @return a row of items where each item sits in its own column
 	 */
 	QList<QStandardItem*> createPropertyItemRow(const PropertyPath& path);
+
 
 	/**
 	 * The base for items that represent a property path, RTTI enabled
@@ -251,6 +247,9 @@ namespace napkin
 		 * Populate child items
 		 */
 		void populateChildren();
+
+		// Called when this property value changes
+		void onValueChanged();
 	};
 
 

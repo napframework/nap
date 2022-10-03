@@ -107,6 +107,7 @@ void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	if (this->mPath == path)
 	{
+		nap::Logger::info("Property value changed: %s", path.toString().c_str());
 		valueChanged();
 	}
 }
@@ -230,8 +231,8 @@ void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, s
 
 napkin::PointerItem::PointerItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{
-}
+{ }
+
 
 QVariant napkin::PointerValueItem::data(int role) const
 {
@@ -250,6 +251,7 @@ QVariant napkin::PointerValueItem::data(int role) const
 		return QStandardItem::data(role);
 	return QStandardItem::data(role);
 }
+
 
 void napkin::PointerValueItem::setData(const QVariant& value, int role)
 {
@@ -354,6 +356,18 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+// EmbeddedPointerItem
+//////////////////////////////////////////////////////////////////////////
+
+napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
+	: PropertyPathItem(path)
+{
+	populateChildren();
+	connect(this, &PropertyPathItem::valueChanged, this, &EmbeddedPointerItem::onValueChanged);
+}
+
+
 void napkin::EmbeddedPointerItem::populateChildren()
 {
 	// First resolve the pointee, after that behave like compound
@@ -383,9 +397,11 @@ void napkin::EmbeddedPointerItem::populateChildren()
 }
 
 
-napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
-	: PropertyPathItem(path)
+void napkin::EmbeddedPointerItem::onValueChanged()
 {
+	// Remove embedded child (all children) and re-populate
+	auto* parent_item =QStandardItem::parent();
+	removeRows(0, this->rowCount());
 	populateChildren();
 }
 

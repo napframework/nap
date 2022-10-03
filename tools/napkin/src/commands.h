@@ -340,8 +340,6 @@ namespace napkin
 		void undo() override;
 	private:
 		PropertyPath mPath;
-		PropertyPath mCreatedObject;
 		rttr::type mType;
 	};
-
 };

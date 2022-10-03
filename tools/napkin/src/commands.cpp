@@ -467,7 +467,6 @@ void ReplaceEmbeddedPointerCommand::redo()
 		doc->removeObject(*pointee);
 
 	auto obj = doc->addObject(mType, nullptr);
-	mCreatedObject = {*obj, *doc};
 	mPath.setPointee(obj);
 	doc->propertyValueChanged(mPath);
 }
