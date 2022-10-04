@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "QuiltCameraBoxMesh.h"
+#include "quiltcameraboxmesh.h"
 #include "renderservice.h"
 #include "renderglobals.h"
 

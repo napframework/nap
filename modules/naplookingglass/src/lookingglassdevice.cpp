@@ -29,11 +29,11 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	constexpr char* sViewConeQuery		= "/calibration/viewCone/value";
-	constexpr char* sQuiltColumnsQuery	= "/defaultQuilt/tileX";
-	constexpr char* sQuiltRowsQuery		= "/defaultQuilt/tileY";
-	constexpr char* sQuiltWidthQuery		= "/defaultQuilt/quiltX";
-	constexpr char* sQuiltHeightQuery	= "/defaultQuilt/quiltY";
+	const std::string sViewConeQuery		= "/calibration/viewCone/value";
+    const std::string sQuiltColumnsQuery	= "/defaultQuilt/tileX";
+    const std::string sQuiltRowsQuery		= "/defaultQuilt/tileY";
+    const std::string sQuiltWidthQuery	    = "/defaultQuilt/quiltX";
+    const std::string sQuiltHeightQuery	    = "/defaultQuilt/quiltY";
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -63,10 +63,10 @@ namespace nap
 		}
 
 		// Acquire quilt settings from device
-		mOptimalQuiltSettings.mWidth	= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltWidthQuery);
-		mOptimalQuiltSettings.mHeight	= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltHeightQuery);
-		mOptimalQuiltSettings.mColumns	= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltColumnsQuery);
-		mOptimalQuiltSettings.mRows		= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltRowsQuery);
+		mOptimalQuiltSettings.mWidth	= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltWidthQuery.c_str());
+		mOptimalQuiltSettings.mHeight	= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltHeightQuery.c_str());
+		mOptimalQuiltSettings.mColumns	= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltColumnsQuery.c_str());
+		mOptimalQuiltSettings.mRows		= hpc_GetDevicePropertyInt(mDeviceIndex, sQuiltRowsQuery.c_str());
 
 		// Copy custom quilt settings from public property
 		mCustomQuiltSettings = mQuiltSettingsResource;
@@ -101,7 +101,7 @@ namespace nap
 			mScreenResolution = { hpc_GetDevicePropertyScreenW(mDeviceIndex), hpc_GetDevicePropertyScreenH(mDeviceIndex) };
 
 			// Store view cone
-			mViewCone = hpc_GetDevicePropertyFloat(mDeviceIndex, sViewConeQuery);
+			mViewCone = hpc_GetDevicePropertyFloat(mDeviceIndex, sViewConeQuery.c_str());
 		}
 
 		// Position and resize the render window appropriately

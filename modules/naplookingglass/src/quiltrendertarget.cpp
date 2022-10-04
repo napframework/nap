@@ -132,10 +132,10 @@ namespace nap
 	// Creates the color image and view
 	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mTextureImage, outData.mTextureAllocation, outData.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outData.mTextureImage, colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mTextureView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
 			return false;
 
 		return true;
@@ -145,10 +145,10 @@ namespace nap
 	// Create the depth image and view
 	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mTextureImage, outImage.mTextureAllocation, outImage.mTextureAllocationInfo, errorState))
+		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outImage.mTextureImage, renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mTextureView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outImage.mImage, renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -248,7 +248,7 @@ namespace nap
 			if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 
-			std::array<VkImageView, 2> attachments{ mColorTexture->getImageView(), mDepthImage.mTextureView };
+			std::array<VkImageView, 2> attachments{ mColorTexture->getImageView(), mDepthImage.mView };
 			framebuffer_info.pAttachments = attachments.data();
 			framebuffer_info.attachmentCount = attachments.size();
 			framebuffer_info.renderPass = mRenderPass;
@@ -267,7 +267,7 @@ namespace nap
 			if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 
-			std::array<VkImageView, 3> attachments{ mColorImage.mTextureView, mDepthImage.mTextureView, mColorTexture->getImageView() };
+			std::array<VkImageView, 3> attachments{ mColorImage.mView, mDepthImage.mView, mColorTexture->getImageView() };
 			framebuffer_info.pAttachments = attachments.data();
 			framebuffer_info.attachmentCount = attachments.size();
 			framebuffer_info.renderPass = mRenderPass;
@@ -284,7 +284,7 @@ namespace nap
 		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
 		if (mIsFirstPass)
 		{
-			transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImage.mTextureImage,
+			transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImage.mImage,
 				mDepthImage.mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
@@ -294,7 +294,7 @@ namespace nap
 
 			if (mRasterizationSamples != VK_SAMPLE_COUNT_1_BIT)
 			{
-				transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mColorImage.mTextureImage,
+				transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mColorImage.mImage,
 					mColorImage.mCurrentLayout, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
 					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
 					VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT,
@@ -305,7 +305,7 @@ namespace nap
 		}
 
 		const QuiltSettings& settings = mDevice->getQuiltSettings();
-		RGBAColorFloat clear_color = { mClearColor.x, mClearColor.y, mClearColor.z, mClearColor.w };
+		RGBAColorFloat& clear_color = mClearColor;
 
 		std::array<VkClearValue, 2> clearValues = {};
 		clearValues[0].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };

@@ -101,14 +101,21 @@ namespace nap
 
 		// The call to hpc_InitializeApp is required to complete successfully for an app to communicate with the Holoplay service
 		hpc_client_error error_code = hpc_InitializeApp(config->mAppName.c_str(), license_type);
-		if (!errorState.check(error_code == hpc_client_error::hpc_CLIERR_NOERROR, "Failed to initialize LookingGlass service"))
+		if (error_code != hpc_client_error::hpc_CLIERR_NOERROR)
 		{
-			// Append error message
-			errorState.fail(getClientErrorMessage(error_code));
+            // Must tear down the message pipe
+            hpc_TeardownMessagePipe();
 
-			// Must tear down the message pipe before shutting down the app
-			hpc_TeardownMessagePipe();
-			return false;
+            std::string errorMessage = "Failed to initialize LookingGlass service: " + getClientErrorMessage(error_code);
+            if (mAllowFailure)
+            {
+                nap::Logger::warn(errorMessage);
+                return true;
+            }
+            else {
+                errorState.fail(errorMessage.c_str());
+                return false;
+            }
 		}
 
 		char_buffer.assign(char_buffer.size(), '\0');

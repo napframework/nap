@@ -93,7 +93,7 @@ namespace nap
 		 * Updates the render target clear color.
 		 * @param color the new clear color to use.
 		 */
-		virtual void setClearColor(const glm::vec4& color) override
+		virtual void setClearColor(const RGBAColorFloat& color) override
 		{
 		    mClearColor = color;
         }
@@ -101,7 +101,7 @@ namespace nap
 		/**
 		 * @return the currently used render target clear color.
 		 */
-		virtual const glm::vec4& getClearColor() const override			{ return mClearColor; }
+		virtual const RGBAColorFloat& getClearColor() const override { return mClearColor; }
 
 		/**
 		 * Geometry winding order, defaults to clockwise. 
@@ -179,7 +179,7 @@ namespace nap
 
 	public:
 		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		glm::vec4							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
+		RGBAColorFloat 							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
 		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		ResourcePtr<RenderTexture2D>			mColorTexture;										///< Property: 'ColorTexture' texture to render to.
 		ResourcePtr<LookingGlassDevice>			mDevice;											///< Property: 'LookingGlassDevice' the looking glass device.
