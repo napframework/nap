@@ -7,6 +7,7 @@
 // Local Includes
 #include "imgui/imgui.h"
 #include "imguiicon.h"
+#include "imguistylesettings.h"
 
 // External includes
 #include <nap/service.h>
@@ -117,6 +118,7 @@ namespace nap
 		glm::ivec2 mFontOversampling = { 5, 3 };						///< Property: 'FontSampling' Horizontal and vertical font oversampling, higher values result in sharper text in exchange for more memory.
 		float mFontSpacing = 0.25f;										///< Property: 'FontSpacing' Extra horizontal spacing (in pixels) between glyphs.
 		gui::ColorPalette mCustomColors;								///< Property: 'Colors' Gui color overrides if scheme is set to custom
+        gui::StyleSettings mStyleSettings;                              ///< Property: Additional specific ImGUI properties.
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
 
@@ -395,6 +397,9 @@ namespace nap
 
 		// Color palette
 		const gui::ColorPalette* mColorPalette = nullptr;
+        
+        // Additional specific ImGUI style settings
+        const gui::StyleSettings* mStyleSettings = nullptr;
 
 		// Icons
 		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;
