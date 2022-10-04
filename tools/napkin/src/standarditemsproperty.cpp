@@ -104,6 +104,29 @@ QVariant napkin::PropertyPathItem::data(int role) const
 }
 
 
+QList<QStandardItem*> napkin::PropertyPathItem::createAppendRow(const PropertyPath& childPath)
+{
+	// Create and append row
+	auto row = createPropertyItemRow(childPath);
+	appendRow(row);
+
+	// Listen to row changes
+	assert(!row.empty());
+	for (const auto& item : row)
+	{
+		const PropertyPathItem* item = qitem_cast<const PropertyPathItem*>(row.first());
+		if (item != nullptr)
+		{
+			connect(item, &PropertyPathItem::childAdded, this, &PropertyPathItem::childAdded);
+		}
+	}
+
+	// Notify listeners
+	childAdded(row);
+	return row;
+}
+
+
 void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	if (this->mPath == path)
@@ -140,7 +163,9 @@ napkin::PropertyItem::PropertyItem(const PropertyPath& path)
 void napkin::CompoundPropertyItem::populateChildren()
 {
 	for (auto childPath : mPath.getChildren())
-		appendRow(createPropertyItemRow(childPath));
+	{
+		this->createAppendRow(childPath);
+	}
 }
 
 
@@ -168,7 +193,9 @@ napkin::ArrayPropertyItem::ArrayPropertyItem(const PropertyPath& path)
 void napkin::ArrayPropertyItem::populateChildren()
 {
 	for (auto childPath : mPath.getChildren())
-		appendRow(createPropertyItemRow(childPath));
+	{
+		this->createAppendRow(childPath);
+	}
 }
 
 
@@ -185,15 +212,7 @@ void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, 
 		auto children = mPath.getChildren();
 		auto idx = childIndex;
 		for (auto idx = childIndex; idx < children.size(); idx++)
-			appendRow(createPropertyItemRow(children[idx]));
-
-		// Notify listeners
-		QList<QStandardItem*> child_items;
-		child_items.reserve(3);
-		for (int c = 0; c < this->columnCount(); c++)
-			child_items.append(this->child(childIndex, c));
-
-		childInserted(children[childIndex], child_items);
+			this->createAppendRow(children[idx]);
 	}
 }
 
@@ -368,8 +387,7 @@ static nap::rtti::Object* getEmbeddedObject(const nap::rtti::ResolvedPath& path)
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 	bool is_wrapper = wrapped_type != value_type;
-	return  is_wrapper ?
-		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
+	return  is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
 		value.get_value<nap::rtti::Object*>();
 }
 
@@ -400,7 +418,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 
 		nap::rtti::Path path;
 		path.pushAttribute(name);
-		appendRow(createPropertyItemRow({ *object, path, *(AppContext::get().getDocument())}));
+		createAppendRow({ *object, path, *(AppContext::get().getDocument()) });
 	}
 }
 
@@ -479,7 +497,6 @@ QVariant napkin::PropertyValueItem::data(int role) const
 		{
 			return variant;
 		}
-
 		return napkin::TXT_UNCONVERTIBLE_TYPE;
 	}
 	return QStandardItem::data(role);

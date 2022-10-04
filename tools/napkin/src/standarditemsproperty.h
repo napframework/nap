@@ -56,7 +56,7 @@ namespace napkin
 
 	Q_SIGNALS:
 		/**
-		 * Called when a value changes
+		 * Called when the property value of this item changes
 		 */
 		void valueChanged();
 
@@ -67,8 +67,22 @@ namespace napkin
 		 */
 		void objectRenamed(const std::string& oldName, PropertyPath newName);
 
+		/**
+		 * Called when a new row is added to this item.
+		 * @param items row items
+		 */
+		void childAdded(const QList<QStandardItem*> items);
+
 	protected:
 		PropertyPath mPath; // The path to the property
+
+		/**
+		 * Creates and appends a new row to this item based on the given child path
+		 * Call this in derived classes to create a set of child items for a child path.
+		 * @param childPath property child path
+		 * @return items that were added
+		 */
+		QList<QStandardItem*> createAppendRow(const PropertyPath& childPath);
 
 	private:
 		// Called when a property value changes
@@ -135,14 +149,6 @@ namespace napkin
 		 * @param array Because the property is an array, provide a view into the array.
 		 */
 		ArrayPropertyItem(const PropertyPath& path);
-
-	Q_SIGNALS:
-		/**
-		 * Called when a child is inserted
-		 * @param path to the property that was inserted
-		 * @param items the Q row items 
-		 */
-		void childInserted(const PropertyPath& path, const QList<QStandardItem*> items);
 
 	private:
         /**

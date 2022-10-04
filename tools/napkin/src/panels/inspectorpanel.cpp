@@ -83,7 +83,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &InspectorPanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
-	connect(&mModel, &InspectorModel::childInserted, this, &InspectorPanel::onChildInserted);
+	connect(&mModel, &InspectorModel::childAdded, this, &InspectorPanel::onChildAdded);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -280,10 +280,14 @@ void InspectorPanel::clear()
 }
 
 
-void napkin::InspectorPanel::onChildInserted(const PropertyPath& path, QList<QStandardItem*> items)
+void napkin::InspectorPanel::onChildAdded(QList<QStandardItem*> items)
 {
 	assert(items.size() > 0);
-	mTreeView.select(items[0], false);
+	auto parent = items.first()->parent();
+	if (qitem_cast<const ArrayPropertyItem*>(parent) != nullptr)
+	{
+		mTreeView.select(items[0], false);
+	}
 }
 
 
@@ -330,22 +334,9 @@ bool InspectorModel::isPropertyIgnored(const PropertyPath& prop) const
 }
 
 
-// TODO: Install on creation
-void napkin::InspectorModel::installCallbacks(QStandardItem& item)
+void napkin::InspectorModel::onChildAdded(const QList<QStandardItem*> items)
 {
-	ArrayPropertyItem* array_item = qitem_cast<ArrayPropertyItem*>(&item);
-	if (array_item != nullptr)
-		connect(array_item, &ArrayPropertyItem::childInserted, this, &InspectorModel::onChildInserted);
-
-	// Install callbacks for children
-	for (int r = 0; r < item.rowCount(); r++)
-		installCallbacks(*item.child(r, 0));
-}
-
-
-void napkin::InspectorModel::onChildInserted(const PropertyPath& path, const QList<QStandardItem*> items)
-{
-	childInserted(path, items);
+	childAdded(items);
 }
 
 
@@ -361,7 +352,14 @@ void InspectorModel::populateItems()
 		if (!isPropertyIgnored(propPath))
 		{
 			auto row = createPropertyItemRow(propPath);
-			installCallbacks(*row[0]);
+			for (const auto& item : row)
+			{
+				auto path_item = qitem_cast<const PropertyPathItem*>(item);
+				if (path_item != nullptr)
+				{
+					connect(path_item, &PropertyPathItem::childAdded, this, &napkin::InspectorModel::onChildAdded);
+				}
+			}
 			appendRow(row);
 		}
 	}

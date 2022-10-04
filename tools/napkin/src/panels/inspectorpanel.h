@@ -103,7 +103,7 @@ namespace napkin
 		Qt::ItemFlags flags(const QModelIndex& index) const override;
 
 	Q_SIGNALS:
-		void childInserted(const PropertyPath& path, const QList<QStandardItem*> items);
+		void childAdded(const QList<QStandardItem*> items);
 
 	private:
 		/**
@@ -114,16 +114,11 @@ namespace napkin
 		bool isPropertyIgnored(const PropertyPath& prop) const;
 
 		/**
-		 * Recursively installs required callbacks on items
-		 */
-		void installCallbacks(QStandardItem& item);
-
-		/**
 		 * Called when a child is inserted
 		 * @param path path to property that is inserted
 		 * @param items new row items
 		 */
-		void onChildInserted(const PropertyPath& path, const QList<QStandardItem*> items);
+		void onChildAdded(QList<QStandardItem*> items);
 
 		PropertyPath mPath; // the path currently being edited by the property editor
 	};
@@ -178,7 +173,7 @@ namespace napkin
 		 * @param path path to the newly inserted child
 		 * @param items row items
 		 */
-		void onChildInserted(const PropertyPath& path, QList<QStandardItem*> items);
+		void onChildAdded(QList<QStandardItem*> items);
 		
 		/**
 		 * Called just before the current document is closed
