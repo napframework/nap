@@ -53,6 +53,7 @@ RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSampling",		&nap::IMGuiServiceConfiguration::mFontOversampling, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FontSpacing",		&nap::IMGuiServiceConfiguration::mFontSpacing,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mCustomColors,		nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("StyleSettings",      &nap::IMGuiServiceConfiguration::mStyleSettings,    nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
@@ -276,7 +277,7 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette)
+	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette, const gui::StyleSettings& styleSettings)
 	{
 		// Get ImGUI colors
 		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
@@ -362,6 +363,9 @@ namespace nap
 		style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
 		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
 
+        // apply additional specific GUI settings
+        styleSettings.apply(*style);
+        
 		return style;
 	}
 
@@ -693,6 +697,9 @@ namespace nap
 
 		// Get palette associated with scheme
 		mColorPalette = &getColorPalette(mConfiguration->mColorScheme, mConfiguration->mCustomColors);
+        
+        // Get additional ImGUI style settings
+        mStyleSettings = &mConfiguration->mStyleSettings;
 
 		// Load all the default icons, bail if any of them fails to load
 		bool icons_loaded = true;
@@ -803,11 +810,11 @@ namespace nap
 
 			// Create atlas, scale based on dpi of main monitor
 			const char* font_file = mConfiguration->mFontFile.empty() ? nullptr : mConfiguration->mFontFile.c_str();
-			float font_size = mConfiguration->mFontSize * mDPIScale * mGuiScale;
+            float font_size = mConfiguration->mFontSize * mGuiScale;
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
-			mStyle = createStyle(getPalette());
+            mStyle = createStyle(getPalette(), *mStyleSettings);
 
 			// Create context using font & style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
@@ -987,7 +994,7 @@ namespace nap
 			context.activate();
 			ImGui::GetStyle() = *context.mStyle;
 			ImGui::GetStyle().ScaleAllSizes(gscale);
-			ImGui::GetIO().FontGlobalScale = fscale;
+			ImGui::GetIO().FontGlobalScale = gscale;
 			context.deactivate();
 
 			// Store scale, ensures custom widgets can scale accordingly

@@ -118,7 +118,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                            '-B%s' % build_dir_name,
                            '-G', 'Visual Studio 16 2019',
                            '-DNAP_PACKAGED_APP_BUILD=1',
-#                           '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
+                           '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
                            '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
