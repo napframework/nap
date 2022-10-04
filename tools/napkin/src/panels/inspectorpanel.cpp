@@ -107,10 +107,26 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	auto parent_array_item = qobject_cast<ArrayPropertyItem*>(parent_item);
 	if (parent_array_item != nullptr)
 	{
+		// Remove
 		auto parent_array_item = static_cast<ArrayPropertyItem*>(parent_item);
 		PropertyPath parent_property = parent_array_item->getPath();
 		long element_index = path_item->row();
-		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), "Remove Element", [parent_property, element_index]()
+
+		// Construct label based on array type
+		QString label("Remove ");
+		if (path_item->getPath().isPointer())
+		{
+			auto pointee = path_item->getPath().getPointee();
+			assert(pointee != nullptr);
+			label += pointee->mID.c_str();
+		}
+		else
+		{
+			auto array_type = parent_array_item->getPath().getArrayElementType();
+			label += array_type.get_name().data();
+		}
+
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [parent_property, element_index]()
 			{
 				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
 			});
@@ -138,6 +154,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 	}
 
+	// Instance property?
 	if (path.isInstanceProperty() && path.isOverridden())
 	{
 		menu.addAction("Remove override", [path]() {
@@ -170,7 +187,6 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			QString label = QString("Replace %1").arg(pointee->mID.c_str());
 			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE), label, [this, path, type]
 				{
-					// TODO: Make this a command
 					TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
 					rttr::type chosenType = showTypeSelector(this, predicate);
 					if (!chosenType.is_valid())
@@ -179,19 +195,23 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 					path.getDocument()->executeCommand(new ReplaceEmbeddedPointerCommand(path, chosenType));
 				});
 
-			label = QString("Delete %1").arg(pointee->mID.c_str());
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [path_item, pointee]
-				{
-					// TODO: Make this a command
-					auto doc = path_item->getPath().getDocument();
-					auto pointeePath = PropertyPath(*pointee, *doc);
-					auto ownerPath = doc->getEmbeddedObjectOwnerPath(*pointeePath.getObject());
-					doc->removeObject(*pointeePath.getObject());
-					if (ownerPath.isValid())
+			// Only add option to delete if not in array.
+			if (parent_array_item == nullptr)
+			{
+				label = QString("Delete %1").arg(pointee->mID.c_str());
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [path_item, pointee]
 					{
-						doc->propertyValueChanged(ownerPath);
-					}
-				});
+						// TODO: Make this a command
+						auto doc = path_item->getPath().getDocument();
+						auto pointeePath = PropertyPath(*pointee, *doc);
+						auto ownerPath = doc->getEmbeddedObjectOwnerPath(*pointeePath.getObject());
+						doc->removeObject(*pointeePath.getObject());
+						if (ownerPath.isValid())
+						{
+							doc->propertyValueChanged(ownerPath);
+						}
+					});
+			}
 		}
 		else
 		{
@@ -208,18 +228,18 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 	}
 
-	// Array item?
+	// Array?
 	if (qobject_cast<ArrayPropertyItem*>(path_item))
 	{
 		PropertyPath array_path = path_item->getPath();
+		auto array_type = array_path.getArrayElementType();
 		if (array_path.isNonEmbeddedPointer())
 		{
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
-			auto type = array_path.getArrayElementType();
-			QString label = QString("Add %1...").arg(type.get_raw_type().get_name().data());
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, type]()
+			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
 			{
-				auto objects = AppContext::get().getDocument()->getObjects(type);
+				auto objects = AppContext::get().getDocument()->getObjects(array_type);
 				nap::rtti::Object* selected_object = showObjectSelector(this, objects);
 				if (selected_object != nullptr)
 					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
@@ -228,11 +248,10 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 		else if (array_path.isEmbeddedPointer())
 		{
-			auto type = array_path.getArrayElementType();
-			QString label = QString("Create %1...").arg(type.get_raw_type().get_name().data());
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(type) , label, [this, array_path, type]()
+			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(array_type) , label, [this, array_path, array_type]()
 			{
-				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };
+				TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
 				rttr::type elementType = showTypeSelector(this, predicate);
 				if (elementType.is_valid())
 					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
@@ -240,8 +259,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 		else
 		{
-			auto element_type = array_path.getArrayElementType();
-			QString label = QString("Add %1").arg(QString::fromUtf8(element_type.get_name().data()));
+			QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
 			{
 				AppContext::get().executeCommand(new ArrayAddValueCommand(array_path));
