@@ -255,20 +255,24 @@ napkin::PointerItem::PointerItem(const PropertyPath& path)
 
 QVariant napkin::PointerValueItem::data(int role) const
 {
-	if (role == Qt::DisplayRole || role == Qt::EditRole)
+	switch (role)
 	{
-		if (auto pointee = mPath.getPointee())
-			return QString::fromStdString(pointee->mID);
-		else
-			return "NULL";
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+		{
+			auto pointee = mPath.getPointee();
+			return pointee != nullptr ?
+				QString::fromStdString(pointee->mID) : "NULL";
+		}
+		case Qt::UserRole:
+		{
+			return QVariant::fromValue(mPath);
+		}
+		default:
+		{
+			return PropertyPathItem::data(role);
+		}
 	}
-	else if (role == Qt::UserRole)
-	{
-		return QVariant::fromValue(mPath);
-	}
-	if (mPath.isInstanceProperty() && mPath.isOverridden() && role == Qt::BackgroundRole)
-		return QStandardItem::data(role);
-	return QStandardItem::data(role);
 }
 
 
@@ -326,13 +330,17 @@ QVariant napkin::ColorValueItem::data(int role) const
 		return QVariant::fromValue(mPath);
 	}
 	default:
-		return QStandardItem::data(role);
+		return PropertyPathItem::data(role);
 	}
 }
 
 
 void napkin::ColorValueItem::setData(const QVariant& value, int role)
 {
+	// Only hanle edits
+	if (role != Qt::EditRole)
+		return PropertyPathItem::setData(value, role);
+
 	// Ensure we can parse string, must be dividable by 2
 	QString color_str = value.toString();
 	color_str.remove('#');
@@ -490,16 +498,20 @@ void napkin::EmbeddedPointerValueItem::setData(const QVariant& value, int role)
 
 QVariant napkin::PropertyValueItem::data(int role) const
 {
-	if (role == Qt::DisplayRole || role == Qt::EditRole)
+	switch(role)
 	{
-		QVariant variant;
-		if (napkin::toQVariant(mPath.getType(), mPath.getValue(), variant))
+		case Qt::DisplayRole:
+		case Qt::EditRole:
 		{
-			return variant;
+			QVariant variant;
+			return napkin::toQVariant(mPath.getType(), mPath.getValue(), variant) ?
+				variant : napkin::TXT_UNCONVERTIBLE_TYPE;
 		}
-		return napkin::TXT_UNCONVERTIBLE_TYPE;
+		default:
+		{
+			return PropertyPathItem::data(role);
+		}
 	}
-	return QStandardItem::data(role);
 }
 
 
@@ -508,21 +520,19 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
-	if (role == Qt::EditRole)
+	switch (role)
 	{
-		auto path = mPath;
-		napkin::AppContext::get().executeCommand(new SetValueCommand(path, value));
-	}
-	else if (role == Qt::DisplayRole)
-	{
-		bool ok;
-		auto resultValue = napkin::fromQVariant(resolvedPath.getType(), value, &ok);
-		if (ok)
-			resolvedPath.setValue(resultValue);
-	}
-	else
-	{
-		QStandardItem::setData(value, role);
+		case Qt::EditRole:
+		{
+			auto path = mPath;
+			napkin::AppContext::get().executeCommand(new SetValueCommand(path, value));
+			break;
+		}
+		default:
+		{
+			PropertyPathItem::setData(value, role);
+			break;
+		}
 	}
 }
 
