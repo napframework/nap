@@ -61,7 +61,7 @@ endif()
 # Feel free to continue support for macOS on your end.
 if(APPLE)
     message(DEPRECATION "macOS (as a target) is no longer in active development or supported")
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.14)
 endif()
 
 # We don't actively support and work on python bindings anymore.
@@ -136,7 +136,7 @@ add_subdirectory(demos/helloworld)
 # add_subdirectory(demos/videomodulation/module)
 # add_subdirectory(demos/blobtrace)
 # add_subdirectory(demos/audioanalysis)
-# add_subdirectory(demos/audioplayback)
+add_subdirectory(demos/audioplayback)
 # add_subdirectory(demos/oscmidi)
 # add_subdirectory(demos/oscmidi/module)
 # add_subdirectory(demos/lineblending)
@@ -220,7 +220,7 @@ endif()
 #add_subdirectory(modules/napsequence)
 #add_subdirectory(modules/napsequencegui)
 #add_subdirectory(modules/naplicense)
-add_subdirectory(modules/nappythonparameter)
+#add_subdirectory(modules/nappythonparameter)
 add_subdirectory(modules/naplookingglass)
 
 # 4dsound modules
