@@ -360,6 +360,20 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 // EmbeddedPointerItem
 //////////////////////////////////////////////////////////////////////////
 
+static nap::rtti::Object* getEmbeddedObject(const nap::rtti::ResolvedPath& path)
+{
+	// First resolve the pointee, after that behave like compound
+	assert(path.isValid());
+	auto value = path.getValue();
+	auto value_type = value.get_type();
+	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+	bool is_wrapper = wrapped_type != value_type;
+	return  is_wrapper ?
+		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
+		value.get_value<nap::rtti::Object*>();
+}
+
+
 napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
@@ -371,15 +385,8 @@ napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 void napkin::EmbeddedPointerItem::populateChildren()
 {
 	// First resolve the pointee, after that behave like compound
-	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-
-	assert(resolvedPath.isValid());
-	auto value = resolvedPath.getValue();
-
-	auto value_type = value.get_type();
-	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-	bool is_wrapper = wrapped_type != value_type;
-	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
+	// If the embedded object isn't present, do nothing
+	nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
 	if (pointee == nullptr)
 		return;
 
@@ -388,7 +395,8 @@ void napkin::EmbeddedPointerItem::populateChildren()
 	{
 		auto childValue = childprop.get_value(object);
 		std::string name = childprop.get_name().data();
-		QString qName = QString::fromStdString(name);
+		if(name == nap::rtti::sIDPropertyName)
+			continue;
 
 		nap::rtti::Path path;
 		path.pushAttribute(name);
@@ -400,7 +408,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 void napkin::EmbeddedPointerItem::onValueChanged()
 {
 	// Remove embedded child (all children) and re-populate
-	auto* parent_item =QStandardItem::parent();
+	auto* parent_item = QStandardItem::parent();
 	removeRows(0, this->rowCount());
 	populateChildren();
 }
@@ -413,7 +421,7 @@ void napkin::EmbeddedPointerItem::onValueChanged()
 napkin::EmbeddedPointerValueItem::EmbeddedPointerValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
-	setEditable(false);
+	setEditable(true);
 }
 
 
@@ -422,19 +430,38 @@ QVariant napkin::EmbeddedPointerValueItem::data(int role) const
 	switch (role)
 	{
 		case Qt::DisplayRole:
+		case Qt::EditRole:
 		{
-			// Show ID of embedded resource
-			nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-			assert(resolvedPath.isValid());
-			auto value = resolvedPath.getValue();
-			auto value_type = value.get_type();
-			auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-			bool is_wrapper = wrapped_type != value_type;
-			nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
+			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
 			return pointee != nullptr ? pointee->mID.c_str() : "NULL";
 		}
 		default:
+		{
 			return PropertyPathItem::data(role);
+		}
+	}
+}
+
+
+void napkin::EmbeddedPointerValueItem::setData(const QVariant& value, int role)
+{
+	switch (role)
+	{
+		case Qt::EditRole:
+		{
+			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
+			if (pointee != nullptr && !value.toString().isEmpty())
+			{
+				PropertyPath id_path(pointee->mID, nap::rtti::sIDPropertyName, *mPath.getDocument());
+				napkin::AppContext::get().executeCommand(new SetValueCommand(id_path, value));
+			}
+			break;
+		}
+		default:
+		{
+			PropertyPathItem::setData(value, role);
+			break;
+		}
 	}
 }
 

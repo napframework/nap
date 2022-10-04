@@ -44,15 +44,11 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 	mLineEditFilter.setClearButtonEnabled(true);
 	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	mLayout.addWidget(&mLineEditFilter);
-
 	mTreeView->setModel(&mProxyModel);
-
 	mLayout.addWidget(mTreeView);
-
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
-
 	connect(mTreeView, &QTreeView::doubleClicked, this, &FilterTreeView::doubleClicked);
 }
 
