@@ -249,7 +249,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		else if (array_path.isEmbeddedPointer())
 		{
 			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(array_type) , label, [this, array_path, array_type]()
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD) , label, [this, array_path, array_type]()
 			{
 				TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
 				rttr::type elementType = showTypeSelector(this, predicate);
