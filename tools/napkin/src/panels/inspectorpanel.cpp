@@ -199,7 +199,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		if (array_path.isNonEmbeddedPointer())
 		{
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
-			menu.addAction("Add...", [this, array_path]()
+			menu.addAction("Add ...", [this, array_path]()
 			{
 				auto objects = AppContext::get().getDocument()->getObjects(array_path.getArrayElementType());
 				nap::rtti::Object* selected_object = showObjectSelector(this, objects);
@@ -210,7 +210,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 		else if (array_path.isEmbeddedPointer())
 		{
-			menu.addAction("Create...", [this, array_path]()
+			menu.addAction("Create ...", [this, array_path]()
 			{
 				auto type = array_path.getArrayElementType();
 				TypePredicate predicate = [type](auto t) { return t.is_derived_from(type); };

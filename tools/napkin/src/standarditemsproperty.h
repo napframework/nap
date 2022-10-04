@@ -265,7 +265,6 @@ namespace napkin
 	private:
 		QVariant data(int role) const override;
 		void setData(const QVariant& value, int role) override;
-
 	};
 
 

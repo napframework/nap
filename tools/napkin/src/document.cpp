@@ -179,7 +179,9 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 
 const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
 {
-	assert(!name.empty());
+	if (name.empty())
+		return object.mID;
+
 	auto new_name = getUniqueName(name, object, false);
 	if (new_name == object.mID)
 		return object.mID;

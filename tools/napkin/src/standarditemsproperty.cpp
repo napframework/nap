@@ -450,7 +450,7 @@ void napkin::EmbeddedPointerValueItem::setData(const QVariant& value, int role)
 		case Qt::EditRole:
 		{
 			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
-			if (pointee != nullptr && !value.toString().isEmpty())
+			if (pointee != nullptr)
 			{
 				PropertyPath id_path(pointee->mID, nap::rtti::sIDPropertyName, *mPath.getDocument());
 				napkin::AppContext::get().executeCommand(new SetValueCommand(id_path, value));
