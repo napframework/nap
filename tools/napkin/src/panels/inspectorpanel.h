@@ -150,7 +150,7 @@ namespace napkin
 		/**
 		 * Lays out all the items
 		 */
-		void expand(const QModelIndex& parent);
+		void expandTree(const QModelIndex& parent);
 
 		/**
 		 * Called when the context menu for an item should be shown

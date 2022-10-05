@@ -300,7 +300,7 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	if (doc != nullptr)
 		connect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
 
-	expand(QModelIndex());
+	expandTree(QModelIndex());
 }
 
 
@@ -313,20 +313,36 @@ void InspectorPanel::clear()
 }
 
 
-void napkin::InspectorPanel::expand(const QModelIndex& parent)
+void napkin::InspectorPanel::expandTree(const QModelIndex& parent)
 {
+	// Get parent item
+	QStandardItem* parent_item = parent.isValid() ? mModel.itemFromIndex(parent) : nullptr;
 	for (int r = 0; r < mModel.rowCount(parent); r++)
 	{
+		// Get child item
 		QModelIndex child_index = mModel.index(r, 0, parent);
-		QStandardItem* item =  mModel.itemFromIndex(child_index);
-		assert(item != nullptr);
+		QStandardItem* child_item =  mModel.itemFromIndex(child_index);
+		assert(child_item != nullptr);
 
-		if (qitem_cast<ArrayPropertyItem*>(item) != nullptr)
-		{
-			auto mapped_idx = mTreeView.getProxyModel().mapFromSource(child_index);
-			mTreeView.getTreeView().expand(mapped_idx);
-			expand(child_index);
-		}
+		// Don't expand when item in array
+		if(qitem_cast<ArrayPropertyItem*>(parent_item) != nullptr)
+			continue;
+
+		// Don't expand embedded resources
+		if(qitem_cast<EmbeddedPointerItem*>(child_item) != nullptr)
+			continue;
+
+		// Don't expand color
+		CompoundPropertyItem* compound = qitem_cast<CompoundPropertyItem*>(child_item);
+		if (compound != nullptr && compound->getPath().isColor())
+			continue;
+
+		// Do expand the rest
+		auto mapped_idx = mTreeView.getProxyModel().mapFromSource(child_index);
+		mTreeView.getTreeView().expand(mapped_idx);
+
+		// Repeat
+		expandTree(child_index);
 	}
 }
 
