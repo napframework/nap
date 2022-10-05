@@ -148,6 +148,11 @@ namespace napkin
 		void clear();
 
 		/**
+		 * Lays out all the items
+		 */
+		void expand(const QModelIndex& parent);
+
+		/**
 		 * Called when the context menu for an item should be shown
 		 * @param menu The menu that actions should be added to (initially empty)
 		 */

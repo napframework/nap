@@ -705,6 +705,7 @@ int Document::arrayAddValue(const PropertyPath& path)
 	Variant array = resolved_path.getValue();
 	assert(array.is_array());
 	VariantArray array_view = array.create_array_view();
+	assert(array_view.is_dynamic());
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
@@ -717,13 +718,8 @@ int Document::arrayAddValue(const PropertyPath& path)
 	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
 	// hence, rttr::variant_array_view::insert_value will fail because it expects just a string.
 	Variant new_value;
-	if (wrapped_type == RTTI_OF(std::string))
-		new_value = std::string();
-	else
-		new_value = wrapped_type.create();
-
+	new_value = wrapped_type == RTTI_OF(std::string) ? std::string() : wrapped_type.create();
 	assert(new_value.is_valid());
-	assert(array_view.is_dynamic());
 
 	size_t index = array_view.get_size();
 	bool inserted = array_view.insert_value(index, new_value);

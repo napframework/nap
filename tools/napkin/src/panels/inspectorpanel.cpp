@@ -232,7 +232,8 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	}
 
 	// Array?
-	if (qobject_cast<ArrayPropertyItem*>(path_item))
+	auto* array_item = qobject_cast<ArrayPropertyItem*>(path_item);
+	if (array_item != nullptr && array_item->getPath().getArrayEditable())
 	{
 		PropertyPath array_path = path_item->getPath();
 		auto array_type = array_path.getArrayElementType();
@@ -269,7 +270,6 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			});
 
 		}
-		menu.addSeparator();
 	}
 }
 
@@ -281,7 +281,6 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 	if(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 	{
 		setPath({});
-		return;
 	}
 }
 
@@ -289,26 +288,19 @@ void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
 void InspectorPanel::setPath(const PropertyPath& path)
 {
 	auto doc = mModel.path().getDocument();
-
 	if (doc != nullptr)
 		disconnect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
 
-	if (path.isValid())
-	{
-		mTitle.setText(QString::fromStdString(path.getName()));
-		mSubTitle.setText(QString::fromStdString(path.getType().get_name().data()));
-	}
-	else
-	{
-		mTitle.setText("");
-		mSubTitle.setText("");
-	}
+	mTitle.setText(path.isValid() ? path.getName().c_str() : "");
+	mSubTitle.setText(path.isValid() ? path.getType().get_name().data() : "");
 	mPathField.setText(QString::fromStdString(path.toString()));
 
 	mModel.setPath(path);
 	doc = path.getDocument();
 	if (doc != nullptr)
 		connect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
+
+	expand(QModelIndex());
 }
 
 
@@ -318,6 +310,24 @@ void InspectorPanel::clear()
 	mPathField.setText("");
 	mTitle.setText("");
 	mSubTitle.setText("");
+}
+
+
+void napkin::InspectorPanel::expand(const QModelIndex& parent)
+{
+	for (int r = 0; r < mModel.rowCount(parent); r++)
+	{
+		QModelIndex child_index = mModel.index(r, 0, parent);
+		QStandardItem* item =  mModel.itemFromIndex(child_index);
+		assert(item != nullptr);
+
+		if (qitem_cast<ArrayPropertyItem*>(item) != nullptr)
+		{
+			auto mapped_idx = mTreeView.getProxyModel().mapFromSource(child_index);
+			mTreeView.getTreeView().expand(mapped_idx);
+			expand(child_index);
+		}
+	}
 }
 
 

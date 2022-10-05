@@ -421,9 +421,9 @@ rttr::type PropertyPath::getArrayElementType() const
 
 	VariantArray array_view = array.create_array_view();
 	auto elmtype = array_view.get_rank_type(1);
-	//auto elmtype = array_view.get_rank_type(array_view.get_rank());
 	return elmtype.is_wrapper() ? elmtype.get_wrapped_type() : elmtype;
 }
+
 
 size_t PropertyPath::getArrayLength() const
 {
@@ -431,14 +431,12 @@ size_t PropertyPath::getArrayLength() const
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
-	assert(array.is_valid()); assert(array.is_array());
+	assert(array.is_valid());
 
 	VariantArray array_view = array.create_array_view();
-	assert(array_view.is_dynamic());
-	assert(array_view.is_valid());
-
 	return array_view.get_size();
 }
+
 
 PropertyPath PropertyPath::getArrayElement(size_t index) const
 {
@@ -449,6 +447,20 @@ PropertyPath PropertyPath::getArrayElement(size_t index) const
 	p.emplace_back(std::to_string(index));
 	assert(mDocument != nullptr);
 	return { mObjectPath, p, *mDocument };
+}
+
+
+bool napkin::PropertyPath::getArrayEditable() const
+{
+	assert(isArray());
+	ResolvedPath resolved_path = resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_valid());
+
+	VariantArray array_view = array.create_array_view();
+	return array_view.is_dynamic();
 }
 
 

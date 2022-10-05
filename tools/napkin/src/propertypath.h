@@ -162,6 +162,12 @@ namespace napkin
 		PropertyPath getArrayElement(size_t index) const;
 
 		/**
+		 * Returns if the array is editable.
+		 * @return if the array is editable.
+		 */
+		bool getArrayEditable() const;
+
+		/**
 		 * @return Wrapped type
 		 */
 		rttr::type getWrappedType() const;
