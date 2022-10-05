@@ -206,7 +206,7 @@ void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, 
 		// Delete everything at and beyond the item that was inserted
 		NAP_ASSERT_MSG(childIndex == this->rowCount(), "Item not appended to end of array");
 		if (childIndex < this->rowCount())
-			this->removeRows(childIndex, this->rowCount() - 1);
+			this->removeRows(childIndex, this->rowCount() - childIndex);
 
 		// Create items for children from that point onwards
 		auto children = mPath.getChildren();
@@ -221,25 +221,14 @@ void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, s
 {
 	if (mPath == parentPath)
 	{
-		// Every child item beyond the one that was deleted now maps to the wrong index.
-		// Instead of deleting (and re-creating) all items beyond the item that was removed, update their paths
-		assert(childIndex < rowCount());
-		auto idx = childIndex + 1;
-		while (idx < this->rowCount())
-		{
-			for (int c = 0; c < this->columnCount(); c++)
-			{
-				auto a = qitem_cast<PropertyPathItem*>(this->child(idx - 1, c));
-				auto b = qitem_cast<PropertyPathItem*>(this->child(idx - 0, c));
-				if (a != nullptr && b != nullptr)
-				{
-					b->setPath(a->getPath());
-				}
-			}
-			idx++;
-		}
-		// Now remove the item
-		this->removeRows(childIndex, 1);
+		// Delete the item and everything beyond the item that was deleted
+		this->removeRows(childIndex, this->rowCount() - childIndex);
+
+		// Create items for children from that point onwards
+		auto children = mPath.getChildren();
+		auto idx = childIndex;
+		for (auto idx = childIndex; idx < children.size(); idx++)
+			this->createAppendRow(children[idx]);
 	}
 }
 

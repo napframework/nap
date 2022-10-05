@@ -48,12 +48,6 @@ namespace napkin
 		 */
 		const PropertyPath& getPath() const { return mPath; }
 
-		/**
-		 * Update the path held by this item
-		 * @param path the new path
-		 */
-		void setPath(const PropertyPath& path) { mPath = path; }
-
 	Q_SIGNALS:
 		/**
 		 * Called when the property value of this item changes
