@@ -157,17 +157,20 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	// Instance property?
 	if (path.isInstanceProperty() && path.isOverridden())
 	{
-		menu.addAction("Remove override", [path]() {
-			PropertyPath p = path;
-			p.removeOverride();
-		});
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), 
+			"Remove override", [path]()
+			{
+				PropertyPath p = path;
+				p.removeOverride();
+			});
 	}
 
 	// Pointer?
 	if (qobject_cast<PointerItem*>(path_item) != nullptr)
 	{
 		nap::rtti::Object* pointee = path_item->getPath().getPointee();
-		QAction* action = menu.addAction("Select Resource", [pointee]
+		QAction* action = menu.addAction(AppContext::get().getResourceFactory().getIcon(*pointee),
+			"Select Resource", [pointee]
 		{
 			QList<nap::rtti::Object*> objects = {pointee};
 			AppContext::get().selectionChanged(objects);
