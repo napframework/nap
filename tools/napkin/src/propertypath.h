@@ -95,7 +95,7 @@ namespace napkin
 		/**
 		 * Set the value of this property
 		 */
-		void setValue(rttr::variant value);
+		bool setValue(rttr::variant value);
 
 		/**
 		 * If this path refers to a pointer, get the Object it's pointing to.

@@ -4,8 +4,11 @@
 
 #pragma once
 
+// Local Includes
+#include "document.h"
+
+// External Includes
 #include <QVariant>
-#include <mutex>
 #include <rtti/typeinfo.h>
 #include <rttr/type.h>
 #include <nap/logger.h>
@@ -57,9 +60,31 @@ namespace napkin
 	 */
 	rttr::variant fromQVariant(const nap::rtti::TypeInfo& type, const QVariant& variant, bool* ok);
 
-	rttr::variant getInstancePropertyValue(rttr::type type, nap::InstancePropertyValue& instPropValue);
-	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value);
-	void setInstancePropertyValue(rttr::variant& prop, const rttr::type& type, const rttr::variant& value);
-	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type);
+	/**
+	 * Creates an instance property override for the given type
+	 * @param type the type of the instance property override
+	 * @param document the document the property belongs to
+	 */
+	nap::InstancePropertyValue* createInstanceProperty(const rttr::type& type, napkin::Document& document);
+
+	/**
+	 * Deletes an instance property override
+	 * @param instanceProperty the instance property override to remove
+	 * @param document the document the property belongs to
+	 */
+	void removeInstanceProperty(rttr::variant& instanceProperty, napkin::Document& document);
+
+	/**
+	 * @return the value of the instance property override
+	 * @param instanceProperty instance property that holds the value
+	 */
+	rttr::variant getInstancePropertyValue(const nap::InstancePropertyValue& instanceProperty);
+
+	/**
+	 * Updates the instance property value
+	 * @param instanceProperty variant that holds the instance property
+	 * @paaram value new value
+	 */
+	bool setInstancePropertyValue(rttr::variant& instanceProperty, const rttr::variant& value);
 }
 
