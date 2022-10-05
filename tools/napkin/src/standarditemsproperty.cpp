@@ -91,16 +91,27 @@ napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(pat
 
 QVariant napkin::PropertyPathItem::data(int role) const
 {
-	if (role == Qt::DisplayRole)
+	switch (role)
 	{
-		// If the parent is an array, display the index of this item
-		auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
-		if (parent_path != nullptr && parent_path->getPath().isArray())
+		case Qt::DisplayRole:
 		{
-			return row();
+			// If the parent is an array, display the index of this item
+			auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
+			if (parent_path != nullptr && parent_path->getPath().isArray())
+			{
+				return row();
+			}
+			return QStandardItem::data(role);
 		}
+		case Qt::UserRole:
+		{
+			return QVariant::fromValue(mPath);
+		}
+		default:
+		{
+			return QStandardItem::data(role);
+		}		
 	}
-	return QStandardItem::data(role);
 }
 
 
@@ -250,12 +261,7 @@ QVariant napkin::PointerValueItem::data(int role) const
 		case Qt::EditRole:
 		{
 			auto pointee = mPath.getPointee();
-			return pointee != nullptr ?
-				QString::fromStdString(pointee->mID) : "NULL";
-		}
-		case Qt::UserRole:
-		{
-			return QVariant::fromValue(mPath);
+			return pointee != nullptr ? QString::fromStdString(pointee->mID) : "NULL";
 		}
 		default:
 		{
@@ -313,10 +319,6 @@ QVariant napkin::ColorValueItem::data(int role) const
 			display += nap::utility::stringFormat("%02x", display_color[i]);
 		}
 		return QString::fromStdString(display).toUpper();
-	}
-	case Qt::UserRole:
-	{
-		return QVariant::fromValue(mPath);
 	}
 	default:
 		return PropertyPathItem::data(role);
