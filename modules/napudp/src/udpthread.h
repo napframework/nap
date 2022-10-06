@@ -30,9 +30,9 @@ namespace nap
 	 */
 	enum EUDPThreadUpdateMethod : int
 	{
-		MAIN_THREAD			= 0,			///< process UDPAdapters on main thread
-		SPAWN_OWN_THREAD	= 1,			///< process UDPAdapters in newly spawned thread
-		MANUAL				= 2				///< only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
+		UDP_MAIN_THREAD			= 0,			///< process UDPAdapters on main thread
+        UDP_SPAWN_OWN_THREAD	= 1,			///< process UDPAdapters in newly spawned thread
+        UDP_MANUAL				= 2				///< only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
 	};
 
 	// forward declares
@@ -80,12 +80,9 @@ namespace nap
 		virtual void stop() override final;
 
         /**
-         *
          * @return asio IO context
          */
         asio::io_context& getIOContext();
-
-		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
 
 		/**
 		 * Call this when update method is set to manual.
@@ -93,6 +90,8 @@ namespace nap
 		 */
 		void manualProcess();
 
+        // properties
+        EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::UDP_MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
 	private:
 		/**
 		 * the threaded function
@@ -126,7 +125,7 @@ namespace nap
 		UDPService& mService;
 
 		// adapters
-		std::vector<UDPAdapter*> mAdapters;
+		std::vector<UDPAdapter*> 	mAdapters;
 
         struct Impl;
         std::unique_ptr<Impl> mImpl;
