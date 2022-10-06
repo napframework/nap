@@ -94,6 +94,8 @@ namespace napkin
 
 		/**
 		 * Set the value of this property
+		 * @param value the new property value
+		 * @return if the value was set
 		 */
 		bool setValue(rttr::variant value);
 

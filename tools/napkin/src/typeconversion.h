@@ -81,9 +81,10 @@ namespace napkin
 	rttr::variant getInstancePropertyValue(const nap::InstancePropertyValue& instanceProperty);
 
 	/**
-	 * Updates the instance property value
+	 * Assigns a new value to the instance property
 	 * @param instanceProperty variant that holds the instance property
-	 * @paaram value new value
+	 * @param value new instance property value
+	 * @return if the value has been assigned to the instance property
 	 */
 	bool setInstancePropertyValue(rttr::variant& instanceProperty, const rttr::variant& value);
 }
