@@ -65,7 +65,7 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 		return false;
 
 	// Otherwise sort default
-	return model->data(left, Qt::ItemDataRole::DisplayRole) < model->data(right, Qt::ItemDataRole::DisplayRole);
+    return l_item->text() < r_item->text();
 }
 
 
