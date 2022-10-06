@@ -125,10 +125,10 @@ QList<QStandardItem*> napkin::PropertyPathItem::createAppendRow(const PropertyPa
 	assert(!row.empty());
 	for (const auto& item : row)
 	{
-		const PropertyPathItem* item = qitem_cast<const PropertyPathItem*>(row.first());
-		if (item != nullptr)
+		const PropertyPathItem* path_item = qitem_cast<const PropertyPathItem*>(row.first());
+		if (path_item != nullptr)
 		{
-			connect(item, &PropertyPathItem::childAdded, this, &PropertyPathItem::childAdded);
+			connect(path_item, &PropertyPathItem::childAdded, this, &PropertyPathItem::childAdded);
 		}
 	}
 

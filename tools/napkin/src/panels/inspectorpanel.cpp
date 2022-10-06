@@ -446,7 +446,7 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 		}
 		break;
 	}
-	case Qt::TextColorRole:
+	case Qt::ForegroundRole:
 	{
 		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (value_item != nullptr)
