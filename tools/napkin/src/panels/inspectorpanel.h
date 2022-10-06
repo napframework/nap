@@ -159,11 +159,6 @@ namespace napkin
 		void onItemContextMenu(QMenu& menu);
 
 		/**
-		 * Called when a property value has been changed
-		 */
-		void onPropertyValueChanged(const PropertyPath& path);
-
-		/**
 		 * Called when another property needs to be selected
 		 */
 		void onPropertySelectionChanged(const PropertyPath& prop);
@@ -186,6 +181,11 @@ namespace napkin
 		 */
 		void onFileClosing(const QString& filename);
 
+		/**
+		 * Called when an object is renamed
+		 */
+		void onObjectRenamed(nap::rtti::Object& object, const std::string& oldName, const std::string& newName);
+
 	private:
 		InspectorModel mModel;						// The model for the view
 		nap::qt::FilterTreeView mTreeView;			// A tree view
@@ -198,5 +198,6 @@ namespace napkin
 		QLabel mSubTitle;							// Subtitle label
 		QLabel mPathLabel;							// label before path
 		QLineEdit mPathField;						// Display path to object
+		PropertyPath mPath;							// Path to display
 	};
 };

@@ -464,6 +464,17 @@ bool napkin::PropertyPath::getArrayEditable() const
 }
 
 
+bool napkin::PropertyPath::referencesObject(const std::string& name)
+{
+	for (const auto& idx_name : mObjectPath)
+	{
+		if (idx_name.mID == name)
+			return true;
+	}
+	return false;
+}
+
+
 std::string PropertyPath::toString() const
 {
 	if (hasProperty())
@@ -779,6 +790,7 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 
 }
 
+
 std::string PropertyPath::objectPathStr() const
 {
 	std::vector<std::string> elements;
@@ -786,6 +798,7 @@ std::string PropertyPath::objectPathStr() const
 		elements.emplace_back(elm);
 	return "/" + nap::utility::joinString(elements, "/");
 }
+
 
 std::string PropertyPath::propPathStr() const
 {
@@ -795,6 +808,7 @@ std::string PropertyPath::propPathStr() const
 	return nap::utility::joinString(elements, "/");
 }
 
+
 void PropertyPath::updateObjectName(const std::string& oldName, const std::string& newName)
 {
 	for (auto& nameIdx : mObjectPath)
@@ -803,6 +817,7 @@ void PropertyPath::updateObjectName(const std::string& oldName, const std::strin
 			nameIdx.mID = newName;
 	}
 }
+
 
 void PropertyPath::invalidate()
 {

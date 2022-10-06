@@ -294,6 +294,11 @@ namespace napkin
 		void updateObjectName(const std::string& oldName, const std::string& newName);
 
 		/**
+		 * Checks if the path refers to the object with the given name
+		 */
+		bool referencesObject(const std::string& name);
+
+		/**
 		 * @return data model
 		 */
 		Document* getDocument() const { return mDocument; }

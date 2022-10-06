@@ -18,6 +18,7 @@
 #include <utility/fileutils.h>
 #include <napqt/filterpopup.h>
 #include <nap/group.h>
+#include <fcurve.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -79,10 +80,9 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 
 	mTreeView.setMenuHook(std::bind(&InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
-	// TODO: Move this back to the model and let it update its state whenever properties change
-	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &InspectorPanel::onPropertyValueChanged);
 	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &InspectorPanel::onFileClosing);
+	connect(&AppContext::get(), &AppContext::objectRenamed, this, &InspectorPanel::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
 	connect(&mModel, &InspectorModel::childAdded, this, &InspectorPanel::onChildAdded);
 
@@ -274,33 +274,42 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 }
 
 
-void InspectorPanel::onPropertyValueChanged(const PropertyPath& path)
-{
-	// Skip groups, they're not visible in the inspector, only their children
-	assert(path.hasProperty());
-	if(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-	{
-		setPath({});
-	}
-}
-
-
 void InspectorPanel::setPath(const PropertyPath& path)
 {
-	auto doc = mModel.path().getDocument();
-	if (doc != nullptr)
-		disconnect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
+	// Clear everything
+	clear();
 
-	mTitle.setText(path.isValid() ? path.getName().c_str() : "");
-	mSubTitle.setText(path.isValid() ? path.getType().get_name().data() : "");
+	// Bail if path isn't valid
+	mPath = path;
+	if (!path.isValid())
+		return;
+
+	// Update title and subtitle
 	mPathField.setText(QString::fromStdString(path.toString()));
+	mTitle.setText(path.getName().c_str());
+	mSubTitle.setText(path.getType().get_name().data());
 
-	mModel.setPath(path);
-	doc = path.getDocument();
-	if (doc != nullptr)
-		connect(doc, &Document::removingObject, this, &InspectorPanel::onObjectRemoved);
+	// These types are excluded from property editing
+	static const std::vector<nap::rtti::TypeInfo> typeExceptions
+	{
+		RTTI_OF(nap::IGroup),
+		RTTI_OF(nap::math::FloatFCurve)
+	};
 
-	expandTree(QModelIndex());
+	// Check if path is an exception
+	auto path_obj = path.getObject();
+	assert(path_obj != nullptr); auto obj_type = path_obj->get_type();
+	auto it = std::find_if(typeExceptions.begin(), typeExceptions.end(), [&obj_type](const nap::rtti::TypeInfo& typeException)
+		{
+			return obj_type.is_derived_from(typeException);
+		});
+
+	// Add if not an exception
+	if (it == typeExceptions.end())
+	{
+		mModel.setPath(path);
+		expandTree(QModelIndex());
+	}
 }
 
 
@@ -365,17 +374,27 @@ void napkin::InspectorPanel::onFileClosing(const QString& filename)
 }
 
 
+void napkin::InspectorPanel::onObjectRenamed(nap::rtti::Object& object, const std::string& oldName, const std::string& newName)
+{
+	// Update path if object that was renamed is currently referenced
+	if (mPath.referencesObject(oldName))
+	{
+		mPath.updateObjectName(oldName, newName);
+		mPathField.setText(QString::fromStdString(mPath.toString()));
+		mTitle.setText(mPath.getName().c_str());
+	}
+}
+
+
 void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
 	QList<nap::rtti::Object*> objects = {prop.getObject()};
 	AppContext::get().selectionChanged(objects);
-
 	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
 	{
 		auto pitem = qitem_cast<PropertyPathItem*>(item);
 		return pitem != nullptr ? pitem->getPath() == prop : false;
 	});
-
 	mTreeView.select(pathItem, true);
 }
 
