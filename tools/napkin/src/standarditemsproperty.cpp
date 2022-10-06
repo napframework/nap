@@ -87,6 +87,7 @@ napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(pat
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &PropertyPathItem::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::removingObject, this, &PropertyPathItem::onRemovingObject);
+	setEditable(false);
 }
 
 
@@ -167,9 +168,7 @@ void napkin::PropertyPathItem::onRemovingObject(const nap::rtti::Object* object)
 
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{
-	setEditable(false);
-}
+{ }
 
 
 void napkin::CompoundPropertyItem::populateChildren()
@@ -299,11 +298,15 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{ }
+{
+	setEditable(true);
+}
 
 
 napkin::ColorValueItem::ColorValueItem(const PropertyPath& path) : PropertyPathItem(path)
-{ }
+{
+	setEditable(true);
+}
 
 
 QVariant napkin::ColorValueItem::data(int role) const
@@ -543,4 +546,6 @@ void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 
 napkin::PropertyValueItem::PropertyValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{ }
+{
+	setEditable(true);
+}
