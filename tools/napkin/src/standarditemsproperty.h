@@ -144,6 +144,11 @@ namespace napkin
 		 */
 		ArrayPropertyItem(const PropertyPath& path);
 
+		/**
+		 * Override from QStandardItem
+		 */
+		QVariant data(int role) const override;
+
 	private:
         /**
          * Generate child items

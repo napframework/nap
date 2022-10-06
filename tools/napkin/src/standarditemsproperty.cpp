@@ -8,6 +8,7 @@
 #include "standarditemsproperty.h"
 #include "standarditemsgeneric.h"
 #include "appcontext.h"
+#include "napkin-resources.h"
 
 #include <QtDebug>
 #include <rtti/object.h>
@@ -198,6 +199,18 @@ napkin::ArrayPropertyItem::ArrayPropertyItem(const PropertyPath& path)
 	populateChildren();
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &ArrayPropertyItem::onChildInserted);
 	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &ArrayPropertyItem::onChildRemoved);
+}
+
+
+QVariant napkin::ArrayPropertyItem::data(int role) const
+{
+	switch (role)
+	{
+	case Qt::DecorationRole:
+		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ARRAY);
+	default:
+		return PropertyPathItem::data(role);
+	}
 }
 
 

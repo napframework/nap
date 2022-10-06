@@ -37,6 +37,7 @@
 		<file>icons/info.png</file>
 		<file>icons/help.png</file>
 		<file>icons/url.png</file>
+		<file>icons/property.png</file>
+		<file>icons/array.png</file>
 	</qresource>
 </RCC>
-
