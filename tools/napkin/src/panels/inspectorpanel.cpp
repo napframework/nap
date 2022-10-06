@@ -169,13 +169,15 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	if (qobject_cast<PointerItem*>(path_item) != nullptr)
 	{
 		nap::rtti::Object* pointee = path_item->getPath().getPointee();
-		QAction* action = menu.addAction(AppContext::get().getResourceFactory().getIcon(*pointee),
-			"Select Resource", [pointee]
+		if (pointee != nullptr)
 		{
-			QList<nap::rtti::Object*> objects = {pointee};
-			AppContext::get().selectionChanged(objects);
-		});
-		action->setEnabled(pointee != nullptr);
+			QAction* action = menu.addAction(AppContext::get().getResourceFactory().getIcon(*pointee),
+				"Select Resource", [pointee]
+				{
+					QList<nap::rtti::Object*> objects = { pointee };
+					AppContext::get().selectionChanged(objects);
+				});
+		}
 	}
 
 	// Embedded pointer?
