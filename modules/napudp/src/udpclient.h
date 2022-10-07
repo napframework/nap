@@ -52,7 +52,7 @@ namespace nap
 		void send(UDPPacket&& packet);
 
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
-		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
+		std::string mEndpoint 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
 		bool mBroadcast                     = false;        ///< Property: 'Broadcast' set option to broadcast
@@ -73,8 +73,7 @@ namespace nap
 		/**
 		 * The process function
 		 */
-		void process() override final;
-
+		void onProcess() override final;
 	private:
 		// Client specific ASIO implementation
 		class Impl;
