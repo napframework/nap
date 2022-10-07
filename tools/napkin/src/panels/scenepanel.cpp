@@ -192,7 +192,7 @@ nap::qt::FilterTreeView& napkin::ScenePanel::treeView()
 void napkin::ScenePanel::select(nap::RootEntity* rootEntity, const QString& path)
 {
 	auto item = resolveItem(rootEntity, path);
-	mFilterView.selectAndReveal(item);
+	mFilterView.select(item, true);
 }
 
 

@@ -455,22 +455,23 @@ void RemoveComponentCommand::undo()
 
 ReplaceEmbeddedPointerCommand::ReplaceEmbeddedPointerCommand(const PropertyPath& path, rttr::type objectType)
 		: mPath(path), mType(objectType)
-{
+{ }
 
-}
 
 void ReplaceEmbeddedPointerCommand::redo()
 {
+	// Remove current pointee
 	auto pointee = mPath.getPointee();
 	auto doc = mPath.getDocument();
-	if (pointee) // TODO: Serialize and store for undo
+	if (pointee)
 		doc->removeObject(*pointee);
 
-	auto obj = doc->addObject(mType, nullptr);
-	mCreatedObject = {*obj, *doc};
+	// Create and point to new object
+	auto obj = doc->addObject(mType, mPath.getObject());
 	mPath.setPointee(obj);
 	doc->propertyValueChanged(mPath);
 }
+
 
 void ReplaceEmbeddedPointerCommand::undo()
 {

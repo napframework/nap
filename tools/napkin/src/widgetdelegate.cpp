@@ -89,7 +89,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		op.text = enumIndexToQString(type.get_enumeration(), val);
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 	}
-	else if (path.isPointer())
+	else if (path.isNonEmbeddedPointer())
 	{
 		QStyleOptionViewItem viewop(option);
 		QStyledItemDelegate::paint(painter, viewop, index);

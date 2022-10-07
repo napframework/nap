@@ -14,6 +14,7 @@
 #include <QSet>
 #include <QStandardItem>
 #include <QString>
+#include <QUrl>
 #include <QUndoCommand>
 #include <entity.h>
 #include <nap/logger.h>
@@ -418,5 +419,18 @@ namespace napkin
 	private:
 		void perform() override;
 		QString mTheme;	// The theme to set
+	};
+
+
+	/**
+	 * Open URL in browser
+	 */
+	class OpenURLAction : public Action
+	{
+	public:
+        explicit OpenURLAction(const char* text, const QUrl& address);
+	private:
+		void perform() override;
+		QUrl mAddress;
 	};
 }

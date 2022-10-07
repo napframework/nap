@@ -10,7 +10,6 @@ using namespace nap::rtti;
 
 namespace napkin
 {
-
 	uint64_t enumStringToIndex(rttr::enumeration enumer, const std::string& name, bool* ok)
 	{
 		// TODO: Not sure how rttr::enumeration::name_to_value works, so doing it like this for now
@@ -118,7 +117,6 @@ namespace napkin
 	Variant fromQVariant(const TypeInfo& type, const QVariant& variant, bool* ok)
 	{
 		*ok = true;
-
 		if (type.is_arithmetic())
 		{
 			if (type == TypeInfo::get<bool>())
@@ -168,8 +166,16 @@ namespace napkin
 		return Variant();
 	}
 
+
+	rttr::variant getInstancePropertyValue(const nap::InstancePropertyValue& instPropValue)
+	{
+		nap::rtti::Property inst_prop = instPropValue.get_type().get_property(nap::rtti::instanceproperty::value);
+		return inst_prop.get_value(instPropValue);
+	}
+
+
 	template<typename T>
-	nap::TypedInstancePropertyValue<T>* addInstProp(const rttr::variant& value)
+	nap::InstancePropertyValue* addInstanceProperty(const rttr::variant& value)
 	{
 		auto doc = napkin::AppContext::get().getDocument();
 		std::string name("instanceProp_" + std::string(value.get_type().get_name().data()));
@@ -178,117 +184,75 @@ namespace napkin
 		return propValue;
 	}
 
-	rttr::variant getInstancePropertyValue(rttr::type type, nap::InstancePropertyValue& instPropValue)
-	{
-		if (type == RTTI_OF(bool)) 			return static_cast<nap::TypedInstancePropertyValue<bool>&>(instPropValue).mValue;
-		if (type == RTTI_OF(char)) 			return static_cast<nap::TypedInstancePropertyValue<char>&>(instPropValue).mValue;
-		if (type == RTTI_OF(int8_t)) 		return static_cast<nap::TypedInstancePropertyValue<int8_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(int16_t)) 		return static_cast<nap::TypedInstancePropertyValue<int16_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(int32_t)) 		return static_cast<nap::TypedInstancePropertyValue<int32_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(int64_t)) 		return static_cast<nap::TypedInstancePropertyValue<int64_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(uint8_t)) 		return static_cast<nap::TypedInstancePropertyValue<uint8_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(uint16_t)) 		return static_cast<nap::TypedInstancePropertyValue<uint16_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(uint32_t)) 		return static_cast<nap::TypedInstancePropertyValue<uint32_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(uint64_t)) 		return static_cast<nap::TypedInstancePropertyValue<uint64_t>&>(instPropValue).mValue;
-		if (type == RTTI_OF(float)) 		return static_cast<nap::TypedInstancePropertyValue<float>&>(instPropValue).mValue;
-		if (type == RTTI_OF(double)) 		return static_cast<nap::TypedInstancePropertyValue<double>&>(instPropValue).mValue;
-		if (type == RTTI_OF(glm::vec2)) 	return static_cast<nap::TypedInstancePropertyValue<glm::vec2>&>(instPropValue).mValue;
-		if (type == RTTI_OF(glm::vec3)) 	return static_cast<nap::TypedInstancePropertyValue<glm::vec3>&>(instPropValue).mValue;
-		if (type == RTTI_OF(glm::vec4)) 	return static_cast<nap::TypedInstancePropertyValue<glm::vec4>&>(instPropValue).mValue;
-		if (type == RTTI_OF(glm::ivec2)) 	return static_cast<nap::TypedInstancePropertyValue<glm::ivec2>&>(instPropValue).mValue;
-		if (type == RTTI_OF(glm::ivec3)) 	return static_cast<nap::TypedInstancePropertyValue<glm::ivec3>&>(instPropValue).mValue;
-		if (type == RTTI_OF(glm::quat)) 	return static_cast<nap::TypedInstancePropertyValue<glm::quat>&>(instPropValue).mValue;
-		if (type == RTTI_OF(std::string))	return static_cast<nap::TypedInstancePropertyValue<std::string>&>(instPropValue).mValue;
 
-		return rttr::detail::get_invalid_type();
+	nap::InstancePropertyValue* createInstanceProperty(const rttr::type& type, napkin::Document& document)
+	{
+		const static std::unordered_map<rttr::type, rttr::type> instancePropertyMap
+		{
+			{ RTTI_OF(bool),		RTTI_OF(nap::BoolInstancePropertyValue)		},
+			{ RTTI_OF(char),		RTTI_OF(nap::CharInstancePropertyValue)		},
+			{ RTTI_OF(int8_t),		RTTI_OF(nap::Int8InstancePropertyValue)		},
+			{ RTTI_OF(int16_t),		RTTI_OF(nap::Int16InstancePropertyValue)	},
+			{ RTTI_OF(int32_t),		RTTI_OF(nap::Int32InstancePropertyValue)	},
+			{ RTTI_OF(int64_t),		RTTI_OF(nap::Int64InstancePropertyValue)	},
+			{ RTTI_OF(uint8_t),		RTTI_OF(nap::UInt16InstancePropertyValue)	},
+			{ RTTI_OF(uint16_t),	RTTI_OF(nap::UInt32InstancePropertyValue)	},
+			{ RTTI_OF(uint32_t),	RTTI_OF(nap::UInt32InstancePropertyValue)	},
+			{ RTTI_OF(uint64_t),	RTTI_OF(nap::UInt64InstancePropertyValue)	},
+			{ RTTI_OF(float),		RTTI_OF(nap::FloatInstancePropertyValue)	},
+			{ RTTI_OF(double),		RTTI_OF(nap::DoubleInstancePropertyValue)	},
+			{ RTTI_OF(glm::vec2),	RTTI_OF(nap::Vec2InstancePropertyValue)		},
+			{ RTTI_OF(glm::vec3),	RTTI_OF(nap::Vec3InstancePropertyValue)		},
+			{ RTTI_OF(glm::vec4),	RTTI_OF(nap::Vec4InstancePropertyValue)		},
+			{ RTTI_OF(glm::ivec2),	RTTI_OF(nap::IVec2InstancePropertyValue)	},
+			{ RTTI_OF(glm::ivec3),	RTTI_OF(nap::IVec3InstancePropertyValue)	},
+			{ RTTI_OF(glm::quat),	RTTI_OF(nap::QuatInstancePropertyValue)		},
+			{ RTTI_OF(std::string),	RTTI_OF(nap::StringInstancePropertyValue)	}
+		};
+
+		// Get property override to create
+		nap::rtti::TypeInfo instance_property_type = nap::rtti::TypeInfo::empty();
+		if (!type.is_wrapper())
+		{
+			// Find value type
+			auto it = instancePropertyMap.find(type);
+			if (it != instancePropertyMap.end())
+				instance_property_type = it->second;
+		}
+		else
+		{
+			// Pointer type
+			if (type.get_wrapped_type().is_pointer())
+				instance_property_type = RTTI_OF(nap::PointerInstancePropertyValue);
+		}
+
+		// Bail if invalid
+		if (!instance_property_type.is_valid())
+		{
+			nap::Logger::error("Instance property type '%s' not supported", type.get_name().data());
+			return nullptr;
+		}
+
+		// Create
+		auto instance_property = document.addObject(instance_property_type, nullptr, "override");
+		assert(instance_property != nullptr);
+		return rtti_cast<nap::InstancePropertyValue>(instance_property);
 	}
 
 
-	nap::InstancePropertyValue* createInstancePropertyValue(const rttr::type& type, const rttr::variant& value)
+	bool setInstancePropertyValue(rttr::variant& instanceProperty, const rttr::variant& value)
 	{
-		if (type == rttr::type::get<bool>()) 		return addInstProp<bool>(value);
-		if (type == rttr::type::get<char>()) 		return addInstProp<char>(value);
-		if (type == rttr::type::get<int8_t>()) 		return addInstProp<int8_t>(value);
-		if (type == rttr::type::get<int16_t>()) 	return addInstProp<int16_t>(value);
-		if (type == rttr::type::get<int32_t>()) 	return addInstProp<int32_t>(value);
-		if (type == rttr::type::get<int64_t>()) 	return addInstProp<int64_t>(value);
-		if (type == rttr::type::get<uint8_t>()) 	return addInstProp<uint8_t>(value);
-		if (type == rttr::type::get<uint16_t>()) 	return addInstProp<uint16_t>(value);
-		if (type == rttr::type::get<uint32_t>()) 	return addInstProp<uint32_t>(value);
-		if (type == rttr::type::get<uint64_t>()) 	return addInstProp<uint64_t>(value);
-		if (type == rttr::type::get<float>()) 		return addInstProp<float>(value);
-		if (type == rttr::type::get<double>()) 		return addInstProp<double>(value);
-		if (type == rttr::type::get<glm::vec2>()) 	return addInstProp<glm::vec2>(value);
-		if (type == rttr::type::get<glm::vec3>()) 	return addInstProp<glm::vec3>(value);
-		if (type == rttr::type::get<glm::vec4>()) 	return addInstProp<glm::vec4>(value);
-		if (type == rttr::type::get<glm::ivec2>()) 	return addInstProp<glm::ivec2>(value);
-		if (type == rttr::type::get<glm::ivec3>()) 	return addInstProp<glm::ivec3>(value);
-		if (type == rttr::type::get<glm::quat>()) 	return addInstProp<glm::quat>(value);
-		if (type == rttr::type::get<std::string>()) return addInstProp<std::string>(value);
-
-		nap::Logger::error("Instance property type '%s' not supported", type.get_name().data());
-
-		return nullptr;
+		auto instance_property = instanceProperty.get_value<nap::InstancePropertyValue*>();
+		assert(instance_property != nullptr);
+		nap::rtti::Property value_property = instance_property->get_type().get_property(nap::rtti::instanceproperty::value);
+		return value_property.set_value(instance_property, value);
 	}
 
-	template<typename T>
-	void setInstProp(rttr::variant& prop, const rttr::variant& value)
-	{
-		auto propValue = prop.get_value<nap::TypedInstancePropertyValue<T>*>();
-		propValue->mValue = value.get_value<T>();
-	}
 
-	void setInstancePropertyValue(rttr::variant& prop, const rttr::type& type, const rttr::variant& value)
+	void removeInstanceProperty(rttr::variant& instanceProperty, napkin::Document& document)
 	{
-		if (type == rttr::type::get<bool>()) 				setInstProp<bool>(prop, value);
-		else if (type == rttr::type::get<char>()) 			setInstProp<char>(prop, value);
-		else if (type == rttr::type::get<int8_t>()) 		setInstProp<int8_t>(prop, value);
-		else if (type == rttr::type::get<int16_t>()) 		setInstProp<int16_t>(prop, value);
-		else if (type == rttr::type::get<int32_t>()) 		setInstProp<int32_t>(prop, value);
-		else if (type == rttr::type::get<int64_t>()) 		setInstProp<int64_t>(prop, value);
-		else if (type == rttr::type::get<uint8_t>()) 		setInstProp<uint8_t>(prop, value);
-		else if (type == rttr::type::get<uint16_t>()) 		setInstProp<uint16_t>(prop, value);
-		else if (type == rttr::type::get<uint32_t>()) 		setInstProp<uint32_t>(prop, value);
-		else if (type == rttr::type::get<uint64_t>()) 		setInstProp<uint64_t>(prop, value);
-		else if (type == rttr::type::get<float>()) 			setInstProp<float>(prop, value);
-		else if (type == rttr::type::get<double>()) 		setInstProp<double>(prop, value);
-		else if (type == rttr::type::get<glm::vec2>()) 		setInstProp<glm::vec2>(prop, value);
-		else if (type == rttr::type::get<glm::vec3>()) 		setInstProp<glm::vec3>(prop, value);
-		else if (type == rttr::type::get<glm::vec4>()) 		setInstProp<glm::vec4>(prop, value);
-		else if (type == rttr::type::get<glm::ivec2>()) 	setInstProp<glm::ivec2>(prop, value);
-		else if (type == rttr::type::get<glm::ivec3>()) 	setInstProp<glm::ivec3>(prop, value);
-		else if (type == rttr::type::get<glm::quat>()) 		setInstProp<glm::quat>(prop, value);
-		else if (type == rttr::type::get<std::string>()) 	setInstProp<std::string>(prop, value);
-	}
-
-	template<typename T>
-	void removeInstProp(rttr::variant& prop)
-	{
-		auto doc = napkin::AppContext::get().getDocument();
-		auto propValue = prop.get_value<nap::TypedInstancePropertyValue<T>*>();
-		doc->removeObject(*propValue);
-	}
-
-	void removeInstancePropertyValue(rttr::variant& prop, const rttr::type& type)
-	{
-		if (type == rttr::type::get<bool>()) 				removeInstProp<bool>(prop);
-		else if (type == rttr::type::get<char>()) 			removeInstProp<char>(prop);
-		else if (type == rttr::type::get<int8_t>()) 		removeInstProp<int8_t>(prop);
-		else if (type == rttr::type::get<int16_t>()) 		removeInstProp<int16_t>(prop);
-		else if (type == rttr::type::get<int32_t>()) 		removeInstProp<int32_t>(prop);
-		else if (type == rttr::type::get<int64_t>()) 		removeInstProp<int64_t>(prop);
-		else if (type == rttr::type::get<uint8_t>()) 		removeInstProp<uint8_t>(prop);
-		else if (type == rttr::type::get<uint16_t>()) 		removeInstProp<uint16_t>(prop);
-		else if (type == rttr::type::get<uint32_t>()) 		removeInstProp<uint32_t>(prop);
-		else if (type == rttr::type::get<uint64_t>()) 		removeInstProp<uint64_t>(prop);
-		else if (type == rttr::type::get<float>()) 			removeInstProp<float>(prop);
-		else if (type == rttr::type::get<double>()) 		removeInstProp<double>(prop);
-		else if (type == rttr::type::get<glm::vec2>()) 		removeInstProp<glm::vec2>(prop);
-		else if (type == rttr::type::get<glm::vec3>()) 		removeInstProp<glm::vec3>(prop);
-		else if (type == rttr::type::get<glm::vec4>()) 		removeInstProp<glm::vec4>(prop);
-		else if (type == rttr::type::get<glm::ivec2>()) 	removeInstProp<glm::ivec2>(prop);
-		else if (type == rttr::type::get<glm::ivec3>()) 	removeInstProp<glm::ivec3>(prop);
-		else if (type == rttr::type::get<glm::quat>()) 		removeInstProp<glm::quat>(prop);
-		else if (type == rttr::type::get<std::string>()) 	removeInstProp<std::string>(prop);
+		auto prop_value = instanceProperty.get_value<nap::InstancePropertyValue*>();
+		assert(prop_value != nullptr);
+		document.removeObject(*prop_value);
 	}
 };
