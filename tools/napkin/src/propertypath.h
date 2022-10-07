@@ -83,7 +83,7 @@ namespace napkin
 		~PropertyPath();
 
 		/**
-		 * @return The last part of the property name (not including the path)
+		 * @return The last part of the property name
 		 */
 		const std::string getName() const;
 
@@ -94,8 +94,10 @@ namespace napkin
 
 		/**
 		 * Set the value of this property
+		 * @param value the new property value
+		 * @return if the value was set
 		 */
-		void setValue(rttr::variant value);
+		bool setValue(rttr::variant value);
 
 		/**
 		 * If this path refers to a pointer, get the Object it's pointing to.
@@ -160,6 +162,12 @@ namespace napkin
 		 * @return A path to an element of the array or an invalid path if it cannot be found.
 		 */
 		PropertyPath getArrayElement(size_t index) const;
+
+		/**
+		 * Returns if the array is editable.
+		 * @return if the array is editable.
+		 */
+		bool getArrayEditable() const;
 
 		/**
 		 * @return Wrapped type
@@ -280,8 +288,21 @@ namespace napkin
 		 */
 		int getRealChildEntityIndex() const;
 
+		/**
+		 * Replaces every occurrence of oldName with newName
+		 * @param oldName old object name
+		 * @param newName new object name
+		 */
 		void updateObjectName(const std::string& oldName, const std::string& newName);
 
+		/**
+		 * Checks if the path refers to the object with the given name
+		 */
+		bool referencesObject(const std::string& name);
+
+		/**
+		 * @return data model
+		 */
 		Document* getDocument() const { return mDocument; }
 
 	private:

@@ -200,20 +200,19 @@ nap::Component* PropertyPath::component() const
 
 nap::TargetAttribute* PropertyPath::targetAttribute() const
 {
-	auto pathstr = propPathStr();
-
 	auto instProps = instanceProps();
 	if (!instProps)
 		return nullptr;
 
+	auto pathstr = propPathStr();
 	for (auto& attr : instProps->mTargetAttributes)
 	{
 		if (attr.mPath == pathstr)
 			return &attr;
 	}
-
 	return nullptr;
 }
+
 
 nap::TargetAttribute& PropertyPath::getOrCreateTargetAttribute()
 {
@@ -244,112 +243,89 @@ rttr::variant PropertyPath::getValue() const
 {
 	if (isInstanceProperty() && isOverridden())
 	{
-		auto targetAttr = targetAttribute();
-		if (targetAttr)
+		auto target_attr = targetAttribute();
+		if (target_attr)
 		{
-			if (isPointer())
-			{
-				auto ptrInstPropValue = rtti_cast<nap::PointerInstancePropertyValue>(targetAttr->mValue.get());
-				if (ptrInstPropValue)
-					return ptrInstPropValue->mValue;
-			}
-			else
-			{
-				return getInstancePropertyValue(getType(), *targetAttr->mValue.get());
-			}
+			return getInstancePropertyValue(*target_attr->mValue.get());
 		}
 	}
-
 	return resolve().getValue();
 }
 
-void PropertyPath::setValue(rttr::variant value)
+
+bool PropertyPath::setValue(rttr::variant value)
 {
-	auto resolved = resolve();
-
-	if (isInstanceProperty())
+	// Regular property
+	auto resolved_path = resolve();
+	if (!isInstanceProperty())
 	{
-		auto targetAttr = targetAttribute();
-		if (targetAttr)
-		{
-			rttr::variant val = targetAttr->mValue.get();
-
-			// discard instance property value if the provided value is the same as the original
-			if (resolve().getValue() == value)
-			{
-				removeInstanceValue(targetAttr, val);
-			}
-			else
-			{
-				if (isPointer())
-				{
-					auto propValue = val.get_value<nap::PointerInstancePropertyValue*>();
-					if (!propValue)
-					{
-						std::string name("instanceProp_" + std::string(value.get_type().get_name().data())
-										 + "_" + nap::math::generateUUID());
-						propValue = new nap::PointerInstancePropertyValue();
-						propValue->mID = name;
-					}
-					propValue->mValue = value.get_value<nap::rtti::Object*>();
-					targetAttr->mValue = propValue;
-				}
-				else
-				{
-					setInstancePropertyValue(val, getType(), value);
-				}
-			}
-			return;
-		}
-		else
-		{
-			targetAttr = &getOrCreateTargetAttribute();
-			if (isPointer())
-			{
-				std::string name("instanceProp_" + std::string(value.get_type().get_name().data()) + "_" + nap::math::generateUUID());
-				auto propValue = new nap::PointerInstancePropertyValue();
-				propValue->mID = name;
-				propValue->mValue = value.get_value<nap::rtti::Object*>();
-				targetAttr->mValue = propValue;
-			}
-			else
-			{
-				targetAttr->mValue = createInstancePropertyValue(getType(), value);
-			}
-		}
-		return;
+		return resolved_path.setValue(value);
 	}
 
-	bool success = resolved.setValue(value);
-	assert(success);
+	//////////////////////////////////////////////////////////////////////////
+	// TODO: Drastically improve handling of instance properties!!!
+	// The current implementation is shaky at best. It works, but that's about it. What to do?
+	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
+	// Properly implement callbacks, they're too scattered and hard to trace!
+	// Strengthen and simplify the entire model!
+	//////////////////////////////////////////////////////////////////////////
+
+	// Instance property: If the value is the same, remove property or bail
+	if (resolved_path.getValue() == value)
+	{
+		auto target_attr = targetAttribute();
+		if (target_attr != nullptr)
+		{
+			rttr::variant val = target_attr->mValue.get();
+			removeInstanceValue(target_attr, val);
+		}
+		return true;
+	}
+
+	// Get instance property (as target). Create one if it doesn't exist.
+	// If it does exist: discard instance property value if the provided value is the same as the original
+	auto target_attr = targetAttribute();
+	if (target_attr == nullptr)
+	{
+		target_attr = &getOrCreateTargetAttribute();
+		target_attr->mValue = createInstanceProperty(getType(), *getDocument());
+	}
+
+	// Set instance property value
+	rttr::variant val = target_attr->mValue.get();
+	return setInstancePropertyValue(val, value);
 }
+
 
 void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const
 {
-	// remove from targetattributes list
+	// remove from target attributes list
 	auto instProps = this->instanceProps();
 	auto& attrs = instProps->mTargetAttributes;
 	auto filter = [&](const nap::TargetAttribute& attr) { return &attr == targetAttr; };
 	attrs.erase(std::remove_if(attrs.begin(), attrs.end(), filter), attrs.end());
-
-	auto component = instProps->mTargetComponent.get();
 
 	// remove attributes list if necessary
 	if (attrs.empty())
 	{
 		auto flt = [&](const nap::ComponentInstanceProperties& instProp) { return &instProp == instProps; };
 		auto& rootInstProps = this->getRootEntity()->mInstanceProperties;
-		rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt),
-							rootInstProps.end());
+		rootInstProps.erase(std::remove_if(rootInstProps.begin(), rootInstProps.end(), flt), rootInstProps.end());
 	}
 
 	// Remove from object list
-	removeInstancePropertyValue(val, this->getType());
+	removeInstanceProperty(val, *getDocument());
 	assert(mDocument != nullptr);
+
+	// Notify listeners
+	auto component = instProps->mTargetComponent.get();
 	mDocument->objectChanged(component);
 	for (auto scene : mDocument->getObjects<nap::Scene>())
+	{
 		mDocument->objectChanged(scene);
+	}
 }
+
 
 Object* PropertyPath::getPointee() const
 {
@@ -445,9 +421,9 @@ rttr::type PropertyPath::getArrayElementType() const
 
 	VariantArray array_view = array.create_array_view();
 	auto elmtype = array_view.get_rank_type(1);
-	//auto elmtype = array_view.get_rank_type(array_view.get_rank());
 	return elmtype.is_wrapper() ? elmtype.get_wrapped_type() : elmtype;
 }
+
 
 size_t PropertyPath::getArrayLength() const
 {
@@ -455,14 +431,12 @@ size_t PropertyPath::getArrayLength() const
 	assert(resolved_path.isValid());
 
 	Variant array = resolved_path.getValue();
-	assert(array.is_valid()); assert(array.is_array());
+	assert(array.is_valid());
 
 	VariantArray array_view = array.create_array_view();
-	assert(array_view.is_dynamic());
-	assert(array_view.is_valid());
-
 	return array_view.get_size();
 }
+
 
 PropertyPath PropertyPath::getArrayElement(size_t index) const
 {
@@ -473,6 +447,31 @@ PropertyPath PropertyPath::getArrayElement(size_t index) const
 	p.emplace_back(std::to_string(index));
 	assert(mDocument != nullptr);
 	return { mObjectPath, p, *mDocument };
+}
+
+
+bool napkin::PropertyPath::getArrayEditable() const
+{
+	assert(isArray());
+	ResolvedPath resolved_path = resolve();
+	assert(resolved_path.isValid());
+
+	Variant array = resolved_path.getValue();
+	assert(array.is_valid());
+
+	VariantArray array_view = array.create_array_view();
+	return array_view.is_dynamic();
+}
+
+
+bool napkin::PropertyPath::referencesObject(const std::string& name)
+{
+	for (const auto& idx_name : mObjectPath)
+	{
+		if (idx_name.mID == name)
+			return true;
+	}
+	return false;
 }
 
 
@@ -791,6 +790,7 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 
 }
 
+
 std::string PropertyPath::objectPathStr() const
 {
 	std::vector<std::string> elements;
@@ -798,6 +798,7 @@ std::string PropertyPath::objectPathStr() const
 		elements.emplace_back(elm);
 	return "/" + nap::utility::joinString(elements, "/");
 }
+
 
 std::string PropertyPath::propPathStr() const
 {
@@ -807,6 +808,7 @@ std::string PropertyPath::propPathStr() const
 	return nap::utility::joinString(elements, "/");
 }
 
+
 void PropertyPath::updateObjectName(const std::string& oldName, const std::string& newName)
 {
 	for (auto& nameIdx : mObjectPath)
@@ -815,6 +817,7 @@ void PropertyPath::updateObjectName(const std::string& oldName, const std::strin
 			nameIdx.mID = newName;
 	}
 }
+
 
 void PropertyPath::invalidate()
 {

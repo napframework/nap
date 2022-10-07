@@ -147,6 +147,15 @@ void MainWindow::addMenu()
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), &mThemeMenu);
+
+	// Help
+	auto help_menu = new QMenu("Help", menuBar());
+	{
+		auto open_url_action = new OpenURLAction("NAP Documentation", QUrl("https://docs.nap.tech"));
+		addAction(open_url_action);
+		help_menu->addAction(open_url_action);
+	}
+	menuBar()->insertMenu(getWindowMenu()->menuAction(), help_menu);
 }
 
 
