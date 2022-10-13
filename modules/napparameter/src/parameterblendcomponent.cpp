@@ -15,8 +15,8 @@
 
 // nap::blendparameterscomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::ParameterBlendComponent)
-	RTTI_PROPERTY("EnableBlending",		&nap::ParameterBlendComponent::mEnableBlending,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("EnableBlending",		&nap::ParameterBlendComponent::mEnableBlending,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex",		&nap::ParameterBlendComponent::mPresetIndex,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetBlendTime",	&nap::ParameterBlendComponent::mPresetBlendTime,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -166,7 +166,10 @@ namespace nap
 				{
 					// Valid entry, add as valid preset
 					mPresetData.emplace_back(std::move(deserialize_result));
-					mPresetGroups.emplace_back(rtti_cast<ParameterGroup>(object.get()));
+					auto& param_group = mPresetGroups.emplace_back(rtti_cast<ParameterGroup>(object.get()));
+					if (!param_group->init(error))
+						return false;
+
 					mPresets.emplace_back(preset);
 					preset_group_found = true;
 					break;
