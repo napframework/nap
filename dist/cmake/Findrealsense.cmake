@@ -14,7 +14,7 @@ else()
         HINTS ${THIRDPARTY_DIR}/librealsense
     )   
     set(REALSENSE_LIBS_DIR ${REALSENSE_DIR}/bin)
-    set(REALSENSE_LIBS ${REALSENSE_LIBS_DIR}/librealsense2.so.2.51.1)
+    set(REALSENSE_LIBS ${REALSENSE_LIBS_DIR}/librealsense2.so.2.51.1 ${REALSENSE_LIBS_DIR}/librealsense2.so.2.51)
     set(REALSENSE_LIBS_RELEASE_DLL ${REALSENSE_LIBS})
 endif()
 
