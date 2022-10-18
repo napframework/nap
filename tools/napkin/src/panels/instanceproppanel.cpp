@@ -42,7 +42,7 @@ QVariant InstPropAttribItem::data(int role) const
 		}
 		return QString("%1 = %2").arg(path, val);
 	}
-	case Qt::TextColorRole:
+	case Qt::ForegroundRole:
 	{
 		return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
 	}

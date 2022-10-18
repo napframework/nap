@@ -15,11 +15,11 @@
 #include <concurrentqueue.h>
 #include <rtti/factory.h>
 
-// ASIO includes
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/io_service.hpp>
-#include <asio/system_error.hpp>
+// ASIO forward declaration
+namespace asio
+{
+    class io_context;
+}
 
 namespace nap
 {
@@ -30,9 +30,9 @@ namespace nap
 	 */
 	enum EUDPThreadUpdateMethod : int
 	{
-		MAIN_THREAD			= 0,			///< process UDPAdapters on main thread
-		SPAWN_OWN_THREAD	= 1,			///< process UDPAdapters in newly spawned thread
-		MANUAL				= 2				///< only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
+		UDP_MAIN_THREAD			= 0,			///< process UDPAdapters on main thread
+        UDP_SPAWN_OWN_THREAD	= 1,			///< process UDPAdapters in newly spawned thread
+        UDP_MANUAL				= 2				///< only process UDPAdapters when the user explicitly calls manualProcess on the UDPThread
 	};
 
 	// forward declares
@@ -52,35 +52,46 @@ namespace nap
 	{
 		friend class UDPService;
 		friend class UDPAdapter;
-
 		RTTI_ENABLE(Device)
 	public:
+        UDPThread();
+
 		/**
 		 * Constructor
 		 * @param service reference to UDP service
 		 */
 		UDPThread(UDPService& service);
 
+        /**
+         * Destructor
+         */
+        virtual ~UDPThread();
+
 		/**
 		 * Starts the UDPThread, spawns new thread if necessary or registers to UDPService
 		 * @param errorState contains any errors
 		 * @return true on succes
 		 */
-		virtual bool start(utility::ErrorState& errorState) override;
+		virtual bool start(utility::ErrorState& errorState) override final;
 
 		/**
 		 * Stops the UDPThread, stops own thread or removes itself from service
 		 */
-		virtual void stop() override;
-	public:
-		// properties
-		EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
+		virtual void stop() override final;
+
+        /**
+         * @return asio IO context
+         */
+        asio::io_context& getIOContext();
 
 		/**
 		 * Call this when update method is set to manual.
-		 If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
+		 * If the update method is MAIN_THREAD or SPAWN_OWN_THREAD, this function will not do anything.
 		 */
 		void manualProcess();
+
+        // properties
+        EUDPThreadUpdateMethod mUpdateMethod = EUDPThreadUpdateMethod::UDP_MAIN_THREAD; ///< Property: 'Update Method' the way the UDPThread should process adapters
 	private:
 		/**
 		 * the threaded function
@@ -111,10 +122,13 @@ namespace nap
 		std::function<void()> 								mManualProcessFunc;
 
 		// service
-		UDPService& 				mService;
+		UDPService& mService;
 
 		// adapters
 		std::vector<UDPAdapter*> 	mAdapters;
+
+        struct Impl;
+        std::unique_ptr<Impl> mImpl;
 	};
 
 	// Object creator used for constructing the UDP thread

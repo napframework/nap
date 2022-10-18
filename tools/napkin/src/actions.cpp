@@ -11,6 +11,7 @@
 
 #include <QMessageBox>
 #include <QHBoxLayout>
+#include <QDesktopServices>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonwriter.h>
 #include <utility/errorstate.h>
@@ -926,4 +927,15 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 
 	// Set as default in project
 	ctx.getServiceConfig()->makeProjectDefault();
+}
+
+
+napkin::OpenURLAction::OpenURLAction(const char* text, const QUrl& address) :
+	Action(text, QRC_ICONS_URL), mAddress(address)
+{ }
+
+
+void napkin::OpenURLAction::perform()
+{
+	QDesktopServices::openUrl(mAddress);
 }

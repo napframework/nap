@@ -95,9 +95,10 @@ namespace nap
 
 			/**
 			 * Select and item and make sure it's visible on screen by scrolling if needed.
-			 * @param item
+			 * @param item item to select
+			 * @param expand if the item should be expanded
 			 */
-			void selectAndReveal(const QStandardItem* item);
+			void select(const QStandardItem* item, bool expand);
 
 			/**
 			 * Expand the given item

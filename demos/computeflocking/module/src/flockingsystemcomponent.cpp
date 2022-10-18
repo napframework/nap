@@ -131,7 +131,7 @@ namespace nap
 
 		// Collect compute instances under this entity
 		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
-		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+		mCurrentComputeInstance = mComputeInstances.front();
 
 		// Initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
@@ -148,6 +148,7 @@ namespace nap
 		for (auto& comp : mComputeInstances)
 			comp->setInvocations(mNumBoids);
 
+		mComputeInstanceIndex = -1;
 		return true;
 	}
 
@@ -200,11 +201,12 @@ namespace nap
 		}
 
 		// Update vertex shader buffer bindings
-		auto* storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getMaterialInstance().findBinding("BoidBuffer_Out"));
-		if (storage_binding != nullptr && storage_binding != nullptr)
+		auto* compute_storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getMaterialInstance().findBinding("BoidBuffer_Out"));
+		if (compute_storage_binding != nullptr)
 		{
-			auto& storage_buffer = storage_binding->getBuffer();
-			storage_binding->setBuffer(storage_buffer);
+			auto* render_storage_binding = rtti_cast<BufferBindingStructInstance>(getMaterialInstance().findBinding("VERTSSBO"));
+			if (render_storage_binding != nullptr)
+				render_storage_binding->setBuffer(compute_storage_binding->getBuffer());
 		}
 
 		// Update fragment shader uniforms
@@ -231,16 +233,17 @@ namespace nap
 
 	void FlockingSystemComponentInstance::compute()
 	{
+		// Update current compute instance and index
+		assert(mComputeInstanceIndex >= -1);
+		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
+		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+
 		// Update the compute material uniforms of the current compute instance
 		updateComputeMaterial(mCurrentComputeInstance);
 
 		// Compute the current compute instance
 		// This updates the boid storage buffers to use for rendering
 		mRenderService->computeObjects({ mCurrentComputeInstance });
-
-		// Update current compute instance and index
-		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 	}
 
 

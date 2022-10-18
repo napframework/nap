@@ -5,46 +5,93 @@
 #pragma once
 
 // Nap includes
+#include <nap/device.h>
+#include <nap/resource.h>
 #include <nap/resourceptr.h>
-#include <udpthread.h>
+
+// STD includes
+#include <system_error>
+
+// local includes
+#include "udpthread.h"
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	/**
-	 * Base class of specific UDP client and server resources.  
+	 * Base class of specific UDP client and server resources.
 	 * process() is automatically called by the thread this adapter links to.
 	 * Both UDPClient & UDPServer extend UDPAdapter.
 	 */
-	class NAPAPI UDPAdapter : public Resource
+	class NAPAPI UDPAdapter : public Device
 	{
 		friend class UDPThread;
 
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Device)
 	public:
-		ResourcePtr<UDPThread> mThread = nullptr; ///< Property: 'Thread' the udp thread the adapter registers itself to
+        /**
+         * Constructor
+         */
+        UDPAdapter();
 
-		/**
-		 * Initialization
-		 * @param error contains error information
-		 * @return true on success
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
+        /**
+         * Destructor
+         */
+        virtual ~UDPAdapter();
+
+        /**
+         * Initialization
+         * @param error contains error information
+         * @return true on success
+         */
+		virtual bool init(utility::ErrorState& errorState) override final;
 
 		/**
 		 * called on destruction
 		 */
-		virtual void onDestroy() override;
-    public:
+		virtual void onDestroy() override final;
+
+        /**
+         * Start the adapter. Called after initialization.
+         * When called it is safe to assume that all dependencies have been resolved up to this point.
+         * Internally calls virtual method 'onStart' that is implemented in derived class
+         * Upon successfull start, registers adapter to UDP thread
+         * @param errorState The error state
+         * @return: true on success
+         */
+        virtual bool start(utility::ErrorState& errorState) override final;
+
+        /**
+         * Called when the adapter needs to be stopped, but only if start has previously been called on this Device.
+         * It is safe to assume that when stop is called the device is in a 'started' state. Called in reverse init order.
+         * Removed adapter from UDP thread
+         */
+        virtual void stop() override final;
+
         // Properties
-        bool mAllowFailure 					= false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
+        ResourcePtr<UDPThread> mThread; ///< Property: 'Thread' the udp thread the adapter registers itself to
+        bool mAllowFailure = false;		///< Property: 'AllowFailure' if binding to socket is allowed to fail on initialization
 	protected:
+        /**
+         * Called by start method and needs to be implemented by derived class
+         * @param errorState The error state
+         * @return: true on success
+         */
+        virtual bool onStart(utility::ErrorState& errorState) = 0;
+
+        /**
+         * Called by stop method and needs to be implemented by derived class
+         */
+        virtual void onStop() = 0;
+
 		/**
 		 * called by a UDPThread
 		 */
-		virtual void process() = 0;
+		virtual void onProcess() = 0;
 
-        bool handleAsioError(const asio::error_code& errorCode, utility::ErrorState& errorState, bool& success);
-	};
+        void process();
+
+        bool handleAsioError(const std::error_code& errorCode, utility::ErrorState& errorState, bool& success);
+
+        asio::io_context& getIOContext();
+    };
 }

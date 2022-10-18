@@ -50,6 +50,12 @@ namespace napkin
 		 * @param object the rtti object to get the icon for
 		 * @return an icon for the given rtti object
 		 */
+        const QIcon getIcon(const nap::rtti::TypeInfo& type) const;
+
+		/**
+		 * @param object the rtti object to get the icon for
+		 * @return an icon for the given rtti object
+		 */
         const QIcon getIcon(const nap::rtti::Object& object) const;
 
 		/**

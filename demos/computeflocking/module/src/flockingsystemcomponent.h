@@ -186,7 +186,7 @@ namespace nap
 
 		std::vector<ComputeComponentInstance*>		mComputeInstances;					//< Compute instances found in the entity
 		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	//< The current compute instance
-		uint										mComputeInstanceIndex = 0;			//< Current compute instance index
+		int											mComputeInstanceIndex = 0;			//< Current compute instance index
 
 		ComponentInstancePtr<PerspCameraComponent>	mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
 		ComponentInstancePtr<TransformComponent>	mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };

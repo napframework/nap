@@ -36,9 +36,7 @@ void splitNameIndex(const std::string& str, std::string& name, int& index)
 
 Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
 	: QObject(), mCore(core), mCurrentFilename(filename), mObjects(std::move(objects))
-{
-	nap::Logger::info("Loading");
-}
+{ }
 
 nap::Entity* Document::getParent(const nap::Entity& child) const
 {
@@ -184,21 +182,25 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	auto newName = getUniqueName(name, object, false);
-	if (newName == object.mID)
+	auto new_name = getUniqueName(name, object, false);
+	if (new_name == object.mID)
 		return object.mID;
 
-	auto oldName = object.mID;
-	object.mID = newName;
+	// Set name and update all pointers (in data model) that point to this object
+	auto old_name = object.mID;
 
-	// Update pointers to this object
+	// Update all pointers (in data model) to this object
+	object.mID = new_name;
 	for (auto propPath : getPointersTo(object, false, false, false))
 		propPath.setPointee(&object);
 
+	// Notify listeners
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());
 	propertyValueChanged(path);
+	objectRenamed(object, old_name, new_name);
 
+	// New name
 	return object.mID;
 }
 
@@ -686,12 +688,14 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 	}
 }
 
+
 void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
 	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
 	scene.mEntities.erase(scene.mEntities.begin() + index);
 	objectChanged(&scene);
 }
+
 
 int Document::arrayAddValue(const PropertyPath& path)
 {
@@ -701,6 +705,7 @@ int Document::arrayAddValue(const PropertyPath& path)
 	Variant array = resolved_path.getValue();
 	assert(array.is_array());
 	VariantArray array_view = array.create_array_view();
+	assert(array_view.is_dynamic());
 
 	const TypeInfo element_type = array_view.get_rank_type(1);
 	const TypeInfo wrapped_type = element_type.is_wrapper() ? element_type.get_wrapped_type() : element_type;
@@ -713,21 +718,16 @@ int Document::arrayAddValue(const PropertyPath& path)
 	// HACK: In the case of a vector<string>, rttr::type::create() gives us a shared_ptr to a string,
 	// hence, rttr::variant_array_view::insert_value will fail because it expects just a string.
 	Variant new_value;
-	if (wrapped_type == RTTI_OF(std::string))
-		new_value = std::string();
-	else
-		new_value = wrapped_type.create();
-
+	new_value = wrapped_type == RTTI_OF(std::string) ? std::string() : wrapped_type.create();
 	assert(new_value.is_valid());
-	assert(array_view.is_dynamic());
 
 	size_t index = array_view.get_size();
 	bool inserted = array_view.insert_value(index, new_value);
 	assert(inserted);
 	resolved_path.setValue(array);
 
-	propertyChildInserted(path, index);
 	propertyValueChanged(path);
+	propertyChildInserted(path, index);
 
 	return index;
 }

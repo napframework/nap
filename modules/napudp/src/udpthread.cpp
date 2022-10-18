@@ -2,19 +2,27 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// local includes
 #include "udpthread.h"
 #include "udpadapter.h"
 #include "udpservice.h"
 
+// ASIO includes
+#include <asio/ts/buffer.hpp>
+#include <asio/ts/internet.hpp>
+#include <asio/io_service.hpp>
+#include <asio/system_error.hpp>
+
+// NAP includes
 #include <nap/logger.h>
 
 using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_ENUM(nap::EUDPThreadUpdateMethod)
-	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::MAIN_THREAD, 		"Main Thread"),
-	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::SPAWN_OWN_THREAD, 	"Spawn Own Thread"),
-	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::MANUAL, 			"Manual")
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::UDP_MAIN_THREAD, 		"Main Thread"),
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::UDP_SPAWN_OWN_THREAD, 	"Spawn Own Thread"),
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::UDP_MANUAL, 			"Manual")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPThread)
@@ -23,12 +31,23 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    //////////////////////////////////////////////////////////////////////////
+    // UDPThread::Impl
+    //////////////////////////////////////////////////////////////////////////
+
+    struct UDPThread::Impl
+    {
+        asio::io_context mIOContext;
+    };
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// UDPThread
 	//////////////////////////////////////////////////////////////////////////
 
 	UDPThread::UDPThread(UDPService & service) : mService(service)
 	{
+        mImpl = std::make_unique<Impl>();
 		mManualProcessFunc = [this]()
 		{
 			nap::Logger::warn(*this, "calling manual process function when thread update method is not manual!");
@@ -36,25 +55,28 @@ namespace nap
 	}
 
 
+    UDPThread::~UDPThread(){}
+
+
 	bool UDPThread::start(utility::ErrorState& errorState)
 	{
+        mRun.store(true);
+
 		switch (mUpdateMethod)
 		{
-		case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
+		case EUDPThreadUpdateMethod::UDP_SPAWN_OWN_THREAD:
 			mThread = std::thread([this] { thread(); });
 			break;
-		case EUDPThreadUpdateMethod::MAIN_THREAD:
+		case EUDPThreadUpdateMethod::UDP_MAIN_THREAD:
 			mService.registerUdpThread(this);
 			break;
-		case EUDPThreadUpdateMethod::MANUAL:
+		case EUDPThreadUpdateMethod::UDP_MANUAL:
 			mManualProcessFunc = [this]() { process(); };
 			break;
 		default:
 			errorState.fail("Unknown UDP thread update method");
 			return false;
 		}
-
-		mRun.store(true);
 
 		return true;
 	}
@@ -68,10 +90,10 @@ namespace nap
 
 			switch (mUpdateMethod)
 			{
-			case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
+			case EUDPThreadUpdateMethod::UDP_SPAWN_OWN_THREAD:
 				mThread.join();
 				break;
-			case EUDPThreadUpdateMethod::MAIN_THREAD:
+			case EUDPThreadUpdateMethod::UDP_MAIN_THREAD:
 				mService.removeUdpThread(this);
 				break;
 			default:
@@ -126,4 +148,10 @@ namespace nap
 
 		mAdapters.emplace_back(adapter);
 	}
+
+
+    asio::io_service& UDPThread::getIOContext()
+    {
+        return mImpl->mIOContext;
+    }
 }

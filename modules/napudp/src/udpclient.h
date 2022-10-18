@@ -9,12 +9,6 @@
 #include <queue>
 #include <mutex>
 
-// ASIO includes
-#include <asio/ts/buffer.hpp>
-#include <asio/ts/internet.hpp>
-#include <asio/io_service.hpp>
-#include <asio/system_error.hpp>
-
 // NAP includes
 #include <utility/threading.h>
 #include <concurrentqueue.h>
@@ -25,8 +19,6 @@
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-
 	/**
 	 * The UDP Client class is used to send UDP Packets to an endpoint.
 	 */
@@ -34,17 +26,15 @@ namespace nap
 	{
 		RTTI_ENABLE(UDPAdapter)
 	public:
-		/**
-		 * Initializes the UDP client
-		 * @param error contains error information
-		 * @return true on success
-		 */
-		bool init(utility::ErrorState& errorState) override;
+        /**
+         * Constructor
+         */
+        UDPClient();
 
-		/**
-		 * called on destruction
-		 */
-		void onDestroy() override;
+        /**
+         * Destructor
+         */
+        virtual ~UDPClient();
 
 		/**
 		 * Makes a copy of the packet and queues if for sending.
@@ -61,23 +51,34 @@ namespace nap
 		 */
 		void send(UDPPacket&& packet);
 
-	public:
-		// properties
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
-		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
+		std::string mEndpoint 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
+		bool mBroadcast                     = false;        ///< Property: 'Broadcast' set option to broadcast
+
 	protected:
+        /**
+         * Starts the UDP client and creates the socket
+         * @param error contains error information
+         * @return true on success
+         */
+        bool onStart(utility::ErrorState& errorState) override final;
+
+        /**
+         * Called when socket needs to be closed
+         */
+        void onStop() override final;
+
 		/**
 		 * The process function
 		 */
-		void process() override;
+		void onProcess() override final;
 	private:
-		// ASIO
-		asio::io_service 			mIOService;
-		asio::ip::udp::socket 		mSocket{mIOService};
-		std::vector<nap::uint8>		mBuffer;
-		asio::ip::udp::endpoint 	mRemoteEndpoint;
+		// Client specific ASIO implementation
+		class Impl;
+        std::unique_ptr<Impl> mImpl;
+        std::vector<nap::uint8> mBuffer;
 
 		// Threading
 		moodycamel::ConcurrentQueue<UDPPacket> 	mQueue;
