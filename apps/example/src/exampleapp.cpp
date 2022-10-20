@@ -7,7 +7,6 @@
 #include <inputrouter.h>
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
-#include <renderablemeshcomponent.h>
 
 namespace nap 
 {    
@@ -61,7 +60,7 @@ namespace nap
 			// Add Gnomon
 			std::vector<nap::RenderableComponentInstance*> components_to_render
 			{
-				&mGnomonEntity->getComponent<RenderableMeshComponentInstance>()
+				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
 			};
 
 			// Render Gnomon
