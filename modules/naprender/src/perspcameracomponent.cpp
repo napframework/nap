@@ -268,23 +268,37 @@ namespace nap
 	}
 
 
+	float PerspCameraComponentInstance::getNearClippingPlane() const
+	{
+		return mProperties.mNearClippingPlane;
+	}
+
+
+	float PerspCameraComponentInstance::getFarClippingPlane() const
+	{
+		return mProperties.mFarClippingPlane;
+	}
+
+
 	void PerspCameraComponentInstance::updateProjectionMatrices() const
 	{
-		if (mDirty)
-		{
-			const float fov = glm::radians(mProperties.mFieldOfView);
-			const float near_plane = mProperties.mNearClippingPlane;
-			const float far_plane = mProperties.mFarClippingPlane;
-			const float aspect_ratio = ((float)(getRenderTargetSize().x * mProperties.mGridDimensions.x)) / ((float)(getRenderTargetSize().y * mProperties.mGridDimensions.y));
+		// Bail if there's nothing to update
+		if (!mDirty)
+			return;
 
-			float left, right, top, bottom;
-			calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
-			calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
-			mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
+		// Compute projection matrix
+		const float fov = glm::radians(mProperties.mFieldOfView);
+		const float near_plane = mProperties.mNearClippingPlane;
+		const float far_plane = mProperties.mFarClippingPlane;
+		const float aspect_ratio = ((float)(getRenderTargetSize().x * mProperties.mGridDimensions.x)) / ((float)(getRenderTargetSize().y * mProperties.mGridDimensions.y));
 
-			mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
-			mDirty = false;
-		}
+		float left, right, top, bottom;
+		calculateCameraPlanes(fov, aspect_ratio, near_plane, mProperties.mGridDimensions.x, mProperties.mGridLocation.x, left, right);
+		calculateCameraPlanes(fov, 1.0f, near_plane, mProperties.mGridDimensions.y, mProperties.mGridLocation.y, bottom, top);
+		mRenderProjectionMatrix = createASymmetricProjection(near_plane, far_plane, left, right, top, bottom);
+
+		mProjectionMatrix = glm::perspective(fov, aspect_ratio, near_plane, far_plane);
+		mDirty = false;
 	}
 
 
