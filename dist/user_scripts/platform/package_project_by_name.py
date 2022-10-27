@@ -173,6 +173,7 @@ def create_macos_bundle(bin_dir, project_full_name, project_name_lower, project_
     projectJsonFile = open(projectJsonPath)
     projectJson = json.load(projectJsonFile)
     dataFilePath = projectJson["Data"]
+    configFilePath = projectJson["ServiceConfig"]
     dataDirectory = os.path.dirname(dataFilePath)
     dataFileName = os.path.basename(dataFilePath)
     projectJsonFile.close()
@@ -200,8 +201,10 @@ def create_macos_bundle(bin_dir, project_full_name, project_name_lower, project_
     shutil.copytree(os.path.join(bin_dir, "modules"), os.path.join(app_resources_dir, "modules"))           # copy module data
     shutil.move(os.path.join(app_macos_dir, "lib/python3.6"), os.path.join(app_resources_lib_dir, "python3.6")) # copy python modules
 
-    # Change the path to the data json file in project.json
+    # Change the path to the data folder and config json file in project.json
     projectJson["Data"] = os.path.join("../Resources", dataFilePath)
+    if configFilePath:
+        projectJson["ServiceConfig"] = os.path.join("../Resources", configFilePath)
     projectJsonFile = open(os.path.join(app_macos_dir, "project.json"), "w")
     json.dump(projectJson, projectJsonFile, indent = 4)
     projectJsonFile.close()
