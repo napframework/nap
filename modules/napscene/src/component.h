@@ -55,8 +55,7 @@ namespace nap
 		ComponentInstance(EntityInstance& entity, Component& resource) : 
 			mEntityInstance(&entity),
 			mResource(&resource)
-		{ 
-		}
+		{ }
 
 		/**
 		 * Update this component
