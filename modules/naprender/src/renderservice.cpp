@@ -1828,7 +1828,7 @@ namespace nap
 		// Create shader
 		std::unique_ptr<Shader>shader(shaderType.create<Shader>({ getCore() }));
 		if (!error.check(shader != nullptr, "Unable to create shader of type: %s", shader_name.c_str()))
-			return false;
+			return nullptr;
 		shader->mID = utility::stringFormat("%s_%s", shader_name.c_str(), math::generateUUID().c_str());
 
 		// Create material
