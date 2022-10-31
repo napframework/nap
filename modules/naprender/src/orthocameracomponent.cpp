@@ -24,6 +24,7 @@ RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
 	RTTI_PROPERTY("BottomPlane",		&nap::OrthoCameraProperties::mBottomPlane,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("NearClippingPlane",	&nap::OrthoCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClipRect",			&nap::OrthoCameraProperties::mClipRect,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::OrthoCameraComponent)
@@ -106,38 +107,70 @@ namespace nap
 	}
 
 
+	void OrthoCameraComponentInstance::setClipRect(const math::Rect& clipRect)
+	{
+		if (mProperties.mClipRect.getMin() != clipRect.getMin() || mProperties.mClipRect.getMax() != clipRect.getMax())
+		{
+			mProperties.mClipRect = clipRect;
+			setDirty();
+		}
+	}
+
+
+	void OrthoCameraComponentInstance::restoreClipRect()
+	{
+		if (mProperties.mClipRect.getMin() != glm::vec2(0.0f, 0.0f) || mProperties.mClipRect.getMax() != glm::vec2(1.0f, 1.0f))
+		{
+			mProperties.mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };
+			setDirty();
+		}
+	}
+
+
 	void OrthoCameraComponentInstance::updateProjectionMatrices() const
 	{
 		if (mDirty)
 		{
-			switch (mProperties.mMode)
+			const auto& prop = mProperties;
+			math::Rect rect = prop.mClipRect;
+
+			switch (prop.mMode)
 			{
 				case EOrthoCameraMode::PixelSpace:
 				{
 					// In this mode we use the render target size to set the planes.
-					glm::ivec2 render_target_size = getRenderTargetSize();
-					mRenderProjectionMatrix = createRenderProjectionMatrix(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
-					mProjectionMatrix = glm::ortho(0.0f, (float)render_target_size.x, 0.0f, (float)render_target_size.y, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					glm::vec2 render_target_size = getRenderTargetSize();
+					rect =
+					{
+						{ prop.mClipRect.getMin().x * render_target_size.x, prop.mClipRect.getMin().y * render_target_size.y },
+						{ prop.mClipRect.getMax().x * render_target_size.x, prop.mClipRect.getMax().y * render_target_size.y }
+					};
 					break;
 				}
 				case EOrthoCameraMode::CorrectAspectRatio:
 				{
 					// In this mode, we scale the top and bottom planes based on the aspect ratio
-					glm::ivec2 renderTargetSize = getRenderTargetSize();
-					float aspect_ratio = (float)renderTargetSize.y / (float)renderTargetSize.x;
-					float top_plane = mProperties.mTopPlane * aspect_ratio;
-					float bottom_plane = mProperties.mBottomPlane * aspect_ratio;
-					mRenderProjectionMatrix = createRenderProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
-					mProjectionMatrix = mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, bottom_plane, top_plane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					float aspect_ratio = getRenderTargetSize().y / getRenderTargetSize().x;
+					rect =
+					{
+						{ prop.mClipRect.getMin().x * prop.mLeftPlane, prop.mClipRect.getMin().y * prop.mBottomPlane * aspect_ratio },
+						{ prop.mClipRect.getMax().x * prop.mRightPlane, prop.mClipRect.getMax().y * prop.mTopPlane * aspect_ratio }
+					};
 					break;
 				}
 				case EOrthoCameraMode::Custom:
 				{
-					mRenderProjectionMatrix = createRenderProjectionMatrix(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
-					mProjectionMatrix = glm::ortho(mProperties.mLeftPlane, mProperties.mRightPlane, mProperties.mBottomPlane, mProperties.mTopPlane, mProperties.mNearClippingPlane, mProperties.mFarClippingPlane);
+					rect =
+					{
+						{ prop.mClipRect.getMin().x * prop.mLeftPlane, prop.mClipRect.getMin().y * prop.mBottomPlane },
+						{ prop.mClipRect.getMax().x * prop.mRightPlane, prop.mClipRect.getMax().y * prop.mTopPlane }
+					};
 					break;
 				}
+				assert(false);
 			}
+			mRenderProjectionMatrix = createRenderProjectionMatrix(rect.getMin().x, rect.getMax().x, rect.getMin().y, rect.getMax().y, prop.mNearClippingPlane, prop.mFarClippingPlane);
+			mProjectionMatrix = glm::ortho(rect.getMin().x, rect.getMax().x, rect.getMin().y, rect.getMax().y, prop.mNearClippingPlane, prop.mFarClippingPlane);
 			mDirty = false;
 		}
 	}
