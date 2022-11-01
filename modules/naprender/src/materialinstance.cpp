@@ -429,7 +429,7 @@ namespace nap
 
 			++ssbo_index;
 		}
-		return true;
+ 		return true;
 	}
 
 
@@ -556,7 +556,7 @@ namespace nap
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
 		// with the actual set that was acquired.
 		// The actual latest buffers were already set correctly in mStorageDescriptors during init and when setting
-		// a new texture for a sampler. We just need to call VkUpdateDescriptors with the correct descriptorSet and
+		// a new buffer for a binding. We just need to call VkUpdateDescriptors with the correct descriptorSet and
 		// latest buffer info.
 		for (VkWriteDescriptorSet& write_descriptor : mStorageWriteDescriptorSets)
 			write_descriptor.dstSet = descriptorSet.mSet;
