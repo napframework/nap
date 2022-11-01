@@ -14,12 +14,9 @@ find_path(HOLOPLAYCORE_INCLUDE_DIR
         NAMES HoloPlayCore.h
         HINTS ${HOLOPLAYCORE_DIR}/include
         )
+set(HOLOPLAYCORE_LIB_DIR ${HOLOPLAYCORE_DIR}/lib)
 
 if(WIN32)
-    find_path(HOLOPLAYCORE_LIB_DIR
-            NAMES HoloPlayCore.lib
-            HINTS ${HOLOPLAYCORE_DIR}/bin/msvc
-            )
     set(HOLOPLAYCORE_LIB ${HOLOPLAYCORE_LIB_DIR}/HoloPlayCore.lib)
     set(HOLOPLAYCORE_DLL ${HOLOPLAYCORE_LIB_DIR}/HoloPlayCore.dll)
 
