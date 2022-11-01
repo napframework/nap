@@ -48,6 +48,12 @@ endif()
 copy_module_json_to_bin()
 
 # Package into platform release
+if(APPLE)
+    set(MACOS_EXTRA_RPATH_RELEASE ../../../../thirdparty/holoplaycore/lib)
+    set(MACOS_EXTRA_RPATH_DEBUG ${MACOS_EXTRA_RPATH_RELEASE})
+elseif(UNIX)
+    set(LINUX_EXTRA_RPATH ../../../../thirdparty/holoplaycore/lib)
+endif()
 package_module()
 
 # Package holoplaycore into platform release
@@ -58,8 +64,8 @@ install(FILES ${HOLOPLAYCORE_DIR}/VERSION DESTINATION thirdparty/holoplaycore)
 install(DIRECTORY ${HOLOPLAYCORE_INCLUDE_DIR} DESTINATION thirdparty/holoplaycore FILES_MATCHING PATTERN "*.h")
 
 if(WIN32)
-    install(FILES ${HOLOPLAYCORE_LIB} DESTINATION thirdparty/holoplaycore/bin/msvc)
-    install(FILES ${HOLOPLAYCORE_DLL} DESTINATION thirdparty/holoplaycore/bin/msvc)
-elseif(APPLE)
-    install(FILES ${HOLOPLAYCORE_DLL} DESTINATION thirdparty/holoplaycore/bin/macos)
+    install(FILES ${HOLOPLAYCORE_LIB} DESTINATION thirdparty/holoplaycore/lib)
+    install(FILES ${HOLOPLAYCORE_DLL} DESTINATION thirdparty/holoplaycore/bin)
+elseif(UNIX)
+    install(FILES ${HOLOPLAYCORE_DLL} DESTINATION thirdparty/holoplaycore/lib)
 endif()
