@@ -160,10 +160,11 @@ namespace nap
 				}
 				case EOrthoCameraMode::Custom:
 				{
+                    glm::vec2 size(prop.mRightPlane - prop.mLeftPlane, prop.mTopPlane - prop.mBottomPlane);
 					rect =
 					{
-						{ prop.mClipRect.getMin().x * prop.mLeftPlane, prop.mClipRect.getMin().y * prop.mBottomPlane },
-						{ prop.mClipRect.getMax().x * prop.mRightPlane, prop.mClipRect.getMax().y * prop.mTopPlane }
+						{ prop.mClipRect.getMin().x * size.x + prop.mLeftPlane, prop.mClipRect.getMin().y * size.y + prop.mBottomPlane },
+						{ prop.mClipRect.getMax().x * size.x + prop.mLeftPlane, prop.mClipRect.getMax().y * size.y + prop.mBottomPlane }
 					};
 					break;
 				}
