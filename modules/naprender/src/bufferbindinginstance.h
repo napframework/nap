@@ -260,7 +260,6 @@ namespace nap
 
 	protected:
 		const ShaderVariableValueArrayDeclaration*			mDeclaration;
-		BufferBindingChangedCallback						mBindingChangedCallback;
 	};
 
 
@@ -298,7 +297,7 @@ namespace nap
 		 * Updates thebuffer from a resource.
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const TypedBufferBindingNumeric<T>& resource)			{ BufferBindingInstance::mBuffer = resource.mBuffer.get(); }
+		void setBuffer(const TypedBufferBindingNumeric<T>& resource);
 
 		/**
 		 * @return buffer
@@ -342,6 +341,14 @@ namespace nap
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
 		BufferBindingInstance::mBuffer = &buffer;
+		raiseChanged();
+	}
+
+	template<class T>
+	void TypedBufferBindingNumericInstance<T>::setBuffer(const TypedBufferBindingNumeric<T>& resource)
+	{
+		assert(resource.mBuffer.getSize() == mDeclaration->mSize);
+		BufferBindingInstance::mBuffer = resource.mBuffer.get();
 		raiseChanged();
 	}
 }
