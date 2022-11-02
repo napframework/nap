@@ -386,7 +386,7 @@ namespace nap
 		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
 		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
 		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
+		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_RETURN;
 		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
         io.KeyMap[ImGuiKey_Space] = (int)EKeyCode::KEY_SPACE;
 		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
