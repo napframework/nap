@@ -8,6 +8,7 @@
 #include <parameternumeric.h>
 #include <parametervec.h>
 #include <parametercolor.h>
+#include <parametersimple.h>
 
 namespace nap
 {
@@ -198,6 +199,7 @@ namespace nap
 	using ParameterRGBFloatBlender	= ParameterBlender<ParameterRGBColorFloat, RGBColorFloat>;
 	using ParameterRGBA8Blender		= ParameterBlender<ParameterRGBAColor8, RGBAColor8>;
 	using ParameterRGB8Blender		= ParameterBlender<ParameterRGBColor8, RGBColor8>;
+	using ParameterBoolBlender		= ParameterBlender<ParameterBool, bool>;
 
 
 
@@ -265,4 +267,7 @@ namespace nap
 
 	template<>
 	void nap::ParameterBlender<ParameterRGBColor8, RGBColor8>::onBlend(float value);
+
+	template<>
+	void nap::ParameterBlender<ParameterBool, bool>::onBlend(float value);
 }

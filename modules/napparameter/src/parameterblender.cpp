@@ -44,6 +44,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGB8Blender)
 	RTTI_CONSTRUCTOR(nap::Parameter&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterBoolBlender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
 namespace nap
 {
 	/**
@@ -59,7 +63,8 @@ namespace nap
 		{ RTTI_OF(ParameterRGBAColorFloat),	RTTI_OF(ParameterRGBAFloatBlender)	},
 		{ RTTI_OF(ParameterRGBColorFloat),	RTTI_OF(ParameterRGBFloatBlender)	},
 		{ RTTI_OF(ParameterRGBAColor8),		RTTI_OF(ParameterRGBA8Blender)		},
-		{ RTTI_OF(ParameterRGBColor8),		RTTI_OF(ParameterRGB8Blender)		}
+		{ RTTI_OF(ParameterRGBColor8),		RTTI_OF(ParameterRGB8Blender)		},
+		{ RTTI_OF(ParameterBool),			RTTI_OF(ParameterBoolBlender)		}
 	};
 
 
@@ -194,5 +199,13 @@ namespace nap
 		glm::vec3 lval = math::lerp<glm::vec3>(mSourceValue.toVec3(), getTarget<ParameterRGBColor8>().mValue.toVec3(), value);
 		RGBColor8 nval(lval.x, lval.y, lval.z);
 		getParameter<ParameterRGBColor8>().setValue(nval);
+	}
+
+
+	template<>
+	void nap::ParameterBlender<ParameterBool, bool>::onBlend(float value)
+	{
+		bool nval = value < 1.0f ? mSourceValue : getTarget<ParameterBool>().mValue;
+		getParameter<ParameterBool>().setValue(nval);
 	}
 }
