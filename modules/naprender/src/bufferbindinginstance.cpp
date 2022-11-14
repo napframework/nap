@@ -51,7 +51,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
-	static std::unique_ptr<INSTANCE_TYPE> BufferBindingInstance::createBufferBindingInstance(const DECLARATION_TYPE& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
+	std::unique_ptr<INSTANCE_TYPE> BufferBindingInstance::createBufferBindingInstance(const DECLARATION_TYPE& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
 	{
 		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(binding->mName, declaration, bufferChangedCallback);
 		if (binding != nullptr)
