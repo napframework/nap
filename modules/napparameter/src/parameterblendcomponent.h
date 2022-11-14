@@ -40,7 +40,7 @@ namespace nap
 	public:
 
 		nap::ResourcePtr<ParameterBlendGroup> mBlendGroup = nullptr;			///< Property: 'BlendGroup' all the parameters to blend over time
-		nap::ResourcePtr<ParameterInt>	mPresetIndex = nullptr;					///< Property: 'PresetIndex' index of the preset to blend to
+		nap::ResourcePtr<ParameterInt> mPresetIndex = nullptr;					///< Property: 'PresetIndex' index of the preset to blend to
 		nap::ResourcePtr<ParameterFloat> mPresetBlendTime = nullptr;			///< Property: 'PresetBlendTime' time it takes to blend parameters (seconds)
 		bool mEnableBlending = false;											///< Property: 'If blending is enabled or not
 		bool mIgnoreNonBlendableParameters = true;                              ///< Property: 'IgnoreNonBlendable' if false, throws error when parameters cannot be blended
@@ -106,6 +106,11 @@ namespace nap
 		 * @return current blend value from 0 - 1
 		 */
 		float getBlendValue();
+
+		/**
+		 * @return current preset index
+		 */
+		int getIndex() const													{ return mPresetIndex->mValue; }
 
 		/**
 		 * @return the names of all the presets that can be blended.
