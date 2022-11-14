@@ -13,15 +13,16 @@
 #include <rtti/defaultlinkresolver.h>
 #include <nap/logger.h>
 
-// nap::blendparameterscomponent run time class definition 
+// nap::blendparameterscomponent run time class definition
 RTTI_BEGIN_CLASS(nap::ParameterBlendComponent)
 	RTTI_PROPERTY("EnableBlending",		&nap::ParameterBlendComponent::mEnableBlending,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex",		&nap::ParameterBlendComponent::mPresetIndex,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetBlendTime",	&nap::ParameterBlendComponent::mPresetBlendTime,	nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("IgnoreNonBlendable",	&nap::ParameterBlendComponent::mIgnoreNonBlendableParameters,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::blendparameterscomponentInstance run time class definition 
+// nap::blendparameterscomponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterBlendComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
@@ -54,6 +55,7 @@ namespace nap
 		mPresetBlendTime = resource->mPresetBlendTime.get();
 		mBlendParameters = resource->mBlendGroup.get();
 		mEnableBlending = resource->mEnableBlending;
+        mIgnoreNonBlendableParameters = resource->mIgnoreNonBlendableParameters;
 
 		// Source presets
 		if (!sourcePresets(errorState))
@@ -139,7 +141,7 @@ namespace nap
 
 		mPresets.clear();
 		mPresets.reserve(presets.size());
-			
+
 		// Load all presets
 		nap::rtti::Factory& factory = getEntityInstance()->getCore()->getResourceManager()->getFactory();
 		for (const auto& preset : presets)
@@ -202,13 +204,21 @@ namespace nap
 			std::unique_ptr<BaseParameterBlender> new_blender = getParameterBlender(*source_parameter);
 			if (new_blender == nullptr)
 			{
-				error.fail("%s: Parameter %s can't be blended, no blender available for: %s", 
-					getComponent<ParameterBlendComponent>()->mID.c_str(),
-					source_parameter->mID.c_str(),
-					source_parameter->get_type().get_name().to_string().c_str());
-				return false;
+                std::string error_string = utility::stringFormat("%s: Parameter %s can't be blended, no blender available for: %s",
+                                                                  getComponent<ParameterBlendComponent>()->mID.c_str(),
+                                                                  source_parameter->mID.c_str(),
+                                                                  source_parameter->get_type().get_name().to_string().c_str());
+                if(!mIgnoreNonBlendableParameters)
+                {
+                    error.fail(error_string);
+                    return false;
+                }else
+                {
+                    nap::Logger::warn(*this, error_string);
+                }
 			}
-			mBlenders.emplace_back(std::move(new_blender));
+            if (new_blender != nullptr)
+                mBlenders.emplace_back(std::move(new_blender));
 		}
 		return true;
 	}
@@ -232,7 +242,7 @@ namespace nap
 
 			// Find matching target parameter in preset
 			ResourcePtr<Parameter> found_param = preset_group.findObjectRecursive(source_param.mID);
-			
+
 			// If no parameter with a matching id is found, notify and clear
 			// This ensures the blender is not updated
 			if (found_param == nullptr)
