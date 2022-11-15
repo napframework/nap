@@ -26,8 +26,10 @@ RTTI_END_ENUM
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EtherCATMaster)
 	RTTI_PROPERTY("ForceOperational",		&nap::EtherCATMaster::mForceOperational,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ForceSafeOperational",	&nap::EtherCATMaster::mForceSafeOperational,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ForcePreOperational",	&nap::EtherCATMaster::mForcePreOperational,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("OperationalTimeout",		&nap::EtherCATMaster::mOperationalTimeout,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SafeOperationalTimeout",	&nap::EtherCATMaster::mSafeOperationalTimeout,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PreOperationalTimeout",	&nap::EtherCATMaster::mPreOperationalTimeout,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Adapter",				&nap::EtherCATMaster::mAdapter,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ErrorCycleTime",			&nap::EtherCATMaster::mErrorCycleTime,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RecoveryTimeout",		&nap::EtherCATMaster::mRecoveryTimeout,			nap::rtti::EPropertyMetaData::Default)
@@ -153,6 +155,7 @@ namespace nap
 		assert(!mOperational);
 		assert(!mStarted);
 
+
 		//////////////////////////////////////////////////////////////////////////
 		// Init
 		//////////////////////////////////////////////////////////////////////////
@@ -203,18 +206,19 @@ namespace nap
 		// Configure DC options for every DC capable slave found in the list
 		ecx_configdc(context);
 
+
 		//////////////////////////////////////////////////////////////////////////
 		// Pre Operational
 		//////////////////////////////////////////////////////////////////////////
 
 		// All slaves should be in pre-op mode now, if not show and bail if required
-		if (stateCheck(0, ESlaveState::PreOperational, mSafeOperationalTimeout) != ESlaveState::PreOperational)
+		if (stateCheck(0, ESlaveState::PreOperational, mPreOperationalTimeout) != ESlaveState::PreOperational)
 		{
 			nap::Logger::warn("%s: not all slaves reached pre-operational state", mID.c_str());
 
 			utility::ErrorState pre_op_error;
 			getStatusMessage(ESlaveState::PreOperational, pre_op_error);
-			if (mForceSafeOperational)
+			if (mForcePreOperational)
 			{
 				errorState = pre_op_error;
 				stop();
@@ -222,8 +226,12 @@ namespace nap
 			}
 			nap::Logger::warn(pre_op_error.toString());
 		}
+		else
+		{
+			nap::Logger::info("%s: all slaves reached pre-operational state", mID.c_str());
+		}
 
-		// Allow derived class to startup, bail of failure
+		// Allow derived class to startup, bail on failure
 		readState();
 		if (!onStarted(errorState))
 		{
@@ -250,7 +258,9 @@ namespace nap
 			stop();
 			return false;
 		}
-		nap::Logger::info("%s: all slaves reached pre-operational state", mID.c_str());
+
+		nap::Logger::info("%s: all slaves advanced pre-operational hooks", mID.c_str());
+		
 
 		//////////////////////////////////////////////////////////////////////////
 		// Safe Operational
@@ -265,7 +275,7 @@ namespace nap
 		// All slaves should be in safe-op mode 
 		if (stateCheck(0, ESlaveState::SafeOperational, mSafeOperationalTimeout) != ESlaveState::SafeOperational)
 		{
-			nap::Logger::warn("%s: not all slaves reached pre-operational state", mID.c_str());
+			nap::Logger::warn("%s: not all slaves reached safe-operational state", mID.c_str());
 
 			utility::ErrorState safe_op_error;
 			getStatusMessage(ESlaveState::SafeOperational, safe_op_error);
@@ -276,6 +286,10 @@ namespace nap
 				return false;
 			}
 			nap::Logger::warn(safe_op_error.toString());
+		}
+		else
+		{
+			nap::Logger::info("%s: all slaves reached safe-operational state", mID.c_str());
 		}
 
 		// Calculate slave work counter, used to check in the error loop if slaves got lost
@@ -307,7 +321,7 @@ namespace nap
 			stop();
 			return false;
 		}
-		nap::Logger::info("%s: all slaves reached safe-operational state", mID.c_str());
+		nap::Logger::info("%s: all slaves advanced safe-operational hooks", mID.c_str());
 
 		//////////////////////////////////////////////////////////////////////////
 		// Operational

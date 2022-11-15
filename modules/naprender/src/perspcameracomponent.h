@@ -103,9 +103,19 @@ namespace nap
 		void setFieldOfView(float fov);
 
 		/**
-		 * @return current field of view
+		 * @return camera field of view
 		 */
 		float getFieldOfView() const;
+
+		/**
+		 * @return camera near clipping plane
+		 */
+		float getNearClippingPlane() const;
+
+		/**
+		 * @return camera far clipping plane
+		 */
+		float getFarClippingPlane() const;
 
 		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.

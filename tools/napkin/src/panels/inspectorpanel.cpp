@@ -294,7 +294,6 @@ void InspectorPanel::setPath(const PropertyPath& path)
 	// These types are excluded from property editing
 	static const std::vector<nap::rtti::TypeInfo> typeExceptions
 	{
-		RTTI_OF(nap::IGroup),
 		RTTI_OF(nap::math::FloatFCurve)
 	};
 
@@ -431,25 +430,39 @@ void napkin::InspectorModel::onChildAdded(const QList<QStandardItem*> items)
 void InspectorModel::populateItems()
 {
 	// Skip entities
-	if (rtti_cast<nap::Entity>(mPath.getObject()) != nullptr)
+	auto rtti_object = mPath.getObject();
+	if (rtti_cast<nap::Entity>(rtti_object) != nullptr)
 		return;
 
 	// Create items (and child items) for every property
-	for (const auto& propPath : mPath.getChildren())
+	for (const auto& prop_path : mPath.getChildren())
 	{
-		if (!isPropertyIgnored(propPath))
+		// Skip ID
+		if (prop_path.getName() == nap::rtti::sIDPropertyName)
+			continue;
+
+		// Skip member and child property of groups
+		nap::IGroup* group_obj = rtti_cast<nap::IGroup>(rtti_object);
+		if (group_obj != nullptr)
 		{
-			auto row = createPropertyItemRow(propPath);
-			for (const auto& item : row)
+			if (group_obj->getMembersProperty()  == prop_path.getProperty() ||
+				group_obj->getChildrenProperty() == prop_path.getProperty())
 			{
-				auto path_item = qitem_cast<const PropertyPathItem*>(item);
-				if (path_item != nullptr)
-				{
-					connect(path_item, &PropertyPathItem::childAdded, this, &napkin::InspectorModel::onChildAdded);
-				}
+				continue;
 			}
-			appendRow(row);
 		}
+
+		// Create item
+		auto row = createPropertyItemRow(prop_path);
+		for (const auto& item : row)
+		{
+			auto path_item = qitem_cast<const PropertyPathItem*>(item);
+			if (path_item != nullptr)
+			{
+				connect(path_item, &PropertyPathItem::childAdded, this, &napkin::InspectorModel::onChildAdded);
+			}
+		}
+		appendRow(row);
 	}
 }
 
