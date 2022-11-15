@@ -119,7 +119,7 @@ namespace nap
 		 * which are, outside color and depth attachments in render passes, the only resources that can currently be written to.
 		 * Makes the assumption that the data will be read in a subsequent render pass in the current frame.
 		 */
-		void insertBarriers(VkCommandBuffer commandBuffer, const std::vector<BufferData>& resources);
+		void insertBarriers(VkCommandBuffer commandBuffer);
 
 		RenderService*						mRenderService = nullptr;
 		ComputeMaterialInstance				mComputeMaterialInstance;
