@@ -132,7 +132,7 @@ namespace napkin
 		PropertyPath getChild(const std::string& name) const;
 
 		/**
-		 * @return obj The object this property is on
+		 * @return obj The object that has the property, nullptr if the path is invalid
 		 */
 		nap::rtti::Object* getObject() const;
 

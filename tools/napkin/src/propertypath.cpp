@@ -31,52 +31,63 @@ std::string NameIndex::toString() const
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-PropertyPath::PropertyPath(Object& obj, Document& doc) 
-	: mDocument(&doc)
+PropertyPath::PropertyPath(Object& obj, Document& doc) : mDocument(&doc), mObject(&obj)
 {
 	mObjectPath.emplace_back(obj.mID);
 }
 
-PropertyPath::PropertyPath(const std::string& abspath, Document& doc) 
-	: mDocument(&doc)
-{
-	auto pathParts = nap::utility::splitString(abspath, '@');
-	for (auto pathElm : nap::utility::splitString(pathParts[0], '/'))
-		if (!pathElm.empty())
-			mObjectPath.emplace_back(pathElm);
 
-	if (pathParts.size() > 1)
-		for (auto propElm : nap::utility::splitString(pathParts[1], '/'))
+PropertyPath::PropertyPath(const std::string& abspath, Document& doc) : mDocument(&doc)
+{
+	auto path_parts = nap::utility::splitString(abspath, '@');
+	auto path_elems = nap::utility::splitString(path_parts[0], '/');
+
+	// Construct object path
+	for (auto path_elem: path_elems)
+	{
+		if(!path_elem.empty())
+			mObjectPath.emplace_back(path_elem);
+	}
+
+	// Construct property path
+	if (path_parts.size() > 1)
+	{
+		for (auto propElm : nap::utility::splitString(path_parts[1], '/'))
 			mPropertyPath.emplace_back(propElm);
+	}
 }
 
-PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath, Document& doc) 
-	: mDocument(&doc)
-{
-	for (const auto& pathElm : nap::utility::splitString(abspath, '/'))
-		if (!pathElm.empty())
-			mObjectPath.emplace_back(pathElm);
 
-	for (const auto& propElm : nap::utility::splitString(proppath, '/'))
-		mPropertyPath.emplace_back(propElm);
+PropertyPath::PropertyPath(const std::string& abspath, const std::string& proppath, Document& doc)  : mDocument(&doc)
+{
+	// Construct object path
+	auto abs_elems = nap::utility::splitString(abspath, '/');
+	for (const auto& elem : abs_elems)
+	{
+		if (!elem.empty())
+			mObjectPath.emplace_back(elem);
+	}
+
+	// Construct property path
+	auto prop_elems = nap::utility::splitString(proppath, '/');
+	for (const auto& elem : prop_elems)
+		mPropertyPath.emplace_back(elem);
 }
 
 
 PropertyPath::PropertyPath(const PPath& abspath, Document& doc)
 		: mObjectPath(abspath), mDocument(&doc)
-{
-}
+{ }
+
 
 PropertyPath::PropertyPath(const PPath& absPath, const PPath& propPath, Document& doc)
 		: mObjectPath(absPath), mPropertyPath(propPath), mDocument(&doc)
-{
-}
+{ }
 
 
-PropertyPath::PropertyPath(Object& obj, const Path& path, Document& doc) : mDocument(&doc)
+PropertyPath::PropertyPath(Object& obj, const Path& path, Document& doc) : mDocument(&doc), mObject(&obj)
 {
-	auto id = obj.mID;
-	mObjectPath.emplace_back(NameIndex(id));
+	mObjectPath.emplace_back(NameIndex(obj.mID));
 	mPropertyPath.emplace_back(path.toString());
 }
 
@@ -87,15 +98,16 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document
 	mPropertyPath.emplace_back(std::string(prop.get_name().data()));
 }
 
+
 PropertyPath::~PropertyPath()
 { }
 
+
 const std::string PropertyPath::getName() const
 {
-	if (hasProperty())
-		return getProperty().get_name().data();
-	return getObject()->mID;
+	return hasProperty() ? getProperty().get_name().data() : getObject()->mID;
 }
+
 
 nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
 {
@@ -383,10 +395,12 @@ PropertyPath PropertyPath::getParent() const
 	return { };
 }
 
+
 rttr::property PropertyPath::getProperty() const
 {
 	return resolve().getProperty();
 }
+
 
 rttr::type PropertyPath::getType() const
 {
@@ -399,6 +413,7 @@ rttr::type PropertyPath::getType() const
 	Variant value = resolve().getValue();
 	return value.get_type();
 }
+
 
 ResolvedPath PropertyPath::resolve() const
 {
@@ -482,10 +497,12 @@ std::string PropertyPath::toString() const
 	return objectPathStr();
 }
 
+
 bool PropertyPath::isInstanceProperty() const
 {
 	return hasProperty() && getRootEntity();
 }
+
 
 PropertyPath PropertyPath::getChild(const std::string& name) const
 {
@@ -493,25 +510,23 @@ PropertyPath PropertyPath::getChild(const std::string& name) const
 	return {objectPathStr(), propPathStr() + "/" + name, *mDocument};
 }
 
+
 nap::rtti::Object* PropertyPath::getObject() const
 {
-	if (mObjectPath.empty())
-		return nullptr;
-
-	if (mObject == nullptr)
+	if (mObject == nullptr && !mObjectPath.empty())
 	{
 		assert(mDocument != nullptr);
 		mObject = mDocument->getObject(mObjectPath.back().mID);
 	}
-
-	assert(mObject != nullptr);
 	return mObject;
 }
+
 
 Path PropertyPath::getPath() const
 {
 	return Path::fromString(propPathStr());
 }
+
 
 rttr::type PropertyPath::getWrappedType() const
 {
@@ -521,19 +536,19 @@ rttr::type PropertyPath::getWrappedType() const
 
 bool PropertyPath::isOverridden() const
 {
-	if (!hasProperty())
-		return false;
-	return targetAttribute();
+	return hasProperty() ? targetAttribute() : false;
 }
+
 
 void PropertyPath::removeOverride()
 {
 	auto at = targetAttribute();
-	if (!at)
+	if (!at) 
 		return;
 	rttr::variant val = at->mValue.get();
 	removeInstanceValue(at, val);
 }
+
 
 bool PropertyPath::hasOverriddenChildren() const
 {
@@ -547,30 +562,32 @@ bool PropertyPath::hasOverriddenChildren() const
 	return false;
 }
 
+
 bool PropertyPath::hasProperty() const
 {
 	return !mPropertyPath.empty();
 }
 
+
 bool PropertyPath::isValid() const
 {
-	// Path must be associated with a document and object
-	if (mDocument == nullptr || getObject() == nullptr)
-		return false;
-
 	// If it's a property, resolve and validate
-	return hasProperty() ? resolve().isValid() : true;
+	return hasProperty() ? resolve().isValid() :
+		getObject() != nullptr;
 }
+
 
 bool PropertyPath::operator==(const PropertyPath& other) const
 {
 	return objectPathStr() == other.objectPathStr() && propPathStr() == other.propPathStr();
 }
 
+
 bool PropertyPath::isArray() const
 {
 	return getType().is_array();
 }
+
 
 bool PropertyPath::isPointer() const
 {
@@ -579,6 +596,7 @@ bool PropertyPath::isPointer() const
 	return getWrappedType().is_pointer();
 }
 
+
 bool PropertyPath::isEmbeddedPointer() const
 {
 	if (!isPointer())
@@ -586,6 +604,7 @@ bool PropertyPath::isEmbeddedPointer() const
 
 	return nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
 }
+
 
 bool PropertyPath::isNonEmbeddedPointer() const
 {
@@ -614,7 +633,6 @@ void PropertyPath::iterateChildren(std::function<bool(const PropertyPath&)> visi
 		return;
 
 	rttr::type type = getType();
-
 	if (isArray())
 	{
 		iterateArrayElements(visitor, flags);
@@ -686,6 +704,7 @@ std::vector<PropertyPath> PropertyPath::getProperties(int flags) const
 	return props;
 }
 
+
 int PropertyPath::getInstanceChildEntityIndex() const
 {
 	if (mObjectPath.empty())
@@ -693,6 +712,7 @@ int PropertyPath::getInstanceChildEntityIndex() const
 
 	return mObjectPath.back().mIndex;
 }
+
 
 int PropertyPath::getRealChildEntityIndex() const
 {
@@ -718,6 +738,7 @@ int PropertyPath::getRealChildEntityIndex() const
 	return -1;
 }
 
+
 void PropertyPath::iterateArrayElements(PropertyVisitor visitor, int flags) const
 {
 	auto value = getValue();
@@ -738,6 +759,7 @@ void PropertyPath::iterateArrayElements(PropertyVisitor visitor, int flags) cons
 	}
 }
 
+
 void PropertyPath::iterateChildrenProperties(PropertyVisitor visitor, int flags) const
 {
 	for (auto childProp : getType().get_properties())
@@ -754,6 +776,7 @@ void PropertyPath::iterateChildrenProperties(PropertyVisitor visitor, int flags)
 			childPath.iterateChildren(visitor, flags);
 	}
 }
+
 
 void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) const
 {
@@ -793,7 +816,6 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 		if (!visitor(childPath))
 			return;
 	}
-
 }
 
 
