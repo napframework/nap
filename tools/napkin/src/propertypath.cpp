@@ -22,12 +22,6 @@ NameIndex::NameIndex(const std::string& nameIndex)
 	nameAndIndex(nameIndex, mID, mIndex);
 }
 
-std::string NameIndex::toString() const
-{
-	if (mIndex < 0)
-		return mID;
-	return mID + ":" + std::to_string(mIndex);
-}
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

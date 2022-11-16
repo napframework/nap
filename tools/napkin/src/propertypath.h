@@ -27,15 +27,33 @@ namespace napkin
 	};
 
 
-	struct NameIndex
+	/**
+	 * Maps a name to a specific index.
+	 * Used as a part of a path to objects and properties.
+	 */
+	class NameIndex
 	{
+		friend class PropertyPath;
+	public:
+		/**
+		 * Creates the name / index pair
+		 */
 		NameIndex(const std::string& nameIndex);
-		std::string toString() const;
-		operator std::string() const { return toString(); }
-		std::string mID;
-		int mIndex = -1;
-	};
 
+		/**
+		 * @return name at index as string
+		 */
+		std::string toString() const				{ return  mIndex < 0 ? mID : nap::utility::stringFormat("%s:%d", mID, mIndex); }
+
+		/**
+		 * @return name at index as string
+		 */
+		operator std::string() const				{ return toString(); }
+
+	private:
+		std::string mID;							// the name
+		int mIndex = -1;							// the index of the name
+	};
 	using PPath = std::vector<NameIndex>;
 
 
