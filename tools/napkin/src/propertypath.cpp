@@ -498,8 +498,14 @@ nap::rtti::Object* PropertyPath::getObject() const
 	if (mObjectPath.empty())
 		return nullptr;
 
-	assert(mDocument != nullptr);
-	return mDocument->getObject(mObjectPath.back().mID);
+	if (mObject == nullptr)
+	{
+		assert(mDocument != nullptr);
+		mObject = mDocument->getObject(mObjectPath.back().mID);
+	}
+
+	assert(mObject != nullptr);
+	return mObject;
 }
 
 Path PropertyPath::getPath() const

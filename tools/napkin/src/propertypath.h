@@ -333,6 +333,7 @@ namespace napkin
 		Document* mDocument = nullptr;
 		PPath mObjectPath;
 		PPath mPropertyPath;
+		mutable nap::rtti::Object* mObject = nullptr;	
 	};
 }
 
