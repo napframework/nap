@@ -48,15 +48,18 @@ Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObj
 
 nap::Entity* Document::getParent(const nap::Entity& child) const
 {
-	for (const auto& o : getObjectPointers())
+	for (const auto& obj : mObjects)
 	{
-		if (!o->get_type().is_derived_from<nap::Entity>())
+		if (!obj.second->get_type().is_derived_from<nap::Entity>())
 			continue;
 
-		auto parent = rtti_cast<nap::Entity>(o);
-		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(),
-							   [&child](ObjectPtr<nap::Entity> e) -> bool { return &child == e.get(); });
+		auto parent = rtti_cast<nap::Entity>(obj.second.get());
+		auto it = std::find_if(parent->mChildren.begin(), parent->mChildren.end(), [&child](const auto& child_entity) -> bool
+			{
+				return &child == child_entity.get();
+			});
 
+		// Child is part of parent
 		if (it != parent->mChildren.end())
 			return parent;
 	}
@@ -326,8 +329,7 @@ Object* Document::getObject(const std::string& name)
 Object* Document::getObject(const std::string& name, const rttr::type& type)
 {
 	auto object = getObject(name);
-	return object != nullptr && object->get_type().is_derived_from(type) ?
-		object : nullptr;
+	return object != nullptr && object->get_type().is_derived_from(type) ? object : nullptr;
 }
 
 
