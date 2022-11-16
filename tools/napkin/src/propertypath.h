@@ -98,8 +98,6 @@ namespace napkin
 		 */
 		PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document& doc);
 
-		~PropertyPath();
-
 		/**
 		 * @return The last part of the property name
 		 */

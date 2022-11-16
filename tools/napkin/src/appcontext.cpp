@@ -250,17 +250,18 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 std::string AppContext::documentToString() const
 {
-	ObjectList objects;
-	for (auto& ob : getDocument()->getObjects())
+	ObjectList ser_objects;
+	const auto& doc_objects = getDocument()->getObjects();
+	for (auto& obj : doc_objects)
 	{
-		if (ob->get_type().is_derived_from<nap::InstancePropertyValue>())
-			continue;
-		objects.emplace_back(ob.get());
+		if (!obj.second->get_type().is_derived_from<nap::InstancePropertyValue>())
+		{
+			ser_objects.emplace_back(obj.second.get());
+		}
 	}
 
-	JSONWriter writer;
-	ErrorState err;
-	if (!serializeObjects(objects, writer, err))
+	JSONWriter writer; ErrorState err;
+	if (!serializeObjects(ser_objects, writer, err))
 	{
 		nap::Logger::fatal(err.toString());
 		return {};

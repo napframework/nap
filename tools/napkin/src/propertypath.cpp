@@ -93,10 +93,6 @@ PropertyPath::PropertyPath(nap::rtti::Object& obj, rttr::property prop, Document
 }
 
 
-PropertyPath::~PropertyPath()
-{ }
-
-
 const std::string PropertyPath::getName() const
 {
 	return hasProperty() ? getProperty().get_name().data() : getObject()->mID;

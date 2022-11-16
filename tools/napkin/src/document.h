@@ -18,6 +18,8 @@
 
 namespace napkin
 {
+	using OwnedObjectMap = std::unordered_map<std::string, std::unique_ptr<nap::rtti::Object>>;
+
 	/**
 	 * A document 'owns' a bunch of objects, it's own undostack
 	 */
@@ -51,7 +53,7 @@ namespace napkin
 		/**
 		 * @return A reference to all the objects (resources?) that are currently loaded.
 		 */
-		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
+		const OwnedObjectMap& getObjects() const { return mObjects; }
 
 		/**
 		 * Get all objects from this document, derived from the specified type.
@@ -588,9 +590,9 @@ namespace napkin
 		static std::string createSimpleUUID();
 
 		nap::Core& mCore;                        // nap's core
-		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
-		QString mCurrentFilename;                // This document's filename
-		QUndoStack mUndoStack;                    // This document's undostack
+		OwnedObjectMap mObjects;					// The objects in this document
+		QString mCurrentFilename;					// This document's filename
+		QUndoStack mUndoStack;						// This document's undostack
 
 		/**
 		 * Set object name, but skip checks and optimizations. Does not emit signal.
