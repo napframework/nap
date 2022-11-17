@@ -300,21 +300,22 @@ nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 	return *e;
 }
 
+
 std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID)
 {
-	std::string newName = suggestedName;
-	if (useUUID)
-		newName += "_" + createSimpleUUID();
-	int i = 2;
-	auto obj = getObject(newName);
-	while (obj != nullptr && obj != &object)
-	{
-		if (useUUID)
-			newName = suggestedName + "_" + createSimpleUUID();
-		else
-			newName = suggestedName + std::to_string(i++);
+	// Construct name
+	std::string newName = useUUID ?
+		nap::utility::stringFormat("%s_%s", suggestedName.c_str(), createSimpleUUID().c_str()) :
+		suggestedName;
 
-		obj = getObject(newName);
+	// Ensure name is unique
+	auto ex_obj = getObject(newName); int i = 2;
+	while (ex_obj != nullptr && ex_obj != &object)
+	{
+		newName = useUUID ?
+			nap::utility::stringFormat("%s_%s", suggestedName.c_str(), createSimpleUUID().c_str()) :
+			nap::utility::stringFormat("%s%d", suggestedName.c_str(), i++);
+		ex_obj = getObject(newName);
 	}
 	return newName;
 }
@@ -322,10 +323,7 @@ std::string Document::getUniqueName(const std::string& suggestedName, const nap:
 
 Object* Document::getObject(const std::string& name)
 {
-	nap::SteadyTimer timer;
-	timer.start();
 	auto it = mObjects.find(name);
-	nap::Logger::info("Getting object: %s, took: %d ns", name.c_str(), timer.getNanos().count());
 	return it != mObjects.end() ? it->second.get() : nullptr;
 }
 
@@ -339,12 +337,9 @@ Object* Document::getObject(const std::string& name, const rttr::type& type)
 
 ObjectList Document::getObjectPointers() const
 {
-	nap::SteadyTimer timer;
-	timer.start();
 	ObjectList ret; ret.reserve(mObjects.size());
 	for (auto& obj : mObjects)
 		ret.emplace_back(obj.second.get());
-	nap::Logger::info("Getting %d object pointers took: %d ns", mObjects.size(), timer.getNanos().count());
 	return ret;
 }
 
