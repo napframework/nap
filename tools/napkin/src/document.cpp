@@ -36,7 +36,7 @@ void splitNameIndex(const std::string& str, std::string& name, int& index)
 }
 
 
-Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects)
+Document::Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList&& objects)
 	: QObject(), mCore(core), mCurrentFilename(filename)
 {
 	for (auto& obj : objects)
@@ -274,7 +274,7 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 	obj->mID = getUniqueName(base_name, *obj, true);
 
 	// Add to managed object list
-	mObjects.emplace(std::make_pair(obj->mID, std::move(obj)));
+	mObjects.emplace(std::make_pair(obj->mID, obj));
 
 	// Notify listeners
 	objectAdded(obj, parent);

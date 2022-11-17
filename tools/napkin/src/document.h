@@ -21,15 +21,26 @@ namespace napkin
 	using OwnedObjectMap = std::unordered_map<std::string, std::unique_ptr<nap::rtti::Object>>;
 
 	/**
-	 * A document 'owns' a bunch of objects, it's own undostack
+	 * Owns a set of objects and offers an interface to interact with those objects.
 	 */
 	class Document : public QObject
 	{
 	Q_OBJECT
 	public:
+		/**
+		 * Construct an empty document
+		 * @param core the nap core
+		 */
 		Document(nap::Core& core) : QObject(), mCore(core) {}
 
-		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects);
+		/**
+		 * Construct a new document with a specific filename and set of objects.
+		 * The objects will be owned by the document.
+		 * @param core nap core
+		 * @param filename the name of the document
+		 * @param objects unique set of objects
+		 */
+		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList&& objects);
 
 		~Document();
 
