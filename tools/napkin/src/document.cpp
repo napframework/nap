@@ -189,6 +189,7 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 	return nullptr;
 }
 
+
 const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
 {
 	if (name.empty())
@@ -207,7 +208,6 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	auto it = mObjects.find(old_name);
 	assert(it != mObjects.end());
 	auto released_obj = it->second.release();
-	assert(released_obj == &object);
 
 	// Erase old entry, add new entry
 	mObjects.erase(it);

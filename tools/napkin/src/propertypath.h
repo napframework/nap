@@ -340,12 +340,6 @@ namespace napkin
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
 
-		/**
-		 * Invalidates the property path.
-		 * Called by the document when it is destroyed or changed.
-		 * Ensures no further operations on document can be performed
-		 */
-		void invalidate();
 		Document* mDocument = nullptr;
 		PPath mObjectPath;
 		PPath mPropertyPath;

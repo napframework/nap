@@ -835,9 +835,3 @@ void PropertyPath::updateObjectName(const std::string& oldName, const std::strin
 			nameIdx.mID = newName;
 	}
 }
-
-
-void PropertyPath::invalidate()
-{
-	mDocument = nullptr;
-}
