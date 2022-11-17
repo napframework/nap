@@ -335,15 +335,6 @@ Object* Document::getObject(const std::string& name, const rttr::type& type)
 }
 
 
-ObjectList Document::getObjectPointers() const
-{
-	ObjectList ret; ret.reserve(mObjects.size());
-	for (auto& obj : mObjects)
-		ret.emplace_back(obj.second.get());
-	return ret;
-}
-
-
 void Document::removeObject(Object& object)
 {
 	// Emit signal first so observers can act before the change

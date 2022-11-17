@@ -58,7 +58,7 @@ void napkin::RootResourcesItem::clear()
 }
 
 
-void napkin::RootResourcesItem::populate(nap::rtti::ObjectList& objects)
+void napkin::RootResourcesItem::populate(nap::rtti::ObjectSet& objects)
 {
 	clear();
 	for (auto& obj : objects)
@@ -135,7 +135,7 @@ void napkin::EntityResourcesItem::clear()
 }
 
 
-void napkin::EntityResourcesItem::populate(nap::rtti::ObjectList& objects)
+void napkin::EntityResourcesItem::populate(nap::rtti::ObjectSet& objects)
 {
 	clear();
 	for (auto& obj : objects)

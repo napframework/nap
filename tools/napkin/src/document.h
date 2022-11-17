@@ -71,11 +71,6 @@ namespace napkin
 		std::vector<T*> getObjects();
 
 		/**
-		 * @return All the objects that are currently loaded.
-		 */
-		nap::rtti::ObjectList getObjectPointers() const;
-
-		/**
 		 * Retrieve an (data) object by name/id
 		 * @param name The name/id of the object to find
 		 * @return The found object or nullptr if none was found

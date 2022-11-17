@@ -58,11 +58,10 @@ namespace napkin
 	void dumpTypes(rttr::type type, const std::string& indent = "");
 
 	/**
-	 * Filter the provided list of objects
-	 * @param objects
-	 * @param topLevelObjects
+	 * Returns all top level, non-embedded, objects.
+	 * @return all top level, non embedded, objects
 	 */
-	nap::rtti::ObjectList topLevelObjects(const nap::rtti::ObjectList& objects);
+	nap::rtti::ObjectSet topLevelObjects();
 
 	/**
 	 * Display a selection dialog with all available objects, filtered by a base type

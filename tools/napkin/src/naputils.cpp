@@ -96,66 +96,43 @@ void napkin::RTTITypeItem::refresh()
 	}
 }
 
-nap::rtti::ObjectList napkin::topLevelObjects(const ObjectList& objects)
+
+nap::rtti::ObjectSet napkin::topLevelObjects()
 {
-	// Pass 1: determine the set of all potential root objects
-	std::vector<ObjectLink> all_object_links;
-	ObjectSet allObjects;
-	ObjectList objects_to_visit = objects;
-	for (int index = 0; index < objects_to_visit.size(); ++index)
-	{
-		Object* object = objects_to_visit[index];
-		allObjects.insert(object);
+	// Bail if no document is loaded
+	ObjectSet top_level_objects; // RVO will take care of this
+	napkin::Document* doc = AppContext::get().getDocument();
+	if (doc == nullptr)
+		return top_level_objects;
 
-		// Find links for all objects
+	// Create set that contains all the objects
+	const auto& all_objects = doc->getObjects();
+	top_level_objects.reserve(all_objects.size());
+	for (const auto& it : all_objects)
+		top_level_objects.emplace(it.second.get());
+
+	// Filter by removing all embedded objects
+	for (const auto& it : all_objects)
+	{
+		// Get all links
 		std::vector<ObjectLink> links;
-		findObjectLinks(*object, links);
-
-		// Visit each links; the target of each link is a potential root object
-		all_object_links.reserve(all_object_links.size() + links.size());
-		objects_to_visit.reserve(objects_to_visit.size() + links.size());
-		for (ObjectLink& link : links)
+		findObjectLinks(*it.second, links);
+		for (const auto& link : links)
 		{
-			if (link.mTarget != nullptr && allObjects.find(link.mTarget) == allObjects.end())
-				objects_to_visit.push_back(link.mTarget);
-
-			all_object_links.push_back(link);
-		}
-	}
-
-	// Pass 2: now that we know all potential root objects, build the list of actual root object
-	// An object is a root object if it is not pointed to by an embedded pointer, or if it's pointed to by an embedded
-	// pointer but the writer does not support embedded pointers
-    ObjectList topLevelObjects; // RVO will take care of this
-	topLevelObjects.reserve(allObjects.size());
-	for (Object* object : allObjects)
-	{
-		bool is_embedded_object = false;
-
-		// Scan through all links to figure out if any embedded pointer is pointing to this object.
-		for (auto& link : all_object_links)
-		{
-			if (link.mTarget != object)
-				continue;
-
+			// Check if the link points to an embedded resource
 			ResolvedPath resolved_path;
 			link.mSourcePath.resolve(link.mSource, resolved_path);
 
-			auto property = resolved_path.getProperty();
-			if (hasFlag(property, EPropertyMetaData::Embedded))
+			// Remove as top level object
+			if (hasFlag(resolved_path.getProperty(), EPropertyMetaData::Embedded))
 			{
-				is_embedded_object = true;
-				break;
+				top_level_objects.erase(link.mTarget);
 			}
 		}
-
-		// Only non-embedded objects can be roots
-		if (!is_embedded_object)
-			topLevelObjects.emplace_back(object);
 	}
-
-    return topLevelObjects;
+    return top_level_objects;
 }
+
 
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
@@ -173,6 +150,7 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 
 	return *it;
 }
+
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
