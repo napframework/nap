@@ -236,6 +236,10 @@ namespace napkin
 		 */
 		void removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& object);
 
+		/**
+		 * Remove instance properties for a parentEntity / childEntity combo
+		 * @param path property path, expected to be a child of another entity
+		 */
 		void removeInstanceProperties(PropertyPath path);
 
 		/**
@@ -599,7 +603,7 @@ namespace napkin
 	std::vector<T*> Document::getObjects()
 	{
 		auto objects = getObjects(RTTI_OF(T));
-		std::vector<T*> ret;
+		std::vector<T*> ret; 
 		ret.reserve(objects.size());
 		for (auto& obj : objects)
 		{

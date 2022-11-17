@@ -460,6 +460,7 @@ void Document::removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& ob
 	}
 }
 
+
 void Document::removeInstanceProperties(PropertyPath path)
 {
 	// Remove instanceproperties for a parentEntity, childEntity combo
@@ -624,7 +625,7 @@ void Document::remove(const PropertyPath& path)
 		auto childEntity = rtti_cast<nap::Entity>(path.getObject());
 		assert(childEntity);
 
-		// Remove all instanceproperties that refer to this Entity:0 under ParentEntity
+		// Remove all instance properties that refer to this Entity:0 under ParentEntity
 		auto realIndex = path.getRealChildEntityIndex();
 		removeInstanceProperties(path);
 		removeChildEntity(*parentEntity, realIndex);
