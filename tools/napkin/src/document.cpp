@@ -89,7 +89,7 @@ nap::Entity* Document::getOwner(const nap::Component& component) const
 			continue;
 
 		nap::Entity* owner = static_cast<nap::Entity*>(obj.second.get());
-		auto filter = [&component](ObjectPtr<nap::Component> comp) -> bool
+		auto filter = [&component](const auto& comp) -> bool
 		{
 			return &component == comp.get();
 		};
@@ -194,17 +194,24 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
+	// Get name
 	auto new_name = getUniqueName(name, object, false);
 	if (new_name == object.mID)
 		return object.mID;
 
-	// Set name and update all pointers (in data model) that point to this object
+	// Set name
 	auto old_name = object.mID;
-
-	// Update all pointers (in data model) to this object
 	object.mID = new_name;
-	for (auto propPath : getPointersTo(object, false, false, false))
-		propPath.setPointee(&object);
+
+	// Release item 
+	auto it = mObjects.find(old_name);
+	assert(it != mObjects.end());
+	auto released_obj = it->second.release();
+	assert(released_obj == &object);
+
+	// Erase old entry, add new entry
+	mObjects.erase(it);
+	mObjects.emplace(std::make_pair(new_name, std::unique_ptr<nap::rtti::Object>(released_obj)));
 
 	// Notify listeners
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
@@ -213,24 +220,6 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	objectRenamed(object, old_name, new_name);
 
 	// New name
-	return object.mID;
-}
-
-
-const std::string& Document::forceSetObjectName(nap::rtti::Object& object, const std::string& name)
-{
-	auto newName = getUniqueName(name, object, false);
-
-	auto oldName = object.mID;
-	object.mID = newName;
-
-	// Update pointers to this object
-	for (auto propPath : getPointersTo(object, false, false, false))
-		propPath.setPointee(&object);
-
-	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
-	assert(path.isValid());
-
 	return object.mID;
 }
 
@@ -768,9 +757,6 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object
 
 	propertyValueChanged(path);
 	propertyChildInserted(path, index);
-
-	// HACK? fixes: object->mID will somehow get invalidated, this makes it stick...
-	forceSetObjectName(*object, object->mID);
 
 	return index;
 }
