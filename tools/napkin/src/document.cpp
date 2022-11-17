@@ -14,6 +14,7 @@
 #include <mathutils.h>
 #include <utility/fileutils.h>
 #include <nap/group.h>
+#include <nap/timer.h>
 
 using namespace napkin;
 using namespace nap::rtti;
@@ -321,7 +322,10 @@ std::string Document::getUniqueName(const std::string& suggestedName, const nap:
 
 Object* Document::getObject(const std::string& name)
 {
+	nap::SteadyTimer timer;
+	timer.start();
 	auto it = mObjects.find(name);
+	nap::Logger::info("Getting object: %s, took: %d ns", name.c_str(), timer.getNanos().count());
 	return it != mObjects.end() ? it->second.get() : nullptr;
 }
 
@@ -335,9 +339,12 @@ Object* Document::getObject(const std::string& name, const rttr::type& type)
 
 ObjectList Document::getObjectPointers() const
 {
+	nap::SteadyTimer timer;
+	timer.start();
 	ObjectList ret; ret.reserve(mObjects.size());
 	for (auto& obj : mObjects)
 		ret.emplace_back(obj.second.get());
+	nap::Logger::info("Getting %d object pointers took: %d ns", mObjects.size(), timer.getNanos().count());
 	return ret;
 }
 
@@ -1106,7 +1113,7 @@ Document::~Document()
 std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& type)
 {
 	std::vector<nap::rtti::Object*> result;
-	for (auto& object : getObjects())
+	for (auto& object : mObjects)
 	{
 		if (object.second->get_type().is_derived_from(type))
 		{
