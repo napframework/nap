@@ -524,9 +524,12 @@ rttr::type PropertyPath::getWrappedType() const
 	return type.is_wrapper() ? type.get_wrapped_type() : type;
 }
 
+
 bool PropertyPath::isOverridden() const
 {
-	return hasProperty() ? targetAttribute() : false;
+    if (hasProperty())
+        return targetAttribute() != nullptr;
+    return false;
 }
 
 
