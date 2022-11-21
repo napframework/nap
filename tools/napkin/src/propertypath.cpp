@@ -289,8 +289,12 @@ bool PropertyPath::setValue(rttr::variant value)
 	auto target_attr = targetAttribute();
 	if (target_attr == nullptr)
 	{
+		nap::InstancePropertyValue* new_value = createInstanceProperty(getType(), *getDocument());
+		if (new_value == nullptr)
+			return false;
+
 		target_attr = &getOrCreateTargetAttribute();
-		target_attr->mValue = createInstanceProperty(getType(), *getDocument());
+		target_attr->mValue = new_value;
 	}
 
 	// Set instance property value
