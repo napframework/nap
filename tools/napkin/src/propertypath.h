@@ -43,7 +43,7 @@ namespace napkin
 		/**
 		 * @return name at index as string
 		 */
-		std::string toString() const				{ return  mIndex < 0 ? mID : nap::utility::stringFormat("%s:%d", mID, mIndex); }
+		std::string toString() const				{ return  mIndex < 0 ? mID : nap::utility::stringFormat("%s:%d", mID.c_str(), mIndex); }
 
 		/**
 		 * @return name at index as string

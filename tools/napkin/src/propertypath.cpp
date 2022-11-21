@@ -814,19 +814,23 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 
 std::string PropertyPath::objectPathStr() const
 {
-	std::vector<std::string> elements;
+	std::string obj_path;
 	for (const auto& elm : mObjectPath)
-		elements.emplace_back(elm);
-	return "/" + nap::utility::joinString(elements, "/");
+		obj_path += nap::utility::stringFormat("/%s", elm.toString().c_str());
+	return obj_path;
 }
 
 
 std::string PropertyPath::propPathStr() const
 {
-	std::vector<std::string> elements;
-	for (const auto& elm : mPropertyPath)
-		elements.emplace_back(elm);
-	return nap::utility::joinString(elements, "/");
+	std::string pro_path;
+	for (auto i = 0; i < mPropertyPath.size(); i++)
+	{
+		if (i > 0)
+			pro_path += "/";
+		pro_path += mPropertyPath[i];
+	}
+	return pro_path;
 }
 
 
