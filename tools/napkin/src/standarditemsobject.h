@@ -42,7 +42,7 @@ namespace napkin
 		 * Populate this item
 		 * @param objects the objects to populate this item with
 		 */
-		void populate(nap::rtti::ObjectList& objects);
+		void populate(nap::rtti::ObjectSet& objects);
 
 		/**
 		 * Clear all items
@@ -94,7 +94,7 @@ namespace napkin
 		 * Populate this item
 		 * @param objects the objects to populate this item with
 		 */
-		void populate(nap::rtti::ObjectList& objects);
+		void populate(nap::rtti::ObjectSet& objects);
 
 		/**
 		 * Clear all items

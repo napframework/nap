@@ -528,7 +528,7 @@ void AddExistingResourceToGroupAction::perform()
 	auto base_type = members_path.getArrayElementType();
 
 	// Get objects to select from
-	auto objects = topLevelObjects(AppContext::get().getDocument()->getObjectPointers());
+	auto objects = topLevelObjects();
 
 	std::vector<nap::rtti::Object*> object_selection;
 	object_selection.reserve(objects.size());

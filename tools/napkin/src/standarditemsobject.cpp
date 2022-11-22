@@ -58,7 +58,7 @@ void napkin::RootResourcesItem::clear()
 }
 
 
-void napkin::RootResourcesItem::populate(nap::rtti::ObjectList& objects)
+void napkin::RootResourcesItem::populate(nap::rtti::ObjectSet& objects)
 {
 	clear();
 	for (auto& obj : objects)
@@ -135,7 +135,7 @@ void napkin::EntityResourcesItem::clear()
 }
 
 
-void napkin::EntityResourcesItem::populate(nap::rtti::ObjectList& objects)
+void napkin::EntityResourcesItem::populate(nap::rtti::ObjectSet& objects)
 {
 	clear();
 	for (auto& obj : objects)
@@ -200,40 +200,13 @@ ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 
 const PropertyPath ObjectItem::propertyPath() const
 {
-	auto parentEntity = qobject_cast<EntityItem*>(parentItem());
-	QStringList path;
-
-	auto thisEntity = this;
-	while (parentEntity)
-	{
-		auto thisID = QString::fromStdString(thisEntity->getObject()->mID);
-		if (qobject_cast<const ComponentItem*>(thisEntity))
-		{
-			// TODO: Remove this case if multiple entities of the same type/name may be added to entities
-			path.insert(0, thisID);
-		}
-		else
-		{
-			auto thisIndex = QString::number(parentEntity->nameIndex(*thisEntity));
-			auto id = QString("%1:%2").arg(thisID, thisIndex);
-			path.insert(0, id);
-		}
-
-		thisEntity = parentEntity;
-		parentEntity = qobject_cast<EntityItem*>(parentEntity->parentItem());
-	}
-
-	path.insert(0, QString::fromStdString(thisEntity->getObject()->mID));
-
-	auto pathStr = "/" + path.join('/');
-
 	return PropertyPath(absolutePath(), *(AppContext::get().getDocument()));
 }
 
+
 std::string ObjectItem::absolutePath() const
 {
-	std::vector<std::string> path;
-	path.emplace(path.begin(), unambiguousName());
+	std::vector<std::string> path = { unambiguousName() };
 	auto pitem = qobject_cast<ObjectItem*>(parentItem());
 	while (pitem)
 	{
@@ -242,6 +215,7 @@ std::string ObjectItem::absolutePath() const
 	}
 	return "/" + nap::utility::joinString(path, "/");
 }
+
 
 bool ObjectItem::isPointer() const
 {
