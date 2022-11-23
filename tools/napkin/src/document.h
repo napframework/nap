@@ -18,16 +18,29 @@
 
 namespace napkin
 {
+	using OwnedObjectMap = std::unordered_map<std::string, std::unique_ptr<nap::rtti::Object>>;
+
 	/**
-	 * A document 'owns' a bunch of objects, it's own undostack
+	 * Owns a set of objects and offers an interface to interact with those objects.
 	 */
 	class Document : public QObject
 	{
 	Q_OBJECT
 	public:
+		/**
+		 * Construct an empty document
+		 * @param core the nap core
+		 */
 		Document(nap::Core& core) : QObject(), mCore(core) {}
 
-		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList objects);
+		/**
+		 * Construct a new document with a specific filename and set of objects.
+		 * The objects will be owned by the document.
+		 * @param core nap core
+		 * @param filename the name of the document
+		 * @param objects unique set of objects
+		 */
+		Document(nap::Core& core, const QString& filename, nap::rtti::OwnedObjectList&& objects);
 
 		~Document();
 
@@ -51,7 +64,7 @@ namespace napkin
 		/**
 		 * @return A reference to all the objects (resources?) that are currently loaded.
 		 */
-		const nap::rtti::OwnedObjectList& getObjects() const { return mObjects; }
+		const OwnedObjectMap& getObjects() const { return mObjects; }
 
 		/**
 		 * Get all objects from this document, derived from the specified type.
@@ -67,11 +80,6 @@ namespace napkin
 		 */
 		template<typename T>
 		std::vector<T*> getObjects();
-
-		/**
-		 * @return All the objects that are currently loaded.
-		 */
-		nap::rtti::ObjectList getObjectPointers() const;
 
 		/**
 		 * Retrieve an (data) object by name/id
@@ -239,6 +247,10 @@ namespace napkin
 		 */
 		void removeInstanceProperties(nap::Scene& scene, nap::rtti::Object& object);
 
+		/**
+		 * Remove instance properties for a parentEntity / childEntity combo
+		 * @param path property path, expected to be a child of another entity
+		 */
 		void removeInstanceProperties(PropertyPath path);
 
 		/**
@@ -588,18 +600,9 @@ namespace napkin
 		static std::string createSimpleUUID();
 
 		nap::Core& mCore;                        // nap's core
-		nap::rtti::OwnedObjectList mObjects;    // The objects in this document
-		QString mCurrentFilename;                // This document's filename
-		QUndoStack mUndoStack;                    // This document's undostack
-
-		/**
-		 * Set object name, but skip checks and optimizations. Does not emit signal.
-		 *
-		 * @param object The object of which the name must change
-		 * @param name The new name, can be the same as the old one, will be overwritten anyway.
-		 * @return The resulting name given to the object (in case the name was changed for disambiguation).
-		 */
-		const std::string& forceSetObjectName(nap::rtti::Object& object, const std::string& name);
+		OwnedObjectMap mObjects;					// The objects in this document
+		QString mCurrentFilename;					// This document's filename
+		QUndoStack mUndoStack;						// This document's undostack
 	};
 
 
@@ -611,7 +614,7 @@ namespace napkin
 	std::vector<T*> Document::getObjects()
 	{
 		auto objects = getObjects(RTTI_OF(T));
-		std::vector<T*> ret;
+		std::vector<T*> ret; 
 		ret.reserve(objects.size());
 		for (auto& obj : objects)
 		{

@@ -106,7 +106,7 @@ void napkin::ResourceModel::populate()
 {
 	auto doc = AppContext::get().getDocument();
 	assert(doc != nullptr);
-	auto root_objects = topLevelObjects(doc->getObjectPointers());
+	auto root_objects = topLevelObjects();
 	mObjectsItem.populate(root_objects);
 	mEntitiesItem.populate(root_objects);
 }
