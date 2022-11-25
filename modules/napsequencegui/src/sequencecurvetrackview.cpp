@@ -85,7 +85,8 @@ namespace nap
         {
             {RTTI_OF(SequenceTrackCurveFloat), {{RTTI_OF(ParameterFloat), RTTI_OF(ParameterDouble), RTTI_OF(ParameterLong), RTTI_OF(ParameterInt), RTTI_OF(ParameterBool)}}},
             {RTTI_OF(SequenceTrackCurveVec2),  {{RTTI_OF(ParameterVec2)}}},
-            {RTTI_OF(SequenceTrackCurveVec3),  {{RTTI_OF(ParameterVec3)}}}
+            {RTTI_OF(SequenceTrackCurveVec3),  {{RTTI_OF(ParameterVec3)}}},
+			{RTTI_OF(SequenceTrackCurveVec4),  {{RTTI_OF(ParameterVec4)}}}
         };
 
 

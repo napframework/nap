@@ -23,3 +23,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::SequenceTrackSegmentEventVec3)
         RTTI_PROPERTY("Value", &nap::SequenceTrackSegmentEventVec3::mValue, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SequenceTrackSegmentEventVec4)
+		RTTI_PROPERTY("Value", &nap::SequenceTrackSegmentEventVec4::mValue, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
