@@ -295,11 +295,12 @@ namespace nap
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
 		/**
- 		 * Writes a 'config.json' file, that contains all currently loaded service configurations, to the project directory.
+ 		 * Writes a 'config.json' file, that contains all currently loaded service configurations
+ 		 * @param path the absolute path of the config file that will be written.
  		 * @param errorState contains the error if the operation fails.
  		 * @return true on success.
 		 */
-		bool writeConfigFile(utility::ErrorState& errorState);
+		bool writeConfigFile(const std::string& path, utility::ErrorState& errorState);
 
 		/**
 		 * Returns all available and used service configurations.
