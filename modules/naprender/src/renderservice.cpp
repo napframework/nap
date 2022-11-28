@@ -1782,6 +1782,7 @@ namespace nap
 				{
 					window.setPosition(cache->mPosition);
 					window.setSize(cache->mSize);
+					break;
 				}
 			}
 			break;
