@@ -89,7 +89,7 @@ add_subdirectory(demos/python)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
-    add_custom_target(generateXcodeProject cmake -H. -Bxcode -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
+    add_custom_target(generateXcodeProject ${CMAKE_COMMAND} -H. -B. -G Xcode -DCMAKE_BUILD_TYPE=Debug ../)
 endif()
 #add_dependencies(${PROJECT_NAME} ${GENERATE_XCODE_PROJECT_TARGET})
 
