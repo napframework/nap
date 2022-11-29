@@ -1,15 +1,12 @@
 # Find RTTR
-set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
-if(NOT TARGET RTTR::Core)
-    find_package(RTTR CONFIG REQUIRED Core)
-endif()
+find_rttr()
 
 # Find rapidjson
 find_package(rapidjson)
 
 # Let find_python find our prepackaged Python in thirdparty,
 # Note that this operation is allowed to fail because, by default, python support is disabled.
-find_python_in_thirdparty()
+configure_python()
 set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
 find_package(pybind11 QUIET)
 

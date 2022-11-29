@@ -6,7 +6,7 @@
 # LIBSNDFILE_DEFINITIONS - Compiler switches required for using LIBSNDFILE
 # LIBSNDFILE_DIST_FILES - Files required when package is distributed (Licenses etc.)
 
-include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(LIBSNDFILE_DIR 

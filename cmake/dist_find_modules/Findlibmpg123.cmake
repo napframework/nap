@@ -1,4 +1,4 @@
-if (WIN32)
+if(WIN32)
     find_path(
         LIBMPG123_DIR
         NAMES bin/libmpg123.dll
@@ -22,17 +22,17 @@ mark_as_advanced(MPG123_LIBS_DIR)
 
 # promote package for find
 INCLUDE(FindPackageHandleStandardArgs)
-FIND_PACKAGE_HANDLE_STANDARD_ARGS(mpg123 REQUIRED_VARS LIBMPG123_DIR MPG123_LIBS MPG123_LIBS_DIR)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(libmpg123 REQUIRED_VARS LIBMPG123_DIR MPG123_LIBS MPG123_LIBS_DIR)
 
-add_library(mpg123 SHARED IMPORTED)
-set_target_properties(mpg123 PROPERTIES
+add_library(libmpg123 SHARED IMPORTED)
+set_target_properties(libmpg123 PROPERTIES
                       IMPORTED_CONFIGURATIONS "Debug;Release"
                       IMPORTED_LOCATION_RELEASE ${MPG123_LIBS_RELEASE_DLL}
                       IMPORTED_LOCATION_DEBUG ${MPG123_LIBS_RELEASE_DLL}
                       )
 
 if(WIN32)
-    set_target_properties(mpg123 PROPERTIES
+    set_target_properties(libmpg123 PROPERTIES
                           IMPORTED_IMPLIB ${MPG123_LIBS}
                           )
 endif()

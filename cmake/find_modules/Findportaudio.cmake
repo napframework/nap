@@ -6,7 +6,7 @@
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
 # PORTAUDIO_DIST_FILES - Files required when distributing (installing) portaudio
 
-include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(PORTAUDIO_DIR 

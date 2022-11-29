@@ -1,10 +1,10 @@
 # - Try to find RTMIDI
 # Once done this will define
 # RTMIDI_FOUND - System has RTMIDI
-# RTMIDI_INCLUDE_DIRS - The RTMIDI include directories
+# RTMIDI_INCLUDE_DIR - The RTMIDI include directories
 # RTMIDI_LIBRARIES_DEBUG - The libraries needed to use RTMIDI in debug mode
 # RTMIDI_LIBRARIES_RELEASE - The libraries needed to use RTMIDI in release mode
-# RTMIDID_DIST_FILES - Files reqruied when rtmidi is distributed, for example: licenses
+# RTMIDID_DIST_FILES - Files required when rtmidi is distributed, for example: licenses
 
 find_path(RTMIDI_DIR 
           NAMES

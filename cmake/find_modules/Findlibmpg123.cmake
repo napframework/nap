@@ -6,7 +6,7 @@
 # LIBMPG123_DEFINITIONS - Compiler switches required for using LIBMPG123
 # LIBMPG123_DIST_FILES - Files required when distributed (License etc.)
 
-include(${CMAKE_CURRENT_LIST_DIR}/targetarch.cmake)
+include(${NAP_ROOT}/cmake/targetarch.cmake)
 target_architecture(ARCH)
 
 find_path(LIBMPG123_DIR
@@ -70,5 +70,3 @@ macro(copy_mpg123_lib)
                            )
     endif()
 endmacro()
-
-
