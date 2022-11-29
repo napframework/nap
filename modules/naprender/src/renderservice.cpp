@@ -50,21 +50,17 @@ namespace nap
 		RTTI_ENABLE(nap::Resource)
 	public:
 		WindowCache() = default;
-		WindowCache(const nap::RenderWindow& window, const nap::Display& display);
+		WindowCache(const nap::RenderWindow& window);
 
 		glm::ivec2 mPosition = {};					///< Property: 'Position' Position of window
 		glm::ivec2 mSize = {};						///< Property: 'Size' Size of window
-		std::string mDisplay;						///< Property: 'Display' Name of the display associated with the window
-		int mIndex = 0;								///< Property: 'Index' Index of the display 
 	};
 
-	WindowCache::WindowCache(const nap::RenderWindow& window, const nap::Display& display)
+	WindowCache::WindowCache(const nap::RenderWindow& window)
 	{
 		mID = window.mID;
 		mPosition = window.getPosition();
 		mSize = window.getSize();
-		mDisplay = display.getName();
-		mIndex = display.getIndex();
 	}
 
 
@@ -117,8 +113,6 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::WindowCache)
 	RTTI_PROPERTY("Position",					&nap::WindowCache::mPosition,									nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Size",						&nap::WindowCache::mSize,										nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Display",					&nap::WindowCache::mDisplay,									nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",						&nap::WindowCache::mIndex,										nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -1693,28 +1687,8 @@ namespace nap
 
 		for (const auto& window : mWindows)
 		{
-			// Find display
-			auto pos = window->getPosition();
-			const Display* window_display = nullptr;
-			for (const auto& display : mDisplays)
-			{
-				auto& min = display.getMin();
-				auto& max = display.getMax();
-
-				if (pos.x >= min.x && pos.x < max.x &&
-					pos.y >= min.y && pos.y < max.y)
-				{
-					window_display = &display;
-					break;
-				}
-			}
-
-			// Find display that shows window
-			if (window_display == nullptr)
-				continue;
-
 			// Create cache
-			auto new_cache = std::make_unique<WindowCache>(*window, *window_display);
+			auto new_cache = std::make_unique<WindowCache>(*window);
 			resources.emplace_back(new_cache.get());
 			caches.emplace_back(std::move(new_cache));
 		}
@@ -1787,21 +1761,17 @@ namespace nap
 			if(window.mID != cache->mID)
 				continue;
 
-			// If they do, find the display to position on, the display name and index must match.
-			// Otherwise the configuration changed and we might position it somewhere unreachable.
-			// If that's the case we don't attempt to restore it at all
+			// If ID matches, ensure the window doesn't fall out of display bounds.
+			// If window falls within bounds, restore.
 			for (const auto& display : mDisplays)
 			{
-				// Ensure index matches
-				if (cache->mIndex == display.getIndex())
+				auto& min = display.getMin();
+				auto& max = display.getMax();
+				if (cache->mPosition.x >= min.x && cache->mPosition.x < max.x &&
+					cache->mPosition.y >= min.y && cache->mPosition.y < max.y)
 				{
-					// Ensure names at index matches and apply position and size
-					// If index & name don't match the display configuration changed
-					if (cache->mDisplay == display.getName())
-					{
-						window.setPosition(cache->mPosition);
-						window.setSize(cache->mSize);
-					}
+					window.setPosition(cache->mPosition);
+					window.setSize(cache->mSize);
 					break;
 				}
 			}
