@@ -43,7 +43,7 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 set_target_properties(${NAPKIN_LIB} PROPERTIES FOLDER Tools)
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_napcolor)
+set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_napcolor mod_napsdlinput mod_napapp mod_napparameter mod_napinput)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
@@ -123,6 +123,15 @@ if(MSVC)
     # RTTR
     find_rttr()
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
+
+    # SDL
+    # TODO use the find module
+    add_custom_command(
+        TARGET ${PROJECT_NAME}
+        POST_BUILD
+        #COMMAND ${CMAKE_COMMAND} -E copy $ENV{SDL2DIR}/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+   )
 
     # Python
     if(NAP_ENABLE_PYTHON)
