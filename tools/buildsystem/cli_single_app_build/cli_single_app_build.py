@@ -8,7 +8,7 @@ from sys import platform
 import sys
 import shutil
 
-LINUX_BUILD_DIR = 'build_dir'
+LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
 THIRDPARTY = 'thirdparty'
