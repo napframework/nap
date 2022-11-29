@@ -1693,13 +1693,28 @@ namespace nap
 
 		for (const auto& window : mWindows)
 		{
+			// Find display
+			auto pos = window->getPosition();
+			const Display* window_display = nullptr;
+			for (const auto& display : mDisplays)
+			{
+				auto& min = display.getMin();
+				auto& max = display.getMax();
+
+				if (pos.x >= min.x && pos.x < max.x &&
+					pos.y >= min.y && pos.y < max.y)
+				{
+					window_display = &display;
+					break;
+				}
+			}
+
 			// Find display that shows window
-			const auto* display = findDisplay(*window);
-			if (display == nullptr)
+			if (window_display == nullptr)
 				continue;
 
 			// Create cache
-			auto new_cache = std::make_unique<WindowCache>(*window, *display);
+			auto new_cache = std::make_unique<WindowCache>(*window, *window_display);
 			resources.emplace_back(new_cache.get());
 			caches.emplace_back(std::move(new_cache));
 		}
@@ -1777,17 +1792,23 @@ namespace nap
 			// If that's the case we don't attempt to restore it at all
 			for (const auto& display : mDisplays)
 			{
-				// Name & index match
-				if (cache->mIndex == display.getIndex() && cache->mDisplay == display.getName())
+				// Ensure index matches
+				if (cache->mIndex == display.getIndex())
 				{
-					window.setPosition(cache->mPosition);
-					window.setSize(cache->mSize);
+					// Ensure names at index matches and apply position and size
+					// If index & name don't match the display configuration changed
+					if (cache->mDisplay == display.getName())
+					{
+						window.setPosition(cache->mPosition);
+						window.setSize(cache->mSize);
+					}
 					break;
 				}
 			}
 			break;
 		}
 	}
+
 
 	void RenderService::waitForFence(int frameIndex)
 	{
