@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )
+#!/bin/sh
+nap_root=$( cd "$(dirname -- "$0")" ; pwd -P )
 
 thirdparty="$nap_root/../thirdparty"
 if [ ! -d $thirdparty ]; then
@@ -8,7 +8,7 @@ if [ ! -d $thirdparty ]; then
     echo "Once thirdparty is in place run check_build_environment.sh first."
 fi
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
     python="$thirdparty/python/macos/x86_64/bin/python3"
 else
     case "$(arch)" in
@@ -26,4 +26,4 @@ fi
 
 unset PYTHONHOME
 unset PYTHONPATH
-$python $nap_root/build_tools/source_cli_build/build.py "$@"
+$python $nap_root/tools/buildsystem/source_cli_build/build.py "$@"

@@ -18,11 +18,11 @@ set PYTHONPATH=""
 set PYTHONHOME=""
 
 if "%~1" == "--source" goto SOURCE
-"%~dp0\..\thirdparty\python\python" "%~dp0\platform\check_build_environment_continued.py"
+"%~dp0\..\thirdparty\python\python" "%~dp0\buildsystem\check_build_environment\win64\check_build_environment_continued.py"
 exit /B
 
 : SOURCE
-set NAP_ROOT=%~dp0\..\..\..
+set NAP_ROOT=%~dp0\..\..\..\..
 set THIRDPARTY_DIR=%NAP_ROOT%\..\thirdparty
 if exist %THIRDPARTY_DIR% (
     echo Checking for third party repository: PASS

@@ -10,4 +10,4 @@ if not exist %THIRDPARTY_DIR% (
 
 set PYTHONPATH=
 set PYTHONHOME=
-%~dp0\..\thirdparty\python\msvc\x86_64\python %~dp0\build_tools\generate_solution\generate_solution.py %*
+%~dp0\..\thirdparty\python\msvc\x86_64\python %~dp0\tools\buildsystem\generate_solution\generate_solution.py %*

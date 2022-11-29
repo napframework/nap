@@ -11,4 +11,4 @@ if not exist %THIRDPARTY_DIR% (
 
 set PYTHONPATH=
 set PYTHONHOME=
-%THIRDPARTY_DIR%\python\msvc\x86_64\python %~dp0\project_and_module_updater.py %*
+%THIRDPARTY_DIR%\python\msvc\x86_64\python %~dp0\app_and_module_updater.py %*

@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )/../..
+#!/bin/sh
+nap_root=$( cd "$(dirname -- "$0")" ; pwd -P )/../..
 
 thirdparty="$nap_root/../thirdparty"
 if [ ! -d $thirdparty ]; then
@@ -27,4 +27,4 @@ fi
 
 unset PYTHONHOME
 unset PYTHONPATH
-$python $nap_root/build_tools/cli_single_project_build/cli_single_project_build.py "$@"
+$python $nap_root/build_tools/cli_single_app_build/cli_single_app_build.py "$@"

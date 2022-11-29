@@ -1,4 +1,8 @@
 @echo off
 set PYTHONPATH=
 set PYTHONHOME=
-%~dp0\..\thirdparty\python\python %~dp0\platform\cli_single_project_build.py %*
+set python=%~dp0\..\thirdparty\python\python.exe
+if not exist %python% (
+    set python=%~dp0\..\..\thirdparty\python\msvc\x86_64\python
+)
+%python% %~dp0\buildsystem\cli_single_app_build\cli_single_app_build.py %*

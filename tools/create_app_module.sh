@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-unset PYTHONHOME
-unset PYTHONPATH
-nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )/..
-$nap_root/thirdparty/python/bin/python3 $nap_root/tools/platform/create_project_module.py "$@"
+#!/bin/sh
+nap_root=$( cd "$(dirname -- "$0")" ; pwd -P )/..
+. $nap_root/tools/buildsystem/common/sh_shared.sh
+configure_python $nap_root
+$python $nap_root/tools/buildsystem/common/create_app_module.py "$@"

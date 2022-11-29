@@ -1,5 +1,5 @@
-#!/usr/bin/env bash
-nap_root=$( cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P )/../..
+#!/bin/sh
+nap_root=$( cd "$(dirname -- "$0")" ; pwd -P )/../..
 
 thirdparty="$nap_root/../thirdparty"
 if [ ! -d $thirdparty ]; then
@@ -9,7 +9,7 @@ if [ ! -d $thirdparty ]; then
     exit 1
 fi
 
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
     python="$thirdparty/python/macos/x86_64/bin/python3"
 else
     case "$(arch)" in
@@ -27,4 +27,4 @@ fi
 
 unset PYTHONHOME
 unset PYTHONPATH
-$python $nap_root/build_tools/project_and_module_updater/project_and_module_updater.py "$@"
+$python $nap_root/build_tools/app_and_module_updater/app_and_module_updater.py "$@"
