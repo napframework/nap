@@ -1,4 +1,3 @@
-include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 project(naprtti)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
@@ -27,8 +26,8 @@ target_include_directories(${PROJECT_NAME} PUBLIC src)
 target_include_directories(${PROJECT_NAME} PUBLIC ${RAPIDJSON_INCLUDE_DIRS})
 
 if (NAP_ENABLE_PYTHON)
-    # Find the python interpreter in thirdparty
-    find_python_in_thirdparty()
+    # Find the Python interpreter in thirdparty
+    configure_python()
 
     # Pybind uses the interpreter to locate the python libraries and includes, next to pybind includes
     set(pybind11_DIR ${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11)
@@ -56,7 +55,8 @@ if(WIN32)
 
     # Python
     if(NAP_ENABLE_PYTHON)
-        copy_windows_python_dlls_to_bin()
+        file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
+        copy_files_to_bin(${PYTHON_DLLS})
     endif()
 endif()
 
@@ -84,7 +84,7 @@ if (WIN32)
                                     ARCHIVE DESTINATION lib/$<CONFIG>)
 
     # Install for fbxconverter
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
 
     if(PACKAGE_PDBS)
@@ -101,7 +101,7 @@ install(DIRECTORY src/rtti/ DESTINATION include/rtti/
         FILES_MATCHING PATTERN "*.h")
 
 
-# Package dependent lib into platform release --
+# Package dependent lib into framework release --
 
 # Package pybind
 if (NAP_ENABLE_PYTHON)

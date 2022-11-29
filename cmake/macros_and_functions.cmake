@@ -1,3 +1,364 @@
+# Bootstrap our build environment, setting up architecture, flags, policies, etc used across both NAP # build contexts
+macro(bootstrap_environment)
+    # Enforce GCC on Linux for now (when doing packaging build at least)
+    if(UNIX AND NOT APPLE)
+        if(NOT NAP_BUILD_CONTEXT MATCHES "source" OR DEFINED NAP_PACKAGED_BUILD)
+            if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
+                message(FATAL_ERROR "NAP only currently supports GCC on Linux")
+            endif()
+        endif()
+    endif()
+
+    include(${NAP_ROOT}/cmake/targetarch.cmake)
+    target_architecture(ARCH)
+
+    set(CMAKE_CXX_STANDARD 17)
+    set(CMAKE_CXX_STANDARD_REQUIRED ON)
+    set_property(GLOBAL PROPERTY USE_FOLDERS ON)
+
+    if(WIN32)
+        if(MSVC)
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
+            set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
+            set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+            set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+            if(DEFINED INCLUDE_DEBUG_SYMBOLS AND INCLUDE_DEBUG_SYMBOLS)
+                set(PACKAGE_PDBS ON)
+            endif()
+        else()
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
+        endif()
+    elseif(UNIX)
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch -fvisibility=hidden")
+        if(DEFINED INCLUDE_DEBUG_SYMBOLS AND NOT INCLUDE_DEBUG_SYMBOLS)
+            if(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+                # Verified for AppleClang, expected to also potentially work (at a later date) for Clang on Linux
+                string(REPLACE "-g" "" CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG}")
+            else()
+                # Verified for GCC on Linux
+                set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -s")
+            endif()
+        endif()
+    endif()
+
+    # We don't actively support and work on macOS anymore.
+    # This is not because we don't like their hardware, but because of the continuous tightening of restrictions of macOS,
+    # Including aggressive gate-keeping, required app singing, forcing specific data structures, vague licence policies,
+    # proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
+    # Feel free to continue support for macOS on your end.
+    if(APPLE)
+        message(DEPRECATION "macOS (as a target) is no longer in active development or supported")
+        set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+    endif()
+
+    # We don't actively support and work on Python bindings anymore.
+    if(NAP_ENABLE_PYTHON)
+        message(DEPRECATION "Python bindings are no longer in active development or supported")
+        add_definitions(-DNAP_ENABLE_PYTHON)
+    endif()
+
+    # Automatically link Qt executables to qtmain target on Windows.
+    cmake_policy(SET CMP0020 NEW)
+
+    # Ignore COMPILE_DEFINITIONS
+    cmake_policy(SET CMP0043 NEW)
+
+    # Allow modifying link targets created in other directories (needed for the way extra libraries are brought in from
+    # module_extra.cmake
+    cmake_policy(SET CMP0079 NEW)
+
+    # Restrict to debug and release build types
+    set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
+
+    # Allow extra Find{project}.cmake files to be found by projects
+    # TODO first one is temporary until the find modules are moved under find_modules for framework release
+    list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake")
+    list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake/find_modules")
+
+    if(UNIX AND NOT APPLE)
+        # Ensure we have patchelf on Linux, preventing silent failures
+        ensure_patchelf_installed()
+
+        # Check if we're building on raspbian
+        check_raspbian_os(RASPBIAN)
+    endif()
+endmacro()
+
+# Get our NAP modules dependencies from module.json, populating into DEPENDENT_NAP_MODULES
+# APP_DIR: The app directory
+# DEST_CONTEXT: Our desired build context, ie. one of 'source', 'framework_release' or 'packaged_app'
+macro(find_path_mapping APP_DIR DEST_CONTEXT)
+    unset(PATH_MAPPING_FILE)
+    set(CHECK_PATH_LIST "")
+
+    # Provide for greater specificity
+    if(APPLE)
+        list(APPEND CHECK_PATH_LIST macos)
+    elseif(UNIX)
+        list(APPEND CHECK_PATH_LIST linux)
+    endif()
+
+    # Fallback to Windows/Unix split
+    if(WIN32)
+        list(APPEND CHECK_PATH_LIST win64)
+    else()
+        list(APPEND CHECK_PATH_LIST unix)
+    endif()
+
+    # Check for custom app mappings
+    foreach(CHECK_PATH ${CHECK_PATH_LIST})
+        set(FULL_CHECK_PATH ${APP_DIR}/config/custom_path_mappings/${CHECK_PATH}/${DEST_CONTEXT}.json)
+        if(EXISTS ${FULL_CHECK_PATH})
+            set(PATH_MAPPING_FILE ${FULL_CHECK_PATH})
+            message(STATUS "Using custom path mapping: ${FULL_CHECK_PATH}")
+            break()
+        endif()
+    endforeach()
+
+    # Otherwise find system mapping
+    if(NOT DEFINED PATH_MAPPING_FILE)
+        set(system_mappings ${NAP_ROOT}/tools/buildsystem/path_mappings)
+        foreach(CHECK_PATH ${CHECK_PATH_LIST})
+            if(NAP_BUILD_CONTEXT MATCHES "source")
+                set(FULL_CHECK_PATH ${system_mappings}/${CHECK_PATH}/${DEST_CONTEXT}.json)
+            else()
+                set(FULL_CHECK_PATH ${system_mappings}/${DEST_CONTEXT}.json)
+            endif()
+            if(EXISTS ${FULL_CHECK_PATH})
+                set(PATH_MAPPING_FILE ${FULL_CHECK_PATH})
+                break()
+            endif()
+        endforeach()
+    endif()
+
+    if(DEFINED PATH_MAPPING_FILE)
+        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
+    else()
+        message(FATAL_ERROR "Couldn't locate path mapping in ${APP_DIR} (for context ${DEST_CONTEXT})")
+    endif()
+endmacro()
+
+# Ensure that patchelf is installed on a Linux system. Configuration will fail if it's missing.
+macro(ensure_patchelf_installed)
+    execute_process(COMMAND sh -c "which patchelf"
+                    OUTPUT_QUIET
+                    RESULT_VARIABLE EXIT_CODE)
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not locate patchelf. Please run check_build_environment.")
+    endif()
+endmacro()
+
+# Check existence of bcm_host.h header file to see if we're building on Raspberry
+macro(check_raspbian_os RASPBERRY)
+    if(${ARCH} MATCHES "armhf")
+        MESSAGE(VERBOSE "Looking for bcm_host.h")
+        INCLUDE(CheckIncludeFiles)
+
+        # Raspbian bullseye bcm_host.h location
+        CHECK_INCLUDE_FILES("/usr/include/bcm_host.h" RASPBERRY)
+
+        # otherwise, check previous location of bcm_host.h on older Raspbian OS's
+        if(NOT RASPBERRY)
+            CHECK_INCLUDE_FILES("/opt/vc/include/bcm_host.h" RASPBERRY)
+        endif()
+    endif()
+endmacro()
+
+
+# Initialise our Python environment
+# _LIB AND _EXECUTABLE are used to help find_package(pybind11)
+function(configure_python)
+    if(DEFINED PYTHON_BIN)
+        return()
+    endif()
+
+    # Clear any system Python path settings
+    unset(ENV{PYTHONHOME})
+    unset(ENV{PYTHONPATH})
+
+    set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
+    if(NAP_BUILD_CONTEXT MATCHES "source")
+        if(CMAKE_HOST_WIN32)
+            set(PYTHON_BIN ${PYTHON_PREFIX}/msvc/x86_64/python.exe)
+            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/msvc/x86_64/libs PARENT_SCOPE)
+        elseif(CMAKE_HOST_APPLE)
+            set(PYTHON_BIN ${PYTHON_PREFIX}/macos/x86_64/bin/python3)
+            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/macos/x86_64/lib PARENT_SCOPE)
+        else()
+            set(PYTHON_BIN ${PYTHON_PREFIX}/linux/${ARCH}/bin/python3)
+            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/linux/${ARCH}/lib PARENT_SCOPE)
+        endif()
+    else()
+        if(WIN32)
+            set(PYTHON_BIN ${PYTHON_PREFIX}/python.exe)
+            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/libs PARENT_SCOPE)
+        elseif(UNIX)
+            set(PYTHON_BIN ${PYTHON_PREFIX}/bin/python3)
+            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/lib PARENT_SCOPE)
+        endif()
+    endif()
+    if(NOT EXISTS ${PYTHON_BIN})
+        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}. Have you updated thirdparty?")
+    endif()
+    set(PYTHON_BIN ${PYTHON_BIN} PARENT_SCOPE)
+    set(PYTHON_EXECUTABLE ${PYTHON_BIN} PARENT_SCOPE)
+endfunction()
+
+# Find RTTR using our thirdparty paths
+macro(find_rttr)
+    if(NOT TARGET RTTR::Core)
+        if(NAP_BUILD_CONTEXT MATCHES "source")
+            if(WIN32)
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
+                find_package(RTTR CONFIG REQUIRED Core)
+            elseif(APPLE)
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake")
+                find_path(
+                        RTTR_DIR
+                        NAMES rttr-config.cmake
+                        HINTS
+                        ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
+                )
+                find_package(RTTR CONFIG REQUIRED Core)
+            else()
+                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake")
+            endif()
+        else()
+            set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
+        endif()
+        find_package(RTTR CONFIG REQUIRED Core)
+    endif()
+endmacro()
+
+# Helper function to filter out platform-specific files
+# The function outputs the following new variables with the platform-specific sources:
+# - WIN32_SOURCES
+# - MACOS_SOURCES
+# - LINUX_SOURCES
+function(filter_platform_specific_files UNFILTERED_SOURCES)
+    set(LOCAL_WIN32_SOURCES)
+    set(LOCAL_MACOS_SOURCES)
+    set(LOCAL_LINUX_SOURCES)
+    foreach(TMP_PATH ${${UNFILTERED_SOURCES}})
+        string(FIND ${TMP_PATH} "/win32/" WIN32_EXCLUDE_DIR_FOUND)
+        if(NOT ${WIN32_EXCLUDE_DIR_FOUND} EQUAL -1)
+            list(APPEND LOCAL_WIN32_SOURCES ${TMP_PATH})
+        else()
+            string(FIND ${TMP_PATH} "/osx/" MACOS_EXCLUDE_DIR_FOUND)
+            if(NOT ${MACOS_EXCLUDE_DIR_FOUND} EQUAL -1)
+                list(APPEND LOCAL_MACOS_SOURCES ${TMP_PATH})
+            else()
+                string(FIND ${TMP_PATH} "/linux/" LINUX_EXCLUDE_DIR_FOUND)
+                if(NOT ${LINUX_EXCLUDE_DIR_FOUND} EQUAL -1)
+                    list(APPEND LOCAL_LINUX_SOURCES ${TMP_PATH})
+                endif()
+            endif()
+        endif()
+    endforeach(TMP_PATH)
+
+    set(WIN32_SOURCES ${LOCAL_WIN32_SOURCES} PARENT_SCOPE)
+    set(MACOS_SOURCES ${LOCAL_MACOS_SOURCES} PARENT_SCOPE)
+    set(LINUX_SOURCES ${LOCAL_LINUX_SOURCES} PARENT_SCOPE)
+endfunction()
+
+# Helper macro to add platform-specific files to the correct directory and
+# to only compile the platform-specific files that match the current platform
+macro(add_platform_specific_files WIN32_SOURCES MACOS_SOURCES LINUX_SOURCES)
+    # Add to solution folders
+    if(MSVC)
+        # Sort header and cpps into solution folders for Win32
+        foreach(TMP_PATH ${WIN32_SOURCES})
+            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
+            if(NOT ${IS_CPP} EQUAL -1)
+                source_group("Source Files\\Win32" FILES ${TMP_PATH})
+            else()
+                source_group("Header Files\\Win32" FILES ${TMP_PATH})
+            endif()
+        endforeach()
+        foreach(TMP_PATH ${LINUX_SOURCES})
+            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
+            if(NOT ${IS_CPP} EQUAL -1)
+                source_group("Source Files\\Linux" FILES ${TMP_PATH})
+            else()
+                source_group("Header Files\\Linux" FILES ${TMP_PATH})
+            endif()
+        endforeach()
+        foreach(TMP_PATH ${MACOS_SOURCES})
+            string(FIND ${TMP_PATH} ".cpp" IS_CPP)
+            if(NOT ${IS_CPP} EQUAL -1)
+                source_group("Source Files\\macOS" FILES ${TMP_PATH})
+            else()
+                source_group("Header Files\\macOS" FILES ${TMP_PATH})
+            endif()
+        endforeach()
+    endif()
+
+    # Unfortunately, there's no clean way to add a file to the solution (for browsing purposes, etc) but
+    # exclude it from the build. The hacky way to do it is to treat the file as a 'header' (even though it's not)
+    if(NOT WIN32)
+        set_source_files_properties(${WIN32_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    endif()
+
+    if(NOT APPLE)
+        set_source_files_properties(${MACOS_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    endif()
+
+    if(APPLE OR NOT UNIX)
+        set_source_files_properties(${LINUX_SOURCES} PROPERTIES HEADER_FILE_ONLY TRUE)
+    endif()
+endmacro()
+
+# Set build output configuration for Source context
+macro(set_source_build_configuration)
+    if(MSVC OR APPLE)
+        # Loop over each configuration for multi-configuration systems
+        foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
+            set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-${OUTPUTCONFIG})
+
+            # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
+            # builds when working in packaging and non-packaging at the same time)
+            if(DEFINED NAP_PACKAGED_BUILD)
+                set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+                set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
+            else()
+                set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
+                set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
+            endif()
+
+            string(TOUPPER ${OUTPUTCONFIG} OUTPUTCONFIG)
+            set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${BIN_DIR})
+            set(CMAKE_LIBRARY_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
+            set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY_${OUTPUTCONFIG} ${LIB_DIR})
+        endforeach(OUTPUTCONFIG CMAKE_CONFIGURATION_TYPES)
+
+        add_compile_definitions(NAP_BUILD_CONF=${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
+        add_compile_definitions(NAP_BUILD_TYPE=$<CONFIG>)
+        add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
+    else()
+        set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${CMAKE_BUILD_TYPE}-${ARCH})
+
+        # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
+        # builds when working in packaging and non-packaging at the same time)
+        if(DEFINED NAP_PACKAGED_BUILD)
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/packaging_lib/${BUILD_CONF})
+        else()
+            set(BIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/bin/${BUILD_CONF})
+            set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${BUILD_CONF})
+        endif()
+        file(MAKE_DIRECTORY ${BIN_DIR})
+        file(MAKE_DIRECTORY ${LIB_DIR})
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${LIB_DIR})
+        set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${BIN_DIR})
+        set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${LIB_DIR})
+        set(EXECUTABLE_OUTPUT_PATH ${PROJECT_BINARY_DIR})
+
+        add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
+        add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+        add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
+    endif()
+endmacro()
+
 # Set a default build type if none was specified (single-configuration generators only, ie. Linux)
 macro(set_default_build_type)
     if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
@@ -6,21 +367,23 @@ macro(set_default_build_type)
     endif()
 endmacro()
 
-# Add the project module (if it exists) into the project
-macro(add_project_module)
-    if(EXISTS ${CMAKE_SOURCE_DIR}/module/)
-        message("Found project module in ${CMAKE_SOURCE_DIR}/module/")
-        set(MODULE_INTO_PROJ TRUE)
-        set(IMPORTING_PROJECT_MODULE TRUE)
-        add_subdirectory(${CMAKE_SOURCE_DIR}/module/ project_module_build/)
-        unset(MODULE_INTO_PROJ)
-        unset(IMPORTING_PROJECT_MODULE)
+# Add the app module (if it exists) into the app
+macro(add_app_module)
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
+        message(DEBUG "Found app module in ${CMAKE_CURRENT_SOURCE_DIR}/module/")
+        set(MODULE_INTO_PARENT TRUE)
+        set(IMPORTING_APP_MODULE TRUE)
+        add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/module/ app_module_build/)
+        unset(MODULE_INTO_PARENT)
+        unset(IMPORTING_APP_MODULE)
 
         # Add includes
-        target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_SOURCE_DIR}/module/src)
+        target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/module/src)
 
         # Link
         target_link_libraries(${PROJECT_NAME} mod_${PROJECT_NAME})
+
+        target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
         # On Windows copy over module DLLs post-build
         if(WIN32)
@@ -28,33 +391,56 @@ macro(add_project_module)
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/mod_${PROJECT_NAME}.json
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/mod_${PROJECT_NAME}.json
             )       
         endif()
     endif()
 endmacro()
 
 # Export all FBXs in directory to meshes
-# SRCDIR: The directory to import/export in
-macro(export_fbx SRCDIR)
-    # Set the binary name
-    set(TOOLS_DIR ${NAP_ROOT}/tools)
-    set(FBXCONVERTER_BIN ${TOOLS_DIR}/platform/fbxconverter)
+function(export_fbx)
+    if(NAP_PACKAGED_BUILD AND NOT BUILD_APPS)
+        return()
+    endif()
+
+    set(workdir ${CMAKE_CURRENT_SOURCE_DIR}/data/)
+
+    # If we don't have any FBXs bail
+    file(GLOB fbx_files ${workdir}/*.fbx)
+    list(LENGTH fbx_files fbx_count)
+    if(NOT fbx_files)
+        return()
+    endif()
+
+    if(NAP_BUILD_CONTEXT MATCHES "source")
+        if(MSVC OR APPLE)
+            set(BUILD_CONF ${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>)
+        endif()
+        if(DEFINED NAP_PACKAGED_BUILD)
+            set(fbxconv_dir ${NAP_ROOT}/packaging_bin/${BUILD_CONF})
+        else()
+            set(fbxconv_dir ${NAP_ROOT}/bin/${BUILD_CONF})
+        endif()
+    else()
+        set(tools_dir ${NAP_ROOT}/tools)
+        set(fbxconv_dir ${tools_dir}/buildsystem)
+    endif()
 
     # Do the export
     add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND "${FBXCONVERTER_BIN}" -o ${SRCDIR} "${SRCDIR}/*.fbx"
-        COMMENT "Exporting FBX in '${SRCDIR}'")
-endmacro()
+                       POST_BUILD
+                       COMMAND ${fbxconv_dir}/fbxconverter -o ${workdir} ${workdir}/*.fbx
+                       COMMENT "Exporting FBX in '${workdir}'"
+                       )
+endfunction()
 
-# Setup our project output directories
-macro(set_output_directories)
-    if (MSVC OR APPLE)
+# Setup our output directories in Framework Release context
+macro(set_framework_release_output_directories)
+    if(MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
-            if (PROJECT_PACKAGE_BIN_DIR)
-                set(BIN_DIR ${CMAKE_SOURCE_DIR}/${PROJECT_PACKAGE_BIN_DIR}/)
+            if(APP_PACKAGE_BIN_DIR)
+                set(BIN_DIR ${CMAKE_SOURCE_DIR}/${APP_PACKAGE_BIN_DIR}/)
             else()
                 set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${OUTPUTCONFIG}/)
             endif()
@@ -63,8 +449,8 @@ macro(set_output_directories)
         endforeach()
     else()
         # Single built type, for Linux
-        if (PROJECT_PACKAGE_BIN_DIR)
-            set(BIN_DIR ${CMAKE_SOURCE_DIR}/${PROJECT_PACKAGE_BIN_DIR}/)
+        if(APP_PACKAGE_BIN_DIR)
+            set(BIN_DIR ${CMAKE_SOURCE_DIR}/${APP_PACKAGE_BIN_DIR}/)
         else()
             set(BIN_DIR ${CMAKE_SOURCE_DIR}/bin/${CMAKE_BUILD_TYPE}/)
         endif()
@@ -74,7 +460,7 @@ endmacro()
 
 # Setup our module output directories
 macro(set_module_output_directories)
-    if (MSVC OR APPLE)
+    if(MSVC OR APPLE)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             set(LIB_DIR ${CMAKE_CURRENT_SOURCE_DIR}/lib/${OUTPUTCONFIG}/)
@@ -176,26 +562,46 @@ endmacro()
 
 # Copy files to project binary dir
 # ARGN: Files to copy
-macro(copy_files_to_bin)
+function(copy_files_to_bin)
+    # TODO compare and retain the one that works across both contexts (I believe/hope this will be the top one)
+    if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+        foreach(F ${ARGN})
+            add_custom_command(TARGET ${PROJECT_NAME}
+                               POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                               COMMENT "Copying ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+        endforeach()
+    else()
+        foreach(F ${ARGN})
+            add_custom_command(TARGET ${PROJECT_NAME}
+                               POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>"
+                               COMMENT "Copying ${F} -> bin dir")
+        endforeach()
+    endif()
+endfunction()
+
+# Copy files to project target file dir
+# ARGN: Files to copy
+function(copy_files_to_target_file_dir)
     foreach(F ${ARGN})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
-                           COMMENT "Copy ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>")
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different "${F}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           COMMENT "Copying ${F} -> $<TARGET_FILE_DIR:${PROJECT_NAME}>"
+                           )
     endforeach()
-endmacro()
+endfunction()
 
-# Set our environment so that find_package finds our pre-packaged Python in thirdparty
-macro(find_python_in_thirdparty)
-    set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
-    if(UNIX)
-        set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/lib)
-        set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/bin/python3)
-    else()
-        set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/libs)
-        set(PYTHON_EXECUTABLE ${PYTHON_PREFIX}/python.exe)
-    endif()
-endmacro()
+# Copy directory to project bin output
+# SRCDIR: The source directory
+# DSTDIR: The destination directory without project bin output
+function(copy_dir_to_bin SRCDIR DSTDIR)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${SRCDIR}" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/${DSTDIR}"
+                       COMMENT "Copying dir '${SRCDIR}' -> '${DSTDIR}'")
+endfunction()
 
 # Windows: Post-build copy Python DLLs into project bin output
 # FOR_NAPKIN: Whether copying for Napkin (changing output dir)
@@ -239,70 +645,34 @@ macro(macos_add_rpath_to_module_post_build TARGET_NAME FILENAME PATH_TO_ADD)
                        )
 endmacro()
 
+# macOS: Add the runtime path for RTTR
+# TODO As a lower priority this should get pulled in automatically, need to cleanup. Jira NAP-108.
+function(macos_add_rttr_rpath)
+    add_custom_command(TARGET ${PROJECT_NAME}
+                       POST_BUILD
+                       COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/macos/${ARCH}/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                       )
+endfunction()
+
 # Populate modules list from project.json into var NAP_MODULES
-macro(project_json_to_cmake)
-    # Use configure_file to result in changes in project.json triggering reconfigure.  Appears to be best current approach.
-    configure_file(${CMAKE_SOURCE_DIR}/project.json project_json_trigger_dummy.json)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/project_json_trigger_dummy.json
+macro(app_json_to_cmake)
+    # Use configure_file to result in changes in project.json triggering reconfigure. Appears to be best current approach.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json app_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/app_json_trigger_dummy.json
                     ERROR_QUIET)    
 
-    # Clear any system Python path settings
-    unset(ENV{PYTHONHOME})
-    unset(ENV{PYTHONPATH})
+    # TODO this is slow, ideally only run it if project.json has changed (when calling regenerate explicitly)
 
     # Parse our project.json and import it
-    if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python.exe)
-    elseif(UNIX)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
-    endif()
-    if(NOT EXISTS ${PYTHON_BIN})
-        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
-    endif()
-
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/project_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
+    configure_python()
+    set(python_tools_dir ${NAP_ROOT}/tools/buildsystem/common)
+    execute_process(COMMAND ${PYTHON_BIN} ${python_tools_dir}/app_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
         message(FATAL_ERROR "Could not parse modules from project.json (${EXIT_CODE})")
     endif()
     include(cached_project_json.cmake)
-endmacro()
-
-# Get our NAP modules dependencies from module.json, populating into DEPENDENT_NAP_MODULES
-macro(module_json_to_cmake)
-    module_json_in_directory_to_cmake(${CMAKE_CURRENT_SOURCE_DIR})
-endmacro()
-
-# Get our NAP modules dependencies from module.json in specified directory, populating into DEPENDENT_NAP_MODULES
-macro(module_json_in_directory_to_cmake DIRECTORY)
-    # Use configure_file to result in changes in module.json triggering reconfigure.  Appears to be best current approach.
-    configure_file(${DIRECTORY}/module.json module_json_trigger_dummy.json)
-    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/module_json_trigger_dummy.json
-                    ERROR_QUIET)
-
-    # Clear any system Python path settings
-    unset(ENV{PYTHONHOME})
-    unset(ENV{PYTHONPATH})
-
-    # Parse our module.json and import it
-    if(WIN32)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/python.exe)
-    elseif(UNIX)
-        set(PYTHON_BIN ${THIRDPARTY_DIR}/python/bin/python3)
-    endif()
-    if(NOT EXISTS ${PYTHON_BIN})
-        message(FATAL_ERROR "Python not found at ${PYTHON_BIN}")
-    endif()
-
-    execute_process(COMMAND ${PYTHON_BIN} ${NAP_ROOT}/tools/platform/module_info_parse_to_cmake.py ${DIRECTORY} ${NAP_ROOT}
-                    RESULT_VARIABLE EXIT_CODE
-                    )
-    if(NOT ${EXIT_CODE} EQUAL 0)
-        message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
-    endif()
-    include(${DIRECTORY}/cached_module_json.cmake)
-    # message("${PROJECT_NAME} DEPENDENT_NAP_MODULES from module.json: ${DEPENDENT_NAP_MODULES}")
 endmacro()
 
 # Build source groups for input files maintaining their folder structure
@@ -331,7 +701,7 @@ function(create_hierarchical_source_groups_for_files INPUT_FILES RELATIVE_TO_PAT
 endfunction()
 
 # Copy calling module's module.json to sit alongside module post-build
-macro(copy_module_json_to_bin)
+function(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
     
     if(APPLE)
@@ -346,7 +716,6 @@ macro(copy_module_json_to_bin)
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
                            COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
-
     else()
         # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -354,7 +723,7 @@ macro(copy_module_json_to_bin)
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
                            COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
     endif()
-endmacro()
+endfunction()
 
 # For the provided top-level modules locate all dependencies and store in NAP_MODULES
 # TOPLEVEL_MODULES: A list of top level modules
@@ -386,25 +755,34 @@ endmacro()
 # TOTAL_MODULES: The modules we already have as dependencies
 macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
     # Set the location for NAP framework modules
-    set(NAP_MODULES_DIR ${NAP_ROOT}/modules/)
+    set(NAP_MODULES_DIR ${NAP_ROOT}/system_modules/)
 
     # Set the user modules location
-    set(USER_MODULES_DIR ${NAP_ROOT}/user_modules/)
+    set(USER_MODULES_DIR ${NAP_ROOT}/modules/)
 
     # Workaround for CMake not treating macro argument as proper list variable
     set(TOTAL_MODULES ${TOTAL_MODULES})
 
+
     # Loop for each search module
     foreach(SEARCH_MODULE ${SEARCH_MODULES})
+        # TODO Temp hack to remove mod_ suffix matching Source context NAP modules
+        string(SUBSTRING ${SEARCH_MODULE} 4 -1 hack_temp_mod_title)
         # Check for a NAP framework module
         if(EXISTS ${NAP_MODULES_DIR}/${SEARCH_MODULE})
             set(FOUND_PATH ${NAP_MODULES_DIR}/${SEARCH_MODULE})
         # Check for a user module
         elseif(EXISTS ${USER_MODULES_DIR}/${SEARCH_MODULE})
             set(FOUND_PATH ${USER_MODULES_DIR}/${SEARCH_MODULE})
-        # Check for a project module
+        # Check for an app module
         elseif(${SEARCH_MODULE} STREQUAL mod_${PROJECT_NAME} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
             set(FOUND_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module)
+        # TODO temporary - Check for a NAP framework module in Source context
+        elseif(EXISTS ${NAP_MODULES_DIR}/${hack_temp_mod_title})
+            if(${SEARCH_MODULE} MATCHES "^mod_${hack_temp_mod_title}$")
+                set(FOUND_PATH ${NAP_MODULES_DIR}/${hack_temp_mod_title})
+            endif()
+            # Check for a user module
         else()
             message(FATAL_ERROR "Could not find module ${SEARCH_MODULE}")
         endif()
@@ -460,15 +838,11 @@ endmacro()
 
 # Deploy appropriate path mapping to cache location alongside binary, and install
 # in packaged app
-# PROJECT_DIR: The project directory
-function(deploy_single_path_mapping PROJECT_DIR)
+# APP_DIR: The app directory
+# DEST_CONTEXT: The run time context
+function(deploy_single_path_mapping APP_DIR DEST_CONTEXT)
     # Deploy to build output
-    find_path_mapping(${NAP_ROOT}/tools/platform/path_mappings ${PROJECT_DIR} framework_release)
-    if(DEFINED PATH_MAPPING_FILE)
-        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
-    else()
-        message(FATAL_ERROR "Couldn't locate path mapping")
-    endif()
+    find_path_mapping(${APP_DIR} ${DEST_CONTEXT})
 
     if(APPLE OR WIN32)
         # Multi build-type systems
@@ -482,27 +856,179 @@ function(deploy_single_path_mapping PROJECT_DIR)
                        COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${DEST_CACHE_PATH}
                        COMMENT "Deploying path mapping to bin")
 
-    set(PROJ_DEST_CACHE_PATH ${PROJECT_DIR}/cache/path_mapping.json)
+    set(APP_DEST_CACHE_PATH ${APP_DIR}/cache/path_mapping.json)
     if(NOT (WIN32 AND NAP_PACKAGED_APP_BUILD))
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
-                           COMMENT "Deploying path mapping to project directory")
+                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${APP_DEST_CACHE_PATH}
+                           COMMENT "Deploying path mapping to app directory")
     endif()
 
-    # Install into packaged app
-    find_path_mapping(${NAP_ROOT}/tools/platform/path_mappings ${PROJECT_DIR} packaged_app)
-    if(DEFINED PATH_MAPPING_FILE)
-        message(VERBOSE "Using path mapping ${PATH_MAPPING_FILE}")
-    else()
-        message(FATAL_ERROR "Couldn't locate path mapping")
+    if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+        # Install into packaged app
+        find_path_mapping(${APP_DIR} packaged_app)
+        install(FILES ${PATH_MAPPING_FILE} DESTINATION cache RENAME path_mapping.json)
+        if(WIN32 AND NAP_PACKAGED_APP_BUILD)
+            set(APP_DEST_CACHE_PATH ${CMAKE_INSTALL_PREFIX}/cache/path_mapping.json)
+            add_custom_command(TARGET ${PROJECT_NAME}
+                               POST_BUILD
+                               COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${APP_DEST_CACHE_PATH}
+                               COMMENT "Deploying Win64 path mapping to packaged app app directory")
+        endif()
     endif()
-    install(FILES ${PATH_MAPPING_FILE} DESTINATION cache RENAME path_mapping.json)
-    if(WIN32 AND NAP_PACKAGED_APP_BUILD)
-        set(PROJ_DEST_CACHE_PATH ${CMAKE_INSTALL_PREFIX}/cache/path_mapping.json)
-        add_custom_command(TARGET ${PROJECT_NAME}
-                           POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} -E copy_if_different ${PATH_MAPPING_FILE} ${PROJ_DEST_CACHE_PATH}
-                           COMMENT "Deploying Win64 path mapping to packaged app project directory")
+endfunction()
+
+# Generic way to import each module for different configurations. Included is a fairly simple mechanism for 
+# extra per-module CMake logic, to be refined.
+macro(find_nap_module MODULE_NAME)
+    if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/)
+        message(STATUS "Module is user module: ${MODULE_NAME}")
+        set(MODULE_INTO_PARENT TRUE)
+        add_subdirectory(${NAP_ROOT}/modules/${MODULE_NAME} modules/${MODULE_NAME})
+        unset(MODULE_INTO_PARENT)
+
+        # On Windows copy over module DLLs and JSON post-build
+        if(WIN32)
+            add_custom_command(
+                TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_directory $<TARGET_FILE_DIR:${MODULE_NAME}>/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                )       
+        endif()
+    elseif(EXISTS ${NAP_ROOT}/system_modules/${NAP_MODULE}/)
+        if(NOT TARGET ${NAP_MODULE})
+            add_library(${MODULE_NAME} INTERFACE)
+
+            message(STATUS "Adding library path for ${MODULE_NAME}")
+            if(WIN32)
+                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.lib)
+                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.lib)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.json)
+            elseif(APPLE)
+                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.dylib)
+                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.dylib)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.json)
+            elseif(UNIX)
+                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.so)
+                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.so)
+                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release/${MODULE_NAME}.json)
+            endif()
+
+            target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
+            target_link_libraries(${MODULE_NAME} INTERFACE optimized ${${MODULE_NAME}_RELEASE_LIB})
+            set(MODULE_INCLUDE_ROOT ${NAP_ROOT}/system_modules/${NAP_MODULE}/include)
+            file(GLOB_RECURSE module_headers ${MODULE_INCLUDE_ROOT}/*.h ${MODULE_INCLUDE_ROOT}/*.hpp)
+            target_sources(${MODULE_NAME} INTERFACE ${module_headers})
+            set_target_properties(${MODULE_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${NAP_ROOT}/system_modules/${MODULE_NAME}/include)
+
+            # Build source groups for our headers maintaining their folder structure
+            create_hierarchical_source_groups_for_files("${module_headers}" ${MODULE_INCLUDE_ROOT} "Modules\\${MODULE_NAME}")
+        endif(NOT TARGET ${NAP_MODULE})
+
+        # On macOS & Linux install module into packaged app
+        if(NOT WIN32)
+            install(FILES ${${MODULE_NAME}_RELEASE_LIB} DESTINATION lib CONFIGURATIONS Release)
+            install(FILES ${${MODULE_NAME}_MODULE_JSON} DESTINATION lib CONFIGURATIONS Release)
+            # On Linux set our modules use their directory for RPATH
+            if(NOT APPLE)
+                install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
+                              execute_process(COMMAND patchelf 
+                                                      --set-rpath 
+                                                      $ORIGIN/.
+                                                      ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
+                                              RESULT_VARIABLE EXIT_CODE)
+                              if(NOT \${EXIT_CODE} EQUAL 0)
+                                  message(FATAL_ERROR \"Failed to fetch RPATH on ${MODULE_NAME} using patchelf. Is patchelf installed?\")
+                              endif()")
+            endif()
+        endif()
+
+        # Bring in any additional module logic
+        set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/system_modules/${MODULE_NAME}/module_extra.cmake)
+        if(EXISTS ${MODULE_EXTRA_CMAKE_PATH})
+            unset(MODULE_NAME_EXTRA_LIBS)
+            include (${MODULE_EXTRA_CMAKE_PATH})
+            if(MODULE_NAME_EXTRA_LIBS)
+                foreach(extra_lib ${MODULE_NAME_EXTRA_LIBS})
+                    target_link_libraries(${MODULE_NAME} INTERFACE ${extra_lib})
+                endforeach()
+            endif()
+        endif()
+
+        if(WIN32)
+            # Copy over module DLLs post-build
+            add_custom_command(
+                TARGET ${PROJECT_NAME}
+                POST_BUILD
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                )
+
+            # Copy PDB post-build, if we have them
+            if(EXISTS ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.pdb)
+                add_custom_command(
+                    TARGET ${PROJECT_NAME}
+                    POST_BUILD
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+                    )
+            endif()
+        endif()        
+    elseif(NOT TARGET ${MODULE_NAME})
+        message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    
+    endif()    
+endmacro()
+
+# Add an include to the list of includes on an interface target
+function(add_include_to_interface_target TARGET_NAME INCLUDE_PATH)
+    # Deal with cases using module_extra.cmake for DLL installation when targets aren't defined
+    if(INSTALLING_MODULE_FOR_NAPKIN AND NOT TARGET ${TARGET_NAME})
+        return()
     endif()
+
+    # Get existing list of includes
+    get_target_property(module_includes ${TARGET_NAME} INTERFACE_INCLUDE_DIRECTORIES)
+
+    # Handle no existing includes
+    if(NOT module_includes)
+        set(module_includes "")
+    endif()
+
+    # Append new path and set on target
+    list(APPEND module_includes ${INCLUDE_PATH})
+    set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES "${module_includes}")
+endfunction()
+
+# Add a define to the list of defines on an interface target
+function(add_define_to_interface_target TARGET_NAME DEFINE)
+    # Deal with cases using module_extra.cmake for DLL installation when targets aren't defined
+    if(INSTALLING_MODULE_FOR_NAPKIN AND NOT TARGET ${TARGET_NAME})
+        return()
+    endif()
+
+    # Get existing list of includes
+    get_target_property(module_defines ${TARGET_NAME} INTERFACE_COMPILE_DEFINITIONS)
+
+    # Handle no existing includes
+    if(NOT module_defines)
+        set(module_defines "")
+    endif()
+
+    # Append new path and set on target
+    list(APPEND module_defines ${DEFINE})
+    set_target_properties(${TARGET_NAME} PROPERTIES INTERFACE_COMPILE_DEFINITIONS "${module_defines}")
+endfunction()
+
+# Determine module name from directory
+function(directory_name_to_module_name)
+    get_filename_component(module_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
+    if(module_name MATCHES "^module$")
+        # Handle app module
+        get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+        get_filename_component(module_name ${parent_dir} NAME)
+    endif()
+
+    if(NOT "${module_name}" MATCHES "^mod_")
+        set(module_name "mod_${module_name}")
+    endif()
+    set(MODULE_NAME ${module_name} PARENT_SCOPE)
 endfunction()

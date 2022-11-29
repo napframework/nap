@@ -1,4 +1,3 @@
-include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 project(napcore)
 
 file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
@@ -96,7 +95,7 @@ endif()
 
 if(WIN32)
     # Install for fbxconverter on Win64
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
