@@ -23,7 +23,7 @@ target_link_libraries(${PROJECT_NAME} cryptopp)
 
 # Add the runtime paths for RTTR on macOS
 if(APPLE)
-    add_macos_rttr_rpath()
+    macos_add_rttr_rpath()
 endif()
 
 if(WIN32)

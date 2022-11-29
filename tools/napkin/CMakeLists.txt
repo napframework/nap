@@ -69,7 +69,7 @@ nap_qt_post(${PROJECT_NAME})
 
 # Add the runtime paths for RTTR
 if(APPLE)
-    add_macos_rttr_rpath()
+    macos_add_rttr_rpath()
 endif()
 
 # Copy resources
@@ -140,8 +140,6 @@ endif()
 package_qt()
 
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
-
-include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 
 if(MSVC)
     # On Windows, for now, dump our whole napkin directory from packaging_bin

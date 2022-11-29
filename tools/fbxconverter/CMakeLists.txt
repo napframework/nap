@@ -16,7 +16,7 @@ target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Add the runtime paths for RTTR on macOS
 if(APPLE)
-    add_macos_rttr_rpath()
+    macos_add_rttr_rpath()
 endif()
 
 # ======================= UNIT TESTS
