@@ -55,16 +55,16 @@ class SingleProjectBuilder:
     def determine_environment(self):
         """Verify environment and populate paths"""
         script_path = os.path.dirname(os.path.realpath(__file__))
-        script_to_nap_root = os.path.join(os.pardir, os.pardir)
+        script_to_nap_root = os.path.join(os.pardir, os.pardir, os.pardir)
 
         # Check for Source context
-        source_dist_dir = os.path.join(script_path, script_to_nap_root, 'dist', 'cmake', 'native')
-        if os.path.exists(source_dist_dir):
+        source_root_cmakelists = os.path.join(script_path, script_to_nap_root, 'CMakeLists.txt')
+        if os.path.exists(source_root_cmakelists):
             self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))    
             self.__source_context = True
         else:
             # Verify in Framework Release context
-            package_modules_dir = os.path.join(script_path, script_to_nap_root, 'modules')
+            package_modules_dir = os.path.join(script_path, script_to_nap_root, 'system_modules')
             if not os.path.exists(package_modules_dir):
                 print("Error: Can't locate NAP root")
                 sys.exit(ERROR_CANT_LOCATE_NAP)
@@ -97,9 +97,9 @@ class SingleProjectBuilder:
             build_type = build_type.capitalize()
 
         # Late import to handle different operating contexts
-        sys.path.append(os.path.join(self.__nap_root, 'dist', 'user_scripts', 'platform'))
-        from nap_shared import find_project
-        project_path = find_project(project_name, False, True)
+        sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
+        from nap_shared import find_app
+        project_path = find_app(project_name, False, True)
         if project_path is None:
             print("Error: Can't find project %s" % project_name)
             sys.exit(ERROR_CANT_LOCATE_PROJECT)
@@ -138,8 +138,9 @@ class SingleProjectBuilder:
 
     def build_packaged_framework_project(self, project_name, build_type):
         # Late import to handle different operating contexts
-        from nap_shared import find_project
-        project_path = find_project(project_name, False, True)
+        sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
+        from nap_shared import find_app
+        project_path = find_app(project_name, False, True)
         if project_path is None:
             print("Error: Can't find project %s" % project_name)
             sys.exit(ERROR_CANT_LOCATE_PROJECT)
@@ -164,7 +165,7 @@ class SingleProjectBuilder:
             build_type = build_type.capitalize()
 
         if generate_solution:
-            cmd = [self.__python, './tools/platform/regenerate_project_by_name.py', project_name]
+            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', project_name]
             if sys.platform.startswith('linux'):
                 cmd.append(build_type)        
             else:

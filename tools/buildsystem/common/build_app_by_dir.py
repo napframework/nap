@@ -10,7 +10,7 @@ from nap_shared import read_console_char, get_python_path
 def build_project_by_dir(project_path, build_type, pause_on_failed_build):
     project_name = os.path.basename(os.path.abspath(project_path.strip('\\')))
     nap_root = os.path.abspath(os.path.join(project_path, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'platform', 'cli_single_project_build.py')
+    script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'cli_single_app_build', 'cli_single_app_build.py')
 
     # Determine our Python interpreter location
     python = get_python_path()

@@ -25,10 +25,10 @@ def create_project_module(project_name, update_project_json, generate_solution, 
     # Set our paths
     module_path = os.path.join(project_path, 'module')    
     script_path = os.path.dirname(os.path.realpath(__file__))
-    nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir))
+    nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-    user_module_path = os.path.abspath(os.path.join(nap_root, 'user_modules', 'mod_%s' % module_name.lower()))
-    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
+    user_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
+    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'system_modules', 'mod_%s' % module_name.lower()))
 
     # Ensure project doesn't already have module
     if os.path.exists(module_path):
@@ -71,7 +71,7 @@ def create_project_module(project_name, update_project_json, generate_solution, 
             # Determine our Python interpreter location
             python = get_python_path()
 
-            cmd = [python, './tools/platform/regenerate_project_by_name.py', project_name]
+            cmd = [python, './tools/buildsystem/common/regenerate_app_by_name.py', project_name]
             if not show_solution and not sys.platform.startswith('linux'):
                 cmd.append('--no-show')
             if call(cmd, cwd=nap_root) != 0:

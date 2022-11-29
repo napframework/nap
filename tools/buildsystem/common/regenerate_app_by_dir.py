@@ -10,7 +10,7 @@ from nap_shared import read_console_char, get_python_path
 def regenerate_project_by_dir(project_path, suppress_showing_solution, linux_build_type, pause_on_failure):
     project_name = os.path.basename(project_path.strip('\\'))
     nap_root = os.path.abspath(os.path.join(project_path, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'platform', 'regenerate_project_by_name.py')
+    script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'common', 'regenerate_app_by_name.py')
 
     # Determine our Python interpreter location
     python = get_python_path()

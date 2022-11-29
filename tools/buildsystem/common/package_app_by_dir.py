@@ -5,12 +5,12 @@ import os
 from subprocess import call
 import sys
 
-from nap_shared import read_console_char, get_python_path
+from nap_shared import read_console_char, get_python_path, get_nap_root
 
 def package_project_by_dir(project_path, include_napkin, zip_package, show, pause_on_package):
     project_name = os.path.basename(project_path.strip('\\'))
-    nap_root = os.path.abspath(os.path.join(project_path, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'platform', 'package_project_by_name.py')
+    nap_root = get_nap_root()
+    script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'common', 'package_app_by_name.py')
 
     # Determine our Python interpreter location
     python = get_python_path()

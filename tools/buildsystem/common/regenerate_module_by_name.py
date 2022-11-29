@@ -4,7 +4,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_module, get_cmake_path
+from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path
 
 # Exit codes
 ERROR_MISSING_PROJECT = 1
@@ -20,13 +20,13 @@ elif sys.platform == 'win32':
 else:
     BUILD_DIR = 'build_dir'
 
-def update_module(module_name, build_type):
+def update_module_framework_release(module_name, build_type):
     # If module name is prefixed with mod_ remove it
     if module_name.startswith('mod_'):
         module_name = module_name[4:]
         
     # Find the module
-    module_path = find_module(module_name)
+    module_path = find_user_module(module_name)
     if module_path is None:
         return ERROR_MISSING_PROJECT
         
@@ -48,6 +48,20 @@ def update_module(module_name, build_type):
         return 0
     else:
         return ERROR_CONFIGURE_FAILURE
+
+def update_module_source(build_type):
+    nap_root = get_nap_root()
+    script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'generate_solution', 'generate_solution.py')
+
+    # Determine our Python interpreter location
+    python = get_python_path()
+
+    # Build our command
+    cmd = [python, script_path]
+    if sys.platform.startswith('linux'):    
+        cmd.append('-t')
+        cmd.append(build_type.lower())
+    return call(cmd)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
@@ -71,5 +85,8 @@ if __name__ == '__main__':
     else:
         build_type = None
 
-    exit_code = update_module(args.MODULE_NAME, build_type)
+    if get_build_context() == 'framework_release':
+        exit_code = update_module_framework_release(args.MODULE_NAME, build_type)
+    else:
+        exit_code = update_module_source(build_type)
     sys.exit(exit_code)

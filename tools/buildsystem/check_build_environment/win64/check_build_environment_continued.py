@@ -112,7 +112,7 @@ def check_qt_version():
     
     # Remove temporary directory for CMake project files to go into if it exists 
     nap_root = get_nap_root()
-    qt_checker_path = os.path.join(nap_root, 'dist', 'cmake', 'qt_checker')
+    qt_checker_path = os.path.join(nap_root, 'cmake', 'qt_checker')
     temp_build_dir = os.path.join(qt_checker_path, 'project_temp')
     if os.path.exists(temp_build_dir):
         shutil.rmtree(temp_build_dir)

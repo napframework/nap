@@ -10,7 +10,7 @@ from nap_shared import read_console_char, get_python_path
 def regenerate_module_by_dir(module_path, linux_build_type=None):
     module_name = os.path.basename(module_path.strip('\\'))
     nap_root = os.path.abspath(os.path.join(module_path, os.pardir, os.pardir))
-    script_path = os.path.join(nap_root, 'tools', 'platform', 'regenerate_module_by_name.py')
+    script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'common', 'regenerate_module_by_name.py')
 
     # Determine our Python interpreter location
     python = get_python_path()

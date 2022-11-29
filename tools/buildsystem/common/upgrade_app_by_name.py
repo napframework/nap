@@ -15,7 +15,7 @@ def upgrade_project(project_name):
     if project_path is None:
         return ERROR_MISSING_PROJECT
 
-    script_path = os.path.join(os.path.dirname(__file__), 'project_and_module_updater.py')
+    script_path = os.path.join(get_nap_root(), 'tools', 'buildsystem', 'app_and_module_updater', 'app_and_module_updater.py')
 
     python = get_python_path()
     cmd = [python, script_path, 'UPGRADE_PROJECT', project_path] 

@@ -94,11 +94,11 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
     if (WIN32)
         # Install for fbxconverter
-        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
                 CONFIGURATIONS Release)
     endif()
 
-    # Package dependent libs into platform release --
+    # Package dependent libs into framework release --
 
     # Assimp
     install(FILES ${ASSIMP_DIST_FILES} DESTINATION thirdparty/assimp)
@@ -145,7 +145,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         install(DIRECTORY ${VULKANSDK_DIR}/lib DESTINATION thirdparty/vulkansdk)
         install(DIRECTORY ${VULKANSDK_DIR}/share DESTINATION thirdparty/vulkansdk)
         install(DIRECTORY ${VULKANSDK_DIR}/bin DESTINATION thirdparty/vulkansdk)
-        install(FILES dist/vulkan_macos/MoltenVK_icd.json DESTINATION modules/${PROJECT_NAME}/macos/)
+        install(FILES dist/vulkan_macos/MoltenVK_icd.json DESTINATION system_modules/${PROJECT_NAME}/macos/)
     elseif(UNIX)
         install(DIRECTORY ${VULKANSDK_DIR}/include DESTINATION thirdparty/vulkansdk)
         install(DIRECTORY ${VULKANSDK_DIR}/lib DESTINATION thirdparty/vulkansdk)
@@ -205,7 +205,7 @@ else()
 
     # Package MoltenVK ICD file for packaged app on macOS
     if(APPLE)
-        install(FILES ${NAP_ROOT}/modules/mod_naprender/macos/MoltenVK_icd.json DESTINATION lib)
+        install(FILES ${NAP_ROOT}/system_modules/mod_naprender/macos/MoltenVK_icd.json DESTINATION lib)
     endif()
 
     # Install thirdparty licenses into lib
@@ -215,5 +215,5 @@ else()
     install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION licenses/vulkansdk)
 
     # Install data directory
-    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data DESTINATION modules/mod_naprender)
+    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data DESTINATION system_modules/mod_naprender)
 endif()

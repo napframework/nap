@@ -12,7 +12,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         copy_freetype_dll()
     endif()
 
-    # Package freetype into platform release
+    # Package freetype into framework release
     install(FILES ${FREETYPE_DIST_FILES} DESTINATION thirdparty/freetype)
 
     install(DIRECTORY ${FREETYPE_INCLUDE_DIR}/ DESTINATION thirdparty/freetype/include
@@ -33,7 +33,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
     if (WIN32)
         # Install for fbxconverter
-        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
     endif()
 else()

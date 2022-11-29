@@ -4,7 +4,7 @@ import sys
 import os
 from subprocess import call
 
-from nap_shared import find_module, get_python_path
+from nap_shared import find_user_module, get_python_path
 
 # Exit codes
 ERROR_MISSING_MODULE = 1
@@ -15,11 +15,11 @@ def upgrade_module(module_name):
         module_name = module_name[4:]
         
     # Find the module
-    module_path = find_module(module_name)
+    module_path = find_user_module(module_name)
     if module_path is None:
         return ERROR_MISSING_MODULE
 
-    script_path = os.path.join(os.path.dirname(__file__), 'project_and_module_updater.py')
+    script_path = os.path.join(os.path.dirname(__file__), os.pardir, 'app_and_module_updater', 'app_and_module_updater.py')
 
     python = get_python_path()
     cmd = [python, script_path, 'UPGRADE_MODULE', module_path] 

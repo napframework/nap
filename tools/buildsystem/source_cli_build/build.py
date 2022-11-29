@@ -42,7 +42,7 @@ def get_cmake_path():
 def get_nap_root():
     """Get absolute path to NAP root"""
     script_path = os.path.realpath(__file__)
-    script_to_nap_root = os.path.join(os.pardir, os.pardir)
+    script_to_nap_root = os.path.join(os.pardir, os.pardir, os.pardir)
     return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))    
 
 def main(target, clean_build, build_type, enable_python):

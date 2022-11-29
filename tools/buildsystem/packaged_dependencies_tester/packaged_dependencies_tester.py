@@ -35,7 +35,7 @@ PROJECT_BUILD_TYPE = 'Release'
 DEFAULT_TESTING_PROJECTS_DIR = 'demos'
 
 # Directory containing modules, to verify they all get dependency tested
-MODULES_DIR = 'modules'
+MODULES_DIR = 'system_modules'
 
 # Main project structure filename
 PROJECT_FILENAME = 'project.json'
@@ -2549,8 +2549,8 @@ if __name__ == '__main__':
         sys.exit(1)
 
     # Import python helpers
-    sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'platform'))
-    from nap_shared import get_full_project_module_requirements
+    sys.path.append(os.path.join(args.NAP_FRAMEWORK_PATH, 'tools', 'buildsystem', 'common'))
+    from nap_shared import get_app_full_module_requirements
 
     # Don't do any NAP framework / Qt renaming on Windows
     if is_windows():

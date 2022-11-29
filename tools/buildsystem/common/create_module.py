@@ -14,13 +14,13 @@ ERROR_CMAKE_CREATION_FAILURE = 3
 ERROR_SOLUTION_GENERATION_FAILURE = 4
 
 def create_module(module_name, generate_solution):
-    print("Creating module %s in user_modules/mod_%s" % (module_name, module_name.lower()))
+    print("Creating module %s in modules/mod_%s" % (module_name, module_name.lower()))
 
     # Set our paths
     script_path = os.path.dirname(os.path.realpath(__file__))
-    nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir))
+    nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-    module_path = os.path.abspath(os.path.join(nap_root, 'user_modules', 'mod_%s' % module_name.lower()))
+    module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
     duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
 
     # Check for existing module with same name
@@ -47,8 +47,7 @@ def create_module(module_name, generate_solution):
 
         # Determine our Python interpreter location
         python = get_python_path()
-
-        cmd = [python, './tools/platform/regenerate_module_by_name.py', module_name.lower()]
+        cmd = [python, './tools/buildsystem/common/regenerate_module_by_name.py', module_name.lower()]
         if call(cmd, cwd=nap_root) != 0:
             print("Solution generation failed")
             sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
