@@ -1,79 +1,36 @@
-# Enforce GCC on Linux for now
-if(UNIX AND NOT APPLE)
-    if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
-        message(FATAL_ERROR "NAP only currently supports GCC on Linux")
-    endif()
+if(NOT DEFINED NAP_BUILD_CONTEXT)
+    set(NAP_BUILD_CONTEXT "framework_release")
+    get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
+    message(STATUS "Using NAP root: ${NAP_ROOT}")
+    get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
+    message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
+
+    # Set our install prefix for app packaging
+    set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_package)
+
+    include(${NAP_ROOT}/cmake/macros_and_functions.cmake)
+
+    bootstrap_environment()
+
+    # Set our default build type if we haven't specified one (Linux)
+    set_default_build_type()
 endif()
 
-# Set our install prefix for project packaging
-set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/bin_package)
-
-get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
-message(STATUS "Using NAP root: ${NAP_ROOT}")
-get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
-message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
-
-include(${NAP_ROOT}/cmake/targetarch.cmake)
-target_architecture(ARCH)
-
-include(${NAP_ROOT}/cmake/dist_shared_native.cmake)
-include(${NAP_ROOT}/cmake/cross_context_macros.cmake)
+unset(PACKAGING_INCLUDE_ONLY_WITH_NAIVI_APPS)
+unset(PACKAGING_FORCE_PACKAGE_USER_APP)
+unset(APP_CUSTOM_IDE_FOLDER)
 
 # Get our modules list from project.json
-project_json_to_cmake()
+app_json_to_cmake()
 
-# Fetch our module dependencies
-fetch_module_dependencies("${NAP_MODULES}")
-
-# Set our default build type if we haven't specified one (Linux)
-set_default_build_type()
-
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_STANDARD_REQUIRED ON)
-set_property(GLOBAL PROPERTY USE_FOLDERS ON)
-if (WIN32)
-    if(MSVC)
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
-        set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
-        set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
-        set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
-    else()
-        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -msse -Wa,-mbig-obj")
+# Bring in any additional app logic (pre-target definition)
+set(APP_EXTRA_PRE_TARGET_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/app_extra_pre_target.cmake)
+if(EXISTS ${APP_EXTRA_PRE_TARGET_CMAKE_PATH})
+    unset(SKIP_APP)
+    include(${APP_EXTRA_PRE_TARGET_CMAKE_PATH})
+    if(SKIP_APP)
+        return()
     endif()
-elseif(UNIX)
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fPIC -Wno-format-security -Wno-switch -fvisibility=hidden" )
-endif()
-
-if(APPLE)
-    set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
-endif()
-
-cmake_policy(SET CMP0020 NEW)
-cmake_policy(SET CMP0043 NEW)
-
-# Restrict to debug and release build types
-set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
-
-# Allow extra Find{project}.cmake files to be found by projects
-list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/cmake)
-
-if(WIN32)
-    if(MINGW)
-        # Copy required MinGW dll's to bin dir
-        get_filename_component(COMPILER_DIR ${CMAKE_CXX_COMPILER} PATH)
-        set(MODULES gcc_s_dw2-1 stdc++-6 winpthread-1)
-        foreach (MOD ${MODULES})
-            find_library(_LIB NAMES ${MOD} HINTS ${COMPILER_DIR})
-            message(STATUS "Copy ${_LIB} to ${BIN_DIR}")
-            file(COPY ${_LIB} DESTINATION ${BIN_DIR})
-            unset(_LIB CACHE)
-        endforeach ()
-    endif()
-endif()
-
-# Ensure we have patchelf on Linux, preventing silent failures
-if(UNIX AND NOT APPLE)
-    ensure_patchelf_installed()
 endif()
 
 include_directories(${NAP_ROOT}/include/)
@@ -81,92 +38,146 @@ include_directories(${NAP_ROOT}/include/)
 # Add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
-file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert)
+file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert data/shaders/*.comp)
 
 # Create IDE groups
 create_hierarchical_source_groups_for_files("${SOURCES}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Sources")
 create_hierarchical_source_groups_for_files("${HEADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Headers")
 create_hierarchical_source_groups_for_files("${SHADERS}" ${CMAKE_CURRENT_SOURCE_DIR}/src "Shaders")
 
-# Add executable, include plist files if found
-file(GLOB_RECURSE INFO_PLIST macos/*.plist)
-if(APPLE AND INFO_PLIST)
-    create_hierarchical_source_groups_for_files("${INFO_PLIST}" ${CMAKE_CURRENT_SOURCE_DIR}/macos "PropertyList")
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS} ${INFO_PLIST})
-    copy_files_to_bin(${INFO_PLIST})
-else()
-    add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
-endif()
-
-if (WIN32)
-    set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
-    if (${CMAKE_VERSION} VERSION_GREATER "3.6.0")
-        # Set project as startup project in Visual Studio
-        set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
-    endif()
-endif()
-target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-
-# Set our project output directory
-set_output_directories()
+# Declare target
+add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
 # Pull in NAP core
-find_package(napcore REQUIRED)
-find_package(naprtti REQUIRED)
-find_package(naputility REQUIRED)
+if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+    find_package(napcore REQUIRED)
+    find_package(naprtti REQUIRED)
+    find_package(naputility REQUIRED)
+endif()
 
-# Pull in a project module if it exists
-add_project_module()
+cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH parent_path)
+cmake_path(GET parent_path STEM LAST_ONLY parent_dir)
 
-# Find each NAP module
-foreach(NAP_MODULE ${NAP_MODULES})
-    find_nap_module(${NAP_MODULE})
-endforeach()
+if(NAP_BUILD_CONTEXT MATCHES "source")
+    if(DEFINED APP_CUSTOM_IDE_FOLDER)
+        set(app_folder_name ${APP_CUSTOM_IDE_FOLDER})
+    elseif(parent_dir MATCHES "^apps$")
+        set(app_folder_name Apps)
+    else()
+        set(app_folder_name Demos)
+    endif()
+    set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${app_folder_name})
+endif()
 
-target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} ${PYTHON_LIBRARIES} ${SDL2_LIBRARY})
+# Pull in a app module if it exists
+add_app_module()
 
-# Include any extra project CMake logic
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
-    include(${CMAKE_CURRENT_SOURCE_DIR}/project_extra.cmake)
+if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+    # Fetch our (deep) module dependencies
+    fetch_module_dependencies("${NAP_MODULES}")
+
+    # Find each NAP module
+    foreach(NAP_MODULE ${NAP_MODULES})
+        find_nap_module(${NAP_MODULE})
+    endforeach()
+endif()
+
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility ${NAP_MODULES} ${SDL2_LIBRARY})
+if(NAP_ENABLE_PYTHON)
+    target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES})
+endif()
+
+# Include any extra app CMake logic
+if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
+    include(${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
 endif()
 
 # Run FBX converter post-build
-export_fbx(${CMAKE_SOURCE_DIR}/data/)
+export_fbx()
+
+if(NAP_BUILD_CONTEXT MATCHES "source")
+    add_dependencies(${PROJECT_NAME} fbxconverter)
+endif()
+
+# macOS specifics
+if(APPLE)
+    # Add the runtime paths for RTTR
+    if(NAP_BUILD_CONTEXT MATCHES "source")
+        macos_add_rttr_rpath()
+    endif()
+
+    # Add plist files if found
+    file(GLOB_RECURSE INFO_PLIST macos/*.plist)
+    if(INFO_PLIST)
+        create_hierarchical_source_groups_for_files("${INFO_PLIST}" ${CMAKE_CURRENT_SOURCE_DIR}/macos "PropertyList")
+        target_sources(${PROJECT_NAME} PUBLIC ${INFO_PLIST})
+        copy_files_to_bin(${INFO_PLIST})
+    endif()
+endif()
 
 # Copy path mapping
-deploy_single_path_mapping(${CMAKE_SOURCE_DIR})
+if(NOT NAP_PACKAGED_BUILD)
+    deploy_single_path_mapping(${CMAKE_CURRENT_SOURCE_DIR} ${NAP_BUILD_CONTEXT})
+endif()
 
-# Package into packaged project on *nix
-install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
-install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
-install(FILES ${NAP_ROOT}/cmake/project_creator/NAP.txt DESTINATION .)
+if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+    # Set our app output directory
+    set_framework_release_output_directories()
 
-if(NOT WIN32)
-    # Set RPATH to search in ./lib
-    if(APPLE)
-        set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
-        # Install Information Propertly List file if present
-        if(INFO_PLIST)
-            install(FILES ${INFO_PLIST} DESTINATION .)
-        endif()
-    else()
-        set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
+    if(WIN32)
+        set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
+        # Set app as startup project in Visual Studio
+        set_property(DIRECTORY ${CMAKE_SOURCE_DIR} PROPERTY VS_STARTUP_PROJECT ${PROJECT_NAME})
     endif()
-    install(TARGETS ${PROJECT_NAME} DESTINATION .)
-endif()
 
-# Package napkin if we're doing a build from against released NAP or we're packaging a project with napkin
-if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
-    include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_project.cmake)
-endif()
+    # Deploy into packaged app
+    install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
+    install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+    install(FILES ${NAP_ROOT}/cmake/app_creator/NAP.txt DESTINATION .)
 
-# Package redistributable help on Windows
-if(WIN32)
-    install(FILES ${NAP_ROOT}/tools/platform/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
-endif()
+    if(NOT WIN32)
+        # Set RPATH to search in ./lib
+        if(APPLE)
+            set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "@executable_path/lib/")
+            # Install Information Propertly List file if present
+            if(INFO_PLIST)
+                install(FILES ${INFO_PLIST} DESTINATION .)
+            endif()
+        else()
+            set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib/")
+        endif()
+        install(TARGETS ${PROJECT_NAME} DESTINATION .)
+    endif()
 
-# Provide Gatekeeper unquarantine script on macOS
-if(APPLE)
-    install(PROGRAMS "${NAP_ROOT}/cmake/project_creator/template/Unquarantine Project.command" DESTINATION .)
-    install(FILES "${NAP_ROOT}/cmake/project_creator/template/Help launching on macOS.txt" DESTINATION .)
+    # Package Napkin if we're doing a build from against released NAP or we're packaging a app with napkin
+    if(NOT DEFINED PACKAGE_NAPKIN OR PACKAGE_NAPKIN)
+        include(${CMAKE_CURRENT_LIST_DIR}/install_napkin_with_app.cmake)
+    endif()
+
+    # Package redistributable help on Windows
+    if(WIN32)
+        install(FILES ${NAP_ROOT}/tools/buildsystem/Microsoft\ Visual\ C++\ Redistributable\ Help.txt DESTINATION .)
+    endif()
+
+    # Provide Gatekeeper unquarantine script on macOS
+    if(APPLE)
+        set(app_template_dir "${NAP_ROOT}/cmake/app_creator/template")
+        install(PROGRAMS "${app_template_dir}/Unquarantine App.command" DESTINATION .)
+        install(FILES "${app_template_dir}/Help launching on macOS.txt" DESTINATION .)
+    endif()
+else()
+    if(NAP_PACKAGED_BUILD)
+        # Package into framework release
+        set(included_with_framework_release FALSE)
+        if(parent_dir MATCHES "^demos$" OR PACKAGE_NAIVI_APPS OR PACKAGING_FORCE_PACKAGE_USER_APP)
+            package_app_into_framework_release(${parent_dir}/${PROJECT_NAME})
+            set(included_with_framework_release TRUE)
+        endif()
+
+        # Don't build the apps while doing a framework packaging build unless explicitly requested
+        # (and even when explicitly requested skip excluded apps)
+        if(NOT BUILD_APPS OR NOT included_with_framework_release)
+            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif()
+    endif()
 endif()
