@@ -167,21 +167,23 @@ endif()
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
         DESTINATION tools/napkin/)
 
+module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
+
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
 set(PATH_TO_THIRDPARTY "../../thirdparty")
 if(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
-    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-    list(APPEND EXTRA_RPATH lib)
+    list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
+    list(APPEND DEEP_DEPENDENT_RPATHS lib)
 
     foreach(MODULECONFIG Release)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
                                                                                 "${NAP_MODULES_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                                                 "../.."
-                                                                                "${EXTRA_RPATH}")
+                                                                                "${DEEP_DEPENDENT_RPATHS}")
     endforeach()
 
     # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
@@ -201,10 +203,14 @@ if(APPLE)
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-        set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-        list(APPEND EXTRA_RPATH lib)
+        list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
+        list(APPEND DEEP_DEPENDENT_RPATHS lib)
 
-        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
+        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_DEPENDENCIES}" 
+                                                                  ${PROJECT_NAME} 
+                                                                  "../.." 
+                                                                  "${DEEP_DEPENDENT_RPATHS}"
+                                                                  )
 
         # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
         # remotely (from thirdparty)

@@ -6,11 +6,31 @@
         "mod_napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/mpg123/msvc/x86_64/lib",
+        "{ROOT}/../thirdparty/mpg123/msvc/{BUILD_ARCH}/lib",
         "{ROOT}/thirdparty/mpg123/bin",
-        "{ROOT}/../thirdparty/portaudio/msvc/x86_64/lib",
+        "{ROOT}/../thirdparty/portaudio/msvc/{BUILD_ARCH}/lib",
         "{ROOT}/thirdparty/portaudio/bin",
-        "{ROOT}/../thirdparty/libsndfile/msvc/x86_64/lib",
+        "{ROOT}/../thirdparty/libsndfile/msvc/{BUILD_ARCH}/lib",
         "{ROOT}/thirdparty/libsndfile/bin"
-    ]
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/mpg123/lib",
+            "{ROOT}/thirdparty/portaudio/lib",
+            "{ROOT}/thirdparty/libsndfile/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/mpg123/lib",
+            "{ROOT}/thirdparty/portaudio/lib",
+            "{ROOT}/thirdparty/libsndfile/lib"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/mpg123/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/thirdparty/mpg123/bin",
+            "{ROOT}/../thirdparty/portaudio/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/thirdparty/portaudio/bin",
+            "{ROOT}/../thirdparty/libsndfile/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/thirdparty/libsndfile/bin"
+        ]
+    }
 }

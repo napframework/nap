@@ -6,8 +6,8 @@
         "mod_napsdlinput"
     ],
     "WindowsDllSearchPaths": [],
-     "DataSearchPaths": [
-        "{ROOT}/modules/napimgui/data",
-        "{ROOT}/modules/{MODULE_NAME}/data"
+    "DataSearchPaths": [
+        "{ROOT}/system_modules/napimgui/data",
+        "{ROOT}/system_modules/{MODULE_NAME}/data"
     ]
 }

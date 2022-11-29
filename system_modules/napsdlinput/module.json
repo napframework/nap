@@ -6,7 +6,19 @@
         "mod_napapp"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/SDL2/msvc/x86_64/lib",
+        "{ROOT}/../thirdparty/SDL2/msvc/{BUILD_ARCH}/lib",
         "{ROOT}/thirdparty/SDL2/lib"
-    ]
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/SDL2/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/SDL2/lib"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/SDL2/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/thirdparty/SDL2/lib"
+        ]
+    }
 }

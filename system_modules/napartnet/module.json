@@ -7,8 +7,20 @@
         "mod_napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/libartnet/msvc/x86_64/bin/Release",
-        "{ROOT}/../thirdparty/libartnet/msvc/x86_64/bin/Debug",
+        "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release",
+        "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Debug",
         "{ROOT}/thirdparty/libartnet/bin"
-    ]
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/libartnet/bin"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/libartnet/bin"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/{BUILD_TYPE}",
+            "{ROOT}/thirdparty/libartnet/bin"
+        ]
+    }
 }

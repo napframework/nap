@@ -6,7 +6,19 @@
         "mod_napaudio"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/ffmpeg/msvc/x86_64/bin",
+        "{ROOT}/../thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin",
         "{ROOT}/thirdparty/FFmpeg/bin"
-    ]
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/FFmpeg/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/FFmpeg/lib"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin",
+            "{ROOT}/thirdparty/FFmpeg/bin"
+        ]
+    }
 }

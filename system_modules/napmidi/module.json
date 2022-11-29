@@ -4,5 +4,14 @@
     "RequiredModules": [
         "mod_napscene"
     ],
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/rtmidi/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/rtmidi/lib"
+        ],
+        "Windows": []
+    }
 }

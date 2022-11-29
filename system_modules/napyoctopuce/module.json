@@ -10,5 +10,18 @@
         "{ROOT}/../thirdparty/yoctopuce/msvc/x86_64/Debug",
         "{ROOT}/thirdparty/yoctopuce/bin/release",
         "{ROOT}/thirdparty/yoctopuce/bin/debug"
-    ]
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/yoctopuce/bin"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/yoctopuce/bin"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/yoctopuce/msvc/{BUILD_ARCH}/{BUILD_TYPE}",
+            "{ROOT}/thirdparty/yoctopuce/bin/release",
+            "{ROOT}/thirdparty/yoctopuce/bin/debug"
+        ]
+    }
 }

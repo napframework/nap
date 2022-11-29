@@ -5,5 +5,14 @@
         "mod_napmath",
         "mod_napscene"
     ],
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/oscpack/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/oscpack/lib/Release"
+        ],
+        "Windows": []
+    }
 }

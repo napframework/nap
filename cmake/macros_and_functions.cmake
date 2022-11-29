@@ -240,6 +240,65 @@ function(solution_info_to_cmake)
     endforeach()
 endfunction()
 
+# Get our NAP modules dependencies from module.json in specified directory, populating into DEPENDENT_NAP_MODULES,
+# DEEP_DEPENDENT_NAP_MODULES and DEEP_DEPENDENT_RPATHS
+# Directory: Module directory
+macro(module_json_in_directory_to_cmake DIRECTORY)
+    # Use configure_file to result in changes in module.json triggering reconfigure. Appears to be best current approach.
+    configure_file(${DIRECTORY}/module.json module_json_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/module_json_trigger_dummy.json
+                    ERROR_QUIET)
+
+    # Find path mapping to build RPATHs
+    find_path_mapping(${DIRECTORY} framework_release)
+
+    # Parse our module.json and import it
+    configure_python()
+    set(python_tools_dir ${NAP_ROOT}/tools/buildsystem/common)
+    execute_process(COMMAND ${PYTHON_BIN}
+                            ${python_tools_dir}/module_info_to_cmake.py
+                            ${NAP_ROOT}
+                            ${PATH_MAPPING_FILE}
+                            ${ARCH}
+                            parse_json
+                            ${DIRECTORY}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules dependencies from module.json (${EXIT_CODE})")
+    endif()
+    include(${DIRECTORY}/cached_module_json.cmake)
+    # message("${PROJECT_NAME} DEPENDENT_NAP_MODULES from module.json: ${DEPENDENT_NAP_MODULES}")
+endmacro()
+
+# Build deep module dependencies from module list, populating DEPENDENT_NAP_MODULES,
+# DEEP_DEPENDENT_NAP_MODULES and DEEP_DEPENDENT_RPATHS
+# MODULE_LIST: List of modules to work from
+macro(module_list_to_deep_dependencies_cmake MODULE_LIST)
+    # Find path mapping to build RPATHs
+    find_path_mapping(${CMAKE_CURRENT_SOURCE_DIR} framework_release)
+
+    # Calculate deep dependencies and RPATHs
+    configure_python()
+    set(python_tools_dir ${NAP_ROOT}/tools/buildsystem/common)
+    execute_process(COMMAND ${PYTHON_BIN}
+                            ${python_tools_dir}/module_info_to_cmake.py
+                            --path-mapping-element=NapkinExeToRoot
+                            ${NAP_ROOT}
+                            ${PATH_MAPPING_FILE}
+                            ${ARCH}
+                            process_module_list
+                            "${MODULE_LIST}"
+                            ${CMAKE_CURRENT_SOURCE_DIR}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse modules dependencies from module list (${EXIT_CODE})")
+    endif()
+    include(${CMAKE_CURRENT_SOURCE_DIR}/cached_module_json.cmake)
+    file(REMOVE ${CMAKE_CURRENT_SOURCE_DIR}/cached_module_json.cmake)
+endmacro()
+
 # Find RTTR using our thirdparty paths
 macro(find_rttr)
     if(NOT TARGET RTTR::Core)

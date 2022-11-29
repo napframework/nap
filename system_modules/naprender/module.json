@@ -8,15 +8,35 @@
         "mod_napcolor"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/assimp/msvc/x86_64/bin",
+        "{ROOT}/../thirdparty/assimp/msvc/{BUILD_ARCH}/bin",
         "{ROOT}/thirdparty/assimp/bin",
-        "{ROOT}/../thirdparty/FreeImage/msvc/x86_64/Dist/x64",
+        "{ROOT}/../thirdparty/FreeImage/msvc/{BUILD_ARCH}/Dist/x64",
         "{ROOT}/thirdparty/FreeImage/bin",
-        "{ROOT}/../thirdparty/SDL2/msvc/x86_64/lib",
+        "{ROOT}/../thirdparty/SDL2/msvc/{BUILD_ARCH}/lib",
         "{ROOT}/thirdparty/SDL2/lib"
     ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/assimp/lib",
+            "{ROOT}/thirdparty/FreeImage/lib",
+            "{ROOT}/thirdparty/vulkansdk/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/assimp/lib",
+            "{ROOT}/thirdparty/FreeImage/lib",
+            "{ROOT}/thirdparty/vulkansdk/lib"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/assimp/msvc/{BUILD_ARCH}/bin",
+            "{ROOT}/thirdparty/assimp/bin",
+            "{ROOT}/../thirdparty/FreeImage/msvc/{BUILD_ARCH}/Dist/x64",
+            "{ROOT}/thirdparty/FreeImage/bin",
+            "{ROOT}/../thirdparty/SDL2/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/thirdparty/SDL2/lib"
+        ]
+    },
     "DataSearchPaths": [
-        "{ROOT}/modules/naprender/data",
-        "{ROOT}/modules/{MODULE_NAME}/data"
+        "{ROOT}/system_modules/naprender/data",
+        "{ROOT}/system_modules/{MODULE_NAME}/data"
     ]
 }

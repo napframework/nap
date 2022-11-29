@@ -5,9 +5,22 @@
         "mod_napmath"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/freetype/msvc/x86_64/lib/Release",
-        "{ROOT}/../thirdparty/freetype/msvc/x86_64/lib/Debug",
+        "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Release",
+        "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Debug",
         "{ROOT}/thirdparty/freetype/bin/release",
         "{ROOT}/thirdparty/freetype/bin/debug"
-    ]
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/thirdparty/freetype/lib"
+        ],
+        "macOS": [
+            "{ROOT}/thirdparty/freetype/lib"
+        ],
+        "Windows": [
+            "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}",
+            "{ROOT}/thirdparty/freetype/bin/release",
+            "{ROOT}/thirdparty/freetype/bin/debug"
+        ]
+    }
 }
