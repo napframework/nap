@@ -36,7 +36,7 @@ REPORT_FILENAME = 'report.json'
 SCRIPT_DEBUG_ONE_PROJECT_ONLY = False
 
 # Exit code that Napkin will 
-NAPKIN_SUCCESS_EXIT_CODE = 180
+NAPKIN_SUCCESS_EXIT_CODE = 0
 
 # Seconds to wait for a Napkin load project and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
@@ -142,7 +142,7 @@ def run_napkin_process(project_json_file):
     stderr : str
         STDERR from process
     """
-    return run_process_then_stop('./napkin -p %s --exit-on-failure --exit-on-success' % project_json_file, NAPKIN_SUCCESS_EXIT_CODE, NAPKIN_SECONDS_WAIT_FOR_PROCESS, True)
+    return run_process_then_stop('./napkin -p %s --exit-after-load' % project_json_file, NAPKIN_SUCCESS_EXIT_CODE, NAPKIN_SECONDS_WAIT_FOR_PROCESS, True)
 
 def open_projects_in_napkin(testing_projects_dir, binary_dir, nap_framework_full_path):
     """Open demos in Napkin
