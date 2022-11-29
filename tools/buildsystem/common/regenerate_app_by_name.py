@@ -5,7 +5,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_project, get_cmake_path
+from nap_shared import find_app, get_cmake_path, get_build_context, get_nap_root, get_python_path
 
 # Exit codes
 ERROR_MISSING_MODULE = 1
@@ -20,9 +20,9 @@ elif sys.platform == 'win32':
 else:
     BUILD_DIR = 'build'
 
-def cmake_reconfigure_project(project_name, build_type, show_solution):
+def cmake_reconfigure_project_framework_release(project_name, build_type, show_solution):
     # Find the project
-    project_path = find_project(project_name)
+    project_path = find_app(project_name)
     if project_path is None:
         return ERROR_MISSING_MODULE
 
@@ -62,6 +62,20 @@ def cmake_reconfigure_project(project_name, build_type, show_solution):
     else:
         return(ERROR_CONFIGURE_FAILURE)
 
+def cmake_reconfigure_project_source(build_type):
+    nap_root = get_nap_root()
+    script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'generate_solution', 'generate_solution.py')
+
+    # Determine our Python interpreter location
+    python = get_python_path()
+
+    # Build our command
+    cmd = [python, script_path]
+    if sys.platform.startswith('linux'):    
+        cmd.append('-t')
+        cmd.append(build_type.lower())
+    return call(cmd)
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str,
@@ -91,5 +105,8 @@ if __name__ == '__main__':
         build_type = None
         show_solution = not args.no_show
 
-    exit_code = cmake_reconfigure_project(args.PROJECT_NAME, build_type, show_solution)
+    if get_build_context() == 'framework_release':
+        exit_code = cmake_reconfigure_project_framework_release(args.PROJECT_NAME, build_type, show_solution)
+    else:
+        exit_code = cmake_reconfigure_project_source(build_type)
     sys.exit(exit_code)

@@ -18,8 +18,7 @@ BIN_DIR = 'packaging_bin'
 PACKAGING_DIR = 'packaging_staging'
 ARCHIVING_DIR = 'archiving'
 APPS_SOURCE_DIR = 'apps'
-APPS_DEST_DIR = 'projects'
-BUILDINFO_FILE = 'dist/cmake/build_info.json'
+APPS_DEST_DIR = 'apps'
 BUILD_TYPES = ('Release', 'Debug')
 APPLY_PERMISSIONS_BATCHFILE = 'apply_executable_permissions.cmd'
 
@@ -33,7 +32,7 @@ ERROR_SOURCE_ARCHIVE_EXISTING = 7
 def call(cwd, cmd, capture_output=False):
     """Execute command in provided working directory"""
 
-    # print('dir: %s' % cwd)
+    # print('dir: %s' % os.path.abspath(cwd))
     # print('cmd: %s' % cmd)
     if capture_output:
         proc = subprocess.Popen(cmd, cwd=cwd, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
@@ -56,7 +55,7 @@ def package(zip_release,
             include_timestamp_in_name, 
             build_label, 
             package_name,
-            build_projects,
+            build_apps,
             archive_source, 
             archive_source_zipped,
             archive_source_only,
@@ -122,7 +121,7 @@ def package(zip_release,
                                              include_docs, 
                                              zip_release, 
                                              include_debug_symbols,
-                                             build_projects,
+                                             build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
@@ -137,7 +136,7 @@ def package(zip_release,
                                              include_docs, 
                                              zip_release, 
                                              include_debug_symbols,
-                                             build_projects,
+                                             build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
@@ -152,7 +151,7 @@ def package(zip_release,
                                              include_docs, 
                                              zip_release, 
                                              include_debug_symbols,
-                                             build_projects,
+                                             build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
@@ -217,7 +216,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             sys.exit(ERROR_PACKAGE_EXISTS)
 
 
-def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects, additional_dirs, enable_python):
+def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_apps, additional_dirs, enable_python):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -233,7 +232,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
                            '-DBUILD_GIT_REVISION=%s' % git_revision,
                            '-DBUILD_LABEL=%s' % build_label,
                            '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                           '-DBUILD_PROJECTS=%s' % int(build_projects),
+                           '-DBUILD_APPS=%s' % int(build_apps),
                            '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                            '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                            ])
@@ -255,10 +254,10 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects, additional_dirs, enable_python):
+def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_apps, additional_dirs, enable_python):
     """Package NAP platform release for macOS"""
 
-    # Generate project
+    # Generate app
     call(WORKING_DIR, [get_cmake_path(), 
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
@@ -270,7 +269,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DBUILD_PROJECTS=%s' % int(build_projects),
+                       '-DBUILD_APPS=%s' % int(build_apps),
                        '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                        '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                        ])
@@ -297,14 +296,14 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_projects, additional_dirs, enable_python):
+def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_apps, additional_dirs, enable_python):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
     if not os.path.exists(BUILD_DIR):
         os.makedirs(BUILD_DIR)
 
-    # Generate project
+    # Generate app
     call(WORKING_DIR, [get_cmake_path(), 
                        '-H.', 
                        '-B%s' % BUILD_DIR, 
@@ -316,7 +315,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DBUILD_PROJECTS=%s' % int(build_projects),
+                       '-DBUILD_APPS=%s' % int(build_apps),
                        '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                        '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                        ])
@@ -544,7 +543,7 @@ def strip_client_apps_for_source_archive(staging_dir):
     # Remove apps
     shutil.rmtree(os.path.join(staging_dir, 'apps'))
 
-    # Remove client projects from CMakeLists.txt
+    # Remove client apps from CMakeLists.txt
     path = os.path.join(staging_dir, 'CMakeLists.txt')
     output = []
     with open(path, 'r') as f:
@@ -553,8 +552,8 @@ def strip_client_apps_for_source_archive(staging_dir):
         for line in lines:
             if 'START_SOURCE_ARCHIVE_REMOVED_SECTION' in line:
                 in_client_targets = True
-                output.append("# project targets\n")
-                output.append("add_subdirectory(projects/example)\n")
+                output.append("# App targets\n")
+                output.append("add_subdirectory(apps/example)\n")
             if not in_client_targets:
                 output.append(line)
             if 'END_SOURCE_ARCHIVE_REMOVED_SECTION' in line:
@@ -564,7 +563,7 @@ def strip_client_apps_for_source_archive(staging_dir):
         f.writelines(output)
 
 def create_source_archive(source_archive_basename, zip_source_archive, build_label, timestamp, git_revision, overwrite):
-    """Create a source archive of the repository with projects removed"""
+    """Create a source archive of the repository with apps removed"""
 
     print("Creating source archive...")
 
@@ -595,12 +594,10 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     # Misc. cleanup       
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
-    # Populate example project
-    os.mkdir(os.path.join(staging_dir, 'projects'))
-    os.rename(os.path.join(staging_dir, 'apps', 'example'), os.path.join(staging_dir, 'projects', 'example'))
-
-    # Remove client projects
+    # Remove client apps
+    os.rename(os.path.join(staging_dir, 'apps', 'example'), os.path.join(staging_dir, 'example-tmp'))
     strip_client_apps_for_source_archive(staging_dir)
+    os.rename(os.path.join(staging_dir, 'example-tmp'), os.rename(os.path.join(staging_dir, 'apps', 'example')))
 
     # Create executable bit retaining script if on Windows
     if sys.platform == 'win32':
@@ -651,7 +648,7 @@ def create_source_archive_executable_bit_applicator(staging_dir):
 
 def get_nap_root():
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
 
 def get_cmake_path():
     """Fetch the path to the CMake binary"""
@@ -691,8 +688,8 @@ if __name__ == '__main__':
                         help="Overwrite any existing framework or source package")
     core_group.add_argument("-c", "--clean", action="store_true",
                         help="Clean build")
-    core_group.add_argument("--build-projects", action="store_true",
-                        help="Build projects while packaging (not included in package)")
+    core_group.add_argument("--build-apps", action="store_true",
+                        help="Build apps while packaging (not included in package)")
     core_group.add_argument('-p', '--enable-python', action="store_true", 
                        help="Enable python integration using pybind (deprecated)")
 
@@ -708,10 +705,10 @@ if __name__ == '__main__':
     nap_apps_group.add_argument("-d", "--additional_dirs", nargs='+', type=str, default=[], 
                         help="List of additional sub directories to add to the build")
     nap_apps_group.add_argument("-a", "--include-apps", action="store_true",
-                        help="Include apps, packaging them as projects")
+                        help="Include apps")
     nap_apps_group.add_argument("-sna", "--include-single-app",
                         type=str,
-                        help="A single app to include, packaged as project. Conflicts with --include-apps.")
+                        help="A single app to include. Conflicts with --include-apps.")
 
     unsupported_group = parser.add_argument_group('Unsupported')
     unsupported_group.add_argument("--include-docs", action="store_true",
@@ -742,7 +739,7 @@ if __name__ == '__main__':
                                      or args.clean
                                      or args.include_apps
                                      or args.include_debug_symbols
-                                     or args.build_projects
+                                     or args.build_apps
                                      or args.additional_dirs
                                      ):
         print("Error: You have specified options that don't make sense if only creating a source archive")
@@ -758,7 +755,7 @@ if __name__ == '__main__':
             not args.no_timestamp, 
             args.label,
             args.name,
-            args.build_projects,
+            args.build_apps,
             args.archive_source or args.source_archive_only, 
             args.source_archive_zipped,
             args.source_archive_only,            

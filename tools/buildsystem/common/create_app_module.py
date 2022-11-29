@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_project, get_camelcase_project_name, add_module_to_project_json, get_cmake_path, get_python_path
+from nap_shared import find_app, get_camelcase_app_name, add_module_to_app_json, get_cmake_path, get_python_path
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -14,13 +14,13 @@ ERROR_EXISTING_MODULE = 3
 
 def create_project_module(project_name, update_project_json, generate_solution, show_solution):
     # Ensure project exists
-    project_path = find_project(project_name, True) 
+    project_path = find_app(project_name, True) 
     if project_path is None:
         print("Error: can't find project with name '%s'" % project_name)
         sys.exit(ERROR_MISSING_PROJECT)
 
     # Load camelcase project name from project.json
-    module_name = get_camelcase_project_name(project_name)
+    module_name = get_camelcase_app_name(project_name)
 
     # Set our paths
     module_path = os.path.join(project_path, 'module')    
@@ -51,8 +51,8 @@ def create_project_module(project_name, update_project_json, generate_solution, 
     cmake = get_cmake_path()
     cmd = [cmake, 
            '-DMODULE_NAME_PASCALCASE=%s' % module_name, 
-           '-DPROJECT_MODULE=1', 
-           '-DPROJECT_MODULE_PROJECT_PATH=%s' % project_path,
+           '-DAPP_MODULE=1', 
+           '-DAPP_MODULE_APP_PATH=%s' % project_path,
            '-P', 'module_creator.cmake'
            ]
     if call(cmd, cwd=cmake_template_dir) != 0:
@@ -61,7 +61,7 @@ def create_project_module(project_name, update_project_json, generate_solution, 
 
     if update_project_json:
         # Update project.json
-        add_module_to_project_json(project_name, 'mod_%s' % module_name.lower())
+        add_module_to_app_json(project_name, 'mod_%s' % module_name.lower())
 
         # Solution regeneration
         if generate_solution:

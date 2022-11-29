@@ -4,14 +4,14 @@ import sys
 import os
 from subprocess import call
 
-from nap_shared import find_project, get_python_path
+from nap_shared import find_app, get_python_path, get_nap_root
 
 # Exit codes
 ERROR_MISSING_PROJECT = 1
 
 def upgrade_project(project_name):
     # Find the project
-    project_path = find_project(project_name)
+    project_path = find_app(project_name)
     if project_path is None:
         return ERROR_MISSING_PROJECT
 

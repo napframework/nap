@@ -22,9 +22,9 @@ from subprocess import call
 # TODO Move out to wrapper scripts PYTHONPATH?
 script_dir = os.path.dirname(__file__)
 if not os.path.exists(os.path.join(script_dir, 'nap_shared.py')):
-    nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
-    sys.path.append(os.path.join(nap_root, 'dist', 'user_scripts', 'platform'))
-from nap_shared import get_cmake_path, get_nap_root
+    nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
+    sys.path.append(os.path.join(nap_root, 'tools', 'buildsystem', 'common'))
+from nap_shared import get_cmake_path, get_nap_root, get_build_context, eprint
 
 LOG = logging.getLogger(os.path.basename(os.path.dirname(__file__)))
 
@@ -56,7 +56,7 @@ def _load_json(directory, filename):
 
     filepath = os.path.join(directory, filename)
     if not os.path.exists(filepath):
-        print('File not found: %s' % filepath)
+        eprint('File not found: %s' % filepath)
         return None, None
 
     with open(filepath, 'r') as fp:
@@ -98,20 +98,19 @@ def convert_module(directory):
     update_module_cmake(directory, project_module)
 
 def update_module_cmake(directory, project_module):
-    # Ensure it's a dist module by verifying CMakeLists.txt contains nap_module.cmake
     file_path = os.path.join(directory, 'CMakeLists.txt')
-    # Allow for precompiled modules in Framework Release which don't currently have a CMakeLists.txt
+    # Allow for precompiled modules in Framework Release which don't have a CMakeLists.txt
     if not os.path.exists(file_path):
         return
     with open(file_path) as f:
         contents = f.read()
 
-    if 'nap_module.cmake' in contents:
+    if get_build_context() == 'framework_release':
         update_framework_release_module_cmake(directory, project_module, contents)
     else:
-        update_source_release_module_cmake(directory, project_module, contents)
+        update_source_module_cmake(directory, project_module, contents)
 
-def update_source_release_module_cmake(directory, project_module, contents):
+def update_source_module_cmake(directory, project_module, contents):
     # Detect if needs update
     needs_update = False
 
@@ -138,7 +137,7 @@ def update_source_release_module_cmake(directory, project_module, contents):
             # Find the end of the call on that line
             close_call_index = contents.find(")", index)
             if close_call_index == -1:
-                print("Failed to update module removing lib prefix, %s" % directory)
+                eprint("Failed to update module removing lib prefix, %s" % directory)
                 return
             insert_index = contents.find("\n", close_call_index)
             # Found line appears to be last line in file, with no following newline, append to end
@@ -188,12 +187,12 @@ def update_framework_release_module_cmake(directory, project_module, contents):
     print("Upgrading module CMake at %s" % directory)
     cmd = [cmake, 
            '-DMODULE_CMAKE_OUTPATH=%s' % os.path.join(directory, 'CMakeLists.txt'),
-           '%s' % '-DPROJECT_MODULE=1' if project_module else '', 
+           '%s' % '-DAPP_MODULE=1' if project_module else '', 
            '-DCMAKE_ONLY=1', 
            '-P', os.path.join(cmake_template_dir, 'module_creator.cmake')
            ]
     if call(cmd) != 0:
-        print("CMake upgrade at %s failed" % directory)
+        eprint("CMake upgrade at %s failed" % directory)
 
 def convert_module_info(directory):
     """Find a moduleinfo file in the specified directory, convert to new format and write to same file"""
@@ -225,7 +224,7 @@ def convert_project_info(directory):
     if not proj_info_json:
         return
 
-    # has this file been converted yet?
+    # Has this file been converted yet?
     if any(t not in proj_info_json for t in ('Type', 'mID')):
         print('Converting: %s' % filepath)
 
@@ -243,7 +242,7 @@ def convert_project_info(directory):
     else:
         new_proj_info_json = proj_info_json
 
-    # -- ensure some values
+    # Ensure some values
     new_proj_info_json.setdefault('PathMapping', 'cache/path_mapping.json')
     new_proj_info_json.setdefault('Data', _find_data_file(directory) or '')
 
@@ -261,14 +260,11 @@ def convert_project(project_dir):
     update_project_cmake(project_dir)
 
 def update_project_cmake(directory):
-    # Ensure it's a Framework Release context by verifying CMakeLists.txt contains nap_project.cmake
     file_path = os.path.join(directory, 'CMakeLists.txt')
     try:
         with open(file_path) as f:
             contents = f.read()
     except FileNotFoundError:
-        return
-    if not 'nap_project.cmake' in contents:
         return
 
     # Detect if needs update
@@ -286,18 +282,18 @@ def update_project_cmake(directory):
     nap_root = get_nap_root()
 
     # Create module from template
-    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'project_creator'))
+    cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'app_creator'))
     if not os.path.exists(cmake_template_dir):
-        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'project_creator'))
+        cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'app_creator'))
 
     print("Upgrading project CMake at %s" % directory)
     cmd = [cmake, 
            '-DPROJECT_DIR=%s' % directory,
            '-DCMAKE_ONLY=1', 
-           '-P', os.path.join(cmake_template_dir, 'project_creator.cmake')
+           '-P', os.path.join(cmake_template_dir, 'app_creator.cmake')
            ]
     if call(cmd) != 0:
-        print("CMake upgrade at %s failed" % directory)
+        eprint("CMake upgrade at %s failed" % directory)
 
 def convert_all(root_directory):
     print('Convert projectinfo and moduleinfo files in NAP directory: %s' % root_directory)
@@ -317,6 +313,7 @@ def convert_all(root_directory):
                 convert_project(directory)
 
     module_dirs = [
+        'system_modules',
         'modules',
         'user_modules',
     ]

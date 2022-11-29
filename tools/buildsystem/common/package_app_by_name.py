@@ -10,7 +10,7 @@ from sys import platform
 import sys
 import shutil
 
-from nap_shared import find_project, call_except_on_failure, get_cmake_path
+from nap_shared import find_app, call_except_on_failure, get_cmake_path
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
@@ -26,7 +26,7 @@ ERROR_INVALID_PROJECT_JSON = 3
 
 def package_project(project_name, show_created_package, include_napkin, zip_package):
     # Find the project
-    project_path = find_project(project_name)
+    project_path = find_app(project_name)
     if project_path is None:
         return ERROR_MISSING_PROJECT
 
@@ -112,7 +112,7 @@ def package_project(project_name, show_created_package, include_napkin, zip_pack
                            '-B%s' % build_dir_name, 
                            '-G', 'Visual Studio 16 2019', 
                            '-DNAP_PACKAGED_APP_BUILD=1',
-                           '-DPROJECT_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
+                           '-DAPP_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
                            '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
         # Build & install to packaging dir
