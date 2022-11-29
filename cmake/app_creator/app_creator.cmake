@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.18.4)
 
-# Verify we have a project name
+# Verify we have a app name
 if (NOT DEFINED PROJECT_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
-    message(FATAL_ERROR "No project name")
+    message(FATAL_ERROR "No app name")
 endif()
 
 # Build modules for substitution into project.json
@@ -17,7 +17,7 @@ if(DEFINED MODULE_LIST)
     endforeach()
 endif ()
 
-# Set lowercase project name, used for a filenames etc
+# Set lowercase app name, used for a filenames etc
 if(DEFINED PROJECT_NAME_PASCALCASE)
     string(TOLOWER ${PROJECT_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
 endif()
@@ -26,17 +26,22 @@ endif()
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 if(NOT DEFINED PROJECT_DIR)
-    set(PROJECT_DIR ${NAP_ROOT}/projects/${PROJECT_NAME_LOWERCASE})
+    set(PROJECT_DIR ${NAP_ROOT}/apps/${PROJECT_NAME_LOWERCASE})
+endif()
+if(EXISTS ${NAP_ROOT}/CMakeLists.txt)
+    set(NAP_BUILD_CONTEXT source)
+else()
+    set(NAP_BUILD_CONTEXT framework_release)
 endif()
 
 configure_file(${TEMPLATE_ROOT}/CMakeLists.txt ${PROJECT_DIR}/CMakeLists.txt @ONLY)
 
-# Allow for use of project creator to upgrade CMakeLists.txt
+# Allow for use of app creator to upgrade CMakeLists.txt
 if(DEFINED CMAKE_ONLY)
     return()
 endif()
 
-# Create our project files, with substitutions
+# Create our app files, with substitutions
 configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
 configure_file(${TEMPLATE_ROOT}/data/objects.json ${PROJECT_DIR}/data/objects.json @ONLY)
 
@@ -44,15 +49,19 @@ configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateapp.cpp ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.cpp @ONLY)
 configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.h @ONLY)
 
-# Create our project directory package and regenerate shortcuts
+# Create our app directory package and regenerate shortcuts
 if(UNIX)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package ${PROJECT_DIR}/package @ONLY)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/regenerate ${PROJECT_DIR}/regenerate @ONLY)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/build ${PROJECT_DIR}/build @ONLY)
+    if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+        configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/unix/package.sh ${PROJECT_DIR}/package.sh @ONLY)
+    endif()
+    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/unix/regenerate.sh ${PROJECT_DIR}/regenerate.sh @ONLY)
+    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/unix/build.sh ${PROJECT_DIR}/build.sh @ONLY)
 elseif(WIN32)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/package.bat ${PROJECT_DIR}/package.bat @ONLY)
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)    
-    configure_file(${NAP_ROOT}/tools/platform/project_dir_shortcuts/build.bat ${PROJECT_DIR}/build.bat @ONLY)    
+    if(NAP_BUILD_CONTEXT MATCHES "framework_release")
+        configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/package.bat ${PROJECT_DIR}/package.bat @ONLY)
+    endif()
+    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)    
+    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/build.bat ${PROJECT_DIR}/build.bat @ONLY)    
 endif()
 
 # Make a shaders directory

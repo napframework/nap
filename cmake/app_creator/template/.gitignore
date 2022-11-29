@@ -1,0 +1,15 @@
+/lib/
+/bin/
+/build/
+/CMakeLists.txt
+/demo/*/CMakeLists.txt
+/demo/*/module/CMakeLists.txt
+/regenerate.*
+/prepare_module_to_share.*
+/demo/*/build.*
+/demo/*/package.*
+/demo/*/regenerate.*
+/cached_module_json.cmake
+*/cache
+.ini
+.idea/
