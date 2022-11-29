@@ -83,20 +83,30 @@ def main(target, clean_build, build_type, enable_python):
         call(build_dir, ['make', target, '-j%s' % cpu_count()])
     elif platform == 'darwin':
         # macOS
-        call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', target, '-configuration', build_config])
+        cmd = ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', build_config]
+        if target == 'all':
+            cmd.append('-alltargets')
+        else:
+            cmd.extend(['-target', target])
+        call(build_dir, cmd)
     else:
         # Windows
         cmake = get_cmake_path()
-        call(nap_root, [cmake, '--build', build_dir, '--target', target, '--config', build_config])
+        nap_root = get_nap_root()
+        cmake = get_cmake_path()
+        cmd = [cmake, '--build', build_dir, '--config', build_config]
+        if target != 'all':
+            cmd.extend(['--target', target])
+        call(nap_root, cmd)
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_NAME", type=str, help="The project name")
+    parser.add_argument("PROJECT_NAME", type=str, help="The project name (default='all')", default="all", nargs="?")
     parser.add_argument('-t', '--build-type', type=str.lower, default=DEFAULT_BUILD_TYPE,
             choices=['release', 'debug'], help="Build configuration (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     parser.add_argument('-c', '--clean', default=False, action="store_true", help="Clean before build")
-    parser.add_argument('-p', '--enable-python', action="store_true", help="Enable python integration using pybind (deprecated)")
+    parser.add_argument('-p', '--enable-python', action="store_true", help="Enable Python integration using pybind (deprecated)")
 
     args = parser.parse_args()
 
