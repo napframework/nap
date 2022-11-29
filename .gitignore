@@ -88,3 +88,4 @@ cmake-build-release
 report.json
 *.ini
 demos/vinyl/data/snapshots
+/solution_info.json

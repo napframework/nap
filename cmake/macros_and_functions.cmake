@@ -204,6 +204,42 @@ function(configure_python)
     set(PYTHON_EXECUTABLE ${PYTHON_BIN} PARENT_SCOPE)
 endfunction()
 
+# Bring solution_info.json into Source root CMakeLists.txt
+function(solution_info_to_cmake)
+    set(input_path ${NAP_ROOT}/solution_info.json)
+    set(output_path ${NAP_ROOT}/additional_targets.cmake)
+
+    if(NOT EXISTS ${input_path})
+        if(EXISTS ${output_path})
+            file(REMOVE ${output_path})
+        endif()
+        return()
+    endif()
+    # Use configure_file to result in changes in the JSON file triggering reconfigure. Appears to be best current approach.
+    configure_file(${input_path} solution_info_trigger_dummy.json)
+    execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/solution_info_trigger_dummy.json
+                    ERROR_QUIET)
+
+    # Parse our JSON and import it
+    configure_python()
+    set(python_tools_dir ${NAP_ROOT}/tools/buildsystem/common)
+    execute_process(COMMAND ${PYTHON_BIN}
+                            ${python_tools_dir}/list_in_json_to_cmake.py
+                            ${input_path} AdditionalTargets
+                            EXTRA_TARGETS
+                            ${output_path}
+                    RESULT_VARIABLE EXIT_CODE
+                    )
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Could not parse solution_info.json (${EXIT_CODE})")
+    endif()
+    include(${output_path})
+
+    foreach(EXTRA_TARGET ${EXTRA_TARGETS})
+        add_subdirectory(${EXTRA_TARGET})
+    endforeach()
+endfunction()
+
 # Find RTTR using our thirdparty paths
 macro(find_rttr)
     if(NOT TARGET RTTR::Core)

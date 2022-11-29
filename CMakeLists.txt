@@ -134,6 +134,8 @@ add_subdirectory(modules/napasio)
 add_subdirectory(modules/nappipins)
 add_subdirectory(modules/napportal)
 
+solution_info_to_cmake()
+
 # Add additional directories if specified from command line.
 # For example: -DADDITIONAL_SUB_DIRECTORIES="apps/myapp;apps/myapp/module"
 if(ADDITIONAL_SUB_DIRECTORIES)
