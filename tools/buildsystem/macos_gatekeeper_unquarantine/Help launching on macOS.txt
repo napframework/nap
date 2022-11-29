@@ -1,6 +1,6 @@
 Some issues can be encountered trying to launch the project on macOS due to the Gatekeeper security system. Use the following steps to "unquarantine" the project:
 
-1. In Finder ctrl-click on "Unquarantine Project.command" and select Open
+1. In Finder ctrl-click on "Unquarantine App.command" and select Open
 2. Give the script permission to run in the dialog that appears
 3. Press return in the Terminal window that the script is running in when asked
 4. If any other permission dialog appears at this point it should also be approved
