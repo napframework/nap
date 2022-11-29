@@ -2,21 +2,10 @@ if(NOT DEFINED NAP_PACKAGED_APP_BUILD)
     return()
 endif()
 
-include(${CMAKE_CURRENT_LIST_DIR}/dist_shared_crossplatform.cmake)
+include(${CMAKE_CURRENT_LIST_DIR}/macros_and_functions.cmake)
 
 # NAP modules which Napkin uses (as a minimum)
 set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_napmath)
-
-# Let find_python find our prepackaged Python in thirdparty,
-# Note that this operation is allowed to fail because, by default, python support is disabled.
-find_python_in_thirdparty()
-set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
-find_package(pybind11 QUIET)
-
-# Append it if found
-if(pybind11_FOUND)
-    list(APPEND NAPKIN_DEPENDENT_NAP_MODULES mod_nappython)
-endif()
 
 # Qt frameworks which Napkin uses
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
@@ -30,18 +19,18 @@ if(WIN32)
 elseif(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
-    # ---- Install napkin with packaged project ------
+    # ---- Install napkin with packaged app ------
 
-    # Install executable into packaged project
+    # Install executable into packaged app
     install(PROGRAMS ${NAP_ROOT}/tools/napkin/napkin
             DESTINATION napkin)
-    # Install resources into packaged project
+    # Install resources into packaged app
     install(DIRECTORY ${NAP_ROOT}/tools/napkin/resources
             DESTINATION napkin)
-    # Install main Qt libs from thirdparty into packaged project
+    # Install main Qt libs from thirdparty into packaged app
     install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
             DESTINATION napkin/lib)
-    # Install Qt plugins from thirdparty into packaged project
+    # Install Qt plugins from thirdparty into packaged app
     install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins
             DESTINATION napkin)
 
@@ -88,20 +77,20 @@ elseif(APPLE)
 else()
     # Linux
 
-    # Install executable into packaged project
+    # Install executable into packaged app
     install(PROGRAMS ${NAP_ROOT}/tools/napkin/napkin
             DESTINATION napkin)
-    # Install resources into packaged project
+    # Install resources into packaged app
     install(DIRECTORY ${NAP_ROOT}/tools/napkin/resources
             DESTINATION napkin)
-    # Install main Qt libs from thirdparty into packaged project
+    # Install main Qt libs from thirdparty into packaged app
     install(DIRECTORY ${THIRDPARTY_DIR}/Qt/lib/
             DESTINATION napkin/lib)
-    # Install Qt plugins from thirdparty into packaged project
+    # Install Qt plugins from thirdparty into packaged app
     install(DIRECTORY ${THIRDPARTY_DIR}/Qt/plugins/platforms
             DESTINATION napkin)
 
-    # Allow Qt platform plugin to find Qt frameworks in thirdparty (packaged project)
+    # Allow Qt platform plugin to find Qt frameworks in thirdparty (packaged app)
     install(CODE "execute_process(COMMAND patchelf
                                           --set-rpath
                                           \$ORIGIN/../lib

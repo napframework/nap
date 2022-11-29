@@ -19,7 +19,7 @@ if(NOT MODULE_INTO_PARENT)
 endif()
 
 # Fetch our module dependencies
-module_json_to_cmake()
+module_json_in_directory_to_cmake(${CMAKE_CURRENT_SOURCE_DIR})
 
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
     list(APPEND CMAKE_MODULE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cmake_find_modules)
