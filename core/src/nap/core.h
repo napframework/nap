@@ -23,7 +23,7 @@
 
 // Default name to use when writing the file that contains all the settings for the NAP services.
 inline constexpr char DEFAULT_SERVICE_CONFIG_FILENAME[] = "config.json";
-inline constexpr char PROJECT_INFO_FILENAME[] = "project.json";
+inline constexpr char PROJECT_INFO_FILENAME[] = "app.json";
 
 // Build configuration eg. "Clang-Debug-x86_64"
 #define STRINGIZE(x) #x
@@ -48,7 +48,7 @@ namespace nap
 	 * Service A is initialized before B. After initialization all module specific resources and their
 	 * contexts are available for object creation using the ResourceManager.
 	 *
-	 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file. 
+	 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside an `app.json` file. 
 	 * The nap::ProjectInfo file contains information such as the project name, version and which modules are 
 	 * required for the project to run. It also contains a link to a data file, which contains the actual application content and
 	 * an optional link to a service configuration file, which contains service configuration information.
@@ -56,8 +56,8 @@ namespace nap
 	 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
 	 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
 	 *
-	 * It is therefore required that core is able to load a valid project.json file, that contains a 'nap::ProjectInfo' resource.
-	 * example of a project.json file:
+	 * It is therefore required that core is able to load a valid app.json file, that contains a 'nap::ProjectInfo' resource.
+	 * example of an app.json file:
 	 *
 	 * ~~~~~
 	 *	{
@@ -109,7 +109,7 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services.
 		 *
-		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file.
+		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside an `app.json` file.
 		 * The nap::ProjectInfo file contains information such as the project name, version and which modules are
 		 * required for the project to run. It also contains an optional link to a service configuration file, 
 		 * which holds service configuration information.
@@ -117,7 +117,7 @@ namespace nap
 		 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
 		 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
 		 *
-		 * It is therefore required that core is able to find and load a valid project.json file that contains a 'nap::ProjectInfo' resource.
+		 * It is therefore required that core is able to find and load a valid app.json file that contains a 'nap::ProjectInfo' resource.
 		 *
 		 * @param error contains the error code when initialization fails
 		 * @return if initialization succeeded
@@ -127,7 +127,7 @@ namespace nap
 		/**
 		 * Loads all modules in to the core environment and creates all the associated services.
 		 *
-		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside a `project.json` file.
+		 * Every instance of Core is initialized against a nap::ProjectInfo resource, which is declared inside an `app.json` file.
 		 * The nap::ProjectInfo file contains information such as the project name, version and which modules are
 		 * required for the project to run. It also contains an optional link to a service configuration file,
 		 * which holds service configuration information.
@@ -135,7 +135,7 @@ namespace nap
 		 * The linked path mapping file provides core with additional information on how to resolve paths to all required modules.
 		 * Using this information both the editor and application are able to load the requested modules and initialize all required services.
 		 *
-		 * It is therefore required that core is able to find and load the provided project.json file that contains a 'nap::ProjectInfo' resource.
+		 * It is therefore required that core is able to find and load the provided app.json file that contains a 'nap::ProjectInfo' resource.
 		 *
 		 * @param projectInfofile absolute path to the project file on disk.
 		 * @param context whether initializing for application or editor
@@ -352,7 +352,7 @@ namespace nap
 
 	private:
 		/**
-		 * Locates the project info (project.json) file.
+		 * Locates the project info (app.json) file.
 		 * @param foundFilePath The full file path of where the file was found.
 		 * @return true if the file was found, otherwise false.
 		 */

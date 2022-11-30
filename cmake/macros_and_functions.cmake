@@ -749,25 +749,25 @@ function(macos_add_rttr_rpath)
                        )
 endfunction()
 
-# Populate modules list from project.json into var NAP_MODULES
+# Populate modules list from app.json into var NAP_MODULES
 macro(app_json_to_cmake)
-    # Use configure_file to result in changes in project.json triggering reconfigure. Appears to be best current approach.
-    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/project.json app_json_trigger_dummy.json)
+    # Use configure_file to result in changes in app.json triggering reconfigure. Appears to be best current approach.
+    configure_file(${CMAKE_CURRENT_SOURCE_DIR}/app.json app_json_trigger_dummy.json)
     execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/app_json_trigger_dummy.json
                     ERROR_QUIET)    
 
-    # TODO this is slow, ideally only run it if project.json has changed (when calling regenerate explicitly)
+    # TODO this is slow, ideally only run it if app.json has changed (when calling regenerate explicitly)
 
-    # Parse our project.json and import it
+    # Parse our app.json and import it
     configure_python()
     set(python_tools_dir ${NAP_ROOT}/tools/buildsystem/common)
     execute_process(COMMAND ${PYTHON_BIN} ${python_tools_dir}/app_info_parse_to_cmake.py ${CMAKE_CURRENT_SOURCE_DIR}
                     RESULT_VARIABLE EXIT_CODE
                     )
     if(NOT ${EXIT_CODE} EQUAL 0)
-        message(FATAL_ERROR "Could not parse modules from project.json (${EXIT_CODE})")
+        message(FATAL_ERROR "Could not parse modules from app.json (${EXIT_CODE})")
     endif()
-    include(cached_project_json.cmake)
+    include(cached_app_json.cmake)
 endmacro()
 
 # Build source groups for input files maintaining their folder structure

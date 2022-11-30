@@ -20,7 +20,7 @@ unset(PACKAGING_INCLUDE_ONLY_WITH_NAIVI_APPS)
 unset(PACKAGING_FORCE_PACKAGE_USER_APP)
 unset(APP_CUSTOM_IDE_FOLDER)
 
-# Get our modules list from project.json
+# Get our modules list from app.json
 app_json_to_cmake()
 
 # Bring in any additional app logic (pre-target definition)
@@ -132,7 +132,7 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
 
     # Deploy into packaged app
     install(DIRECTORY ${CMAKE_SOURCE_DIR}/data DESTINATION .)
-    install(FILES ${CMAKE_SOURCE_DIR}/project.json DESTINATION .)
+    install(FILES ${CMAKE_SOURCE_DIR}/app.json DESTINATION .)
     install(FILES ${NAP_ROOT}/cmake/app_creator/NAP.txt DESTINATION .)
 
     if(NOT WIN32)

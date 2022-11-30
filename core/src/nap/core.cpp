@@ -518,7 +518,7 @@ namespace nap
 
 	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
 	{
-		// Load path mapping (relative to the project.json file)
+		// Load path mapping (relative to the app.json file)
 		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
 		projectInfo.mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(
 			pathMappingFilename,

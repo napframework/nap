@@ -400,7 +400,8 @@ macro(package_app_into_framework_release DEST_DIR)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
             DESTINATION ${DEST_DIR}
             PATTERN "CMakeLists.txt" EXCLUDE
-            PATTERN "cached_project_json.cmake" EXCLUDE
+            PATTERN "cached_app_json.cmake" EXCLUDE 
+            PATTERN "cached_project_json.cmake" EXCLUDE # TODO transitional/temporary
             PATTERN "dist" EXCLUDE
             PATTERN "*.mesh" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE

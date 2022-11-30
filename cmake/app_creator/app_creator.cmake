@@ -5,7 +5,7 @@ if (NOT DEFINED APP_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
     message(FATAL_ERROR "No app name")
 endif()
 
-# Build modules for substitution into project.json
+# Build modules for substitution into app.json
 set(MODULE_LIST_SUB_JSON "")
 if(DEFINED MODULE_LIST)
     foreach(module ${MODULE_LIST})
@@ -42,7 +42,7 @@ if(DEFINED CMAKE_ONLY)
 endif()
 
 # Create our app files, with substitutions
-configure_file(${TEMPLATE_ROOT}/project.json ${PROJECT_DIR}/project.json @ONLY)
+configure_file(${TEMPLATE_ROOT}/app.json ${PROJECT_DIR}/app.json @ONLY)
 configure_file(${TEMPLATE_ROOT}/data/objects.json ${PROJECT_DIR}/data/objects.json @ONLY)
 
 configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)
