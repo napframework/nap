@@ -15,6 +15,9 @@ sys.path.append(os.path.join(nap_root, 'tools', 'buildsystem', 'common'))
 from nap_shared import add_to_solution_info, ensure_set_executable, find_user_module, eprint, get_build_arch, \
         get_build_context, get_nap_root, read_yes_no
 
+class InvalidModuleArchive(Exception):
+    pass
+
 class ModuleInitialiser():
 
     MODULES_DIR_NAME = 'modules'
@@ -45,13 +48,16 @@ class ModuleInitialiser():
 
     def setup_module_by_dir(self, module_path):
         if not os.path.exists(module_path):
-            raise Exception(f"Can't find module at {module_path}")
+            eprint(f"Error: Can't find module at {module_path}")
+            return False
         if not os.path.isdir(module_path):
-            raise Exception(f"{module_path} is not a directory")
+            eprint(f"Error: {module_path} is not a directory")
+            return False
 
         module_purepath = PurePath(os.path.abspath(module_path))
         if str(module_purepath.parent) != self.__modules_dir:
-            raise Exception(f"{module_path} is not a user module directory under {self.__modules_dir_relpath}")
+            eprint(f"Error: {module_path} is not a user module directory under {self.__modules_dir_relpath}")
+            return False
 
         # Deploy module CMakeLists.txt
         print("Copying module CMakeLists.txt")
@@ -66,28 +72,37 @@ class ModuleInitialiser():
         self.__deploy_shortcuts('module_dir_shortcuts', module_path)
 
         # Check and install demo
-        self.__process_demo(module_path)
+        return self.__process_demo(module_path)
 
     def setup_module_by_name(self, module_name):
         module_path = os.path.join(self.__modules_dir, module_name)
         if not os.path.exists(module_path):
-            raise Exception(f"Can't find {module_name} at {module_path}")
-        self.setup_module_by_dir(module_path)
+            eprint(f"Error: Can't find {module_name} at {module_path}")
+            return False
+        return self.setup_module_by_dir(module_path)
 
     def setup_module_from_archive(self, archive_path):
         if not os.path.exists(archive_path):
-            raise Exception(f"Can't find module at {archive_path}")
+            eprint(f"Error: Can't find module at {archive_path}")
+            return False
         if os.path.isdir(archive_path) or not zipfile.is_zipfile(archive_path):
-            raise Exception(f"{archive_path} is not a module .zip file")
+            eprint(f"Error: {archive_path} is not a module .zip file")
+            return False
 
+        success = False
         with zipfile.ZipFile(archive_path, mode='r') as archive:
-            module_name = ModuleInitialiser.__read_module_id_from_archive(archive, archive_path)
+            try:
+                module_name = ModuleInitialiser.__read_module_id_from_archive(archive, archive_path)
+            except InvalidModuleArchive as e:
+                eprint("Error:", e)
+                return False
 
             module_path = os.path.join(self.__modules_dir, module_name)
             if os.path.exists(module_path):
                 if not self.__force_overwrite_module:
                     if not self.__interactive or not read_yes_no(f"Module already exists at {module_path}, overwrite?"):
-                        raise Exception(f"Module exists at {module_path}")
+                        eprint(f"Error: Module exists at {module_path}")
+                        return False
                 shutil.rmtree(module_path)
             print(f"Extacting {archive_path} to {self.__modules_dir}")
             if os.name == 'posix':
@@ -97,7 +112,8 @@ class ModuleInitialiser():
                 p = run(cmd, shell=True, cwd=self.__modules_dir, stdout=PIPE)
             else:
                 archive.extractall(path=self.__modules_dir)
-            self.setup_module_by_dir(module_path)
+            success = self.setup_module_by_dir(module_path)
+        return success
 
     def __add_path_to_solution_info(self, new_path):
         rel_path = os.path.relpath(new_path, self.__nap_root)
@@ -107,6 +123,7 @@ class ModuleInitialiser():
 
     def __process_demo(self, module_path):
         demo_wrapper_dir = os.path.join(module_path, 'demo')
+        success = True
         if os.path.exists(demo_wrapper_dir):
             demos = [name for name in os.listdir(demo_wrapper_dir) if os.path.isdir(os.path.join(demo_wrapper_dir, name)) and not name.startswith('.')]
             if len(demos) > 0:
@@ -117,7 +134,8 @@ class ModuleInitialiser():
                     if len(demos) > 1:
                         print(f"There appears to be more than one demo included with the module. {demo_app_id} will be deployed.")
                     demo_dir = os.path.join(demo_wrapper_dir, demo_app_id)
-                    self.__install_demo(demo_app_id, demo_dir)
+                    success = self.__install_demo(demo_app_id, demo_dir)
+        return success
 
     def __install_demo(self, demo_app_id, demo_dir):
         demo_dest_dir = os.path.join(self.__nap_root, self.DEMO_DEST_DIR, demo_app_id)
@@ -126,14 +144,16 @@ class ModuleInitialiser():
         if self.DEMO_DEST_DIR != self.APPS_DIR:
             apps_duplicate_dir = os.path.join(self.__nap_root, self.APPS_DIR, demo_app_id)
             if os.path.exists(apps_duplicate_dir):
-                raise Exception("An app exists with the same name")
+                eprint("Error: An app exists with the same name")
+                return False
 
         # Handle existing demo
         if os.path.exists(demo_dest_dir):
             if not self.__force_overwrite_demo:
                 demo_relpath = os.path.relpath(demo_dest_dir, self.__nap_root)
                 if not self.__interactive or not read_yes_no(f"Demo already exists at {demo_relpath}, overwrite?"):
-                    raise Exception(f"Demo exists at {demo_dest_dir}")
+                    eprint(f"Error: Demo exists at {demo_dest_dir}")
+                    return False
             shutil.rmtree(demo_dest_dir)
 
         # Copy demo
@@ -164,7 +184,9 @@ class ModuleInitialiser():
             # Due to argument processing in the constructor we know we're not running interactively
             self.__run_demo = read_yes_no(f"Build and run demo?", 'n')
         if self.__run_demo:
-            self.__build_and_launch_demo(demo_app_id)
+            if not self.__build_and_launch_demo(demo_app_id):
+                return False
+        return True
 
     def __build_and_launch_demo(self, demo_app_id):
         # Remove any previous binary ensuring post-build steps are run, deploying the path mapping
@@ -177,10 +199,12 @@ class ModuleInitialiser():
         cmd = f'{build_script} {demo_app_id}'
         p = run(cmd, shell=True)
         if p.returncode != 0:
-            raise Exception(f"{demo_app_id} failed to build")
+            eprint(f"Error: {demo_app_id} failed to build")
+            return False
 
         print("Launching demo")
         run(binary_path, shell=True)
+        return True
 
     def __build_binary_path(self, app_name, release_build=True):
         if get_build_context() == 'source':
@@ -211,9 +235,9 @@ class ModuleInitialiser():
     def __read_module_id_from_archive(archive, archive_path):
         top = {item.split('/')[0] for item in archive.namelist() if not item.startswith('.')}
         if len(top) == 0:
-            raise Exception(f"{archive_path} doesn't appear to contain a module (empty)")
+            raise InvalidModuleArchive(f"{archive_path} doesn't appear to contain a module (empty)")
         elif len(top) > 1:
-            raise Exception(f"{archive_path} doesn't appear to contain a module (more than one top level directory)")
+            raise InvalidModuleArchive(f"{archive_path} doesn't appear to contain a module (more than one top level directory)")
         return list(top)[0]
 
     @staticmethod
@@ -262,17 +286,17 @@ if __name__ == '__main__':
                                     )
 
     module_input = args.MODULE_NAME_OR_DIR_OR_ARCHIVE
-    try:
-        if os.path.exists(module_input):
-            if os.path.isdir(module_input):
-                initialiser.setup_module_by_dir(module_input)
-            else:
-                initialiser.setup_module_from_archive(module_input)
+    if os.path.exists(module_input):
+        if os.path.isdir(module_input):
+            success = initialiser.setup_module_by_dir(module_input)
         else:
-            if os.sep in module_input:
-                raise Exception(f"No module located at {module_input}")
-            else:
-                initialiser.setup_module_by_name(module_input)
-    except Exception as e:
-        eprint("Error:", e)
+            success = initialiser.setup_module_from_archive(module_input)
+    else:
+        if os.sep in module_input:
+            # The input appear to be a path but nothing is found at the path
+            eprint(f"Error: No module located at {module_input}")
+            success = False
+        else:
+            success = initialiser.setup_module_by_name(module_input)
+    if not success:
         sys.exit(1)
