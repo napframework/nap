@@ -220,7 +220,7 @@ def convert_project_info(directory):
     This will also attempt to merge and convert any existing service configurations into the same file
     and delete the original config.json
     """
-    filepath, proj_info_json = _load_json(directory, 'project.json')
+    filepath, proj_info_json = _load_json(directory, 'app.json')
     if not proj_info_json:
         return
 

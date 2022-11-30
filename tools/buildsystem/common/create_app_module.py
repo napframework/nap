@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+!/usr/bin/env python3
 import argparse
 import os
 import re
@@ -9,30 +9,30 @@ from nap_shared import find_app, get_camelcase_app_name, add_module_to_app_json,
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
-ERROR_MISSING_PROJECT = 2
+ERROR_MISSING_APP = 2
 ERROR_EXISTING_MODULE = 3
 
-def create_project_module(project_name, update_project_json, generate_solution, show_solution):
-    # Ensure project exists
-    project_path = find_app(project_name, True) 
-    if project_path is None:
-        print("Error: can't find project with name '%s'" % project_name)
-        sys.exit(ERROR_MISSING_PROJECT)
+def create_app_module(app_name, update_app_json, generate_solution, show_solution):
+    # Ensure app exists
+    app_path = find_app(app_name, True) 
+    if app_path is None:
+        print("Error: can't find app with name '%s'" % app_name)
+        sys.exit(ERROR_MISSING_APP)
 
-    # Load camelcase project name from project.json
-    module_name = get_camelcase_app_name(project_name)
+    # Load camelcase app name from app.json
+    module_name = get_camelcase_app_name(app_name)
 
     # Set our paths
-    module_path = os.path.join(project_path, 'module')    
+    module_path = os.path.join(app_path, 'module')    
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
     user_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
     duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'system_modules', 'mod_%s' % module_name.lower()))
 
-    # Ensure project doesn't already have module
+    # Ensure app doesn't already have module
     if os.path.exists(module_path):
-        print("Error: '%s' already has a module" % project_name)
+        print("Error: '%s' already has a module" % app_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
     # Check for existing module with same name
@@ -45,23 +45,23 @@ def create_project_module(project_name, update_project_json, generate_solution, 
         print("Error: NAP module exists with same name '%s'" % module_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
-    print("Creating project module mod_%s for project %s in %s" % (module_name.lower(), module_name, module_path))
+    print("Creating app module mod_%s for app %s in %s" % (module_name.lower(), module_name, module_path))
 
     # Create module from template
     cmake = get_cmake_path()
     cmd = [cmake, 
            '-DMODULE_NAME_PASCALCASE=%s' % module_name, 
            '-DAPP_MODULE=1', 
-           '-DAPP_MODULE_APP_PATH=%s' % project_path,
+           '-DAPP_MODULE_APP_PATH=%s' % app_path,
            '-P', 'module_creator.cmake'
            ]
     if call(cmd, cwd=cmake_template_dir) != 0:
         print("Module creation failed")
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
 
-    if update_project_json:
-        # Update project.json
-        add_module_to_app_json(project_name, 'mod_%s' % module_name.lower())
+    if update_app_json:
+        # Update app.json
+        add_module_to_app_json(app_name, 'mod_%s' % module_name.lower())
 
         # Solution regeneration
         if generate_solution:
@@ -71,33 +71,33 @@ def create_project_module(project_name, update_project_json, generate_solution, 
             # Determine our Python interpreter location
             python = get_python_path()
 
-            cmd = [python, './tools/buildsystem/common/regenerate_app_by_name.py', project_name]
+            cmd = [python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
             if not show_solution and not sys.platform.startswith('linux'):
                 cmd.append('--no-show')
             if call(cmd, cwd=nap_root) != 0:
                 print("Solution generation failed")
                 sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
 
-    print("Project module created in %s" % os.path.relpath(module_path))
+    print("App module created in %s" % os.path.relpath(module_path))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_NAME", type=str,
-                        help="The project name")
-    parser.add_argument("-nu", "--no-update-project", action="store_true",
-                        help="Don't update the project.json")
+    parser.add_argument("APP_NAME", type=str,
+                        help="The app name")
+    parser.add_argument("-nu", "--no-update-app", action="store_true",
+                        help="Don't update the app.json")
     parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't regenerate the solution for the updated project")       
+                        help="Don't regenerate the solution for the updated app")       
     if not sys.platform.startswith('linux'):    
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the regenerated solution")
 
     args = parser.parse_args()
 
-    project_name = args.PROJECT_NAME.lower()
+    app_name = args.APP_NAME.lower()
 
-    update_project_json = not args.no_update_project
-    regenerate_project = update_project_json and not args.no_generate
+    update_app_json = not args.no_update_app
+    regenerate_app = update_app_json and not args.no_generate
     show_solution = not sys.platform.startswith('linux') and not args.no_show
-    exit_code = create_project_module(project_name, update_project_json, regenerate_project, show_solution)
+    exit_code = create_app_module(app_name, update_app_json, regenerate_app, show_solution)
     sys.exit(exit_code)

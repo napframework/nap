@@ -16,7 +16,7 @@ WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
 ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'build_info.json'
-PROJECT_INFO_FILE = 'project.json'
+PROJECT_INFO_FILE = 'app.json'
 PACKAGED_BUILD_TYPE = 'Release'
 
 # Exit codes
@@ -243,7 +243,7 @@ def process_project_info(project_path):
         try:
             project_info = json.load(json_file)
         except ValueError as e:
-            print("Invalid project.json: %s" % e)
+            print("Invalid app.json: %s" % e)
             return (None, None)
 
     # Some simple validation on loaded JSON

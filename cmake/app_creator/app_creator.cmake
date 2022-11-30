@@ -19,14 +19,14 @@ endif ()
 
 # Set lowercase app name, used for a filenames etc
 if(DEFINED APP_NAME_PASCALCASE)
-    string(TOLOWER ${APP_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
+    string(TOLOWER ${APP_NAME_PASCALCASE} APP_NAME_LOWERCASE)
 endif()
 
 # Setup our paths
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 if(NOT DEFINED PROJECT_DIR)
-    set(PROJECT_DIR ${NAP_ROOT}/apps/${PROJECT_NAME_LOWERCASE})
+    set(PROJECT_DIR ${NAP_ROOT}/apps/${APP_NAME_LOWERCASE})
 endif()
 if(EXISTS ${NAP_ROOT}/CMakeLists.txt)
     set(NAP_BUILD_CONTEXT source)
@@ -46,8 +46,8 @@ configure_file(${TEMPLATE_ROOT}/app.json ${PROJECT_DIR}/app.json @ONLY)
 configure_file(${TEMPLATE_ROOT}/data/objects.json ${PROJECT_DIR}/data/objects.json @ONLY)
 
 configure_file(${TEMPLATE_ROOT}/src/main.cpp ${PROJECT_DIR}/src/main.cpp @ONLY)
-configure_file(${TEMPLATE_ROOT}/src/templateapp.cpp ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.cpp @ONLY)
-configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${PROJECT_NAME_LOWERCASE}app.h @ONLY)
+configure_file(${TEMPLATE_ROOT}/src/templateapp.cpp ${PROJECT_DIR}/src/${APP_NAME_LOWERCASE}app.cpp @ONLY)
+configure_file(${TEMPLATE_ROOT}/src/templateapp.h ${PROJECT_DIR}/src/${APP_NAME_LOWERCASE}app.h @ONLY)
 
 # Create our app directory package and regenerate shortcuts
 if(UNIX)

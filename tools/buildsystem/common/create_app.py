@@ -59,7 +59,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
             eprint("App module creation failed")
             sys.exit(ERROR_CMAKE_MODULE_CREATION_FAILURE)
 
-        # Update project.json
+        # Update app.json
         add_module_to_app_json(app_name, 'mod_%s' % app_name.lower())
 
     if get_build_context() == 'source':

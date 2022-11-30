@@ -5,11 +5,11 @@ from platform import machine
 from subprocess import Popen, run
 import sys
 
-PROJECT_INFO_FILENAME = 'project.json'
+PROJECT_INFO_FILENAME = 'app.json'
 MODULE_INFO_FILENAME = 'module.json'
 SOLUTION_INFO_FILENAME = 'solution_info.json'
 
-# Keys for entries in project.json and module.json
+# Keys for entries in app.json and module.json
 CFG_KEY_DEPENDENCIES = 'Dependencies'
 CFG_KEY_MODULES = 'Modules'
 
@@ -114,7 +114,7 @@ def get_camelcase_app_name(app_name):
     return app_name
 
 def add_module_to_app_json(app_name, full_module_name):
-    """Add module to project.json"""
+    """Add module to app.json"""
     project_path = find_app(app_name, True, True)
     if project_path is None:
         print("Error: couldn't find app '%s'" % app_name)

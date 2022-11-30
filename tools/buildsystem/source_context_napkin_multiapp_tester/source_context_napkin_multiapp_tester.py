@@ -27,7 +27,7 @@ DEFAULT_TESTING_PROJECTS_DIR = 'demos'
 DEFAULT_BUILD_TYPE = 'release'
 
 # Main project structure filename
-PROJECT_FILENAME = 'project.json'
+PROJECT_FILENAME = 'app.json'
 
 # JSON report filename
 REPORT_FILENAME = 'report.json'

@@ -1,7 +1,7 @@
 {
     "Type": "nap::ProjectInfo", 
     "mID": "ProjectInfo", 
-    "Title": "@PROJECT_NAME_PASCALCASE@", 
+    "Title": "@APP_NAME_PASCALCASE@", 
     "Version": "0.1.0", 
     "RequiredModules": [
         @MODULE_LIST_SUB_JSON@
