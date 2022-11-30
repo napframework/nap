@@ -5,7 +5,6 @@ build/
 .idea/workspace.xml
 py/.idea/
 lib/Clang/
-build.sh
 xcode/*
 codeblocks/*
 cmake-build-debug/*

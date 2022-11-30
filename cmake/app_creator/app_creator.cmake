@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18.4)
 
 # Verify we have a app name
-if (NOT DEFINED PROJECT_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
+if (NOT DEFINED APP_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
     message(FATAL_ERROR "No app name")
 endif()
 
@@ -18,8 +18,8 @@ if(DEFINED MODULE_LIST)
 endif ()
 
 # Set lowercase app name, used for a filenames etc
-if(DEFINED PROJECT_NAME_PASCALCASE)
-    string(TOLOWER ${PROJECT_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
+if(DEFINED APP_NAME_PASCALCASE)
+    string(TOLOWER ${APP_NAME_PASCALCASE} PROJECT_NAME_LOWERCASE)
 endif()
 
 # Setup our paths
