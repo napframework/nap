@@ -474,24 +474,24 @@ macro(package_module_into_framework_release)
 
     # Package library
     if(WIN32)
-        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                        LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>
-                                        ARCHIVE DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>)
+        install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH}
+                                        LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH}
+                                        ARCHIVE DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
         if(PACKAGE_PDBS)
-            install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>)
+            install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
         endif()        
     elseif(APPLE)
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>)
+        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
     else()
-        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE})
+        install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}-${ARCH})
     endif()
 
     # Package module.json
     install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/)
     if(WIN32 OR APPLE)
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>/ RENAME ${PROJECT_NAME}.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH}/ RENAME ${PROJECT_NAME}.json)
     else()
-        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}/ RENAME ${PROJECT_NAME}.json)
+        install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}-${ARCH}/ RENAME ${PROJECT_NAME}.json)
     endif()
 
     # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we 
@@ -645,7 +645,7 @@ endmacro()
 # ARGN: Any extra non-NAP-module paths to add
 macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
     # Add our core paths first
-    set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
+    set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}-${ARCH}")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/rttr/bin")    
 
@@ -657,7 +657,7 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
 
     # Iterate over each module and append to path
     foreach(module ${DEPENDENT_NAP_MODULES})
-        set(THIS_MODULE_PATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/system_modules/${module}/lib/${CMAKE_BUILD_TYPE}")
+        set(THIS_MODULE_PATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/system_modules/${module}/lib/${CMAKE_BUILD_TYPE}-${ARCH}")
         set(BUILT_RPATH "${BUILT_RPATH}:${THIS_MODULE_PATH}")
     endforeach(module)
     set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
@@ -686,11 +686,11 @@ macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CO
     # Set basic paths
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/python/lib")
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/rttr/bin")
-    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}")   
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}-${ARCH}")
 
     # Set module paths
     foreach(DEPENDENT_MODULE_NAME ${DEPENDENT_NAP_MODULES})
-        ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/system_modules/${DEPENDENT_MODULE_NAME}/lib/${CONFIG}")
+        ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/system_modules/${DEPENDENT_MODULE_NAME}/lib/${CONFIG}-${ARCH}")
     endforeach()
 
     # Process any extra paths
@@ -774,3 +774,4 @@ function(package_path_mappings)
             DESTINATION tools/buildsystem/path_mappings 
             PATTERN "source.json" EXCLUDE)
 endfunction()
+

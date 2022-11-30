@@ -1,27 +1,19 @@
-if (WIN32)
+if(WIN32)
     find_path(
         NAPCORE_LIBS_DIR
-        NAMES Release/napcore.lib
+        NAMES Release-${ARCH}/napcore.lib
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.lib)
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.lib)
-elseif (APPLE)
+    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug-${ARCH}/napcore.lib)
+    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release-${ARCH}/napcore.lib)
+elseif(UNIX)
     find_path(
         NAPCORE_LIBS_DIR
-        NAMES Release/napcore.dylib
+        NAMES Debug-${ARCH}/napcore${CMAKE_SHARED_LIBRARY_SUFFIX}
         HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.dylib)
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.dylib)
-elseif (UNIX)
-    find_path(
-        NAPCORE_LIBS_DIR
-        NAMES Debug/napcore.so
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
-    )
-    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release/napcore.so)
-    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug/napcore.so)
+    set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release-${ARCH}/napcore${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug-${ARCH}/napcore${CMAKE_SHARED_LIBRARY_SUFFIX})
 endif()
 
 # Setup as interface library
@@ -38,12 +30,12 @@ source_group(NAP\\Core FILES ${core_headers})
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(napcore REQUIRED_VARS NAPCORE_LIBS_DIR)
 
-if (WIN32)
+if(WIN32)
     # Copy over DLL post-build
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPCORE_LIBS_DIR}/$<CONFIG>/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAPCORE_LIBS_DIR}/$<CONFIG>-${ARCH}/napcore.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
     )
 
     # Copy PDB post-build, if we have them
@@ -51,14 +43,14 @@ if (WIN32)
         add_custom_command(
             TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAPCORE_LIBS_DIR}/$<CONFIG>/napcore.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAPCORE_LIBS_DIR}/$<CONFIG>-${ARCH}/napcore.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/
             )
     endif()
 endif()
 
 # Install into packaged project for macOS/Linux
 if(NOT WIN32)
-    install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
+    install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
 
     # On Linux use lib directory for RPATH
     if(NOT APPLE)

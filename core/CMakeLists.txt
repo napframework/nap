@@ -82,15 +82,15 @@ endif ()
 
 # Package into release build
 if(WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
-                                    ARCHIVE DESTINATION lib/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>-${ARCH}
+                                    ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
     if(PACKAGE_PDBS)
-        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>-${ARCH})
     endif()
 elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>-${ARCH})
 else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
 endif()
 
 if(WIN32)

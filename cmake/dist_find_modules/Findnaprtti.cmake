@@ -10,33 +10,24 @@ configure_python()
 set(pybind11_DIR "${NAP_ROOT}/thirdparty/pybind11/share/cmake/pybind11")
 find_package(pybind11 QUIET)
 
-if (WIN32)
+if(WIN32)
     find_path(
         NAPRTTI_LIBS_DIR
-        NAMES Release/naprtti.lib
+        NAMES Release-${ARCH}/naprtti.lib
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.lib)
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.lib)
-elseif (APPLE)
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug-${ARCH}/naprtti.lib)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release-${ARCH}/naprtti.lib)
+elseif(UNIX)
     find_path(
         NAPRTTI_LIBS_DIR
-        NAMES Release/naprtti.dylib
+        NAMES Debug-${ARCH}/naprtti${CMAKE_SHARED_LIBRARY_SUFFIX}
         HINTS
             ${CMAKE_CURRENT_LIST_DIR}/../lib/
     )
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.dylib)
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.dylib)
-elseif (UNIX)
-    find_path(
-        NAPRTTI_LIBS_DIR
-        NAMES Debug/naprtti.so
-        HINTS
-            ${CMAKE_CURRENT_LIST_DIR}/../lib/
-    )
-    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release/naprtti.so)
-    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug/naprtti.so)
+    set(NAPRTTI_LIBS_RELEASE ${NAPRTTI_LIBS_DIR}/Release-${ARCH}/naprtti${CMAKE_SHARED_LIBRARY_SUFFIX})
+    set(NAPRTTI_LIBS_DEBUG ${NAPRTTI_LIBS_DIR}/Debug-${ARCH}/naprtti${CMAKE_SHARED_LIBRARY_SUFFIX})
 endif()
 
 # Setup as interface library
@@ -55,12 +46,12 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(naprtti REQUIRED_VARS NAPRTTI_LIBS_DIR)
 
 # Package naprtti and RTTR into projects for Windows
-if (WIN32)
+if(WIN32)
     # Copy over DLL post-build
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
+        COMMAND ${CMAKE_COMMAND} -E copy ${NAPRTTI_LIBS_DIR}/$<CONFIG>-${ARCH}/naprtti.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>
     )
 
     # Copy PDB post-build, if we have them
@@ -68,7 +59,7 @@ if (WIN32)
         add_custom_command(
             TARGET ${PROJECT_NAME}
             POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAPRTTI_LIBS_DIR}/$<CONFIG>/naprtti.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAPRTTI_LIBS_DIR}/$<CONFIG>-${ARCH}/naprtti.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/
             )
     endif()
 
@@ -86,8 +77,8 @@ endif()
 
 # Package naprtti and RTTR into projects for macOS/Linux
 if(NOT WIN32)
-    install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)    
-    install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release) 
+    install(FILES ${NAPRTTI_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
+    install(FILES $<TARGET_FILE:RTTR::Core> DESTINATION lib CONFIGURATIONS Release)
 
     # Add post-build step to set RTTR RPATH
     if(APPLE)
@@ -97,7 +88,7 @@ if(NOT WIN32)
                            )
     endif()
 
-    # On Linux use lib directory for RPATH   
+    # On Linux use lib directory for RPATH
     if(UNIX AND NOT APPLE)
         install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/naprtti.so\")
                       execute_process(COMMAND patchelf 

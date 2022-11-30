@@ -75,25 +75,25 @@ if(APPLE)
                                -id 
                                @rpath/librttr_core_d.0.9.6.dylib 
                                ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin/librttr_core_d.0.9.6.dylib
-                       COMMENT "Setting install name for rttr_core_d")    
+                       COMMENT "Setting install name for rttr_core_d")
 endif()
 
 # Package into release build
 if (WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
-                                    ARCHIVE DESTINATION lib/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>-${ARCH}
+                                    ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
 
     # Install for fbxconverter
     install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
 
     if(PACKAGE_PDBS)
-        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>-${ARCH})
     endif()
 elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)  
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>-${ARCH})
 else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})   
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
 endif()
 
 # RTTI headers

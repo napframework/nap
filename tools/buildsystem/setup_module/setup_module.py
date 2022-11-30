@@ -207,12 +207,11 @@ class ModuleInitialiser():
         return True
 
     def __build_binary_path(self, app_name, release_build=True):
+        build_config = ModuleInitialiser.__get_build_config(release_build)
         if get_build_context() == 'source':
-            build_config = ModuleInitialiser.__get_build_config(release_build)
             path = os.path.join(self.__nap_root, 'bin', build_config, app_name)
         else:
-            build_type = 'Release' if release_build else 'Debug'
-            path = os.path.join(self.__nap_root, self.DEMO_DEST_DIR, app_name, 'bin', build_type, app_name)
+            path = os.path.join(self.__nap_root, self.DEMO_DEST_DIR, app_name, 'bin', build_config, app_name)
         if sys.platform == 'win32':
             path += '.exe'
         return path
@@ -249,16 +248,7 @@ class ModuleInitialiser():
     def __get_build_config(release_build=True):
         build_type = 'Release' if release_build else 'Debug'
         arch = get_build_arch()
-        if sys.platform.startswith('linux'):
-            compiler = 'GNU'
-        elif sys.platform == 'darwin':
-            compiler = 'AppleClang'
-        else:
-            compiler = 'MSVC'
-        if sys.platform.startswith('linux'):
-            return f'{compiler}-{build_type}-{arch}'
-        else:
-            return f'{compiler}-{arch}-{build_type}'
+        return f'{build_type}-{arch}'
 
 def yes_no_to_bool(val):
     ret = None

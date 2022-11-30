@@ -1,33 +1,15 @@
 # Find moodycamel
 find_package(moodycamel REQUIRED)
 
-if (WIN32)
-    find_path(
-        NAPUTILITY_LIBS_DIR
-        NAMES Release/naputility.lib
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
-    )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/naputility.lib)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/naputility.lib)
-elseif (APPLE)
-    find_path(
-        NAPUTILITY_LIBS_DIR
-        NAMES Release/naputility.a
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
-    )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/naputility.a)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/naputility.a)
-elseif (UNIX)
-    find_path(
-        NAPUTILITY_LIBS_DIR
-        NAMES Debug/naputility.a
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
-    )
-    set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release/naputility.a)
-    set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug/naputility.a)
-endif()
+find_path(
+    NAPUTILITY_LIBS_DIR
+    NAMES Debug-${ARCH}/naputility${CMAKE_STATIC_LIBRARY_SUFFIX}
+    HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
+)
+set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release-${ARCH}/naputility${CMAKE_STATIC_LIBRARY_SUFFIX})
+set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug-${ARCH}/naputility${CMAKE_STATIC_LIBRARY_SUFFIX})
 
-if (NOT NAPUTILITY_LIBS_DIR)
+if(NOT NAPUTILITY_LIBS_DIR)
     message(FATAL_ERROR "Couldn't find NAP utility")
 endif()
 
