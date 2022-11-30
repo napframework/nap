@@ -531,8 +531,8 @@ namespace nap
 		const Display* findDisplay(int index) const;
 
 		/**
-		 * Returns the display that currently contains the given window. 
-		 * @return display that contains the given window, nullptr if not found
+		 * Returns the display that contains the center of the window.
+		 * @return display that contains the center of the window, nullptr if not found
 		 */
 		const Display* findDisplay(const nap::RenderWindow& window) const;
 
