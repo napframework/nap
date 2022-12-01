@@ -28,15 +28,18 @@ def find_user_module(module_name):
     nap_root = get_nap_root()
 
     # Create module dir name
-    module_dir_name = module_name.lower()
-    if not module_dir_name.startswith('nap'):
-        module_dir_name = f'nap{module_dir_name}'
+    if not module_name.startswith('nap'):
+        module_name = f'nap{module_name}'
 
     modules_root = os.path.join(nap_root, 'modules')
-    module_path = os.path.join(modules_root, module_dir_name)
+    module_path = None
+    for d in os.listdir(modules_root):
+        if d.lower() == module_name.lower():
+            module_path = os.path.join(modules_root, d)
+            break
 
     # Does it exist?
-    if os.path.exists(module_path):
+    if not module_path is None and os.path.exists(module_path):
         cmake_path = os.path.join(module_path, 'CMakeLists.txt')
         if os.path.exists(cmake_path):
             print("Found module %s at %s" % (module_name, module_path))
@@ -341,6 +344,8 @@ def check_for_existing_module(module_name):
 
     for dirname in ('demos', 'apps', 'test'):
         check_dir = os.path.abspath(os.path.join(nap_root, dirname))
+        if not os.path.isdir(check_dir):
+            continue
         if check_for_app_modules_under_dir(check_dir):
             return True
 

@@ -21,7 +21,7 @@ def create_module(module_name, generate_solution):
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-    module_path = os.path.abspath(os.path.join(nap_root, 'modules', prefixed_module_name_lower))
+    module_path = os.path.abspath(os.path.join(nap_root, 'modules', prefixed_module_name))
 
     if check_for_existing_module(prefixed_module_name):
         sys.exit(ERROR_EXISTING_MODULE)
@@ -37,7 +37,7 @@ def create_module(module_name, generate_solution):
 
     if get_build_context() == 'source':
         print("Adding module to solution info")
-        add_to_solution_info(f'modules/{prefixed_module_name_lower}')
+        add_to_solution_info(f'modules/{prefixed_module_name}')
 
     # Solution generation
     if generate_solution:
@@ -45,7 +45,7 @@ def create_module(module_name, generate_solution):
 
         # Determine our Python interpreter location
         python = get_python_path()
-        cmd = [python, './tools/buildsystem/common/regenerate_module_by_name.py', module_name.lower()]
+        cmd = [python, './tools/buildsystem/common/regenerate_module_by_name.py', prefixed_module_name]
         if call(cmd, cwd=nap_root) != 0:
             eprint("Solution generation failed")
             sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
