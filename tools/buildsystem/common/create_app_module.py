@@ -1,4 +1,4 @@
-!/usr/bin/env python3
+#!/usr/bin/env python3
 import argparse
 import os
 import re
@@ -28,7 +28,7 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-    user_module_path = os.path.abspath(os.path.join(nap_root, 'modules', prefixed_module_name)
+    user_module_path = os.path.abspath(os.path.join(nap_root, 'modules', prefixed_module_name))
     duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'system_modules', prefixed_module_name))
 
     # Ensure app doesn't already have module

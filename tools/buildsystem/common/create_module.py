@@ -73,7 +73,7 @@ if __name__ == '__main__':
 
     # Validate module name only includes valid characters. For now we're only allowing ASCII alphabet, numeric, underscore and dash.
     if re.match(r'^[A-Za-z0-9_-]+$', module_name) == None:
-        eprint("Error: Module name includes invalid characters. Letters (ASCII), numbers, underscores and dashes are accepted.")
+        eprint(f"Error: Module name '{module_name}' is invalid. Letters (ASCII), numbers, underscores and dashes are accepted.")
         sys.exit(ERROR_INVALID_INPUT)
 
     exit_code = create_module(module_name, not args.no_generate)

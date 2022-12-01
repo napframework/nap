@@ -29,8 +29,8 @@ def find_user_module(module_name):
 
     # Create module dir name
     module_dir_name = module_name.lower()
-    if not module_dir_name.startswith("mod_"):
-        module_dir_name = "mod_%s" % module_dir_name
+    if not module_dir_name.startswith('nap'):
+        module_dir_name = f'nap{module_dir_name}'
 
     modules_root = os.path.join(nap_root, 'modules')
     module_path = os.path.join(modules_root, module_dir_name)
