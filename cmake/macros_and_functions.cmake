@@ -486,7 +486,7 @@ macro(add_app_module)
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:nap${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/mod_${PROJECT_NAME}.json
-            )       
+            )
         endif()
     endif()
 endmacro()
@@ -580,7 +580,7 @@ macro(macos_replace_qt_framework_links_install_time FRAMEWORKS SKIP_FRAMEWORK_NA
         if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${SKIP_FRAMEWORK_NAME})
             macos_replace_single_install_name_link_install_time(${QT_LINK_FRAMEWORK} ${FILEPATH} ${PATH_PREFIX})
         endif()
-    endforeach()    
+    endforeach()
 endmacro()
 
 # macOS: At install time replace a path prefix of a single lib in the specified file
@@ -595,11 +595,11 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                       if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
                           message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
                           # Strip read path
-                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
+                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
 
                           # Change link to dylib
-                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                                  -change 
+                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                                  -change
                                                   \${REPLACE_INSTALL_NAME}
                                                   ${PATH_PREFIX}/${REPLACE_LIB_NAME}
                                                   ${FILEPATH}
@@ -625,7 +625,7 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SRC_FILEPATH FILEPATH PATH_PRE
                                                ${SRC_FILEPATH}
                                                ${FILEPATH}
                                                ${PATH_PREFIX})
-    endforeach()    
+    endforeach()
 endmacro()
 
 # macOS: Post-build replace a single lib install name in the specified file with new paths built
@@ -645,8 +645,8 @@ macro(macos_replace_single_install_name_link REPLACE_LIB_NAME SRC_FILEPATH FILEP
         string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                   -change 
+                           COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                   -change
                                    ${REPLACE_INSTALL_NAME}
                                    ${PATH_PREFIX}/${REPLACE_LIB_NAME}
                                    ${FILEPATH}
@@ -753,7 +753,7 @@ macro(app_json_to_cmake)
     # Use configure_file to result in changes in app.json triggering reconfigure. Appears to be best current approach.
     configure_file(${CMAKE_CURRENT_SOURCE_DIR}/app.json app_json_trigger_dummy.json)
     execute_process(COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_CACHEFILE_DIR}/app_json_trigger_dummy.json
-                    ERROR_QUIET)    
+                    ERROR_QUIET)
 
     # TODO this is slow, ideally only run it if app.json has changed (when calling regenerate explicitly)
 
@@ -797,25 +797,25 @@ endfunction()
 # Copy calling module's module.json to sit alongside module post-build
 function(copy_module_json_to_bin)
     set(DEST_FILENAME ${PROJECT_NAME}.json)
-    
+
     if(APPLE)
         # macOS: Multi build type outputting to LIBRARY_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     elseif(UNIX)
         # Linux: Single build type outputting to LIBRARY_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},LIBRARY_OUTPUT_DIRECTORY>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     else()
         # Win64: Multi build type outputting to RUNTIME_OUTPUT_DIRECTORY
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND} -E copy_if_different "${CMAKE_CURRENT_SOURCE_DIR}/module.json" "$<TARGET_PROPERTY:${PROJECT_NAME},RUNTIME_OUTPUT_DIRECTORY_$<UPPER_CASE:$<CONFIG>>>/${DEST_FILENAME}"
-                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")        
+                           COMMENT "Copying module.json for ${PROJECT_NAME} to ${DEST_FILENAME} in library output post-build")
     endif()
 endfunction()
 
@@ -883,12 +883,12 @@ macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
 
         # Loop over each found dependency
         foreach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})
-            # If we don't already have the module in our previously found dependencies or our newly found dependencies, 
+            # If we don't already have the module in our previously found dependencies or our newly found dependencies,
             # add the new dependency
             if(NOT ${DEPENDENT_MODULE} IN_LIST NEW_MODULES AND NOT ${DEPENDENT_MODULE} IN_LIST TOTAL_MODULES)
                 list(APPEND NEW_MODULES ${DEPENDENT_MODULE})
             endif()
-        endforeach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})        
+        endforeach(DEPENDENT_MODULE ${DEPENDENT_NAP_MODULES})
     endforeach(SEARCH_MODULE ${SEARCH_MODULES})
 endmacro()
 
@@ -964,7 +964,7 @@ function(deploy_single_path_mapping APP_DIR DEST_CONTEXT)
     endif()
 endfunction()
 
-# Generic way to import each module for different configurations. Included is a fairly simple mechanism for 
+# Generic way to import each module for different configurations. Included is a fairly simple mechanism for
 # extra per-module CMake logic, to be refined.
 macro(find_nap_module MODULE_NAME)
     if(EXISTS ${NAP_ROOT}/modules/${MODULE_NAME}/)
@@ -979,7 +979,7 @@ macro(find_nap_module MODULE_NAME)
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_directory $<TARGET_FILE_DIR:${MODULE_NAME}>/ $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-                )       
+                )
         endif()
     elseif(EXISTS ${NAP_ROOT}/system_modules/${NAP_MODULE}/)
         if(NOT TARGET ${NAP_MODULE})
@@ -1018,8 +1018,8 @@ macro(find_nap_module MODULE_NAME)
             # On Linux set our modules use their directory for RPATH
             if(NOT APPLE)
                 install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
-                              execute_process(COMMAND patchelf 
-                                                      --set-rpath 
+                              execute_process(COMMAND patchelf
+                                                      --set-rpath
                                                       $ORIGIN/.
                                                       ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
                                               RESULT_VARIABLE EXIT_CODE)
@@ -1055,13 +1055,13 @@ macro(find_nap_module MODULE_NAME)
                 add_custom_command(
                     TARGET ${PROJECT_NAME}
                     POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/            
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/
                     )
             endif()
-        endif()        
+        endif()
     elseif(NOT TARGET ${MODULE_NAME})
-        message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")    
-    endif()    
+        message(FATAL_ERROR "Could not locate module '${MODULE_NAME}'")
+    endif()
 endmacro()
 
 # Add an include to the list of includes on an interface target

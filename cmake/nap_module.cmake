@@ -45,7 +45,7 @@ add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
 
 # Set IDE folder
 cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH parent_path)
-cmake_path(GET parent_path STEM LAST_ONLY parent_dir)     
+cmake_path(GET parent_path STEM LAST_ONLY parent_dir)
 if(IMPORTING_APP_MODULE)
     set(module_folder_name AppModules)
     # Ensure not still declared for dependent module search

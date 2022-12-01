@@ -116,7 +116,7 @@ macro(package_nap)
     elseif(APPLE)
         install(DIRECTORY ${NAP_ROOT}/ide_templates/xcode_templates/ DESTINATION xcode_templates)
     endif()
-        
+
     # Package CMake
     package_cmake()
 
@@ -146,7 +146,7 @@ macro(package_nap)
                       endif()")
     endif()
 
-    # Install NAP Packaged App license 
+    # Install NAP Packaged App license
     install(FILES ${NAP_ROOT}/docs/license/NAP.txt DESTINATION cmake/app_creator)
 endmacro()
 
@@ -165,7 +165,7 @@ macro(package_python)
                         CONFIGURATIONS Release)
         endif()
 
-        # Install license   
+        # Install license
         install(FILES ${THIRDPARTY_DIR}/python/msvc/LICENSE.txt
                 DESTINATION thirdparty/python/
                 CONFIGURATIONS Release)
@@ -176,7 +176,7 @@ macro(package_python)
             set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/${ARCH})
         endif()
 
-        # Install dylib        
+        # Install dylib
         file(GLOB PYTHON_DYLIBs ${PYTHON_PREFIX}/lib/*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${PYTHON_DYLIBs}
                 DESTINATION thirdparty/python/lib
@@ -265,7 +265,7 @@ macro(package_qt)
                     )
 
             # Change dylib installed id
-            install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+            install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                                   -id @rpath/Qt${QT_INSTALL_FRAMEWORK}
                                                   ${FRAMEWORK_INSTALL_LOC}
                                           ERROR_QUIET
@@ -285,9 +285,9 @@ macro(package_qt)
                 CONFIGURATIONS Release
                 PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
                 )
-        macos_replace_qt_framework_links("${QT_FRAMEWORKS}" 
-                                         libqcocoa 
-                                         ${QT_DIR}/plugins/platforms/libqcocoa.dylib 
+        macos_replace_qt_framework_links("${QT_FRAMEWORKS}"
+                                         libqcocoa
+                                         ${QT_DIR}/plugins/platforms/libqcocoa.dylib
                                          ${CMAKE_INSTALL_PREFIX}/thirdparty/Qt/plugins/platforms/libqcocoa.dylib
                                          ${PATH_FROM_QT_PLUGIN_TOLIB}
                                          )
@@ -321,7 +321,7 @@ macro(package_qt)
                     DESTINATION thirdparty/Qt/lib
                     CONFIGURATIONS Release
                     PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE GROUP_READ GROUP_EXECUTE WORLD_READ WORLD_EXECUTE
-                    )            
+                    )
         endforeach()
 
         # Allow Qt platform plugin to find Qt frameworks in thirdparty
@@ -344,18 +344,18 @@ macro(package_cmake)
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
-                )    
+                )
     elseif(UNIX)
         install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/${ARCH}/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
-                )    
+                )
     else()
         install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/x86_64/
                 DESTINATION thirdparty/cmake
                 CONFIGURATIONS Release
-                )    
+                )
     endif()
 endmacro()
 
@@ -400,7 +400,7 @@ macro(package_app_into_framework_release DEST_DIR)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
             DESTINATION ${DEST_DIR}
             PATTERN "CMakeLists.txt" EXCLUDE
-            PATTERN "cached_app_json.cmake" EXCLUDE 
+            PATTERN "cached_app_json.cmake" EXCLUDE
             PATTERN "cached_project_json.cmake" EXCLUDE # TODO transitional/temporary
             PATTERN "dist" EXCLUDE
             PATTERN "*.mesh" EXCLUDE
@@ -482,7 +482,7 @@ macro(package_module_into_framework_release)
                                         ARCHIVE DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
         if(PACKAGE_PDBS)
             install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
-        endif()        
+        endif()
     elseif(APPLE)
         install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION system_modules/${PROJECT_NAME}/lib/$<CONFIG>-${ARCH})
     else()
@@ -497,28 +497,28 @@ macro(package_module_into_framework_release)
         install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/module.json DESTINATION system_modules/${PROJECT_NAME}/lib/${CMAKE_BUILD_TYPE}-${ARCH}/ RENAME ${PROJECT_NAME}.json)
     endif()
 
-    # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we 
+    # Set packaged RPATH for *nix (for macOS I believe we need to make sure this is being done after we
     # install the target above due to ordering of install_name_tool calling)
     set(NAP_ROOT_LOCATION_TO_MODULE "../../../..")
     if(APPLE)
         if(DEFINED MACOS_EXTRA_RPATH_RELEASE)
-            set(MACOS_EXTRA_RPATH_RELEASE "${MACOS_EXTRA_RPATH_RELEASE}")    
+            set(MACOS_EXTRA_RPATH_RELEASE "${MACOS_EXTRA_RPATH_RELEASE}")
         else()
             set(MACOS_EXTRA_RPATH_RELEASE "")
         endif()
         if(DEFINED MACOS_EXTRA_RPATH_DEBUG)
-            set(MACOS_EXTRA_RPATH_DEBUG "${MACOS_EXTRA_RPATH_DEBUG}")    
+            set(MACOS_EXTRA_RPATH_DEBUG "${MACOS_EXTRA_RPATH_DEBUG}")
         else()
             set(MACOS_EXTRA_RPATH_DEBUG "")
         endif()
         set_installed_rpath_on_macos_module_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} "${MACOS_EXTRA_RPATH_RELEASE}" "${MACOS_EXTRA_RPATH_DEBUG}")
     elseif(UNIX)
         if(DEFINED LINUX_EXTRA_RPATH)
-            set(EXTRA_RPATH "${LINUX_EXTRA_RPATH}")    
+            set(EXTRA_RPATH "${LINUX_EXTRA_RPATH}")
         else()
             set(EXTRA_RPATH "")
         endif()
-        set_installed_rpath_on_linux_object_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} ${EXTRA_RPATH})        
+        set_installed_rpath_on_linux_object_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} ${NAP_ROOT_LOCATION_TO_MODULE} ${EXTRA_RPATH})
     endif()
 endmacro()
 
@@ -544,8 +544,8 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SKIP_FRAMEWORK_NAME LIB_SRC_LO
                 string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
 
                 # Change link to dylib
-                install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                                      -change 
+                install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                                      -change
                                                       ${REPLACE_INSTALL_NAME}
                                                       ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
                                                       ${LIB_INSTALL_LOCATION}
@@ -556,7 +556,7 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SKIP_FRAMEWORK_NAME LIB_SRC_LO
                               endif()")
             endif()
         endif()
-    endforeach()    
+    endforeach()
 endmacro()
 
 # macOS: At install time replace Qt framework install names in specified file with new paths built
@@ -570,7 +570,7 @@ macro(macos_replace_qt_framework_links_install_time FRAMEWORKS SKIP_FRAMEWORK_NA
         if(NOT ${QT_LINK_FRAMEWORK} STREQUAL ${SKIP_FRAMEWORK_NAME})
             macos_replace_single_install_name_link_install_time(${QT_LINK_FRAMEWORK} ${FILEPATH} ${PATH_PREFIX})
         endif()
-    endforeach()    
+    endforeach()
 endmacro()
 
 # macOS: At install time replace a path prefix of a single lib in the specified file
@@ -589,11 +589,11 @@ macro(macos_replace_single_install_name_link_install_time REPLACE_LIB_NAME FILEP
                       if(NOT \${REPLACE_INSTALL_NAME} STREQUAL \"\")
                           #message(\"Adding install name change in ${FILEPATH} for ${REPLACE_LIB_NAME}\")
                           # Strip read path
-                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)                               
+                          string(STRIP \${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
 
                           # Change link to dylib
-                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
-                                                  -change 
+                          execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+                                                  -change
                                                   \${REPLACE_INSTALL_NAME}
                                                   ${PATH_PREFIX}/${REPLACE_LIB_NAME}
                                                   ${FILEPATH}
@@ -650,7 +650,7 @@ macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MO
     # Add our core paths first
     set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}-${ARCH}")
     set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/rttr/bin")    
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/rttr/bin")
 
     # Process any extra paths
     set(EXTRA_PATHS ${ARGN})
@@ -700,7 +700,7 @@ macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CO
     set(EXTRA_PATHS ${ARGN})
     foreach(EXTRA_PATH ${EXTRA_PATHS})
         ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${EXTRA_PATH}")
-    endforeach()       
+    endforeach()
 endmacro()
 
 # macOS: Set the packaged RPATH of a module for its dependent modules
@@ -729,7 +729,7 @@ macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MO
         endif()
         foreach(EXTRA_PATH ${EXTRA_PATHS})
             ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${EXTRA_PATH}")
-        endforeach()       
+        endforeach()
     endforeach()
 endmacro()
 
@@ -746,25 +746,25 @@ endmacro()
 # FILENAME: The binary object
 # PATH_TO_ADD: The path to check/add
 macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
-    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL} 
+    install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                           -add_rpath
                                           ${PATH_TO_ADD}
-                                          ${FILENAME} 
+                                          ${FILENAME}
                                   ERROR_QUIET)")
 endmacro()
 
 # Don't build the app module while doing a framework build unless explicitly requested
-# INCLUDE_ONLY_WITH_NAIVI_APPS: whether the module is for a app that should only be 
+# INCLUDE_ONLY_WITH_NAIVI_APPS: whether the module is for a app that should only be
 #   packaged if packaging Naivi apps
 function(exclude_from_build_when_packaging INCLUDE_ONLY_WITH_NAIVI_APPS)
-    if(NAP_PACKAGED_BUILD) 
+    if(NAP_PACKAGED_BUILD)
         if(NOT BUILD_APPS)
             set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
         elseif(${INCLUDE_ONLY_WITH_NAIVI_APPS} AND NOT PACKAGE_NAIVI_APPS)
             set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
         endif()
     endif()
-endfunction() 
+endfunction()
 
 # Package path mappings, for appropriate platform
 function(package_path_mappings)
@@ -773,8 +773,8 @@ function(package_path_mappings)
     else()
         set(MAPPINGS_PREFIX unix)
     endif()
-    install(DIRECTORY ${NAP_ROOT}/tools/buildsystem/path_mappings/${MAPPINGS_PREFIX}/ 
-            DESTINATION tools/buildsystem/path_mappings 
+    install(DIRECTORY ${NAP_ROOT}/tools/buildsystem/path_mappings/${MAPPINGS_PREFIX}/
+            DESTINATION tools/buildsystem/path_mappings
             PATTERN "source.json" EXCLUDE)
 endfunction()
 
