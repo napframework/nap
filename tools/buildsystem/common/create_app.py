@@ -27,10 +27,11 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
     nap_root = os.path.join(script_path, os.pardir, os.pardir, os.pardir)
 
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'app_creator'))
-    app_path = os.path.abspath(os.path.join(nap_root, 'apps', '%s' % app_name.lower()))
+    app_path = os.path.abspath(os.path.join(nap_root, 'apps', app_name))
 
     # Check for duplicate app
-    if not find_app(app_name, True) is None:
+    (dupe_path, _) = find_app(app_name, True)
+    if dupe_path is not None:
         eprint("Error: demo, example or app exists with same name '%s'" % app_name)
         return ERROR_EXISTING_APP
 
@@ -42,7 +43,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
     print("Creating app %s" % app_name)
 
     # Create app from template
-    input_module_list = module_list.lower().replace(',', ';')
+    input_module_list = module_list.replace(',', ';')
     cmake = get_cmake_path()
     cmd = [cmake, '-DAPP_NAME_INPUTCASE=%s' % app_name, '-DMODULE_LIST=%s' % input_module_list, '-P', 'app_creator.cmake']
     if call(cmd, cwd=cmake_template_dir) != 0:
@@ -53,7 +54,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
     if with_module:
         # Create module from template
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-        input_module_list = APP_MODULE_MODULE_LIST.lower().replace(',', ';')
+        input_module_list = APP_MODULE_MODULE_LIST.replace(',', ';')
         cmd = [cmake,
                '-DUNPREFIXED_MODULE_NAME_INPUTCASE=%s' % app_name,
                '-DAPP_MODULE=1',
@@ -66,15 +67,14 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
             sys.exit(ERROR_CMAKE_MODULE_CREATION_FAILURE)
 
         # Update app.json
-        add_module_to_app_json(app_name, 'nap%s' % app_name.lower())
+        add_module_to_app_json(app_name, 'nap%s' % app_name)
 
     if get_build_context() == 'source':
         print("Adding app to solution info")
-        add_to_solution_info(f'apps/{app_name.lower()}')
+        add_to_solution_info(f'apps/{app_name}')
 
     # Solution generation
     if generate_solution:
-        print("App created")
         print("Generating solution")
 
         # Determine our Python interpreter location
@@ -86,8 +86,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
         if call(cmd, cwd=nap_root) != 0:
             eprint("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
-    else:
-        print("App created in %s" % os.path.relpath(app_path))
+    print("App created in %s" % os.path.relpath(app_path))
 
     return 0
 

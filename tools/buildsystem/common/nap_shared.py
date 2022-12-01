@@ -52,21 +52,23 @@ def find_user_module(module_name):
         return None
 
 def find_app(app_name, silent_failure=False, silent_success=False):
-    """Locate app specified by name"""
+    """Locate app specified by loosely cased name, returning the path and proper identifier"""
     nap_root = get_nap_root()
 
-    project_dir_name = app_name.lower()
-
     for project_type in ['apps', 'examples', 'demos']:
-        project_search_path = os.path.join(nap_root, project_type, project_dir_name)
-        if os.path.exists(project_search_path):
-            if not silent_success:
-                print("Found %s at %s" % (project_type[:-1], project_search_path))
-            return project_search_path
+        search_dir = os.path.join(nap_root, project_type)
+        if not os.path.isdir(search_dir):
+            continue
+        for d in os.listdir(search_dir):
+            if d.lower() == app_name.lower():
+                project_search_path = os.path.join(search_dir, d)
+                if not silent_success:
+                    print("Found %s at %s" % (project_type[:-1], project_search_path))
+                return (project_search_path, d)
 
     if not silent_failure:
         print("Couldn't find app, demo or example with name '%s'" % app_name)
-    return None
+    return (None, None)
 
 def read_console_char():
     """Pause for input"""
@@ -85,12 +87,12 @@ def read_console_char():
 
 def get_camelcase_app_name(app_name):
     """Get camelcase app name"""
-    project_path = find_app(app_name, True, True)
-    if project_path is None:
+    (app_path, _) = find_app(app_name, True, True)
+    if app_path is None:
         print("Error: couldn't find app '%s'" % app_name)
         return None
 
-    project_info_path = os.path.join(project_path, PROJECT_INFO_FILENAME)
+    project_info_path = os.path.join(app_path, PROJECT_INFO_FILENAME)
     with open(project_info_path) as json_file:
         json_dict = json.load(json_file)
         if not 'Title' in json_dict:
@@ -102,12 +104,12 @@ def get_camelcase_app_name(app_name):
 
 def add_module_to_app_json(app_name, full_module_name):
     """Add module to app.json"""
-    project_path = find_app(app_name, True, True)
-    if project_path is None:
+    (app_path, _) = find_app(app_name, True, True)
+    if app_path is None:
         print("Error: couldn't find app '%s'" % app_name)
         return False
 
-    project_info_path = os.path.join(project_path, PROJECT_INFO_FILENAME)
+    project_info_path = os.path.join(app_path, PROJECT_INFO_FILENAME)
 
     with open(project_info_path) as json_file:
         json_dict = json.load(json_file, object_pairs_hook=OrderedDict)

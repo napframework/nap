@@ -7,23 +7,23 @@ from subprocess import call
 from nap_shared import find_app, get_python_path, get_nap_root
 
 # Exit codes
-ERROR_MISSING_PROJECT = 1
+ERROR_MISSING_APP = 1
 
-def upgrade_project(project_name):
-    # Find the project
-    project_path = find_app(project_name)
-    if project_path is None:
-        return ERROR_MISSING_PROJECT
+def upgrade_app(app_name):
+    # Find the app
+    (app_path, _) = find_app(app_name)
+    if app_path is None:
+        return ERROR_MISSING_APP
 
     script_path = os.path.join(get_nap_root(), 'tools', 'buildsystem', 'app_and_module_updater', 'app_and_module_updater.py')
 
     python = get_python_path()
-    cmd = [python, script_path, 'UPGRADE_PROJECT', project_path] 
+    cmd = [python, script_path, 'UPGRADE_PROJECT', app_path]
     return call(cmd)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_NAME", type=str, help="The project to upgrade")
+    parser.add_argument("APP_NAME", type=str, help="The app to upgrade")
     args = parser.parse_args()
-    exit_code = upgrade_project(args.PROJECT_NAME)
+    exit_code = upgrade_app(args.APP_NAME)
     sys.exit(exit_code)

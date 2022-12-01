@@ -12,16 +12,16 @@ ERROR_INVALID_INPUT = 1
 ERROR_MISSING_APP = 2
 ERROR_EXISTING_MODULE = 3
 
-def create_app_module(app_name, update_app_json, generate_solution, show_solution):
+def create_app_module(search_app_name, update_app_json, generate_solution, show_solution):
     # Ensure app exists
-    app_path = find_app(app_name, True)
+    (app_path, app_name) = find_app(search_app_name, True)
     if app_path is None:
-        print("Error: can't find app with name '%s'" % app_name)
+        print("Error: can't find app with name '%s'" % search_app_name)
         sys.exit(ERROR_MISSING_APP)
 
     # Load camelcase app name from app.json
     app_name = get_camelcase_app_name(app_name)
-    prefixed_module_name = f'nap{app_name.lower()}'
+    prefixed_module_name = f'nap{app_name}'
 
     # Set our paths
     module_path = os.path.join(app_path, 'module')
@@ -44,7 +44,7 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
 
     # Create module from template
     cmake = get_cmake_path()
-    cmd = [cmake, 
+    cmd = [cmake,
            '-DUNPREFIXED_MODULE_NAME_INPUTCASE=%s' % app_name,
            '-DAPP_MODULE=1',
            '-DAPP_MODULE_APP_PATH=%s' % app_path,
@@ -89,7 +89,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    app_name = args.APP_NAME.lower()
+    app_name = args.APP_NAME
 
     update_app_json = not args.no_update_app
     regenerate_app = update_app_json and not args.no_generate

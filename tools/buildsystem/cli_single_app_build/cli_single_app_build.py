@@ -17,9 +17,9 @@ DEFAULT_BUILD_TYPE = 'Release'
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
-ERROR_CANT_LOCATE_PROJECT = 3
+ERROR_CANT_LOCATE_APP = 3
 
-class SingleProjectBuilder:
+class SingleAppBuilder:
 
     def __init__(self):
         pass
@@ -60,7 +60,7 @@ class SingleProjectBuilder:
         # Check for Source context
         source_root_cmakelists = os.path.join(script_path, script_to_nap_root, 'CMakeLists.txt')
         if os.path.exists(source_root_cmakelists):
-            self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))    
+            self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))
             self.__source_context = True
         else:
             # Verify in Framework Release context
@@ -68,7 +68,7 @@ class SingleProjectBuilder:
             if not os.path.exists(package_modules_dir):
                 print("Error: Can't locate NAP root")
                 sys.exit(ERROR_CANT_LOCATE_NAP)
-            self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))    
+            self.__nap_root = os.path.abspath(os.path.join(script_path, script_to_nap_root))
             self.__source_context = False
 
             # Determine Python interpreter location
@@ -77,7 +77,7 @@ class SingleProjectBuilder:
             else:
                 self.__python = os.path.join(self.__nap_root, 'thirdparty', 'python', 'bin', 'python3')
 
-    def build(self, project_name, build_type):
+    def build(self, app_name, build_type):
         if not build_type is None:
             build_type = build_type.lower().capitalize()
 
@@ -86,11 +86,11 @@ class SingleProjectBuilder:
 
         # Build
         if self.__source_context:
-            self.build_source_context_project(project_name, build_type)
+            self.build_source_context_app(app_name, build_type)
         else:
-            self.build_packaged_framework_project(project_name, build_type)
+            self.build_packaged_framework_app(app_name, build_type)
 
-    def build_source_context_project(self, project_name, build_type):
+    def build_source_context_app(self, app_name, build_type):
         if build_type is None:
             build_type = DEFAULT_BUILD_TYPE
         else:
@@ -99,10 +99,10 @@ class SingleProjectBuilder:
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
         from nap_shared import find_app
-        project_path = find_app(project_name, False, True)
-        if project_path is None:
-            print("Error: Can't find project %s" % project_name)
-            sys.exit(ERROR_CANT_LOCATE_PROJECT)
+        (app_path, app_name) = find_app(app_name, False, True)
+        if app_path is None:
+            print("Error: Can't find app %s" % app_name)
+            sys.exit(ERROR_CANT_LOCATE_APP)
 
         build_dir = None
         if platform.startswith('linux'):
@@ -122,28 +122,28 @@ class SingleProjectBuilder:
             rc = self.call(self.__nap_root, ['generate_solution.bat', '--build-path=%s' % build_dir], True)
 
         if rc != 0:
-            print("Error: Failed to configure project")
+            print("Error: Failed to configure app")
             sys.exit(ERROR_CONFIGURE)
 
         if platform.startswith('linux'):
             # Linux
-            self.call(build_dir, ['make', project_name, '-j%s' % cpu_count()])
+            self.call(build_dir, ['make', app_name, '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', project_name, '-configuration', build_type])
+            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', app_name, '-configuration', build_type])
         else:
             # Windows
             cmake = self.get_cmake_path()
-            self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', project_name, '--config', build_type])
+            self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', app_name, '--config', build_type])
 
-    def build_packaged_framework_project(self, project_name, build_type):
+    def build_packaged_framework_app(self, app_name, build_type):
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
         from nap_shared import find_app
-        project_path = find_app(project_name, False, True)
-        if project_path is None:
-            print("Error: Can't find project %s" % project_name)
-            sys.exit(ERROR_CANT_LOCATE_PROJECT)
+        (app_path, app_name) = find_app(app_name, False, True)
+        if app_path is None:
+            print("Error: Can't find app %s" % app_name)
+            sys.exit(ERROR_CANT_LOCATE_APP)
 
         build_dir = None
         if platform.startswith('linux'):
@@ -152,12 +152,12 @@ class SingleProjectBuilder:
             build_dir = MACOS_BUILD_DIR.lower()
         else:
             build_dir = MSVC_BUILD_DIR
-        build_dir = os.path.join(project_path, build_dir)
+        build_dir = os.path.join(app_path, build_dir)
 
         # Only explicitly regenerate the solution if it doesn't already exist or a build type has
-        # been specified. Provides quicker CLI build times if regeneration not required while 
+        # been specified. Provides quicker CLI build times if regeneration not required while
         # ensuring that the right build type will be generated for Napkin on Linux.
-        generate_solution = build_type != None or not os.path.exists(build_dir) 
+        generate_solution = build_type != None or not os.path.exists(build_dir)
 
         if build_type is None:
             build_type = DEFAULT_BUILD_TYPE
@@ -165,32 +165,32 @@ class SingleProjectBuilder:
             build_type = build_type.capitalize()
 
         if generate_solution:
-            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', project_name]
+            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
             if sys.platform.startswith('linux'):
-                cmd.append(build_type)        
+                cmd.append(build_type)
             else:
-                cmd.append('--no-show')        
+                cmd.append('--no-show')
             if self.call(self.__nap_root, cmd) != 0:
                 print("Error: Solution generation failed")
                 sys.exit(ERROR_CONFIGURE)
 
         if platform.startswith('linux'):
             # Linux
-            self.call(build_dir, ['make', project_name, '-j%s' % cpu_count()])
+            self.call(build_dir, ['make', app_name, '-j%s' % cpu_count()])
         elif platform == 'darwin':
             # macOS
-            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % project_name, '-configuration', build_type])
+            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % app_name, '-configuration', build_type])
         else:
             # Windows
             cmake = self.get_cmake_path()
-            self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', project_name, '--config', build_type], True)
+            self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', app_name, '--config', build_type], True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("PROJECT_NAME", type=str, help="The project name")
+    parser.add_argument("APP_NAME", type=str, help="The app name")
     parser.add_argument('-t', '--build-type', type=str.lower, default=None,
             choices=['release', 'debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE.lower())
     args = parser.parse_args()
 
-    b = SingleProjectBuilder()
-    b.build(args.PROJECT_NAME, args.build_type)
+    b = SingleAppBuilder()
+    b.build(args.APP_NAME, args.build_type)
