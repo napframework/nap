@@ -2589,7 +2589,7 @@ if __name__ == '__main__':
 
     # Ensure package directory exists
     if not os.path.exists(args.NAP_FRAMEWORK_PATH):
-        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
+        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))
         sys.exit(1)
 
     # Import python helpers
@@ -2601,9 +2601,9 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH, 
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH,
                                args.testing_apps_dir,
-                               not args.no_json_report, 
+                               not args.no_json_report,
                                args.force_log_reporting,
                                not args.no_rename_framework,
                                not args.no_rename_qt,

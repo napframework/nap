@@ -50,14 +50,14 @@ def create_module(module_name, generate_solution):
     # Solution generation
     if generate_solution:
         print("Module created")
-        print("Generating solution")        
+        print("Generating solution")
 
         # Determine our Python interpreter location
         python = get_python_path()
         cmd = [python, './tools/buildsystem/common/regenerate_module_by_name.py', module_name.lower()]
         if call(cmd, cwd=nap_root) != 0:
             eprint("Solution generation failed")
-            sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
+            sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
     else:
         print("Module created in %s" % os.path.relpath(module_path))
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument("MODULE_NAME", type=str,
                         help="The module name (eg. MyModuleName)")
     parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't generate the solution for the created module")       
+                        help="Don't generate the solution for the created module")
     args = parser.parse_args()
 
     module_name = args.MODULE_NAME

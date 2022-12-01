@@ -4,7 +4,7 @@
 cmake_minimum_required(VERSION 3.18.4)
 
 if(NOT DEFINED NAP_ROOT)
-    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR STEM LAST_ONLY dir_name)     
+    cmake_path(GET CMAKE_CURRENT_SOURCE_DIR STEM LAST_ONLY dir_name)
     if(dir_name MATCHES "^module$")
         set(path_from_module_to_root ../../..)
     else()

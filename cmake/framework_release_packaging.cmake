@@ -9,7 +9,7 @@ macro(package_nap)
             set(NAP_BUILD_NUMBER 0)
         endif()
         math(EXPR NAP_BUILD_NUMBER "${NAP_BUILD_NUMBER}+1")
-        include(${NAP_ROOT}/cmake/version.cmake)        
+        include(${NAP_ROOT}/cmake/version.cmake)
         configure_file(${NAP_ROOT}/cmake/build_info.json.in ${NAP_ROOT}/cmake/build_info.json @ONLY)
         configure_file(${NAP_ROOT}/cmake/build_number.cmake.in ${NAP_ROOT}/cmake/build_number.cmake @ONLY)
     endif()
@@ -24,7 +24,7 @@ macro(package_nap)
     list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/install_napkin_with_app.cmake)
     install(FILES ${CROSSP_FILES}
             DESTINATION cmake/
-            )   
+            )
     install(DIRECTORY ${NAP_ROOT}/cmake/app_creator
             DESTINATION cmake
             )
@@ -421,7 +421,7 @@ macro(package_app_into_framework_release DEST_DIR)
     # Package any app module CMake
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
         # Generate fresh module CMake
-        install(CODE "execute_process(COMMAND ${CMAKE_COMMAND} 
+        install(CODE "execute_process(COMMAND ${CMAKE_COMMAND}
                                               -DMODULE_CMAKE_OUTPATH=${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt
                                               -DAPP_MODULE=1
                                               -DCMAKE_ONLY=1

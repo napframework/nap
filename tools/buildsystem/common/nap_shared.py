@@ -135,7 +135,7 @@ def get_nap_root():
     else:
         script_to_nap_root = os.path.join(os.pardir, os.pardir, os.pardir)
         return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
-    
+
 def get_cmake_path():
     """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
     nap_root = get_nap_root()
@@ -166,7 +166,7 @@ def get_app_full_module_requirements(framework_root, app_name, app_path):
                 module_name = module_name.encode('utf8')
             modules.append(module_name)
         new_modules = modules
-    
+
     while len(new_modules) > 0:
         loop_modules = []
         for search_module in new_modules:

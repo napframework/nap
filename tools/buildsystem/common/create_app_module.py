@@ -67,7 +67,7 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
         # Solution regeneration
         if generate_solution:
             print("Module created")
-            print("Regenerating solution")        
+            print("Regenerating solution")
 
             # Determine our Python interpreter location
             python = get_python_path()
@@ -77,7 +77,7 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
                 cmd.append('--no-show')
             if call(cmd, cwd=nap_root) != 0:
                 print("Solution generation failed")
-                sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)    
+                sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
 
     print("App module created in %s" % os.path.relpath(module_path))
 
@@ -88,8 +88,8 @@ if __name__ == '__main__':
     parser.add_argument("-nu", "--no-update-app", action="store_true",
                         help="Don't update the app.json")
     parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't regenerate the solution for the updated app")       
-    if not sys.platform.startswith('linux'):    
+                        help="Don't regenerate the solution for the updated app")
+    if not sys.platform.startswith('linux'):
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the regenerated solution")
 
