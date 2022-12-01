@@ -394,7 +394,7 @@ def get_packaged_app_output_path(app_name, pre_files, post_files):
 
     new_files = list(set(post_files) - set(pre_files))
     for f in new_files:
-        if f.lower().startswith(app_name):
+        if f.lower().startswith(app_name.lower()):
             return f
 
     eprint("Error: get_packaged_app_output_path() sees no difference")
@@ -1005,11 +1005,11 @@ def build_and_package(root_output_dir, timestamp, testing_apps_dir, apps_to_excl
 
         # If we're iterating our apps directory and we've already got our template app in there
         # from a previous run, don't built it in here as we'll build it separately later
-        if demo_name == TEMPLATE_APP_NAME.lower() and testing_apps_dir != DEFAULT_TESTING_APPS_DIR:
+        if demo_name == TEMPLATE_APP_NAME and testing_apps_dir != DEFAULT_TESTING_APPS_DIR:
             continue
 
         # If the app is excluded, skip
-        if demo_name.lower() in excluded_apps:
+        if demo_name in excluded_apps:
             continue
 
         print("----------------------------")
@@ -1203,7 +1203,7 @@ def create_build_and_package_template_app(root_output_dir, timestamp):
     template_results = {}
 
     # Remove any existing app
-    app_path = os.path.join('apps', TEMPLATE_APP_NAME.lower())
+    app_path = os.path.join('apps', TEMPLATE_APP_NAME)
     if os.path.exists(app_path):
         print("- Pre-existing template app found, removing")
         shutil.rmtree(app_path)
@@ -1223,7 +1223,7 @@ def create_build_and_package_template_app(root_output_dir, timestamp):
     if template_creation_success:
         # Creation successful, now configure
         print("  Done.")
-        os.chdir(os.path.join('apps', TEMPLATE_APP_NAME.lower()))
+        os.chdir(os.path.join('apps', TEMPLATE_APP_NAME))
         (template_generate_success, stdout, stderr) = regenerate_cwd_app()
         template_results['generate'] = {}
         template_results['generate']['success'] = template_generate_success
@@ -1232,7 +1232,7 @@ def create_build_and_package_template_app(root_output_dir, timestamp):
 
         if template_generate_success:
             # Configure successful, now build
-            (template_build_success, stdout, stderr) = build_cwd_app(TEMPLATE_APP_NAME.lower())
+            (template_build_success, stdout, stderr) = build_cwd_app(TEMPLATE_APP_NAME)
             template_results['build'] = {}
             template_results['build']['success'] = template_build_success
             template_results['build']['stdout'] = stdout
@@ -1240,7 +1240,7 @@ def create_build_and_package_template_app(root_output_dir, timestamp):
 
             if template_build_success:
                 # Build successful, now package
-                (template_package_success, stdout, stderr) = package_cwd_app_with_napkin(TEMPLATE_APP_NAME.lower(), root_output_dir, timestamp)
+                (template_package_success, stdout, stderr) = package_cwd_app_with_napkin(TEMPLATE_APP_NAME, root_output_dir, timestamp)
                 template_results['package'] = {}
                 template_results['package']['success'] = template_package_success
                 template_results['package']['stdout'] = stdout
@@ -1330,10 +1330,10 @@ def run_build_directory_template_app(template_results, nap_framework_full_path):
     apps_dir = os.getcwd()
 
     # Change to template app directory
-    os.chdir(TEMPLATE_APP_NAME.lower())
+    os.chdir(TEMPLATE_APP_NAME)
 
     # Run
-    (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_app(TEMPLATE_APP_NAME.lower(), nap_framework_full_path)
+    (success, stdout, stderr, unexpected_libs, return_code) = run_cwd_app(TEMPLATE_APP_NAME, nap_framework_full_path)
     template_results['runFromBuildOutput'] = {}
     template_results['runFromBuildOutput']['success'] = success
     template_results['runFromBuildOutput']['stdout'] = stdout
@@ -1450,7 +1450,7 @@ def open_template_app_in_napkin_from_framework_release(template_results, nap_fra
     print("- Open with Napkin from framework release...")
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
-        template_app_json = os.path.join(nap_framework_full_path, 'apps', TEMPLATE_APP_NAME.lower(), APP_FILENAME)
+        template_app_json = os.path.join(nap_framework_full_path, 'apps', TEMPLATE_APP_NAME, APP_FILENAME)
         (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % template_app_json, 
                                                                                         nap_framework_full_path, 
                                                                                         True,
@@ -1619,7 +1619,7 @@ def open_template_app_in_napkin_from_packaged_app(template_results, root_output_
         return
 
     cwd = os.getcwd()
-    open_app_in_napkin_from_packaged_app(template_results, TEMPLATE_APP_NAME.lower(), root_output_dir, timestamp)
+    open_app_in_napkin_from_packaged_app(template_results, TEMPLATE_APP_NAME, root_output_dir, timestamp)
     os.chdir(cwd)
 
 
@@ -1693,7 +1693,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_r
 
     # Remove packaged template app
     if 'package' in template_results and template_results['package']['success']:
-        containing_dir = os.path.join(root_output_dir, '%s-%s-napkin' % (TEMPLATE_APP_NAME.lower(), timestamp))
+        containing_dir = os.path.join(root_output_dir, '%s-%s-napkin' % (TEMPLATE_APP_NAME, timestamp))
 
         try:
             shutil.rmtree(containing_dir)
@@ -2229,8 +2229,8 @@ def create_fake_apps_for_modules_without_demos(nap_framework_full_path, testing_
         # Build a app name
         processed_name = module.replace('_', '').title()
         app_name = 'FakeDemo%s' % processed_name
-        created_app_path = os.path.join('apps', app_name.lower())
-        dest_app_path = os.path.join(testing_apps_dir, app_name.lower())
+        created_app_path = os.path.join('apps', app_name)
+        dest_app_path = os.path.join(testing_apps_dir, app_name)
 
         # Remove if it already exists
         for path in (created_app_path, dest_app_path):
@@ -2323,8 +2323,8 @@ def perform_test_run(nap_framework_path,
         return False
 
     # Warn if an existing template is about to be overwritten
-    if os.path.exists(os.path.join(nap_framework_full_path, 'apps', TEMPLATE_APP_NAME.lower())):
-        print("Warning: Template app already exists at %s and will be replaced" % os.path.join(nap_framework_path, 'apps', TEMPLATE_APP_NAME.lower()))
+    if os.path.exists(os.path.join(nap_framework_full_path, 'apps', TEMPLATE_APP_NAME)):
+        print("Warning: Template app already exists at %s and will be replaced" % os.path.join(nap_framework_path, 'apps', TEMPLATE_APP_NAME))
 
     # Warn about not doing framework and Qt renames on *nix
     if not is_windows() and not rename_framework:
@@ -2458,7 +2458,7 @@ def perform_test_run(nap_framework_path,
     phase += 1
     print("============ Phase #%s - Running packaged template app ============" % phase)
     if 'package' in template_results and template_results['package']['success']:
-        run_packaged_app(template_results, root_output_dir, timestamp, TEMPLATE_APP_NAME.lower())
+        run_packaged_app(template_results, root_output_dir, timestamp, TEMPLATE_APP_NAME)
     else:
         print("Skipping due to package failure")
 
@@ -2589,7 +2589,7 @@ if __name__ == '__main__':
 
     # Ensure package directory exists
     if not os.path.exists(args.NAP_FRAMEWORK_PATH):
-        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))
+        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
         sys.exit(1)
 
     # Import python helpers
@@ -2601,9 +2601,9 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH,
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH, 
                                args.testing_apps_dir,
-                               not args.no_json_report,
+                               not args.no_json_report, 
                                args.force_log_reporting,
                                not args.no_rename_framework,
                                not args.no_rename_qt,
