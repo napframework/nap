@@ -309,3 +309,39 @@ def ensure_set_executable(filepath):
     if os.path.exists(filepath) and not os.access(filepath, os.X_OK):
         cmd = f'chmod +x {filepath}'
         run(cmd, shell=True)
+
+def check_for_existing_module(module_name):
+    """Check for any existing module with the specified name"""
+    nap_root = get_nap_root()
+    module_name_lower = module_name.lower()
+
+    # Check for existing module with same name
+    user_module_dir = os.path.abspath(os.path.join(nap_root, 'modules'))
+    names = [d.lower() for d in os.listdir(user_module_dir)]
+    if module_name_lower in names:
+        eprint(f"Error: Module with name {module_name} already exists")
+        return True
+
+    # Check for existing system module with same name
+    system_module_dir = os.path.abspath(os.path.join(nap_root, 'system_modules'))
+    names = [d.lower() for d in os.listdir(system_module_dir)]
+    if module_name_lower in names:
+        eprint(f"Error: System module with name {module_name} already exists")
+        return True
+
+    # Check for app modules
+    def check_for_app_modules_under_dir(search_dir):
+        for app in os.listdir(search_dir):
+            if f'nap{app.lower()}' == module_name_lower:
+                app_module_dir = os.path.join(search_dir, app, 'module')
+                if os.path.exists(app_module_dir):
+                    eprint(f"Error: App module with name {module_name} already exists")
+                    return True
+        return False
+
+    for dirname in ('demos', 'apps', 'test'):
+        check_dir = os.path.abspath(os.path.join(nap_root, dirname))
+        if check_for_app_modules_under_dir(check_dir):
+            return True
+
+    return False

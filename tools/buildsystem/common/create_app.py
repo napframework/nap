@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_app, add_module_to_app_json, get_cmake_path, get_python_path, eprint, get_build_context, add_to_solution_info
+from nap_shared import add_module_to_app_json, add_to_solution_info, check_for_existing_module, find_app, eprint, get_cmake_path, get_python_path, get_build_context
 
 # Default modules if none are specified
 DEFAULT_MODULE_LIST = "napapp,napcameracontrol,napparametergui"
@@ -19,10 +19,9 @@ ERROR_EXISTING_APP = 2
 ERROR_CMAKE_CREATION_FAILURE = 3
 ERROR_SOLUTION_GENERATION_FAILURE = 4
 ERROR_CMAKE_MODULE_CREATION_FAILURE = 5
+ERROR_EXISTING_MODULE = 6
 
 def create_app(app_name, module_list, with_module, generate_solution, show_solution):
-    print("Creating app %s" % app_name)
-
     # Set our paths
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.join(script_path, os.pardir, os.pardir, os.pardir)
@@ -34,6 +33,13 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
     if not find_app(app_name, True) is None:
         eprint("Error: demo, example or app exists with same name '%s'" % app_name)
         return ERROR_EXISTING_APP
+
+    # Check for existing module which would clash
+    if with_module and check_for_existing_module(f'nap{app_name}'):
+        eprint("Can't create app with module due to clash with existing module name")
+        sys.exit(ERROR_EXISTING_MODULE)
+
+    print("Creating app %s" % app_name)
 
     # Create app from template
     input_module_list = module_list.lower().replace(',', ';')

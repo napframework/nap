@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_app, get_camelcase_app_name, add_module_to_app_json, get_cmake_path, get_python_path
+from nap_shared import add_module_to_app_json, check_for_existing_module, find_app, get_camelcase_app_name, get_cmake_path, get_python_path
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -36,14 +36,8 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
         print("Error: '%s' already has a module" % app_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
-    # Check for existing module with same name
-    if os.path.exists(user_module_path):
-        print("Error: User module with name %s already exists" % prefixed_module_name)
-        sys.exit(ERROR_EXISTING_MODULE)
-
-    # Check for existing NAP module with same name
-    if os.path.exists(duplicate_module_path):
-        print("Error: NAP module exists with same name '%s'" % prefixed_module_name)
+    # Check for existing module which would clash
+    if check_for_existing_module(prefixed_module_name):
         sys.exit(ERROR_EXISTING_MODULE)
 
     print("Creating app module %s for app %s in %s" % (prefixed_module_name, app_name, module_path))
