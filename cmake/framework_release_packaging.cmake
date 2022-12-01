@@ -407,6 +407,9 @@ macro(package_app_into_framework_release DEST_DIR)
             PATTERN "cached_module_json.cmake" EXCLUDE
             PATTERN "*.plist" EXCLUDE
             PATTERN "*.ini" EXCLUDE
+            PATTERN "regenerate.*" EXCLUDE
+            PATTERN "build.*" EXCLUDE
+            PATTERN "package.*" EXCLUDE
             )
     install(FILES ${NAP_ROOT}/cmake/app_creator/template/CMakeLists.txt DESTINATION ${DEST_DIR})
 
