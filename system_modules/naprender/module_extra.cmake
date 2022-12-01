@@ -157,7 +157,7 @@ else()
     if(NOT TARGET vulkansdk)
         find_package(vulkansdk REQUIRED)
     endif()
-    add_include_to_interface_target(mod_naprender ${VULKANSDK_INCLUDE_DIRS})
+    add_include_to_interface_target(naprender ${VULKANSDK_INCLUDE_DIRS})
 
     if(NOT TARGET assimp)
         find_package(assimp REQUIRED)
@@ -167,7 +167,7 @@ else()
     if(NOT TARGET FreeImage)
         find_package(FreeImage REQUIRED)
     endif()
-    add_include_to_interface_target(mod_naprender ${FREEIMAGE_INCLUDE_DIRS})
+    add_include_to_interface_target(naprender ${FREEIMAGE_INCLUDE_DIRS})
 
     # Add Vulkan library
     set(MODULE_NAME_EXTRA_LIBS vulkansdk)
@@ -205,7 +205,7 @@ else()
 
     # Package MoltenVK ICD file for packaged app on macOS
     if(APPLE)
-        install(FILES ${NAP_ROOT}/system_modules/mod_naprender/macos/MoltenVK_icd.json DESTINATION lib)
+        install(FILES ${NAP_ROOT}/system_modules/naprender/macos/MoltenVK_icd.json DESTINATION lib)
     endif()
 
     # Install thirdparty licenses into lib
@@ -215,5 +215,5 @@ else()
     install(FILES ${THIRDPARTY_DIR}/vulkansdk/LICENSE.txt DESTINATION licenses/vulkansdk)
 
     # Install data directory
-    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data DESTINATION system_modules/mod_naprender)
+    install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/data DESTINATION system_modules/naprender)
 endif()

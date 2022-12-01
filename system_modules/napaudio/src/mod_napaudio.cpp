@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_SERVICE_MODULE("mod_napaudio", "0.4.0", "nap::audio::AudioService")
+NAP_SERVICE_MODULE("napaudio", "0.4.0", "nap::audio::AudioService")

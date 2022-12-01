@@ -4,9 +4,9 @@
     "Title": "PaintObject",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napparametergui",
-        "mod_napcameracontrol"
+        "napapp",
+        "napparametergui",
+        "napcameracontrol"
     ],
     "Data": "data/paintobject.json",
     "ServiceConfig": "",

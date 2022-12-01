@@ -2,10 +2,10 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napscene",
-        "mod_napfont",
-        "mod_napinput",
-        "mod_napcolor"
+        "napscene",
+        "napfont",
+        "napinput",
+        "napcolor"
     ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/assimp/msvc/{BUILD_ARCH}/bin",

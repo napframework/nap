@@ -73,7 +73,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
                 DESTINATION thirdparty/mpg123/lib)
 
         foreach(build_type Release Debug)
-            ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/mod_napaudio/lib/${build_type}/libmod_napaudio.dylib
+            ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/napaudio/lib/${build_type}/libnapaudio.dylib
                                                    "@loader_path/../../../../thirdparty/mpg123/lib")
         endforeach()
     elseif(UNIX)
@@ -118,7 +118,7 @@ else()
     if(NOT TARGET moodycamel)
         find_package(moodycamel REQUIRED)
     endif()
-    add_include_to_interface_target(mod_napaudio ${MOODYCAMEL_INCLUDE_DIRS})
+    add_include_to_interface_target(napaudio ${MOODYCAMEL_INCLUDE_DIRS})
 
     if(NOT TARGET portaudio)
         find_package(portaudio REQUIRED)

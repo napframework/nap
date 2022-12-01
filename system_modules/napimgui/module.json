@@ -2,8 +2,8 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_naprender",
-        "mod_napsdlinput"
+        "naprender",
+        "napsdlinput"
     ],
     "WindowsDllSearchPaths": [],
     "DataSearchPaths": [

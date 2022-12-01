@@ -27,13 +27,13 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     endif()
 else()
     # Add GLM
-    add_include_to_interface_target(mod_napmath ${GLM_INCLUDE_DIRS})
+    add_include_to_interface_target(napmath ${GLM_INCLUDE_DIRS})
 
     # For backwards compatibility, force identity matrix on construction
     target_compile_definitions(${PROJECT_NAME} PUBLIC GLM_FORCE_CTOR_INIT)
 
     if(WIN32)
-        add_define_to_interface_target(mod_napmath NOMINMAX)
+        add_define_to_interface_target(napmath NOMINMAX)
     endif()
 
     # Install thirdparty licenses into packaged app

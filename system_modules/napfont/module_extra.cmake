@@ -38,7 +38,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     endif()
 else()
     set(MODULE_NAME_EXTRA_LIBS freetype)
-    add_include_to_interface_target(mod_napfont ${FREETYPE_INCLUDE_DIRS})
+    add_include_to_interface_target(napfont ${FREETYPE_INCLUDE_DIRS})
 
     if(WIN32)
         copy_freetype_dll()

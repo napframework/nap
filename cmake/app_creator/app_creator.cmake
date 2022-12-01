@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.18.4)
 
 # Verify we have a app name
-if (NOT DEFINED APP_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
+if (NOT DEFINED APP_NAME_INPUTCASE AND NOT DEFINED CMAKE_ONLY)
     message(FATAL_ERROR "No app name")
 endif()
 
@@ -18,8 +18,8 @@ if(DEFINED MODULE_LIST)
 endif ()
 
 # Set lowercase app name, used for a filenames etc
-if(DEFINED APP_NAME_PASCALCASE)
-    string(TOLOWER ${APP_NAME_PASCALCASE} APP_NAME_LOWERCASE)
+if(DEFINED APP_NAME_INPUTCASE)
+    string(TOLOWER ${APP_NAME_INPUTCASE} APP_NAME_LOWERCASE)
 endif()
 
 # Setup our paths
@@ -60,8 +60,8 @@ elseif(WIN32)
     if(NAP_BUILD_CONTEXT MATCHES "framework_release")
         configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/package.bat ${PROJECT_DIR}/package.bat @ONLY)
     endif()
-    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)    
-    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/build.bat ${PROJECT_DIR}/build.bat @ONLY)    
+    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/regenerate.bat ${PROJECT_DIR}/regenerate.bat @ONLY)
+    configure_file(${NAP_ROOT}/tools/buildsystem/app_dir_shortcuts/win64/build.bat ${PROJECT_DIR}/build.bat @ONLY)
 endif()
 
 # Make a shaders directory

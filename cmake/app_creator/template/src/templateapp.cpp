@@ -7,7 +7,7 @@
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@APP_NAME_PASCALCASE@App)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@APP_NAME_INPUTCASE@App)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -17,7 +17,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool @APP_NAME_PASCALCASE@App::init(utility::ErrorState& error)
+	bool @APP_NAME_INPUTCASE@App::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -54,7 +54,7 @@ namespace nap
 	
 	
 	// Called when the window is updating
-	void @APP_NAME_PASCALCASE@App::update(double deltaTime)
+	void @APP_NAME_INPUTCASE@App::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -63,7 +63,7 @@ namespace nap
 	
 	
 	// Called when the window is going to render
-	void @APP_NAME_PASCALCASE@App::render()
+	void @APP_NAME_INPUTCASE@App::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -103,13 +103,13 @@ namespace nap
 	}
 	
 
-	void @APP_NAME_PASCALCASE@App::windowMessageReceived(WindowEventPtr windowEvent)
+	void @APP_NAME_INPUTCASE@App::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void @APP_NAME_PASCALCASE@App::inputMessageReceived(InputEventPtr inputEvent)
+	void @APP_NAME_INPUTCASE@App::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -127,7 +127,7 @@ namespace nap
 	}
 
 	
-	int @APP_NAME_PASCALCASE@App::shutdown()
+	int @APP_NAME_INPUTCASE@App::shutdown()
 	{
 		return 0;
 	}

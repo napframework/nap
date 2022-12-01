@@ -4,10 +4,10 @@
     "Title": "Curveball",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_curveball",
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_napcameracontrol"
+        "napcurveball",
+        "napapp",
+        "napimgui",
+        "napcameracontrol"
     ],
     "Data": "data/curveball.json",
     "ServiceConfig": "",

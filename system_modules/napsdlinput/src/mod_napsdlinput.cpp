@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_SERVICE_MODULE("mod_napsdlinput", "0.2.0", "nap::SDLInputService")
+NAP_SERVICE_MODULE("napsdlinput", "0.2.0", "nap::SDLInputService")

@@ -4,9 +4,9 @@
     "Title": "licensecheck", 
     "Version": "1.0.0", 
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_naplicense"
+        "napapp",
+        "napimgui",
+        "naplicense"
     ],
     "Data": "data/license.json",
     "ServiceConfig": "",

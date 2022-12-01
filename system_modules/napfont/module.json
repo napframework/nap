@@ -2,7 +2,7 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napmath"
+        "napmath"
     ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Release",

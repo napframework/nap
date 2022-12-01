@@ -15,13 +15,13 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(FILES ${ASIO_DIST_FILES} DESTINATION thirdparty/asio)
     install(DIRECTORY ${ASIO_INCLUDE_DIR} DESTINATION thirdparty/asio)
 else()
-    add_include_to_interface_target(mod_napasio ${ASIO_INCLUDE_DIRS})
-    add_define_to_interface_target(mod_napasio ASIO_STANDALONE)
+    add_include_to_interface_target(napasio ${ASIO_INCLUDE_DIRS})
+    add_define_to_interface_target(napasio ASIO_STANDALONE)
 
     if(WIN32)
         # Define _WIN32_WINNT for ASIO
-        add_define_to_interface_target(mod_napasio WIN32_LEAN_AND_MEAN)
-        add_define_to_interface_target(mod_napasio _WIN32_WINNT=0x0A00)
+        add_define_to_interface_target(napasio WIN32_LEAN_AND_MEAN)
+        add_define_to_interface_target(napasio _WIN32_WINNT=0x0A00)
     endif()
 
     # Install asio license into packaged project

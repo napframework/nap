@@ -475,7 +475,7 @@ macro(add_app_module)
         target_include_directories(${PROJECT_NAME} PUBLIC ${CMAKE_CURRENT_SOURCE_DIR}/module/src)
 
         # Link
-        target_link_libraries(${PROJECT_NAME} mod_${PROJECT_NAME})
+        target_link_libraries(${PROJECT_NAME} nap${PROJECT_NAME})
 
         target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 
@@ -484,7 +484,7 @@ macro(add_app_module)
             add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:mod_${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:nap${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/mod_${PROJECT_NAME}.json
             )       
         endif()
@@ -860,8 +860,6 @@ macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
 
     # Loop for each search module
     foreach(SEARCH_MODULE ${SEARCH_MODULES})
-        # TODO Temp hack to remove mod_ suffix matching Source context NAP modules
-        string(SUBSTRING ${SEARCH_MODULE} 4 -1 hack_temp_mod_title)
         # Check for a NAP framework module
         if(EXISTS ${NAP_MODULES_DIR}/${SEARCH_MODULE})
             set(FOUND_PATH ${NAP_MODULES_DIR}/${SEARCH_MODULE})
@@ -869,14 +867,8 @@ macro(fetch_module_dependencies_for_modules SEARCH_MODULES TOTAL_MODULES)
         elseif(EXISTS ${USER_MODULES_DIR}/${SEARCH_MODULE})
             set(FOUND_PATH ${USER_MODULES_DIR}/${SEARCH_MODULE})
         # Check for an app module
-        elseif(${SEARCH_MODULE} STREQUAL mod_${PROJECT_NAME} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
+        elseif(${SEARCH_MODULE} STREQUAL nap${PROJECT_NAME} AND EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module)
             set(FOUND_PATH ${CMAKE_CURRENT_SOURCE_DIR}/module)
-        # TODO temporary - Check for a NAP framework module in Source context
-        elseif(EXISTS ${NAP_MODULES_DIR}/${hack_temp_mod_title})
-            if(${SEARCH_MODULE} MATCHES "^mod_${hack_temp_mod_title}$")
-                set(FOUND_PATH ${NAP_MODULES_DIR}/${hack_temp_mod_title})
-            endif()
-            # Check for a user module
         else()
             message(FATAL_ERROR "Could not find module ${SEARCH_MODULE}")
         endif()
@@ -1119,10 +1111,7 @@ function(directory_name_to_module_name)
         # Handle app module
         get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
         get_filename_component(module_name ${parent_dir} NAME)
-    endif()
-
-    if(NOT "${module_name}" MATCHES "^mod_")
-        set(module_name "mod_${module_name}")
+        set(module_name "nap${module_name}")
     endif()
     set(MODULE_NAME ${module_name} PARENT_SCOPE)
 endfunction()

@@ -425,7 +425,7 @@ macro(package_app_into_framework_release DEST_DIR)
                                               -DMODULE_CMAKE_OUTPATH=${CMAKE_INSTALL_PREFIX}/${DEST_DIR}/module/CMakeLists.txt
                                               -DAPP_MODULE=1
                                               -DCMAKE_ONLY=1
-                                              -DMODULE_NAME_PASCALCASE=Unused
+                                              -DUNPREFIXED_MODULE_NAME_INPUTCASE=Unused
                                               -P ${NAP_ROOT}/cmake/module_creator/module_creator.cmake
                                       RESULT_VARIABLE EXIT_CODE)
                       if(NOT \${EXIT_CODE} EQUAL 0)

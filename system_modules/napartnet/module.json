@@ -2,9 +2,9 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napasio",
-        "mod_napmath",
-        "mod_napscene"
+        "napasio",
+        "napmath",
+        "napscene"
     ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release",

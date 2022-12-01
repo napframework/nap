@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_SERVICE_MODULE("mod_naposc", "0.2.0", "nap::OSCService")
+NAP_SERVICE_MODULE("naposc", "0.2.0", "nap::OSCService")

@@ -21,9 +21,9 @@ else:
     BUILD_DIR = 'build_dir'
 
 def update_module_framework_release(module_name, build_type):
-    # If module name is prefixed with mod_ remove it
-    if module_name.startswith('mod_'):
-        module_name = module_name[4:]
+    # If module name isn't prefixed with nap prepend it
+    if not module_name.startswith('nap'):
+        module_name = f'nap{module_name}'
         
     # Find the module
     module_path = find_user_module(module_name)

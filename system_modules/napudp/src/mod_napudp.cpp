@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_SERVICE_MODULE("mod_napudp", "0.1.0", "nap::UDPService")
+NAP_SERVICE_MODULE("napudp", "0.1.0", "nap::UDPService")

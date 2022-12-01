@@ -4,9 +4,9 @@
     "Title": "CopyStamp",
     "Version": "0.3.0",
     "RequiredModules": [
-        "mod_copystamp",
-        "mod_napapp",
-        "mod_napcameracontrol"
+        "napcopystamp",
+        "napapp",
+        "napcameracontrol"
     ],
     "Data": "data/copystamp.json",
     "ServiceConfig": "",

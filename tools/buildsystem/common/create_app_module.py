@@ -14,21 +14,22 @@ ERROR_EXISTING_MODULE = 3
 
 def create_app_module(app_name, update_app_json, generate_solution, show_solution):
     # Ensure app exists
-    app_path = find_app(app_name, True) 
+    app_path = find_app(app_name, True)
     if app_path is None:
         print("Error: can't find app with name '%s'" % app_name)
         sys.exit(ERROR_MISSING_APP)
 
     # Load camelcase app name from app.json
-    module_name = get_camelcase_app_name(app_name)
+    app_name = get_camelcase_app_name(app_name)
+    prefixed_module_name = f'nap{app_name.lower()}'
 
     # Set our paths
-    module_path = os.path.join(app_path, 'module')    
+    module_path = os.path.join(app_path, 'module')
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-    user_module_path = os.path.abspath(os.path.join(nap_root, 'modules', 'mod_%s' % module_name.lower()))
-    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'system_modules', 'mod_%s' % module_name.lower()))
+    user_module_path = os.path.abspath(os.path.join(nap_root, 'modules', prefixed_module_name)
+    duplicate_module_path = os.path.abspath(os.path.join(nap_root, 'system_modules', prefixed_module_name))
 
     # Ensure app doesn't already have module
     if os.path.exists(module_path):
@@ -37,21 +38,21 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
 
     # Check for existing module with same name
     if os.path.exists(user_module_path):
-        print("Error: User module with name %s already exists" % module_name)
+        print("Error: User module with name %s already exists" % prefixed_module_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
     # Check for existing NAP module with same name
     if os.path.exists(duplicate_module_path):
-        print("Error: NAP module exists with same name '%s'" % module_name)
+        print("Error: NAP module exists with same name '%s'" % prefixed_module_name)
         sys.exit(ERROR_EXISTING_MODULE)
 
-    print("Creating app module mod_%s for app %s in %s" % (module_name.lower(), module_name, module_path))
+    print("Creating app module %s for app %s in %s" % (prefixed_module_name, app_name, module_path))
 
     # Create module from template
     cmake = get_cmake_path()
     cmd = [cmake, 
-           '-DMODULE_NAME_PASCALCASE=%s' % module_name, 
-           '-DAPP_MODULE=1', 
+           '-DUNPREFIXED_MODULE_NAME_INPUTCASE=%s' % app_name,
+           '-DAPP_MODULE=1',
            '-DAPP_MODULE_APP_PATH=%s' % app_path,
            '-P', 'module_creator.cmake'
            ]
@@ -61,7 +62,7 @@ def create_app_module(app_name, update_app_json, generate_solution, show_solutio
 
     if update_app_json:
         # Update app.json
-        add_module_to_app_json(app_name, 'mod_%s' % module_name.lower())
+        add_module_to_app_json(app_name, prefixed_module_name)
 
         # Solution regeneration
         if generate_solution:

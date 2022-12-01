@@ -4,12 +4,12 @@
     "Title": "Sequencer",
     "Version": "0.3.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napparametergui",
-        "mod_napsequence",
-        "mod_napsequencegui",
-        "mod_napsequenceaudio",
-        "mod_napsequenceaudiogui"
+        "napapp",
+        "napparametergui",
+        "napsequence",
+        "napsequencegui",
+        "napsequenceaudio",
+        "napsequenceaudiogui"
     ],
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json",

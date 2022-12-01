@@ -4,9 +4,9 @@
     "Title": "Example",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_example",
-        "mod_napapp",
-        "mod_napparametergui"
+        "napexample",
+        "napapp",
+        "napparametergui"
     ],
     "Data": "data/default.json",
     "ServiceConfig": "",

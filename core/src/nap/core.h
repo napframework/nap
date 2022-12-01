@@ -67,8 +67,8 @@ namespace nap
 	 *		"Version": "1.0.0",
 	 *		"RequiredModules": 
 	 *		[
-	 *			"mod_napapp",
-	 *			"mod_napimgui"
+	 *			"napapp",
+	 *			"napimgui"
 	 *		],
 	 *		"Data": "data/myapp.json",
 	 *		"ServiceConfig": "",

@@ -18,7 +18,7 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * SequenceServiceAudio registers all necessary factory functions for mod_sequenceaudio to SequenceService
+     * SequenceServiceAudio registers all necessary factory functions for napsequenceaudio to SequenceService
      */
     class NAPAPI SequenceServiceAudio final : public Service
     {

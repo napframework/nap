@@ -7,8 +7,8 @@
     "PathMapping": "cache/path_mapping.json",
     "ServiceConfig": "",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napimgui"
+        "napapp",
+        "napcameracontrol",
+        "napimgui"
     ]
 }

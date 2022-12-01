@@ -5,13 +5,13 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import find_app, validate_pascalcase_name, add_module_to_app_json, get_cmake_path, get_python_path, eprint, get_build_context, add_to_solution_info
+from nap_shared import find_app, add_module_to_app_json, get_cmake_path, get_python_path, eprint, get_build_context, add_to_solution_info
 
 # Default modules if none are specified
-DEFAULT_MODULE_LIST = "mod_napapp,mod_napcameracontrol,mod_napparametergui"
+DEFAULT_MODULE_LIST = "napapp,napcameracontrol,napparametergui"
 
 # Modules for app module
-APP_MODULE_MODULE_LIST = "mod_naprender,mod_napscene,mod_napparameter"
+APP_MODULE_MODULE_LIST = "naprender,napscene,napparameter"
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -38,7 +38,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
     # Create app from template
     input_module_list = module_list.lower().replace(',', ';')
     cmake = get_cmake_path()
-    cmd = [cmake, '-DAPP_NAME_PASCALCASE=%s' % app_name, '-DMODULE_LIST=%s' % input_module_list, '-P', 'app_creator.cmake']
+    cmd = [cmake, '-DAPP_NAME_INPUTCASE=%s' % app_name, '-DMODULE_LIST=%s' % input_module_list, '-P', 'app_creator.cmake']
     if call(cmd, cwd=cmake_template_dir) != 0:
         eprint("App creation failed")
         return ERROR_CMAKE_CREATION_FAILURE
@@ -48,9 +48,9 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
         # Create module from template
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
         input_module_list = APP_MODULE_MODULE_LIST.lower().replace(',', ';')
-        cmd = [cmake, 
-               '-DMODULE_NAME_PASCALCASE=%s' % app_name, 
-               '-DAPP_MODULE=1', 
+        cmd = [cmake,
+               '-DUNPREFIXED_MODULE_NAME_INPUTCASE=%s' % app_name,
+               '-DAPP_MODULE=1',
                '-DAPP_MODULE_APP_PATH=%s' % app_path,
                '-DAPP_MODULE_MODULE_LIST=%s' % input_module_list,
                '-P', 'module_creator.cmake'
@@ -60,7 +60,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
             sys.exit(ERROR_CMAKE_MODULE_CREATION_FAILURE)
 
         # Update app.json
-        add_module_to_app_json(app_name, 'mod_%s' % app_name.lower())
+        add_module_to_app_json(app_name, 'nap%s' % app_name.lower())
 
     if get_build_context() == 'source':
         print("Adding app to solution info")
@@ -76,7 +76,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
 
         cmd = [python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
         if not show_solution and not sys.platform.startswith('linux'):
-            cmd.append('--no-show')        
+            cmd.append('--no-show')
         if call(cmd, cwd=nap_root) != 0:
             eprint("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
@@ -87,27 +87,22 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("PASCAL_CASE_APP_NAME", type=str,
-                        help="The app name, in pascal case (eg. MyAppName)")
+    parser.add_argument("APP_NAME", type=str,
+                        help="The app name (eg. MyAppName)")
     parser.add_argument("-nm", "--no-module", action="store_true",
                         help="Don't include an app module")
     parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't generate the solution for the created app")       
-    if not sys.platform.startswith('linux'):    
+                        help="Don't generate the solution for the created app")
+    if not sys.platform.startswith('linux'):
         parser.add_argument("-ns", "--no-show", action="store_true",
                             help="Don't show the generated solution")
     args = parser.parse_args()
 
-    app_name = args.PASCAL_CASE_APP_NAME
+    app_name = args.APP_NAME
 
     # Validate module name only includes valid characters.  For now we're only allowing ASCII alphabet, numeric, underscore and dash.
     if re.match(r'^[A-Za-z0-9_-]+$', app_name) == None:
-        eprint("Error: Please specify app name in PascalCase (ie. with an uppercase letter for each word, starting with the first word) without any special characters")
-        sys.exit(ERROR_INVALID_INPUT)
-
-    # Validate app name is pascal case, only includes valid characters
-    if not validate_pascalcase_name(app_name):
-        eprint("Error: Please specify app name in PascalCase (ie. with an uppercase letter for each word, starting with the first word)")
+        eprint("Error: App name includes invalid characters. Letters (ASCII), numbers, underscores and dashes are accepted.")
         sys.exit(ERROR_INVALID_INPUT)
 
     show_solution = not sys.platform.startswith('linux') and not args.no_show

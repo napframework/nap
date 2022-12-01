@@ -4,8 +4,8 @@
     "Title": "Vinyl",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napimgui"
+        "napapp",
+        "napimgui"
     ],
     "Data": "data/vinyl.json",
     "ServiceConfig": "",

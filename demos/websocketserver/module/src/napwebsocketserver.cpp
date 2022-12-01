@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_oscmidi", "0.2.0")
+NAP_MODULE("napwebsocketserver", "0.2.0")

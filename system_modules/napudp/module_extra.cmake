@@ -11,8 +11,8 @@ else()
     endif()
 
     # Add asio to any target including this module
-    add_include_to_interface_target(mod_napudp ${ASIO_INCLUDE_DIRS})
-    add_define_to_interface_target(mod_napudp ASIO_STANDALONE)
+    add_include_to_interface_target(napudp ${ASIO_INCLUDE_DIRS})
+    add_define_to_interface_target(napudp ASIO_STANDALONE)
 
     # Install license into packaged project
     install(FILES ${THIRDPARTY_DIR}/asio/LICENSE_1_0.txt DESTINATION licenses/asio)

@@ -4,9 +4,9 @@
     "Title": "AudioPlayback",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napaudio",
-        "mod_napimgui"
+        "napapp",
+        "napaudio",
+        "napimgui"
     ],
     "Data": "data/audioplayback.json",
     "ServiceConfig": "config.json",

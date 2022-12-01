@@ -4,9 +4,9 @@
     "Title": "OscMidi",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_oscmidi",
-        "mod_napimgui"
+        "napapp",
+        "naposcmidi",
+        "napimgui"
     ],
     "Data": "data/oscmidi.json",
     "ServiceConfig": "",

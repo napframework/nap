@@ -4,9 +4,9 @@
     "Title": "ArtNetReceive",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_artnetreceive"
+        "napapp",
+        "napimgui",
+        "napartnetreceive"
     ],
     "Data": "data/artnetreceive.json",
     "ServiceConfig": "",

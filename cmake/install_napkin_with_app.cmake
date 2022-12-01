@@ -5,7 +5,7 @@ endif()
 include(${CMAKE_CURRENT_LIST_DIR}/macros_and_functions.cmake)
 
 # NAP modules which Napkin uses (as a minimum)
-set(NAPKIN_DEPENDENT_NAP_MODULES mod_napscene mod_napmath)
+set(NAPKIN_DEPENDENT_NAP_MODULES napscene napmath)
 
 # Qt frameworks which Napkin uses
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)

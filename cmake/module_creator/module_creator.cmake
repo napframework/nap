@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.18.4)
 
 # Verify we have a module name
-if (NOT DEFINED MODULE_NAME_PASCALCASE AND NOT DEFINED CMAKE_ONLY)
+if (NOT DEFINED UNPREFIXED_MODULE_NAME_INPUTCASE AND NOT DEFINED CMAKE_ONLY)
     message(FATAL_ERROR "No module name")
 endif()
 
 # Set lowercase module name, used for a filenames etc
-if(DEFINED MODULE_NAME_PASCALCASE)
-    string(TOLOWER ${MODULE_NAME_PASCALCASE} MODULE_NAME_LOWERCASE)
+if(DEFINED UNPREFIXED_MODULE_NAME_INPUTCASE)
+    string(TOLOWER ${UNPREFIXED_MODULE_NAME_INPUTCASE} UNPREFIXED_MODULE_NAME_LOWERCASE)
 endif()
 
 # Build modules for substitution into module.json
@@ -26,15 +26,13 @@ endif ()
 set(TEMPLATE_ROOT ${CMAKE_CURRENT_LIST_DIR}/template)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../..)
 if(DEFINED APP_MODULE)
-    set(MODULE_NAME_POPULATOR "set(MODULE_NAME \"mod_\$\{PROJECT_NAME\}\")")
     if(NOT DEFINED MODULE_DIR)
         set(MODULE_DIR ${APP_MODULE_APP_PATH}/module)
     endif()
     set(PATH_FROM_MODULE_TO_NAP_ROOT ../../..)
 else()
-    set(MODULE_NAME_POPULATOR "get_filename_component(MODULE_NAME \$\{CMAKE_CURRENT_SOURCE_DIR\} NAME)")
     if(NOT DEFINED MODULE_DIR)
-        set(MODULE_DIR ${NAP_ROOT}/modules/mod_${MODULE_NAME_LOWERCASE})
+        set(MODULE_DIR ${NAP_ROOT}/modules/nap${UNPREFIXED_MODULE_NAME_LOWERCASE})
     endif()
     set(PATH_FROM_MODULE_TO_NAP_ROOT ../..)
 endif()
@@ -50,9 +48,9 @@ if(DEFINED CMAKE_ONLY)
     return()
 endif()
 
-configure_file(${TEMPLATE_ROOT}/src/mod_template.cpp ${MODULE_DIR}/src/mod_${MODULE_NAME_LOWERCASE}.cpp @ONLY)
-configure_file(${TEMPLATE_ROOT}/src/templateservice.cpp ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.cpp @ONLY)
-configure_file(${TEMPLATE_ROOT}/src/templateservice.h ${MODULE_DIR}/src/${MODULE_NAME_LOWERCASE}service.h @ONLY)
+configure_file(${TEMPLATE_ROOT}/src/naptemplate.cpp ${MODULE_DIR}/src/nap${UNPREFIXED_MODULE_NAME_LOWERCASE}.cpp @ONLY)
+configure_file(${TEMPLATE_ROOT}/src/templateservice.cpp ${MODULE_DIR}/src/${UNPREFIXED_MODULE_NAME_LOWERCASE}service.cpp @ONLY)
+configure_file(${TEMPLATE_ROOT}/src/templateservice.h ${MODULE_DIR}/src/${UNPREFIXED_MODULE_NAME_LOWERCASE}service.h @ONLY)
 configure_file(${TEMPLATE_ROOT}/module.json ${MODULE_DIR}/module.json @ONLY)
 
 # Create our module directory shortcuts

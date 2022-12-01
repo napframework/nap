@@ -31,7 +31,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                                   -add_rpath
                                                   @loader_path/../../../../thirdparty/yoctopuce/bin
-                                                  ${CMAKE_INSTALL_PREFIX}/modules/mod_napyoctopuce/lib/${build_type}/mod_napyoctopuce.dylib
+                                                  ${CMAKE_INSTALL_PREFIX}/modules/napyoctopuce/lib/${build_type}/napyoctopuce.dylib
                                           ERROR_QUIET
                                           )")
         endforeach()    
@@ -41,7 +41,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 else()
     set(MODULE_NAME_EXTRA_LIBS yoctopuce)
 
-    add_include_to_interface_target(mod_napyoctopuce ${YOCTOPUCE_INCLUDE_DIRS})
+    add_include_to_interface_target(napyoctopuce ${YOCTOPUCE_INCLUDE_DIRS})
 
     if(WIN32)
         # Add post-build step to set copy yoctopuce to bin

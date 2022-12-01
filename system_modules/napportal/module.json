@@ -2,9 +2,9 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_napapiwebsocket",
-        "mod_napparameter",
-        "mod_napcalendar"
+        "napapiwebsocket",
+        "napparameter",
+        "napcalendar"
     ],
     "WindowsDllSearchPaths": []
 }

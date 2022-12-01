@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_napsvg", "0.2.0")
+NAP_MODULE("napsvg", "0.2.0")

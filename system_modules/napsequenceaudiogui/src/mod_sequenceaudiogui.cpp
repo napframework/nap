@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_SERVICE_MODULE("mod_napsequenceaudiogui", "0.2.0", "nap::SequenceAudioGUIService")
+NAP_SERVICE_MODULE("napsequenceaudiogui", "0.2.0", "nap::SequenceAudioGUIService")

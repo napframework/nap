@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_napasio", "0.1.0")
+NAP_MODULE("napasio", "0.1.0")

@@ -5,12 +5,12 @@
 
 namespace nap
 {
-	class NAPAPI @MODULE_NAME_PASCALCASE@Service : public Service
+	class NAPAPI @UNPREFIXED_MODULE_NAME_INPUTCASE@Service : public Service
 	{
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
-		@MODULE_NAME_PASCALCASE@Service(ServiceConfiguration* configuration) : Service(configuration)	{ }
+		@UNPREFIXED_MODULE_NAME_INPUTCASE@Service(ServiceConfiguration* configuration) : Service(configuration)	{ }
 
 		/**
 		 * Use this call to register service dependencies

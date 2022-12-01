@@ -7,8 +7,8 @@
     "PathMapping": "cache/path_mapping.json",
     "ServiceConfig": "",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napparametergui",
-        "mod_napportal"
+        "napapp",
+        "napparametergui",
+        "napportal"
     ]
 }

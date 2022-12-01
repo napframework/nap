@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_MODULE("mod_napcameracontrol", "0.2.0")
+NAP_MODULE("napcameracontrol", "0.2.0")

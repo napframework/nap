@@ -43,11 +43,11 @@ add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES
 set_target_properties(${NAPKIN_LIB} PROPERTIES FOLDER Tools)
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_napcolor mod_napsdlinput mod_napapp mod_napparameter mod_napinput)
+set(NAP_MODULES_DEPENDENCIES napscene napmath napcolor napsdlinput napapp napparameter napinput)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
-    list(APPEND NAP_MODULES_DEPENDENCIES mod_nappython)
+    list(APPEND NAP_MODULES_DEPENDENCIES nappython)
 endif()
 
 # Add module lib dependencies

@@ -2098,7 +2098,7 @@ def rename_qt_dir(warnings):
 
 def patch_audio_service_configuration(app_dir, output_dir, app_name, nap_framework_full_path):
     """Patches audio service configuration to have zero input channels on any app
-    using mod_napaudio
+    using napaudio
 
     Parameters
     ----------
@@ -2113,7 +2113,7 @@ def patch_audio_service_configuration(app_dir, output_dir, app_name, nap_framewo
     """
 
     modules = get_app_full_module_requirements(nap_framework_full_path, app_name, app_dir)
-    if not 'mod_napaudio' in modules:
+    if not 'napaudio' in modules:
         return
 
     # Create or patch the config.json
@@ -2254,8 +2254,8 @@ def create_fake_apps_for_modules_without_demos(nap_framework_full_path, testing_
                 with open(app_info_path, 'r') as f:
                     app_info = json.load(f)
             if not app_info is None:
-                if 'mod_napaudio' in app_info['RequiredModules']:
-                    app_info['RequiredModules'].remove('mod_napaudio')
+                if 'napaudio' in app_info['RequiredModules']:
+                    app_info['RequiredModules'].remove('napaudio')
                 app_info['RequiredModules'].append(module)
 
                 with open(app_info_path, 'w') as f:

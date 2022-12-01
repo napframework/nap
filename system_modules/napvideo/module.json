@@ -2,8 +2,8 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_naprender",
-        "mod_napaudio"
+        "naprender",
+        "napaudio"
     ],
     "WindowsDllSearchPaths": [
         "{ROOT}/../thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin",

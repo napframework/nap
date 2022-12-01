@@ -6,10 +6,10 @@
     "Data": "data/computeflocking.json",
     "PathMapping": "cache/path_mapping.json",
     "RequiredModules": [
-        "mod_computeflocking",
-        "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napimgui",
-        "mod_napparametergui"
+        "napcomputeflocking",
+        "napapp",
+        "napcameracontrol",
+        "napimgui",
+        "napparametergui"
     ]
 }

@@ -21,7 +21,7 @@ namespace nap
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class @APP_NAME_PASCALCASE@App : public App
+	class @APP_NAME_INPUTCASE@App : public App
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -29,7 +29,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		@APP_NAME_PASCALCASE@App(nap::Core& core) : App(core) { }
+		@APP_NAME_INPUTCASE@App(nap::Core& core) : App(core) { }
 		
 		/**
 		 * Initialize all the services and app specific data structures

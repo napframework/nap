@@ -4,10 +4,10 @@
     "Title": "RenderTest",
     "Version": "0.1.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_nappython",
-        "mod_napcameracontrol",
-        "mod_napimgui"
+        "napapp",
+        "nappython",
+        "napcameracontrol",
+        "napimgui"
     ],
     "Data": "data/render.json",
     "ServiceConfig": "",

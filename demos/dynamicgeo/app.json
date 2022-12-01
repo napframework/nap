@@ -4,10 +4,10 @@
     "Title": "DynamicGeo",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_dynamicgeo",
-        "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napimgui"
+        "napdynamicgeo",
+        "napapp",
+        "napcameracontrol",
+        "napimgui"
     ],
     "Data": "data/dynamicgeo.json",
     "ServiceConfig": "",

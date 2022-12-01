@@ -4,10 +4,10 @@
     "Title": "WebSocketServer",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_websocketserver",
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_napcameracontrol"
+        "napwebsocketserver",
+        "napapp",
+        "napimgui",
+        "napcameracontrol"
     ],
     "Data": "data/websocketserver.json",
     "ServiceConfig": "",

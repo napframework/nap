@@ -28,12 +28,12 @@ else()
     if(WIN32)
          set(MODULE_NAME_EXTRA_LIBS "${MODULE_NAME_EXTRA_LIBS}" winmm)
     endif()
-    add_include_to_interface_target(mod_napmidi ${RTMIDI_INCLUDE_DIR})
+    add_include_to_interface_target(napmidi ${RTMIDI_INCLUDE_DIR})
 
     if(NOT TARGET moodycamel)
         find_package(moodycamel REQUIRED)
     endif()
-    add_include_to_interface_target(mod_napmidi ${MOODYCAMEL_INCLUDE_DIRS})
+    add_include_to_interface_target(napmidi ${MOODYCAMEL_INCLUDE_DIRS})
 
 
     # Install rtmidi lib into packaged app

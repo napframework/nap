@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_videomodulation", "0.2.0")
+NAP_MODULE("napdynamicgeo", "0.2.0")

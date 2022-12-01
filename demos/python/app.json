@@ -4,9 +4,9 @@
     "Title": "Python",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_nappython",
-        "mod_napimgui"
+        "napapp",
+        "nappython",
+        "napimgui"
     ],
     "Data": "data/python.json",
     "ServiceConfig": "",

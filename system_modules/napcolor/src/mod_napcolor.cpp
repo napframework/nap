@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_napcolor", "0.1.0")
+NAP_MODULE("napcolor", "0.1.0")

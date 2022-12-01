@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_SERVICE_MODULE("mod_naplicense", "0.1.0", "nap::LicenseService")
+NAP_SERVICE_MODULE("naplicense", "0.1.0", "nap::LicenseService")

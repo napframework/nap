@@ -4,10 +4,10 @@
     "Title": "VideoModulation",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_videomodulation",
-        "mod_napapp",
-        "mod_napimgui",
-        "mod_napcameracontrol"
+        "napvideomodulation",
+        "napapp",
+        "napimgui",
+        "napcameracontrol"
     ],
     "Data": "data/videomodulation.json",
     "ServiceConfig": "",

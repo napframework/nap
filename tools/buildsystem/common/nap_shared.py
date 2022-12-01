@@ -65,22 +65,6 @@ def find_app(app_name, silent_failure=False, silent_success=False):
         print("Couldn't find app, demo or example with name '%s'" % app_name)
     return None
 
-def validate_pascalcase_name(module_name):
-    """Super basic pascal case validation of name"""
-    # Check we're not a single char
-    if len(module_name) < 2:
-        return False
-
-    # Check our first character is uppercase
-    if (not module_name[0].isalpha()) or module_name[0].islower():
-        return False
-
-    # Check we're not all uppercase
-    if module_name.isupper():
-        return False
-
-    return True
-
 def read_console_char():
     """Pause for input"""
     if sys.platform == 'win32':
@@ -187,7 +171,7 @@ def get_app_full_module_requirements(framework_root, app_name, app_path):
         loop_modules = []
         for search_module in new_modules:
             found_module_path = None
-            if search_module == 'mod_{}'.format(app_name):
+            if search_module == 'nap{}'.format(app_name):
                 found_module_path = os.path.join(app_path, 'module')
             else:
                 for module_source in ('system_modules', 'modules'):
@@ -205,7 +189,7 @@ def get_app_full_module_requirements(framework_root, app_name, app_path):
                                 module_name = module_name.encode('utf8')
                             loop_modules.append(module_name)
             else:
-                print("{} not found".format(search_module))
+                print("get_app_full_module_requirements: {} not found".format(search_module))
         new_modules = loop_modules
         modules.extend(new_modules)
 

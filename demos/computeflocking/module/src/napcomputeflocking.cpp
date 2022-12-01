@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("mod_dynamicgeo", "0.2.0")
+NAP_MODULE("napcomputeflocking", "1.0.0")

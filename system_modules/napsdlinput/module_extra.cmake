@@ -23,7 +23,7 @@ else()
         set(ENV{SDL2DIR} ${NAP_ROOT}/thirdparty/SDL2/)
         find_package(SDL2 REQUIRED)
     endif()
-    add_include_to_interface_target(mod_napsdlinput ${SDL2_INCLUDE_DIR})
+    add_include_to_interface_target(napsdlinput ${SDL2_INCLUDE_DIR})
 
     if (WIN32)
         # Copy over DLL post-build

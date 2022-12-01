@@ -4,10 +4,10 @@
     "Title": "HeightMap",
     "Version": "1.0.0",
     "RequiredModules": [
-        "mod_heightmap",
-        "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napimgui"
+        "napheightmap",
+        "napapp",
+        "napcameracontrol",
+        "napimgui"
     ],
     "Data": "data/heightmap.json",
     "ServiceConfig": "",
