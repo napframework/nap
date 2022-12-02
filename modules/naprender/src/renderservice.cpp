@@ -50,21 +50,17 @@ namespace nap
 		RTTI_ENABLE(nap::Resource)
 	public:
 		WindowCache() = default;
-		WindowCache(const nap::RenderWindow& window, const nap::Display& display);
+		WindowCache(const nap::RenderWindow& window);
 
 		glm::ivec2 mPosition = {};					///< Property: 'Position' Position of window
 		glm::ivec2 mSize = {};						///< Property: 'Size' Size of window
-		std::string mDisplay;						///< Property: 'Display' Name of the display associated with the window
-		int mIndex = 0;								///< Property: 'Index' Index of the display 
 	};
 
-	WindowCache::WindowCache(const nap::RenderWindow& window, const nap::Display& display)
+	WindowCache::WindowCache(const nap::RenderWindow& window)
 	{
 		mID = window.mID;
 		mPosition = window.getPosition();
 		mSize = window.getSize();
-		mDisplay = display.getName();
-		mIndex = display.getIndex();
 	}
 
 
@@ -117,8 +113,6 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::WindowCache)
 	RTTI_PROPERTY("Position",					&nap::WindowCache::mPosition,									nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Size",						&nap::WindowCache::mSize,										nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Display",					&nap::WindowCache::mDisplay,									nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",						&nap::WindowCache::mIndex,										nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 namespace nap
@@ -1693,13 +1687,8 @@ namespace nap
 
 		for (const auto& window : mWindows)
 		{
-			// Find display that shows window
-			const auto* display = findDisplay(*window);
-			if (display == nullptr)
-				continue;
-
 			// Create cache
-			auto new_cache = std::make_unique<WindowCache>(*window, *display);
+			auto new_cache = std::make_unique<WindowCache>(*window);
 			resources.emplace_back(new_cache.get());
 			caches.emplace_back(std::move(new_cache));
 		}
@@ -1767,34 +1756,29 @@ namespace nap
 			if (!object->get_type().is_derived_from(RTTI_OF(WindowCache)))
 				continue;
 
-			// Check if IDs match, if they do, find the display to position on
-			// The display name and index must match, subsequently: the cached coordinate must fit within display bounds
-			// Otherwise the configuration changed and we might position it somewhere unreachable.
-			// If that's the case we don't attempt to restore it at all
+			// Check if IDs match
 			const WindowCache* cache = static_cast<const WindowCache*>(object.get());
-			if (window.mID == cache->mID)
-			{
-				// Now we have the cache, find the display to position it on.
-				for (const auto& display : mDisplays)
-				{
-					// Name match
-					if (cache->mDisplay != display.getName() || cache->mIndex != display.getIndex())
-						continue;
+			if(window.mID != cache->mID)
+				continue;
 
-					// Check if coordinates are within display bounds
-					glm::ivec2 min, max;
-					SDL::getDisplayBounds(display.getIndex(), min, max);
-					if (cache->mPosition.x >= min.x && cache->mPosition.y >= min.y &&
-						cache->mPosition.x < max.x && cache->mPosition.y < max.y)
-					{
-						window.setPosition(cache->mPosition);
-						window.setSize(cache->mSize);
-					}
+			// If ID matches, ensure the window doesn't fall out of display bounds.
+			// If window falls within bounds, restore.
+			for (const auto& display : mDisplays)
+			{
+				auto& min = display.getMin();
+				auto& max = display.getMax();
+				if (cache->mPosition.x >= min.x && cache->mPosition.x < max.x &&
+					cache->mPosition.y >= min.y && cache->mPosition.y < max.y)
+				{
+					window.setPosition(cache->mPosition);
+					window.setSize(cache->mSize);
 					break;
 				}
 			}
+			break;
 		}
 	}
+
 
 	void RenderService::waitForFence(int frameIndex)
 	{
