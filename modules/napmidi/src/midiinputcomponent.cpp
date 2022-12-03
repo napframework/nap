@@ -16,7 +16,13 @@ RTTI_BEGIN_CLASS(nap::MidiInputComponent)
     RTTI_PROPERTY("Ports", &nap::MidiInputComponent::mPorts, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Channels", &nap::MidiInputComponent::mChannels, nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Numbers", &nap::MidiInputComponent::mNumbers, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Types", &nap::MidiInputComponent::mTypes, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("NoteOn", &nap::MidiInputComponent::mNoteOn, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("NoteOff", &nap::MidiInputComponent::mNoteOff, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Aftertouch", &nap::MidiInputComponent::mAfterTouch, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("ControlChange", &nap::MidiInputComponent::mControlChange, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("ProgramChange", &nap::MidiInputComponent::mProgramChange, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("ChannelPressure", &nap::MidiInputComponent::mChannelPressure, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("PitchBend", &nap::MidiInputComponent::mPitchBend, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiInputComponentInstance)
@@ -39,8 +45,23 @@ namespace nap
         mPorts = resource->mPorts;
         mChannels = resource->mChannels;
         mNumbers = resource->mNumbers;
-        mTypes = resource->mTypes;
-        
+
+        // copy event type filtering
+        if (resource->mNoteOn)
+            mTypes.push_back(MidiEvent::Type::noteOn);
+        if (resource->mNoteOff)
+            mTypes.push_back(MidiEvent::Type::noteOff);
+        if (resource->mAfterTouch)
+            mTypes.push_back(MidiEvent::Type::afterTouch);
+        if (resource->mControlChange)
+            mTypes.push_back(MidiEvent::Type::controlChange);
+        if (resource->mProgramChange)
+            mTypes.push_back(MidiEvent::Type::programChange);
+        if (resource->mChannelPressure)
+            mTypes.push_back(MidiEvent::Type::channelPressure);
+        if (resource->mPitchBend)
+            mTypes.push_back(MidiEvent::Type::pitchBend);
+
         return true;
     }
     
