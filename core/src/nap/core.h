@@ -298,9 +298,10 @@ namespace nap
  		 * Writes a 'config.json' file, that contains all currently loaded service configurations
  		 * @param path the absolute path of the config file that will be written.
  		 * @param errorState contains the error if the operation fails.
+ 		 * @param linkToProjectInfo If set to true the new written file will be linked in the current project info
  		 * @return true on success.
 		 */
-		bool writeConfigFile(const std::string& path, utility::ErrorState& errorState);
+		bool writeConfigFile(const std::string& path, utility::ErrorState& errorState, bool linkToProjectInfo = true);
 
 		/**
 		 * Returns all available and used service configurations.

@@ -538,7 +538,7 @@ namespace nap
 	}
 
 
-    bool Core::writeConfigFile(const std::string& path, utility::ErrorState& errorState)
+    bool Core::writeConfigFile(const std::string& path, utility::ErrorState& errorState, bool linkToProjectInfo)
     {
         // Write all available service configurations to a vector
         std::vector<rtti::Object*> objects;
@@ -565,6 +565,12 @@ namespace nap
         configFile << json << std::endl;
         configFile.close();
         nap::Logger::info("Wrote configuration to: %s", path.c_str());
+
+        if (linkToProjectInfo && mProjectInfo != nullptr)
+        {
+            if (!mProjectInfo->hasServiceConfigFile())
+                mProjectInfo->mServiceConfigFilename = path;
+        }
 
         return true;
     }
