@@ -555,21 +555,39 @@ namespace nap
         }
 
         // Serialize the configurations to json
-        rtti::JSONWriter writer;
-        if (!serializeObjects(objects, writer, errorState))
-            return false;
-        std::string json = writer.GetJSON();
+        {
+            rtti::JSONWriter writer;
+            if (!serializeObjects(objects, writer, errorState))
+                return false;
+            std::string json = writer.GetJSON();
 
-        std::ofstream configFile;
-        configFile.open(path);
-        configFile << json << std::endl;
-        configFile.close();
-        nap::Logger::info("Wrote configuration to: %s", path.c_str());
+            std::ofstream configFile;
+            configFile.open(path);
+            configFile << json << std::endl;
+            configFile.close();
+            nap::Logger::info("Wrote configuration to: %s", path.c_str());
+        }
 
         if (linkToProjectInfo && mProjectInfo != nullptr)
         {
-            if (!mProjectInfo->hasServiceConfigFile())
-                mProjectInfo->mServiceConfigFilename = path;
+            // Link the config file to the project info
+            mProjectInfo->mServiceConfigFilename = path;
+
+            // Serialize the project info to the project.json file.
+            std::string projectInfoFilePath;
+            if (!findProjectInfoFile(projectInfoFilePath))
+            {
+                errorState.fail("Failed to locate project info file");
+                return false;
+            }
+            rtti::JSONWriter projectInfoWriter;
+            if (!serializeObjects({ mProjectInfo.get() }, projectInfoWriter, errorState))
+                return false;
+            std::string projectInfoJson = projectInfoWriter.GetJSON();
+            std::ofstream projectInfoFile;
+            projectInfoFile.open(projectInfoFilePath);
+            projectInfoFile << projectInfoJson << std::endl;
+            projectInfoFile.close();
         }
 
         return true;
