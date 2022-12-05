@@ -165,6 +165,12 @@ namespace nap
 		void NAPAPI showCursor();
 
 		/**
+		 * Returns the mouse cursor position relative to the focus window for the currently selected mouse.
+		 * @return cursor position relative to the focus window
+		 */
+		glm::ivec2 NAPAPI getCursorPosition();
+
+		/**
 		 * Initializes SDL video system.
 		 * Call this before creating any windows or render contexts!
 		 * @return if the system initialized correctly or not

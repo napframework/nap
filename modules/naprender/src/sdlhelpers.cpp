@@ -201,6 +201,14 @@ namespace nap
 		}
 
 
+		glm::ivec2 getCursorPosition()
+		{
+			glm::ivec2 pos;
+			SDL_GetMouseState(&pos.x, &pos.y);
+			return pos;
+		}
+
+
 		bool getFullscreen(SDL_Window* window)
 		{
 			uint32 flags = SDL_GetWindowFlags(window);
