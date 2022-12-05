@@ -17,10 +17,12 @@ QModelIndex PathBrowserModel::index(int row, int column, const QModelIndex& pare
 	return createIndex(row, column, mCache[parentPath][row].get());
 }
 
+
 QModelIndex PathBrowserModel::parent(const QModelIndex& child) const
 {
 	return QModelIndex();
 }
+
 
 int PathBrowserModel::rowCount(const QModelIndex& parent) const
 {
@@ -41,10 +43,12 @@ int PathBrowserModel::rowCount(const QModelIndex& parent) const
 	return mCache[parentPath].size();
 }
 
+
 int PathBrowserModel::columnCount(const QModelIndex& parent) const
 {
 	return 2;
 }
+
 
 QVariant PathBrowserModel::data(const QModelIndex& index, int role) const
 {
@@ -65,11 +69,13 @@ QVariant PathBrowserModel::data(const QModelIndex& index, int role) const
 	return QVariant();
 }
 
+
 void PathBrowserModel::clear()
 {
 	mCache.clear();
 	mRootPaths = {};
 }
+
 
 void PathBrowserModel::addPath(const PropertyPath& path)
 {
@@ -91,16 +97,17 @@ PathBrowserPanel::PathBrowserPanel()
 	connect(&AppContext::get(), &AppContext::documentChanged, [this](Document* doc)
 	{
 		mModel.clear();
-		if (!doc)
+		if (doc == nullptr)
 			return;
 
-		for (auto& obj : doc->getObjects())
+		const auto& objects = doc->getObjects();
+		for (auto& obj : objects)
 		{
-			if (obj->get_type().is_derived_from<nap::Component>())
+			if (obj.second->get_type().is_derived_from<nap::Component>())
 				continue;
-			if (obj->get_type().is_derived_from<nap::InstancePropertyValue>())
+
+			if (obj.second->get_type().is_derived_from<nap::InstancePropertyValue>())
 				continue;
-//			mModel.addPath({*obj});
 		}
 	});
 

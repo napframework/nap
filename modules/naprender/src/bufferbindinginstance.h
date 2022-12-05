@@ -119,7 +119,7 @@ namespace nap
 		friend class BaseMaterialInstance;
 
 		/**
-		 * Creates a buffer binding instance from a uniform declaration and returns a unique ptr to if successful. Returns nullptr otherwise.
+		 * Creates a buffer binding instance from a buffer declaration and returns a unique ptr to if successful. Returns nullptr otherwise.
 		 * @param declaration the shader variable declaration.
 		 * @param binding the binding resource to create the instance from. Is allowed to be nullptr, in which case the instance will have no buffer.
 		 * @param bindingChangedCallback callback function that is fired each time the binding instance is updated.
@@ -127,6 +127,18 @@ namespace nap
 		 * @return a unique ptr to the new buffer binding instance. nullptr if the operation has failed.
 		 */
 		static std::unique_ptr<BufferBindingInstance> createBufferBindingInstanceFromDeclaration(const BufferObjectDeclaration& declaration, const BufferBinding* binding, BufferBindingChangedCallback bindingChangedCallback, utility::ErrorState& errorState);
+
+		/**
+		 * Helper function for BufferBindingInstance::createBufferBindingInstanceFromDeclaration.
+		 * Creates a buffer binding instance from a buffer declaration and returns a unique ptr to if successful. Returns nullptr otherwise.
+		 * @param declaration the shader variable declaration.
+		 * @param binding the binding resource to create the instance from. Is allowed to be nullptr, in which case the instance will have no buffer.
+		 * @param bindingChangedCallback callback function that is fired each time the binding instance is updated.
+		 * @param errorState contains the error if the buffer binding creation fails.
+		 * @return a unique ptr to the new buffer binding instance. nullptr if the operation has failed.
+		 */
+		template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
+		static std::unique_ptr<INSTANCE_TYPE> createBufferBindingInstance(const DECLARATION_TYPE& declaration, const BufferBinding* binding,  BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState);
 	};
 
 
@@ -248,7 +260,6 @@ namespace nap
 
 	protected:
 		const ShaderVariableValueArrayDeclaration*			mDeclaration;
-		BufferBindingChangedCallback						mBindingChangedCallback;
 	};
 
 
@@ -286,7 +297,7 @@ namespace nap
 		 * Updates thebuffer from a resource.
 		 * @param resource resource to set buffer from.
 		 */
-		void setBuffer(const TypedBufferBindingNumeric<T>& resource)			{ BufferBindingInstance::mBuffer = resource.mBuffer.get(); }
+		void setBuffer(const TypedBufferBindingNumeric<T>& resource);
 
 		/**
 		 * @return buffer
@@ -326,10 +337,18 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<class T>
-	void nap::TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
+	void TypedBufferBindingNumericInstance<T>::setBuffer(TypedGPUBufferNumeric<T>& buffer)
 	{
 		assert(buffer.getSize() == mDeclaration->mSize);
 		BufferBindingInstance::mBuffer = &buffer;
+		raiseChanged();
+	}
+
+	template<class T>
+	void TypedBufferBindingNumericInstance<T>::setBuffer(const TypedBufferBindingNumeric<T>& resource)
+	{
+		assert(resource.mBuffer.getSize() == mDeclaration->mSize);
+		BufferBindingInstance::mBuffer = resource.mBuffer.get();
 		raiseChanged();
 	}
 }

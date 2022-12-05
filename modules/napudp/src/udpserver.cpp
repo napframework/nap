@@ -126,7 +126,7 @@ namespace nap
 	}
 
 
-	void UDPServer::process()
+	void UDPServer::onProcess()
 	{
 		asio::error_code asio_error;
 		size_t available_bytes = mImpl->mSocket.available(asio_error);

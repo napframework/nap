@@ -250,17 +250,18 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 std::string AppContext::documentToString() const
 {
-	ObjectList objects;
-	for (auto& ob : getDocument()->getObjects())
+	ObjectList ser_objects;
+	const auto& doc_objects = getDocument()->getObjects();
+	for (auto& obj : doc_objects)
 	{
-		if (ob->get_type().is_derived_from<nap::InstancePropertyValue>())
-			continue;
-		objects.emplace_back(ob.get());
+		if (!obj.second->get_type().is_derived_from<nap::InstancePropertyValue>())
+		{
+			ser_objects.emplace_back(obj.second.get());
+		}
 	}
 
-	JSONWriter writer;
-	ErrorState err;
-	if (!serializeObjects(objects, writer, err))
+	JSONWriter writer; ErrorState err;
+	if (!serializeObjects(ser_objects, writer, err))
 	{
 		nap::Logger::fatal(err.toString());
 		return {};
@@ -333,6 +334,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 		connect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
 		connect(doc, &Document::objectReparented, this, &AppContext::objectReparented);
+		connect(doc, &Document::objectRenamed, this, &AppContext::objectRenamed);
 		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
@@ -348,6 +350,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 		disconnect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
 		disconnect(doc, &Document::objectReparented, this, &AppContext::objectReparented);
+		disconnect(doc, &Document::objectRenamed, this, &AppContext::objectRenamed);
 		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		disconnect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);

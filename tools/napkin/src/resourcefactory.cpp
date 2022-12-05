@@ -40,7 +40,14 @@ QIcon napkin::Icon::inverted() const
 
 const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::Object& object) const
 {
-	const static std::vector<std::pair<nap::rtti::TypeInfo, QString>> icon_map = {
+	return getIcon(object.get_type());
+}
+
+
+const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::TypeInfo& type) const
+{
+	const static std::vector<std::pair<nap::rtti::TypeInfo, QString>> icon_map =
+	{
 		{ RTTI_OF(Entity),		QRC_ICONS_ENTITY },
 		{ RTTI_OF(Component),	QRC_ICONS_COMPONENT },
 		{ RTTI_OF(Scene),		QRC_ICONS_SCENE },
@@ -53,8 +60,7 @@ const QIcon napkin::ResourceFactory::getIcon(const nap::rtti::Object& object) co
 	// TODO: Right now order of declaration is important
 	for (auto entry : icon_map)
 	{
-		rttr::type obj_type = object.get_type();
-		if (obj_type.is_derived_from(entry.first))
+		if (type.get_raw_type().is_derived_from(entry.first))
 			return getIcon(entry.second);
 	}
 	return QIcon();

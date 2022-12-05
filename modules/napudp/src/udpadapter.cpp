@@ -44,17 +44,21 @@ namespace nap
             return false;
 
         mThread->registerAdapter(this);
-
         return true;
     }
 
 
     void UDPAdapter::stop()
     {
-        onStop();
-
         mThread->removeAdapter(this);
-    };
+        onStop();
+    }
+
+
+    void UDPAdapter::process()
+    {
+        onProcess();
+    }
 
 
     bool UDPAdapter::handleAsioError(const std::error_code& errorCode, utility::ErrorState& errorState, bool& success)

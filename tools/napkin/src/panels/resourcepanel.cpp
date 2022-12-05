@@ -65,7 +65,7 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 		return false;
 
 	// Otherwise sort default
-	return model->data(left, Qt::ItemDataRole::DisplayRole) < model->data(right, Qt::ItemDataRole::DisplayRole);
+    return l_item->text() < r_item->text();
 }
 
 
@@ -106,7 +106,7 @@ void napkin::ResourceModel::populate()
 {
 	auto doc = AppContext::get().getDocument();
 	assert(doc != nullptr);
-	auto root_objects = topLevelObjects(doc->getObjectPointers());
+	auto root_objects = topLevelObjects();
 	mObjectsItem.populate(root_objects);
 	mEntitiesItem.populate(root_objects);
 }
@@ -269,19 +269,19 @@ void napkin::ResourcePanel::populate()
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 {
 	if (obj.size() > 0)
-		mTreeView.selectAndReveal(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]));
+		mTreeView.select(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]), true);
 }
 
 
 void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& item)
 {
-	mTreeView.selectAndReveal(&item);
+	mTreeView.select(&item, true);
 }
 
 
 void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem& item)
 {
-	mTreeView.selectAndReveal(&item);
+	mTreeView.select(&item, true);
 }
 
 

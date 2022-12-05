@@ -11,6 +11,7 @@
 
 #include <QMessageBox>
 #include <QHBoxLayout>
+#include <QDesktopServices>
 #include <rtti/rttiutilities.h>
 #include <rtti/jsonwriter.h>
 #include <utility/errorstate.h>
@@ -527,7 +528,7 @@ void AddExistingResourceToGroupAction::perform()
 	auto base_type = members_path.getArrayElementType();
 
 	// Get objects to select from
-	auto objects = topLevelObjects(AppContext::get().getDocument()->getObjectPointers());
+	auto objects = topLevelObjects();
 
 	std::vector<nap::rtti::Object*> object_selection;
 	object_selection.reserve(objects.size());
@@ -926,4 +927,15 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 
 	// Set as default in project
 	ctx.getServiceConfig()->makeProjectDefault();
+}
+
+
+napkin::OpenURLAction::OpenURLAction(const char* text, const QUrl& address) :
+	Action(text, QRC_ICONS_URL), mAddress(address)
+{ }
+
+
+void napkin::OpenURLAction::perform()
+{
+	QDesktopServices::openUrl(mAddress);
 }

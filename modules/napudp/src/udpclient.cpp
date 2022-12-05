@@ -15,7 +15,7 @@
 #include <thread>
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
-	RTTI_PROPERTY("Endpoint",					&nap::UDPClient::mRemoteIp,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Endpoint",                   &nap::UDPClient::mEndpoint,                     nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Broadcast",					&nap::UDPClient::mBroadcast,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port",						&nap::UDPClient::mPort,							nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxQueueSize",				&nap::UDPClient::mMaxPacketQueueSize,			nap::rtti::EPropertyMetaData::Default)
@@ -73,8 +73,15 @@ namespace nap
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
         
-        // create address from string
-        auto address = address::from_string(mRemoteIp, asio_error_code);
+        // resolve ip address from endpoint
+        asio::ip::tcp::resolver resolver(getIOContext());
+        asio::ip::tcp::resolver::query query(mEndpoint, "80");
+        asio::ip::tcp::resolver::iterator iter = resolver.resolve(query, asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
+
+        asio::ip::tcp::endpoint endpoint = iter->endpoint();
+        auto address = address::from_string(endpoint.address().to_string(), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
@@ -135,7 +142,7 @@ namespace nap
 	}
 
 
-	void UDPClient::process()
+	void UDPClient::onProcess()
 	{
 		// let the socket send queued packets
 		UDPPacket packet_to_send;

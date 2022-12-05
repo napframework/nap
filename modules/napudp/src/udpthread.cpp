@@ -20,9 +20,9 @@ using asio::ip::address;
 using asio::ip::udp;
 
 RTTI_BEGIN_ENUM(nap::EUDPThreadUpdateMethod)
-	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::MAIN_THREAD, 		"Main Thread"),
-	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::SPAWN_OWN_THREAD, 	"Spawn Own Thread"),
-	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::MANUAL, 			"Manual")
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::UDP_MAIN_THREAD, 		"Main Thread"),
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::UDP_SPAWN_OWN_THREAD, 	"Spawn Own Thread"),
+	RTTI_ENUM_VALUE(nap::EUDPThreadUpdateMethod::UDP_MANUAL, 			"Manual")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPThread)
@@ -60,23 +60,23 @@ namespace nap
 
 	bool UDPThread::start(utility::ErrorState& errorState)
 	{
+        mRun.store(true);
+
 		switch (mUpdateMethod)
 		{
-		case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
+		case EUDPThreadUpdateMethod::UDP_SPAWN_OWN_THREAD:
 			mThread = std::thread([this] { thread(); });
 			break;
-		case EUDPThreadUpdateMethod::MAIN_THREAD:
+		case EUDPThreadUpdateMethod::UDP_MAIN_THREAD:
 			mService.registerUdpThread(this);
 			break;
-		case EUDPThreadUpdateMethod::MANUAL:
+		case EUDPThreadUpdateMethod::UDP_MANUAL:
 			mManualProcessFunc = [this]() { process(); };
 			break;
 		default:
 			errorState.fail("Unknown UDP thread update method");
 			return false;
 		}
-
-		mRun.store(true);
 
 		return true;
 	}
@@ -90,10 +90,10 @@ namespace nap
 
 			switch (mUpdateMethod)
 			{
-			case EUDPThreadUpdateMethod::SPAWN_OWN_THREAD:
+			case EUDPThreadUpdateMethod::UDP_SPAWN_OWN_THREAD:
 				mThread.join();
 				break;
-			case EUDPThreadUpdateMethod::MAIN_THREAD:
+			case EUDPThreadUpdateMethod::UDP_MAIN_THREAD:
 				mService.removeUdpThread(this);
 				break;
 			default:

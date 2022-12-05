@@ -158,6 +158,10 @@ void FilterPopup::computeSize()
 		auto rect = tree.visualRectFor(selection);
 		height += rect.height();
 	}
+	else
+	{
+		height *= 2;
+	}
 
 	setFixedSize(300, qMin(height, 500));
 	adjustSize();

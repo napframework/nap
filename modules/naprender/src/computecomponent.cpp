@@ -101,30 +101,33 @@ namespace nap
 		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
 
 		// Insert memory barriers if required
-		insertBarriers(commandBuffer, descriptor_set.mBuffers);
+		insertBarriers(commandBuffer);
 	}
 
 
-	void ComputeComponentInstance::insertBarriers(VkCommandBuffer commandBuffer, const std::vector<BufferData>& resources)
+	void ComputeComponentInstance::insertBarriers(VkCommandBuffer commandBuffer)
 	{
-		for (const BufferData& resource : resources)
+		for (const auto& binding : mComputeMaterialInstance.getBufferBindings())
 		{
+			// Fetch buffer data
+			const auto& buffer_data = binding->getBuffer().getBufferData();
+
 			// Check if the resource is marked to be written to (in any stage)
-			if (resource.mUsage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
+			if (buffer_data.mUsage & VK_BUFFER_USAGE_STORAGE_BUFFER_BIT)
 			{
 				// We must set a memory barrier to prevent access to the resource before it is finished being written to
 				VkAccessFlags dst_access = 0;
 				VkPipelineStageFlags dst_stage = 0;
 
 				// The resource may be consumed as a vertex attribute buffer
-				if (resource.mUsage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
+				if (buffer_data.mUsage & VK_BUFFER_USAGE_VERTEX_BUFFER_BIT)
 				{
 					dst_access |= VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT;
 					dst_stage |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
 				}
 
 				// The resource may be consumed as an index buffer
-				if (resource.mUsage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
+				if (buffer_data.mUsage & VK_BUFFER_USAGE_INDEX_BUFFER_BIT)
 				{
 					dst_access |= VK_ACCESS_INDEX_READ_BIT;
 					dst_stage |= VK_PIPELINE_STAGE_VERTEX_INPUT_BIT;
@@ -135,7 +138,7 @@ namespace nap
 				dst_stage = (dst_stage == 0) ? VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT : dst_stage;
 
 				// Insert a memory barrier for this resource
-				memoryBarrier(commandBuffer, resource.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dst_stage);
+				memoryBarrier(commandBuffer, buffer_data.mBuffer, VK_ACCESS_SHADER_WRITE_BIT, dst_access, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, dst_stage);
 			}
 		}
 	}
