@@ -206,7 +206,8 @@ float calcShadow(vec4 shadowCoord, vec3 lightDir)
 	// Map coordinates to [0.0, 1.0] range
 	shadowCoord = shadowCoord * 0.5 + 0.5;
 
-	float bias = max(0.01 * (1.0 - dot(passNormal, lightDir)), 0.005);
+	const float texelSize = 1.0/float(textureSize(shadowMap, 0).x);
+	float bias = max(texelSize * (1.0 - dot(passNormal, lightDir)), 0.1*texelSize);
 	float frag_depth = (shadowCoord.z-bias) / shadowCoord.w;
 	float shadow = 0.0;
 
