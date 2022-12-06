@@ -55,7 +55,10 @@ namespace nap
 
 		// make all paths absolute
 		for (const auto& p : mPathMapping->mModulePaths)
-			dirs.emplace_back(utility::isAbsolutePath(p) ? p : utility::joinPath({ projectDir, p }));
+		{
+			dirs.emplace_back(utility::forceSeparator(utility::isAbsolutePath(p) ? p :
+				utility::joinPath({ projectDir, p })));
+		}
 		return dirs;
 	}
 
