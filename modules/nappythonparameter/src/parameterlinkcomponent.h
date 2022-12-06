@@ -27,7 +27,7 @@ namespace nap
 		static rtti::TypeInfo getParameterType() { return RTTI_OF(T); }
 
 		/**
-		 * Contructor
+		 * Constructor
 		 * @param parameter the parameter that will be wrapped
 		 */
 		PythonParameterWrapper(Parameter* parameter) : rtti::Object()
@@ -98,7 +98,7 @@ namespace nap
 		template <typename T>
 		T* findParameter(const std::string& mID)
 		{
-			rtti_cast<T>(mParameterGroup->findParameter(mID));
+			rtti_cast<T>(mParameterGroup->findObject(mID));
 		}
 
 		/**

@@ -46,7 +46,7 @@ namespace nap
 	rtti::Object* ParameterLinkComponentInstance::getParameterWrapper(const std::string& mID)
 	{
 		// first find the parameter in the group
-		auto parameter = mParameterGroup->findParameter(mID);
+		auto parameter = mParameterGroup->findObject(mID);
 		if (parameter == nullptr)
 			return nullptr;
 
