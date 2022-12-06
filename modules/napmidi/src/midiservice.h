@@ -78,6 +78,11 @@ namespace nap {
         void printPorts();
 
         /**
+         * Enqueue a freshly received midi event from the input thread.
+         */
+        void enqueueEvent(std::unique_ptr<MidiEvent> event) { mEventQueue.enqueue(std::move(event)); }
+
+        /**
          * Processes all received midi events
          */
         void update(double deltaTime) override;
@@ -97,9 +102,6 @@ namespace nap {
 
         // Used by input component to unregister itself.
         void unregisterInputComponent(MidiInputComponentInstance& component) { mInputComponents.erase(&component); }
-
-        // Used by midi input port to enqueue a freshly received midi event from the input thread.
-        void enqueueEvent(std::unique_ptr<MidiEvent> event) { mEventQueue.enqueue(std::move(event)); }
 
         std::unique_ptr<RtMidiIn> mMidiIn = nullptr; // used to poll for available input ports
         std::unique_ptr<RtMidiOut> mMidiOut = nullptr; // used to poll available output ports.
