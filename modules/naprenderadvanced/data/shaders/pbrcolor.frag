@@ -181,17 +181,16 @@ float calcShadow(vec4 shadowCoord, vec3 lightDir)
 	// Map coordinates to [0.0, 1.0] range
 	shadowCoord = shadowCoord * 0.5 + 0.5;
 
-	float bias = max(0.00125 * (1.0 - dot(passNormal, lightDir)), 0.0005);
+	const float texelSize = 1.0/float(textureSize(shadowMap, 0).x);
+	float bias = max(4.0*texelSize * (1.0 - dot(passNormal, lightDir)), texelSize);
 	float frag_depth = (shadowCoord.z-bias) / shadowCoord.w;
 	float shadow = 0.0;
 
 	// Multi sample
-	for (int i=4; i<16; i++) 
+	for (int i=0; i<16; i++) 
 	{
-		//int idx = int(16.0*rnd(gl_FragCoord.xy, i))%16;
-		int idx = i;
 		shadow += texture(shadowMap, 
-			vec3(shadowCoord.xy + POISSON_DISK_16[idx]/POISSON_SPREAD, frag_depth)
+			vec3(shadowCoord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, frag_depth)
 		);
 	}
 	shadow /= 16.0;
