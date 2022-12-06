@@ -29,6 +29,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
+if(WIN32)
+    set_property(TARGET ${PROJECT_NAME} PROPERTY WIN32_EXECUTABLE true)
+endif()
+
 if(${ARCH} STREQUAL "armhf")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
 endif()
