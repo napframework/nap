@@ -81,18 +81,18 @@ namespace nap
 		if (!event_type.is_derived_from(RTTI_OF(nap::TouchEvent)))
 			return;
 
-		if (event_type == RTTI_OF(PointerPressEvent))
+		if (event_type == RTTI_OF(TouchPressEvent))
 		{
 			const TouchPressEvent& press_event = static_cast<const TouchPressEvent&>(inEvent);
 			pressed.trigger(press_event);
 
 		}
-		else if (event_type == RTTI_OF(PointerReleaseEvent))
+		else if (event_type == RTTI_OF(TouchReleaseEvent))
 		{
 			const TouchReleaseEvent& release_event = static_cast<const TouchReleaseEvent&>(inEvent);
 			released.trigger(release_event);
 		}
-		else if (event_type == RTTI_OF(PointerMoveEvent))
+		else if (event_type == RTTI_OF(TouchMoveEvent))
 		{
 			const TouchMoveEvent& move_event = static_cast<const TouchMoveEvent&>(inEvent);
 			moved.trigger(move_event);
