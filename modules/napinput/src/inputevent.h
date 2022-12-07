@@ -213,7 +213,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Base class for all touch finger input events
+	 * Base class for all touch input events
 	 */
 	class NAPAPI TouchEvent : public WindowInputEvent
 	{
