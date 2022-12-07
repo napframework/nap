@@ -683,6 +683,14 @@ namespace nap
 			return InputEventPtr(mouse_event);
 		}
 
+		// If it's a touch event, create, map and return
+		auto touch_it = SDLToTouchMapping.find(sdlEvent.type);
+		if (touch_it != SDLToTouchMapping.end())
+		{
+			InputEvent* touch_event = translateSDLTouchEvent(sdlEvent, touch_it->first, touch_it->second);
+			return InputEventPtr(touch_event);
+		}
+
 		// If it's a controller event, create, map and return
 		auto control_it = SDLToControllerMapping.find(sdlEvent.type);
 		if (control_it != SDLToControllerMapping.end())
