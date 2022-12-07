@@ -239,7 +239,6 @@ QString napkin::getResourceReferencePath(const QString& reference)
 
 std::string napkin::toLocalURI(const std::string& filename)
 {
-
 	return QUrl::fromLocalFile(QString::fromStdString(filename)).toString().toStdString();
 }
 
