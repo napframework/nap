@@ -54,8 +54,7 @@ namespace nap
 	public:
 		KeyEvent(EKeyCode inKey, int window = 0) : WindowInputEvent(window),
 			mKey(inKey)	
-		{
-		}
+		{ }
 		
 		EKeyCode mKey;					///< Associated Key
 	};
@@ -70,8 +69,7 @@ namespace nap
 	public:
 		KeyPressEvent(EKeyCode inKey, int window = 0) : 
 			KeyEvent(inKey, window) 
-		{ 
-		}
+		{ }
 	};
 
 
@@ -84,8 +82,7 @@ namespace nap
 	public:
 		KeyReleaseEvent(EKeyCode inKey, int window = 0) :
 			KeyEvent(inKey, window) 
-		{
-		}
+		{ }
 	};
 
 
@@ -103,8 +100,7 @@ namespace nap
 	public:
 		TextInputEvent(const std::string& text, int window = 0) :
 			WindowInputEvent(window), mText(text)
-		{
-		}
+		{ }
 
 		std::string mText;					///< text input
 	};
@@ -126,8 +122,7 @@ namespace nap
 			mX(inX), 
 			mY(inY),
 			mId(inId)		
-		{ 
-		}
+		{ }
 
 		int		mX;							///< horizontal window pixel coordinate
 		int		mY;							///< vertical window pixel coordinate
@@ -145,8 +140,7 @@ namespace nap
 		PointerClickEvent(int inX, int inY, EMouseButton inButton, int window = 0, int inId = 0) :
 			PointerEvent(inX, inY, window, inId), 
 			mButton(inButton)	
-		{
-		}
+		{ }
 
 		EMouseButton mButton;				///< clicked mouse button
 	};
@@ -161,8 +155,7 @@ namespace nap
 	public:
 		PointerPressEvent(int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, window, inId)
-		{
-		}
+		{ }
 	};
 	
 
@@ -175,8 +168,7 @@ namespace nap
 	public:
 		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
 			PointerClickEvent(inX, inY, inButton, window, inId)
-		{
-		}
+		{ }
 	};
 
 
@@ -191,8 +183,7 @@ namespace nap
 			PointerEvent(inAbsX, inAbsY, window, inId),
 			mRelX(relX),
 			mRelY(relY)
-		{
-		}
+		{ }
 
 		int mRelX;							///< Horizontal relative movement in pixels
 		int mRelY;							///< Vertical relative movement in pixels
@@ -210,11 +201,76 @@ namespace nap
 			WindowInputEvent(window),
 			mX(x),
 			mY(y)
-		{
-		}
+		{ }
 
 		int mX;
 		int mY;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Touch Input Events
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Base class for all touch finger input events
+	 */
+	class NAPAPI TouchEvent : public WindowInputEvent
+	{
+		RTTI_ENABLE(WindowInputEvent)
+	public:
+		TouchEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int window = 0) :
+			WindowInputEvent(window), mFingerID(fingerID), mTouchID(touchID), mX(x), mY(y), mPressure(pressure)
+		{ }
+
+		nap::int64 mFingerID;					///< The finger ID
+		nap::int64 mTouchID;					///< The touch device ID
+		int mX;									///< The x-axis window coordinate of the touch event
+		int mY;									///< The y-axis window coordinate of the touch event
+		float mPressure;						///< The quantity of the pressure applied, normalized (0 - 1)
+	};
+
+
+	/**
+	 * Finger down input event
+	 */
+	class NAPAPI TouchPressEvent : public TouchEvent
+	{
+		RTTI_ENABLE(TouchEvent)
+	public:
+		TouchPressEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int window = 0) :
+			TouchEvent(fingerID, touchID, x, y, pressure, window)
+		{ }
+	};
+
+
+	/**
+	 * Finger up input event
+	 */
+	class NAPAPI TouchReleaseEvent : public TouchEvent
+	{
+		RTTI_ENABLE(TouchEvent)
+	public:
+		TouchReleaseEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int window = 0) :
+			TouchEvent(fingerID, touchID, x, y, pressure, window)
+		{ }
+	};
+
+
+	/**
+	 * Finger move input event
+	 */
+	class NAPAPI TouchMoveEvent : public TouchEvent
+	{
+		RTTI_ENABLE(TouchEvent)
+	public:
+		TouchMoveEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int dx, int dy, int window = 0) :
+			TouchEvent(fingerID, touchID, x, y, pressure, window),
+			mDX (dx), mDY (dy)
+		{ }
+
+		int mDX;								///< The distance moved in the x-axis, screen space
+		int mDY;								///< The distance moved in the y-axis, screen space
 	};
 
 

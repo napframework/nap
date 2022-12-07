@@ -288,6 +288,15 @@ namespace nap
 	};
 
 
+	// Binds a specific sdl touch finger event to a touch event type
+	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToTouchMapping =
+	{
+		std::make_pair(SDL_FINGERDOWN,		RTTI_OF(nap::TouchPressEvent)),
+		std::make_pair(SDL_FINGERUP,		RTTI_OF(nap::TouchReleaseEvent)),
+		std::make_pair(SDL_FINGERMOTION,	RTTI_OF(nap::TouchMoveEvent))
+	};
+
+
 	// Binds a specific sdl key event to a pointer event type
 	const static std::unordered_map<Uint32, rtti::TypeInfo> SDLToKeyMapping = 
 	{
@@ -456,6 +465,62 @@ namespace nap
 	}
 
 
+	static nap::InputEvent* translateSDLTouchEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
+	{
+		// Get window
+		int window_id = static_cast<int>(sdlEvent.tfinger.windowID);
+		SDL_Window* window = SDL_GetWindowFromID(window_id);
+		if (window == nullptr)
+			return nullptr;
+
+		int sx, sy;
+		SDL_GetWindowSize(window, &sx, &sy);
+		int px = static_cast<int>((sx - 1) * sdlEvent.tfinger.x);
+		int py = static_cast<int>((sy - 1) * (1.0f - sdlEvent.tfinger.y));
+
+		nap::int64 fid = static_cast<nap::int64>(sdlEvent.tfinger.fingerId);
+		nap::int64 tid = static_cast<nap::int64>(sdlEvent.tfinger.touchId);
+
+		InputEvent* touch_event = nullptr;
+		switch (sdlType)
+		{
+			case SDL_FINGERDOWN:
+			case SDL_FINGERUP:
+			{
+				touch_event = eventType.create<InputEvent>(
+					{
+						fid, tid,
+						px, py,
+						float(sdlEvent.tfinger.pressure),
+						window_id
+					});
+				break;
+			}
+			case SDL_FINGERMOTION:
+			{
+				int dx = static_cast<int>(sx * sdlEvent.tfinger.dx);
+				int dy = static_cast<int>(sy * -sdlEvent.tfinger.dy);
+				touch_event = eventType.create<InputEvent>(
+					{
+						fid, tid,
+						px, py,
+						sdlEvent.tfinger.pressure,
+						dx, dy,
+						window_id
+					});
+				break;
+			}
+			default:
+			{
+				assert(false);
+				break;
+			}
+		}
+
+		return touch_event;
+	}
+
+
 	nap::InputEvent* SDLEventConverter::translateSDLControllerEvent(SDL_Event& sdlEvent, uint32 sdlType, const rtti::TypeInfo& eventType)
 	{
 		InputEvent* controller_event = nullptr;
@@ -575,6 +640,18 @@ namespace nap
 	}
 
 
+
+	nap::InputEventPtr SDLEventConverter::translateTouchEvent(SDL_Event& sdlEvent)
+	{
+		auto touch_it = SDLToTouchMapping.find(sdlEvent.type);
+		if (touch_it == SDLToTouchMapping.end())
+			return nullptr;
+
+		InputEvent* touch_event = translateSDLTouchEvent(sdlEvent, touch_it->first, touch_it->second);
+		return InputEventPtr(touch_event);
+	}
+
+
 	nap::InputEventPtr SDLEventConverter::translateControllerEvent(SDL_Event& sdlEvent)
 	{
 		// If it's a controller event, create, map and return
@@ -643,10 +720,18 @@ namespace nap
 	}
 
 
+
+	bool SDLEventConverter::isTouchEvent(SDL_Event& sdlEvent) const
+	{
+		return SDLToTouchMapping.find(sdlEvent.type) != SDLToTouchMapping.end();
+	}
+
+
 	bool SDLEventConverter::isInputEvent(SDL_Event& sdlEvent) const
 	{
-		return isKeyEvent(sdlEvent) 
-			|| isMouseEvent(sdlEvent) 
+		return isKeyEvent(sdlEvent)
+			|| isMouseEvent(sdlEvent)
+			|| isTouchEvent(sdlEvent)
 			|| isControllerEvent(sdlEvent);
 	}
 

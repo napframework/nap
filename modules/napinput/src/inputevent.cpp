@@ -12,6 +12,7 @@ RTTI_DEFINE_BASE(nap::ControllerButtonEvent)
 RTTI_DEFINE_BASE(nap::KeyEvent)
 RTTI_DEFINE_BASE(nap::PointerEvent)
 RTTI_DEFINE_BASE(nap::PointerClickEvent)
+RTTI_DEFINE_BASE(nap::TouchEvent)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyPressEvent)
 	RTTI_CONSTRUCTOR(nap::EKeyCode, int)
@@ -35,6 +36,18 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MouseWheelEvent)
 	RTTI_CONSTRUCTOR(int, int, int)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchPressEvent)
+	RTTI_CONSTRUCTOR(nap::int64, nap::int64, int, int, float, int)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchReleaseEvent)
+	RTTI_CONSTRUCTOR(nap::int64, nap::int64, int, int, float, int)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchMoveEvent)
+	RTTI_CONSTRUCTOR(nap::int64, nap::int64, int, int, float, int, int, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ControllerButtonPressEvent)

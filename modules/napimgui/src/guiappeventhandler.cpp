@@ -36,7 +36,7 @@ namespace nap
 		bool quit = false;
 		while (SDL_PollEvent(&event))
 		{
-			// Forward if we're not capturing mouse and it's a pointer event
+			// Forward if we're not capturing the mouse in the GUI and it's a pointer event
 			if (mEventConverter->isMouseEvent(event))
 			{
 				nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
@@ -50,7 +50,7 @@ namespace nap
 				}
 			}
 
-			// Forward if we're not capturing keyboard and it's a key event
+			// Forward if we're not capturing the keyboard in the GUI and it's a key event
 			else if (mEventConverter->isKeyEvent(event))
 			{
 				nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
@@ -59,6 +59,16 @@ namespace nap
 
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
+				{
+					getApp<App>().inputMessageReceived(std::move(input_event));
+				}
+			}
+
+			// Always forward touch events
+			else if (mEventConverter->isTouchEvent(event))
+			{
+				nap::InputEventPtr input_event = mEventConverter->translateTouchEvent(event);
+				if (input_event != nullptr)
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
