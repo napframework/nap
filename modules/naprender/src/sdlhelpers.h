@@ -165,6 +165,17 @@ namespace nap
 		void NAPAPI showCursor();
 
 		/**
+		 * Returns if the cursor is visible
+		 * @return if the cursor is visible
+		 */
+		bool NAPAPI cursorVisible();
+
+		/**
+		 * Toggles cursor visibility on / off
+		 */
+		void NAPAPI toggleCursor();
+
+		/**
 		 * Returns the mouse cursor position relative to the focus window for the currently selected mouse.
 		 * @return cursor position relative to the focus window
 		 */

@@ -201,6 +201,18 @@ namespace nap
 		}
 
 
+		bool cursorVisible()
+		{
+			return SDL_ShowCursor(SDL_QUERY) > 0;
+		}
+
+
+		void toggleCursor()
+		{
+			cursorVisible() ? hideCursor() : showCursor();
+		}
+
+
 		glm::ivec2 getCursorPosition()
 		{
 			glm::ivec2 pos;
