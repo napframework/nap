@@ -11,6 +11,9 @@ import sys
 from sys import platform
 from enum import Enum
 
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
+from nap_shared import get_cmake_path, get_nap_root
+
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
 LIB_DIR = 'packaging_lib'
@@ -46,17 +49,17 @@ def call(cwd, cmd, capture_output=False):
         raise Exception("Bailing for non zero returncode: %s", proc.returncode)
     return out, err
 
-def package(zip_release, 
+def package(zip_release,
             include_debug_symbols,
-            include_docs, 
-            include_apps, 
-            single_app_to_include, 
-            clean, 
-            include_timestamp_in_name, 
-            build_label, 
+            include_docs,
+            include_apps,
+            single_app_to_include,
+            clean,
+            include_timestamp_in_name,
+            build_label,
             package_name,
             build_apps,
-            archive_source, 
+            archive_source,
             archive_source_zipped,
             archive_source_only,
             overwrite,
@@ -85,7 +88,7 @@ def package(zip_release,
     # Ensure we won't overwrite any existing package
     if not archive_source_only and not overwrite:
         check_for_existing_package(package_basename, zip_release)
-    
+
     if archive_source:
         # Verify our repo is clean if we want to do a source archive
         verify_clean_git_repo()
@@ -106,50 +109,50 @@ def package(zip_release,
         if clean:
             clean_the_build()
 
-        # Convert additional sub directories to CMAKE list type
+        # Convert additional sub directories to CMake list type
         sub_dirs = ';'.join(additional_dirs)
 
         # Do the packaging
-        if platform.startswith('linux'):    
-            package_path = package_for_linux(package_basename, 
-                                             timestamp, 
-                                             git_revision, 
-                                             build_label_out, 
-                                             overwrite, 
-                                             include_apps, 
-                                             single_app_to_include, 
-                                             include_docs, 
-                                             zip_release, 
+        if platform.startswith('linux'):
+            package_path = package_for_linux(package_basename,
+                                             timestamp,
+                                             git_revision,
+                                             build_label_out,
+                                             overwrite,
+                                             include_apps,
+                                             single_app_to_include,
+                                             include_docs,
+                                             zip_release,
                                              include_debug_symbols,
                                              build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
         elif platform == 'darwin':
-            package_path = package_for_macos(package_basename, 
-                                             timestamp, 
-                                             git_revision, 
-                                             build_label_out, 
-                                             overwrite, 
-                                             include_apps, 
-                                             single_app_to_include, 
-                                             include_docs, 
-                                             zip_release, 
+            package_path = package_for_macos(package_basename,
+                                             timestamp,
+                                             git_revision,
+                                             build_label_out,
+                                             overwrite,
+                                             include_apps,
+                                             single_app_to_include,
+                                             include_docs,
+                                             zip_release,
                                              include_debug_symbols,
                                              build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
         else:
-            package_path = package_for_win64(package_basename, 
-                                             timestamp, 
-                                             git_revision, 
-                                             build_label_out, 
-                                             overwrite, 
-                                             include_apps, 
-                                             single_app_to_include, 
-                                             include_docs, 
-                                             zip_release, 
+            package_path = package_for_win64(package_basename,
+                                             timestamp,
+                                             git_revision,
+                                             build_label_out,
+                                             overwrite,
+                                             include_apps,
+                                             single_app_to_include,
+                                             include_docs,
+                                             zip_release,
                                              include_debug_symbols,
                                              build_apps,
                                              sub_dirs,
@@ -175,7 +178,7 @@ def clean_the_build():
     """Clean the build"""
 
     print("Cleaning...")
-    if platform.startswith('linux'):    
+    if platform.startswith('linux'):
         for build_type in BUILD_TYPES:
             build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
             if os.path.exists(build_dir_for_type):
@@ -221,9 +224,9 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
 
     for build_type in BUILD_TYPES:
         build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
-        call(WORKING_DIR, [get_cmake_path(), 
-                           '-H.', 
-                           '-B%s' % build_dir_for_type, 
+        call(WORKING_DIR, [get_cmake_path(),
+                           '-H.',
+                           '-B%s' % build_dir_for_type,
                            '-DNAP_PACKAGED_BUILD=1',
                            '-DCMAKE_BUILD_TYPE=%s' % build_type,
                            '-DINCLUDE_DOCS=%s' % int(include_docs),
@@ -246,7 +249,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
 
     # If requested, overwrite any existing package
     if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)        
+        check_for_existing_package(package_basename, zip_release, True)
 
     # Create archive
     if zip_release:
@@ -258,11 +261,11 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     """Package NAP platform release for macOS"""
 
     # Generate app
-    call(WORKING_DIR, [get_cmake_path(), 
-                       '-H.', 
-                       '-B%s' % BUILD_DIR, 
+    call(WORKING_DIR, [get_cmake_path(),
+                       '-H.',
+                       '-B%s' % BUILD_DIR,
                        '-G', 'Xcode',
-                       '-DNAP_PACKAGED_BUILD=1',                 
+                       '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
@@ -288,7 +291,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
 
     # If requested, overwrite any existing package
     if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)        
+        check_for_existing_package(package_basename, zip_release, True)
 
     # Create archive
     if zip_release:
@@ -304,9 +307,9 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
         os.makedirs(BUILD_DIR)
 
     # Generate app
-    call(WORKING_DIR, [get_cmake_path(), 
-                       '-H.', 
-                       '-B%s' % BUILD_DIR, 
+    call(WORKING_DIR, [get_cmake_path(),
+                       '-H.',
+                       '-B%s' % BUILD_DIR,
                        '-G', 'Visual Studio 16 2019',
                        '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
@@ -330,7 +333,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
 
     # If requested, overwrite any existing package
     if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)        
+        check_for_existing_package(package_basename, zip_release, True)
 
     # Create archive
     if zip_release:
@@ -357,7 +360,7 @@ def create_linux_tar_bz2(source_directory):
 
     archive_filename_with_ext = '%s.%s' % (source_directory, 'tar.bz2')
     print("Archiving to %s ..." % os.path.abspath(archive_filename_with_ext))
-    call(WORKING_DIR, ['tar', '-cjvf', archive_filename_with_ext, source_directory])    
+    call(WORKING_DIR, ['tar', '-cjvf', archive_filename_with_ext, source_directory])
     return archive_filename_with_ext
 
 def archive_framework_to_macos_zip(package_basename):
@@ -433,9 +436,9 @@ def remove_all_apps_but_specified(single_app_to_include):
         if not app_name == single_app_to_include:
             path = os.path.join(PACKAGING_DIR, APPS_DEST_DIR, app_name)
             remove_directory_exit_on_failure(path, 'unwanted internal app')
-            
+
 def archive_source_archive_directory(source_directory):
-    if platform.startswith('linux'):    
+    if platform.startswith('linux'):
         package_filename_with_ext = create_linux_tar_bz2(source_directory)
         shutil.rmtree(source_directory)
     elif platform == 'darwin':
@@ -591,7 +594,7 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
     else:
         shutil.rmtree(os.path.join(staging_dir, '.git'))
 
-    # Misc. cleanup       
+    # Misc. cleanup
     shutil.rmtree(os.path.join(staging_dir, 'test'))
 
     # Remove client apps
@@ -604,7 +607,7 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
         create_source_archive_executable_bit_applicator(staging_dir)
 
     # Populate source_archive.json
-    call(WORKING_DIR, [get_cmake_path(), 
+    call(WORKING_DIR, [get_cmake_path(),
                        '-DOUT_PATH=%s' % staging_dir,
                        '-DNAP_ROOT=.',
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
@@ -612,7 +615,7 @@ def create_source_archive(source_archive_basename, zip_source_archive, build_lab
                        '-DBUILD_LABEL=%s' % build_label,
                        '-P', 'cmake/source_archive_populate_info.cmake'
                        ])
-    
+
     # Move alongside release
     local_archive_name = os.path.join('.', source_archive_basename)
     if overwrite and os.path.exists(local_archive_name):
@@ -646,28 +649,6 @@ def create_source_archive_executable_bit_applicator(staging_dir):
                 writer.write('\tgit update-index --chmod=+x %s\n' % exe_bit_filepath)
                 writer.write(')\n')
 
-def get_nap_root():
-    script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
-
-def get_cmake_path():
-    """Fetch the path to the CMake binary"""
-
-    nap_root = get_nap_root()
-    cmake_thirdparty_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
-    if platform.startswith('linux'):
-        arch = machine()
-        if arch == 'x86_64':
-            return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
-        elif arch == 'aarch64':
-            return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
-        else:
-            return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
-    elif platform == 'darwin':
-        return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
-    else:
-        return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
-    
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
@@ -675,7 +656,7 @@ if __name__ == '__main__':
     labelling_group.add_argument("-nt", "--no-timestamp", action="store_true",
                         help="Don't include timestamp in the release archive and folder name, for final releases")
     labelling_group.add_argument("-l", "--label", type=str,
-                        help="An optional suffix for the package")    
+                        help="An optional suffix for the package")
     labelling_group.add_argument("-n", "--name", type=str,
                         help="Overrides the package name. NAP timestamp, version and label information is excluded")
 
@@ -690,19 +671,19 @@ if __name__ == '__main__':
                         help="Clean build")
     core_group.add_argument("--build-apps", action="store_true",
                         help="Build apps while packaging (not included in package)")
-    core_group.add_argument('-p', '--enable-python', action="store_true", 
+    core_group.add_argument('-p', '--enable-python', action="store_true",
                        help="Enable python integration using pybind (deprecated)")
 
     source_archive_group = parser.add_argument_group('Source Archiving')
     source_archive_group.add_argument("-as", "--archive-source", action="store_true",
-                        help="Create a source archive")        
+                        help="Create a source archive")
     source_archive_group.add_argument("-asz", "--source-archive-zipped", action="store_true",
-                        help="Zip the created source archive")        
+                        help="Zip the created source archive")
     source_archive_group.add_argument("-aso", "--source-archive-only", action="store_true",
-                        help="Only create a source archive")        
+                        help="Only create a source archive")
 
     nap_apps_group = parser.add_argument_group('Applications')
-    nap_apps_group.add_argument("-d", "--additional_dirs", nargs='+', type=str, default=[], 
+    nap_apps_group.add_argument("-d", "--additional_dirs", nargs='+', type=str, default=[],
                         help="List of additional sub directories to add to the build")
     nap_apps_group.add_argument("-a", "--include-apps", action="store_true",
                         help="Include apps")
@@ -732,8 +713,8 @@ if __name__ == '__main__':
         print("Error: Can't zip a source archive that you're not creating")
         sys.exit(ERROR_BAD_INPUT)
 
-    if args.source_archive_only and (args.no_zip 
-                                     or args.include_docs 
+    if args.source_archive_only and (args.no_zip
+                                     or args.include_docs
                                      or args.include_apps
                                      or args.include_single_app
                                      or args.clean
@@ -747,18 +728,18 @@ if __name__ == '__main__':
 
     # Package our build
     package(not args.no_zip,
-            args.include_debug_symbols, 
-            args.include_docs, 
-            args.include_apps or not args.include_single_app is None, 
+            args.include_debug_symbols,
+            args.include_docs,
+            args.include_apps or not args.include_single_app is None,
             args.include_single_app,
-            args.clean, 
-            not args.no_timestamp, 
+            args.clean,
+            not args.no_timestamp,
             args.label,
             args.name,
             args.build_apps,
-            args.archive_source or args.source_archive_only, 
+            args.archive_source or args.source_archive_only,
             args.source_archive_zipped,
-            args.source_archive_only,            
+            args.source_archive_only,
             args.overwrite,
             args.additional_dirs,
             args.enable_python)

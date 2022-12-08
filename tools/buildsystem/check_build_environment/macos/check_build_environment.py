@@ -24,7 +24,7 @@ def getch():
 
 def wait_for_return(txt):
     """Show text and wait for using pressing return"""
-    if sys.version_info >= (3, 0):    
+    if sys.version_info >= (3, 0):
         input(txt)
     else:
         raw_input(txt)
@@ -59,7 +59,7 @@ def read_yes_no(question):
 
     yes = ('yes','y', 'ye', '')
     no = ('no','n')
-     
+
     while True:
         prompt = question + ' [Y/n] '
         if sys.version_info >= (3, 0):
@@ -88,7 +88,7 @@ def check_macos():
     macos_version = call('sw_vers -productVersion')
     macos_version_ok = macos_version.startswith(REQUIRED_MACOS_VERSION)
     log_test_success('macOS %s' % REQUIRED_MACOS_VERSION_TITLE, macos_version_ok)
-    return macos_version_ok    
+    return macos_version_ok
 
 def check_xcode_installed():
     """Check if the Xcode is installed"""
@@ -168,7 +168,7 @@ def handle_xcode_license_approval():
 
 def check_for_thirdparty():
     """Check for the thirdparty repository"""
-    
+
     nap_root = get_nap_root()
     thirdparty_ok = os.path.exists(os.path.join(nap_root, os.pardir, 'thirdparty'))
     log_test_success('for third party repository', thirdparty_ok)
@@ -180,14 +180,14 @@ def check_qt_env_var():
     qt_env_var_ok = 'QT_DIR' in os.environ
     log_test_success('Qt environment variable', qt_env_var_ok)
     return qt_env_var_ok
-    
+
 def check_qt_version():
     """Check Qt version for source user"""
 
     qt_found_version = None
     qt_version_ok = False
-    
-    # Remove temporary directory for CMake project files to go into if it exists 
+
+    # Remove temporary directory for CMake project files to go into if it exists
     nap_root = get_nap_root()
     qt_checker_path = os.path.join(nap_root, 'cmake', 'qt_checker')
     temp_build_dir = os.path.join(qt_checker_path, 'project_temp')

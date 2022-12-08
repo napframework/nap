@@ -8,6 +8,9 @@ from sys import platform
 import sys
 import shutil
 
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
+from nap_shared import get_cmake_path, get_python_path, get_nap_root
+
 LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
@@ -31,27 +34,6 @@ class SingleAppBuilder:
         proc.communicate()
         return proc.returncode
 
-    def get_cmake_path(self):
-        """Fetch the path to the CMake binary"""
-
-        if self.__source_context:
-            cmake_thirdparty_root = os.path.join(self.__nap_root, os.pardir, THIRDPARTY, 'cmake')
-            if platform.startswith('linux'):
-                arch = machine()
-                if arch == 'x86_64':
-                    return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
-                elif arch == 'aarch64':
-                    return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
-                else:
-                    return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
-            elif platform == 'darwin':
-                return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
-            else:
-                return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake')
-        else:
-            cmake_thirdparty_root = os.path.join(self.__nap_root, THIRDPARTY, 'cmake')
-            return os.path.join(cmake_thirdparty_root, 'bin', 'cmake')
-
     def determine_environment(self):
         """Verify environment and populate paths"""
         script_path = os.path.dirname(os.path.realpath(__file__))
@@ -72,10 +54,7 @@ class SingleAppBuilder:
             self.__source_context = False
 
             # Determine Python interpreter location
-            if sys.platform == 'win32':
-                self.__python = os.path.join(self.__nap_root, 'thirdparty', 'python', 'python')
-            else:
-                self.__python = os.path.join(self.__nap_root, 'thirdparty', 'python', 'bin', 'python3')
+            self.__python = get_python_path()
 
     def build(self, app_name, build_type):
         if not build_type is None:
@@ -133,7 +112,7 @@ class SingleAppBuilder:
             self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', app_name, '-configuration', build_type])
         else:
             # Windows
-            cmake = self.get_cmake_path()
+            cmake = get_cmake_path()
             self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', app_name, '--config', build_type])
 
     def build_packaged_framework_app(self, app_name, build_type):
@@ -182,7 +161,7 @@ class SingleAppBuilder:
             self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % app_name, '-configuration', build_type])
         else:
             # Windows
-            cmake = self.get_cmake_path()
+            cmake = get_cmake_path()
             self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', app_name, '--config', build_type], True)
 
 if __name__ == '__main__':

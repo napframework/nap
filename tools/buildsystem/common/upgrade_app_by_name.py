@@ -18,7 +18,7 @@ def upgrade_app(app_name):
     script_path = os.path.join(get_nap_root(), 'tools', 'buildsystem', 'app_and_module_updater', 'app_and_module_updater.py')
 
     python = get_python_path()
-    cmd = [python, script_path, 'UPGRADE_PROJECT', app_path]
+    cmd = [python, script_path, 'UPGRADE_APP', app_path]
     return call(cmd)
 
 if __name__ == '__main__':

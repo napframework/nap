@@ -161,8 +161,8 @@ if __name__ == '__main__':
         sys.exit(1)
 
     try:
-        parser = ModuleInfoParser(args.NAP_ROOT, 
-                                  args.PATH_MAPPING_FILE, 
+        parser = ModuleInfoParser(args.NAP_ROOT,
+                                  args.PATH_MAPPING_FILE,
                                   args.BUILD_ARCH,
                                   args.path_mapping_element
                                   )

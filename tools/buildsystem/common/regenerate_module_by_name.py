@@ -7,8 +7,8 @@ from subprocess import Popen, call
 from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path
 
 # Exit codes
-ERROR_MISSING_PROJECT = 1
-ERROR_INVALID_PROJECT_JSON = 2
+ERROR_MISSING_APP = 1
+ERROR_INVALID_APP_JSON = 2
 ERROR_INVALID_BUILD_TYPE = 3
 ERROR_CONFIGURE_FAILURE = 4
 
@@ -24,12 +24,12 @@ def update_module_framework_release(module_name, build_type):
     # If module name isn't prefixed with nap prepend it
     if not module_name.startswith('nap'):
         module_name = f'nap{module_name}'
-        
+
     # Find the module
     module_path = find_user_module(module_name)
     if module_path is None:
-        return ERROR_MISSING_PROJECT
-        
+        return ERROR_MISSING_APP
+
     cmake = get_cmake_path()
     if sys.platform.startswith('linux'):
         exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=module_path)
@@ -58,7 +58,7 @@ def update_module_source(build_type):
 
     # Build our command
     cmd = [python, script_path]
-    if sys.platform.startswith('linux'):    
+    if sys.platform.startswith('linux'):
         cmd.append('-t')
         cmd.append(build_type.lower())
     return call(cmd)

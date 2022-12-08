@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-"""This script automates basic testing of opening projects in Napkin in the Source context"""
+"""This script automates basic testing of opening apps in Napkin in the Source context"""
 
 import argparse
 import copy
@@ -21,24 +21,24 @@ import time
 WAIT_SECONDS_FOR_PROCESS_HEALTH = 5
 
 # Directory to iterate for testing
-DEFAULT_TESTING_PROJECTS_DIR = 'demos'
+DEFAULT_TESTING_APPS_DIR = 'demos'
 
 # Default build type for Napkin
 DEFAULT_BUILD_TYPE = 'release'
 
-# Main project structure filename
-PROJECT_FILENAME = 'app.json'
+# Main app structure filename
+APP_FILENAME = 'app.json'
 
 # JSON report filename
 REPORT_FILENAME = 'report.json'
 
 # Quicker iteration when debugging this script
-SCRIPT_DEBUG_ONE_PROJECT_ONLY = False
+SCRIPT_DEBUG_ONE_APP_ONLY = False
 
-# Exit code that Napkin will 
+# Exit code that Napkin will
 NAPKIN_SUCCESS_EXIT_CODE = 0
 
-# Seconds to wait for a Napkin load project and exit with expected exit code
+# Seconds to wait for a Napkin load app and exit with expected exit code
 NAPKIN_SECONDS_WAIT_FOR_PROCESS = 30
 
 def run_process_then_stop(cmd, success_exit_code=0, wait_for_seconds=WAIT_SECONDS_FOR_PROCESS_HEALTH, expect_early_closure=False):
@@ -92,13 +92,13 @@ def run_process_then_stop(cmd, success_exit_code=0, wait_for_seconds=WAIT_SECOND
             # Process done, if the success code matches we've had a successful Napkin run
             success = p.returncode == success_exit_code
         else:
-            # Check and make sure the project binary's still running
+            # Check and make sure the binary's still running
             print("  Error: Process already done?")
             (stdout, stderr) = p.communicate()
             if type(stdout) == bytes:
                 stdout = stdout.decode('utf8')
                 stderr = stderr.decode('utf8')
-                
+
             return (False, stdout, stderr)
 
     # Send SIGTERM and wait a moment to close
@@ -121,17 +121,17 @@ def run_process_then_stop(cmd, success_exit_code=0, wait_for_seconds=WAIT_SECOND
     (stdout, stderr) = p.communicate()
     if type(stdout) == bytes:
         stdout = stdout.decode('utf8')
-        stderr = stderr.decode('utf8')    
+        stderr = stderr.decode('utf8')
 
     return (success, stdout, stderr)
 
-def run_napkin_process(project_json_file):
+def run_napkin_process(app_json_file):
     """Run Napkin, reporting success
 
     Parameters
     ----------
-    project_json_file : str
-        Path to JSON file for project to open
+    app_json_file : str
+        Path to JSON file for app to open
 
     Returns
     -------
@@ -142,17 +142,17 @@ def run_napkin_process(project_json_file):
     stderr : str
         STDERR from process
     """
-    return run_process_then_stop('./napkin -p %s --exit-after-load' % project_json_file, NAPKIN_SUCCESS_EXIT_CODE, NAPKIN_SECONDS_WAIT_FOR_PROCESS, True)
+    return run_process_then_stop('./napkin -p %s --exit-after-load' % app_json_file, NAPKIN_SUCCESS_EXIT_CODE, NAPKIN_SECONDS_WAIT_FOR_PROCESS, True)
 
-def open_projects_in_napkin(testing_projects_dir, binary_dir, nap_framework_full_path):
+def open_apps_in_napkin(testing_apps_dir, binary_dir, nap_framework_full_path):
     """Open demos in Napkin
 
     Parameters
     ----------
     results : dict
         Results for demos
-    testing_projects_dir : str
-        Projects directory to test against
+    testing_apps_dir : str
+        Apps directory to test against
     binary_dir : str
         Binary output directory
     nap_framework_full_path : str
@@ -163,36 +163,36 @@ def open_projects_in_napkin(testing_projects_dir, binary_dir, nap_framework_full
     results = {}
     os.chdir(os.path.join(binary_dir, 'napkin'))
 
-    projects_root_dir = os.path.join(nap_framework_full_path, testing_projects_dir) 
-    sorted_dirs = os.listdir(projects_root_dir)
+    apps_root_dir = os.path.join(nap_framework_full_path, testing_apps_dir)
+    sorted_dirs = os.listdir(apps_root_dir)
     sorted_dirs.sort()
     for demo_name in sorted_dirs:
-        demo_path = os.path.join(projects_root_dir, demo_name)
+        demo_path = os.path.join(apps_root_dir, demo_name)
         # Check if path looks sane
         if not os.path.isdir(demo_path) or demo_name.startswith('.'):
             continue
 
         print("Demo: %s" % demo_name)
-        this_project = {}
-        results[demo_name] = this_project
+        this_app = {}
+        results[demo_name] = this_app
 
-        project_json_file = os.path.join(projects_root_dir, demo_name, PROJECT_FILENAME)
-        (success, stdout, stderr) = run_napkin_process(project_json_file)
-        this_project['openWithNapkin'] = {}
-        this_project['openWithNapkin']['success'] = success
-        this_project['openWithNapkin']['stdout'] = stdout
-        this_project['openWithNapkin']['stderr'] = stderr
+        app_json_file = os.path.join(apps_root_dir, demo_name, APP_FILENAME)
+        (success, stdout, stderr) = run_napkin_process(app_json_file)
+        this_app['openWithNapkin'] = {}
+        this_app['openWithNapkin']['success'] = success
+        this_app['openWithNapkin']['stdout'] = stdout
+        this_app['openWithNapkin']['stderr'] = stderr
 
         if success:
             print("  Done.")
         else:
-            print("  Error: Failed to open project")
+            print("  Error: Failed to open app")
             print("  STDOUT: %s" % stdout)
             print("  STDERR: %s" % stderr)
 
         print("----------------------------")
 
-        if SCRIPT_DEBUG_ONE_PROJECT_ONLY:
+        if SCRIPT_DEBUG_ONE_APP_ONLY:
             break
 
     os.chdir(prev_wd)
@@ -265,12 +265,12 @@ def dump_json_report(starting_dir,
     always_include_logs : bool
         Whether to force inclusion logs for all processes into report, not just on failure
     """
-    
+
     report = {}
 
     # Include summary details for whole test run
     report['run'] = {}
-    report['run']['success'] = run_success    
+    report['run']['success'] = run_success
     report['run']['duration'] = formatted_duration
     report['run']['startTime'] = timestamp
     report['run']['frameworkPath'] = nap_framework_full_path
@@ -284,18 +284,18 @@ def dump_json_report(starting_dir,
                 if phase in demo and demo[phase]['success']:
                     del(demo[phase]['stdout'])
                     del(demo[phase]['stderr'])
-    report['projects'] = results
+    report['apps'] = results
 
     # Write report
     with open(os.path.join(starting_dir, REPORT_FILENAME), 'w') as f:
         f.write(json.dumps(report, indent=4, sort_keys=True))
 
-def perform_test_run(testing_projects_dir, build_type, create_json_report, force_log_reporting):
+def perform_test_run(testing_apps_dir, build_type, create_json_report, force_log_reporting):
     """Main entry point to the testing
 
     Parameters
     ----------
-    testing_projects_dir : str
+    testing_apps_dir : str
         Directory to iterate for testing, by default 'demos'
     build_type: str
         Build type to use for Napkin
@@ -313,7 +313,7 @@ def perform_test_run(testing_projects_dir, build_type, create_json_report, force
     starting_dir = os.getcwd()
     root_output_dir = os.path.abspath('.')
 
-    nap_framework_full_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir))
+    nap_framework_full_path = os.path.abspath(os.path.join(os.path.dirname(os.path.realpath(__file__)), os.pardir, os.pardir, os.pardir))
     timestamp = datetime.datetime.now().strftime('%Y.%m.%dT%H.%M')
     duration_start_time = time.time()
 
@@ -335,7 +335,7 @@ def perform_test_run(testing_projects_dir, build_type, create_json_report, force
     print("Framework root: %s" % nap_framework_full_path)
     print("Binary dir.: %s" % binary_dir)
 
-    results = open_projects_in_napkin(testing_projects_dir, binary_dir, nap_framework_full_path)
+    results = open_apps_in_napkin(testing_apps_dir, binary_dir, nap_framework_full_path)
 
     # Determine run duration
     (minutes, seconds) = divmod(time.time() - duration_start_time, 60)
@@ -343,7 +343,7 @@ def perform_test_run(testing_projects_dir, build_type, create_json_report, force
 
     # Determine run success
     run_success = determine_run_success(results)
-    
+
     # Report
     if create_json_report:
         print("Creating JSON report")
@@ -368,10 +368,10 @@ def perform_test_run(testing_projects_dir, build_type, create_json_report, force
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('--testing-projects-dir', type=str,
-                        default=DEFAULT_TESTING_PROJECTS_DIR,
+    parser.add_argument('--testing-apps-dir', type=str,
+                        default=DEFAULT_TESTING_APPS_DIR,
                         action='store', nargs='?',
-                        help="Directory to test on, relative to framework root (default %s)" % DEFAULT_TESTING_PROJECTS_DIR)
+                        help="Directory to test on, relative to framework root (default %s)" % DEFAULT_TESTING_APPS_DIR)
     parser.add_argument('--build-type', type=str,
                         default=DEFAULT_BUILD_TYPE,
                         action='store', nargs='?',
@@ -382,5 +382,5 @@ if __name__ == '__main__':
                         help="If reporting to JSON, include STDOUT and STDERR even if there has been no issue")
     args = parser.parse_args()
 
-    success = perform_test_run(args.testing_projects_dir, args.build_type, args.json_report, args.force_log_reporting)
+    success = perform_test_run(args.testing_apps_dir, args.build_type, args.json_report, args.force_log_reporting)
     sys.exit(not success)

@@ -7,30 +7,30 @@ import sys
 
 from nap_shared import find_app
 
-PROJECT_INFO_FILENAME = 'app.json'
-PROJECT_INFO_CMAKE_CACHE_FILENAME = 'cached_app_json.cmake'
+APP_INFO_FILENAME = 'app.json'
+APP_INFO_CMAKE_CACHE_FILENAME = 'cached_app_json.cmake'
 
-def update_project_info_to_cmake(project_path):
-    # Check our project exists
-    if not os.path.exists(project_path):
+def update_app_info_to_cmake(app_path):
+    # Check our app exists
+    if not os.path.exists(app_path):
         return False
 
-    output_filename = os.path.join(project_path, PROJECT_INFO_CMAKE_CACHE_FILENAME)
+    output_filename = os.path.join(app_path, APP_INFO_CMAKE_CACHE_FILENAME)
 
     # If any existing output file exists remove it.  This ensure that CMake will fail if our JSON parsing etc fails.
     if os.path.exists(output_filename):
         os.remove(output_filename)
 
     # Read in the JSON
-    project_info_path = os.path.join(project_path, PROJECT_INFO_FILENAME)
-    with open(project_info_path) as json_file:
+    app_info_path = os.path.join(app_path, APP_INFO_FILENAME)
+    with open(app_info_path) as json_file:
         json_dict = json.load(json_file)
         if not 'RequiredModules' in json_dict:
-            print("Missing element 'RequiredModules' in %s" % project_info_path)
+            print("Missing element 'RequiredModules' in %s" % app_info_path)
             return False
 
         if not type(json_dict['RequiredModules']) is list:
-            print("Element 'RequiredModules' in %s is not an array" % PROJECT_INFO_FILENAME)
+            print("Element 'RequiredModules' in %s is not an array" % APP_INFO_FILENAME)
             return False
 
         nap_modules = ' '.join(json_dict['RequiredModules'])
@@ -45,8 +45,8 @@ def update_project_info_to_cmake(project_path):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument('PROJECT_NAME')
+    parser.add_argument('APP_NAME')
     args = parser.parse_args()
 
-    if not update_project_info_to_cmake(args.PROJECT_NAME):
+    if not update_app_info_to_cmake(args.APP_NAME):
         sys.exit(1)

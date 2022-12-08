@@ -4,8 +4,8 @@
 TODO: Update this docstring to account for versioning
 
 This script will either
-    - take a project and convert its json descriptors to the latest format
-    - or take the NAP root directory and convert all projects/modules to the latest format
+    - take an app and convert its json descriptors to the latest format
+    - or take the NAP root directory and convert all apps/modules to the latest format
 
 See the main() function below.
 
@@ -66,7 +66,7 @@ def _load_json(directory, filename):
 
 def _find_data_file(root_dir):
     proj_name = os.path.basename(root_dir)
-    assert proj_name, 'Expected root dir to be in a project directory: %s' % root_dir
+    assert proj_name, 'Expected root dir to be in a app directory: %s' % root_dir
     data_dir = os.path.join(root_dir, 'data')
 
     # check for data dir first
@@ -91,13 +91,13 @@ def _get_current_cmake_version_setter():
 def convert_module(directory):
     convert_module_info(directory)
 
-    # Determine if it's a project module
-    project_module = os.path.basename(directory) == 'module'
+    # Determine if it's an app module
+    app_module = os.path.basename(directory) == 'module'
 
     # Update CMakeLists.txt in module root if in Framework Release context
-    update_module_cmake(directory, project_module)
+    update_module_cmake(directory, app_module)
 
-def update_module_cmake(directory, project_module):
+def update_module_cmake(directory, app_module):
     file_path = os.path.join(directory, 'CMakeLists.txt')
     # Allow for precompiled modules in Framework Release which don't have a CMakeLists.txt
     if not os.path.exists(file_path):
@@ -106,11 +106,11 @@ def update_module_cmake(directory, project_module):
         contents = f.read()
 
     if get_build_context() == 'framework_release':
-        update_framework_release_module_cmake(directory, project_module, contents)
+        update_framework_release_module_cmake(directory, app_module, contents)
     else:
-        update_source_module_cmake(directory, project_module, contents)
+        update_source_module_cmake(directory, app_module, contents)
 
-def update_source_module_cmake(directory, project_module, contents):
+def update_source_module_cmake(directory, app_module, contents):
     # Detect if needs update
     needs_update = False
 
@@ -164,10 +164,10 @@ set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")"""
     with open(file_path, 'w') as f:
         f.write(contents)
 
-def update_framework_release_module_cmake(directory, project_module, contents):
+def update_framework_release_module_cmake(directory, app_module, contents):
     # Detect if needs update
     needs_update = False
-    # Check for project definition relocation for v0.4
+    # Check for app definition relocation for v0.4
     if not 'dist_shared_crossplatform.cmake' in contents:
         needs_update = True
     if not _get_current_cmake_version_setter() in contents:
@@ -187,7 +187,7 @@ def update_framework_release_module_cmake(directory, project_module, contents):
     print("Upgrading module CMake at %s" % directory)
     cmd = [cmake, 
            '-DMODULE_CMAKE_OUTPATH=%s' % os.path.join(directory, 'CMakeLists.txt'),
-           '%s' % '-DAPP_MODULE=1' if project_module else '', 
+           '%s' % '-DAPP_MODULE=1' if app_module else '', 
            '-DCMAKE_ONLY=1', 
            '-P', os.path.join(cmake_template_dir, 'module_creator.cmake')
            ]
@@ -215,7 +215,7 @@ def convert_module_info(directory):
     with open(filepath, 'w') as fp:
         json.dump(new_mod_info_json, fp, indent=4)
 
-def convert_project_info(directory):
+def convert_app_info(directory):
     """Find a projectinfo file in the specified directory, convert to new format and write to same file.
     This will also attempt to merge and convert any existing service configurations into the same file
     and delete the original config.json
@@ -249,17 +249,17 @@ def convert_project_info(directory):
     with open(filepath, 'w') as fp:
         json.dump(new_proj_info_json, fp, indent=4)
 
-def convert_project(project_dir):
-    convert_project_info(project_dir)
+def convert_app(app_dir):
+    convert_app_info(app_dir)
 
-    module_dir = os.path.join(project_dir, 'module')
+    module_dir = os.path.join(app_dir, 'module')
     if os.path.exists(module_dir):
         convert_module(module_dir)
 
-    # Update CMakeLists.txt in project root if in Framework Release context
-    update_project_cmake(project_dir)
+    # Update CMakeLists.txt in app root if in Framework Release context
+    update_app_cmake(app_dir)
 
-def update_project_cmake(directory):
+def update_app_cmake(directory):
     file_path = os.path.join(directory, 'CMakeLists.txt')
     try:
         with open(file_path) as f:
@@ -269,13 +269,13 @@ def update_project_cmake(directory):
 
     # Detect if needs update
     needs_update = False
-    # Check for project definition relocation for v0.4
+    # Check for app definition relocation for v0.4
     if not 'dist_shared_crossplatform.cmake' in contents:
         needs_update = True
     if not _get_current_cmake_version_setter() in contents:
         needs_update = True
     if not needs_update:
-        print("Project at %s doesn't need CMake update" % directory)
+        print("App at %s doesn't need CMake update" % directory)
         return
 
     cmake = get_cmake_path()
@@ -286,7 +286,7 @@ def update_project_cmake(directory):
     if not os.path.exists(cmake_template_dir):
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'app_creator'))
 
-    print("Upgrading project CMake at %s" % directory)
+    print("Upgrading app CMake at %s" % directory)
     cmd = [cmake, 
            '-DPROJECT_DIR=%s' % directory,
            '-DCMAKE_ONLY=1', 
@@ -310,7 +310,7 @@ def convert_all(root_directory):
         for d in os.listdir(parent_dir):
             if not d.startswith('.'):
                 directory = os.path.join(parent_dir, d)
-                convert_project(directory)
+                convert_app(directory)
 
     module_dirs = [
         'system_modules',
@@ -326,10 +326,10 @@ def convert_all(root_directory):
                 directory = os.path.join(parent_dir, d)
                 convert_module(directory)
 
-def convert_project_wrapper(args):
-    directory = os.path.abspath(args.PROJECT_PATH)
+def convert_app_wrapper(args):
+    directory = os.path.abspath(args.APP_PATH)
     assert os.path.exists(directory), 'Directory does not exist at: %s' % directory
-    convert_project(directory)
+    convert_app(directory)
 
 def convert_module_wrapper(args):
     directory = os.path.abspath(args.MODULE_PATH)
@@ -344,11 +344,11 @@ def convert_all_wrapper(args):
 
 def main():
     parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(metavar='command', help='UPGRADE_PROJECT, UPGRADE_MODULE, or UPGRADE_ALL')
+    subparsers = parser.add_subparsers(metavar='command', help='UPGRADE_APP, UPGRADE_MODULE, or UPGRADE_ALL')
 
-    project_subparser = subparsers.add_parser('UPGRADE_PROJECT')
-    project_subparser.add_argument('PROJECT_PATH', type=str, help='Path to project to upgrade')
-    project_subparser.set_defaults(func=convert_project_wrapper)
+    app_subparser = subparsers.add_parser('UPGRADE_APP')
+    app_subparser.add_argument('APP_PATH', type=str, help='Path to app to upgrade')
+    app_subparser.set_defaults(func=convert_app_wrapper)
 
     module_subparser = subparsers.add_parser('UPGRADE_MODULE')
     module_subparser.add_argument('MODULE_PATH', type=str, help='Path to module to upgrade')
