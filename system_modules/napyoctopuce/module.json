@@ -6,22 +6,17 @@
         "napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/yoctopuce/msvc/x86_64/Release",
-        "{ROOT}/../thirdparty/yoctopuce/msvc/x86_64/Debug",
-        "{ROOT}/thirdparty/yoctopuce/bin/release",
-        "{ROOT}/thirdparty/yoctopuce/bin/debug"
+        "{ROOT}/system_modules/napyoctopuce/thirdparty/yoctopuce/msvc/x86_64/{BUILD_TYPE}"
     ],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/yoctopuce/bin"
+            "{ROOT}/system_modules/napyoctopuce/thirdparty/yoctopuce/linux/{BUILD_ARCH}"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/yoctopuce/bin"
+            "{ROOT}/system_modules/napyoctopuce/thirdparty/yoctopuce/macos/x86_64"
         ],
         "Windows": [
-            "{ROOT}/../thirdparty/yoctopuce/msvc/{BUILD_ARCH}/{BUILD_TYPE}",
-            "{ROOT}/thirdparty/yoctopuce/bin/release",
-            "{ROOT}/thirdparty/yoctopuce/bin/debug"
+            "{ROOT}/system_modules/napyoctopuce/thirdparty/yoctopuce/msvc/x86_64/{BUILD_TYPE}"
         ]
     }
 }

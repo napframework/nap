@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_SERVICE_MODULE("serial", "0.2.0", "nap::SerialService")
+NAP_SERVICE_MODULE("napserial", "0.2.0", "nap::SerialService")

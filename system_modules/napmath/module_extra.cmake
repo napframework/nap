@@ -3,6 +3,7 @@ if(NOT TARGET glm)
     find_package(glm REQUIRED)
 endif()
 
+set(thirdparty_module_dir system_modules/napmath/thirdparty)
 if(NAP_BUILD_CONTEXT MATCHES "source")
     # Include GLM
     target_include_directories(${PROJECT_NAME} PUBLIC ${GLM_INCLUDE_DIRS})
@@ -16,9 +17,10 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
     endif()
 
+
     # Package GLM
-    install(FILES ${GLM_DIR}/copying.txt DESTINATION thirdparty/glm)
-    install(DIRECTORY ${GLM_DIR}/glm/ DESTINATION thirdparty/glm)
+    install(DIRECTORY ${GLM_DIR}/glm DESTINATION ${thirdparty_module_dir}/glm/)
+    install(FILES ${GLM_DIR}/copying.txt DESTINATION ${thirdparty_module_dir}/glm)
 
     if (WIN32)
         # Install for fbxconverter
@@ -37,5 +39,5 @@ else()
     endif()
 
     # Install thirdparty licenses into packaged app
-    install(FILES ${THIRDPARTY_DIR}/glm/copying.txt DESTINATION licenses/glm)
+    install(FILES ${NAP_ROOT}/${thirdparty_module_dir}/glm/copying.txt DESTINATION licenses/GLM)
 endif()

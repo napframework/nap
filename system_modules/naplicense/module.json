@@ -3,17 +3,13 @@
     "mID": "ModuleInfo",
     "RequiredModules": [],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/Release",
-        "{ROOT}/../thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/Debug",
-        "{ROOT}/thirdparty/cryptopp/lib/Release",
-        "{ROOT}/thirdparty/cryptopp/lib/Debug"
+        "{ROOT}/system_modules/naplicense/thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}"
     ],
     "LibrarySearchPaths": {
         "Linux": [],
         "macOS": [],
         "Windows": [
-            "{ROOT}/../thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}",
-            "{ROOT}/thirdparty/cryptopp/lib/{BUILD_TYPE}"
+            "{ROOT}/system_modules/naplicense/thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}"
         ]
     }
 }

@@ -12,10 +12,11 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     endif()
 
     # Package asio into platform release
-    install(FILES ${ASIO_DIST_FILES} DESTINATION thirdparty/asio)
-    install(DIRECTORY ${ASIO_INCLUDE_DIR} DESTINATION thirdparty/asio)
+    set(dest_dir system_modules/${PROJECT_NAME}/thirdparty/asio)
+    install(FILES ${ASIO_LICENSE_FILES} DESTINATION ${dest_dir})
+    install(DIRECTORY ${ASIO_INCLUDE_DIR} DESTINATION ${dest_dir})
 else()
-    add_include_to_interface_target(napasio ${ASIO_INCLUDE_DIRS})
+    add_include_to_interface_target(napasio ${ASIO_INCLUDE_DIR})
     add_define_to_interface_target(napasio ASIO_STANDALONE)
 
     if(WIN32)
@@ -25,5 +26,5 @@ else()
     endif()
 
     # Install asio license into packaged project
-    install(FILES ${THIRDPARTY_DIR}/asio/LICENSE_1_0.txt DESTINATION licenses/asio)
+    install(FILES ${ASIO_LICENSE_FILES} DESTINATION licenses/asio/)
 endif()

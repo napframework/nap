@@ -6,19 +6,17 @@
         "napapp"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/SDL2/msvc/{BUILD_ARCH}/lib",
-        "{ROOT}/thirdparty/SDL2/lib"
+        "{ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/{BUILD_ARCH}/lib"
     ],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/SDL2/lib"
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/SDL2/lib"
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/macos/{BUILD_ARCH}/lib"
         ],
         "Windows": [
-            "{ROOT}/../thirdparty/SDL2/msvc/{BUILD_ARCH}/lib",
-            "{ROOT}/thirdparty/SDL2/lib"
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/{BUILD_ARCH}/lib"
         ]
     }
 }

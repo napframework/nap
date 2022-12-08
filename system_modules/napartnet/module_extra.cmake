@@ -2,6 +2,7 @@ if(NOT TARGET artnet)
     find_package(artnet REQUIRED)
 endif()
 
+set(artnet_dest_dir system_modules/napartnet/thirdparty/libartnet)
 if(NAP_BUILD_CONTEXT MATCHES "source")
     target_include_directories(${PROJECT_NAME} PUBLIC ${ARTNET_INCLUDE_DIRS})
 
@@ -28,25 +29,28 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
     # Package libartnet into platform release
     # Install docs
-    install(FILES ${THIRDPARTY_DIR}/libartnet/source/AUTHORS DESTINATION thirdparty/libartnet)
-    install(FILES ${THIRDPARTY_DIR}/libartnet/source/COPYING DESTINATION thirdparty/libartnet)
-    install(FILES ${THIRDPARTY_DIR}/libartnet/source/README DESTINATION thirdparty/libartnet)
+    install(FILES ${ARTNET_DIR}/source/AUTHORS
+                  ${ARTNET_DIR}/source/COPYING
+                  ${ARTNET_DIR}/source/README
+            DESTINATION ${artnet_dest_dir}/source
+            )
 
     # Install includes
-    install(DIRECTORY ${ARTNET_INCLUDE_DIRS}/ DESTINATION thirdparty/libartnet/include)
+    install(DIRECTORY ${ARTNET_INCLUDE_DIRS} DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
 
     # Install libraries
     if(UNIX AND NOT APPLE)
         file(GLOB ARTNET_DYLIBS ${ARTNET_LINUX_DIR}/lib/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-        install(FILES ${ARTNET_DYLIBS} DESTINATION thirdparty/libartnet/bin)
+        install(FILES ${ARTNET_DYLIBS} DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     else()
-        install(FILES $<TARGET_FILE:artnet> DESTINATION thirdparty/libartnet/bin)
+        install(FILES $<TARGET_FILE:artnet> DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/Release)
+    endif()
+    if(WIN32)
+        install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION ${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/Release)
     endif()
 
     # Set artnet install name macOS
-    if(WIN32)
-        install(FILES $<TARGET_FILE_DIR:artnet>/libartnet.lib DESTINATION thirdparty/libartnet/bin)
-    elseif(APPLE)
+    if(APPLE)
         # Ensure our libArtnet install name id is set properly, this is really for install into packaging
         add_custom_command(TARGET ${PROJECT_NAME}
                            PRE_BUILD
@@ -54,10 +58,11 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
                            COMMENT "Setting install name for libartnet")
 
         foreach(build_type Release Debug)
+            # TODO will need updating
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                                   -add_rpath
                                                   @loader_path/../../../../thirdparty/libartnet/bin
-                                                  ${CMAKE_INSTALL_PREFIX}/modules/napartnet/lib/${build_type}/napartnet.dylib
+                                                  ${CMAKE_INSTALL_PREFIX}/system_modules/napartnet/lib/${build_type}/napartnet.dylib
                                           ERROR_QUIET
                                           )")
         endforeach()
@@ -69,17 +74,22 @@ else()
         # Add post-build step to set copy artnet to bin
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
-                           COMMAND ${CMAKE_COMMAND} 
-                                   -E copy
+                           COMMAND ${CMAKE_COMMAND}
+                                   -E copy_if_different
                                    $<TARGET_FILE:artnet>
-                                   $<TARGET_FILE_DIR:${PROJECT_NAME}> 
+                                   $<TARGET_FILE_DIR:${PROJECT_NAME}>
                            )
-    elseif(UNIX)
-        # Install artnet lib into packaged project
-        file(GLOB ARTNET_DYLIBS ${THIRDPARTY_DIR}/libartnet/bin/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+    elseif(APPLE)
+        # Install artnet lib into packaged project on macOS
+        file(GLOB ARTNET_DYLIBS ${NAP_ROOT}/${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/Release/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        install(FILES ${ARTNET_DYLIBS} DESTINATION lib)
+    else()
+        # Install artnet lib into packaged project on Linux
+        file(GLOB ARTNET_DYLIBS ${NAP_ROOT}/${artnet_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libartnet*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${ARTNET_DYLIBS} DESTINATION lib)
     endif()
 
     # Install artnet license into packaged project
-    install(FILES ${THIRDPARTY_DIR}/libartnet/COPYING DESTINATION licenses/libartnet)
+    # TODO change to ARTNET_LICENSES
+    install(FILES ${NAP_ROOT}/${artnet_dest_dir}/source/COPYING DESTINATION licenses/libartnet)
 endif()

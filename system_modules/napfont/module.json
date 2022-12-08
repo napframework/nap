@@ -5,22 +5,19 @@
         "napmath"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Release",
-        "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Debug",
-        "{ROOT}/thirdparty/freetype/bin/release",
-        "{ROOT}/thirdparty/freetype/bin/debug"
+        "{ROOT}/system_modules/napfont/thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Release",
+        "{ROOT}/system_modules/napfont/thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Debug"
     ],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/freetype/lib"
+            "{ROOT}/system_modules/napfont/thirdparty/freetype/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/freetype/lib"
+            "{ROOT}/system_modules/napfont/thirdparty/freetype/macos/{BUILD_ARCH}/lib"
         ],
         "Windows": [
-            "{ROOT}/../thirdparty/freetype/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}",
-            "{ROOT}/thirdparty/freetype/bin/release",
-            "{ROOT}/thirdparty/freetype/bin/debug"
+            "{ROOT}/system_modules/napfont/thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Release",
+            "{ROOT}/system_modules/napfont/thirdparty/freetype/msvc/{BUILD_ARCH}/lib/Debug"
         ]
     }
 }

@@ -53,14 +53,16 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         copy_files_to_bin(${FILES_TO_COPY})
     endif()
 
+    set(dest_thirdparty system_modules/${PROJECT_NAME}/thirdparty)
+
     # Package mpg123 into platform release
-    install(FILES ${LIBMPG123_DIST_FILES} DESTINATION thirdparty/mpg123)
-    install(DIRECTORY ${LIBMPG123_INCLUDE_DIR}/ DESTINATION thirdparty/mpg123/include)
+    install(FILES ${LIBMPG123_LICENSE_FILES} DESTINATION ${dest_thirdparty}/mpg123/source)
+    install(DIRECTORY ${LIBMPG123_INCLUDE_DIR} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
     if(WIN32)
         file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/*.dll)
-        install(FILES ${MPG123_DYLIBS} DESTINATION thirdparty/mpg123/bin)
-        file(GLOB MPG123_LIBFILES ${LIBMPG123_LIB_DIR}/*.lib) 
-        install(FILES ${MPG123_LIBFILES} DESTINATION thirdparty/mpg123/lib)
+        install(FILES ${MPG123_DYLIBS} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
+        file(GLOB MPG123_LIBFILES ${LIBMPG123_LIB_DIR}/*.lib)
+        install(FILES ${MPG123_LIBFILES} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     elseif(APPLE)
         # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -70,47 +72,47 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
         file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${MPG123_DYLIBS}
-                DESTINATION thirdparty/mpg123/lib)
+                DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
 
         foreach(build_type Release Debug)
             ensure_macos_file_has_rpath_at_install(${CMAKE_INSTALL_PREFIX}/modules/napaudio/lib/${build_type}/libnapaudio.dylib
-                                                   "@loader_path/../../../../thirdparty/mpg123/lib")
+                                                   "@loader_path/../../thirdparty/mpg123/macos/${ARCH}lib")
         endforeach()
     elseif(UNIX)
         file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${MPG123_DYLIBS}
-                DESTINATION thirdparty/mpg123/lib)
+                DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     endif()
 
     # Package libsndfile into platform release
-    install(FILES ${LIBSNDFILE_DIST_FILES} DESTINATION thirdparty/libsndfile)
+    install(FILES ${LIBSNDFILE_LICENSE_FILES} DESTINATION ${dest_thirdparty}/libsndfile/source)
     install(FILES ${LIBSNDFILE_INCLUDE_DIR}/sndfile.h ${LIBSNDFILE_INCLUDE_DIR}/sndfile.hh
-            DESTINATION thirdparty/libsndfile/include)
+            DESTINATION ${dest_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/include)
     if(WIN32)
         file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${LIBSNDFILE_DYLIBS}
-                DESTINATION thirdparty/libsndfile/bin)
+                DESTINATION ${dest_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
         file(GLOB LIBSNDFILE_IMPLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*.lib)
         install(FILES ${LIBSNDFILE_IMPLIBS}
-                DESTINATION thirdparty/libsndfile/lib)
+                DESTINATION ${dest_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     elseif(UNIX)
         file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${LIBSNDFILE_DYLIBS}
-                DESTINATION thirdparty/libsndfile/lib)
+                DESTINATION ${dest_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     endif()
 
     # Package portaudio into platform release
-    install(FILES ${PORTAUDIO_DIST_FILES} DESTINATION thirdparty/portaudio)
-    install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR}/ DESTINATION thirdparty/portaudio/include)
+    install(FILES ${PORTAUDIO_LICENSE_FILES} DESTINATION DESTINATION ${dest_thirdparty}/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
+    install(DIRECTORY ${PORTAUDIO_INCLUDE_DIR} DESTINATION ${dest_thirdparty}/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
     if(WIN32)
         install(FILES ${PORTAUDIO_LIBRARIES}
-                DESTINATION thirdparty/portaudio/lib)
+                DESTINATION ${dest_thirdparty}/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
         install(FILES ${PORTAUDIO_LIBS_RELEASE_DLL}
-                DESTINATION thirdparty/portaudio/bin)
+                DESTINATION ${dest_thirdparty}/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     elseif(UNIX)
         file(GLOB PORTAUDIO_DYLIBS ${PORTAUDIO_LIB_DIR}/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${PORTAUDIO_DYLIBS}
-                DESTINATION thirdparty/portaudio/lib)
+                DESTINATION ${dest_thirdparty}/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
     endif()
 else()
     set(MODULE_NAME_EXTRA_LIB "libmpg123;libsndfile;portaudio")
@@ -131,7 +133,7 @@ else()
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND}
-                                   -E copy
+                                   -E copy_if_different
                                    $<TARGET_FILE:libmpg123>
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DLLCOPY_PATH_SUFFIX}
                            )
@@ -140,8 +142,8 @@ else()
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND}
-                                   -E copy
-                                   ${THIRDPARTY_DIR}/libsndfile/bin/libsndfile-1.dll
+                                   -E copy_if_different
+                                   ${LIBSNDFILE_LIBS_RELEASE_DLL}
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DLLCOPY_PATH_SUFFIX}
                            )
 
@@ -149,21 +151,23 @@ else()
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND ${CMAKE_COMMAND}
-                                   -E copy
-                                   ${THIRDPARTY_DIR}/portaudio/bin/portaudio_x64.dll
+                                   -E copy_if_different
+                                   ${PORTAUDIO_LIBS_RELEASE_DLL}
                                    $<TARGET_FILE_DIR:${PROJECT_NAME}>/${DLLCOPY_PATH_SUFFIX}
                            )
     elseif(UNIX)
+        set(module_thirdparty ${NAP_ROOT}/system_modules/napaudio/thirdparty)
+
         # Install mpg123 lib into packaged app
-        file(GLOB MPG123_DYLIBS ${THIRDPARTY_DIR}/mpg123/lib/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        file(GLOB MPG123_DYLIBS ${module_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${MPG123_DYLIBS} DESTINATION lib)
 
         # Install portaudio lib into packaged app
-        file(GLOB PORTAUDIO_DYLIBS ${THIRDPARTY_DIR}/portaudio/lib/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        file(GLOB PORTAUDIO_DYLIBS ${module_thirdparty}/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libport*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${PORTAUDIO_DYLIBS} DESTINATION lib)
 
         # Install libsndfile into packaged app
-        file(GLOB SNDFILE_DYLIBS ${THIRDPARTY_DIR}/libsndfile/lib/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        file(GLOB SNDFILE_DYLIBS ${module_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
     endif()
 
@@ -179,7 +183,7 @@ else()
     endif()
 
     # Install thirdparty licenses into packaged project
-    install(FILES ${THIRDPARTY_DIR}/portaudio/LICENSE.txt DESTINATION licenses/portaudio)
-    install(FILES ${THIRDPARTY_DIR}/libsndfile/COPYING DESTINATION licenses/libsndfile)
-    install(FILES ${THIRDPARTY_DIR}/mpg123/COPYING DESTINATION licenses/mpg123)
+    install(FILES ${LIBMPG123_LICENSE_FILES} DESTINATION licenses/mpg123)
+    install(FILES ${LIBSNDFILE_LICENSE_FILES} DESTINATION licenses/libsndfile)
+    install(FILES ${PORTAUDIO_LICENSE_FILES} DESTINATION licenses/PortAudio)
 endif()

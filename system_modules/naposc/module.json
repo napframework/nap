@@ -8,10 +8,10 @@
     "WindowsDllSearchPaths": [],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/oscpack/lib"
+            "{ROOT}/system_modules/naposc/thirdparty/oscpack/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/oscpack/lib/Release"
+            "{ROOT}/system_modules/naposc/thirdparty/oscpack/macos/{BUILD_ARCH}/lib/{BUILD_TYPE}"
         ],
         "Windows": []
     }

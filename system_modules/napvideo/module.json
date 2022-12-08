@@ -6,19 +6,17 @@
         "napaudio"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin",
-        "{ROOT}/thirdparty/FFmpeg/bin"
+        "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin"
     ],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/FFmpeg/lib"
+            "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/FFmpeg/lib"
+            "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/macos/{BUILD_ARCH}/lib"
         ],
         "Windows": [
-            "{ROOT}/../thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin",
-            "{ROOT}/thirdparty/FFmpeg/bin"
+            "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin"
         ]
     }
 }

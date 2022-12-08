@@ -5,15 +5,13 @@
         "napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/python/msvc/{BUILD_ARCH}",
-        "{ROOT}/thirdparty/python"
+        "{ROOT}/thirdparty/python/msvc/{BUILD_ARCH}"
     ],
     "LibrarySearchPaths": {
         "Linux": [],
         "macOS": [],
         "Windows": [
-            "{ROOT}/../thirdparty/python/msvc/{BUILD_ARCH}",
-            "{ROOT}/thirdparty/python"
+            "{ROOT}/thirdparty/python/msvc/{BUILD_ARCH}"
         ]
     }
 }

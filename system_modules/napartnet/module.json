@@ -7,20 +7,17 @@
         "napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release",
-        "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Debug",
-        "{ROOT}/thirdparty/libartnet/bin"
+        "{ROOT}/system_modules/napartnet/thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release"
     ],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/libartnet/bin"
+            "{ROOT}/system_modules/napartnet/thirdparty/libartnet/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/libartnet/bin"
+            "{ROOT}/system_modules/napartnet/thirdparty/libartnet/macos/{BUILD_ARCH}/bin/Release"
         ],
         "Windows": [
-            "{ROOT}/../thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/{BUILD_TYPE}",
-            "{ROOT}/thirdparty/libartnet/bin"
+            "{ROOT}/system_modules/napartnet/thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release"
         ]
     }
 }

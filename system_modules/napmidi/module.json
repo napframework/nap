@@ -7,10 +7,10 @@
     "WindowsDllSearchPaths": [],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/rtmidi/lib"
+            "{ROOT}/system_modules/napmidi/thirdparty/rtmidi/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/rtmidi/lib"
+            "{ROOT}/system_modules/napmidi/thirdparty/rtmidi/macos/{BUILD_ARCH}/lib"
         ],
         "Windows": []
     }

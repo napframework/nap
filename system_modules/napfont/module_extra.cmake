@@ -13,23 +13,11 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     endif()
 
     # Package freetype into framework release
-    install(FILES ${FREETYPE_DIST_FILES} DESTINATION thirdparty/freetype)
-
-    install(DIRECTORY ${FREETYPE_INCLUDE_DIR}/ DESTINATION thirdparty/freetype/include
-            FILES_MATCHING PATTERN "*.h")
-
-    if(MSVC)
-        install(FILES ${FREETYPE_LIBS_RELEASE} ${FREETYPE_DLL_RELEASE} DESTINATION thirdparty/freetype/bin/release)
-        install(FILES ${FREETYPE_LIBS_DEBUG} ${FREETYPE_DLL_DEBUG} DESTINATION thirdparty/freetype/bin/debug)
-    elseif(APPLE)
-        file(GLOB RTFREETYPE_LIBS ${FREETYPE_LIBS_DIR}/libfreetype*${CMAKE_SHARED_LIBRARY_SUFFIX})
-        install(FILES ${RTFREETYPE_LIBS}
-                DESTINATION thirdparty/freetype/lib)
-    elseif(UNIX)
-        file(GLOB RTFREETYPE_LIBS ${FREETYPE_LIBS_DIR}/libfreetype${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-        install(FILES ${RTFREETYPE_LIBS}
-                DESTINATION thirdparty/freetype/lib)
-    endif()
+    set(freetype_dest system_modules/${PROJECT_NAME}/thirdparty/freetype)
+    file(GLOB freetype_docs ${FREETYPE_DIR}/source/docs/*.txt ${FREETYPE_DIR}/source/docs/*.TXT)
+    install(FILES ${freetype_docs} DESTINATION ${freetype_dest}/source/docs/)
+    install(FILES ${FREETYPE_DIR}/source/README DESTINATION ${freetype_dest}/source/)
+    install(DIRECTORY ${FREETYPE_DIR}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH} DESTINATION ${freetype_dest}/${NAP_THIRDPARTY_PLATFORM_DIR}/)
 
     if (WIN32)
         # Install for fbxconverter
@@ -38,15 +26,14 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     endif()
 else()
     set(MODULE_NAME_EXTRA_LIBS freetype)
-    add_include_to_interface_target(napfont ${FREETYPE_INCLUDE_DIRS})
+    add_include_to_interface_target(napfont ${FREETYPE_INCLUDE_DIR})
 
     if(WIN32)
         copy_freetype_dll()
-    elseif(APPLE)
-        file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/lib/libfreetype*${CMAKE_SHARED_LIBRARY_SUFFIX})
-          install(FILES ${RTFREETYPE_LIBS} DESTINATION lib)
-    elseif(UNIX)
-        file(GLOB RTFREETYPE_LIBS ${THIRDPARTY_DIR}/freetype/lib/libfree*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-          install(FILES ${RTFREETYPE_LIBS} DESTINATION lib)
+    else()
+        file(GLOB rtfreetype_libs ${FREETYPE_DIR}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libfreetype*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        install(FILES ${rtfreetype_libs} DESTINATION lib)
     endif()
+
+    install(FILES ${FREETYPE_LICENSE_FILES} DESTINATION licenses/FreeType)
 endif()

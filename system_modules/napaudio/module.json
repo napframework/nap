@@ -6,31 +6,25 @@
         "napscene"
     ],
     "WindowsDllSearchPaths": [
-        "{ROOT}/../thirdparty/mpg123/msvc/{BUILD_ARCH}/lib",
-        "{ROOT}/thirdparty/mpg123/bin",
-        "{ROOT}/../thirdparty/portaudio/msvc/{BUILD_ARCH}/lib",
-        "{ROOT}/thirdparty/portaudio/bin",
-        "{ROOT}/../thirdparty/libsndfile/msvc/{BUILD_ARCH}/lib",
-        "{ROOT}/thirdparty/libsndfile/bin"
+        "{ROOT}/system_modules/napaudio/thirdparty/mpg123/msvc/{BUILD_ARCH}/lib",
+        "{ROOT}/system_modules/napaudio/thirdparty/portaudio/msvc/{BUILD_ARCH}/lib",
+        "{ROOT}/system_modules/napaudio/thirdparty/libsndfile/msvc/{BUILD_ARCH}/lib"
     ],
     "LibrarySearchPaths": {
         "Linux": [
-            "{ROOT}/thirdparty/mpg123/lib",
-            "{ROOT}/thirdparty/portaudio/lib",
-            "{ROOT}/thirdparty/libsndfile/lib"
+            "{ROOT}/system_modules/napaudio/thirdparty/mpg123/linux/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/napaudio/thirdparty/portaudio/linux/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/napaudio/thirdparty/libsndfile/linux/{BUILD_ARCH}/lib"
         ],
         "macOS": [
-            "{ROOT}/thirdparty/mpg123/lib",
-            "{ROOT}/thirdparty/portaudio/lib",
-            "{ROOT}/thirdparty/libsndfile/lib"
+            "{ROOT}/system_modules/napaudio/thirdparty/mpg123/macos/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/napaudio/thirdparty/portaudio/macos/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/napaudio/thirdparty/libsndfile/macos/{BUILD_ARCH}/lib"
         ],
         "Windows": [
-            "{ROOT}/../thirdparty/mpg123/msvc/{BUILD_ARCH}/lib",
-            "{ROOT}/thirdparty/mpg123/bin",
-            "{ROOT}/../thirdparty/portaudio/msvc/{BUILD_ARCH}/lib",
-            "{ROOT}/thirdparty/portaudio/bin",
-            "{ROOT}/../thirdparty/libsndfile/msvc/{BUILD_ARCH}/lib",
-            "{ROOT}/thirdparty/libsndfile/bin"
+            "{ROOT}/system_modules/napaudio/thirdparty/mpg123/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/napaudio/thirdparty/portaudio/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/napaudio/thirdparty/libsndfile/msvc/{BUILD_ARCH}/lib"
         ]
     }
 }

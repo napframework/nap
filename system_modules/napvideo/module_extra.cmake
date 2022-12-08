@@ -1,6 +1,7 @@
 set(FFMPEG_FIND_QUIETLY TRUE)
 find_package(FFmpeg REQUIRED)
 
+set(ffmpeg_dest_dir system_modules/napvideo/thirdparty/ffmpeg)
 if(NAP_BUILD_CONTEXT MATCHES "source")
     target_include_directories(${PROJECT_NAME} PUBLIC ${FFMPEG_INCLUDE_DIR})
 
@@ -8,32 +9,33 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
 
     if(WIN32)
         # Copy FFmpeg DLLs to build directory
-        file(GLOB FFMPEGDLLS ${THIRDPARTY_DIR}/ffmpeg/msvc/x86_64/bin/*.dll)
-        copy_files_to_bin(${FFMPEGDLLS})
+        file(GLOB FFMPEG_DLLS ${NAP_ROOT}/${ffmpeg_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/*.dll)
+        copy_files_to_bin(${FFMPEG_DLLS})
     endif()
 
     ## Package into platform release
 
     # Package dependencies into release --
-    install(DIRECTORY ${FFMPEG_LICENSE_DIR}/ DESTINATION thirdparty/FFmpeg)
-    install(FILES ${FFMPEG_DIST_FILES} DESTINATION thirdparty/FFmpeg)
+    install(DIRECTORY ${FFMPEG_LICENSE_DIR} DESTINATION ${ffmpeg_dest_dir})
+    install(FILES ${FFMPEG_SOURCE_DIST} DESTINATION ${ffmpeg_dest_dir})
     set(FFMPEG_DIR ${FFMPEG_INCLUDE_DIR}/..)
-    install(DIRECTORY ${FFMPEG_DIR}/ DESTINATION thirdparty/FFmpeg)
+    install(DIRECTORY ${FFMPEG_DIR}/ DESTINATION ${ffmpeg_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
 
     if(APPLE)
         # Add RPATH for FFmpeg to packaged module on macOS
         foreach(build_type Release Debug)
             # Errors are ignored as duplicate RPATHs are possible
+            # TODO this will need fixing
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                                   -add_rpath
                                                   @loader_path/../../../../thirdparty/FFmpeg/lib
-                                                  ${CMAKE_INSTALL_PREFIX}/modules/napvideo/lib/${build_type}/napvideo.dylib                                           
+                                                  ${CMAKE_INSTALL_PREFIX}/modules/napvideo/lib/${build_type}/napvideo.dylib
                                           ERROR_QUIET
                                           )")
         endforeach()
     elseif(UNIX)
         # Let our installed FFmpeg libs find each other
-        install(CODE "file(GLOB FFMPEG_DYLIBS ${CMAKE_INSTALL_PREFIX}/thirdparty/FFmpeg/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        install(CODE "file(GLOB FFMPEG_DYLIBS ${CMAKE_INSTALL_PREFIX}/${ffmpeg_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
                       foreach(FFMPEG_DYLIB \${FFMPEG_DYLIBS})
                           execute_process(COMMAND patchelf --set-rpath \$ORIGIN/. \${FFMPEG_DYLIB}
                                           RESULT_VARIABLE EXIT_CODE
@@ -50,7 +52,7 @@ else()
     if(WIN32)
         # Copy over DLLs post-build on Windows
         get_filename_component(FFMPEG_LIB_DIR ${FFMPEG_LIBAVCODEC} DIRECTORY)
-        file(GLOB FFMPEG_DLLS ${FFMPEG_LIB_DIR}/../bin/*.dll)
+        file(GLOB FFMPEG_DLLS ${NAP_ROOT}/${ffmpeg_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/*.dll)
 
         set(DLLCOPY_PATH_SUFFIX "")
         foreach (SINGLE_DLL ${FFMPEG_DLLS})
@@ -63,19 +65,19 @@ else()
     elseif(UNIX)
         if(APPLE)
             # Add FFmpeg RPATH to built app
-            macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/FFmpeg/lib) 
+            macos_add_rpath_to_module_post_build(${PROJECT_NAME} $<TARGET_FILE:${PROJECT_NAME}> ${THIRDPARTY_DIR}/FFmpeg/lib)
         endif()
 
         # Install FFmpeg into packaged app
-        install(DIRECTORY ${THIRDPARTY_DIR}/FFmpeg/lib/ DESTINATION lib)
+        install(DIRECTORY ${NAP_ROOT}/${ffmpeg_dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/ DESTINATION lib)
     endif()
 
     # Install FFmpeg license into packaged app
-    install(FILES ${THIRDPARTY_DIR}/FFmpeg/COPYING.LGPLv2.1
-                  ${THIRDPARTY_DIR}/FFmpeg/COPYING.LGPLv3
-                  ${THIRDPARTY_DIR}/FFmpeg/LICENSE.md
+    install(FILES ${FFMPEG_LICENSE_DIR}/COPYING.LGPLv2.1
+                  ${FFMPEG_LICENSE_DIR}/COPYING.LGPLv3
+                  ${FFMPEG_LICENSE_DIR}/LICENSE.md
             DESTINATION licenses/FFmpeg
             )
     # Install FFmpeg source into packaged app to comply with license
-    install(FILES ${THIRDPARTY_DIR}/FFmpeg/ffmpeg-3.4.2.tar.xz DESTINATION licenses/FFmpeg)
+    install(FILES ${FFMPEG_SOURCE_DIST} DESTINATION licenses/FFmpeg)
 endif()
