@@ -14,22 +14,10 @@ macro(package_nap)
         configure_file(${NAP_ROOT}/cmake/build_number.cmake.in ${NAP_ROOT}/cmake/build_number.cmake @ONLY)
     endif()
 
-    # Package shared CMake files
-    file(GLOB CROSSP_FILES ${NAP_ROOT}/cmake/dist_find_modules/*.*)
-    list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/macros_and_functions.cmake)
-    list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/nap_module.cmake)
-    list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/nap_app.cmake)
-    list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/build_info.json)
-    list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/targetarch.cmake)
-    list(APPEND CROSSP_FILES ${NAP_ROOT}/cmake/install_napkin_with_app.cmake)
-    install(FILES ${CROSSP_FILES}
+    # Package CMake logic
+    install(DIRECTORY ${NAP_ROOT}/cmake/
             DESTINATION cmake/
-            )
-    install(DIRECTORY ${NAP_ROOT}/cmake/app_creator
-            DESTINATION cmake
-            )
-    install(DIRECTORY ${NAP_ROOT}/cmake/module_creator
-            DESTINATION cmake
+            PATTERN "*.in" EXCLUDE
             )
 
     # Install wrapper batch scripts for user tools
