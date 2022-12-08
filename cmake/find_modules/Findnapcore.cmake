@@ -2,7 +2,7 @@ if(WIN32)
     find_path(
         NAPCORE_LIBS_DIR
         NAMES Release-${ARCH}/napcore.lib
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
+        HINTS ${NAP_ROOT}/lib/
     )
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug-${ARCH}/napcore.lib)
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release-${ARCH}/napcore.lib)
@@ -10,7 +10,7 @@ elseif(UNIX)
     find_path(
         NAPCORE_LIBS_DIR
         NAMES Debug-${ARCH}/napcore${CMAKE_SHARED_LIBRARY_SUFFIX}
-        HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
+        HINTS ${NAP_ROOT}/lib/
     )
     set(NAPCORE_LIBS_RELEASE ${NAPCORE_LIBS_DIR}/Release-${ARCH}/napcore${CMAKE_SHARED_LIBRARY_SUFFIX})
     set(NAPCORE_LIBS_DEBUG ${NAPCORE_LIBS_DIR}/Debug-${ARCH}/napcore${CMAKE_SHARED_LIBRARY_SUFFIX})
@@ -48,7 +48,7 @@ if(WIN32)
     endif()
 endif()
 
-# Install into packaged project for macOS/Linux
+# Install into packaged app for macOS/Linux
 if(NOT WIN32)
     install(FILES ${NAPCORE_LIBS_RELEASE} DESTINATION lib CONFIGURATIONS Release)
 
@@ -56,7 +56,7 @@ if(NOT WIN32)
     if(NOT APPLE)
         install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/napcore.so\")
                       execute_process(COMMAND patchelf
-                                              --set-rpath 
+                                              --set-rpath
                                               $ORIGIN/.
                                               ${CMAKE_INSTALL_PREFIX}/lib/napcore.so
                                       RESULT_VARIABLE EXIT_CODE)
@@ -64,5 +64,5 @@ if(NOT WIN32)
                           message(FATAL_ERROR \"Failed to fetch RPATH on napcore.so using patchelf\")
                       endif()
                       ")
-    endif()      
+    endif()
 endif()

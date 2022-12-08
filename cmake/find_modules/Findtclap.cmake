@@ -1,12 +1,15 @@
-find_path(TCLAP_INCLUDE_DIRS
-          NAMES tclap/CmdLine.h
+find_path(TCLAP_DIR
+          NAMES include/tclap/CmdLine.h
           HINTS
-          ${THIRDPARTY_DIR}/tclap-1.2.1/include
+          ${THIRDPARTY_DIR}/tclap
           )
 
+set(TCLAP_INCLUDE_DIRS ${TCLAP_DIR}/include)
+
+mark_as_advanced(TCLAP_DIR)
 mark_as_advanced(TCLAP_INCLUDE_DIRS)
 
-if(TCLAP_INCLUDE_DIRS)
+if(TCLAP_DIRS)
     set(TCLAP_FOUND TRUE)
 endif()
 

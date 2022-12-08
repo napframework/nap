@@ -4,7 +4,7 @@ find_package(moodycamel REQUIRED)
 find_path(
     NAPUTILITY_LIBS_DIR
     NAMES Debug-${ARCH}/naputility${CMAKE_STATIC_LIBRARY_SUFFIX}
-    HINTS ${CMAKE_CURRENT_LIST_DIR}/../lib/
+    HINTS ${NAP_ROOT}/lib/
 )
 set(NAPUTILITY_LIBS_RELEASE ${NAPUTILITY_LIBS_DIR}/Release-${ARCH}/naputility${CMAKE_STATIC_LIBRARY_SUFFIX})
 set(NAPUTILITY_LIBS_DEBUG ${NAPUTILITY_LIBS_DIR}/Debug-${ARCH}/naputility${CMAKE_STATIC_LIBRARY_SUFFIX})
@@ -27,5 +27,5 @@ file(GLOB utility_headers ${CMAKE_CURRENT_LIST_DIR}/../include/utility/*.h)
 target_sources(naputility INTERFACE ${utility_headers})
 source_group(NAP\\Utility FILES ${utility_headers})
 
-# Install moodycamel license into packaged project
+# Install moodycamel license into packaged app
 install(FILES ${THIRDPARTY_DIR}/moodycamel/LICENSE.md DESTINATION licenses/moodycamel)
