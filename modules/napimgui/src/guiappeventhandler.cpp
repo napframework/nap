@@ -18,7 +18,7 @@ namespace nap
 {
 	GUIAppEventHandler::GUIAppEventHandler(App& app) : AppEventHandler(app)
 	{
-		if (!setTouchGenerateMouseEvents(true))
+		if (!setTouchGeneratesMouseEvents(true))
 		{
 			nap::Logger::warn("Unable to control if touch input generates mouse events");
 		}
@@ -75,7 +75,17 @@ namespace nap
 			else if (mEventConverter->isTouchEvent(event))
 			{
 				nap::InputEventPtr input_event = mEventConverter->translateTouchEvent(event);
-				if (input_event != nullptr)
+				if (input_event == nullptr)
+					continue;
+
+				// Forward touch as mouse input to GUI if touch input doesn't generate mouse events.
+				assert(input_event->get_type().is_derived_from(RTTI_OF(WindowInputEvent)));
+				ImGuiContext* ctx = !mTouchGeneratesMouseEvents ?
+					mGuiService->processInputEvent(*input_event) :
+					mGuiService->findContext(static_cast<WindowInputEvent*>(input_event.get())->mWindow);
+
+				// Forward touch input to running app if gui isn't capturing this 'touch' event
+				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
 				{
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
@@ -123,9 +133,14 @@ namespace nap
 	}
 
 
-	bool GUIAppEventHandler::setTouchGenerateMouseEvents(bool value)
+	bool GUIAppEventHandler::setTouchGeneratesMouseEvents(bool value)
 	{
-		return SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
-			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0;
+		if (SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
+			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0)
+		{
+			mTouchGeneratesMouseEvents = value;
+			return true;
+		}
+		return false;
 	}
 }

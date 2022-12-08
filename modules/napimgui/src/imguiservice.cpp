@@ -386,7 +386,7 @@ namespace nap
 		io.KeyMap[ImGuiKey_End] = (int)EKeyCode::KEY_END;
 		io.KeyMap[ImGuiKey_Delete] = (int)EKeyCode::KEY_DELETE;
 		io.KeyMap[ImGuiKey_Backspace] = (int)EKeyCode::KEY_BACKSPACE;
-		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_KP_ENTER;
+		io.KeyMap[ImGuiKey_Enter] = (int)EKeyCode::KEY_RETURN;
 		io.KeyMap[ImGuiKey_Escape] = (int)EKeyCode::KEY_ESCAPE;
         io.KeyMap[ImGuiKey_Space] = (int)EKeyCode::KEY_SPACE;
 		io.KeyMap[ImGuiKey_A] = (int)EKeyCode::KEY_a;
@@ -510,6 +510,19 @@ namespace nap
 	}
 
 
+	ImGuiContext* IMGuiService::findContext(int windowID)
+	{
+		auto* window = mRenderService->findWindow(windowID);
+		if (window != nullptr)
+		{
+			const auto it = mContexts.find(window);
+			assert(it != mContexts.end());
+			return it->second->mContext;
+		}
+		return nullptr;
+	}
+
+
 	float IMGuiService::getScale(const ImGuiContext* context) const
 	{
 		// Check if service doesn't already exist
@@ -529,14 +542,14 @@ namespace nap
 	}
 
 
-	ImGuiContext* IMGuiService::processInputEvent(InputEvent& event)
+	ImGuiContext* IMGuiService::processInputEvent(const InputEvent& event)
 	{
 		// Check if it's a window input event
 		if (!event.get_type().is_derived_from(RTTI_OF(nap::WindowInputEvent)))
 			return nullptr;
 
 		// Find window associated with event
-		WindowInputEvent& input_event = static_cast<WindowInputEvent&>(event);
+		const auto& input_event = static_cast<const WindowInputEvent&>(event);
 		nap::RenderWindow* window = mRenderService->findWindow(input_event.mWindow);
 		assert(window != nullptr);
 
@@ -544,34 +557,32 @@ namespace nap
 		auto context = mContexts.find(window);
 		assert(context != mContexts.end());
 
-		// Select contect and get input / output information
+		// Activate ImGUI Context
 		ImGui::SetCurrentContext(context->second->mContext);
-		ImGuiIO& io = ImGui::GetIO();
 
 		// Key event
 		if (event.get_type().is_derived_from(RTTI_OF(nap::KeyEvent)))
-		{
-			bool pressed = event.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
-			KeyEvent& key_event = static_cast<KeyEvent&>(event);
+			handleKeyEvent(static_cast<const KeyEvent&>(event), *context->second);
 
-			io.KeysDown[static_cast<int>(key_event.mKey)] = pressed;
-			io.KeyShift = ((SDL_GetModState() & KMOD_SHIFT) != 0);
-			io.KeyCtrl	= ((SDL_GetModState() & KMOD_CTRL)	!= 0);
-			io.KeyAlt	= ((SDL_GetModState() & KMOD_ALT)	!= 0);
-			io.KeySuper	= ((SDL_GetModState() & KMOD_GUI)	!= 0);
-		}
+		// Pointer press event
+		else if (event.get_type().is_derived_from(RTTI_OF(PointerEvent)))
+			handlePointerEvent(static_cast<const PointerEvent&>(event), *context->second);
+
+		else if (event.get_type().is_derived_from(RTTI_OF(TouchEvent)))
+			handleTouchEvent(static_cast<const TouchEvent&>(event), *context->second);
 
 		// Text input event
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::TextInputEvent)))
 		{
-			nap::TextInputEvent& press_event = static_cast<nap::TextInputEvent&>(event);
+			ImGuiIO& io = ImGui::GetIO();
+			const auto& press_event = static_cast<const nap::TextInputEvent&>(event);
 			io.AddInputCharactersUTF8(press_event.mText.c_str());
 		}
 
 		// Mouse wheel event
 		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
 		{
-			nap::MouseWheelEvent& wheel_event = static_cast<nap::MouseWheelEvent&>(event);
+			const auto& wheel_event = static_cast<const nap::MouseWheelEvent&>(event);
 #ifdef __APPLE__
 			int delta = io.KeyShift ? wheel_event.mX * -1 : wheel_event.mY;
 #else
@@ -580,13 +591,6 @@ namespace nap
 			context->second->mMouseWheel = delta > 0 ? 1.0f : -1.0f;
 		}
 
-		// Pointer press event
-		else if (event.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
-		{
-			nap::PointerPressEvent& press_event = static_cast<nap::PointerPressEvent&>(event);
-			if(press_event.mButton != EMouseButton::UNKNOWN)
-				context->second->mMousePressed[static_cast<int>(press_event.mButton)] = true;
-		}
 		return context->second->mContext;
 	}
 
@@ -932,39 +936,51 @@ namespace nap
 		io.DisplaySize = { (float)window.getBufferSize().x, (float)window.getBufferSize().y };
 		io.DisplayFramebufferScale = { 1.0f, 1.0f };
 
-		// Current mouse settings
-		int mx, my;
-		Uint32 mouseMask = SDL_GetMouseState(&mx, &my);
-		bool mouse_focus = SDL_GetWindowFlags(window.getNativeWindow()) & SDL_WINDOW_MOUSE_FOCUS;
+		// Set mouse coordinates
+		io.MousePos =
+		{
+			static_cast<float>(context.mMousePosition.x),
+			static_cast<float>(window.getHeight() - 1 - context.mMousePosition.y)
+		};
 
-		// Mouse coordinates are scaled accordingly when high dpi rendering is enabled
-		if (mouse_focus)
+		// Scale mouse coordinates when high dpi rendering is enabled
+		if (mRenderService->getHighDPIEnabled())
 		{
-			io.MousePos = ImVec2(static_cast<float>(mx), static_cast<float>(my));
-			if (mRenderService->getHighDPIEnabled())
-			{
-				io.MousePos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
-				io.MousePos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
-			}
-		}
-		else
-		{
-			io.MousePos = { -math::max<float>(), -math::max<float>() };
+			io.MousePos.x *= static_cast<float>(window.getBufferSize().x) / static_cast<float>(window.getWidth());
+			io.MousePos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
 		}
 
-		// Update mouse down state
-		// If a mouse press event came, always pass it as "mouse held this frame", so we don't miss click-release events that are shorter than 1 frame.
-		io.MouseDown[0] = context.mMousePressed[0] || (mouseMask & SDL_BUTTON(SDL_BUTTON_LEFT))   != 0;		
-		io.MouseDown[1] = context.mMousePressed[1] || (mouseMask & SDL_BUTTON(SDL_BUTTON_RIGHT))  != 0;
-		io.MouseDown[2] = context.mMousePressed[2] || (mouseMask & SDL_BUTTON(SDL_BUTTON_MIDDLE)) != 0;
-		context.mMousePressed[0] = context.mMousePressed[1] = context.mMousePressed[2] = false;
+		// Tell the system if a mouse press has been registered this frame.
+		for (auto i = 0; i < context.mMousePressed.size(); i++)
+		{
+			io.MouseDown[i] = context.mMousePressed[i];
+		}
 
 		// Update mouse wheel state
 		io.MouseWheel = context.mMouseWheel;
-		context.mMouseWheel = 0.0f;
+
+		// Update key modifiers
+		SDL_Keymod mod_state = SDL_GetModState();
+		io.KeyShift = ((mod_state & KMOD_SHIFT) > 0);
+		io.KeyCtrl  = ((mod_state & KMOD_CTRL)  > 0);
+		io.KeyAlt   = ((mod_state & KMOD_ALT)   > 0);
+		io.KeySuper = ((mod_state & KMOD_GUI)   > 0);
 
 		// Begin new frame
 		ImGui::NewFrame();
+
+		// If a mouse button was released this frame, disable the button press and reset mouse release state.
+		for (int i = 0; i < context.mMouseRelease.size(); i++)
+		{
+			if (context.mMouseRelease[i])
+			{
+				context.mMousePressed[i] = false;
+				context.mMouseRelease[i] = false;
+			}
+		}
+
+		// Reset mouse wheel
+		context.mMouseWheel = 0.0f;
 	}
 
 
@@ -1003,6 +1019,64 @@ namespace nap
 			// Store scale, ensures custom widgets can scale accordingly
 			context.mScale = mGuiScale;
 		}
+	}
+
+
+	void IMGuiService::handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context)
+	{
+		ImGuiIO& io = ImGui::GetIO();
+		io.KeysDown[static_cast<int>(keyEvent.mKey)] = keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
+	}
+
+
+	void IMGuiService::handlePointerEvent(const PointerEvent& pointerEvent, GUIContext& context)
+	{
+		// Set position
+		context.mMousePosition.x = pointerEvent.mX;
+		context.mMousePosition.y = pointerEvent.mY;
+
+		// Handle Press
+		if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
+		{
+			const auto& press_event = static_cast<const nap::PointerPressEvent&>(pointerEvent);
+			if (press_event.mButton != EMouseButton::UNKNOWN)
+			{
+				context.mMousePressed[static_cast<int>(press_event.mButton)] = true;
+			}
+		}
+
+		// Handle Release
+		else if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
+		{
+			const auto& press_event = static_cast<const nap::PointerReleaseEvent&>(pointerEvent);
+			if (press_event.mButton != EMouseButton::UNKNOWN)
+			{
+				context.mMouseRelease[static_cast<int>(press_event.mButton)] = true;
+			}
+		}
+	}
+
+
+	void IMGuiService::handleTouchEvent(const TouchEvent& touchEvent, GUIContext& context)
+	{
+		/*
+		 * Updates GUI mouse information based on touch input
+		 * DO NOT call this function when touch events also generate mouse events.
+		 * This function should only be called when touch input is decoupled from the mouse.
+		 * The GUIAppEventHandler forwards touch events to the GUI if 'setTouchGenerateMouseEvents' is set to false.
+		 */
+
+		// Set mouse position
+		context.mMousePosition.x = touchEvent.mX;
+		context.mMousePosition.y = touchEvent.mY;
+
+		// Handle touch press
+		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchPressEvent)))
+			context.mMousePressed[0] = true;
+
+		// Handle touch release
+		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchReleaseEvent)))
+			context.mMouseRelease[0] = true;
 	}
 
 
