@@ -8,7 +8,7 @@ message(STATUS "Using NAP Root: ${CMAKE_CURRENT_LIST_DIR}")
 set(NAP_BUILD_CONTEXT "source")
 
 # Thirdparty libraries reside in this location, keep an absolute path
-get_filename_component(THIRDPARTY_DIR ../thirdparty REALPATH BASE_DIR ${CMAKE_CURRENT_LIST_DIR})
+set(THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
 include(cmake/macros_and_functions.cmake)
