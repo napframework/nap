@@ -16,6 +16,7 @@ namespace nap
 	/**
 	 * Application event handler that is designed to work with applications that host a graphical user interface.
 	 * This class checks if the user is interacting with a GUI element, if so, no input events are forwarded to the application.
+	 * By default touch input generates mouse events. Call `setTouchGenerateMouseEvents(false)` to decouple this behavior.
 	 */
 	class NAPAPI GUIAppEventHandler : public AppEventHandler
 	{
@@ -35,9 +36,18 @@ namespace nap
 		virtual void process() override;
 
 		/**
-		* This call deletes the input converter
-		*/
+		 * This call deletes the input converter
+		 */
 		virtual void shutdown() override;
+
+		/**
+		 * Tells the input system if touch input also generates mouse events, next to touch events.
+		 * On most systems touch input is coupled to mouse input. This is controlled on an operating system level.
+		 * This call tries to explicitly tell the input system to couple or decouple both events.
+		 * @param value if touch input generates mouse events.
+		 * @return if the system accepted the hint.
+		 */
+		bool setTouchGenerateMouseEvents(bool value);
 
 	private:
 		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;

@@ -8,6 +8,7 @@
 
 // External includes
 #include <sdlinputservice.h>
+#include <SDL_hints.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GUIAppEventHandler)
 	RTTI_CONSTRUCTOR(nap::App&)
@@ -16,7 +17,13 @@ RTTI_END_CLASS
 namespace nap
 {
 	GUIAppEventHandler::GUIAppEventHandler(App& app) : AppEventHandler(app)
-	{ }
+	{
+		if (!setTouchGenerateMouseEvents(true))
+		{
+			nap::Logger::warn("Unable to control if touch input generates mouse events");
+		}
+	}
+
 
 	void GUIAppEventHandler::start()
 	{
@@ -113,5 +120,12 @@ namespace nap
 	{
 		mEventConverter.reset(nullptr);
 		mGuiService = nullptr;
+	}
+
+
+	bool GUIAppEventHandler::setTouchGenerateMouseEvents(bool value)
+	{
+		return SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
+			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0;
 	}
 }

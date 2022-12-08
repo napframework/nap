@@ -165,5 +165,4 @@ namespace nap
 		SDL_GameControllerClose(reinterpret_cast<SDL_GameController*>(mController));
 		nap::Logger::info("Game Controller: %d disconnected", mDeviceID);
 	}
-
 }
