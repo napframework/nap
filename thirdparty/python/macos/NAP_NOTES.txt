@@ -1,0 +1,37 @@
+Built from Python-3.6.4.tar.xz
+
+Downloader older macOS SDKs for backwards compatibility.  If you don't do this we'll be locked into the last release or two.  https://github.com/phracker/MacOSX-SDKs
+
+Configured with options:
+./configure --enable-shared --enable-universalsdk=/Users/cheywood/workspaces/naivi/thirdpartybuild/MacOSX-SDKs/MacOSX10.9.sdk/ --prefix=`pwd`/osx-install/
+
+# TODO flesh out configuration options, based on any missing modules below that we want
+
+After build:
+
+In install dir..
+
+Set PATH_DEPENDENT_DYLIB_PATH from the Python path in otool -L bin/python3.6
+
+chown -R `whoami` *
+chmod -R +w *
+install_name_tool -id @rpath/libpython3.6m.dylib lib/libpython3.6m.dylib
+install_name_tool -change PATH_DEPENDENT_DYLIB_PATH @loader_path/../lib/libpython3.6m.dylib bin/python3.6
+rm -r lib/python3.6/test 
+rm -r lib/python3.6/tkinter
+rm lib/python3.6/config-3.6m-darwin/libpython3.6m.a
+
+Output:
+
+Python build finished successfully!
+The necessary bits to build these optional modules were not found:
+_gdbm                 _ssl                  ossaudiodev        
+spwd                                                           
+To find the necessary bits, look in setup.py in detect_modules() for the module's name.
+
+The following modules found by detect_modules() in setup.py, have been
+built by the Makefile instead, as configured by the Setup files:
+atexit                pwd                   time               
+
+Failed to build these modules:
+_lzma   

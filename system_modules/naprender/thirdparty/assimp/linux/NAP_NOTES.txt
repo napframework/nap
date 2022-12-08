@@ -1,0 +1,4 @@
+Built from source in NAP thirdparty repo on Ubuntu 16.04 with GCC 5.4.0
+
+Configured with:
+cmake -DCMAKE_INSTALL_PREFIX=`pwd`/linux/install -DBUILD_SHARED_LIBS=ON -DCMAKE_C_FLAGS=-fPIC -DCMAKE_CXX_FLAGS=-fPIC CMakeLists.txt -G 'Unix Makefiles'

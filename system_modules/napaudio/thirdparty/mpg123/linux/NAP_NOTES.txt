@@ -1,0 +1,56 @@
+Compiled from source included in repo (1.25.6) on Ubuntu 16.04 with GCC 5.4.0
+
+Output:
+
+  CPU Optimization ........ x86-64
+  Compiler Optimization ... 2
+  Gapless Support ......... enabled
+  Debugging ............... disabled
+  Seek table size ......... 1000
+  FIFO support ............ enabled
+  Buffer .................. enabled
+  Network (http streams) .. enabled
+  Network Sockets ......... Posix
+  IPv6 (getaddrinfo) ...... enabled
+  File offsets ............ default
+  LFS alias symbols ....... enabled (64)
+  LFS alias type .......... off_t
+  Use yasm (for AVX only) . disabled
+
+  Core libmpg123 features:
+  Layer I ................. enabled
+  Layer II ................ enabled
+  Layer III ............... enabled
+  NtoM resampling ......... enabled
+  downsampled decoding .... enabled
+  Feeder/buffered input ... enabled
+  ID3v2 parsing ........... enabled
+  String API .............. enabled
+  ICY parsing/conversion .. enabled
+  Error/warning messages .. enabled
+  Win32 Unicode File Open.. unneeded
+  Feature Report Function.. enabled
+  Output formats (nofpu will disable all but 16 or 8 bit!):
+  8 bit integer ........... enabled
+  16 bit integer .......... enabled
+  32/24 bit integer ....... enabled
+  real (32 bit float) ..... enabled
+  Equalizer ............... enabled
+  Optimization detail:
+  Integer conversion ...... fast
+  IEEE 754 hackery ........ enabled
+  New/old WRITE_SAMPLE .... disabled
+  new Huffman scheme ...... enabled
+
+Note: Disabling core features is not commonly done and some combinations might not build/work. If you encounter such a case, help yourself (and provide a patch) or just poke the maintainers.
+
+  Modules ................. enabled
+  Checked audio modules ... alsa tinyalsa oss coreaudio sndio sun win32 win32_wasapi os2 esd jack portaudio pulse sdl nas arts openal dummy
+  Detected audio support .. alsa oss jack dummy
+  Default output module ... alsa
+
+
+  CPPFLAGS=' -DOPT_MULTI -DOPT_X86_64 -DOPT_GENERIC -DOPT_GENERIC_DITHER -DREAL_IS_FLOAT -DOPT_AVX '
+  CFLAGS='-O2 -fomit-frame-pointer -funroll-all-loops -finline-functions -ffast-math  -g -O2'
+  LIBS='-lm -ldl '
+

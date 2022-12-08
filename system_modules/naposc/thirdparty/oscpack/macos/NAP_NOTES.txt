@@ -1,0 +1,8 @@
+After build: 
+
+Renamed .so to .dylib.  They are actually dylibs, the output name of the build is wrong.
+
+install_name_tool -id @rpath/liboscpack.1.1.0.dylib Release/liboscpack.1.1.0.dylib
+install_name_tool -id @rpath/liboscpack.1.1.0.dylib Debug/liboscpack.1.1.0.dylib
+
+TODO: Once dylibs are in use remove static libs in oscpack/xcode

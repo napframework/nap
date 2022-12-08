@@ -1,0 +1,334 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		B8AF94D51B9F3418003FA33E /* yapi.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94BC1B9F3418003FA33E /* yapi.c */; };
+		B8AF94D61B9F3418003FA33E /* yfifo.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94BF1B9F3418003FA33E /* yfifo.c */; };
+		B8AF94D71B9F3418003FA33E /* yhash.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94C11B9F3418003FA33E /* yhash.c */; };
+		B8AF94D81B9F3418003FA33E /* yjson.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94C31B9F3418003FA33E /* yjson.c */; };
+		B8AF94D91B9F3418003FA33E /* ykey.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94C51B9F3418003FA33E /* ykey.c */; };
+		B8AF94DA1B9F3418003FA33E /* ymemory.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94C71B9F3418003FA33E /* ymemory.c */; };
+		B8AF94DB1B9F3418003FA33E /* ypkt_lin.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94C91B9F3418003FA33E /* ypkt_lin.c */; };
+		B8AF94DC1B9F3418003FA33E /* ypkt_osx.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94CA1B9F3418003FA33E /* ypkt_osx.c */; };
+		B8AF94DD1B9F3418003FA33E /* ypkt_win.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94CB1B9F3418003FA33E /* ypkt_win.c */; };
+		B8AF94DE1B9F3418003FA33E /* yprog.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94CC1B9F3418003FA33E /* yprog.c */; };
+		B8AF94DF1B9F3418003FA33E /* ystream.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94CF1B9F3418003FA33E /* ystream.c */; };
+		B8AF94E01B9F3418003FA33E /* ytcp.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94D01B9F3418003FA33E /* ytcp.c */; };
+		B8AF94E11B9F3418003FA33E /* ythread.c in Sources */ = {isa = PBXBuildFile; fileRef = B8AF94D21B9F3418003FA33E /* ythread.c */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B8AF94B21B9F33E1003FA33E /* yapi.bundle */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = yapi.bundle; sourceTree = BUILT_PRODUCTS_DIR; };
+		B8AF94B61B9F33E1003FA33E /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		B8AF94BC1B9F3418003FA33E /* yapi.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yapi.c; path = ../../../../Sources/yapi/yapi.c; sourceTree = "<group>"; };
+		B8AF94BD1B9F3418003FA33E /* yapi.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yapi.h; path = ../../../../Sources/yapi/yapi.h; sourceTree = "<group>"; };
+		B8AF94BE1B9F3418003FA33E /* ydef.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ydef.h; path = ../../../../Sources/yapi/ydef.h; sourceTree = "<group>"; };
+		B8AF94BF1B9F3418003FA33E /* yfifo.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yfifo.c; path = ../../../../Sources/yapi/yfifo.c; sourceTree = "<group>"; };
+		B8AF94C01B9F3418003FA33E /* yfifo.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yfifo.h; path = ../../../../Sources/yapi/yfifo.h; sourceTree = "<group>"; };
+		B8AF94C11B9F3418003FA33E /* yhash.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yhash.c; path = ../../../../Sources/yapi/yhash.c; sourceTree = "<group>"; };
+		B8AF94C21B9F3418003FA33E /* yhash.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yhash.h; path = ../../../../Sources/yapi/yhash.h; sourceTree = "<group>"; };
+		B8AF94C31B9F3418003FA33E /* yjson.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yjson.c; path = ../../../../Sources/yapi/yjson.c; sourceTree = "<group>"; };
+		B8AF94C41B9F3418003FA33E /* yjson.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yjson.h; path = ../../../../Sources/yapi/yjson.h; sourceTree = "<group>"; };
+		B8AF94C51B9F3418003FA33E /* ykey.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ykey.c; path = ../../../../Sources/yapi/ykey.c; sourceTree = "<group>"; };
+		B8AF94C61B9F3418003FA33E /* ykey.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ykey.h; path = ../../../../Sources/yapi/ykey.h; sourceTree = "<group>"; };
+		B8AF94C71B9F3418003FA33E /* ymemory.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ymemory.c; path = ../../../../Sources/yapi/ymemory.c; sourceTree = "<group>"; };
+		B8AF94C81B9F3418003FA33E /* ymemory.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ymemory.h; path = ../../../../Sources/yapi/ymemory.h; sourceTree = "<group>"; };
+		B8AF94C91B9F3418003FA33E /* ypkt_lin.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ypkt_lin.c; path = ../../../../Sources/yapi/ypkt_lin.c; sourceTree = "<group>"; };
+		B8AF94CA1B9F3418003FA33E /* ypkt_osx.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ypkt_osx.c; path = ../../../../Sources/yapi/ypkt_osx.c; sourceTree = "<group>"; };
+		B8AF94CB1B9F3418003FA33E /* ypkt_win.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ypkt_win.c; path = ../../../../Sources/yapi/ypkt_win.c; sourceTree = "<group>"; };
+		B8AF94CC1B9F3418003FA33E /* yprog.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = yprog.c; path = ../../../../Sources/yapi/yprog.c; sourceTree = "<group>"; };
+		B8AF94CD1B9F3418003FA33E /* yprog.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yprog.h; path = ../../../../Sources/yapi/yprog.h; sourceTree = "<group>"; };
+		B8AF94CE1B9F3418003FA33E /* yproto.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yproto.h; path = ../../../../Sources/yapi/yproto.h; sourceTree = "<group>"; };
+		B8AF94CF1B9F3418003FA33E /* ystream.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ystream.c; path = ../../../../Sources/yapi/ystream.c; sourceTree = "<group>"; };
+		B8AF94D01B9F3418003FA33E /* ytcp.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ytcp.c; path = ../../../../Sources/yapi/ytcp.c; sourceTree = "<group>"; };
+		B8AF94D11B9F3418003FA33E /* ytcp.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ytcp.h; path = ../../../../Sources/yapi/ytcp.h; sourceTree = "<group>"; };
+		B8AF94D21B9F3418003FA33E /* ythread.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = ythread.c; path = ../../../../Sources/yapi/ythread.c; sourceTree = "<group>"; };
+		B8AF94D31B9F3418003FA33E /* ythread.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = ythread.h; path = ../../../../Sources/yapi/ythread.h; sourceTree = "<group>"; };
+		B8AF94D41B9F3418003FA33E /* yversion.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = yversion.h; path = ../../../../Sources/yapi/yversion.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		B8AF94AF1B9F33E1003FA33E /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		B8AF94A91B9F33E1003FA33E = {
+			isa = PBXGroup;
+			children = (
+				B8AF94B41B9F33E1003FA33E /* yapi */,
+				B8AF94B31B9F33E1003FA33E /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		B8AF94B31B9F33E1003FA33E /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				B8AF94B21B9F33E1003FA33E /* yapi.bundle */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		B8AF94B41B9F33E1003FA33E /* yapi */ = {
+			isa = PBXGroup;
+			children = (
+				B8AF94BC1B9F3418003FA33E /* yapi.c */,
+				B8AF94BD1B9F3418003FA33E /* yapi.h */,
+				B8AF94BE1B9F3418003FA33E /* ydef.h */,
+				B8AF94BF1B9F3418003FA33E /* yfifo.c */,
+				B8AF94C01B9F3418003FA33E /* yfifo.h */,
+				B8AF94C11B9F3418003FA33E /* yhash.c */,
+				B8AF94C21B9F3418003FA33E /* yhash.h */,
+				B8AF94C31B9F3418003FA33E /* yjson.c */,
+				B8AF94C41B9F3418003FA33E /* yjson.h */,
+				B8AF94C51B9F3418003FA33E /* ykey.c */,
+				B8AF94C61B9F3418003FA33E /* ykey.h */,
+				B8AF94C71B9F3418003FA33E /* ymemory.c */,
+				B8AF94C81B9F3418003FA33E /* ymemory.h */,
+				B8AF94C91B9F3418003FA33E /* ypkt_lin.c */,
+				B8AF94CA1B9F3418003FA33E /* ypkt_osx.c */,
+				B8AF94CB1B9F3418003FA33E /* ypkt_win.c */,
+				B8AF94CC1B9F3418003FA33E /* yprog.c */,
+				B8AF94CD1B9F3418003FA33E /* yprog.h */,
+				B8AF94CE1B9F3418003FA33E /* yproto.h */,
+				B8AF94CF1B9F3418003FA33E /* ystream.c */,
+				B8AF94D01B9F3418003FA33E /* ytcp.c */,
+				B8AF94D11B9F3418003FA33E /* ytcp.h */,
+				B8AF94D21B9F3418003FA33E /* ythread.c */,
+				B8AF94D31B9F3418003FA33E /* ythread.h */,
+				B8AF94D41B9F3418003FA33E /* yversion.h */,
+				B8AF94B51B9F33E1003FA33E /* Supporting Files */,
+			);
+			path = yapi;
+			sourceTree = "<group>";
+		};
+		B8AF94B51B9F33E1003FA33E /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				B8AF94B61B9F33E1003FA33E /* Info.plist */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		B8AF94B11B9F33E1003FA33E /* yapi */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = B8AF94B91B9F33E1003FA33E /* Build configuration list for PBXNativeTarget "yapi" */;
+			buildPhases = (
+				B8AF94AE1B9F33E1003FA33E /* Sources */,
+				B8AF94AF1B9F33E1003FA33E /* Frameworks */,
+				B8AF94B01B9F33E1003FA33E /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = yapi;
+			productName = yapi;
+			productReference = B8AF94B21B9F33E1003FA33E /* yapi.bundle */;
+			productType = "com.apple.product-type.bundle";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		B8AF94AA1B9F33E1003FA33E /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0640;
+				ORGANIZATIONNAME = Yoctopuce;
+				TargetAttributes = {
+					B8AF94B11B9F33E1003FA33E = {
+						CreatedOnToolsVersion = 6.4;
+					};
+				};
+			};
+			buildConfigurationList = B8AF94AD1B9F33E1003FA33E /* Build configuration list for PBXProject "yapi" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = B8AF94A91B9F33E1003FA33E;
+			productRefGroup = B8AF94B31B9F33E1003FA33E /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				B8AF94B11B9F33E1003FA33E /* yapi */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		B8AF94B01B9F33E1003FA33E /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		B8AF94AE1B9F33E1003FA33E /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				B8AF94DA1B9F3418003FA33E /* ymemory.c in Sources */,
+				B8AF94D91B9F3418003FA33E /* ykey.c in Sources */,
+				B8AF94D71B9F3418003FA33E /* yhash.c in Sources */,
+				B8AF94DF1B9F3418003FA33E /* ystream.c in Sources */,
+				B8AF94D51B9F3418003FA33E /* yapi.c in Sources */,
+				B8AF94DC1B9F3418003FA33E /* ypkt_osx.c in Sources */,
+				B8AF94D61B9F3418003FA33E /* yfifo.c in Sources */,
+				B8AF94DB1B9F3418003FA33E /* ypkt_lin.c in Sources */,
+				B8AF94DE1B9F3418003FA33E /* yprog.c in Sources */,
+				B8AF94DD1B9F3418003FA33E /* ypkt_win.c in Sources */,
+				B8AF94D81B9F3418003FA33E /* yjson.c in Sources */,
+				B8AF94E01B9F3418003FA33E /* ytcp.c in Sources */,
+				B8AF94E11B9F3418003FA33E /* ythread.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		B8AF94B71B9F33E1003FA33E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+			};
+			name = Debug;
+		};
+		B8AF94B81B9F33E1003FA33E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.10;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				SDKROOT = macosx;
+			};
+			name = Release;
+		};
+		B8AF94BA1B9F33E1003FA33E /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = yapi/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Debug;
+		};
+		B8AF94BB1B9F33E1003FA33E /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = "$(ARCHS_STANDARD_32_64_BIT)";
+				COMBINE_HIDPI_IMAGES = YES;
+				INFOPLIST_FILE = yapi/Info.plist;
+				INSTALL_PATH = "$(LOCAL_LIBRARY_DIR)/Bundles";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				WRAPPER_EXTENSION = bundle;
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		B8AF94AD1B9F33E1003FA33E /* Build configuration list for PBXProject "yapi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8AF94B71B9F33E1003FA33E /* Debug */,
+				B8AF94B81B9F33E1003FA33E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		B8AF94B91B9F33E1003FA33E /* Build configuration list for PBXNativeTarget "yapi" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				B8AF94BA1B9F33E1003FA33E /* Debug */,
+				B8AF94BB1B9F33E1003FA33E /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = B8AF94AA1B9F33E1003FA33E /* Project object */;
+}

@@ -1,0 +1,1 @@
+Compiled from source in repo (3.0.0) on Ubuntu 16.04 with GCC 5.4.0

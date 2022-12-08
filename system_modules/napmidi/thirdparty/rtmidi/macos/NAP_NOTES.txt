@@ -1,0 +1,3 @@
+After build:
+
+install_name_tool -id @rpath/librtmidi.4.dylib librtmidi.4.dylib

@@ -1,0 +1,15 @@
+prefix=/home/creywood/workspaces/naivi/thirdparty/ffmpeg/linux/install
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: libavformat
+Description: FFmpeg container format library
+Version: 57.83.100
+Requires: 
+Requires.private: libavcodec >= 57.107.100, libswresample >= 2.9.100, libavutil >= 55.78.100
+Conflicts:
+Libs: -L${libdir}  -lavformat 
+Libs.private: -lxcb -lxcb-xfixes -lxcb-shape -lm -ldl -lz -pthread -pthread
+Cflags: -I${includedir}

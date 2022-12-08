@@ -1,0 +1,14 @@
+prefix=./install
+exec_prefix=${prefix}
+libdir=./install/lib
+includedir=./install/include
+
+Name: libavresample
+Description: Libav audio resampling library
+Version: 3.7.0
+Requires: 
+Requires.private: libavutil >= 55.78.100
+Conflicts:
+Libs: -L${libdir}  -lavresample 
+Libs.private: 
+Cflags: -I${includedir}
