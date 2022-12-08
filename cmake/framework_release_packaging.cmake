@@ -1,4 +1,4 @@
-# Top level entry point for creating framework release.  Mainly a gathering place for things not captured 
+# Top level entry point for creating framework release.  Mainly a gathering place for things not captured
 # in the install phase elsewhere.
 macro(package_nap)
     # Populate JSON build info
@@ -138,42 +138,38 @@ macro(package_nap)
     install(FILES ${NAP_ROOT}/docs/license/NAP.txt DESTINATION cmake/app_creator)
 endmacro()
 
-# Package installed Python for distribution with NAP release (for use with mod_nappython, Napkin and interpreter for Python scripts)
+# Package installed Python for distribution with NAP release (for use with nappython, Napkin and interpreter for Python scripts)
 macro(package_python)
     if(WIN32)
         # Install main framework
-        install(DIRECTORY ${THIRDPARTY_DIR}/python/msvc/x86_64/
-                DESTINATION thirdparty/python/
+        install(DIRECTORY ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/x86_64
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}
                 CONFIGURATIONS Release)
 
         # Install framework for Napkin
         if(NAP_ENABLE_PYTHON)
-                install(FILES ${THIRDPARTY_DIR}/python/msvc/x86_64/python36.zip
+                install(FILES ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/x86_64/python36.zip
                         DESTINATION tools/napkin/
                         CONFIGURATIONS Release)
         endif()
 
         # Install license
-        install(FILES ${THIRDPARTY_DIR}/python/msvc/LICENSE.txt
-                DESTINATION thirdparty/python/
+        install(FILES ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/LICENSE.txt
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}
                 CONFIGURATIONS Release)
     elseif(UNIX)
-        if(APPLE)
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/macos/x86_64)
-        else()
-            set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/linux/${ARCH})
-        endif()
+        set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
 
         # Install dylib
         file(GLOB PYTHON_DYLIBs ${PYTHON_PREFIX}/lib/*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
         install(FILES ${PYTHON_DYLIBs}
-                DESTINATION thirdparty/python/lib
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib
                 CONFIGURATIONS Release
                 )
 
         # Install main framework
         install(DIRECTORY ${PYTHON_PREFIX}/lib/python3.6
-                DESTINATION thirdparty/python/lib/
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/
                 CONFIGURATIONS Release
                 PATTERN *.pyc EXCLUDE
                 PATTERN *.a EXCLUDE
@@ -182,17 +178,17 @@ macro(package_python)
         # Install command line intrepreter
         file(GLOB PYTHON_INTERPRETER ${PYTHON_PREFIX}/bin/python*)
         install(PROGRAMS ${PYTHON_INTERPRETER}
-                DESTINATION thirdparty/python/bin/
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/bin/
                 CONFIGURATIONS Release)
 
         # Install includes
         install(DIRECTORY ${PYTHON_PREFIX}/include
-                DESTINATION thirdparty/python/
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/
                 CONFIGURATIONS Release)
 
         # Install license
         install(FILES ${PYTHON_PREFIX}/LICENSE
-                DESTINATION thirdparty/python/
+                DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}
                 CONFIGURATIONS Release)
     endif()
 endmacro()
@@ -327,21 +323,15 @@ endmacro()
 
 # Package CMake into release
 macro(package_cmake)
-    if(APPLE)
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/macos/x86_64/
-                DESTINATION thirdparty/cmake
-                CONFIGURATIONS Release
-                USE_SOURCE_PERMISSIONS
-                )
-    elseif(UNIX)
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/linux/${ARCH}/
-                DESTINATION thirdparty/cmake
+    if(UNIX)
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}
+                DESTINATION thirdparty/cmake/${NAP_THIRDPARTY_PLATFORM_DIR}
                 CONFIGURATIONS Release
                 USE_SOURCE_PERMISSIONS
                 )
     else()
-        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/msvc/x86_64/
-                DESTINATION thirdparty/cmake
+        install(DIRECTORY ${THIRDPARTY_DIR}/cmake/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}
+                DESTINATION thirdparty/cmake/${NAP_THIRDPARTY_PLATFORM_DIR}
                 CONFIGURATIONS Release
                 )
     endif()
@@ -461,6 +451,11 @@ macro(package_module_into_framework_release)
     # If the module has an extra data directory package it
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION system_modules/${PROJECT_NAME})
+    endif()
+
+    # If the module has find modules package them
+    if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cmake_find_modules)
+        install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/cmake_find_modules DESTINATION system_modules/${PROJECT_NAME}/thirdparty)
     endif()
 
     # Package library
@@ -637,8 +632,8 @@ endmacro()
 macro(set_installed_rpath_on_linux_object_for_dependent_modules DEPENDENT_NAP_MODULES TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
     # Add our core paths first
     set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}-${ARCH}")
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/rttr/bin")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/linux/${ARCH}/lib")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/rttr/linux/${ARCH}/bin")
 
     # Process any extra paths
     set(EXTRA_PATHS ${ARGN})
@@ -661,7 +656,7 @@ endmacro()
 macro(set_python_installed_rpath_on_linux_object TARGET_NAME NAP_ROOT_LOCATION_TO_ORIGIN)
     # Add our core paths
     set(BUILT_RPATH "$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/lib/${CMAKE_BUILD_TYPE}")
-    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/lib")
+    set(BUILT_RPATH "${BUILT_RPATH}:$ORIGIN/${NAP_ROOT_LOCATION_TO_ORIGIN}/thirdparty/python/linux/${ARCH}/lib")
 
     set_target_properties(${TARGET_NAME} PROPERTIES SKIP_BUILD_RPATH FALSE
                                                     INSTALL_RPATH ${BUILT_RPATH})
@@ -675,8 +670,8 @@ endmacro()
 # ARGN: Any extra non-NAP-module paths to add
 macro(set_single_config_installed_rpath_on_macos_object_for_dependent_modules CONFIG DEPENDENT_NAP_MODULES OBJECT_FILENAME NAP_ROOT_LOCATION_TO_OBJECT)
     # Set basic paths
-    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/python/lib")
-    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/rttr/bin")
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/python/macos/${ARCH}/lib")
+    ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/thirdparty/rttr/macos/${ARCH}/bin")
     ensure_macos_file_has_rpath_at_install(${OBJECT_FILENAME} "@loader_path/${NAP_ROOT_LOCATION_TO_OBJECT}/lib/${CONFIG}-${ARCH}")
 
     # Set module paths
@@ -700,8 +695,8 @@ endmacro()
 macro(set_installed_rpath_on_macos_module_for_dependent_modules DEPENDENT_NAP_MODULES MODULE_NAME NAP_ROOT_LOCATION_TO_MODULE EXTRA_RPATH_RELEASE EXTRA_RPATH_DEBUG)
     foreach(MODULECONFIG Release Debug)
         # Set basic paths
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/lib")
-        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/bin")
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/python/macos/${ARCH}/lib")
+        ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/thirdparty/rttr/macos/${ARCH}/bin")
         ensure_macos_module_has_rpath_at_install(${MODULE_NAME} ${MODULECONFIG} "@loader_path/${NAP_ROOT_LOCATION_TO_MODULE}/lib/${MODULECONFIG}")
 
         # Set module paths
@@ -726,7 +721,7 @@ endmacro()
 # CONFIG: The build configuration
 # PATH_TO_ADD: The path to check/add
 macro(ensure_macos_module_has_rpath_at_install MODULE_NAME CONFIG PATH_TO_ADD)
-    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/system_modules/${MODULE_NAME}/lib/${CONFIG}/${MODULE_NAME}.dylib)
+    set(MODULE_FILENAME ${CMAKE_INSTALL_PREFIX}/system_modules/${MODULE_NAME}/lib/${CONFIG}-${ARCH}/${MODULE_NAME}.dylib)
     ensure_macos_file_has_rpath_at_install(${MODULE_FILENAME} ${PATH_TO_ADD})
 endmacro()
 

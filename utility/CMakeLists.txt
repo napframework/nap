@@ -40,4 +40,4 @@ if (MSVC)
 endif()
 
 # Package moodycamel into platform release
-install(DIRECTORY ${MOODYCAMEL_INCLUDE_DIRS}/ DESTINATION thirdparty/moodycamel)
+install(DIRECTORY ${MOODYCAMEL_DIR} DESTINATION thirdparty)

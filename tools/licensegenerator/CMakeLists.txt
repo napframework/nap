@@ -9,6 +9,7 @@ find_package(tclap REQUIRED)
 include_directories(${TCLAP_INCLUDE_DIRS})
 
 # Add cryptopp
+list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/naplicense/thirdparty/cmake_find_modules)
 find_package(cryptopp REQUIRED)
 include_directories(${CRYPTOPP_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS})
 

@@ -12,11 +12,11 @@ endif()
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
     else()
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/$<CONFIG>-${ARCH}/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/$<CONFIG>-${ARCH}/napkin)
     endif()
 else()
     if(NOT DEFINED NAP_PACKAGED_BUILD)
@@ -125,12 +125,11 @@ if(MSVC)
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
 
     # SDL
-    # TODO use the find module
+    find_sdl2()
     add_custom_command(
         TARGET ${PROJECT_NAME}
         POST_BUILD
-        #COMMAND ${CMAKE_COMMAND} -E copy $ENV{SDL2DIR}/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-        COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+        COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_DIR}/msvc/x86_64/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
    )
 
     # Python
@@ -154,7 +153,7 @@ if(MSVC)
     # On Windows, for now, dump our whole napkin directory from packaging_bin
     # into the release as it contains the required DLLs (as we loaded them in 
     # there for running Napkin against source from its own directory)
-    install(DIRECTORY ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-Release/napkin
+    install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release-${ARCH}/napkin
             DESTINATION tools/)
 else()
     # Deploy Napkin binary into release on *nix

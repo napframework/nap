@@ -1,4 +1,5 @@
-# Bootstrap our build environment, setting up architecture, flags, policies, etc used across both NAP # build contexts
+# Bootstrap our build environment, setting up architecture, flags, policies, etc used across both NAP
+# build contexts
 macro(bootstrap_environment)
     # Enforce GCC on Linux for now (when doing packaging build at least)
     if(UNIX AND NOT APPLE)
@@ -70,10 +71,16 @@ macro(bootstrap_environment)
     # Restrict to debug and release build types
     set(CMAKE_CONFIGURATION_TYPES "Debug;Release")
 
-    # Allow extra Find{project}.cmake files to be found by projects
-    # TODO first one is temporary until the find modules are moved under find_modules for framework release
-    list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake")
+    # Add extra CMake find module path
     list(APPEND CMAKE_MODULE_PATH "${NAP_ROOT}/cmake/find_modules")
+
+    if(APPLE)
+        set(NAP_THIRDPARTY_PLATFORM_DIR "macos")
+    elseif(MSVC)
+        set(NAP_THIRDPARTY_PLATFORM_DIR "msvc")
+    else()
+        set(NAP_THIRDPARTY_PLATFORM_DIR "linux")
+    endif()
 
     if(UNIX AND NOT APPLE)
         # Ensure we have patchelf on Linux, preventing silent failures
@@ -176,25 +183,15 @@ function(configure_python)
     unset(ENV{PYTHONPATH})
 
     set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python)
-    if(NAP_BUILD_CONTEXT MATCHES "source")
-        if(CMAKE_HOST_WIN32)
-            set(PYTHON_BIN ${PYTHON_PREFIX}/msvc/x86_64/python.exe)
-            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/msvc/x86_64/libs PARENT_SCOPE)
-        elseif(CMAKE_HOST_APPLE)
-            set(PYTHON_BIN ${PYTHON_PREFIX}/macos/x86_64/bin/python3)
-            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/macos/x86_64/lib PARENT_SCOPE)
-        else()
-            set(PYTHON_BIN ${PYTHON_PREFIX}/linux/${ARCH}/bin/python3)
-            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/linux/${ARCH}/lib PARENT_SCOPE)
-        endif()
+    if(CMAKE_HOST_WIN32)
+        set(PYTHON_BIN ${PYTHON_PREFIX}/msvc/x86_64/python.exe)
+        set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/msvc/x86_64/libs PARENT_SCOPE)
+    elseif(CMAKE_HOST_APPLE)
+        set(PYTHON_BIN ${PYTHON_PREFIX}/macos/x86_64/bin/python3)
+        set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/macos/x86_64/lib PARENT_SCOPE)
     else()
-        if(WIN32)
-            set(PYTHON_BIN ${PYTHON_PREFIX}/python.exe)
-            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/libs PARENT_SCOPE)
-        elseif(UNIX)
-            set(PYTHON_BIN ${PYTHON_PREFIX}/bin/python3)
-            set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/lib PARENT_SCOPE)
-        endif()
+        set(PYTHON_BIN ${PYTHON_PREFIX}/linux/${ARCH}/bin/python3)
+        set(PYTHON_LIB_DIR ${PYTHON_PREFIX}/linux/${ARCH}/lib PARENT_SCOPE)
     endif()
     if(NOT EXISTS ${PYTHON_BIN})
         message(FATAL_ERROR "Python not found at ${PYTHON_BIN}. Have you updated thirdparty?")
@@ -301,26 +298,45 @@ endmacro()
 # Find RTTR using our thirdparty paths
 macro(find_rttr)
     if(NOT TARGET RTTR::Core)
-        if(NAP_BUILD_CONTEXT MATCHES "source")
-            if(WIN32)
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
-                find_package(RTTR CONFIG REQUIRED Core)
-            elseif(APPLE)
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake")
-                find_path(
-                        RTTR_DIR
-                        NAMES rttr-config.cmake
-                        HINTS
-                        ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
-                )
-                find_package(RTTR CONFIG REQUIRED Core)
-            else()
-                set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake")
-            endif()
+        if(WIN32)
+            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
+        elseif(APPLE)
+            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake")
+            find_path(
+                    RTTR_DIR
+                    NAMES rttr-config.cmake
+                    HINTS
+                    ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
+            )
         else()
-            set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/cmake")
+            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake")
         endif()
         find_package(RTTR CONFIG REQUIRED Core)
+        set(RTTR_LICENSE_FILES ${RTTR_DIR}/)
+    endif()
+endmacro()
+
+# Find SDL2
+macro(find_sdl2)
+    # Because we use the upstream SDL2 find module, we augment it with some extra platform specifc vars
+    set(SDL2_DIR ${NAP_ROOT}/system_modules/naprender/thirdparty/SDL2)
+    set(SDL2_LICENSE_FILES ${SDL2_DIR}/COPYING.txt)
+    if(NOT TARGET SDL2)
+        if(WIN32)
+            set(SDL2_LIBS_DIR ${SDL2_DIR}/msvc/x86_64/lib)
+            set(CMAKE_LIBRARY_PATH ${SDL2_LIBS_DIR})
+            set(CMAKE_PREFIX_PATH ${SDL2_DIR}/msvc/x86_64)
+        elseif(APPLE)
+            set(SDL2_LIBS_DIR ${SDL2_DIR}/macos/x86_64/lib)
+            set(CMAKE_LIBRARY_PATH ${SDL2_LIBS_DIR})
+            set(CMAKE_PREFIX_PATH ${SDL2_DIR}/macos/x86_64)
+        elseif(UNIX)
+            set(SDL2_LIBS_DIR ${SDL2_DIR}/linux/${ARCH}/lib)
+            set(CMAKE_LIBRARY_PATH ${SDL2_LIBS_DIR})
+            set(CMAKE_PREFIX_PATH ${SDL2_DIR}/linux/${ARCH})
+        endif()
+        list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/naprender/thirdparty/cmake_find_modules)
+        find_package(SDL2 REQUIRED)
     endif()
 endmacro()
 
@@ -485,7 +501,7 @@ macro(add_app_module)
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different $<TARGET_FILE:nap${PROJECT_NAME}> $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/mod_${PROJECT_NAME}.json
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${CMAKE_CURRENT_SOURCE_DIR}/module/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/nap${PROJECT_NAME}.json
             )
         endif()
     endif()
@@ -705,7 +721,7 @@ macro(win64_copy_python_dlls_postbuild FOR_NAPKIN)
     else()
         set(PYDLL_PATH_SUFFIX "")
     endif()
-    file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/*.dll)
+    file(GLOB PYTHON_DLLS ${PYTHON_LIB_DIR}/../*.dll)
     foreach(PYTHON_DLL ${PYTHON_DLLS})
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
@@ -724,7 +740,7 @@ macro(win64_copy_python_modules_postbuild FOR_NAPKIN_BUILD_OUTPUT)
     endif()
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy ${THIRDPARTY_DIR}/python/python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PYMOD_PATH_SUFFIX}
+                       COMMAND ${CMAKE_COMMAND} -E copy ${PYTHON_LIB_DIR}/../python36.zip $<TARGET_FILE_DIR:${PROJECT_NAME}>/${PYMOD_PATH_SUFFIX}
                        )
 endmacro()
 
@@ -982,34 +998,35 @@ macro(find_nap_module MODULE_NAME)
                 )
         endif()
     elseif(EXISTS ${NAP_ROOT}/system_modules/${NAP_MODULE}/)
+        set(sys_module_dir ${NAP_ROOT}/system_modules/${NAP_MODULE}/)
         if(NOT TARGET ${NAP_MODULE})
             add_library(${MODULE_NAME} INTERFACE)
 
             message(STATUS "Adding library path for ${MODULE_NAME}")
-            if(WIN32)
-                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug-${ARCH}/${MODULE_NAME}.lib)
-                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release-${ARCH}/${MODULE_NAME}.lib)
-                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release-${ARCH}/${MODULE_NAME}.json)
-            elseif(APPLE)
-                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release-${ARCH}/${MODULE_NAME}.dylib)
-                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug-${ARCH}/${MODULE_NAME}.dylib)
-                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release-${ARCH}/${MODULE_NAME}.json)
-            elseif(UNIX)
-                set(${MODULE_NAME}_RELEASE_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release-${ARCH}/${MODULE_NAME}.so)
-                set(${MODULE_NAME}_DEBUG_LIB ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug-${ARCH}/${MODULE_NAME}.so)
-                set(${MODULE_NAME}_MODULE_JSON ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Release-${ARCH}/${MODULE_NAME}.json)
+            set(${MODULE_NAME}_MODULE_JSON ${sys_module_dir}/lib/Release-${ARCH}/${MODULE_NAME}.json)
+            if(UNIX)
+                set(${MODULE_NAME}_RELEASE_LIB ${sys_module_dir}/lib/Release-${ARCH}/${MODULE_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX})
+                set(${MODULE_NAME}_DEBUG_LIB ${sys_module_dir}/lib/Debug-${ARCH}/${MODULE_NAME}${CMAKE_SHARED_LIBRARY_SUFFIX})
+            else()
+                set(${MODULE_NAME}_DEBUG_LIB ${sys_module_dir}/lib/Debug-${ARCH}/${MODULE_NAME}.lib)
+                set(${MODULE_NAME}_RELEASE_LIB ${sys_module_dir}/lib/Release-${ARCH}/${MODULE_NAME}.lib)
             endif()
 
             target_link_libraries(${MODULE_NAME} INTERFACE debug ${${MODULE_NAME}_DEBUG_LIB})
             target_link_libraries(${MODULE_NAME} INTERFACE optimized ${${MODULE_NAME}_RELEASE_LIB})
-            set(MODULE_INCLUDE_ROOT ${NAP_ROOT}/system_modules/${NAP_MODULE}/include)
+            set(MODULE_INCLUDE_ROOT ${sys_module_dir}/include)
             file(GLOB_RECURSE module_headers ${MODULE_INCLUDE_ROOT}/*.h ${MODULE_INCLUDE_ROOT}/*.hpp)
             target_sources(${MODULE_NAME} INTERFACE ${module_headers})
-            set_target_properties(${MODULE_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${NAP_ROOT}/system_modules/${MODULE_NAME}/include)
+            set_target_properties(${MODULE_NAME} PROPERTIES INTERFACE_INCLUDE_DIRECTORIES ${sys_module_dir}/include)
 
             # Build source groups for our headers maintaining their folder structure
             create_hierarchical_source_groups_for_files("${module_headers}" ${MODULE_INCLUDE_ROOT} "Modules\\${MODULE_NAME}")
-        endif(NOT TARGET ${NAP_MODULE})
+        endif()
+
+        # Add any CMake find modules path
+        if(EXISTS ${sys_module_dir}/thirdparty)
+            list(APPEND CMAKE_MODULE_PATH ${sys_module_dir}/thirdparty/cmake_find_modules)
+        endif()
 
         # On macOS & Linux install module into packaged app
         if(NOT WIN32)
@@ -1030,7 +1047,7 @@ macro(find_nap_module MODULE_NAME)
         endif()
 
         # Bring in any additional module logic
-        set(MODULE_EXTRA_CMAKE_PATH ${NAP_ROOT}/system_modules/${MODULE_NAME}/module_extra.cmake)
+        set(MODULE_EXTRA_CMAKE_PATH ${sys_module_dir}/module_extra.cmake)
         if(EXISTS ${MODULE_EXTRA_CMAKE_PATH})
             unset(MODULE_NAME_EXTRA_LIBS)
             include (${MODULE_EXTRA_CMAKE_PATH})
@@ -1046,16 +1063,16 @@ macro(find_nap_module MODULE_NAME)
             add_custom_command(
                 TARGET ${PROJECT_NAME}
                 POST_BUILD
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sys_module_dir}/lib/$<CONFIG>-${ARCH}/${MODULE_NAME}.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sys_module_dir}/lib/$<CONFIG>-${ARCH}/${MODULE_NAME}.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/
                 )
 
             # Copy PDB post-build, if we have them
-            if(EXISTS ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/Debug/${MODULE_NAME}.pdb)
+            if(EXISTS ${sys_module_dir}/lib/Debug/${MODULE_NAME}.pdb)
                 add_custom_command(
                     TARGET ${PROJECT_NAME}
                     POST_BUILD
-                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${NAP_ROOT}/system_modules/${MODULE_NAME}/lib/$<CONFIG>/${MODULE_NAME}.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/
+                    COMMAND ${CMAKE_COMMAND} -E copy_if_different ${sys_module_dir}/lib/$<CONFIG>-${ARCH}/${MODULE_NAME}.pdb $<TARGET_FILE_DIR:${PROJECT_NAME}>/
                     )
             endif()
         endif()

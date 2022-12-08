@@ -30,7 +30,8 @@ if (NAP_ENABLE_PYTHON)
     configure_python()
 
     # Pybind uses the interpreter to locate the python libraries and includes, next to pybind includes
-    set(pybind11_DIR ${THIRDPARTY_DIR}/pybind11/install/share/cmake/pybind11)
+    set(pybind11_parent_dir ${NAP_ROOT}/system_modules/nappython/thirdparty/pybind11)
+    set(pybind11_DIR ${pybind11_parent_dir}/install/share/cmake/pybind11)
     find_package(pybind11 REQUIRED)
 
     # Add pybind includes and libraries
@@ -64,16 +65,16 @@ if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                               -id 
-                               @rpath/librttr_core.0.9.6.dylib 
+                               -id
+                               @rpath/librttr_core.0.9.6.dylib
                                ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin/librttr_core.0.9.6.dylib
                        COMMENT "Setting install name for rttr_core")
 
     add_custom_command(TARGET ${PROJECT_NAME}
                        PRE_BUILD
                        COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                               -id 
-                               @rpath/librttr_core_d.0.9.6.dylib 
+                               -id
+                               @rpath/librttr_core_d.0.9.6.dylib
                                ${THIRDPARTY_DIR}/rttr/macos/x86_64/bin/librttr_core_d.0.9.6.dylib
                        COMMENT "Setting install name for rttr_core_d")
 endif()
@@ -103,26 +104,27 @@ install(DIRECTORY src/rtti/ DESTINATION include/rtti/
 
 # Package dependent lib into framework release --
 
-# Package pybind
+# Package pybind11
 if (NAP_ENABLE_PYTHON)
-    install(DIRECTORY ${THIRDPARTY_DIR}/pybind11/install/ DESTINATION thirdparty/pybind11)
-    install(FILES ${THIRDPARTY_DIR}/pybind11/LICENSE DESTINATION thirdparty/pybind11)
+    install(DIRECTORY ${pybind11_parent_dir}/install DESTINATION system_modules/nappython/thirdparty/pybind11)
+    install(FILES ${pybind11_parent_dir}/LICENSE DESTINATION system_modules/nappython/thirdparty/pybind11)
 endif()
 
 # Package RTTR
 if (MSVC)
-    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/msvc/x86_64/ DESTINATION thirdparty/rttr)
+    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/msvc/x86_64 DESTINATION thirdparty/rttr/msvc)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
     set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
     set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/macos/x86_64/ DESTINATION thirdparty/rttr)
+    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/macos/x86_64 DESTINATION thirdparty/rttr/macos)
 elseif(UNIX)
-    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/linux/${ARCH}/ DESTINATION thirdparty/rttr)
+    install(DIRECTORY ${THIRDPARTY_DIR}/rttr/linux/${ARCH} DESTINATION thirdparty/rttr/linux)
 endif()
+install(FILES ${THIRDPARTY_DIR}/rttr/source/LICENSE.txt DESTINATION thirdparty/rttr/source)
 
-# Package rapidjson
-install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt 
+# Package RapidJSON
+install(FILES ${THIRDPARTY_DIR}/rapidjson/license.txt
               ${THIRDPARTY_DIR}/rapidjson/readme.md
         DESTINATION thirdparty/rapidjson)
 install(DIRECTORY ${THIRDPARTY_DIR}/rapidjson/include DESTINATION thirdparty/rapidjson)
