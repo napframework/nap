@@ -11,6 +11,18 @@ set(NAPKIN_DEPENDENT_NAP_MODULES napscene napmath)
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
 message(STATUS "Preparing Napkin deployment to output directory")
 
+# Let find_python find our prepackaged Python in thirdparty,
+# Note that this operation is allowed to fail because, by default, Python support is disabled.
+if(NOT pybind11_DIR)
+    configure_python()
+    set(pybind11_DIR "${NAP_ROOT}/system_modules/nappython/thirdparty/pybind11/install/share/cmake/pybind11")
+    find_package(pybind11 QUIET)
+endif()
+if(pybind11_FOUND)
+    win64_copy_python_dlls_postbuild(FALSE)
+    list(APPEND NAPKIN_DEPENDENT_NAP_MODULES nappython)
+endif()
+
 if(WIN32)
     add_custom_command(TARGET ${PROJECT_NAME}
                        POST_BUILD
