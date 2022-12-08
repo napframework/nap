@@ -168,8 +168,9 @@ def get_app_full_module_requirements(framework_root, app_name, app_path):
         loop_modules = []
         for search_module in new_modules:
             found_module_path = None
-            if search_module == 'nap{}'.format(app_name):
-                found_module_path = os.path.join(app_path, 'module')
+            app_module_path = os.path.join(app_path, 'module')
+            if search_module == f'nap{app_name}' and os.path.exists(app_module_path):
+                found_module_path = app_module_path
             else:
                 for module_source in ('system_modules', 'modules'):
                     check_path = os.path.join(framework_root, module_source, search_module)
