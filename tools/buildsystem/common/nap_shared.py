@@ -142,23 +142,15 @@ def get_nap_root():
         return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))
 
 def get_cmake_path():
-    """Fetch the path to the CMake binary, providing for future providing of CMake via included thirdparty"""
+    """Fetch the path to the CMake binary"""
     nap_root = get_nap_root()
-    cmake_dir = os.path.join(nap_root, 'thirdparty', 'cmake', 'bin')
-    if os.path.exists(cmake_dir):
-        if sys.platform == 'win32':
-            return os.path.join(cmake_dir, 'cmake.exe')
-        else:
-            return os.path.join(cmake_dir, 'cmake')
+    cmake_root = os.path.join(nap_root, 'thirdparty', 'cmake')
+    if sys.platform.startswith('linux'):
+        cmake = os.path.join(cmake_root, 'linux', get_build_arch(), 'bin', 'cmake')
+    elif sys.platform == 'darwin':
+        cmake = os.path.join(cmake_root, 'macos', 'x86_64', 'bin', 'cmake')
     else:
-        # Running against Source
-        cmake_root = os.path.join(nap_root, os.pardir, 'thirdparty', 'cmake')
-        if sys.platform.startswith('linux'):
-            cmake = os.path.join(cmake_root, 'linux', get_build_arch(), 'bin', 'cmake')
-        elif sys.platform == 'darwin':
-            cmake = os.path.join(cmake_root, 'macos', 'x86_64', 'bin', 'cmake')
-        else:
-            cmake = os.path.join(cmake_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
+        cmake = os.path.join(cmake_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
     return cmake
 
 def get_app_full_module_requirements(framework_root, app_name, app_path):
@@ -203,19 +195,13 @@ def get_app_full_module_requirements(framework_root, app_name, app_path):
 def get_python_path():
     """Determine Python interpreter location"""
     nap_root = get_nap_root()
-    if get_build_context() == 'source':
-        python_dir = os.path.join(nap_root, os.pardir, 'thirdparty', 'python')
-        if sys.platform.startswith('linux'):
-            python = os.path.join(python_dir, 'linux', get_build_arch(), 'bin', 'python3')
-        elif sys.platform == 'darwin':
-            python = os.path.join(python_dir, 'macos', 'x86_64', 'bin', 'python3')
-        else:
-            python = os.path.join(python_dir, 'msvc', 'x86_64', 'python')
+    python_dir = os.path.join(nap_root, 'thirdparty', 'python')
+    if sys.platform.startswith('linux'):
+        python = os.path.join(python_dir, 'linux', get_build_arch(), 'bin', 'python3')
+    elif sys.platform == 'darwin':
+        python = os.path.join(python_dir, 'macos', 'x86_64', 'bin', 'python3')
     else:
-        if sys.platform == 'win32':
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'python')
-        else:
-            python = os.path.join(nap_root, 'thirdparty', 'python', 'bin', 'python3')
+        python = os.path.join(python_dir, 'msvc', 'x86_64', 'python')
     return python
 
 def get_platform_name():
