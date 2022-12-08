@@ -260,6 +260,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libudev',
    r'libusb-[0-9]+\.[0-9]+',
    r'libutil-[0-9]+\.[0-9]+',
+    'libutil',
     'libuuid',
     'libva',
     'libva-drm',
@@ -343,8 +344,10 @@ def eprint(*args, **kwargs):
     print(*args, file=sys.stderr, **kwargs)
 
 def get_platform_scriptpath(script):
-    script_suffix = '' if sys.platform == 'win32' else '.sh'
-    return os.path.join('.', f'{script}{script_suffix}')
+    if sys.platform == 'win32':
+        return f'{script}'
+    else:
+        return os.path.join('.', f'{script}.sh')
 
 def call_capturing_output(cmd, shell=True):
     """Run specified command, capturing output
@@ -766,7 +769,7 @@ def regenerate_cwd_app(build_type=APP_BUILD_TYPE):
     print("- Regenerating...")
 
     # Build command
-    script = get_platform_scriptpath(os.path.join('.', 'regenerate'))
+    script = get_platform_scriptpath('regenerate')
     if is_linux():
         cmd = f'{script} %s' % build_type
     else:
@@ -813,7 +816,7 @@ def build_cwd_app(app_name, build_type=APP_BUILD_TYPE):
         cmd = 'make all . -j%s' % cpu_count()
     else:
         os.chdir(MSVC_BUILD_DIR)
-        cmd = '..\\..\\..\\thirdparty\\cmake\\bin\\cmake --build . --target %s --config %s' % (app_name, build_type)
+        cmd = '..\\..\\..\\thirdparty\\cmake\\msvc\\x86_64\\bin\\cmake --build . --target %s --config %s' % (app_name, build_type)
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
@@ -855,7 +858,7 @@ def package_cwd_app_with_napkin(app_name, root_output_dir, timestamp):
     pre_files = os.listdir('.')
 
     # Build command
-    script = get_platform_scriptpath(os.path.join('.', 'package'))
+    script = get_platform_scriptpath('package')
     cmd = f'{script} -nz -ns'
     if not is_linux():
         cmd = '%s -np' % cmd
@@ -1149,7 +1152,7 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
     pre_files = os.listdir('.')
     
     # Build command
-    script = get_platform_scriptpath(os.path.join('.', 'package'))
+    script = get_platform_scriptpath('package')
     cmd = f'{script} -nn -nz -ns'
     if not is_linux():
         cmd = f'{cmd} -np'
@@ -1211,7 +1214,7 @@ def create_build_and_package_template_app(root_output_dir, timestamp):
     # Create from template
     print("- Create app from template...")
     pre_files = os.listdir('.')
-    script = get_platform_scriptpath(os.path.join('.', 'tools', 'create_app'))
+    script = get_platform_scriptpath(os.path.join('tools', 'create_app'))
     cmd = f'{script} -ng {TEMPLATE_APP_NAME}'
     (returncode, stdout, stderr) = call_capturing_output(cmd)
     template_creation_success = returncode == 0
@@ -2241,7 +2244,7 @@ def create_fake_apps_for_modules_without_demos(nap_framework_full_path, testing_
                 shutil.rmtree(path)
 
         # Generate the app
-        script = get_platform_scriptpath(os.path.join('.', 'tools', 'create_app'))
+        script = get_platform_scriptpath(os.path.join('tools', 'create_app'))
         cmd = f'{script} -ng {app_name}'
         (returncode, stdout, stderr) = call_capturing_output(cmd)
         template_creation_success = returncode == 0
