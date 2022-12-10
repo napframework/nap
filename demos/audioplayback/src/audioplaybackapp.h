@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "audiodevicesettingsgui.h"
+
 // External Includes
 #include <renderwindow.h>
 #include <nap/resourcemanager.h>
@@ -76,5 +78,8 @@ namespace nap
         audio::TimeValue mFadeOutTime = 0;                              //< Fade out time in ms
         audio::ControllerValue mPitch = 1.0;                            //< Pitch of the playback in relation to original pitch of the audio file
         audio::ControllerValue mPanning = 0.5;                          //< Panning of the audio in the stereo field
+
+        std::unique_ptr<audio::AudioDeviceSettingsGui> mAudioDeviceSettingsGui = nullptr; //< Gui to select audio device settings at runtime
+ open
 	};
 }

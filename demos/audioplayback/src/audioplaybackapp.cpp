@@ -54,6 +54,9 @@ namespace nap
         mFadeOutTime = playbackComponent->getFadeOutTime() / 1000.0f;
         mPitch = playbackComponent->getPitch();
         mPanning = playbackComponent->getStereoPanning();
+
+        mAudioDeviceSettingsGui = std::make_unique<audio::AudioDeviceSettingsGui>(*getCore().getService<audio::AudioService>(), false);
+
 		return true;
 	}
 
@@ -96,8 +99,26 @@ namespace nap
 		{
 			playbackComponent->setStereoPanning(mPanning);
 		}
+
+		// Show audio device settings
+        if (ImGui::CollapsingHeader("Driver Settings"))
+        {
+            mAudioDeviceSettingsGui->drawGui();
+
+            // Save audio device settings to config file
+            if (ImGui::Button("Save"))
+            {
+                utility::ErrorState errorState;
+                auto configPath = getCore().getProjectInfo()->mServiceConfigFilename;
+                if (configPath.empty())
+                    configPath = "config.json";
+                if (!getCore().writeConfigFile(configPath, errorState))
+                    Logger::warn("Failed to write config file: %s", errorState.toString().c_str());
+            }
+        }
+
         ImGui::Text("Music: Hang by Breek (www.breek.me)");
-		ImGui::End();
+        ImGui::End();
 	}
 
 	
