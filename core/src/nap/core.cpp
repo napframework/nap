@@ -560,11 +560,8 @@ namespace nap
             if (!serializeObjects(objects, writer, errorState))
                 return false;
             std::string json = writer.GetJSON();
-
-            std::ofstream configFile;
-            configFile.open(path);
-            configFile << json << std::endl;
-            configFile.close();
+            auto absolutePath = utility::joinPath({ getProjectInfo()->getProjectDir(), path });
+            utility::writeStringToFile(absolutePath, json);
             nap::Logger::info("Wrote configuration to: %s", path.c_str());
         }
 
@@ -580,14 +577,12 @@ namespace nap
                 errorState.fail("Failed to locate project info file");
                 return false;
             }
-            rtti::JSONWriter projectInfoWriter;
-            if (!serializeObjects({ mProjectInfo.get() }, projectInfoWriter, errorState))
+            rtti::JSONWriter writer;
+            if (!serializeObject(*mProjectInfo, writer, errorState))
                 return false;
-            std::string projectInfoJson = projectInfoWriter.GetJSON();
-            std::ofstream projectInfoFile;
-            projectInfoFile.open(projectInfoFilePath);
-            projectInfoFile << projectInfoJson << std::endl;
-            projectInfoFile.close();
+            std::string json = writer.GetJSON();
+            utility::writeStringToFile(projectInfoFilePath, json);
+            nap::Logger::info("Wrote project info to: %s", projectInfoFilePath.c_str());
         }
 
         return true;
