@@ -248,6 +248,8 @@ macro(module_json_in_directory_to_cmake DIRECTORY)
     # Find path mapping to build RPATHs
     find_path_mapping(${DIRECTORY} framework_release)
 
+    # TODO this is slow, ideally only run it if module.json has changed (when calling regenerate explicitly)
+
     # Parse our module.json and import it
     configure_python()
     set(python_tools_dir ${NAP_ROOT}/tools/buildsystem/common)

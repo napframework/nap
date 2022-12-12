@@ -58,7 +58,6 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
                            COMMENT "Setting install name for libartnet")
 
         foreach(build_type Release Debug)
-            # TODO will need updating
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                                   -add_rpath
                                                   @loader_path/../../../../thirdparty/libartnet/bin
@@ -90,6 +89,5 @@ else()
     endif()
 
     # Install artnet license into packaged project
-    # TODO change to ARTNET_LICENSES
-    install(FILES ${NAP_ROOT}/${artnet_dest_dir}/source/COPYING DESTINATION licenses/libartnet)
+    install(FILES ${ARTNET_LICENSE_FILES} DESTINATION licenses/libartnet)
 endif()

@@ -4,7 +4,6 @@ endif()
 
 # Support building user modules from their own (build system) app (in Framework Release context)
 if(NOT MODULE_INTO_PARENT)
-    # TODO don't duplicate this from Source/CMakeLists.txt, sharing is caring
     get_filename_component(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR}/../ REALPATH)
     message(STATUS "Using NAP root: ${NAP_ROOT}")
     get_filename_component(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty REALPATH)
@@ -159,8 +158,8 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
         # On Linux set our user modules to use their directory for RPATH when installing
         if(NOT APPLE)
             install(CODE "message(\"Setting RPATH on ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so\")
-                          execute_process(COMMAND patchelf 
-                                                  --set-rpath 
+                          execute_process(COMMAND patchelf
+                                                  --set-rpath
                                                   $ORIGIN/.
                                                   ${CMAKE_INSTALL_PREFIX}/lib/${MODULE_NAME}.so
                                           RESULT_VARIABLE EXIT_CODE)

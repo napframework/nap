@@ -25,7 +25,6 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
                            COMMENT "Setting install name for yoctopuce")
 
         foreach(build_type Release Debug)
-            # TODO presumably needs updating
             install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
                                                   -add_rpath
                                                   @loader_path/../../../../thirdparty/yoctopuce/bin

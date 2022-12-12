@@ -569,8 +569,8 @@ def linux_check_for_unexpected_library_use(pid, accepted_shared_libs_path):
     pid : str
         Command to run
     accepted_shared_libs_path : str
-        Absolute path to directory which we're happy to see any shared libraries source from. 
-        Typically NAP framework for build programs running from framework, or the packaged app for 
+        Absolute path to directory which we're happy to see any shared libraries source from.
+        Typically NAP framework for build programs running from framework, or the packaged app for
         single apps.
 
     Returns
@@ -609,8 +609,8 @@ def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path):
     stdout : str
         STDOUT from the process
     accepted_shared_libs_path : str
-        Absolute path to directory which we're happy to see any shared libraries source from. 
-        Typically NAP framework for build programs running from framework, or the packaged app for 
+        Absolute path to directory which we're happy to see any shared libraries source from.
+        Typically NAP framework for build programs running from framework, or the packaged app for
         single apps.
 
     Returns
@@ -631,7 +631,7 @@ def macos_check_for_unexpected_library_use(stdout, accepted_shared_libs_path):
 
             # Check if library is accepted
             if not shared_lib_accepted(libs_abs_path, accepted_shared_libs_path):
-                unexpected_libs.append(libs_abs_path) 
+                unexpected_libs.append(libs_abs_path)
 
     return unexpected_libs
 
@@ -670,8 +670,8 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
     file_path : str
         Path to the shared library
     accepted_shared_libs_path : str
-        Absolute path to directory which we're happy to see any shared libraries source from. 
-        Typically NAP framework for build programs running from framework, or the packaged app for 
+        Absolute path to directory which we're happy to see any shared libraries source from.
+        Typically NAP framework for build programs running from framework, or the packaged app for
         single apps.
 
     Returns
@@ -680,7 +680,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
         Whether the library is accepted
     """
 
-    # If we're running something inside the framework path and it's using libs from within there 
+    # If we're running something inside the framework path and it's using libs from within there
     # we're happy with that. Same goes for a packaged app and the app path.
     if not accepted_shared_libs_path is None:
         if file_path.startswith(accepted_shared_libs_path):
@@ -688,7 +688,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
 
     filename = os.path.basename(file_path)
     in_system_path = False
-    accepted = False    
+    accepted = False
 
     # Check if it's within the system libs paths
     if is_linux():
@@ -710,7 +710,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
     else:
         for system_path in MACOS_ACCEPTED_SYSTEM_LIB_PATHS:
             if file_path.startswith(system_path):
-                # on macOS if it's within one of our system paths accept the library. See notes 
+                # on macOS if it's within one of our system paths accept the library. See notes
                 # above with MACOS_ACCEPTED_SYSTEM_LIB_PATHS definition.
                 in_system_path = True
                 accepted = True
@@ -728,7 +728,7 @@ def shared_lib_accepted(file_path, accepted_shared_libs_path):
         return False
 
 def linux_system_library_accepted(short_lib_name):
-    """Check whether a single shared system library is expected for the executed NAP process on 
+    """Check whether a single shared system library is expected for the executed NAP process on
        Linux
 
     Parameters
@@ -744,7 +744,7 @@ def linux_system_library_accepted(short_lib_name):
 
     # Build list of accepted library names
     all_accepted_libs = LINUX_BASE_ACCEPTED_SYSTEM_LIBS
-    
+
     # Verify the library name against the list
     for check_lib in all_accepted_libs:
         expr = "^" + check_lib + "$"
@@ -784,7 +784,7 @@ def regenerate_cwd_app(build_type=APP_BUILD_TYPE):
         eprint("  Error: Couldn't regenerate, return code: %s" % returncode)
         eprint("  STDOUT: %s" % stdout)
         eprint("  STDERR: %s" % stderr)
-    
+
     return (success, stdout, stderr)
 
 def build_cwd_app(app_name, build_type=APP_BUILD_TYPE):
@@ -822,7 +822,7 @@ def build_cwd_app(app_name, build_type=APP_BUILD_TYPE):
     (returncode, stdout, stderr) = call_capturing_output(cmd)
     success = returncode == 0
     if success:
-        print("  Done.")              
+        print("  Done.")
     else:
         eprint("  Error: Couldn't build, return code: %s" % returncode)
         eprint("  STDOUT: %s" % stdout)
@@ -905,7 +905,7 @@ def run_cwd_app(app_name, nap_framework_full_path, build_type=APP_BUILD_TYPE):
     returncode : int
         Process exit code
     """
-    
+
     print("- Run from build output...")
 
     # Find build output path
@@ -914,7 +914,7 @@ def run_cwd_app(app_name, nap_framework_full_path, build_type=APP_BUILD_TYPE):
         if build_type.lower() in f.lower():
             build_path = f
 
-    # Build command and run            
+    # Build command and run
     folder = os.path.abspath(os.path.join(os.getcwd(), 'bin', build_path))
     patch_audio_service_configuration(os.getcwd(), os.getcwd(), app_name, nap_framework_full_path)
     cmd = os.path.join(folder, app_name)
@@ -926,7 +926,7 @@ def run_cwd_app(app_name, nap_framework_full_path, build_type=APP_BUILD_TYPE):
         eprint("  STDOUT: %s" % stdout)
         eprint("  STDERR: %s" % stderr)
         eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
-        eprint("  Exit code: %s" % return_code) 
+        eprint("  Exit code: %s" % return_code)
 
     return (success, stdout, stderr, unexpected_libs, return_code)
 
@@ -981,10 +981,10 @@ def build_and_package(root_output_dir, timestamp, testing_apps_dir, apps_to_excl
     timestamp : str
         Timestamp of the test run
     testing_apps_dir : str
-        Directory to iterate for testing, by default 'demos'        
+        Directory to iterate for testing, by default 'demos'
     apps_to_exclude: str
         apps to exclude
-        
+
     Returns
     -------
     dict
@@ -1087,7 +1087,7 @@ def build_other_build_type_demo(build_type, misc_results):
         module_path = os.path.join(demo_path, 'module')
         if os.path.isdir(module_path):
             break
-    
+
     print("Demo: %s" % test_demo)
     other_build_type_results['demoName'] = test_demo
     other_build_type_results['buildType'] = build_type
@@ -1150,7 +1150,7 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
     results['name'] = napkin_package_demo
     os.chdir(napkin_package_demo)
     pre_files = os.listdir('.')
-    
+
     # Build command
     script = get_platform_scriptpath('package')
     cmd = f'{script} -nn -nz -ns'
@@ -1358,13 +1358,13 @@ def open_napkin_from_framework_release_without_app(napkin_results, nap_framework
         Absolute path to NAP framework
     """
 
-    napkin_results['runFromFrameworkRelease'] = {}    
+    napkin_results['runFromFrameworkRelease'] = {}
     prev_wd = os.getcwd()
 
     # Change directory and run
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen', 
-                                                                                    nap_framework_full_path, 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen',
+                                                                                    nap_framework_full_path,
                                                                                     True)
 
     napkin_results['runFromFrameworkRelease']['success'] = success
@@ -1380,7 +1380,7 @@ def open_napkin_from_framework_release_without_app(napkin_results, nap_framework
         eprint("  Error: Running Napkin from Framework Release without app failed")
         eprint("  STDOUT: %s" % stdout)
         eprint("  STDERR: %s" % stderr)
-        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
         eprint("  Exit code: %s" % return_code)
 
     os.chdir(prev_wd)
@@ -1408,8 +1408,8 @@ def open_apps_in_napkin_from_framework_release(demo_results, nap_framework_full_
 
         # Run
         demo_app_json = os.path.join(demos_root_dir, demo_name, APP_FILENAME)
-        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_app_json, 
-                                                                                        nap_framework_full_path, 
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_app_json,
+                                                                                        nap_framework_full_path,
                                                                                         True,
                                                                                         True,
                                                                                         SUCCESS_EXIT_CODE,
@@ -1454,8 +1454,8 @@ def open_template_app_in_napkin_from_framework_release(template_results, nap_fra
     os.chdir(os.path.join(nap_framework_full_path, 'tools', 'napkin'))
     if 'build' in template_results and template_results['build']['success']:
         template_app_json = os.path.join(nap_framework_full_path, 'apps', TEMPLATE_APP_NAME, APP_FILENAME)
-        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % template_app_json, 
-                                                                                        nap_framework_full_path, 
+        (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % template_app_json,
+                                                                                        nap_framework_full_path,
                                                                                         True,
                                                                                         True,
                                                                                         SUCCESS_EXIT_CODE,
@@ -1473,7 +1473,7 @@ def open_template_app_in_napkin_from_framework_release(template_results, nap_fra
             eprint("  Error: Failed to open app")
             eprint("  STDOUT: %s" % stdout)
             eprint("  STDERR: %s" % stderr)
-            eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+            eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
             eprint("  Exit code: %s" % return_code)
     else:
         print("  Skipping due to build failure")
@@ -1492,7 +1492,7 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     root_output_dir : str
         Directory where packaged apps were moved to
     timestamp : str
-        Timestamp of the test run     
+        Timestamp of the test run
     """
 
     # Get the name of the demo that Napkin was packaged with
@@ -1512,8 +1512,8 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
     # Run demo from packaged app
     print("- Run Napkin from packaged app...")
     demo_app_json = os.path.join(os.pardir, APP_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen', 
-                                                                                    os.path.abspath(os.pardir), 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin --no-project-reopen',
+                                                                                    os.path.abspath(os.pardir),
                                                                                     True)
 
     napkin_results['runFromPackagedOutput'] = {}
@@ -1530,7 +1530,7 @@ def open_napkin_from_packaged_app(demo_results, napkin_results, root_output_dir,
         eprint("  Error: Napkin from package failed to run")
         eprint("  STDOUT: %s" % stdout)
         eprint("  STDERR: %s" % stderr)
-        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
         eprint("  Exit code: %s" % return_code)
 
 def open_app_in_napkin_from_packaged_app(results, app_name, root_output_dir, timestamp):
@@ -1545,7 +1545,7 @@ def open_app_in_napkin_from_packaged_app(results, app_name, root_output_dir, tim
     root_output_dir : str
         Directory where packaged apps were moved to
     timestamp : str
-        Timestamp of the test run     
+        Timestamp of the test run
     """
 
     # Get the name of the demo that Napkin was packaged with
@@ -1555,7 +1555,7 @@ def open_app_in_napkin_from_packaged_app(results, app_name, root_output_dir, tim
     # Run demo from packaged app
     print("- Open app with Napkin from packaged app...")
     demo_app_json = os.path.join(os.pardir, APP_FILENAME)
-    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_app_json, 
+    (success, stdout, stderr, unexpected_libs, return_code) = run_process_then_stop('./napkin -p %s --exit-after-load' % demo_app_json,
                                                                                     os.path.abspath(os.pardir),
                                                                                     True,
                                                                                     True,
@@ -1574,7 +1574,7 @@ def open_app_in_napkin_from_packaged_app(results, app_name, root_output_dir, tim
         eprint("  Error: Napkin from package failed to open app")
         eprint("  STDOUT: %s" % stdout)
         eprint("  STDERR: %s" % stderr)
-        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))        
+        eprint("  Unexpected libraries: %s" % repr(unexpected_libs))
         eprint("  Exit code: %s" % return_code)
 
     print("----------------------------")
@@ -1589,7 +1589,7 @@ def open_apps_in_napkin_from_packaged_apps(demo_results, root_output_dir, timest
     root_output_dir : str
         Directory where packaged apps were moved to
     timestamp : str
-        Timestamp of the test run     
+        Timestamp of the test run
     """
 
     cwd = os.getcwd()
@@ -1614,7 +1614,7 @@ def open_template_app_in_napkin_from_packaged_app(template_results, root_output_
     root_output_dir : str
         Directory where packaged apps were moved to
     timestamp : str
-        Timestamp of the test run     
+        Timestamp of the test run
     """
 
     if not 'package' in template_results or not template_results['package']['success']:
@@ -1636,7 +1636,7 @@ def run_packaged_demos(demo_results, root_output_dir, timestamp):
     root_output_dir : str
         Directory where packaged apps were moved to
     timestamp : str
-        Timestamp of the test run     
+        Timestamp of the test run
     """
 
     prev_cwd = os.getcwd()
@@ -1647,7 +1647,7 @@ def run_packaged_demos(demo_results, root_output_dir, timestamp):
         if 'package' in this_demo and this_demo['package']['success']:
             print("Demo: %s" % demo_name)
             run_packaged_app(this_demo, root_output_dir, timestamp, demo_name)
-            print("----------------------------")        
+            print("----------------------------")
 
     os.chdir(prev_cwd)
 
@@ -1667,7 +1667,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_r
     root_output_dir : str
         Directory where packaged apps were moved to
     timestamp : str
-        Timestamp of the test run     
+        Timestamp of the test run
     warnings : list of str
         Any warnings generated throughout the testing
     """
@@ -1691,7 +1691,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_r
             shutil.rmtree(containing_dir)
         except OSError:
             warning = "Couldn't remove packaged app at %s during cleanup" % containing_dir
-            print("  Warning: %s" % warning)       
+            print("  Warning: %s" % warning)
             warnings.append(warning)
 
     # Remove packaged template app
@@ -1702,7 +1702,7 @@ def cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_r
             shutil.rmtree(containing_dir)
         except OSError:
             warning = "Couldn't remove packaged app at %s during cleanup" % containing_dir
-            print("  Warning: %s" % warning)       
+            print("  Warning: %s" % warning)
             warnings.append(warning)
 
 def determine_run_success(demo_results, template_results, napkin_results, misc_results, fail_on_unexpected_libs):
@@ -1811,7 +1811,7 @@ def determine_run_success(demo_results, template_results, napkin_results, misc_r
         return False
     if not 'runFromPackagedOutput' in napkin_results:
         return False
-    elif not napkin_results['runFromPackagedOutput']['success']: 
+    elif not napkin_results['runFromPackagedOutput']['success']:
         return False
     elif fail_on_unexpected_libs and len(napkin_results['runFromPackagedOutput']['unexpectedLibraries']) > 0:
         return False
@@ -1905,7 +1905,7 @@ def log_summary(demo_results, template_results, napkin_results, misc_results):
     for demo_name, this_demo in sorted(demo_results.items()):
         print("Demo: " + demo_name)
         log_single_app_summary(this_demo, True, True)
-        print("----------------------------")        
+        print("----------------------------")
 
     print("Template app")
     log_single_app_summary(template_results, True, True)
@@ -1987,12 +1987,12 @@ def dump_json_report(starting_dir,
     excluded_apps: str
         Apps that are excluded
     """
-    
+
     report = {}
 
     # Include summary details for whole test run
     report['run'] = {}
-    report['run']['success'] = run_success    
+    report['run']['success'] = run_success
     report['run']['duration'] = formatted_duration
     report['run']['startTime'] = timestamp
     report['run']['frameworkPath'] = nap_framework_full_path
@@ -2084,7 +2084,7 @@ def rename_qt_dir(warnings):
                 qt_top_level_path = os.path.abspath(os.path.join(qt_top_level_path, os.path.pardir))
                 if qt_top_level_path == '/':
                     break
-        
+
         if found:
             try:
                 print("* Renaming Qt directory")
@@ -2094,7 +2094,7 @@ def rename_qt_dir(warnings):
                 qt_top_level_path = None
         else:
             print("  Warning: Couldn't determine top-level Qt path to rename")
-            warnings.append("Couldn't rename Qt due to inability to determine top-level Qt path")                
+            warnings.append("Couldn't rename Qt due to inability to determine top-level Qt path")
             qt_top_level_path = None
 
     return qt_top_level_path
@@ -2273,12 +2273,12 @@ def create_fake_apps_for_modules_without_demos(nap_framework_full_path, testing_
 
     os.chdir(prev_wd)
 
-def perform_test_run(nap_framework_path, 
-                     testing_apps_dir, 
-                     create_json_report, 
-                     force_log_reporting, 
-                     rename_framework, 
-                     rename_qt, 
+def perform_test_run(nap_framework_path,
+                     testing_apps_dir,
+                     create_json_report,
+                     force_log_reporting,
+                     rename_framework,
+                     rename_qt,
                      create_fake_apps,
                      excluded_apps,
                      fail_on_unexpected_libs):
@@ -2340,7 +2340,7 @@ def perform_test_run(nap_framework_path,
         warnings.append(warning)
 
     # Warn about Qt not being found for renaming
-    if not is_windows() and rename_qt: 
+    if not is_windows() and rename_qt:
         if 'QT_DIR' in os.environ:
             if not os.path.exists(os.environ['QT_DIR']):
                 warning = "Qt does not exist at path pointed to by QT_DIR env. variable. Not renaming Qt may result in missing dependencies not being detected."
@@ -2476,7 +2476,7 @@ def perform_test_run(nap_framework_path,
 
     os.chdir(starting_dir)
 
-    # Cleanup   
+    # Cleanup
     phase += 1
     print("============ Phase #%s - Clean up ============" % phase)
     cleanup_packaged_apps(demo_results, template_results, napkin_results, misc_results, root_output_dir, timestamp, warnings)
@@ -2492,8 +2492,8 @@ def perform_test_run(nap_framework_path,
 
     # Revert Qt rename
     if rename_qt and not qt_top_level_path is None:
-        print("* Renaming Qt directory back")        
-        os.rename('%s-rename' % qt_top_level_path, qt_top_level_path)        
+        print("* Renaming Qt directory back")
+        os.rename('%s-rename' % qt_top_level_path, qt_top_level_path)
 
     # Determine run duration
     (minutes, seconds) = divmod(time.time() - duration_start_time, 60)
@@ -2501,7 +2501,7 @@ def perform_test_run(nap_framework_path,
 
     # Determine run success
     run_success = determine_run_success(demo_results, template_results, napkin_results, misc_results, fail_on_unexpected_libs)
-    
+
     # Report
     if create_json_report:
         phase += 1
@@ -2520,7 +2520,7 @@ def perform_test_run(nap_framework_path,
             excluded_apps)
 
     # Log summary
-    print("============ Summary ============")        
+    print("============ Summary ============")
     log_summary(demo_results, template_results, napkin_results, misc_results)
 
     # Final success log
@@ -2592,7 +2592,7 @@ if __name__ == '__main__':
 
     # Ensure package directory exists
     if not os.path.exists(args.NAP_FRAMEWORK_PATH):
-        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))  
+        print("Package directory does not exist: {0}".format(args.NAP_FRAMEWORK_PATH))
         sys.exit(1)
 
     # Import python helpers
@@ -2604,9 +2604,9 @@ if __name__ == '__main__':
         args.no_rename_framework = True
         args.no_rename_qt = True
 
-    success = perform_test_run(args.NAP_FRAMEWORK_PATH, 
+    success = perform_test_run(args.NAP_FRAMEWORK_PATH,
                                args.testing_apps_dir,
-                               not args.no_json_report, 
+                               not args.no_json_report,
                                args.force_log_reporting,
                                not args.no_rename_framework,
                                not args.no_rename_qt,

@@ -18,6 +18,8 @@ macro(package_nap)
     install(DIRECTORY ${NAP_ROOT}/cmake/
             DESTINATION cmake/
             PATTERN "*.in" EXCLUDE
+            PATTERN "framework_release_packaging.cmake" EXCLUDE
+            PATTERN "source_archive_populate_info.cmake" EXCLUDE
             )
 
     # Install wrapper batch scripts for user tools
@@ -65,6 +67,8 @@ macro(package_nap)
         install(FILES ${cbe_tool_dir}/win64/check_build_environment.bat DESTINATION tools)
         install(FILES ${cbe_tool_dir}/win64/check_build_environment_continued.py DESTINATION tools/buildsystem/common)
     endif()
+
+    # TODO update to just deploy tools/buildsystem
 
     # Package single app CLI build script
     install(FILES ${build_tools_dir}/cli_single_app_build/cli_single_app_build.py DESTINATION tools/buildsystem/cli_single_app_build)
@@ -330,6 +334,7 @@ macro(package_cmake)
                 USE_SOURCE_PERMISSIONS
                 )
     else()
+        # TODO test using USE_SOURCE_PERMISSIONS on Windows and combining
         install(DIRECTORY ${THIRDPARTY_DIR}/cmake/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}
                 DESTINATION thirdparty/cmake/${NAP_THIRDPARTY_PLATFORM_DIR}
                 CONFIGURATIONS Release

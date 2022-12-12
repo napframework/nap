@@ -27,6 +27,8 @@ else()
     set(ARTNET_LIBS_RELEASE_DLL ${ARTNET_LIBS})
 endif()
 
+set(ARTNET_LICENSE_FILES ${ARTNET_DIR}/source/COPYING)
+
 mark_as_advanced(ARTNET_INCLUDE_DIRS)
 mark_as_advanced(ARTNET_LIBS_DIR)
 
