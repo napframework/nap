@@ -68,7 +68,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         endforeach()
     endif()
 else()
-    set(MODULE_NAME_EXTRA_LIBS artnet)
+    set(MODULE_EXTRA_LIBS artnet)
 
     if(WIN32)
         # Add post-build step to set copy artnet to bin

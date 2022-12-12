@@ -47,7 +47,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
                       ")
     endif()
 else()
-    set(MODULE_NAME_EXTRA_LIBS ${FFMPEG_LIBRARIES})
+    set(MODULE_EXTRA_LIBS ${FFMPEG_LIBRARIES})
 
     if(WIN32)
         # Copy over DLLs post-build on Windows

@@ -25,7 +25,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
             CONFIGURATIONS Release)
     endif()
 else()
-    set(MODULE_NAME_EXTRA_LIBS freetype)
+    set(MODULE_EXTRA_LIBS freetype)
     add_include_to_interface_target(napfont ${FREETYPE_INCLUDE_DIR})
 
     if(WIN32)

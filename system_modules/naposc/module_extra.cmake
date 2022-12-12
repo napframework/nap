@@ -15,8 +15,8 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(DIRECTORY ${OSCPACK_INCLUDE_DIRS}/ DESTINATION ${dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/include/oscpack PATTERN "*.cpp" EXCLUDE)
     install(DIRECTORY ${OSCPACK_LIBS_DIR}/ DESTINATION ${dest_dir}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
 else()
-    # TODO this is a regression, using release type only. Could solve by using the old oscpack findmodule from framework release?
-    set(MODULE_NAME_EXTRA_LIBS ${OSCPACK_LIBS_RELEASE})
+    set(MODULE_EXTRA_LIBS_OPTIMIZED ${OSCPACK_LIBS_RELEASE})
+    set(MODULE_EXTRA_LIBS_DEBUG ${OSCPACK_LIBS_DEBUG})
 
     add_include_to_interface_target(naposc ${OSCPACK_INCLUDE_DIRS})
 

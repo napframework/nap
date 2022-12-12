@@ -133,7 +133,7 @@ else()
     add_include_to_interface_target(naprender ${FREEIMAGE_INCLUDE_DIR})
 
     # Add Vulkan library
-    set(MODULE_NAME_EXTRA_LIBS ${VULKANSDK_LIBS})
+    set(MODULE_EXTRA_LIBS ${VULKANSDK_LIBS})
 
     if(UNIX)
         # Package assimp into packaged project on *nix

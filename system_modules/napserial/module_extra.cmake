@@ -13,8 +13,8 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(FILES ${SERIAL_DIR}/source/README.md DESTINATION ${thirdparty_module_dest}/serial/source)
     install(DIRECTORY ${SERIAL_INCLUDE_DIR} DESTINATION ${thirdparty_module_dest}/serial/source PATTERN "*.cpp" EXCLUDE)
 else()
-    # TODO regression only using release
-    set(MODULE_NAME_EXTRA_LIBS ${SERIAL_LIBS_RELEASE})
+    set(MODULE_EXTRA_LIBS_OPTIMIZED ${SERIAL_LIBS_RELEASE})
+    set(MODULE_EXTRA_LIBS_DEBUG ${SERIAL_LIBS_DEBUG})
     add_include_to_interface_target(napserial ${SERIAL_INCLUDE_DIR})
 
     install(FILES ${SERIAL_LICENSE_FILES} DESTINATION licenses/serial/)

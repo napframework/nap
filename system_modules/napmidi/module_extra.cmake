@@ -26,9 +26,9 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(FILES ${RTMIDI_DIR}/source/README.md DESTINATION ${rtmidi_dest_dir}/source)
 else()
     # As with oscpack this is a minor regression, could be solved usig the old framework release style find module
-    set(MODULE_NAME_EXTRA_LIBS ${RTMIDI_LIBRARIES_RELEASE})
+    set(MODULE_EXTRA_LIBS ${RTMIDI_LIBRARIES_RELEASE})
     if(WIN32)
-         set(MODULE_NAME_EXTRA_LIBS "${MODULE_NAME_EXTRA_LIBS}" winmm)
+         set(MODULE_EXTRA_LIBS "${MODULE_EXTRA_LIBS}" winmm)
     endif()
     add_include_to_interface_target(napmidi ${RTMIDI_INCLUDE_DIR})
 

@@ -35,7 +35,7 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         endforeach()
     endif()
 else()
-    set(MODULE_NAME_EXTRA_LIBS yoctopuce)
+    set(MODULE_EXTRA_LIBS yoctopuce)
 
     add_include_to_interface_target(napyoctopuce ${YOCTOPUCE_INCLUDE_DIRS})
 
