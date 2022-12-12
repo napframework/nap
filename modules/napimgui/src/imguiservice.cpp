@@ -956,6 +956,19 @@ namespace nap
 			io.MouseDown[i] = context.mMousePressed[i];
 		}
 
+		// Tell the system which keys have been pressed this frame
+		for (auto i = 0; i < context.mKeyPressed.size(); i++)
+		{
+			io.KeysDown[i] = context.mKeyPressed[i];
+
+			// Remove the key for the next frame if released
+			if (context.mKeyRelease[i])
+			{
+				context.mKeyPressed[i] = false;
+				context.mKeyRelease[i] = false;
+			}
+		}
+
 		// Update mouse wheel state
 		io.MouseWheel = context.mMouseWheel;
 
@@ -1024,8 +1037,16 @@ namespace nap
 
 	void IMGuiService::handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context)
 	{
-		ImGuiIO& io = ImGui::GetIO();
-		io.KeysDown[static_cast<int>(keyEvent.mKey)] = keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent));
+		int key_id = static_cast<int>(keyEvent.mKey); assert(key_id < 512);
+		if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+		{
+			context.mKeyPressed[key_id] = true;
+		}
+
+		else if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyReleaseEvent)))
+		{
+			context.mKeyRelease[key_id] = true;
+		}
 	}
 
 
