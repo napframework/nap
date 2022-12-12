@@ -9,7 +9,7 @@ set(TCLAP_INCLUDE_DIRS ${TCLAP_DIR}/include)
 mark_as_advanced(TCLAP_DIR)
 mark_as_advanced(TCLAP_INCLUDE_DIRS)
 
-if(TCLAP_DIRS)
+if(TCLAP_DIR)
     set(TCLAP_FOUND TRUE)
 endif()
 
