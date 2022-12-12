@@ -80,6 +80,5 @@ namespace nap
         audio::ControllerValue mPanning = 0.5;                          //< Panning of the audio in the stereo field
 
         std::unique_ptr<audio::AudioDeviceSettingsGui> mAudioDeviceSettingsGui = nullptr; //< Gui to select audio device settings at runtime
- open
 	};
 }
