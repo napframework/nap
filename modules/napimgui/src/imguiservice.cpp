@@ -457,7 +457,7 @@ namespace nap
 	static constexpr int modShift = 2;
 	static constexpr int modNone = -1;
 
-	static int getModIndex(nap::EKeyCode key)
+	static int getModKeyIndex(nap::EKeyCode key)
 	{
 		switch (key)
 		{
@@ -1069,7 +1069,7 @@ namespace nap
 	void IMGuiService::handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context)
 	{
 		int key_idx = static_cast<int>(keyEvent.mKey); assert(key_idx < 512);
-		int mod_idx = getModIndex(keyEvent.mKey);
+		int mod_idx = getModKeyIndex(keyEvent.mKey);
 
 		if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
