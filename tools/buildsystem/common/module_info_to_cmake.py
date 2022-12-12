@@ -34,9 +34,6 @@ class ModuleInfoParser():
         # Check for user module
         elif os.path.exists(os.path.join(self.__nap_root, 'modules', module_name)):
             module_path = os.path.join(self.__nap_root, 'modules', module_name)
-        # Check for NAP module in NAP source - TODO remove after path consolidation
-        elif module_name.startswith('mod_nap') and os.path.exists(os.path.join(self.__nap_root, 'system_modules', module_name[4:])):
-            module_path = os.path.join(self.__nap_root, 'system_modules', module_name[4:])
 
         if module_path is None:
             raise Exception(f"Couldn't find module {module_name}")

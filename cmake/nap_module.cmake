@@ -135,16 +135,6 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
     # Set our module output directory
     set_module_output_directories()
 
-    # On Windows copy over module.json post-build
-    # TODO does this duplicate logic in find_nap_module?
-    if(WIN32)
-        add_custom_command(
-            TARGET ${MODULE_NAME}
-            POST_BUILD
-            COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/module.json $<TARGET_FILE_DIR:${PROJECT_NAME}>/${MODULE_NAME}.json
-            )
-    endif()
-
     # Install module data into packaged app
     if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
         install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION modules/${MODULE_NAME} CONFIGURATIONS Release)
