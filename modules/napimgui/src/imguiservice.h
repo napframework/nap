@@ -335,6 +335,7 @@ namespace nap
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
+
 		/**
 		 * Simple struct that combines an ImGUI context with additional state information.
 		 * Takes ownership of the context, destroys it on destruction.
@@ -344,17 +345,19 @@ namespace nap
 			GUIContext(ImGuiContext* context, ImGuiStyle* style);
 			~GUIContext();
 
-			std::array<bool,3> mMousePressed	= { false, false, false };		///< If the mouse was pressed this frame
-			std::array<bool,3> mMouseRelease	= { false, false, false };		///< If the mouse was released this frame
-			std::array<bool, 512> mKeyPressed	= { 0 };						///< The keys that were pressed this frame
-			std::array<bool, 512> mKeyRelease	= { 0 };						///< The keys that were released this frame
-			glm::ivec2 mMousePosition			= { 0, 0 };						///< Last known mouse position
-			float mMouseWheel					= 0.0f;							///< Mouse wheel
-			float mScale						= 1.0f;							///< GUI Scale
-			const Display* mDisplay				= nullptr;						///< Current display
-			ImGuiContext* mContext				= nullptr;						///< Associated ImGUI context
-			ImGuiContext* mPreviousContext		= nullptr;						///< Context active before this one
-			ImGuiStyle* mStyle					= nullptr;						///< Style of context
+			std::array<bool,3> mMousePressed	= { false };		///< If the mouse was pressed this frame
+			std::array<bool,3> mMouseRelease	= { false };		///< If the mouse was released this frame
+			std::array<bool,3> mModPressed		= { false };		///< If the ctrl (0), alt (1) or shift (2) modifier key is pressed
+			std::array<bool,3> mModRelease		= { false };		///< If the ctrl (0), alt (1) or shift (2) modifier key is released
+			std::array<bool, 512> mKeyPressed   = { false };		///< The keys that were pressed this frame
+			std::vector<int> mKeyRelease;							///< The keys that were released this frame
+			glm::ivec2 mMousePosition			= { 0, 0 };			///< Last known mouse position
+			float mMouseWheel					= 0.0f;				///< Mouse wheel
+			float mScale						= 1.0f;				///< GUI Scale
+			const Display* mDisplay				= nullptr;			///< Current display
+			ImGuiContext* mContext				= nullptr;			///< Associated ImGUI context
+			ImGuiContext* mPreviousContext		= nullptr;			///< Context active before this one
+			ImGuiStyle* mStyle					= nullptr;			///< Style of context
 
 			// Activates current context
 			void activate();

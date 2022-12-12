@@ -148,6 +148,7 @@ namespace nap
 	// Static / Local methods
 	//////////////////////////////////////////////////////////////////////////
 
+
 	static void checkVKResult(VkResult err)
 	{
 		if (err == 0) return;
@@ -448,6 +449,31 @@ namespace nap
 #else
 		(void)window;
 #endif
+	}
+
+	// Global key modifiers
+	static constexpr int modControl = 0;
+	static constexpr int modAlt = 1;
+	static constexpr int modShift = 2;
+	static constexpr int modNone = -1;
+
+	static int getModIndex(nap::EKeyCode key)
+	{
+		switch (key)
+		{
+		case EKeyCode::KEY_LCTRL:
+		case EKeyCode::KEY_RCTRL:
+			return modControl;
+		case EKeyCode::KEY_LALT:
+		case EKeyCode::KEY_RALT:
+			return modAlt;
+		case EKeyCode::KEY_LSHIFT:
+		case EKeyCode::KEY_RSHIFT:
+			return modShift;
+		default:
+			break;
+		}
+		return modNone;
 	}
 
 
@@ -950,41 +976,13 @@ namespace nap
 			io.MousePos.y *= static_cast<float>(window.getBufferSize().y) / static_cast<float>(window.getHeight());
 		}
 
-		// Tell the system if a mouse press has been registered this frame.
+		// Tell the system which mouse buttons are pressed
 		for (auto i = 0; i < context.mMousePressed.size(); i++)
 		{
 			io.MouseDown[i] = context.mMousePressed[i];
-		}
 
-		// Tell the system which keys have been pressed this frame
-		for (auto i = 0; i < context.mKeyPressed.size(); i++)
-		{
-			io.KeysDown[i] = context.mKeyPressed[i];
-
-			// Remove the key for the next frame if released
-			if (context.mKeyRelease[i])
-			{
-				context.mKeyPressed[i] = false;
-				context.mKeyRelease[i] = false;
-			}
-		}
-
-		// Update mouse wheel state
-		io.MouseWheel = context.mMouseWheel;
-
-		// Update key modifiers
-		SDL_Keymod mod_state = SDL_GetModState();
-		io.KeyShift = ((mod_state & KMOD_SHIFT) > 0);
-		io.KeyCtrl  = ((mod_state & KMOD_CTRL)  > 0);
-		io.KeyAlt   = ((mod_state & KMOD_ALT)   > 0);
-		io.KeySuper = ((mod_state & KMOD_GUI)   > 0);
-
-		// Begin new frame
-		ImGui::NewFrame();
-
-		// If a mouse button was released this frame, disable the button press and reset mouse release state.
-		for (int i = 0; i < context.mMouseRelease.size(); i++)
-		{
+			// If a mouse button was released this frame -> disable the press for next frame
+			// This ensures that buttons that are pressed and released within the same frame are always registered
 			if (context.mMouseRelease[i])
 			{
 				context.mMousePressed[i] = false;
@@ -992,8 +990,41 @@ namespace nap
 			}
 		}
 
+		// Tell the system which keys are pressed, we copy block of memory because iterating over 
+		memcpy(io.KeysDown, context.mKeyPressed.data(), sizeof(bool) * 512);
+		for (const auto& key : context.mKeyRelease)
+		{
+			// If a key was released this frame -> disable the key press for next frame
+			// This ensures that keys that are pressed and released within the same frame are always registered
+			assert(key < context.mKeyPressed.size());
+			context.mKeyPressed[key] = false;
+		} 
+		context.mKeyRelease.clear();
+
+		// Update key modifiers
+		io.KeyCtrl = context.mModPressed[modControl];
+		io.KeyAlt = context.mModPressed[modAlt];
+		io.KeyShift = context.mModPressed[modShift];
+
+		for (auto i = 0; i < context.mModRelease.size(); i++)
+		{
+			// If a modifier was released -> disable the mod for the next frame
+			// This ensures that mod keys that are pressed and released within the same frame are always registered
+			if (context.mModRelease[i])
+			{
+				context.mModPressed[i] = false;
+				context.mModRelease[i] = false;
+			}
+		}
+
+		// Update mouse wheel state
+		io.MouseWheel = context.mMouseWheel;
+
 		// Reset mouse wheel
 		context.mMouseWheel = 0.0f;
+
+		// Begin new frame
+		ImGui::NewFrame();
 	}
 
 
@@ -1037,15 +1068,27 @@ namespace nap
 
 	void IMGuiService::handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context)
 	{
-		int key_id = static_cast<int>(keyEvent.mKey); assert(key_id < 512);
+		int key_idx = static_cast<int>(keyEvent.mKey); assert(key_idx < 512);
+		int mod_idx = getModIndex(keyEvent.mKey);
+
 		if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
-			context.mKeyPressed[key_id] = true;
+			context.mKeyPressed[key_idx] = true;
+			if (mod_idx >= 0)
+			{
+				assert(mod_idx < context.mModPressed.size());
+				context.mModPressed[mod_idx] = true;
+			}
 		}
 
 		else if (keyEvent.get_type().is_derived_from(RTTI_OF(nap::KeyReleaseEvent)))
 		{
-			context.mKeyRelease[key_id] = true;
+			context.mKeyRelease.emplace_back(key_idx);
+			if (mod_idx >= 0)
+			{
+				assert(mod_idx < context.mModRelease.size());
+				context.mModRelease[mod_idx] = true;
+			}
 		}
 	}
 

@@ -21,7 +21,9 @@ int main(int argc, char *argv[])
 
 	// Create app runner using default event handler
 	nap::AppRunner<nap::MultiWindowApp, nap::GUIAppEventHandler> app_runner(core);
-
+	app_runner.getApp().setFramerate(30.0f);
+	app_runner.getApp().capFramerate(true);
+	
 	// Start
 	nap::utility::ErrorState error;
 	if (!app_runner.start(error))
