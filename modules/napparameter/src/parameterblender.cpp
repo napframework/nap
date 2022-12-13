@@ -44,6 +44,14 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterRGB8Blender)
 	RTTI_CONSTRUCTOR(nap::Parameter&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterBoolBlender)
+	RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterQuatBlender)
+        RTTI_CONSTRUCTOR(nap::Parameter&)
+RTTI_END_CLASS
+
 namespace nap
 {
 	/**
@@ -59,7 +67,9 @@ namespace nap
 		{ RTTI_OF(ParameterRGBAColorFloat),	RTTI_OF(ParameterRGBAFloatBlender)	},
 		{ RTTI_OF(ParameterRGBColorFloat),	RTTI_OF(ParameterRGBFloatBlender)	},
 		{ RTTI_OF(ParameterRGBAColor8),		RTTI_OF(ParameterRGBA8Blender)		},
-		{ RTTI_OF(ParameterRGBColor8),		RTTI_OF(ParameterRGB8Blender)		}
+		{ RTTI_OF(ParameterRGBColor8),		RTTI_OF(ParameterRGB8Blender)		},
+		{ RTTI_OF(ParameterBool),			RTTI_OF(ParameterBoolBlender)		},
+        { RTTI_OF(ParameterQuat),           RTTI_OF(ParameterQuatBlender)       }
 	};
 
 
@@ -95,7 +105,7 @@ namespace nap
 		auto it = sBlendMap.emplace(std::make_pair(inParameterType, inBlenderType));
 		if (!(it.second))
 		{
-			nap::Logger::warn("Unable to register parameter blender, parameter %s: duplicate entry", 
+			nap::Logger::warn("Unable to register parameter blender, parameter %s: duplicate entry",
 				inParameterType.get_name().to_string().c_str());
 			return false;
 		}
@@ -149,14 +159,14 @@ namespace nap
 
 	const nap::Parameter& BaseParameterBlender::getTarget() const
 	{
-		assert(mTarget != nullptr); 
+		assert(mTarget != nullptr);
 		return *mTarget;
 	}
 
 
 	const nap::Parameter& BaseParameterBlender::getParameter() const
 	{
-		assert(mParameter != nullptr); 
+		assert(mParameter != nullptr);
 		return *mParameter;
 	}
 
@@ -195,4 +205,20 @@ namespace nap
 		RGBColor8 nval(lval.x, lval.y, lval.z);
 		getParameter<ParameterRGBColor8>().setValue(nval);
 	}
+
+
+	template<>
+	void nap::ParameterBlender<ParameterBool, bool>::onBlend(float value)
+	{
+		bool nval = value < 1.0f ? mSourceValue : getTarget<ParameterBool>().mValue;
+		getParameter<ParameterBool>().setValue(nval);
+	}
+
+
+    template<>
+    void nap::ParameterBlender<ParameterQuat, glm::quat>::onBlend(float value)
+    {
+        glm::quat q = glm::slerp(mSourceValue, getTarget<ParameterQuat>().mValue, value);
+        getParameter<ParameterQuat>().setValue(q);
+    }
 }
