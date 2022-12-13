@@ -128,7 +128,7 @@ def get_non_local_demo_dir(demo_app_name, module_dir, nap_root):
 def clean_module(dest_path, nap_root):
     # If .gitignore missing copy from template
     dest_gitignore = os.path.join(dest_path, '.gitignore')
-    template_gitignore = os.path.relpath(os.path.join(nap_root, 'cmake', 'app_creator', 'template', '.gitignore'))
+    template_gitignore = os.path.relpath(os.path.join(nap_root, 'cmake', 'module_creator', 'template', '.gitignore'))
     if os.path.exists(dest_gitignore):
         # Log a note if the gitignore has diverged from our template version
         if not filecmp.cmp(dest_gitignore, template_gitignore):

@@ -367,12 +367,12 @@ macro(package_module_dir_shortcuts DESTINATION)
     if(WIN32)
         set(src_dir ${src_dir}/win64)
         install(PROGRAMS ${src_dir}/regenerate.bat
-                         ${src_dir}/prepare_module_to_share.bat
+                         ${src_dir}/prepare_to_share.bat
                 DESTINATION ${DESTINATION})
     else()
         set(src_dir ${src_dir}/unix)
         install(PROGRAMS ${src_dir}/regenerate.sh
-                         ${src_dir}/prepare_module_to_share.sh
+                         ${src_dir}/prepare_to_share.sh
                 DESTINATION ${DESTINATION})
     endif()
 endmacro()

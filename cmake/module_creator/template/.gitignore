@@ -1,13 +1,11 @@
 /lib/
-/bin/
 /build/
 /msvc64/
 /xcode/
 /CMakeLists.txt
 /regenerate.*
-/package.*
-/build.*
-/cached_app_json.cmake
+/prepare_to_share.*
+/cached_module_json.cmake
 */cache
 .ini
 .idea/

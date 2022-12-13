@@ -18,7 +18,7 @@ if sys.platform == 'darwin':
 elif sys.platform == 'win32':
     BUILD_DIR = 'msvc64'
 else:
-    BUILD_DIR = 'build_dir'
+    BUILD_DIR = 'build'
 
 def update_module_framework_release(module_name, build_type):
     # If module name isn't prefixed with nap prepend it
