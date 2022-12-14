@@ -190,7 +190,7 @@ def read_yes_no(question):
 def get_nap_root():
     """Get framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
 
 def get_source_nap_root():
     """Get source framework root directory"""

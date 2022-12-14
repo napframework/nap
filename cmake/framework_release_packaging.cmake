@@ -59,7 +59,7 @@ macro(package_nap)
     # Package check_build_environment scripts
     set(cbe_tool_dir ${build_tools_dir}/check_build_environment)
     if(APPLE)
-        install(PROGRAMS ${cbe_tool_dir}/macos/check_build_environment.py DESTINATION tools/buildsystem/check_build_environment/macos)
+        install(PROGRAMS ${cbe_tool_dir}/macos/check_build_environment.py DESTINATION tools RENAME check_build_environment)
     elseif(UNIX)
         install(PROGRAMS ${cbe_tool_dir}/linux/check_build_environment.sh DESTINATION tools)
         install(PROGRAMS ${cbe_tool_dir}/linux/check_build_environment_worker.py DESTINATION tools/buildsystem/common)
