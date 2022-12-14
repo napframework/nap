@@ -11,7 +11,7 @@ add_executable(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-set(DEPENDENT_NAP_MODULES naprender napmath napscene napsdlinput)
+set(DEPENDENT_NAP_MODULES naprender napmath napscene)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Add the runtime paths for RTTR on macOS
