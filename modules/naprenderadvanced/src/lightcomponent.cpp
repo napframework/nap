@@ -168,8 +168,8 @@ namespace nap
 			}
 		}
 
-		glm::vec3 camera_location = mCameraEnabled ? mEyeCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>().getTranslate() : glm::vec3(0.0f, 0.0f, 0.0f);
-
+		const auto camera_transform = mCameraEnabled ? mEyeCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>().getGlobalTransform() : glm::mat4();
+		const auto camera_location = math::extractPosition(camera_transform);
 		for (auto& render_comp : mRenderComponents)
 		{
 			UniformStructInstance* vert_ubo_struct = (*render_comp).getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);

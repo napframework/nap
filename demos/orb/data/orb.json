@@ -1158,8 +1158,8 @@
         {
             "Type": "nap::ShaderFromFile",
             "mID": "PBRColorShader",
-            "VertShader": "shaders/pbrcolor.vert",
-            "FragShader": "shaders/pbrcolor.frag"
+            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrcolor.vert",
+            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrcolor.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
