@@ -178,6 +178,7 @@ namespace nap
 		UniformMat4Instance*					mModelMatUniform = nullptr;		///< Pointer to the model matrix uniform
 		UniformMat4Instance*					mViewMatUniform = nullptr;		///< Pointer to the view matrix uniform
 		UniformMat4Instance*					mProjectMatUniform = nullptr;	///< Pointer to the projection matrix uniform
+		UniformMat4Instance*					mNormalMatrixUniform = nullptr;	///< Pointer to the normal matrix uniform
 		float									mLineWidth = 1.0f;				///< Line width, clamped to 1.0 if not supported by GPU
 	};
 }

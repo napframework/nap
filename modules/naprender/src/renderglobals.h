@@ -26,9 +26,10 @@ namespace nap
 	 *	...
 	 *	uniform nap
 	 *	{
-	 *		uniform mat4 projectionMatrix;
-	 *		uniform mat4 viewMatrix;
-	 *		uniform mat4 modelMatrix;
+	 *		mat4 projectionMatrix;
+	 *		mat4 viewMatrix;
+	 *		mat4 modelMatrix;
+	 *		mat4 normalMatrix;
 	 *	} mvp;
 	 *
 	 *	...
@@ -44,6 +45,7 @@ namespace nap
 		inline constexpr const char* modelMatrix = "modelMatrix";			///< uniform model matrix name
 		inline constexpr const char* viewMatrix = "viewMatrix";				///< uniform view matrix name
 		inline constexpr const char* projectionMatrix = "projectionMatrix";	///< uniform projection matrix name
+		inline constexpr const char* normalMatrix = "normalMatrix";			///< uniform normal matrix name
 	}
 
 
