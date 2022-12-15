@@ -122,14 +122,25 @@ namespace nap
 		// Ensure the presets directory exists
 		utility::makeDirs(utility::getAbsolutePath(getGroupPresetDirectory(group.mID)));
 
-		std::string preset_path = getPresetPath(group.mID, presetFile);
+		// Create parameter group and copy group member properties
+		// Don't serialize the given group, which might contain properties we're not interested in
+		auto ser_group = std::make_unique<nap::ParameterGroup>();
+		auto properties = ser_group->get_type().get_properties();
+		for (const rtti::Property& property : properties)
+		{
+			rtti::Variant new_value = property.get_value(group);
+			bool success = property.set_value(*ser_group, new_value);
+			if (!errorState.check(success, "Failed to copy property: %s", property.get_name().data()))
+				return false;
+		}
 
 		// Serialize current set of parameters to json
 		rtti::JSONWriter writer;
-		if (!rtti::serializeObjects({ &group }, writer, errorState))
+		if (!rtti::serializeObjects({ ser_group.get() }, writer, errorState))
 			return false;
 
 		// Open output file
+		std::string preset_path = getPresetPath(group.mID, presetFile);
 		std::ofstream output(preset_path, std::ios::binary | std::ios::out);
 		if (!errorState.check(output.is_open() && output.good(), "Failed to open %s for writing", preset_path.c_str()))
 			return false;

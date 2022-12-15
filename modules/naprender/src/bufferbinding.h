@@ -118,7 +118,7 @@ namespace nap
 		/**
 		 * @return a pointer to the buffer, nullptr if not set
 		 */
-		const GPUBufferNumeric* getBuffer()								{ return static_cast<const GPUBufferNumeric*>(BufferBinding::mBuffer); }
+		const GPUBufferNumeric* getBuffer() const						{ return static_cast<const GPUBufferNumeric*>(BufferBinding::mBuffer); }
 	};
 
 

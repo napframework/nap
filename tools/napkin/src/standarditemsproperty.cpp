@@ -8,11 +8,13 @@
 #include "standarditemsproperty.h"
 #include "standarditemsgeneric.h"
 #include "appcontext.h"
+#include "napkin-resources.h"
 
 #include <QtDebug>
 #include <rtti/object.h>
 #include <color.h>
 #include <mathutils.h>
+#include <nap/assert.h>
 
 RTTI_DEFINE_BASE(napkin::PropertyPathItem)
 RTTI_DEFINE_BASE(napkin::PropertyItem)
@@ -22,6 +24,7 @@ RTTI_DEFINE_BASE(napkin::PointerItem)
 RTTI_DEFINE_BASE(napkin::PointerValueItem)
 RTTI_DEFINE_BASE(napkin::ColorValueItem)
 RTTI_DEFINE_BASE(napkin::EmbeddedPointerItem)
+RTTI_DEFINE_BASE(napkin::EmbeddedPointerValueItem)
 RTTI_DEFINE_BASE(napkin::PropertyValueItem)
 
 QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
@@ -45,7 +48,7 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 		if (path.isEmbeddedPointer())
 		{
 			items << new EmbeddedPointerItem(path);
-			items << new EmptyItem();
+			items << new EmbeddedPointerValueItem(path);
 			items << new RTTITypeItem(type);
 		}
 		else
@@ -77,36 +80,105 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 	return items;
 }
 
+
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(path)
 {
 	setText(QString::fromStdString(path.getName()));
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::objectRenamed, this, &PropertyPathItem::onObjectRenamed);
+	connect(&AppContext::get(), &AppContext::removingObject, this, &PropertyPathItem::onRemovingObject);
+	setEditable(false);
 }
+
 
 QVariant napkin::PropertyPathItem::data(int role) const
 {
-	if (role == Qt::DisplayRole)
+	switch (role)
 	{
-		// If the parent is an array, display the index of this item
-		auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
-		if (parent_path != nullptr && parent_path->getPath().isArray())
+		case Qt::DisplayRole:
 		{
+			// If the parent is an array, display the index of this item
+			auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
+			if (parent_path != nullptr && parent_path->getPath().isArray())
+			{
 				return row();
+			}
+			return QStandardItem::data(role);
+		}
+		case Qt::UserRole:
+		{
+			return QVariant::fromValue(mPath);
+		}
+		default:
+		{
+			return QStandardItem::data(role);
+		}		
+	}
+}
+
+
+QList<QStandardItem*> napkin::PropertyPathItem::createAppendRow(const PropertyPath& childPath)
+{
+	// Create and append row
+	auto row = createPropertyItemRow(childPath);
+	appendRow(row);
+
+	// Listen to row changes
+	assert(!row.empty());
+	for (const auto& item : row)
+	{
+		const PropertyPathItem* path_item = qitem_cast<const PropertyPathItem*>(row.first());
+		if (path_item != nullptr)
+		{
+			connect(path_item, &PropertyPathItem::childAdded, this, &PropertyPathItem::childAdded);
 		}
 	}
-	return QStandardItem::data(role);
+
+	// Notify listeners
+	childAdded(row);
+	return row;
 }
+
+
+void napkin::PropertyPathItem::onPropertyValueChanged(const PropertyPath& path)
+{
+	if (this->mPath == path)
+	{
+		valueChanged();
+	}
+}
+
+
+void napkin::PropertyPathItem::onObjectRenamed(const nap::rtti::Object& object, const std::string& oldName, const std::string& newName)
+{
+	mPath.updateObjectName(oldName, newName);
+}
+
+
+void napkin::PropertyPathItem::onRemovingObject(const nap::rtti::Object* object)
+{
+	if (mPath.getObject() == object)
+	{
+		QStandardItem* parent_item = QStandardItem::parent();
+		this->model()->removeRow(this->row(), parent_item != nullptr ?
+			parent_item->index() : QModelIndex());
+	}
+}
+
 
 napkin::PropertyItem::PropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{
-	setEditable(false);
-}
+{ }
+
 
 void napkin::CompoundPropertyItem::populateChildren()
 {
 	for (auto childPath : mPath.getChildren())
-		appendRow(createPropertyItemRow(childPath));
+	{
+		this->createAppendRow(childPath);
+	}
 }
+
 
 napkin::CompoundPropertyItem::CompoundPropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
@@ -114,41 +186,102 @@ napkin::CompoundPropertyItem::CompoundPropertyItem(const PropertyPath& path)
 	populateChildren();
 }
 
-void napkin::ArrayPropertyItem::populateChildren()
-{
-	for (auto childPath : mPath.getChildren())
-		appendRow(createPropertyItemRow(childPath));
-}
+
+//////////////////////////////////////////////////////////////////////////
+// ArrayPropertyItem
+//////////////////////////////////////////////////////////////////////////
 
 napkin::ArrayPropertyItem::ArrayPropertyItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 	std::string pathStr = path.getPath().toString();
 	populateChildren();
+	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &ArrayPropertyItem::onChildInserted);
+	connect(&AppContext::get(), &AppContext::propertyChildRemoved, this, &ArrayPropertyItem::onChildRemoved);
 }
+
+
+QVariant napkin::ArrayPropertyItem::data(int role) const
+{
+	switch (role)
+	{
+	case Qt::DecorationRole:
+		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ARRAY);
+	default:
+		return PropertyPathItem::data(role);
+	}
+}
+
+
+void napkin::ArrayPropertyItem::populateChildren()
+{
+	for (auto childPath : mPath.getChildren())
+	{
+		this->createAppendRow(childPath);
+	}
+}
+
+
+void napkin::ArrayPropertyItem::onChildInserted(const PropertyPath& parentPath, size_t childIndex)
+{
+	if (mPath == parentPath)
+	{
+		// Delete everything at and beyond the item that was inserted
+		NAP_ASSERT_MSG(childIndex == this->rowCount(), "Item not appended to end of array");
+		if (childIndex < this->rowCount())
+			this->removeRows(childIndex, this->rowCount() - childIndex);
+
+		// Create items for children from that point onwards
+		auto children = mPath.getChildren();
+		auto idx = childIndex;
+		for (auto idx = childIndex; idx < children.size(); idx++)
+			this->createAppendRow(children[idx]);
+	}
+}
+
+
+void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, size_t childIndex)
+{
+	if (mPath == parentPath)
+	{
+		// Delete the item and everything beyond the item that was deleted
+		this->removeRows(childIndex, this->rowCount() - childIndex);
+
+		// Create items for children from that point onwards
+		auto children = mPath.getChildren();
+		auto idx = childIndex;
+		for (auto idx = childIndex; idx < children.size(); idx++)
+			this->createAppendRow(children[idx]);
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// PointerItem
+//////////////////////////////////////////////////////////////////////////
 
 napkin::PointerItem::PointerItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{
-}
+{ }
+
 
 QVariant napkin::PointerValueItem::data(int role) const
 {
-	if (role == Qt::DisplayRole || role == Qt::EditRole)
+	switch (role)
 	{
-		if (auto pointee = mPath.getPointee())
-			return QString::fromStdString(pointee->mID);
-		else
-			return "NULL";
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+		{
+			auto pointee = mPath.getPointee();
+			return pointee != nullptr ? QString::fromStdString(pointee->mID) : "NULL";
+		}
+		default:
+		{
+			return PropertyPathItem::data(role);
+		}
 	}
-	else if (role == Qt::UserRole)
-	{
-		return QVariant::fromValue(mPath);
-	}
-	if (mPath.isInstanceProperty() && mPath.isOverridden() && role == Qt::BackgroundRole)
-		return QStandardItem::data(role);
-	return QStandardItem::data(role);
 }
+
 
 void napkin::PointerValueItem::setData(const QVariant& value, int role)
 {
@@ -165,11 +298,15 @@ void napkin::PointerValueItem::setData(const QVariant& value, int role)
 
 napkin::PointerValueItem::PointerValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
-{ }
+{
+	setEditable(true);
+}
 
 
 napkin::ColorValueItem::ColorValueItem(const PropertyPath& path) : PropertyPathItem(path)
-{ }
+{
+	setEditable(true);
+}
 
 
 QVariant napkin::ColorValueItem::data(int role) const
@@ -199,18 +336,18 @@ QVariant napkin::ColorValueItem::data(int role) const
 		}
 		return QString::fromStdString(display).toUpper();
 	}
-	case Qt::UserRole:
-	{
-		return QVariant::fromValue(mPath);
-	}
 	default:
-		return QStandardItem::data(role);
+		return PropertyPathItem::data(role);
 	}
 }
 
 
 void napkin::ColorValueItem::setData(const QVariant& value, int role)
 {
+	// Only hanle edits
+	if (role != Qt::EditRole)
+		return PropertyPathItem::setData(value, role);
+
 	// Ensure we can parse string, must be dividable by 2
 	QString color_str = value.toString();
 	color_str.remove('#');
@@ -253,85 +390,162 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 }
 
 
-void napkin::EmbeddedPointerItem::populateChildren()
+//////////////////////////////////////////////////////////////////////////
+// EmbeddedPointerItem
+//////////////////////////////////////////////////////////////////////////
+
+static nap::rtti::Object* getEmbeddedObject(const nap::rtti::ResolvedPath& path)
 {
 	// First resolve the pointee, after that behave like compound
-	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-
-	assert(resolvedPath.isValid());
-	auto value = resolvedPath.getValue();
-
+	assert(path.isValid());
+	auto value = path.getValue();
 	auto value_type = value.get_type();
 	auto wrapped_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
 	bool is_wrapper = wrapped_type != value_type;
-	nap::rtti::Object* pointee = is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>()
-												: value.get_value<nap::rtti::Object*>();
-	if (nullptr == pointee)
-	{
-		nap::Logger::warn("Embedded pointer was null: %s", mPath.toString().c_str());
-		return;
-	}
-
-	auto object = pointee;
-
-	for (auto childprop : object->get_type().get_properties())
-	{
-		auto childValue = childprop.get_value(object);
-		std::string name = childprop.get_name().data();
-		QString qName = QString::fromStdString(name);
-
-		nap::rtti::Path path;
-		path.pushAttribute(name);
-
-		appendRow(createPropertyItemRow({ *object, path, *(AppContext::get().getDocument())}));
-	}
+	return  is_wrapper ? value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
+		value.get_value<nap::rtti::Object*>();
 }
+
 
 napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
 	populateChildren();
+	connect(this, &PropertyPathItem::valueChanged, this, &EmbeddedPointerItem::onValueChanged);
 }
+
+
+void napkin::EmbeddedPointerItem::populateChildren()
+{
+	// First resolve the pointee, after that behave like compound
+	// If the embedded object isn't present, do nothing
+	nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
+	if (pointee == nullptr)
+		return;
+
+	auto object = pointee;
+	for (auto childprop : object->get_type().get_properties())
+	{
+		auto childValue = childprop.get_value(object);
+		std::string name = childprop.get_name().data();
+		if(name == nap::rtti::sIDPropertyName)
+			continue;
+
+		nap::rtti::Path path;
+		path.pushAttribute(name);
+		createAppendRow({ *object, path, *(AppContext::get().getDocument()) });
+	}
+}
+
+
+void napkin::EmbeddedPointerItem::onValueChanged()
+{
+	// Remove embedded child (all children) and re-populate
+	auto* parent_item = QStandardItem::parent();
+	removeRows(0, this->rowCount());
+	populateChildren();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// EmbeddedPointerValueItem
+//////////////////////////////////////////////////////////////////////////
+
+napkin::EmbeddedPointerValueItem::EmbeddedPointerValueItem(const PropertyPath& path)
+	: PropertyPathItem(path)
+{
+	setEditable(true);
+}
+
+
+QVariant napkin::EmbeddedPointerValueItem::data(int role) const
+{
+	switch (role)
+	{
+		case Qt::DisplayRole:
+		case Qt::EditRole:
+		{
+			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
+			return pointee != nullptr ? pointee->mID.c_str() : "NULL";
+		}
+		default:
+		{
+			return PropertyPathItem::data(role);
+		}
+	}
+}
+
+
+void napkin::EmbeddedPointerValueItem::setData(const QVariant& value, int role)
+{
+	switch (role)
+	{
+		case Qt::EditRole:
+		{
+			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
+			if (pointee != nullptr)
+			{
+				PropertyPath id_path(pointee->mID, nap::rtti::sIDPropertyName, *mPath.getDocument());
+				napkin::AppContext::get().executeCommand(new SetValueCommand(id_path, value));
+			}
+			break;
+		}
+		default:
+		{
+			PropertyPathItem::setData(value, role);
+			break;
+		}
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// PropertyValueItem
+//////////////////////////////////////////////////////////////////////////
 
 QVariant napkin::PropertyValueItem::data(int role) const
 {
-	if (role == Qt::DisplayRole || role == Qt::EditRole)
+	switch(role)
 	{
-		QVariant variant;
-		if (napkin::toQVariant(mPath.getType(), mPath.getValue(), variant))
+		case Qt::DisplayRole:
+		case Qt::EditRole:
 		{
-			return variant;
+			QVariant variant;
+			return napkin::toQVariant(mPath.getType(), mPath.getValue(), variant) ?
+				variant : napkin::TXT_UNCONVERTIBLE_TYPE;
 		}
-
-		return napkin::TXT_UNCONVERTIBLE_TYPE;
+		default:
+		{
+			return PropertyPathItem::data(role);
+		}
 	}
-	return QStandardItem::data(role);
 }
+
 
 void napkin::PropertyValueItem::setData(const QVariant& value, int role)
 {
 	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
 	assert(resolvedPath.isValid());
 
-	if (role == Qt::EditRole)
+	switch (role)
 	{
-		auto path = mPath;
-		napkin::AppContext::get().executeCommand(new SetValueCommand(path, value));
-	}
-	else if (role == Qt::DisplayRole)
-	{
-		bool ok;
-		auto resultValue = napkin::fromQVariant(resolvedPath.getType(), value, &ok);
-		if (ok)
-			resolvedPath.setValue(resultValue);
-	}
-	else
-	{
-		QStandardItem::setData(value, role);
+		case Qt::EditRole:
+		{
+			auto path = mPath;
+			napkin::AppContext::get().executeCommand(new SetValueCommand(path, value));
+			break;
+		}
+		default:
+		{
+			PropertyPathItem::setData(value, role);
+			break;
+		}
 	}
 }
+
 
 napkin::PropertyValueItem::PropertyValueItem(const PropertyPath& path)
 	: PropertyPathItem(path)
 {
+	setEditable(true);
 }

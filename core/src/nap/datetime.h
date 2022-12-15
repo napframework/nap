@@ -332,7 +332,7 @@ namespace nap
 
 		/**
 		 * Helper function to check if a specific date exists.
-		 * Gregorian dates started in 1582
+		 * Gregorian dates started in 1582.
 		 * @param year the year
 		 * @param month the month
 		 * @param day the day in the month
@@ -341,7 +341,7 @@ namespace nap
 
 		/**
 		 * Helper function to check if the date exists.
-		 * @return 
+		 * @return if date exists
 		 */
 		bool valid() const;
 

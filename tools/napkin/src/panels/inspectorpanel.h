@@ -29,6 +29,7 @@ namespace napkin
      */
 	class InspectorModel : public QStandardItemModel
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * This is a constructor
@@ -101,6 +102,9 @@ namespace napkin
 		 */
 		Qt::ItemFlags flags(const QModelIndex& index) const override;
 
+	Q_SIGNALS:
+		void childAdded(const QList<QStandardItem*> items);
+
 	private:
 		/**
 		 * Check if a property is to be included in the inspector view
@@ -108,6 +112,13 @@ namespace napkin
 		 * @return True when the property should not be displayed, false otherwise
 		 */
 		bool isPropertyIgnored(const PropertyPath& prop) const;
+
+		/**
+		 * Called when a child is inserted
+		 * @param path path to property that is inserted
+		 * @param items new row items
+		 */
+		void onChildAdded(QList<QStandardItem*> items);
 
 		PropertyPath mPath; // the path currently being edited by the property editor
 	};
@@ -137,15 +148,15 @@ namespace napkin
 		void clear();
 
 		/**
+		 * Lays out all the items
+		 */
+		void expandTree(const QModelIndex& parent);
+
+		/**
 		 * Called when the context menu for an item should be shown
 		 * @param menu The menu that actions should be added to (initially empty)
 		 */
 		void onItemContextMenu(QMenu& menu);
-
-		/**
-		 * Called when a property value has been changed
-		 */
-		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
 		 * Called when another property needs to be selected
@@ -158,18 +169,22 @@ namespace napkin
 	 	void onObjectRemoved(nap::rtti::Object* obj);
 
 		/**
-		 * Rebuilds view and model and applies path as selection
-		 * This is a temp work-around to ensure selection remains valid
-		 * @param selection the property path that should be selected after rebuilding the model
-		 * @param verticalScrollPos the vertical scroll position of the widget before being refreshed
+		 * Called when a child is inserted into the model
+		 * @param path path to the newly inserted child
+		 * @param items row items
 		 */
-		void rebuild(const PropertyPath& selection);
+		void onChildAdded(QList<QStandardItem*> items);
 		
 		/**
 		 * Called just before the current document is closed
 		 * @param filename The name of the document
 		 */
 		void onFileClosing(const QString& filename);
+
+		/**
+		 * Called when an object is renamed
+		 */
+		void onObjectRenamed(nap::rtti::Object& object, const std::string& oldName, const std::string& newName);
 
 	private:
 		InspectorModel mModel;						// The model for the view
@@ -183,5 +198,6 @@ namespace napkin
 		QLabel mSubTitle;							// Subtitle label
 		QLabel mPathLabel;							// label before path
 		QLineEdit mPathField;						// Display path to object
+		PropertyPath mPath;							// Path to display
 	};
 };

@@ -21,6 +21,7 @@ namespace nap
 		RTTI_ENABLE()
 	public:
 		using UniformStructInstanceList = std::vector<std::unique_ptr<UniformStructInstance>>;
+		using BufferBindingInstanceList = std::vector<std::unique_ptr<BufferBindingInstance>>;
 		using SamplerInstanceList = std::vector<std::unique_ptr<SamplerInstance>>;
 
         UniformContainer() = default;
@@ -61,6 +62,16 @@ namespace nap
 		 * @return all the uniforms sampler instances.
 		 */
 		const SamplerInstanceList& getSamplers() const								{ return mSamplerInstances; }
+
+		/**
+		 * @return all the buffer binding instances.
+		 */
+		const BufferBindingInstanceList& getBufferBindings() const					{ return mBindingInstances; }
+
+		/**
+		 * @return all the uniform root structs.
+		 */
+		const UniformStructInstanceList& getUniformStructs() const					{ return mUniformRootStructs; }
 
 		/**
 		 * Tries to find a sampler instance with the given name.

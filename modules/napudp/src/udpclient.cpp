@@ -15,7 +15,7 @@
 #include <thread>
 
 RTTI_BEGIN_CLASS(nap::UDPClient)
-	RTTI_PROPERTY("Endpoint",					&nap::UDPClient::mRemoteIp,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Endpoint",                   &nap::UDPClient::mEndpoint,                     nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("Broadcast",					&nap::UDPClient::mBroadcast,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port",						&nap::UDPClient::mPort,							nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxQueueSize",				&nap::UDPClient::mMaxPacketQueueSize,			nap::rtti::EPropertyMetaData::Default)
@@ -34,10 +34,12 @@ namespace nap
     class UDPClient::Impl
     {
     public:
+        Impl(asio::io_context& context) : mIOContext(context){}
+
         // ASIO
-        asio::io_context 			mIOService;
+        asio::io_context& 			mIOContext;
         asio::ip::udp::endpoint 	mRemoteEndpoint;
-        asio::ip::udp::socket       mSocket{ mIOService };
+        asio::ip::udp::socket       mSocket{ mIOContext };
     };
 
 	//////////////////////////////////////////////////////////////////////////
@@ -52,46 +54,47 @@ namespace nap
     {}
 
 
-	bool UDPClient::init(utility::ErrorState& errorState)
+	bool UDPClient::onStart(utility::ErrorState& errorState)
 	{
         // create asio implementation
-        mAsio = std::make_unique<UDPClient::Impl>();
+        mImpl = std::make_unique<UDPClient::Impl>(getIOContext());
 
         // when asio error occurs, init_success indicates whether initialization should fail or succeed
         bool init_success = false;
 
 		// try to open socket
 		asio::error_code asio_error_code;
-        mAsio->mSocket.open(udp::v4(), asio_error_code);
+        mImpl->mSocket.open(udp::v4(), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
         // enable/disable broadcast
-        mAsio->mSocket.set_option(asio::socket_base::broadcast(mBroadcast), asio_error_code);
+        mImpl->mSocket.set_option(asio::socket_base::broadcast(mBroadcast), asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
         
-        // create address from string
-        auto address = address::from_string(mRemoteIp, asio_error_code);
+        // resolve ip address from endpoint
+        asio::ip::tcp::resolver resolver(getIOContext());
+        asio::ip::tcp::resolver::query query(mEndpoint, "80");
+        asio::ip::tcp::resolver::iterator iter = resolver.resolve(query, asio_error_code);
         if(handleAsioError(asio_error_code, errorState, init_success))
             return init_success;
 
-        mAsio->mRemoteEndpoint = udp::endpoint(address, mPort);
+        asio::ip::tcp::endpoint endpoint = iter->endpoint();
+        auto address = address::from_string(endpoint.address().to_string(), asio_error_code);
+        if(handleAsioError(asio_error_code, errorState, init_success))
+            return init_success;
 
-		// init UDPAdapter, registering the client to an UDPThread
-		if (!UDPAdapter::init(errorState))
-			return false;
+        mImpl->mRemoteEndpoint = udp::endpoint(address, mPort);
 
 		return true;
 	}
 
 
-	void UDPClient::onDestroy()
+	void UDPClient::onStop()
 	{
-		UDPAdapter::onDestroy();
-
 		asio::error_code err;
-        mAsio->mSocket.close(err);
+        mImpl->mSocket.close(err);
 		if (err)
 		{
 			nap::Logger::error(*this, "error closing socket : %s", err.message().c_str());
@@ -139,14 +142,14 @@ namespace nap
 	}
 
 
-	void UDPClient::process()
+	void UDPClient::onProcess()
 	{
 		// let the socket send queued packets
 		UDPPacket packet_to_send;
 		while(mQueue.try_dequeue(packet_to_send))
 		{
 			asio::error_code err;
-            mAsio->mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mAsio->mRemoteEndpoint, 0, err);
+            mImpl->mSocket.send_to(asio::buffer(&packet_to_send.data()[0], packet_to_send.size()), mImpl->mRemoteEndpoint, 0, err);
 
 			if(err)
 			{

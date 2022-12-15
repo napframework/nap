@@ -29,15 +29,36 @@ namespace nap
 		if(!errorState.check(mThread !=nullptr, "Thread cannot be nullptr"))
 			return false;
 
-		mThread->registerAdapter(this);
 		return true;
 	}
 
 
 	void UDPAdapter::onDestroy()
 	{
-		mThread->removeAdapter(this);
 	}
+
+
+    bool UDPAdapter::start(utility::ErrorState& errorState)
+    {
+        if(!onStart(errorState))
+            return false;
+
+        mThread->registerAdapter(this);
+        return true;
+    }
+
+
+    void UDPAdapter::stop()
+    {
+        mThread->removeAdapter(this);
+        onStop();
+    }
+
+
+    void UDPAdapter::process()
+    {
+        onProcess();
+    }
 
 
     bool UDPAdapter::handleAsioError(const std::error_code& errorCode, utility::ErrorState& errorState, bool& success)
@@ -60,5 +81,11 @@ namespace nap
         }
 
         return false;
+    }
+
+
+    asio::io_context& UDPAdapter::getIOContext()
+    {
+        return mThread->getIOContext();
     }
 }

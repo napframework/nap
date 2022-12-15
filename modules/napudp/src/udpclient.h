@@ -37,18 +37,6 @@ namespace nap
         virtual ~UDPClient();
 
 		/**
-		 * Initializes the UDP client
-		 * @param error contains error information
-		 * @return true on success
-		 */
-		bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * called on destruction
-		 */
-		void onDestroy() override;
-
-		/**
 		 * Makes a copy of the packet and queues if for sending.
 		 * Call send(std::move(packet)) if you want to move the packet instead.
 		 * Calling this method is Thread-Safe.
@@ -64,21 +52,32 @@ namespace nap
 		void send(UDPPacket&& packet);
 
 		int mPort 							= 13251; 		///< Property: 'Port' the port the client socket binds to
-		std::string mRemoteIp 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
+		std::string mEndpoint 				= "10.8.0.3";	///< Property: 'Endpoint' the ip address the client socket binds to
 		int  mMaxPacketQueueSize			= 1000;			///< Property: 'MaxQueueSize' maximum of queued packets
 		bool mStopOnMaxQueueSizeExceeded 	= true;			///< Property: 'StopOnMaxQueueSizeExceeded' stop adding packets when queue size is exceed
 		bool mBroadcast                     = false;        ///< Property: 'Broadcast' set option to broadcast
 
 	protected:
+        /**
+         * Starts the UDP client and creates the socket
+         * @param error contains error information
+         * @return true on success
+         */
+        bool onStart(utility::ErrorState& errorState) override final;
+
+        /**
+         * Called when socket needs to be closed
+         */
+        void onStop() override final;
+
 		/**
 		 * The process function
 		 */
-		void process() override;
-
+		void onProcess() override final;
 	private:
 		// Client specific ASIO implementation
 		class Impl;
-        std::unique_ptr<Impl> mAsio;
+        std::unique_ptr<Impl> mImpl;
         std::vector<nap::uint8> mBuffer;
 
 		// Threading

@@ -139,10 +139,11 @@ namespace napkin
 	{
 		// Gather list of configurations to save to disk
 		nap::rtti::ObjectList objects;
-		for (const auto& config : mDocument->getObjects())
+		const auto& doc_objects = mDocument->getObjects();
+		for (const auto& config : doc_objects)
 		{
-			config->mID = config->mID.empty() ? nap::math::generateUUID() : config->mID;
-			objects.emplace_back(config.get());
+			assert(!config.second->mID.empty());
+			objects.emplace_back(config.second.get());
 		}
 
 		// Serialize the configurations to json
@@ -229,9 +230,9 @@ namespace napkin
 		configs.reserve(mDocument->getObjects().size());
 		for (const auto& obj : mDocument->getObjects())
 		{
-			if (obj->get_type().is_derived_from(RTTI_OF(nap::ServiceConfiguration)))
+			if (obj.second->get_type().is_derived_from(RTTI_OF(nap::ServiceConfiguration)))
 			{
-				configs.emplace_back(static_cast<nap::ServiceConfiguration*>(obj.get()));
+				configs.emplace_back(static_cast<nap::ServiceConfiguration*>(obj.second.get()));
 			}
 		}
 		return configs;

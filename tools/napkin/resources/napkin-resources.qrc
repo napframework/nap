@@ -34,6 +34,10 @@
 		<file>icons/remove.png</file>
 		<file>icons/edit.png</file>
 		<file>icons/change.png</file>
+		<file>icons/info.png</file>
+		<file>icons/help.png</file>
+		<file>icons/url.png</file>
+		<file>icons/property.png</file>
+		<file>icons/array.png</file>
 	</qresource>
 </RCC>
-
