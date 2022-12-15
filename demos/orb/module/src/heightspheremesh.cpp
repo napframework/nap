@@ -10,6 +10,7 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <renderglobals.h>
+#include <glm/gtc/constants.hpp>
 
 // nap::heightmesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightSphereMesh)
@@ -31,8 +32,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	HeightSphereMesh::HeightSphereMesh(Core& core) :
-		mRenderService(core.getService<RenderService>())
-	{}
+		mRenderService(core.getService<RenderService>()) {}
 
 
 	/**
@@ -46,7 +46,9 @@ namespace nap
 			return false;
 
 		// Get total amount of vertices
-		uint vertex_count = mRings * mSectors;
+		const uint rings = mRings + 1;
+		const uint sectors = mSectors + 1;
+		const uint vertex_count = rings * sectors;
 
 		// Vertex data
 		std::vector<glm::vec3> vertices(vertex_count);
@@ -56,19 +58,19 @@ namespace nap
 		std::vector<glm::vec3> texcoords(vertex_count);
 		std::vector<glm::vec3>::iterator t = texcoords.begin();
 
-		float const dr = 1.0f / static_cast<float>(mRings - 1);
-		float const ds = 1.0f / static_cast<float>(mSectors - 1);
+		const float DR = 1.0f / static_cast<float>(rings - 1);
+		const float DS = 1.0f / static_cast<float>(sectors - 1);
 
-		for (uint r = 0; r < mRings; r++)
+		for (uint r = 0; r < rings; r++)
 		{
-			for (uint s = 0; s < mSectors; s++)
+			for (uint s = 0; s < sectors; s++)
 			{
-				float const y = sin(-(math::PI_2)+math::PI * r * dr);
-				float const x = cos(math::PIX2 * s * ds) * sin(math::PI * r * dr) * -1.0f;
-				float const z = sin(math::PIX2 * s * ds) * sin(math::PI * r * dr);
+				const float y = std::sin(-glm::half_pi<float>() + glm::pi<float>() * r * DR);
+				const float x = std::cos(glm::two_pi<float>() * s * DS) * std::sin(glm::pi<float>() * r * DR) * -1.0f;
+				const float z = std::sin(glm::two_pi<float>() * s * DS) * std::sin(glm::pi<float>() * r * DR);
 
 				// Set texture coordinates
-				*t++ = { s * ds, r * dr, 0.5f };
+				*t++ = { s * DS, r * DR, 0.5f };
 
 				// Set vertex coordinates
 				*v++ = { x * mRadius, y * mRadius, z * mRadius };
@@ -79,8 +81,8 @@ namespace nap
 		}
 
 		// Calculate sphere indices
-		uint irings = mRings - 1;
-		uint isectors = mSectors - 1;
+		uint irings = rings - 1;
+		uint isectors = sectors - 1;
 		uint index_count = irings * isectors * 6;
 
 		std::vector<uint32> indices(index_count);
@@ -88,17 +90,21 @@ namespace nap
 
 		for (uint r = 0; r < irings; r++)
 		{
+			const uint r_plus = (r + 1);
+
 			for (uint s = 0; s < isectors; s++)
 			{
+				const uint s_plus = (s + 1);
+
 				// Triangle A
-				*i++ = (r * mSectors) + s;
-				*i++ = (r * mSectors) + (s + 1);
-				*i++ = ((r + 1) * mSectors) + (s + 1);
+				*i++ = (r * sectors) + s;
+				*i++ = (r * sectors) + s_plus;
+				*i++ = (r_plus * sectors) + s_plus;
 
 				// Triangle B
-				*i++ = (r * mSectors) + s;
-				*i++ = ((r + 1) * mSectors) + (s + 1);
-				*i++ = ((r + 1) * mSectors) + s;
+				*i++ = (r * sectors) + s;
+				*i++ = (r_plus * sectors) + s_plus;
+				*i++ = (r_plus * sectors) + s;
 			}
 		}
 
