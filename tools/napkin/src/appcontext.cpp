@@ -100,21 +100,25 @@ Document* AppContext::loadDocument(const QString& filename)
 	return loadDocumentFromString(buffer, filename);
 }
 
+
 const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
 	// If there's a project already loaded in the current context, quit and restart.
 	// The editor can only load 1 project because it needs to load modules that can't be freed.
-	progressChanged(0.25f, "Loading: " + projectFilename);
+	QString project_file_name = QString::fromStdString(nap::utility::forceSeparator(projectFilename.toStdString()));
 	if (getProjectInfo() != nullptr)
 	{
-		QProcess::startDetached(qApp->arguments()[0], {"-p", projectFilename});
-		getQApplication()->exit(0);
+		QProcess proc;
+		proc.setProgram(qApp->arguments()[0]);
+		proc.setArguments({ "-p", project_file_name });
+		proc.startDetached();
 		return nullptr;
 	}
 
 	// Initialize engine
 	ErrorState err;
-	if (!mCore.initializeEngine(projectFilename.toStdString(), nap::ProjectInfo::EContext::Editor, err))
+	progressChanged(0.25f, "Loading: " + project_file_name);
+	if (!mCore.initializeEngine(project_file_name.toStdString(), nap::ProjectInfo::EContext::Editor, err))
 	{
 		nap::Logger::error(err.toString());
 		progressChanged(1.0f);
@@ -135,7 +139,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	progressChanged(0.75f);
 
 	// Load document (data file)
-	addRecentlyOpenedProject(projectFilename);
+	addRecentlyOpenedProject(project_file_name);
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
 	if (!dataFilename.isEmpty())
 		loadDocument(dataFilename);
@@ -278,6 +282,7 @@ void AppContext::openRecentProject()
 	AppContext::get().loadProject(lastFilename);
 }
 
+
 const QString AppContext::getLastOpenedProjectFilename()
 {
 	auto recent = getRecentlyOpenedProjects();
@@ -286,21 +291,25 @@ const QString AppContext::getLastOpenedProjectFilename()
 	return recent.last();
 }
 
+
 void AppContext::addRecentlyOpenedProject(const QString& filename)
 {
+	QString file_name = QString::fromStdString(nap::utility::forceSeparator(filename.toStdString()));
 	auto recentProjects = getRecentlyOpenedProjects();
-	recentProjects.removeAll(filename);
-	recentProjects << filename;
+	recentProjects.removeAll(file_name);
+	recentProjects << file_name;
 	while (recentProjects.size() > MAX_RECENT_FILES)
 		recentProjects.removeFirst();
 	QSettings().setValue(settingsKey::RECENTLY_OPENED, recentProjects);
 
 }
 
+
 QStringList AppContext::getRecentlyOpenedProjects() const
 {
 	return QSettings().value(settingsKey::RECENTLY_OPENED, QStringList()).value<QStringList>();
 }
+
 
 void AppContext::restoreUI()
 {
@@ -316,6 +325,7 @@ void AppContext::restoreUI()
 		openRecentProject();
 	}
 }
+
 
 void AppContext::connectDocumentSignals(bool enable)
 {
@@ -357,6 +367,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		disconnect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 	}
 }
+
 
 QMainWindow* AppContext::getMainWindow() const
 {

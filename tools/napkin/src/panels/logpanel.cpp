@@ -49,10 +49,8 @@ void LogModel::onLog(nap::LogMessage msg)
 
 	QRegularExpression re("([a-z]+:(\\/\\/)[^\\s&^'&^\"]+)");
 	auto levelitem = new LevelItem(msg);
-	//	levelitem->setForeground(col);
 	levelitem->setEditable(false);
 	auto textitem = new LogTextItem(msg);
-	//	textitem->setForeground(col);
 	textitem->setToolTip(logtext);
 	textitem->setEditable(false);
 
@@ -102,17 +100,10 @@ LogPanel::LogPanel() : QWidget()
 	mCornerLayout.addWidget(&mFilterCombo);
 
 	// Let the treeview filter log messages (Look at these beautiful placeholders)
-	mTreeView.getProxyModel().addExtraFilter(std::bind(&LogPanel::levelFilter, this,
-														std::placeholders::_1,
-														std::placeholders::_2,
-														std::placeholders::_3));
+	mTreeView.getProxyModel().addExtraFilter(std::bind(&LogPanel::levelFilter, this, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3));
 	populateFilterCombo();
-
 	mTreeView.setModel(&mLogModel);
-
-
-	connect(&mFilterCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
-			this, &LogPanel::onLevelChanged);
+	connect(&mFilterCombo, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &LogPanel::onLevelChanged);
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &LogPanel::onDoubleClicked);
 	connect(mTreeView.getModel(), &QAbstractItemModel::rowsInserted, this, &LogPanel::onRowInserted);
 	connect(mTreeView.getModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogPanel::onRowsAboutToBeInserted);
@@ -174,13 +165,11 @@ void LogPanel::closeEvent(QCloseEvent* event)
 }
 
 
-bool LogPanel::levelFilter(const nap::qt::LeafFilterProxyModel& model, int sourceRow,
-						   const QModelIndex& sourceParent)
+bool LogPanel::levelFilter(const nap::qt::LeafFilterProxyModel& model, int sourceRow, const QModelIndex& sourceParent)
 {
 	auto index = mLogModel.index(sourceRow, 0, sourceParent);
 	auto levelItem = qitem_cast<LevelItem*>(mLogModel.itemFromIndex(index));
 	assert(levelItem != nullptr);
-
 	const auto& itemLevel = levelItem->level();
 	return levelItem->level() >= getCurrentLevel();
 }
