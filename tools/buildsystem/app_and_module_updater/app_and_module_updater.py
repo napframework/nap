@@ -338,7 +338,7 @@ def convert_module_wrapper(args):
 
 def convert_all_wrapper(args):
     nap_root_dir = get_nap_root()
-    verify_path = os.path.join(nap_root_dir, 'modules')
+    verify_path = os.path.join(nap_root_dir, 'system_modules')
     assert os.path.exists(verify_path), 'NAP root dir not found at: %s' % nap_root_dir
     convert_all(nap_root_dir)
 

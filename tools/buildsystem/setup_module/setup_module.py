@@ -47,6 +47,7 @@ class ModuleInitialiser():
         self.__force_overwrite_demo = force_overwrite_demo
 
     def setup_module_by_dir(self, module_path):
+        self.__ensure_modules_dir()
         if not os.path.exists(module_path):
             eprint(f"Error: Can't find module at {module_path}")
             return False
@@ -75,6 +76,7 @@ class ModuleInitialiser():
         return self.__process_demo(module_path)
 
     def setup_module_by_name(self, module_name):
+        self.__ensure_modules_dir()
         module_path = os.path.join(self.__modules_dir, module_name)
         if not os.path.exists(module_path):
             eprint(f"Error: Can't find {module_name} at {module_path}")
@@ -82,6 +84,7 @@ class ModuleInitialiser():
         return self.setup_module_by_dir(module_path)
 
     def setup_module_from_archive(self, archive_path):
+        self.__ensure_modules_dir()
         if not os.path.exists(archive_path):
             eprint(f"Error: Can't find module at {archive_path}")
             return False
@@ -114,6 +117,11 @@ class ModuleInitialiser():
                 archive.extractall(path=self.__modules_dir)
             success = self.setup_module_by_dir(module_path)
         return success
+
+    def __ensure_modules_dir(self):
+        if not os.path.exists(self.__modules_dir):
+            print("Creating modules dir")
+            os.mkdir(self.__modules_dir)
 
     def __add_path_to_solution_info(self, new_path):
         rel_path = os.path.relpath(new_path, self.__nap_root)

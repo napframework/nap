@@ -21,7 +21,12 @@ def create_module(module_name, generate_solution):
     script_path = os.path.dirname(os.path.realpath(__file__))
     nap_root = os.path.abspath(os.path.join(script_path, os.pardir, os.pardir, os.pardir))
     cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'cmake', 'module_creator'))
-    module_path = os.path.abspath(os.path.join(nap_root, 'modules', prefixed_module_name))
+    modules_dir = os.path.abspath(os.path.join(nap_root, 'modules'))
+    module_path = os.path.abspath(os.path.join(modules_dir, prefixed_module_name))
+
+    if not os.path.exists(modules_dir):
+        print("Creating modules directory")
+        os.mkdir(modules_dir)
 
     if check_for_existing_module(prefixed_module_name):
         sys.exit(ERROR_EXISTING_MODULE)

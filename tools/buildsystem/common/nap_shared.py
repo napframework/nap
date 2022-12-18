@@ -309,7 +309,10 @@ def check_for_existing_module(module_name):
 
     # Check for existing module with same name
     user_module_dir = os.path.abspath(os.path.join(nap_root, 'modules'))
-    names = [d.lower() for d in os.listdir(user_module_dir)]
+    try:
+        names = [d.lower() for d in os.listdir(user_module_dir)]
+    except FileNotFoundError:
+        names = []
     if module_name_lower in names:
         eprint(f"Error: Module with name {module_name} already exists")
         return True
