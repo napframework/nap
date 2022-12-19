@@ -6,7 +6,6 @@
 
 // Local Includes
 #include "keyboard.h"
-#include "mouse.h"
 #include "controller.h"
 
 // External Includes
