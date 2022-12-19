@@ -5,11 +5,13 @@
 #version 450 core
 
 // Vertex shader model matrix uniforms
-uniform nap
+layout(binding = 0) uniform nap
 {
-		uniform mat4 projectionMatrix;
-		uniform mat4 viewMatrix;
-		uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
 } mvp;
 
 // Input attributes

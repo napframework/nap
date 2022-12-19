@@ -591,7 +591,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 			if (!errorState.check((*it).mBinding == binding, "Duplicate UBO declaration '%s' in one or more shader stages of same program cannot have the same layout binding index", resource.name.c_str()))
 				return false;
 
-			// This is UBO is shared between shader stages. AND the current stage flag and continue 
+			// This UBO is shared over multiple shader stages. AND the current stage flag and continue 
 			(*it).mStages |= inStage;
 			continue;
 		}

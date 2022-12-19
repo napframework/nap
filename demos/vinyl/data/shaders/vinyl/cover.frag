@@ -11,15 +11,23 @@ in vec3 pass_Vert;			// The vertex position
 
 out vec4 out_Color;
 
+layout(binding = 0) uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
+} mvp;
+
 uniform UBO
 {
-	uniform vec3		lightPosition;		// World position of the light
-	uniform vec3		lightIntensity;		// Light intensity
-	uniform float		ambientIntensity;	// Ambient light intensity
-	uniform float		shininess;			// Specular angle shininess
-	uniform float		specularIntensity;	// Amount of added specular
-	uniform float		attenuationScale;	// Light Falloff
-	uniform vec3		cameraLocation;		// World Space location of the camera
+	vec3	lightPosition;		// World position of the light
+	vec3	lightIntensity;		// Light intensity
+	float	ambientIntensity;	// Ambient light intensity
+	float	shininess;			// Specular angle shininess
+	float	specularIntensity;	// Amount of added specular
+	float	attenuationScale;	// Light Falloff
 } ubo;
 
 // Cover image input
@@ -41,8 +49,7 @@ void main(void)
 	vec3 surfaceToLight = normalize(ubo.lightPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 cameraPosition = ubo.cameraLocation;
-	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - frag_position);
 
 	// Ambient color
 	vec3 ambient = color.rgb * ubo.lightIntensity * ubo.ambientIntensity;

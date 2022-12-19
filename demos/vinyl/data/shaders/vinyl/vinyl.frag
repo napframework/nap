@@ -2,7 +2,7 @@
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#version 330 core
+#version 450 core
 
 in vec3 pass_Uvs0;			// The global vinyl uvs
 in vec3 pass_Normals;		// Normals
@@ -13,18 +13,28 @@ in vec3 pass_Bitangent;		// The bitangent
 
 out vec4 out_Color;
 
-// Fragment uniforms
+// Fragment shader model matrix uniforms
+layout(binding = 0) uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
+} mvp;
+
+// Fragment shader uniforms
 uniform UBO
 {
-	uniform vec3	recordColor;			// Color of the record
-	uniform vec3	lightPosition;			// Position of the light (world space)
-	uniform vec3	lightIntensity;			// Intensity of the light
-	uniform float	ambientIntensity;		// Ambient light intensity
-	uniform float	shininess;				// Specular angle ubo.shininess
-	uniform float	specularIntensity;		// Amount of added specular
-	uniform float	attenuationScale;		// Light Falloff
-	uniform float	grooveScale;			// Amount of groove highlight
-	uniform vec3	cameraLocation;			// World space location of the camera
+	vec3	recordColor;			// Color of the record
+	vec3	lightPosition;			// Position of the light (world space)
+	vec3	lightIntensity;			// Intensity of the light
+	float	ambientIntensity;		// Ambient light intensity
+	float	shininess;				// Specular angle ubo.shininess
+	float	specularIntensity;		// Amount of added specular
+	float	attenuationScale;		// Light Falloff
+	float	grooveScale;			// Amount of groove highlight
+	vec3	cameraLocation;			// World space location of the camera
 } ubo;
 
 // Samplers
@@ -63,8 +73,7 @@ void main(void)
 	vec3 surfaceToLight = normalize(ubo.lightPosition - frag_position);
 
 	// calculate vector that defines the direction of camera to the surface
-	vec3 cameraPosition = ubo.cameraLocation;
-	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - frag_position);
 
 	// Ambient color
 	vec3 ambient = color.rgb * ubo.lightIntensity * ubo.ambientIntensity;
