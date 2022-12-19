@@ -584,6 +584,9 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		// Fetch layout binding index
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
+		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
+		size_t struct_size = compiler.get_declared_struct_size(type);
+
 		// Check if a UBO declaration with an identical name already exists
 		if (it != uboDeclarations.end())
 		{
@@ -591,16 +594,16 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 			if (!errorState.check((*it).mBinding == binding, "Duplicate UBO declaration '%s' in one or more shader stages of same program cannot have the same layout binding index", resource.name.c_str()))
 				return false;
 
+			// Ensure the size is equal, otherwise fail
+			if (!errorState.check((*it).mSize == struct_size, "Shared UBO declaration '%s' size mismatch between shader stages", resource.name.c_str()))
+				return false;
+
 			// This UBO is shared over multiple shader stages. AND the current stage flag and continue 
 			(*it).mStages |= inStage;
 			continue;
 		}
 
-		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
-
-		size_t struct_size = compiler.get_declared_struct_size(type);
 		nap::BufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
-
 		if (!addShaderVariablesRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Uniform, errorState))
 			return false;
 
@@ -616,7 +619,6 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
 		nap::BufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Storage, struct_size);
-
 		if (!addShaderVariablesRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
 			return false;
 
