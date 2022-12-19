@@ -350,10 +350,20 @@ namespace nap
 				return EMouseButton::MIDDLE;
 			case SDL_BUTTON_RIGHT:
 				return EMouseButton::RIGHT;
+			default:
+				return EMouseButton::UNKNOWN;
 		}
-
-		return EMouseButton::UNKNOWN;
 	}
+
+
+	/**
+	 * Helper function to convert an SDL mouse source to nap pointer source
+	 */
+	static nap::PointerEvent::ESource toNapMouseSource(uint32_t source)
+	{
+		return source == SDL_TOUCH_MOUSEID ? PointerEvent::ESource::Touch : PointerEvent::ESource::Mouse;
+	}
+
 
 	static nap::EControllerAxis toNapAxis(uint8_t axis)
 	{
@@ -420,6 +430,7 @@ namespace nap
 	{
 		// Get window
 		int window_id = static_cast<int>(sdlEvent.window.windowID);
+
 		SDL_Window* window = SDL_GetWindowFromID(window_id);
 		if (window == nullptr)
 			return nullptr;
@@ -442,7 +453,8 @@ namespace nap
 			SDL_GetWindowSize(window, &sx, &sy);
 			int px = sdlEvent.motion.x;
 			int py = sy - 1 - sdlEvent.motion.y;
-			mouse_event = eventType.create<InputEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, 0 });
+			PointerEvent::ESource source = sdlEvent.motion.which == SDL_TOUCH_MOUSEID ? PointerEvent::ESource::Touch : PointerEvent::ESource::Mouse;
+			mouse_event = eventType.create<InputEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, toNapMouseSource(sdlEvent.motion.which)});
 			break;
 		}
 		case SDL_MOUSEMOTION:
@@ -454,7 +466,7 @@ namespace nap
 			int py = sy - 1 - static_cast<int>(sdlEvent.motion.y);
 			int rx = static_cast<int>(sdlEvent.motion.xrel);
 			int ry = static_cast<int>(-sdlEvent.motion.yrel);
-			mouse_event = eventType.create<InputEvent>({ rx, ry, px, py, window_id, 0 });
+			mouse_event = eventType.create<InputEvent>({ rx, ry, px, py, window_id, toNapMouseSource(sdlEvent.motion.which) });
 			break;
 		}
 		default:

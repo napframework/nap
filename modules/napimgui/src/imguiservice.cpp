@@ -981,16 +981,19 @@ namespace nap
 		{
 			io.MouseDown[i] = context.mMousePressed[i];
 
-			// If a mouse button was released this frame -> disable the press for next frame
-			// This ensures that buttons that are pressed and released within the same frame are always registered
-			if (context.mMouseRelease[i])
+			// If the mouse button was released this frame -> disable the press for next frame.
+			// This ensures that buttons that are pressed and released within the same frame are always registered.
+			// If the button press is from a mouse (instead of touch), take into account current press state.
+			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
+			if (context.mMouseRelease[i] || (context.mMousePressed[i] &&
+				context.mMouseSource[i] == GUIContext::ESource::Mouse && (SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(i+1)) == 0))
 			{
 				context.mMousePressed[i] = false;
 				context.mMouseRelease[i] = false;
 			}
 		}
 
-		// Tell the system which keys are pressed, we copy block of memory because iterating over 
+		// Tell the system which keys are pressed, we copy block of memory because iterating over every element is wasteful
 		memcpy(io.KeysDown, context.mKeyPressed.data(), sizeof(bool) * 512);
 		for (const auto& key : context.mKeyRelease)
 		{
@@ -1105,7 +1108,9 @@ namespace nap
 			const auto& press_event = static_cast<const nap::PointerPressEvent&>(pointerEvent);
 			if (press_event.mButton != EMouseButton::UNKNOWN)
 			{
-				context.mMousePressed[static_cast<int>(press_event.mButton)] = true;
+				int btn_id = static_cast<int>(press_event.mButton);
+				context.mMousePressed[btn_id] = true;
+				context.mMouseSource[btn_id] = pointerEvent.mSource;
 			}
 		}
 
@@ -1136,11 +1141,16 @@ namespace nap
 
 		// Handle touch press
 		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchPressEvent)))
+		{
 			context.mMousePressed[0] = true;
+			context.mMouseSource[0] = GUIContext::ESource::Touch;
+		}
 
 		// Handle touch release
 		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchReleaseEvent)))
+		{
 			context.mMouseRelease[0] = true;
+		}
 	}
 
 

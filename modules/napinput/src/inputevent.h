@@ -107,26 +107,34 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Mouse Input Events, always associated with a with a window
+	// Pointer Input Events, always associated with a with a window
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * Contains all relevant information for pointer specific interaction
 	 * Can also be used to signal multi touch gestures (therefore the id)
-	*/
+	 */
 	class NAPAPI PointerEvent : public WindowInputEvent
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		PointerEvent(int inX, int inY, int window = 0, int inId = 0) : WindowInputEvent(window),
-			mX(inX), 
-			mY(inY),
-			mId(inId)		
+
+		/**
+		 * Possible pointer input sources
+		 */
+		enum class ESource : int8
+		{
+			Mouse = 0,							///< Pointer event from mouse input
+			Touch = 1							///< Pointer event from touch input
+		};
+
+		PointerEvent(int inX, int inY, int window = 0, ESource origin = ESource::Mouse) :
+			WindowInputEvent(window), mX(inX), mY(inY), mSource(origin)
 		{ }
 
-		int		mX;							///< horizontal window pixel coordinate
-		int		mY;							///< vertical window pixel coordinate
-		int		mId;						///< device id
+		int			mX;							///< horizontal window coordinate
+		int			mY;							///< vertical window coordinate
+		ESource		mSource = ESource::Mouse;	///< input device
 	};
 	
 
@@ -137,8 +145,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerClickEvent(int inX, int inY, EMouseButton inButton, int window = 0, int inId = 0) :
-			PointerEvent(inX, inY, window, inId), 
+		PointerClickEvent(int inX, int inY, EMouseButton inButton, int window = 0, ESource source = ESource::Mouse) :
+			PointerEvent(inX, inY, window, source),
 			mButton(inButton)	
 		{ }
 
@@ -153,8 +161,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerPressEvent(int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
-			PointerClickEvent(inX, inY, inButton, window, inId)
+		PointerPressEvent(int inX, int inY, EMouseButton inButton, int window=0, ESource source = ESource::Mouse) :
+			PointerClickEvent(inX, inY, inButton, window, source)
 		{ }
 	};
 	
@@ -166,8 +174,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int window=0, int inId = 0) : 
-			PointerClickEvent(inX, inY, inButton, window, inId)
+		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int window=0, ESource source = ESource::Mouse) :
+			PointerClickEvent(inX, inY, inButton, window, source)
 		{ }
 	};
 
@@ -179,8 +187,8 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerMoveEvent(int relX, int relY, int inAbsX, int inAbsY, int window=0, int inId = 0) : 
-			PointerEvent(inAbsX, inAbsY, window, inId),
+		PointerMoveEvent(int relX, int relY, int inAbsX, int inAbsY, int window=0, ESource source = ESource::Mouse) :
+			PointerEvent(inAbsX, inAbsY, window, source),
 			mRelX(relX),
 			mRelY(relY)
 		{ }

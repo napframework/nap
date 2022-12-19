@@ -9,7 +9,7 @@
 namespace nap
 {
 	/**
-	 * Enum describing a list of all possible mouse buttons
+	 * All possible mouse buttons
 	 */
 	enum class EMouseButton : int
 	{
