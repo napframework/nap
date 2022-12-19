@@ -21,9 +21,17 @@ struct PointLight
 // uniform inputs
 uniform sampler2D	videoTextureFrag;
 
+layout(binding = 0) uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
+} mvp;
+
 uniform UBO
 {
-	vec3		cameraPosition;		//< world space camera position
 	PointLight	light;				//< light
 	vec3 		colorOne;			//< second color
 	vec3 		colorTwo;			//< third color
@@ -45,7 +53,7 @@ void main()
 	vec3 surfaceToLight = normalize(ubo.light.mPosition - passVert);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(ubo.cameraPosition - passVert);
+	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - passVert);
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
