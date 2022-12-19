@@ -126,32 +126,6 @@ def update_source_module_cmake(directory, app_module, contents):
 
     print("Upgrading module CMake at %s" % directory)
 
-    if not 'PROPERTIES PREFIX ""' in contents:
-        # Removing lib prefix on library for Unix. Find a line below which to place it. 
-        # A little simplistic.
-        index = contents.find('set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Modules)')
-        if index == -1:
-            index = contents.find('add_library(')
-
-        if index != -1:
-            # Find the end of the call on that line
-            close_call_index = contents.find(")", index)
-            if close_call_index == -1:
-                eprint("Failed to update module removing lib prefix, %s" % directory)
-                return
-            insert_index = contents.find("\n", close_call_index)
-            # Found line appears to be last line in file, with no following newline, append to end
-            if insert_index == -1:
-                insert_index = len(contents)
-        else:
-            # Couldn't find any suitable location (somehow?), append to end of file
-            insert_index = len(contents)
-
-        new_contents = """
-# Remove lib prefix on Unix libraries
-set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")"""
-        contents = contents[:insert_index] + new_contents + contents[insert_index:]
-
     if not cmake_version_setter in contents:
         index = contents.find('cmake_minimum_required')
         if index == -1:
@@ -185,10 +159,10 @@ def update_framework_release_module_cmake(directory, app_module, contents):
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'module_creator'))
 
     print("Upgrading module CMake at %s" % directory)
-    cmd = [cmake, 
+    cmd = [cmake,
            '-DMODULE_CMAKE_OUTPATH=%s' % os.path.join(directory, 'CMakeLists.txt'),
-           '%s' % '-DAPP_MODULE=1' if app_module else '', 
-           '-DCMAKE_ONLY=1', 
+           '%s' % '-DAPP_MODULE=1' if app_module else '',
+           '-DCMAKE_ONLY=1',
            '-P', os.path.join(cmake_template_dir, 'module_creator.cmake')
            ]
     if call(cmd) != 0:
@@ -287,9 +261,9 @@ def update_app_cmake(directory):
         cmake_template_dir = os.path.abspath(os.path.join(nap_root, 'dist', 'cmake', 'native', 'app_creator'))
 
     print("Upgrading app CMake at %s" % directory)
-    cmd = [cmake, 
+    cmd = [cmake,
            '-DPROJECT_DIR=%s' % directory,
-           '-DCMAKE_ONLY=1', 
+           '-DCMAKE_ONLY=1',
            '-P', os.path.join(cmake_template_dir, 'app_creator.cmake')
            ]
     if call(cmd) != 0:
