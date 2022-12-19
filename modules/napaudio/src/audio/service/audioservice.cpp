@@ -257,7 +257,14 @@ namespace nap
 		}
 
 
-		bool AudioService::openStream(int hostApi, int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState)
+		bool AudioService::openStream(int hostApi,
+                                      int inputDeviceIndex,
+                                      int outputDeviceIndex,
+                                      int inputChannelCount,
+                                      int outputChannelCount,
+                                      float sampleRate,
+                                      int bufferSize,
+                                      int internalBufferSize, utility::ErrorState& errorState)
 		{
 			// The stream can only be opened when it's closed
 			assert(mStream == nullptr);
@@ -621,6 +628,8 @@ namespace nap
 			configuration->mHostApi = getHostApiName(mHostApiIndex);
 			configuration->mInputDevice = mInputDeviceIndex > -1 ? Pa_GetDeviceInfo(mInputDeviceIndex)->name : "";
 			configuration->mOutputDevice = mOutputDeviceIndex > -1 ? Pa_GetDeviceInfo(mOutputDeviceIndex)->name : "";
+            configuration->mDisableInput = mInputDeviceIndex <= -1;
+            configuration->mDisableOutput = mOutputDeviceIndex <= -1;
 		}
 		
 		

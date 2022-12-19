@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <map>
@@ -6,11 +10,8 @@
 
 namespace nap
 {
-
     namespace audio
     {
-
-
         /**
          * Object that draws a gui to edit settings for the @AudioService at runtime.
          * Enables selecting of audio devices for input and output and changing the buffer size and samplerate.
@@ -53,8 +54,8 @@ namespace nap
             int mOutputDeviceSelection = 0;
             int mBufferSizeIndex = 0;
             int mSampleRateIndex = 0;
-            int mInputChannelCount = 0;
-            int mOutputChannelCount = 0;
+            bool mEnableInput = false;
+            bool mEnableOutput = false;
             std::vector<int> mBufferSizes = { 64, 128, 256, 512, 1024, 2048 };
             std::vector<int> mSampleRates = { 44100, 48000 };
             const char* const mBufferSizeNames[6] = { "64", "128", "256", "512", "1024", "2048" };

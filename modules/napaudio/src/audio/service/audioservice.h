@@ -286,7 +286,6 @@ namespace nap
 			 * Enqueue a task to be executed within the process() method for thread safety
 			 */
 			void enqueueTask(TaskQueue::Task task) { mNodeManager.enqueueTask(task); }
-		
 		private:
 			/*
 			 * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If so, @inputDeviceIndex and @outputDeviceIndex will be set to these. If not and @mAllowChannelCountFailure is set to true, it will return the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.

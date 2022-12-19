@@ -1,15 +1,17 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "audiodevicesettingsgui.h"
+#include "nap/logger.h"
 
 #include <imgui/imgui.h>
 
 namespace nap
 {
-
     namespace audio
     {
-
-
-        int getIndexOf(int value, std::vector<int>& list)
+        static int getIndexOf(int value, std::vector<int>& list)
         {
             for (auto i = 0; i < list.size(); ++i)
                 if (list[i] == value)
@@ -38,17 +40,22 @@ namespace nap
                     deviceInfo.mName = device->name;
                     deviceInfo.mIndex = mAudioService.getDeviceIndex(hostApiIndex, deviceIndex);
                     if (mHasInputs)
-	                    if (device->maxInputChannels > 0)
-	                    {
-	                        if (deviceInfo.mIndex == mAudioService.getCurrentInputDeviceIndex())
-	                            mInputDeviceSelection = driverInfo.mInputDevices.size() + 1;
-	                        deviceInfo.mChannelCount = device->maxInputChannels;
-	                        driverInfo.mInputDevices.push_back(deviceInfo);
-	                    }
+                    {
+                        if (device->maxInputChannels > 0)
+                        {
+                            if (deviceInfo.mIndex == mAudioService.getCurrentInputDeviceIndex())
+                                mInputDeviceSelection = driverInfo.mInputDevices.size() + 1;
+
+                            deviceInfo.mChannelCount = device->maxInputChannels;
+                            driverInfo.mInputDevices.push_back(deviceInfo);
+                        }
+                    }
+
                     if (device->maxOutputChannels > 0)
                     {
                         if (deviceInfo.mIndex == mAudioService.getCurrentOutputDeviceIndex())
                             mOutputDeviceSelection = driverInfo.mOutputDevices.size() + 1;
+
                         deviceInfo.mChannelCount = device->maxOutputChannels;
                         driverInfo.mOutputDevices.push_back(deviceInfo);
                     }
@@ -56,6 +63,8 @@ namespace nap
                 mDrivers.push_back(driverInfo);
             }
 
+            mEnableOutput = mAudioService.getCurrentOutputDeviceIndex() > -1 && mAudioService.getCurrentHostApiIndex() > -1;
+            mEnableInput = mAudioService.getCurrentInputDeviceIndex() > -1 && mAudioService.getCurrentHostApiIndex() > -1;
             mBufferSizeIndex = getIndexOf(mAudioService.getCurrentBufferSize(), mBufferSizes);
             mSampleRateIndex = getIndexOf(int(mAudioService.getNodeManager().getSampleRate()), mSampleRates);
         }
@@ -63,121 +72,127 @@ namespace nap
 
         void AudioDeviceSettingsGui::drawGui()
         {
-            utility::ErrorState errorState;
+            utility::ErrorState error_state;
+            bool change = false;
 
             // Combo box with all available drivers
-
-            bool driverChanged = ImGui::Combo("Driver", &mDriverSelection, [](void* data, int index, const char** out_text){
-                std::vector<DriverInfo>* drivers = (std::vector<DriverInfo>*)(data);
+            change = ImGui::Combo("Driver", &mDriverSelection, [](void* data, int index, const char** out_text)
+            {
+                auto* drivers = static_cast<std::vector<DriverInfo>*>(data);
                 if (index == 0)
                     *out_text = "No Driver";
                 else
-                    *out_text = (*drivers)[index - 1].mName.c_str();
+                    *out_text = drivers->at(index - 1).mName.c_str();
                 return true;
             }, &mDrivers, mDrivers.size() + 1);
-            if (driverChanged)
+
+            // driver has changed
+            if(change)
             {
-                if (mAudioService.isOpened())
-                {
-                    if (mAudioService.isActive()) mAudioService.stop(errorState);
-	                mAudioService.closeStream(errorState);
-                }
                 mInputDeviceSelection = 0;
                 mOutputDeviceSelection = 0;
+
+                mSampleRateIndex = getIndexOf(int(mAudioService.getNodeManager().getSampleRate()), mSampleRates);
+                if(mSampleRateIndex < 0)
+                    mSampleRateIndex = 0;
+
+                mBufferSizeIndex = getIndexOf(mAudioService.getCurrentBufferSize(), mBufferSizes);
+                if(mBufferSizeIndex < 0)
+                    mBufferSizeIndex = 0;
             }
 
-
-            if (mDriverSelection > 0)
+            if(mDriverSelection > 0)
             {
-                // Combo box with all input devices for the chosen driver
+                assert(mDriverSelection-1 < mDrivers.size());
 
-                bool inputDeviceChanged = false;
-                if (mHasInputs)
+                // update inputs
+                mHasInputs = !mDrivers[mDriverSelection-1].mInputDevices.empty();
+
+                // input and output device info pointers
+                DeviceInfo* input_device = nullptr;
+                DeviceInfo* output_device = nullptr;
+
+                // Combo box with all input devices for the chosen driver
+                if(mHasInputs)
                 {
-	                inputDeviceChanged = ImGui::Combo("Input Device", &mInputDeviceSelection, [](void* data, int index, const char** out_text){
-		                std::vector<DeviceInfo>* devices = (std::vector<DeviceInfo>*)(data);
+	                change = ImGui::Combo("Input Device", &mInputDeviceSelection, [](void* data, int index, const char** out_text)
+                    {
+		                auto* devices = static_cast<std::vector<DeviceInfo>*>(data);
 		                if (index == 0)
 			                *out_text = "No Device";
 		                else
-			                *out_text = (*devices)[index - 1].mName.c_str();
+			                *out_text = devices->at(index - 1).mName.c_str();
 		                return true;
-	                }, &mDrivers[mDriverSelection - 1].mInputDevices, mDrivers[mDriverSelection - 1].mInputDevices.size() + 1);
+	                }, &mDrivers[mDriverSelection - 1].mInputDevices, mDrivers[mDriverSelection - 1].mInputDevices.size() + 1) || change;
+
+                    if(mInputDeviceSelection > 0)
+                    {
+                        input_device = &mDrivers[mDriverSelection-1].mInputDevices[mInputDeviceSelection-1];
+                    }
                 }
 
                 // Combo box with all output devices for the chosen driver
-
-                bool outputDeviceChanged = ImGui::Combo("Output Device", &mOutputDeviceSelection, [](void* data, int index, const char** out_text){
-                    std::vector<DeviceInfo>* devices = (std::vector<DeviceInfo>*)(data);
+                change = ImGui::Combo("Output Device", &mOutputDeviceSelection, [](void* data, int index, const char** out_text)
+                {
+                    auto* devices = static_cast<std::vector<DeviceInfo>*>(data);
                     if (index == 0)
                         *out_text = "No Device";
                     else
-                        *out_text = (*devices)[index - 1].mName.c_str();
+                        *out_text = devices->at(index - 1).mName.c_str();
                     return true;
-                }, &mDrivers[mDriverSelection - 1].mOutputDevices, mDrivers[mDriverSelection - 1].mOutputDevices.size() + 1);
+                }, &mDrivers[mDriverSelection - 1].mOutputDevices, mDrivers[mDriverSelection - 1].mOutputDevices.size() + 1) || change;
 
-                if (inputDeviceChanged || outputDeviceChanged)
+                if(mOutputDeviceSelection > 0)
                 {
-                    if (mAudioService.isOpened())
-                    {
-                        if (mAudioService.isActive()) mAudioService.stop(errorState);
-	                    mAudioService.closeStream(errorState);
-                    }
-                    auto& driver = mDrivers[mDriverSelection - 1];
-                    auto* inputDevice = (mHasInputs && mInputDeviceSelection > 0) ? &driver.mInputDevices[mInputDeviceSelection - 1] : nullptr;
-                    auto* outputDevice = (mOutputDeviceSelection > 0) ? &driver.mOutputDevices[mOutputDeviceSelection - 1] : nullptr;
-                    int inputChannelCount = inputDevice ? inputDevice->mChannelCount : 0;
-                    int outputChannelCount = outputDevice ? outputDevice->mChannelCount : 0;
-
-                    if (mAudioService.openStream(driver.mIndex, inputDevice ? inputDevice->mIndex : -1, outputDevice ? outputDevice->mIndex : -1, inputChannelCount, outputChannelCount, mSampleRates[mSampleRateIndex], mBufferSizes[mBufferSizeIndex], mBufferSizes[mBufferSizeIndex], errorState))
-                    {
-	                    mAudioService.start(errorState);
-                    }
+                    output_device = &mDrivers[mDriverSelection-1].mOutputDevices[mOutputDeviceSelection-1];
                 }
 
                 // Combo box for sample rate and buffersize
+                change = ImGui::Combo("Sample Rate", &mSampleRateIndex, mSampleRateNames, mSampleRates.size()) || change;
+                change = ImGui::Combo("Buffer Size", &mBufferSizeIndex, mBufferSizeNames, mBufferSizes.size()) || change;
 
-                bool sampleRateChanged = ImGui::Combo("Sample Rate", &mSampleRateIndex, mSampleRateNames, mSampleRates.size());
-                bool bufferSizeChanged = ImGui::Combo("Buffer Size", &mBufferSizeIndex, mBufferSizeNames, mBufferSizes.size());
-
-                // Sliders for channel counts
-
-                bool inputChannelCountChanged = false;
-                int inputChannelCount = mAudioService.getNodeManager().getInputChannelCount();
-                if (mInputDeviceSelection > 0)
+                // Sliders for channels
+                int input_channels = mAudioService.getNodeManager().getInputChannelCount();
+                if(input_device!= nullptr)
                 {
-                    int maxInputChannelCount = mDrivers[mDriverSelection - 1].mInputDevices[mInputDeviceSelection - 1].mChannelCount;
-                    inputChannelCountChanged = ImGui::SliderInt("Input channels", &inputChannelCount, 1, maxInputChannelCount);
+                    int max_input_channels = input_device->mChannelCount;
+                    change = ImGui::SliderInt("Input channels", &input_channels, 1, max_input_channels) || change;
+                }
+                int output_channels = mAudioService.getNodeManager().getOutputChannelCount();
+                if(output_device!= nullptr)
+                {
+                    int max_output_channels = output_device->mChannelCount;
+                    change = ImGui::SliderInt("Output channels", &output_channels, 1, max_output_channels) || change;
                 }
 
-                bool outputChannelCountChanged = false;
-                int outputChannelCount = mAudioService.getNodeManager().getOutputChannelCount();
-                if (mOutputDeviceSelection > 0)
-                {
-                    int maxOutputChannelCount = mDrivers[mDriverSelection - 1].mOutputDevices[mOutputDeviceSelection - 1].mChannelCount;
-                    outputChannelCountChanged = ImGui::SliderInt("Output channels", &outputChannelCount, 1, maxOutputChannelCount);
-                }
+                // checkboxes for input & output enable/disable
+                change = ImGui::Checkbox("Enable Input", &mEnableInput) || change;
+                change = ImGui::Checkbox("Enable Output", &mEnableOutput) || change;
 
-                if (sampleRateChanged || bufferSizeChanged || inputChannelCountChanged || outputChannelCountChanged)
+                // a change in settings has occurred, close & open audio stream
+                if(change)
                 {
                     if (mAudioService.isOpened())
                     {
-                        if (mAudioService.isActive()) mAudioService.stop(errorState);
-	                    mAudioService.closeStream(errorState);
+                        if (mAudioService.isActive())
+                            mAudioService.stop(error_state);
+
+	                    mAudioService.closeStream(error_state);
                     }
-                    if (mAudioService.openStream(mAudioService.getCurrentHostApiIndex(),
-												 mAudioService.getCurrentInputDeviceIndex(),
-                                                 mAudioService.getCurrentOutputDeviceIndex(), inputChannelCount, outputChannelCount, mSampleRates[mSampleRateIndex], mBufferSizes[mBufferSizeIndex], mBufferSizes[mBufferSizeIndex], errorState))
+                    if (mAudioService.openStream(mDriverSelection - 1,
+                                                 mEnableInput ? mInputDeviceSelection - 1 : -1,
+                                                 mEnableOutput ? mOutputDeviceSelection - 1 : -1,
+                                                 input_channels,
+                                                 output_channels,
+                                                 mSampleRates[mSampleRateIndex],
+                                                 mBufferSizes[mBufferSizeIndex],
+                                                 mBufferSizes[mBufferSizeIndex],
+                                                 error_state))
                     {
-	                    mAudioService.start(errorState);
+	                    mAudioService.start(error_state);
                     }
                 }
-
             }
         }
-
-
-
-
     }
-
 }
