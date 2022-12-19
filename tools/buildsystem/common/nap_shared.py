@@ -32,6 +32,9 @@ def find_user_module(module_name):
         module_name = f'nap{module_name}'
 
     modules_root = os.path.join(nap_root, 'modules')
+    if not os.path.exists(modules_root):
+        print("No user modules found")
+        return None
     module_path = None
     for d in os.listdir(modules_root):
         if d.lower() == module_name.lower():
