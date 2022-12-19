@@ -981,12 +981,15 @@ namespace nap
 		{
 			io.MouseDown[i] = context.mMousePressed[i];
 
+			// Check if the mouse button has been released this frame. Take into consideration current state if press is from a mouse.
+			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
+			bool released = context.mMouseRelease[i];
+			if (!released && io.MouseDown[i] && context.mMouseSource[i] == GUIContext::ESource::Mouse)
+				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON(i + 1)) == 0;
+
 			// If the mouse button was released this frame -> disable the press for next frame.
 			// This ensures that buttons that are pressed and released within the same frame are always registered.
-			// If the button press is from a mouse (instead of touch), take into account current press state.
-			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
-			if (context.mMouseRelease[i] || (context.mMousePressed[i] &&
-				context.mMouseSource[i] == GUIContext::ESource::Mouse && (SDL_GetMouseState(nullptr, nullptr) & SDL_BUTTON(i+1)) == 0))
+			if (released)
 			{
 				context.mMousePressed[i] = false;
 				context.mMouseRelease[i] = false;
