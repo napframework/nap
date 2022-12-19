@@ -119,16 +119,10 @@ namespace nap
 		// To do that we fetch the material associated with the world mesh and query the camera location uniform.
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
-
-		// Get camera world space position and set in sphere shader
-		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
 
 		// Push the colors.
 		// Note that it is also possible to set shader variables on update().
+		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);

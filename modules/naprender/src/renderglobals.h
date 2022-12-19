@@ -41,11 +41,12 @@ namespace nap
 	 */
 	namespace uniform
 	{
-		inline constexpr const char* mvpStruct = "nap";						///< default model view projection struct name
-		inline constexpr const char* modelMatrix = "modelMatrix";			///< uniform model matrix name
-		inline constexpr const char* viewMatrix = "viewMatrix";				///< uniform view matrix name
-		inline constexpr const char* projectionMatrix = "projectionMatrix";	///< uniform projection matrix name
-		inline constexpr const char* normalMatrix = "normalMatrix";			///< uniform normal matrix name
+		inline constexpr const char* mvpStruct = "nap";								///< default model view projection struct name
+		inline constexpr const char* modelMatrix = "modelMatrix";					///< uniform model matrix name
+		inline constexpr const char* viewMatrix = "viewMatrix";						///< uniform view matrix name
+		inline constexpr const char* projectionMatrix = "projectionMatrix";			///< uniform projection matrix name
+		inline constexpr const char* normalMatrix = "normalMatrix";					///< uniform normal matrix name
+		inline constexpr const char* cameraWorldPosition = "cameraWorldPosition";	///< uniform camera world position name
 	}
 
 

@@ -4,12 +4,13 @@
 
 #version 450 core
 
-uniform nap
+layout(binding = 0) uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
 } mvp;
 
 // Input Vertex Attributes

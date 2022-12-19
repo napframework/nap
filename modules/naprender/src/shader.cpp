@@ -576,9 +576,27 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 	// Uniform buffers
 	for (const spirv_cross::Resource& resource : shader_resources.uniform_buffers)
 	{
-		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
+		// Handle duplicates
+		auto it = std::find_if(uboDeclarations.begin(), uboDeclarations.end(), [name = resource.name](const auto& it) {
+			return it.mName == name;
+		});
 
+		// Fetch layout binding index
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
+
+		// Check if a UBO declaration with an identical name already exists
+		if (it != uboDeclarations.end())
+		{
+			// Ensure the binding point is the same, otherwise fail
+			if (!errorState.check((*it).mBinding == binding, "Duplicate UBO declaration '%s' in one or more shader stages of same program cannot have the same layout binding index", resource.name.c_str()))
+				return false;
+
+			// This is UBO is shared between shader stages. AND the current stage flag and continue 
+			(*it).mStages |= inStage;
+			continue;
+		}
+
+		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
 		nap::BufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
@@ -676,7 +694,7 @@ namespace nap
 			uboLayoutBinding.binding = declaration.mBinding;
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.pImmutableSamplers = nullptr;
-			uboLayoutBinding.stageFlags = declaration.mStage;
+			uboLayoutBinding.stageFlags = declaration.mStages;
 			uboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
 			descriptor_set_layouts.push_back(uboLayoutBinding);
@@ -688,7 +706,7 @@ namespace nap
 			ssboLayoutBinding.binding = declaration.mBinding;
 			ssboLayoutBinding.descriptorCount = 1;
 			ssboLayoutBinding.pImmutableSamplers = nullptr;
-			ssboLayoutBinding.stageFlags = declaration.mStage;
+			ssboLayoutBinding.stageFlags = declaration.mStages;
 			ssboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
 			descriptor_set_layouts.push_back(ssboLayoutBinding);
