@@ -34,7 +34,7 @@ void main(void)
 	// Set vertex world position
 	passWorldPosition = world_position.xyz;
 
-	// Rotate normal based on model matrix and set
+	// Rotate normal based on normal matrix and set
 	passNormal = normalize(mvp.normalMatrix * vec4(in_Normal, 0.0)).xyz;
 
 	// Forward uvs to fragment shader

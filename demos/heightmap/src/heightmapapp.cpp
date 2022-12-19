@@ -117,16 +117,8 @@ namespace nap
 		normal_frag_ubo->getOrCreateUniform<UniformFloatInstance>("opacity")->setValue(mNormalOpacity);
 		normal_frag_ubo->getOrCreateUniform<UniformFloatInstance>("nlength")->setValue(mNormalLength);
 
-		// Set camera position, first get handle to the camera position uniform
-		UniformStructInstance* height_frag_ubo = height_material.getOrCreateUniform("FRAGUBO");
-		nap::UniformVec3Instance* cam_loc_uniform = height_frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
-
-		// Extract world space position and set in material
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
-
 		// Update blend state in fragment shader of for height material
+		UniformStructInstance* height_frag_ubo = height_material.getOrCreateUniform("FRAGUBO");
 		height_frag_ubo->getOrCreateUniform<UniformFloatInstance>("blendValue")->setValue(current_blend_value);
 	}
 

@@ -77,9 +77,15 @@ namespace nap
 		mColorUniform = mMaterialInstance.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("meshColor");
 
 		// Get handle to matrices, which we set in the draw call
-		mProjectionUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("projectionMatrix");
-		mViewUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("viewMatrix");
-		mModelUniform = mMaterialInstance.getOrCreateUniform("nap")->getOrCreateUniform<UniformMat4Instance>("modelMatrix");
+		UniformStructInstance* mvp_struct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (mvp_struct != nullptr)
+		{
+			mModelMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
+			mViewMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
+			mProjectMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
+			mNormalMatrixUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::normalMatrix);
+			mCameraWorldPosUniform = mvp_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraWorldPosition);
+		}
 
 		// Ensure there's at least 1 mesh to copy
 		if (!errorState.check(!(resource->mCopyMeshes.empty()),
@@ -196,13 +202,24 @@ namespace nap
 	void RenderableCopyMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		RenderService* renderService = getEntityInstance()->getCore()->getService<RenderService>();
+		const glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
-		// Get global transform
-		const glm::mat4x4& model_matrix = mTransform->getGlobalTransform();
+		// Set mvp matrices if present in material
+		if (mProjectMatUniform != nullptr)
+			mProjectMatUniform->setValue(projectionMatrix);
 
-		// Set non changing uniforms
-		mViewUniform->setValue(viewMatrix);
-		mProjectionUniform->setValue(projectionMatrix);
+		if (mViewMatUniform != nullptr)
+			mViewMatUniform->setValue(viewMatrix);
+
+		if (mModelMatUniform != nullptr)
+			mModelMatUniform->setValue(mTransform->getGlobalTransform());
+
+		if (mNormalMatrixUniform != nullptr)
+			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransform->getGlobalTransform())));
+
+		if (mCameraWorldPosUniform != nullptr)
+			mCameraWorldPosUniform->setValue(cam_pos);
+
 		mColorUniform->setValue({ 1.0,0.0,0.0 });
 
 		// Get points to copy onto
@@ -216,9 +233,6 @@ namespace nap
 		float rand_scale = math::clamp<float>(mRandomScale, 0.0f, 1.0f);
 		float rand_rotat = math::clamp<float>(mRandomRotation, 0.0f, 1.0f);
 		int max_rand_color = static_cast<int>(mColors.size()) - 1;
-
-		// Get camera location
-		glm::vec3 cam_pos = math::extractPosition(mCamera->getGlobalTransform());
 
 		// Scissor rect can also be re-used
 		VkRect2D scissor_rect
@@ -256,7 +270,7 @@ namespace nap
 				mColorUniform->setValue(color);
 
 				// Calculate model matrix
-				glm::mat4x4 object_loc = glm::translate(model_matrix, pos_data[vertex]);
+				glm::mat4x4 object_loc = glm::translate(mTransform->getGlobalTransform(), pos_data[vertex]);
 
 				// Orient towards camera using normal or rotate based on time
 				float ftime = math::random<float>(1.0f - rand_rotat, 1.0f) * (float)mTime;
@@ -275,7 +289,7 @@ namespace nap
 
 				// Add scale, set as value and push
 				float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
-				mModelUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
+				mModelMatUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
 
 				// Render mesh after updating uniforms
 				renderMesh(*mRenderService, pipeline, mesh, commandBuffer);

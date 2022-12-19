@@ -5,10 +5,18 @@
 #version 450 core
 
 // vertex shader input 
-in vec3 passNormals;										// Normals
-in mat4 passModelMatrix;									// Matrix
-in vec3 passVert;											// The vertex position
-in vec3	cameraLocation;										// World Space location of the camera
+in vec3 passNormals;							// Normals
+in vec3 passVert;								// The vertex position
+
+// NAP Uniforms
+layout(binding = 0) uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
+} mvp;
 
 // Point light structure
 struct PointLight
@@ -20,17 +28,14 @@ struct PointLight
 // Uniform inputs
 uniform UBO
 {
-    // uniform inputs
-    uniform PointLight  light;                              // All ubo.lights in the scene
-    uniform vec3        meshColor;                          // Color or the mesh
-
+	PointLight  light;                          // All ubo.lights in the scene
+	vec3        meshColor;                      // Color or the mesh
 } ubo;
 
-
 // Light constants
-const float			ambientIntensity = 0.5;					// Ambient light intensity
-const float			shininess = 2.0;						// Specular angle shininess
-const float			specularIntensity = 0.2;				// Amount of added specular
+const float		ambientIntensity = 0.5;			// Ambient light intensity
+const float		shininess = 2.0;				// Specular angle shininess
+const float		specularIntensity = 0.2;		// Amount of added specular
 
 // output
 out vec4 out_Color;
@@ -38,19 +43,17 @@ out vec4 out_Color;
 
 vec3 computeLightContribution(vec3 color)
 {
-		//calculate normal in world coordinates
-    mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
-    vec3 normal = normalize(normal_matrix * passNormals);
+	// calculate normal in world coordinates
+    vec3 normal = normalize((mvp.normalMatrix * vec4(passNormals, 0.0)).xyz);
 	
 	//calculate the location of this fragment (pixel) in world coordinates
-    vec3 frag_position = vec3(passModelMatrix * vec4(passVert, 1));
+    vec3 frag_position = (mvp.modelMatrix * vec4(passVert, 1.0)).xyz;
 
 	//calculate the vector from this pixels surface to the light source
 	vec3 surfaceToLight = normalize(ubo.light.mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 cameraPosition = cameraLocation;
-	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - frag_position);
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));

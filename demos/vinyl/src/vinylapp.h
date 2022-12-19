@@ -94,9 +94,6 @@ namespace nap
 		// Matches background to viewport size
 		void positionBackground();
 
-		// Updates camera location
-		void setCameraLocation();
-
 		// Updates color of the vinyl record
 		void setRecordColor();
 		

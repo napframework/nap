@@ -4,19 +4,22 @@
 
 #version 450 core
 
-// All model view projection inputs
-uniform nap
+// NAP Uniforms
+layout(binding = 0) uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
 } mvp;
+
 
 // All uniform vertex shader inputs
 uniform VERTUBO
 {
-	uniform float blendValue;
-	uniform float normalBlendValue;
+	float blendValue;
+	float normalBlendValue;
 } vubo;
 
 
@@ -37,15 +40,14 @@ void main(void)
 	// Blend original normal with target normal
 	vec3 blend_nor = mix(in_OriginalNormal, in_Normal, vubo.normalBlendValue);
 
-	//rotate normal based on model matrix and set
-    mat3 normal_matrix = transpose(inverse(mat3(mvp.modelMatrix)));
-	passNormal = normalize(normal_matrix * blend_nor);
-
 	// Blend original position with target position
 	vec3 blend_pos = mix(in_OriginalPosition, in_Position, vubo.blendValue);
 
 	// Multiply with modelmatrix to position in world space and pass to frag
-	passPosition = vec3(mvp.modelMatrix * vec4(blend_pos, 1));
+	passPosition = vec3(mvp.modelMatrix * vec4(blend_pos, 1.0));
+
+	// Rotate normal based on model matrix and set
+	passNormal = normalize((mvp.normalMatrix * vec4(in_Normal, 0.0)).xyz);
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

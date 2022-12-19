@@ -4,12 +4,14 @@
 
 #version 450 core
 
-// NAP specific matrices
-uniform nap
+// NAP Uniforms
+layout(binding = 0) uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
 } mvp;
 
 // Input Vertex Attributes
@@ -18,23 +20,15 @@ in vec3 in_Normals;
 
 // Output to fragment shader
 out vec3 passNormals;				//< Vertex normal
-out mat4 passModelMatrix;			//< Matrix to transform vertex from object to world space
 out vec3 passVert;					//< Vertex position in object space 
-out vec3 cameraLocation;			//< camera location
 
 void main(void)
 {
-	// Pass along model matrix for light calculations
-	passModelMatrix = mvp.modelMatrix;
-
 	// Pass along normals for light calculations
 	passNormals = in_Normals;
 
 	// Pass along vertex position in object space
 	passVert = in_Position;
-
-	// Extract camera location
-	cameraLocation = vec3(inverse(mvp.viewMatrix)[3]);
 
 	// Calculate frag position
     gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);

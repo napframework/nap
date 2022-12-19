@@ -9,13 +9,21 @@ in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
 
+layout(binding = 0) uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
+} mvp;
+
 // uniform buffer inputs
 uniform UBO
 {
-	uniform vec3 cameraPosition;		//< Camera World Space Position
-	uniform vec3 colorOne;				//< Mix Color One
-	uniform vec3 colorTwo;				//< Mix Color Two
-	uniform vec3 haloColor;				//< Halo Color
+	vec3 colorOne;						//< Mix Color One
+	vec3 colorTwo;						//< Mix Color Two
+	vec3 haloColor;						//< Halo Color
 } ubo;
 
 // unfiorm sampler inputs 
@@ -31,7 +39,7 @@ void main()
 	vec3 world_color = mix(ubo.colorOne, ubo.colorTwo, alpha);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(ubo.cameraPosition - passPosition);
+	vec3 cam_normal = normalize(mvp.cameraWorldPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value

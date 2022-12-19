@@ -4,11 +4,14 @@
 
 #version 450 core
 
-uniform nap
+// NAP Uniforms
+layout(binding = 0) uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
 } mvp;
 
 // Input Vertex Attributes
@@ -26,12 +29,11 @@ void main(void)
 	// Calculate frag position
     gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
-	//rotate normal based on model matrix and set
-    mat3 normal_matrix = transpose(inverse(mat3(mvp.modelMatrix)));
-	passNormal = normalize(normal_matrix * in_Normal);
+	// Calculate vertex world space position and set
+	passPosition = (mvp.modelMatrix * vec4(in_Position, 1.0)).xyz;
 
-	// calculate vertex world space position and set
-	passPosition = vec3(mvp.modelMatrix * vec4(in_Position, 1));
+	// Rotate normal based on normal matrix and set
+	passNormal = normalize((mvp.normalMatrix * vec4(in_Normal, 0.0)).xyz);
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
