@@ -340,18 +340,18 @@ namespace nap
 	/**
 	 * Helper function to convert an SDL mouse button to nap MouseButton
 	 */
-	static nap::EMouseButton toNapMouseButton(uint8_t button)
+	static nap::PointerClickEvent::EButton toNapPointerButton(uint8_t button)
 	{
 		switch (button)
 		{
 			case SDL_BUTTON_LEFT:
-				return EMouseButton::LEFT;
+				return PointerClickEvent::EButton::LEFT;
 			case SDL_BUTTON_MIDDLE:
-				return EMouseButton::MIDDLE;
+				return PointerClickEvent::EButton::MIDDLE;
 			case SDL_BUTTON_RIGHT:
-				return EMouseButton::RIGHT;
+				return PointerClickEvent::EButton::RIGHT;
 			default:
-				return EMouseButton::UNKNOWN;
+				return PointerClickEvent::EButton::UNKNOWN;
 		}
 	}
 
@@ -359,7 +359,7 @@ namespace nap
 	/**
 	 * Helper function to convert an SDL mouse source to nap pointer source
 	 */
-	static nap::PointerEvent::ESource toNapMouseSource(uint32_t source)
+	static nap::PointerEvent::ESource toNapPointerSource(uint32_t source)
 	{
 		return source == SDL_TOUCH_MOUSEID ? PointerEvent::ESource::Touch : PointerEvent::ESource::Mouse;
 	}
@@ -454,7 +454,7 @@ namespace nap
 			int px = sdlEvent.motion.x;
 			int py = sy - 1 - sdlEvent.motion.y;
 			PointerEvent::ESource source = sdlEvent.motion.which == SDL_TOUCH_MOUSEID ? PointerEvent::ESource::Touch : PointerEvent::ESource::Mouse;
-			mouse_event = eventType.create<InputEvent>({ px, py, toNapMouseButton(sdlEvent.button.button), window_id, toNapMouseSource(sdlEvent.motion.which)});
+			mouse_event = eventType.create<InputEvent>({ px, py, toNapPointerButton(sdlEvent.button.button), window_id, toNapPointerSource(sdlEvent.motion.which)});
 			break;
 		}
 		case SDL_MOUSEMOTION:
@@ -466,7 +466,7 @@ namespace nap
 			int py = sy - 1 - static_cast<int>(sdlEvent.motion.y);
 			int rx = static_cast<int>(sdlEvent.motion.xrel);
 			int ry = static_cast<int>(-sdlEvent.motion.yrel);
-			mouse_event = eventType.create<InputEvent>({ rx, ry, px, py, window_id, toNapMouseSource(sdlEvent.motion.which) });
+			mouse_event = eventType.create<InputEvent>({ rx, ry, px, py, window_id, toNapPointerSource(sdlEvent.motion.which) });
 			break;
 		}
 		default:

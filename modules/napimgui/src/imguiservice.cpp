@@ -1109,7 +1109,7 @@ namespace nap
 		if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
 			const auto& press_event = static_cast<const nap::PointerPressEvent&>(pointerEvent);
-			if (press_event.mButton != EMouseButton::UNKNOWN)
+			if (press_event.mButton != PointerClickEvent::EButton::UNKNOWN)
 			{
 				int btn_id = static_cast<int>(press_event.mButton);
 				context.mMousePressed[btn_id] = true;
@@ -1121,7 +1121,7 @@ namespace nap
 		else if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
 		{
 			const auto& press_event = static_cast<const nap::PointerReleaseEvent&>(pointerEvent);
-			if (press_event.mButton != EMouseButton::UNKNOWN)
+			if (press_event.mButton != PointerClickEvent::EButton::UNKNOWN)
 			{
 				context.mMouseRelease[static_cast<int>(press_event.mButton)] = true;
 			}

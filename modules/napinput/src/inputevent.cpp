@@ -22,11 +22,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyReleaseEvent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerPressEvent)
-	RTTI_CONSTRUCTOR(int, int, nap::EMouseButton, int, nap::PointerEvent::ESource)
+	RTTI_CONSTRUCTOR(int, int, nap::PointerClickEvent::EButton, int, nap::PointerEvent::ESource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerReleaseEvent)
-	RTTI_CONSTRUCTOR(int, int, nap::EMouseButton, int, nap::PointerEvent::ESource)
+	RTTI_CONSTRUCTOR(int, int, nap::PointerClickEvent::EButton, int, nap::PointerEvent::ESource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerMoveEvent)

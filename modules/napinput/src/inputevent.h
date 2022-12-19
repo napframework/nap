@@ -145,12 +145,24 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerClickEvent(int inX, int inY, EMouseButton inButton, int window = 0, ESource source = ESource::Mouse) :
+
+		/**
+		 * Possible 'mouse' buttons
+		 */
+		enum class EButton : int8
+		{
+			UNKNOWN		= -1,
+			LEFT		= 0,
+			MIDDLE		= 1,
+			RIGHT		= 2
+		};
+
+		PointerClickEvent(int inX, int inY, EButton inButton, int window = 0, ESource source = ESource::Mouse) :
 			PointerEvent(inX, inY, window, source),
-			mButton(inButton)	
+			mButton(inButton)
 		{ }
 
-		EMouseButton mButton;				///< clicked mouse button
+		EButton mButton;				///< clicked mouse button
 	};
 	
 
@@ -161,7 +173,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerPressEvent(int inX, int inY, EMouseButton inButton, int window=0, ESource source = ESource::Mouse) :
+		PointerPressEvent(int inX, int inY, EButton inButton, int window=0, ESource source = ESource::Mouse) :
 			PointerClickEvent(inX, inY, inButton, window, source)
 		{ }
 	};
@@ -174,7 +186,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerReleaseEvent (int inX, int inY, EMouseButton inButton, int window=0, ESource source = ESource::Mouse) :
+		PointerReleaseEvent (int inX, int inY, EButton inButton, int window=0, ESource source = ESource::Mouse) :
 			PointerClickEvent(inX, inY, inButton, window, source)
 		{ }
 	};
