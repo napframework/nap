@@ -118,7 +118,7 @@ namespace nap
 	                change = ImGui::Combo("Input Device", &mInputDeviceSelection, [](void* data, int index, const char** out_text)
                     {
 		                auto* devices = static_cast<std::vector<DeviceInfo>*>(data);
-		                if (index == 0)
+		                if(index == 0)
 			                *out_text = "No Device";
 		                else
 			                *out_text = devices->at(index - 1).mName.c_str();
@@ -135,7 +135,7 @@ namespace nap
                 change = ImGui::Combo("Output Device", &mOutputDeviceSelection, [](void* data, int index, const char** out_text)
                 {
                     auto* devices = static_cast<std::vector<DeviceInfo>*>(data);
-                    if (index == 0)
+                    if(index == 0)
                         *out_text = "No Device";
                     else
                         *out_text = devices->at(index - 1).mName.c_str();
@@ -172,9 +172,9 @@ namespace nap
                 // a change in settings has occurred, close & open audio stream
                 if(change)
                 {
-                    if (mAudioService.isOpened())
+                    if(mAudioService.isOpened())
                     {
-                        if (mAudioService.isActive())
+                        if(mAudioService.isActive())
                             mAudioService.stop(error_state);
 
 	                    mAudioService.closeStream(error_state);
@@ -190,6 +190,16 @@ namespace nap
                                                  error_state))
                     {
 	                    mAudioService.start(error_state);
+                    }
+                }
+            }else
+            {
+                if(change)
+                {
+                    if(mAudioService.isOpened())
+                    {
+                        if(mAudioService.isActive())
+                            mAudioService.stop(error_state);
                     }
                 }
             }
