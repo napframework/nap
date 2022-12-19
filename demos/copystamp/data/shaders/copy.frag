@@ -45,7 +45,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 	vec3 frag_pos = (mvp.modelMatrix * vec4(passPosition, 1.0)).xyz;
 
 	// Rotate normal based on model matrix and set
-	vec3 frag_normal = normalize((mvp.modelMatrix * vec4(passNormals, 0.0)).xyz); 
+	vec3 frag_normal = normalize((mvp.normalMatrix * vec4(passNormals, 0.0)).xyz); 
 
 	// Calculate the vector from this pixels surface to the light source
 	vec3 surfaceToLight = normalize(ubo.lights[lightIndex].mPosition - frag_pos);

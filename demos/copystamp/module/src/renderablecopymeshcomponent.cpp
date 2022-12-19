@@ -211,12 +211,6 @@ namespace nap
 		if (mViewMatUniform != nullptr)
 			mViewMatUniform->setValue(viewMatrix);
 
-		if (mModelMatUniform != nullptr)
-			mModelMatUniform->setValue(mTransform->getGlobalTransform());
-
-		if (mNormalMatrixUniform != nullptr)
-			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransform->getGlobalTransform())));
-
 		if (mCameraWorldPosUniform != nullptr)
 			mCameraWorldPosUniform->setValue(cam_pos);
 
@@ -289,7 +283,10 @@ namespace nap
 
 				// Add scale, set as value and push
 				float fscale = math::random<float>(1.0f - rand_scale, 1.0f) * mScale;
-				mModelMatUniform->setValue(glm::scale(object_loc, { fscale, fscale, fscale }));
+				auto model_mat = glm::scale(object_loc, { fscale, fscale, fscale });
+
+				mModelMatUniform->setValue(model_mat);
+				mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(model_mat)));
 
 				// Render mesh after updating uniforms
 				renderMesh(*mRenderService, pipeline, mesh, commandBuffer);
