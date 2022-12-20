@@ -16,17 +16,6 @@ namespace nap
 {
 	namespace math
 	{
-		Rect::Rect(float x, float y, float width, float height)
-		{
-			mMinPosition = glm::vec2(x, y);
-			mMaxPosition = mMinPosition + glm::vec2(width, height);
-		}
-
-
-		Rect::Rect(const glm::vec2& min, const glm::vec2& max) : mMinPosition(min), mMaxPosition(max)
-		{}
-
-
 		float Rect::getWidth() const
 		{
 			return fabs(mMaxPosition.x - mMinPosition.x);
@@ -75,6 +64,5 @@ namespace nap
 		{
 			return mMaxPosition;
 		}
-
 	}
 }

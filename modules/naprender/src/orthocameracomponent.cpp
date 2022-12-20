@@ -109,7 +109,7 @@ namespace nap
 
 	void OrthoCameraComponentInstance::setClipRect(const math::Rect& clipRect)
 	{
-		if (mProperties.mClipRect.getMin() != clipRect.getMin() || mProperties.mClipRect.getMax() != clipRect.getMax())
+		if (mProperties.mClipRect != clipRect)
 		{
 			mProperties.mClipRect = clipRect;
 			setDirty();
@@ -119,9 +119,9 @@ namespace nap
 
 	void OrthoCameraComponentInstance::restoreClipRect()
 	{
-		if (mProperties.mClipRect.getMin() != glm::vec2(0.0f, 0.0f) || mProperties.mClipRect.getMax() != glm::vec2(1.0f, 1.0f))
+		if (mProperties.mClipRect != math::topRightRect)
 		{
-			mProperties.mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };
+			mProperties.mClipRect = math::topRightRect;
 			setDirty();
 		}
 	}
