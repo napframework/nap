@@ -43,22 +43,22 @@ const float 	ambientIntensity = 0.5f;
 // Shades a color based on a light, incoming normal and position should be in object space
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
-	// Calculate normal to world
-	vec3 ws_normal = normalize(normal * mvp.normalMatrix);
+	// Calculate normal in world space
+	vec3 ws_normal = normalize((mvp.normalMatrix * vec4(normal, 0.0)).xyz);
 
-	// Calculate frag to world
-	vec3 ws_position = vec3(mvp.modelMatrix * vec4(position, 1.0));
+	// Calculate frag position in world space
+	vec3 ws_position = (mvp.modelMatrix * vec4(position, 1.0)).xyz;
 
-	//calculate the vector from this pixels surface to the light source
+	// Calculate the direction from this pixel's surface to the light source
 	vec3 surfaceToLight = normalize(ubo.light.mPosition - ws_position);
 
-	// calculate vector that defines the distance from camera to the surface
+	// Calculate the direction from camera to surface
 	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
 
-	// diffuse
+	// Diffuse
     float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
 	vec3 diffuse = diffuseCoefficient * color * ubo.light.mIntensity;
 
@@ -76,6 +76,6 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 void main()
 {
 	vec2 uvs = vec2(passUVs.x, passUVs.y);
-	vec3 output_color = applyLight(ubo.ballColor, passNormal, passPosition);
+	vec3 output_color = applyLight(ubo.ballColor, normalize(passNormal), passPosition);
 	out_Color =  vec4(output_color.rgb, 1.0);
 }
