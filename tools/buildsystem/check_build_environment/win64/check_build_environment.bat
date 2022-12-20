@@ -17,25 +17,11 @@ if %OS%==32BIT (
 set PYTHONPATH=""
 set PYTHONHOME=""
 
-if "%~1" == "--source" goto SOURCE
-"%~dp0\..\thirdparty\python\python" "%~dp0\buildsystem\check_build_environment\win64\check_build_environment_continued.py"
-exit /B
-
-: SOURCE
-set NAP_ROOT=%~dp0\..\..\..\..
-set THIRDPARTY_DIR=%NAP_ROOT%\..\thirdparty
-if exist %THIRDPARTY_DIR% (
-    echo Checking for third party repository: PASS
+if "%~1" == "--source" (
+    set NAP_ROOT=%~dp0\..\..\..\..
 ) else (
-    echo Checking for third party repository: FAIL
-    echo.
-    echo The third party repository ^('thirdparty'^) needs to be cloned alongside the main repository.
-    echo.
-    echo Not continuing checks. Re-run this script after cloning.
-    echo.
-    echo Press key to close...
-    pause
-    exit /B        
+    set NAP_ROOT=%~dp0\..
 )
-"%THIRDPARTY_DIR%\python\msvc\x86_64\python" "%~dp0\check_build_environment_continued.py" "--source"
+set THIRDPARTY_DIR=%NAP_ROOT%\thirdparty
+"%THIRDPARTY_DIR%\python\msvc\x86_64\python" "%NAP_ROOT%\tools\buildsystem\check_build_environment\win64\check_build_environment_continued.py" "%~1"
 exit /B

@@ -65,7 +65,7 @@ macro(package_nap)
         install(PROGRAMS ${cbe_tool_dir}/linux/check_build_environment_worker.py DESTINATION tools/buildsystem/common)
     else()
         install(FILES ${cbe_tool_dir}/win64/check_build_environment.bat DESTINATION tools)
-        install(FILES ${cbe_tool_dir}/win64/check_build_environment_continued.py DESTINATION tools/buildsystem/common)
+        install(FILES ${cbe_tool_dir}/win64/check_build_environment_continued.py DESTINATION tools/buildsystem/check_build_environment/win64)
     endif()
 
     # TODO update to just deploy tools/buildsystem
