@@ -44,10 +44,10 @@ namespace nap
 				mMinPosition(min), mMaxPosition(max) {}
 
 			// Equal-to operator overload
-			bool operator==(const Rect& other) const { return getMin() == other.getMin() && getMax() == other.getMax(); }
+			bool operator==(const Rect& other) const;
 
 			// Not-equal-to operator overload
-			bool operator!=(const Rect& other) const { return getMin() != other.getMin() || getMax() != other.getMax(); }
+			bool operator!=(const Rect& other) const;
 
 			/**
 			 *	@return the absolute width of the rectangle
