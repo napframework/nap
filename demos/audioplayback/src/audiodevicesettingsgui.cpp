@@ -74,6 +74,7 @@ namespace nap
         {
             utility::ErrorState error_state;
             bool change = false;
+            auto settings = mAudioService.getSettings();
 
             // Combo box with all available drivers
             change = ImGui::Combo("Driver", &mDriverSelection, [](void* data, int index, const char** out_text)
@@ -89,6 +90,8 @@ namespace nap
             // driver has changed
             if(change)
             {
+                settings.mHostApi = mDrivers[mDriverSelection-1].mName;
+
                 mInputDeviceSelection = 0;
                 mOutputDeviceSelection = 0;
 
@@ -172,6 +175,17 @@ namespace nap
                 // a change in settings has occurred, close & open audio stream
                 if(change)
                 {
+                    // apply settings
+                    settings.mOutputDevice = output_device != nullptr ? output_device->mName : "";
+                    settings.mInputDevice = input_device != nullptr ? input_device->mName : "";
+                    settings.mBufferSize = mBufferSizes[mBufferSizeIndex];
+                    settings.mSampleRate = mSampleRates[mSampleRateIndex];
+                    settings.mHostApi = mDriverSelection - 1 >= 0 ? mDrivers[mDriverSelection-1].mName : "";
+                    settings.mOutputChannelCount = output_channels;
+                    settings.mInputChannelCount = input_channels;
+                    settings.mDisableInput = !mEnableInput;
+                    settings.mDisableOutput = !mEnableOutput;
+
                     if(mAudioService.isOpened())
                     {
                         if(mAudioService.isActive())
@@ -179,15 +193,7 @@ namespace nap
 
 	                    mAudioService.closeStream(error_state);
                     }
-                    if (mAudioService.openStream(mDriverSelection - 1,
-                                                 mEnableInput ? mInputDeviceSelection - 1 : -1,
-                                                 mEnableOutput ? mOutputDeviceSelection - 1 : -1,
-                                                 input_channels,
-                                                 output_channels,
-                                                 mSampleRates[mSampleRateIndex],
-                                                 mBufferSizes[mBufferSizeIndex],
-                                                 mBufferSizes[mBufferSizeIndex],
-                                                 error_state))
+                    if (mAudioService.openStream(settings, error_state))
                     {
 	                    mAudioService.start(error_state);
                     }
