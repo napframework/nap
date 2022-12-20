@@ -265,7 +265,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 	bool result = shader->parse(&defaultResource, default_version, false, messages);
 	if (!result)
 	{
-		errorState.fail("%s", shader->getInfoLog());
+		errorState.fail("Failed to compile shader: %s", shader->getInfoLog());
 		return nullptr;
 	}
 
@@ -301,16 +301,22 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 	// Link the program first. This merges potentially multiple compilation units within a single stage into a single intermediate representation.
 	// Note that this usually doesn't do anything (1 compilation unit per stage is the most common case), but it is neccessary in order to execute the next step.
 	// In addition, if this isn't called, glslang will not correctly resolve built-in variables such as gl_PerVertex, which will result in invalid SPIR-V being generated
-	if (!errorState.check(program.link(messages), "Failed to link shader program: %s", program.getInfoLog()))
+	if (!program.link(messages))
+	{
+		errorState.fail("Failed to link shader program: %s", program.getInfoLog());
 		return false;
+	}
 
 	// We need to create our own IO mapper/resolver for automatic numbering of locations/bindings. See comment above BindingResolver at the top of this file.
 	BindingResolver io_resolver(*program.getIntermediate(EShLangVertex));
 	glslang::TGlslIoMapper io_mapper;
 
 	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
-	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
+	if (!program.mapIO(&io_resolver, &io_mapper))
+	{
+		errorState.fail("Failed to map input/outputs: %s", program.getInfoLog());
 		return false;
+	}
 
 	glslang::SpvOptions spv_options;
 	spv_options.generateDebugInfo = false;
@@ -361,16 +367,22 @@ static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, co
 	// Link the program first. This merges potentially multiple compilation units within a single stage into a single intermediate representation.
 	// Note that this usually doesn't do anything (1 compilation unit per stage is the most common case), but it is neccessary in order to execute the next step.
 	// In addition, if this isn't called, glslang will not correctly resolve built-in variables such as gl_PerVertex, which will result in invalid SPIR-V being generated
-	if (!errorState.check(program.link(messages), "Failed to link shader program: %s", program.getInfoLog()))
+	if (!program.link(messages))
+	{
+		errorState.fail("Failed to link shader program: %s", program.getInfoLog());
 		return false;
+	}
 
 	// We need to create our own IO mapper/resolver for automatic numbering of locations/bindings. See comment above BindingResolver at the top of this file.
 	BindingResolver io_resolver(*program.getIntermediate(EShLangCompute));
 	glslang::TGlslIoMapper io_mapper;
 
 	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
-	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
+	if (!program.mapIO(&io_resolver, &io_mapper))
+	{
+		errorState.fail("Failed to map input/outputs: %s", program.getInfoLog());
 		return false;
+	}
 
 	glslang::SpvOptions spv_options;
 	spv_options.generateDebugInfo = false;
