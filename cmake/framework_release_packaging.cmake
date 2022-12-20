@@ -77,7 +77,9 @@ macro(package_nap)
     install(FILES ${build_tools_dir}/app_and_module_updater/app_and_module_updater.py DESTINATION tools/buildsystem/app_and_module_updater)
 
     # Package module sharing prep and setup scripts
-    install(FILES ${build_tools_dir}/prepare_module_to_share/prepare_module_to_share.py DESTINATION tools/buildsystem/prepare_module_to_share)
+    install(FILES ${build_tools_dir}/prepare_module_to_share/prepare_module_to_share_by_dir.py
+                  ${build_tools_dir}/prepare_module_to_share/prepare_module_to_share_by_name.py
+            DESTINATION tools/buildsystem/prepare_module_to_share)
     install(FILES ${build_tools_dir}/setup_module/setup_module.py DESTINATION tools/buildsystem/setup_module)
 
     # Create empty apps and modules directories
