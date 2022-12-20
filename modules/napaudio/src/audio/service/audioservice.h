@@ -33,9 +33,9 @@ namespace nap
 			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(AudioService); }
 
             /**
-             * Copyable struct containing audio service settings
+             * Copyable struct containing audio device settings
              */
-            struct NAPAPI Settings
+            struct NAPAPI DeviceSettings
             {
                 /**
                  * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
@@ -95,7 +95,11 @@ namespace nap
                  */
                 int mInternalBufferSize = 1024;
             };
-            Settings mSettings;
+
+            /**
+             * Settings of the audio device to initialize
+             */
+            DeviceSettings mDeviceSettings;
 
             /**
              * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
@@ -242,11 +246,21 @@ namespace nap
 			/**
 			 * @return the current buffer size.
 			 */
-			int getCurrentBufferSize() const { return mSettings.mBufferSize; }
+			int getCurrentBufferSize() const { return getConfiguration<AudioServiceConfiguration>()->mDeviceSettings.mBufferSize; }
 
-            bool openStream(const AudioServiceConfiguration::Settings& settings, utility::ErrorState& errorState);
+            /**
+             * Stores the device settings and tries to open audio stream with given device settings, return true on succes
+             * @param settings const ref to DeviceSettings struct
+             * @param errorState contains any errors
+             * @return true on success
+             */
+            bool openStream(const AudioServiceConfiguration::DeviceSettings& settings, utility::ErrorState& errorState);
 
-            const AudioServiceConfiguration::Settings& getSettings() const;
+            /**
+             * Returns const ref to current device settings used by service
+             * @return const ref to current device settings used by service
+             */
+            const AudioServiceConfiguration::DeviceSettings& getDeviceSettings() const;
 			
 			/**
 			 * Closes the current stream. Assumes that it has been opened successfully.
@@ -308,12 +322,6 @@ namespace nap
 			 * Checks wether certain atomic types that are used within the library are lockfree and gives a warning if not.
 			 */
 			void checkLockfreeTypes();
-			
-			/*
-			 * Copies the current settings to the configuration object.
-			 */
-			void saveConfiguration();
-		
 		private:
 			NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
@@ -322,7 +330,6 @@ namespace nap
 			int mOutputDeviceIndex = -1; // The actual output device being used, if any.
 			bool mPortAudioInitialized = false; // If port audio is initialized
 			bool mMpg123Initialized	   = false;	// If mpg123 is initialized
-            AudioServiceConfiguration::Settings mSettings; // AudioServiceConfiguration settings
 
 			// DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
 			// Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.

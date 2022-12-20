@@ -74,7 +74,7 @@ namespace nap
         {
             utility::ErrorState error_state;
             bool change = false;
-            auto settings = mAudioService.getSettings();
+            auto settings = mAudioService.getDeviceSettings();
 
             // Combo box with all available drivers
             change = ImGui::Combo("Driver", &mDriverSelection, [](void* data, int index, const char** out_text)
