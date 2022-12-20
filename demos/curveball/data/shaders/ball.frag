@@ -9,7 +9,7 @@ in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in object space
 in vec3 passPosition;					//< frag position in object space
 
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

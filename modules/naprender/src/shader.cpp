@@ -190,19 +190,45 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 	int resolveBinding(EShLanguage stage, glslang::TVarEntryInfo& ent) override
 	{
 		const glslang::TType& type = ent.symbol->getType();
-		const int set = getLayoutSet(type);
-		// On OpenGL arrays of opaque types take a separate binding for each element
-		int numBindings = mIntermediate.getSpv().openGl != 0 && type.isSizedArray() ? type.getCumulativeArraySize() : 1;
+		const glslang::TString& name = ent.symbol->getAccessName();
+
+		// OpenGL arrays of opaque types take a separate binding for each element, Vulkan does not
+		int num_bindings = 1;
 		glslang::TResourceType resource = getResourceType(type);
-		if (resource < glslang::EResCount) {
-			if (type.getQualifier().hasBinding()) {
-				return ent.newBinding = reserveSlot(
-					set, getBaseBinding(stage,resource, set) + type.getQualifier().layoutBinding, numBindings);
+
+		int resource_key = ent.newSet;
+		if (resource < glslang::EResCount)
+		{
+			if (type.getQualifier().hasBinding())
+			{
+				int new_binding = reserveSlot(resource_key, getBaseBinding(stage, resource, ent.newSet) + type.getQualifier().layoutBinding, num_bindings);
+				return ent.newBinding = new_binding;
 			}
-			else if (doAutoBindingMapping()) {
-				// find free slot, the caller did make sure it passes all vars with binding
-				// first and now all are passed that do not have a binding and needs one
-				return ent.newBinding = getFreeSlot(set, getBaseBinding(stage, resource, set), numBindings);
+			else
+			{
+				// The resource in current stage is not declared with binding, but it is possible declared
+				// with explicit binding in other stages, find the resourceSlotMap firstly to check whether
+				// the resource has binding, don't need to allocate if it already has a binding
+				bool has_explicit_binding = false;
+				ent.newBinding = -1; // leave as -1 if it isn't set below
+
+				if (!resourceSlotMap[resource_key].empty())
+				{
+					TVarSlotMap::iterator iter = resourceSlotMap[resource_key].find(name);
+					if (iter != resourceSlotMap[resource_key].end()) {
+						has_explicit_binding = true;
+						ent.newBinding = iter->second;
+					}
+				}
+				if (!has_explicit_binding && doAutoBindingMapping())
+				{
+					// Find free slot, the caller did make sure it passes all vars with binding
+					// first and now all are passed that do not have a binding and needs one
+					int binding = getFreeSlot(resource_key, getBaseBinding(stage, resource, ent.newSet), num_bindings);
+					resourceSlotMap[resource_key][name] = binding;
+					ent.newBinding = binding;
+				}
+				return ent.newBinding;
 			}
 		}
 		return ent.newBinding = -1;

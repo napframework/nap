@@ -14,7 +14,7 @@ in vec3 pass_Bitangent;		// The bitangent
 out vec4 out_Color;
 
 // Fragment shader model matrix uniforms
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

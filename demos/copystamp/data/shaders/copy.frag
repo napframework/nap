@@ -8,7 +8,7 @@
 in vec3 passNormals;									// Normal
 in vec3 passPosition;									// The vertex position in object space
 
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

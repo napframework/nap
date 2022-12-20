@@ -5,7 +5,7 @@
 #version 450 core
 
 // All mvp uniform variables
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

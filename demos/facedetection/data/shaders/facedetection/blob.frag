@@ -9,7 +9,7 @@ in vec3 passNormals;							// Normals
 in vec3 passVert;								// The vertex position
 
 // NAP Uniforms
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

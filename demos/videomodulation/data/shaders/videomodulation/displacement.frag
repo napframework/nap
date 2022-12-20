@@ -21,7 +21,7 @@ struct PointLight
 // uniform inputs
 uniform sampler2D	videoTextureFrag;
 
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

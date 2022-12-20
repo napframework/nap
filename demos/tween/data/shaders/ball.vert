@@ -5,7 +5,7 @@
 #version 450 core
 
 // Uniform inputs
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

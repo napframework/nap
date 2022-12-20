@@ -5,7 +5,7 @@
 #version 450 core
 
 // Vertex shader model matrix uniforms
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;

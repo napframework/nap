@@ -11,7 +11,7 @@ in vec3 passPosition;					//< frag world space position
 in mat4 passModelMatrix;				//< model matrix
 in vec3 passVert;						// The vertex position
 
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
