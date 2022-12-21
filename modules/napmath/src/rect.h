@@ -32,7 +32,7 @@ namespace nap
 			 * @param width the width of the rectangle
 			 * @param height the height of the triangle
 			 */
-			constexpr Rect::Rect(float x, float y, float width, float height) :
+			constexpr Rect(float x, float y, float width, float height) :
 				mMinPosition({ x, y }), mMaxPosition(mMinPosition + glm::vec2(width, height)) {};
 
 			/**
@@ -40,7 +40,7 @@ namespace nap
 			 * @param min: the min x, y position of the rectangle
 			 * @param max: the max x, y position of the rectangle
 			 */
-			constexpr Rect::Rect(const glm::vec2& min, const glm::vec2& max) :
+			constexpr Rect(const glm::vec2& min, const glm::vec2& max) :
 				mMinPosition(min), mMaxPosition(max) {}
 
 			// Equal-to operator overload
