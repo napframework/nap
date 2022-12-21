@@ -133,13 +133,6 @@ namespace nap
 		}
 
 
-		// Returns an SDL window based on the given id
-		SDL_Window* getWindow(uint32_t  id)
-		{
-			return SDL_GetWindowFromID((Uint32)(id));
-		}
-
-
 		uint32_t getWindowId(SDL_Window* window)
 		{
 			return SDL_GetWindowID(window);
@@ -218,6 +211,26 @@ namespace nap
 			glm::ivec2 pos;
 			SDL_GetMouseState(&pos.x, &pos.y);
 			return pos;
+		}
+
+
+		uint32 getMouseState(int* x, int* y)
+		{
+			return SDL_GetMouseState(x, y);
+		}
+
+
+		glm::ivec2 getGlobalCursorPosition()
+		{
+			glm::ivec2 pos;
+			SDL_GetGlobalMouseState(&pos.x, &pos.y);
+			return pos;
+		}
+
+
+		uint32 getGlobalMouseState(int* x, int* y)
+		{
+			return SDL_GetGlobalMouseState(x, y);
 		}
 
 
