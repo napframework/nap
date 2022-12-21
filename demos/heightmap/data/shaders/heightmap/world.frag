@@ -12,6 +12,16 @@ in vec3 passPosition;					//< frag world space position
 // uniform inputs
 uniform sampler2D inHeightmap;			//< World Texture
 
+// NAP Uniforms
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraWorldPosition;
+} mvp;
+
 // All uniform fragment inputs
 uniform FRAGUBO
 {
