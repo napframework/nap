@@ -250,6 +250,7 @@ namespace nap
 
             /**
              * Stores the device settings and tries to open audio stream with given device settings, return true on succes
+             * The meesage from the errorState will be stored and can be retrieved using AudioService::getErrorMessage()
              * @param settings const ref to DeviceSettings struct
              * @param errorState contains any errors
              * @return true on success
@@ -305,7 +306,22 @@ namespace nap
 			 * Enqueue a task to be executed within the process() method for thread safety
 			 */
 			void enqueueTask(TaskQueue::Task task) { mNodeManager.enqueueTask(task); }
-		private:
+
+            /**
+             * @return Error message from last call to openStream() in case it was unsuccessful.
+             */
+            const std::string& getErrorMessage() const { return mErrorMessage; }
+
+        private:
+            /**
+             * Does the actual work for the public openStream() so it can conveniently store the message from the errorState.
+             * Stores the device settings and tries to open audio stream with given device settings, return true on succes
+             * @param settings const ref to DeviceSettings struct
+             * @param errorState contains any errors
+             * @return true on success
+             */
+            bool _openStream(const AudioServiceConfiguration::DeviceSettings& settings, utility::ErrorState& errorState);
+
             /**
              * Tries to open the audio stream using the given settings.
              * @return true on success.
@@ -322,6 +338,7 @@ namespace nap
 			 * Checks wether certain atomic types that are used within the library are lockfree and gives a warning if not.
 			 */
 			void checkLockfreeTypes();
+
 		private:
 			NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
@@ -334,6 +351,8 @@ namespace nap
 			// DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
 			// Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.
 			DeletionQueue mDeletionQueue;
+
+            std::string mErrorMessage = ""; // Holds the error message if public openStream() method was called unsuccesfully.
 		};
 	}
 }

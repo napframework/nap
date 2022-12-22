@@ -36,6 +36,7 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
+        mAudioService	= getCore().getService<nap::audio::AudioService>();
 
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
@@ -116,6 +117,8 @@ namespace nap
                     Logger::warn("Failed to write config file: %s", errorState.toString().c_str());
             }
         }
+        if (!mAudioService->isOpened())
+            ImGui::Text(mAudioService->getErrorMessage().c_str());
 
         ImGui::Text("Music: Hang by Breek (www.breek.me)");
         ImGui::End();

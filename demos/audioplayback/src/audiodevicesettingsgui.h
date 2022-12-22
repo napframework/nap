@@ -54,8 +54,6 @@ namespace nap
             int mOutputDeviceSelection = 0;
             int mBufferSizeIndex = 0;
             int mSampleRateIndex = 0;
-            bool mEnableInput = false;
-            bool mEnableOutput = false;
             std::vector<int> mBufferSizes = { 64, 128, 256, 512, 1024, 2048 };
             std::vector<int> mSampleRates = { 44100, 48000 };
             const char* const mBufferSizeNames[6] = { "64", "128", "256", "512", "1024", "2048" };

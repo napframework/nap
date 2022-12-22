@@ -145,6 +145,14 @@ namespace nap
 
         bool AudioService::openStream(const AudioServiceConfiguration::DeviceSettings& deviceSettings, utility::ErrorState& errorState)
         {
+            auto result = _openStream(deviceSettings, errorState);
+            mErrorMessage = errorState.toString();
+            return result;
+        }
+
+
+        bool AudioService::_openStream(const AudioServiceConfiguration::DeviceSettings& deviceSettings, utility::ErrorState& errorState)
+        {
             // copy settings to configuration
             auto* configuration = getConfiguration<AudioServiceConfiguration>();
             configuration->mDeviceSettings = deviceSettings;
