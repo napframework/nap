@@ -17,32 +17,33 @@
 // Third party includes
 #include <mpg123.h>
 
+RTTI_BEGIN_STRUCT(nap::audio::AudioServiceConfiguration::DeviceSettings)
+        RTTI_PROPERTY("HostApi", &nap::audio::AudioServiceConfiguration::DeviceSettings::mHostApi,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("InputDevice", &nap::audio::AudioServiceConfiguration::DeviceSettings::mInputDevice,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("OutputDevice", &nap::audio::AudioServiceConfiguration::DeviceSettings::mOutputDevice,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioServiceConfiguration::DeviceSettings::mInputChannelCount,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioServiceConfiguration::DeviceSettings::mOutputChannelCount,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("DisableInput", &nap::audio::AudioServiceConfiguration::DeviceSettings::mDisableInput,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("DisableOutput", &nap::audio::AudioServiceConfiguration::DeviceSettings::mDisableOutput,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::DeviceSettings::mSampleRate,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::DeviceSettings::mBufferSize,
+                      nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("InternalBufferSize", &nap::audio::AudioServiceConfiguration::DeviceSettings::mInternalBufferSize,
+                      nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::audio::AudioServiceConfiguration)
-	RTTI_PROPERTY("HostApi", &nap::audio::AudioServiceConfiguration::mHostApi,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InputDevice", &nap::audio::AudioServiceConfiguration::mInputDevice,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OutputDevice", &nap::audio::AudioServiceConfiguration::mOutputDevice,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InputChannelCount", &nap::audio::AudioServiceConfiguration::mInputChannelCount,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OutputChannelCount", &nap::audio::AudioServiceConfiguration::mOutputChannelCount,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::AudioServiceConfiguration::mAllowChannelCountFailure,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::AudioServiceConfiguration::mAllowDeviceFailure,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DisableInput", &nap::audio::AudioServiceConfiguration::mDisableInput,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DisableOutput", &nap::audio::AudioServiceConfiguration::mDisableOutput,
-					  nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SampleRate", &nap::audio::AudioServiceConfiguration::mSampleRate,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BufferSize", &nap::audio::AudioServiceConfiguration::mBufferSize,
-		              nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InternalBufferSize", &nap::audio::AudioServiceConfiguration::mInternalBufferSize,
-		              nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("Audio Device Settings", &nap::audio::AudioServiceConfiguration::mDeviceSettings, nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::AudioServiceConfiguration::mAllowChannelCountFailure, nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::AudioServiceConfiguration::mAllowDeviceFailure, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
@@ -95,12 +96,9 @@ namespace nap
 			mMpg123Initialized = true;
 			checkLockfreeTypes();
 
-			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
-			int inputDeviceIndex = -1;
-			int outputDeviceIndex = -1;
-			int inputChannelCount = 0;
-			int outputChannelCount = 0;
-			
+			auto* configuration = getConfiguration<AudioServiceConfiguration>();
+            const auto& device_settings = configuration->mDeviceSettings;
+
 			// Initialize the portaudio library
 			PaError error = Pa_Initialize();
 			if (!errorState.check(error == paNoError, "Portaudio error: %s", Pa_GetErrorText(error)))
@@ -109,123 +107,129 @@ namespace nap
 			mPortAudioInitialized = true;
 			Logger::info("Portaudio initialized");
 			printDevices();
-			
-			// Initialize the audio device
-			if (configuration->mBufferSize % configuration->mInternalBufferSize != 0) {
-				errorState.fail("AudioService: Internal buffer size does not fit device buffer size");
-				return false;
-			}
-			
-			if (configuration->mHostApi.empty())
-				mHostApiIndex = Pa_GetDefaultHostApi();
-			else
-				mHostApiIndex = getHostApiIndex(configuration->mHostApi);
-			if (mHostApiIndex < 0)
+
+			if (!(openStream(device_settings, errorState) && start(errorState)))
 			{
 				if (!configuration->mAllowDeviceFailure)
 				{
-					errorState.fail("Audio host API not found: %s", configuration->mHostApi.c_str());
 					return false;
 				}
-				else {
-					Logger::warn("Audio host API not found: %s", configuration->mHostApi.c_str());
-					return true;
-				}
-			}
-			
-			if (configuration->mDisableInput)
-			{
-				inputDeviceIndex = -1;
-			}
-			else {
-				if (configuration->mInputDevice.empty())
-					inputDeviceIndex = Pa_GetDefaultInputDevice();
 				else
-					inputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mInputDevice);
-				if (inputDeviceIndex < 0) {
-					if (!configuration->mAllowDeviceFailure)
-					{
-						errorState.fail("Audio input device not found: %s", configuration->mInputDevice.c_str());
-						return false;
-					} else
-						Logger::info("Audio input device not found: %s", configuration->mInputDevice.c_str());
-				}
-			}
-
-			if (configuration->mDisableOutput)
-			{
-				outputDeviceIndex = -1;
-			}
-			else {
-				if (configuration->mOutputDevice.empty())
-					outputDeviceIndex = Pa_GetDefaultOutputDevice();
-				else
-					outputDeviceIndex = getDeviceIndex(mHostApiIndex, configuration->mOutputDevice);
-				if (outputDeviceIndex < 0)
-				{
-					if (!configuration->mAllowDeviceFailure)
-					{
-						errorState.fail("Audio output device not found: %s", configuration->mOutputDevice.c_str());
-						return false;
-					}
-					else
-						Logger::info("Audio output device not found: %s", configuration->mOutputDevice.c_str());
-				}
-			}
-
-			if (inputDeviceIndex < 0 && outputDeviceIndex < 0)
-			{
-				if (!configuration->mAllowDeviceFailure)
-				{
-					errorState.fail("Cannot start audio stream with neither input nor output.");
-					return false;
-				}
-				else {
-					Logger::warn("Cannot start audio stream with neither input nor output.");
-					return true;
-				}
-			}
-
-			if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, errorState))
-				return false;
-
-			if (!(openStream(mHostApiIndex, inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, configuration->mSampleRate, configuration->mBufferSize, configuration->mInternalBufferSize, errorState) && start(errorState)))
-			{
-				if (!configuration->mAllowDeviceFailure)
-				{
-					errorState.fail(
-							"Portaudio stream failed to start with: input: %s (%i channels), output: %s (%i channels), samplerate %i, buffersize %i",
-							inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "no input device", inputChannelCount,
-							outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "no output device", outputChannelCount, int(configuration->mSampleRate),
-							configuration->mBufferSize);
-					return false;
-				}
-				else {
-					Logger::info(
-						"Portaudio stream failed to start with: input: %s (%i channels), output: %s (%i channels), samplerate %i, buffersize %i",
-						inputDeviceIndex >= 0 ? Pa_GetDeviceInfo(inputDeviceIndex)->name : "no input device", inputChannelCount,
-						outputDeviceIndex >= 0 ? Pa_GetDeviceInfo(outputDeviceIndex)->name : "no output device", outputChannelCount, int(configuration->mSampleRate),
-						configuration->mBufferSize);
+                {
+					Logger::warn(
+                            "Portaudio stream failed to start with: input: %s (%i channels), output: %s (%i channels), samplerate %i, buffersize %i",
+                            !device_settings.mInputDevice.empty() ? device_settings.mInputDevice.c_str() : "no input device", device_settings.mInputChannelCount,
+                            !device_settings.mOutputDevice.empty() ? device_settings.mOutputDevice.c_str() : "no output device", device_settings.mOutputChannelCount, int(device_settings.mSampleRate),
+                            device_settings.mBufferSize);
 				}
 				return true;
 			}
 
 			// Log portaudio stream settings
 			Logger::info("Portaudio stream started:");
-			if (inputDeviceIndex >= 0)
-				Logger::info("Input device: %s, %i channel(s)", Pa_GetDeviceInfo(inputDeviceIndex)->name, mNodeManager.getInputChannelCount());
+			if (mInputDeviceIndex >= 0)
+				Logger::info("Input device: %s, %i channel(s)", Pa_GetDeviceInfo(mInputDeviceIndex)->name, mNodeManager.getInputChannelCount());
 			else
 				Logger::info("No input device");
 
-			if (outputDeviceIndex >= 0)
-				Logger::info("Output device: %s, %i channel(s)", Pa_GetDeviceInfo(outputDeviceIndex)->name, mNodeManager.getOutputChannelCount());
+			if (mOutputDeviceIndex >= 0)
+				Logger::info("Output device: %s, %i channel(s)", Pa_GetDeviceInfo(mOutputDeviceIndex)->name, mNodeManager.getOutputChannelCount());
 			else
 				Logger::info("No output device");
 			Logger::info("Samplerate: %i", int(mNodeManager.getSampleRate()));
-			Logger::info("Buffersize: %i", mBufferSize);
+			Logger::info("Buffersize: %i", device_settings.mBufferSize);
 
 			return true;
 		}
+
+
+        bool AudioService::openStream(const AudioServiceConfiguration::DeviceSettings& deviceSettings, utility::ErrorState& errorState)
+        {
+            // copy settings to configuration
+            auto* configuration = getConfiguration<AudioServiceConfiguration>();
+            configuration->mDeviceSettings = deviceSettings;
+
+            // close stream
+            if(isOpened())
+            {
+                if(!closeStream(errorState))
+                    return false;
+            }
+
+            int inputDeviceIndex = -1;
+            int outputDeviceIndex = -1;
+            int inputChannelCount = 0;
+            int outputChannelCount = 0;
+
+            // Initialize the audio device
+            if (deviceSettings.mBufferSize % deviceSettings.mInternalBufferSize != 0) {
+                errorState.fail("AudioService: Internal buffer size does not fit device buffer size");
+                return false;
+            }
+
+            if (deviceSettings.mHostApi.empty())
+                mHostApiIndex = Pa_GetDefaultHostApi();
+            else
+                mHostApiIndex = getHostApiIndex(deviceSettings.mHostApi);
+            if (mHostApiIndex < 0)
+            {
+                errorState.fail("Audio host API not found: %s", deviceSettings.mHostApi.c_str());
+                return false;
+            }
+
+            if (deviceSettings.mDisableInput)
+            {
+                inputDeviceIndex = -1;
+            }
+            else {
+                if (deviceSettings.mInputDevice.empty())
+                    inputDeviceIndex = Pa_GetDefaultInputDevice();
+                else
+                    inputDeviceIndex = getDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
+                if (inputDeviceIndex < 0)
+                {
+                    errorState.fail("Audio input device not found: %s", deviceSettings.mInputDevice.c_str());
+                    return false;
+                }
+            }
+
+            if (deviceSettings.mDisableOutput)
+            {
+                outputDeviceIndex = -1;
+            }
+            else {
+                if (deviceSettings.mOutputDevice.empty())
+                    outputDeviceIndex = Pa_GetDefaultOutputDevice();
+                else
+                    outputDeviceIndex = getDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
+                if (outputDeviceIndex < 0)
+                {
+                    errorState.fail("Audio output device not found: %s", deviceSettings.mOutputDevice.c_str());
+                    return false;
+                }
+            }
+
+            if (inputDeviceIndex < 0 && outputDeviceIndex < 0)
+            {
+                errorState.fail("Cannot start audio stream with neither input nor output.");
+                return false;
+            }
+
+            if (!checkChannelCounts(inputDeviceIndex, outputDeviceIndex, inputChannelCount, outputChannelCount, errorState))
+                return false;
+
+            mInputDeviceIndex = inputDeviceIndex;
+            mOutputDeviceIndex = outputDeviceIndex;
+
+            return openStream(errorState);
+        }
+
+
+        const AudioServiceConfiguration::DeviceSettings& AudioService::getDeviceSettings() const
+        {
+            auto* configuration = getConfiguration<AudioServiceConfiguration>();
+            return configuration->mDeviceSettings;
+        }
 
 
 		void AudioService::shutdown()
@@ -257,72 +261,56 @@ namespace nap
 		}
 
 
-		bool AudioService::openStream(int hostApi,
-                                      int inputDeviceIndex,
-                                      int outputDeviceIndex,
-                                      int inputChannelCount,
-                                      int outputChannelCount,
-                                      float sampleRate,
-                                      int bufferSize,
-                                      int internalBufferSize, utility::ErrorState& errorState)
-		{
-			// The stream can only be opened when it's closed
-			assert(mStream == nullptr);
+        bool AudioService::openStream(utility::ErrorState& errorState)
+        {
+            // The stream can only be opened when it's closed
+            assert(mStream == nullptr);
 
-			if (inputChannelCount != mNodeManager.getInputChannelCount())
-				mNodeManager.setInputChannelCount(inputChannelCount);
-			if (outputChannelCount != mNodeManager.getOutputChannelCount())
-				mNodeManager.setOutputChannelCount(outputChannelCount);
-			if (sampleRate != mNodeManager.getSampleRate())
-				mNodeManager.setSampleRate(sampleRate);
-			if (internalBufferSize != mNodeManager.getInternalBufferSize())
-				mNodeManager.setInternalBufferSize(internalBufferSize);
+            const auto& device_settings = getConfiguration<AudioServiceConfiguration>()->mDeviceSettings;
 
-			mHostApiIndex = hostApi;
-			mInputDeviceIndex = inputDeviceIndex;
-			mOutputDeviceIndex = outputDeviceIndex;
-			mBufferSize = bufferSize;
+            mNodeManager.setInputChannelCount(device_settings.mDisableInput ? 0 : device_settings.mInputChannelCount);
+            mNodeManager.setOutputChannelCount(device_settings.mDisableOutput ? 0 : device_settings.mOutputChannelCount);
+            mNodeManager.setSampleRate(device_settings.mSampleRate);
+            mNodeManager.setInternalBufferSize(device_settings.mInternalBufferSize);
 
-			PaStreamParameters inputParameters;
-			inputParameters.device = mInputDeviceIndex;
-			inputParameters.channelCount = mNodeManager.getInputChannelCount();
-			inputParameters.sampleFormat = paFloat32 | paNonInterleaved;
-			inputParameters.hostApiSpecificStreamInfo = nullptr;
+            PaStreamParameters inputParameters;
+            inputParameters.device = mInputDeviceIndex;
+            inputParameters.channelCount = mNodeManager.getInputChannelCount();
+            inputParameters.sampleFormat = paFloat32 | paNonInterleaved;
+            inputParameters.hostApiSpecificStreamInfo = nullptr;
 
-			PaStreamParameters outputParameters;
-			outputParameters.device = mOutputDeviceIndex;
-			outputParameters.channelCount = mNodeManager.getOutputChannelCount();
-			outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
-			outputParameters.hostApiSpecificStreamInfo = nullptr;
+            PaStreamParameters outputParameters;
+            outputParameters.device = mOutputDeviceIndex;
+            outputParameters.channelCount = mNodeManager.getOutputChannelCount();
+            outputParameters.sampleFormat = paFloat32 | paNonInterleaved;
+            outputParameters.hostApiSpecificStreamInfo = nullptr;
 
-			PaStreamParameters* inputParamsPtr = nullptr;
-			if (mInputDeviceIndex >= 0)
-			{
-				inputParameters.suggestedLatency = Pa_GetDeviceInfo(mInputDeviceIndex)->defaultLowInputLatency;
-				inputParamsPtr = &inputParameters;
-			}
-			PaStreamParameters* outputParamsPtr = nullptr;
-			if (mOutputDeviceIndex >= 0)
-			{
-				outputParameters.suggestedLatency = Pa_GetDeviceInfo(mOutputDeviceIndex)->defaultLowOutputLatency;
-				outputParamsPtr = &outputParameters;
-			}
+            PaStreamParameters* inputParamsPtr = nullptr;
+            if (mInputDeviceIndex >= 0)
+            {
+                inputParameters.suggestedLatency = Pa_GetDeviceInfo(mInputDeviceIndex)->defaultLowInputLatency;
+                inputParamsPtr = &inputParameters;
+            }
+            PaStreamParameters* outputParamsPtr = nullptr;
+            if (mOutputDeviceIndex >= 0)
+            {
+                outputParameters.suggestedLatency = Pa_GetDeviceInfo(mOutputDeviceIndex)->defaultLowOutputLatency;
+                outputParamsPtr = &outputParameters;
+            }
 
-			PaError error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, mNodeManager.getSampleRate(), mBufferSize, paNoFlag, &audioCallback, this);
-			if (error != paNoError)
-			{
-				errorState.fail("Error opening audio stream: %s", Pa_GetErrorText(error));
-				mInputDeviceIndex = -1;
-				mOutputDeviceIndex = -1;
-				mStream = nullptr;
+            PaError error = Pa_OpenStream(&mStream, inputParamsPtr, outputParamsPtr, mNodeManager.getSampleRate(), device_settings.mBufferSize, paNoFlag, &audioCallback, this);
+            if (error != paNoError)
+            {
+                errorState.fail("Error opening audio stream: %s", Pa_GetErrorText(error));
+                mInputDeviceIndex = -1;
+                mOutputDeviceIndex = -1;
+                mStream = nullptr;
 
-				saveConfiguration();
-				return false;
-			}
+                return false;
+            }
 
-			saveConfiguration();
-			return true;
-		}
+            return true;
+        }
 		
 		
 		bool AudioService::closeStream(utility::ErrorState& errorState)
@@ -489,6 +477,7 @@ namespace nap
 		                                      int& outputChannelCount, utility::ErrorState& errorState)
 		{
 			AudioServiceConfiguration* configuration = getConfiguration<AudioServiceConfiguration>();
+            const auto& settings = configuration->mDeviceSettings;
 			
 			const PaDeviceInfo* inputDeviceInfo = Pa_GetDeviceInfo(inputDeviceIndex);
 			const PaDeviceInfo* outputDeviceInfo = Pa_GetDeviceInfo(outputDeviceIndex);
@@ -496,7 +485,7 @@ namespace nap
 			if (inputDeviceInfo == nullptr)
 			{
 				// There is no input device
-				if (configuration->mDisableInput == false && configuration->mInputChannelCount > 0)
+				if (settings.mDisableInput == false && settings.mInputChannelCount > 0)
 				{
 					// Input channels were requested
 					if (configuration->mAllowChannelCountFailure)
@@ -514,14 +503,14 @@ namespace nap
 			}
 			else {
 				// There is an input device
-				if (configuration->mInputChannelCount > inputDeviceInfo->maxInputChannels)
+				if (settings.mInputChannelCount > inputDeviceInfo->maxInputChannels)
 				{
 					// There are less channels than requested
 					if (configuration->mAllowChannelCountFailure)
 					{
 						Logger::warn(
 								"AudioService: Requested number of %i input channels not available, initializing with only %i",
-								configuration->mInputChannelCount, inputDeviceInfo->maxInputChannels);
+                                settings.mInputChannelCount, inputDeviceInfo->maxInputChannels);
 						inputChannelCount = inputDeviceInfo->maxInputChannels;
 					}
 					else {
@@ -531,14 +520,14 @@ namespace nap
 				}
 				else
 					// There are enough channels
-					inputChannelCount = configuration->mInputChannelCount;
+					inputChannelCount = settings.mInputChannelCount;
 			}
 			
 			
 			if (!outputDeviceInfo)
 			{
 				// There is no output device
-				if (configuration->mDisableOutput == false && configuration->mOutputChannelCount > 0)
+				if (settings.mDisableOutput == false && settings.mOutputChannelCount > 0)
 				{
 					if (configuration->mAllowChannelCountFailure)
 					{
@@ -555,14 +544,14 @@ namespace nap
 			}
 			else {
 				// There is an output device
-				if (configuration->mOutputChannelCount > outputDeviceInfo->maxOutputChannels)
+				if (settings.mOutputChannelCount > outputDeviceInfo->maxOutputChannels)
 				{
 					// There are less channels than requested
 					if (configuration->mAllowChannelCountFailure)
 					{
 						Logger::warn(
 								"AudioService: Requested number of %i output channels not available, initializing with only %i",
-								configuration->mOutputChannelCount, outputDeviceInfo->maxOutputChannels);
+                                settings.mOutputChannelCount, outputDeviceInfo->maxOutputChannels);
 						outputChannelCount = outputDeviceInfo->maxOutputChannels;
 					}
 					else {
@@ -572,7 +561,7 @@ namespace nap
 				}
 				else
 					// There are enough channels
-					outputChannelCount = configuration->mOutputChannelCount;
+					outputChannelCount = settings.mOutputChannelCount;
 			}
 
 			if (inputChannelCount < 1 && outputChannelCount < 0)
@@ -615,23 +604,7 @@ namespace nap
 //            if (!enumVar.is_lock_free())
 //                Logger::warn("%s is not lockfree on current platform", "atomic enum");
 		}
-		
-		
-		void AudioService::saveConfiguration()
-		{
-			auto configuration = getConfiguration<AudioServiceConfiguration>();
-			configuration->mSampleRate = mNodeManager.getSampleRate();
-			configuration->mBufferSize = mBufferSize;
-			configuration->mInternalBufferSize = mNodeManager.getInternalBufferSize();
-			configuration->mInputChannelCount = mNodeManager.getInputChannelCount();
-			configuration->mOutputChannelCount = mNodeManager.getOutputChannelCount();
-			configuration->mHostApi = getHostApiName(mHostApiIndex);
-			configuration->mInputDevice = mInputDeviceIndex > -1 ? Pa_GetDeviceInfo(mInputDeviceIndex)->name : "";
-			configuration->mOutputDevice = mOutputDeviceIndex > -1 ? Pa_GetDeviceInfo(mOutputDeviceIndex)->name : "";
-            configuration->mDisableInput = mInputDeviceIndex <= -1;
-            configuration->mDisableOutput = mOutputDeviceIndex <= -1;
-		}
-		
+
 		
 		int AudioService::getDeviceIndex(int hostApiIndex, int hostApiDeviceIndex)
 		{
