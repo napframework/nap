@@ -193,7 +193,7 @@ namespace nap
                 if (deviceSettings.mInputDevice.empty())
                     inputDeviceIndex = Pa_GetDefaultInputDevice();
                 else
-                    inputDeviceIndex = getDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
+                    inputDeviceIndex = getInputDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
                 if (inputDeviceIndex < 0)
                 {
                     errorState.fail("Audio input device not found: %s", deviceSettings.mInputDevice.c_str());
@@ -209,7 +209,7 @@ namespace nap
                 if (deviceSettings.mOutputDevice.empty())
                     outputDeviceIndex = Pa_GetDefaultOutputDevice();
                 else
-                    outputDeviceIndex = getDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
+                    outputDeviceIndex = getOutputDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
                 if (outputDeviceIndex < 0)
                 {
                     errorState.fail("Audio output device not found: %s", deviceSettings.mOutputDevice.c_str());
@@ -446,20 +446,33 @@ namespace nap
 		}
 		
 		
-		int AudioService::getDeviceIndex(int hostApiIndex, const std::string& device)
+		int AudioService::getInputDeviceIndex(int hostApiIndex, const std::string& device)
 		{
 			for (auto deviceIndex = 0; deviceIndex < getHostApiInfo(hostApiIndex).deviceCount; ++deviceIndex)
 			{
 				auto deviceInfo = getDeviceInfo(hostApiIndex, deviceIndex);
-				if (nap::utility::toLower(device) == nap::utility::toLower(deviceInfo.name))
+				if (nap::utility::toLower(device) == nap::utility::toLower(deviceInfo.name) && deviceInfo.maxInputChannels > 0)
 					return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex);
 			}
 			
 			return -1;
 		}
-		
-		
-		int AudioService::getHostApiIndex(const std::string& hostApi)
+
+
+        int AudioService::getOutputDeviceIndex(int hostApiIndex, const std::string& device)
+        {
+            for (auto deviceIndex = 0; deviceIndex < getHostApiInfo(hostApiIndex).deviceCount; ++deviceIndex)
+            {
+                auto deviceInfo = getDeviceInfo(hostApiIndex, deviceIndex);
+                if (nap::utility::toLower(device) == nap::utility::toLower(deviceInfo.name) && deviceInfo.maxOutputChannels > 0)
+                    return Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex);
+            }
+
+            return -1;
+        }
+
+
+        int AudioService::getHostApiIndex(const std::string& hostApi)
 		{
 			auto hostApiIndex = -1;
 			

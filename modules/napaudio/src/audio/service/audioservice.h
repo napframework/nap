@@ -207,14 +207,26 @@ namespace nap
 			std::string getDeviceName(unsigned int hostApiIndex, unsigned int localDeviceIndex);
 			
 			/**
-			 * Lookups the index for a device with a certain name on a host API.
+			 * Lookups the index for an input device with a certain name on a host API.
+			 * @param hostApiIndex index of the host API
+			 * @param device name of the input device
 			 * @return the device index for a device specified by name for a given host API .
 			 * Uses case insensitive search.
 			 * Returns -1 if the device specified was not found.
 			 */
-			int getDeviceIndex(int hostApiIndex, const std::string& device);
-			
-			/**
+			int getInputDeviceIndex(int hostApiIndex, const std::string& device);
+
+            /**
+             * Lookups the index for an output device with a certain name on a host API.
+			 * @param hostApiIndex index of the host API
+			 * @param device name of the output device
+             * @return the device index for a device specified by name for a given host API .
+             * Uses case insensitive search.
+             * Returns -1 if the device specified was not found.
+             */
+            int getOutputDeviceIndex(int hostApiIndex, const std::string& device);
+
+            /**
 			 * Returns the device index for a device specified by a local index in the list of devices for a specific host API.
 			 * Returns -1 if the specified device was not found.
 			 */
