@@ -997,7 +997,8 @@ namespace nap
 		}
 
 		// Tell the system which keys are pressed, we copy block of memory because iterating over every element is wasteful
-		memcpy(io.KeysDown, context.mKeyPressed.data(), sizeof(bool) * 512);
+		static constexpr size_t keyArraySize = GUIContext::keyCount * sizeof(bool);
+		memcpy(io.KeysDown, context.mKeyPressed.data(), keyArraySize);
 		for (const auto& key : context.mKeyRelease)
 		{
 			// If a key was released this frame -> disable the key press for next frame
@@ -1099,8 +1100,16 @@ namespace nap
 	}
 
 
+	static constexpr int64 getPointerID(PointerEvent::ESource source)
+	{
+		return source == PointerEvent::ESource::Mouse ? gui::pointerMouseID :
+			gui::pointerTouchID;
+	}
+
+
 	void IMGuiService::handlePointerEvent(const PointerEvent& pointerEvent, GUIContext& context)
 	{
+
 		// Handle Press
 		if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
@@ -1113,7 +1122,7 @@ namespace nap
 			context.mMousePosition.y = pointerEvent.mY;
 			context.mMousePressed[btn_id] = true;
 			context.mPointerSource[btn_id] = pointerEvent.mSource;
-			context.mPointerID[btn_id] = static_cast<int64>(pointerEvent.mSource);
+			context.mPointerID[btn_id] = getPointerID(pointerEvent.mSource);
 		}
 
 		// Handle Move
@@ -1131,7 +1140,7 @@ namespace nap
 				return;
 
 			int btn_id = static_cast<int>(release_event.mButton);
-			if (context.mPointerID[btn_id] != static_cast<int64>(pointerEvent.mSource))
+			if (context.mPointerID[btn_id] != getPointerID(pointerEvent.mSource))
 				return;
 
 			context.mMousePosition.x = pointerEvent.mX;
