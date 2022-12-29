@@ -68,6 +68,7 @@ namespace nap
 	namespace gui
 	{
 		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+		inline constexpr int64 pointerInvalidID = -2;			///< Invalid (no) pointer ID
 
 		/**
 		 * All available color schemes
@@ -346,20 +347,21 @@ namespace nap
 			~GUIContext();
 
 			using ESource = PointerEvent::ESource;
-			std::array<bool,3> mMousePressed	= { false };			///< If the mouse was pressed this frame
-			std::array<bool,3> mMouseRelease	= { false };			///< If the mouse was released this frame
-			std::array<bool,3> mModPressed		= { false };			///< If the ctrl (0), alt (1) or shift (2) modifier key is pressed
-			std::array<bool,3> mModRelease		= { false };			///< If the ctrl (0), alt (1) or shift (2) modifier key is released
-			std::array<ESource, 3> mMouseSource	= { ESource::Mouse};	///< Pointer input source
-			std::array<bool, 512> mKeyPressed	= { false };			///< The keys that were pressed this frame
-			std::vector<int> mKeyRelease;								///< The keys that were released this frame
-			glm::ivec2 mMousePosition			= { 0, 0 };				///< Last known mouse position
-			float mMouseWheel					= 0.0f;					///< Mouse wheel
-			float mScale						= 1.0f;					///< GUI Scale
-			const Display* mDisplay				= nullptr;				///< Current display
-			ImGuiContext* mContext				= nullptr;				///< Associated ImGUI context
-			ImGuiContext* mPreviousContext		= nullptr;				///< Context active before this one
-			ImGuiStyle* mStyle					= nullptr;				///< Style of context
+			std::array<bool,3> mMousePressed		= { false };					///< If the mouse was pressed this frame
+			std::array<bool,3> mMouseRelease		= { false };					///< If the mouse was released this frame
+			std::array<bool,3> mModPressed			= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is pressed
+			std::array<bool,3> mModRelease			= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is released
+			std::array<ESource, 3> mPointerSource	= { ESource::Mouse};			///< Pointer input source, either mouse or touch
+			std::array<int64, 3> mPointerID			= { gui::pointerInvalidID };	///< Pointer id, -1 for pointer, 0+ for finger
+			std::array<bool, 512> mKeyPressed		= { false };					///< The keys that were pressed this frame
+			std::vector<int> mKeyRelease;											///< The keys that were released this frame
+			glm::ivec2 mMousePosition				= { 0, 0 };						///< Last known mouse position
+			float mMouseWheel						= 0.0f;							///< Mouse wheel
+			float mScale							= 1.0f;							///< GUI Scale
+			const Display* mDisplay					= nullptr;						///< Current display
+			ImGuiContext* mContext					= nullptr;						///< Associated ImGUI context
+			ImGuiContext* mPreviousContext			= nullptr;						///< Context active before this one
+			ImGuiStyle* mStyle						= nullptr;						///< Style of context
 
 			// Activates current context
 			void activate();

@@ -78,9 +78,9 @@ namespace nap
 				if (input_event == nullptr)
 					continue;
 
-				// Forward touch as mouse input to GUI if touch input doesn't generate mouse events.
+				// Forward touch event to GUI if touch input does not generate mouse events.
 				assert(input_event->get_type().is_derived_from(RTTI_OF(WindowInputEvent)));
-				ImGuiContext* ctx = !mTouchGeneratesMouseEvents ?
+				ImGuiContext* ctx = !mTouchGeneratesMouseEvents ? 
 					mGuiService->processInputEvent(*input_event) :
 					mGuiService->findContext(static_cast<WindowInputEvent*>(input_event.get())->mWindow);
 

@@ -984,7 +984,7 @@ namespace nap
 			// Check if the mouse button has been released this frame. Take into consideration current state if press is from a mouse.
 			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
 			bool released = context.mMouseRelease[i];
-			if (!released && io.MouseDown[i] && context.mMouseSource[i] == GUIContext::ESource::Mouse)
+			if (!released && io.MouseDown[i] && context.mPointerSource[i] == GUIContext::ESource::Mouse)
 				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON(i + 1)) == 0;
 
 			// If the mouse button was released this frame -> disable the press for next frame.
@@ -1101,30 +1101,43 @@ namespace nap
 
 	void IMGuiService::handlePointerEvent(const PointerEvent& pointerEvent, GUIContext& context)
 	{
-		// Set position
-		context.mMousePosition.x = pointerEvent.mX;
-		context.mMousePosition.y = pointerEvent.mY;
-
 		// Handle Press
 		if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
 			const auto& press_event = static_cast<const nap::PointerPressEvent&>(pointerEvent);
-			if (press_event.mButton != PointerClickEvent::EButton::UNKNOWN)
-			{
-				int btn_id = static_cast<int>(press_event.mButton);
-				context.mMousePressed[btn_id] = true;
-				context.mMouseSource[btn_id] = pointerEvent.mSource;
-			}
+			if (press_event.mButton == PointerClickEvent::EButton::UNKNOWN)
+				return;
+
+			int btn_id = static_cast<int>(press_event.mButton);
+			context.mMousePosition.x = pointerEvent.mX;
+			context.mMousePosition.y = pointerEvent.mY;
+			context.mMousePressed[btn_id] = true;
+			context.mPointerSource[btn_id] = pointerEvent.mSource;
+			context.mPointerID[btn_id] = static_cast<int64>(pointerEvent.mSource);
+		}
+
+		// Handle Move
+		else if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)))
+		{
+			context.mMousePosition.x = pointerEvent.mX;
+			context.mMousePosition.y = pointerEvent.mY;
 		}
 
 		// Handle Release
 		else if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
 		{
-			const auto& press_event = static_cast<const nap::PointerReleaseEvent&>(pointerEvent);
-			if (press_event.mButton != PointerClickEvent::EButton::UNKNOWN)
-			{
-				context.mMouseRelease[static_cast<int>(press_event.mButton)] = true;
-			}
+			const auto& release_event = static_cast<const nap::PointerReleaseEvent&>(pointerEvent);
+			if (release_event.mButton == PointerClickEvent::EButton::UNKNOWN)
+				return;
+
+			int btn_id = static_cast<int>(release_event.mButton);
+			if (context.mPointerID[btn_id] != static_cast<int64>(pointerEvent.mSource))
+				return;
+
+			context.mMousePosition.x = pointerEvent.mX;
+			context.mMousePosition.y = pointerEvent.mY;
+			context.mMouseRelease[btn_id] = true;
+			context.mPointerID[btn_id] = gui::pointerInvalidID;
 		}
 	}
 
@@ -1133,26 +1146,40 @@ namespace nap
 	{
 		/*
 		 * Updates GUI mouse information based on touch input
-		 * DO NOT call this function when touch events also generate mouse events.
 		 * This function should only be called when touch input is decoupled from the mouse.
 		 * The GUIAppEventHandler forwards touch events to the GUI if 'setTouchGenerateMouseEvents' is set to false.
 		 */
 
-		// Set mouse position
-		context.mMousePosition.x = touchEvent.mX;
-		context.mMousePosition.y = touchEvent.mY;
-
-		// Handle touch press
+		// Register press, touch is now active ID
 		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchPressEvent)))
 		{
 			context.mMousePressed[0] = true;
-			context.mMouseSource[0] = GUIContext::ESource::Touch;
+			context.mPointerSource[0] = GUIContext::ESource::Touch;
+			context.mPointerID[0] = touchEvent.mFingerID;
+			context.mMousePosition.x = touchEvent.mX;
+			context.mMousePosition.y = touchEvent.mY;
 		}
 
-		// Handle touch release
-		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchReleaseEvent)))
+		// Set position if pointer ID is finger ID
+		else if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchMoveEvent)))
 		{
+			if (context.mPointerID[0] != touchEvent.mFingerID)
+				return;
+
+			context.mMousePosition.x = touchEvent.mX;
+			context.mMousePosition.y = touchEvent.mY;
+		}
+
+		// Release if pointer ID is finger ID
+		else if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchReleaseEvent)))
+		{
+			if (context.mPointerID[0] != touchEvent.mFingerID)
+				return;
+
 			context.mMouseRelease[0] = true;
+			context.mPointerID[0] = gui::pointerInvalidID;
+			context.mMousePosition.x = touchEvent.mX;
+			context.mMousePosition.y = touchEvent.mY;
 		}
 	}
 
