@@ -69,8 +69,8 @@ namespace nap
 	{
 		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
 		inline constexpr int64 pointerInvalidID = -3;			///< Invalid pointer ID
-		inline constexpr int64 pointerMouseID = -2;				///< Pointer from mouse ID
-		inline constexpr int64 pointerTouchID = -1;				///< Pointer from touch ID
+		inline constexpr int64 pointerMouseID	= -2;			///< Pointer from mouse ID
+		inline constexpr int64 pointerTouchID	= -1;			///< Pointer from touch ID
 
 		/**
 		 * All available color schemes
