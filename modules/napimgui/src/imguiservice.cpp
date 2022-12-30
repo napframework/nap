@@ -984,7 +984,7 @@ namespace nap
 			// Check if the mouse button has been released this frame. Take into consideration current state if press is from a mouse.
 			// This is required because the user can release the button outside of SDL window bounds, in which case no release event is generated.
 			bool released = context.mMouseRelease[i];
-			if (!released && io.MouseDown[i] && context.mPointerSource[i] == GUIContext::ESource::Mouse)
+			if (!released && io.MouseDown[i] && context.mPointerID[i] == gui::pointerMouseID)
 				released = (SDL_GetGlobalMouseState(nullptr, nullptr) & SDL_BUTTON(i + 1)) == 0;
 
 			// If the mouse button was released this frame -> disable the press for next frame.
@@ -1121,7 +1121,6 @@ namespace nap
 			context.mMousePosition.x = pointerEvent.mX;
 			context.mMousePosition.y = pointerEvent.mY;
 			context.mMousePressed[btn_id] = true;
-			context.mPointerSource[btn_id] = pointerEvent.mSource;
 			context.mPointerID[btn_id] = getPointerID(pointerEvent.mSource);
 		}
 
@@ -1163,7 +1162,6 @@ namespace nap
 		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchPressEvent)))
 		{
 			context.mMousePressed[0] = true;
-			context.mPointerSource[0] = GUIContext::ESource::Touch;
 			context.mPointerID[0] = touchEvent.mFingerID;
 			context.mMousePosition.x = touchEvent.mX;
 			context.mMousePosition.y = touchEvent.mY;

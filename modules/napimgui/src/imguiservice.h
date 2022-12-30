@@ -68,9 +68,9 @@ namespace nap
 	namespace gui
 	{
 		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
-		inline constexpr int64 pointerInvalidID = -2;			///< Invalid pointer ID
-		inline constexpr int64 pointerMouseID = -1;				///< Pointer from mouse ID
-		inline constexpr int64 pointerTouchID = 0;				///< Pointer from touch ID
+		inline constexpr int64 pointerInvalidID = -3;			///< Invalid pointer ID
+		inline constexpr int64 pointerMouseID = -2;				///< Pointer from mouse ID
+		inline constexpr int64 pointerTouchID = -1;				///< Pointer from touch ID
 
 		/**
 		 * All available color schemes
@@ -356,7 +356,6 @@ namespace nap
 			std::array<bool,3> mMouseRelease				= { false };					///< If the mouse was released this frame
 			std::array<bool,3> mModPressed					= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is pressed
 			std::array<bool,3> mModRelease					= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is released
-			std::array<ESource, 3> mPointerSource			= { ESource::Mouse};			///< Pointer input source, either mouse or touch
 			std::array<int64, 3> mPointerID					= { gui::pointerInvalidID };	///< Pointer id, -1 for pointer, 0+ for finger
 			KeyArray mKeyPressed							= { false };					///< The keys that were pressed this frame
 			std::vector<int> mKeyRelease;													///< The keys that were released this frame
