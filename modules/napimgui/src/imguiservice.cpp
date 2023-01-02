@@ -1159,17 +1159,18 @@ namespace nap
 	{
 		/*
 		 * Updates GUI mouse information based on touch input
-		 * This function should only be called when touch input is decoupled from the mouse.
+		 * This function should only be called when touch input is decoupled from the mouse and a window is underneath the touch event.
 		 * The GUIAppEventHandler forwards touch events to the GUI if 'setTouchGenerateMouseEvents' is set to false.
 		 */
 
 		// Register press, touch is now active ID
+		assert(touchEvent.hasWindow());
 		if (touchEvent.get_type().is_derived_from(RTTI_OF(nap::TouchPressEvent)))
 		{
 			context.mMousePressed[0] = true;
 			context.mPointerID[0] = touchEvent.mFingerID;
-			context.mMousePosition.x = touchEvent.mX;
-			context.mMousePosition.y = touchEvent.mY;
+			context.mMousePosition.x = touchEvent.mXCoordinate;
+			context.mMousePosition.y = touchEvent.mYCoordinate;
 		}
 
 		// Set position if pointer ID is finger ID
@@ -1178,8 +1179,8 @@ namespace nap
 			if (context.mPointerID[0] != touchEvent.mFingerID)
 				return;
 
-			context.mMousePosition.x = touchEvent.mX;
-			context.mMousePosition.y = touchEvent.mY;
+			context.mMousePosition.x = touchEvent.mXCoordinate;
+			context.mMousePosition.y = touchEvent.mYCoordinate;
 		}
 
 		// Release if pointer ID is finger ID
@@ -1190,8 +1191,8 @@ namespace nap
 
 			context.mMouseRelease[0] = true;
 			context.mPointerID[0] = gui::pointerInvalidID;
-			context.mMousePosition.x = touchEvent.mX;
-			context.mMousePosition.y = touchEvent.mY;
+			context.mMousePosition.x = touchEvent.mXCoordinate;
+			context.mMousePosition.y = touchEvent.mYCoordinate;
 		}
 	}
 

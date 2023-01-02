@@ -38,15 +38,15 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MouseWheelEvent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchPressEvent)
-	RTTI_CONSTRUCTOR(int, int, int, int, float, int)
+	RTTI_CONSTRUCTOR(int, int, float, float, float, int, int, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchReleaseEvent)
-	RTTI_CONSTRUCTOR(int, int, int, int, float, int)
+	RTTI_CONSTRUCTOR(int, int, float, float, float, int, int, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchMoveEvent)
-	RTTI_CONSTRUCTOR(int, int, int, int, float, int, int, int)
+	RTTI_CONSTRUCTOR(int, int, float, float, float, float, float, int, int, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ControllerButtonPressEvent)

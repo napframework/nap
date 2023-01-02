@@ -481,15 +481,28 @@ namespace nap
 	{
 		// Get window
 		int window_id = static_cast<int>(sdlEvent.tfinger.windowID);
+
+		// Normalized coordinates 
+		float nx = sdlEvent.tfinger.x;
+		float ny = 1.0f - sdlEvent.tfinger.y;
+
+		// Get window coordinates if window associated with event
+		int px = input::invalid;
+		int py = input::invalid;
 		SDL_Window* window = SDL_GetWindowFromID(window_id);
-		if (window == nullptr)
-			return nullptr;
+		if (window != nullptr)
+		{
+			int sx, sy;
+			SDL_GetWindowSize(window, &sx, &sy);
+			px = static_cast<int>((sx - 1) * nx);
+			py = static_cast<int>((sy - 1) * ny);
+		}
+		else
+		{
+			window_id = input::invalid;
+		}
 
-		int sx, sy;
-		SDL_GetWindowSize(window, &sx, &sy);
-		int px = static_cast<int>((sx - 1) * sdlEvent.tfinger.x);
-		int py = static_cast<int>((sy - 1) * (1.0f - sdlEvent.tfinger.y));
-
+		// Touch identifiers
 		int fid = static_cast<int>(sdlEvent.tfinger.fingerId);
 		int tid = static_cast<int>(sdlEvent.tfinger.touchId);
 
@@ -502,23 +515,25 @@ namespace nap
 				touch_event = eventType.create<InputEvent>(
 					{
 						fid, tid,
-						px, py,
+						nx, ny,
 						float(sdlEvent.tfinger.pressure),
-						window_id
+						window_id,
+						px, py
 					});
 				break;
 			}
 			case SDL_FINGERMOTION:
 			{
-				int dx = static_cast<int>(sx * sdlEvent.tfinger.dx);
-				int dy = static_cast<int>(sy * -sdlEvent.tfinger.dy);
+				float dx =  sdlEvent.tfinger.dx;
+				float dy = -sdlEvent.tfinger.dy;
 				touch_event = eventType.create<InputEvent>(
 					{
 						fid, tid,
-						px, py,
+						nx, ny,
 						sdlEvent.tfinger.pressure,
 						dx, dy,
-						window_id
+						window_id,
+						px, py
 					});
 				break;
 			}
@@ -528,7 +543,6 @@ namespace nap
 				break;
 			}
 		}
-
 		return touch_event;
 	}
 

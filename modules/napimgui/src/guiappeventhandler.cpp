@@ -78,15 +78,25 @@ namespace nap
 				if (input_event == nullptr)
 					continue;
 
-				// Forward touch event to GUI if touch input does not generate mouse events.
-				assert(input_event->get_type().is_derived_from(RTTI_OF(WindowInputEvent)));
-				ImGuiContext* ctx = !mTouchGeneratesMouseEvents ? 
-					mGuiService->processInputEvent(*input_event) :
-					mGuiService->findContext(static_cast<WindowInputEvent*>(input_event.get())->mWindow);
-
-				// Forward touch input to running app if gui isn't capturing this 'touch' event
-				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
+				// If the touch overlays a window, check if it needs to be handled by the GUI
+				assert(input_event->get_type().is_derived_from(RTTI_OF(TouchEvent)));
+				auto* touch_event = static_cast<TouchEvent*>(input_event.get());
+				if (touch_event->hasWindow())
 				{
+					// Forward touch event to GUI if touch input does not generate mouse events.
+					ImGuiContext* ctx = !mTouchGeneratesMouseEvents ?
+						mGuiService->processInputEvent(*input_event) :
+						mGuiService->findContext(touch_event->mWindow);
+
+					// Forward touch input to running app if gui isn't capturing this touch event
+					if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
+					{
+						getApp<App>().inputMessageReceived(std::move(input_event));
+					}
+				}
+				else
+				{
+					// No window associated with touch event, let the app handle it
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
 			}

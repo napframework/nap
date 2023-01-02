@@ -16,6 +16,11 @@
 
 namespace nap
 {
+	namespace input
+	{
+		inline constexpr int invalid = -1;	///< Invalid input ID
+	}
+
 	/**
 	 * Defines an input event that is passed along the system
 	 */
@@ -51,7 +56,7 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		KeyEvent(EKeyCode inKey, int window = 0) : WindowInputEvent(window),
+		KeyEvent(EKeyCode inKey, int window) : WindowInputEvent(window),
 			mKey(inKey)	
 		{ }
 		
@@ -66,7 +71,7 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyPressEvent(EKeyCode inKey, int window = 0) : 
+		KeyPressEvent(EKeyCode inKey, int window) : 
 			KeyEvent(inKey, window) 
 		{ }
 	};
@@ -79,7 +84,7 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyReleaseEvent(EKeyCode inKey, int window = 0) :
+		KeyReleaseEvent(EKeyCode inKey, int window) :
 			KeyEvent(inKey, window) 
 		{ }
 	};
@@ -97,7 +102,7 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		TextInputEvent(const std::string& text, int window = 0) :
+		TextInputEvent(const std::string& text, int window) :
 			WindowInputEvent(window), mText(text)
 		{ }
 
@@ -127,7 +132,7 @@ namespace nap
 			Touch = 0							///< Pointer event from touch input
 		};
 
-		PointerEvent(int inX, int inY, int window = 0, ESource origin = ESource::Mouse) :
+		PointerEvent(int inX, int inY, int window, ESource origin) :
 			WindowInputEvent(window), mX(inX), mY(inY), mSource(origin)
 		{ }
 
@@ -156,7 +161,7 @@ namespace nap
 			RIGHT		= 2
 		};
 
-		PointerClickEvent(int inX, int inY, EButton inButton, int window = 0, ESource source = ESource::Mouse) :
+		PointerClickEvent(int inX, int inY, EButton inButton, int window, ESource source) :
 			PointerEvent(inX, inY, window, source),
 			mButton(inButton)
 		{ }
@@ -172,7 +177,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerPressEvent(int inX, int inY, EButton inButton, int window=0, ESource source = ESource::Mouse) :
+		PointerPressEvent(int inX, int inY, EButton inButton, int window, ESource source) :
 			PointerClickEvent(inX, inY, inButton, window, source)
 		{ }
 	};
@@ -185,7 +190,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerClickEvent)
 	public:
-		PointerReleaseEvent (int inX, int inY, EButton inButton, int window=0, ESource source = ESource::Mouse) :
+		PointerReleaseEvent (int inX, int inY, EButton inButton, int window, ESource source) :
 			PointerClickEvent(inX, inY, inButton, window, source)
 		{ }
 	};
@@ -198,7 +203,7 @@ namespace nap
 	{
 		RTTI_ENABLE(PointerEvent)
 	public:
-		PointerMoveEvent(int relX, int relY, int inAbsX, int inAbsY, int window=0, ESource source = ESource::Mouse) :
+		PointerMoveEvent(int relX, int relY, int inAbsX, int inAbsY, int window, ESource source) :
 			PointerEvent(inAbsX, inAbsY, window, source),
 			mRelX(relX),
 			mRelY(relY)
@@ -238,15 +243,28 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		TouchEvent(int fingerID, int touchID, int x, int y, float pressure, int window = 0) :
-			WindowInputEvent(window), mFingerID(fingerID), mTouchID(touchID), mX(x), mY(y), mPressure(pressure)
+		TouchEvent(int fingerID, int touchID, float x, float y, float pressure, int window = input::invalid, int wx = input::invalid, int wy = input::invalid) :
+			WindowInputEvent(window), 
+			mFingerID(fingerID),
+			mTouchID(touchID),
+			mX(x), mY(y),
+			mPressure(pressure),
+			mXCoordinate(wx), mYCoordinate(wy)
 		{ }
 
 		int mFingerID;							///< The finger ID
 		int mTouchID;							///< The touch device ID
-		int mX;									///< The x-axis window coordinate of the touch event
-		int mY;									///< The y-axis window coordinate of the touch event
+		float mX;								///< The x-axis location of the touch event, normalized(0 - 1)
+		float mY;								///< The y-axis location of the touch event, normalized(0 - 1)
 		float mPressure;						///< The quantity of the pressure applied, normalized (0 - 1)
+		int mXCoordinate;						///< The x-axis window coordinate, if any. -1 otherwise
+		int mYCoordinate;						///< The y-axis window coordinate, if any. -1 otherwise
+
+		/**
+		 * Returns if there is a window under the touch event
+		 * @return if there is a window under the touch event
+		 */
+		bool hasWindow() const					{ return mWindow != input::invalid; }
 	};
 
 
@@ -257,8 +275,8 @@ namespace nap
 	{
 		RTTI_ENABLE(TouchEvent)
 	public:
-		TouchPressEvent(int fingerID, int touchID, int x, int y, float pressure, int window = 0) :
-			TouchEvent(fingerID, touchID, x, y, pressure, window)
+		TouchPressEvent(int fingerID, int touchID, float x, float y, float pressure, int window = input::invalid, int wx = input::invalid, int wy = input::invalid) :
+			TouchEvent(fingerID, touchID, x, y, pressure, window, wx, wy)
 		{ }
 	};
 
@@ -270,8 +288,8 @@ namespace nap
 	{
 		RTTI_ENABLE(TouchEvent)
 	public:
-		TouchReleaseEvent(int fingerID, int touchID, int x, int y, float pressure, int window = 0) :
-			TouchEvent(fingerID, touchID, x, y, pressure, window)
+		TouchReleaseEvent(int fingerID, int touchID, float x, float y, float pressure, int window = input::invalid, int wx = input::invalid, int wy = input::invalid) :
+			TouchEvent(fingerID, touchID, x, y, pressure, window, wx, wy)
 		{ }
 	};
 
@@ -283,13 +301,13 @@ namespace nap
 	{
 		RTTI_ENABLE(TouchEvent)
 	public:
-		TouchMoveEvent(int fingerID, int touchID, int x, int y, float pressure, int dx, int dy, int window = 0) :
-			TouchEvent(fingerID, touchID, x, y, pressure, window),
+		TouchMoveEvent(int fingerID, int touchID, float x, float y, float pressure, float dx, float dy, int window = input::invalid, int wx = input::invalid, int wy = input::invalid) :
+			TouchEvent(fingerID, touchID, x, y, pressure, window, wx, wy),
 			mDX (dx), mDY (dy)
 		{ }
 
-		int mDX;								///< The distance moved in the x-axis, screen space
-		int mDY;								///< The distance moved in the y-axis, screen space
+		float mDX;								///< The distance moved in the x-axis, normalized (-1-1)
+		float mDY;								///< The distance moved in the y-axis, normalized (-1-1)
 	};
 
 
