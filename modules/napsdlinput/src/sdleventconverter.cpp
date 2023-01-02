@@ -485,8 +485,9 @@ namespace nap
 		// Normalized coordinates 
 		float nx = sdlEvent.tfinger.x;
 		float ny = 1.0f - sdlEvent.tfinger.y;
+		float pr = sdlEvent.tfinger.pressure;
 
-		// Get window coordinates if window associated with event
+		// Get window coordinates if window under touch event
 		int px = input::invalid;
 		int py = input::invalid;
 		SDL_Window* window = SDL_GetWindowFromID(window_id);
@@ -516,7 +517,7 @@ namespace nap
 					{
 						fid, tid,
 						nx, ny,
-						float(sdlEvent.tfinger.pressure),
+						pr,
 						window_id,
 						px, py
 					});
@@ -530,7 +531,7 @@ namespace nap
 					{
 						fid, tid,
 						nx, ny,
-						sdlEvent.tfinger.pressure,
+						pr,
 						dx, dy,
 						window_id,
 						px, py
