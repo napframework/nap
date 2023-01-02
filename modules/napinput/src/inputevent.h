@@ -238,12 +238,12 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		TouchEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int window = 0) :
+		TouchEvent(int fingerID, int touchID, int x, int y, float pressure, int window = 0) :
 			WindowInputEvent(window), mFingerID(fingerID), mTouchID(touchID), mX(x), mY(y), mPressure(pressure)
 		{ }
 
-		nap::int64 mFingerID;					///< The finger ID
-		nap::int64 mTouchID;					///< The touch device ID
+		int mFingerID;							///< The finger ID
+		int mTouchID;							///< The touch device ID
 		int mX;									///< The x-axis window coordinate of the touch event
 		int mY;									///< The y-axis window coordinate of the touch event
 		float mPressure;						///< The quantity of the pressure applied, normalized (0 - 1)
@@ -257,7 +257,7 @@ namespace nap
 	{
 		RTTI_ENABLE(TouchEvent)
 	public:
-		TouchPressEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int window = 0) :
+		TouchPressEvent(int fingerID, int touchID, int x, int y, float pressure, int window = 0) :
 			TouchEvent(fingerID, touchID, x, y, pressure, window)
 		{ }
 	};
@@ -270,7 +270,7 @@ namespace nap
 	{
 		RTTI_ENABLE(TouchEvent)
 	public:
-		TouchReleaseEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int window = 0) :
+		TouchReleaseEvent(int fingerID, int touchID, int x, int y, float pressure, int window = 0) :
 			TouchEvent(fingerID, touchID, x, y, pressure, window)
 		{ }
 	};
@@ -283,7 +283,7 @@ namespace nap
 	{
 		RTTI_ENABLE(TouchEvent)
 	public:
-		TouchMoveEvent(nap::int64 fingerID, nap::int64 touchID, int x, int y, float pressure, int dx, int dy, int window = 0) :
+		TouchMoveEvent(int fingerID, int touchID, int x, int y, float pressure, int dx, int dy, int window = 0) :
 			TouchEvent(fingerID, touchID, x, y, pressure, window),
 			mDX (dx), mDY (dy)
 		{ }

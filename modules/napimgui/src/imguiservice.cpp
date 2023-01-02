@@ -1101,7 +1101,7 @@ namespace nap
 	}
 
 
-	static constexpr int64 getPointerID(PointerEvent::ESource source)
+	static constexpr int getPointerID(PointerEvent::ESource source)
 	{
 		return source == PointerEvent::ESource::Mouse ? gui::pointerMouseID :
 			gui::pointerTouchID;

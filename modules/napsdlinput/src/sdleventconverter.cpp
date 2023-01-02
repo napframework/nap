@@ -490,8 +490,8 @@ namespace nap
 		int px = static_cast<int>((sx - 1) * sdlEvent.tfinger.x);
 		int py = static_cast<int>((sy - 1) * (1.0f - sdlEvent.tfinger.y));
 
-		nap::int64 fid = static_cast<nap::int64>(sdlEvent.tfinger.fingerId);
-		nap::int64 tid = static_cast<nap::int64>(sdlEvent.tfinger.touchId);
+		int fid = static_cast<int>(sdlEvent.tfinger.fingerId);
+		int tid = static_cast<int>(sdlEvent.tfinger.touchId);
 
 		InputEvent* touch_event = nullptr;
 		switch (sdlType)
