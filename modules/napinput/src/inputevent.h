@@ -128,8 +128,8 @@ namespace nap
 		 */
 		enum class ESource : int8
 		{
-			Mouse = -1,							///< Pointer event from mouse input
-			Touch = 0							///< Pointer event from touch input
+			Mouse = 0,							///< Pointer event from mouse input
+			Touch = 1							///< Pointer event from touch input
 		};
 
 		PointerEvent(int inX, int inY, int window, ESource origin) :
