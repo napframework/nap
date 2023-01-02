@@ -586,14 +586,15 @@ namespace nap
 		// Activate ImGUI Context
 		ImGui::SetCurrentContext(context->second->mContext);
 
-		// Key event
-		if (event.get_type().is_derived_from(RTTI_OF(nap::KeyEvent)))
-			handleKeyEvent(static_cast<const KeyEvent&>(event), *context->second);
-
 		// Pointer press event
-		else if (event.get_type().is_derived_from(RTTI_OF(PointerEvent)))
+		if (event.get_type().is_derived_from(RTTI_OF(PointerEvent)))
 			handlePointerEvent(static_cast<const PointerEvent&>(event), *context->second);
 
+		// Key event
+		else if (event.get_type().is_derived_from(RTTI_OF(nap::KeyEvent)))
+			handleKeyEvent(static_cast<const KeyEvent&>(event), *context->second);
+
+		// Touch event
 		else if (event.get_type().is_derived_from(RTTI_OF(TouchEvent)))
 			handleTouchEvent(static_cast<const TouchEvent&>(event), *context->second);
 
@@ -1127,6 +1128,10 @@ namespace nap
 		// Handle Move
 		else if (pointerEvent.get_type().is_derived_from(RTTI_OF(nap::PointerMoveEvent)))
 		{
+			// Don't register move when IDs don't match when pressed
+			if (context.mMousePressed[0] && context.mPointerID[0] != getPointerID(pointerEvent.mSource))
+				return;
+
 			context.mMousePosition.x = pointerEvent.mX;
 			context.mMousePosition.y = pointerEvent.mY;
 		}
