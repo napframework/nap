@@ -17,6 +17,7 @@
 #include <triangleiterator.h>
 #include <meshutils.h>
 #include <mathutils.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -26,6 +27,10 @@ RTTI_END_CLASS
 
 namespace nap 
 {
+	// Config file modal ID
+	static constexpr char* configModalID = (char*)"Config File";
+	static bool configWritten = false;
+
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -63,62 +68,81 @@ namespace nap
 
 
 	/**
+	 * Setup the gui on update
 	 */
 	void AudioPlaybackApp::update(double deltaTime)
-	{
-        auto playbackComponent = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
-        
+	{        
 		// Draw some gui elements to control audio playback
 		ImGui::Begin("Audio Playback", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
-        if (!playbackComponent->isPlaying())
+
+		// Handle config file popup
+		if (ImGui::BeginPopupModal(configModalID))
+		{
+			ImGui::Text(configWritten ? utility::stringFormat(
+				"Config file written to: %s", getCore().getProjectInfo()->mServiceConfigFilename.c_str()).c_str() :
+				"Failed to write config file, see log");
+
+			if (ImGui::Button("Close"))
+				ImGui::CloseCurrentPopup();
+
+			ImGui::EndPopup();
+		}
+
+		// Handle playback
+		auto play_back_component = mAudioEntity->findComponent<audio::PlaybackComponentInstance>();
+        if (!play_back_component->isPlaying())
         {
             if (ImGui::Button("Play"))
-                playbackComponent->start(mStartPosition * 1000.0f, mDuration * 1000.0f);
+                play_back_component->start(mStartPosition * 1000.0f, mDuration * 1000.0f);
         }
         else
 		{
             if (ImGui::Button("Stop"))
-                playbackComponent->stop();
+                play_back_component->stop();
         }
 
+		// Playback settings
 		float length_seconds = mBuffer->getSize() / (mBuffer->getSampleRate() / 1000.0f) / 1000.0f;
 		ImGui::SliderFloat("Start Position (s)", &mStartPosition, 0, length_seconds, "%.3f", 2);
 		ImGui::SliderFloat("Duration (0 = until end)", &mDuration, 0, 10.0f, "%.3f", 2);
 		if (ImGui::SliderFloat("Fade In (s)", &mFadeInTime, 0, 2.0f, "%.3f", 2))
 		{
-			playbackComponent->setFadeInTime(mFadeInTime * 1000.0f);
+			play_back_component->setFadeInTime(mFadeInTime * 1000.0f);
 		}
 		if (ImGui::SliderFloat("Fade Out (s)", &mFadeOutTime, 0, 2.0f, "%.3f", 2))
 		{
-			playbackComponent->setFadeOutTime(mFadeOutTime * 1000.0f);
+			play_back_component->setFadeOutTime(mFadeOutTime * 1000.0f);
 		}
 		if (ImGui::SliderFloat("Pitch", &mPitch, 0.5, 2, "%.3f", 1))
 		{
-			playbackComponent->setPitch(mPitch);
+			play_back_component->setPitch(mPitch);
 		}
 		if (ImGui::SliderFloat("Panning", &mPanning, 0.f, 1.f, "%.3f", 1))
 		{
-			playbackComponent->setStereoPanning(mPanning);
+			play_back_component->setStereoPanning(mPanning);
 		}
 
 		// Show audio device settings
-        if (ImGui::CollapsingHeader("Driver Settings"))
+        if (ImGui::CollapsingHeader("Driver Settings", ImGuiTreeNodeFlags_DefaultOpen))
         {
-            mAudioDeviceSettingsGui->drawGui();
+			// Save audio device settings to config file
+			if (ImGui::ImageButton(mGuiService->getIcon(icon::save), "Save and apply driver settings"))
+			{
+				utility::ErrorState errorState;
+				auto configPath = getCore().getProjectInfo()->mServiceConfigFilename;
+				if (configPath.empty())
+					configPath = "config.json";
 
-            // Save audio device settings to config file
-            if (ImGui::Button("Save"))
-            {
-                utility::ErrorState errorState;
-                auto configPath = getCore().getProjectInfo()->mServiceConfigFilename;
-                if (configPath.empty())
-                    configPath = "config.json";
-                if (!getCore().writeConfigFile(configPath, errorState))
-                    Logger::warn("Failed to write config file: %s", errorState.toString().c_str());
-            }
+				configWritten = getCore().writeConfigFile(configPath, errorState);
+				if (!configWritten)
+					nap::Logger::error(errorState.toString());
+				ImGui::OpenPopup(configModalID);
+			}
+            mAudioDeviceSettingsGui->drawGui();
         }
+
         if (!mAudioService->isOpened())
-            ImGui::Text(mAudioService->getErrorMessage().c_str());
+            ImGui::TextColored(mGuiService->getPalette().mHighlightColor4, mAudioService->getErrorMessage().c_str());
 
         ImGui::Text("Music: Hang by Breek (www.breek.me)");
         ImGui::End();

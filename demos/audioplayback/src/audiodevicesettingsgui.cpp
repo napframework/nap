@@ -192,7 +192,8 @@ namespace nap
                     }
                 }
             }
-            else {
+            else
+			{
                 if (change)
                 {
                     if (mAudioService.isOpened())

@@ -477,7 +477,7 @@ namespace nap
 		float mFramerate = 0.0f;
 
 		// Used to calculate framerate over time
-		std::array<double, 20> mTicks;
+		std::array<double, 20> mTicks = { 0 };
 		double mTicksum = 0;
 		uint32 mTickIdx = 0;
 

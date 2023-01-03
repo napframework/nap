@@ -13,7 +13,7 @@ namespace nap
     namespace audio
     {
         /**
-         * Object that draws a gui to edit settings for the @AudioService at runtime.
+         * Object that draws a gui to edit settings for the AudioService at runtime.
          * Enables selecting of audio devices for input and output and changing the buffer size and samplerate.
          */
         class AudioDeviceSettingsGui
