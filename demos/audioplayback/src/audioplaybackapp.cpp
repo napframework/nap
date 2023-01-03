@@ -27,10 +27,6 @@ RTTI_END_CLASS
 
 namespace nap 
 {
-	// Config file modal ID
-	static constexpr char* configModalID = (char*)"Config File";
-	static bool configWritten = false;
-
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -71,18 +67,24 @@ namespace nap
 	 * Setup the gui on update
 	 */
 	void AudioPlaybackApp::update(double deltaTime)
-	{        
+	{
+		// Config file modal ID
+		static constexpr char* configModalID = (char*)"Config File";
+		static std::string configError;
+
 		// Draw some gui elements to control audio playback
 		ImGui::Begin("Audio Playback", nullptr, ImGuiWindowFlags_AlwaysAutoResize);
 
 		// Handle config file popup
-		if (ImGui::BeginPopupModal(configModalID))
+		if (ImGui::BeginPopupModal(configModalID, nullptr,
+			ImGuiWindowFlags_AlwaysAutoResize | ImGuiWindowFlags_NoResize))
 		{
-			ImGui::Text(configWritten ? utility::stringFormat(
-				"Config file written to: %s", getCore().getProjectInfo()->mServiceConfigFilename.c_str()).c_str() :
-				"Failed to write config file, see log");
+			ImGui::Text(configError.empty() ?
+				utility::stringFormat("Config file written to: %s", getCore().getProjectInfo()->mServiceConfigFilename.c_str()).c_str() :
+				utility::stringFormat("Failed to write config file: \n%s", configError.c_str()).c_str());
 
-			if (ImGui::Button("Close"))
+			ImGui::SameLine();
+			if (ImGui::ImageButton(mGuiService->getIcon(icon::ok)))
 				ImGui::CloseCurrentPopup();
 
 			ImGui::EndPopup();
@@ -133,9 +135,12 @@ namespace nap
 				if (configPath.empty())
 					configPath = "config.json";
 
-				configWritten = getCore().writeConfigFile(configPath, errorState);
-				if (!configWritten)
-					nap::Logger::error(errorState.toString());
+				configError.clear();
+				if (!getCore().writeConfigFile(configPath, errorState))
+				{
+					configError = errorState.toString();
+					nap::Logger::error(configError);
+				}
 				ImGui::OpenPopup(configModalID);
 			}
             mAudioDeviceSettingsGui->drawGui();
