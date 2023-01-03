@@ -407,10 +407,19 @@ namespace nap
 		 */
 		void pushScale(GUIContext& context, const Display& display);
 
+		/**
+		 * Add key event to given context
+		 */
 		void handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context);
 
+		/**
+		 * Add pointer event to given context
+		 */
 		void handlePointerEvent(const PointerEvent& pointerEvent, GUIContext& context);
 
+		/**
+		 * Add touch event to given context
+		 */
 		void handleTouchEvent(const TouchEvent& touchEvent, GUIContext& context);
 
 		RenderService* mRenderService = nullptr;
