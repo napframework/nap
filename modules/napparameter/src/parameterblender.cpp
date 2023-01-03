@@ -210,7 +210,7 @@ namespace nap
 	template<>
 	void nap::ParameterBlender<ParameterBool, bool>::onBlend(float value)
 	{
-		bool nval = value < 1.0f ? mSourceValue : getTarget<ParameterBool>().mValue;
+		bool nval = value < 1.0f - math::epsilon<float>() ? mSourceValue : getTarget<ParameterBool>().mValue;
 		getParameter<ParameterBool>().setValue(nval);
 	}
 
