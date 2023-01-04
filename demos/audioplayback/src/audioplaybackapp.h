@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include "audiodevicesettingsgui.h"
+
 // External Includes
 #include <renderwindow.h>
 #include <nap/resourcemanager.h>
@@ -15,6 +17,7 @@
 
 // Audio includes
 #include <audio/component/playbackcomponent.h>
+#include <audio/service/audioservice.h>
 
 namespace nap
 {
@@ -67,6 +70,7 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
+        audio::AudioService* mAudioService = nullptr;                   //< Manages audio devices and processing
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
         ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
         ObjectPtr<nap::EntityInstance> mAudioEntity = nullptr;
@@ -76,5 +80,7 @@ namespace nap
         audio::TimeValue mFadeOutTime = 0;                              //< Fade out time in ms
         audio::ControllerValue mPitch = 1.0;                            //< Pitch of the playback in relation to original pitch of the audio file
         audio::ControllerValue mPanning = 0.5;                          //< Panning of the audio in the stereo field
+
+        std::unique_ptr<audio::AudioDeviceSettingsGui> mAudioDeviceSettingsGui = nullptr; //< Gui to select audio device settings at runtime
 	};
 }
