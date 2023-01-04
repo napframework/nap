@@ -24,6 +24,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SphereMesh)
 	RTTI_PROPERTY("Rings",			&nap::SphereMesh::mRings,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Sectors",		&nap::SphereMesh::mSectors,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",			&nap::SphereMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Position",		&nap::SphereMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)	
 RTTI_END_CLASS
 
 namespace nap
@@ -65,7 +66,11 @@ namespace nap
 				*t++ = {s*ds, r*dr, 0.5f };
 
 				// Set vertex coordinates
-				*v++ = { x * mRadius, y * mRadius, z * mRadius };
+				*v++ = {
+					(x * mRadius) + mPosition.x,
+					(y * mRadius) + mPosition.y,
+					(z * mRadius) + mPosition.z
+				};
 
 				// Set normal coordinates
 				*n++ = { x, y, z };
