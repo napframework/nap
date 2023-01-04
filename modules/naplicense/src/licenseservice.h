@@ -88,6 +88,15 @@ namespace nap
 		 */
 		LicenseService(ServiceConfiguration* configuration);
 
+        /**
+         * Generates a (unique) ID for this machine, which can be used as 'uuid' input for the license generator.
+         * The ID is a hash, created using the MAC address of the network interface(s) and OS machine identifier.
+         * @param uuid the generated machine ID
+         * @param error contains the error if generation failed
+         * @return if generation succeeded
+         */
+         bool getMachineID(uint64& id, nap::utility::ErrorState& error);
+
 		/**
 		 * Validates the user provided license using a public RSA key.
 		 * Call this somewhere in your application, preferably on init(), to ensure the application has a valid license.

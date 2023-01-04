@@ -14,7 +14,11 @@
 
 #ifdef _WIN32 
 	#include <dll.h>
+#elif  __linux__
+    #include <ifaddrs.h>
+    #include <netpacket/packet.h>
 #endif
+
 #include <rsa.h>
 #include <hex.h>
 #include <files.h>
@@ -279,7 +283,45 @@ namespace nap
 	}
 
 
-	//////////////////////////////////////////////////////////////////////////
+    bool LicenseService::getMachineID(uint64& id, nap::utility::ErrorState& error)
+    {
+#ifdef __linux__
+        id = 0;
+        struct ifaddrs* if_addresses = nullptr;
+        if(!error.check(getifaddrs(&if_addresses) > -1, "Unable to access network interfaces"))
+            return false;
+
+        struct ifaddrs* interface = nullptr; int i = 0;
+        for (interface = if_addresses; interface != nullptr; interface = interface->ifa_next)
+        {
+            if ((interface->ifa_addr) && (interface->ifa_addr->sa_family == AF_PACKET) )
+            {
+                struct sockaddr_ll *s = (struct sockaddr_ll*)interface->ifa_addr;
+                for (i=0; i <s->sll_halen; i++)
+                    id ^= static_cast<int64>(s->sll_addr[i]) << (i * 8);
+            }
+        }
+        freeifaddrs(if_addresses);
+
+        // Add machine ID
+        std::string id_str;
+        if(!nap::utility::readFileToString("/etc/machine-id", id_str, error))
+        {
+            error.fail("Unable to access machine identifier");
+            return false;
+        }
+        std::hash<std::string> hasher;
+        uint64 machine_id = static_cast<uint64>(hasher(id_str));
+        id ^= machine_id;
+        return true;
+#else
+        id = 0;
+        return true
+#endif
+    }
+
+
+    //////////////////////////////////////////////////////////////////////////
 	// LicenseInformation
 	//////////////////////////////////////////////////////////////////////////
 
