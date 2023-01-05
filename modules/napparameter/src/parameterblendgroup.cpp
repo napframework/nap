@@ -4,10 +4,11 @@
 
 #include "parameterblendgroup.h"
 
-// nap::animablendparameters run time class definition 
+// nap::ParameterBlendGroup run time class definition 
 RTTI_BEGIN_CLASS(nap::ParameterBlendGroup)
 	RTTI_PROPERTY("Parameters",		&nap::ParameterBlendGroup::mParameters,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RootGroup",		&nap::ParameterBlendGroup::mRootGroup,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendAll",		&nap::ParameterBlendGroup::mBlendAll,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -15,20 +16,47 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Helpers
+	//////////////////////////////////////////////////////////////////////////
+
+	static void getParametersRecursive(const ParameterGroup& inGroup, std::vector<ResourcePtr<Parameter>>& outParameters)
+	{
+		// Recursively apply the parameters of all child groups
+		for (auto& child : inGroup.mChildren)
+			getParametersRecursive(*child, outParameters);
+
+		for (auto& member : inGroup.mMembers)
+			outParameters.emplace_back(member);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ParameterBlendGroup
+	//////////////////////////////////////////////////////////////////////////
+
 	ParameterBlendGroup::~ParameterBlendGroup()			{ }
 
 
 	bool ParameterBlendGroup::init(utility::ErrorState& errorState)
 	{
-		// Ensure the declared parameters are part of the parameter or parameter group children
-		for (const auto& parameter : mParameters)
+		if (!mBlendAll)
 		{
-			ResourcePtr<Parameter> found_param = mRootGroup->findObjectRecursive(parameter->mID);
-			if (!errorState.check(found_param != nullptr, "%s: parameter %s not part of group or child of group: %s",
-				mID.c_str(), parameter->mID.c_str(), mRootGroup->mID.c_str()))
+			// Ensure the declared parameters are part of the parameter or parameter group children
+			for (const auto& parameter : mParameters)
 			{
-				return false;
+				ResourcePtr<Parameter> found_param = mRootGroup->findObjectRecursive(parameter->mID);
+				if (!errorState.check(found_param != nullptr, "%s: parameter %s not part of group or child of group: %s",
+					mID.c_str(), parameter->mID.c_str(), mRootGroup->mID.c_str()))
+				{
+					return false;
+				}
 			}
+		}
+		else
+		{
+			// Recursively collect parameters from root group
+			getParametersRecursive(*mRootGroup, mParameters);
 		}
 		return true;
 	}

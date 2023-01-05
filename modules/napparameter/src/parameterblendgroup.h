@@ -32,7 +32,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		std::vector<ResourcePtr<Parameter>> mParameters;						///< Property: 'Parameters' list of parameters that are blended
-		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;					///< Property: 'RootGroup' the group all blend 'Parameters' belong to, either direct or in a child group.
+		std::vector<ResourcePtr<Parameter>> mParameters;				///< Property: 'Parameters' list of parameters that are blended
+		nap::ResourcePtr<ParameterGroup> mRootGroup = nullptr;			///< Property: 'RootGroup' the group all blend 'Parameters' belong to, either direct or in a child group.
+		bool mBlendAll = false;											///< Property: 'BlendAll' recursively traverses the specified parameter group to include all parameters in this blend group.
 	};
 }
