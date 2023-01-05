@@ -319,7 +319,7 @@ namespace nap
 		assert(utility::fileExists(mSignature));
 
 		// Verify license using provided public application key
-		if (!error.check(rsaVerifyFile(publicKey, signingScheme, mLicense, mSignature), "Invalid license"))
+		if (!error.check(rsaVerifyFile(publicKey, signingScheme, mLicense, mSignature), "Signature verification failed"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
@@ -392,7 +392,7 @@ namespace nap
 			}
 
 			uint64 license_id = stoull(it->second);
-			if (!error.check(machine_id == license_id, "Machine identification failed: IDs don't match"))
+			if (!error.check(machine_id == license_id, "Identification failed: machine IDs don't match"))
 				return false;
 		}
 		return true;
