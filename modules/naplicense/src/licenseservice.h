@@ -89,9 +89,11 @@ namespace nap
 		LicenseService(ServiceConfiguration* configuration);
 
         /**
-         * Generates a (unique) ID for this machine, which can be used as 'uuid' input for the license generator.
-         * The ID is a hash, created using the MAC address of the network interface(s) and OS machine identifier.
-         * @param uuid the generated machine ID
+         * Generates an ID for this machine, which can be used as 'id' input for the license generator.
+         * The ID is a hash, created using the MAC address of the network interface(s) + unique OS machine identifier.
+         * Note that the returned ID not required to be unique, as it is a combination of various components,
+         * but difficult to spoof.
+         * @param id the generated machine ID
          * @param error contains the error if generation failed
          * @return if generation succeeded
          */
