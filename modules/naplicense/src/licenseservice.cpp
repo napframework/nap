@@ -232,15 +232,12 @@ namespace nap
 		static constexpr LPCTSTR key = "SOFTWARE\\Microsoft\\Cryptography";
 		static constexpr LPCTSTR name = "MachineGuid";
 
-		// RAII struct around registry key
+		// simple RAII struct around registry key
 		struct KeyHandle
 		{
 			KeyHandle(LPCTSTR key) : mKey(key)	{ }
 			~KeyHandle()						{ if (mHandle != nullptr) { RegCloseKey(mHandle); } }
-			bool open()
-			{
-				return RegOpenKeyEx(HKEY_LOCAL_MACHINE, mKey, 0, KEY_READ | KEY_WOW64_64KEY, &mHandle) == ERROR_SUCCESS;
-			}
+			bool open()							{ return RegOpenKeyEx(HKEY_LOCAL_MACHINE, mKey, 0, KEY_READ | KEY_WOW64_64KEY, &mHandle) == ERROR_SUCCESS; }
 
 			HKEY mHandle = nullptr;
 			LPCTSTR mKey = nullptr;
