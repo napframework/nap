@@ -178,10 +178,8 @@ namespace nap
 		id ^= machine_id;
 		return true;
 	}
-#endif
 
-
-#ifdef _WIN32
+#elif _WIN32
 	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
 	{
 		//////////////////////////////////////////////////////////////////////////
@@ -193,7 +191,7 @@ namespace nap
 		ULONG buf_length = sizeof(IP_ADAPTER_INFO);
 		p_adapter_info = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
 		if (!error.check(p_adapter_info != nullptr,
-			"Error allocating network information memory"))
+			"Error allocating network information"))
 			return false;
 
 		// Make an initial call to GetAdaptersInfo to get the necessary size into the ulOutBufLen variable
@@ -202,7 +200,7 @@ namespace nap
 			free(p_adapter_info);
 			p_adapter_info = (IP_ADAPTER_INFO*)malloc(buf_length);
 			if (!error.check(p_adapter_info != nullptr,
-				"Error allocating network information memory"))
+				"Error allocating network information"))
 				return false;
 		}
 
@@ -270,6 +268,13 @@ namespace nap
 		uint64 machine_id = static_cast<uint64>(hasher(id_str));
 		id ^= machine_id;
 		return true;
+	}
+
+#else
+	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	{
+		error.fail("Platform not supported");
+		return false;
 	}
 #endif 
 
