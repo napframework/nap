@@ -205,7 +205,7 @@ namespace nap
 		}
 
 		// Get adapter information
-		if (error.check(GetAdaptersInfo(p_adapter_info, &buf_length) != NO_ERROR,
+		if (!error.check(GetAdaptersInfo(p_adapter_info, &buf_length) == NO_ERROR,
 			"Unable to access network interfaces"))
 		{
 			free(p_adapter_info);
@@ -392,7 +392,7 @@ namespace nap
 			}
 
 			uint64 license_id = stoull(it->second);
-			if (!error.check(machine_id == license_id, "Machine identification failed"))
+			if (!error.check(machine_id == license_id, "Machine identification failed: IDs don't match"))
 				return false;
 		}
 		return true;
