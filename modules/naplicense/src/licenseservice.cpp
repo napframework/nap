@@ -14,6 +14,9 @@
 
 #ifdef _WIN32 
 	#include <dll.h>
+	#include <windows.h>
+	#include <intrin.h>       
+	#include <iphlpapi.h>
 #elif  __linux__
     #include <ifaddrs.h>
     #include <netpacket/packet.h>
@@ -61,35 +64,35 @@ namespace nap
 		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
 		switch (signingScheme)
 		{
-		case nap::ESigningScheme::RSASS_PKCS1v15_SHA1:
-		{
-			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
-			return verifier;
-		}
-		case nap::ESigningScheme::RSASS_PKCS1v15_SHA224:
-		{
-			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
-			return verifier;
-		}
-		case nap::ESigningScheme::RSASS_PKCS1v15_SHA256:
-		{
-			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
-			return verifier;
-		}
-		case nap::ESigningScheme::RSASS_PKCS1v15_SHA384:
-		{
-			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
-			return verifier;
-		}
-		case nap::ESigningScheme::RSASS_PKCS1v15_SHA512:
-		{
-			verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
-			return verifier;
-		}
-		default:
-		{
-			assert(false);
-		}
+			case nap::ESigningScheme::RSASS_PKCS1v15_SHA1:
+			{
+				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
+				return verifier;
+			}
+			case nap::ESigningScheme::RSASS_PKCS1v15_SHA224:
+			{
+				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
+				return verifier;
+			}
+			case nap::ESigningScheme::RSASS_PKCS1v15_SHA256:
+			{
+				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
+				return verifier;
+			}
+			case nap::ESigningScheme::RSASS_PKCS1v15_SHA384:
+			{
+				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
+				return verifier;
+			}
+			case nap::ESigningScheme::RSASS_PKCS1v15_SHA512:
+			{
+				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
+				return verifier;
+			}
+			default:
+			{
+				assert(false);
+			}
 		}
 
 		return nullptr;
@@ -141,6 +144,137 @@ namespace nap
 		outDate = createTimestamp(std::stoi(parts[2]), std::stoi(parts[1]), std::stoi(parts[0]), 0, 0);
 		return true;
 	}
+
+
+#ifdef __linux__
+	static bool LicenseService::getMachineIdentifier(uint64& id, nap::utility::ErrorState& error)
+	{
+		id = 0;
+		struct ifaddrs* if_addresses = nullptr;
+		if (!error.check(getifaddrs(&if_addresses) > -1, "Unable to access network interfaces"))
+			return false;
+
+		struct ifaddrs* interface = nullptr;
+		for (interface = if_addresses; interface != nullptr; interface = interface->ifa_next)
+		{
+			if ((interface->ifa_addr) && (interface->ifa_addr->sa_family == AF_PACKET))
+			{
+				struct sockaddr_ll* s = (struct sockaddr_ll*)interface->ifa_addr;
+				for (auto i = 0; i < s->sll_halen; i++)
+					id ^= static_cast<int64>(s->sll_addr[i]) << (i * 8);
+			}
+		}
+		freeifaddrs(if_addresses);
+
+		// Add machine ID
+		std::string id_str;
+		if (!nap::utility::readFileToString("/etc/machine-id", id_str, error))
+		{
+			error.fail("Unable to access machine identifier");
+			return false;
+		}
+		std::hash<std::string> hasher;
+		uint64 machine_id = static_cast<uint64>(hasher(id_str));
+		id ^= machine_id;
+		return true;
+	}
+#endif
+
+
+#ifdef _WIN32
+	static bool getMachineIdentifier(uint64& id, nap::utility::ErrorState& error)
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// Network adapters
+		//////////////////////////////////////////////////////////////////////////
+
+		id = 0;
+		PIP_ADAPTER_INFO p_adapter_info;
+		ULONG buf_length = sizeof(IP_ADAPTER_INFO);
+		p_adapter_info = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
+		if (!error.check(p_adapter_info != nullptr,
+			"Error allocating network information memory"))
+			return false;
+
+		// Make an initial call to GetAdaptersInfo to get the necessary size into the ulOutBufLen variable
+		if (GetAdaptersInfo(p_adapter_info, &buf_length) == ERROR_BUFFER_OVERFLOW)
+		{
+			free(p_adapter_info);
+			p_adapter_info = (IP_ADAPTER_INFO*)malloc(buf_length);
+			if (!error.check(p_adapter_info != nullptr,
+				"Error allocating network information memory"))
+				return false;
+		}
+
+		// Get adapter information
+		if (error.check(GetAdaptersInfo(p_adapter_info, &buf_length) != NO_ERROR,
+			"Unable to access network interfaces"))
+		{
+			free(p_adapter_info);
+			return false;
+		}
+
+		// Create combined mac address hash
+		PIP_ADAPTER_INFO adapter = p_adapter_info;
+		for (adapter = p_adapter_info; adapter != nullptr; adapter = adapter->Next)
+		{
+			for (auto i = 0; i < adapter->AddressLength; i++)
+				id ^= static_cast<uint64>(adapter->Address[i]) << (i * 8);
+		}
+
+		// Free adapter information
+		free(p_adapter_info);
+
+		//////////////////////////////////////////////////////////////////////////
+		// UUID
+		//////////////////////////////////////////////////////////////////////////
+
+		static constexpr LPCTSTR key = "SOFTWARE\\Microsoft\\Cryptography";
+		static constexpr LPCTSTR name = "MachineGuid";
+
+		// RAII struct around registry key
+		struct KeyHandle
+		{
+			KeyHandle(LPCTSTR key) : mKey(key)	{ }
+			~KeyHandle()						{ if (mHandle != nullptr) { RegCloseKey(mHandle); } }
+			bool open()
+			{
+				return RegOpenKeyEx(HKEY_LOCAL_MACHINE, mKey, 0, KEY_READ | KEY_WOW64_64KEY, &mHandle) == ERROR_SUCCESS;
+			}
+
+			HKEY mHandle = nullptr;
+			LPCTSTR mKey = nullptr;
+		};
+
+		// Get key
+		KeyHandle uuid_key(key);
+		if (!error.check(uuid_key.open(), "Could not open registry key"))
+			return false;
+
+		// Extract value
+		DWORD type; DWORD buf_size;
+		if (!error.check(RegQueryValueEx(uuid_key.mHandle, name, NULL, &type, NULL, &buf_size) == ERROR_SUCCESS,
+			"Could not read registry value"))
+			return false;
+
+		// Ensure type
+		if (!error.check(type == REG_SZ, "Incorrect registry value type"))
+			return false;
+
+		// Get value
+		std::string id_str(buf_size, '\0');
+		assert(sizeof(BYTE) == sizeof(std::string::value_type));
+		if (!error.check(RegQueryValueEx(uuid_key.mHandle, name, NULL, NULL, (PBYTE)(&id_str[0]), &buf_size) == ERROR_SUCCESS,
+			"Could not read registry value"))
+			return false;
+
+		// Hash
+		std::hash<std::string> hasher;
+		uint64 machine_id = static_cast<uint64>(hasher(id_str));
+		id ^= machine_id;
+		return true;
+	}
+#endif 
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -285,39 +419,7 @@ namespace nap
 
     bool LicenseService::getMachineID(uint64& id, nap::utility::ErrorState& error)
     {
-#ifdef __linux__
-        id = 0;
-        struct ifaddrs* if_addresses = nullptr;
-        if(!error.check(getifaddrs(&if_addresses) > -1, "Unable to access network interfaces"))
-            return false;
-
-        struct ifaddrs* interface = nullptr; int i = 0;
-        for (interface = if_addresses; interface != nullptr; interface = interface->ifa_next)
-        {
-            if ((interface->ifa_addr) && (interface->ifa_addr->sa_family == AF_PACKET) )
-            {
-                struct sockaddr_ll *s = (struct sockaddr_ll*)interface->ifa_addr;
-                for (i=0; i <s->sll_halen; i++)
-                    id ^= static_cast<int64>(s->sll_addr[i]) << (i * 8);
-            }
-        }
-        freeifaddrs(if_addresses);
-
-        // Add machine ID
-        std::string id_str;
-        if(!nap::utility::readFileToString("/etc/machine-id", id_str, error))
-        {
-            error.fail("Unable to access machine identifier");
-            return false;
-        }
-        std::hash<std::string> hasher;
-        uint64 machine_id = static_cast<uint64>(hasher(id_str));
-        id ^= machine_id;
-        return true;
-#else
-        id = 0;
-        return true
-#endif
+		return getMachineIdentifier(id, error);
     }
 
 
