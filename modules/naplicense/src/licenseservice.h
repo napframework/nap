@@ -39,7 +39,7 @@ namespace nap
 		std::string			mMail;					///< Extracted user mail
 		std::string			mApp;					///< Extracted application signature
 		std::string			mTag;					///< Extracted additional license information
-		std::string			mUuid;					///< Extracted additional uuid
+		std::string			mID;					///< Extracted machine id
 		bool				mExpires = false;		///< If this license can expire
 		DateTime			mTime;					///< License expiry date as system timestamp
 
@@ -92,6 +92,8 @@ namespace nap
          * Generates an ID for this machine, which can be used as 'id' input for the license generator.
          * The ID is a hash, created using the MAC addresses of the network interfaces + OS machine identifier.
          * Note that the returned ID is not required to be unique, it is a combination of various components but difficult to spoof.
+		 * The ID is generated every time this function is called, cache it if read frequently. 
+		 * 
          * @param id the generated machine ID
          * @param error contains the error if generation failed
          * @return if generation succeeded

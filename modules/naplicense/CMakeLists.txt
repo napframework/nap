@@ -23,7 +23,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${CRYPTOPP_INCLUDE_DIRS})
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
 # link with external libs
-target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} cryptopp)
+if (WIN32)
+  target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} cryptopp Iphlpapi)
+else()
+  target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES} cryptopp)
+endif()
 
 # copy crypto dll to bin directory
 if (WIN32)

@@ -133,7 +133,7 @@ namespace nap
 	static void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue)
 	{
 		auto it = args.find(key);
-		outValue = it != args.end() ? (*it).second : std::string("not provided");
+		outValue = it != args.end() ? (*it).second : "not provided";
 	}
 
 
@@ -147,7 +147,7 @@ namespace nap
 
 
 #ifdef __linux__
-	static bool LicenseService::getMachineIdentifier(uint64& id, nap::utility::ErrorState& error)
+	static bool LicenseService::generateMachineID(uint64& id, nap::utility::ErrorState& error)
 	{
 		id = 0;
 		struct ifaddrs* if_addresses = nullptr;
@@ -182,7 +182,7 @@ namespace nap
 
 
 #ifdef _WIN32
-	static bool getMachineIdentifier(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
 	{
 		//////////////////////////////////////////////////////////////////////////
 		// Network adapters
@@ -356,7 +356,7 @@ namespace nap
 		setArgument(arguments, "name", outInformation.mName);
 		setArgument(arguments, "application", outInformation.mApp);
 		setArgument(arguments, "tag", outInformation.mTag);
-		setArgument(arguments, "uuid", outInformation.mUuid);
+		setArgument(arguments, "id", outInformation.mID);
 
 		// If an expiration date is specified check if it expired
 		outInformation.mExpires = false;
@@ -374,8 +374,25 @@ namespace nap
 			if (!error.check(!outInformation.expired(), "License expired"))
 				return false;
 		}
+
+		// If an id is provided, make sure it matches
+		it = arguments.find("id");
+		if (it != arguments.end())
+		{
+			uint64 machine_id;
+			if (!getMachineID(machine_id, error))
+			{
+				error.fail("Unable to generate machine identifier");
+				return false;
+			}
+
+			uint64 license_id = stoull(it->second);
+			if (!error.check(machine_id == license_id, "Machine identification failed"))
+				return false;
+		}
 		return true;
 	}
+
 
 	bool LicenseService::init(utility::ErrorState& error)
 	{
@@ -416,7 +433,7 @@ namespace nap
 
     bool LicenseService::getMachineID(uint64& id, nap::utility::ErrorState& error)
     {
-		return getMachineIdentifier(id, error);
+		return generateMachineID(id, error);
     }
 
 

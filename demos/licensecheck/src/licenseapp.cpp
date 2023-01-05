@@ -47,6 +47,10 @@ namespace nap
 		if (!mLicenseService->validateLicense(ApplicationPublicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA512, mLicenseInfo, mLicenseError))
 			mLicenseValid = false;
 
+		// Get machine identifier
+		if (!mLicenseService->getMachineID(mMachineID, error))
+			return false;
+
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
 
@@ -87,6 +91,7 @@ namespace nap
 		else {
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor1, "License: invalid");
 		}
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Machine ID: %llu", mMachineID).c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		if (ImGui::CollapsingHeader("License"))
 		{
