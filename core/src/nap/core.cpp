@@ -39,7 +39,6 @@ namespace nap
 	{
 		// Initialize timer
 		mTimer.reset();
-		mTicks.fill(0);
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 	}
@@ -538,16 +537,20 @@ namespace nap
 	}
 
 
-    bool Core::writeConfigFile(utility::ErrorState& errorState)
+    bool Core::writeConfigFile(const std::string& path, utility::ErrorState& errorState, bool linkToProjectInfo)
     {
-	    // Write all available service configurations to a vector
+		// Services and project not available when engine not initialized
+		if(!errorState.check(isInitialized(), "NAP not initialized"))
+			return false;
+
+        // Write all available service configurations to a vector
         std::vector<rtti::Object*> objects;
         for (auto& service : mServices)
         {
             auto configuration = service->getConfiguration<rtti::Object>();
             if (configuration != nullptr)
             {
-                // The serializer needs all objects to have a mID set
+                // The serializer needs all objects to have an mID set
                 if (configuration->mID.empty())
                     configuration->mID = configuration->get_type().get_name().to_string();
                 objects.emplace_back(configuration);
@@ -555,21 +558,35 @@ namespace nap
         }
 
         // Serialize the configurations to json
-        rtti::JSONWriter writer;
+		rtti::JSONWriter writer;
         if (!serializeObjects(objects, writer, errorState))
-            return false;
-        std::string json = writer.GetJSON();
+			return false;
 
-        // Save the config file besides the binary, the first location that NAP searches
-		assert(getProjectInfo() != nullptr);
-        const std::string configFilePath = getProjectInfo()->getProjectDir() + "/" + DEFAULT_SERVICE_CONFIG_FILENAME;
+		std::string json = writer.GetJSON();
+        auto absolutePath = utility::joinPath({ getProjectInfo()->getProjectDir(), path });
+        utility::writeStringToFile(absolutePath, json);
+        nap::Logger::info("Wrote configuration to: %s", path.c_str());
 
-        std::ofstream configFile;
-        configFile.open(configFilePath);
-        configFile << json << std::endl;
-        configFile.close();
-		nap::Logger::info("Wrote configuration to: %s", configFilePath.c_str());
+		// Link the config file to the project info
+        if (linkToProjectInfo)
+        {
+            // Serialize the project info to the project.json file.
+			mProjectInfo->mServiceConfigFilename = path;
+            std::string projectInfoFilePath;
+            if (!findProjectInfoFile(projectInfoFilePath))
+            {
+                errorState.fail("Failed to locate project info file");
+                return false;
+            }
 
+            rtti::JSONWriter writer;
+            if (!serializeObject(*mProjectInfo, writer, errorState))
+                return false;
+
+			std::string json = writer.GetJSON();
+            utility::writeStringToFile(projectInfoFilePath, json);
+            nap::Logger::info("Wrote project info to: %s", projectInfoFilePath.c_str());
+        }
         return true;
     }
 
