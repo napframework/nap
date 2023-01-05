@@ -39,6 +39,7 @@ namespace nap
 		float mRightPlane = 100.0f;						///< Property: 'RightPlane' used when mode is CorrectAspectRatio or Custom
 		float mTopPlane = 100.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom 
 		float mBottomPlane = 0.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom
+		math::Rect mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };	///< Property: 'ClipRect' normalized rectangle used to clip/crop the camera view
 	};
 	
 	/**
@@ -118,6 +119,18 @@ namespace nap
 		* @param mode The view mode to operate in.
 		*/
 		void setMode(EOrthoCameraMode mode);
+
+		/**
+		* Sets the normalized clip rectangle used to clip/crop the camera view
+		* @param clipRect The clip rectangle.
+		*/
+		void setClipRect(const math::Rect& clipRect);
+
+
+		/**
+		* Restores the clip rectangle to a unit rectangle, disabling clipping
+		*/
+		void restoreClipRect();
 
 		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.

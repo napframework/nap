@@ -50,6 +50,7 @@ namespace nap
 		ECullMode		mCullMode = ECullMode::Back;			///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		EPolygonMode	mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
 		RGBAColorFloat	mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' the vertex color of the sphere
+		glm::vec3		mPosition = { 0.0, 0.0, 0.0 };			///< Property: 'Position' center of the sphere
 
 	private:
 		RenderService* mRenderService;

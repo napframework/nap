@@ -295,11 +295,13 @@ namespace nap
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 
 		/**
- 		 * Writes a 'config.json' file, that contains all currently loaded service configurations, to the project directory.
- 		 * @param errorState contains the error if the operation fails.
- 		 * @return true on success.
+ 		 * Writes a 'config.json' file, that contains all currently loaded service configurations
+ 		 * @param path The path to the config file relative to the path of the project info json file
+ 		 * @param errorState Contains the error if the operation fails
+ 		 * @param linkToProjectInfo If set to true the new written file will be linked in the current project info, and the project info will be saved to the project.json file.
+ 		 * @return True on success
 		 */
-		bool writeConfigFile(utility::ErrorState& errorState);
+		bool writeConfigFile(const std::string& path, utility::ErrorState& errorState, bool linkToProjectInfo = true);
 
 		/**
 		 * Returns all available and used service configurations.
@@ -475,7 +477,7 @@ namespace nap
 		float mFramerate = 0.0f;
 
 		// Used to calculate framerate over time
-		std::array<double, 20> mTicks;
+		std::array<double, 20> mTicks = { 0 };
 		double mTicksum = 0;
 		uint32 mTickIdx = 0;
 
