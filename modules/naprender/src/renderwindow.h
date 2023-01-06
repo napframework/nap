@@ -274,8 +274,8 @@ namespace nap
 		RGBAColorFloat			mClearColor			= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
 		ERasterizationSamples	mRequestedSamples	= ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages	= 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
-		bool					mRestorePosition	= true;								///< Property: 'RestorePosition' if window position is saved and restored in between sessions
-		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is saved and restored in between sessions
+		bool					mRestorePosition	= true;								///< Property: 'RestorePosition' if window position is restored from previous session
+		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session
 
 	private:
 		RenderService*					mRenderService	= nullptr;
