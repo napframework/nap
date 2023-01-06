@@ -147,7 +147,7 @@ namespace nap
 
 
 #ifdef __linux__
-	static bool LicenseService::generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
 	{
 		id = 0;
 		struct ifaddrs* if_addresses = nullptr;
