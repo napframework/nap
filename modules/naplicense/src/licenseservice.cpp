@@ -133,7 +133,7 @@ namespace nap
 	static void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue)
 	{
 		auto it = args.find(key);
-		outValue = it != args.end() ? (*it).second : "not provided";
+		outValue = it != args.end() ? (*it).second : "";
 	}
 
 

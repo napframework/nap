@@ -88,13 +88,17 @@ namespace nap
 		 */
 		LicenseService(ServiceConfiguration* configuration);
 
-        /**
-         * Generates an ID for this machine, which can be used as 'id' input for the license generator.
-         * The ID is a hash, created using the MAC addresses of the network interfaces + OS machine identifier.
-         * Note that the returned ID is not required to be unique, it is a combination of various components but difficult to spoof.
-		 * The ID is generated every time this function is called, cache it if read frequently. 
+		/**
+		 * Generates a machine identification hash.
+		 *
+		 * Input this number (as string) into the 'id' field of the license generator to tie a license to a particular machine.
+		 * The machine ID is a hash, created using the MAC addresses of the network interfaces & unique OS identifier.
+		 * The ID doesn't change unless the network interfaces change or the operating system is re-installed.
 		 * 
-         * @param id the generated machine ID
+		 * Note that the returned ID is *not* required to be unique, as it is a combination of various components, but therefore difficult to spoof.
+		 * Note that the ID is generated *every time* this function is called, cache it if read frequently.
+		 *
+		 * @param id the generated machine ID
          * @param error contains the error if generation failed
          * @return if generation succeeded
          */
@@ -108,7 +112,7 @@ namespace nap
 		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
 		 * - it is not expired (if specified)
-		 * - it has a matching device id (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
@@ -131,7 +135,7 @@ namespace nap
 		 * - a .license and .key file is found on initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
 		 * - it is not expired (if specified)
-		 * - it has a matching device id (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
@@ -154,7 +158,7 @@ namespace nap
 		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
 		 * - it is not expired (if specified)
-		 * - it has a matching device id (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
@@ -178,7 +182,7 @@ namespace nap
 		 * - a .license and .key file is found on initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
 		 * - it is not expired (if specified)
-		 * - it has a matching device id (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
