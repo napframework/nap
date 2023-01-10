@@ -21,7 +21,7 @@
 // nap::renderabletextcomponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
 	RTTI_PROPERTY("Text",				&nap::RenderableTextComponent::mText,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("TextColor",			&nap::RenderableTextComponent::mColor,						nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

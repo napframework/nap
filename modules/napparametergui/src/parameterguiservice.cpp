@@ -110,7 +110,7 @@ namespace nap
 				: ImGui::InputText(string_parameter->getDisplayName().c_str(), buffer, buffer_size))
 			{
 				string_parameter->setValue(std::string(buffer));
-			}	
+			}
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterRGBColorFloat), [](Parameter& parameter)
@@ -201,9 +201,11 @@ namespace nap
 		{
 			ParameterQuat* quat_parameter = rtti_cast<ParameterQuat>(&parameter);
 
-			glm::quat value = quat_parameter->mValue;
-			if (ImGui::InputFloat4(quat_parameter->getDisplayName().c_str(), &(value[0])))
-				quat_parameter->setValue(value);
+			glm::vec3 euler = glm::degrees(glm::eulerAngles(quat_parameter->mValue));
+			if (ImGui::InputFloat3(quat_parameter->getDisplayName().c_str(), &(euler[0])))
+            {
+                quat_parameter->setValue(glm::radians(euler));
+            }
 		});
 
 		registerParameterEditor(RTTI_OF(ParameterIVec3), [](Parameter& parameter)

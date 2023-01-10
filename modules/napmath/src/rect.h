@@ -23,7 +23,7 @@ namespace nap
 			/**
 			 *	Default constructor
 			 */
-			Rect() = default;
+			constexpr Rect() = default;
 
 			/**
 			 * Utility constructor
@@ -32,14 +32,22 @@ namespace nap
 			 * @param width the width of the rectangle
 			 * @param height the height of the triangle
 			 */
-			Rect(float x, float y, float width, float height);
+			constexpr Rect(float x, float y, float width, float height) :
+				mMinPosition({ x, y }), mMaxPosition(mMinPosition + glm::vec2(width, height)) {};
 
 			/**
 			 * Utility constructor
 			 * @param min: the min x, y position of the rectangle
 			 * @param max: the max x, y position of the rectangle
 			 */
-			Rect(const glm::vec2& min, const glm::vec2& max);
+			constexpr Rect(const glm::vec2& min, const glm::vec2& max) :
+				mMinPosition(min), mMaxPosition(max) {}
+
+			// Equal-to operator overload
+			bool operator==(const Rect& other) const;
+
+			// Not-equal-to operator overload
+			bool operator!=(const Rect& other) const;
 
 			/**
 			 *	@return the absolute width of the rectangle
@@ -79,5 +87,12 @@ namespace nap
 			glm::vec2 mMinPosition = { 0.0f, 0.0f };		// min x,y position
 			glm::vec2 mMaxPosition = { 0.0f, 0.0f };		// max x,y position
 		};
+
+		// Static rectangles
+		static constexpr Rect topRightRect		{ { 0.0f, 0.0f},	{ 1.0f,  1.0f} };
+		static constexpr Rect topLeftRect		{ { -1.0f, 0.0f },	{ 0.0f,  1.0f} };
+		static constexpr Rect bottomLeftRect	{ { -1.0f, -1.0f },	{ 0.0f,  0.0f} };
+		static constexpr Rect bottomRightRect	{ { 0.0f, -1.0f },	{ 1.0f,  0.0f} };
+		static constexpr Rect centeredRect		{ { -0.5f, -0.5f },	{ 0.5f,  0.5f} };
 	}
 }

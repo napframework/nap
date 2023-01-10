@@ -5,6 +5,9 @@
 #include "rect.h"
 #include "mathutils.h"
 
+// External includes
+#include <glm/gtc/epsilon.hpp>
+
 RTTI_BEGIN_CLASS(nap::math::Rect)
 	RTTI_CONSTRUCTOR(float, float, float, float)
 	RTTI_CONSTRUCTOR(glm::vec2, glm::vec2)
@@ -16,15 +19,20 @@ namespace nap
 {
 	namespace math
 	{
-		Rect::Rect(float x, float y, float width, float height)
+		// Equal-to operator overload
+		bool Rect::operator==(const Rect& other) const
 		{
-			mMinPosition = glm::vec2(x, y);
-			mMaxPosition = mMinPosition + glm::vec2(width, height);
+			const auto eps2 = glm::vec2(math::epsilon<float>());
+			return glm::all(glm::epsilonEqual(getMin(), other.getMin(), eps2)) && glm::all(glm::epsilonEqual(getMax(), other.getMax(), eps2));
 		}
 
 
-		Rect::Rect(const glm::vec2& min, const glm::vec2& max) : mMinPosition(min), mMaxPosition(max)
-		{}
+		// Not-equal-to operator overload
+		bool Rect::operator!=(const Rect& other) const
+		{
+			const auto eps2 = glm::vec2(math::epsilon<float>());
+			return glm::any(glm::epsilonNotEqual(getMin(), other.getMin(), eps2)) || glm::any(glm::epsilonNotEqual(getMax(), other.getMax(), eps2));
+		}
 
 
 		float Rect::getWidth() const
@@ -75,6 +83,5 @@ namespace nap
 		{
 			return mMaxPosition;
 		}
-
 	}
 }
