@@ -14,6 +14,7 @@
 #include <nap/core.h>
 #include <renderservice.h>
 #include <renderglobals.h>
+#include <glm/matrix.hpp>
 
 // nap::renderablecopymeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderableClassifyComponent)
@@ -92,16 +93,24 @@ namespace nap
 			return false;
 
 		// Get handle to matrices, which we set in the draw call
-		mProjectionUniform = extractUniform<UniformMat4Instance>("projectionMatrix", *mvp_ubo, errorState);
+		mProjectionUniform = extractUniform<UniformMat4Instance>(uniform::projectionMatrix, *mvp_ubo, errorState);
 		if (mProjectionUniform == nullptr)
 			return false;
 		
-		mViewUniform = extractUniform<UniformMat4Instance>("viewMatrix", *mvp_ubo, errorState);
+		mViewUniform = extractUniform<UniformMat4Instance>(uniform::viewMatrix, *mvp_ubo, errorState);
 		if (mViewUniform == nullptr)
 			return false;
 		
-		mModelUniform = extractUniform<UniformMat4Instance>("modelMatrix", *mvp_ubo, errorState);
+		mModelUniform = extractUniform<UniformMat4Instance>(uniform::modelMatrix, *mvp_ubo, errorState);
 		if (mModelUniform == nullptr)
+			return false;
+
+		mNormalUniform = extractUniform<UniformMat4Instance>(uniform::normalMatrix, *mvp_ubo, errorState);
+		if (mNormalUniform == nullptr)
+			return false;
+
+		mCameraPosUniform = extractUniform<UniformVec3Instance>(uniform::cameraPosition, *mvp_ubo, errorState);
+		if (mCameraPosUniform == nullptr)
 			return false;
 
 		//////////////////////////////////////////////////////////////////////////
@@ -226,6 +235,7 @@ namespace nap
 		// Set non changing uniforms
 		mViewUniform->setValue(viewMatrix);
 		mProjectionUniform->setValue(projectionMatrix);
+		mCameraPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
 		mColorUniform->setValue({ 1.0,0.0,0.0 });
 
 		// Fix seed for subsequent random calls
@@ -259,6 +269,9 @@ namespace nap
 			glm::mat4 object_loc = glm::translate(glm::mat4(), glm::vec3(mLocations[i]));
 			object_loc = glm::scale(object_loc, { mLocations[i].w, mLocations[i].w, mLocations[i].w });
 			mModelUniform->setValue(object_loc);
+
+			// Calculate normal matrix, set and push
+			mNormalUniform->setValue(glm::transpose(glm::inverse(object_loc)));
 
 			// Update our descriptor set
 			const DescriptorSet& descriptor_set = mMaterialInstance.update();

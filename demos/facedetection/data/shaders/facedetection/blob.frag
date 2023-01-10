@@ -50,23 +50,19 @@ vec3 computeLightContribution(vec3 color)
     vec3 frag_position = (mvp.modelMatrix * vec4(passVert, 1.0)).xyz;
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(ubo.light.mPosition - frag_position);
+	vec3 surface_to_light = normalize(ubo.light.mPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(mvp.cameraPosition - frag_position);
+	vec3 surface_to_camera = normalize(mvp.cameraPosition - frag_position);
 	
 	//diffuse
-    float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color.rgb * ubo.light.mIntensity;
+    float diff_co = max(0.0, dot(normal, surface_to_light));
+	vec3 diffuse = diff_co * color.rgb * ubo.light.mIntensity;
     
 	//specular
-	vec3 specularColor = vec3(1.0,1.0,1.0);
-	float specularCoefficient = 0.0;
-    if(diffuseCoefficient > 0.0)
-    {
-        specularCoefficient = pow(max(0.0, dot(surfaceToCamera, reflect(-surfaceToLight, normal))), shininess);
-    }
-    vec3 specular = specularCoefficient * specularColor * ubo.light.mIntensity * specularIntensity;
+	vec3 specular_color = vec3(1.0,1.0,1.0);
+	float specular_co = diff_co > 0.0 ? pow(max(0.0, dot(surface_to_camera, reflect(-surface_to_light, normal))), shininess) : 0.0;
+    vec3 specular = specular_co * specular_color * ubo.light.mIntensity * specularIntensity;
 
     // return combination
     return specular + diffuse;
@@ -76,10 +72,9 @@ vec3 computeLightContribution(vec3 color)
 void main() 
 {        
 	//linear color (color before gamma correction)
-    vec3 outColor = computeLightContribution(ubo.meshColor);
+    vec3 color = computeLightContribution(ubo.meshColor);
 
     // Add ambient color
-	vec3 ambient = ubo.meshColor.rgb * ambientIntensity;
-    outColor = outColor + ambient;
-    out_Color = vec4(outColor, 1.0);
+    color += ubo.meshColor.rgb * ambientIntensity;
+    out_Color = vec4(color, 1.0);
 }
