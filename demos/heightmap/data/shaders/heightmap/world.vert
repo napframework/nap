@@ -38,20 +38,20 @@ out vec3 passPosition;				//< vertex world space position
 void main(void)
 {
 	// Blend original normal with target normal
-	vec3 blend_nor = mix(in_OriginalNormal, in_Normal, vubo.normalBlendValue);
+	vec4 blend_nor = vec4(mix(in_OriginalNormal, in_Normal, vubo.normalBlendValue), 1.0);
 
 	// Blend original position with target position
-	vec3 blend_pos = mix(in_OriginalPosition, in_Position, vubo.blendValue);
+	vec4 blend_pos = vec4(mix(in_OriginalPosition, in_Position, vubo.blendValue),1.0);
 
 	// Multiply with modelmatrix to position in world space and pass to frag
-	passPosition = vec3(mvp.modelMatrix * vec4(blend_pos, 1.0));
+	passPosition = vec3(mvp.modelMatrix * blend_pos);
 
 	// Rotate normal based on model matrix and set
-	passNormal = normalize((mvp.normalMatrix * vec4(in_Normal, 0.0)).xyz);
+	passNormal = normalize((mvp.normalMatrix * blend_nor).xyz);
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
 
 	// Calculate frag position
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(blend_pos, 1.0);
+    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * blend_pos;
 }
