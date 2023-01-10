@@ -30,12 +30,13 @@ namespace nap
 	 *		mat4 viewMatrix;
 	 *		mat4 modelMatrix;
 	 *		mat4 normalMatrix;
+	 *		vec3 cameraPosition;
 	 *	} mvp;
 	 *
 	 *	...
 	 *	void main(void)
 	 *	{
-     *		gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix;	
+     *		gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);	
 	 *	}
 	 * ~~~~~
 	 */
