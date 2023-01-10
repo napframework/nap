@@ -11,7 +11,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 // Input attributes

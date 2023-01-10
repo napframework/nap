@@ -46,7 +46,7 @@ namespace nap
 		inline constexpr const char* viewMatrix = "viewMatrix";						///< uniform view matrix name
 		inline constexpr const char* projectionMatrix = "projectionMatrix";			///< uniform projection matrix name
 		inline constexpr const char* normalMatrix = "normalMatrix";					///< uniform normal matrix name
-		inline constexpr const char* cameraWorldPosition = "cameraWorldPosition";	///< uniform camera world position name
+		inline constexpr const char* cameraPosition = "cameraPosition";	            ///< uniform camera world position name
 	}
 
 

@@ -20,7 +20,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 // Fragment shader uniforms
@@ -73,7 +73,7 @@ void main(void)
 	vec3 surfaceToLight = normalize(ubo.lightPosition - frag_position);
 
 	// calculate vector that defines the direction of camera to the surface
-	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - frag_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - frag_position);
 
 	// Ambient color
 	vec3 ambient = color.rgb * ubo.lightIntensity * ubo.ambientIntensity;

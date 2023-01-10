@@ -10,7 +10,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 uniform FRAGUBO
@@ -68,7 +68,7 @@ void main(void)
 	vec3 boid_color = mix(boid_diffuse, boid_randomrgb, step(EPSILON, ubo.randomColor));
 
 	// Surface to camera normal
-	vec3 surface_to_cam = normalize(mvp.cameraWorldPosition - pass_Position);
+	vec3 surface_to_cam = normalize(mvp.cameraPosition - pass_Position);
 
 	// Calculate the vector from this pixels surface to the light source
 	vec3 surface_to_light = normalize(ubo.lightPosition - pass_Position);

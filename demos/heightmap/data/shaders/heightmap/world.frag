@@ -19,7 +19,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 // All uniform fragment inputs
@@ -56,7 +56,7 @@ void main()
 	world_color = mix(fubo.lowerColor, world_color, blend_value);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(mvp.cameraWorldPosition - passPosition);
+	vec3 cam_normal = normalize(mvp.cameraPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value

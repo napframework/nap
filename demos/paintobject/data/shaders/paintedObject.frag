@@ -17,7 +17,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 // uniform buffer inputs
@@ -52,7 +52,7 @@ vec3 computeLightContribution(vec3 color)
 	vec3 surfaceToLight = normalize(ubo.LightPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - frag_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - frag_position);
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));

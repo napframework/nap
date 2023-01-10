@@ -27,7 +27,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 uniform UBO
@@ -53,7 +53,7 @@ void main()
 	vec3 surfaceToLight = normalize(ubo.light.mPosition - passVert);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - passVert);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - passVert);
 
 	//calculate normal in world coordinates
     mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));

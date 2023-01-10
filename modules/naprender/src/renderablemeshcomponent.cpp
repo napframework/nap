@@ -87,7 +87,7 @@ namespace nap
 			mViewMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
 			mProjectMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
 			mNormalMatrixUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::normalMatrix);
-			mCameraWorldPosUniform = mvp_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraWorldPosition);
+			mCameraWorldPosUniform = mvp_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraPosition);
 		}
 		return true;
 	}

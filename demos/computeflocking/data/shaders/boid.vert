@@ -24,7 +24,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 uniform VERTUBO
@@ -85,7 +85,7 @@ void main(void)
 	vec3 world_normal = normalize((mvp.modelMatrix * vec4(flock_normal, 0.0)).xyz);
 	pass_Normal = world_normal;
 
-	vec3 eye_to_surface = normalize(world_position.xyz - mvp.cameraWorldPosition);
+	vec3 eye_to_surface = normalize(world_position.xyz - mvp.cameraPosition);
 	float fresnel = 0.04 + 0.96 * pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), fresnelPower);
 	pass_Fresnel = fresnelScale * fresnel;
 

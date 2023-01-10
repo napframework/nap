@@ -14,7 +14,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 // Point light structure
@@ -51,7 +51,7 @@ vec3 computeLightContribution(int lightIndex, vec3 color)
 	vec3 surfaceToLight = normalize(ubo.lights[lightIndex].mPosition - frag_pos);
 
 	// Calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - frag_pos);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - frag_pos);
 	
 	// Diffuse
     float diffuseCoefficient = max(0.0, dot(frag_normal, surfaceToLight));

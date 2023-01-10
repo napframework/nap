@@ -16,7 +16,7 @@ uniform nap
 	mat4 viewMatrix;
 	mat4 modelMatrix;
 	mat4 normalMatrix;
-	vec3 cameraWorldPosition;
+	vec3 cameraPosition;
 } mvp;
 
 // Point light structure
@@ -143,7 +143,7 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 	vec3 surfaceToLight = normalize(ubofrag.inLight.mPosition - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(mvp.cameraWorldPosition - ws_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
