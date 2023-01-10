@@ -11,7 +11,7 @@ in vec3 pass_Vert;			// The vertex position
 
 out vec4 out_Color;
 
-layout(binding = 0) uniform nap
+uniform nap
 {
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
