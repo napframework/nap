@@ -77,8 +77,7 @@ namespace nap
 		ResourcePtr<ParameterFloat> mViewRadiusParam;					///< Property: "ViewRadius" Radius in which a boid detects mates to follow
 		ResourcePtr<ParameterFloat> mAvoidRadiusParam;					///< Property: "AvoidRadius" Radius in which a boid detect mates to avoid
 		ResourcePtr<ParameterFloat> mMinSpeedParam;						///< Property: "MinSpeed" Minimum speed
-		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "MaxSteerForce" Maximum speed
-		ResourcePtr<ParameterFloat> mMaxSteerForceParam;				///< Property: "MaxSteerForce" Maximum steer force, also acceleration and deceleration
+		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "MaxSpeed" Maximum speed
 		ResourcePtr<ParameterFloat> mTargetWeightParam;					///< Property: "TargetWeight" Contribution of target on boid forces
 		ResourcePtr<ParameterFloat> mAlignmentWeightParam;				///< Property: "AlignmentWeight" Contribution of aligment vector to boid forces
 		ResourcePtr<ParameterFloat> mCohesionWeightParam;				///< Property: "CohesionWeight" Contribution of cohesion vector on boid movement
