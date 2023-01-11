@@ -98,7 +98,6 @@ namespace nap
 		ResourcePtr<ParameterFloat> mSpecularIntensityParam;			///< Property: "SpecularIntensity" Specular intensity
 		ResourcePtr<ParameterFloat> mMateColorRateParam;				///< Property: "MateColor" Maximum rate of mates for blending boid diffuse colors
 
-		ComponentPtr<PerspCameraComponent> mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
 		ComponentPtr<TransformComponent> mTargetTransformComponent;		///< Property: "TargetTransformComponent" Camera that we're controlling
 	};
 
@@ -188,7 +187,6 @@ namespace nap
 		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	//< The current compute instance
 		int											mComputeInstanceIndex = 0;			//< Current compute instance index
 
-		ComponentInstancePtr<PerspCameraComponent>	mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
 		ComponentInstancePtr<TransformComponent>	mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };
 	};
 }

@@ -46,7 +46,6 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MateColorRate",				&nap::FlockingSystemComponent::mMateColorRateParam,			nap::rtti::EPropertyMetaData::Default)
 
-	RTTI_PROPERTY("PerspCameraComponent",		&nap::FlockingSystemComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -66,7 +65,6 @@ namespace nap
 		constexpr const char* FRAGUBO = "FRAGUBO";
 		constexpr const char* randomColor = "randomColor";
 		constexpr const char* boidSize = "boidSize";
-		constexpr const char* cameraLocation = "cameraLocation";
 		constexpr const char* lightPosition = "lightPosition";
 		constexpr const char* lightIntensity = "lightIntensity";
 		constexpr const char* diffuseColor = "diffuseColor";
@@ -188,14 +186,11 @@ namespace nap
 
 	void FlockingSystemComponentInstance::updateRenderMaterial()
 	{
-		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
-
 		// Update vertex shader uniforms
 		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale)->setValue(mResource->mFresnelScaleParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
 		}
@@ -214,7 +209,6 @@ namespace nap
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor)->setValue(mResource->mDiffuseColorParam->mValue.toVec3());
@@ -274,6 +268,12 @@ namespace nap
 
 		if (mModelMatUniform != nullptr)
 			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
+
+		if (mNormalMatrixUniform != nullptr)
+			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransformComponent->getGlobalTransform())));
+
+		if (mCameraWorldPosUniform != nullptr)
+			mCameraWorldPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
 
 		// Acquire new / unique descriptor set before rendering
 		MaterialInstance& mat_instance = getMaterialInstance();

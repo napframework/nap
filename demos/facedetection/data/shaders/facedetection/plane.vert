@@ -10,6 +10,8 @@ uniform nap
 	uniform mat4 projectionMatrix;
 	uniform mat4 viewMatrix;
 	uniform mat4 modelMatrix;
+	uniform mat4 normalMatrix;
+	uniform vec3 cameraPosition;
 } mvp;
 
 // Input Vertex Attributes
@@ -21,15 +23,11 @@ in vec3 in_Normals;
 // Output to fragment shader
 out vec3 passUVs;					//< vetex uv's
 out mat4 passModelMatrix;			//< Matrix to transform vertex from object to world space
-out vec3 cameraLocation;			//< camera location
 out vec3 passVert;					//< Vertex position in object space 
 out vec3 passNormals;				//< Vertex normal
 
 void main(void)
 {
-	// Extract camera location
-	cameraLocation = vec3(inverse(mvp.viewMatrix)[3]);
-
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;
 

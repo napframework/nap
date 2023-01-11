@@ -7,18 +7,19 @@
 // All mvp uniform variables
 uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
 } mvp;
-
 
 // All non mvp uniform variables
 uniform UBOVert
 {
-	uniform vec3 	inBlobPosition;			//< Blob position in uv space
-	uniform float 	inTime;					//< Modulation time
-	uniform float 	inVelocity;				//< Velocity used for modulating frequency
+	vec3 	inBlobPosition;			//< Blob position in uv space
+	float 	inTime;					//< Modulation time
+	float 	inVelocity;				//< Velocity used for modulating frequency
 } ubovert;
 
 // Input Vertex Attributes
@@ -30,18 +31,17 @@ in vec3 in_Normal;
 out vec3 passUVs;					//< vetex uv's
 out vec3 passNormal;				//< vertex normal in object space
 out vec3 passPosition;				//< vertex position in object space
-out mat4 passModelMatrix;			//< model matrix
 out vec2 passColor;
 
-const float		displacement = 0.033;
-const float		minDistance = 0.4;
-const float		maxDistance = 0.1;
-const float		speed = 0.005;
-const float		fade = 0.75;
-const float		minFrequency = 499.8;
-const float		maxFrequency = 500;
-const float		minDistribution = 2.25;
-const float		maxDistribution = 4.0;
+const float	displacement = 0.033;
+const float	minDistance = 0.4;
+const float	maxDistance = 0.1;
+const float	speed = 0.005;
+const float	fade = 0.75;
+const float	minFrequency = 499.8;
+const float	maxFrequency = 500;
+const float	minDistribution = 2.25;
+const float	maxDistribution = 4.0;
 
 // Maps a value to a new range
 float fit(float value, float inMin, float inMax, float outMin, float outMax, bool doClamp)
@@ -115,9 +115,6 @@ void main(void)
 
 	// Pass position in object space
 	passPosition = displ_pos;
-
-	// Pass model matrix for blob light calculations
-	passModelMatrix = mvp.modelMatrix;
 
 	// Forward uvs to fragment shader
 	passUVs = in_UV0;

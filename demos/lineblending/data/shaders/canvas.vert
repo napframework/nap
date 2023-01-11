@@ -7,9 +7,9 @@
 // matrices ubo
 uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
 } mvp;
 
 in vec3	in_Position;

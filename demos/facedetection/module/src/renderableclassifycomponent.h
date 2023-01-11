@@ -176,7 +176,9 @@ namespace nap
 		nap::UniformVec3Instance* mColorUniform = nullptr;				///< Color uniform slot
 		nap::UniformMat4Instance* mProjectionUniform = nullptr;			///< Projection matrix uniform slot
 		nap::UniformMat4Instance* mViewUniform = nullptr;				///< View matrix uniform slot
-		nap::UniformMat4Instance* mModelUniform = nullptr;				///< Model matrix uniform 
+		nap::UniformMat4Instance* mModelUniform = nullptr;				///< Model matrix uniform
+		nap::UniformMat4Instance* mNormalUniform = nullptr;				///< Normal matrix rotation uniform
+		nap::UniformVec3Instance* mCameraPosUniform = nullptr;			///< Camera position uniform
 		nap::UniformIntInstance* mBlobCountUniform = nullptr;			///< Number of blobs uniform
 		nap::UniformStructArrayInstance* mBlobsUniform = nullptr;		///< Handle to the array of blobs in the plane material
 		std::vector<RGBColorFloat> mColors;								///< All selectable colors
