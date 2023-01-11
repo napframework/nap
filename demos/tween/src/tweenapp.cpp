@@ -82,12 +82,6 @@ namespace nap
 		// Find the camera location uniform in the material of the sphere
 		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		auto* ubo =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto* cam_loc_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
-
-		// Set it to the current camera location
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
 
 		// Set color
 		auto* ball_color = ubo->getOrCreateUniform<UniformVec3Instance>("ballColor");

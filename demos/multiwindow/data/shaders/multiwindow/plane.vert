@@ -7,9 +7,9 @@
 // NAP ubo, contains all the matrices
 uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
 } mvp;
 
 // Input Vertex Attributes

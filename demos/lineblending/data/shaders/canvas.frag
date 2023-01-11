@@ -12,12 +12,12 @@ in vec4 pass_Color;
 out vec4 out_Color;
 
 // uniform sampler inputs
-uniform sampler2D	mCanvas;
+uniform sampler2D mCanvas;
 
 // uniform buffer inputs
 uniform UBO
 {
-	uniform vec3	mColor;
+	vec3 mColor;
 } ubo;
 
 

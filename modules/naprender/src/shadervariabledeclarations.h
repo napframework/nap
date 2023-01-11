@@ -163,7 +163,7 @@ namespace nap
 	{
 		RTTI_ENABLE(ShaderVariableStructDeclaration)
 	public:
-		BufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, EDescriptorType descriptorType, int size);
+		BufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlags inStages, EDescriptorType descriptorType, int size);
 
 		BufferObjectDeclaration(BufferObjectDeclaration&& inRHS);
 		BufferObjectDeclaration& operator=(BufferObjectDeclaration&& inRHS);
@@ -177,7 +177,7 @@ namespace nap
 		const ShaderVariableDeclaration& getBufferDeclaration() const;
 
 		int							mBinding;									///< Shader binding identifier
-		VkShaderStageFlagBits		mStage;										///< Shader stage: vertex, fragment, compute etc.
+		VkShaderStageFlags			mStages;									///< Shader stages: vertex, fragment, compute etc.
 	};
 
 	// Type alias

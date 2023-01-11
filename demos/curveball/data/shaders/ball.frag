@@ -8,7 +8,15 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in object space
 in vec3 passPosition;					//< frag position in object space
-in mat4 passModelMatrix;				//< modelMatrix
+
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
+} mvp;
 
 // Point light structure
 struct PointLight
@@ -20,11 +28,9 @@ struct PointLight
 // Uniform inputs
 uniform UBO
 {
-	uniform vec3 		inCameraPosition;		//< Camera World Space Position
-	uniform vec3		ballColor;
-	uniform PointLight	light;
+	vec3		ballColor;
+	PointLight	light;
 } ubo;
-
 
 // output
 out vec4 out_Color;
@@ -38,31 +44,30 @@ const float 	ambientIntensity = 0.5f;
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
 	// Calculate normal to world
-	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
-	vec3 ws_normal = normalize(normal * normal_matrix);
+	vec3 ws_normal = normalize((vec4(passNormal, 0.0) * mvp.normalMatrix).xyz);
 
 	// Calculate frag to world
-	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
+	vec3 ws_position = vec3(mvp.modelMatrix * vec4(position, 1.0));
 
 	//calculate the vector from this pixels surface to the light source
-	vec3 surfaceToLight = normalize(ubo.light.mPosition - ws_position);
+	vec3 surface_to_light = normalize(ubo.light.mPosition - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(ubo.inCameraPosition - ws_position);
+	vec3 surface_to_camera = normalize(mvp.cameraPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
 
 	// diffuse
-    float diffuseCoefficient = max(0.0, dot(ws_normal, surfaceToLight));
-	vec3 diffuse = diffuseCoefficient * color * ubo.light.mIntensity;
+    float diffuse_co = max(0.0, dot(ws_normal, surface_to_light));
+	vec3 diffuse = diffuse_co * color * ubo.light.mIntensity;
 
 	// Scale specular based on vert color (greyscale)
 	float spec_intensity = specularIntensity;
 
 	// Compute specularf
-    float specularCoefficient = pow(max(0.0, dot(normalize(reflect(-surfaceToLight, ws_normal)), surfaceToCamera)), shininess);
-    vec3 specular = specularCoefficient * specularColor * ubo.light.mIntensity * spec_intensity;
+    float specular_co =  diffuse_co > 0.0 ? pow(max(0.0, dot(normalize(reflect(-surface_to_light, ws_normal)), surface_to_camera)), shininess) : 0.0;
+    vec3 specular = specular_co * specularColor * ubo.light.mIntensity * spec_intensity;
 
 	//linear color (color before gamma correction)
     return diffuse + specular + ambient;

@@ -86,6 +86,8 @@ namespace nap
 			mModelMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
 			mViewMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
 			mProjectMatUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
+			mNormalMatrixUniform = mvp_struct->getOrCreateUniform<UniformMat4Instance>(uniform::normalMatrix);
+			mCameraWorldPosUniform = mvp_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraPosition);
 		}
 		return true;
 	}
@@ -122,14 +124,20 @@ namespace nap
 		}
 
 		// Set mvp matrices if present in material
-		if(mProjectMatUniform != nullptr)
+		if (mProjectMatUniform != nullptr)
 			mProjectMatUniform->setValue(projectionMatrix);
 		
-		if(mViewMatUniform != nullptr)
+		if (mViewMatUniform != nullptr)
 			mViewMatUniform->setValue(viewMatrix);
 
-		if(mModelMatUniform != nullptr)
+		if (mModelMatUniform != nullptr)
 			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
+
+		if (mNormalMatrixUniform != nullptr)
+			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransformComponent->getGlobalTransform())));
+
+		if (mCameraWorldPosUniform != nullptr)
+			mCameraWorldPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
 
 		// Acquire new / unique descriptor set before rendering
 		MaterialInstance& mat_instance = getMaterialInstance();
