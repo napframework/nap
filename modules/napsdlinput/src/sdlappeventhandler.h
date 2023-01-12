@@ -46,7 +46,7 @@ namespace nap
 		 * @param value if touch input generates mouse events.
 		 * @return if the system accepted the hint.
 		 */
-		bool setTouchGenerateMouseEvents(bool value);
+		bool setTouchGeneratesMouseEvents(bool value);
 
 	private:
 		std::unique_ptr<SDLEventConverter> mEventConverter = nullptr;
