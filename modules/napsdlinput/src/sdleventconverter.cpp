@@ -696,7 +696,6 @@ namespace nap
 	}
 
 
-
 	nap::InputEventPtr SDLEventConverter::translateTouchEvent(SDL_Event& sdlEvent)
 	{
 		const auto& touch_map = getSDLTouchMap();
@@ -791,7 +790,6 @@ namespace nap
 		const auto& mouse_map = getSDLMouseMap();
 		return mouse_map.find(sdlEvent.type) != mouse_map.end();
 	}
-
 
 
 	bool SDLEventConverter::isTouchEvent(SDL_Event& sdlEvent) const
