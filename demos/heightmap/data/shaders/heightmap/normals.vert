@@ -7,16 +7,16 @@
 // All model view projection inputs
 uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
 } mvp;
 
 // All vert shader uniform inputs
 uniform VERTUBO
 {
-	uniform float blendValue;
-	uniform float normalBlendValue;
+	float blendValue;
+	float normalBlendValue;
 } vubo;
 
 

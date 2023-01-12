@@ -18,7 +18,7 @@ namespace nap
 {
 	SDLAppEventHandler::SDLAppEventHandler(App& app) : AppEventHandler(app)
 	{
-		if (!setTouchGenerateMouseEvents(true))
+		if (!setTouchGeneratesMouseEvents(true))
 		{
 			nap::Logger::warn("Unable to control if touch input generates mouse events");
 		}
@@ -80,7 +80,7 @@ namespace nap
 	}
 
 
-	bool SDLAppEventHandler::setTouchGenerateMouseEvents(bool value)
+	bool SDLAppEventHandler::setTouchGeneratesMouseEvents(bool value)
 	{
 		return SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
 			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0;

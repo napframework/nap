@@ -571,12 +571,12 @@ namespace nap
 	ImGuiContext* IMGuiService::processInputEvent(const InputEvent& event)
 	{
 		// Check if it's a window input event
-		if (!event.get_type().is_derived_from(RTTI_OF(nap::WindowInputEvent)))
+		if (!event.get_type().is_derived_from(RTTI_OF(WindowInputEvent)))
 			return nullptr;
 
 		// Find window associated with event
 		const auto& input_event = static_cast<const WindowInputEvent&>(event);
-		nap::RenderWindow* window = mRenderService->findWindow(input_event.mWindow);
+		RenderWindow* window = mRenderService->findWindow(input_event.mWindow);
 		assert(window != nullptr);
 
 		// Get context for window
@@ -591,7 +591,7 @@ namespace nap
 			handlePointerEvent(static_cast<const PointerEvent&>(event), *context->second);
 
 		// Key event
-		else if (event.get_type().is_derived_from(RTTI_OF(nap::KeyEvent)))
+		else if (event.get_type().is_derived_from(RTTI_OF(KeyEvent)))
 			handleKeyEvent(static_cast<const KeyEvent&>(event), *context->second);
 
 		// Touch event
@@ -599,17 +599,17 @@ namespace nap
 			handleTouchEvent(static_cast<const TouchEvent&>(event), *context->second);
 
 		// Text input event
-		else if (event.get_type().is_derived_from(RTTI_OF(nap::TextInputEvent)))
+		else if (event.get_type().is_derived_from(RTTI_OF(TextInputEvent)))
 		{
 			ImGuiIO& io = ImGui::GetIO();
-			const auto& press_event = static_cast<const nap::TextInputEvent&>(event);
+			const auto& press_event = static_cast<const TextInputEvent&>(event);
 			io.AddInputCharactersUTF8(press_event.mText.c_str());
 		}
 
 		// Mouse wheel event
-		else if (event.get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent)))
+		else if (event.get_type().is_derived_from(RTTI_OF(MouseWheelEvent)))
 		{
-			const auto& wheel_event = static_cast<const nap::MouseWheelEvent&>(event);
+			const auto& wheel_event = static_cast<const MouseWheelEvent&>(event);
 #ifdef __APPLE__
 			int delta = ImGui::GetIO().KeyShift ? wheel_event.mX * -1 : wheel_event.mY;
 #else

@@ -6,9 +6,10 @@
 
 uniform nap
 {
-	uniform mat4 projectionMatrix;
-	uniform mat4 viewMatrix;
-	uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
 } mvp;
 
 // Input Vertex Attributes
@@ -28,12 +29,11 @@ void main(void)
 	// Calculate frag position
     gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
 
-	//rotate normal based on model matrix and set
-    mat3 normal_matrix = transpose(inverse(mat3(mvp.modelMatrix)));
-	passNormal = normalize(normal_matrix * in_Normal);
+	// Rotate normal based on normal matrix and set
+	passNormal = normalize((mvp.normalMatrix * vec4(in_Normal, 0.0)).xyz);
 
-	// calculate vertex world space position and set
-	passPosition = vec3(mvp.modelMatrix * vec4(in_Position, 1));
+	// Calculate vertex world space position and set
+	passPosition = (mvp.modelMatrix * vec4(in_Position, 1.0)).xyz;
 
 	// Pass color attribute
 	passColor = in_Color0;

@@ -4,9 +4,17 @@
 
 #version 450 core
 
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
+} mvp;
+
 uniform FRAGUBO
 {
-	vec3		cameraLocation;				// World Space location of the camera
 	vec3		lightPosition;				// Light position
 	float		lightIntensity;				// Light intensity
 	vec3		diffuseColor;				// Color or the boid
@@ -60,7 +68,7 @@ void main(void)
 	vec3 boid_color = mix(boid_diffuse, boid_randomrgb, step(EPSILON, ubo.randomColor));
 
 	// Surface to camera normal
-	vec3 surface_to_cam = normalize(ubo.cameraLocation - pass_Position);
+	vec3 surface_to_cam = normalize(mvp.cameraPosition - pass_Position);
 
 	// Calculate the vector from this pixels surface to the light source
 	vec3 surface_to_light = normalize(ubo.lightPosition - pass_Position);

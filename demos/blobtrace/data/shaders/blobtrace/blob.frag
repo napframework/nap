@@ -8,7 +8,16 @@
 in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in object space
 in vec3 passPosition;					//< frag position in object space
-in mat4 passModelMatrix;				//< modelMatrix
+
+// NAP Uniforms
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
+} mvp;
 
 // Point light structure
 struct PointLight
@@ -20,15 +29,14 @@ struct PointLight
 // uniform inputs
 uniform UBOFrag
 {
-	uniform vec3 		inCameraPosition;		//< Camera World Space Position
-	uniform vec3 		inBlobPosition;			//< Blob position in uv space
-	uniform float 		inTime;					//< Modulation time
-	uniform float 		inVelocity;				//< Velocity used for modulating frequency
-	uniform vec3 		inMousePosition;		//< Current mouse position in uv space
-	uniform vec3		colorOne;				//< First color (highlight)
-	uniform vec3		colorTwo;				//< Second color
-	uniform vec3		colorEdge;				//< Edge color
-	uniform PointLight	inLight;				//< Light
+	vec3 		inBlobPosition;			//< Blob position in uv space
+	float 		inTime;					//< Modulation time
+	float 		inVelocity;				//< Velocity used for modulating frequency
+	vec3 		inMousePosition;		//< Current mouse position in uv space
+	vec3		colorOne;				//< First color (highlight)
+	vec3		colorTwo;				//< Second color
+	vec3		colorEdge;				//< Edge color
+	PointLight	inLight;				//< Light
 } ubofrag;
 
 // output
@@ -126,17 +134,16 @@ float calculateMouseCursor(vec2 uv)
 vec3 applyLight(vec3 color, vec3 normal, vec3 position)
 {
 	// Calculate normal to world
-	mat3 normal_matrix = transpose(inverse(mat3(passModelMatrix)));
-	vec3 ws_normal = normalize(normal * normal_matrix);
+	vec3 ws_normal = normalize((mvp.normalMatrix * vec4(normal, 0.0)).xyz);
 
 	// Calculate frag to world
-	vec3 ws_position = vec3(passModelMatrix * vec4(position, 1.0));
+	vec3 ws_position = (mvp.modelMatrix * vec4(position, 1.0)).xyz;
 
 	//calculate the vector from this pixels surface to the light source
 	vec3 surfaceToLight = normalize(ubofrag.inLight.mPosition - ws_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 surfaceToCamera = normalize(ubofrag.inCameraPosition - ws_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - ws_position);
 
 	// Ambient color
 	vec3 ambient = color * ambientIntensity;
@@ -184,7 +191,7 @@ void main()
 	vec3 bitangent = pos_y - pos_n;
 
 	// Calculate fake normal at frag coordinate
-	vec3 normal = cross(tangent, bitangent);
+	vec3 normal = normalize(cross(tangent, bitangent));
 
 	// Calculate edge
 	float edge_x = abs((passUVs.x - 0.5) * 2.0);
@@ -202,7 +209,7 @@ void main()
 
 	// Mix in border
 	color  = mix(color, ubofrag.colorEdge, edge);
-	normal = mix(normal, passNormal,edge);
+	normal = mix(normal, normalize(passNormal), edge);
 
 	// Apply lights and specular
 	vec3 lit_color = applyLight(color, normal, passPosition);
