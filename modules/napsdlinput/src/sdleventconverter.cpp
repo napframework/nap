@@ -512,7 +512,7 @@ namespace nap
 
 		// Normalized coordinates 
 		float nx = sdlEvent.tfinger.x;
-		float ny = 1.0f - sdlEvent.tfinger.y;
+		float ny = 1.0f - sdlEvent.tfinger.y;		// Flip Y axis because in NAP the bottom left corner of a window is 0,0
 		float pr = sdlEvent.tfinger.pressure;
 
 		// Get window coordinates if window under touch event
