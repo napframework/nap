@@ -14,8 +14,8 @@ in vec4 passColor;						//< frag color
 // uniform buffer inputs
 uniform UBO
 {
-	uniform float inSoftness;			//< brush softness
-	uniform float inFalloff;			//< brush falloff
+	float inSoftness;			//< brush softness
+	float inFalloff;			//< brush falloff
 } ubo;
 
 // output

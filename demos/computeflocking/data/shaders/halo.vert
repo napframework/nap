@@ -9,6 +9,7 @@ uniform nap
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
 	mat4 modelMatrix;
+	mat4 normalMatrix;
 } mvp;
 
 uniform VERTUBO
@@ -36,7 +37,7 @@ void main(void)
 
 	// Calculate normal in world coordinates and pass along
 	vec4 normal = vec4(in_Normals, 0.0);
-	vec3 world_normal = normalize(mvp.modelMatrix * normal).xyz;
+	vec3 world_normal = normalize(mvp.normalMatrix * normal).xyz;
 
 	// Calculate fresnel term
 	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);

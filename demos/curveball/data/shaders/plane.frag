@@ -17,9 +17,9 @@ const float maxOffset = 0.5;
 // Uniform inputs
 uniform UBO
 {
-	uniform float animationValue;
-	uniform vec3  colorOne;
-	uniform vec3  colorTwo;
+	float animationValue;
+	vec3  colorOne;
+	vec3  colorTwo;
 } ubo;
 
 // Maps a value from min, max to outmin and outmax

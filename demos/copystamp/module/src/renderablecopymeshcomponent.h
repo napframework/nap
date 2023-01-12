@@ -108,10 +108,14 @@ namespace nap
 		std::unordered_map<RenderableMesh, std::vector<int>> mMeshPositions;			///< All renderable meshes and their positions
 		Vec3VertexAttribute* mTargetVertices = nullptr;									///< Point positions to copy meshes onto
 		Vec3VertexAttribute* mTargetNormals = nullptr;									///< Point orientation of target mesh
-		nap::UniformVec3Instance* mColorUniform = nullptr;								///< Color uniform slot
-		nap::UniformMat4Instance* mProjectionUniform = nullptr;							///< Projection matrix uniform slot
-		nap::UniformMat4Instance* mViewUniform = nullptr;								///< View matrix uniform slot
-		nap::UniformMat4Instance* mModelUniform = nullptr;								///< Model matrix uniform slot
+
+		UniformMat4Instance* mModelMatUniform = nullptr;								///< Pointer to the model matrix uniform
+		UniformMat4Instance* mViewMatUniform = nullptr;									///< Pointer to the view matrix uniform
+		UniformMat4Instance* mProjectMatUniform = nullptr;								///< Pointer to the projection matrix uniform
+		UniformMat4Instance* mNormalMatrixUniform = nullptr;							///< Pointer to the normal matrix uniform
+		UniformVec3Instance* mCameraWorldPosUniform = nullptr;							///< Pointer to the camera world position uniform
+		UniformVec3Instance* mColorUniform = nullptr;									///< Color uniform slot
+
 		std::vector<RGBColorFloat> mColors;												///< All selectable colors 
 		double mTime = 0.0;																///< Total running time
 		float mRandomRotation = 0.0f;													///< Amount of randomization of rotation speed

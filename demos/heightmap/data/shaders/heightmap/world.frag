@@ -12,14 +12,23 @@ in vec3 passPosition;					//< frag world space position
 // uniform inputs
 uniform sampler2D inHeightmap;			//< World Texture
 
+// NAP Uniforms
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
+} mvp;
+
 // All uniform fragment inputs
 uniform FRAGUBO
 {
-	uniform vec3 inCameraPosition;		//< Camera World Space Position
-	uniform float blendValue;			//< height blend value
-	uniform vec3 lowerColor;			//< valley color
-	uniform vec3 upperColor;			//< peak color
-	uniform vec3 haloColor;				//< halo color
+	float blendValue;			//< height blend value
+	vec3 lowerColor;			//< valley color
+	vec3 upperColor;			//< peak color
+	vec3 haloColor;				//< halo color
 } fubo;
 
 // output
@@ -47,7 +56,7 @@ void main()
 	world_color = mix(fubo.lowerColor, world_color, blend_value);
 
 	// Calculate mesh to camera angle for halo effect
-	vec3 cam_normal = normalize(fubo.inCameraPosition - passPosition);
+	vec3 cam_normal = normalize(mvp.cameraPosition - passPosition);
 
 	// Dot product gives us the 'angle' between the surface and cam vector
 	// The result is that normals pointing away from the camera at an angle of 90* are getting a higer value

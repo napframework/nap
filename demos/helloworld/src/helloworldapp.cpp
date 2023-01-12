@@ -78,11 +78,19 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+		// Push the current color selection to the shader.
+		nap::RenderableMeshComponentInstance& renderer = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto ubo = renderer.getMaterialInstance().getOrCreateUniform("UBO");
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
+
 		// Setup GUI
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
 
 		// Colors
 		if (ImGui::CollapsingHeader("Colors"))
@@ -114,24 +122,6 @@ namespace nap
 	 */
 	void HelloWorldApp::render()
 	{
-		// Now we know the final camera position, we can push it to the world shader for the computation of the halo effect.
-		// To do that we fetch the material associated with the world mesh and query the camera location uniform.
-		// Once we have the uniform we can set it to the camera world space location
-		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
-
-		// Get camera world space position and set in sphere shader
-		nap::TransformComponentInstance& cam_xform = mPerspectiveCamEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
-
-		// Push the colors.
-		// Note that it is also possible to set shader variables on update().
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
-
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.

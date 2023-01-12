@@ -13,11 +13,11 @@ in vec4 passColor;						//< frag color
 // uniform buffer inputs
 uniform UBO
 {
-	uniform vec4 	inBrushColor; 				//< color of brush
-	uniform vec2 	inMousePosition;			//< mouse position in uv space
-	uniform float 	inBrushSize;				//< size of brush relative to uv space
-	uniform float 	inFinalMultiplier;			//< final multiplier
-	uniform float 	inEraserAmount;				//< eraser amount, when 1, brush will clear paint
+	vec4 	inBrushColor; 				//< color of brush
+	vec2 	inMousePosition;			//< mouse position in uv space
+	float 	inBrushSize;				//< size of brush relative to uv space
+	float 	inFinalMultiplier;			//< final multiplier
+	float 	inEraserAmount;				//< eraser amount, when 1, brush will clear paint
 } ubo;
 
 // unfiorm sampler inputs 			

@@ -157,20 +157,6 @@ namespace nap
 		// Once we have the uniform we can set it to the camera world space location
 		nap::RenderableMeshComponentInstance& render_mesh = mPlaneEntity->getComponent<nap::RenderableMeshComponentInstance>();
 		
-		// Get fragment shader uniform buffer object
-		RenderableMeshComponentInstance& minstance = mPlaneEntity->getComponent<RenderableMeshComponentInstance>();
-		UniformStructInstance* frag_ubo = minstance.getMaterialInstance().getOrCreateUniform("UBOFrag");
-		if (frag_ubo != nullptr)
-		{
-			nap::UniformVec3Instance* cam_loc_uniform = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("inCameraPosition");
-			if (cam_loc_uniform != nullptr)
-			{
-				nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-				glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-				cam_loc_uniform->setValue(global_pos);
-			}
-		}
-
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.

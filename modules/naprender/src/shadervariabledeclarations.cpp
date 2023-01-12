@@ -114,10 +114,10 @@ namespace nap
 
 	//////////////////////////////////////////////////////////////////////////
 
-	BufferObjectDeclaration::BufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlagBits inStage, nap::EDescriptorType descriptorType, int size) :
+	BufferObjectDeclaration::BufferObjectDeclaration(const std::string& name, int binding, VkShaderStageFlags inStages, nap::EDescriptorType descriptorType, int size) :
 		ShaderVariableStructDeclaration(name, descriptorType, 0, size),
 		mBinding(binding),
-		mStage(inStage)
+		mStages(inStages)
 	{
 	}
 
@@ -125,7 +125,7 @@ namespace nap
 	BufferObjectDeclaration::BufferObjectDeclaration(BufferObjectDeclaration&& inRHS) :
 		ShaderVariableStructDeclaration(std::move(inRHS)),
 		mBinding(inRHS.mBinding),
-		mStage(inRHS.mStage)
+		mStages(inRHS.mStages)
 	{
 	}
 
@@ -133,7 +133,7 @@ namespace nap
 	BufferObjectDeclaration& BufferObjectDeclaration::operator=(BufferObjectDeclaration&& inRHS)
 	{
 		mBinding = inRHS.mBinding;
-		mStage = inRHS.mStage;
+		mStages = inRHS.mStages;
 		ShaderVariableStructDeclaration::operator=(std::move(inRHS));
 
 		return *this;
