@@ -14,11 +14,11 @@ namespace nap
 {
 	// Forward declares
 	class InputService;
+	class InputComponentInstance;
 
 	/**
-	* The resource class for the InputComponent.
-	*/
-	class InputComponentInstance;
+	 * The resource class for the InputComponent.
+	 */
 	class InputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
@@ -36,8 +36,7 @@ namespace nap
 	public:
 		InputComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
-		{
-		}
+		{ }
 
 		/**
 		 * This function is called by an InputRouter derived class if it decides to route the input to this component.
@@ -52,14 +51,15 @@ namespace nap
 	// Key Input Component
 	//////////////////////////////////////////////////////////////////////////
 
-	/**
-	* Resource class for KeyInputComponent.
-	*/
 	class KeyInputComponentInstance;
+
+	/**
+	 * Resource class for KeyInputComponent.
+	 */
 	class NAPAPI KeyInputComponent : public InputComponent
 	{
 		RTTI_ENABLE(InputComponent)
-			DECLARE_COMPONENT(KeyInputComponent, KeyInputComponentInstance)
+		DECLARE_COMPONENT(KeyInputComponent, KeyInputComponentInstance)
 	};
 
 
@@ -75,8 +75,7 @@ namespace nap
 	public:
 		KeyInputComponentInstance(EntityInstance& entity, Component& resource) :
 			InputComponentInstance(entity, resource)
-		{
-		}
+		{ }
 
 		// Signals
 		Signal<const KeyPressEvent&>		pressed;		///< Signal emitted when a key is pressed
@@ -91,10 +90,11 @@ namespace nap
 	// Pointer Input Component
 	//////////////////////////////////////////////////////////////////////////
 
+	class PointerInputComponentInstance;
+
 	/**
 	 * Resource class for PointerInputComponent.
 	 */
-	class PointerInputComponentInstance;
 	class NAPAPI PointerInputComponent : public InputComponent
 	{
 		RTTI_ENABLE(InputComponent)
@@ -103,7 +103,7 @@ namespace nap
 
 
 	/**
-	 * Input component for mouse/touch events.
+	 * Input component for mouse events.
 	 * Register to the various signals to receive mouse events
 	 */
 	class NAPAPI PointerInputComponentInstance : public InputComponentInstance
@@ -114,12 +114,50 @@ namespace nap
 	public:
 		PointerInputComponentInstance(EntityInstance& entity, Component& resource) :
 			InputComponentInstance(entity, resource)
-		{
-		}
+		{ }
 
 		Signal<const PointerPressEvent&>	pressed;		///< Signal emitted when the input component receives a click
 		Signal<const PointerReleaseEvent&>	released;		///< Signal emitted when the click is released
 		Signal<const PointerMoveEvent&>		moved;			///< Signal emitted when this component receives a mouse move
+
+	protected:
+		virtual void trigger(const nap::InputEvent& inEvent) override;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Touch Input Component
+	//////////////////////////////////////////////////////////////////////////
+
+	class TouchInputComponentInstance;
+
+	/**
+	 * Resource class for TouchInputComponent.
+	 */
+	class NAPAPI TouchInputComponent : public InputComponent
+	{
+		RTTI_ENABLE(InputComponent)
+		DECLARE_COMPONENT(TouchInputComponent, TouchInputComponentInstance)
+	};
+
+
+	/**
+	 * Touch event input component.
+	 * Listen to the various signals to receive touch events.
+	 */
+	class NAPAPI TouchInputComponentInstance : public InputComponentInstance
+	{
+		friend class InputService;
+		RTTI_ENABLE(InputComponentInstance)
+
+	public:
+		TouchInputComponentInstance(EntityInstance& entity, Component& resource) :
+			InputComponentInstance(entity, resource)
+		{ }
+
+		Signal<const TouchPressEvent&>		pressed;		///< Signal emitted when the component receives a finger press
+		Signal<const TouchReleaseEvent&>	released;		///< Signal emitted when the finger is released
+		Signal<const TouchMoveEvent&>		moved;			///< Signal emitted when the finger moves
 
 	protected:
 		virtual void trigger(const nap::InputEvent& inEvent) override;
@@ -154,8 +192,7 @@ namespace nap
 	public:
 		ControllerInputComponentInstance(EntityInstance& entity, Component& resource) :
 			InputComponentInstance(entity, resource)
-		{
-		}
+		{ }
 
 		Signal<const ControllerButtonPressEvent&>	pressed;		///< Signal emitted when the controller button is pressed
 		Signal<const ControllerButtonReleaseEvent&>	released;		///< Signal emitted when the controller button is released
@@ -164,6 +201,4 @@ namespace nap
 	protected:
 		virtual void trigger(const nap::InputEvent& inEvent) override;
 	};
-
-
 }

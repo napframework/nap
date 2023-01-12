@@ -8,6 +8,7 @@
 
 // External includes
 #include <sdlinputservice.h>
+#include <SDL_hints.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GUIAppEventHandler)
 	RTTI_CONSTRUCTOR(nap::App&)
@@ -16,7 +17,13 @@ RTTI_END_CLASS
 namespace nap
 {
 	GUIAppEventHandler::GUIAppEventHandler(App& app) : AppEventHandler(app)
-	{ }
+	{
+		if (!setTouchGeneratesMouseEvents(true))
+		{
+			nap::Logger::warn("Unable to control if touch input generates mouse events");
+		}
+	}
+
 
 	void GUIAppEventHandler::start()
 	{
@@ -36,7 +43,7 @@ namespace nap
 		bool quit = false;
 		while (SDL_PollEvent(&event))
 		{
-			// Forward if we're not capturing mouse and it's a pointer event
+			// Forward if we're not capturing the mouse in the GUI and it's a pointer event
 			if (mEventConverter->isMouseEvent(event))
 			{
 				nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
@@ -50,7 +57,7 @@ namespace nap
 				}
 			}
 
-			// Forward if we're not capturing keyboard and it's a key event
+			// Forward if we're not capturing the keyboard in the GUI and it's a key event
 			else if (mEventConverter->isKeyEvent(event))
 			{
 				nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
@@ -60,6 +67,36 @@ namespace nap
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
 				{
+					getApp<App>().inputMessageReceived(std::move(input_event));
+				}
+			}
+
+			// Always forward touch events
+			else if (mEventConverter->isTouchEvent(event))
+			{
+				nap::InputEventPtr input_event = mEventConverter->translateTouchEvent(event);
+				if (input_event == nullptr)
+					continue;
+
+				// If the touch overlays a window, check if it needs to be handled by the GUI
+				assert(input_event->get_type().is_derived_from(RTTI_OF(TouchEvent)));
+				auto* touch_event = static_cast<TouchEvent*>(input_event.get());
+				if (touch_event->hasWindow())
+				{
+					// Forward touch event to GUI if touch input does not generate mouse events.
+					ImGuiContext* ctx = !mTouchGeneratesMouseEvents ?
+						mGuiService->processInputEvent(*input_event) :
+						mGuiService->findContext(touch_event->mWindow);
+
+					// Forward touch input to running app if gui isn't capturing this touch event
+					if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
+					{
+						getApp<App>().inputMessageReceived(std::move(input_event));
+					}
+				}
+				else
+				{
+					// No window associated with touch event, let the app handle it
 					getApp<App>().inputMessageReceived(std::move(input_event));
 				}
 			}
@@ -103,5 +140,17 @@ namespace nap
 	{
 		mEventConverter.reset(nullptr);
 		mGuiService = nullptr;
+	}
+
+
+	bool GUIAppEventHandler::setTouchGeneratesMouseEvents(bool value)
+	{
+		if (SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
+			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0)
+		{
+			mTouchGeneratesMouseEvents = value;
+			return true;
+		}
+		return false;
 	}
 }

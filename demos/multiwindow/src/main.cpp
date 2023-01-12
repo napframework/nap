@@ -20,8 +20,8 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner using default event handler
-	nap::AppRunner<nap::MultiWindowApp, nap::GUIAppEventHandler> app_runner(core);
-
+	nap::AppRunner<nap::MultiWindowApp, nap::GUIAppEventHandler> app_runner(core);	
+	
 	// Start
 	nap::utility::ErrorState error;
 	if (!app_runner.start(error))

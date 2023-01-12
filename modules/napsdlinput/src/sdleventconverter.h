@@ -45,7 +45,7 @@ namespace nap
 		SDLEventConverter& operator=(SDLEventConverter&&) = delete;
 
 		/**
-		* Utility function that checks if this is an input event (key, mouse or controller)
+		* Utility function that checks if this is an input event (key, mouse, touch or controller)
 		* @param sdlEvent the sdlEvent to verify
 		* @return if this sdl event is an input event
 		*/
@@ -89,6 +89,22 @@ namespace nap
 		* @return a nap pointer event, nullptr if the event could not be translated
 		*/
 		nap::InputEventPtr translateMouseEvent(SDL_Event& sdlEvent);
+
+		/**
+		 * Utility functions that checks if this is a touch input event.
+		 * @param sdlEvent the sdlEvent to verify, touch finger events are considered valid.
+		 * @return if this SDL event is a touch compatible event
+		 */
+		bool isTouchEvent(SDL_Event& sdlEvent) const;
+
+		/**
+		 * Utility function to translate an SDL event into a NAP touch event.
+		 * This call assumes that the given SDL event can be translated into a NAP touch event!
+		 * Use isTouchEvent() to verify if the events are compatible.
+		 * @param sdlEvent the sdl mouse event to translate
+		 * @return a nap pointer event, nullptr if the event could not be translated
+		 */
+		nap::InputEventPtr translateTouchEvent(SDL_Event& sdlEvent);
 
 		/**
 		* Utility functions that checks if this is a controller input event (gamepad or joystick).
