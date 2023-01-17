@@ -359,7 +359,7 @@ namespace nap
 		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
 			nap::PointerPressEvent* event = static_cast<nap::PointerPressEvent*>(inputEvent.get());
-			if (event->mButton == EMouseButton::LEFT)
+			if (event->mButton == PointerClickEvent::EButton::LEFT)
 			{
 				mMouseDown = true;
 			}
@@ -369,7 +369,7 @@ namespace nap
 		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
 		{
 			nap::PointerReleaseEvent* event = static_cast<nap::PointerReleaseEvent*>(inputEvent.get());
-			if (event->mButton == EMouseButton::LEFT)
+			if (event->mButton == PointerClickEvent::EButton::LEFT)
 			{
 				mMouseDown = false;
 			}

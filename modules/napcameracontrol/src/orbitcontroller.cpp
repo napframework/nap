@@ -91,10 +91,10 @@ namespace nap
 
 		switch (pointerPressEvent.mButton)
 		{
-		case EMouseButton::LEFT:
+		case PointerClickEvent::EButton::LEFT:
 			mMode = EMode::Rotating;
 			break;
-		case EMouseButton::RIGHT:
+		case PointerClickEvent::EButton::RIGHT:
 			mMode = EMode::Zooming;
 			break;
 		default:
