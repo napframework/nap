@@ -47,9 +47,11 @@ namespace nap
 		if (!mLicenseService->validateLicense(ApplicationPublicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA512, mLicenseInfo, mLicenseError))
 			mLicenseValid = false;
 
-		// Get machine identifier
+		// Get machine identifier (Linux, Win32), Apple not supported
+#ifndef __APPLE__
 		if (!mLicenseService->getMachineID(mMachineID, error))
 			return false;
+#endif // !__APPLE__
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
