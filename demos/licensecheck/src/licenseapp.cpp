@@ -48,10 +48,9 @@ namespace nap
 			mLicenseValid = false;
 
 		// Get machine identifier (Linux, Win32), Apple not supported
-#ifndef __APPLE__
-		if (!mLicenseService->getMachineID(mMachineID, error))
-			return false;
-#endif // !__APPLE__
+		utility::ErrorState id_error;
+		if (!mLicenseService->getMachineID(mMachineID, id_error))
+			nap::Logger::warn("Unable to get machine ID: %s", id_error.toString().c_str());
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
