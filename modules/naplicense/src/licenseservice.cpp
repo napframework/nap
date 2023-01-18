@@ -159,7 +159,7 @@ namespace nap
 		{
 			if ((interface->ifa_addr) && (interface->ifa_addr->sa_family == AF_PACKET))
 			{
-				struct sockaddr_ll* s = (struct sockaddr_ll*)interface->ifa_addr;
+				sockaddr_ll* s = reinterpret_cast<sockaddr_ll*>(interface->ifa_addr);
 				for (auto i = 0; i < s->sll_halen; i++)
 					id ^= static_cast<uint64>(s->sll_addr[i]) << (i * 8);
 			}
