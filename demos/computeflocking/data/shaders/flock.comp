@@ -178,13 +178,11 @@ vec3 clampMagnitude(const vec3 v, const float min, const float max)
 
 
 // Returns a steering vector towards targetDir
-// @param targetDir: the target direction
+// @param force: the direction of the force, limited by maxSpeed
 // @param velocity: the current velocity
-// @param maxSteerForce: the maximum steer force, affects speed and direction
-vec3 steerTowards(const vec3 targetDir, const vec3 velocity, const float maxSteerForce)
+vec3 blendForce(const vec3 force, const vec3 velocity)
 {
-	vec3 v = !isZero(targetDir) ? normalize(targetDir) * ubo.maxSpeed - velocity : velocity;
-	return clampMagnitude(v, length(v), maxSteerForce);
+	return !isZero(force) ? (normalize(force) * ubo.maxSpeed - velocity) : vec3(0.0);
 }
 
 
@@ -315,7 +313,8 @@ void computeForcesShared(
 	flockCenter = vec4(0.0);
 	numFlockMates = 0U;
 
-	vec3 dir = safeNormalize(velocity);
+	const vec3 dir = safeNormalize(velocity);
+	const float max_view_dot = 0.1;
 
 	// Copy to fast shared data and process in chunks of MAX_GROUP_SIZE_X
 	uint local_id = gl_LocalInvocationID.x;
@@ -351,10 +350,10 @@ void computeForcesShared(
 			float l1 = dot(offset, offset);
 
 			// Vision is a half sphere
-			float lookdot = dot(dir, normalize(offset));
+			float view_dot = dot(dir, normalize(offset));
 
 			// Evaluating both the radius and the dot product gives us a view cone
-			if ((l1 > EPSILON) && (l1 < ubo.viewRadius * ubo.viewRadius) && (lookdot > -0.1)) 
+			if ((l1 > EPSILON) && (l1 < ubo.viewRadius * ubo.viewRadius) && (view_dot > max_view_dot)) 
 			{
 				other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
 
@@ -398,7 +397,7 @@ void main()
 
 	// Calculate base acceleration determined by a moving global target position
 	vec4 offset = vec4(ubo.target, 0.0) - b.position;
-	vec3 acceleration = steerTowards(offset.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.targetWeight;
+	vec3 acceleration = blendForce(offset.xyz, b.velocity.xyz) * ubo.targetWeight;
 
 	// Calculate individual forces (direction and magnitude)
 	// 'alignment' indicates a force pushing towards the average heading of the flock
@@ -411,9 +410,9 @@ void main()
 		vec4 mean_flock_heading = flock_heading / fcount;
 		vec4 mean_avoidance_heading = avoidance_heading / fcount;
 
-		vec3 alignment = steerTowards(mean_flock_heading.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.alignmentWeight;
-		vec3 cohesion = steerTowards(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.cohesionWeight;
-		vec3 seperation = steerTowards(mean_avoidance_heading.xyz, b.velocity.xyz, ubo.maxSteerForce) * ubo.separationWeight;
+		vec3 alignment = blendForce(mean_flock_heading.xyz, b.velocity.xyz) * ubo.alignmentWeight;
+		vec3 cohesion = blendForce(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz) * ubo.cohesionWeight;
+		vec3 seperation = blendForce(mean_avoidance_heading.xyz, b.velocity.xyz) * ubo.separationWeight;
 
 		acceleration += alignment;
 		acceleration += cohesion;
@@ -429,12 +428,13 @@ void main()
 	{
 		vec3 hit_norm = normalize(b.position.xyz + dir * dist);	
 		vec3 refl = reflect(dir, hit_norm);		
-		vec3 avoid = steerTowards(refl, b.velocity.xyz, ubo.maxSteerForce) * avoidBoundWeightConst;
+		vec3 avoid = blendForce(refl, b.velocity.xyz) * avoidBoundWeightConst;
 		acceleration += avoid;
 	}
 
 	// Calculate velocity
-	vec3 vel = clampMagnitude(b.velocity.xyz + acceleration * ubo.deltaTime, ubo.minSpeed, ubo.maxSteerForce);
+	vec3 vel = b.velocity.xyz + acceleration * ubo.deltaTime;
+	vel = clampMagnitude(vel, max(ubo.minSpeed, EPSILON), max(ubo.maxSpeed, EPSILON));
 
 	// Write current boid
 	b.velocity.xyz = mix(vel, b.velocity.xyz, 0.5);
@@ -445,14 +445,15 @@ void main()
 
 	// Get a quaternion describing the boid's delta rotation
 	vec3 dir_orig = rotate(FORWARD, b.orientation);
-	vec3 dir_dest = normalize(steerTowards(dir_orig, b.velocity.xyz, ubo.maxSteerForce));
+	vec3 dir_dest = normalize(blendForce(dir_orig, b.velocity.xyz));
 	vec4 q_delta = rotationQuat(dir_orig, dir_dest);
 
 	// Compose a new orientation from last frame's quat and the delta
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.5), b.mateRate) * 0.97;
+	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.55), b.mateRate);
+	b.mateRate = clamp(b.mateRate, 0.0, 1.0) * 0.97;
 
 	// Write boid to output buffer
 	ssbo_out.boids[global_id] = b;

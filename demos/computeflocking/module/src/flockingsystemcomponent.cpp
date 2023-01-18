@@ -26,7 +26,6 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("AvoidRadius",				&nap::FlockingSystemComponent::mAvoidRadiusParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MinSpeed",					&nap::FlockingSystemComponent::mMinSpeedParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxSpeed",					&nap::FlockingSystemComponent::mMaxSpeedParam,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxSteerForce",				&nap::FlockingSystemComponent::mMaxSteerForceParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TargetWeight",				&nap::FlockingSystemComponent::mTargetWeightParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AlignmentWeight",			&nap::FlockingSystemComponent::mAlignmentWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CohesionWeight",				&nap::FlockingSystemComponent::mCohesionWeightParam,		nap::rtti::EPropertyMetaData::Default)
@@ -91,7 +90,6 @@ namespace nap
 		constexpr const char* avoidRadius = "avoidRadius";
 		constexpr const char* minSpeed = "minSpeed";
 		constexpr const char* maxSpeed = "maxSpeed";
-		constexpr const char* maxSteerForce = "maxSteerForce";
 		constexpr const char* targetWeight = "targetWeight";
 		constexpr const char* alignmentWeight = "alignmentWeight";
 		constexpr const char* cohesionWeight = "cohesionWeight";
@@ -173,7 +171,6 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius)->setValue(mResource->mAvoidRadiusParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed)->setValue(mResource->mMinSpeedParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed)->setValue(mResource->mMaxSpeedParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSteerForce)->setValue(mResource->mMaxSteerForceParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight)->setValue(mResource->mTargetWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight)->setValue(mResource->mAlignmentWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);

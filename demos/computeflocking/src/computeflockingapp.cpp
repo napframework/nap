@@ -163,11 +163,10 @@ namespace nap
 		UniformVec3Instance* cam_location_uni = ubo_struct->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
 		cam_location_uni->setValue(mCameraEntity->getComponent<TransformComponentInstance>().getTranslate());
 
-		// Update if we need to display bounds and gnomon
+		// Update if we need to display bounds
 		bool show = rtti_cast<ParameterBool>(mShowBoundsParam.get())->mValue;
 		mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsWireFrame")->setVisible(show);
 		mBoundsEntity->findComponentByID<RenderableMeshComponentInstance>("RenderBoundsFill")->setVisible(show);
-		mWorldEntity->getComponent<RenderGnomonComponentInstance>().setVisible(show);
 	}
 
 
