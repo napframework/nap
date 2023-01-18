@@ -161,7 +161,7 @@ namespace nap
 			{
 				struct sockaddr_ll* s = (struct sockaddr_ll*)interface->ifa_addr;
 				for (auto i = 0; i < s->sll_halen; i++)
-					id ^= static_cast<int64>(s->sll_addr[i]) << (i * 8);
+					id ^= static_cast<uint64>(s->sll_addr[i]) << (i * 8);
 			}
 		}
 		freeifaddrs(if_addresses);
@@ -182,33 +182,26 @@ namespace nap
 #elif _WIN32
 	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
 	{
+		id = 0;
+
 		//////////////////////////////////////////////////////////////////////////
 		// Network adapters
 		//////////////////////////////////////////////////////////////////////////
 
-		id = 0;
-		PIP_ADAPTER_INFO p_adapter_info;
-		ULONG buf_length = sizeof(IP_ADAPTER_INFO);
-		p_adapter_info = (IP_ADAPTER_INFO*)malloc(sizeof(IP_ADAPTER_INFO));
-		if (!error.check(p_adapter_info != nullptr,
-			"Error allocating network information"))
-			return false;
-
 		// Make an initial call to GetAdaptersInfo to get the necessary size into the ulOutBufLen variable
+		PIP_ADAPTER_INFO p_adapter_info = nullptr; ULONG buf_length = 0;
 		if (GetAdaptersInfo(p_adapter_info, &buf_length) == ERROR_BUFFER_OVERFLOW)
 		{
-			free(p_adapter_info);
-			p_adapter_info = (IP_ADAPTER_INFO*)malloc(buf_length);
-			if (!error.check(p_adapter_info != nullptr,
-				"Error allocating network information"))
+			p_adapter_info = (IP_ADAPTER_INFO*)std::malloc(buf_length);
+			if (!error.check(p_adapter_info != nullptr, "Error allocating network information"))
 				return false;
 		}
 
 		// Get adapter information
-		if (!error.check(GetAdaptersInfo(p_adapter_info, &buf_length) == NO_ERROR,
+		if (!error.check(GetAdaptersInfo(p_adapter_info, &buf_length) == NO_ERROR, 
 			"Unable to access network interfaces"))
 		{
-			free(p_adapter_info);
+			std::free(p_adapter_info);
 			return false;
 		}
 
@@ -221,7 +214,7 @@ namespace nap
 		}
 
 		// Free adapter information
-		free(p_adapter_info);
+		std::free(p_adapter_info);
 
 		//////////////////////////////////////////////////////////////////////////
 		// UUID
@@ -391,7 +384,7 @@ namespace nap
 				return false;
 			}
 
-			uint64 license_id = stoull(it->second);
+			uint64 license_id = std::stoull(it->second);
 			if (!error.check(machine_id == license_id, "Identification failed: machine IDs don't match"))
 				return false;
 		}
