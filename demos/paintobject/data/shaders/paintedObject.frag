@@ -9,19 +9,27 @@ in vec3 passUVs;						//< frag Uv's
 in vec3 passNormal;						//< frag normal in world space
 in vec3 passPosition;					//< frag world space position 
 in mat4 passModelMatrix;				//< model matrix
-in vec3	cameraLocation;					//< World Space location of the camera
 in vec3 passVert;						// The vertex position
+
+uniform nap
+{
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
+} mvp;
 
 // uniform buffer inputs
 uniform UBO
 {
-    uniform vec3		LightPosition; 	//< light position in world space
-	uniform float 		LightIntensity; //< light intensity
+    vec3			LightPosition; 		//< light position in world space
+	float 			LightIntensity; 	//< light intensity
 } ubo;
 
 // unfiorm sampler inputs 
-uniform sampler2D inPaintTexture;		//< Paint Texture
-uniform sampler2D inTexture;			//< Object Texture
+uniform sampler2D	inPaintTexture;		//< Paint Texture
+uniform sampler2D	inTexture;			//< Object Texture
 
 // Light constants
 const float			ambientIntensity = 0.5;					// Ambient light intensity
@@ -44,8 +52,7 @@ vec3 computeLightContribution(vec3 color)
 	vec3 surfaceToLight = normalize(ubo.LightPosition - frag_position);
 
 	// calculate vector that defines the distance from camera to the surface
-	vec3 cameraPosition = cameraLocation;
-	vec3 surfaceToCamera = normalize(cameraPosition - frag_position);
+	vec3 surfaceToCamera = normalize(mvp.cameraPosition - frag_position);
 	
 	//diffuse
     float diffuseCoefficient = max(0.0, dot(normal, surfaceToLight));

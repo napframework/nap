@@ -2,6 +2,10 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// External Includes
+#include <SDL_hints.h>
+#include <nap/logger.h>
+
 // Local Includes
 #include "sdlappeventhandler.h"
 #include "sdlinputservice.h"
@@ -13,7 +17,12 @@ RTTI_END_CLASS
 namespace nap
 {
 	SDLAppEventHandler::SDLAppEventHandler(App& app) : AppEventHandler(app)
-	{ }
+	{
+		if (!setTouchGeneratesMouseEvents(true))
+		{
+			nap::Logger::warn("Unable to control if touch input generates mouse events");
+		}
+	}
 
 
 	void SDLAppEventHandler::start()
@@ -68,5 +77,12 @@ namespace nap
 	void SDLAppEventHandler::shutdown()
 	{
 		mEventConverter.reset(nullptr);
+	}
+
+
+	bool SDLAppEventHandler::setTouchGeneratesMouseEvents(bool value)
+	{
+		return SDL_SetHintWithPriority(SDL_HINT_TOUCH_MOUSE_EVENTS, value ? "1" : "0",
+			SDL_HintPriority::SDL_HINT_OVERRIDE) > 0;
 	}
 }

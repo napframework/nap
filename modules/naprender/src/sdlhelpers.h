@@ -165,32 +165,65 @@ namespace nap
 		void NAPAPI showCursor();
 
 		/**
+		 * Returns if the cursor is visible
+		 * @return if the cursor is visible
+		 */
+		bool NAPAPI cursorVisible();
+
+		/**
+		 * Toggles cursor visibility on / off
+		 */
+		void NAPAPI toggleCursor();
+
+		/**
+		 * Returns the mouse cursor position relative to the focus window.
+		 * @return cursor position relative to the focus window
+		 */
+		glm::ivec2 NAPAPI getCursorPosition();
+
+		/**
+		 * Get the position of the cursor, in relation to the desktop.
+		 * This works just like getCursorPosition(), but the coordinates will be reported relative to the top-left of the desktop.
+		 * Current position of the cursor, in relation to the desktop
+		 */
+		glm::ivec2 NAPAPI getGlobalCursorPosition();
+
+		/**
+		 * Get the current state of the mouse relative to the focus window.
+		 * @param x the current x coordinate. Can be nullptr
+		 * @param y the current y coordinate. Can be nullptr
+		 * @return The current button state as a bitmask, which can be tested using the SDL_BUTTON(X) macros.
+		 */
+		uint32 NAPAPI getMouseState(int* x, int* y);
+
+		/**
+		 * Get the current state of the mouse, in relation to the desktop.
+		 * This works just like getMouseState(), but the coordinates will be reported relative to the top-left of the desktop.
+		 * @param x the current x coordinate, relative to the desktop. Can be nullptr
+		 * @param y the current y coordinate, relative to the desktop. Can be nullptr
+		 * @return The current button state as a bitmask, which can be tested using the SDL_BUTTON(X) macros.
+		 */
+		uint32 NAPAPI getGlobalMouseState(int* x, int* y);
+
+		/**
 		 * Initializes SDL video system.
 		 * Call this before creating any windows or render contexts!
 		 * @return if the system initialized correctly or not
 		 */
-		bool initVideo(utility::ErrorState& error);
+		bool NAPAPI initVideo(utility::ErrorState& error);
 
 		/**
 	 	 * Controls if the window has any borders.
 		 * @param window the window to set
 		 * @param hasBorders if the window should have borders
 		 */
-		void setWindowBordered(SDL_Window* window, bool hasBorders);
+		void NAPAPI setWindowBordered(SDL_Window* window, bool hasBorders);
 
 		/**
 		 * Sets the window title.
 		 * @param window the window to set the title for
 		 * @param name the new window name
 		 */
-		void setWindowTitle(SDL_Window* window, const std::string& name);
-
-
-		/**
-		 * Returns an SDL window based on the given ID
-		 * @param id the window id to query
-		 * @return handle to the SDL window, nullptr if not found
-		 */
-		SDL_Window* getWindow(uint32_t id);
+		void NAPAPI setWindowTitle(SDL_Window* window, const std::string& name);
 	}
 }

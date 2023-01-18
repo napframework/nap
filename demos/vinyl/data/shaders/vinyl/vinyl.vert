@@ -7,9 +7,11 @@
 // Vertex shader model matrix uniforms
 uniform nap
 {
-		uniform mat4 projectionMatrix;
-		uniform mat4 viewMatrix;
-		uniform mat4 modelMatrix;
+	mat4 projectionMatrix;
+	mat4 viewMatrix;
+	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
 } mvp;
 
 // Input attributes

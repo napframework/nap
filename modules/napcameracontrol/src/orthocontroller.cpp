@@ -95,11 +95,11 @@ namespace nap
 		if (!mEnabled)
 			return;
 
-		if (pointerPressEvent.mButton == EMouseButton::LEFT)
+		if (pointerPressEvent.mButton == PointerClickEvent::EButton::LEFT)
 		{
 			mMode = EMode::Pan;
 		}
-		else if (pointerPressEvent.mButton == EMouseButton::RIGHT)
+		else if (pointerPressEvent.mButton == PointerClickEvent::EButton::RIGHT)
 		{
 			mMode = EMode::Zoom;
 

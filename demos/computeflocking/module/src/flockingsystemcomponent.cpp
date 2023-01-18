@@ -26,7 +26,6 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("AvoidRadius",				&nap::FlockingSystemComponent::mAvoidRadiusParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MinSpeed",					&nap::FlockingSystemComponent::mMinSpeedParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MaxSpeed",					&nap::FlockingSystemComponent::mMaxSpeedParam,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxSteerForce",				&nap::FlockingSystemComponent::mMaxSteerForceParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TargetWeight",				&nap::FlockingSystemComponent::mTargetWeightParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AlignmentWeight",			&nap::FlockingSystemComponent::mAlignmentWeightParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CohesionWeight",				&nap::FlockingSystemComponent::mCohesionWeightParam,		nap::rtti::EPropertyMetaData::Default)
@@ -46,7 +45,6 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MateColorRate",				&nap::FlockingSystemComponent::mMateColorRateParam,			nap::rtti::EPropertyMetaData::Default)
 
-	RTTI_PROPERTY("PerspCameraComponent",		&nap::FlockingSystemComponent::mPerspCameraComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -66,7 +64,6 @@ namespace nap
 		constexpr const char* FRAGUBO = "FRAGUBO";
 		constexpr const char* randomColor = "randomColor";
 		constexpr const char* boidSize = "boidSize";
-		constexpr const char* cameraLocation = "cameraLocation";
 		constexpr const char* lightPosition = "lightPosition";
 		constexpr const char* lightIntensity = "lightIntensity";
 		constexpr const char* diffuseColor = "diffuseColor";
@@ -93,7 +90,6 @@ namespace nap
 		constexpr const char* avoidRadius = "avoidRadius";
 		constexpr const char* minSpeed = "minSpeed";
 		constexpr const char* maxSpeed = "maxSpeed";
-		constexpr const char* maxSteerForce = "maxSteerForce";
 		constexpr const char* targetWeight = "targetWeight";
 		constexpr const char* alignmentWeight = "alignmentWeight";
 		constexpr const char* cohesionWeight = "cohesionWeight";
@@ -175,7 +171,6 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius)->setValue(mResource->mAvoidRadiusParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed)->setValue(mResource->mMinSpeedParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed)->setValue(mResource->mMaxSpeedParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSteerForce)->setValue(mResource->mMaxSteerForceParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight)->setValue(mResource->mTargetWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight)->setValue(mResource->mAlignmentWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
@@ -188,14 +183,11 @@ namespace nap
 
 	void FlockingSystemComponentInstance::updateRenderMaterial()
 	{
-		auto& camera_transform = mPerspCameraComponent->getEntityInstance()->getComponent<TransformComponentInstance>();
-
 		// Update vertex shader uniforms
 		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale)->setValue(mResource->mFresnelScaleParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
 		}
@@ -214,7 +206,6 @@ namespace nap
 		if (ubo_struct != nullptr)
 		{
 			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_transform.getTranslate());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor)->setValue(mResource->mDiffuseColorParam->mValue.toVec3());
@@ -274,6 +265,12 @@ namespace nap
 
 		if (mModelMatUniform != nullptr)
 			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
+
+		if (mNormalMatrixUniform != nullptr)
+			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransformComponent->getGlobalTransform())));
+
+		if (mCameraWorldPosUniform != nullptr)
+			mCameraWorldPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
 
 		// Acquire new / unique descriptor set before rendering
 		MaterialInstance& mat_instance = getMaterialInstance();

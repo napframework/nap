@@ -33,6 +33,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderWindow)
 	RTTI_PROPERTY("ClearColor",				&nap::RenderWindow::mClearColor,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Samples",				&nap::RenderWindow::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("AdditionalSwapImages",	&nap::RenderWindow::mAddedSwapImages,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RestoreSize",			&nap::RenderWindow::mRestoreSize,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RestorePosition",		&nap::RenderWindow::mRestorePosition,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap

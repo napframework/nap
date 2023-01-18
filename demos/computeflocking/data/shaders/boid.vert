@@ -23,6 +23,8 @@ uniform nap
 	mat4 projectionMatrix;
 	mat4 viewMatrix;
 	mat4 modelMatrix;
+	mat4 normalMatrix;
+	vec3 cameraPosition;
 } mvp;
 
 uniform VERTUBO
@@ -69,7 +71,8 @@ void main(void)
 	vec4 position = vec4(boidSize * in_Position, 1.0);
 
 	// Transform the fetched position to world space using the position and orientation of the boid
-	vec4 world_position = vec4(rotate((mvp.modelMatrix * position).xyz, b.orientation) + b.position.xyz, 1.0);
+	vec3 flock_position = rotate(position.xyz, b.orientation) + b.position.xyz;
+	vec4 world_position = mvp.modelMatrix * vec4(flock_position, 1.0);
 
 	// Calculate position
 	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
@@ -78,11 +81,11 @@ void main(void)
 	pass_Position = world_position.xyz;
 
 	// Calculate normal in world coordinates and pass along
-	vec4 normal = vec4(in_Normals, 0.0);
-	vec3 world_normal = normalize(rotate((mvp.modelMatrix * normal).xyz, b.orientation));
+	vec3 flock_normal = normalize(rotate(in_Normals, b.orientation));
+	vec3 world_normal = normalize((mvp.modelMatrix * vec4(flock_normal, 0.0)).xyz);
 	pass_Normal = world_normal;
 
-	vec3 eye_to_surface = normalize(world_position.xyz - cameraLocation);
+	vec3 eye_to_surface = normalize(world_position.xyz - mvp.cameraPosition);
 	float fresnel = 0.04 + 0.96 * pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), fresnelPower);
 	pass_Fresnel = fresnelScale * fresnel;
 

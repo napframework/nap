@@ -29,7 +29,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoidTargetMesh",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "BoidTargetPointMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -54,8 +54,8 @@
                 {
                     "Type": "nap::BoidTargetTranslateComponent",
                     "mID": "BoidTargetTranslateComponent",
-                    "Radius": 0.75,
-                    "Speed": 0.07999999821186066,
+                    "Radius": 1.0,
+                    "Speed": 0.2,
                     "RandomOffset": true
                 }
             ],
@@ -333,7 +333,6 @@
                     "AvoidRadius": "AvoidRadiusParameter",
                     "MinSpeed": "MinSpeedParameter",
                     "MaxSpeed": "MaxSpeedParameter",
-                    "MaxSteerForce": "MaxSteerForceParameter",
                     "TargetWeight": "TargetWeightParameter",
                     "AlignmentWeight": "AlignmentWeightParameter",
                     "CohesionWeight": "CohesionWeightParameter",
@@ -663,14 +662,6 @@
                         },
                         "UniformScale": 1.0
                     }
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomonComponent",
-                    "Visible": false,
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": [
@@ -714,7 +705,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ViewRadiusParameter",
                             "Name": "ViewRadius",
-                            "Value": 1.0,
+                            "Value": 0.6,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -722,7 +713,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "AvoidRadiusParameter",
                             "Name": "AvoidRadius",
-                            "Value": 1.215999960899353,
+                            "Value": 0.5,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -730,7 +721,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "MinSpeedParameter",
                             "Name": "MinSpeed",
-                            "Value": 2.6530001163482668,
+                            "Value": 3.0,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         },
@@ -738,23 +729,15 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "MaxSpeedParameter",
                             "Name": "MaxSpeed",
-                            "Value": 7.394000053405762,
+                            "Value": 8.0,
                             "Minimum": 0.0,
                             "Maximum": 10.0
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "MaxSteerForceParameter",
-                            "Name": "MaxSteerForce",
-                            "Value": 6.0,
-                            "Minimum": 0.10000000149011612,
-                            "Maximum": 8.0
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
                             "mID": "TargetWeightParameter",
                             "Name": "TargetWeight",
-                            "Value": 1.0,
+                            "Value": 0.9,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -762,7 +745,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "AlignmentWeightParameter",
                             "Name": "AlignmentWeight",
-                            "Value": 0.3149999976158142,
+                            "Value": 1.6,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -770,7 +753,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "CohesionWeightParameter",
                             "Name": "CohesionWeight",
-                            "Value": 0.18299999833106996,
+                            "Value": 0.3,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -778,7 +761,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SeparationWeightParameter",
                             "Name": "SeparationWeight",
-                            "Value": 1.4789999723434449,
+                            "Value": 1.3,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1242,16 +1225,6 @@
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "ReadWrite"
-                },
-                {
-                    "Type": "nap::GnomonMesh",
-                    "mID": "GnomonMesh",
-                    "Size": 1.0,
-                    "Position": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    }
                 },
                 {
                     "Type": "nap::RenderTarget",

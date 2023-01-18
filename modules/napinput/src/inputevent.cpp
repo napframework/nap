@@ -4,7 +4,6 @@
 
 #include <inputevent.h>
 
-// RTTI Definitions
 RTTI_DEFINE_BASE(nap::InputEvent)
 RTTI_DEFINE_BASE(nap::WindowInputEvent)
 RTTI_DEFINE_BASE(nap::ControllerEvent)
@@ -12,6 +11,7 @@ RTTI_DEFINE_BASE(nap::ControllerButtonEvent)
 RTTI_DEFINE_BASE(nap::KeyEvent)
 RTTI_DEFINE_BASE(nap::PointerEvent)
 RTTI_DEFINE_BASE(nap::PointerClickEvent)
+RTTI_DEFINE_BASE(nap::TouchEvent)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyPressEvent)
 	RTTI_CONSTRUCTOR(nap::EKeyCode, int)
@@ -22,19 +22,31 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyReleaseEvent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerPressEvent)
-	RTTI_CONSTRUCTOR(int, int, nap::EMouseButton, int, int)
+	RTTI_CONSTRUCTOR(int, int, nap::PointerClickEvent::EButton, int, nap::PointerEvent::ESource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerReleaseEvent)
-	RTTI_CONSTRUCTOR(int, int, nap::EMouseButton, int, int)
+	RTTI_CONSTRUCTOR(int, int, nap::PointerClickEvent::EButton, int, nap::PointerEvent::ESource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerMoveEvent)
-	RTTI_CONSTRUCTOR(int, int, int, int, int, int)
+	RTTI_CONSTRUCTOR(int, int, int, int, int, nap::PointerEvent::ESource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MouseWheelEvent)
 	RTTI_CONSTRUCTOR(int, int, int)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchPressEvent)
+	RTTI_CONSTRUCTOR(int, int, float, float, float, int, int, int)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchReleaseEvent)
+	RTTI_CONSTRUCTOR(int, int, float, float, float, int, int, int)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchMoveEvent)
+	RTTI_CONSTRUCTOR(int, int, float, float, float, float, float, int, int, int)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ControllerButtonPressEvent)

@@ -34,6 +34,9 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	// ImGUI debug popup ID
+	static constexpr const char* popupID = "Running Debug Build";
+
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -106,15 +109,15 @@ namespace nap
 		std::vector<EntityInstance*> entities = { mPerspectiveCamEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Notify user that painting in debug mode is slow
-#ifndef NDEBUG
-		if (!mOpened)
-			ImGui::OpenPopup("Running Debug Build");
-		handlePopup();
-#endif // DEBUG
-
 		// Add some gui elements
 		ImGui::Begin("Controls");
+
+		// Notify user that painting in debug mode is slow
+#ifndef NDEBUG
+		if (!mPopupOpened)
+			ImGui::OpenPopup(popupID);
+		handlePopup();
+#endif // DEBUG
 
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor1, "Hold LMB to spray paint on object");
@@ -356,7 +359,7 @@ namespace nap
 		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerPressEvent)))
 		{
 			nap::PointerPressEvent* event = static_cast<nap::PointerPressEvent*>(inputEvent.get());
-			if (event->mButton == EMouseButton::LEFT)
+			if (event->mButton == PointerClickEvent::EButton::LEFT)
 			{
 				mMouseDown = true;
 			}
@@ -366,7 +369,7 @@ namespace nap
 		else if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::PointerReleaseEvent)))
 		{
 			nap::PointerReleaseEvent* event = static_cast<nap::PointerReleaseEvent*>(inputEvent.get());
-			if (event->mButton == EMouseButton::LEFT)
+			if (event->mButton == PointerClickEvent::EButton::LEFT)
 			{
 				mMouseDown = false;
 			}
@@ -496,12 +499,14 @@ namespace nap
 
 	void PaintObjectApp::handlePopup()
 	{
-		if (ImGui::BeginPopupModal("Running Debug Build"))
+		if (ImGui::BeginPopupModal(popupID, nullptr,
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::Text("Painting is slow in a debug build");
-			if (ImGui::Button("Gotcha"))
+			ImGui::SameLine();
+			if (ImGui::ImageButton(mGuiService->getIcon(icon::ok), "Gotcha"))
 			{
-				mOpened = true;
+				mPopupOpened = true;
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

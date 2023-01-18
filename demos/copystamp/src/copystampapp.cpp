@@ -14,6 +14,7 @@
 #include <perspcameracomponent.h>
 #include <inputrouter.h>
 #include <imgui/imgui.h>
+#include <imguiutils.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -23,6 +24,9 @@ RTTI_END_CLASS
 
 namespace nap 
 {
+	// ImGUI debug popup ID
+	static constexpr const char* popupID = "Running Debug Build";
+
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -74,13 +78,6 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { mCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-		// Notify user that painting in debug mode is slow
-#ifndef NDEBUG
-		if (!mOpened)
-			ImGui::OpenPopup("Running Debug Build");
-		handlePopup();
-#endif // DEBUG
-
 		// Update gui and check for gui changes
 		updateGui();
 	}
@@ -106,12 +103,6 @@ namespace nap
 
 			// Get mesh to render
 			RenderableCopyMeshComponentInstance& copy_mesh = mWorldEntity->getComponent<RenderableCopyMeshComponentInstance>();
-
-			// Set camera location in the shader that draws all the meshes.
-			// The camera location is used for the light computation.
-			TransformComponentInstance& cam_xform = mCameraEntity->getComponent<TransformComponentInstance>();
-			UniformVec3Instance& cam_loc_uniform = *copy_mesh.getMaterial().getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraLocation");
-			cam_loc_uniform.setValue(math::extractPosition(cam_xform.getGlobalTransform()));
 
 			// Begin render pass
 			mRenderWindow->beginRendering();
@@ -183,6 +174,14 @@ namespace nap
 
 		// Draw some gui elements
 		ImGui::Begin("Controls");
+
+		// Notify user that painting in debug mode is slow
+#ifndef NDEBUG
+		if (!mPopupOpened)
+			ImGui::OpenPopup(popupID);
+		handlePopup();
+#endif // DEBUG
+
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
@@ -200,12 +199,14 @@ namespace nap
 
 	void CopystampApp::handlePopup()
 	{
-		if (ImGui::BeginPopupModal("Running Debug Build"))
+		if (ImGui::BeginPopupModal(popupID, nullptr,
+			ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize))
 		{
 			ImGui::Text("Performance is ~100x times better in a release build");
-			if (ImGui::Button("Gotcha"))
+			ImGui::SameLine();
+			if (ImGui::ImageButton(mGuiService->getIcon(icon::ok), "Gotcha"))
 			{
-				mOpened = true;
+				mPopupOpened = true;
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();

@@ -14,7 +14,7 @@ out vec4 out_Color;
 // Uniform used for setting color
 uniform UBO
 {
-	uniform vec4 mColor;
+	vec4 mColor;
 } ubo;
 
 void main() 

@@ -141,8 +141,6 @@ namespace nap
 	{
 		// Find the camera uniform we need to set for both render passes that contain a sphere
 		nap::RenderableMeshComponentInstance& render_mesh = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		auto ubo = render_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto cam_loc_uniform = ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraPosition");
 
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -162,11 +160,6 @@ namespace nap
 
 			// Find the camera
 			nap::PerspCameraComponentInstance& camera = mPerspectiveCameraOne->getComponent<nap::PerspCameraComponentInstance>();
-
-			// Set the camera location uniform
-			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraOne->getComponent<nap::TransformComponentInstance>();
-			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-			cam_loc_uniform->setValue(global_pos);
 
 			// Render the world with the right camera directly to screen
 			mRenderService->renderObjects(*mRenderWindowOne, camera, components_to_render);
@@ -221,11 +214,6 @@ namespace nap
 
 			// Find the second perspective camera
 			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCameraTwo->getComponent<nap::PerspCameraComponentInstance>();
-			
-			// Set the camera location uniform for the halo effect
-			nap::TransformComponentInstance& cam_xform = mPerspectiveCameraTwo->getComponent<nap::TransformComponentInstance>();
-			glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-			cam_loc_uniform->setValue(global_pos);
 
 			// Render sphere
 			mRenderService->renderObjects(*mRenderWindowThree, persp_camera, components_to_render);

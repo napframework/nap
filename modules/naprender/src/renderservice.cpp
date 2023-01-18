@@ -1780,8 +1780,12 @@ namespace nap
 				if (cache->mPosition.x >= min.x && cache->mPosition.x < max.x &&
 					cache->mPosition.y >= min.y && cache->mPosition.y < max.y)
 				{
-					window.setPosition(cache->mPosition);
-					window.setSize(cache->mSize);
+					if(window.mRestorePosition)
+						window.setPosition(cache->mPosition);
+
+					if(window.mRestoreSize)
+						window.setSize(cache->mSize);
+
 					break;
 				}
 			}

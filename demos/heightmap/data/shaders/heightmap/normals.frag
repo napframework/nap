@@ -13,9 +13,9 @@ out vec4 out_Color;
 // All fragment shader ubo's
 uniform FRAGUBO
 {
-	uniform vec3 color;				//< Normal color
-	uniform float opacity;			//< Opacity
-	uniform float nlength;			//< Normal length
+	vec3 color;				//< Normal color
+	float opacity;			//< Opacity
+	float nlength;			//< Normal length
 } fubo;
 
 void main() 
