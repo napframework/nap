@@ -13,6 +13,9 @@
 #include <renderablemeshcomponent.h>
 #include <depthrendertarget.h>
 
+// Local includes
+#include "light.h"
+
 namespace nap
 {
 	class LightComponentInstance;
@@ -34,9 +37,7 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ResourcePtr<ParameterRGBColorFloat>		mLightColorParam;							///< Property: "LightColor"
-		ResourcePtr<ParameterFloat>				mLightIntensityParam;						///< Property: "LightIntensity"
-
+		ResourcePtr<Light>						mLight;										///< Property: "Light" The light resource
 		std::vector<ComponentPtr<RenderableMeshComponent>> mRenderComponents;				///< Property: "RenderComponents"
 
 		ComponentPtr<PerspCameraComponent>		mEyeCamera;									///< Property: "EyeCamera" Camera that represents the eye/view frustrum

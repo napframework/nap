@@ -11,8 +11,7 @@
 
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::LightComponent)
-	RTTI_PROPERTY("LightColor",					&nap::LightComponent::mLightColorParam,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LightIntensity",				&nap::LightComponent::mLightIntensityParam,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Light",						&nap::LightComponent::mLight,						nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("EyeCamera",					&nap::LightComponent::mEyeCamera,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowCameraOrthographic",	&nap::LightComponent::mShadowCameraOrthographic,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowCameraPerspective",	&nap::LightComponent::mShadowCameraPerspective,		nap::rtti::EPropertyMetaData::Default)
@@ -174,14 +173,14 @@ namespace nap
 		{
 			UniformStructInstance* vert_ubo_struct = (*render_comp).getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
 			vert_ubo_struct->getOrCreateUniform<UniformMat4Instance>(uniform::lightSpaceMatrix)->setValue(mLightViewProjection);
-			vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
+			//vert_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
 
 			UniformStructInstance* frag_ubo_struct = (*render_comp).getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
 			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::cameraLocation)->setValue(camera_location);
 			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(light_position);
 			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightDirection)->setValue(light_direction);
-			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->getValue().toVec3());
-			frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
+			frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLight->);
+			frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLight->mIntensity);
 		}
 	}
 

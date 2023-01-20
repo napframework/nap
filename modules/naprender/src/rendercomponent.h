@@ -27,7 +27,7 @@ namespace nap
 		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
 
 	public:
-		bool mVisible = true;	///< Property: 'Visible' if this object is rendered to target by the render service 
+		bool mVisible = true;	///< Property: 'Visible' if this object is rendered to target by the render service
 	};
 
 
