@@ -263,20 +263,21 @@ namespace nap
 		 */
 		virtual VkRenderPass getRenderPass() const override							{ return mRenderPass; }
 
-		bool					mSampleShading	= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		int						mWidth			= 512;								///< Property: 'Width' of the window in pixels
-		int						mHeight			= 512;								///< Property: 'Height' of the window in pixels
-		bool					mBorderless		= false;							///< Property: 'Borderless' if the window has any borders
-		bool					mResizable		= true;								///< Property: 'Resizable' if the window is resizable
-		bool					mVisible		= true;								///< Property: 'Visible' if the render window is visible on screen
-		EPresentationMode		mMode			= EPresentationMode::Immediate;		///< Property: 'Mode' the image presentation mode to use
-		std::string				mTitle			= "";								///< Property: 'Title' window title
-		RGBAColorFloat			mClearColor		= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
-		ERasterizationSamples	mRequestedSamples = ERasterizationSamples::Four;	///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
-		int						mAddedSwapImages = 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
+		bool					mSampleShading		= true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		int						mWidth				= 512;								///< Property: 'Width' window horizontal resolution
+		int						mHeight				= 512;								///< Property: 'Height' window vertical resolution
+		bool					mBorderless			= false;							///< Property: 'Borderless' if the window has any borders
+		bool					mResizable			= true;								///< Property: 'Resizable' if the window is resizable
+		bool					mVisible			= true;								///< Property: 'Visible' if the render window is visible on screen
+		EPresentationMode		mMode				= EPresentationMode::Immediate;		///< Property: 'Mode' the image presentation mode to use
+		std::string				mTitle				= "";								///< Property: 'Title' window title
+		RGBAColorFloat			mClearColor			= { 0.0f, 0.0f, 0.0f, 1.0f };		///< Property: 'ClearColor' background clear color
+		ERasterizationSamples	mRequestedSamples	= ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
+		int						mAddedSwapImages	= 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
+		bool					mRestorePosition	= true;								///< Property: 'RestorePosition' if window position is restored from previous session
+		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session
 
 	private:
-
 		RenderService*					mRenderService	= nullptr;
 		SDL_Window*						mSDLWindow		= nullptr;						
 		VkSampleCountFlagBits			mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
