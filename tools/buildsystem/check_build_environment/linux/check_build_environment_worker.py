@@ -69,7 +69,7 @@ def check_distribution():
         distribution_ok = distributor_id == 'ubuntu'
         log_test_success('Ubuntu distribution', distribution_ok)
 
-    return distribution_ok    
+    return distribution_ok
 
 def check_distribution_version():
     """Check if the we're running our supported distribution version"""
@@ -93,41 +93,41 @@ def apt_package_installed(package_name):
 
 def check_compiler():
     """Check that c++ is setup for GCC"""
-    
+
     alternatives_output = call('update-alternatives --query c++ | grep Value')
     gcc_ok = alternatives_output == '' or '/g++' in alternatives_output
 
     log_test_success('C++ is GCC', gcc_ok)
-    return gcc_ok 
-    
+    return gcc_ok
+
 def check_for_thirdparty():
     """Check for the thirdparty repository"""
-    
+
     nap_root = get_source_nap_root()
     thirdparty_ok = os.path.exists(os.path.join(nap_root, os.pardir, 'thirdparty'))
     log_test_success('for third party repository', thirdparty_ok)
     return thirdparty_ok
-    
+
 def check_qt_env_var():
     """Check Qt env. var. for source user"""
 
     qt_env_var_ok = 'QT_DIR' in os.environ
-    log_test_success('Qt environment variable', qt_env_var_ok)        
+    log_test_success('Qt environment variable', qt_env_var_ok)
     return qt_env_var_ok
-    
+
 def check_qt_version():
     """Check Qt version for source user"""
 
     qt_found_version = None
     qt_version_ok = False
-    
-    # Remove temporary directory for CMake project files to go into if it exists 
+
+    # Remove temporary directory for CMake project files to go into if it exists
     nap_root = get_source_nap_root()
     qt_checker_path = os.path.join(nap_root, 'cmake', 'qt_checker')
     temp_build_dir = os.path.join(qt_checker_path, 'project_temp')
     if os.path.exists(temp_build_dir):
         shutil.rmtree(temp_build_dir)
-    
+
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
     arch = machine()
@@ -147,32 +147,32 @@ def check_qt_version():
                 if len(chunks) > 1:
                     qt_found_version = chunks[-1].strip()
                 break
-    
+
     # OK is version matching required version
     if not qt_found_version is None:
         qt_version_ok = LooseVersion(qt_found_version) == LooseVersion(REQUIRED_QT_VERSION)
-    
+
     # Cleanup
     if os.path.exists(temp_build_dir):
         shutil.rmtree(temp_build_dir)
-    
-    log_test_success('Qt version v%s' % REQUIRED_QT_VERSION, qt_version_ok)        
+
+    log_test_success('Qt version v%s' % REQUIRED_QT_VERSION, qt_version_ok)
     return (qt_version_ok, qt_found_version)
-    
+
 def log_qt_help(qt_env_var_ok, qt_found_version):
     """Log help for source user Qt problems"""
 
     if not qt_env_var_ok:
         print("\nThis version of NAP requires Qt v%s as downloaded directly from Qt. Distribution versions are not supported. Once Qt v%s has been downloaded it should be pointed to with the environment variable QT_DIR, eg. QT_DIR=\"/home/username/Qt%s/%s/gcc_64\"." % (REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION, REQUIRED_QT_VERSION))
     else:
-        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
+        print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))
 
 def read_yes_no(question):
     """Read a yes/no answer for a question"""
 
     yes = ('yes','y', 'ye', '')
     no = ('no','n')
-     
+
     while True:
         prompt = question + ' [Y/n] '
         if sys.version_info >= (3, 0):
@@ -186,7 +186,7 @@ def read_yes_no(question):
            return False
         else:
            print("Please respond with 'yes' or 'no'\n")
-         
+
 def get_nap_root():
     """Get framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
@@ -196,16 +196,16 @@ def get_source_nap_root():
     """Get source framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
     return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
-    
+
 def check_and_warn_for_potential_system_qt():
     """Attempt to detect if the Qt installation might be a system version and warn if so"""
-    
+
     running_apt_distro = call('which apt') != ''
     if running_apt_distro:
         (_, returncode) = call_with_returncode("dpkg -l qtdeclarative5-dev")
         if returncode == 0:
             print("\nWarning: You appear to have Qt development packages installed via your system packaging system. This may cause issues, especially with packaging.")
-    
+
     qt_dir = os.environ['QT_DIR']
     qt_dir = os.path.abspath(qt_dir)
     if qt_dir.startswith('/usr/') and not qt_dir.startswith('/usr/local'):
@@ -255,9 +255,13 @@ def check_build_environment(against_source):
     patchelf_installed = apt_package_installed('patchelf')
     log_test_success('for patchelf package', patchelf_installed)
 
+    # Check mesa vulkan drivers installed
+    mesa_vulkan_installed = apt_package_installed('mesa-vulkan-drivers')
+    log_test_success('for mesa vulkan drivers', mesa_vulkan_installed)
+
     if against_source:
 
-        # Check package libglu1-mesa-dev installed, currently brings in 
+        # Check package libglu1-mesa-dev installed, currently brings in
         # dependencies needed by Qt when working against source
         glut_installed = apt_package_installed('libglu1-mesa-dev')
         log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
@@ -272,7 +276,7 @@ def check_build_environment(against_source):
 
         # Check for Qt
         qt_env_var_ok = check_qt_env_var()
-        
+
         # Check Qt version
         if qt_env_var_ok:
             (qt_version_ok, qt_found_version) = check_qt_version()
@@ -281,11 +285,11 @@ def check_build_environment(against_source):
             qt_found_version = None
 
     print("")
-    
+
     # If we're running for source users check source requirements are met
     extra_source_requirements_ok = True
     if against_source and (not thirdparty_ok or not qt_env_var_ok or not qt_version_ok or not glut_installed):
-        extra_source_requirements_ok = False 
+        extra_source_requirements_ok = False
 
     # If everything looks good log and exit
     if distribution_version_ok \
@@ -321,7 +325,9 @@ def check_build_environment(against_source):
         packages_to_install.append('patchelf')
     if against_source and not glut_installed:
         packages_to_install.append('libglu1-mesa-dev')
-        
+    if not mesa_vulkan_installed:
+        packages_to_install.append('mesa-vulkan-drivers')
+
     if len(packages_to_install) > 0:
         package_str = ' '.join(packages_to_install)
         print("\nThe following package/s are required and are not installed: %s" % package_str)
@@ -332,12 +338,12 @@ def check_build_environment(against_source):
         else:
             print("Re-run check_build_environment once you have installed the requirements.")
             return False
-            
+
     # Show Qt help
     if against_source :
         if (not qt_env_var_ok or not qt_version_ok):
             log_qt_help(qt_env_var_ok, qt_found_version)
-            
+
         if qt_env_var_ok:
             check_and_warn_for_potential_system_qt()
 
