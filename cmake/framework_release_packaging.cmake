@@ -81,6 +81,7 @@ macro(package_nap)
                   ${build_tools_dir}/prepare_module_to_share/prepare_module_to_share_by_name.py
             DESTINATION tools/buildsystem/prepare_module_to_share)
     install(FILES ${build_tools_dir}/setup_module/setup_module.py DESTINATION tools/buildsystem/setup_module)
+    install(FILES ${build_tools_dir}/setup_module/add_module_from_zip.py DESTINATION tools/buildsystem/setup_module)
 
     # Create empty apps and modules directories
     install(CODE "FILE(MAKE_DIRECTORY \${ENV}\${CMAKE_INSTALL_PREFIX}/apps)")
