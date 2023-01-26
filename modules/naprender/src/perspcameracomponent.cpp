@@ -321,11 +321,4 @@ namespace nap
 		const glm::mat4& global_transform = mTransformComponent->getGlobalTransform();
 		return glm::inverse(global_transform);
 	}
-
-
-	void PerspCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-		components.push_back(RTTI_OF(TransformComponent));
-	}
-
 }

@@ -68,16 +68,8 @@ namespace nap
 
 	bool OrbComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// Ensure a compute component is available
-		if (!errorState.check(getEntityInstance()->findComponent<ComputeComponentInstance>() != nullptr, "%s: missing ComputeComponent", mID.c_str()))
-			return false;
-		
 		// Cache resource
 		mResource = getComponent<OrbComponent>();
-
-		// Collect compute instances
-		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
-		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
 
 		// Initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
@@ -102,18 +94,6 @@ namespace nap
 		{
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::refractiveIndex)->setValue(mResource->mRefractiveIndexParam->mValue);
 		}
-	}
-
-
-	void OrbComponentInstance::compute()
-	{
-		if (!mFirstUpdate)
-		{
-			mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-			mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
-		}
-		mFirstUpdate = false;
-		mRenderService->computeObjects({ mCurrentComputeInstance });
 	}
 
 

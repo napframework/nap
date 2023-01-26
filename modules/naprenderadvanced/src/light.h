@@ -23,32 +23,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * 
-		 */
-		virtual bool updateLight(MaterialInstance& materialInstance, utility::ErrorState& errorState) = 0;
-	};
-
-
-	/**
-	 * Ambient
-	 */
-	class NAPAPI AmbientLight : public Light
-	{
-		RTTI_ENABLE(Light)
-	public:
-		/**
-		 * Initialize
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 *
-		 */
-		virtual bool updateLight(MaterialInstance& materialInstance, utility::ErrorState& errorState) override;
-
-		RGBColorFloat mColor;
-		float mIntensity;
 	};
 
 
@@ -64,11 +38,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 *
-		 */
-		virtual bool updateLight(MaterialInstance& materialInstance, utility::ErrorState& errorState) override;
-		
 		glm::vec3 mOrigin;
 		RGBColorFloat mColor;
 		float mIntensity;
@@ -87,11 +56,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 *
-		 */
-		virtual bool updateLight(MaterialInstance& materialInstance, utility::ErrorState& errorState) override;
-
 		glm::vec3 mDirection;
 		RGBColorFloat mColor;
 		float mIntensity;
@@ -109,11 +73,6 @@ namespace nap
 		 * Initialize
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 *
-		 */
-		virtual bool updateLight(MaterialInstance& materialInstance, uint index, utility::ErrorState& errorState) override;
 
 		glm::vec3 mOrigin;
 		RGBColorFloat mColor;

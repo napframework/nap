@@ -28,10 +28,11 @@ namespace nap
 	bool OrbApp::init(utility::ErrorState& errorState)
 	{
 		// Create render service
-		mRenderService = getCore().getService<RenderService>();
-		mInputService = getCore().getService<InputService>();
-		mSceneService = getCore().getService<SceneService>();
-		mGuiService = getCore().getService<IMGuiService>();
+		mRenderService			= getCore().getService<RenderService>();
+		mRenderAdvancedService	= getCore().getService<RenderAdvancedService>();
+		mInputService			= getCore().getService<InputService>();
+		mSceneService			= getCore().getService<SceneService>();
+		mGuiService				= getCore().getService<IMGuiService>();
 
 		// Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -154,13 +155,13 @@ namespace nap
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
-		for (auto& light : mLightComponents)
-		{
-			if (!light->isShadowEnabled())
-				continue;
+		//for (auto& light : mLightComponents)
+		//{
+		//	if (!light->isShadowEnabled())
+		//		continue;
 
-			ImGui::Image(light->getShadowTarget().getDepthTexture(), { 200.0f, 200.0f });
-		}
+		//	ImGui::Image(light->getShadowTarget().getDepthTexture(), { 200.0f, 200.0f });
+		//}
 
 		mParameterGUI->show(false);
 		ImGui::End();
@@ -178,21 +179,13 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		std::vector<RenderableComponentInstance*> render_comps;
+		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
+
 		// Shadow pass
 		if (mRenderService->beginHeadlessRecording())
 		{
-			for (auto& light : mLightComponents)
-			{
-				if (!light->isShadowEnabled())
-					continue;
-
-				// Offscreen color pass -> Render all available geometry to ColorTexture
-				if (light->beginShadowPass())
-				{
-					mRenderService->renderObjects(light->getShadowTarget(), *light->getShadowCamera(), light->getRenderableComponents());
-					light->endShadowPass();
-				}
-			}
+			mRenderAdvancedService->renderShadows(render_comps);
 			mRenderService->endHeadlessRecording();
 		}
 
@@ -205,9 +198,6 @@ namespace nap
 
 			// Render world
 			auto& perspective_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-
-			std::vector<RenderableComponentInstance*> render_comps;
-			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
 
 			// Render composite component

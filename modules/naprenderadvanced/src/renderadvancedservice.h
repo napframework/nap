@@ -6,22 +6,45 @@
 
 // External Includes
 #include <nap/service.h>
+#include <depthrendertarget.h>
+
+// Local includes
+#include "lightcomponent.h"
 
 namespace nap
 {
+	// Forward declares
+	class RenderableComponentInstance;
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service
 	//////////////////////////////////////////////////////////////////////////
+
+	class NAPAPI RenderAdvancedServiceConfiguration : public ServiceConfiguration
+	{
+		RTTI_ENABLE(ServiceConfiguration)
+	public:
+		virtual rtti::TypeInfo getServiceType() const;
+
+		/**
+		 * Shadow map size
+		 */
+		uint mShadowMapSize = 1024;
+	};
+
 
 	/**
 	 * Render Advanced Service
 	 */
 	class NAPAPI RenderAdvancedService : public Service
 	{
+		friend class LightComponentInstance;
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
-		RenderAdvancedService(ServiceConfiguration* configuration) : Service(configuration) { }
+		RenderAdvancedService(ServiceConfiguration* configuration) :
+			Service(configuration) { }
 
 		/**
 		 * Use this call to register service dependencies
@@ -51,7 +74,22 @@ namespace nap
 		 */
 		virtual void preShutdown() override;
 
+		/**
+		 * Render shadows
+		 */
+		void renderShadows(const std::vector<RenderableComponentInstance*>& comps);
+
 	protected:
-		void registerObjectCreators(rtti::Factory& factory) override;
+		//void registerObjectCreators(rtti::Factory& factory) override;
+
+		void registerLightComponent(LightComponentInstance& light);
+
+	private:
+		// Registered light component instances
+		std::vector<LightComponentInstance*> mLightComponents;
+
+		// Shadow map
+		std::unique_ptr<DepthRenderTexture2D> mShadowMapTexture;
+		std::unique_ptr<DepthRenderTarget> mShadowMapTarget;
 	};
-} // nap
+}

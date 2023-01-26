@@ -51,38 +51,8 @@
             }
         },
         {
-            "Type": "nap::ComputeMaterial",
-            "mID": "ComputeMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Buffers": [],
-            "Shader": "ComputeShader"
-        },
-        {
-            "Type": "nap::ComputeShaderFromFile",
-            "mID": "ComputeShader",
-            "ComputeShader": "shaders/pass.comp"
-        },
-        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
-        },
-        {
-            "Type": "nap::DepthRenderTarget",
-            "mID": "DepthRenderTarget",
-            "DepthTexture": "ShadowMap",
-            "ClearValue": 1.0
-        },
-        {
-            "Type": "nap::DepthRenderTexture2D",
-            "mID": "ShadowMap",
-            "Usage": "Static",
-            "Fill": false,
-            "Width": 2048,
-            "Height": 2048,
-            "Format": "D32",
-            "ColorSpace": "Linear",
-            "ClearValue": 1.0
         },
         {
             "Type": "nap::Entity",
@@ -164,12 +134,12 @@
                             {
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_c702da1f",
-                                "Name": "FRAGUBO",
+                                "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
                                         "mID": "UniformVec3_da7e00c9",
-                                        "Name": "albedo",
+                                        "Name": "color",
                                         "Value": {
                                             "x": 0.5,
                                             "y": 0.0,
@@ -178,22 +148,33 @@
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_1fc4937a",
-                                        "Name": "roughness",
-                                        "Value": 0.75
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_18eea776",
-                                        "Name": "metallic",
+                                        "Name": "alpha",
                                         "Value": 1.0
                                     }
                                 ]
                             }
                         ],
-                        "Samplers": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "Sampler2D_4bde5ff9",
+                                "Name": "shadowMap",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": true,
+                                "Texture": "DummyTexture"
+                            }
+                        ],
                         "Buffers": [],
-                        "Material": "PBRColorMaterial",
+                        "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -323,12 +304,12 @@
                             {
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_77776c6a",
-                                "Name": "FRAGUBO",
+                                "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
                                         "mID": "UniformVec3_1e4219be",
-                                        "Name": "albedo",
+                                        "Name": "color",
                                         "Value": {
                                             "x": 0.30000001192092898,
                                             "y": 0.4000000059604645,
@@ -337,22 +318,33 @@
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_f0083f62",
-                                        "Name": "roughness",
-                                        "Value": 0.4000000059604645
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_972bd7c8",
-                                        "Name": "metallic",
+                                        "Name": "alpha",
                                         "Value": 1.0
                                     }
                                 ]
                             }
                         ],
-                        "Samplers": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "Sampler2D_1ed739ec",
+                                "Name": "shadowMap",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": true,
+                                "Texture": "DummyTexture"
+                            }
+                        ],
                         "Buffers": [],
-                        "Material": "PBRColorMaterial",
+                        "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -447,21 +439,18 @@
                     }
                 },
                 {
-                    "Type": "nap::LightComponent",
+                    "Type": "nap::DirectionalLightComponent",
                     "mID": "Light",
-                    "LightColor": "LightColorParameter",
-                    "LightIntensity": "LightIntensityParameter",
-                    "EyeCamera": "../../../CameraEntity/PerspCamera",
-                    "ShadowCameraOrthographic": "./ShadowCameraOrtho",
-                    "ShadowCameraPerspective": "./ShadowCameraPersp",
-                    "CameraType": "Orthographic",
-                    "RenderComponents": [
-                        "../../OrbEntity/RenderOrb",
-                        "../../FloorEntity/RenderFloor",
-                        "../../TorusEntity/RenderTorus",
-                        "../../BoxEntity/RenderBox"
-                    ],
-                    "DepthRenderTarget": "DepthRenderTarget"
+                    "Enable Shadows": true,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Intensity": 1.0,
+                    "ShadowCamera": "./ShadowCameraOrtho"
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -473,7 +462,17 @@
                         "TopPlane": 10.0,
                         "BottomPlane": -10.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 100.0
+                        "FarClippingPlane": 100.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
                     }
                 },
                 {
@@ -552,7 +551,7 @@
                 {
                     "Type": "nap::OrbComponent",
                     "mID": "RenderOrb",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "HeightSphereMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -574,17 +573,6 @@
                         }
                     },
                     "RefractiveIndex": "RefractiveIndexParameter"
-                },
-                {
-                    "Type": "nap::ComputeComponent",
-                    "mID": "ComputeComponent",
-                    "ComputeMaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "ComputeMaterial": "ComputeMaterial"
-                    },
-                    "Invocations": 1
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -647,12 +635,12 @@
                             {
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_417f3165",
-                                "Name": "FRAGUBO",
+                                "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
                                         "mID": "UniformVec3_57aa093e",
-                                        "Name": "albedo",
+                                        "Name": "color",
                                         "Value": {
                                             "x": 0.1599999964237213,
                                             "y": 0.3449999988079071,
@@ -661,22 +649,33 @@
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_6a5f1be7",
-                                        "Name": "roughness",
-                                        "Value": 0.5
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_997120b6",
-                                        "Name": "metallic",
+                                        "Name": "alpha",
                                         "Value": 1.0
                                     }
                                 ]
                             }
                         ],
-                        "Samplers": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "Sampler2D_3400478d",
+                                "Name": "shadowMap",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": true,
+                                "Texture": "DummyTexture"
+                            }
+                        ],
                         "Buffers": [],
-                        "Material": "PBRColorMaterial",
+                        "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -854,64 +853,6 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "PBRColorMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_e5a079c8",
-                    "Name": "FragUBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_8ac8e7d1",
-                            "Name": "albedo",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 0.0,
-                                "z": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_ac179ad4",
-                            "Name": "roughness",
-                            "Value": 0.5
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_e2688231",
-                            "Name": "metallic",
-                            "Value": 0.0
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_1230e4bc",
-                    "Name": "shadowMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToBorder",
-                    "AddressModeHorizontal": "ClampToBorder",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "FloatOpaqueWhite",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": true,
-                    "Texture": "ShadowMap"
-                }
-            ],
-            "Buffers": [],
-            "Shader": "PBRColorShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
             "mID": "PBRTextureMaterial",
             "Uniforms": [
                 {
@@ -1016,7 +957,7 @@
                     "BorderColor": "FloatOpaqueWhite",
                     "CompareMode": "LessOrEqual",
                     "EnableCompare": true,
-                    "Texture": "ShadowMap"
+                    "Texture": "DummyTexture"
                 },
                 {
                     "Type": "nap::Sampler2D",
@@ -1059,6 +1000,17 @@
                     "ShaderAttributeID": "in_OriginalNormal"
                 }
             ],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "PhongColorMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "PhongColorShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -1135,7 +1087,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",
@@ -1157,15 +1111,15 @@
         },
         {
             "Type": "nap::ShaderFromFile",
-            "mID": "PBRColorShader",
-            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrcolor.vert",
-            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrcolor.frag"
-        },
-        {
-            "Type": "nap::ShaderFromFile",
             "mID": "PBRTextureShader",
             "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrtexture.vert",
             "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrtexture.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "PhongColorShader",
+            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/phongcolor.vert",
+            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/phongcolor.frag"
         },
         {
             "Type": "nap::SphereMesh",
@@ -1183,6 +1137,11 @@
                     1.0,
                     1.0
                 ]
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
             }
         },
         {
@@ -1201,6 +1160,11 @@
                     1.0,
                     1.0
                 ]
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
             }
         },
         {

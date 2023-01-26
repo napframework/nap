@@ -10,7 +10,6 @@ uniform nap
 uniform VERTUBO
 {
 	mat4 lightSpaceMatrix;
-	vec3 lightPosition;
 } ubo;
 
 // Input Vertex Attributes

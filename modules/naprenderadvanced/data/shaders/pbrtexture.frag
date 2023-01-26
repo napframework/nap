@@ -22,6 +22,15 @@ struct DirectionalLight
 	float intensity;
 };
 
+struct DirectionalLightShadow
+{
+	mat4 lightViewProjection;
+	vec3 direction;
+	vec3 color;
+	float intensity;
+};
+
+
 uniform FRAGUBO
 {
 	vec3 cameraLocation;

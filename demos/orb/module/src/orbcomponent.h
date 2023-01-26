@@ -5,7 +5,6 @@
 #pragma once
 
 // External includes
-#include <computecomponent.h>
 #include <renderablemeshcomponent.h>
 #include <mesh.h>
 #include <nap/resourceptr.h>
@@ -26,17 +25,7 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableMeshComponent)
 		DECLARE_COMPONENT(OrbComponent, OrbComponentInstance)
-
 	public:
-		/**
-		 * Returns the components this component depends upon.
-		 * @param components the various components this component depends upon.
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
-		{
-			components.emplace_back(RTTI_OF(ComputeComponent));
-		}
-
 		ResourcePtr<ParameterVec3> mRefractiveIndexParam;				///< Property: "RefractiveIndex"
 	};
 
@@ -67,11 +56,6 @@ namespace nap
 		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 		/**
-		 * Execute compute shader update associated with this component
-		 */
-		void compute();
-
-		/**
 		 * Returns the resource associated with this instance
 		 */
 		OrbComponent& getResource();
@@ -84,10 +68,6 @@ namespace nap
 
 		double										mDeltaTime = 0.0;
 		double										mElapsedTime = 0.0;
-
-		std::vector<ComputeComponentInstance*>		mComputeInstances;
-		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;
-		int											mComputeInstanceIndex = 0;
 		bool										mFirstUpdate = true;
 	};
 }

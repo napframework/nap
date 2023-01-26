@@ -13,13 +13,22 @@
 
 namespace nap
 {
+	// Forward declares
+	class CameraComponentInstance;
+
+
 	/**
-	 * Denotes a camera type
+	 * Base class for perspective and orthographic camera resource.
 	 */
-	enum class ECameraType : uint
+	class NAPAPI CameraComponent : public Component
 	{
-		Perspective = 0,
-		Orthographic
+		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(CameraComponent, CameraComponentInstance)
+	public:
+		/**
+		 * The perspective camera needs on a transform to calculate it's view matrix
+		 */
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 	};
 
 

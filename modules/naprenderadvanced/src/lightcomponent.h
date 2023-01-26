@@ -3,49 +3,78 @@
 // External includes
 #include <component.h>
 #include <componentptr.h>
-#include <parameternumeric.h>
-#include <parametervec.h>
-#include <parametercolor.h>
 #include <cameracomponent.h>
 #include <perspcameracomponent.h>
 #include <orthocameracomponent.h>
 #include <transformcomponent.h>
-#include <renderablemeshcomponent.h>
-#include <depthrendertarget.h>
 
 // Local includes
 #include "light.h"
 
 namespace nap
 {
+	// Forward declares
 	class LightComponentInstance;
-	class RenderableMeshComponentInstance;
-	class RenderService;
+	class DirectionalLightComponentInstance;
 
 	/**
-	 *	LightComponent
+	 * Light Globals
+	 */
+	namespace uniform
+	{
+		inline constexpr const char* lightStruct = "light";							// Default light UBO struct name
+
+		namespace light
+		{
+			namespace directional
+			{
+				inline constexpr const char* color = "color";
+				inline constexpr const char* intensity = "intensity";
+				inline constexpr const char* direction = "direction";
+			}
+
+			namespace point
+			{
+				inline constexpr const char* origin = "origin";
+				inline constexpr const char* color = "color";
+				inline constexpr const char* intensity = "intensity";
+			}
+
+			namespace spot
+			{
+
+			}
+
+			inline constexpr const char* lightViewProjection = "lightViewProjection";
+			inline constexpr const char* lights = "lights";
+			inline constexpr const char* count = "count";
+		}
+	}
+
+	namespace sampler
+	{
+		namespace light
+		{
+			inline constexpr const char* shadowMap = "shadowMap";
+		}
+	}
+
+
+	/**
+	 * LightComponent
 	 */
 	class NAPAPI LightComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(LightComponent, LightComponentInstance)
 	public:
-
 		/**
 		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		* @param components the components this object depends on
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		ResourcePtr<Light>						mLight;										///< Property: "Light" The light resource
-		std::vector<ComponentPtr<RenderableMeshComponent>> mRenderComponents;				///< Property: "RenderComponents"
-
-		ComponentPtr<PerspCameraComponent>		mEyeCamera;									///< Property: "EyeCamera" Camera that represents the eye/view frustrum
-		ComponentPtr<PerspCameraComponent>		mShadowCameraPerspective;					///< Property: "ShadowCameraPerspective" Camera that produces the depth texture for a point light
-		ComponentPtr<OrthoCameraComponent>		mShadowCameraOrthographic;					///< Property: "ShadowCameraOrthographic" Camera that produces the depth texture for a directional light
-		ECameraType								mCameraType = ECameraType::Perspective;		///< Property: "CameraType" The camera type to use
-
-		ResourcePtr<DepthRenderTarget>			mDepthRenderTarget;
+		bool mEnableShadows = false;
 	};
 
 
@@ -74,57 +103,81 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * 
+		 * @return whether this light component produces shadows
 		 */
-		bool isCameraEnabled() const											{ return mCameraEnabled; }
+		virtual bool isShadowEnabled() { return mIsShadowEnabled; }
 
 		/**
-		 *
+		 * @return the shadow camera if available, else nullptr
 		 */
-		bool isShadowEnabled() const											{ return mShadowEnabled; }
+		virtual CameraComponentInstance* getShadowCamera() { return nullptr; }
 
 		/**
-		 *
+		 * @return the light transform
 		 */
-		CameraComponentInstance* getShadowCamera() const;
+		const TransformComponentInstance& getTransform() const { return *mTransform; }
+
+	protected:
+		LightComponent* mResource						= nullptr;
+		TransformComponentInstance* mTransform			= nullptr;
+
+		bool mIsShadowEnabled							= false;
+	};
+
+
+	/**
+	 *	DirectionalLightComponent
+	 */
+	class NAPAPI DirectionalLightComponent : public LightComponent
+	{
+		RTTI_ENABLE(LightComponent)
+		DECLARE_COMPONENT(DirectionalLightComponent, DirectionalLightComponentInstance)
+	public:
+		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };			///< Property: 'Color'
+		float mIntensity = 1.0f;								///< Property: 'Intensity'
+
+		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+	};
+
+
+	/**
+	 * DirectionalLightComponentInstance
+	 */
+	class NAPAPI DirectionalLightComponentInstance : public LightComponentInstance
+	{
+		RTTI_ENABLE(LightComponentInstance)
+	public:
+		DirectionalLightComponentInstance(EntityInstance& entity, Component& resource) :
+			LightComponentInstance(entity, resource) { }
 
 		/**
-		 * Returns the depth render target for the shadow map. Asserts when shadow is not enabled.
-		 * @return the shadow depth render target.
+		 * Initialize LightComponentInstance based on the LightComponent resource
+		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
+		 * @param errorState should hold the error message when initialization fails
+		 * @return if the LightComponentInstance is initialized successfully
 		 */
-		DepthRenderTarget& getShadowTarget() const;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 *
+		 * update LightComponentInstance. This is called by NAP core automatically
+		 * @param deltaTime time in between frames in seconds
 		 */
-		const std::vector<RenderableComponentInstance*>& getRenderableComponents() const { return mResolvedRenderComponents; }
+		virtual void update(double deltaTime) override;
 
 		/**
-		 * 
+		 * @return the shadow camera if available, else nullptr
 		 */
-		bool beginShadowPass();
+		virtual CameraComponentInstance* getShadowCamera() { return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
 
-		/**
-		 * 
-		 */
-		void endShadowPass();
+		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
+		float mIntensity = 1.0f;
 
 	private:
-		LightComponent* mResource = nullptr;
-		RenderService* mRenderService = nullptr;
-		TransformComponentInstance* mTransform = nullptr;
+		// Shadow camera
+		ComponentInstancePtr<OrthoCameraComponent> mShadowCamera = { this, &DirectionalLightComponent::mShadowCamera };
 
+		// Shadow map rendering
 		glm::mat4 mLightView;
 		glm::mat4 mLightViewProjection;
-
-		bool mCameraEnabled = false;
-		bool mShadowEnabled = false;
-
-		ComponentInstancePtr<PerspCameraComponent>	mEyeCameraComponent = { this, &LightComponent::mEyeCamera };
-		ComponentInstancePtr<PerspCameraComponent>	mShadowCameraPerspective = { this, &LightComponent::mShadowCameraPerspective };
-		ComponentInstancePtr<OrthoCameraComponent>	mShadowCameraOrthographic = { this, &LightComponent::mShadowCameraOrthographic };
-
-		std::vector<ComponentInstancePtr<RenderableMeshComponent>> mRenderComponents = initComponentInstancePtr(this, &LightComponent::mRenderComponents);
-		std::vector<RenderableComponentInstance*> mResolvedRenderComponents;
 	};
 }

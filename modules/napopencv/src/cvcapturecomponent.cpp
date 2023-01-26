@@ -8,7 +8,6 @@
 
 // External Includes
 #include <entity.h>
-#include <entity.h>
 #include <nap/core.h>
 
 // nap::cvcapturecomponent run time class definition 

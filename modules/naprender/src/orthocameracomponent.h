@@ -45,16 +45,10 @@ namespace nap
 	/**
 	 * Orthographic camera resource.
 	 */
-	class NAPAPI OrthoCameraComponent : public Component
+	class NAPAPI OrthoCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(Component)
+		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(OrthoCameraComponent, OrthoCameraComponentInstance)
-
-		/**
-		 * This camera depends on a transform to calculate the view matrix.
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 	public:
 		OrthoCameraProperties mProperties;		///< Property:'Properties' the camera settings
 	};

@@ -5,6 +5,7 @@
 #pragma once
 
 // External Includes
+#include <renderadvancedservice.h>
 #include <renderablemeshcomponent.h>
 #include <renderbloomcomponent.h>
 #include <rendertotexturecomponent.h>
@@ -97,6 +98,7 @@ namespace nap
 
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
+		RenderAdvancedService* mRenderAdvancedService = nullptr;		//< Render Advanced Service that handles render calls
 		ResourceManager* mResourceManager = nullptr;					//< Manages all the loaded resources
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input

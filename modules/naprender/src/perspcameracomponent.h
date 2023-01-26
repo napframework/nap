@@ -30,16 +30,10 @@ namespace nap
 	/**
 	 * Perspective camera component resource. Holds static data as read from file.
 	 */
-	class NAPAPI PerspCameraComponent : public Component
+	class NAPAPI PerspCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(Component)
+		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
-
-		/**
-		 * The perspective camera needs on a transform to calculate it's view matrix
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 	public:
 		PerpCameraProperties mProperties;	///< Property: 'Properties' the perspective camera settings
 	};
