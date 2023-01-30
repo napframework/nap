@@ -77,8 +77,7 @@ namespace nap
 		ResourcePtr<ParameterFloat> mViewRadiusParam;					///< Property: "ViewRadius" Radius in which a boid detects mates to follow
 		ResourcePtr<ParameterFloat> mAvoidRadiusParam;					///< Property: "AvoidRadius" Radius in which a boid detect mates to avoid
 		ResourcePtr<ParameterFloat> mMinSpeedParam;						///< Property: "MinSpeed" Minimum speed
-		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "MaxSteerForce" Maximum speed
-		ResourcePtr<ParameterFloat> mMaxSteerForceParam;				///< Property: "MaxSteerForce" Maximum steer force, also acceleration and deceleration
+		ResourcePtr<ParameterFloat> mMaxSpeedParam;						///< Property: "MaxSpeed" Maximum speed
 		ResourcePtr<ParameterFloat> mTargetWeightParam;					///< Property: "TargetWeight" Contribution of target on boid forces
 		ResourcePtr<ParameterFloat> mAlignmentWeightParam;				///< Property: "AlignmentWeight" Contribution of aligment vector to boid forces
 		ResourcePtr<ParameterFloat> mCohesionWeightParam;				///< Property: "CohesionWeight" Contribution of cohesion vector on boid movement
@@ -98,7 +97,6 @@ namespace nap
 		ResourcePtr<ParameterFloat> mSpecularIntensityParam;			///< Property: "SpecularIntensity" Specular intensity
 		ResourcePtr<ParameterFloat> mMateColorRateParam;				///< Property: "MateColor" Maximum rate of mates for blending boid diffuse colors
 
-		ComponentPtr<PerspCameraComponent> mPerspCameraComponent;		///< Property: "PerspCameraComponent" Camera that we're controlling
 		ComponentPtr<TransformComponent> mTargetTransformComponent;		///< Property: "TargetTransformComponent" Camera that we're controlling
 	};
 
@@ -188,7 +186,6 @@ namespace nap
 		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	//< The current compute instance
 		int											mComputeInstanceIndex = 0;			//< Current compute instance index
 
-		ComponentInstancePtr<PerspCameraComponent>	mPerspCameraComponent = { this, &FlockingSystemComponent::mPerspCameraComponent };
 		ComponentInstancePtr<TransformComponent>	mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };
 	};
 }

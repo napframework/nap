@@ -39,7 +39,7 @@ namespace nap
 		std::string			mMail;					///< Extracted user mail
 		std::string			mApp;					///< Extracted application signature
 		std::string			mTag;					///< Extracted additional license information
-		std::string			mUuid;					///< Extracted additional uuid
+		std::string			mID;					///< Extracted machine id
 		bool				mExpires = false;		///< If this license can expire
 		DateTime			mTime;					///< License expiry date as system timestamp
 
@@ -89,16 +89,36 @@ namespace nap
 		LicenseService(ServiceConfiguration* configuration);
 
 		/**
+		 * Generates a machine identification hash.
+		 *
+		 * Input this number (as string) into the 'id' field of the license generator to tie a license to a particular machine.
+		 * The machine ID is a hash, created using the MAC addresses of the network interfaces & unique OS identifier.
+		 * The ID doesn't change unless the network interfaces change or the operating system is re-installed.
+		 * 
+		 * Note that the returned ID is *not* required to be unique, as it is a combination of various components, but therefore difficult to spoof.
+		 * Note that the ID is generated *every time* this function is called, cache it if read frequently.
+		 *
+		 * @param id the generated machine ID
+         * @param error contains the error if generation failed
+         * @return if generation succeeded
+         */
+         bool getMachineID(uint64& id, nap::utility::ErrorState& error);
+
+		/**
 		 * Validates the user provided license using a public RSA key.
 		 * Call this somewhere in your application, preferably on init(), to ensure the application has a valid license.
 		 *
 		 * The license is valid when:
 		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
-		 * - it is not expired
+		 * - it is not expired (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * Note that a license, without a machine identifier, is considered valid when it passes verification.
+		 * It is up to the owner of the application to create and sign a license with a device id if required.
 		 *
 		 * @param publicKey public key, generated using the 'licensegenerator'
 		 * @param outInformation validated user license information, empty if license is invalid
@@ -114,10 +134,14 @@ namespace nap
 		 * The license is valid when:
 		 * - a .license and .key file is found on initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
-		 * - it is not expired
+		 * - it is not expired (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * Note that a license, without a machine identifier, is considered valid when it passes verification.
+		 * It is up to the owner of the application to create and sign a license with a device id if required.
 		 *
 		 * @param publicKey public key, generated using the 'licensegenerator'
 		 * @param outInformation validated user license information, empty if license is invalid
@@ -133,10 +157,14 @@ namespace nap
 		 * The license is valid when:
 		 * - a .license and .key file is found on service initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
-		 * - it is not expired
+		 * - it is not expired (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * Note that a license, without a machine identifier, is considered valid when it passes verification.
+		 * It is up to the owner of the application to create and sign a license with a device id if required.
 		 *
 		 * @param publicKey public key, generated using the 'licensegenerator'
 		 * @param signingScheme signing scheme used during license creation
@@ -153,10 +181,14 @@ namespace nap
 		 * The license is valid when:
 		 * - a .license and .key file is found on initialization (using the LicenseConfiguration)
 		 * - is can be verified using the provided public key
-		 * - it is not expired
+		 * - it is not expired (if specified)
+		 * - it has a matching machine id (if specified)
 		 *
 		 * Note that a license, without an expiration date, is considered valid when it passes verification.
 		 * It is up to the owner of the application to create and sign a license with an expiration date if required.
+		 *
+		 * Note that a license, without a machine identifier, is considered valid when it passes verification.
+		 * It is up to the owner of the application to create and sign a license with a device id if required.
 		 *
 		 * @param publicKey public key, generated using the 'licensegenerator'
 		 * @param signingScheme signing scheme used during license creation

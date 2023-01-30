@@ -8,6 +8,8 @@
 #include <parameternumeric.h>
 #include <parametervec.h>
 #include <parametercolor.h>
+#include <parametersimple.h>
+#include <parameterquat.h>
 
 namespace nap
 {
@@ -39,7 +41,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Base class of all parameter blenders. 
+	 * Base class of all parameter blenders.
 	 * Blends a parameter (source) towards a target parameter based on a lerp value from 0 to 1.
 	 * Override the virtual methods to create a blender for a specific parameter type.
 	 */
@@ -53,14 +55,14 @@ namespace nap
 		 * @param parameter the parameter to update.
 		 */
 		BaseParameterBlender(Parameter& parameter);
-		
+
 		// Default destructor
 		virtual ~BaseParameterBlender() = default;
 
 		/**
 		 * Blends parameters based on the given value (0-1).
 		 * Result is immediately applied to the parameter.
-		 * @param value normalized blend value 
+		 * @param value normalized blend value
 		 */
 		void blend(float value);
 
@@ -198,6 +200,8 @@ namespace nap
 	using ParameterRGBFloatBlender	= ParameterBlender<ParameterRGBColorFloat, RGBColorFloat>;
 	using ParameterRGBA8Blender		= ParameterBlender<ParameterRGBAColor8, RGBAColor8>;
 	using ParameterRGB8Blender		= ParameterBlender<ParameterRGBColor8, RGBColor8>;
+	using ParameterBoolBlender		= ParameterBlender<ParameterBool, bool>;
+    using ParameterQuatBlender      = ParameterBlender<ParameterQuat, glm::quat>;
 
 
 
@@ -265,4 +269,10 @@ namespace nap
 
 	template<>
 	void nap::ParameterBlender<ParameterRGBColor8, RGBColor8>::onBlend(float value);
+
+	template<>
+	void nap::ParameterBlender<ParameterBool, bool>::onBlend(float value);
+
+    template<>
+    void nap::ParameterBlender<ParameterQuat, glm::quat>::onBlend(float value);
 }

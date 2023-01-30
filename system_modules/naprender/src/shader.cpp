@@ -190,19 +190,45 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 	int resolveBinding(EShLanguage stage, glslang::TVarEntryInfo& ent) override
 	{
 		const glslang::TType& type = ent.symbol->getType();
-		const int set = getLayoutSet(type);
-		// On OpenGL arrays of opaque types take a separate binding for each element
-		int numBindings = mIntermediate.getSpv().openGl != 0 && type.isSizedArray() ? type.getCumulativeArraySize() : 1;
+		const glslang::TString& name = ent.symbol->getAccessName();
+
+		// OpenGL arrays of opaque types take a separate binding for each element, Vulkan does not
+		int num_bindings = 1;
 		glslang::TResourceType resource = getResourceType(type);
-		if (resource < glslang::EResCount) {
-			if (type.getQualifier().hasBinding()) {
-				return ent.newBinding = reserveSlot(
-					set, getBaseBinding(stage,resource, set) + type.getQualifier().layoutBinding, numBindings);
+
+		int resource_key = ent.newSet;
+		if (resource < glslang::EResCount)
+		{
+			if (type.getQualifier().hasBinding())
+			{
+				int new_binding = reserveSlot(resource_key, getBaseBinding(stage, resource, ent.newSet) + type.getQualifier().layoutBinding, num_bindings);
+				return ent.newBinding = new_binding;
 			}
-			else if (doAutoBindingMapping()) {
-				// find free slot, the caller did make sure it passes all vars with binding
-				// first and now all are passed that do not have a binding and needs one
-				return ent.newBinding = getFreeSlot(set, getBaseBinding(stage, resource, set), numBindings);
+			else
+			{
+				// The resource in current stage is not declared with binding, but it is possible declared
+				// with explicit binding in other stages, find the resourceSlotMap firstly to check whether
+				// the resource has binding, don't need to allocate if it already has a binding
+				bool has_explicit_binding = false;
+				ent.newBinding = -1; // leave as -1 if it isn't set below
+
+				if (!resourceSlotMap[resource_key].empty())
+				{
+					TVarSlotMap::iterator iter = resourceSlotMap[resource_key].find(name);
+					if (iter != resourceSlotMap[resource_key].end()) {
+						has_explicit_binding = true;
+						ent.newBinding = iter->second;
+					}
+				}
+				if (!has_explicit_binding && doAutoBindingMapping())
+				{
+					// Find free slot, the caller did make sure it passes all vars with binding
+					// first and now all are passed that do not have a binding and needs one
+					int binding = getFreeSlot(resource_key, getBaseBinding(stage, resource, ent.newSet), num_bindings);
+					resourceSlotMap[resource_key][name] = binding;
+					ent.newBinding = binding;
+				}
+				return ent.newBinding;
 			}
 		}
 		return ent.newBinding = -1;
@@ -265,7 +291,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 	bool result = shader->parse(&defaultResource, default_version, false, messages);
 	if (!result)
 	{
-		errorState.fail("%s", shader->getInfoLog());
+		errorState.fail("Failed to compile shader: %s", shader->getInfoLog());
 		return nullptr;
 	}
 
@@ -276,18 +302,12 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
 {
 	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
-	if (vertex_shader == nullptr)
-	{
-		errorState.fail("Unable to compile vertex shader");
+	if (!errorState.check(vertex_shader != nullptr, "Unable to compile vertex shader"))
 		return false;
-	}
 
 	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, errorState);
-	if (fragment_shader == nullptr)
-	{
-		errorState.fail("Unable to compile fragment shader");
+	if (!errorState.check(fragment_shader != nullptr, "Unable to compile fragment shader"))
 		return false;
-	}
 
 	EShMessages messages = EShMsgDefault;
 	messages = (EShMessages)(messages | EShMsgSpvRules);
@@ -301,16 +321,22 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 	// Link the program first. This merges potentially multiple compilation units within a single stage into a single intermediate representation.
 	// Note that this usually doesn't do anything (1 compilation unit per stage is the most common case), but it is neccessary in order to execute the next step.
 	// In addition, if this isn't called, glslang will not correctly resolve built-in variables such as gl_PerVertex, which will result in invalid SPIR-V being generated
-	if (!errorState.check(program.link(messages), "Failed to link shader program: %s", program.getInfoLog()))
+	if (!program.link(messages))
+	{
+		errorState.fail("Failed to link shader program: %s", program.getInfoLog());
 		return false;
+	}
 
 	// We need to create our own IO mapper/resolver for automatic numbering of locations/bindings. See comment above BindingResolver at the top of this file.
 	BindingResolver io_resolver(*program.getIntermediate(EShLangVertex));
 	glslang::TGlslIoMapper io_mapper;
 
 	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
-	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
+	if (!program.mapIO(&io_resolver, &io_mapper))
+	{
+		errorState.fail("Failed to map input/outputs: %s", program.getInfoLog());
 		return false;
+	}
 
 	glslang::SpvOptions spv_options;
 	spv_options.generateDebugInfo = false;
@@ -344,11 +370,8 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
 {
 	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, errorState);
-	if (compute_shader == nullptr)
-	{
-		errorState.fail("Unable to compile compute shader");
+	if (!errorState.check(compute_shader != nullptr, "Unable to compile compute shader"))
 		return false;
-	}
 
 	EShMessages messages = EShMsgDefault;
 	messages = (EShMessages)(messages | EShMsgSpvRules);
@@ -361,16 +384,22 @@ static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, co
 	// Link the program first. This merges potentially multiple compilation units within a single stage into a single intermediate representation.
 	// Note that this usually doesn't do anything (1 compilation unit per stage is the most common case), but it is neccessary in order to execute the next step.
 	// In addition, if this isn't called, glslang will not correctly resolve built-in variables such as gl_PerVertex, which will result in invalid SPIR-V being generated
-	if (!errorState.check(program.link(messages), "Failed to link shader program: %s", program.getInfoLog()))
+	if (!program.link(messages))
+	{
+		errorState.fail("Failed to link shader program: %s", program.getInfoLog());
 		return false;
+	}
 
 	// We need to create our own IO mapper/resolver for automatic numbering of locations/bindings. See comment above BindingResolver at the top of this file.
 	BindingResolver io_resolver(*program.getIntermediate(EShLangCompute));
 	glslang::TGlslIoMapper io_mapper;
 
 	// Call mapIO to automatically number the bindings and correctly map input/output locations in both stages
-	if (!errorState.check(program.mapIO(&io_resolver, &io_mapper), "Failed to map input/outputs: %s", program.getInfoLog()))
+	if (!program.mapIO(&io_resolver, &io_mapper))
+	{
+		errorState.fail("Failed to map input/outputs: %s", program.getInfoLog());
 		return false;
+	}
 
 	glslang::SpvOptions spv_options;
 	spv_options.generateDebugInfo = false;
@@ -576,13 +605,34 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 	// Uniform buffers
 	for (const spirv_cross::Resource& resource : shader_resources.uniform_buffers)
 	{
-		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
+		// Handle duplicates
+		auto it = std::find_if(uboDeclarations.begin(), uboDeclarations.end(), [name = resource.name](const auto& it) {
+			return it.mName == name;
+		});
 
+		// Fetch layout binding index
 		nap::uint32 binding = compiler.get_decoration(resource.id, spv::DecorationBinding);
 
+		spirv_cross::SPIRType type = compiler.get_type(resource.type_id);
 		size_t struct_size = compiler.get_declared_struct_size(type);
-		nap::BufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
 
+		// Check if a UBO declaration with an identical name already exists
+		if (it != uboDeclarations.end())
+		{
+			// Ensure the binding point is the same, otherwise fail
+			if (!errorState.check((*it).mBinding == binding, "Duplicate UBO declaration '%s' in one or more shader stages of same program cannot have the same layout binding index", resource.name.c_str()))
+				return false;
+
+			// Ensure the size is equal, otherwise fail
+			if (!errorState.check((*it).mSize == struct_size, "Shared UBO declaration '%s' size mismatch between shader stages", resource.name.c_str()))
+				return false;
+
+			// This UBO is shared over multiple shader stages. AND the current stage flag and continue 
+			(*it).mStages |= inStage;
+			continue;
+		}
+
+		nap::BufferObjectDeclaration uniform_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Uniform, struct_size);
 		if (!addShaderVariablesRecursive(uniform_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Uniform, errorState))
 			return false;
 
@@ -598,7 +648,6 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 
 		size_t struct_size = compiler.get_declared_struct_size(type);
 		nap::BufferObjectDeclaration storage_buffer_object(resource.name, binding, inStage, nap::EDescriptorType::Storage, struct_size);
-
 		if (!addShaderVariablesRecursive(storage_buffer_object, compiler, type, 0, resource.name, nap::EDescriptorType::Storage, errorState))
 			return false;
 
@@ -676,7 +725,7 @@ namespace nap
 			uboLayoutBinding.binding = declaration.mBinding;
 			uboLayoutBinding.descriptorCount = 1;
 			uboLayoutBinding.pImmutableSamplers = nullptr;
-			uboLayoutBinding.stageFlags = declaration.mStage;
+			uboLayoutBinding.stageFlags = declaration.mStages;
 			uboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
 			descriptor_set_layouts.push_back(uboLayoutBinding);
@@ -688,7 +737,7 @@ namespace nap
 			ssboLayoutBinding.binding = declaration.mBinding;
 			ssboLayoutBinding.descriptorCount = 1;
 			ssboLayoutBinding.pImmutableSamplers = nullptr;
-			ssboLayoutBinding.stageFlags = declaration.mStage;
+			ssboLayoutBinding.stageFlags = declaration.mStages;
 			ssboLayoutBinding.descriptorType = getVulkanDescriptorType(declaration.mDescriptorType);
 
 			descriptor_set_layouts.push_back(ssboLayoutBinding);

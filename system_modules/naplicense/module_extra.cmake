@@ -5,6 +5,9 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     target_link_libraries(${PROJECT_NAME} cryptopp)
 
     if (WIN32)
+        # Link against iphlpapi
+        target_link_libraries(${PROJECT_NAME} iphlpapi.lib)
+
         # Copy Crypto++ DLL to bin directory
         copy_cryptopp_dll()
 

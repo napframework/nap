@@ -161,12 +161,6 @@ namespace nap
 			render_objects.clear();
 			render_objects.emplace_back(&mDisplacementEntity->getComponent<RenderableMeshComponentInstance>());
 
-			// Set camera position in material
-			nap::MaterialInstance& material = mDisplacementEntity->getComponent<RenderableMeshComponentInstance>().getMaterialInstance();
-			UniformVec3Instance* uniform = material.getOrCreateUniform("UBO")->getOrCreateUniform<UniformVec3Instance>("cameraPosition");
-			const glm::mat4x4 global_xform = mPerspCameraEntity->getComponent<TransformComponentInstance>().getGlobalTransform();
-			uniform->setValue(math::extractPosition(global_xform));
-
 			// Render
 			mRenderService->renderObjects(*mRenderWindow, mPerspCameraEntity->getComponent<PerspCameraComponentInstance>(), render_objects);
 

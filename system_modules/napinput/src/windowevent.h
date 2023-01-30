@@ -71,8 +71,7 @@ namespace nap
 		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
 		WindowMovedEvent(int x, int y, int window) : ParameterizedWindowEvent(x, y, window)
-		{
-		}
+		{ }
 	};
 
 	/**
@@ -83,8 +82,7 @@ namespace nap
 		RTTI_ENABLE(ParameterizedWindowEvent)
 	public:
 		WindowResizedEvent(int width, int height, int window) :ParameterizedWindowEvent(width, height, window) 
-		{
-		}
+		{ }
 	};
 
 	/**

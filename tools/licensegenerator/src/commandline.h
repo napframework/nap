@@ -28,7 +28,7 @@ public:
 		using namespace TCLAP;
 		try
 		{
-			CmdLine							command					("LicenseGenerator");
+			CmdLine							command					("licensegenerator -f John -l Doe -m john@doe.com -a licensedemo -t example -d 30/12/2025 -k keys/licensedemo.private -o license");
 			ValueArg<std::string>			output_directory		("o",  "outdir", "Output directory (absolute)", true, "", "path_to_output_directory");
 			ValueArg<std::string>			private_key				("k",  "key", "Path to private key file", true, "", "path_to_private_key_file");
 			ValueArg<std::string>			application				("a",  "application", "Application name", true, "", "application_name");
@@ -36,8 +36,8 @@ public:
 			ValueArg<std::string>			last_name				("l",  "last_name", "Last name", true, "", "last_name");
 			ValueArg<std::string>			mail					("m",  "mail", "Client mail address", false, "", "client_mail");
 			ValueArg<std::string>			date					("d",  "date", "Expiry date, format: day/month/year -> 30/12/2025", false, "", "expiry_date");
+			ValueArg<std::string>			id						("i",  "id", "Machine identification code", false, "", "id");
 			ValueArg<std::string>			tag						("t",  "tag", "Additional information", false, "", "tag");
-			ValueArg<std::string>			uuid					("u",  "uuid", "Generate unique user id", false, "", "uuid");
 			ValueArg<std::string>			signing_scheme			("s",  "signing_scheme", "Signing scheme: RSASS_PKCS1v15_SHA1, RSASS_PKCS1v15_SHA224, RSASS_PKCS1v15_SHA256, RSASS_PKCS1v15_SHA384, RSASS_PKCS1v15_SHA512", false, "", "signing_scheme");
 
 			command.add(output_directory);
@@ -48,7 +48,7 @@ public:
 			command.add(mail);
 			command.add(date);
 			command.add(tag);
-			command.add(uuid);
+			command.add(id);
 			command.add(signing_scheme);
 			command.parse(argc, argv);
 
@@ -60,7 +60,7 @@ public:
 			commandLine.mMail = mail.getValue();
 			commandLine.mDate = date.getValue();
 			commandLine.mTag = tag.getValue();
-			commandLine.mUuid = uuid.getValue();
+			commandLine.mID = id.getValue();
 			commandLine.mSignScheme  = signing_scheme.getValue();
 		}
 		catch (ArgException& e)
@@ -79,6 +79,6 @@ public:
 	std::string					mDate;
 	std::string					mApplication;
 	std::string					mTag;
-	std::string					mUuid;
+	std::string					mID;
 	std::string					mSignScheme;
 };

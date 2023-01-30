@@ -25,7 +25,7 @@ namespace nap
 	 * The parameters that are blended are defined by the 'BlendGroup'.
 	 * The preset index controls the preset to sample the parameters from.
 	 *
-	 * Note that the 'PresetBlendTime' and 'PresetIndex' parameter links 
+	 * Note that the 'PresetBlendTime' and 'PresetIndex' parameter links
 	 * should not be part of the 'BlendGroup'.
 	 *
 	 * A blender needs to be available for every parameter that is blended.
@@ -40,9 +40,10 @@ namespace nap
 	public:
 
 		nap::ResourcePtr<ParameterBlendGroup> mBlendGroup = nullptr;			///< Property: 'BlendGroup' all the parameters to blend over time
-		nap::ResourcePtr<ParameterInt>	mPresetIndex = nullptr;					///< Property: 'PresetIndex' index of the preset to blend to
+		nap::ResourcePtr<ParameterInt> mPresetIndex = nullptr;					///< Property: 'PresetIndex' index of the preset to blend to
 		nap::ResourcePtr<ParameterFloat> mPresetBlendTime = nullptr;			///< Property: 'PresetBlendTime' time it takes to blend parameters (seconds)
 		bool mEnableBlending = false;											///< Property: 'If blending is enabled or not
+		bool mIgnoreNonBlendableParameters = true;                              ///< Property: 'IgnoreNonBlendable' if false, throws error when parameters cannot be blended
 	};
 
 
@@ -56,7 +57,7 @@ namespace nap
 	 * The system issues a warning on initialization when there is no blender available for a specific parameter.
 	 * By default float, double, vec2, vec3 and color parameters are supported.
 	 * If a preset does not contain a specific parameter a warning is issued.
-	 * 
+	 *
 	 */
 	class NAPAPI ParameterBlendComponentInstance : public ComponentInstance
 	{
@@ -107,6 +108,11 @@ namespace nap
 		float getBlendValue();
 
 		/**
+		 * @return current preset index
+		 */
+		int getIndex() const													{ return mPresetIndex->mValue; }
+
+		/**
 		 * @return the names of all the presets that can be blended.
 		 */
 		const std::vector<std::string>& getPresets() const						{ return mPresets; }
@@ -130,11 +136,12 @@ namespace nap
 		bool mEnableBlending = false;											///< Blending toggle
 		ParameterService* mParameterService = nullptr;							///< The parameter service
 		std::vector<std::string> mPresets;										///< All available preset names
-		std::vector<std::unique_ptr<rtti::DeserializeResult>> mPresetData;		///< All available preset data 
+		std::vector<std::unique_ptr<rtti::DeserializeResult>> mPresetData;		///< All available preset data
 		std::vector<ParameterGroup*> mPresetGroups;								///< Cached preset groups
 		std::vector<std::unique_ptr<BaseParameterBlender>> mBlenders;			///< Individual parameter blenders
 		double mElapsedTime = 0.0;												///< Current elapsed time in seconds
 		bool mBlending = false;													///< If the component is currently blending values
+        bool mIgnoreNonBlendableParameters = true;                              ///< If we should ignore non-blendable parameters
 
 		/**
 		 * Sources all the presets from disk.
@@ -145,7 +152,7 @@ namespace nap
 
 		/**
 		 * Creates a blender for every parameter in the blend group, if a blender is available.
-		 * Parameters that do not have a blender available for their type are ignored. 
+		 * Parameters that do not have a blender available for their type are ignored.
 		 * A warning is issued.
 		 * @param error contains the error if the operation fails.
 		 * @return if the operation succeeded.

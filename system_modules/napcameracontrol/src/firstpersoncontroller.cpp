@@ -136,14 +136,14 @@ namespace nap
 			return;
 
 		// Enable movement when lmb is pressed
-		if (pointerPressEvent.mButton == EMouseButton::LEFT)
+		if (pointerPressEvent.mButton == PointerClickEvent::EButton::LEFT)
 			mMoving = true;
 	}
 	
 
 	void FirstPersonControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
-		if (pointerReleaseEvent.mButton == EMouseButton::LEFT)
+		if (pointerReleaseEvent.mButton == PointerClickEvent::EButton::LEFT)
 			mMoving = false;
 	}
 

@@ -82,15 +82,9 @@ namespace nap
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::End();
 
-		// Find the camera location uniform in the material of the sphere
+		// Get uniform struct with name  'UBO'
 		nap::RenderableMeshComponentInstance& sphere_mesh = mSphereEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		nap::UniformStructInstance* ubo =  sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
-		auto* cam_loc_uniform = ubo->getOrCreateUniform<UniformVec3Instance>("inCameraPosition");
-
-		// Set it to the current camera location
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		glm::vec3 global_pos = math::extractPosition(cam_xform.getGlobalTransform());
-		cam_loc_uniform->setValue(global_pos);
+		nap::UniformStructInstance* ubo = sphere_mesh.getMaterialInstance().getOrCreateUniform("UBO");
 
 		// Set sphere color
 		const auto& theme = mGuiService->getPalette();

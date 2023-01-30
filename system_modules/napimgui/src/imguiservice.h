@@ -68,6 +68,9 @@ namespace nap
 	namespace gui
 	{
 		inline constexpr float dpi = 96.0f;						///< Default (reference) dpi for gui elements
+		inline constexpr int pointerInvalidID = -3;				///< Invalid pointer ID
+		inline constexpr int pointerMouseID	= -2;				///< Pointer from mouse ID
+		inline constexpr int pointerTouchID	= -1;				///< Pointer from touch ID
 
 		/**
 		 * All available color schemes
@@ -194,6 +197,13 @@ namespace nap
 		ImGuiContext* getContext(nap::ResourcePtr<RenderWindow> window);
 
 		/**
+		 * Returns the ImGUI context associated with the given window id.
+		 * @param window the render window id
+		 * @return ImGUI context for the given window, nullptr if it doesn't exist.
+		 */
+		ImGuiContext* findContext(int windowID);
+
+		/**
 		 * Returns the scaling factor of the current active context.
 		 * The scaling factor is calculated using the display DPI (if high DPI rendering is enabled)
 		 * and the global GUI scale.
@@ -220,7 +230,7 @@ namespace nap
 		 * Forwards window input events to the GUI, called from GUIAppEventHandler.
 		 * @return context that belongs to the event, nullptr if the event is not related to a window.
 		 */
-		ImGuiContext* processInputEvent(InputEvent& event);
+		ImGuiContext* processInputEvent(const InputEvent& event);
 
 		/**
 		 * @return if the GUI is capturing keyboard events
@@ -322,10 +332,13 @@ namespace nap
 		 */
 		virtual void shutdown() override;
 
-	protected:
+		/**
+		 * Registers all gui object creation objects
+		 */
 		virtual void registerObjectCreators(rtti::Factory& factory) override;
 
 	private:
+
 		/**
 		 * Simple struct that combines an ImGUI context with additional state information.
 		 * Takes ownership of the context, destroys it on destruction.
@@ -335,13 +348,24 @@ namespace nap
 			GUIContext(ImGuiContext* context, ImGuiStyle* style);
 			~GUIContext();
 
-			bool mMousePressed[3]			= { false, false, false };
-			float mMouseWheel				= 0.0f;
-			float mScale					= 1.0f;
-			const Display* mDisplay			= nullptr;
-			ImGuiContext* mContext			= nullptr;
-			ImGuiContext* mPreviousContext	= nullptr;
-			ImGuiStyle* mStyle				= nullptr;
+			using ESource = PointerEvent::ESource;
+			static constexpr int keyCount = 512;											///< Number of items in key array
+			using KeyArray = std::array<bool, keyCount>;
+
+			std::array<bool,3> mMousePressed				= { false };					///< If the mouse was pressed this frame
+			std::array<bool,3> mMouseRelease				= { false };					///< If the mouse was released this frame
+			std::array<bool,3> mModPressed					= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is pressed
+			std::array<bool,3> mModRelease					= { false };					///< If the ctrl (0), alt (1) or shift (2) modifier key is released
+			std::array<int, 3> mPointerID					= { gui::pointerInvalidID };	///< Pointer id, -1 for pointer, 0+ for finger
+			KeyArray mKeyPressed							= { false };					///< The keys that were pressed this frame
+			std::vector<int> mKeyRelease;													///< The keys that were released this frame
+			glm::ivec2 mMousePosition						= { 0, 0 };						///< Last known mouse position
+			float mMouseWheel								= 0.0f;							///< Mouse wheel
+			float mScale									= 1.0f;							///< GUI Scale
+			const Display* mDisplay							= nullptr;						///< Current display
+			ImGuiContext* mContext							= nullptr;						///< Associated ImGUI context
+			ImGuiContext* mPreviousContext					= nullptr;						///< Context active before this one
+			ImGuiStyle* mStyle								= nullptr;						///< Style of context
 
 			// Activates current context
 			void activate();
@@ -382,6 +406,21 @@ namespace nap
 		 * Calculates and applies a gui scaling factor based on the given display and associated dpi settings
 		 */
 		void pushScale(GUIContext& context, const Display& display);
+
+		/**
+		 * Add key event to given context
+		 */
+		void handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context);
+
+		/**
+		 * Add pointer event to given context
+		 */
+		void handlePointerEvent(const PointerEvent& pointerEvent, GUIContext& context);
+
+		/**
+		 * Add touch event to given context
+		 */
+		void handleTouchEvent(const TouchEvent& touchEvent, GUIContext& context);
 
 		RenderService* mRenderService = nullptr;
 		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;

@@ -277,8 +277,8 @@ int main(int argc, char* argv[])
 		lic_content << "|tag:" << commandLine.mTag;
 
 	// Add uuid (optional)
-	if (!commandLine.mUuid.empty())
-		lic_content << "|uuid:" << commandLine.mUuid;
+	if (!commandLine.mID.empty())
+		lic_content << "|id:" << commandLine.mID;
 
 	// Add issue time -> minutes since epoch
 	SystemTimeStamp ctime = SystemClock::now();

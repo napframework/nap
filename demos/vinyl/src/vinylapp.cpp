@@ -66,9 +66,6 @@ namespace nap
 	{
 		// Make sure background image matches window size
 		positionBackground();
-		
-		// Update our shader variables
-		setCameraLocation();
 
 		// Add some gui elements
 		ImGui::Begin("Controls");
@@ -232,24 +229,6 @@ namespace nap
 		auto* color_two = ubo->getOrCreateUniform<UniformVec3Instance>("colorTwo");
 		color_one->setValue(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
 		color_two->setValue(mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>());
-	}
-	
-	
-
-	void VinylApp::setCameraLocation()
-	{
-		// Set camera location in shader, should be present in all materials
-		nap::TransformComponentInstance& cam_xform = mCameraEntity->getComponent<nap::TransformComponentInstance>();
-		for (const nap::EntityInstance* e : mModelEntity->getChildren())
-		{
-			nap::RenderableMeshComponentInstance* mesh = e->findComponent<nap::RenderableMeshComponentInstance>();
-			if(mesh == nullptr)
-				continue;
-
-			UniformStructInstance* frag_ubo = mesh->getMaterialInstance().getOrCreateUniform("UBO");
-			nap::UniformVec3Instance* cameraLocation = frag_ubo->getOrCreateUniform<nap::UniformVec3Instance>("cameraLocation");
-			cameraLocation->setValue(cam_xform.getTranslate());
-		}
 	}
 
 
