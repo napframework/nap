@@ -30,7 +30,7 @@ namespace nap
 		/**
 		 * Shadow map size
 		 */
-		uint mShadowMapSize = 1024;
+		uint mShadowMapSize = 2048;
 	};
 
 
@@ -80,16 +80,23 @@ namespace nap
 		void renderShadows(const std::vector<RenderableComponentInstance*>& comps);
 
 	protected:
-		//void registerObjectCreators(rtti::Factory& factory) override;
-
 		void registerLightComponent(LightComponentInstance& light);
+		void removeLightComponent(LightComponentInstance& light);
 
 	private:
+		bool initShadowMappingResources(utility::ErrorState& errorState);
+
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;
 
-		// Shadow map
+		// Shadow mapping
+		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 		std::unique_ptr<DepthRenderTexture2D> mShadowMapTexture;
 		std::unique_ptr<DepthRenderTarget> mShadowMapTarget;
+
+		std::unique_ptr<Sampler2DArray> mShadowSamplerArray;
+		std::unique_ptr<Sampler2D> mShadowSampler;
+
+		bool mShadowsIntialized = false;
 	};
 }

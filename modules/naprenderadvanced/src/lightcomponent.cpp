@@ -87,6 +87,14 @@ namespace nap
 	}
 
 
+	LightComponentInstance::~LightComponentInstance()
+	{
+		auto* service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
+		assert(service != nullptr);
+		service->removeLightComponent(*this);
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// DirectionalLightComponent
 	//////////////////////////////////////////////////////////////////////////

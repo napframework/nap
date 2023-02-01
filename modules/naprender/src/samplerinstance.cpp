@@ -202,7 +202,16 @@ namespace nap
 	void Sampler2DArrayInstance::setTexture(int index, Texture2D& texture)
 	{
 		assert(index < mTextures.size());
+		assert(index < mDeclaration->mNumArrayElements);
 		mTextures[index] = &texture;
+		raiseChanged();
+	}
+
+
+	void Sampler2DArrayInstance::addTexture(Texture2D& texture)
+	{
+		assert(mTextures.size()+1 < mDeclaration->mNumArrayElements);
+		mTextures.emplace_back(&texture);
 		raiseChanged();
 	}
 }

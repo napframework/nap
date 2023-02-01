@@ -55,7 +55,6 @@ namespace nap
 		RTTI_ENABLE(UniformInstance)
 
 	public:
-
 		// Constructor
 		UniformStructInstance(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback) :
 			mUniformCreatedCallback(uniformCreatedCallback),
@@ -118,7 +117,6 @@ namespace nap
 		 */
 		static std::unique_ptr<UniformInstance> createUniformFromDeclaration(const ShaderVariableDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 
-	private:
 		UniformCreatedCallback									mUniformCreatedCallback;
 		const ShaderVariableStructDeclaration&					mDeclaration;
 		std::vector<std::unique_ptr<UniformInstance>>			mUniforms;
@@ -150,6 +148,16 @@ namespace nap
 		 * @return all uniform struct instance elements
 		 */
 		const std::vector<std::unique_ptr<UniformStructInstance>>& getElements() const	{ return mElements; }
+
+		/**
+		 * @return total number of uniform structs in the current array
+		 */
+		int getNumElements() const														{ return static_cast<int>(mElements.size()); }
+
+		/**
+		 * @return maximum number of uniform structs that can be assigned
+		 */
+		int getMaxNumElements() const													{ return mDeclaration.mElements.size(); }
 
 		/**
 		 * @return the uniform struct at the given index.

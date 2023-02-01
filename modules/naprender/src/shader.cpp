@@ -658,7 +658,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 	for (const spirv_cross::Resource& sampled_image : shader_resources.sampled_images)
 	{
 		spirv_cross::SPIRType sampler_type = compiler.get_type(sampled_image.type_id);
-
+		
 		if (!errorState.check(sampler_type.array.size() <= 1, "Multidimensional arrays are not supported"))
 			return false;
 

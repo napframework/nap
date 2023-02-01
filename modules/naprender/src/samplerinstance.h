@@ -52,7 +52,6 @@ namespace nap
 		 */
 		void raiseChanged()									{ if (mSamplerChangedCallback) mSamplerChangedCallback(*this); }
 
-	private:
 		RenderService*					mRenderService = nullptr;
 		VkDevice						mDevice = VK_NULL_HANDLE;
 		VkSampler						mVulkanSampler = VK_NULL_HANDLE;
@@ -109,52 +108,6 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
-	// Sampler2DInstance
-	//////////////////////////////////////////////////////////////////////////
-
-	/**
-	 * 2D sampler instance. Binds a single 2D texture to a shader.
-	 * The texture can be changed at runtime.
-	 */
-	class NAPAPI Sampler2DShadowInstance : public SamplerInstance
-	{
-		RTTI_ENABLE(SamplerInstance)
-	public:
-		/**
-		 * Constructs the instance based on the shader declaration and resource.
-		 * @param renderService render engine
-		 * @param declaration sampler shader declaration
-		 * @param sampler2D the sampler resource used to create this instance.
-		 * @param samplerChangedCallback called when the 'texture' changes.
-		 */
-		Sampler2DShadowInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2D* sampler2D, const SamplerChangedCallback& samplerChangedCallback);
-
-		/**
-		 * Binds a texture to the 2D sampler.
-		 * @param texture the new texture to bind
-		 */
-		void setTexture(Texture2D& texture);
-
-		/**
-		 * @return if a texture is bound to the 2D sampler.
-		 */
-		bool hasTexture() const { return mTexture2D != nullptr; }
-
-		/**
-		 * @return currently bound texture.
-		 */
-		const Texture2D& getTexture() const { return *mTexture2D; }
-
-	private:
-		/**
-		 * Calls SamplerInstance::raiseChanged()
-		 */
-		void onTextureChanged(const Texture2D&);
-		rtti::ObjectPtr<Texture2D> mTexture2D = nullptr;
-	};
-
-
-	//////////////////////////////////////////////////////////////////////////
 	// Sampler2DArrayInstance
 	//////////////////////////////////////////////////////////////////////////
 
@@ -181,6 +134,11 @@ namespace nap
 		int getNumElements() const								{ return static_cast<int>(mTextures.size()); }
 
 		/**
+		 * @return maximum number of textures that can be assigned
+		 */
+		int getMaxNumElements() const							{ return mDeclaration->mNumArrayElements; }
+
+		/**
 		 * @return if a texture is bound to the given index.
 		 */
 		bool hasTexture(int index) const						{ assert(index < mTextures.size()); return mTextures[index] != nullptr; }
@@ -197,6 +155,12 @@ namespace nap
 		 * @param texture the texture to bind.
 		 */
 		void setTexture(int index, Texture2D& texture);
+
+		/**
+		 * Creates additional texture entry, and binds the specified texture 
+		 * @param texture the texture to bind.
+		 */
+		void addTexture(Texture2D& texture);
 
 		/**
 		 * Array subscript operator, returns a specific texture in the array as a reference,

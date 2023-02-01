@@ -20,7 +20,7 @@ in vec3 passPosition;					//< frag position in object space
 in vec3 passNormal;						//< frag normal in object space
 in vec3 passUV0;						//< UVs
 in float passFresnel;					//< fresnel term
-in vec4 passShadowCoord[16];			//< shadow coord
+in vec4 passShadowCoord[8];			//< shadow coord
 
 uniform nap
 {
@@ -33,7 +33,7 @@ uniform nap
 
 uniform light
 {
-	DirectionalLightShadow lights[16];
+	DirectionalLightShadow lights[8];
 	uint count;
 } lit;
 
@@ -48,7 +48,7 @@ uniform UBO
 out vec4 out_Color;
 
 // Shadow Texture Sampler
-uniform sampler2DShadow shadowMap;
+uniform sampler2DShadow shadowMaps[8];
 
 // Constants
 const float SHININESS 	= 24.0;
@@ -87,12 +87,12 @@ const float POISSON_SPREAD 	= 768.0;
 // Calculate shadow contribution
 // @param shadowCoord: the fragment position in light space
 // @param lightDir: the light direction
-float computeShadow(vec4 shadowCoord, vec3 lightDir)
+float computeShadow(vec4 shadowCoord, vec3 lightDir, uint lightIndex)
 {
 	// Map coordinates to [0.0, 1.0] range
 	shadowCoord = shadowCoord * 0.5 + 0.5;
 
-	const float texelSize = 1.0/float(textureSize(shadowMap, 0).x);
+	const float texelSize = 1.0/float(textureSize(shadowMaps[lightIndex], 0).x);
 	float bias = max(4.0*texelSize * (1.0 - dot(passNormal, lightDir)), texelSize);
 	float frag_depth = (shadowCoord.z-bias) / shadowCoord.w;
 	float shadow = 0.0;
@@ -100,14 +100,14 @@ float computeShadow(vec4 shadowCoord, vec3 lightDir)
 	// Multi sample
 	for (int i=0; i<16; i++) 
 	{
-		shadow += texture(shadowMap, 
+		shadow += texture(shadowMaps[lightIndex], 
 			vec3(shadowCoord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, frag_depth)
 		);
 	}
 	shadow /= 16.0;
 
 	// Single sample
-	//shadow = 1.0 - texture(shadowMap, vec3(shadowCoord.xy, frag_depth));
+	//shadow = 1.0 - texture(shadowMaps[lightIndex], vec3(shadowCoord.xy, frag_depth));
 	return shadow;
 }
 
@@ -160,11 +160,12 @@ void main()
 	for (uint i = 0; i < lit.count; i++)
 	{
 		DirectionalLightShadow li = lit.lights[i];
-		shadow += computeShadow(passShadowCoord[i], normalize(li.direction));
+		shadow += computeShadow(passShadowCoord[i], normalize(li.direction), i);
 	}
+	shadow /= max(lit.count, 1);
 	
-	color = mix(color, vec3(0.975), passFresnel * shadow);
-	color *= shadow;
+	color = mix(color, vec3(0.975), passFresnel * (1.0-shadow));
+	color = mix(vec3(0.025), color, shadow);
 
 	out_Color = vec4(color, ubo.alpha);
 }

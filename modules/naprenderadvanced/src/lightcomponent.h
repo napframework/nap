@@ -55,7 +55,7 @@ namespace nap
 	{
 		namespace light
 		{
-			inline constexpr const char* shadowMap = "shadowMap";
+			inline constexpr const char* shadowMaps = "shadowMaps";
 		}
 	}
 
@@ -85,8 +85,12 @@ namespace nap
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
+		// Constructor
 		LightComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
+
+		// Destructor
+		~LightComponentInstance();
 
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
@@ -167,7 +171,17 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() { return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
+		virtual CameraComponentInstance* getShadowCamera()		{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
+
+		/**
+		 * @return the position of the light in world space
+		 */
+		const glm::vec3 getLightPosition() const				{ return math::extractPosition(getTransform().getGlobalTransform()); }
+
+		/**
+		 * @return the direction of the light in world space
+		 */
+		const glm::vec3 getLightDirection() const				{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
 
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
 		float mIntensity = 1.0f;

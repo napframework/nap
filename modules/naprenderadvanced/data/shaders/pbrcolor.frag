@@ -37,7 +37,7 @@ uniform FRAGUBO
 } frag_ubo;
 
 // Shadow Texture Sampler
-uniform sampler2DShadow shadowMap;
+uniform sampler2D shadowMap;
 
 // Inputs
 in vec3 passPosition;

@@ -26,7 +26,7 @@ uniform nap
 
 uniform light
 {
-	DirectionalLightShadow lights[16];
+	DirectionalLightShadow lights[8];
 	uint count;
 } lit;
 
@@ -39,7 +39,7 @@ out vec3 passPosition;				//< vertex position in object space
 out vec3 passNormal;				//< vertex normal in object space
 out vec3 passUV0;					//< UVs
 out float passFresnel;				//< Fresnel
-out vec4 passShadowCoord[16];		//< Shadow
+out vec4 passShadowCoord[8];		//< Shadow
 
 // Constants
 const float fresnelScale = 1.0;

@@ -270,6 +270,10 @@ namespace nap
 			{
 				const Texture2D& texture = sampler_2d_array->getTexture(index);
 
+
+				if (mSamplerDescriptors.size() < imageStartIndex + index)
+					mSamplerDescriptors.emplace_back();
+
 				VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex + index];
 				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 				imageInfo.imageView = texture.getHandle().getView();
@@ -480,9 +484,9 @@ namespace nap
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, static_cast<const Sampler2DArray*>(sampler), std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, static_cast<const Sampler2D*>(sampler), std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
 
 				if (!sampler_instance_override->init(errorState))
 					return false;
@@ -502,7 +506,7 @@ namespace nap
 			if (is_array)
 			{
 				// Create all VkDescriptorImageInfo for all elements in the array
-				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(sampler_instance);
+				Sampler2DArrayInstance* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
 
 				for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
 				{
@@ -515,7 +519,7 @@ namespace nap
 			else
 			{
 				// Create a single VkDescriptorImageInfo for just this element
-				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(sampler_instance);
+				Sampler2DInstance* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
 
 				if (sampler_2d->hasTexture())
 					addImageInfo(sampler_2d->getTexture(), vk_sampler);
