@@ -674,7 +674,7 @@
                             "y": 0.0
                         }
                     },
-                    "RefractiveIndex": "RefractiveIndexParameter"
+                    "RefractiveIndex": ""
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -1120,19 +1120,6 @@
                     "mID": "LightIntensityParameter",
                     "Name": "LightIntensity",
                     "Value": 0.5,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "RefractiveIndexParameter",
-                    "Name": "RefractiveIndex",
-                    "Value": {
-                        "x": 0.029999999329447748,
-                        "y": 0.029999999329447748,
-                        "z": 0.029999999329447748
-                    },
-                    "Clamp": true,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 }

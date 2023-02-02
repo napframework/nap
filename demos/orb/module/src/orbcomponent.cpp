@@ -17,7 +17,7 @@
 #include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::OrbComponent)
-	RTTI_PROPERTY("RefractiveIndex",			&nap::OrbComponent::mRefractiveIndexParam,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RefractiveIndex",			&nap::OrbComponent::mRefractiveIndexParam,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbComponentInstance)
@@ -92,7 +92,8 @@ namespace nap
 		UniformStructInstance*  ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
 		if (ubo_struct != nullptr)
 		{
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::refractiveIndex)->setValue(mResource->mRefractiveIndexParam->mValue);
+			const glm::vec3 value = mResource->mRefractiveIndexParam != nullptr ? mResource->mRefractiveIndexParam->mValue : glm::vec3(1.0f, 1.0f, 1.0f);
+			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::refractiveIndex)->setValue(value);
 		}
 	}
 
