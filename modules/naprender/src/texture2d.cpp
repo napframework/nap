@@ -457,13 +457,9 @@ namespace nap
 	{
 		// Do not clear if this is an attachment
 		// Attachments use vkCmdClearAttachments for clear operations
-		// But should really be cleared in a renderpass with VK_ATTACHMENT_LOAD_OP_CLEAR 
-		if (getImageLayout() & VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL ||
-			getImageLayout() & VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL ||
-			getImageLayout() > VK_IMAGE_LAYOUT_PREINITIALIZED)
-		{
+		// But should really be cleared in a renderpass with VK_ATTACHMENT_LOAD_OP_CLEAR
+		if (getImageLayout() == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL || getImageLayout() == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || getImageLayout() > VK_IMAGE_LAYOUT_PREINITIALIZED)
 			return;
-		}
 
 		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
 		// Therefore, the initial layout transition waits for nothing
