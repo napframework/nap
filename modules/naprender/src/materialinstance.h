@@ -131,6 +131,15 @@ namespace nap
 		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name); }
 
 		/**
+		 * Creates a nap::SamplerInstance for this material instance from a resource.
+		 * The sampler returned is only applicable to this instance.
+		 *
+		 * @param name: the name of the sampler declared in the shader.
+		 * @return nap::SamplerInstance, nullptr if not available.
+		 */
+		SamplerInstance* getOrCreateSamplerFromResource(const Sampler& resource, utility::ErrorState& errorState);
+
+		/**
 		 * @return base material that this instance is overriding
 		 */
 		BaseMaterial* getMaterial()											{ assert(mMaterial != nullptr); return mMaterial; }
@@ -161,7 +170,7 @@ namespace nap
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
 		void onUniformCreated();
-		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
+		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance, int imageArrayIndex);
 		void onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
 
 		void updateBuffers(const DescriptorSet& descriptorSet);

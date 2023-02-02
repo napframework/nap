@@ -10,7 +10,7 @@
 namespace nap
 {
 	// Called when the bound sampler resource changes
-	using SamplerChangedCallback = std::function<void(SamplerInstance&)>;
+	using SamplerChangedCallback = std::function<void(SamplerInstance&, int)>;
 
 	/**
 	 * Sampler instance base class. Allows for interfacing with samplers at run-time.
@@ -50,7 +50,7 @@ namespace nap
 		/**
 		 * Called when the texture changes
 		 */
-		void raiseChanged()									{ if (mSamplerChangedCallback) mSamplerChangedCallback(*this); }
+		void raiseChanged(int index = 0)					{ if (mSamplerChangedCallback) mSamplerChangedCallback(*this, index); }
 
 		RenderService*					mRenderService = nullptr;
 		VkDevice						mDevice = VK_NULL_HANDLE;
@@ -129,14 +129,9 @@ namespace nap
 		Sampler2DArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
 
 		/**
-		 * @return total number of assigned textures
+		 * @return total number of textures that can be assigned
 		 */
-		int getNumElements() const								{ return static_cast<int>(mTextures.size()); }
-
-		/**
-		 * @return maximum number of textures that can be assigned
-		 */
-		int getMaxNumElements() const							{ return mDeclaration->mNumArrayElements; }
+		int getNumElements() const								{ return mDeclaration->mNumArrayElements; }
 
 		/**
 		 * @return if a texture is bound to the given index.
@@ -155,12 +150,6 @@ namespace nap
 		 * @param texture the texture to bind.
 		 */
 		void setTexture(int index, Texture2D& texture);
-
-		/**
-		 * Creates additional texture entry, and binds the specified texture 
-		 * @param texture the texture to bind.
-		 */
-		void addTexture(Texture2D& texture);
 
 		/**
 		 * Array subscript operator, returns a specific texture in the array as a reference,

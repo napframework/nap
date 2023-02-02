@@ -156,24 +156,7 @@
                                 ]
                             }
                         ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2D",
-                                "mID": "Sampler2D_4bde5ff9",
-                                "Name": "shadowMap",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MaxLodLevel": 1000,
-                                "AnisotropicSamples": "Default",
-                                "BorderColor": "IntOpaqueBlack",
-                                "CompareMode": "LessOrEqual",
-                                "EnableCompare": true,
-                                "Texture": "DummyTexture"
-                            }
-                        ],
+                        "Samplers": [],
                         "Buffers": [],
                         "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
@@ -326,24 +309,7 @@
                                 ]
                             }
                         ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2D",
-                                "mID": "Sampler2D_1ed739ec",
-                                "Name": "shadowMap",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MaxLodLevel": 1000,
-                                "AnisotropicSamples": "Default",
-                                "BorderColor": "IntOpaqueBlack",
-                                "CompareMode": "LessOrEqual",
-                                "EnableCompare": true,
-                                "Texture": "DummyTexture"
-                            }
-                        ],
+                        "Samplers": [],
                         "Buffers": [],
                         "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
@@ -401,8 +367,8 @@
                             1.0
                         ]
                     },
-                    "Intensity": 1.0,
-                    "ShadowCamera": "./ShadowCamera2"
+                    "Intensity": 0.5,
+                    "ShadowCamera": "./ShadowCameraOrtho2"
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -455,15 +421,15 @@
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
-                    "mID": "ShadowCamera2",
+                    "mID": "ShadowCameraOrtho2",
                     "Properties": {
-                        "Mode": "PixelSpace",
-                        "LeftPlane": 0.0,
-                        "RightPlane": 100.0,
-                        "TopPlane": 100.0,
-                        "BottomPlane": 0.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0,
+                        "Mode": "Custom",
+                        "LeftPlane": -10.0,
+                        "RightPlane": 10.0,
+                        "TopPlane": 10.0,
+                        "BottomPlane": -10.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 100.0,
                         "ClipRect": {
                             "Min": {
                                 "x": 0.0,
@@ -614,7 +580,7 @@
                             1.0
                         ]
                     },
-                    "Intensity": 1.0,
+                    "Intensity": 0.5,
                     "ShadowCamera": "./ShadowCameraOrtho"
                 },
                 {
@@ -804,24 +770,7 @@
                                 ]
                             }
                         ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2D",
-                                "mID": "Sampler2D_3400478d",
-                                "Name": "shadowMap",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MaxLodLevel": 1000,
-                                "AnisotropicSamples": "Default",
-                                "BorderColor": "IntOpaqueBlack",
-                                "CompareMode": "LessOrEqual",
-                                "EnableCompare": true,
-                                "Texture": "DummyTexture"
-                            }
-                        ],
+                        "Samplers": [],
                         "Buffers": [],
                         "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",

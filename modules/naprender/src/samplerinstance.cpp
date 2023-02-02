@@ -195,7 +195,16 @@ namespace nap
 		SamplerInstance(renderService, declaration, sampler2DArray, samplerChangedCallback)
 	{
 		if (sampler2DArray != nullptr)
+		{
+			assert(sampler2DArray->mTextures.size() <= declaration.mNumArrayElements);
 			mTextures = sampler2DArray->mTextures;
+		}
+
+		// Ensure we create array entries for all textures
+		mTextures.reserve(declaration.mNumArrayElements);
+		uint count = mTextures.size();
+		for (uint i = count; i < declaration.mNumArrayElements; i++)
+			mTextures.emplace_back();
 	}
 
 
@@ -204,14 +213,6 @@ namespace nap
 		assert(index < mTextures.size());
 		assert(index < mDeclaration->mNumArrayElements);
 		mTextures[index] = &texture;
-		raiseChanged();
-	}
-
-
-	void Sampler2DArrayInstance::addTexture(Texture2D& texture)
-	{
-		assert(mTextures.size()+1 < mDeclaration->mNumArrayElements);
-		mTextures.emplace_back(&texture);
-		raiseChanged();
+		raiseChanged(index);
 	}
 }

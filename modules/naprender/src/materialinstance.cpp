@@ -229,9 +229,15 @@ namespace nap
 
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+				{
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr,
+						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+				}
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+				{
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
+						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+				}
 
 				utility::ErrorState error_state;
 				bool initialized = sampler_instance_override->init(error_state);
@@ -242,6 +248,55 @@ namespace nap
 			}
 			image_start_index += declaration.mNumArrayElements;
 		}
+		return result;
+	}
+
+
+	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerFromResource(const Sampler& resource, utility::ErrorState& errorState)
+	{
+		// See if we have an override in MaterialInstance. If so, we can return it
+		SamplerInstance* existing_sampler = findSampler(resource.mName);
+		if (existing_sampler != nullptr)
+			return existing_sampler;
+
+		SamplerInstance* result = nullptr;
+
+		const BaseShader& shader = getMaterial()->getShader();
+		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
+		int image_start_index = 0;
+		for (const SamplerDeclaration& declaration : sampler_declarations)
+		{
+			if (declaration.mName == resource.mName)
+			{
+				bool is_array = declaration.mNumArrayElements > 1;
+
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (is_array)
+				{
+					const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(&resource);
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler_2d_array,
+						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+				}
+				else
+				{
+					const auto* sampler_2d = static_cast<const Sampler2D*>(&resource);
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
+						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+				}
+
+				utility::ErrorState error_state;
+				bool initialized = sampler_instance_override->init(error_state);
+				assert(initialized);
+
+				result = &addSamplerInstance(std::move(sampler_instance_override));
+				break;
+			}
+			image_start_index += declaration.mNumArrayElements;
+		}
+
+		if (result == nullptr)
+			errorState.fail("Sampler declaration with name '%s' not found in material '%s'", resource.mName.c_str(), getMaterial()->mID.c_str());
+
 		return result;
 	}
 
@@ -259,26 +314,24 @@ namespace nap
 	// remains static after init, no matter what textures we use, because it is pointing to indices into the mSamplerImages array.
 	// What we need to do here is update the contents of the mSamplerImages array so that it points to correct information
 	// for the texture change. This way, when update() is called, VkUpdateDescriptorSets will use the correct image info.
-	void BaseMaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance)
+	void BaseMaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance, int imageArrayIndex)
 	{
 		VkSampler vk_sampler = samplerInstance.getVulkanSampler();
 		if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
 		{
 			Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
+			assert(imageArrayIndex < sampler_2d_array->getNumElements());
 
-			for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
-			{
-				const Texture2D& texture = sampler_2d_array->getTexture(index);
+			const Texture2D& texture = sampler_2d_array->getTexture(imageArrayIndex);
 
+			int sampler_descriptor_index = imageStartIndex + imageArrayIndex;
+			if (mSamplerDescriptors.size() < sampler_descriptor_index)
+				mSamplerDescriptors.emplace_back();
 
-				if (mSamplerDescriptors.size() < imageStartIndex + index)
-					mSamplerDescriptors.emplace_back();
-
-				VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex + index];
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = texture.getHandle().getView();
-				imageInfo.sampler = vk_sampler;
-			}
+			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[sampler_descriptor_index];
+			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			imageInfo.imageView = texture.getHandle().getView();
+			imageInfo.sampler = vk_sampler;
 		}
 		else
 		{
@@ -484,9 +537,15 @@ namespace nap
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, static_cast<const Sampler2DArray*>(sampler), std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
+				{
+					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, static_cast<const Sampler2DArray*>(sampler),
+						std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+				}
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, static_cast<const Sampler2D*>(sampler), std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
+				{
+					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, static_cast<const Sampler2D*>(sampler),
+						std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+				}
 
 				if (!sampler_instance_override->init(errorState))
 					return false;

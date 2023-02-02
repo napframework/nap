@@ -77,11 +77,13 @@ namespace nap
 		/**
 		 * Render shadows
 		 */
-		void renderShadows(const std::vector<RenderableComponentInstance*>& comps);
+		void renderShadows(const std::vector<RenderableComponentInstance*>& comps, bool updateMaterials = true);
 
 	protected:
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
+
+		bool updateLightData(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState);
 
 	private:
 		bool initShadowMappingResources(utility::ErrorState& errorState);
@@ -94,6 +96,7 @@ namespace nap
 		std::unique_ptr<DepthRenderTexture2D> mShadowMapTexture;
 		std::unique_ptr<DepthRenderTarget> mShadowMapTarget;
 
+		// Sampler Resources
 		std::unique_ptr<Sampler2DArray> mShadowSamplerArray;
 		std::unique_ptr<Sampler2D> mShadowSampler;
 

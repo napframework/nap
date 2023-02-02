@@ -135,7 +135,7 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& comps)
+	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& comps, bool updateMaterials)
 	{
 		auto* render_service = getCore().getService<RenderService>();
 		assert(render_service != nullptr);
@@ -143,7 +143,7 @@ namespace nap
 		// Evaluate registered light components
 		for (const auto& light : mLightComponents)
 		{
-			auto* shadow_camera = light->getShadowCamera();
+			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
 			if (shadow_camera != nullptr)
 			{
 				// One shadow render pass per light
@@ -153,6 +153,21 @@ namespace nap
 			}
 		}
 
+		if (updateMaterials)
+		{
+			utility::ErrorState error_state;
+			if (!updateLightData(comps, error_state))
+			{
+				nap::Logger::error(error_state.toString());
+				assert(false);
+			}
+		}
+	}
+
+
+
+	bool RenderAdvancedService::updateLightData(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState)
+	{
 		// Filter render components
 		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
 		for (auto& comp : comps)
@@ -168,7 +183,6 @@ namespace nap
 		}
 
 		// Update materials for color pass
-		utility::ErrorState error_state; // TODO: resolve nicely later
 		for (auto& mesh_comp : filtered_mesh_comps)
 		{
 			// Verify shader interface for lights
@@ -208,20 +222,21 @@ namespace nap
 					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
 					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
 
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSampler<Sampler2DArrayInstance>(sampler::light::shadowMaps);
-					if (count >= shadow_sampler_array->getMaxNumElements())
+					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mShadowSamplerArray, errorState);
+					if (shadow_sampler_array == nullptr)
+						return false;
+
+					auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
+					if (count >= instance->getNumElements())
 						continue;
 
-					// Ensure we create the texture entries in the array
-					if (count >= shadow_sampler_array->getNumElements())
-						shadow_sampler_array->addTexture(*mShadowMapTexture);
-					else
-						shadow_sampler_array->setTexture(count, *mShadowMapTexture);
+					instance->setTexture(count, *mShadowMapTexture);
 				}
 				++count;
 			}
 			light_count->setValue(count);
 		}
+		return true;
 	}
 
 
@@ -277,35 +292,18 @@ namespace nap
 			}
 		}
 
-		auto* render_service = getCore().getService<RenderService>();
-
-		// Shadow Sampler
-		{
-			auto shadow_sampler = std::make_unique<Sampler2D>();
-			shadow_sampler->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-			shadow_sampler->mTexture = mShadowTextureDummy.get();
-			shadow_sampler->mCompareMode = EDepthCompareMode::LessOrEqual;
-			shadow_sampler->mEnableCompare = true;
-			mShadowSampler = std::move(shadow_sampler);
-
-			utility::ErrorState error_state;
-			if (!mShadowSampler->init(error_state))
-			{
-				error_state.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-				return false;
-			}
-		}
-
 		// Shadow Sampler Array
 		{
 			auto shadow_sampler_array = std::make_unique<Sampler2DArray>(8);
-			shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+			shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
+			shadow_sampler_array->mName = sampler::light::shadowMaps;
 
 			// Copy pointers
 			for (auto& tex : shadow_sampler_array->mTextures)
 				tex = mShadowTextureDummy.get();
 
 			shadow_sampler_array->mCompareMode = EDepthCompareMode::LessOrEqual;
+			shadow_sampler_array->mBorderColor = EBorderColor::IntOpaqueBlack;
 			shadow_sampler_array->mEnableCompare = true;
 			mShadowSamplerArray = std::move(shadow_sampler_array);
 

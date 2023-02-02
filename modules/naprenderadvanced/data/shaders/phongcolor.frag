@@ -51,9 +51,10 @@ out vec4 out_Color;
 uniform sampler2DShadow shadowMaps[8];
 
 // Constants
-const float SHININESS 	= 24.0;
-const float EPSILON 	= 0.00001;
-const float PI 			= 3.14159265359;
+const float SHADOW_STRENGTH 	= 0.8;
+const float SHININESS 			= 24.0;
+const float EPSILON 			= 0.00001;
+const float PI 					= 3.14159265359;
 
 // Poisson Sampling
 const vec2 POISSON_DISK_4[4] = vec2[](
@@ -98,16 +99,16 @@ float computeShadow(vec4 shadowCoord, vec3 lightDir, uint lightIndex)
 	float shadow = 0.0;
 
 	// Multi sample
-	for (int i=0; i<16; i++) 
-	{
-		shadow += texture(shadowMaps[lightIndex], 
-			vec3(shadowCoord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, frag_depth)
-		);
-	}
-	shadow /= 16.0;
+	// for (int i=0; i<16; i++) 
+	// {
+	// 	shadow += texture(shadowMaps[lightIndex], 
+	// 		vec3(shadowCoord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, frag_depth)
+	// 	);
+	// }
+	// shadow /= 16.0;
 
 	// Single sample
-	//shadow = 1.0 - texture(shadowMaps[lightIndex], vec3(shadowCoord.xy, frag_depth));
+	shadow = 1.0 - texture(shadowMaps[lightIndex], vec3(shadowCoord.xy, frag_depth));
 	return shadow;
 }
 
@@ -135,9 +136,9 @@ vec3 applyLight(vec3 color, vec3 normal, vec3 position, uint lightIndex)
 		specular = pow(max(dot(normal, halfway), 0.0), SHININESS);
 	}
 
-	vec3 ambient_color = ambient * li.color;
-	vec3 diffuse_color = diffuse * li.color;
-	vec3 specular_color = specular * li.color;
+	vec3 ambient_color = ambient * li.intensity * li.color;
+	vec3 diffuse_color = diffuse * li.intensity * li.color;
+	vec3 specular_color = specular * li.intensity * li.color;
 
 	// linear color (color before gamma correction)
 	vec3 comp_color = (diffuse_color + specular_color + ambient_color) * ubo.color;
@@ -154,18 +155,17 @@ void main()
 	{
 		color += applyLight(ubo.color.rgb, passNormal, passPosition, i);
 	};
-	color /= max(lit.count, 1);
 
 	float shadow = 0.0;
 	for (uint i = 0; i < lit.count; i++)
 	{
 		DirectionalLightShadow li = lit.lights[i];
-		shadow += computeShadow(passShadowCoord[i], normalize(li.direction), i);
+		shadow = max(computeShadow(passShadowCoord[i], normalize(li.direction), i), shadow);
 	}
-	shadow /= max(lit.count, 1);
+	shadow = clamp(shadow, 0.0, 1.0) * SHADOW_STRENGTH;
 	
-	color = mix(color, vec3(0.975), passFresnel * (1.0-shadow));
-	color = mix(vec3(0.025), color, shadow);
+	color = mix(color, vec3(0.975), passFresnel);
+	color = mix(color, vec3(0.025), shadow);
 
 	out_Color = vec4(color, ubo.alpha);
 }
