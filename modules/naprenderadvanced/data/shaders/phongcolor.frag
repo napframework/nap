@@ -2,6 +2,7 @@
 
 struct DirectionalLight
 {
+	vec3 origin;
 	vec3 direction;
 	vec3 color;
 	float intensity;
@@ -10,6 +11,7 @@ struct DirectionalLight
 struct DirectionalLightShadow
 {
 	mat4 lightViewProjection;
+	vec3 origin;
 	vec3 direction;
 	vec3 color;
 	float intensity;
@@ -99,16 +101,17 @@ float computeShadow(vec4 shadowCoord, vec3 lightDir, uint lightIndex)
 	float shadow = 0.0;
 
 	// Multi sample
-	// for (int i=0; i<16; i++) 
-	// {
-	// 	shadow += texture(shadowMaps[lightIndex], 
-	// 		vec3(shadowCoord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, frag_depth)
-	// 	);
-	// }
-	// shadow /= 16.0;
+	for (int i=0; i<16; i++) 
+	{
+		shadow += 1.0 - texture(shadowMaps[lightIndex], 
+			vec3(shadowCoord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, frag_depth)
+		);
+	}
+	shadow /= 16.0;
 
 	// Single sample
-	shadow = 1.0 - texture(shadowMaps[lightIndex], vec3(shadowCoord.xy, frag_depth));
+	//shadow = 1.0 - texture(shadowMaps[lightIndex], vec3(shadowCoord.xy, frag_depth));
+
 	return shadow;
 }
 

@@ -8,8 +8,15 @@
 #include <orthocameracomponent.h>
 #include <transformcomponent.h>
 
+#include <parameter.h>
+#include <parameternumeric.h>
+#include <parametervec.h>
+#include <parametermat.h>
+#include <parametercolor.h>
+
 // Local includes
 #include "light.h"
+
 
 namespace nap
 {
@@ -26,24 +33,10 @@ namespace nap
 
 		namespace light
 		{
-			namespace directional
-			{
-				inline constexpr const char* color = "color";
-				inline constexpr const char* intensity = "intensity";
-				inline constexpr const char* direction = "direction";
-			}
-
-			namespace point
-			{
-				inline constexpr const char* origin = "origin";
-				inline constexpr const char* color = "color";
-				inline constexpr const char* intensity = "intensity";
-			}
-
-			namespace spot
-			{
-
-			}
+			inline constexpr const char* color = "color";
+			inline constexpr const char* intensity = "intensity";
+			inline constexpr const char* direction = "direction";
+			inline constexpr const char* origin = "origin";
 
 			inline constexpr const char* lightViewProjection = "lightViewProjection";
 			inline constexpr const char* lights = "lights";
@@ -59,6 +52,7 @@ namespace nap
 		}
 	}
 
+	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
 
 	/**
 	 * LightComponent
@@ -74,7 +68,9 @@ namespace nap
 		*/
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		bool mEnableShadows = false;
+		ResourcePtr<ParameterRGBColorFloat> mColor;				///< Property: 'Color'
+		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
+		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
 	};
 
 
@@ -83,11 +79,12 @@ namespace nap
 	 */
 	class NAPAPI LightComponentInstance : public ComponentInstance
 	{
+		friend class RenderAdvancedService;
 		RTTI_ENABLE(ComponentInstance)
 	public:
 		// Constructor
 		LightComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+			ComponentInstance(entity, resource) { }
 
 		// Destructor
 		~LightComponentInstance();
@@ -101,31 +98,43 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update LightComponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
 		 * @return whether this light component produces shadows
 		 */
-		virtual bool isShadowEnabled() { return mIsShadowEnabled; }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getShadowCamera() { return nullptr; }
+		virtual bool isShadowEnabled()										{ return mIsShadowEnabled; }
 
 		/**
 		 * @return the light transform
 		 */
-		const TransformComponentInstance& getTransform() const { return *mTransform; }
+		const TransformComponentInstance& getTransform() const				{ return *mTransform; }
+
+		/**
+		 * @return the shadow camera if available, else nullptr
+		 */
+		virtual CameraComponentInstance* getShadowCamera()					{ return nullptr; }
+
+		/**
+		 * @return the position of the light in world space
+		 */
+		const glm::vec3 getLightPosition() const							{ return math::extractPosition(getTransform().getGlobalTransform()); }
+
+		/**
+		 * @return the direction of the light in world space
+		 */
+		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
+
 
 	protected:
+		void addLightUniformMember(const std::string& memberName, Parameter* parameter);
+
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
 
 		bool mIsShadowEnabled							= false;
+
+	private:
+		Parameter* getLightUniform(const std::string& memberName);
+
+		std::unordered_map<std::string, Parameter*> mUniformDataMap;
 	};
 
 
@@ -137,9 +146,6 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(DirectionalLightComponent, DirectionalLightComponentInstance)
 	public:
-		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };			///< Property: 'Color'
-		float mIntensity = 1.0f;								///< Property: 'Intensity'
-
 		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
 	};
 
@@ -163,25 +169,9 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update LightComponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()		{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
-
-		/**
-		 * @return the position of the light in world space
-		 */
-		const glm::vec3 getLightPosition() const				{ return math::extractPosition(getTransform().getGlobalTransform()); }
-
-		/**
-		 * @return the direction of the light in world space
-		 */
-		const glm::vec3 getLightDirection() const				{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
+		virtual CameraComponentInstance* getShadowCamera()					{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
 
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
 		float mIntensity = 1.0f;

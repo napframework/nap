@@ -360,14 +360,8 @@
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "Light2",
                     "Enable Shadows": true,
-                    "Color": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    "Intensity": 0.5,
+                    "Color": "LightColorParameter",
+                    "Intensity": "LightIntensityParameter",
                     "ShadowCamera": "./ShadowCameraOrtho2"
                 },
                 {
@@ -573,14 +567,8 @@
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "Light",
                     "Enable Shadows": true,
-                    "Color": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    "Intensity": 0.5,
+                    "Color": "LightColorParameter",
+                    "Intensity": "LightIntensityParameter",
                     "ShadowCamera": "./ShadowCameraOrtho"
                 },
                 {
@@ -1131,9 +1119,9 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightIntensityParameter",
                     "Name": "LightIntensity",
-                    "Value": 1.0,
+                    "Value": 0.5,
                     "Minimum": 0.0,
-                    "Maximum": 2.0
+                    "Maximum": 1.0
                 },
                 {
                     "Type": "nap::ParameterVec3",

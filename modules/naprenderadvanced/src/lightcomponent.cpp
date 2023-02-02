@@ -64,6 +64,10 @@ namespace nap
 		// Fetch transform
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
 
+		// Create default parameters
+		addLightUniformMember(uniform::light::color, mResource->mColor.get());
+		addLightUniformMember(uniform::light::intensity, mResource->mIntensity.get());
+
 		if (mIsShadowEnabled)
 		{
 			if(!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled No shadow camera set", mID.c_str()))
@@ -79,11 +83,21 @@ namespace nap
 	}
 
 
-	void LightComponentInstance::update(double deltaTime)
+	void LightComponentInstance::addLightUniformMember(const std::string& memberName, Parameter* parameter)
 	{
-		// Calculate new light direction
-		const glm::vec3 light_position = math::extractPosition(mTransform->getGlobalTransform());
-		const glm::vec3 light_direction = -glm::normalize(mTransform->getGlobalTransform()[2]);
+		const auto it = mUniformDataMap.insert({ memberName, parameter });
+		assert(it.second);
+	}
+
+
+	Parameter* LightComponentInstance::getLightUniform(const std::string& memberName)
+	{
+		const auto it = mUniformDataMap.find(memberName);
+		if (it != mUniformDataMap.end())
+			return it->second;
+
+		assert(false);
+		return nullptr;
 	}
 
 
@@ -104,16 +118,6 @@ namespace nap
 		if (!LightComponentInstance::init(errorState))
 			return false;
 
-		auto* resource = static_cast<DirectionalLightComponent*>(mResource);
-		mColor = resource->mColor;
-		mIntensity = resource->mIntensity;
-
 		return true;
-	}
-
-
-	void DirectionalLightComponentInstance::update(double deltaTime)
-	{
-
 	}
 }

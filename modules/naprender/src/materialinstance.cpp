@@ -13,7 +13,6 @@
 // External includes
 #include <nap/logger.h>
 #include <rtti/rttiutilities.h>
-#include <depthtexture2d.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
 	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)

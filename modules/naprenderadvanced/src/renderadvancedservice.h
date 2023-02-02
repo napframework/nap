@@ -70,9 +70,16 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 *
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function to close service specific handles, drivers or devices
+		 * When service B depends on A, Service B is shutdown before A
 		 */
 		virtual void preShutdown() override;
+
+		/**
+		 * Invoked after the resource manager successfully loaded resources
+		 */
+		virtual void postResourcesLoaded() override;
 
 		/**
 		 * Render shadows
@@ -92,14 +99,14 @@ namespace nap
 		std::vector<LightComponentInstance*> mLightComponents;
 
 		// Shadow mapping
-		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
-		std::unique_ptr<DepthRenderTexture2D> mShadowMapTexture;
-		std::unique_ptr<DepthRenderTarget> mShadowMapTarget;
+		std::unordered_map<LightComponentInstance*, std::unique_ptr<DepthRenderTarget>> mLightDepthTargetMap;
+		std::unordered_map<LightComponentInstance*, std::unique_ptr<DepthRenderTexture2D>> mLightDepthTextureMap;
 
-		// Sampler Resources
-		std::unique_ptr<Sampler2DArray> mShadowSamplerArray;
-		std::unique_ptr<Sampler2D> mShadowSampler;
+		std::unique_ptr<Sampler2DArray> mSamplerResource;
+		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 
 		bool mShadowsIntialized = false;
+
+		static constexpr uint sMaxShadowMapCount = 8;
 	};
 }

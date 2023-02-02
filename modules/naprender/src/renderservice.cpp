@@ -1444,6 +1444,7 @@ namespace nap
 		settings.mDataType = ESurfaceDataType::BYTE;
 		
 		mEmptyTexture = std::make_unique<Texture2D>(getCore());
+		mEmptyTexture->mID = utility::stringFormat("%s_EmptyTexture_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		return mEmptyTexture->init(settings, false, 0, errorState);
 	}
 

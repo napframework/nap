@@ -12,6 +12,12 @@
 #include <nap/core.h>
 #include <rtti/factory.h>
 
+#include <parameter.h>
+#include <parametervec.h>
+#include <parameternumeric.h>
+#include <parametermat.h>
+#include <parametercolor.h>
+
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowMapSize", &nap::RenderAdvancedServiceConfiguration::mShadowMapSize, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -143,13 +149,15 @@ namespace nap
 		// Evaluate registered light components
 		for (const auto& light : mLightComponents)
 		{
+			// TODO: Only re-render shadow map when light transform or camera matrix has changed
 			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
 			if (shadow_camera != nullptr)
 			{
 				// One shadow render pass per light
-				mShadowMapTarget->beginRendering();
-				render_service->renderObjects(*mShadowMapTarget, *shadow_camera, comps);
-				mShadowMapTarget->endRendering();
+				auto& target = mLightDepthTargetMap[light];
+				target->beginRendering();
+				render_service->renderObjects(*target, *shadow_camera, comps);
+				target->endRendering();
 			}
 		}
 
@@ -207,22 +215,81 @@ namespace nap
 				// Fetch element
 				auto& light_element = light_array->getElement(count);
 
-				// TODO: All this stuff should somehow be handled by the light implementation, we cant account for every possible
-				// shader interface for specific light types.
-				if (light->get_type().is_derived_from<DirectionalLightComponentInstance>())
+				// Light uniform defaults
+				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
+				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
+
+				// Light uniform custom
+				for (const auto& entry : light->mUniformDataMap)
 				{
-					auto* directional_light = static_cast<DirectionalLightComponentInstance*>(light);
-					light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::directional::direction)->setValue(directional_light->getLightDirection());
-					light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::directional::color)->setValue(directional_light->mColor);
-					light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::directional::intensity)->setValue(directional_light->mIntensity);
+					const auto name = entry.first;
+					if (name == uniform::light::origin || name == uniform::light::direction || name == uniform::light::lightViewProjection)
+						continue;
+
+					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
+					auto* member = struct_decl->findMember(name);
+					if (!errorState.check(member != nullptr, "Missing uniform with name '%s'", name.c_str()))
+						return false;
+
+					if (member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)))
+					{
+						auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
+						if (value_member->mType == EShaderVariableValueType::Float)
+						{
+							auto* param = light->getLightUniform(name);
+							if (!errorState.check(param != nullptr, "Unsupported member data type"))
+								return false;
+
+							light_element.getOrCreateUniform<UniformFloatInstance>(name)->setValue(static_cast<ParameterFloat*>(param)->mValue);
+						}
+						else if (value_member->mType == EShaderVariableValueType::Vec3)
+						{
+							auto* param = light->getLightUniform(name);
+							if (!errorState.check(param != nullptr, "Unsupported member data type"))
+								return false;
+
+							if (param->get_type().is_derived_from(RTTI_OF(ParameterRGBColorFloat)))
+							{
+								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterRGBColorFloat*>(param)->mValue.toVec3());
+							}
+							else if (param->get_type().is_derived_from(RTTI_OF(ParameterVec3)))
+							{
+								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterVec3*>(param)->mValue);
+							}
+							else
+							{
+								errorState.fail("Unsupported member data type");
+								return false;
+							}
+
+						}
+						else if (value_member->mType == EShaderVariableValueType::Mat4)
+						{
+							auto* param = light->getLightUniform(name);
+							if (!errorState.check(param != nullptr, "Unsupported member data type"))
+								return false;
+							light_element.getOrCreateUniform<UniformMat4Instance>(name)->setValue(static_cast<ParameterMat4*>(param)->mValue);
+						}
+						else
+						{
+							errorState.fail("Unsupported member data type");
+							return false;
+						}
+					}
+					else
+					{
+						errorState.fail("Unsupported member data type");
+						return false;
+					}
 				}
 
+				// Shadows
 				if (light->isShadowEnabled())
 				{
 					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
 					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
 
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mShadowSamplerArray, errorState);
+					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
 					if (shadow_sampler_array == nullptr)
 						return false;
 
@@ -230,7 +297,7 @@ namespace nap
 					if (count >= instance->getNumElements())
 						continue;
 
-					instance->setTexture(count, *mShadowMapTexture);
+					instance->setTexture(count, *mLightDepthTextureMap[light]);
 				}
 				++count;
 			}
@@ -242,12 +309,27 @@ namespace nap
 
 	void RenderAdvancedService::preShutdown()
 	{
+		mLightDepthTargetMap.clear();
+		mLightDepthTextureMap.clear();
 		mShadowTextureDummy.reset();
-		mShadowMapTexture.reset();
-		mShadowMapTarget.reset();
+		mSamplerResource.reset();
 
-		mShadowSamplerArray.reset();
-		mShadowSampler.reset();
+		mShadowsIntialized = false;
+	}
+
+
+	void RenderAdvancedService::postResourcesLoaded()
+	{
+		// We now know the number of light components in the scene and can initialize resources accordingly
+		if (!mShadowsIntialized)
+		{
+			utility::ErrorState error_state;
+			if (!initShadowMappingResources(error_state))
+			{
+				nap::Logger::error(error_state.toString());
+				assert(false);
+			}
+		}
 	}
 
 
@@ -255,8 +337,12 @@ namespace nap
 	{
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 
-		// Depth Render Texture
+		// Shadow maps
+		mLightDepthTextureMap.reserve(mLightComponents.size());
+		mLightDepthTargetMap.reserve(mLightComponents.size());
+		for (const auto& light : mLightComponents)
 		{
+			// Texture
 			auto shadow_map = std::make_unique<DepthRenderTexture2D>(getCore());
 			shadow_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 			shadow_map->mWidth = configuration->mShadowMapSize;
@@ -266,53 +352,47 @@ namespace nap
 			shadow_map->mColorSpace = EColorSpace::Linear;
 			shadow_map->mClearValue = 1.0f;
 			shadow_map->mFill = true;
-			mShadowMapTexture = std::move(shadow_map);
 
-			utility::ErrorState error_state;
-			if (!mShadowMapTexture->init(error_state))
+			if (!shadow_map->init(errorState))
 			{
-				error_state.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+				errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 				return false;
 			}
-		}
 
-		// Depth Render Target
-		{
+			const auto it_tex = mLightDepthTextureMap.insert({ light, std::move(shadow_map) }).first;
+
+			// Target
 			auto shadow_target = std::make_unique<DepthRenderTarget>(getCore());
 			shadow_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 			shadow_target->mClearValue = 1.0f;
-			mShadowMapTarget = std::move(shadow_target);
-			mShadowMapTarget->mDepthTexture = mShadowMapTexture.get();
+			shadow_target->mDepthTexture = it_tex->second.get();
 
-			utility::ErrorState error_state;
-			if (!mShadowMapTarget->init(error_state))
+			if (!shadow_target->init(errorState))
 			{
-				error_state.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+				errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 				return false;
 			}
+
+			mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
 		}
 
-		// Shadow Sampler Array
+		auto shadow_sampler_array = std::make_unique<Sampler2DArray>(sMaxShadowMapCount);
+		shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
+		shadow_sampler_array->mName = sampler::light::shadowMaps;
+
+		// Copy pointers
+		for (auto& tex : shadow_sampler_array->mTextures)
+			tex = mShadowTextureDummy.get();
+
+		shadow_sampler_array->mCompareMode = EDepthCompareMode::LessOrEqual;
+		shadow_sampler_array->mBorderColor = EBorderColor::IntOpaqueBlack;
+		shadow_sampler_array->mEnableCompare = true;
+		mSamplerResource = std::move(shadow_sampler_array);
+
+		if (!mSamplerResource->init(errorState))
 		{
-			auto shadow_sampler_array = std::make_unique<Sampler2DArray>(8);
-			shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
-			shadow_sampler_array->mName = sampler::light::shadowMaps;
-
-			// Copy pointers
-			for (auto& tex : shadow_sampler_array->mTextures)
-				tex = mShadowTextureDummy.get();
-
-			shadow_sampler_array->mCompareMode = EDepthCompareMode::LessOrEqual;
-			shadow_sampler_array->mBorderColor = EBorderColor::IntOpaqueBlack;
-			shadow_sampler_array->mEnableCompare = true;
-			mShadowSamplerArray = std::move(shadow_sampler_array);
-
-			utility::ErrorState error_state;
-			if (!mShadowSamplerArray->init(error_state))
-			{
-				error_state.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-				return false;
-			}
+			errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+			return false;
 		}
 
 		mShadowsIntialized = true;
@@ -323,17 +403,6 @@ namespace nap
 	void RenderAdvancedService::registerLightComponent(LightComponentInstance& light)
 	{
 		mLightComponents.emplace_back(&light);
-
-		// Generate shadow map
-		if (!mShadowsIntialized)
-		{
-			utility::ErrorState error_state;
-			if (!initShadowMappingResources(error_state))
-			{
-				nap::Logger::error(error_state.toString());
-				assert(false);
-			}
-		}
 	}
 
 

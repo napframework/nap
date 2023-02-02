@@ -2,6 +2,7 @@
 
 struct DirectionalLight
 {
+	vec3 origin;
 	vec3 direction;
 	vec3 color;
 	float intensity;
@@ -10,6 +11,7 @@ struct DirectionalLight
 struct DirectionalLightShadow
 {
 	mat4 lightViewProjection;
+	vec3 origin;
 	vec3 direction;
 	vec3 color;
 	float intensity;
