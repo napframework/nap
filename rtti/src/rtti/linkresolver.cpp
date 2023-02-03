@@ -54,7 +54,7 @@ namespace nap
 
 				// If the type that we're processing has a function to assign the pointer value, we use it.
 				Variant target_value = target_object;
-				rttr::method assign_method = findMethodRecursive(resolved_path.getType(), "assign");
+				rttr::method assign_method = findMethodRecursive(resolved_path.getType(), method::assign);
 				if (assign_method.is_valid())
 				{
 					target_value = resolved_path.getValue();
