@@ -15,6 +15,7 @@
 #include <QMap>
 
 #include <rtti/deserializeresult.h>
+#include <rtti/typeinfo.h>
 
 namespace napkin
 {
@@ -342,15 +343,6 @@ namespace napkin
 		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object, size_t index);
 
 		/**
-		 * Add an existing pointer to the end of an array
-		 * The propertyValueChanged signal will be emitted.
-		 * @param path The path to the array
-		 * @param object The object pointer to addd
-		 * @return The index at which the element lives.
-		 */
-		size_t arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object);
-
-		/**
 		 * Create an object of the specified type and add it to the array
 		 * The propertyValueChanged signal will be emitted.
 		 * @param path The path to the array
@@ -589,8 +581,7 @@ namespace napkin
 	private:
 
 		/**
-		 * @param suggestedName
-		 * @return
+		 * @return unique object name
 		 */
 		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
 
