@@ -4,18 +4,16 @@
 
 #pragma once
 
+#include "propertypath.h"
+
 #include <deque>
 #include <nap/core.h>
 #include <entity.h>
 #include <nap/group.h>
-#include <propertypath.h>
-
 #include <QString>
 #include <QUndoCommand>
 #include <QMap>
-
 #include <rtti/deserializeresult.h>
-#include <rtti/typeinfo.h>
 
 namespace napkin
 {
