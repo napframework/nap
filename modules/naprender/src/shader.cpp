@@ -903,6 +903,12 @@ namespace nap
 		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
+		//auto frag_constants = fragment_shader_compiler.get_specialization_constants();
+		//if (!frag_constants.empty())
+		//{
+		//	nap::Logger::info("");
+		//}
+
 		// Verify the shader variable declarations
 		if (!verifyShaderVariableDeclarations(errorState))
 			return false;

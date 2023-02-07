@@ -6,49 +6,54 @@
 // Constants
 const float SHININESS = 24.0;
 
+
 // Shades a fragment based on a light, incoming normal and position should be in object space
-vec3 applyLight(DirectionalLightShadow lights[8], uint count, vec3 camPosition, vec3 surfColor, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, vec3 camPosition, vec3 surfColor, vec3 surfNormal, vec3 fragPosition)
+{
+	// inverse light direction
+	vec3 inv_dir = normalize(-lightDirection);
+
+	// calculate vector that defines the distance from camera to the surface
+	vec3 surface_to_cam = normalize(camPosition - fragPosition);
+
+	// lighting components
+	float ambient = 1.0;
+	float diffuse = max(0.0, dot(surfNormal, inv_dir));
+	float specular = 0.0;
+
+	// compute specular value if diffuse coefficient is > 0.0
+	if (diffuse > 0.0)
+	{
+		vec3 halfway = normalize(inv_dir + surface_to_cam);  
+		specular = pow(max(dot(surfNormal, halfway), 0.0), SHININESS);
+	}
+
+	vec3 ambient_color = ambient * lightIntensity * lightColor;
+	vec3 diffuse_color = diffuse * lightIntensity * lightColor;
+	vec3 specular_color = specular * lightIntensity * lightColor;
+
+	// linear color (color before gamma correction)
+	vec3 comp_color = (diffuse_color + specular_color + ambient_color) * surfColor;
+
+	// clamp
+	return clamp(comp_color, 0.0, 1.0);
+}
+
+
+// Shades a fragment based on a light, incoming normal and position should be in object space
+vec3 computeLight(DirectionalLightShadow lights[8], uint count, vec3 camPosition, vec3 surfColor, vec3 surfNormal, vec3 fragPosition)
 {
 	vec3 color = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < count; i++)
 	{
 		DirectionalLightShadow li = lights[i];
-
-		// inverse light direction
-		vec3 inv_dir = normalize(-li.direction);
-
-		// calculate vector that defines the distance from camera to the surface
-		vec3 surface_to_cam = normalize(camPosition - fragPosition);
-
-		// lighting components
-		float ambient = 1.0;
-		float diffuse = max(0.0, dot(surfNormal, inv_dir));
-		float specular = 0.0;
-
-		// compute specular value if diffuse coefficient is > 0.0
-		if (diffuse > 0.0)
-		{
-			vec3 halfway = normalize(inv_dir + surface_to_cam);  
-			specular = pow(max(dot(surfNormal, halfway), 0.0), SHININESS);
-		}
-
-		vec3 ambient_color = ambient * li.intensity * li.color;
-		vec3 diffuse_color = diffuse * li.intensity * li.color;
-		vec3 specular_color = specular * li.intensity * li.color;
-
-		// linear color (color before gamma correction)
-		vec3 comp_color = (diffuse_color + specular_color + ambient_color) * surfColor;
-
-		// clamp and add
-		color += clamp(comp_color, 0.0, 1.0);
+		color += computeLight(li.direction, li.color, li.intensity, camPosition, surfColor, surfNormal, fragPosition);
 	}
 	return color;
 }
 
 
-vec3 applyLight(DirectionalLightShadow light, vec3 camPosition, vec3 surfColor, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLight(DirectionalLightShadow light, vec3 camPosition, vec3 surfColor, vec3 surfNormal, vec3 fragPosition)
 {
-	DirectionalLightShadow lights[8];
-	lights[0] = light;
-	return applyLight(lights, 1, camPosition, surfColor, surfNormal, fragPosition);
+	return computeLight(light.direction, light.color, light.intensity, camPosition, surfColor, surfNormal, fragPosition);
 }

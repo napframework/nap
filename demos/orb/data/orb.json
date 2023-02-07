@@ -231,7 +231,7 @@
                         "y": 0.0,
                         "z": 0.0
                     },
-                    "MinimumZoomDistance": 2.0,
+                    "MinimumZoomDistance": 1.5,
                     "LimitZoomDistance": true
                 },
                 {
@@ -841,13 +841,13 @@
             "Type": "nap::HeightSphereMesh",
             "mID": "HeightSphereMesh",
             "Heightmap": "OrbDisplacementMap",
-            "Height": 0.25,
+            "Height": 1.0,
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Radius": 1.0,
-            "Rings": 512,
-            "Sectors": 512,
+            "Rings": 256,
+            "Sectors": 256,
             "Color": {
                 "Values": [
                     1.0,
@@ -937,7 +937,7 @@
             "Uniforms": [],
             "Samplers": [],
             "Buffers": [],
-            "Shader": "OrbShader",
+            "Shader": "PhongColorShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -1047,13 +1047,15 @@
             "Type": "nap::ShaderFromFile",
             "mID": "OrbShader",
             "VertShader": "shaders/orbcolor.vert",
-            "FragShader": "shaders/orbcolor.frag"
+            "FragShader": "shaders/orbcolor.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "PhongColorShader",
-            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/phongcolor.vert",
-            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/phongcolor.frag"
+            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/blinnphongcolor.vert",
+            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/blinnphongcolor.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::SphereMesh",

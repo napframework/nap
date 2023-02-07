@@ -48,25 +48,16 @@ out vec4 out_Color;
 uniform sampler2DShadow shadowMaps[8];
 
 // Constants
-const float SHADOW_STRENGTH 	= 0.8;
+const float SHADOW_STRENGTH = 0.9;
 
 
 void main()
 {
-	vec3 surf_normal = normalize(passNormal);
-	vec3 color = applyLight(lit.lights, lit.count, mvp.cameraPosition, ubo.color, surf_normal, passPosition);
-
-	float shadow = 0.0;
-	for (uint i = 0; i < lit.count; i++)
-	{
-		DirectionalLightShadow li = lit.lights[i];
-		shadow = max(computeShadow(
-			shadowMaps[i], passShadowCoord[i], normalize(li.direction), surf_normal, ubo.bias), shadow);
-	}
-	shadow = clamp(shadow, 0.0, 1.0) * SHADOW_STRENGTH;
-	
+	vec3 color = computeLight(lit.lights, lit.count, mvp.cameraPosition, ubo.color, normalize(passNormal), passPosition);
 	color = mix(color, vec3(0.975), passFresnel);
-	color = mix(color, vec3(0.025), shadow);
+
+	float shadow = computeShadow(shadowMaps, passShadowCoord, lit.count) * SHADOW_STRENGTH;
+	color *= (1.0 - shadow);
 
 	out_Color = vec4(color, ubo.alpha);
 }

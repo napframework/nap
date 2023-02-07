@@ -24,10 +24,10 @@ struct PointLight
 	float intensity;
 };
 
-struct PointLightShadow
-{
-	mat4 lightViewProjection;
-	vec3 origin;
-	vec3 color;
-	float intensity;
-};
+// struct PointLightShadow
+// {
+// 	mat4 lightViewProjection;
+// 	vec3 origin;
+// 	vec3 color;
+// 	float intensity;
+// };

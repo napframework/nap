@@ -37,20 +37,37 @@ const float POISSON_SPREAD 	= 768.0;
 // Calculate shadow contribution
 // @param shadowCoord: the fragment position in light space
 // @param lightDir: the light direction
-float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord, vec3 lightDir, vec3 surfNormal, float bias)
+float computeShadow(sampler2DShadow shadowMaps[8], vec4 shadowCoords[8], uint count)
+{
+	float result = 0.0;
+	for (uint i = 0; i < count; i++)
+	{
+		// Perspective divide and map coordinates to [0.0, 1.0] range
+		vec3 coord = ((shadowCoords[i].xyz / shadowCoords[i].w) + 1.0) * 0.5;
+
+		// Multi sample
+		float shadow = 0.0;
+		for (int s=0; s<POISSON_DISK_16.length(); s++) 
+		{
+			shadow += 1.0 - texture(shadowMaps[i], vec3(coord.xy + POISSON_DISK_16[s]/POISSON_SPREAD, coord.z));
+		}
+		result = max(shadow / float(POISSON_DISK_16.length()), result);
+	}
+
+	return clamp(result, 0.0, 1.0);
+}
+
+
+float computeShadow(sampler2DShadow shadowMap, vec4 shadowCoord)
 {
 	// Perspective divide and map coordinates to [0.0, 1.0] range
 	vec3 coord = ((shadowCoord.xyz / shadowCoord.w) + 1.0) * 0.5;
 
-	//float texelSize = 1.0/float(textureSize(shadowMap, 0).x);
-	//float bias = max(texelSize * (1.0 - dot(surfNormal, lightDir)), texelSize * 0.5);
-
 	// Multi sample
 	float shadow = 0.0;
-	for (int i=0; i<POISSON_DISK_16.length(); i++) 
+	for (int s=0; s<POISSON_DISK_16.length(); s++) 
 	{
-		shadow += 1.0 - texture(shadowMap, 
-			vec3(coord.xy + POISSON_DISK_16[i]/POISSON_SPREAD, coord.z + bias));
+		shadow += 1.0 - texture(shadowMap, vec3(coord.xy + POISSON_DISK_16[s]/POISSON_SPREAD, coord.z));
 	}
-	return shadow / float(POISSON_DISK_16.length());
+	return clamp(shadow / float(POISSON_DISK_16.length()), 0.0, 1.0);
 }

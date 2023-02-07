@@ -62,16 +62,8 @@ vec3 bandColor(vec3 cola, vec3 colb, vec3 color, float shades)
 void main()
 {
 	vec3 surf_normal = normalize(passNormal);
-	vec3 color = applyLight(lit.lights, lit.count, mvp.cameraPosition, ubo.color, surf_normal, passPosition);
-
-	float shadow = 0.0;
-	for (uint i = 0; i < lit.count; i++)
-	{
-		DirectionalLightShadow li = lit.lights[i];
-		shadow = max(computeShadow(
-			shadowMaps[i], passShadowCoord[i], normalize(li.direction), surf_normal, 0.0), shadow);
-	}
-	shadow = clamp(shadow, 0.0, 1.0) * SHADOW_STRENGTH;
+	vec3 color = computeLight(lit.lights, lit.count, mvp.cameraPosition, ubo.color, surf_normal, passPosition);
+	float shadow = computeShadow(shadowMaps, passShadowCoord, lit.count) * SHADOW_STRENGTH;
 	
 	color = mix(color, vec3(0.975), passFresnel);
 	color = mix(color, vec3(0.025), shadow);
