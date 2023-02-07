@@ -5,7 +5,6 @@
     "Version": "1.0.0",
     "Data": "data/orb.json",
     "PathMapping": "cache/path_mapping.json",
-    "ServiceConfig": "service_config.json",
     "RequiredModules": [
         "mod_orb",
         "mod_napapp",
