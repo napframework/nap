@@ -31,75 +31,86 @@ namespace nap
 			
 		public:
 			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(AudioService); }
-			
-			/**
-			 * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
-			 * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
-			 * If left empty the default host API will be used.
-			 */
-			std::string mHostApi = "";
-			
-			/**
-			 * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
-			 * If left empty, the default input device will be used.
-			 */
-			std::string mInputDevice = "";
-			
-			/**
-			 * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
-			 * If left empty the default output device will be used.
-			 */
-			std::string mOutputDevice = "";
-			
-			/**
-			 * The number of input channels in the stream.
-			 * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
-			 */
-			int mInputChannelCount = 1;
-			
-			/**
-			 * The number of output channels in the stream.
-			 * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
-			 */
-			int mOutputChannelCount = 2;
-			
-			/**
-			 * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
-			 * In this case a zero signal will be used to emulate the input from an unsupported input channel.
-			 */
-			bool mAllowChannelCountFailure = true;
-			
-			/**
-			 * Indicates wether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
-			 */
-			bool mAllowDeviceFailure = true;
-			
-			/**
-			 * If set to true the audio will start with only an output device.
-			 */
-			bool mDisableInput = false;
 
-			/**
-			 * If set to true the audio will start with only an input device.
-			 */
-			bool mDisableOutput = false;
-			
-			/**
-			 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
-			 */
-			float mSampleRate = 44100;
-			
-			/**
-			 * The buffer size the audio stream will run on, every audio callback processes this amount of samples per channel
-			 */
-			int mBufferSize = 1024;
-			
-			/**
-			 * The buffer size that is used internally by the node system to peform processing.
-			 * This can be lower than mBufferSize but has to fit within mBufferSize a discrete amount of times.
-			 * Lowering this can improve timing precision in the case that the node manager performs internal event scheduling, however will increase performance load.
-			 */
-			int mInternalBufferSize = 1024;
+            /**
+             * Copyable struct containing audio device settings
+             */
+            struct NAPAPI DeviceSettings
+            {
+                /**
+                 * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
+                 * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
+                 * If left empty the default host API will be used.
+                 */
+                std::string mHostApi = "";
+
+                /**
+                 * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
+                 * If left empty, the default input device will be used.
+                 */
+                std::string mInputDevice = "";
+
+                /**
+                 * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
+                 * If left empty the default output device will be used.
+                 */
+                std::string mOutputDevice = "";
+
+                /**
+                 * The number of input channels in the stream.
+                 * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
+                 */
+                int mInputChannelCount = 1;
+
+                /**
+                 * The number of output channels in the stream.
+                 * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
+                 */
+                int mOutputChannelCount = 2;
+
+                /**
+                 * If set to true the audio will start with only an output device.
+                 */
+                bool mDisableInput = false;
+
+                /**
+                 * If set to true the audio will start with only an input device.
+                 */
+                bool mDisableOutput = false;
+
+                /**
+                 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
+                 */
+                float mSampleRate = 44100;
+
+                /**
+                 * The buffer size the audio stream will run on, every audio callback processes this amount of samples per channel
+                 */
+                int mBufferSize = 1024;
+
+                /**
+                 * The buffer size that is used internally by the node system to peform processing.
+                 * This can be lower than mBufferSize but has to fit within mBufferSize a discrete amount of times.
+                 * Lowering this can improve timing precision in the case that the node manager performs internal event scheduling, however will increase performance load.
+                 */
+                int mInternalBufferSize = 1024;
+            };
+
+            /**
+             * Settings of the audio device to initialize
+             */
+            DeviceSettings mDeviceSettings;
+
+            /**
+             * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
+             * In this case a zero signal will be used to emulate the input from an unsupported input channel.
+             */
+            bool mAllowChannelCountFailure = true;
+
+            /**
+             * Indicates wether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
+             */
+            bool mAllowDeviceFailure = true;
 		};
 		
 		/**
@@ -124,11 +135,6 @@ namespace nap
 			 * Initializes portaudio.
 			 */
 			bool init(nap::utility::ErrorState& errorState) override;
-
-			/**
-			 * Called before shutdown of the running application. Stops the portaudio stream for safety.
-			 */
-			void preShutdown() override;
 
 			/**
 			 * Called on shutdown of the service. Closes portaudio stream and shuts down portaudio.
@@ -201,14 +207,26 @@ namespace nap
 			std::string getDeviceName(unsigned int hostApiIndex, unsigned int localDeviceIndex);
 			
 			/**
-			 * Lookups the index for a device with a certain name on a host API.
+			 * Lookups the index for an input device with a certain name on a host API.
+			 * @param hostApiIndex index of the host API
+			 * @param device name of the input device
 			 * @return the device index for a device specified by name for a given host API .
 			 * Uses case insensitive search.
 			 * Returns -1 if the device specified was not found.
 			 */
-			int getDeviceIndex(int hostApiIndex, const std::string& device);
-			
-			/**
+			int getInputDeviceIndex(int hostApiIndex, const std::string& device);
+
+            /**
+             * Lookups the index for an output device with a certain name on a host API.
+			 * @param hostApiIndex index of the host API
+			 * @param device name of the output device
+             * @return the device index for a device specified by name for a given host API .
+             * Uses case insensitive search.
+             * Returns -1 if the device specified was not found.
+             */
+            int getOutputDeviceIndex(int hostApiIndex, const std::string& device);
+
+            /**
 			 * Returns the device index for a device specified by a local index in the list of devices for a specific host API.
 			 * Returns -1 if the specified device was not found.
 			 */
@@ -240,13 +258,22 @@ namespace nap
 			/**
 			 * @return the current buffer size.
 			 */
-			int getCurrentBufferSize() const { return mBufferSize; }
-			
-			/**
-			 * Tries to open the audio stream using the given settings.
-			 * @return true on success.
-			 */
-			bool openStream(int hostApi, int inputDeviceIndex, int outputDeviceIndex, int inputChannelCount, int outputChannelCount, float sampleRate, int bufferSize, int internalBufferSize, utility::ErrorState& errorState);
+			int getCurrentBufferSize() const { return getConfiguration<AudioServiceConfiguration>()->mDeviceSettings.mBufferSize; }
+
+            /**
+             * Stores the device settings and tries to open audio stream with given device settings, return true on succes
+             * The meesage from the errorState will be stored and can be retrieved using AudioService::getErrorMessage()
+             * @param settings const ref to DeviceSettings struct
+             * @param errorState contains any errors
+             * @return true on success
+             */
+            bool openStream(const AudioServiceConfiguration::DeviceSettings& settings, utility::ErrorState& errorState);
+
+            /**
+             * Returns const ref to current device settings used by service
+             * @return const ref to current device settings used by service
+             */
+            const AudioServiceConfiguration::DeviceSettings& getDeviceSettings() const;
 			
 			/**
 			 * Closes the current stream. Assumes that it has been opened successfully.
@@ -291,8 +318,28 @@ namespace nap
 			 * Enqueue a task to be executed within the process() method for thread safety
 			 */
 			void enqueueTask(TaskQueue::Task task) { mNodeManager.enqueueTask(task); }
-		
-		private:
+
+            /**
+             * @return Error message from last call to openStream() in case it was unsuccessful.
+             */
+            const std::string& getErrorMessage() const { return mErrorMessage; }
+
+        private:
+            /**
+             * Does the actual work for the public openStream() so it can conveniently store the message from the errorState.
+             * Stores the device settings and tries to open audio stream with given device settings, return true on succes
+             * @param settings const ref to DeviceSettings struct
+             * @param errorState contains any errors
+             * @return true on success
+             */
+            bool _openStream(const AudioServiceConfiguration::DeviceSettings& settings, utility::ErrorState& errorState);
+
+            /**
+             * Tries to open the audio stream using the given settings.
+             * @return true on success.
+             */
+            bool openStream(utility::ErrorState& errorState);
+
 			/*
 			 * Verifies if the ammounts of input and output channels specified in the configuration are supported on the given devices. If so, @inputDeviceIndex and @outputDeviceIndex will be set to these. If not and @mAllowChannelCountFailure is set to true, it will return the maximum numbers of channels of the selected devices instead. If @mAllowChannelCountFailure is false initialization will fail.
 			 */
@@ -303,25 +350,21 @@ namespace nap
 			 * Checks wether certain atomic types that are used within the library are lockfree and gives a warning if not.
 			 */
 			void checkLockfreeTypes();
-			
-			/*
-			 * Copies the current settings to the configuration object.
-			 */
-			void saveConfiguration();
-		
+
 		private:
 			NodeManager mNodeManager; // The node manager that performs the audio processing.
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
 			int mHostApiIndex = -1; // The actual host Api being used.
 			int mInputDeviceIndex = -1; // The actual input device being used, if any.
 			int mOutputDeviceIndex = -1; // The actual output device being used, if any.
-			int mBufferSize = 1024; // The actual buffersize that the audio device runs on
 			bool mPortAudioInitialized = false; // If port audio is initialized
 			bool mMpg123Initialized	   = false;	// If mpg123 is initialized
 
 			// DeletionQueue with nodes that are no longer used and that can be cleared and destructed safely on the next audio callback.
 			// Clearing is performed on the audio callback to make sure the node can not be destructed while it is being processed.
 			DeletionQueue mDeletionQueue;
+
+            std::string mErrorMessage = ""; // Holds the error message if public openStream() method was called unsuccesfully.
 		};
 	}
 }

@@ -39,7 +39,6 @@ namespace nap
 	{
 		// Initialize timer
 		mTimer.reset();
-		mTicks.fill(0);
 		mResourceManager = std::make_unique<ResourceManager>(*this);
 		mModuleManager = std::make_unique<ModuleManager>(*this);
 	}
@@ -393,52 +392,30 @@ namespace nap
 			// TODO Explore locating Python instead in third party to reduce duplication on disk
 			// We have our Python modules zip alongside our executable for running against NAP source or packaged apps
 			const std::string packagedAppPythonPath = utility::joinPath({exeDir, "python36.zip"});
-			Logger::info("Python home: %s", packagedAppPythonPath.c_str());
 			_putenv_s("PYTHONPATH", packagedAppPythonPath.c_str());
 		}
 		else {
 			// Set PYTHONPATH for thirdparty location beside NAP source
 			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", "msvc", "x86_64", "python36.zip"});
-			Logger::info("Python home: %s", pythonHome.c_str());
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #else
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
+			const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
 			if (utility::dirExists(packagedAppPythonPath)) {
-			    Logger::info("Python home: %s", mProjectInfo->getProjectDir().c_str());
 				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
 			}
 			else {
-    #ifdef __APPLE__
-			    // Check for app bundle directory structure
-			    std::string appBundleResourcesPath = utility::joinPath({mProjectInfo->getProjectDir(), "..", "Resources"});
-                packagedAppPythonPath = utility::joinPath({appBundleResourcesPath, "lib", "python3.6"});
-			    if (utility::dirExists(packagedAppPythonPath))
-			    {
-                    Logger::info("Python home: %s", appBundleResourcesPath.c_str());
-                    setenv("PYTHONHOME", appBundleResourcesPath.c_str(), 1);
-                }
-			    else {
-                    // Set PYTHONHOME to thirdparty location within packaged NAP release
-                    const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
-                    Logger::info("Python home: %s", pythonHome.c_str());
-                    setenv("PYTHONHOME", pythonHome.c_str(), 1);
-                }
-    #elif
 				// Set PYTHONHOME to thirdparty location within packaged NAP release
 				const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
-			    Logger::info("Python home: %s", pythonHome.c_str());
 				setenv("PYTHONHOME", pythonHome.c_str(), 1);
-    #endif
 			}
 		}
 		else {
 			// set PYTHONHOME for thirdparty location beside NAP source
 			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "..", "thirdparty", "python", platformPrefix, sBuildArch});
-            Logger::info("Python home: %s", pythonHome.c_str());
 			setenv("PYTHONHOME", pythonHome.c_str(), 1);
 		}
 #endif
@@ -560,16 +537,20 @@ namespace nap
 	}
 
 
-    bool Core::writeConfigFile(utility::ErrorState& errorState)
+    bool Core::writeConfigFile(const std::string& path, utility::ErrorState& errorState, bool linkToProjectInfo)
     {
-	    // Write all available service configurations to a vector
+		// Services and project not available when engine not initialized
+		if(!errorState.check(isInitialized(), "NAP not initialized"))
+			return false;
+
+        // Write all available service configurations to a vector
         std::vector<rtti::Object*> objects;
         for (auto& service : mServices)
         {
             auto configuration = service->getConfiguration<rtti::Object>();
             if (configuration != nullptr)
             {
-                // The serializer needs all objects to have a mID set
+                // The serializer needs all objects to have an mID set
                 if (configuration->mID.empty())
                     configuration->mID = configuration->get_type().get_name().to_string();
                 objects.emplace_back(configuration);
@@ -577,25 +558,35 @@ namespace nap
         }
 
         // Serialize the configurations to json
-        rtti::JSONWriter writer;
+		rtti::JSONWriter writer;
         if (!serializeObjects(objects, writer, errorState))
-            return false;
-        std::string json = writer.GetJSON();
+			return false;
 
-        // Save the config file besides the binary, the first location that NAP searches
-		assert(getProjectInfo() != nullptr);
+		std::string json = writer.GetJSON();
+        auto absolutePath = utility::joinPath({ getProjectInfo()->getProjectDir(), path });
+        utility::writeStringToFile(absolutePath, json);
+        nap::Logger::info("Wrote configuration to: %s", path.c_str());
 
-        // Get path relative to project
-        std::string config_file_path;
-        if (!errorState.check(findProjectFilePath(mProjectInfo->mServiceConfigFilename, config_file_path), "Unable to find: %s", mProjectInfo->mServiceConfigFilename.c_str()))
-            return false;
+		// Link the config file to the project info
+        if (linkToProjectInfo)
+        {
+            // Serialize the project info to the project.json file.
+			mProjectInfo->mServiceConfigFilename = path;
+            std::string projectInfoFilePath;
+            if (!findProjectInfoFile(projectInfoFilePath))
+            {
+                errorState.fail("Failed to locate project info file");
+                return false;
+            }
 
-        std::ofstream configFile;
-        configFile.open(config_file_path);
-        configFile << json << std::endl;
-        configFile.close();
-		nap::Logger::info("Wrote configuration to: %s", config_file_path.c_str());
+            rtti::JSONWriter writer;
+            if (!serializeObject(*mProjectInfo, writer, errorState))
+                return false;
 
+			std::string json = writer.GetJSON();
+            utility::writeStringToFile(projectInfoFilePath, json);
+            nap::Logger::info("Wrote project info to: %s", projectInfoFilePath.c_str());
+        }
         return true;
     }
 
