@@ -237,6 +237,50 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 };
 
 
+// Allow all Includer searches
+class AllowIncluder : public glslang::TShader::Includer
+{
+public:
+	AllowIncluder(const std::vector<std::string>& searchPaths) :
+		mSearchPaths(searchPaths) {}
+
+	// For the "local"-only aspect of a "" include. Should not search in the
+	// "system" paths, because on returning a failure, the parser will
+	// call includeSystem() to look in the "system" locations.
+	virtual IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth)
+	{
+		if (mSearchPaths.empty())
+			return nullptr;
+
+		auto absolute_path = nap::utility::findFileInDirectories(headerName, { mSearchPaths });
+		if (absolute_path.empty())
+			return nullptr;
+
+		nap::utility::ErrorState error_state;
+		auto& header_source = mHeaderSources.emplace();
+		if (!error_state.check(nap::utility::readFileToString(absolute_path, header_source, error_state), "Unable to read shader file %s", absolute_path.c_str()))
+			return nullptr;
+
+		return &mResults.emplace(absolute_path, header_source.c_str(), header_source.size(), this);
+	}
+
+	// Signals that the parser will no longer use the contents of the
+	// specified IncludeResult.
+	virtual void releaseInclude(glslang::TShader::Includer::IncludeResult* includer) override
+	{
+		assert(includer == &mResults.top());
+		mResults.pop();
+		mHeaderSources.pop();
+	}
+
+private:
+	std::vector<std::string> mSearchPaths;
+
+	std::stack<std::string> mHeaderSources;
+	std::stack<IncludeResult> mResults;
+};
+
+
 static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, VkDevice device)
 {
 	VkShaderModuleCreateInfo createInfo = {};
@@ -251,7 +295,7 @@ static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, V
 }
 
 
-static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, nap::utility::ErrorState& errorState)
+static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
 	const char* sources[] = { shaderCode };
 	int source_sizes[] = { shaderSize };
@@ -288,7 +332,10 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 
 	// Version number taken from shaderc sources. 110 means "Desktop OpenGL", 100 means "OpenGL ES"
 	int default_version = 110;
-	bool result = shader->parse(&defaultResource, default_version, false, messages);
+
+	// Allow include directives
+	AllowIncluder includer(searchPaths);
+	bool result = shader->parse(&defaultResource, default_version, false, messages, includer);
 	if (!result)
 	{
 		errorState.fail("Failed to compile shader: %s", shader->getInfoLog());
@@ -299,13 +346,14 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 }
 
 
-static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
+static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName,
+	std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
+	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, searchPaths, errorState);
 	if (!errorState.check(vertex_shader != nullptr, "Unable to compile vertex shader"))
 		return false;
 
-	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, errorState);
+	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, searchPaths, errorState);
 	if (!errorState.check(fragment_shader != nullptr, "Unable to compile fragment shader"))
 		return false;
 
@@ -369,7 +417,7 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 
 static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, errorState);
+	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, {}, errorState);
 	if (!errorState.check(compute_shader != nullptr, "Unable to compile compute shader"))
 		return false;
 
@@ -804,7 +852,7 @@ namespace nap
 	}
 
 
-	bool Shader::load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
+	bool Shader::load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		assert(mRenderService->isInitialized());
@@ -818,7 +866,7 @@ namespace nap
 		std::vector<nap::uint32> fragment_shader_spirv;
 
 		// Compile both vert and frag into single shader pipeline program
-		if (!compileProgram(device, vulkan_version, vertShader, vertSize, fragShader, fragSize, mDisplayName, vertex_shader_spirv, fragment_shader_spirv, errorState))
+		if (!compileProgram(device, vulkan_version, vertShader, vertSize, fragShader, fragSize, mDisplayName, vertex_shader_spirv, fragment_shader_spirv, searchPaths, errorState))
 			return false;
 
 		// Create vertex shader module
@@ -883,8 +931,11 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read %s fragment shader file", displayName.c_str()))
 			return false;
 
+		// Copy data search paths
+		const auto search_paths = mRenderService->getModule().getInformation().mDataSearchPaths;
+
 		// Compile shader
-		return this->load(displayName, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		return this->load(displayName, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 
 
@@ -920,6 +971,9 @@ namespace nap
 
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
 		std::vector<uint32> comp_shader_spirv;
+
+		// Copy data search paths
+		const auto search_paths = mRenderService->getModule().getInformation().mDataSearchPaths;
 
 		// Compile both vert and frag into single shader pipeline program
 		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, errorState))
@@ -993,7 +1047,8 @@ namespace nap
 		
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
-		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		std::string shader_path = utility::getFileDir(mVertPath);
+		return this->load(shader_name, { shader_path }, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 
 

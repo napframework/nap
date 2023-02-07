@@ -1,21 +1,10 @@
 #version 450 core
 
-struct DirectionalLight
-{
-	vec3 origin;
-	vec3 direction;
-	vec3 color;
-	float intensity;
-};
+// Extensions
+#extension GL_GOOGLE_include_directive : enable
 
-struct DirectionalLightShadow
-{
-	mat4 lightViewProjection;
-	vec3 origin;
-	vec3 direction;
-	vec3 color;
-	float intensity;
-};
+// Includes
+#include "light.glslinc"
 
 uniform nap
 {

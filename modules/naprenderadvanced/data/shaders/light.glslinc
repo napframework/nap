@@ -1,0 +1,33 @@
+// NAP Shader include file
+
+struct DirectionalLight
+{
+	vec3 origin;
+	vec3 direction;
+	vec3 color;
+	float intensity;
+};
+
+struct DirectionalLightShadow
+{
+	mat4 lightViewProjection;
+	vec3 origin;
+	vec3 direction;
+	vec3 color;
+	float intensity;
+};
+
+struct PointLight
+{
+	vec3 origin;
+	vec3 color;
+	float intensity;
+};
+
+struct PointLightShadow
+{
+	mat4 lightViewProjection;
+	vec3 origin;
+	vec3 color;
+	float intensity;
+};

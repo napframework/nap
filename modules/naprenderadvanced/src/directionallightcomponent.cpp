@@ -13,7 +13,6 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-
 // nap::DirectionalLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::DirectionalLightComponent)
 	RTTI_PROPERTY("Color", &nap::DirectionalLightComponent::mColor, nap::rtti::EPropertyMetaData::Default)

@@ -659,7 +659,7 @@
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "PBRTextureMaterial",
+                        "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -817,7 +817,7 @@
         {
             "Type": "nap::HeightSphereMesh",
             "mID": "HeightSphereMesh",
-            "Heightmap": "PBRDisplacementMap",
+            "Heightmap": "OrbDisplacementMap",
             "Height": 0.25,
             "Usage": "Static",
             "CullMode": "Back",
@@ -843,37 +843,9 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "PBRAlbedoMap",
-            "Usage": "Static",
-            "ImagePath": "material/Rock005_2K_Color.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "PBRAmbientOcclusionMap",
-            "Usage": "Static",
-            "ImagePath": "material/Rock005_2K_AmbientOcclusion.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "PBRDisplacementMap",
+            "mID": "OrbDisplacementMap",
             "Usage": "Static",
             "ImagePath": "material/Rock005_2K_Displacement.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "PBRNormalMap",
-            "Usage": "Static",
-            "ImagePath": "material/Rock005_2K_NormalGL.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "PBRRoughnessMap",
-            "Usage": "Static",
-            "ImagePath": "material/Rock005_2K_Roughness.jpg",
             "GenerateLods": true
         },
         {
@@ -933,158 +905,6 @@
             "Buffers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "PBRTextureMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_c3d96411",
-                    "Name": "shadow",
-                    "Uniforms": []
-                }
-            ],
-            "Samplers": [
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_072dc9d4",
-                    "Name": "albedoMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToBorder",
-                    "AddressModeHorizontal": "ClampToBorder",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "IntOpaqueBlack",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": false,
-                    "Texture": "PBRAlbedoMap"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_555b6836",
-                    "Name": "normalMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "Repeat",
-                    "AddressModeHorizontal": "Repeat",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "FloatOpaqueWhite",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": true,
-                    "Texture": "PBRNormalMap"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_4e9e2c08",
-                    "Name": "metallicMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "Repeat",
-                    "AddressModeHorizontal": "Repeat",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "IntOpaqueBlack",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": false,
-                    "Texture": "DummyTexture"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_0a31620f",
-                    "Name": "roughnessMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "Repeat",
-                    "AddressModeHorizontal": "Repeat",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "IntOpaqueBlack",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": false,
-                    "Texture": "PBRRoughnessMap"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_7b4fd1f9",
-                    "Name": "ambientOcclusionMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "Repeat",
-                    "AddressModeHorizontal": "Repeat",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "IntOpaqueBlack",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": false,
-                    "Texture": "PBRAmbientOcclusionMap"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_e4bd3a8a",
-                    "Name": "shadowMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "ClampToBorder",
-                    "AddressModeHorizontal": "ClampToBorder",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "FloatOpaqueWhite",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": true,
-                    "Texture": "DummyTexture"
-                },
-                {
-                    "Type": "nap::Sampler2D",
-                    "mID": "Sampler2D_d500d5da",
-                    "Name": "heightMap",
-                    "MinFilter": "Linear",
-                    "MaxFilter": "Linear",
-                    "MipMapMode": "Linear",
-                    "AddressModeVertical": "Repeat",
-                    "AddressModeHorizontal": "Repeat",
-                    "MaxLodLevel": 1000,
-                    "AnisotropicSamples": "Default",
-                    "BorderColor": "IntOpaqueBlack",
-                    "CompareMode": "LessOrEqual",
-                    "EnableCompare": false,
-                    "Texture": "PBRDisplacementMap"
-                }
-            ],
-            "Buffers": [],
-            "Shader": "PBRTextureShader",
-            "VertexAttributeBindings": [
-                {
-                    "MeshAttributeID": "Position",
-                    "ShaderAttributeID": "in_Position"
-                },
-                {
-                    "MeshAttributeID": "UV0",
-                    "ShaderAttributeID": "in_UV0"
-                },
-                {
-                    "MeshAttributeID": "Normal",
-                    "ShaderAttributeID": "in_Normal"
-                },
-                {
-                    "MeshAttributeID": "OriginalPosition",
-                    "ShaderAttributeID": "in_OriginalPosition"
-                },
-                {
-                    "MeshAttributeID": "OriginalNormal",
-                    "ShaderAttributeID": "in_OriginalNormal"
-                }
-            ],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -1180,12 +1000,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "PBRTextureShader",
-            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrtexture.vert",
-            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/pbrtexture.frag"
         },
         {
             "Type": "nap::ShaderFromFile",
