@@ -1665,6 +1665,17 @@ namespace nap
 			nap::Logger::warn(errorState.toString());
 		}
 
+		// Gather shader search paths
+		for (auto* mod : getCore().getModuleManager().getModules())
+		{
+			for (const auto& path : mod->getInformation().mDataSearchPaths)
+			{
+				auto shader_path = utility::joinPath({ path, "shaders" });
+				if (utility::dirExists(shader_path))
+					mShaderSearchPaths.emplace_back(shader_path);
+			}
+		}
+
 		mInitialized = true;
 		return true;
 	}

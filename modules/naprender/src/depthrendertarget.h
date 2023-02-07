@@ -160,6 +160,8 @@ namespace nap
 
 	public:
 		float								mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
+		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' texture to render to, format needs to be: 'Backbuffer'
 
 	private:

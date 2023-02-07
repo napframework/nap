@@ -25,8 +25,6 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderableMeshComponent)
 		DECLARE_COMPONENT(OrbComponent, OrbComponentInstance)
-	public:
-		ResourcePtr<ParameterVec3> mRefractiveIndexParam;				///< Property: "RefractiveIndex"
 	};
 
 
@@ -61,8 +59,6 @@ namespace nap
 		OrbComponent& getResource();
 
 	private:
-		void updateRenderUniforms();
-
 		OrbComponent*								mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
 

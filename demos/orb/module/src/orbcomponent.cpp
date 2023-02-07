@@ -17,7 +17,6 @@
 #include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::OrbComponent)
-	RTTI_PROPERTY("RefractiveIndex",			&nap::OrbComponent::mRefractiveIndexParam,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbComponentInstance)
@@ -38,17 +37,8 @@ namespace nap
 		constexpr const char* roughnessMap = "roughnessMap";
 		constexpr const char* ambientOcclusionMap = "ambientOcclusionMap";
 		constexpr const char* heightMap = "heightMap";
-		constexpr const char* shadowMap = "shadowMap";
 	}
-
-	namespace uniform
-	{
-		constexpr const char* uboStruct = "UBO";
-		constexpr const char* vertUboStruct = "VERTUBO";
-		constexpr const char* fragUboStruct = "FRAGUBO";
-		constexpr const char* refractiveIndex = "refractiveIndex";
-	}
-
+	
 	namespace computeuniform
 	{
 		constexpr const char* uboStruct = "UBO";
@@ -86,18 +76,6 @@ namespace nap
 	}
 
 
-	void OrbComponentInstance::updateRenderUniforms()
-	{
-		// Update shader uniforms
-		UniformStructInstance*  ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::fragUboStruct);
-		if (ubo_struct != nullptr)
-		{
-			const glm::vec3 value = mResource->mRefractiveIndexParam != nullptr ? mResource->mRefractiveIndexParam->mValue : glm::vec3(1.0f, 1.0f, 1.0f);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::refractiveIndex)->setValue(value);
-		}
-	}
-
-
 	void OrbComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get material to work with
@@ -106,9 +84,6 @@ namespace nap
 			assert(false);
 			return;
 		}
-
-		// Update render uniforms
-		updateRenderUniforms();
 
 		// Set mvp matrices if present in material
 		if (mProjectMatUniform != nullptr)

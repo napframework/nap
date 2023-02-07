@@ -50,22 +50,6 @@ namespace nap
 
 
 	/**
-	 * Get the light uniform struct
-	 */
-	//static UniformStructInstance* verifyLightStruct(UniformStructInstance* lightStruct, utility::ErrorState& errorState)
-	//{
-	//	auto* light_array = lightStruct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
-	//	if (!errorState.check(light_array != nullptr,
-	//		"The shader bound to material instance '%s' with shader '%s' requires an UBO with name '%s'",
-	//		materialInstance.getMaterial().mID.c_str(), materialInstance.getMaterial().getShader().getDisplayName().c_str(), uniform::lightStruct))
-	//		return nullptr;
-
-	//	// Safely create and set the member
-	//	return materialInstance.getOrCreateUniform(uniform::lightStruct);
-	//}
-
-
-	/**
 	 * Ensures the value member is created without asserting. Reports a verbose error message if this is not the case.
 	 *
 	 * @param materialInstance
@@ -131,6 +115,26 @@ namespace nap
 			errorState.fail("%s: Failed to create shadow texture dummy", this->get_type().get_name().to_string().c_str());
 			return false;
 		}
+
+		auto shadow_sampler_array = std::make_unique<Sampler2DArray>(sMaxShadowMapCount);
+		shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
+		shadow_sampler_array->mName = sampler::light::shadowMaps;
+
+		// Copy pointers
+		for (auto& tex : shadow_sampler_array->mTextures)
+			tex = mShadowTextureDummy.get();
+
+		shadow_sampler_array->mCompareMode = EDepthCompareMode::LessOrEqual;
+		shadow_sampler_array->mBorderColor = EBorderColor::IntOpaqueBlack;
+		shadow_sampler_array->mEnableCompare = true;
+		mSamplerResource = std::move(shadow_sampler_array);
+
+		if (!mSamplerResource->init(errorState))
+		{
+			errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+			return false;
+		}
+
 		return true;
 	}
 
@@ -154,7 +158,12 @@ namespace nap
 			if (shadow_camera != nullptr)
 			{
 				// One shadow render pass per light
-				auto& target = mLightDepthTargetMap[light];
+				auto it = mLightDepthTargetMap.find(light);
+				assert(it != mLightDepthTargetMap.end());
+
+				auto& target = it->second;
+				assert(target != nullptr);
+
 				target->beginRendering();
 				render_service->renderObjects(*target, *shadow_camera, comps);
 				target->endRendering();
@@ -309,37 +318,39 @@ namespace nap
 
 	void RenderAdvancedService::preShutdown()
 	{
-		mLightDepthTargetMap.clear();
-		mLightDepthTextureMap.clear();
 		mShadowTextureDummy.reset();
 		mSamplerResource.reset();
+	}
 
-		mShadowsIntialized = false;
+
+	void RenderAdvancedService::preResourcesLoaded()
+	{
+
 	}
 
 
 	void RenderAdvancedService::postResourcesLoaded()
 	{
 		// We now know the number of light components in the scene and can initialize resources accordingly
-		if (!mShadowsIntialized)
+		utility::ErrorState error_state;
+		if (!initShadowMappingResources(error_state))
 		{
-			utility::ErrorState error_state;
-			if (!initShadowMappingResources(error_state))
-			{
-				nap::Logger::error(error_state.toString());
-				assert(false);
-			}
+			nap::Logger::error(error_state.toString());
+			assert(false);
 		}
 	}
 
 
 	bool RenderAdvancedService::initShadowMappingResources(utility::ErrorState& errorState)
 	{
-		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
-
 		// Shadow maps
+		mLightDepthTextureMap.clear();
 		mLightDepthTextureMap.reserve(mLightComponents.size());
+
+		mLightDepthTargetMap.clear();
 		mLightDepthTargetMap.reserve(mLightComponents.size());
+
+		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		for (const auto& light : mLightComponents)
 		{
 			// Texture
@@ -366,6 +377,8 @@ namespace nap
 			shadow_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 			shadow_target->mClearValue = 1.0f;
 			shadow_target->mDepthTexture = it_tex->second.get();
+			shadow_target->mRequestedSamples = ERasterizationSamples::One;
+			shadow_target->mSampleShading = false;
 
 			if (!shadow_target->init(errorState))
 			{
@@ -375,44 +388,46 @@ namespace nap
 
 			mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
 		}
-
-		auto shadow_sampler_array = std::make_unique<Sampler2DArray>(sMaxShadowMapCount);
-		shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
-		shadow_sampler_array->mName = sampler::light::shadowMaps;
-
-		// Copy pointers
-		for (auto& tex : shadow_sampler_array->mTextures)
-			tex = mShadowTextureDummy.get();
-
-		shadow_sampler_array->mCompareMode = EDepthCompareMode::LessOrEqual;
-		shadow_sampler_array->mBorderColor = EBorderColor::IntOpaqueBlack;
-		shadow_sampler_array->mEnableCompare = true;
-		mSamplerResource = std::move(shadow_sampler_array);
-
-		if (!mSamplerResource->init(errorState))
-		{
-			errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-			return false;
-		}
-
-		mShadowsIntialized = true;
 		return true;
 	}
 
 
 	void RenderAdvancedService::registerLightComponent(LightComponentInstance& light)
 	{
-		mLightComponents.emplace_back(&light);
+		auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
+		{
+			return it == input;
+		});
+		if (found_it == mLightComponents.end())
+			mLightComponents.emplace_back(&light);
 	}
 
 
 	void RenderAdvancedService::removeLightComponent(LightComponentInstance& light)
 	{
-		auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
 		{
-			return it == input;
-		});
-		assert(found_it != mLightComponents.end());
-		mLightComponents.erase(found_it);
+			auto found_it = std::find_if(mLightDepthTargetMap.begin(), mLightDepthTargetMap.end(), [input = &light](const auto& it)
+			{
+				return it.first == input;
+			});
+			assert(found_it != mLightDepthTargetMap.end());
+			mLightDepthTargetMap.erase(found_it);
+		}
+		{
+			auto found_it = std::find_if(mLightDepthTextureMap.begin(), mLightDepthTextureMap.end(), [input = &light](const auto& it)
+			{
+				return it.first == input;
+			});
+			assert(found_it != mLightDepthTextureMap.end());
+			mLightDepthTextureMap.erase(found_it);
+		}
+		{
+			auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
+			{
+				return it == input;
+			});
+			assert(found_it != mLightComponents.end());
+			mLightComponents.erase(found_it);
+		}
 	}
 }

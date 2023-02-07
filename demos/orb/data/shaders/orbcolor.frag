@@ -38,7 +38,6 @@ uniform UBO
 {
 	vec3 	color;						//< Color
 	float	alpha;						//< Alpha
-	float	bias;
 } ubo;
 
 // Shader Output
@@ -48,7 +47,16 @@ out vec4 out_Color;
 uniform sampler2DShadow shadowMaps[8];
 
 // Constants
-const float SHADOW_STRENGTH 	= 0.8;
+const float SHADOW_STRENGTH 	= 0.9;
+
+
+vec3 bandColor(vec3 cola, vec3 colb, vec3 color, float shades)
+{
+    float st = 1.0 / shades;
+    float avg = luminance(color) * shades; 
+    float band = ceil(avg) / shades;
+    return mix(cola, colb, band);
+}
 
 
 void main()
@@ -61,12 +69,14 @@ void main()
 	{
 		DirectionalLightShadow li = lit.lights[i];
 		shadow = max(computeShadow(
-			shadowMaps[i], passShadowCoord[i], normalize(li.direction), surf_normal, ubo.bias), shadow);
+			shadowMaps[i], passShadowCoord[i], normalize(li.direction), surf_normal, 0.0), shadow);
 	}
 	shadow = clamp(shadow, 0.0, 1.0) * SHADOW_STRENGTH;
 	
 	color = mix(color, vec3(0.975), passFresnel);
 	color = mix(color, vec3(0.025), shadow);
+
+	//color = bandColor(vec3(0.025), vec3(0.975), color, 5);
 
 	out_Color = vec4(color, ubo.alpha);
 }

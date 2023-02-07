@@ -31,11 +31,13 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("VertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
@@ -415,9 +417,9 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 }
 
 
-static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
+static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, {}, errorState);
+	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, searchPaths, errorState);
 	if (!errorState.check(compute_shader != nullptr, "Unable to compile compute shader"))
 		return false;
 
@@ -960,7 +962,7 @@ namespace nap
 	}
 
 
-	bool ComputeShader::load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState)
+	bool ComputeShader::load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		assert(mRenderService->isInitialized());
@@ -972,11 +974,8 @@ namespace nap
 		// Compile vertex & fragment shader into program and get resulting SPIR-V
 		std::vector<uint32> comp_shader_spirv;
 
-		// Copy data search paths
-		const auto search_paths = mRenderService->getModule().getInformation().mDataSearchPaths;
-
 		// Compile both vert and frag into single shader pipeline program
-		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, errorState))
+		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, searchPaths, errorState))
 			return false;
 
 		// Create compute shader module
@@ -1044,11 +1043,14 @@ namespace nap
 		std::string frag_source;
 		if (!errorState.check(utility::readFileToString(mFragPath, frag_source, errorState), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
-		
+
+		// Search paths
+		auto search_paths = !mRestrictModuleIncludes ? mRenderService->getShaderSearchPaths() : std::vector<std::string>{};
+		search_paths.emplace_back(utility::getFileDir(mVertPath));
+
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
-		std::string shader_path = utility::getFileDir(mVertPath);
-		return this->load(shader_name, { shader_path }, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		return this->load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 
 
@@ -1071,8 +1073,12 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(mComputePath, comp_source, errorState), "Unable to read shader file %s", mComputePath.c_str()))
 			return false;
 
+		// Search paths
+		auto search_paths = !mRestrictModuleIncludes ? mRenderService->getShaderSearchPaths() : std::vector<std::string>{};
+		search_paths.emplace_back(utility::getFileDir(mComputePath));
+
 		// Compile shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
-		return this->load(shader_name, comp_source.data(), comp_source.size(), errorState);
+		return this->load(shader_name, search_paths, comp_source.data(), comp_source.size(), errorState);
 	}
 }

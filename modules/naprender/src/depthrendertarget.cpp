@@ -15,6 +15,8 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("DepthTexture",			&nap::DepthRenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SampleShading",			&nap::DepthRenderTarget::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Samples",				&nap::DepthRenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearValue",				&nap::DepthRenderTarget::mClearValue,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -41,6 +43,17 @@ namespace nap
 
 	bool DepthRenderTarget::init(utility::ErrorState& errorState)
 	{
+		// Warn if requested number of samples is not matched by hardware
+		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, errorState))
+			nap::Logger::warn(errorState.toString().c_str());
+
+		// Check if sample rate shading is enabled
+		if (mSampleShading && !(mRenderService->sampleShadingSupported()))
+		{
+			nap::Logger::warn("Sample shading requested but not supported");
+			mSampleShading = false;
+		}
+
 		// Set framebuffer size
 		glm::uvec2 size = mDepthTexture->getSize();
 		VkExtent2D framebuffer_size = { size.x, size.y };

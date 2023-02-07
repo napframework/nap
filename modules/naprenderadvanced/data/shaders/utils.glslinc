@@ -9,6 +9,14 @@ const vec3 FORWARD 			= vec3(0.0, 0.0, 1.0);
 const vec3 UP 				= vec3(0.0, 1.0, 0.0);
 const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
+
+// Compute luminance value from weighted color channels
+float luminance(vec3 color)
+{
+	return 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+}
+
+
 // Maps one range to another
 float map(float value, float min1, float max1, float min2, float max2)
 {
@@ -143,9 +151,9 @@ float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float 
 // Line starting from point a to b
 vec3 nearestPointOnLineSegment(vec3 position, vec3 a, vec3 b) 
 {
-    vec3 ba = b - a; 
-    float t = dot(position - a, ba) / dot(ba, ba);
-    vec3 closest = mix(a, b, clamp(t, 0.0, 1.0));
-    return closest;
+	vec3 ba = b - a; 
+	float t = dot(position - a, ba) / dot(ba, ba);
+	vec3 closest = mix(a, b, clamp(t, 0.0, 1.0));
+	return closest;
 }
 

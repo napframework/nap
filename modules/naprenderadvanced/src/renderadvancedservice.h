@@ -77,6 +77,11 @@ namespace nap
 		virtual void preShutdown() override;
 
 		/**
+		 * Invoked when the resource manager is about to load resources
+		 */
+		virtual void preResourcesLoaded() override;
+
+		/**
 		 * Invoked after the resource manager successfully loaded resources
 		 */
 		virtual void postResourcesLoaded() override;
@@ -104,8 +109,6 @@ namespace nap
 
 		std::unique_ptr<Sampler2DArray> mSamplerResource;
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
-
-		bool mShadowsIntialized = false;
 
 		static constexpr uint sMaxShadowMapCount = 8;
 	};

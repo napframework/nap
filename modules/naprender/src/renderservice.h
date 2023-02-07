@@ -930,7 +930,7 @@ namespace nap
 		 * in an undefined state and can therefore not be queried
 		 * @return if the render service is initialized and therefore running
 		 */
-		bool isInitialized() const	{ return mInitialized; }
+		bool isInitialized() const													{ return mInitialized; }
 
 		/**
 		 * Wait for the fence belonging to the specified frame index. This ensures that, after the wait, all resources for that frame are no longer in use.
@@ -940,6 +940,11 @@ namespace nap
 		 * @param frameIndex The index of the frame to wait for
 		 */
 		void waitForFence(int frameIndex);
+
+		/**
+		 * @return shader search paths present in module data folders
+		 */
+		const std::vector<std::string>& getShaderSearchPaths() const				{ return mShaderSearchPaths; }
 
 	protected:
 		/**
@@ -1212,5 +1217,8 @@ namespace nap
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;
+
+		// Shader search paths
+		std::vector<std::string>				mShaderSearchPaths;
 	};
 } // nap

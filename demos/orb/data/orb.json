@@ -653,13 +653,37 @@
                 {
                     "Type": "nap::OrbComponent",
                     "mID": "RenderOrb",
-                    "Visible": false,
+                    "Visible": true,
                     "Mesh": "HeightSphereMesh",
                     "MaterialInstance": {
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_ceb0366e",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_2a92555b",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 0.0,
+                                            "y": 1.0,
+                                            "z": 0.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_44c2807e",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "PhongColorMaterial",
+                        "Material": "OrbMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -673,8 +697,7 @@
                             "x": 0.0,
                             "y": 0.0
                         }
-                    },
-                    "RefractiveIndex": ""
+                    }
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -910,6 +933,17 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "OrbMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "OrbShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "PhongColorMaterial",
             "Uniforms": [],
             "Samplers": [],
@@ -939,9 +973,17 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightIntensityParameter",
                     "Name": "LightIntensity",
-                    "Value": 0.5,
+                    "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BiasParameter",
+                    "Name": "",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 0.0
                 }
             ],
             "Groups": []
@@ -1000,6 +1042,12 @@
                     "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "OrbShader",
+            "VertShader": "shaders/orbcolor.vert",
+            "FragShader": "shaders/orbcolor.frag"
         },
         {
             "Type": "nap::ShaderFromFile",

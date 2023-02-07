@@ -180,12 +180,13 @@ namespace nap
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
 		 * Call this in a derived class on initialization.
 		 * @param displayName the name of the shader
+		 * @param searchPaths the search paths of the shader.
 		 * @param compShader the fragment shader GLSL code.
 		 * @param compSize total number of characters in compShader.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
-		virtual bool load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState);
+		virtual bool load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState);
 
 	private:
 		glm::u32vec3									mWorkGroupSize;
@@ -215,6 +216,7 @@ namespace nap
 
 		std::string mVertPath;							///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string	mFragPath;							///< Property: 'mFragShader' path to the fragment shader on disk
+		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
 	};
 
 
@@ -236,7 +238,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& error) override;
 
-		std::string mComputePath;							///< Property: 'ComputeShader' path to the vertex shader on disk
+		std::string mComputePath;						///< Property: 'ComputeShader' path to the vertex shader on disk
+		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
 	};
 }
 

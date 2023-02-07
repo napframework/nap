@@ -15,6 +15,7 @@
 #include <imgui/imgui.h>
 #include <imguiutils.h>
 #include <glm/ext.hpp>
+#include <parameternumeric.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -182,6 +183,22 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
+		// Update bias uniforms
+		//for (auto* comp : render_comps)
+		//{
+		//	if (comp->get_type().is_derived_from(RTTI_OF(RenderableMeshComponentInstance)))
+		//	{
+		//		auto* mesh = static_cast<RenderableMeshComponentInstance*>(comp);
+		//		auto* uni = mesh->getMaterialInstance().findUniform("UBO");
+		//		if (uni != nullptr)
+		//		{
+		//			auto* bias = uni->getOrCreateUniform<UniformFloatInstance>("bias");
+		//			if (bias != nullptr)
+		//				bias->setValue(mResourceManager->findObject<ParameterFloat>("BiasParameter")->mValue);
+		//		}
+		//	}
+		//}
+	
 		// Shadow pass
 		if (mRenderService->beginHeadlessRecording())
 		{
