@@ -91,11 +91,14 @@ namespace nap
 		 */
 		void renderShadows(const std::vector<RenderableComponentInstance*>& comps, bool updateMaterials = true);
 
+		/**
+		 * Push light data
+		 */
+		bool pushLights(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState);
+
 	protected:
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-
-		bool updateLightData(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState);
 
 	private:
 		bool initShadowMappingResources(utility::ErrorState& errorState);

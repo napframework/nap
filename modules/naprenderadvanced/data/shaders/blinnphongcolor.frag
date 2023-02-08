@@ -6,18 +6,12 @@
 // Includes
 #include "shadow.glslinc"
 #include "blinnphong.glslinc"
-
-// Test
-#include "noise.glslinc"
 #include "utils.glslinc"
 
-// vertex shader input
-in vec3 passPosition;					//< frag position in object space
-in vec3 passNormal;						//< frag normal in object space
-in vec3 passUV0;						//< UVs
-in float passFresnel;					//< fresnel term
-in vec4 passShadowCoord[8];				//< shadow coord
+// Specialization Constants
+layout (constant_id = 0) const uint SHADOW_SAMPLE_COUNT = 8;
 
+// Uniforms
 uniform nap
 {
 	mat4 projectionMatrix;
@@ -33,15 +27,24 @@ uniform light
 	uint count;
 } lit;
 
-// uniform inputs
 uniform UBO
 {
-	vec3 	color;						//< Color
-	float	alpha;						//< Alpha
-	float	bias;
+	vec3	ambient;				//< Ambient
+	vec3	diffuse;				//< Diffuse
+	vec3	specular;				//< Specular
+	vec2	fresnel;				//< Fresnel [scale, power]
+	float	shininess;				//< Shininess
+	float	alpha;					//< Alpha
 } ubo;
 
-// Shader Output
+// Fragment Input
+in vec3 passPosition;				//< Fragment position in world space
+in vec3 passNormal;					//< Fragment normal in world space
+in vec3 passUV0;					//< Texture UVs
+in float passFresnel;				//< Fresnel term
+in vec4 passShadowCoord[8];			//< Shadow Coordinates
+
+// Fragment Output
 out vec4 out_Color;
 
 // Shadow Texture Sampler
@@ -53,10 +56,12 @@ const float SHADOW_STRENGTH = 0.9;
 
 void main()
 {
-	vec3 color = computeLight(lit.lights, lit.count, mvp.cameraPosition, ubo.color, normalize(passNormal), passPosition);
-	color = mix(color, vec3(0.975), passFresnel);
+	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
+	
+	vec3 color = computeLight(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
+	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), 0.25));
 
-	float shadow = computeShadow(shadowMaps, passShadowCoord, lit.count) * SHADOW_STRENGTH;
+	float shadow = computeShadow(shadowMaps, passShadowCoord, lit.count, min(SHADOW_SAMPLE_COUNT, 64)) * SHADOW_STRENGTH;
 	color *= (1.0 - shadow);
 
 	out_Color = vec4(color, ubo.alpha);

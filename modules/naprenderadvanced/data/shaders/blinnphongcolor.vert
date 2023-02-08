@@ -5,7 +5,9 @@
 
 // Includes
 #include "light.glslinc"
+#include "utils.glslinc"
 
+// Uniforms
 uniform nap
 {
 	mat4 projectionMatrix;
@@ -21,20 +23,27 @@ uniform light
 	uint count;
 } lit;
 
-in vec3	in_Position;
-in vec3 in_Normals;
-in vec3 in_UV0;
+uniform UBO
+{
+	vec3	ambient;				//< Ambient
+	vec3	diffuse;				//< Diffuse
+	vec3	specular;				//< Specular
+	vec2	fresnel;				//< Fresnel [scale, power]
+	float	shininess;				//< Shininess
+	float	alpha;					//< Alpha
+} ubo;
 
-// Output to fragment shader
-out vec3 passPosition;				//< vertex position in object space
-out vec3 passNormal;				//< vertex normal in object space
+// Vertex Input
+in vec3	in_Position;				//< Vertex position in object space
+in vec3 in_Normals;					//< Vertex normal in object space
+in vec3 in_UV0;						//< Texture UVs
+
+// Vertex Output
+out vec3 passPosition;				//< Vertex position in world space
+out vec3 passNormal;				//< Vertex normal in world space
 out vec3 passUV0;					//< UVs
 out float passFresnel;				//< Fresnel
-out vec4 passShadowCoord[8];		//< Shadow
-
-// Constants
-const float fresnelScale = 1.0;
-const float fresnelPower = 1.5;
+out vec4 passShadowCoord[8];		//< Shadow Coordinates
 
 
 void main()
@@ -52,8 +61,7 @@ void main()
 
 	// Calculate fresnel term
 	vec3 eye_to_surface = normalize(world_position.xyz - mvp.cameraPosition);
-	float fresnel = 0.95 * pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), fresnelPower);
-	passFresnel = fresnelScale * fresnel;
+	passFresnel = pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), ubo.fresnel.y) * ubo.fresnel.x;
 
 	// Shadow
 	for (uint i = 0; i < lit.count; i++)

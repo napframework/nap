@@ -139,8 +139,8 @@
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_da7e00c9",
-                                        "Name": "color",
+                                        "mID": "UniformVec3_341baf9b",
+                                        "Name": "diffuse",
                                         "Value": {
                                             "x": 0.5,
                                             "y": 0.0,
@@ -148,10 +148,13 @@
                                         }
                                     },
                                     {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_18eea776",
-                                        "Name": "alpha",
-                                        "Value": 1.0
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "UniformVec2_4ec0a721",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 4.0
+                                        }
                                     }
                                 ]
                             }
@@ -292,8 +295,8 @@
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_1e4219be",
-                                        "Name": "color",
+                                        "mID": "UniformVec3_bc0d6fa3",
+                                        "Name": "diffuse",
                                         "Value": {
                                             "x": 0.30000001192092898,
                                             "y": 0.4000000059604645,
@@ -301,10 +304,19 @@
                                         }
                                     },
                                     {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "UniformVec2_01f24483",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 4.0
+                                        }
+                                    },
+                                    {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_972bd7c8",
-                                        "Name": "alpha",
-                                        "Value": 1.0
+                                        "mID": "UniformFloat_ed9be474",
+                                        "Name": "shininess",
+                                        "Value": 128.0
                                     }
                                 ]
                             }
@@ -654,7 +666,7 @@
                     "Type": "nap::OrbComponent",
                     "mID": "RenderOrb",
                     "Visible": true,
-                    "Mesh": "HeightSphereMesh",
+                    "Mesh": "OrbMesh",
                     "MaterialInstance": {
                         "Uniforms": [
                             {
@@ -664,26 +676,36 @@
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_2a92555b",
-                                        "Name": "color",
+                                        "mID": "UniformVec3_aab39b43",
+                                        "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.0,
-                                            "y": 1.0,
-                                            "z": 0.0
+                                            "x": 0.4000000059604645,
+                                            "y": 0.45000001788139346,
+                                            "z": 0.6000000238418579
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_dd377790",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.75,
+                                            "y": 0.75,
+                                            "z": 0.75
                                         }
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_44c2807e",
-                                        "Name": "alpha",
-                                        "Value": 1.0
+                                        "mID": "UniformFloat_ebd12872",
+                                        "Name": "shininess",
+                                        "Value": 16.0
                                     }
                                 ]
                             }
                         ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "OrbMaterial",
+                        "Material": "PhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -764,19 +786,22 @@
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_57aa093e",
-                                        "Name": "color",
+                                        "mID": "UniformVec3_7a99beea",
+                                        "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.1599999964237213,
-                                            "y": 0.3449999988079071,
+                                            "x": 0.0,
+                                            "y": 0.0,
                                             "z": 1.0
                                         }
                                     },
                                     {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_997120b6",
-                                        "Name": "alpha",
-                                        "Value": 1.0
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "UniformVec2_d2ad12f1",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 4.0
+                                        }
                                     }
                                 ]
                             }
@@ -839,9 +864,9 @@
         },
         {
             "Type": "nap::HeightSphereMesh",
-            "mID": "HeightSphereMesh",
+            "mID": "OrbMesh",
             "Heightmap": "OrbDisplacementMap",
-            "Height": 1.0,
+            "Height": 0.5,
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
@@ -933,19 +958,67 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "OrbMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Buffers": [],
-            "Shader": "PhongColorShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
             "mID": "PhongColorMaterial",
-            "Uniforms": [],
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_60da175c",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_3019e56a",
+                            "Name": "ambient",
+                            "Value": {
+                                "x": 0.125,
+                                "y": 0.125,
+                                "z": 0.125
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_cdd76af7",
+                            "Name": "diffuse",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 0.5,
+                                "z": 0.5
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_11cc25f4",
+                            "Name": "specular",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_f66d0135",
+                            "Name": "fresnel",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 4.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_5b6d8df2",
+                            "Name": "shininess",
+                            "Value": 32.0
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_49935e1d",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
             "Samplers": [],
             "Buffers": [],
             "Shader": "PhongColorShader",
@@ -1042,13 +1115,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "OrbShader",
-            "VertShader": "shaders/orbcolor.vert",
-            "FragShader": "shaders/orbcolor.frag",
-            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::ShaderFromFile",

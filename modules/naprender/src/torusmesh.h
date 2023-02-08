@@ -42,7 +42,7 @@ namespace nap
 		float							mRadius = 0.75f;						///< Property: 'Radius' torus radius
 		float							mTubeRadius = 0.25f;					///< Property: 'Height' tube segment radius
 		uint							mSegments = 64U;						///< Property: 'Segments' number of segments
-		uint							mTubeSegments = 32U;					///< Property: 'TubeSegments' number of tubular segments
+		uint							mTubeSegments = 64U;					///< Property: 'TubeSegments' number of tubular segments
 		float							mAngleOffset = 0.0f;					///< Property: 'AngleOffset' the angle offset in degrees
 		EMemoryUsage					mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		EPolygonMode					mPolygonMode = EPolygonMode::Fill;		///< Property: 'PolygonMode' the polygon mode

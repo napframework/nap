@@ -173,7 +173,7 @@ namespace nap
 		if (updateMaterials)
 		{
 			utility::ErrorState error_state;
-			if (!updateLightData(comps, error_state))
+			if (!pushLights(comps, error_state))
 			{
 				nap::Logger::error(error_state.toString());
 				assert(false);
@@ -182,8 +182,7 @@ namespace nap
 	}
 
 
-
-	bool RenderAdvancedService::updateLightData(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState)
+	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState)
 	{
 		// Filter render components
 		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
@@ -293,20 +292,21 @@ namespace nap
 				}
 
 				// Shadows
-				if (light->isShadowEnabled())
+				auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
+				if (shadow_sampler_array != nullptr)
 				{
-					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
-
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
-					if (shadow_sampler_array == nullptr)
-						return false;
-
 					auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
 					if (count >= instance->getNumElements())
 						continue;
 
-					instance->setTexture(count, *mLightDepthTextureMap[light]);
+					auto& shadow_texture = light->isShadowEnabled() ? *mLightDepthTextureMap[light] : *mShadowTextureDummy;
+					instance->setTexture(count, shadow_texture);
+
+					if (light->isShadowEnabled())
+					{
+						const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
+						light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+					}
 				}
 				++count;
 			}
