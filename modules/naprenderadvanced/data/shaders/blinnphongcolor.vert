@@ -34,16 +34,16 @@ uniform UBO
 } ubo;
 
 // Vertex Input
-in vec3	in_Position;				//< Vertex position in object space
-in vec3 in_Normals;					//< Vertex normal in object space
-in vec3 in_UV0;						//< Texture UVs
+in vec3		in_Position;			//< Vertex position in object space
+in vec3 	in_Normals;				//< Vertex normal in object space
+in vec3 	in_UV0;					//< Texture UVs
 
 // Vertex Output
-out vec3 passPosition;				//< Vertex position in world space
-out vec3 passNormal;				//< Vertex normal in world space
-out vec3 passUV0;					//< UVs
-out float passFresnel;				//< Fresnel
-out vec4 passShadowCoord[8];		//< Shadow Coordinates
+out vec3 	passPosition;			//< Vertex position in world space
+out vec3 	passNormal;				//< Vertex normal in world space
+out vec3 	passUV0;				//< UVs
+out float 	passFresnel;			//< Fresnel
+out vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
 
 void main()
@@ -66,6 +66,12 @@ void main()
 	// Shadow
 	for (uint i = 0; i < lit.count; i++)
 	{
-		passShadowCoord[i] = lit.lights[i].lightViewProjection * world_position;
+		vec4 coord = lit.lights[i].lightViewProjection * world_position;
+
+		float incidence = 1.0 - max(dot(world_normal, -lit.lights[i].direction), 0.0);
+		float bias = 0.0005 * incidence;
+		coord.z -= bias;
+
+		passShadowCoords[i] = coord;
 	}
 }

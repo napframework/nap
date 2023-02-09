@@ -27,10 +27,8 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() const;
 
-		/**
-		 * Shadow map size
-		 */
-		uint mShadowMapSize = 2048;
+		uint mShadowMapSize								= 2048;											///< Shadow Map Size
+		DepthRenderTexture2D::EDepthFormat mPrecision	= DepthRenderTexture2D::EDepthFormat::D16;		///< Precision
 	};
 
 

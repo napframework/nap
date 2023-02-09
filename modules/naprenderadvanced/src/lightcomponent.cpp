@@ -15,7 +15,9 @@
 
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
-	RTTI_PROPERTY("Enable Shadows", &nap::LightComponent::mEnableShadows, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Enable Shadows",		&nap::LightComponent::mEnableShadows,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::LightComponentInstance run time class definition

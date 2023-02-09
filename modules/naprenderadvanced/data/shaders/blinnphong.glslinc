@@ -14,7 +14,7 @@ struct BlinnPhongMaterial
 
 
 // Shades a fragment based on a light, incoming normal and position should be in object space
-vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, float strength, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
 {
 	// inverse light direction
 	vec3 inv_dir = normalize(-lightDirection);
@@ -23,7 +23,6 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, Bl
 	vec3 surface_to_cam = normalize(camPosition - fragPosition);
 
 	// lighting components
-	float ambient = 0.5;
 	float diffuse = max(0.0, dot(surfNormal, inv_dir));
 	float specular = 0.0;
 
@@ -34,12 +33,12 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, Bl
 		specular = pow(max(dot(surfNormal, halfway), 0.0), mtl.shininess);
 	}
 
-	vec3 ambient_color = ambient * lightIntensity * mtl.ambient;
+	vec3 ambient_color = lightIntensity * mtl.ambient;
 	vec3 diffuse_color = diffuse * lightIntensity * mtl.diffuse;
 	vec3 specular_color = specular * lightIntensity * mtl.specular;
 
 	// linear color (color before gamma correction)
-	vec3 comp_color = diffuse_color + specular_color + ambient_color;
+	vec3 comp_color = (diffuse_color + specular_color + ambient_color) * strength;
 
 	// clamp
 	return clamp(comp_color, 0.0, 1.0);
@@ -47,19 +46,45 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, Bl
 
 
 // Shades a fragment based on a light, incoming normal and position should be in object space
-vec3 computeLight(DirectionalLightShadow lights[8], uint count, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLightDirectional(DirectionalLightShadow lights[8], uint count, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
 {
 	vec3 color = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < count; i++)
 	{
 		DirectionalLightShadow li = lights[i];
-		color += computeLight(li.direction, li.color, li.intensity, mtl, camPosition, surfNormal, fragPosition);
+		color += computeLight(li.direction, li.color, li.intensity, li.attenuation, mtl, camPosition, surfNormal, fragPosition);
 	}
 	return color;
 }
 
 
-vec3 computeLight(DirectionalLightShadow light, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLightDirectional(DirectionalLightShadow light, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
 {
-	return computeLight(light.direction, light.color, light.intensity, mtl, camPosition, surfNormal, fragPosition);
+	return computeLight(light.direction, light.color, 1.0, light.intensity, mtl, camPosition, surfNormal, fragPosition);
 }
+
+
+// Single point light
+vec3 computeLightPoint(vec3 lightPosition, vec3 lightColor, float lightIntensity, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+{
+	vec3 delta = fragPosition - lightPosition;
+	float dist_squared = dot(delta, delta);
+	float atten = 0.05/dist_squared;
+	return computeLight(normalize(delta), lightColor, lightIntensity, atten, mtl, camPosition, surfNormal, fragPosition);
+}
+
+
+// Multiple point lights
+vec3 computeLightPoint(PointLight lights[8], uint count, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+{
+	vec3 color = { 0.0, 0.0, 0.0 };
+	for (uint i = 0; i < count; i++)
+	{
+		PointLight li = lights[i];
+		vec3 dir = normalize(fragPosition - li.origin);
+		color += computeLightPoint(dir, li.color, li.intensity, mtl, camPosition, surfNormal, fragPosition);
+	}
+	return color;
+}
+
+

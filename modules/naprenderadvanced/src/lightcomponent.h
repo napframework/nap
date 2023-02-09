@@ -4,8 +4,6 @@
 #include <component.h>
 #include <componentptr.h>
 #include <cameracomponent.h>
-#include <perspcameracomponent.h>
-#include <orthocameracomponent.h>
 #include <transformcomponent.h>
 
 #include <parameter.h>
@@ -34,8 +32,9 @@ namespace nap
 		{
 			inline constexpr const char* color = "color";
 			inline constexpr const char* intensity = "intensity";
-			inline constexpr const char* direction = "direction";
 			inline constexpr const char* origin = "origin";
+			inline constexpr const char* direction = "direction";
+			inline constexpr const char* attenuation = "attenuation";
 
 			inline constexpr const char* lightViewProjection = "lightViewProjection";
 			inline constexpr const char* lights = "lights";

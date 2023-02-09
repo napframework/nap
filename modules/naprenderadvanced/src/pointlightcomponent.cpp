@@ -1,4 +1,4 @@
-#include "directionallightcomponent.h"
+#include "pointlightcomponent.h"
 
 // Local includes
 #include "renderadvancedservice.h"
@@ -13,14 +13,14 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
-// nap::DirectionalLightComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::DirectionalLightComponent)
-	RTTI_PROPERTY("ShadowCamera", &nap::DirectionalLightComponent::mShadowCamera, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Attenuation", &nap::DirectionalLightComponent::mAttenuation, nap::rtti::EPropertyMetaData::Required)
+// nap::PointLightComponent run time class definition 
+RTTI_BEGIN_CLASS(nap::PointLightComponent)
+	RTTI_PROPERTY("ShadowCamera", &nap::PointLightComponent::mShadowCamera, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Attenuation", &nap::PointLightComponent::mAttenuation, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-// nap::DirectionalLightComponentInstance run time class definition
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DirectionalLightComponentInstance)
+// nap::PointLightComponentInstance run time class definition
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointLightComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -30,17 +30,17 @@ RTTI_END_CLASS
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// DirectionalLightComponent
+	// PointLightComponent
 	//////////////////////////////////////////////////////////////////////////
 
-	bool DirectionalLightComponentInstance::init(utility::ErrorState& errorState)
+	bool PointLightComponentInstance::init(utility::ErrorState& errorState)
 	{
 		if (!LightComponentInstance::init(errorState))
 			return false;
 
-		auto* resource = getComponent<DirectionalLightComponent>();
+		auto* resource = getComponent<PointLightComponent>();
 		addLightUniformMember(uniform::light::attenuation, resource->mAttenuation.get());
-
+		
 		return true;
 	}
 }

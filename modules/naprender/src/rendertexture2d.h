@@ -69,7 +69,6 @@ namespace nap
 		 */
 		enum class EDepthFormat
 		{
-			D8,				///< 08 bit unsigned, 1 component
 			D16,			///< 16 bit unsigned, 1 component
 			D32				///< 32 bit float, 1 component
 		};

@@ -6,6 +6,7 @@ struct DirectionalLight
 	vec3 direction;
 	vec3 color;
 	float intensity;
+	float attenuation;
 };
 
 struct DirectionalLightShadow
@@ -15,6 +16,7 @@ struct DirectionalLightShadow
 	vec3 direction;
 	vec3 color;
 	float intensity;
+	float attenuation;
 };
 
 struct PointLight
@@ -22,6 +24,7 @@ struct PointLight
 	vec3 origin;
 	vec3 color;
 	float intensity;
+	float attenuation;
 };
 
 // struct PointLightShadow
@@ -30,4 +33,23 @@ struct PointLight
 // 	vec3 origin;
 // 	vec3 color;
 // 	float intensity;
+// };
+
+struct SpotLight
+{
+	vec3 origin;
+	vec3 color;
+	float intensity;
+	float angle;
+	float falloff;
+};
+
+// struct SpotLightShadow
+// {
+// 	mat4 lightViewProjection;
+// 	vec3 origin;
+// 	vec3 color;
+// 	float intensity;
+// 	float angle;
+// 	float falloff;
 // };

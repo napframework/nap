@@ -291,8 +291,7 @@ namespace nap
 	{
 		// Get the format, when unsupported bail.
 		mFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED,
-			"%s, Unsupported texture format", mID.c_str()))
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 
 		// Ensure our GPU image can be used as a transfer destination during uploads

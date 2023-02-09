@@ -26,7 +26,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::DepthRenderTexture2D::EDepthFormat)
-	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D8,	"D8"),
 	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D16,	"D16"),
 	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D32,	"D32")
 RTTI_END_ENUM
@@ -141,11 +140,6 @@ namespace nap
 		// Initialize based on selected format
 		switch (mFormat)
 		{
-		case DepthRenderTexture2D::EDepthFormat::D8:
-		{
-			settings.mDataType = ESurfaceDataType::BYTE;
-			return Texture2D::init(settings, false, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, errorState);
-		}
 		case DepthRenderTexture2D::EDepthFormat::D16:
 		{
 			settings.mDataType = ESurfaceDataType::USHORT;

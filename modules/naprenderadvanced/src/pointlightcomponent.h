@@ -4,34 +4,34 @@
 #include "lightcomponent.h"
 
 // External includes
-#include <orthocameracomponent.h>
+#include <perspcameracomponent.h>
 
 namespace nap
 {
 	// Forward declares
-	class DirectionalLightComponentInstance;
+	class PointLightComponentInstance;
 
 	/**
-	 *	DirectionalLightComponent
+	 *	PointLightComponent
 	 */
-	class NAPAPI DirectionalLightComponent : public LightComponent
+	class NAPAPI PointLightComponent : public LightComponent
 	{
 		RTTI_ENABLE(LightComponent)
-		DECLARE_COMPONENT(DirectionalLightComponent, DirectionalLightComponentInstance)
+		DECLARE_COMPONENT(PointLightComponent, PointLightComponentInstance)
 	public:
 		ResourcePtr<ParameterFloat> mAttenuation;				///< Property: 'Attenuation'
-		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
 	};
 
 
 	/**
-	 * DirectionalLightComponentInstance
+	 * PointLightComponentInstance
 	 */
-	class NAPAPI DirectionalLightComponentInstance : public LightComponentInstance
+	class NAPAPI PointLightComponentInstance : public LightComponentInstance
 	{
 		RTTI_ENABLE(LightComponentInstance)
 	public:
-		DirectionalLightComponentInstance(EntityInstance& entity, Component& resource) :
+		PointLightComponentInstance(EntityInstance& entity, Component& resource) :
 			LightComponentInstance(entity, resource) { }
 
 		/**
@@ -49,6 +49,6 @@ namespace nap
 
 	private:
 		// Shadow camera
-		ComponentInstancePtr<OrthoCameraComponent> mShadowCamera = { this, &DirectionalLightComponent::mShadowCamera };
+		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &PointLightComponent::mShadowCamera };
 	};
 }

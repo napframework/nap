@@ -38,11 +38,11 @@ uniform UBO
 } ubo;
 
 // Fragment Input
-in vec3 passPosition;				//< Fragment position in world space
-in vec3 passNormal;					//< Fragment normal in world space
-in vec3 passUV0;					//< Texture UVs
-in float passFresnel;				//< Fresnel term
-in vec4 passShadowCoord[8];			//< Shadow Coordinates
+in vec3 	passPosition;			//< Fragment position in world space
+in vec3 	passNormal;				//< Fragment normal in world space
+in vec3 	passUV0;				//< Texture UVs
+in float 	passFresnel;			//< Fresnel term
+in vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
 // Fragment Output
 out vec4 out_Color;
@@ -51,17 +51,26 @@ out vec4 out_Color;
 uniform sampler2DShadow shadowMaps[8];
 
 // Constants
-const float SHADOW_STRENGTH = 0.9;
+const float SHADOW_STRENGTH = 0.85;
 
 
 void main()
 {
 	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
 	
-	vec3 color = computeLight(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
+	vec3 color = computeLightDirectional(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
 	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), 0.25));
 
-	float shadow = computeShadow(shadowMaps, passShadowCoord, lit.count, min(SHADOW_SAMPLE_COUNT, 64)) * SHADOW_STRENGTH;
+	// Per-fragment bias
+	// float shadow = 0.0;
+	// for (uint i = 0; i < lit.count; i++)
+	// {
+	// 	float x = computeShadow(shadowMaps[i], passShadowCoords[i], lit.lights[i].direction, passNormal, min(SHADOW_SAMPLE_COUNT, 64));
+	// 	shadow = max(x, shadow);
+	// }
+	// shadow *= SHADOW_STRENGTH;
+
+	float shadow = computeShadow(shadowMaps, passShadowCoords, lit.count, min(SHADOW_SAMPLE_COUNT, 64)) * SHADOW_STRENGTH;
 	color *= (1.0 - shadow);
 
 	out_Color = vec4(color, ubo.alpha);
