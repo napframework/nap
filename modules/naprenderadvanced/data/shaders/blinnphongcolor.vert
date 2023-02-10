@@ -19,9 +19,15 @@ uniform nap
 
 uniform light
 {
-	DirectionalLightShadow lights[8];
+	DirectionalLight lights[8];
 	uint count;
 } lit;
+
+uniform pointlight
+{
+	PointLight lights[8];
+	uint count;
+} point;
 
 uniform UBO
 {

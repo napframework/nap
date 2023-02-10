@@ -45,7 +45,7 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("MateColorRate",				&nap::FlockingSystemComponent::mMateColorRateParam,			nap::rtti::EPropertyMetaData::Default)
 
-	RTTI_PROPERTY("TargetTransformComponent",	&nap::FlockingSystemComponent::mTargetTransformComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("TargetTransforms",			&nap::FlockingSystemComponent::mTargetTransforms,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FlockingSystemComponentInstance)
@@ -83,7 +83,8 @@ namespace nap
 	namespace computeuniform
 	{
 		constexpr const char* uboStruct = "UBO";
-		constexpr const char* target = "target";
+		constexpr const char* targets = "targets";
+		constexpr const char* targetCount = "targetCount";
 		constexpr const char* deltaTime = "deltaTime";
 		constexpr const char* elapsedTime = "elapsedTime";
 		constexpr const char* viewRadius = "viewRadius";
@@ -163,8 +164,16 @@ namespace nap
 		UniformStructInstance* ubo_struct = comp->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
 		if (ubo_struct != nullptr)
 		{
-			glm::vec4 target_position = mTargetTransformComponent->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(computeuniform::target)->setValue(target_position);
+			std::vector<glm::vec3> targets;
+			targets.reserve(mTargetTransforms.size());
+
+			auto* targets_uni = ubo_struct->getOrCreateUniform<UniformVec3ArrayInstance>(computeuniform::targets);
+			uint count = std::min<uint>(targets.size(), targets_uni->getNumElements());
+			for (uint i = 0; i < count; i++)
+				targets.emplace_back(mTargetTransforms[i]->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+			targets_uni->setValues(targets);
+			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::targetCount)->setValue(targets.size());
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime)->setValue(static_cast<float>(mDeltaTime));
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius)->setValue(mResource->mViewRadiusParam->mValue);

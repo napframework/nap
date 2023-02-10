@@ -64,7 +64,8 @@ layout(std430) writeonly buffer BoidBuffer_Out
 // UNIFORM
 uniform UBO
 {
-	vec3 target;
+	vec3 targets[8];
+	uint targetCount;
 	uint numBoids;
 	float deltaTime;
 	float elapsedTime;
@@ -206,6 +207,36 @@ float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float 
 }
 
 
+// Compute weighted average of vectors based on distance
+vec3 weightedDistAvg(vec3 pos, in vec3 positions[8], uint count)
+{
+	// [xyz = offset][w = l1]
+	vec4 data[8]; 
+
+	// Follow weighted average of all targets
+	float total_l1 = 0.0;
+	for (uint i=0; i<count; i++)
+	{
+		data[i].xyz = positions[i] - pos;
+		data[i].w = dot(data[i].xyz, data[i].xyz);
+		total_l1 += data[i].w;
+	}
+
+	// Prevent division by zero
+	if (total_l1 < EPSILON) 
+		return vec3(0.0);
+
+	const float weight_bias_pow = 4.0;
+	vec3 avg_offset = { 0.0, 0.0, 0.0 };
+	for (uint i=0; i<count; i++)
+	{
+		float weight = data[i].w/total_l1;
+		avg_offset += data[i].xyz * pow(weight, weight_bias_pow);
+	}
+	return avg_offset;
+}
+
+
 // Compute the cumulative forces of the flock on a single boid. This guides its behavior.
 // For each boid in the storage buffer, we calculate the distance between them and the 
 // current boid. We also take the dot product of the current boid's view direction and the
@@ -267,12 +298,12 @@ void computeForces(
 			numFlockMates++;
 			flockHeading += other_dir;
 			flockCenter += other_pos;
+		}
 
-			if (l1 < ubo.avoidRadius * ubo.avoidRadius)
-			{
-				// Note that this can be a zero vector
-				avoidanceHeading -= vec4(offset, 1.0) / l1;
-			}
+		if (l1 < ubo.avoidRadius * ubo.avoidRadius)
+		{
+			// Note that this can be a zero vector
+			avoidanceHeading -= vec4(offset, 1.0) / l1;
 		}
 	}
 }
@@ -395,9 +426,7 @@ void main()
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 
-	// Calculate base acceleration determined by a moving global target position
-	vec4 offset = vec4(ubo.target, 0.0) - b.position;
-	vec3 acceleration = blendForce(offset.xyz, b.velocity.xyz) * ubo.targetWeight;
+	vec3 acceleration = vec3(0.0);
 
 	// Calculate individual forces (direction and magnitude)
 	// 'alignment' indicates a force pushing towards the average heading of the flock
@@ -417,6 +446,13 @@ void main()
 		acceleration += alignment;
 		acceleration += cohesion;
 		acceleration += seperation;
+	}
+
+	// Calculate target weight
+	if (ubo.targetCount > 0)
+	{
+		vec3 target_offset = weightedDistAvg(b.position.xyz, ubo.targets, ubo.targetCount);
+		acceleration += blendForce(target_offset.xyz, b.velocity.xyz) * ubo.targetWeight;
 	}
 
 	// Steer away from sphere bounds

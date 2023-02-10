@@ -46,19 +46,19 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, fl
 
 
 // Shades a fragment based on a light, incoming normal and position should be in object space
-vec3 computeLightDirectional(DirectionalLightShadow lights[8], uint count, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLightDirectional(DirectionalLight lights[8], uint count, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
 {
 	vec3 color = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < count; i++)
 	{
-		DirectionalLightShadow li = lights[i];
-		color += computeLight(li.direction, li.color, li.intensity, li.attenuation, mtl, camPosition, surfNormal, fragPosition);
+		DirectionalLight li = lights[i];
+		color += computeLight(li.direction, li.color, li.intensity, 1.0, mtl, camPosition, surfNormal, fragPosition);
 	}
 	return color;
 }
 
 
-vec3 computeLightDirectional(DirectionalLightShadow light, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+vec3 computeLightDirectional(DirectionalLight light, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
 {
 	return computeLight(light.direction, light.color, 1.0, light.intensity, mtl, camPosition, surfNormal, fragPosition);
 }

@@ -23,9 +23,15 @@ uniform nap
 
 uniform light
 {
-	DirectionalLightShadow lights[8];
+	DirectionalLight lights[8];
 	uint count;
 } lit;
+
+uniform pointlight
+{
+	PointLight lights[8];
+	uint count;
+} point;
 
 uniform UBO
 {
@@ -58,18 +64,15 @@ void main()
 {
 	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
 	
-	vec3 color = computeLightDirectional(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
+	// Lights
+	vec3 dir_color = computeLightDirectional(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
+
+	vec3 point_color = computeLightPoint(point.lights, point.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
+	
+	vec3 color = (dir_color + point_color) * 0.5;
 	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), 0.25));
 
-	// Per-fragment bias
-	// float shadow = 0.0;
-	// for (uint i = 0; i < lit.count; i++)
-	// {
-	// 	float x = computeShadow(shadowMaps[i], passShadowCoords[i], lit.lights[i].direction, passNormal, min(SHADOW_SAMPLE_COUNT, 64));
-	// 	shadow = max(x, shadow);
-	// }
-	// shadow *= SHADOW_STRENGTH;
-
+	// Shadows
 	float shadow = computeShadow(shadowMaps, passShadowCoords, lit.count, min(SHADOW_SAMPLE_COUNT, 64)) * SHADOW_STRENGTH;
 	color *= (1.0 - shadow);
 
