@@ -37,7 +37,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
-	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
