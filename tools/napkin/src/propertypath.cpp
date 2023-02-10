@@ -13,6 +13,8 @@
 #include <cctype>
 #include <mathutils.h>
 #include <color.h>
+#include <componentptr.h>
+#include <entityptr.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -349,24 +351,25 @@ Object* PropertyPath::getPointee() const
 
 void PropertyPath::setPointee(Object* pointee)
 {
-	// TODO: This is a hack to find ComponentPtr/ObjectPtr/EntityPtr method
-	// Someone just needs to add an 'assign' method in the wrong place and it will break.
-	// Also, ObjectPtr's assign method starts with uppercase A
-	if (rttr::method assignMethod = nap::rtti::findMethodRecursive(getType(), "assign"))
+	// Handle assignment for component and entity ptr
+	auto prop_type = getType();
+	if (prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
+		prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
-		auto targetVal = getValue();
+		rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
+		auto target_val = getValue();
 		assert(mDocument != nullptr);
 		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-		assignMethod.invoke(targetVal, path, *pointee);
+		assign_method.invoke(target_val, path, *pointee);
 
 		// Apply the modified value back to the source property
-		setValue(targetVal);
+		setValue(target_val);
+		return;
 	}
-	else
-	{
-		setValue(pointee);
-	}
+
+	// Regular object
+	setValue(pointee);
 }
 
 

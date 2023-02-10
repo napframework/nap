@@ -15,6 +15,8 @@
 #include <utility/fileutils.h>
 #include <nap/group.h>
 #include <nap/timer.h>
+#include <entityptr.h>
+#include <componentptr.h>
 
 using namespace napkin;
 using namespace nap::rtti;
@@ -730,9 +732,9 @@ int Document::arrayAddValue(const PropertyPath& path)
 
 size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object, size_t index)
 {
+	// Resolve path and fetch array
 	ResolvedPath resolved_path = path.resolve();
 	assert(resolved_path.isValid());
-
 	Variant array = resolved_path.getValue();
 	assert(array.is_valid());
 	assert(array.is_array());
@@ -741,55 +743,38 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object
 	assert(array_view.is_valid());
 
 	// Convert the object to the wrapped type
-
 	const TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
 	const TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
 
+	// Insert item into array
 	Variant new_item = object;
 	bool convert_ok = new_item.convert(wrapped_type);
 	assert(convert_ok);
-
 	assert(index <= array_view.get_size());
 	bool inserted = array_view.insert_value(index, new_item);
 	assert(inserted);
 
+	// If the item is a component or entity ptr -> assign relative object path
+	if (array_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
+		array_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
+	{
+		// Get assign method
+		Variant new_ptr = array_view.get_value_as_ref(index);
+		rttr::method assign_method = nap::rtti::findMethodRecursive(array_type, nap::rtti::method::assign);
+		assert(assign_method.is_valid());
+		auto obj_path = relativeObjectPath(*path.getObject(), *object);
+
+		// Assign
+		array_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ?
+			assign_method.invoke(new_ptr.get_wrapped_value<nap::ComponentPtrBase>(), obj_path, *object) :
+			assign_method.invoke(new_ptr.get_wrapped_value<nap::EntityPtr>(), obj_path, *object);
+	}
+
+	// Set updated array
 	bool value_set = resolved_path.setValue(array);
 	assert(value_set);
 
-	propertyValueChanged(path);
-	propertyChildInserted(path, index);
-
-	return index;
-}
-
-size_t Document::arrayAddExistingObject(const PropertyPath& path, nap::rtti::Object* object)
-{
-	ResolvedPath resolved_path = path.resolve();
-	assert(resolved_path.isValid());
-
-	Variant array = resolved_path.getValue();
-	assert(array.is_valid());
-	assert(array.is_array());
-	VariantArray array_view = array.create_array_view();
-	assert(array_view.is_dynamic());
-	assert(array_view.is_valid());
-
-	// Convert the object to the wrapped type
-
-	const TypeInfo array_type = array_view.get_rank_type(array_view.get_rank());
-	const TypeInfo wrapped_type = array_type.is_wrapper() ? array_type.get_wrapped_type() : array_type;
-
-	Variant new_item = object;
-	bool convert_ok = new_item.convert(wrapped_type);
-	assert(convert_ok);
-
-	size_t index = array_view.get_size();
-	bool inserted = array_view.insert_value(index, new_item);
-	assert(inserted);
-
-	bool value_set = resolved_path.setValue(array);
-	assert(value_set);
-
+	// Notify listeners
 	propertyValueChanged(path);
 	propertyChildInserted(path, index);
 

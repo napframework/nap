@@ -157,8 +157,8 @@ namespace nap
 		{
 			UNKNOWN		= -1,
 			LEFT		= 0,
-			MIDDLE		= 1,
-			RIGHT		= 2
+			RIGHT		= 1,
+			MIDDLE		= 2
 		};
 
 		PointerClickEvent(int inX, int inY, EButton inButton, int window, ESource source) :
