@@ -329,7 +329,7 @@ void computeForces(
 // @param avoidanceHeading: outputs the cumulative avoidance vector
 // @param flockHeading: outputs the cumulative flock heading
 // @param flockCenter: outputs the cumulative flock center
-// @param numFlockMates: outputs the number of boids in view radius of the current boid
+// @param flockWeight: outputs the weight of boids in view radius of the current boid
 void computeForcesShared(
 	const uint gid, 
 	const vec3 position, 
@@ -337,12 +337,12 @@ void computeForcesShared(
 	out vec4 avoidanceHeading, 
 	out vec4 flockHeading, 
 	out vec4 flockCenter, 
-	out uint numFlockMates)
+	out float flockWeight)
 {
 	avoidanceHeading = vec4(0.0);
 	flockHeading = vec4(0.0);
 	flockCenter = vec4(0.0);
-	numFlockMates = 0U;
+	flockWeight = 0.0;
 
 	const vec3 dir = safeNormalize(velocity);
 	const float max_view_dot = 0.1;
@@ -388,15 +388,19 @@ void computeForcesShared(
 			{
 				other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
 
-				numFlockMates++;
-				flockHeading += other_dir;
-				flockCenter += other_pos;
+				// Higher distance equals stronger [0.0 - 1.0] 
+				float weight = min(l1/(ubo.viewRadius * ubo.viewRadius), 1.0);
 
-				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
-				{
-					// Note that this can be a zero vector
-					avoidanceHeading -= vec4(offset, 1.0) / l1;
-				}
+				flockWeight += weight;
+				flockHeading += other_dir * (1.0 - weight);
+				flockCenter += other_pos * weight;
+			}
+
+			if (l1 < ubo.avoidRadius * ubo.avoidRadius)
+			{
+				// Note that this can be a zero vector
+				float weight = pow(1.0 - (l1/(ubo.avoidRadius * ubo.avoidRadius)), 2.0);
+				avoidanceHeading -= vec4(offset, 1.0) * weight;
 			}
 		}
 
@@ -420,10 +424,10 @@ void main()
 	vec4 avoidance_heading;
 	vec4 flock_heading;
 	vec4 flock_center;
-	uint num_flock_mates;
+	float flock_weight;
 
 	// Comment/uncomment to compare the performance difference between computeForcesShared() and computeForces()
-	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
 	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
 
 	vec3 acceleration = vec3(0.0);
@@ -432,12 +436,11 @@ void main()
 	// 'alignment' indicates a force pushing towards the average heading of the flock
 	// 'cohesion' indicates a force pushing towards the center of the flock
 	// 'separation' indicates a force steering away from flock mates within an avoidance radius
-	if (num_flock_mates > 0)
+	if (flock_weight > EPSILON)
 	{
-		float fcount = float(num_flock_mates);
-		vec4 mean_flock_center = flock_center / fcount;
-		vec4 mean_flock_heading = flock_heading / fcount;
-		vec4 mean_avoidance_heading = avoidance_heading / fcount;
+		vec4 mean_flock_center = flock_center / flock_weight;
+		vec4 mean_flock_heading = flock_heading / flock_weight;
+		vec4 mean_avoidance_heading = avoidance_heading / flock_weight;
 
 		vec3 alignment = blendForce(mean_flock_heading.xyz, b.velocity.xyz) * ubo.alignmentWeight;
 		vec3 cohesion = blendForce(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz) * ubo.cohesionWeight;
@@ -488,7 +491,7 @@ void main()
 	b.orientation = mulQuat(q_delta, b.orientation);
 
 	// Write mate rate
-	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.55), b.mateRate);
+	b.mateRate = max(pow(flock_weight/float(ubo.numBoids), 0.55), b.mateRate);
 	b.mateRate = clamp(b.mateRate, 0.0, 1.0) * 0.97;
 
 	// Write boid to output buffer

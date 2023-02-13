@@ -168,7 +168,7 @@ namespace nap
 			targets.reserve(mTargetTransforms.size());
 
 			auto* targets_uni = ubo_struct->getOrCreateUniform<UniformVec3ArrayInstance>(computeuniform::targets);
-			uint count = std::min<uint>(targets.size(), targets_uni->getNumElements());
+			uint count = std::min<uint>(mTargetTransforms.size(), targets_uni->getNumElements());
 			for (uint i = 0; i < count; i++)
 				targets.emplace_back(mTargetTransforms[i]->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
 
