@@ -283,55 +283,6 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderLightPosition",
-                    "Visible": true,
-                    "Mesh": "LightPositionReferenceMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_3cd3d510",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_0c490be7",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_411a159c",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "Light",
                     "Color": "LightColorParameter",
@@ -364,20 +315,20 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderLightDirection",
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderDirectionalLight1",
                     "Visible": true,
-                    "Mesh": "LightDirectionReferenceMesh",
+                    "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_2b093017",
+                                "mID": "UniformStruct_dda1e55d",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_64f3bf04",
+                                        "mID": "UniformVec3_335ebe47",
                                         "Name": "color",
                                         "Value": {
                                             "x": 1.0,
@@ -387,7 +338,7 @@
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_b7ecb765",
+                                        "mID": "UniformFloat_af3f07b4",
                                         "Name": "alpha",
                                         "Value": 1.0
                                     }
@@ -451,55 +402,6 @@
                     "Attenuation": "LightAttenuationParameter"
                 },
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderLight2Direction",
-                    "Visible": true,
-                    "Mesh": "LightDirectionReferenceMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_de024a9a",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_03f7d311",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_75bd7225",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::OrthoCameraComponent",
                     "mID": "ShadowCameraOrtho2",
                     "Properties": {
@@ -523,20 +425,20 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderLight2Position",
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderDirectionalLight2",
                     "Visible": true,
-                    "Mesh": "LightPositionReferenceMesh",
+                    "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_fa537a2d",
+                                "mID": "UniformStruct_1f3b7f1a",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_9efccb01",
+                                        "mID": "UniformVec3_32fcaf0a",
                                         "Name": "color",
                                         "Value": {
                                             "x": 1.0,
@@ -546,7 +448,7 @@
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_c606d1bd",
+                                        "mID": "UniformFloat_99e1a5c3",
                                         "Name": "alpha",
                                         "Value": 1.0
                                     }
@@ -802,20 +704,20 @@
                     }
                 },
                 {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderPointLightPosition",
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderPointLight",
                     "Visible": true,
-                    "Mesh": "LightPositionReferenceMesh",
+                    "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_2498f96a",
+                                "mID": "UniformStruct_47494a6e",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_464de0a1",
+                                        "mID": "UniformVec3_f112040c",
                                         "Name": "color",
                                         "Value": {
                                             "x": 1.0,
@@ -825,7 +727,7 @@
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_fe179315",
+                                        "mID": "UniformFloat_a0b68b4d",
                                         "Name": "alpha",
                                         "Value": 1.0
                                     }
@@ -835,8 +737,8 @@
                         "Samplers": [],
                         "Buffers": [],
                         "Material": "ConstantMaterial",
-                        "BlendMode": "Opaque",
-                        "DepthMode": "ReadWrite"
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -1169,7 +1071,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAttenuationParameter",
                     "Name": "LightAttenuation",
-                    "Value": 0.5,
+                    "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 }

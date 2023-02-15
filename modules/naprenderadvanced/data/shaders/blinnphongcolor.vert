@@ -19,15 +19,9 @@ uniform nap
 
 uniform light
 {
-	DirectionalLight lights[8];
+	Light lights[8];
 	uint count;
 } lit;
-
-uniform pointlight
-{
-	PointLight lights[8];
-	uint count;
-} point;
 
 uniform UBO
 {
@@ -74,7 +68,7 @@ void main()
 	{
 		vec4 coord = lit.lights[i].lightViewProjection * world_position;
 
-		float incidence = 1.0 - max(dot(world_normal, -lit.lights[i].direction), 0.0);
+		float incidence = getSurfaceIncidence(lit.lights[i], world_position.xyz, world_normal.xyz);
 		float bias = 0.0005 * incidence;
 		coord.z -= bias;
 

@@ -27,7 +27,7 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() const;
 
-		uint mShadowMapSize								= 2048;											///< Shadow Map Size
+		uint mShadowMapSize								= 2048U;										///< Shadow Map Size
 		DepthRenderTexture2D::EDepthFormat mPrecision	= DepthRenderTexture2D::EDepthFormat::D16;		///< Precision
 	};
 
@@ -111,6 +111,7 @@ namespace nap
 		std::unique_ptr<Sampler2DArray> mSamplerResource;
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 
+		bool mShadowResourcesCreated = false;
 		static constexpr uint sMaxShadowMapCount = 8;
 	};
 }

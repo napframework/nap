@@ -47,6 +47,16 @@ namespace nap
 		 */
 		virtual CameraComponentInstance* getShadowCamera()					{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
 
+		/**
+		 * @return the light equation
+		 */
+		virtual ELightEquation getLightEquation() const						{ return ELightEquation::Directional; }
+
+		/**
+		 * @return the light type
+		 */
+		virtual ELightType getLightType() const								{ return ELightType::Directional; }
+
 	private:
 		// Shadow camera
 		ComponentInstancePtr<OrthoCameraComponent> mShadowCamera = { this, &DirectionalLightComponent::mShadowCamera };

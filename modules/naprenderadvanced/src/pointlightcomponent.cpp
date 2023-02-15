@@ -39,7 +39,7 @@ namespace nap
 			return false;
 
 		auto* resource = getComponent<PointLightComponent>();
-		addLightUniformMember(uniform::light::attenuation, resource->mAttenuation.get());
+		registerLightUniformMember(uniform::light::attenuation, resource->mAttenuation.get());
 		
 		return true;
 	}

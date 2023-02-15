@@ -53,14 +53,19 @@ namespace nap
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
 
 		// Create default parameters
-		addLightUniformMember(uniform::light::color, mResource->mColor.get());
-		addLightUniformMember(uniform::light::intensity, mResource->mIntensity.get());
+		registerLightUniformMember(uniform::light::color, mResource->mColor.get());
+		registerLightUniformMember(uniform::light::intensity, mResource->mIntensity.get());
 
 		if (mIsShadowEnabled)
 		{
 			if(!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled No shadow camera set", mID.c_str()))
 				return false;
 		}
+
+		// Flags [type : 8bit][equation : 8bit][shadow : 1bit][padding : 15bit]
+		mLightFlags = static_cast<uint32>(getLightType());
+		mLightFlags |= static_cast<uint32>(getLightEquation()) << 8U;
+		mLightFlags |= static_cast<uint32>(isShadowEnabled()) << 16U;
 
 		// Register with service
 		auto* service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
@@ -71,7 +76,7 @@ namespace nap
 	}
 
 
-	void LightComponentInstance::addLightUniformMember(const std::string& memberName, Parameter* parameter)
+	void LightComponentInstance::registerLightUniformMember(const std::string& memberName, Parameter* parameter)
 	{
 		const auto it = mUniformDataMap.insert({ memberName, parameter });
 		assert(it.second);

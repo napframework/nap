@@ -22,6 +22,27 @@ namespace nap
 	class LightComponentInstance;
 
 	/**
+	 * Light Type Flag
+	 */
+	enum class ELightType : uint
+	{
+		Custom			= 0,
+		Directional		= 1,
+		Point			= 2,
+		Spot			= 3
+	};
+
+	/**
+	 * Light Equation Flag
+	 */
+	enum class ELightEquation : uint
+	{
+		Custom			= 0,
+		Directional		= 1,
+		Point			= 2
+	};
+
+	/**
 	 * Light Globals
 	 */
 	namespace uniform
@@ -35,6 +56,9 @@ namespace nap
 			inline constexpr const char* origin = "origin";
 			inline constexpr const char* direction = "direction";
 			inline constexpr const char* attenuation = "attenuation";
+			inline constexpr const char* angle = "angle";
+			inline constexpr const char* falloff = "falloff";
+			inline constexpr const char* flags = "flags";
 
 			inline constexpr const char* lightViewProjection = "lightViewProjection";
 			inline constexpr const char* lights = "lights";
@@ -50,7 +74,9 @@ namespace nap
 		}
 	}
 
+	using LightFlags = uint;
 	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
+
 
 	/**
 	 * LightComponent
@@ -108,7 +134,17 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ return nullptr; }
+		virtual CameraComponentInstance* getShadowCamera()					{ assert(false); return nullptr; }
+
+		/**
+		 * @return the light equation
+		 */
+		virtual ELightEquation getLightEquation() const						{ assert(false); return ELightEquation::Custom; }
+
+		/**
+		 * @return the light type
+		 */
+		virtual ELightType getLightType() const								{ assert(false); return ELightType::Custom; }
 
 		/**
 		 * @return the position of the light in world space
@@ -120,14 +156,23 @@ namespace nap
 		 */
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
 
-
 	protected:
-		void addLightUniformMember(const std::string& memberName, Parameter* parameter);
+		/**
+		 * Registers a light uniform member for updating the shader interface.
+		 * TODO: Remove them too to facilitate hot-reloads?
+		 */
+		void registerLightUniformMember(const std::string& memberName, Parameter* parameter);
+
+		/**
+		 * @return the light flags
+		 */
+		const uint getLightFlags() const									{ return mLightFlags; }
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
-
 		bool mIsShadowEnabled							= false;
+
+		uint mLightFlags								= 0U;
 
 	private:
 		Parameter* getLightUniform(const std::string& memberName);

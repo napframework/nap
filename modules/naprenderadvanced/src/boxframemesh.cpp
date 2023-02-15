@@ -1,0 +1,155 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+ // External Includes
+#include <nap/core.h>
+#include <nap/numeric.h>
+#include <cameracomponent.h>
+#include <orthocameracomponent.h>
+#include <perspcameracomponent.h>
+
+// Local Includes
+#include "boxframemesh.h"
+#include "renderservice.h"
+#include "renderglobals.h"
+
+// nap::BoxFrameMesh run time class definition 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxFrameMesh)
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("PolygonMode",		&nap::BoxFrameMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+//////////////////////////////////////////////////////////////////////////
+
+
+namespace nap
+{
+	//////////////////////////////////////////////////////////////////////////
+	// Static
+	//////////////////////////////////////////////////////////////////////////
+
+	const static std::vector<glm::vec3> unitLineBox =
+	{
+		{ 1, -1, 1 },
+		{ -1, -1, 1 },
+		{ -1, 1, 1 },
+		{ 1, 1, 1 },
+
+		{ 1, -1, -1 },
+		{ -1, -1, -1 },
+		{ -1, 1, -1 },
+		{ 1, 1, -1 }
+	};
+
+	constexpr static uint quadVertCount = 4;					//< Number of vertices per quad
+	constexpr static uint quadCount = 2;						//< Total number of quad
+	constexpr static uint lineVertCount = 2;					//< Total number of vertices per line
+	constexpr static uint lineCount = 4;						//< Total number of lines
+	constexpr static uint primitiveCount = 6;					//< Total number of primitives
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// BoxFrameMesh
+	//////////////////////////////////////////////////////////////////////////
+
+	BoxFrameMesh::BoxFrameMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
+	{ }
+
+
+	bool BoxFrameMesh::init(utility::ErrorState& errorState)
+	{
+		setup();
+		return mMeshInstance->init(errorState);
+	}
+
+
+	void BoxFrameMesh::setup()
+	{
+		// Create mesh instance
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
+
+		// Generate the indices
+		std::vector<uint32> indices(quadCount * quadVertCount + 2 + lineCount * lineVertCount + primitiveCount);
+		uint32* index_ptr = indices.data();
+		for (uint quad = 0; quad < quadCount; quad++)
+		{
+			const uint offset = quad * quadVertCount;
+			*(index_ptr++) = 0 + offset;
+			*(index_ptr++) = 1 + offset;
+			*(index_ptr++) = 2 + offset;
+			*(index_ptr++) = 3 + offset;
+			*(index_ptr++) = 0 + offset;
+			*(index_ptr++) = std::numeric_limits<uint32>::max(); // Base this on the index buffer data type (uint16 or uint32)
+		}
+
+		for (uint line = 0; line < lineCount; line++)
+		{
+			*(index_ptr++) = line;
+			*(index_ptr++) = line + quadVertCount;
+			*(index_ptr++) = std::numeric_limits<uint32>::max();
+		}
+
+		// Create attributes
+		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+
+		// Set numer of vertices this mesh contains
+		mMeshInstance->setNumVertices(unitLineBox.size());
+		mMeshInstance->setPolygonMode(EPolygonMode::Line);
+		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
+		mMeshInstance->setCullMode(ECullMode::None);
+		mMeshInstance->setUsage(EMemoryUsage::DynamicWrite);
+
+		// Set data
+		position_attribute.setData(unitLineBox);
+
+		// Create the shape
+		MeshShape& shape = mMeshInstance->createShape();
+		shape.setIndices(indices.data(), indices.size());
+	}
+
+
+	bool BoxFrameMesh::update(const CameraComponentInstance& camera, utility::ErrorState& errorState)
+	{
+		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
+		assert(unitLineBox.size() == position_attribute.getCount());
+
+		float near, far = 0.0f;
+		if (camera.get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
+		{
+			const auto* cam = static_cast<const OrthoCameraComponentInstance*>(&camera);
+			near = cam->getProperties().mNearClippingPlane;
+			far = cam->getProperties().mFarClippingPlane;
+		}
+		else if (camera.get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
+		{
+			const auto* cam = static_cast<const PerspCameraComponentInstance*>(&camera);
+			near = cam->getNearClippingPlane();
+			far = cam->getFarClippingPlane();
+		}
+		else
+		{
+			errorState.fail("Unsupported camera type");
+			return false;
+		}
+
+		const float m22 = camera.getRenderProjectionMatrix()[2][2];
+		const float m32 = camera.getRenderProjectionMatrix()[3][2];
+		const float n = m32 / (m22 - 1.0f);
+		const float f = m32 / (m22 + 1.0f);
+
+		auto& positions = position_attribute.getData();
+		for (uint i = 0; i < unitLineBox.size(); i++)
+		{
+			float z = i < 4 ? near : far;
+			positions[i] = glm::vec3(camera.getRenderProjectionMatrix() * glm::vec4(unitLineBox[i].x, unitLineBox[i].y, z, 1.0f));
+		}
+
+		if (!mMeshInstance->update(errorState))
+			return false;
+
+		return true;
+	}
+}

@@ -196,6 +196,34 @@ namespace nap
 
 
 	/**
+	 * @return Vulkan topology mode based on given NAP draw mode
+	 */
+	static bool isListTopology(EDrawMode drawMode)
+	{
+		switch (drawMode)
+		{
+			case EDrawMode::Points:
+				return false;
+			case EDrawMode::Lines:
+				return true;
+			case EDrawMode::LineStrip:
+				return false;
+			case EDrawMode::Triangles:
+				return true;
+			case EDrawMode::TriangleStrip:
+				return false;
+			case EDrawMode::TriangleFan:
+				return false;
+			default:
+			{
+				assert(false);
+				return false;
+			}
+		}
+	}
+
+
+	/**
 	 * @return Vulkan cull mode based on given NAP cull mode
 	 */
 	static VkCullModeFlagBits getCullMode(ECullMode mode)
@@ -937,7 +965,7 @@ namespace nap
 		input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		input_assembly.topology = getTopology(drawMode);
 		input_assembly.flags = 0;
-		input_assembly.primitiveRestartEnable = VK_FALSE;
+		input_assembly.primitiveRestartEnable = isListTopology(drawMode) ? VK_FALSE : VK_TRUE;
 
 		VkDynamicState dynamic_states[3] = {
 			VK_DYNAMIC_STATE_VIEWPORT,

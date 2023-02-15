@@ -100,16 +100,16 @@ namespace nap
 	bool RenderAdvancedService::init(nap::utility::ErrorState& errorState)
 	{
 		// Create and manage a shadow texture dummy for valid shadow samplers
-		auto texture_dummy = std::make_unique<DepthRenderTexture2D>(getCore());
-		texture_dummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		texture_dummy->mWidth = 16;
-		texture_dummy->mHeight = 16;
-		texture_dummy->mUsage = ETextureUsage::Static;
-		texture_dummy->mFormat = DepthRenderTexture2D::EDepthFormat::D16;
-		texture_dummy->mColorSpace = EColorSpace::Linear;
-		texture_dummy->mClearValue = 1.0f;
-		texture_dummy->mFill = true;
-		mShadowTextureDummy = std::move(texture_dummy);
+		auto tex_dummy = std::make_unique<DepthRenderTexture2D>(getCore());
+		tex_dummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		tex_dummy->mWidth = 16;
+		tex_dummy->mHeight = 16;
+		tex_dummy->mUsage = ETextureUsage::Static;
+		tex_dummy->mFormat = DepthRenderTexture2D::EDepthFormat::D16;
+		tex_dummy->mColorSpace = EColorSpace::Linear;
+		tex_dummy->mClearValue = 1.0f;
+		tex_dummy->mFill = true;
+		mShadowTextureDummy = std::move(tex_dummy);
 
 		if (!mShadowTextureDummy->init(errorState))
 		{
@@ -185,6 +185,10 @@ namespace nap
 
 	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState)
 	{
+		// Exit early if there are no lights in the scene
+		if (mLightComponents.empty())
+			return true;
+
 		// Filter render components
 		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
 		for (auto& comp : comps)
@@ -225,6 +229,7 @@ namespace nap
 				auto& light_element = light_array->getElement(count);
 
 				// Light uniform defaults
+				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(light->getLightFlags());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
 
@@ -237,7 +242,7 @@ namespace nap
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
 					auto* member = struct_decl->findMember(name);
-					if (!errorState.check(member != nullptr, "Missing uniform with name '%s'", name.c_str()))
+					if (!errorState.check(member != nullptr, "Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
 						return false;
 
 					if (member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)))
@@ -326,7 +331,7 @@ namespace nap
 
 	void RenderAdvancedService::preResourcesLoaded()
 	{
-
+		mShadowResourcesCreated = false;
 	}
 
 
@@ -389,6 +394,7 @@ namespace nap
 
 			mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
 		}
+		mShadowResourcesCreated = true;
 		return true;
 	}
 
@@ -399,29 +405,40 @@ namespace nap
 		{
 			return it == input;
 		});
+
 		if (found_it == mLightComponents.end())
+		{
 			mLightComponents.emplace_back(&light);
+			return;
+		}
+		assert(false);
 	}
 
 
 	void RenderAdvancedService::removeLightComponent(LightComponentInstance& light)
 	{
+		if (mShadowResourcesCreated)
 		{
-			auto found_it = std::find_if(mLightDepthTargetMap.begin(), mLightDepthTargetMap.end(), [input = &light](const auto& it)
+			// Shadow resources
 			{
-				return it.first == input;
-			});
-			assert(found_it != mLightDepthTargetMap.end());
-			mLightDepthTargetMap.erase(found_it);
-		}
-		{
-			auto found_it = std::find_if(mLightDepthTextureMap.begin(), mLightDepthTextureMap.end(), [input = &light](const auto& it)
+				auto found_it = std::find_if(mLightDepthTargetMap.begin(), mLightDepthTargetMap.end(), [input = &light](const auto& it)
+				{
+					return it.first == input;
+				});
+				assert(found_it != mLightDepthTargetMap.end());
+				mLightDepthTargetMap.erase(found_it);
+			}
 			{
-				return it.first == input;
-			});
-			assert(found_it != mLightDepthTextureMap.end());
-			mLightDepthTextureMap.erase(found_it);
+				auto found_it = std::find_if(mLightDepthTextureMap.begin(), mLightDepthTextureMap.end(), [input = &light](const auto& it)
+				{
+					return it.first == input;
+				});
+				assert(found_it != mLightDepthTextureMap.end());
+				mLightDepthTextureMap.erase(found_it);
+			}
 		}
+
+		// Light components
 		{
 			auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
 			{

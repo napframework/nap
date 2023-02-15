@@ -7,14 +7,24 @@
 const float SHADOW_POISSON_SPREAD = 1024.0;
 
 
+// Returns whether shadows are enabled in the specified light flag
+bool hasShadow(uint flags)
+{
+	return ((flags & (1 << 16)) >> 16) > 0;
+}
+
+
 // Calculate shadow contribution
 // @param shadowCoord: the fragment position in light space
 // @param lightDir: the light direction
-float computeShadow(sampler2DShadow shadowMaps[8], vec4 shadowCoords[8], uint count, uint sampleCount)
+float computeShadows(sampler2DShadow shadowMaps[8], vec4 shadowCoords[8], uint flags[8], uint count, uint sampleCount)
 {
 	float result = 0.0;
 	for (uint i = 0; i < count; i++)
 	{
+		if (!hasShadow(flags[i]))
+			continue;
+
 		// Perspective divide and map coordinates to [0.0, 1.0] range
 		vec3 coord = ((shadowCoords[i].xyz / shadowCoords[i].w) + 1.0) * 0.5;
 		float bias = 1.0/textureSize(shadowMaps[i], 0).x;

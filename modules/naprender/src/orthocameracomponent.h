@@ -100,7 +100,7 @@ namespace nap
 		/**
 		* @return The planes for this orthographic camera.
 		*/
-		const OrthoCameraProperties& getProperties() { return mProperties; }
+		const OrthoCameraProperties& getProperties() const { return mProperties; }
 
 		/**
 		* Sets the orthographic camera properties.

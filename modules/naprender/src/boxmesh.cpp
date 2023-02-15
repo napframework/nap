@@ -85,7 +85,7 @@ namespace nap
 	};
 
 
-	const std::vector<glm::vec3> boxUVs =
+	const static std::vector<glm::vec3> boxUVs =
 	{
 		{ 1.0f,0.0f,0.0f },
 		{ 0.0f,0.0f,0.0f },
@@ -113,9 +113,9 @@ namespace nap
 		{ 0.0f,1.0f,0.0f }
 	};
 
-	constexpr nap::uint planeVertCount = 4;					//< Number of vertices per plane
-	constexpr nap::uint boxVertCount = planeVertCount * 6;	//< Total number of box vertices
-	constexpr nap::uint triCount = 6 * 2;					//< Total number of box triangles
+	constexpr static uint planeVertCount = 4;					//< Number of vertices per plane
+	constexpr static uint boxVertCount = planeVertCount * 6;	//< Total number of box vertices
+	constexpr static uint triCount = 6 * 2;						//< Total number of box triangles
 
 	BoxMesh::BoxMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
