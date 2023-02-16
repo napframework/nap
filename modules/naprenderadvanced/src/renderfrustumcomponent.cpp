@@ -15,6 +15,8 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
+#include <orthocameracomponent.h>
+#include <perspcameracomponent.h>
 
 RTTI_BEGIN_CLASS(nap::RenderFrustumComponent)
 RTTI_END_CLASS
@@ -62,6 +64,7 @@ namespace nap
 
 		// Initialize frustum mesh
 		mFrustumMesh->mPolygonMode = EPolygonMode::Line;
+		mFrustumMesh->mUsage = EMemoryUsage::DynamicWrite;
 		if (!errorState.check(mFrustumMesh->init(errorState), "Unable to create particle mesh"))
 			return false;
 
@@ -72,6 +75,43 @@ namespace nap
 
 		// Set the frustum mesh to be used when drawing
 		setMesh(renderable_mesh);
+
+		return true;
+	}
+
+
+	bool RenderFrustumComponentInstance::updateFrustum(utility::ErrorState& errorState)
+	{
+		auto& positions = getMeshInstance().getOrCreateAttribute<glm::vec3>(vertexid::position).getData();
+		assert(mFrustumMesh->getUnitLineBox().size() == positions.size());
+
+		if (mCamera->get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
+		{
+			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
+			for (uint i = 0; i < mFrustumMesh->getUnitLineBox().size(); i++)
+			{
+				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getUnitLineBox()[i], 1.0f);
+				positions[i] = view_edge;
+			}
+		}
+		else if (mCamera->get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
+		{
+			auto inv_proj_matrix = glm::inverse(mCamera->getRenderProjectionMatrix());
+			for (uint i = 0; i < mFrustumMesh->getUnitLineBox().size(); i++)
+			{
+				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getUnitLineBox()[i], 1.0f);
+				positions[i] = view_edge / view_edge.w; // Perspective divide
+			}
+		}
+		else
+		{
+			errorState.fail("Unsupported camera type");
+			return false;
+		}
+
+		utility::ErrorState error_state;
+		if (!getMeshInstance().update(error_state))
+			assert(false);
 
 		return true;
 	}
@@ -102,11 +142,11 @@ namespace nap
 		if (mCameraWorldPosUniform != nullptr)
 			mCameraWorldPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
 
-		utility::ErrorState error_state;
-		if (!mFrustumMesh->update(*mCamera, error_state))
+		// Update frustum
 		{
-			assert(false);
-			return;
+			utility::ErrorState error_state;
+			if (!updateFrustum(error_state))
+				nap::Logger::warn(error_state.toString());
 		}
 
 		// Acquire new / unique descriptor set before rendering
@@ -114,6 +154,7 @@ namespace nap
 		const DescriptorSet& descriptor_set = mat_instance.update();
 
 		// Fetch and bind pipeline
+		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 

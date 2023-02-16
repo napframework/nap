@@ -18,6 +18,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxFrameMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("PolygonMode",		&nap::BoxFrameMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",				&nap::BoxFrameMesh::mUsage,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -97,10 +98,10 @@ namespace nap
 
 		// Set numer of vertices this mesh contains
 		mMeshInstance->setNumVertices(unitLineBox.size());
-		mMeshInstance->setPolygonMode(EPolygonMode::Line);
+		mMeshInstance->setUsage(mUsage);
+		mMeshInstance->setPolygonMode(mPolygonMode);
 		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 		mMeshInstance->setCullMode(ECullMode::None);
-		mMeshInstance->setUsage(EMemoryUsage::DynamicWrite);
 
 		// Set data
 		position_attribute.setData(unitLineBox);
@@ -111,45 +112,8 @@ namespace nap
 	}
 
 
-	bool BoxFrameMesh::update(const CameraComponentInstance& camera, utility::ErrorState& errorState)
+	const std::vector<glm::vec3>& BoxFrameMesh::getUnitLineBox()
 	{
-		nap::Vec3VertexAttribute& position_attribute = mMeshInstance->getOrCreateAttribute<glm::vec3>(vertexid::position);
-		assert(unitLineBox.size() == position_attribute.getCount());
-
-		float near, far = 0.0f;
-		if (camera.get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
-		{
-			const auto* cam = static_cast<const OrthoCameraComponentInstance*>(&camera);
-			near = cam->getProperties().mNearClippingPlane;
-			far = cam->getProperties().mFarClippingPlane;
-		}
-		else if (camera.get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
-		{
-			const auto* cam = static_cast<const PerspCameraComponentInstance*>(&camera);
-			near = cam->getNearClippingPlane();
-			far = cam->getFarClippingPlane();
-		}
-		else
-		{
-			errorState.fail("Unsupported camera type");
-			return false;
-		}
-
-		const float m22 = camera.getRenderProjectionMatrix()[2][2];
-		const float m32 = camera.getRenderProjectionMatrix()[3][2];
-		const float n = m32 / (m22 - 1.0f);
-		const float f = m32 / (m22 + 1.0f);
-
-		auto& positions = position_attribute.getData();
-		for (uint i = 0; i < unitLineBox.size(); i++)
-		{
-			float z = i < 4 ? near : far;
-			positions[i] = glm::vec3(camera.getRenderProjectionMatrix() * glm::vec4(unitLineBox[i].x, unitLineBox[i].y, z, 1.0f));
-		}
-
-		if (!mMeshInstance->update(errorState))
-			return false;
-
-		return true;
+		return unitLineBox;
 	}
 }

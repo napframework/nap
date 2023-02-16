@@ -8,9 +8,6 @@
 #include <renderablemeshcomponent.h>
 #include <mesh.h>
 #include <nap/resourceptr.h>
-#include <parameternumeric.h>
-#include <parametervec.h>
-#include <parametercolor.h>
 #include <componentptr.h>
 
 // Local includes
@@ -65,6 +62,8 @@ namespace nap
 		RenderFrustumComponent& getResource();
 
 	private:
+		bool updateFrustum(utility::ErrorState& errorState);
+
 		RenderFrustumComponent*						mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
 		CameraComponentInstance*					mCamera = nullptr;

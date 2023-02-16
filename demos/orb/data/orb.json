@@ -228,7 +228,7 @@
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
                     "MovementSpeed": 0.004999999888241291,
-                    "RotateSpeed": 0.004000000189989805,
+                    "RotateSpeed": 0.0010000001639127732,
                     "PerspCameraComponent": "./PerspCamera",
                     "LookAtPosition": {
                         "x": 0.0,
@@ -666,7 +666,7 @@
                         },
                         "Rotate": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": 180.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -690,9 +690,9 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "ShadowCameraPerspective",
                     "Properties": {
-                        "FieldOfView": 90.0,
+                        "FieldOfView": 60.0,
                         "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 100.0,
+                        "FarClippingPlane": 50.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1

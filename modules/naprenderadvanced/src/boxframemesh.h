@@ -7,10 +7,6 @@
 // Local Includes
 #include "mesh.h"
 
-// External Includes
-#include <box.h>
-#include <color.h>
-
 namespace nap
 {
 	class RenderService;
@@ -25,7 +21,6 @@ namespace nap
 	{
 		RTTI_ENABLE(IMesh)
 	public:
-
 		BoxFrameMesh(Core& core);
 
 		/**
@@ -46,11 +41,12 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 		/**
-		 * 
+		 * @return the unit line box
 		 */
-		bool update(const CameraComponentInstance& camera, utility::ErrorState& errorState);
+		const std::vector<glm::vec3>& getUnitLineBox();
 
-		EPolygonMode mPolygonMode = EPolygonMode::Line;				///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
+		EPolygonMode mPolygonMode = EPolygonMode::Line;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
+		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 
 	protected:
 		/**
@@ -60,7 +56,6 @@ namespace nap
 		 */
 		void setup();
 
-	private:
 		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
 	};
