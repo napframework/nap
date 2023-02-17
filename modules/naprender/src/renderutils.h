@@ -12,6 +12,7 @@
 
 // Local Includes
 #include "vk_mem_alloc.h"
+#include "surfacedescriptor.h"
 
 namespace nap
 {
@@ -70,18 +71,6 @@ namespace nap
 		VmaAllocationInfo		mAllocationInfo;							///< Vulkan allocation information
 		VkBufferUsageFlags		mUsage = 0;									///< Usage flags
 		VkBuffer				mBuffer = VK_NULL_HANDLE;					///< Vulkan buffer
-	};
-
-
-	/**
-	 * Semaphore wait info
-	 */
-	struct NAPAPI SemaphoreWaitInfo
-	{
-		SemaphoreWaitInfo() = default;
-
-		VkSemaphore				mSemaphore;
-		VkPipelineStageFlags	mFlags;
 	};
 
 

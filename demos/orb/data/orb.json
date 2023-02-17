@@ -301,7 +301,7 @@
                         "TopPlane": 10.0,
                         "BottomPlane": -10.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 100.0,
+                        "FarClippingPlane": 50.0,
                         "ClipRect": {
                             "Min": {
                                 "x": 0.0,
@@ -411,7 +411,7 @@
                         "TopPlane": 10.0,
                         "BottomPlane": -10.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 100.0,
+                        "FarClippingPlane": 50.0,
                         "ClipRect": {
                             "Min": {
                                 "x": 0.0,

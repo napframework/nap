@@ -8,9 +8,19 @@
 #include <string>
 #include <glm/glm.hpp>
 #include <utility/dllexport.h>
+#include <nap/numeric.h>
 
 namespace nap
 {
+	/**
+	 * The primitive restart index is used to interrupt non-list topologies in index buffers.
+	 */
+	namespace index
+	{
+		inline constexpr const static uint primitiveRestartIndex = std::numeric_limits<uint>::max();
+	}
+
+
 	/**
 	 * The default shader stage entry point name that is used whenever a pipeline stage is created.
 	 */

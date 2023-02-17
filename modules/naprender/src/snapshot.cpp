@@ -129,7 +129,7 @@ namespace nap
 			cell->mWidth = mCellWidth;
 			cell->mHeight = mCellHeight;
 			cell->mUsage = ETextureUsage::DynamicRead;
-			cell->mFormat = mTextureFormat;
+			cell->mColorFormat = mTextureFormat;
 
 			if (!cell->init(errorState)) 
 			{

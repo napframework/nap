@@ -20,6 +20,7 @@
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowMapSize", &nap::RenderAdvancedServiceConfiguration::mShadowMapSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowCubeMapSize", &nap::RenderAdvancedServiceConfiguration::mShadowCubeMapSize, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Precision", &nap::RenderAdvancedServiceConfiguration::mPrecision, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -105,7 +106,7 @@ namespace nap
 		tex_dummy->mWidth = 16;
 		tex_dummy->mHeight = 16;
 		tex_dummy->mUsage = ETextureUsage::Static;
-		tex_dummy->mFormat = DepthRenderTexture2D::EDepthFormat::D16;
+		tex_dummy->mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
 		tex_dummy->mColorSpace = EColorSpace::Linear;
 		tex_dummy->mClearValue = 1.0f;
 		tex_dummy->mFill = true;
@@ -364,7 +365,7 @@ namespace nap
 			shadow_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 			shadow_map->mWidth = configuration->mShadowMapSize;
 			shadow_map->mHeight = configuration->mShadowMapSize;
-			shadow_map->mFormat = configuration->mPrecision;
+			shadow_map->mDepthFormat = configuration->mPrecision;
 			shadow_map->mUsage = ETextureUsage::Static;
 			shadow_map->mColorSpace = EColorSpace::Linear;
 			shadow_map->mClearValue = 1.0f;

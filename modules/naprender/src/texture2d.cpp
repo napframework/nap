@@ -7,6 +7,7 @@
 #include "bitmap.h"
 #include "renderservice.h"
 #include "copyimagedata.h"
+#include "textureutils.h"
 
 // External Includes
 #include <nap/core.h>
@@ -73,69 +74,6 @@ namespace nap
 	}
 
 
-	static VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
-	{
-		ESurfaceDataType dataType = descriptor.getDataType();
-		EColorSpace colorSpace = descriptor.getColorSpace();
-
-		switch (descriptor.getChannels())
-		{
-			case ESurfaceChannels::R:
-			{
-				switch (dataType)
-				{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16_UNORM;
-				}
-				break;
-			}
-			case ESurfaceChannels::RGBA:
-			{
-				switch (dataType)
-				{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32G32B32A32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16G16B16A16_UNORM;
-				}
-				break;
-			}
-			case ESurfaceChannels::BGRA:
-			{
-				switch (dataType)
-				{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_UNDEFINED;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_UNDEFINED;
-				}
-				break;
-			}
-			case ESurfaceChannels::D:
-			{
-				switch (dataType)
-				{
-				case nap::ESurfaceDataType::FLOAT:
-					return VK_FORMAT_D32_SFLOAT;
-				case nap::ESurfaceDataType::USHORT:
-					return VK_FORMAT_D16_UNORM;
-				}
-				break;
-			}
-			NAP_ASSERT_MSG(false, "Surface descriptor could not be resolved to valid/supported texture format");
-		}
-		return VK_FORMAT_UNDEFINED;
-	}
-
-
 	static int getNumStagingBuffers(int maxFramesInFlight, ETextureUsage textureUsage)
 	{
 		switch (textureUsage)
@@ -150,53 +88,6 @@ namespace nap
 				assert(false);
 		}
 		return 0;
-	}
-
-
-	/**
-	 * Transition image to a new layout using an existing image barrier.
-	 */
-	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
-		VkImageLayout oldLayout,		VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
-		uint32 mipLevel,				uint32 mipLevelCount,
-		VkImageAspectFlags aspect)
-	{
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-		barrier.subresourceRange.aspectMask = aspect;
-		barrier.subresourceRange.baseMipLevel = mipLevel;
-		barrier.subresourceRange.levelCount = mipLevelCount;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstAccessMask = dstAccessMask;
-		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	}
-
-
-	/**
-	 * Transition image to a new layout using an image barrier.
-	 */
-	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
-		VkImageLayout oldLayout,		VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
-		uint32 mipLevel,				uint32 mipLevelCount,
-		VkImageAspectFlags aspect)
-	{
-		VkImageMemoryBarrier barrier = {};
-		transitionImageLayout(commandBuffer, image, barrier,
-			oldLayout,		newLayout,
-			srcAccessMask,	dstAccessMask,
-			srcStage,		dstStage,
-			mipLevel,		mipLevelCount,
-			aspect);
 	}
 
 
@@ -290,7 +181,7 @@ namespace nap
 	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
-		mFormat = getTextureFormat(*mRenderService, descriptor);
+		mFormat = getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 

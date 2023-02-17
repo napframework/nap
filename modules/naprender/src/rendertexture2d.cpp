@@ -18,11 +18,11 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mColorFormat,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::DepthRenderTexture2D::EDepthFormat)
@@ -35,7 +35,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTexture2D)
 	RTTI_PROPERTY("Fill",		&nap::DepthRenderTexture2D::mFill,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Width",		&nap::DepthRenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Height",		&nap::DepthRenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mFormat,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mDepthFormat,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ColorSpace", &nap::DepthRenderTexture2D::mColorSpace,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearValue", &nap::DepthRenderTexture2D::mClearValue,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -60,7 +60,7 @@ namespace nap
 		settings.mColorSpace = mColorSpace;
 
 		// Initialize based on selected format
-		switch (mFormat)
+		switch (mColorFormat)
 		{
 			case RenderTexture2D::EFormat::RGBA8:
 			{
@@ -138,7 +138,7 @@ namespace nap
 		settings.mChannels = ESurfaceChannels::D;
 
 		// Initialize based on selected format
-		switch (mFormat)
+		switch (mDepthFormat)
 		{
 		case DepthRenderTexture2D::EDepthFormat::D16:
 		{

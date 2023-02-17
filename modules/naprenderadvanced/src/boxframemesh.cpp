@@ -8,11 +8,11 @@
 #include <cameracomponent.h>
 #include <orthocameracomponent.h>
 #include <perspcameracomponent.h>
+#include <renderglobals.h>
+#include <renderservice.h>
 
 // Local Includes
 #include "boxframemesh.h"
-#include "renderservice.h"
-#include "renderglobals.h"
 
 // nap::BoxFrameMesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxFrameMesh)
@@ -83,14 +83,14 @@ namespace nap
 			*(index_ptr++) = 2 + offset;
 			*(index_ptr++) = 3 + offset;
 			*(index_ptr++) = 0 + offset;
-			*(index_ptr++) = std::numeric_limits<uint32>::max(); // Base this on the index buffer data type (uint16 or uint32)
+			*(index_ptr++) = index::primitiveRestartIndex; // Base this on the index buffer data type (uint16 or uint32)
 		}
 
 		for (uint line = 0; line < lineCount; line++)
 		{
 			*(index_ptr++) = line;
 			*(index_ptr++) = line + quadVertCount;
-			*(index_ptr++) = std::numeric_limits<uint32>::max();
+			*(index_ptr++) = index::primitiveRestartIndex;
 		}
 
 		// Create attributes
