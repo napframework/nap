@@ -188,6 +188,7 @@ namespace nap
 					target->beginRendering();
 					render_service->renderObjects(*target, *shadow_camera, comps);
 					target->endRendering();
+					break;
 				}
 				case ELightType::Point:
 				{
@@ -201,9 +202,11 @@ namespace nap
 					target->beginRendering();
 					render_service->renderObjects(*target, *shadow_camera, comps);
 					target->endRendering();
+					break;
 				}
 				case ELightType::Custom:
 					nap::Logger::warn("Rendering shadows for custom light types not yet supported");
+					break;
 				default:
 					assert(false);
 				}
@@ -445,6 +448,7 @@ namespace nap
 
 				const auto it_target = mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
 				assert(it_target.second);
+				break;
 			}
 			case ELightType::Point:
 			{
@@ -463,7 +467,9 @@ namespace nap
 
 				const auto it_cube_target = mLightCubeTargetMap.insert({ light, std::move(cube_target) });
 				assert(it_cube_target.second);
+				break;
 			}
+			case ELightType::Custom:
 			default:
 				nap::Logger::warn("Rendering shadows for custom light types not yet supported");
 			}
