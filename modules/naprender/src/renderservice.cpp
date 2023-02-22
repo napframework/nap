@@ -452,13 +452,13 @@ namespace nap
 		}
 
 		// Log used SDK version
-		uint32 major_version = VK_VERSION_MAJOR(instance_version);
-		uint32 minor_version = VK_VERSION_MINOR(instance_version);
-		uint32 patch_version = VK_VERSION_PATCH(instance_version);
+		uint32 major_version = VK_API_VERSION_MAJOR(instance_version);
+		uint32 minor_version = VK_API_VERSION_MINOR(instance_version);
+		uint32 patch_version = VK_API_VERSION_PATCH(instance_version);
 		nap::Logger::info("Vulkan instance version: %d.%d.%d", major_version, minor_version, patch_version);
 
-		uint32 req_version_major = VK_VERSION_MAJOR(requestedVersion);
-		uint32 req_version_minor = VK_VERSION_MINOR(requestedVersion);
+		uint32 req_version_major = VK_API_VERSION_MAJOR(requestedVersion);
+		uint32 req_version_minor = VK_API_VERSION_MINOR(requestedVersion);
 		nap::Logger::info("Vulkan requested version: %d.%d.%d", req_version_major, req_version_minor, 0);
 		
 		// Ensure the found instance version is compatible
@@ -586,12 +586,12 @@ namespace nap
 			// Get properties associated with device
 			VkPhysicalDeviceProperties& properties = physical_device_properties[device_idx];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-			Logger::info("%d: %s, type: %s, version: %d.%d", device_idx, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+			Logger::info("%d: %s, type: %s, version: %d.%d", device_idx, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_API_VERSION_MAJOR(properties.apiVersion), VK_API_VERSION_MINOR(properties.apiVersion));
 
 			// If the supported api version < required by currently used api, continue
 			if (properties.apiVersion < minAPIVersion)
 			{
-				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", device_idx, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", device_idx, VK_API_VERSION_MAJOR(minAPIVersion), VK_API_VERSION_MINOR(minAPIVersion));
 				continue;
 			}
 
@@ -1573,7 +1573,7 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_MAKE_VERSION(render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
+		mAPIVersion = VK_MAKE_API_VERSION(0, render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
 		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
 			return false;
 
@@ -1896,13 +1896,13 @@ namespace nap
 
 	uint32 RenderService::getVulkanVersionMajor() const
 	{
-		return VK_VERSION_MAJOR(mAPIVersion);
+		return VK_API_VERSION_MAJOR(mAPIVersion);
 	}
 
 
 	uint32 RenderService::getVulkanVersionMinor() const
 	{
-		return VK_VERSION_MINOR(mAPIVersion);
+		return VK_API_VERSION_MINOR(mAPIVersion);
 	}
 
 
