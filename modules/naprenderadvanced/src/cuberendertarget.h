@@ -72,7 +72,6 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-	private:
 		/**
 		 * Starts the render pass. Called by CubeRenderTarget::render().
 		 */
@@ -83,7 +82,6 @@ namespace nap
 		 */
 		virtual void endRendering() override;
 
-	public:
 		/**
 		 * @return the size of the buffer in pixels
 		 */
@@ -157,7 +155,7 @@ namespace nap
 		 *	}
 		 * ~~~~~
 		 */
-		void render(QuiltCameraComponentInstance& quiltCamera, std::function<void(nap::CubeRenderTarget&, nap::QuiltCameraComponentInstance&)> renderCallback);
+		void render(QuiltCameraComponentInstance& quiltCamera, std::function<void(CubeRenderTarget&, QuiltCameraComponentInstance&)> renderCallback);
 
 	public:
 		uint									mWidth = 256;										///< Property: 'Width'

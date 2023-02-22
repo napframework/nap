@@ -103,9 +103,19 @@ namespace nap
 	bool NAPAPI create2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState);
 
 	/**
-	 * Creates a Vulkan image view based.
+	 * Creates a Vulkan image view based on the described image usage and given properties.
 	 */
 	bool NAPAPI create2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState);
+
+	/**
+	 * Creates a Vulkan layered image based on the described image usage and given properties.
+	 */
+	bool NAPAPI createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState);
+
+	/**
+	 * Creates a Vulkan layered image view based on the described image usage and given properties.
+	 */
+	bool NAPAPI createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 layerCount, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState);
 
 	/**
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data

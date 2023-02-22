@@ -11,6 +11,7 @@
 #include <renderablemeshcomponent.h>
 #include <nap/core.h>
 #include <rtti/factory.h>
+#include <vulkan/vulkan_core.h>
 
 #include <parameter.h>
 #include <parametervec.h>
@@ -100,6 +101,19 @@ namespace nap
 
 	bool RenderAdvancedService::init(nap::utility::ErrorState& errorState)
 	{
+		auto* render_service = getCore().getService<RenderService>();
+		assert(render_service != nullptr);
+
+		// Ensure the initialized Vulkan API version meets the render advanced service requirement
+		if (render_service->getVulkanVersionMajor() <= mRequiredVulkanVersionMajor)
+		{
+			if (render_service->getVulkanVersionMajor() < mRequiredVulkanVersionMajor || render_service->getVulkanVersionMinor() < mRequiredVulkanVersionMinor)
+			{
+				errorState.fail("%s: Vulkan API Version %d.%d required", this->get_type().get_name().to_string().c_str(), mRequiredVulkanVersionMajor, mRequiredVulkanVersionMinor);
+				return false;
+			}
+		}
+
 		// Create and manage a shadow texture dummy for valid shadow samplers
 		auto tex_dummy = std::make_unique<DepthRenderTexture2D>(getCore());
 		tex_dummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
@@ -118,7 +132,7 @@ namespace nap
 			return false;
 		}
 
-		auto shadow_sampler_array = std::make_unique<Sampler2DArray>(sMaxShadowMapCount);
+		auto shadow_sampler_array = std::make_unique<Sampler2DArray>(mMaxShadowMapCount);
 		shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
 		shadow_sampler_array->mName = sampler::light::shadowMaps;
 
@@ -159,17 +173,44 @@ namespace nap
 			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
 			if (shadow_camera != nullptr)
 			{
-				// One shadow render pass per light
-				auto it = mLightDepthTargetMap.find(light);
-				assert(it != mLightDepthTargetMap.end());
+				switch (light->getLightType())
+				{
+				case ELightType::Directional:
+				case ELightType::Spot:
+				{
+					// One shadow render pass per light
+					auto it = mLightDepthTargetMap.find(light);
+					assert(it != mLightDepthTargetMap.end());
 
-				auto& target = it->second;
-				assert(target != nullptr);
+					auto& target = it->second;
+					assert(target != nullptr);
 
-				target->beginRendering();
-				render_service->renderObjects(*target, *shadow_camera, comps);
-				target->endRendering();
+					target->beginRendering();
+					render_service->renderObjects(*target, *shadow_camera, comps);
+					target->endRendering();
+				}
+				case ELightType::Point:
+				{
+					// One shadow render pass per light
+					auto it = mLightCubeTargetMap.find(light);
+					assert(it != mLightCubeTargetMap.end());
+
+					auto& target = it->second;
+					assert(target != nullptr);
+
+					target->beginRendering();
+					render_service->renderObjects(*target, *shadow_camera, comps);
+					target->endRendering();
+				}
+				case ELightType::Custom:
+					nap::Logger::warn("Rendering shadows for custom light types not yet supported");
+				default:
+					assert(false);
+				}
 			}
+
+
+
 		}
 
 		if (updateMaterials)
@@ -357,43 +398,75 @@ namespace nap
 		mLightDepthTargetMap.clear();
 		mLightDepthTargetMap.reserve(mLightComponents.size());
 
+		mLightCubeTargetMap.clear();
+		mLightCubeTargetMap.reserve(mLightComponents.size());
+	
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		for (const auto& light : mLightComponents)
 		{
-			// Texture
-			auto shadow_map = std::make_unique<DepthRenderTexture2D>(getCore());
-			shadow_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-			shadow_map->mWidth = configuration->mShadowMapSize;
-			shadow_map->mHeight = configuration->mShadowMapSize;
-			shadow_map->mDepthFormat = configuration->mPrecision;
-			shadow_map->mUsage = ETextureUsage::Static;
-			shadow_map->mColorSpace = EColorSpace::Linear;
-			shadow_map->mClearValue = 1.0f;
-			shadow_map->mFill = true;
-
-			if (!shadow_map->init(errorState))
+			switch (light->getLightType())
 			{
-				errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-				return false;
-			}
-
-			const auto it_tex = mLightDepthTextureMap.insert({ light, std::move(shadow_map) }).first;
-
-			// Target
-			auto shadow_target = std::make_unique<DepthRenderTarget>(getCore());
-			shadow_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
-			shadow_target->mClearValue = 1.0f;
-			shadow_target->mDepthTexture = it_tex->second.get();
-			shadow_target->mRequestedSamples = ERasterizationSamples::One;
-			shadow_target->mSampleShading = false;
-
-			if (!shadow_target->init(errorState))
+			case ELightType::Directional:
+			case ELightType::Spot:
 			{
-				errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-				return false;
-			}
+				// Texture
+				auto shadow_map = std::make_unique<DepthRenderTexture2D>(getCore());
+				shadow_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+				shadow_map->mWidth = configuration->mShadowMapSize;
+				shadow_map->mHeight = configuration->mShadowMapSize;
+				shadow_map->mDepthFormat = configuration->mPrecision;
+				shadow_map->mUsage = ETextureUsage::Static;
+				shadow_map->mColorSpace = EColorSpace::Linear;
+				shadow_map->mClearValue = 1.0f;
+				shadow_map->mFill = true;
 
-			mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
+				if (!shadow_map->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+					return false;
+				}
+
+				const auto it_tex = mLightDepthTextureMap.insert({ light, std::move(shadow_map) });
+				assert(it_tex.second);
+
+				// Target
+				auto shadow_target = std::make_unique<DepthRenderTarget>(getCore());
+				shadow_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				shadow_target->mClearValue = 1.0f;
+				shadow_target->mDepthTexture = it_tex.first->second.get();
+				shadow_target->mRequestedSamples = ERasterizationSamples::One;
+				shadow_target->mSampleShading = false;
+
+				if (!shadow_target->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+					return false;
+				}
+
+				const auto it_target = mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
+				assert(it_target.second);
+			}
+			case ELightType::Point:
+			{
+				// Target
+				auto cube_target = std::make_unique<CubeRenderTarget>(getCore());
+				cube_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				cube_target->mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+				cube_target->mRequestedSamples = ERasterizationSamples::One;
+				cube_target->mSampleShading = false;
+
+				if (!cube_target->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+					return false;
+				}
+
+				const auto it_cube_target = mLightCubeTargetMap.insert({ light, std::move(cube_target) });
+				assert(it_cube_target.second);
+			}
+			default:
+				nap::Logger::warn("Rendering shadows for custom light types not yet supported");
+			}
 		}
 		mShadowResourcesCreated = true;
 		return true;

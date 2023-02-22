@@ -9,6 +9,7 @@
 #include <depthrendertarget.h>
 
 // Local includes
+#include "cuberendertarget.h"
 #include "lightcomponent.h"
 
 namespace nap
@@ -109,10 +110,15 @@ namespace nap
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<DepthRenderTarget>> mLightDepthTargetMap;
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<DepthRenderTexture2D>> mLightDepthTextureMap;
 
+		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeRenderTarget>> mLightCubeTargetMap;
+
 		std::unique_ptr<Sampler2DArray> mSamplerResource;
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 
 		bool mShadowResourcesCreated = false;
-		static constexpr uint sMaxShadowMapCount = 8;
+
+		static constexpr const uint mMaxShadowMapCount = 8;
+		static constexpr const uint mRequiredVulkanVersionMajor = 1U;
+		static constexpr const uint mRequiredVulkanVersionMinor = 1U;
 	};
 }

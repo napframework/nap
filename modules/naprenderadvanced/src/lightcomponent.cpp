@@ -64,7 +64,7 @@ namespace nap
 
 		// Flags [type : 8bit][equation : 8bit][shadow : 1bit][padding : 15bit]
 		mLightFlags = static_cast<uint32>(getLightType());
-		mLightFlags |= static_cast<uint32>(getLightEquation()) << 8U;
+		//mLightFlags |= static_cast<uint32>(getLightEquation()) << 8U;
 		mLightFlags |= static_cast<uint32>(isShadowEnabled()) << 16U;
 
 		// Register with service

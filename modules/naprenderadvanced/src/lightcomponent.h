@@ -33,16 +33,6 @@ namespace nap
 	};
 
 	/**
-	 * Light Equation Flag
-	 */
-	enum class ELightEquation : uint
-	{
-		Custom			= 0,
-		Directional		= 1,
-		Point			= 2
-	};
-
-	/**
 	 * Light Globals
 	 */
 	namespace uniform
@@ -137,11 +127,6 @@ namespace nap
 		virtual CameraComponentInstance* getShadowCamera()					{ assert(false); return nullptr; }
 
 		/**
-		 * @return the light equation
-		 */
-		virtual ELightEquation getLightEquation() const						{ assert(false); return ELightEquation::Custom; }
-
-		/**
 		 * @return the light type
 		 */
 		virtual ELightType getLightType() const								{ assert(false); return ELightType::Custom; }
@@ -159,7 +144,6 @@ namespace nap
 	protected:
 		/**
 		 * Registers a light uniform member for updating the shader interface.
-		 * TODO: Remove them too to facilitate hot-reloads?
 		 */
 		void registerLightUniformMember(const std::string& memberName, Parameter* parameter);
 
@@ -170,8 +154,8 @@ namespace nap
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
-		bool mIsShadowEnabled							= false;
 
+		bool mIsShadowEnabled							= false;
 		uint mLightFlags								= 0U;
 
 	private:

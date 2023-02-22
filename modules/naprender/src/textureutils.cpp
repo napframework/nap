@@ -18,11 +18,11 @@ namespace nap
 		{
 			switch (dataType)
 			{
-			case nap::ESurfaceDataType::BYTE:
+			case ESurfaceDataType::BYTE:
 				return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-			case nap::ESurfaceDataType::FLOAT:
+			case ESurfaceDataType::FLOAT:
 				return VK_FORMAT_R32_SFLOAT;
-			case nap::ESurfaceDataType::USHORT:
+			case ESurfaceDataType::USHORT:
 				return VK_FORMAT_R16_UNORM;
 			}
 			break;
@@ -31,11 +31,11 @@ namespace nap
 		{
 			switch (dataType)
 			{
-			case nap::ESurfaceDataType::BYTE:
+			case ESurfaceDataType::BYTE:
 				return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-			case nap::ESurfaceDataType::FLOAT:
+			case ESurfaceDataType::FLOAT:
 				return VK_FORMAT_R32G32B32A32_SFLOAT;
-			case nap::ESurfaceDataType::USHORT:
+			case ESurfaceDataType::USHORT:
 				return VK_FORMAT_R16G16B16A16_UNORM;
 			}
 			break;
@@ -44,11 +44,11 @@ namespace nap
 		{
 			switch (dataType)
 			{
-			case nap::ESurfaceDataType::BYTE:
+			case ESurfaceDataType::BYTE:
 				return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-			case nap::ESurfaceDataType::FLOAT:
+			case ESurfaceDataType::FLOAT:
 				return VK_FORMAT_UNDEFINED;
-			case nap::ESurfaceDataType::USHORT:
+			case ESurfaceDataType::USHORT:
 				return VK_FORMAT_UNDEFINED;
 			}
 			break;
@@ -57,9 +57,9 @@ namespace nap
 		{
 			switch (dataType)
 			{
-			case nap::ESurfaceDataType::FLOAT:
+			case ESurfaceDataType::FLOAT:
 				return VK_FORMAT_D32_SFLOAT;
-			case nap::ESurfaceDataType::USHORT:
+			case ESurfaceDataType::USHORT:
 				return VK_FORMAT_D16_UNORM;
 			}
 			break;

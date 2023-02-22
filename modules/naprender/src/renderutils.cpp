@@ -227,6 +227,59 @@ namespace nap
 	}
 
 
+	bool createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
+	{
+		// Image creation info
+		VkImageCreateInfo image_info = {};
+		image_info.sType = VK_STRUCTURE_TYPE_IMAGE_CREATE_INFO;
+		image_info.imageType = VK_IMAGE_TYPE_2D;
+		image_info.extent.width = width;
+		image_info.extent.height = height;
+		image_info.extent.depth = 1;
+		image_info.mipLevels = 1;
+		image_info.arrayLayers = layerCount;
+		image_info.format = format;
+		image_info.tiling = tiling;
+		image_info.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+		image_info.usage = imageUsage;
+		image_info.samples = samples;
+		image_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
+
+		// Allocation creation info
+		VmaAllocationCreateInfo alloc_info = {};
+		alloc_info.flags = 0;
+		alloc_info.usage = memoryUsage;
+		alloc_info.requiredFlags = VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT;
+
+		// Create image using allocator and allocation instructions
+		VkResult result = vmaCreateImage(allocator, &image_info, &alloc_info, &outImage, &outAllocation, &outAllocationInfo);
+		if (!errorState.check(result == VK_SUCCESS, "Failed to create image for texture"))
+			return false;
+
+		return true;
+	}
+
+
+	bool createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 layerCount, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState)
+	{
+		VkImageViewCreateInfo viewInfo = {};
+		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+		viewInfo.image = image;
+		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D_ARRAY;
+		viewInfo.format = format;
+		viewInfo.subresourceRange.aspectMask = aspectFlags;
+		viewInfo.subresourceRange.baseMipLevel = 0;
+		viewInfo.subresourceRange.levelCount = 1;
+		viewInfo.subresourceRange.baseArrayLayer = 0;
+		viewInfo.subresourceRange.layerCount = layerCount;
+
+		if (!errorState.check(vkCreateImageView(device, &viewInfo, nullptr, &outImageView) == VK_SUCCESS, "Failed to create image view"))
+			return false;
+
+		return true;
+	}
+
+
 	void destroyImageAndView(ImageData& data, VkDevice device, VmaAllocator allocator)
 	{
 		if (data.mView != VK_NULL_HANDLE)

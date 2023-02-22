@@ -27,7 +27,7 @@ namespace nap
     // Static functions
     //////////////////////////////////////////////////////////////////////////
 
-	bool createCubeRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState)
+	bool createCubeRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, uint layerCount, VkRenderPass& renderPass, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(targetLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, "Failed to create render pass. Unsupported target layout."))
 			return false;
@@ -92,6 +92,19 @@ namespace nap
 		renderpass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
 		renderpass_info.pDependencies = dependencies.data();
 
+		// Multi-view extension
+		const uint32_t view_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
+		const uint32_t correlation_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
+
+		VkRenderPassMultiviewCreateInfo multi_ext = {};
+		multi_ext.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+		multi_ext.subpassCount = 1;
+		multi_ext.pViewMasks = &view_mask;
+		multi_ext.correlationMaskCount = 1;
+		multi_ext.pCorrelationMasks = &correlation_mask;
+
+		renderpass_info.pNext = &multi_ext;
+
 		// Single-sample render pass
 		if (!multi_sample)
 		{
@@ -131,12 +144,12 @@ namespace nap
 
 
 	// Creates the color image and view
-	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, ImageData& outData, utility::ErrorState& errorState)
+	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outData, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
+		if (!createLayered2DImage(renderer.getVulkanAllocator(),targetSize.width, targetSize.height, colorFormat, layerCount, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
+		if (!createLayered2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, layerCount, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
 			return false;
 
 		return true;
@@ -144,12 +157,12 @@ namespace nap
 
 
 	// Create the depth image and view
-	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, ImageData& outImage, utility::ErrorState& errorState)
+	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
+		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, layerCount, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
+		if (!createLayered2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, layerCount, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -167,11 +180,8 @@ namespace nap
 
 	CubeRenderTarget::~CubeRenderTarget()
 	{
-		for (auto& fb : mFramebuffers)
-		{
-			if (fb != VK_NULL_HANDLE)
-				vkDestroyFramebuffer(mRenderService->getDevice(), fb, nullptr);
-		}
+		if (mFramebuffers[0] != VK_NULL_HANDLE)
+			vkDestroyFramebuffer(mRenderService->getDevice(), mFramebuffers[0], nullptr);
 
 		if (mRenderPass != nullptr)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
@@ -207,10 +217,13 @@ namespace nap
 		color_settings.mChannels = ESurfaceChannels::RGBA;
 		color_settings.mDataType = ESurfaceDataType::BYTE;
 		mVulkanColorFormat = getTextureFormat(color_settings);
+		assert(mVulkanColorFormat != VK_FORMAT_UNDEFINED);
 
 		SurfaceDescriptor depth_settings = color_settings;
-		color_settings.mChannels = ESurfaceChannels::D;
+		depth_settings.mChannels = ESurfaceChannels::D;
+		depth_settings.mDataType = ESurfaceDataType::USHORT;
 		mVulkanDepthFormat = getTextureFormat(depth_settings);
+		assert(mVulkanDepthFormat != VK_FORMAT_UNDEFINED);
 
 		// Framebuffer and attachment sizes
 		VkExtent2D framebuffer_size = { mWidth, mHeight };
@@ -224,54 +237,51 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createCubeRenderPass(mRenderService->getDevice(), mVulkanColorFormat, getTextureFormat(depth_settings),
-			mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+		if (!createCubeRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat,
+			mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, LAYER_COUNT, mRenderPass, errorState))
 			return false;
 
-		for (uint i = 0; i < LAYER_COUNT; i++)
+		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
-			if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
-			{
-				// Create depth attachments
-				for (auto& img : mDepthImages)
-				{
-					if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, img, errorState))
-						return false;
-				}
+			if (!createColorResource(*mRenderService, framebuffer_size, mVulkanColorFormat, mRasterizationSamples, LAYER_COUNT, mColorImages[0], errorState))
+				return false;
 
-				std::array<VkImageView, 2> attachments{ mColorImages[i].getView(), mDepthImages[i].getView() };
-				framebuffer_info.pAttachments = attachments.data();
-				framebuffer_info.attachmentCount = attachments.size();
-				framebuffer_info.renderPass = mRenderPass;
+			if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, LAYER_COUNT, mDepthImages[0], errorState))
+				return false;
 
-				// Create framebuffer
-				if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
-					return false;
-			}
-			else
-			{
-				NAP_ASSERT_MSG(false, "Multisampled cube render targets not yet implemented");
-				//// Create multi-sampled color attachments
-				//for (auto& img : mColorImages)
-				//{
-				//	if (!createColorResource(*mRenderService, framebuffer_size, getTextureFormat(color_settings), mRasterizationSamples, img, errorState))
-				//		return false;
-				//}
+			std::array<VkImageView, 2> attachments{ mColorImages[0].getView(), mDepthImages[0].getView() };
+			framebuffer_info.pAttachments = attachments.data();
+			framebuffer_info.attachmentCount = attachments.size();
+			framebuffer_info.renderPass = mRenderPass;
 
-				//// Create multi-sampled depth attachment
-				//if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
-				//	return false;
-
-				//std::array<VkImageView, 3> attachments{ mColorImage.mTextureView, mDepthImage.mTextureView, mColorTexture->getImageView() };
-				//framebuffer_info.pAttachments = attachments.data();
-				//framebuffer_info.attachmentCount = attachments.size();
-				//framebuffer_info.renderPass = mRenderPass;
-
-				//// Create a framebuffer that links the cell target texture to the appropriate resolved color attachment
-				//if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
-				//	return false;
-			}
+			// Create framebuffer
+			if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[0]) == VK_SUCCESS, "Failed to create framebuffer"))
+				return false;
 		}
+		else
+		{
+			NAP_ASSERT_MSG(false, "Multisampled cube render targets not yet implemented");
+			//// Create multi-sampled color attachments
+			//for (auto& img : mColorImages)
+			//{
+			//	if (!createColorResource(*mRenderService, framebuffer_size, getTextureFormat(color_settings), mRasterizationSamples, img, errorState))
+			//		return false;
+			//}
+
+			//// Create multi-sampled depth attachment
+			//if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
+			//	return false;
+
+			//std::array<VkImageView, 3> attachments{ mColorImage.mTextureView, mDepthImage.mTextureView, mColorTexture->getImageView() };
+			//framebuffer_info.pAttachments = attachments.data();
+			//framebuffer_info.attachmentCount = attachments.size();
+			//framebuffer_info.renderPass = mRenderPass;
+
+			//// Create a framebuffer that links the cell target texture to the appropriate resolved color attachment
+			//if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
+			//	return false;
+		}
+
 		return true;
 	}
 
@@ -281,16 +291,13 @@ namespace nap
 		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
 		if (mIsFirstPass)
 		{
-			for (auto& img : mDepthImages)
-			{
-				transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), img.mImage,
-					img.mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-					VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
-					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-					VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-					VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1);
-			}
+			transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImages[0].mImage,
+				mDepthImages[0].mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
+				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
+				VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1);
 		}
 
 		const RGBAColorFloat& clear_color = mClearColor;
@@ -337,7 +344,7 @@ namespace nap
 	}
 
 
-	void CubeRenderTarget::render(QuiltCameraComponentInstance& quiltCamera, std::function<void(nap::CubeRenderTarget&, nap::QuiltCameraComponentInstance&)> renderCallback)
+	void CubeRenderTarget::render(QuiltCameraComponentInstance& quiltCamera, std::function<void(CubeRenderTarget&, QuiltCameraComponentInstance&)> renderCallback)
 	{
 		// Render to frame buffers
 		//const QuiltSettings& settings = mDevice->getQuiltSettings();
