@@ -731,6 +731,9 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 			case spv::Dim3D:
 				type = nap::SamplerDeclaration::EType::Type_3D;
 				break;
+			case spv::DimCube:
+				type = nap::SamplerDeclaration::EType::Type_Cube;
+				break;
 			default:
 				errorState.fail("Unsupported sampler type encountered");
 				return false;

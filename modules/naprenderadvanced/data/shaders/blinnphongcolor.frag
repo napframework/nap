@@ -49,6 +49,7 @@ out vec4 out_Color;
 
 // Shadow Texture Sampler
 uniform sampler2DShadow shadowMaps[8];
+uniform samplerCube cubeShadowMaps[8];
 
 // Constants
 const float SHADOW_STRENGTH = 0.85;

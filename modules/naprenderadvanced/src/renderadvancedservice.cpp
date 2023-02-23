@@ -10,6 +10,7 @@
 #include <rendercomponent.h>
 #include <renderablemeshcomponent.h>
 #include <perspcameracomponent.h>
+#include <depthsorter.h>
 #include <nap/core.h>
 #include <rtti/factory.h>
 #include <vulkan/vulkan_core.h>
@@ -217,7 +218,7 @@ namespace nap
 					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
 						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
-						rs->renderObjects(target, projection, view, std::bind(&RenderService::sortObjects, rs, std::placeholders::_1, std::placeholders::_2));
+						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
 					});
 					break;
 				}
@@ -381,6 +382,22 @@ namespace nap
 				}
 				case ELightType::Point:
 				{
+					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
+					if (shadow_sampler_array != nullptr)
+					{
+						auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
+						if (count >= instance->getNumElements())
+							continue;
+
+						auto& shadow_texture = light->isShadowEnabled() ? *mLightDepthTextureMap[light] : *mShadowTextureDummy;
+						instance->setTexture(count, shadow_texture);
+
+						if (light->isShadowEnabled())
+						{
+							const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
+							light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+						}
+					}
 					break;
 				}
 				case ELightType::Custom:

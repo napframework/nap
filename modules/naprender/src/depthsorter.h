@@ -10,10 +10,13 @@
 
 namespace nap
 {
+	// Forward declares
+	class RenderableComponentInstance;
+
 	/**
 	 * Helper class that can sort a list of components back to front or front to back.
 	 */
-	class NAPAPI DepthSorter
+	class NAPAPI DepthComparer
 	{
 	public:
 		enum class EMode
@@ -27,7 +30,7 @@ namespace nap
 		 * @param mode the sort mode to use
 		 * @param viewMatrix the camera location in world space
 		 */
-		DepthSorter(EMode mode, const glm::mat4x4& viewMatrix);
+		DepthComparer(EMode mode, const glm::mat4x4& viewMatrix);
 
 		/**
 		 * Compares location of objectA to objectB based on the current sort mode
@@ -41,4 +44,18 @@ namespace nap
 		const glm::mat4x4& mViewMatrix;
 		EMode mMode = EMode::FrontToBack;
 	};
+
+
+	namespace sorter
+	{
+		/**
+		 * Sorts a set of renderable components based on distance to the camera, ie: depth
+		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
+		 * If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
+		 * know the way the object is rendered to screen
+		 * @param comps the renderable components to sort
+		 * @param viewMatrix the camera view matrix used for sorting based on distance
+		 */
+		void NAPAPI sortObjectsByDepth(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix);
+	}
 }

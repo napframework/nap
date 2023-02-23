@@ -354,24 +354,24 @@ namespace nap
 	{
 		// Fetch camera transform
 		auto& camera_transform = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
+		const auto& camera_local = camera_transform.getLocalTransform();
 
 		// Compute global camera base transform
 		const auto& camera_global = camera_transform.getGlobalTransform();
-		const auto camera_global_base = glm::inverse(camera_transform.getLocalTransform()) * camera_global;
+		const auto camera_global_base = camera_global * glm::inverse(camera_transform.getLocalTransform());
 
-		// Cache camera transform
-		const auto transform_props = camera_transform.getInstanceProperties();
+		// Cache camera properties to restore later
 		const auto camera_props = camera.getProperties();
 
 		// Prepare camera for cube map rendering
 		camera.setFieldOfView(90.0f);
-		camera.setGridDimensions(1, 1);
 		camera.setGridLocation(0, 0);
-		assert(camera.getRenderTargetSize().x == camera.getRenderTargetSize().y);
+		camera.setGridDimensions(1, 1);
+		camera.setRenderTargetSize(mSize);
 
-		const glm::vec3& right = camera_transform.getLocalTransform()[0];
-		const glm::vec3& up = camera_transform.getLocalTransform()[1];
-		const glm::vec3& forward = camera_transform.getLocalTransform()[2];
+		const glm::vec3& right		= camera_transform.getLocalTransform()[0];
+		const glm::vec3& up			= camera_transform.getLocalTransform()[1];
+		const glm::vec3& forward	= camera_transform.getLocalTransform()[2];
 
 		auto rotation_local = glm::mat4{};
 
@@ -388,8 +388,8 @@ namespace nap
 		beginRendering();
 		{
 			// down
-			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 90.0f, right);
-			auto view = glm::inverse(rotation_local * camera_global_base);
+			rotation_local = glm::rotate(camera_local, glm::half_pi<float>(), right);
+			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
@@ -398,8 +398,8 @@ namespace nap
 		beginRendering();
 		{
 			// back
-			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 180.0f, right);
-			auto view = glm::inverse(rotation_local * camera_global_base);
+			rotation_local = glm::rotate(camera_local, glm::pi<float>(), right);
+			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
@@ -408,8 +408,8 @@ namespace nap
 		beginRendering();
 		{
 			// up
-			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 270.0f, right);
-			auto view = glm::inverse(rotation_local * camera_global_base);
+			rotation_local = glm::rotate(camera_local, glm::pi<float>() + glm::half_pi<float>(), right);
+			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
@@ -418,8 +418,8 @@ namespace nap
 		beginRendering();
 		{
 			// left
-			rotation_local = glm::rotate(camera_transform.getLocalTransform(), -90.0f, up);
-			auto view = glm::inverse(rotation_local * camera_global_base);
+			rotation_local = glm::rotate(camera_local, -glm::half_pi<float>(), up);
+			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
@@ -428,8 +428,8 @@ namespace nap
 		beginRendering();
 		{
 			// right
-			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 90.0f, up);
-			auto view = glm::inverse(rotation_local * camera_global_base);
+			rotation_local = glm::rotate(camera_local, glm::half_pi<float>(), up);
+			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
@@ -437,7 +437,6 @@ namespace nap
 
 		// Restore camera properties
 		camera.setProperties(camera_props);
-		camera_transform.setInstanceProperties(transform_props);
 
 		mIsFirstPass = false;
 	}

@@ -21,7 +21,8 @@ namespace nap
 		{
 			Type_1D,
 			Type_2D,
-			Type_3D
+			Type_3D,
+			Type_Cube
 		};
 
 		SamplerDeclaration(const std::string& name, int binding, VkShaderStageFlagBits stage, EType type, int numArrayElements) :

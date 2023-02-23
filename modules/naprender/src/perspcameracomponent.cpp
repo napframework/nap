@@ -331,7 +331,10 @@ namespace nap
 
 	void PerspCameraComponentInstance::setProperties(const PerspCameraProperties& props)
 	{
-		mProperties = props;
-		setDirty();
+		setGridLocation(props.mGridLocation.x, props.mGridLocation.y);
+		setGridDimensions(props.mGridDimensions.x, props.mGridDimensions.y);
+		setFieldOfView(props.mFieldOfView);
+		mProperties.mNearClippingPlane = props.mNearClippingPlane;
+		mProperties.mFarClippingPlane = props.mFarClippingPlane;
 	}
 }

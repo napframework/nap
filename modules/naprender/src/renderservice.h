@@ -996,17 +996,7 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-    private:
-		/**
-		 * Sorts a set of renderable components based on distance to the camera, ie: depth
-		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
-		 * If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
-		 * know the way the object is rendered to screen
-		 * @param comps the renderable components to sort
-		 * @param viewMatrix the camera view matrix used for sorting based on distance
-		 */
-		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix);
-
+	private:
 		/**
 		 * Initializes the empty texture, fills it with zero. The texture is uploaded at the beginning of the next frame.
 		 * @param errorState contains the error if the texture could not be initialized

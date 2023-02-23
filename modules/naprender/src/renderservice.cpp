@@ -1341,51 +1341,10 @@ namespace nap
 	}
 
 
-	void RenderService::sortObjects(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix)
-	{
-		// Split into front to back and back to front meshes
-		std::vector<nap::RenderableComponentInstance*> front_to_back;
-		front_to_back.reserve(comps.size());
-		std::vector<nap::RenderableComponentInstance*> back_to_front;
-		back_to_front.reserve(comps.size());
-
-		for (nap::RenderableComponentInstance* component : comps)
-		{
-			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-			if (renderable_mesh != nullptr)
-			{
-				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
-				if (blend_mode == EBlendMode::AlphaBlend)
-					back_to_front.emplace_back(component);
-				else
-					front_to_back.emplace_back(component);
-			}
-			else
-			{
-				front_to_back.emplace_back(component);
-			}
-		}
-
-		// Sort front to back and render those first
-		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, viewMatrix);
-		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-
-		// Then sort back to front and render these
-		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, viewMatrix);
-		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-
-		// concatinate both in to the output
-		comps.clear();
-		comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
-		comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
-	}
-
-
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
-		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
@@ -1417,7 +1376,7 @@ namespace nap
 
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
-		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
 	}
 
 
