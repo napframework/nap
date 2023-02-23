@@ -53,24 +53,23 @@ vec3 computeLights(Light lights[8], uint count, BlinnPhongMaterial mtl, vec3 cam
 	{
 		Light li = lights[i];
 
-		//uint type = getLightType(li.flags);
-		uint equation = getLightEquation(li.flags);
+		uint type = getLightType(li.flags);
 
 		// Custom
-		if (equation == 0)
+		if (type == 0)
 		{
 			// TODO: Support custom light computation functions in some way
 			color += vec3(1.0, 0.0, 1.0);
 		}
 
 		// Directional
-		else if (equation == 1)
+		else if (type == 1)
 		{
 			color += computeLight(li.direction, li.color, li.intensity, 1.0, mtl, camPosition, surfNormal, fragPosition);
 		}
 
 		// Point
-		else if (equation == 2)
+		else if (type == 2)
 		{
 			vec3 delta = fragPosition - li.origin;
 			float dist_squared = dot(delta, delta);

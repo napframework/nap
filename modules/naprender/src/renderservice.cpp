@@ -1341,6 +1341,47 @@ namespace nap
 	}
 
 
+	void RenderService::sortObjects(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix)
+	{
+		// Split into front to back and back to front meshes
+		std::vector<nap::RenderableComponentInstance*> front_to_back;
+		front_to_back.reserve(comps.size());
+		std::vector<nap::RenderableComponentInstance*> back_to_front;
+		back_to_front.reserve(comps.size());
+
+		for (nap::RenderableComponentInstance* component : comps)
+		{
+			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
+			if (renderable_mesh != nullptr)
+			{
+				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				if (blend_mode == EBlendMode::AlphaBlend)
+					back_to_front.emplace_back(component);
+				else
+					front_to_back.emplace_back(component);
+			}
+			else
+			{
+				front_to_back.emplace_back(component);
+			}
+		}
+
+		// Sort front to back and render those first
+		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, viewMatrix);
+		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
+
+		// Then sort back to front and render these
+		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, viewMatrix);
+		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
+
+		// concatinate both in to the output
+		comps.clear();
+		comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
+		comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
+	}
+
+
 	// Render all objects in scene graph using specified camera
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera)
 	{
@@ -1374,47 +1415,6 @@ namespace nap
 	}
 
 
-	void RenderService::sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera)
-	{
-		// Split into front to back and back to front meshes
-		std::vector<nap::RenderableComponentInstance*> front_to_back;
-		front_to_back.reserve(comps.size());
-		std::vector<nap::RenderableComponentInstance*> back_to_front;
-		back_to_front.reserve(comps.size());
-
-		for (nap::RenderableComponentInstance* component : comps)
-		{
-			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-			if (renderable_mesh != nullptr)
-			{
-				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();	
-				if (blend_mode == EBlendMode::AlphaBlend)
-					back_to_front.emplace_back(component);
-				else
-					front_to_back.emplace_back(component);
-			}
-			else
-			{
-				front_to_back.emplace_back(component);
-			}
-		}
-
-		// Sort front to back and render those first
-		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
-		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-
-		// Then sort back to front and render these
-		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
-		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-
-		// concatinate both in to the output
-		comps.clear();
-		comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
-		comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
-	}
-
-
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
 	{
 		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
@@ -1423,33 +1423,39 @@ namespace nap
 
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
 	{
-		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired	
-
-		// Sort objects to render
-		std::vector<RenderableComponentInstance*> components_to_render = comps;
-		sortFunction(components_to_render, camera);
+		// Only gather renderable components that can be rendered using the given caera
+		std::vector<nap::RenderableComponentInstance*> render_comps;
+		for (const auto& comp : comps)
+		{
+			if (comp->isSupported(camera))
+				render_comps.emplace_back(comp);
+		}
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getBufferSize());
 
 		// Extract camera projection matrix
-		const glm::mat4x4 projection_matrix = camera.getRenderProjectionMatrix();
+		const glm::mat4& projection_matrix = camera.getRenderProjectionMatrix();
 
 		// Extract view matrix
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
-		// Draw components only when camera is supported
+		renderObjects(renderTarget, projection_matrix, view_matrix, render_comps, sortFunction);
+	}
+
+
+	void RenderService::renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	{
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired	
+
+		// Sort objects to render
+		std::vector<RenderableComponentInstance*> components_to_render = comps;
+		sortFunction(components_to_render, view);
+
+		// Draw components
 		for (auto& comp : components_to_render)
-		{
-			if (!comp->isSupported(camera))
-			{
-				nap::Logger::warn("Unable to render component: %s, unsupported camera %s", 
-					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
-				continue;
-			}
-			comp->draw(renderTarget, mCurrentCommandBuffer, view_matrix, projection_matrix);
-		}
+			comp->draw(renderTarget, mCurrentCommandBuffer, view, projection);
 	}
 
 

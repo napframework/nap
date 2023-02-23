@@ -9,6 +9,7 @@
 #include <renderservice.h>
 #include <rendercomponent.h>
 #include <renderablemeshcomponent.h>
+#include <perspcameracomponent.h>
 #include <nap/core.h>
 #include <rtti/factory.h>
 #include <vulkan/vulkan_core.h>
@@ -161,7 +162,7 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& comps, bool updateMaterials)
+	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials)
 	{
 		auto* render_service = getCore().getService<RenderService>();
 		assert(render_service != nullptr);
@@ -186,7 +187,7 @@ namespace nap
 					assert(target != nullptr);
 
 					target->beginRendering();
-					render_service->renderObjects(*target, *shadow_camera, comps);
+					render_service->renderObjects(*target, *shadow_camera, renderComps);
 					target->endRendering();
 					break;
 				}
@@ -199,9 +200,25 @@ namespace nap
 					auto& target = it->second;
 					assert(target != nullptr);
 
-					target->beginRendering();
-					render_service->renderObjects(*target, *shadow_camera, comps);
-					target->endRendering();
+					if (target.get()->get_type() != RTTI_OF(CubeRenderTarget))
+					{
+						NAP_ASSERT_MSG(false, "Point lights must be linked to nap::CubeRenderTarget");
+						continue;
+					}
+
+					if (shadow_camera->get_type() != RTTI_OF(PerspCameraComponentInstance))
+					{
+						NAP_ASSERT_MSG(false, "Lights of type 'Point' must return a nap::PerspCameraComponentInstance");
+						continue;
+					}
+
+					auto* cube_target = static_cast<CubeRenderTarget*>(target.get());
+					auto* persp_camera = static_cast<PerspCameraComponentInstance*>(shadow_camera);
+					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+					{
+						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
+						rs->renderObjects(target, projection, view, std::bind(&RenderService::sortObjects, rs, std::placeholders::_1, std::placeholders::_2));
+					});
 					break;
 				}
 				case ELightType::Custom:
@@ -211,15 +228,12 @@ namespace nap
 					assert(false);
 				}
 			}
-
-
-
 		}
 
 		if (updateMaterials)
 		{
 			utility::ErrorState error_state;
-			if (!pushLights(comps, error_state))
+			if (!pushLights(renderComps, error_state))
 			{
 				nap::Logger::error(error_state.toString());
 				assert(false);
@@ -228,7 +242,7 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& comps, utility::ErrorState& errorState)
+	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState)
 	{
 		// Exit early if there are no lights in the scene
 		if (mLightComponents.empty())
@@ -236,7 +250,7 @@ namespace nap
 
 		// Filter render components
 		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
-		for (auto& comp : comps)
+		for (auto& comp : renderComps)
 		{
 			// Ensure the component is visible and had a material instance
 			if (comp->isVisible() && comp->get_type().is_derived_from(RTTI_OF(RenderableMeshComponentInstance)))
@@ -343,21 +357,38 @@ namespace nap
 				}
 
 				// Shadows
-				auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
-				if (shadow_sampler_array != nullptr)
+				switch (light->getLightType())
 				{
-					auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
-					if (count >= instance->getNumElements())
-						continue;
-
-					auto& shadow_texture = light->isShadowEnabled() ? *mLightDepthTextureMap[light] : *mShadowTextureDummy;
-					instance->setTexture(count, shadow_texture);
-
-					if (light->isShadowEnabled())
+				case ELightType::Directional:
+				case ELightType::Spot:
+				{
+					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
+					if (shadow_sampler_array != nullptr)
 					{
-						const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-						light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+						auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
+						if (count >= instance->getNumElements())
+							continue;
+
+						auto& shadow_texture = light->isShadowEnabled() ? *mLightDepthTextureMap[light] : *mShadowTextureDummy;
+						instance->setTexture(count, shadow_texture);
+
+						if (light->isShadowEnabled())
+						{
+							const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
+							light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+						}
 					}
+				}
+				case ELightType::Point:
+				{
+					break;
+				}
+				case ELightType::Custom:
+				{
+					break;
+				}
+				default:
+					assert(false);
 				}
 				++count;
 			}
@@ -499,22 +530,46 @@ namespace nap
 	{
 		if (mShadowResourcesCreated)
 		{
-			// Shadow resources
+			switch (light.getLightType())
 			{
-				auto found_it = std::find_if(mLightDepthTargetMap.begin(), mLightDepthTargetMap.end(), [input = &light](const auto& it)
+			case ELightType::Directional:
+			case ELightType::Spot:
+			{
+				// Shadow resources
 				{
-					return it.first == input;
-				});
-				assert(found_it != mLightDepthTargetMap.end());
-				mLightDepthTargetMap.erase(found_it);
+					auto found_it = std::find_if(mLightDepthTargetMap.begin(), mLightDepthTargetMap.end(), [input = &light](const auto& it)
+						{
+							return it.first == input;
+						});
+					assert(found_it != mLightDepthTargetMap.end());
+					mLightDepthTargetMap.erase(found_it);
+				}
+				{
+					auto found_it = std::find_if(mLightDepthTextureMap.begin(), mLightDepthTextureMap.end(), [input = &light](const auto& it)
+						{
+							return it.first == input;
+						});
+					assert(found_it != mLightDepthTextureMap.end());
+					mLightDepthTextureMap.erase(found_it);
+				}
+				break;
 			}
+			case ELightType::Point:
 			{
-				auto found_it = std::find_if(mLightDepthTextureMap.begin(), mLightDepthTextureMap.end(), [input = &light](const auto& it)
-				{
-					return it.first == input;
-				});
-				assert(found_it != mLightDepthTextureMap.end());
-				mLightDepthTextureMap.erase(found_it);
+				auto found_it = std::find_if(mLightCubeTargetMap.begin(), mLightCubeTargetMap.end(), [input = &light](const auto& it)
+					{
+						return it.first == input;
+					});
+				assert(found_it != mLightCubeTargetMap.end());
+				mLightCubeTargetMap.erase(found_it);
+				break;
+			}
+			case ELightType::Custom:
+			{
+				break;
+			}
+			default:
+				assert(false);
 			}
 		}
 

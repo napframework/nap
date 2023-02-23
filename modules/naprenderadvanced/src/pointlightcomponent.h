@@ -34,6 +34,9 @@ namespace nap
 		PointLightComponentInstance(EntityInstance& entity, Component& resource) :
 			LightComponentInstance(entity, resource) { }
 
+		// Destructor
+		virtual ~PointLightComponentInstance() override { LightComponentInstance::removeLightComponent(); }
+
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -50,7 +53,7 @@ namespace nap
 		/**
 		 * @return the light type
 		 */
-		virtual ELightType getLightType() const								{ return ELightType::Point; }
+		virtual ELightType getLightType() const	override					{ return ELightType::Point; }
 
 	private:
 		// Shadow camera

@@ -6,9 +6,12 @@
 #include "cuberendertarget.h"
 
 // Nap includes
+#include <perspcameracomponent.h>
+#include <transformcomponent.h>
 #include <renderservice.h>
 #include <textureutils.h>
 #include <nap/core.h>
+#include <entity.h>
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeRenderTarget)
@@ -180,8 +183,8 @@ namespace nap
 
 	CubeRenderTarget::~CubeRenderTarget()
 	{
-		if (mFramebuffers[0] != VK_NULL_HANDLE)
-			vkDestroyFramebuffer(mRenderService->getDevice(), mFramebuffers[0], nullptr);
+		for (auto& fb : mFramebuffers)
+			vkDestroyFramebuffer(mRenderService->getDevice(), fb, nullptr);
 
 		if (mRenderPass != nullptr)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
@@ -237,26 +240,29 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createCubeRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat,
-			mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, LAYER_COUNT, mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat,
+			mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
 			return false;
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
-			if (!createColorResource(*mRenderService, framebuffer_size, mVulkanColorFormat, mRasterizationSamples, LAYER_COUNT, mColorImages[0], errorState))
-				return false;
+			for (uint i = 0U; i < LAYER_COUNT; i++)
+			{
+				if (!createColorResource(*mRenderService, framebuffer_size, mVulkanColorFormat, mRasterizationSamples, LAYER_COUNT, mColorImages[i], errorState))
+					return false;
 
-			if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, LAYER_COUNT, mDepthImages[0], errorState))
-				return false;
+				if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, LAYER_COUNT, mDepthImages[i], errorState))
+					return false;
 
-			std::array<VkImageView, 2> attachments{ mColorImages[0].getView(), mDepthImages[0].getView() };
-			framebuffer_info.pAttachments = attachments.data();
-			framebuffer_info.attachmentCount = attachments.size();
-			framebuffer_info.renderPass = mRenderPass;
+				std::array<VkImageView, 2> attachments{ mColorImages[i].getView(), mDepthImages[i].getView() };
+				framebuffer_info.pAttachments = attachments.data();
+				framebuffer_info.attachmentCount = attachments.size();
+				framebuffer_info.renderPass = mRenderPass;
 
-			// Create framebuffer
-			if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[0]) == VK_SUCCESS, "Failed to create framebuffer"))
-				return false;
+				// Create framebuffer
+				if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
+					return false;
+			}
 		}
 		else
 		{
@@ -291,8 +297,8 @@ namespace nap
 		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
 		if (mIsFirstPass)
 		{
-			transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImages[0].mImage,
-				mDepthImages[0].mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImages[mLayerIndex].mImage,
+				mDepthImages[mLayerIndex].mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
 				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
@@ -312,7 +318,7 @@ namespace nap
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = VK_NULL_HANDLE; // mFramebuffer;
+		renderPassInfo.framebuffer = mFramebuffers[mLayerIndex];
 		renderPassInfo.renderArea.offset = { offset.x, offset.y };
 		renderPassInfo.renderArea.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
@@ -344,21 +350,95 @@ namespace nap
 	}
 
 
-	void CubeRenderTarget::render(QuiltCameraComponentInstance& quiltCamera, std::function<void(CubeRenderTarget&, QuiltCameraComponentInstance&)> renderCallback)
+	void CubeRenderTarget::render(PerspCameraComponentInstance& camera, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback)
 	{
+		// Fetch camera transform
+		auto& camera_transform = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
+
+		// Compute global camera base transform
+		const auto& camera_global = camera_transform.getGlobalTransform();
+		const auto camera_global_base = glm::inverse(camera_transform.getLocalTransform()) * camera_global;
+
+		// Cache camera transform
+		const auto transform_props = camera_transform.getInstanceProperties();
+		const auto camera_props = camera.getProperties();
+
+		// Prepare camera for cube map rendering
+		camera.setFieldOfView(90.0f);
+		camera.setGridDimensions(1, 1);
+		camera.setGridLocation(0, 0);
+		assert(camera.getRenderTargetSize().x == camera.getRenderTargetSize().y);
+
+		const glm::vec3& right = camera_transform.getLocalTransform()[0];
+		const glm::vec3& up = camera_transform.getLocalTransform()[1];
+		const glm::vec3& forward = camera_transform.getLocalTransform()[2];
+
+		auto rotation_local = glm::mat4{};
+
 		// Render to frame buffers
-		//const QuiltSettings& settings = mDevice->getQuiltSettings();
+		setLayerIndex(0);
+		beginRendering();
+		{
+			// forward
+			renderCallback(*this, camera.getProjectionMatrix(), camera.getViewMatrix());
+		}
+		endRendering();
 
-		//for (int i = 0; i < settings.getViewCount(); i++)
-		//{
-		//	mCurrentView = i;
-		//	quiltCamera.setView(i, settings.getViewCount());
+		setLayerIndex(1);
+		beginRendering();
+		{
+			// down
+			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 90.0f, right);
+			auto view = glm::inverse(rotation_local * camera_global_base);
+			renderCallback(*this, camera.getProjectionMatrix(), view);
+		}
+		endRendering();
 
-		//	beginRendering();
-		//	renderCallback(*this, quiltCamera);
-		//	endRendering();
-		//}
-		//quiltCamera.resetView();
-		//mIsFirstPass = false;
+		setLayerIndex(2);
+		beginRendering();
+		{
+			// back
+			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 180.0f, right);
+			auto view = glm::inverse(rotation_local * camera_global_base);
+			renderCallback(*this, camera.getProjectionMatrix(), view);
+		}
+		endRendering();
+
+		setLayerIndex(3);
+		beginRendering();
+		{
+			// up
+			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 270.0f, right);
+			auto view = glm::inverse(rotation_local * camera_global_base);
+			renderCallback(*this, camera.getProjectionMatrix(), view);
+		}
+		endRendering();
+
+		setLayerIndex(4);
+		beginRendering();
+		{
+			// left
+			rotation_local = glm::rotate(camera_transform.getLocalTransform(), -90.0f, up);
+			auto view = glm::inverse(rotation_local * camera_global_base);
+			renderCallback(*this, camera.getProjectionMatrix(), view);
+		}
+		endRendering();
+
+		setLayerIndex(5);
+		beginRendering();
+		{
+			// right
+			rotation_local = glm::rotate(camera_transform.getLocalTransform(), 90.0f, up);
+			auto view = glm::inverse(rotation_local * camera_global_base);
+			renderCallback(*this, camera.getProjectionMatrix(), view);
+		}
+		endRendering();
+		setLayerIndex(0);
+
+		// Restore camera properties
+		camera.setProperties(camera_props);
+		camera_transform.setInstanceProperties(transform_props);
+
+		mIsFirstPass = false;
 	}
 }

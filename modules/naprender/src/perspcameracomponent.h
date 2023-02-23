@@ -17,7 +17,7 @@ namespace nap
 	/**
 	 * Perspective camera properties.
 	 */
-	struct NAPAPI PerpCameraProperties
+	struct NAPAPI PerspCameraProperties
 	{
 		float mFieldOfView			= 50.0f;				///< Property: "FieldOfView" perspective camera field of view
 		float mNearClippingPlane	= 1.0f;					///< Property: "NearClippingPlane" camera near clipping plane
@@ -35,7 +35,7 @@ namespace nap
 		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
 	public:
-		PerpCameraProperties mProperties;	///< Property: 'Properties' the perspective camera settings
+		PerspCameraProperties mProperties;					///< Property: 'Properties' the perspective camera settings
 	};
 
 
@@ -115,10 +115,20 @@ namespace nap
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
 		 * Vulkan uses a coordinate system where (-1, -1) is in the top left quadrant, instead of the bottom left quadrant.
 		 * Use this matrix, instead of the one returned by getProjectionMatrix(), when an ortographic projection matrix is required as shader input.
-		*  For all regular (CPU) related orthographic calculations, use getProjectionMatrix().
+		 * For all regular (CPU) related orthographic calculations, use getProjectionMatrix().
 		 * @return the projection matrix used by the renderer
 		 */
 		virtual const glm::mat4& getRenderProjectionMatrix() const override;
+
+		/**
+		 * @return the perspective camera properties
+		 */
+		PerspCameraProperties getProperties() const;
+
+		/**
+		 * Sets the camera instance properties
+		 */
+		void setProperties(const PerspCameraProperties& props);
 
 	private:
 
@@ -136,7 +146,7 @@ namespace nap
 		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
 		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
 		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated
-		PerpCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		PerspCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
 		TransformComponentInstance*		mTransformComponent;					// Cached transform component
 
 		bool							mPerpendicularRenderProjection = true;	// Whether the render projection matrix should be projected onto a perpendicular surface

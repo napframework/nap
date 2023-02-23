@@ -22,7 +22,6 @@ RTTI_END_CLASS
 
 // nap::LightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponentInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -62,10 +61,9 @@ namespace nap
 				return false;
 		}
 
-		// Flags [type : 8bit][equation : 8bit][shadow : 1bit][padding : 15bit]
+		// Flags [padding : 8bit][padding : 15bit][shadow : 1bit][type : 8bit]
 		mLightFlags = static_cast<uint32>(getLightType());
-		//mLightFlags |= static_cast<uint32>(getLightEquation()) << 8U;
-		mLightFlags |= static_cast<uint32>(isShadowEnabled()) << 16U;
+		mLightFlags |= static_cast<uint32>(isShadowEnabled()) << 8U;
 
 		// Register with service
 		auto* service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
@@ -94,7 +92,7 @@ namespace nap
 	}
 
 
-	LightComponentInstance::~LightComponentInstance()
+	void LightComponentInstance::removeLightComponent()
 	{
 		auto* service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
 		assert(service != nullptr);

@@ -682,7 +682,7 @@
                     "mID": "PointLight",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": false,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraPerspective",
                     "Attenuation": "LightAttenuationParameter"
                 },

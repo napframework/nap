@@ -272,7 +272,7 @@ namespace nap
 		friend class RenderWindow;
 		RTTI_ENABLE(Service)
 	public:
-		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
+		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
 		
 		/**
@@ -472,14 +472,25 @@ namespace nap
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
 
 		/**
-		* Renders a specific set of objects to a specific renderTarget.
-		*
-		* @param renderTarget the target to render to
-		* @param camera the camera used for rendering all the available components
-		* @param comps the components to render to renderTarget
-		* @param sortFunction The function used to sort the components to render
-		*/
+		 * Renders a specific set of objects to a specific renderTarget.
+		 *
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
+		 * @param comps the components to render to renderTarget
+		 * @param sortFunction The function used to sort the components to render
+		 */
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+
+		/**
+		 * Renders a specific set of objects to a specific renderTarget.
+		 *
+		 * @param renderTarget the target to render to
+		 * @param projection the camera projection matrix for rendering all the available components
+		 * @param projection the camera view matrix for rendering all the available components
+		 * @param comps the components to render to renderTarget
+		 * @param sortFunction The function used to sort the components to render
+		 */
+		void renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
 
 		/**
 		 * Calls onCompute() on a specific set of compute component instances, in the order specified.
@@ -992,9 +1003,9 @@ namespace nap
 		 * If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
 		 * know the way the object is rendered to screen
 		 * @param comps the renderable components to sort
-		 * @param camera the camera used for sorting based on distance
+		 * @param viewMatrix the camera view matrix used for sorting based on distance
 		 */
-		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
+		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix);
 
 		/**
 		 * Initializes the empty texture, fills it with zero. The texture is uploaded at the beginning of the next frame.

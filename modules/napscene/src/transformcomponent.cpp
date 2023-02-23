@@ -128,4 +128,20 @@ namespace nap
 		mUniformScale = scale;
 		setDirty();
 	}
+
+
+	TransformInstanceProperties TransformComponentInstance::getInstanceProperties() const
+	{
+		return { mTranslate, mRotate, mScale, mUniformScale };
+	}
+
+
+	void TransformComponentInstance::setInstanceProperties(const TransformInstanceProperties& props)
+	{
+		mTranslate = props.mTranslate;
+		mRotate = props.mRotate;
+		mScale = props.mScale;
+		mUniformScale = props.mUniformScale;
+		setDirty();
+	}
 }

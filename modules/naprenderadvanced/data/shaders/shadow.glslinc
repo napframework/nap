@@ -10,7 +10,7 @@ const float SHADOW_POISSON_SPREAD = 1024.0;
 // Returns whether shadows are enabled in the specified light flag
 bool hasShadow(uint flags)
 {
-	return ((flags & (1 << 16)) >> 16) > 0;
+	return (flags & (1 << 8)) > 0;
 }
 
 

@@ -100,8 +100,11 @@ namespace nap
 		LightComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource) { }
 
-		// Destructor
-		~LightComponentInstance();
+		/**
+		 * Derived lights destructors must remove themselves by calling
+		 * LightComponentInstance::removeLightComponent();
+		 */
+		virtual ~LightComponentInstance() { };
 
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
@@ -124,12 +127,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ assert(false); return nullptr; }
+		virtual CameraComponentInstance* getShadowCamera() = 0;
 
 		/**
 		 * @return the light type
 		 */
-		virtual ELightType getLightType() const								{ assert(false); return ELightType::Custom; }
+		virtual ELightType getLightType() const = 0;
 
 		/**
 		 * @return the position of the light in world space
@@ -142,6 +145,11 @@ namespace nap
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
 
 	protected:
+		/**
+		 * Removes the current light from the render service.
+		 */
+		void removeLightComponent();
+
 		/**
 		 * Registers a light uniform member for updating the shader interface.
 		 */

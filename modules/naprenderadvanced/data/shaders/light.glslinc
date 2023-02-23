@@ -17,13 +17,7 @@ struct Light
 // Returns the light type index of the specified light flag
 uint getLightType(uint flags)
 {
-	return flags & 255;
-}
-
-// Returns the light equation index of the specified light flag
-uint getLightEquation(uint flags)
-{
-	return (flags & (255 << 8)) >> 8;
+	return flags & 0xff;
 }
 
 

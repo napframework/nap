@@ -18,7 +18,7 @@ namespace nap
 	// Forward Declares
 	class RenderTexture2D;
 	class RenderService;
-	class QuiltCameraComponentInstance;
+	class PerspCameraComponentInstance;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Quilt RenderTarget
@@ -155,11 +155,15 @@ namespace nap
 		 *	}
 		 * ~~~~~
 		 */
-		void render(QuiltCameraComponentInstance& quiltCamera, std::function<void(CubeRenderTarget&, QuiltCameraComponentInstance&)> renderCallback);
+		void render(PerspCameraComponentInstance& camera, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
 
-	public:
-		uint									mWidth = 256;										///< Property: 'Width'
-		uint									mHeight = 256;										///< Property: 'Height'
+		/**
+		 * 
+		 */
+		void setLayerIndex(uint index)											{ mLayerIndex = std::clamp(index, 0U, LAYER_COUNT); }
+
+		uint									mWidth = 256U;										///< Property: 'Width'
+		uint									mHeight = 256U;										///< Property: 'Height'
 
 		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
@@ -183,7 +187,7 @@ namespace nap
 		std::array<VkFramebuffer, LAYER_COUNT>	mFramebuffers;
 
 		glm::ivec2								mSize;
-		int										mCurrentView = 0;
+		uint									mLayerIndex = 0U;
 		bool									mIsFirstPass = true;
 	};
 }
