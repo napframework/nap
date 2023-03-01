@@ -213,11 +213,6 @@ namespace nap
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
-		 * @return number of mip-map levels
-		 */
-		int getMipmapCount()									{ return static_cast<int>(mMipLevels); }
-
-		/**
 		 * Starts a transfer of texture data from GPU to CPU. 
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
