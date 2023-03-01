@@ -287,7 +287,7 @@
                     "mID": "Light",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": false,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho",
                     "Attenuation": "LightAttenuationParameter"
                 },
@@ -397,7 +397,7 @@
                     "mID": "Light2",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": false,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho2",
                     "Attenuation": "LightAttenuationParameter"
                 },

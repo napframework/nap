@@ -245,12 +245,13 @@ namespace nap
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
-			if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, TextureCube::LAYER_COUNT, mDepthImage, errorState))
+			const auto& cube_texture = static_cast<const TextureCube&>(*mCubeTexture);
+			if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, cube_texture.getHandle().getSubViewCount(), mDepthImage, errorState))
 				return false;
 
-			for (uint i = 0U; i < TextureCube::LAYER_COUNT; i++)
+			for (uint i = 0U; i < cube_texture.getHandle().getSubViewCount(); i++)
 			{
-				std::array<VkImageView, 2> attachments{ static_cast<const TextureCube*>(mCubeTexture.get())->getHandle().getSubView(i), mDepthImage.mView };
+				std::array<VkImageView, 2> attachments{ cube_texture.getHandle().getSubView(i), mDepthImage.mView };
 				framebuffer_info.pAttachments = attachments.data();
 				framebuffer_info.attachmentCount = attachments.size();
 				framebuffer_info.renderPass = mRenderPass;
