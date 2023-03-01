@@ -31,6 +31,7 @@ namespace nap
 	class MaterialInstance;
 	class ComputeMaterialInstance;
 	class ComputeComponentInstance;
+	class Texture;
 	class Texture2D;
 
 
@@ -61,7 +62,7 @@ namespace nap
 		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32						mVulkanVersionMinor = 1;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool						mEnableCompute = true;											///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
@@ -267,6 +268,7 @@ namespace nap
 	*/
 	class NAPAPI RenderService : public Service
 	{
+		friend class Texture;
 		friend class Texture2D;
 		friend class GPUBuffer;
 		friend class RenderWindow;
@@ -830,10 +832,16 @@ namespace nap
 		bool isComputeAvailable() const;
 
 		/**
-		 * Returns an empty texture that is available on the GPU for temporary binding or storage.
+		 * Returns an empty 2D texture that is available on the GPU for temporary binding or storage.
 		 * @return empty texture that is available on the GPU.
 		 */
-		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
+		Texture2D& getEmptyTexture2D() const										{ return *mEmptyTexture2D; }
+
+		/**
+		 * Returns an empty cube texture that is available on the GPU for temporary binding or storage.
+		 * @return empty texture that is available on the GPU.
+		 */
+		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
 
 		/**
 		 * Returns an existing or new material for the given type of shader that can be shared.
@@ -892,7 +900,7 @@ namespace nap
 		 * Returns the physical device properties for the requested Vulkan format.
 		 * @return physical device properties for the requested Vulkan format.
 		 */
-		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties);
+		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties) const;
 
 		/**
 		 * Returns if the render service is currently recording (rendering) a frame.
@@ -998,11 +1006,12 @@ namespace nap
 
 	private:
 		/**
-		 * Initializes the empty texture, fills it with zero. The texture is uploaded at the beginning of the next frame.
+		 * Initializes empty 2d and cube textures, fills them with zero.
+		 * The textures are uploaded at the beginning of the next frame.
 		 * @param errorState contains the error if the texture could not be initialized
-		 * @return if the texture initialized successfully.
+		 * @return if the textures initialized successfully.
 		 */
-		bool initEmptyTexture(nap::utility::ErrorState& errorState);
+		bool initEmptyTextures(nap::utility::ErrorState& errorState);
 
 		/**
 		 * Deletes all texture upload and download requests.
@@ -1015,7 +1024,7 @@ namespace nap
 		* Request a texture clear
 		* @param texture the texture to clear.
 		*/
-		void requestTextureClear(Texture2D& texture);
+		void requestTextureClear(Texture& texture);
 
 		/**
 		 * Request a pixel data transfer, from a staging buffer to image buffer.
@@ -1119,7 +1128,8 @@ namespace nap
 		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
-		using TextureSet = std::unordered_set<Texture2D*>;
+		using TextureSet = std::unordered_set<Texture*>;
+		using Texture2DSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
@@ -1178,10 +1188,12 @@ namespace nap
 		SceneService*							mSceneService = nullptr;								
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
-		std::unique_ptr<Texture2D>				mEmptyTexture;
+
+		std::unique_ptr<Texture2D>				mEmptyTexture2D;
+		std::unique_ptr<TextureCube>			mEmptyTextureCube;
 
 		TextureSet								mTexturesToClear;
-		TextureSet								mTexturesToUpload;
+		Texture2DSet							mTexturesToUpload;
 		BufferSet								mBuffersToClear;
 		BufferSet								mBuffersToUpload;
 

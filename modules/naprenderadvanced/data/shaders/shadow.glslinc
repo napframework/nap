@@ -13,6 +13,18 @@ bool hasShadow(uint flags)
 	return (flags & (1 << 8)) > 0;
 }
 
+// Returns an id specifying what shadow sampler the light must use
+uint getShadowMapId(uint flags)
+{
+	return ((flags >> 16) & 0xff);
+}
+
+// Returns an id specifying the shadow sampler index
+uint getShadowMapIndex(uint flags)
+{
+	return ((flags >> 24) & 0xff);
+}
+
 
 // Calculate shadow contribution
 // @param shadowCoord: the fragment position in light space

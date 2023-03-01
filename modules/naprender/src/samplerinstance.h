@@ -53,11 +53,31 @@ namespace nap
 		void raiseChanged(int index = 0)					{ if (mSamplerChangedCallback) mSamplerChangedCallback(*this, index); }
 
 		RenderService*					mRenderService = nullptr;
-		VkDevice						mDevice = VK_NULL_HANDLE;
 		VkSampler						mVulkanSampler = VK_NULL_HANDLE;
 		const Sampler*					mSampler = nullptr;
 		const SamplerDeclaration*		mDeclaration = nullptr;
 		SamplerChangedCallback			mSamplerChangedCallback;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Sampler array instance.
+	 */
+	class NAPAPI SamplerArrayInstance : public SamplerInstance
+	{
+		RTTI_ENABLE(SamplerInstance)
+	public:
+		SamplerArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler* sampler, const SamplerChangedCallback& samplerChangedCallback);
+		virtual ~SamplerArrayInstance();
+
+		/**
+		 * @return total number of textures that can be assigned
+		 */
+		virtual int getNumElements() const					{ return mDeclaration->mNumArrayElements; }
 	};
 
 
@@ -91,19 +111,20 @@ namespace nap
 		/**
 		 * @return if a texture is bound to the 2D sampler.
 		 */
-		bool hasTexture() const					{ return mTexture2D != nullptr; }
+		bool hasTexture() const								{ return mTexture2D != nullptr; }
 
 		/**
 		 * @return currently bound texture.
 		 */
-		const Texture2D& getTexture() const		{ return *mTexture2D; }
+		const Texture2D& getTexture() const					{ return *mTexture2D; }
 
 	private:
 		/**
 		 * Calls SamplerInstance::raiseChanged()
 		 */
 		void onTextureChanged(const Texture2D&);
-		rtti::ObjectPtr<Texture2D> mTexture2D = nullptr;
+
+		rtti::ObjectPtr<Texture2D> mTexture2D;
 	};
 
 
@@ -115,9 +136,9 @@ namespace nap
 	 * 2D sampler array instance. Binds multiple 2D textures to a shader.
 	 * The array can be changed at runtime.
 	 */
-	class NAPAPI Sampler2DArrayInstance : public SamplerInstance
+	class NAPAPI Sampler2DArrayInstance : public SamplerArrayInstance
 	{
-		RTTI_ENABLE(SamplerInstance)
+		RTTI_ENABLE(SamplerArrayInstance)
 	public:
 		/**
 		 * Constructs the instance based on the shader declaration and resource.
@@ -127,11 +148,6 @@ namespace nap
 		 * @param samplerChangedCallback called when the 'texture' changes.
 		 */
 		Sampler2DArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback);
-
-		/**
-		 * @return total number of textures that can be assigned
-		 */
-		int getNumElements() const								{ return mDeclaration->mNumArrayElements; }
 
 		/**
 		 * @return if a texture is bound to the given index.
@@ -159,6 +175,104 @@ namespace nap
 		rtti::ObjectPtr<Texture2D>& operator[](size_t index)	{ assert(index < mTextures.size()); return mTextures[index]; }
 
 	private:
-		std::vector<rtti::ObjectPtr<Texture2D>>					mTextures;
+		std::vector<rtti::ObjectPtr<Texture2D>> mTextures;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Cube sampler instance. Binds a single Cube texture to a shader.
+	 * The texture can be changed at runtime.
+	 */
+	class NAPAPI SamplerCubeInstance : public SamplerInstance
+	{
+		RTTI_ENABLE(SamplerInstance)
+	public:
+		/**
+		 * Constructs the instance based on the shader declaration and resource.
+		 * @param renderService render engine
+		 * @param declaration sampler shader declaration
+		 * @param sampler2D the sampler resource used to create this instance.
+		 * @param samplerChangedCallback called when the 'texture' changes.
+		 */
+		SamplerCubeInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCube* samplerCube, const SamplerChangedCallback& samplerChangedCallback);
+
+		/**
+		 * Binds a texture to the 2D sampler.
+		 * @param texture the new texture to bind
+		 */
+		void setTexture(TextureCube& textureCube);
+
+		/**
+		 * @return if a texture is bound to the 2D sampler.
+		 */
+		bool hasTexture() const									{ return mTextureCube != nullptr; }
+
+		/**
+		 * @return currently bound texture.
+		 */
+		const TextureCube& getTexture() const					{ return *mTextureCube; }
+
+	private:
+		/**
+		 * Calls SamplerInstance::raiseChanged()
+		 */
+		void onTextureChanged(const Texture2D&);
+
+		rtti::ObjectPtr<TextureCube> mTextureCube;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * 2D sampler array instance. Binds multiple 2D textures to a shader.
+	 * The array can be changed at runtime.
+	 */
+	class NAPAPI SamplerCubeArrayInstance : public SamplerArrayInstance
+	{
+		RTTI_ENABLE(SamplerArrayInstance)
+	public:
+		/**
+		 * Constructs the instance based on the shader declaration and resource.
+		 * @param renderService render engine
+		 * @param declaration sampler shader declaration
+		 * @param sampler2DArray the sampler resource used to create this instance.
+		 * @param samplerChangedCallback called when the 'texture' changes.
+		 */
+		SamplerCubeArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCubeArray* samplerCubeArray, const SamplerChangedCallback& samplerChangedCallback);
+
+		/**
+		 * @return if a texture is bound to the given index.
+		 */
+		bool hasTexture(int index) const						{ assert(index < mTextures.size()); return mTextures[index] != nullptr; }
+
+		/**
+		 * @param index the index to get the texture for.
+		 * @return the texture at the given index
+		 */
+		const TextureCube& getTexture(int index) const			{ assert(index < mTextures.size()); return *mTextures[index]; }
+
+		/**
+		 * Binds a texture at the given index
+		 * @param index the index to bind the texture to
+		 * @param texture the texture to bind.
+		 */
+		void setTexture(int index, TextureCube& textureCube);
+
+		/**
+		 * Array subscript operator, returns a specific texture in the array as a reference,
+		 * making the following possible: `mTextures[0] = myTexture`;
+		 * @return a specific value in the array as a reference.
+		 */
+		rtti::ObjectPtr<TextureCube>& operator[](size_t index)	{ assert(index < mTextures.size()); return mTextures[index]; }
+
+	private:
+		std::vector<rtti::ObjectPtr<TextureCube>> mTextures;
 	};
 }

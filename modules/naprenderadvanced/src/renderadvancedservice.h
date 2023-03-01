@@ -29,7 +29,7 @@ namespace nap
 		virtual rtti::TypeInfo getServiceType() const;
 
 		uint mShadowMapSize								= 2048U;										///< Shadow Map Size
-		uint mShadowCubeMapSize							= 2048U;										///< Shadow Cube Map Size
+		uint mShadowCubeMapSize							= 512U;											///< Shadow Cube Map Size
 		DepthRenderTexture2D::EDepthFormat mPrecision	= DepthRenderTexture2D::EDepthFormat::D16;		///< Precision
 	};
 
@@ -96,29 +96,52 @@ namespace nap
 		 */
 		bool pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState);
 
-	protected:
+	private:
+		bool pushLights(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-
-	private:
 		bool initShadowMappingResources(utility::ErrorState& errorState);
 
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;
 
+		struct ShadowMapEntry
+		{
+			ShadowMapEntry::ShadowMapEntry(std::unique_ptr<DepthRenderTarget> target, std::unique_ptr<DepthRenderTexture2D> texture) :
+				mTarget(std::move(target)), mTexture(std::move(texture))
+			{
+				mTarget->mDepthTexture = mTexture.get();
+			}
+
+			std::unique_ptr<DepthRenderTarget> mTarget;
+			std::unique_ptr<DepthRenderTexture2D> mTexture;
+		};
+
+		struct CubeMapEntry
+		{
+			CubeMapEntry::CubeMapEntry(std::unique_ptr<CubeRenderTarget> target, std::unique_ptr<RenderTextureCube> texture) :
+				mTarget(std::move(target)), mTexture(std::move(texture))
+			{
+				mTarget->mCubeTexture = mTexture.get();
+			}
+
+			std::unique_ptr<CubeRenderTarget> mTarget;
+			std::unique_ptr<RenderTextureCube> mTexture;
+		};
+
 		// Shadow mapping
-		std::unordered_map<LightComponentInstance*, std::unique_ptr<DepthRenderTarget>> mLightDepthTargetMap;
-		std::unordered_map<LightComponentInstance*, std::unique_ptr<DepthRenderTexture2D>> mLightDepthTextureMap;
+		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;
+		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeMapEntry>> mLightCubeMap;
+		std::unordered_map<LightComponentInstance*, uint> mLightFlagsMap;
 
-		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeRenderTarget>> mLightCubeTargetMap;
-
-		std::unique_ptr<Sampler2DArray> mSamplerResource;
+		std::unique_ptr<Sampler2DArray> mSampler2DResource;
+		std::unique_ptr<SamplerCubeArray> mSamplerCubeResource;
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 
 		bool mShadowResourcesCreated = false;
 
 		static constexpr const uint mMaxShadowMapCount = 8;
 		static constexpr const uint mRequiredVulkanVersionMajor = 1U;
-		static constexpr const uint mRequiredVulkanVersionMinor = 1U;
+		static constexpr const uint mRequiredVulkanVersionMinor = 0U;
 	};
 }

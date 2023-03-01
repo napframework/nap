@@ -16,6 +16,7 @@
 namespace nap
 {
 	// Forward Declares
+	class TextureCube;
 	class RenderTexture2D;
 	class RenderService;
 	class PerspCameraComponentInstance;
@@ -51,9 +52,6 @@ namespace nap
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		// The image layer count is equal to the number of sides of a cube
-		static constexpr const uint LAYER_COUNT = 6;
-
 		/**
 		 * Every render target requires a reference to core.
 		 * @param core link to a nap core instance
@@ -160,7 +158,7 @@ namespace nap
 		/**
 		 * 
 		 */
-		void setLayerIndex(uint index)											{ mLayerIndex = std::clamp(index, 0U, LAYER_COUNT); }
+		void setLayerIndex(uint index)											{ mLayerIndex = std::clamp(index, 0U, TextureCube::LAYER_COUNT); }
 
 		uint									mWidth = 256U;										///< Property: 'Width'
 		uint									mHeight = 256U;										///< Property: 'Height'
@@ -172,19 +170,20 @@ namespace nap
 		RenderTexture2D::EFormat				mColorFormat = RenderTexture2D::EFormat::RGBA8;
 		DepthRenderTexture2D::EDepthFormat		mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
 
-		//ResourcePtr<RenderTexture2D>			mColorTexture;										///< Property: 'ColorTexture' texture to render to.
+		ResourcePtr<TextureCube>				mCubeTexture;										///< Property: 'CubeTexture' texture to render to.
 
 	private:
 		RenderService*							mRenderService;
-		VkRenderPass							mRenderPass = nullptr;
+		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
 		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 		VkFormat								mVulkanColorFormat = VK_FORMAT_UNDEFINED;
 		VkFormat								mVulkanDepthFormat = VK_FORMAT_UNDEFINED;
 
-		std::array<ImageData, LAYER_COUNT>		mDepthImages;
-		std::array<ImageData, LAYER_COUNT>		mColorImages;
-		std::array<VkFramebuffer, LAYER_COUNT>	mFramebuffers;
+		ImageData								mDepthImage{ TextureCube::LAYER_COUNT };
+		ImageData								mColorImage{ TextureCube::LAYER_COUNT };
+
+		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers;
 
 		glm::ivec2								mSize;
 		uint									mLayerIndex = 0U;

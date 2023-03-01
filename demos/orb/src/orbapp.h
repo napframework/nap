@@ -86,16 +86,6 @@ namespace nap
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
 
-		/**
-		 * Collects required resources
-		 */
-		bool reload(utility::ErrorState& errorState);
-
-		/**
-		 * Caches required resources
-		 */
-		void cache();
-
 	private:
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
 		RenderAdvancedService* mRenderAdvancedService = nullptr;		//< Render Advanced Service that handles render calls
@@ -107,37 +97,6 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
 		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mOrthoCameraEntity;				//< Entity that holds the ortho camera
-
-		rtti::ObjectPtr<EntityInstance> mOrbEntity;
 		rtti::ObjectPtr<EntityInstance> mWorldEntity;
-
-		rtti::ObjectPtr<RenderTarget> mRenderTarget;
-
-		RGBAColor8 mTextHighlightColor = { 0xC8, 0x69, 0x69, 0xFF };	//< GUI text highlight color
-		std::unique_ptr<ParameterGUI> mParameterGUI;
-
-		// RenderContrast uniforms
-		ParameterFloat* mContrastParam = nullptr;
-		UniformFloatInstance* mContrastUniform = nullptr;
-
-		ParameterFloat* mBrightnessParam = nullptr;
-		UniformFloatInstance* mBrightnessUniform = nullptr;
-
-		ParameterFloat* mSaturationParam = nullptr;
-		UniformFloatInstance* mSaturationUniform = nullptr;
-
-		// RenderComposite uniforms
-		ParameterFloat* mBlendParam = nullptr;
-		UniformFloatInstance* mBlendUniform = nullptr;
-
-		std::string mSelectedPreset;
-		nap::Slot<> mCacheSlot = { [&]() -> void { cache(); } };
-		nap::Slot<> mReloadSlot = { [&]() -> void { utility::ErrorState error_state; reload(error_state); } };
-
-		// Camera
-		PerspCameraComponentInstance*					mPerspCameraComponent = nullptr;
-		OrbComponentInstance*							mOrbComponent = nullptr;
-		std::vector<LightComponentInstance*>			mLightComponents;
 	};
 }

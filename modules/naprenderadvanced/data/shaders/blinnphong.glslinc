@@ -53,34 +53,36 @@ vec3 computeLights(Light lights[8], uint count, BlinnPhongMaterial mtl, vec3 cam
 	{
 		Light li = lights[i];
 
-		uint type = getLightType(li.flags);
-
-		// Custom
-		if (type == 0)
+		switch(getLightType(li.flags))
 		{
-			// TODO: Support custom light computation functions in some way
-			color += vec3(1.0, 0.0, 1.0);
-		}
+			// Custom
+			case 0:
+				// TODO: Support custom light computation functions in some way
+				color += vec3(1.0, 0.0, 1.0);
+				break;
 
-		// Directional
-		else if (type == 1)
-		{
-			color += computeLight(li.direction, li.color, li.intensity, 1.0, mtl, camPosition, surfNormal, fragPosition);
-		}
+			// Directional
+			case 1:
+				color += computeLight(li.direction, li.color, li.intensity, 1.0, mtl, camPosition, surfNormal, fragPosition);
+				break;
 
-		// Point
-		else if (type == 2)
-		{
-			vec3 delta = fragPosition - li.origin;
-			float dist_squared = dot(delta, delta);
-			float atten = min(1.0/(dist_squared * max(li.attenuation, 0.00001)), 1.0);
-			color += computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
-		}
+			// Point
+			case 2:
+				vec3 delta = fragPosition - li.origin;
+				float dist_squared = dot(delta, delta);
+				float atten = min(1.0/(dist_squared * max(li.attenuation, 0.00001)), 1.0);
+				color += computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
+				break;
 
-		// Error
-		else
-		{
-			color += vec3(1.0, 0.0, 1.0);
+			// Spot
+			case 3:
+				color += vec3(1.0, 0.0, 1.0);
+				break;
+
+			// Error
+			default:
+				color += vec3(1.0, 0.0, 1.0);
+				break;
 		}
 	}
 	return color;

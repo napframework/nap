@@ -67,7 +67,7 @@
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": 0.05,
+                        "Speed": 0.05000000074505806,
                         "Offset": 1.0
                     }
                 },
@@ -287,7 +287,7 @@
                     "mID": "Light",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./ShadowCameraOrtho",
                     "Attenuation": "LightAttenuationParameter"
                 },
@@ -397,7 +397,7 @@
                     "mID": "Light2",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./ShadowCameraOrtho2",
                     "Attenuation": "LightAttenuationParameter"
                 },

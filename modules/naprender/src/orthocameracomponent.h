@@ -164,6 +164,7 @@ namespace nap
 		void updateProjectionMatrices() const;
 
 	private:
+		mutable glm::mat4x4				mViewMatrix;							// The composed view matrix
 		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
 		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
 		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated

@@ -76,50 +76,11 @@ namespace nap
 	}
 
 
-	void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount, VkImageAspectFlags aspect)
-	{
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-		barrier.subresourceRange.aspectMask = aspect;
-		barrier.subresourceRange.baseMipLevel = mipLevel;
-		barrier.subresourceRange.levelCount = mipLevelCount;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstAccessMask = dstAccessMask;
-		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	}
-
-
 	void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
 		VkImageLayout oldLayout, VkImageLayout newLayout,
 		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
 		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount, VkImageAspectFlags aspect)
-	{
-		VkImageMemoryBarrier barrier = {};
-		transitionImageLayout(commandBuffer, image, barrier,
-			oldLayout, newLayout,
-			srcAccessMask, dstAccessMask,
-			srcStage, dstStage,
-			mipLevel, mipLevelCount,
-			aspect);
-	}
-
-
-	void transitionDepthImageLayout(VkCommandBuffer commandBuffer, VkImage image,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount, VkImageAspectFlags aspect)
+		uint mipLevel, uint mipLevelCount, VkImageAspectFlags aspect)
 	{
 		VkImageMemoryBarrier barrier = {};
 		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
@@ -132,14 +93,14 @@ namespace nap
 		barrier.subresourceRange.baseMipLevel = mipLevel;
 		barrier.subresourceRange.levelCount = mipLevelCount;
 		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
+		barrier.subresourceRange.layerCount = VK_REMAINING_ARRAY_LAYERS;
 		barrier.srcAccessMask = srcAccessMask;
 		barrier.dstAccessMask = dstAccessMask;
 		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
 	}
 
 
-	void blit(VkCommandBuffer commandBuffer, Texture2D& srcTexture, Texture2D& dstTexture)
+	void blit(VkCommandBuffer commandBuffer, const Texture2D& srcTexture, const Texture2D& dstTexture)
 	{
 		// Transition to transfer src
 		VkImageLayout src_tex_layout = srcTexture.getHandle().getLayout();

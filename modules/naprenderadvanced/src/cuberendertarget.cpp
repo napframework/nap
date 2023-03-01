@@ -16,7 +16,7 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeRenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	//RTTI_PROPERTY("ColorTexture",			&nap::CubeRenderTarget::mColorTexture,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CubeTexture",			&nap::CubeRenderTarget::mCubeTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Width",					&nap::CubeRenderTarget::mWidth,						nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Height",					&nap::CubeRenderTarget::mHeight,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading",			&nap::CubeRenderTarget::mSampleShading,				nap::rtti::EPropertyMetaData::Default)
@@ -96,17 +96,20 @@ namespace nap
 		renderpass_info.pDependencies = dependencies.data();
 
 		// Multi-view extension
-		const uint32_t view_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
-		const uint32_t correlation_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
+		//const uint32_t view_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
+		//const uint32_t correlation_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
 
-		VkRenderPassMultiviewCreateInfo multi_ext = {};
-		multi_ext.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-		multi_ext.subpassCount = 1;
-		multi_ext.pViewMasks = &view_mask;
-		multi_ext.correlationMaskCount = 1;
-		multi_ext.pCorrelationMasks = &correlation_mask;
+		// Perhaps consider supporting multiview later
+		// The main issue is that this optimization requires all shaders to implement matrix array lookups using gl_ViewIndex
 
-		renderpass_info.pNext = &multi_ext;
+		//VkRenderPassMultiviewCreateInfo multi_ext = {};
+		//multi_ext.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
+		//multi_ext.subpassCount = 1;
+		//multi_ext.pViewMasks = &view_mask;
+		//multi_ext.correlationMaskCount = 1;
+		//multi_ext.pCorrelationMasks = &correlation_mask;
+
+		//renderpass_info.pNext = &multi_ext;
 
 		// Single-sample render pass
 		if (!multi_sample)
@@ -147,12 +150,14 @@ namespace nap
 
 
 	// Creates the color image and view
-	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outData, utility::ErrorState& errorState)
+	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!createLayered2DImage(renderer.getVulkanAllocator(),targetSize.width, targetSize.height, colorFormat, layerCount, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
+		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, layerCount, sampleCount,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+			outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!createLayered2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, layerCount, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
+		if (!createCubeImageView(renderer.getDevice(), outImage.getImage(), colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, layerCount, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -162,10 +167,12 @@ namespace nap
 	// Create the depth image and view
 	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
-		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, layerCount, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
+		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, layerCount, sampleCount,
+			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
+			outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!createLayered2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, layerCount, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
+		if (!createCubeImageView(renderer.getDevice(), outImage.getImage(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, layerCount, outImage.mView, errorState))
 			return false;
 
 		return true;
@@ -189,11 +196,8 @@ namespace nap
 		if (mRenderPass != nullptr)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
 
-		for (auto& img : mDepthImages)
-			destroyImageAndView(img, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
-
-		for (auto& img : mColorImages)
-			destroyImageAndView(img, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 	}
 
 
@@ -213,12 +217,7 @@ namespace nap
 		// Set size
 		mSize = { mWidth, mHeight };
 
-		SurfaceDescriptor color_settings;
-		color_settings.mWidth = mWidth;
-		color_settings.mHeight = mHeight;
-		color_settings.mColorSpace = EColorSpace::Linear;
-		color_settings.mChannels = ESurfaceChannels::RGBA;
-		color_settings.mDataType = ESurfaceDataType::BYTE;
+		SurfaceDescriptor color_settings = { mWidth, mHeight, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA, EColorSpace::Linear };
 		mVulkanColorFormat = getTextureFormat(color_settings);
 		assert(mVulkanColorFormat != VK_FORMAT_UNDEFINED);
 
@@ -246,15 +245,12 @@ namespace nap
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
-			for (uint i = 0U; i < LAYER_COUNT; i++)
+			if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, TextureCube::LAYER_COUNT, mDepthImage, errorState))
+				return false;
+
+			for (uint i = 0U; i < TextureCube::LAYER_COUNT; i++)
 			{
-				if (!createColorResource(*mRenderService, framebuffer_size, mVulkanColorFormat, mRasterizationSamples, LAYER_COUNT, mColorImages[i], errorState))
-					return false;
-
-				if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, LAYER_COUNT, mDepthImages[i], errorState))
-					return false;
-
-				std::array<VkImageView, 2> attachments{ mColorImages[i].getView(), mDepthImages[i].getView() };
+				std::array<VkImageView, 2> attachments{ static_cast<const TextureCube*>(mCubeTexture.get())->getHandle().getSubView(i), mDepthImage.mView };
 				framebuffer_info.pAttachments = attachments.data();
 				framebuffer_info.attachmentCount = attachments.size();
 				framebuffer_info.renderPass = mRenderPass;
@@ -297,13 +293,13 @@ namespace nap
 		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
 		if (mIsFirstPass)
 		{
-			transitionDepthImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImages[mLayerIndex].mImage,
-				mDepthImages[mLayerIndex].mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			transitionImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImage.mImage,
+				mDepthImage.mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
 				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
 				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-				VK_IMAGE_ASPECT_DEPTH_BIT, 0, 1);
+				0, 1, VK_IMAGE_ASPECT_DEPTH_BIT);
 		}
 
 		const RGBAColorFloat& clear_color = mClearColor;
@@ -330,7 +326,7 @@ namespace nap
 		// Ensure scissor and viewport are covering the cell area
 		VkRect2D rect = {};
 		rect.offset = { offset.x, offset.y };
-		rect.extent = { (uint32_t)mSize.x, (uint32_t)mSize.y };
+		rect.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
 		VkViewport viewport = {};
@@ -437,7 +433,6 @@ namespace nap
 
 		// Restore camera properties
 		camera.setProperties(camera_props);
-
 		mIsFirstPass = false;
 	}
 }

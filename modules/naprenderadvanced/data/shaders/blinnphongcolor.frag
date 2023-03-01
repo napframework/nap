@@ -42,6 +42,7 @@ in vec3 	passPosition;			//< Fragment position in world space
 in vec3 	passNormal;				//< Fragment normal in world space
 in vec3 	passUV0;				//< Texture UVs
 in float 	passFresnel;			//< Fresnel term
+
 in vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
 // Fragment Output
@@ -64,12 +65,63 @@ void main()
 	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), 0.25));
 
 	// Shadows
-	uint flags[8];
-	for (uint i = 0; i < lit.count; i++)
-		flags[i] = lit.lights[i].flags;
+	// uint flags[8];
+	// for (uint i = 0; i < lit.count; i++)
+	// 	flags[i] = lit.lights[i].flags;
 
-	float shadow = computeShadows(shadowMaps, passShadowCoords, flags, lit.count, min(SHADOW_SAMPLE_COUNT, POISSON_DISK.length())) * SHADOW_STRENGTH;
-	color *= (1.0 - shadow);
+	//float shadow = computeShadows(shadowMaps, passShadowCoords, flags, lit.count, min(SHADOW_SAMPLE_COUNT, POISSON_DISK.length())) * SHADOW_STRENGTH;
+	//color *= (1.0 - shadow);
+
+
+	float shadow_result = 0.0;
+	for (uint i = 0; i < lit.count; i++)
+	{
+		uint flags = lit.lights[i].flags;
+		if (!hasShadow(flags))
+			continue;
+
+		uint map_index = getShadowMapIndex(flags);
+
+		// Quad
+		switch (getShadowMapId(flags))
+		{
+			case 0:
+			{
+				// Perspective divide and map coordinates to [0.0, 1.0] range
+				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w) + 1.0) * 0.5;
+				float bias = 1.0/textureSize(shadowMaps[map_index], 0).x;
+				float comp = coord.z - bias;
+
+				// Multi sample
+				float shadow = 0.0;
+				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
+				{
+					shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, comp));
+				}
+				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
+				break;
+			}
+			case 1:
+			{
+				// Perspective divide and map coordinates to [0.0, 1.0] range
+				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w) + 1.0) * 0.5;
+				float bias = 1.0/textureSize(cubeShadowMaps[map_index], 0).x;
+				float comp = coord.z - bias;
+
+				// Multi sample
+				float shadow = 0.0;
+				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
+				{
+					shadow += 1.0 - texture(cubeShadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, comp)).x;
+				}
+				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
+				break;
+			}
+		}
+	}
+
+	shadow_result = clamp(shadow_result * SHADOW_STRENGTH, 0.0, 1.0);
+	color *= (1.0 - shadow_result);
 
 	out_Color = vec4(color, ubo.alpha);
 }

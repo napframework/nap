@@ -81,6 +81,22 @@ namespace nap
 	}
 
 
+	static bool isShadowEnabled(uint lightFlags)
+	{
+		return (lightFlags & (1 << 8U)) > 0;
+	}
+
+	static uint getLightType(uint lightFlags)
+	{
+		return static_cast<uint>((lightFlags >> 16U) & 0xff);
+	}
+
+	static uint getLightIndex(uint lightFlags)
+	{
+		return static_cast<uint>((lightFlags >> 24U) & 0xff);
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service Configuration
 	//////////////////////////////////////////////////////////////////////////
@@ -117,39 +133,54 @@ namespace nap
 		}
 
 		// Create and manage a shadow texture dummy for valid shadow samplers
-		auto tex_dummy = std::make_unique<DepthRenderTexture2D>(getCore());
-		tex_dummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		tex_dummy->mWidth = 16;
-		tex_dummy->mHeight = 16;
-		tex_dummy->mUsage = ETextureUsage::Static;
-		tex_dummy->mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
-		tex_dummy->mColorSpace = EColorSpace::Linear;
-		tex_dummy->mClearValue = 1.0f;
-		tex_dummy->mFill = true;
-		mShadowTextureDummy = std::move(tex_dummy);
-
+		mShadowTextureDummy = std::make_unique<DepthRenderTexture2D>(getCore());
+		mShadowTextureDummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mShadowTextureDummy->mWidth = 16;
+		mShadowTextureDummy->mHeight = 16;
+		mShadowTextureDummy->mUsage = Texture::EUsage::Static;
+		mShadowTextureDummy->mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
+		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
+		mShadowTextureDummy->mClearValue = 1.0f;
+		mShadowTextureDummy->mFill = true;
 		if (!mShadowTextureDummy->init(errorState))
 		{
 			errorState.fail("%s: Failed to create shadow texture dummy", this->get_type().get_name().to_string().c_str());
 			return false;
 		}
 
-		auto shadow_sampler_array = std::make_unique<Sampler2DArray>(mMaxShadowMapCount);
-		shadow_sampler_array->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
-		shadow_sampler_array->mName = sampler::light::shadowMaps;
+		// Sampler2D
+		mSampler2DResource = std::make_unique<Sampler2DArray>(mMaxShadowMapCount);
+		mSampler2DResource->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mSampler2DResource->mName = sampler::light::shadowMaps;
 
 		// Copy pointers
-		for (auto& tex : shadow_sampler_array->mTextures)
+		for (auto& tex : mSampler2DResource->mTextures)
 			tex = mShadowTextureDummy.get();
 
-		shadow_sampler_array->mCompareMode = EDepthCompareMode::LessOrEqual;
-		shadow_sampler_array->mBorderColor = EBorderColor::IntOpaqueBlack;
-		shadow_sampler_array->mEnableCompare = true;
-		mSamplerResource = std::move(shadow_sampler_array);
-
-		if (!mSamplerResource->init(errorState))
+		mSampler2DResource->mCompareMode = EDepthCompareMode::LessOrEqual;
+		mSampler2DResource->mBorderColor = EBorderColor::IntOpaqueBlack;
+		mSampler2DResource->mEnableCompare = true;
+		if (!mSampler2DResource->init(errorState))
 		{
-			errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+			errorState.fail("%s: Failed to initialize shadow sampler 2d resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+			return false;
+		}
+
+		// SamplerCube
+		mSamplerCubeResource = std::make_unique<SamplerCubeArray>(mMaxShadowMapCount);
+		mSamplerCubeResource->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(SamplerCubeArray).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mSamplerCubeResource->mName = sampler::light::cubeShadowMaps;
+
+		// Copy pointers
+		for (auto& tex : mSamplerCubeResource->mTextures)
+			tex = &render_service->getEmptyTextureCube();
+
+		mSamplerCubeResource->mCompareMode = EDepthCompareMode::LessOrEqual;
+		mSamplerCubeResource->mBorderColor = EBorderColor::IntOpaqueBlack;
+		mSamplerCubeResource->mEnableCompare = true;
+		if (!mSamplerCubeResource->init(errorState))
+		{
+			errorState.fail("%s: Failed to initialize cube sampler resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 			return false;
 		}
 
@@ -181,10 +212,10 @@ namespace nap
 				case ELightType::Spot:
 				{
 					// One shadow render pass per light
-					auto it = mLightDepthTargetMap.find(light);
-					assert(it != mLightDepthTargetMap.end());
+					auto it = mLightDepthMap.find(light);
+					assert(it != mLightDepthMap.end());
 
-					auto& target = it->second;
+					auto& target = it->second->mTarget;
 					assert(target != nullptr);
 
 					target->beginRendering();
@@ -195,10 +226,10 @@ namespace nap
 				case ELightType::Point:
 				{
 					// One shadow render pass per light
-					auto it = mLightCubeTargetMap.find(light);
-					assert(it != mLightCubeTargetMap.end());
+					auto it = mLightCubeMap.find(light);
+					assert(it != mLightCubeMap.end());
 
-					auto& target = it->second;
+					auto& target = it->second->mTarget;
 					assert(target != nullptr);
 
 					if (target.get()->get_type() != RTTI_OF(CubeRenderTarget))
@@ -243,7 +274,7 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState)
+	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState)
 	{
 		// Exit early if there are no lights in the scene
 		if (mLightComponents.empty())
@@ -279,6 +310,12 @@ namespace nap
 			if (light_count == nullptr)
 				continue;
 
+			if (disableLighting)
+			{
+				light_count->setValue(0);
+				return true;
+			}
+
 			uint count = 0;
 			for (const auto& light : mLightComponents)
 			{
@@ -287,9 +324,12 @@ namespace nap
 
 				// Fetch element
 				auto& light_element = light_array->getElement(count);
+				auto it_flags = mLightFlagsMap.find(light);
+				assert(it_flags != mLightFlagsMap.end());
 
 				// Light uniform defaults
-				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(light->getLightFlags());
+				const uint light_flags = it_flags->second;
+				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(light_flags);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
 
@@ -358,44 +398,58 @@ namespace nap
 				}
 
 				// Shadows
+				auto* render_service = getCore().getService<RenderService>();
+				assert(render_service != nullptr);
+
 				switch (light->getLightType())
 				{
 				case ELightType::Directional:
 				case ELightType::Spot:
 				{
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
+					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
 					if (shadow_sampler_array != nullptr)
 					{
 						auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
 						if (count >= instance->getNumElements())
 							continue;
 
-						auto& shadow_texture = light->isShadowEnabled() ? *mLightDepthTextureMap[light] : *mShadowTextureDummy;
-						instance->setTexture(count, shadow_texture);
-
 						if (light->isShadowEnabled())
 						{
+							const auto it = mLightDepthMap.find(light);
+							assert(it != mLightDepthMap.end());
+							instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
+
 							const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
 							light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
 						}
+						else
+						{
+							instance->setTexture(count, *mShadowTextureDummy);
+						}
 					}
+					break;
 				}
 				case ELightType::Point:
 				{
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerResource, errorState);
+					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
 					if (shadow_sampler_array != nullptr)
 					{
-						auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
+						auto* instance = static_cast<SamplerCubeArrayInstance*>(shadow_sampler_array);
 						if (count >= instance->getNumElements())
 							continue;
 
-						auto& shadow_texture = light->isShadowEnabled() ? *mLightDepthTextureMap[light] : *mShadowTextureDummy;
-						instance->setTexture(count, shadow_texture);
-
 						if (light->isShadowEnabled())
 						{
+							const auto it = mLightCubeMap.find(light);
+							assert(it != mLightCubeMap.end());
+							instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
+
 							const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
 							light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+						}
+						else
+						{
+							instance->setTexture(count, render_service->getEmptyTextureCube());
 						}
 					}
 					break;
@@ -415,10 +469,17 @@ namespace nap
 	}
 
 
+	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState)
+	{
+		return pushLights(renderComps, false, errorState);
+	}
+
+
 	void RenderAdvancedService::preShutdown()
 	{
 		mShadowTextureDummy.reset();
-		mSamplerResource.reset();
+		mSampler2DResource.reset();
+		mSamplerCubeResource.reset();
 	}
 
 
@@ -443,18 +504,28 @@ namespace nap
 	bool RenderAdvancedService::initShadowMappingResources(utility::ErrorState& errorState)
 	{
 		// Shadow maps
-		mLightDepthTextureMap.clear();
-		mLightDepthTextureMap.reserve(mLightComponents.size());
+		mLightDepthMap.clear();
+		mLightDepthMap.reserve(mLightComponents.size());
 
-		mLightDepthTargetMap.clear();
-		mLightDepthTargetMap.reserve(mLightComponents.size());
+		mLightCubeMap.clear();
+		mLightCubeMap.reserve(mLightComponents.size());
 
-		mLightCubeTargetMap.clear();
-		mLightCubeTargetMap.reserve(mLightComponents.size());
-	
+		mLightFlagsMap.clear();
+		mLightFlagsMap.reserve(mLightComponents.size());
+
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
+
+		std::map<EShadowMapType, uint> shadow_map_indices;
+		for (const auto& variant : RTTI_OF(EShadowMapType).get_enumeration().get_values())
+			shadow_map_indices.insert({ variant.get_value<EShadowMapType>(), 0 });
+
 		for (const auto& light : mLightComponents)
 		{
+			// Flags [index : 8bit][map_id : 8bit][padding : 7bit][shadow : 1bit][type : 8bit]
+			uint flags = static_cast<uint>(light->getLightType());
+			flags |= static_cast<uint>(light->isShadowEnabled()) << 8U;
+			flags |= static_cast<uint>(light->getShadowMapType()) << 16U;
+
 			switch (light->getLightType())
 			{
 			case ELightType::Directional:
@@ -466,7 +537,7 @@ namespace nap
 				shadow_map->mWidth = configuration->mShadowMapSize;
 				shadow_map->mHeight = configuration->mShadowMapSize;
 				shadow_map->mDepthFormat = configuration->mPrecision;
-				shadow_map->mUsage = ETextureUsage::Static;
+				shadow_map->mUsage = Texture::EUsage::Static;
 				shadow_map->mColorSpace = EColorSpace::Linear;
 				shadow_map->mClearValue = 1.0f;
 				shadow_map->mFill = true;
@@ -477,50 +548,70 @@ namespace nap
 					return false;
 				}
 
-				const auto it_tex = mLightDepthTextureMap.insert({ light, std::move(shadow_map) });
-				assert(it_tex.second);
-
 				// Target
 				auto shadow_target = std::make_unique<DepthRenderTarget>(getCore());
 				shadow_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				shadow_target->mDepthTexture = shadow_map.get();
 				shadow_target->mClearValue = 1.0f;
-				shadow_target->mDepthTexture = it_tex.first->second.get();
 				shadow_target->mRequestedSamples = ERasterizationSamples::One;
 				shadow_target->mSampleShading = false;
 
-				if (!shadow_target->init(errorState))
+				auto it = mLightDepthMap.insert({ light, std::make_unique<ShadowMapEntry>(std::move(shadow_target), std::move(shadow_map)) });
+				assert(it.second);
+
+				if (!it.first->second->mTarget->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 					return false;
 				}
 
-				const auto it_target = mLightDepthTargetMap.insert({ light, std::move(shadow_target) });
-				assert(it_target.second);
 				break;
 			}
 			case ELightType::Point:
 			{
-				// Target
-				auto cube_target = std::make_unique<CubeRenderTarget>(getCore());
-				cube_target->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
-				cube_target->mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
-				cube_target->mRequestedSamples = ERasterizationSamples::One;
-				cube_target->mSampleShading = false;
+				// Cube Texture
+				auto cube_map = std::make_unique<RenderTextureCube>(getCore());
+				cube_map->mID = utility::stringFormat("%s_%s", RTTI_OF(RenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+				cube_map->mWidth = configuration->mShadowCubeMapSize;
+				cube_map->mHeight = configuration->mShadowCubeMapSize;
+				cube_map->mColorSpace = EColorSpace::Linear;
 
-				if (!cube_target->init(errorState))
+ 				if (!cube_map->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 					return false;
 				}
 
-				const auto it_cube_target = mLightCubeTargetMap.insert({ light, std::move(cube_target) });
-				assert(it_cube_target.second);
+				// Target
+				auto cube_target = std::make_unique<CubeRenderTarget>(getCore());
+				cube_target->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				cube_target->mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+				cube_target->mRequestedSamples = ERasterizationSamples::One;
+				cube_target->mSampleShading = false;
+
+				auto it = mLightCubeMap.insert({ light, std::make_unique<CubeMapEntry>(std::move(cube_target), std::move(cube_map)) });
+				assert(it.second);
+
+				if (!it.first->second->mTarget->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize shadow mapping resources", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+					return false;
+				}
+
 				break;
 			}
 			case ELightType::Custom:
 			default:
 				nap::Logger::warn("Rendering shadows for custom light types not yet supported");
 			}
+
+			uint& index = shadow_map_indices[light->getShadowMapType()];
+			flags |= index << 24U;
+
+			const auto it_flag = mLightFlagsMap.insert({ light, flags });
+			assert(it_flag.second);
+
+			++index;
 		}
 		mShadowResourcesCreated = true;
 		return true;
@@ -553,32 +644,22 @@ namespace nap
 			case ELightType::Spot:
 			{
 				// Shadow resources
-				{
-					auto found_it = std::find_if(mLightDepthTargetMap.begin(), mLightDepthTargetMap.end(), [input = &light](const auto& it)
-						{
-							return it.first == input;
-						});
-					assert(found_it != mLightDepthTargetMap.end());
-					mLightDepthTargetMap.erase(found_it);
-				}
-				{
-					auto found_it = std::find_if(mLightDepthTextureMap.begin(), mLightDepthTextureMap.end(), [input = &light](const auto& it)
-						{
-							return it.first == input;
-						});
-					assert(found_it != mLightDepthTextureMap.end());
-					mLightDepthTextureMap.erase(found_it);
-				}
+				auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
+					{
+						return it.first == input;
+					});
+				assert(found_it != mLightDepthMap.end());
+				mLightDepthMap.erase(found_it);
 				break;
 			}
 			case ELightType::Point:
 			{
-				auto found_it = std::find_if(mLightCubeTargetMap.begin(), mLightCubeTargetMap.end(), [input = &light](const auto& it)
+				auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
 					{
 						return it.first == input;
 					});
-				assert(found_it != mLightCubeTargetMap.end());
-				mLightCubeTargetMap.erase(found_it);
+				assert(found_it != mLightCubeMap.end());
+				mLightCubeMap.erase(found_it);
 				break;
 			}
 			case ELightType::Custom:
@@ -588,14 +669,22 @@ namespace nap
 			default:
 				assert(false);
 			}
+
+			// Flags
+			auto found_it = std::find_if(mLightFlagsMap.begin(), mLightFlagsMap.end(), [input = &light](const auto& it)
+				{
+					return it.first == input;
+				});
+			assert(found_it != mLightFlagsMap.end());
+			mLightFlagsMap.erase(found_it);
 		}
 
 		// Light components
 		{
 			auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
-			{
-				return it == input;
-			});
+				{
+					return it == input;
+				});
 			assert(found_it != mLightComponents.end());
 			mLightComponents.erase(found_it);
 		}

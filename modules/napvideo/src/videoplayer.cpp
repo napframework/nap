@@ -91,7 +91,7 @@ namespace nap
 
 			// Create Y Texture
 			mYTexture = std::make_unique<Texture2D>(mService.getCore());
-			mYTexture->mUsage = ETextureUsage::DynamicWrite;
+			mYTexture->mUsage = Texture::EUsage::DynamicWrite;
 			if (!mYTexture->init(tex_description, false, 0, error))
 				return false;
 
@@ -103,13 +103,13 @@ namespace nap
 
 			// Create U
 			mUTexture = std::make_unique<Texture2D>(mService.getCore());
-			mUTexture->mUsage = ETextureUsage::DynamicWrite;
+			mUTexture->mUsage = Texture::EUsage::DynamicWrite;
 			if (!mUTexture->init(tex_description, false, 0, error))
 				return false;
 
 			// Create V Texture
 			mVTexture = std::make_unique<Texture2D>(mService.getCore());
-			mVTexture->mUsage = ETextureUsage::DynamicWrite;
+			mVTexture->mUsage = Texture::EUsage::DynamicWrite;
 			if (!mVTexture->init(tex_description, false, 0, error))
 				return false;
 

@@ -9,8 +9,8 @@ RTTI_DEFINE_BASE(nap::SamplerInstance)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler2DInstance)
 	RTTI_CONSTRUCTOR(nap::RenderService&, const nap::SamplerDeclaration&, const nap::Sampler2D*, const nap::SamplerChangedCallback&)
-	RTTI_FUNCTION("setTexture", &nap::Sampler2DInstance::setTexture)
-	RTTI_FUNCTION("hasTexture", &nap::Sampler2DInstance::hasTexture)
+	RTTI_FUNCTION("setTexture",		&nap::Sampler2DInstance::setTexture)
+	RTTI_FUNCTION("hasTexture",		&nap::Sampler2DInstance::hasTexture)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler2DArrayInstance)
@@ -18,6 +18,18 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler2DArrayInstance)
 	RTTI_FUNCTION("setTexture",		&nap::Sampler2DArrayInstance::setTexture)
 	RTTI_FUNCTION("hasTexture",		&nap::Sampler2DArrayInstance::hasTexture)
 	RTTI_FUNCTION("getNumElements",	&nap::Sampler2DArrayInstance::getNumElements)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SamplerCubeInstance)
+	RTTI_CONSTRUCTOR(nap::RenderService&, const nap::SamplerDeclaration&, const nap::SamplerCube*, const nap::SamplerChangedCallback&)
+	RTTI_FUNCTION("setTexture",		&nap::SamplerCubeInstance::setTexture)
+	RTTI_FUNCTION("hasTexture",		&nap::SamplerCubeInstance::hasTexture)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SamplerCubeArrayInstance)
+	RTTI_CONSTRUCTOR(nap::RenderService&, const nap::SamplerDeclaration&, const nap::SamplerCubeArray*, const nap::SamplerChangedCallback&)
+	RTTI_FUNCTION("setTexture",		&nap::SamplerCubeArrayInstance::setTexture)
+	RTTI_FUNCTION("hasTexture",		&nap::SamplerCubeArrayInstance::hasTexture)
 RTTI_END_CLASS
 
 namespace nap
@@ -163,6 +175,19 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// SamplerArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	SamplerArrayInstance::SamplerArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler* sampler, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(renderService, declaration, sampler, samplerChangedCallback)
+	{ }
+
+
+	SamplerArrayInstance::~SamplerArrayInstance()
+	{ }
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Sampler2DInstance
 	//////////////////////////////////////////////////////////////////////////
 
@@ -192,7 +217,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	Sampler2DArrayInstance::Sampler2DArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
-		SamplerInstance(renderService, declaration, sampler2DArray, samplerChangedCallback)
+		SamplerArrayInstance(renderService, declaration, sampler2DArray, samplerChangedCallback)
 	{
 		if (sampler2DArray != nullptr)
 		{
@@ -213,6 +238,61 @@ namespace nap
 		assert(index < mTextures.size());
 		assert(index < mDeclaration->mNumArrayElements);
 		mTextures[index] = &texture;
+		raiseChanged(index);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	SamplerCubeInstance::SamplerCubeInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCube* samplerCube, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(renderService, declaration, samplerCube, samplerChangedCallback)
+	{
+		if (samplerCube != nullptr)
+			mTextureCube = samplerCube->mTextureCube;
+	}
+
+
+	void SamplerCubeInstance::onTextureChanged(const Texture2D&)
+	{
+		raiseChanged();
+	}
+
+
+	void SamplerCubeInstance::setTexture(TextureCube& textureCube)
+	{
+		mTextureCube = &textureCube;
+		raiseChanged();
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	SamplerCubeArrayInstance::SamplerCubeArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCubeArray* samplerCubeArray, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerArrayInstance(renderService, declaration, samplerCubeArray, samplerChangedCallback)
+	{
+		if (samplerCubeArray != nullptr)
+		{
+			assert(samplerCubeArray->mTextures.size() <= declaration.mNumArrayElements);
+			mTextures = samplerCubeArray->mTextures;
+		}
+
+		// Ensure we create array entries for all textures
+		mTextures.reserve(declaration.mNumArrayElements);
+		uint count = mTextures.size();
+		for (uint i = count; i < declaration.mNumArrayElements; i++)
+			mTextures.emplace_back();
+	}
+
+
+	void SamplerCubeArrayInstance::setTexture(int index, TextureCube& textureCube)
+	{
+		assert(index < mTextures.size());
+		assert(index < mDeclaration->mNumArrayElements);
+		mTextures[index] = &textureCube;
 		raiseChanged(index);
 	}
 }

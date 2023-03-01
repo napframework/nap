@@ -1337,7 +1337,8 @@ namespace nap
 	// Shut down render service
 	RenderService::~RenderService()
 	{
-		mEmptyTexture.reset();
+		mEmptyTexture2D.reset();
+		mEmptyTextureCube.reset();
 	}
 
 
@@ -1428,17 +1429,20 @@ namespace nap
 	}
 
 
-	bool RenderService::initEmptyTexture(nap::utility::ErrorState& errorState)
+	bool RenderService::initEmptyTextures(nap::utility::ErrorState& errorState)
 	{
-		SurfaceDescriptor settings;
-		settings.mWidth = 16;
-		settings.mHeight = 16;
-		settings.mChannels = ESurfaceChannels::RGBA;
-		settings.mDataType = ESurfaceDataType::BYTE;
-		
-		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		mEmptyTexture->mID = utility::stringFormat("%s_EmptyTexture_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		return mEmptyTexture->init(settings, false, 0, errorState);
+		SurfaceDescriptor settings = { 16, 16, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
+		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
+		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mEmptyTexture2D->init(settings, false, 0, errorState))
+			return false;
+
+		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
+		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mEmptyTextureCube->init(settings, { 0.0f, 0.0f, 0.0f, 0.0f }, 0, errorState))
+			return false;
+
+		return true;
 	}
 
 
@@ -1624,7 +1628,7 @@ namespace nap
 		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
 
 		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
-		if (!initEmptyTexture(errorState))
+		if (!initEmptyTextures(errorState))
 			return false;
 		
 		mFramesInFlight.resize(getMaxFramesInFlight());
@@ -1853,7 +1857,7 @@ namespace nap
 	}
 
 
-	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
+	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties) const
 	{
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), format, &outProperties);
 	}
@@ -1939,7 +1943,8 @@ namespace nap
 		}
 
 		mFramesInFlight.clear();
-		mEmptyTexture.reset();
+		mEmptyTexture2D.reset();
+		mEmptyTextureCube.reset();
 		mDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
 
@@ -2024,7 +2029,7 @@ namespace nap
 		// Transfer data to the GPU, including texture data and general purpose render buffers.
 		transferData(commandBuffer, [commandBuffer, this]()
 		{
-			for (Texture2D* texture : mTexturesToClear)
+			for (Texture* texture : mTexturesToClear)
 				texture->clear(commandBuffer);
 			mTexturesToClear.clear();
 
@@ -2341,7 +2346,7 @@ namespace nap
 	}
 
 
-	void RenderService::requestTextureClear(Texture2D& texture)
+	void RenderService::requestTextureClear(Texture& texture)
 	{
 		// Push a texture clear for the beginning of the next frame
 		mTexturesToClear.insert(&texture);

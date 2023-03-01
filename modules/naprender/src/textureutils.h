@@ -26,22 +26,10 @@ namespace nap
 	VkFormat NAPAPI getTextureFormat(const SurfaceDescriptor& descriptor);
 
 	/**
-	 * Transition image to a new layout using an existing image barrier.
-	 */
-	void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier, VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint32 mipLevel, uint32 mipLevelCount, VkImageAspectFlags aspect);
-
-	/**
 	 * Transition image to a new layout using an image barrier.
 	 */
 	void NAPAPI transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint32 mipLevel, uint32 mipLevelCount, VkImageAspectFlags aspect);
-
-	/**
-	 * Transition image to a new layout using an existing image barrier.
-	 */
-	void NAPAPI transitionDepthImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint32 mipLevel, uint32 mipLevelCount, VkImageAspectFlags aspect);
+		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask, VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage, uint mipLevel, uint mipLevelCount, VkImageAspectFlags aspect);
 
 	/**
 	 * Pushes a full-size blit to the command buffer. Must be called inside a render pass, in onDraw().
@@ -51,5 +39,5 @@ namespace nap
 	 * @param srcTexture the source texture
 	 * @param dstTexture the destination texture
 	 */
-	void NAPAPI blit(VkCommandBuffer commandBuffer, Texture2D& srcTexture, Texture2D& dstTexture);
+	void NAPAPI blit(VkCommandBuffer commandBuffer, const Texture2D& srcTexture, const Texture2D& dstTexture);
 }

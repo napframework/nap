@@ -55,6 +55,12 @@ namespace nap
 		 */
 		virtual ELightType getLightType() const	override					{ return ELightType::Directional; }
 
+		/**
+		 * @return the shadow map type
+		 */
+		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
+
+
 	private:
 		// Shadow camera
 		ComponentInstancePtr<OrthoCameraComponent> mShadowCamera = { this, &DirectionalLightComponent::mShadowCamera };

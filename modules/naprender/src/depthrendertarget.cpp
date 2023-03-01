@@ -63,7 +63,7 @@ namespace nap
 			return false;
 
 		// Bind textures as attachments
-		VkImageView attachment = mDepthTexture->getImageView();
+		VkImageView attachment = mDepthTexture->getHandle().getView();
 
 		// Create framebuffer
 		VkFramebufferCreateInfo framebufferInfo = {};

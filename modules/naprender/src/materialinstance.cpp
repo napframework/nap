@@ -229,13 +229,29 @@ namespace nap
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
 				{
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					if (declaration.mType != SamplerDeclaration::EType::Type_Cube)
+					{
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
 				}
 				else
 				{
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					if (declaration.mType != SamplerDeclaration::EType::Type_Cube)
+					{
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
 				}
 
 				utility::ErrorState error_state;
@@ -272,15 +288,33 @@ namespace nap
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
 				{
-					const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(&resource);
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler_2d_array,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					if (declaration.mType != SamplerDeclaration::EType::Type_Cube)
+					{
+						const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(&resource);
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler_2d_array,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						const auto* sampler_cube_array = static_cast<const SamplerCubeArray*>(&resource);
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, sampler_cube_array,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
 				}
 				else
 				{
-					const auto* sampler_2d = static_cast<const Sampler2D*>(&resource);
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					if (declaration.mType != SamplerDeclaration::EType::Type_Cube)
+					{
+						const auto* sampler_2d = static_cast<const Sampler2D*>(&resource);
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, sampler_2d,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						const auto* sampler_cube = static_cast<const SamplerCube*>(&resource);
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, sampler_cube,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+					}
 				}
 
 				utility::ErrorState error_state;
@@ -316,30 +350,69 @@ namespace nap
 	void BaseMaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance, int imageArrayIndex)
 	{
 		VkSampler vk_sampler = samplerInstance.getVulkanSampler();
-		if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
+		if (samplerInstance.get_type().is_derived_from(RTTI_OF(SamplerArrayInstance)))
 		{
-			Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
-			assert(imageArrayIndex < sampler_2d_array->getNumElements());
+			if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
+			{
+				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
+				assert(imageArrayIndex < sampler_2d_array->getNumElements());
 
-			const Texture2D& texture = sampler_2d_array->getTexture(imageArrayIndex);
+				const Texture2D& texture = sampler_2d_array->getTexture(imageArrayIndex);
 
-			int sampler_descriptor_index = imageStartIndex + imageArrayIndex;
-			if (mSamplerDescriptors.size() < sampler_descriptor_index)
-				mSamplerDescriptors.emplace_back();
+				int sampler_descriptor_index = imageStartIndex + imageArrayIndex;
+				if (mSamplerDescriptors.size() < sampler_descriptor_index)
+					mSamplerDescriptors.emplace_back();
 
-			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[sampler_descriptor_index];
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = texture.getHandle().getView();
-			imageInfo.sampler = vk_sampler;
+				VkDescriptorImageInfo& image_info = mSamplerDescriptors[sampler_descriptor_index];
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView = texture.getHandle().getView();
+				image_info.sampler = vk_sampler;
+			}
+			else if (samplerInstance.get_type() == RTTI_OF(SamplerCubeArrayInstance))
+			{
+				SamplerCubeArrayInstance* sampler_cube_array = (SamplerCubeArrayInstance*)(&samplerInstance);
+				assert(imageArrayIndex < sampler_cube_array->getNumElements());
+
+				const TextureCube& texture = sampler_cube_array->getTexture(imageArrayIndex);
+
+				int sampler_descriptor_index = imageStartIndex + imageArrayIndex;
+				if (mSamplerDescriptors.size() < sampler_descriptor_index)
+					mSamplerDescriptors.emplace_back();
+
+				VkDescriptorImageInfo& image_info = mSamplerDescriptors[sampler_descriptor_index];
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView = texture.getHandle().getView();
+				image_info.sampler = vk_sampler;
+			}
+			else
+			{
+				assert(false);
+			}
 		}
 		else
 		{
-			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
+			if (samplerInstance.get_type() == RTTI_OF(Sampler2DInstance))
+			{
+				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
 
-			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex];
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = sampler_2d->getTexture().getHandle().getView();
-			imageInfo.sampler = vk_sampler;
+				VkDescriptorImageInfo& image_info = mSamplerDescriptors[imageStartIndex];
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				image_info.imageView = sampler_2d->getTexture().getHandle().getView();
+				image_info.sampler = vk_sampler;
+			}
+			else if (samplerInstance.get_type() == RTTI_OF(SamplerCubeInstance))
+			{
+				SamplerCubeInstance* sampler_cube = (SamplerCubeInstance*)(&samplerInstance);
+
+				VkDescriptorImageInfo& image_info = mSamplerDescriptors[imageStartIndex];
+				image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+				//image_info.imageView = sampler_cube->getTexture().getHandle().getView();
+				image_info.sampler = vk_sampler;
+			}
+			else
+			{
+				assert(false);
+			}
 		}
 	}
 
@@ -419,11 +492,11 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
+	void BaseMaterialInstance::addImageInfo(const Texture& texture, VkSampler sampler)
 	{
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = texture2D.getHandle().getView();
+		imageInfo.imageView = texture.getHandle().getView();
 		imageInfo.sampler = sampler;
 
 		mSamplerDescriptors.push_back(imageInfo);
@@ -502,8 +575,6 @@ namespace nap
 		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
 
-		Texture2D& emptyTexture = mRenderService->getEmptyTexture();
-
 		// Samplers are initialized in two steps (somewhat similar to how uniforms are setup):
 		// 1) We create sampler instances based on sampler declarations for all properties in MaterialInstance (so, the ones that are overridden).
 		// 2) We initialize a VkWriteDescriptorSet that contains information that is either pointing to data from MaterialInstance if overridden, 
@@ -537,13 +608,29 @@ namespace nap
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
 				if (is_array)
 				{
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, static_cast<const Sampler2DArray*>(sampler),
-						std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+					if (declaration.mType != SamplerDeclaration::EType::Type_Cube)
+					{
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, static_cast<const Sampler2DArray*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, static_cast<const SamplerCubeArray*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+					}
 				}
 				else
 				{
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, static_cast<const Sampler2D*>(sampler),
-						std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+					if (declaration.mType != SamplerDeclaration::EType::Type_Cube)
+					{
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, static_cast<const Sampler2D*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+					}
+					else
+					{
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, static_cast<const SamplerCube*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+					}
 				}
 
 				if (!sampler_instance_override->init(errorState))
@@ -564,25 +651,58 @@ namespace nap
 			if (is_array)
 			{
 				// Create all VkDescriptorImageInfo for all elements in the array
-				Sampler2DArrayInstance* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
-
-				for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
+				if (declaration.mType == SamplerDeclaration::EType::Type_2D)
 				{
-					if (sampler_2d_array->hasTexture(index))
-						addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
-					else
-						addImageInfo(emptyTexture, vk_sampler);
+					Sampler2DArrayInstance* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
+					for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
+					{
+						if (sampler_2d_array->hasTexture(index))
+							addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
+						else
+							addImageInfo(mRenderService->getEmptyTexture2D(), vk_sampler);
+					}
+				}
+				else if (declaration.mType == SamplerDeclaration::EType::Type_Cube)
+				{
+					SamplerCubeArrayInstance* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(sampler_instance);
+					for (int index = 0; index < sampler_cube_array->getNumElements(); ++index)
+					{
+						if (sampler_cube_array->hasTexture(index))
+							addImageInfo(sampler_cube_array->getTexture(index), vk_sampler);
+						else
+							addImageInfo(mRenderService->getEmptyTextureCube(), vk_sampler);
+					}
+				}
+				else
+				{
+					errorState.fail("Unsupported sampler type");
+					return false;
 				}
 			}
 			else
 			{
 				// Create a single VkDescriptorImageInfo for just this element
-				Sampler2DInstance* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
-
-				if (sampler_2d->hasTexture())
-					addImageInfo(sampler_2d->getTexture(), vk_sampler);
+				if (declaration.mType != SamplerDeclaration::EType::Type_2D)
+				{
+					Sampler2DInstance* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
+					if (sampler_2d->hasTexture())
+						addImageInfo(sampler_2d->getTexture(), vk_sampler);
+					else
+						addImageInfo(mRenderService->getEmptyTexture2D(), vk_sampler);
+				}
+				else if (declaration.mType == SamplerDeclaration::EType::Type_Cube)
+				{
+					SamplerCubeInstance* sampler_cube = static_cast<SamplerCubeInstance*>(sampler_instance);
+					if (sampler_cube->hasTexture())
+						addImageInfo(sampler_cube->getTexture(), vk_sampler);
+					else
+						addImageInfo(mRenderService->getEmptyTextureCube(), vk_sampler);
+				}
 				else
-					addImageInfo(emptyTexture, vk_sampler);
+				{
+					errorState.fail("Unsupported sampler type");
+					return false;
+				}
 			}
 
 			// Create the write descriptor set. This set points to either a single element for non-arrays, or a list of contiguous elements for arrays.

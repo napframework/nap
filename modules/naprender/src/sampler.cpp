@@ -69,3 +69,11 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS(nap::Sampler2DArray)
 	RTTI_PROPERTY("Textures", &nap::Sampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SamplerCube)
+	RTTI_PROPERTY("Texture", &nap::SamplerCube::mTextureCube, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::SamplerCubeArray)
+	RTTI_PROPERTY("Textures", &nap::SamplerCubeArray::mTextures, nap::rtti::EPropertyMetaData::Required)
+RTTI_END_CLASS

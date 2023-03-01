@@ -178,7 +178,7 @@ namespace nap
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
-		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
+		void addImageInfo(const Texture& texture, VkSampler sampler);
 
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);

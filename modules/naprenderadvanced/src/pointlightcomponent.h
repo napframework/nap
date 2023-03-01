@@ -55,6 +55,11 @@ namespace nap
 		 */
 		virtual ELightType getLightType() const	override					{ return ELightType::Point; }
 
+		/**
+		 * @return the shadow map type
+		 */
+		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Cube; }
+
 	private:
 		// Shadow camera
 		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &PointLightComponent::mShadowCamera };

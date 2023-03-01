@@ -88,7 +88,7 @@ namespace nap
 				tex->mWidth = resource->mInputTexture->getWidth() / math::power<int>(2, pass_idx+1);
 				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
 				tex->mColorFormat = resource->mInputTexture->mColorFormat;
-				tex->mUsage = ETextureUsage::Static;
+				tex->mUsage = Texture::EUsage::Static;
 				if (!tex->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize internal render texture", tex->mID.c_str());

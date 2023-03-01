@@ -18,6 +18,7 @@ namespace nap
 {
 	// Forward Declares
 	class Texture2D;
+	class TextureCube;
 	class SamplerInstance;
 	class RenderService;
 
@@ -119,6 +120,28 @@ namespace nap
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// SamplerCube
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Cube sampler resource. Assigns a single 2D texture to a shader.
+	 * Applies filtering and transformations to compute the final color that is retrieved from a texture.
+	 * myshader.frag example:
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform samplerCube inTexture;		//< Texture
+	 * ~~~~~
+	 */
+	class NAPAPI SamplerCube : public Sampler
+	{
+		RTTI_ENABLE(Sampler)
+	public:
+		SamplerCube() = default;
+		rtti::ObjectPtr<TextureCube> mTextureCube;			///< Property: 'Texture' the texture to bind
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// SamplerArray
 	//////////////////////////////////////////////////////////////////////////
 
@@ -137,6 +160,10 @@ namespace nap
 		virtual int getNumElements() const = 0;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Sampler2DArray
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * 2D sampler array resource. Assigns multiple textures to a shader as an array.
@@ -162,5 +189,36 @@ namespace nap
 		virtual int getNumElements() const override				{ return mTextures.size(); }
 
 		std::vector<rtti::ObjectPtr<Texture2D>> mTextures;		///< Property: 'Textures' textures to bind, must be of the same length as the shader declaration.
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeArray
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Cube sampler array resource. Assigns multiple textures to a shader as an array.
+	 * Note that number of textures must match the number of inputs on the shader.
+	 * myshader.frag example:
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform samplerCube textures[20];		//< array of 20 textures
+	 * ~~~~~
+	 */
+	class NAPAPI SamplerCubeArray : public SamplerArray
+	{
+		RTTI_ENABLE(SamplerArray)
+	public:
+
+		SamplerCubeArray() = default;
+		SamplerCubeArray(int inSize) :
+			mTextures(inSize) { }
+
+		/**
+		 * @return The number of elements in this array
+		 */
+		virtual int getNumElements() const override { return mTextures.size(); }
+
+		std::vector<rtti::ObjectPtr<TextureCube>> mTextures;	///< Property: 'Textures' textures to bind, must be of the same length as the shader declaration.
 	};
 }

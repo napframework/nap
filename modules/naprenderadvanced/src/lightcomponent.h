@@ -33,6 +33,15 @@ namespace nap
 	};
 
 	/**
+	 * Shadow Map Type
+	 */
+	enum class EShadowMapType : uint
+	{
+		Quad = 0,
+		Cube = 1
+	};
+
+	/**
 	 * Light Globals
 	 */
 	namespace uniform
@@ -61,6 +70,7 @@ namespace nap
 		namespace light
 		{
 			inline constexpr const char* shadowMaps = "shadowMaps";
+			inline constexpr const char* cubeShadowMaps = "cubeShadowMaps";
 		}
 	}
 
@@ -135,6 +145,11 @@ namespace nap
 		virtual ELightType getLightType() const = 0;
 
 		/**
+		 * @return the shadow map type
+		 */
+		virtual EShadowMapType getShadowMapType() const = 0;
+
+		/**
 		 * @return the position of the light in world space
 		 */
 		const glm::vec3 getLightPosition() const							{ return math::extractPosition(getTransform().getGlobalTransform()); }
@@ -155,16 +170,9 @@ namespace nap
 		 */
 		void registerLightUniformMember(const std::string& memberName, Parameter* parameter);
 
-		/**
-		 * @return the light flags
-		 */
-		const uint getLightFlags() const									{ return mLightFlags; }
-
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
-
 		bool mIsShadowEnabled							= false;
-		uint mLightFlags								= 0U;
 
 	private:
 		Parameter* getLightUniform(const std::string& memberName);

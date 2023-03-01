@@ -13,6 +13,18 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/quaternion.hpp>
 
+RTTI_BEGIN_ENUM(nap::ELightType)
+	RTTI_ENUM_VALUE(nap::ELightType::Custom,		"Custom"),
+	RTTI_ENUM_VALUE(nap::ELightType::Directional,	"Directional"),
+	RTTI_ENUM_VALUE(nap::ELightType::Point,			"Point"),
+	RTTI_ENUM_VALUE(nap::ELightType::Spot,			"Spot")
+RTTI_END_ENUM
+
+RTTI_BEGIN_ENUM(nap::EShadowMapType)
+	RTTI_ENUM_VALUE(nap::EShadowMapType::Quad,		"Quad"),
+	RTTI_ENUM_VALUE(nap::EShadowMapType::Cube,		"Cube")
+RTTI_END_ENUM
+
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,			nap::rtti::EPropertyMetaData::Required)
@@ -60,10 +72,6 @@ namespace nap
 			if(!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled No shadow camera set", mID.c_str()))
 				return false;
 		}
-
-		// Flags [padding : 8bit][padding : 15bit][shadow : 1bit][type : 8bit]
-		mLightFlags = static_cast<uint32>(getLightType());
-		mLightFlags |= static_cast<uint32>(isShadowEnabled()) << 8U;
 
 		// Register with service
 		auto* service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();

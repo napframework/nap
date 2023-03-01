@@ -9,6 +9,7 @@
 #include <utility/dllexport.h>
 #include <nap/numeric.h>
 #include <utility/errorstate.h>
+#include <assert.h>
 
 // Local Includes
 #include "vk_mem_alloc.h"
@@ -22,34 +23,64 @@ namespace nap
 	 */
 	struct NAPAPI ImageData
 	{
+		friend class Texture;
+
 		// Default Constructor
 		ImageData() = default;
+
+		// Constructor
+		ImageData(uint viewCount) :
+			mSubViews(viewCount)
+		{}
 
 		/**
 		 * @return Handle to Vulkan Image View
 		 */
-		VkImageView getView() const			{ return mView; }
+		VkImageView& getView()						{ return mView; }
+
+		/**
+		 * @return Handle to Vulkan Image View
+		 */
+		VkImageView getView() const					{ return mView; }
+
+		/**
+		 * @return Handle to Vulkan Image View
+		 */
+		VkImageView& getSubView(uint index)			{ assert(index < mSubViews.size()); return mSubViews[index]; }
+
+		/**
+		 * @return Handle to Vulkan Image View
+		 */
+		VkImageView getSubView(uint index) const	{ assert(index < mSubViews.size()); return mSubViews[index]; }
+
+		/**
+		 * @return Handle to Vulkan Image View
+		 */
+		uint getSubViewCount() const				{ return mSubViews.size(); }
 
 		/**
 		 * @return Handle to Vulkan Image Data
 		 */
-		VkImage getImage() const			{ return mImage; }
+		VkImage getImage() const					{ return mImage; }
 
 		/**
 		 * @return Current Vulkan image layout.
 		 */
-		VkImageLayout getLayout() const		{ return mCurrentLayout; }
+		VkImageLayout getLayout() const				{ return mCurrentLayout; }
 
 		/**
 		 * Releases the image and view, resetting all the handles to null. Does not delete it.
 		 */
 		void release();
 
-		VkImage				mImage = VK_NULL_HANDLE;						///< Vulkan Image
-		VkImageView			mView = VK_NULL_HANDLE;							///< Vulkan Image view
-		VmaAllocation		mAllocation = VK_NULL_HANDLE;					///< Vulkan single memory allocation
-		VmaAllocationInfo	mAllocationInfo;								///< Vulkan memory allocation information
-		VkImageLayout		mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;		///< Vulkan image layout
+		VkImage							mImage = VK_NULL_HANDLE;						///< Vulkan Image
+		VkImageView						mView = VK_NULL_HANDLE;							///< Vulkan Image view
+		VmaAllocation					mAllocation = VK_NULL_HANDLE;					///< Vulkan single memory allocation
+		VmaAllocationInfo				mAllocationInfo;								///< Vulkan memory allocation information
+		VkImageLayout					mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;		///< Vulkan image layout
+
+	private:
+		std::vector<VkImageView>		mSubViews;										///< Vulkan Image views
 	};
 
 
@@ -110,12 +141,17 @@ namespace nap
 	/**
 	 * Creates a Vulkan layered image based on the described image usage and given properties.
 	 */
-	bool NAPAPI createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState);
+	bool NAPAPI createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImageCreateFlags flags, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState);
 
 	/**
 	 * Creates a Vulkan layered image view based on the described image usage and given properties.
 	 */
-	bool NAPAPI createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 layerCount, VkImageAspectFlags aspectFlags, VkImageView& outImageView, utility::ErrorState& errorState);
+	bool NAPAPI createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32 layerIndex, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState);
+
+	/**
+	 * Creates a Vulkan cube image view based on the described image usage and given properties.
+	 */
+	bool NAPAPI createCubeImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState);
 
 	/**
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data

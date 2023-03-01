@@ -132,7 +132,7 @@ namespace nap
 		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
-			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
+			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D || declaration.mType == SamplerDeclaration::EType::Type_Cube, "Only 2D or Cube samplers are currently supported"))
 				return false;
 
 			bool is_array = declaration.mNumArrayElements > 1;
