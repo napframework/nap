@@ -19,11 +19,11 @@ namespace nap
 	 */
 	struct NAPAPI PerspCameraProperties
 	{
-		float mFieldOfView			= 50.0f;				///< Property: "FieldOfView" perspective camera field of view
-		float mNearClippingPlane	= 1.0f;					///< Property: "NearClippingPlane" camera near clipping plane
-		float mFarClippingPlane		= 1000.0f;				///< Property: "FarClippingPlane" camera far clipping plane
-		glm::ivec2 mGridDimensions	= glm::ivec2(1, 1);		///< Property: "GridDimensions" of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
-		glm::ivec2 mGridLocation	= glm::ivec2(0, 0);		///< Property: "GridLocation" the 2 dimensional index in the split projection dimensions
+		float mFieldOfView				= 50.0f;		///< Property: "FieldOfView" perspective camera field of view
+		float mNearClippingPlane		= 1.0f;			///< Property: "NearClippingPlane" camera near clipping plane
+		float mFarClippingPlane			= 1000.0f;		///< Property: "FarClippingPlane" camera far clipping plane
+		glm::ivec2 mGridDimensions		= { 1, 1 };		///< Property: "GridDimensions" of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
+		glm::ivec2 mGridLocation		= { 0, 0 };		///< Property: "GridLocation" the 2 dimensional index in the split projection dimensions
 	};
 	
 

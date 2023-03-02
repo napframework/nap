@@ -357,15 +357,6 @@ namespace nap
 		const auto& camera_global = camera_transform.getGlobalTransform();
 		const auto camera_global_base = camera_global * glm::inverse(camera_transform.getLocalTransform());
 
-		// Cache camera properties to restore later
-		const auto camera_props = camera.getProperties();
-
-		// Prepare camera for cube map rendering
-		camera.setFieldOfView(90.0f);
-		camera.setGridLocation(0, 0);
-		camera.setGridDimensions(1, 1);
-		camera.setRenderTargetSize(mSize);
-
 		const glm::vec3& right		= camera_transform.getLocalTransform()[0];
 		const glm::vec3& up			= camera_transform.getLocalTransform()[1];
 		const glm::vec3& forward	= camera_transform.getLocalTransform()[2];
@@ -432,8 +423,6 @@ namespace nap
 		endRendering();
 		setLayerIndex(0);
 
-		// Restore camera properties
-		camera.setProperties(camera_props);
 		mIsFirstPass = false;
 	}
 }
