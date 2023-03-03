@@ -232,9 +232,9 @@ namespace nap
 					auto& target = it->second->mTarget;
 					assert(target != nullptr);
 
-					if (target.get()->get_type() != RTTI_OF(CubeRenderTarget))
+					if (target.get()->get_type() != RTTI_OF(CubeDepthRenderTarget))
 					{
-						NAP_ASSERT_MSG(false, "Point lights must be linked to nap::CubeRenderTarget");
+						NAP_ASSERT_MSG(false, "Point lights must be linked to nap::CubeDepthRenderTarget");
 						continue;
 					}
 
@@ -244,9 +244,9 @@ namespace nap
 						continue;
 					}
 
-					auto* cube_target = static_cast<CubeRenderTarget*>(target.get());
+					auto* cube_target = static_cast<CubeDepthRenderTarget*>(target.get());
 					auto* persp_camera = static_cast<PerspCameraComponentInstance*>(shadow_camera);
-					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
 						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
 						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
@@ -401,6 +401,12 @@ namespace nap
 				auto* render_service = getCore().getService<RenderService>();
 				assert(render_service != nullptr);
 
+				const auto light_view = light->getShadowCamera()->getViewMatrix();
+				light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightView)->setValue(light_view);
+
+				const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light_view;
+				light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+
 				switch (light->getLightType())
 				{
 				case ELightType::Directional:
@@ -418,9 +424,6 @@ namespace nap
 							const auto it = mLightDepthMap.find(light);
 							assert(it != mLightDepthMap.end());
 							instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
-
-							const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-							light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
 						}
 						else
 						{
@@ -443,9 +446,6 @@ namespace nap
 							const auto it = mLightCubeMap.find(light);
 							assert(it != mLightCubeMap.end());
 							instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
-
-							const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-							light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
 						}
 						else
 						{
@@ -570,8 +570,8 @@ namespace nap
 			case ELightType::Point:
 			{
 				// Cube Texture
-				auto cube_map = std::make_unique<RenderTextureCube>(getCore());
-				cube_map->mID = utility::stringFormat("%s_%s", RTTI_OF(RenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+				auto cube_map = std::make_unique<DepthRenderTextureCube>(getCore());
+				cube_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
 				cube_map->mWidth = configuration->mShadowCubeMapSize;
 				cube_map->mHeight = configuration->mShadowCubeMapSize;
 				cube_map->mColorSpace = EColorSpace::Linear;
@@ -583,8 +583,8 @@ namespace nap
 				}
 
 				// Target
-				auto cube_target = std::make_unique<CubeRenderTarget>(getCore());
-				cube_target->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				auto cube_target = std::make_unique<CubeDepthRenderTarget>(getCore());
+				cube_target->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				cube_target->mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 				cube_target->mRequestedSamples = ERasterizationSamples::One;
 				cube_target->mSampleShading = false;

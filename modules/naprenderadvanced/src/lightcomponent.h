@@ -60,6 +60,7 @@ namespace nap
 			inline constexpr const char* flags = "flags";
 
 			inline constexpr const char* lightViewProjection = "lightViewProjection";
+			inline constexpr const char* lightView = "lightView";
 			inline constexpr const char* lights = "lights";
 			inline constexpr const char* count = "count";
 		}

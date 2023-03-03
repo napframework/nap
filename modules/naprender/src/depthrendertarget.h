@@ -144,19 +144,19 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const override					{ return false; };
 
 		/**
-		 * @return the texture that holds the result of the render pass.
-		 */
-		DepthRenderTexture2D& getDepthTexture();
-
-		/**
 		 * @return render target color format. This is the format of the linked in color texture.
 		 */
-		virtual VkFormat getColorFormat() const override;
+		virtual VkFormat getColorFormat() const override { return VK_FORMAT_UNDEFINED; }
 
 		/**
 		 * @return render target depth format
 		 */
 		virtual VkFormat getDepthFormat() const override;
+
+		/**
+		 * @return the texture that holds the result of the render pass.
+		 */
+		DepthRenderTexture2D& getDepthTexture();
 
 	public:
 		float								mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target

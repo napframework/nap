@@ -14,6 +14,32 @@ struct BlinnPhongMaterial
 
 
 // Shades a fragment based on a light, incoming normal and position should be in object space
+bool getLightDirection(Light light, vec3 fragPosition, out vec3 outDirection)
+{
+	switch(getLightType(light.flags))
+	{
+		// Custom
+		case 0:
+			// TODO: Support custom light computation functions in some way
+			return false;
+
+		// Directional
+		case 1:
+			outDirection = light.direction;
+			return true;
+
+		// Point
+		case 2:
+			outDirection = normalize(fragPosition - light.origin);
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+
+// Shades a fragment based on a light, incoming normal and position should be in object space
 vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, float strength, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
 {
 	// inverse light direction

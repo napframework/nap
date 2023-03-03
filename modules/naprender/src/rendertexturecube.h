@@ -19,9 +19,9 @@ namespace nap
 	 * You can use this texture to store the result of a render pass by a nap::RenderTarget or
 	 * any other type of render operation. The texture is cleared to 'ClearColor the before first use.
 	 */
-	class NAPAPI RenderTexture2D : public Texture2D
+	class NAPAPI RenderTextureCube : public TextureCube
 	{
-		RTTI_ENABLE(Texture2D)
+		RTTI_ENABLE(TextureCube)
 	public:
 		/**
 		 * All supported render texture 2D formats.
@@ -37,7 +37,7 @@ namespace nap
 			R32				///< 32 bit float, 1 component
 		};
 
-		RenderTexture2D(Core& core);
+		RenderTextureCube(Core& core);
 
 		/**
 		 * Creates the texture on the GPU.
@@ -46,28 +46,23 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return Vulkan GPU data handle, including image and view.
-		 */
-		virtual const ImageData& getHandle() const override { return mImageData; }
-
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
-		RGBAColorFloat		mClearColor	= { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
+		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
 	};
 
 
 	/**
-	 * Empty 2D GPU depth texture that can be declared as a resource in JSON or created at runtime.
+	 * Empty cube GPU depth texture that can be declared as a resource in JSON or created at runtime.
 	 * You can use this texture to store the result of a render pass by a nap::RenderTarget or
 	 * any other type of render operation. The texture is cleared to 'ClearColor the before first use.
 	 */
-	class NAPAPI DepthRenderTexture2D : public Texture2D
+	class NAPAPI DepthRenderTextureCube : public TextureCube
 	{
-		friend class DepthRenderTarget;
-		RTTI_ENABLE(Texture2D)
+		friend class CubeDepthRenderTarget;
+		RTTI_ENABLE(TextureCube)
 	public:
 		/**
 		 * All supported depth texture 2D formats.
@@ -78,7 +73,7 @@ namespace nap
 			D32				///< 32 bit float, 1 component
 		};
 
-		DepthRenderTexture2D(Core& core);
+		DepthRenderTextureCube(Core& core);
 
 		/**
 		 * Creates the texture on the GPU.

@@ -17,8 +17,6 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeRenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("CubeTexture",			&nap::CubeRenderTarget::mCubeTexture,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Width",					&nap::CubeRenderTarget::mWidth,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Height",					&nap::CubeRenderTarget::mHeight,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading",			&nap::CubeRenderTarget::mSampleShading,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Samples",				&nap::CubeRenderTarget::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",				&nap::CubeRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default)
@@ -26,129 +24,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    //////////////////////////////////////////////////////////////////////////
-    // Static functions
-    //////////////////////////////////////////////////////////////////////////
-
-	bool createCubeRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, uint layerCount, VkRenderPass& renderPass, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(targetLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, "Failed to create render pass. Unsupported target layout."))
-			return false;
-
-		bool multi_sample = samples != VK_SAMPLE_COUNT_1_BIT;
-
-		VkAttachmentDescription color_attachment = {};
-		color_attachment.format = colorFormat;
-		color_attachment.samples = samples;
-		color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-		color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		color_attachment.initialLayout = !multi_sample ? targetLayout : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-		color_attachment.finalLayout = !multi_sample ? targetLayout : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentDescription depth_attachment = {};
-		depth_attachment.format = depthFormat;
-		depth_attachment.samples = samples;
-		depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-		depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-		depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-		depth_attachment.initialLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-		depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference color_attachment_ref = {};
-		color_attachment_ref.attachment = 0;
-		color_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-		VkAttachmentReference depth_attachment_ref = {};
-		depth_attachment_ref.attachment = 1;
-		depth_attachment_ref.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-
-		VkSubpassDescription subpass = {};
-		subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
-		subpass.colorAttachmentCount = 1;
-		subpass.pColorAttachments = &color_attachment_ref;
-		subpass.pDepthStencilAttachment = &depth_attachment_ref;
-
-		std::array<VkSubpassDependency, 2> dependencies;
-		dependencies[0].srcSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[0].dstSubpass = 0;
-		dependencies[0].srcStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		dependencies[0].dstStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependencies[0].srcAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		dependencies[0].dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		dependencies[0].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-		dependencies[1].srcSubpass = 0;
-		dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-		dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
-		dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
-		dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
-		dependencies[1].dependencyFlags = VK_DEPENDENCY_BY_REGION_BIT;
-
-		VkRenderPassCreateInfo renderpass_info = {};
-		renderpass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-		renderpass_info.subpassCount = 1;
-		renderpass_info.pSubpasses = &subpass;
-		renderpass_info.dependencyCount = static_cast<uint32_t>(dependencies.size());
-		renderpass_info.pDependencies = dependencies.data();
-
-		// Multi-view extension
-		//const uint32_t view_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
-		//const uint32_t correlation_mask = 2U^std::min<uint32_t>(layerCount, 1)-1;
-
-		// Perhaps consider supporting multiview later
-		// The main issue is that this optimization requires all shaders to implement matrix array lookups using gl_ViewIndex
-
-		//VkRenderPassMultiviewCreateInfo multi_ext = {};
-		//multi_ext.sType = VK_STRUCTURE_TYPE_RENDER_PASS_MULTIVIEW_CREATE_INFO;
-		//multi_ext.subpassCount = 1;
-		//multi_ext.pViewMasks = &view_mask;
-		//multi_ext.correlationMaskCount = 1;
-		//multi_ext.pCorrelationMasks = &correlation_mask;
-
-		//renderpass_info.pNext = &multi_ext;
-
-		// Single-sample render pass
-		if (!multi_sample)
-		{
-			std::array<VkAttachmentDescription, 2> attachments = { color_attachment, depth_attachment };
-			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-			renderpass_info.pAttachments = attachments.data();
-
-			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
-		}
-
-		// Multi-sample render pass
-		else
-		{
-			VkAttachmentDescription resolve_attachment{};
-			resolve_attachment.format = colorFormat;
-			resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-			resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-			resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-			resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-			resolve_attachment.initialLayout = targetLayout;
-			resolve_attachment.finalLayout = targetLayout;
-
-			VkAttachmentReference resolve_attachment_ref{};
-			resolve_attachment_ref.attachment = 2;
-			resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-
-			subpass.pResolveAttachments = &resolve_attachment_ref;
-
-			std::array<VkAttachmentDescription, 3> attachments = { color_attachment, depth_attachment, resolve_attachment };
-			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-			renderpass_info.pAttachments = attachments.data();
-
-			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
-		}
-	}
-
-
+	//////////////////////////////////////////////////////////////////////////
+	// Static functions
+	//////////////////////////////////////////////////////////////////////////
+	
 	// Creates the color image and view
 	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
@@ -215,9 +94,9 @@ namespace nap
 		}
 
 		// Set size
-		mSize = { mWidth, mHeight };
+		mSize = { mCubeTexture->getWidth(), mCubeTexture->getHeight() };
 
-		SurfaceDescriptor color_settings = { mWidth, mHeight, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA, EColorSpace::Linear };
+		SurfaceDescriptor color_settings = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y), ESurfaceDataType::BYTE, ESurfaceChannels::RGBA, EColorSpace::Linear };
 		mVulkanColorFormat = getTextureFormat(color_settings);
 		assert(mVulkanColorFormat != VK_FORMAT_UNDEFINED);
 
@@ -228,7 +107,7 @@ namespace nap
 		assert(mVulkanDepthFormat != VK_FORMAT_UNDEFINED);
 
 		// Framebuffer and attachment sizes
-		VkExtent2D framebuffer_size = { mWidth, mHeight };
+		VkExtent2D framebuffer_size = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
 
 		// Create framebuffer info
 		VkFramebufferCreateInfo framebuffer_info = {};
@@ -362,20 +241,31 @@ namespace nap
 		const glm::vec3& forward	= camera_transform.getLocalTransform()[2];
 
 		auto rotation_local = glm::mat4{};
+		camera.setRenderTargetSize(mSize);
 
 		// Render to frame buffers
-		setLayerIndex(0);
+		setLayerIndex(5);
 		beginRendering();
 		{
-			// forward
+			// forward (-Z)
 			renderCallback(*this, camera.getProjectionMatrix(), camera.getViewMatrix());
 		}
 		endRendering();
 
-		setLayerIndex(1);
+		setLayerIndex(4);
 		beginRendering();
 		{
-			// down
+			// back (+Z)
+			rotation_local = glm::rotate(camera_local, glm::pi<float>(), up);
+			auto view = glm::inverse(camera_global_base * rotation_local);
+			renderCallback(*this, camera.getProjectionMatrix(), view);
+		}
+		endRendering();
+
+		setLayerIndex(3);
+		beginRendering();
+		{
+			// down (-Y)
 			rotation_local = glm::rotate(camera_local, glm::half_pi<float>(), right);
 			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
@@ -385,44 +275,40 @@ namespace nap
 		setLayerIndex(2);
 		beginRendering();
 		{
-			// back
-			rotation_local = glm::rotate(camera_local, glm::pi<float>(), right);
+			// up (+Y)
+			rotation_local = glm::rotate(camera_local, -glm::half_pi<float>(), right);
 			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
 
-		setLayerIndex(3);
+		setLayerIndex(1);
 		beginRendering();
 		{
-			// up
-			rotation_local = glm::rotate(camera_local, glm::pi<float>() + glm::half_pi<float>(), right);
-			auto view = glm::inverse(camera_global_base * rotation_local);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
-		}
-		endRendering();
-
-		setLayerIndex(4);
-		beginRendering();
-		{
-			// left
+			// left (-X)
 			rotation_local = glm::rotate(camera_local, -glm::half_pi<float>(), up);
 			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
 
-		setLayerIndex(5);
+		setLayerIndex(0);
 		beginRendering();
 		{
-			// right
+			// right (+X)
 			rotation_local = glm::rotate(camera_local, glm::half_pi<float>(), up);
 			auto view = glm::inverse(camera_global_base * rotation_local);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
-		setLayerIndex(0);
 
 		mIsFirstPass = false;
+	}
+
+
+	void CubeRenderTarget::setLayerIndex(uint index)
+	{
+		assert(index < TextureCube::LAYER_COUNT);
+		mLayerIndex = std::clamp(index, 0U, TextureCube::LAYER_COUNT - 1);
 	}
 }

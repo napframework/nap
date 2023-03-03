@@ -137,12 +137,6 @@ namespace nap
 	}
 
 
-	VkFormat DepthRenderTarget::getColorFormat() const
-	{
-		return VK_FORMAT_UNDEFINED;
-	}
-
-
 	VkFormat DepthRenderTarget::getDepthFormat() const
 	{
 		return mDepthTexture->getFormat();

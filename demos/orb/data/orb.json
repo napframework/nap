@@ -102,6 +102,84 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "BoundingSphereEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformBoundingSphere",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBoundingSphere",
+                    "Visible": true,
+                    "Mesh": "SphereWireMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_42ec7529",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_c96cbffb",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 1.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_63bed5dd",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "ReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "BoxEntity",
             "Components": [
                 {
@@ -287,7 +365,7 @@
                     "mID": "Light",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./ShadowCameraOrtho",
                     "Attenuation": "LightAttenuationParameter"
                 },
@@ -317,7 +395,7 @@
                 {
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderDirectionalLight1",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -397,7 +475,7 @@
                     "mID": "Light2",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./ShadowCameraOrtho2",
                     "Attenuation": "LightAttenuationParameter"
                 },
@@ -427,7 +505,7 @@
                 {
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderDirectionalLight2",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -662,7 +740,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": -5.0
+                            "z": -3.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -691,7 +769,7 @@
                     "mID": "ShadowCameraPerspective",
                     "Properties": {
                         "FieldOfView": 60.0,
-                        "NearClippingPlane": 1.0,
+                        "NearClippingPlane": 0.1,
                         "FarClippingPlane": 50.0,
                         "GridDimensions": {
                             "x": 1,
@@ -842,7 +920,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_83ae35d7",
+                    "mID": "TransformWorld",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -868,7 +946,8 @@
                 "BaseLightEntity",
                 "FloorEntity",
                 "TorusEntity",
-                "BoxEntity"
+                "BoxEntity",
+                "BoundingSphereEntity"
             ]
         },
         {
@@ -1172,6 +1251,29 @@
             "Radius": 1.0,
             "Rings": 256,
             "Sectors": 256,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SphereWireMesh",
+            "Usage": "Static",
+            "CullMode": "None",
+            "PolygonMode": "Line",
+            "Radius": 10.0,
+            "Rings": 16,
+            "Sectors": 16,
             "Color": {
                 "Values": [
                     1.0,

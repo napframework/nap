@@ -7,9 +7,11 @@
 // External Includes
 #include <nap/service.h>
 #include <depthrendertarget.h>
+#include <rendertexturecube.h>
 
 // Local includes
 #include "cuberendertarget.h"
+#include "cubedepthrendertarget.h"
 #include "lightcomponent.h"
 
 namespace nap
@@ -119,14 +121,14 @@ namespace nap
 
 		struct CubeMapEntry
 		{
-			CubeMapEntry::CubeMapEntry(std::unique_ptr<CubeRenderTarget> target, std::unique_ptr<RenderTextureCube> texture) :
+			CubeMapEntry::CubeMapEntry(std::unique_ptr<CubeDepthRenderTarget> target, std::unique_ptr<DepthRenderTextureCube> texture) :
 				mTarget(std::move(target)), mTexture(std::move(texture))
 			{
-				mTarget->mCubeTexture = mTexture.get();
+				mTarget->mCubeDepthTexture = mTexture.get();
 			}
 
-			std::unique_ptr<CubeRenderTarget> mTarget;
-			std::unique_ptr<RenderTextureCube> mTexture;
+			std::unique_ptr<CubeDepthRenderTarget> mTarget;
+			std::unique_ptr<DepthRenderTextureCube> mTexture;
 		};
 
 		// Shadow mapping

@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "irendertarget.h"
-#include "rendertexture2d.h"
+#include "rendertexturecube.h"
 
 // External Includes
 #include <nap/resource.h>
@@ -17,7 +17,7 @@ namespace nap
 {
 	// Forward Declares
 	class TextureCube;
-	class RenderTexture2D;
+	class DepthRenderTextureCube;
 	class RenderService;
 	class PerspCameraComponentInstance;
 
@@ -26,21 +26,21 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * CubeRenderTarget
+	 * CubeDepthRenderTarget
 	 *
 	 * A specialized version of nap::RenderTarget that renders a quilt texture, comprising a number of views of one or
 	 * multiple objects in a single nap::RenderTexture2D. The layout of the quilt is determined by the nap::QuiltSettings
 	 * acquired from the nap::LookingGlassDevice resource in the "Device" property. 
 	 *
-	 * When rendering, the perspective shift between views is handled automatically by nap::CubeRenderTarget and 
-	 * specified nap::QuiltCameraComponentInstance when using the function CubeRenderTarget::render(). This is 
+	 * When rendering, the perspective shift between views is handled automatically by nap::CubeDepthRenderTarget and 
+	 * specified nap::QuiltCameraComponentInstance when using the function CubeDepthRenderTarget::render(). This is 
 	 * necessary as the rendering of multiple views requires the setup of a renderpass for each view, as opposed to 
 	 * regular use of nap::RenderTarget or nap::RenderWindow. Refer to the following example:
 	 *
 	 * ~~~~~{.cpp} 
 	 *	if (mRenderService->beginHeadlessRecording())
 	 *	{
-	 *		quilt_target->render(quilt_camera, [render_service = mRenderService, comps = render_comps](CubeRenderTarget& target, QuiltCameraComponentInstance& camera)
+	 *		quilt_target->render(quilt_camera, [render_service = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, QuiltCameraComponentInstance& camera)
 	 *		{
 	 *			render_service->renderObjects(target, camera, comps);
 	 *		});
@@ -48,7 +48,7 @@ namespace nap
 	 *	}
 	 * ~~~~~
 	 */
-	class NAPAPI CubeRenderTarget : public Resource, public IRenderTarget
+	class NAPAPI CubeDepthRenderTarget : public Resource, public IRenderTarget
 	{
 		RTTI_ENABLE(Resource)
 	public:
@@ -56,12 +56,12 @@ namespace nap
 		 * Every render target requires a reference to core.
 		 * @param core link to a nap core instance
 		 */
-		CubeRenderTarget(Core& core);
+		CubeDepthRenderTarget(Core& core);
 		
 		/**
 		 * Destroys allocated render resources
 		 */
-		~CubeRenderTarget();
+		~CubeDepthRenderTarget();
 
 		/**
 		 * Initializes the render target, including all the required resources.
@@ -71,12 +71,12 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Starts the render pass. Called by CubeRenderTarget::render().
+		 * Starts the render pass. Called by CubeDepthRenderTarget::render().
 		 */
 		virtual void beginRendering() override;
 
 		/**
-		 * Ends the render pass. Called by CubeRenderTarget::render().
+		 * Ends the render pass. Called by CubeDepthRenderTarget::render().
 		 */
 		virtual void endRendering() override;
 
@@ -107,14 +107,9 @@ namespace nap
 		virtual VkRenderPass getRenderPass() const override						{ return mRenderPass; }
 
 		/**
-		 * @return the texture that holds the result of the render pass.
-		 */
-		//RenderTexture2D& getColorTexture()									{ return *mColorTexture; }
-
-		/**
 		 * @return render target color format.
 		 */
-		virtual VkFormat getColorFormat() const override						{ return mVulkanColorFormat; }
+		virtual VkFormat getColorFormat() const override						{ return VK_FORMAT_UNDEFINED; }
 
 		/**
 		 * @return render target depth format
@@ -137,7 +132,7 @@ namespace nap
 		glm::ivec2 getSize() const												{ return mSize; }
 
 		/**
-		 * Renders a quilt to nap::RenderTexture2D using the specified nap::CubeRenderTarget. Use 'renderCallback' to
+		 * Renders a quilt to nap::RenderTexture2D using the specified nap::CubeDepthRenderTarget. Use 'renderCallback' to
 		 * group the rendering work of a single render pass. This pass is repeated a number of times to create the 
 		 * resulting quilt texture. The perspective shift between views is handled automatically.
 		 * Call this function as follows:
@@ -145,7 +140,7 @@ namespace nap
 		 * ~~~~~{.cpp} 
 		 *	if (mRenderService->beginHeadlessRecording())
 		 *	{
-		 *		quilt_target->render(quilt_camera, [render_service = mRenderService, comps = render_comps](CubeRenderTarget& target, QuiltCameraComponentInstance& camera)
+		 *		quilt_target->render(quilt_camera, [render_service = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, QuiltCameraComponentInstance& camera)
 		 *		{
 		 *			render_service->renderObjects(target, camera, comps);
 		 *		});
@@ -153,7 +148,7 @@ namespace nap
 		 *	}
 		 * ~~~~~
 		 */
-		void render(PerspCameraComponentInstance& camera, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
+		void render(PerspCameraComponentInstance& camera, std::function<void(CubeDepthRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
 
 		/**
 		 * 
@@ -163,22 +158,15 @@ namespace nap
 		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
 		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
+		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;
 
-		RenderTexture2D::EFormat				mColorFormat = RenderTexture2D::EFormat::RGBA8;
-		DepthRenderTexture2D::EDepthFormat		mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
-
-		ResourcePtr<TextureCube>				mCubeTexture;										///< Property: 'CubeTexture' texture to render to.
+		ResourcePtr<DepthRenderTextureCube>		mCubeDepthTexture;									///< Property: 'CubeTexture' texture to render to.
 
 	private:
 		RenderService*							mRenderService;
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
 		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
-
-		VkFormat								mVulkanColorFormat = VK_FORMAT_UNDEFINED;
 		VkFormat								mVulkanDepthFormat = VK_FORMAT_UNDEFINED;
-
-		ImageData								mDepthImage{ TextureCube::LAYER_COUNT };
-		ImageData								mColorImage{ TextureCube::LAYER_COUNT };
 
 		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers;
 

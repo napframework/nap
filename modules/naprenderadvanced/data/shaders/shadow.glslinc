@@ -26,6 +26,7 @@ uint getShadowMapIndex(uint flags)
 }
 
 
+
 // Calculate shadow contribution
 // @param shadowCoord: the fragment position in light space
 // @param lightDir: the light direction

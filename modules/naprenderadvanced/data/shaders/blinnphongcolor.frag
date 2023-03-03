@@ -50,7 +50,7 @@ out vec4 out_Color;
 
 // Shadow Texture Sampler
 uniform sampler2DShadow shadowMaps[8];
-uniform samplerCube cubeShadowMaps[8];
+uniform samplerCubeShadow cubeShadowMaps[8];
 
 // Constants
 const float SHADOW_STRENGTH = 0.85;
@@ -103,18 +103,14 @@ void main()
 			}
 			case 1:
 			{
-				// Perspective divide and map coordinates to [0.0, 1.0] range
-				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w) + 1.0) * 0.5;
-				float bias = 1.0/textureSize(cubeShadowMaps[map_index], 0).x;
-				float comp = coord.z - bias;
+				// The direction of the light is the sampling coordinate in the cube map
+				vec3 light_vec = passPosition - lit.lights[i].origin;
+				vec3 light_direction_world = normalize(light_vec);
+				vec3 coord = normalize((lit.lights[i].lightView * vec4(light_direction_world, 0.0)).xyz);
 
-				// Multi sample
-				float shadow = 0.0;
-				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
-				{
-					shadow += 1.0 - texture(cubeShadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, comp)).x;
-				}
-				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
+				float comp = (length(light_vec))/4.0;
+				float shadow = 1.0 - texture(cubeShadowMaps[map_index], vec4(coord, comp+EPSILON));
+				shadow_result = max(shadow, shadow_result);
 				break;
 			}
 		}
