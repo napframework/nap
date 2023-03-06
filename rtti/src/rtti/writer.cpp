@@ -110,7 +110,7 @@ namespace nap
 						std::string pointee_id = pointee->mID;
 
 						// If the pointer is an RTTI object containing the "toString" function, we call it to serialize the returned value
-						rttr::method to_string_method = findMethodRecursive(value_type, "toString");
+						rttr::method to_string_method = findMethodRecursive(value_type, method::toString);
 						if (to_string_method.is_valid())
 						{
 							// This is likely a ComponentPtrBase

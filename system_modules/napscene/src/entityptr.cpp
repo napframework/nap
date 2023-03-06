@@ -5,9 +5,9 @@
 #include "entityptr.h"
 
 RTTI_BEGIN_CLASS(nap::EntityPtr)
-	RTTI_FUNCTION("toString",			&nap::EntityPtr::toString)
-	RTTI_FUNCTION("translateTargetID",	&nap::EntityPtr::translateTargetID)
-	RTTI_FUNCTION("assign",				&nap::EntityPtr::assign)
+	RTTI_FUNCTION(nap::rtti::method::toString,			&nap::EntityPtr::toString)
+	RTTI_FUNCTION(nap::rtti::method::assign,			&nap::EntityPtr::assign)
+	RTTI_FUNCTION(nap::rtti::method::translateTargetID,	&nap::EntityPtr::translateTargetID)
 RTTI_END_CLASS
 
 namespace nap

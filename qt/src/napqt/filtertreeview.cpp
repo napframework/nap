@@ -62,6 +62,7 @@ QStandardItemModel* FilterTreeView::getModel() const
 	return qobject_cast<QStandardItemModel*>(mProxyModel.sourceModel());
 }
 
+
 void FilterTreeView::select(const QStandardItem* item, bool expand)
 {
 	if (item == nullptr)
@@ -101,6 +102,7 @@ QList<QStandardItem*> FilterTreeView::getSelectedItems() const
 	return ret;
 }
 
+
 QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 {
 	QList<QModelIndex> ret;
@@ -109,31 +111,11 @@ QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 	return ret;
 }
 
+
 void FilterTreeView::onFilterChanged(const QString& text)
 {
 	mProxyModel.setFilterRegExp(text);
 	mProxyModel.clearExemptions();
-	mTreeView->expandAll();
-	setTopItemSelected();
-}
-
-void FilterTreeView::onExpandSelected()
-{
-	for (auto& idx : getSelectedIndexes())
-	{
-		auto index = mProxyModel.mapFromSource(idx);
-		expandChildren(mTreeView, index, true);
-	}
-
-}
-
-void FilterTreeView::onCollapseSelected()
-{
-	for (auto& idx : getSelectedIndexes())
-	{
-		auto index = mProxyModel.mapFromSource(idx);
-		expandChildren(mTreeView, index, false);
-	}
 }
 
 
@@ -145,25 +127,6 @@ void FilterTreeView::onCustomContextMenuRequested(const QPoint& pos)
 	menu.exec(mapToGlobal(pos));
 }
 
-void FilterTreeView::setTopItemSelected()
-{
-	auto model = mTreeView->model();
-	if (model->rowCount() == 0)
-		return;
-
-	setSelectedAndCurrent(model->index(0, 0));
-}
-
-void FilterTreeView::setSelectedAndCurrent(QModelIndex index)
-{
-	auto row = index.row();
-	auto model = index.model();
-	auto leftIndex = model->index(row, 0);;
-	auto rightIndex = model->index(0, model->columnCount() - 1);
-	QItemSelection selection(leftIndex, rightIndex);
-	auto selectionModel = getSelectionModel();
-	selectionModel->setCurrentIndex(leftIndex, QItemSelectionModel::SelectionFlag::ClearAndSelect);
-}
 
 QWidget& FilterTreeView::getCornerWidget()
 {
