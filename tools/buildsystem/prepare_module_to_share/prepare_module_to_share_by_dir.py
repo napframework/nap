@@ -76,13 +76,13 @@ def prepare_module(module_dir, overwrite):
     # Copy any (non-local) demo into the destination module tree
     if demo_dir:
         dest_demo_dir = os.path.join(dest_path, 'demo')
-        shutil.copytree(module_dir, dest_demo_dir)
+        shutil.copytree(demo_dir, dest_demo_dir)
 
     # Clean
     clean_module(dest_path, nap_root)
 
     # Log path
-    print(f"Prepared to {dest_path}")
+    print(f"Module prepared at: {dest_path}")
     return True
 
 def run_cmd(cmd, show_output=False):
@@ -102,28 +102,23 @@ def get_non_local_demo_dir(demo_app_name, module_dir, nap_root):
     If the demo is found under the local module directory that location is preferred and the
     directory isn't returned as it will be included with the main module directory copy.
     """
-
-    print(f"Demo: {demo_app_name}")
-    demo_found_locally = False
-    for search_dir in DEMO_SEARCH_DIRS:
-        check_dir = os.path.join(nap_root, search_dir, demo_app_name)
-        if os.path.exists(check_dir):
-            demo_dir = check_dir
-            break
+    
+    # demo exists local
     demo_dir_under_module = os.path.join(module_dir, 'demo', demo_app_name)
     if os.path.exists(demo_dir_under_module):
-        demo_found_locally = True
-        if not demo_dir is None:
-            reldir = os.path.relpath(demo_dir)
-            print(f"Demo was found at {reldir} however {demo_dir_under_module} will be used instead")
-            # We're found the demo locally next to the module, don't return any other found path
-            demo_dir = None
-        else:
-            demo_dir = demo_dir_under_module
-    if demo_dir is None and not demo_found_locally:
-        eprint(f"Error: {demo_app_name} could not be found")
-        return (None, False)
-    return (demo_dir, True)
+        print(f"Demo found at: {demo_dir_under_module}")
+        return (None, True)
+
+    # look for installed demo
+    for search_dir in DEMO_SEARCH_DIRS:
+        check_dir = os.path.join(nap_root, search_dir, demo_app_name)
+        print(f"Looking for demo in: {check_dir} ...")
+        if os.path.exists(check_dir):
+            print(f"Demo found at: {check_dir}")
+            return (check_dir, True)
+
+    eprint(f"Error: {demo_app_name} could not be found")
+    return (None, False)
 
 def clean_module(dest_path, nap_root):
     # If .gitignore missing copy from template
