@@ -66,6 +66,7 @@ class ModuleInitialiser():
 
         # Deploy module dir shortcuts
         self.__deploy_shortcuts('module_dir_shortcuts', module_path)
+        print(f"Successfully setup module in {module_path}")
 
         # Check and install demo
         return self.__process_demo(module_path)
@@ -144,6 +145,7 @@ class ModuleInitialiser():
 
         # Deploy app dir shortcuts
         self.__deploy_shortcuts('app_dir_shortcuts', demo_dest_dir)
+        print(f"Successfully setup {demo_app_id} demo in {demo_dest_dir}")
 
         # Build and run?
         if self.__run_demo is None:
