@@ -57,12 +57,12 @@ class ModuleInitialiser():
             return False
 
         # Deploy module CMakeLists.txt
-        print("Copying module CMakeLists.txt")
+        print(f"Copying {self.__module_cmakelists} to {module_path}")
         shutil.copy(self.__module_cmakelists, module_path)
 
         # Add module to solution info in Source context
         if get_build_context() == 'source':
-            print("Adding module to solution info")
+            print(f"Adding {module_path} to project solution")
             self.__add_path_to_solution_info(module_path)
 
         # Deploy module dir shortcuts
@@ -89,16 +89,21 @@ class ModuleInitialiser():
         success = True
         if os.path.exists(demo_wrapper_dir):
             demos = [name for name in os.listdir(demo_wrapper_dir) if os.path.isdir(os.path.join(demo_wrapper_dir, name)) and not name.startswith('.')]
-            if len(demos) > 0:
-                if self.__deploy_demo is None:
-                    self.__deploy_demo = read_yes_no(f"Deploy demo?")
-                if self.__deploy_demo:
-                    demo_app_id = demos[0]
-                    if len(demos) > 1:
-                        print(f"There appears to be more than one demo included with the module. {demo_app_id} will be deployed.")
-                    demo_dir = os.path.join(demo_wrapper_dir, demo_app_id)
-                    success = self.__install_demo(demo_app_id, demo_dir)
-        return success
+            demo_count = len(demos)
+            if demo_count == 0:
+                return success
+
+            demo_app_id = demos[0]
+            if demo_count > 1:
+                print(f"There appears to be more than one demo included with the module. Only {demo_app_id} can be deployed.")
+
+            # ask for deployment if not previously set
+            if self.__deploy_demo is None:
+                self.__deploy_demo = read_yes_no(f"Deploy {demo_app_id} demo?")
+            if self.__deploy_demo:
+                demo_dir = os.path.join(demo_wrapper_dir, demo_app_id)
+                success = self.__install_demo(demo_app_id, demo_dir)
+            return success
 
     def __install_demo(self, demo_app_id, demo_dir):
         demo_dest_dir = os.path.join(self.__nap_root, self.DEMO_DEST_DIR, demo_app_id)
@@ -113,30 +118,29 @@ class ModuleInitialiser():
         # Handle existing demo
         if os.path.exists(demo_dest_dir):
             if not self.__force_overwrite_demo:
-                demo_relpath = os.path.relpath(demo_dest_dir, self.__nap_root)
-                if not self.__interactive or not read_yes_no(f"Demo already exists at {demo_relpath}, overwrite?"):
+                if not self.__interactive or not read_yes_no(f"Demo already exists at {demo_dir}, overwrite?"):
                     eprint(f"Error: Demo exists at {demo_dest_dir}")
                     return False
             shutil.rmtree(demo_dest_dir)
 
         # Copy demo
-        print(f"Deploying demo {demo_app_id}")
+        print(f"Deploying {demo_app_id} demo")
         shutil.copytree(demo_dir, demo_dest_dir)
 
         # Deploy demo/app CMakeLists.txt
         app_cmakelists = os.path.join(self.__nap_root, 'cmake', 'app_creator', 'template', 'CMakeLists.txt')
-        print("Copying demo CMakeLists.txt")
+        print(f"Copying {app_cmakelists} to {demo_dest_dir}")
         shutil.copy(app_cmakelists, demo_dest_dir)
 
         # Deploy demo/app module CMakeLists.txt
         demo_module_dir = os.path.join(demo_dest_dir, 'module')
         if os.path.exists(demo_module_dir):
-            print("Copying demo module CMakeLists.txt")
+            print(f"Copying {self.__module_cmakelists} to {demo_module_dir}")
             shutil.copy(self.__module_cmakelists, demo_module_dir)
 
         # Add demo to solution info in Source context
         if get_build_context() == 'source':
-            print("Adding demo to solution info")
+            print(f"Adding {demo_dest_dir} to project solution")
             self.__add_path_to_solution_info(demo_dest_dir)
 
         # Deploy app dir shortcuts
@@ -145,7 +149,7 @@ class ModuleInitialiser():
         # Build and run?
         if self.__run_demo is None:
             # Due to argument processing in the constructor we know we're not running interactively
-            self.__run_demo = read_yes_no(f"Build and run demo?", 'n')
+            self.__run_demo = read_yes_no(f"Build and run {demo_app_id} demo?", 'n')
         if self.__run_demo:
             if not self.__build_and_launch_demo(demo_app_id):
                 return False
@@ -157,7 +161,6 @@ class ModuleInitialiser():
         if os.path.exists(binary_path):
             os.remove(binary_path)
 
-        print(f"Building {demo_app_id}")
         build_script = os.path.join(self.__tools_dir, 'build_app') + ModuleInitialiser.__get_platform_scriptextension()
         cmd = f'{build_script} {demo_app_id}'
         p = run(cmd, shell=True)
