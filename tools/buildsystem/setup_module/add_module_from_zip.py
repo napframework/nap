@@ -53,7 +53,7 @@ class ArchiveHandler():
                         eprint(f"Error: Module exists at {module_path}")
                         return False
                 shutil.rmtree(module_path)
-            print(f"Extacting {archive_path} to {self.__modules_dir}")
+            print(f"Extracting {archive_path} to {self.__modules_dir}")
             if os.name == 'posix':
                 # Use Info-ZIP to preserver symlinks on *nix
                 abs_archive = os.path.abspath(archive_path)
