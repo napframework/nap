@@ -17,6 +17,7 @@ from nap_shared import add_to_solution_info, ensure_set_executable, find_user_mo
 class ModuleInitialiser():
 
     MODULES_DIR_NAME = 'modules'
+    TOOLS_DIR_NAME = 'tools'
     # Currently deploying to apps so that any deployed demos in Source context aren't packaged into the
     # Framework Release
     DEMO_DEST_DIR = 'apps'
@@ -27,6 +28,7 @@ class ModuleInitialiser():
         self.__modules_dir = os.path.join(self.__nap_root, self.MODULES_DIR_NAME)
         self.__modules_dir_relpath = os.path.join('.', os.path.relpath(self.__modules_dir))
         self.__module_cmakelists = os.path.join(self.__nap_root, 'cmake', 'module_creator', 'template', 'CMakeLists.txt')
+        self.__tools_dir = os.path.join(self.__nap_root, self.TOOLS_DIR_NAME)
 
         self.__interactive = interactive
         if deploy_demo in (None, False) and run_demo:
@@ -155,8 +157,8 @@ class ModuleInitialiser():
         if os.path.exists(binary_path):
             os.remove(binary_path)
 
-        print("Building demo")
-        build_script = ModuleInitialiser.__get_platform_scriptpath(os.path.join('tools', 'build_app'))
+        print(f"Building {demo_app_id}")
+        build_script = os.path.join(self.__tools_dir, 'build_app') + ModuleInitialiser.__get_platform_scriptextension()
         cmd = f'{build_script} {demo_app_id}'
         p = run(cmd, shell=True)
         if p.returncode != 0:
@@ -178,8 +180,7 @@ class ModuleInitialiser():
         return path
 
     def __deploy_shortcuts(self, shortcut_dir_name, dest_path):
-        shortcuts_dir = os.path.join(self.__nap_root,
-                                     'tools',
+        shortcuts_dir = os.path.join(self.__tools_dir,
                                      'buildsystem',
                                      shortcut_dir_name,
                                      'unix' if os.name == 'posix' else 'win64',
@@ -192,9 +193,8 @@ class ModuleInitialiser():
                 ensure_set_executable(dest_file)
 
     @staticmethod
-    def __get_platform_scriptpath(script):
-        script_suffix = '' if sys.platform == 'win32' else '.sh'
-        return os.path.join('.', f'{script}{script_suffix}')
+    def __get_platform_scriptextension():
+        return '' if sys.platform == 'win32' else '.sh'
 
     @staticmethod
     def __get_build_config(release_build=True):
