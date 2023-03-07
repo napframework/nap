@@ -769,7 +769,7 @@
                     "mID": "ShadowCameraPerspective",
                     "Properties": {
                         "FieldOfView": 60.0,
-                        "NearClippingPlane": 0.1,
+                        "NearClippingPlane": 0.10000000149011612,
                         "FarClippingPlane": 50.0,
                         "GridDimensions": {
                             "x": 1,

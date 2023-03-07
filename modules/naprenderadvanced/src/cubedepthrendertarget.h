@@ -89,7 +89,7 @@ namespace nap
 		 * Updates the render target clear color.
 		 * @param color the new clear color to use.
 		 */
-		virtual void setClearColor(const RGBAColorFloat& color) override		{ mClearColor = color; }
+		virtual void setClearColor(const RGBAColorFloat& color) override		{ mClearValue = color.getRed(); }
 		
 		/**
 		 * @return the currently used render target clear color.
@@ -155,14 +155,22 @@ namespace nap
 		 */
 		void setLayerIndex(uint index);
 
-		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
-		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;
+		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		float									mClearValue = 1.0f;											///< Property: 'ClearValue' value selection used for clearing the render target
+		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;				///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
+		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D32;	///< Property: 'DepthFormat'
 
-		ResourcePtr<DepthRenderTextureCube>		mCubeDepthTexture;									///< Property: 'CubeTexture' texture to render to.
+		ResourcePtr<DepthRenderTextureCube>		mCubeDepthTexture;											///< Property: 'CubeTexture' Cube texture to render to.
 
 	private:
+		/**
+		 * Starts the render pass. Called by CubeDepthRenderTarget::render().
+		 * Uses the specified depth value range.
+		 * @param minDepth the minimum depth value, 0.0 by default
+		 * @param maxDepth the maximum depth value, 1.0 by default
+		 */
+		void beginRendering(float minDepth, float maxDepth);
+
 		RenderService*							mRenderService;
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
 		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
@@ -171,6 +179,7 @@ namespace nap
 		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers;
 
 		glm::ivec2								mSize;
+		RGBAColorFloat							mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
 		uint									mLayerIndex = 0U;
 		bool									mIsFirstPass = true;
 	};

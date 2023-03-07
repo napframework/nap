@@ -54,6 +54,9 @@ namespace nap
 			mSampleShading = false;
 		}
 
+		// Assign clear color
+		mClearColor = { mClearValue, mClearValue, mClearValue, mClearValue };
+
 		// Set framebuffer size
 		glm::uvec2 size = mDepthTexture->getSize();
 		VkExtent2D framebuffer_size = { size.x, size.y };
@@ -77,22 +80,25 @@ namespace nap
 
 		if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebufferInfo, nullptr, &mFramebuffer) == VK_SUCCESS, "Failed to create framebuffer"))
 			return false;
+
 		return true;
 	}
 
 
 	void DepthRenderTarget::beginRendering()
 	{
-		glm::ivec2 size = mDepthTexture->getSize();
 		VkClearValue clear_value = {};
 		clear_value.depthStencil = { mClearValue, 0 };
+
+		glm::ivec2 size = mDepthTexture->getSize();
+		const glm::ivec2 offset = { 0, 0 };
 
 		// Setup render pass
 		VkRenderPassBeginInfo renderPassInfo = {};
 		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		renderPassInfo.renderPass = mRenderPass;
 		renderPassInfo.framebuffer = mFramebuffer;
-		renderPassInfo.renderArea.offset = { 0, 0 };
+		renderPassInfo.renderArea.offset = { offset.x, offset.y };
 		renderPassInfo.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };
 		renderPassInfo.clearValueCount = 1;
 		renderPassInfo.pClearValues = &clear_value;
@@ -102,15 +108,15 @@ namespace nap
 
 		// Ensure scissor and viewport are covering complete area
 		VkRect2D rect;
-		rect.offset.x = 0;
-		rect.offset.y = 0;
+		rect.offset.x = offset.x;
+		rect.offset.y = offset.y;
 		rect.extent.width = size.x;
 		rect.extent.height = size.y;
 		vkCmdSetScissor(mRenderService->getCurrentCommandBuffer(), 0, 1, &rect);
 
 		VkViewport viewport = {};
-		viewport.x = 0.0f;
-		viewport.y = size.y;
+		viewport.x = static_cast<float>(offset.x);
+		viewport.y = size.y + static_cast<float>(offset.y);
 		viewport.width = size.x;
 		viewport.height = -size.y;
 		viewport.minDepth = 0.0f;

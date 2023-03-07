@@ -22,9 +22,10 @@
 #include <parametercolor.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
-	RTTI_PROPERTY("ShadowMapSize", &nap::RenderAdvancedServiceConfiguration::mShadowMapSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowCubeMapSize", &nap::RenderAdvancedServiceConfiguration::mShadowCubeMapSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Precision", &nap::RenderAdvancedServiceConfiguration::mPrecision, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowMapSize",		&nap::RenderAdvancedServiceConfiguration::mShadowMapSize,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowCubeMapSize",	&nap::RenderAdvancedServiceConfiguration::mShadowCubeMapSize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Precision",			&nap::RenderAdvancedServiceConfiguration::mPrecision,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CubePrecision",		&nap::RenderAdvancedServiceConfiguration::mCubePrecision,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAdvancedService)
@@ -132,13 +133,16 @@ namespace nap
 			}
 		}
 
+		// Get configuration
+		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
+
 		// Create and manage a shadow texture dummy for valid shadow samplers
 		mShadowTextureDummy = std::make_unique<DepthRenderTexture2D>(getCore());
 		mShadowTextureDummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mShadowTextureDummy->mWidth = 16;
 		mShadowTextureDummy->mHeight = 16;
 		mShadowTextureDummy->mUsage = Texture::EUsage::Static;
-		mShadowTextureDummy->mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
+		mShadowTextureDummy->mDepthFormat = configuration->mPrecision;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
 		mShadowTextureDummy->mClearValue = 1.0f;
 		mShadowTextureDummy->mFill = true;
@@ -302,10 +306,6 @@ namespace nap
 			if (light_struct == nullptr)
 				continue;
 
-			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
-			if (light_array == nullptr)
-				continue;
-
 			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
 			if (light_count == nullptr)
 				continue;
@@ -315,6 +315,10 @@ namespace nap
 				light_count->setValue(0);
 				return true;
 			}
+
+			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
+			if (light_array == nullptr)
+				continue;
 
 			uint count = 0;
 			for (const auto& light : mLightComponents)
@@ -397,69 +401,72 @@ namespace nap
 					}
 				}
 
-				// Shadows
-				auto* render_service = getCore().getService<RenderService>();
-				assert(render_service != nullptr);
-
-				const auto light_view = light->getShadowCamera()->getViewMatrix();
-				light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightView)->setValue(light_view);
-
-				const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light_view;
-				light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
-
-				switch (light->getLightType())
+				if (light->isShadowEnabled())
 				{
-				case ELightType::Directional:
-				case ELightType::Spot:
-				{
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
-					if (shadow_sampler_array != nullptr)
+					// Shadows
+					auto* render_service = getCore().getService<RenderService>();
+					assert(render_service != nullptr);
+
+					const auto light_view = light->getShadowCamera()->getViewMatrix();
+					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightView)->setValue(light_view);
+
+					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light_view;
+					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+
+					switch (light->getLightType())
 					{
-						auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
-						if (count >= instance->getNumElements())
-							continue;
-
-						if (light->isShadowEnabled())
-						{
-							const auto it = mLightDepthMap.find(light);
-							assert(it != mLightDepthMap.end());
-							instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
-						}
-						else
-						{
-							instance->setTexture(count, *mShadowTextureDummy);
-						}
-					}
-					break;
-				}
-				case ELightType::Point:
-				{
-					auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
-					if (shadow_sampler_array != nullptr)
+					case ELightType::Directional:
+					case ELightType::Spot:
 					{
-						auto* instance = static_cast<SamplerCubeArrayInstance*>(shadow_sampler_array);
-						if (count >= instance->getNumElements())
-							continue;
+						auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
+						if (shadow_sampler_array != nullptr)
+						{
+							auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
+							if (count >= instance->getNumElements())
+								continue;
 
-						if (light->isShadowEnabled())
-						{
-							const auto it = mLightCubeMap.find(light);
-							assert(it != mLightCubeMap.end());
-							instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
+							if (light->isShadowEnabled())
+							{
+								const auto it = mLightDepthMap.find(light);
+								assert(it != mLightDepthMap.end());
+								instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
+							}
+							else
+							{
+								instance->setTexture(count, *mShadowTextureDummy);
+							}
 						}
-						else
-						{
-							instance->setTexture(count, render_service->getEmptyTextureCube());
-						}
+						break;
 					}
-					break;
-				}
-				case ELightType::Custom:
-				{
-					break;
-				}
-				default:
-					assert(false);
+					case ELightType::Point:
+					{
+						auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
+						if (shadow_sampler_array != nullptr)
+						{
+							auto* instance = static_cast<SamplerCubeArrayInstance*>(shadow_sampler_array);
+							if (count >= instance->getNumElements())
+								continue;
+
+							if (light->isShadowEnabled())
+							{
+								const auto it = mLightCubeMap.find(light);
+								assert(it != mLightCubeMap.end());
+								instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
+							}
+							else
+							{
+								instance->setTexture(count, render_service->getEmptyTextureCube());
+							}
+						}
+						break;
+					}
+					case ELightType::Custom:
+					{
+						break;
+					}
+					default:
+						assert(false);
+					}
 				}
 				++count;
 			}
@@ -574,7 +581,10 @@ namespace nap
 				cube_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
 				cube_map->mWidth = configuration->mShadowCubeMapSize;
 				cube_map->mHeight = configuration->mShadowCubeMapSize;
+				cube_map->mDepthFormat = configuration->mCubePrecision;
 				cube_map->mColorSpace = EColorSpace::Linear;
+				cube_map->mClearValue = 1.0f;
+				cube_map->mFill = true;
 
  				if (!cube_map->init(errorState))
 				{
@@ -585,7 +595,7 @@ namespace nap
 				// Target
 				auto cube_target = std::make_unique<CubeDepthRenderTarget>(getCore());
 				cube_target->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
-				cube_target->mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };
+				cube_target->mClearValue = 1.0f;
 				cube_target->mRequestedSamples = ERasterizationSamples::One;
 				cube_target->mSampleShading = false;
 

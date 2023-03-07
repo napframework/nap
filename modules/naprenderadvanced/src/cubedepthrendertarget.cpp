@@ -19,7 +19,8 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeDepthRenderTarget)
 	RTTI_PROPERTY("CubeDepthTexture",		&nap::CubeDepthRenderTarget::mCubeDepthTexture,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SampleShading",			&nap::CubeDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Samples",				&nap::CubeDepthRenderTarget::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",				&nap::CubeDepthRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClearValue",				&nap::CubeDepthRenderTarget::mClearValue,				nap::rtti::EPropertyMetaData::Default)
+
 RTTI_END_CLASS
 
 namespace nap
@@ -56,6 +57,10 @@ namespace nap
 			mSampleShading = false;
 		}
 
+		// Assign clear color
+		float clear_value = std::clamp(mClearValue, 0.0f, 1.0f);
+		mClearColor = { mClearValue, mClearValue, mClearValue, mClearValue };
+
 		// Set size
 		mSize = { mCubeDepthTexture->getWidth(), mCubeDepthTexture->getHeight() };
 
@@ -91,11 +96,10 @@ namespace nap
 	}
 
 
-	void CubeDepthRenderTarget::beginRendering()
+	void CubeDepthRenderTarget::beginRendering(float minDepth, float maxDepth)
 	{
-		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		VkClearValue clear_value = {};
+		clear_value.depthStencil = { math::fit(std::clamp(mClearValue, 0.0f, 1.0f), 0.0f, 1.0f, minDepth, maxDepth), 0 };
 
 		const glm::ivec2 offset = { 0, 0 };
 
@@ -106,8 +110,8 @@ namespace nap
 		renderPassInfo.framebuffer = mFramebuffers[mLayerIndex];
 		renderPassInfo.renderArea.offset = { offset.x, offset.y };
 		renderPassInfo.renderArea.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		renderPassInfo.clearValueCount = 1;
+		renderPassInfo.pClearValues = &clear_value;
 
 		// Begin render pass
 		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
@@ -123,9 +127,15 @@ namespace nap
 		viewport.y = mSize.y + static_cast<float>(offset.y);
 		viewport.width = mSize.x;
 		viewport.height = -mSize.y;
-		viewport.minDepth = 0.0f;
-		viewport.maxDepth = 1.0f;
+		viewport.minDepth = minDepth;
+		viewport.maxDepth = maxDepth;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
+	}
+
+
+	void CubeDepthRenderTarget::beginRendering()
+	{
+		beginRendering(0.0f, 1.0f);
 	}
 
 
@@ -142,6 +152,8 @@ namespace nap
 		camera.setGridLocation(0, 0);
 		camera.setGridDimensions(1, 1);
 		camera.setRenderTargetSize(mSize);
+		const float near = camera.getNearClippingPlane();
+		const float far = camera.getFarClippingPlane();
 
 		// Fetch camera transform
 		auto& cam_trans = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
@@ -157,7 +169,7 @@ namespace nap
 		// https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
 		//
 		setLayerIndex(5);
-		beginRendering();
+		beginRendering(near, far);
 		{
 			// forward (-Z)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), forward);
@@ -167,7 +179,7 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(4);
-		beginRendering();
+		beginRendering(near, far);
 		{
 			// back (+Z)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right);
@@ -177,7 +189,7 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(3);
-		beginRendering();
+		beginRendering(near, far);
 		{
 			// down (-Y)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), right);
@@ -187,7 +199,7 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(2);
-		beginRendering();
+		beginRendering(near, far);
 		{
 			// up (+Y)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), right);
@@ -197,7 +209,7 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(1);
-		beginRendering();
+		beginRendering(near, far);
 		{
 			// left (-X)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right) *
@@ -208,7 +220,7 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(0);
-		beginRendering();
+		beginRendering(near, far);
 		{
 			// right (+X)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right) *

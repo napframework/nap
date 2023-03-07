@@ -988,14 +988,18 @@ namespace nap
 		VkPipelineRasterizationStateCreateInfo rasterizer = {};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
+		rasterizer.depthBiasEnable = VK_FALSE;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = getPolygonMode(polygonMode);
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
 
-		// Enable depth bias if no color attachment is used
-		rasterizer.depthBiasEnable = depthOnly ? VK_TRUE : VK_FALSE;
+		VkPipelineRasterizationDepthClipStateCreateInfoEXT rasterizer_depth_ext = {};
+		rasterizer_depth_ext.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_DEPTH_CLIP_STATE_CREATE_INFO_EXT;
+		rasterizer_depth_ext.depthClipEnable = VK_FALSE;
+		rasterizer_depth_ext.flags = 0;
+		rasterizer.pNext = &rasterizer_depth_ext;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -1589,6 +1593,10 @@ namespace nap
 
 		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
 		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
+
+		// Add depth clipping extension and disable depth range restrictions extension
+		required_ext_names.emplace_back("VK_EXT_depth_clip_enable");
+		required_ext_names.emplace_back("VK_EXT_depth_range_unrestricted");
 
 		// Add additional requests
 		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());

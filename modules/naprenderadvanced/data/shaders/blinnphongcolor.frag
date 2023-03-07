@@ -50,10 +50,26 @@ out vec4 out_Color;
 
 // Shadow Texture Sampler
 uniform sampler2DShadow shadowMaps[8];
-uniform samplerCubeShadow cubeShadowMaps[8];
+uniform samplerCube cubeShadowMaps[8];
 
 // Constants
 const float SHADOW_STRENGTH = 0.85;
+
+const uint SHADOWMAP_QUAD = 0;
+const uint SHADOWMAP_CUBE = 1;
+
+
+float remapDepth01(float depth, float near, float far)
+{
+	return (depth - near) / (far - near);
+}
+
+
+float linearDepth(float depth, float near, float far)
+{
+	float ndc = depth * 2.0 - 1.0; 
+	return (2.0 * near * far) / (far + near - ndc * (far - near));
+}
 
 
 void main()
@@ -85,7 +101,7 @@ void main()
 		// Quad
 		switch (getShadowMapId(flags))
 		{
-			case 0:
+			case SHADOWMAP_QUAD:
 			{
 				// Perspective divide and map coordinates to [0.0, 1.0] range
 				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w) + 1.0) * 0.5;
@@ -101,15 +117,25 @@ void main()
 				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
 				break;
 			}
-			case 1:
+			case SHADOWMAP_CUBE:
 			{
+				const float near = 0.1;
+				const float far = 50.0;
+
 				// The direction of the light is the sampling coordinate in the cube map
 				vec3 light_vec = passPosition - lit.lights[i].origin;
 				vec3 light_direction_world = normalize(light_vec);
 				vec3 coord = normalize((lit.lights[i].lightView * vec4(light_direction_world, 0.0)).xyz);
+	 
+	 			float depth01 = remapDepth01(texture(cubeShadowMaps[map_index], vec3(coord)).x, near, far);
+				float depth = linearDepth(depth01, near, far);
 
-				float comp = (length(light_vec))/4.0;
-				float shadow = 1.0 - texture(cubeShadowMaps[map_index], vec4(coord, comp+EPSILON));
+				float frag_light_dist = length((lit.lights[i].lightView * vec4(passPosition, 1.0)).xyz);
+				float frag_depth01 = remapDepth01(frag_light_dist, near, far);
+				float frag_depth = linearDepth(frag_depth01, near, far);
+
+				float shadow = frag_depth < depth ? 0.0 : 1.0;
+
 				shadow_result = max(shadow, shadow_result);
 				break;
 			}
