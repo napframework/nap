@@ -233,12 +233,15 @@ def get_build_context():
     else:
         return 'framework_release'
 
+def get_solution_info_path():
+    return os.path.join(get_nap_root(), SOLUTION_INFO_FILENAME)
+
 def add_to_solution_info(new_path):
     """Add new path to solution_info.json in Source context"""
     if get_build_context() != 'source':
         return
 
-    filepath = os.path.join(get_nap_root(), SOLUTION_INFO_FILENAME)
+    filepath = get_solution_info_path()
     if os.path.exists(filepath):
         with open(filepath, 'r') as fp:
             data = json.load(fp, object_pairs_hook=OrderedDict)

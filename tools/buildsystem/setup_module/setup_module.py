@@ -11,7 +11,7 @@ import sys
 script_dir = os.path.dirname(__file__)
 nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
 sys.path.append(os.path.join(nap_root, 'tools', 'buildsystem', 'common'))
-from nap_shared import add_to_solution_info, ensure_set_executable, find_user_module, eprint, get_build_arch, \
+from nap_shared import add_to_solution_info, get_solution_info_path, ensure_set_executable, find_user_module, eprint, get_build_arch, \
         get_build_context, get_nap_root, read_yes_no
 
 class ModuleInitialiser():
@@ -62,7 +62,6 @@ class ModuleInitialiser():
 
         # Add module to solution info in Source context
         if get_build_context() == 'source':
-            print(f"Adding {module_path} to project solution")
             self.__add_path_to_solution_info(module_path)
 
         # Deploy module dir shortcuts
@@ -82,6 +81,7 @@ class ModuleInitialiser():
         rel_path = os.path.relpath(new_path, self.__nap_root)
         if os.name != 'posix':
             rel_path = PurePath(rel_path).as_posix()
+        print(f"Adding '{rel_path}' to {get_solution_info_path()}")
         add_to_solution_info(rel_path)
 
     def __process_demo(self, module_path):
@@ -95,7 +95,7 @@ class ModuleInitialiser():
 
             demo_app_id = demos[0]
             if demo_count > 1:
-                print(f"There appears to be more than one demo included with the module. Only {demo_app_id} can be deployed.")
+                print(f"There appears to be more than one demo included with the module. Only '{demo_app_id}' can be deployed.")
 
             # ask for deployment if not previously set
             if self.__deploy_demo is None:
@@ -112,7 +112,7 @@ class ModuleInitialiser():
         if self.DEMO_DEST_DIR != self.APPS_DIR:
             apps_duplicate_dir = os.path.join(self.__nap_root, self.APPS_DIR, demo_app_id)
             if os.path.exists(apps_duplicate_dir):
-                eprint("Error: An app exists with the same name")
+                eprint(f"Error: App already exists at: {apps_duplicate_dir}")
                 return False
 
         # Handle existing demo
@@ -140,7 +140,6 @@ class ModuleInitialiser():
 
         # Add demo to solution info in Source context
         if get_build_context() == 'source':
-            print(f"Adding {demo_dest_dir} to project solution")
             self.__add_path_to_solution_info(demo_dest_dir)
 
         # Deploy app dir shortcuts
