@@ -53,7 +53,7 @@ class ArchiveHandler():
                         eprint(f"Error: Module exists at {module_path}")
                         return False
                 shutil.rmtree(module_path)
-            print(f"Extracting {archive_path} to {self.__modules_dir}")
+            print(f"Extracting {archive_path} -> {self.__modules_dir}")
             if os.name == 'posix':
                 # Use Info-ZIP to preserver symlinks on *nix
                 abs_archive = os.path.abspath(archive_path)
@@ -95,7 +95,7 @@ def yes_no_to_bool(val):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("ARCHIVE", type=str, help="The module archive")
+    parser.add_argument("ARCHIVE", type=str, help="The module .zip archive")
     parser.add_argument("--interactive", choices=['yes', 'no'], default='yes', help="Disable interactive prompts")
     parser.add_argument("--force-overwrite-module", choices=['yes', 'no'], help="Force overwriting of any existing module")
     parser.add_argument("--deploy-demo", choices=['yes', 'no'], help="Deploy a demo, if it exists")

@@ -57,7 +57,7 @@ class ModuleInitialiser():
             return False
 
         # Deploy module CMakeLists.txt
-        print(f"Copying {self.__module_cmakelists} to {module_path}")
+        print(f"Copying {self.__module_cmakelists} -> {module_path}")
         shutil.copy(self.__module_cmakelists, module_path)
 
         # Add module to solution info in Source context
@@ -130,13 +130,13 @@ class ModuleInitialiser():
 
         # Deploy demo/app CMakeLists.txt
         app_cmakelists = os.path.join(self.__nap_root, 'cmake', 'app_creator', 'template', 'CMakeLists.txt')
-        print(f"Copying {app_cmakelists} to {demo_dest_dir}")
+        print(f"Copying {app_cmakelists} -> {demo_dest_dir}")
         shutil.copy(app_cmakelists, demo_dest_dir)
 
         # Deploy demo/app module CMakeLists.txt
         demo_module_dir = os.path.join(demo_dest_dir, 'module')
         if os.path.exists(demo_module_dir):
-            print(f"Copying {self.__module_cmakelists} to {demo_module_dir}")
+            print(f"Copying {self.__module_cmakelists} -> {demo_module_dir}")
             shutil.copy(self.__module_cmakelists, demo_module_dir)
 
         # Add demo to solution info in Source context
