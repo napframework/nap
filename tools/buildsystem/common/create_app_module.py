@@ -73,7 +73,7 @@ def create_app_module(search_app_name, update_app_json, generate_solution, show_
                 print("Solution generation failed")
                 sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
 
-    print("App module created in %s" % os.path.relpath(module_path))
+    print(f"Successfully created {prefixed_module_name} at {module_path}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

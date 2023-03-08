@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import check_for_existing_module, get_cmake_path, get_python_path, eprint, add_to_solution_info, get_build_context
+from nap_shared import check_for_existing_module, get_cmake_path, get_python_path, eprint, add_to_solution_info, get_solution_info_path, get_build_context
 
 # Exit codes
 ERROR_INVALID_INPUT = 1
@@ -41,8 +41,9 @@ def create_module(module_name, generate_solution):
         sys.exit(ERROR_CMAKE_CREATION_FAILURE)
 
     if get_build_context() == 'source':
-        print("Adding module to solution info")
-        add_to_solution_info(f'modules/{prefixed_module_name}')
+        module_solution_path = f"modules/{prefixed_module_name}"
+        print(f"Adding {module_solution_path} to {get_solution_info_path()}")
+        add_to_solution_info(module_solution_path)
 
     # Solution generation
     if generate_solution:
@@ -55,7 +56,7 @@ def create_module(module_name, generate_solution):
             eprint("Solution generation failed")
             sys.exit(ERROR_SOLUTION_GENERATION_FAILURE)
 
-    print("Module created at %s" % os.path.relpath(module_path))
+    print(f"Successfully created {prefixed_module_name} module at {module_path}")
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

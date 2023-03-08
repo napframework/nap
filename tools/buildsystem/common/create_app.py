@@ -5,7 +5,7 @@ import re
 import sys
 from subprocess import call
 
-from nap_shared import add_module_to_app_json, add_to_solution_info, check_for_existing_module, find_app, eprint, get_cmake_path, get_python_path, get_build_context
+from nap_shared import add_module_to_app_json, add_to_solution_info, get_solution_info_path, check_for_existing_module, find_app, eprint, get_cmake_path, get_python_path, get_build_context
 
 # Default modules if none are specified
 DEFAULT_MODULE_LIST = "napapp,napcameracontrol,napparametergui"
@@ -40,7 +40,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
         eprint("Can't create app with module due to clash with existing module name")
         sys.exit(ERROR_EXISTING_MODULE)
 
-    print("Creating app %s" % app_name)
+    print(f"Creating {app_name} app")
 
     # Create app from template
     input_module_list = module_list.replace(',', ';')
@@ -70,8 +70,9 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
         add_module_to_app_json(app_name, 'nap%s' % app_name)
 
     if get_build_context() == 'source':
-        print("Adding app to solution info")
-        add_to_solution_info(f'apps/{app_name}')
+        app_info_path = f"apps/{app_name}"
+        print(f"Adding {app_info_path} to {get_solution_info_path()}")
+        add_to_solution_info(app_info_path)
 
     # Solution generation
     if generate_solution:
@@ -86,8 +87,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
         if call(cmd, cwd=nap_root) != 0:
             eprint("Solution generation failed")
             return ERROR_SOLUTION_GENERATION_FAILURE
-    print("App created in %s" % os.path.relpath(app_path))
-
+    print(f"Successfully created {app_name} app at {app_path}")
     return 0
 
 if __name__ == '__main__':
