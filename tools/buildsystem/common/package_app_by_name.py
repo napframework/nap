@@ -153,9 +153,9 @@ def archive_to_linux_tar_bz2(timestamp, bin_dir, app_full_name, app_version):
     shutil.rmtree(archive_dir)
 
     # Cleanup
-    packaged_to_relpath = os.path.relpath(os.path.join(app_dir, package_filename_with_ext))
-    print("Packaged to %s" % packaged_to_relpath)
-    return packaged_to_relpath
+    packaged_to = os.path.join(app_dir, package_filename_with_ext)
+    print("Packaged to %s" % packaged_to)
+    return os.path.relpath(packaged_to)
 
 # Create build archive to zip on macOS
 def archive_to_macos_zip(timestamp, bin_dir, app_full_name, app_version):
@@ -180,9 +180,9 @@ def archive_to_macos_zip(timestamp, bin_dir, app_full_name, app_version):
     # Cleanup
     shutil.rmtree(archive_dir)
 
-    packaged_to_relpath = os.path.relpath(os.path.join(app_dir, package_filename_with_ext))
-    print("Packaged to %s" % packaged_to_relpath)
-    return packaged_to_relpath
+    packaged_to = os.path.join(app_dir, package_filename_with_ext)
+    print("Packaged to %s" % packaged_to)
+    return os.path.relpath(packaged_to)
 
 # Create build archive to zip on Win64
 def archive_to_win64_zip(timestamp, bin_dir, app_full_name, app_version):
@@ -210,8 +210,8 @@ def archive_to_win64_zip(timestamp, bin_dir, app_full_name, app_version):
     shutil.rmtree(archiving_parent_path)
 
     packaged_to = os.path.join(app_dir, package_filename_with_ext)
-    print("Packaged to %s" % os.path.relpath(packaged_to))
-    return packaged_to
+    print("Packaged to %s" % packaged_to)
+    return os.path.relpath(packaged_to)
 
 # Just package to a directory
 def archive_to_timestamped_dir(timestamp, bin_dir, app_full_name, app_version, platform):
@@ -227,7 +227,7 @@ def archive_to_timestamped_dir(timestamp, bin_dir, app_full_name, app_version, p
 
     # Cleanup
     packaged_to = os.path.join(app_dir, package_filename)
-    print("Packaged to directory %s" % os.path.relpath(packaged_to))
+    print("Packaged to directory %s" % packaged_to)
     return packaged_to
 
 # Build the name of our package and populate our JSON build info file
