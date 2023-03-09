@@ -116,6 +116,12 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
         # Build & install to packaging dir
         call_except_on_failure(build_dir_name, [cmake, '--build', '.', '--target', 'install', '--config', PACKAGED_BUILD_TYPE])
 
+        # Remove pdbs for distribution
+        for root, dirs, files in os.walk(local_bin_dir_name):
+            for file in files:
+                if file.lower().endswith('.pdb'):
+                    os.remove(os.path.join(root, file))
+
         # Create archive
         if zip_package:
             packaged_to = archive_to_win64_zip(timestamp, bin_dir, app_full_name, app_version)
