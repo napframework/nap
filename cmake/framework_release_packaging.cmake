@@ -442,10 +442,7 @@ endmacro()
 macro(package_module_into_framework_release)
     install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
             DESTINATION modules/${PROJECT_NAME}
-            PATTERN "CMakeLists.txt" EXCLUDE
             PATTERN "cached_module_json.cmake" EXCLUDE
-            PATTERN "prepare_to_share.*" EXCLUDE
-            PATTERN "regenerate.*" EXCLUDE
             PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/lib/" EXCLUDE
             PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/bin/" EXCLUDE
             PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/build/" EXCLUDE
