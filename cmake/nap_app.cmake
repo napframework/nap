@@ -169,11 +169,7 @@ else()
     if(NAP_PACKAGED_BUILD)
         # Package into framework release
         package_app_into_framework_release(${parent_dir}/${PROJECT_NAME})
-
         # Don't build the apps while doing a framework packaging build unless explicitly requested
-        # (and even when explicitly requested skip excluded apps)
-        if(NOT BUILD_APPS)
-            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        endif()
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
     endif()
 endif()

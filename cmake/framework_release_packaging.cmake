@@ -756,19 +756,6 @@ macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
                                   ERROR_QUIET)")
 endmacro()
 
-# Don't build the app module while doing a framework build unless explicitly requested
-# INCLUDE_ONLY_WITH_NAIVI_APPS: whether the module is for a app that should only be
-#   packaged if packaging Naivi apps
-function(exclude_from_build_when_packaging INCLUDE_ONLY_WITH_NAIVI_APPS)
-    if(NAP_PACKAGED_BUILD)
-        if(NOT BUILD_APPS)
-            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        elseif(${INCLUDE_ONLY_WITH_NAIVI_APPS} AND NOT PACKAGE_NAIVI_APPS)
-            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        endif()
-    endif()
-endfunction()
-
 # Package path mappings, for appropriate platform
 function(package_path_mappings)
     if(WIN32)

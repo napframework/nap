@@ -56,7 +56,7 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${module_folder_name})
 
 # Don't build app modules when packaging release
-if(IMPORTING_APP_MODULE AND NAP_PACKAGED_BUILD AND NOT BUILD_APPS)
+if(IMPORTING_APP_MODULE AND NAP_PACKAGED_BUILD)
     set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif()
 unset(IMPORTING_APP_MODULE)
