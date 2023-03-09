@@ -117,10 +117,10 @@ namespace nap
 
 		/**
 		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
-	 	 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param index Index to add.
 		 */
-		void addIndex(int index)										{ mIndices.emplace_back(index); }
+		void addIndex(uint32 index)										{ mIndices.emplace_back(index); }
 
 		/**
 		 * Array subscript overload.

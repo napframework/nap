@@ -341,7 +341,7 @@ namespace nap
 				for (const auto& entry : light->mUniformDataMap)
 				{
 					const auto name = entry.first;
-					if (name == uniform::light::origin || name == uniform::light::direction || name == uniform::light::lightViewProjection)
+					if (name == uniform::light::origin || name == uniform::light::direction || name == uniform::light::viewProjectionMatrix)
 						continue;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
@@ -408,10 +408,10 @@ namespace nap
 					assert(render_service != nullptr);
 
 					const auto light_view = light->getShadowCamera()->getViewMatrix();
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightView)->setValue(light_view);
+					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewMatrix)->setValue(light_view);
 
 					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light_view;
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::lightViewProjection)->setValue(light_view_projection);
+					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewProjectionMatrix)->setValue(light_view_projection);
 
 					switch (light->getLightType())
 					{
@@ -646,6 +646,9 @@ namespace nap
 
 	void RenderAdvancedService::removeLightComponent(LightComponentInstance& light)
 	{
+		if (!light.isRegistered())
+			return;
+
 		if (mShadowResourcesCreated)
 		{
 			switch (light.getLightType())

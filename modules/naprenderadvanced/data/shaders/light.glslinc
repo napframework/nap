@@ -3,8 +3,8 @@
 // Light structure for all lights. Not all types use all members.
 struct Light
 {
-	mat4 lightViewProjection;
-	mat4 lightView;
+	mat4 viewMatrix;
+	mat4 viewProjectionMatrix;
 	vec3 origin;
 	vec3 direction;
 	vec3 color;
@@ -14,6 +14,11 @@ struct Light
 	float falloff;
 	uint flags;
 };
+
+const uint LIGHT_CUSTOM = 0;
+const uint LIGHT_DIRECTIONAL = 1;
+const uint LIGHT_POINT = 2;
+const uint LIGHT_SPOT = 3;
 
 // Returns the light type index of the specified light flag
 uint getLightType(uint flags)
@@ -29,17 +34,19 @@ float getSurfaceIncidence(Light light, vec3 surfaceNormal, vec3 surfacePosition)
 	// Directional
 	switch (getLightType(light.flags))
 	{
-		case 0:
+		case LIGHT_DIRECTIONAL:
+		case LIGHT_SPOT:
 		{
 			return 1.0 - max(dot(surfaceNormal, -light.direction), 0.0);
 		}
-		case 1:
+		case LIGHT_POINT:
 		{
 			vec3 inv_light_direction = normalize(light.origin - surfacePosition);
 			return 1.0 - max(dot(surfaceNormal, inv_light_direction), 0.0);
 		}
 
 		// Light type not supported
+		case LIGHT_CUSTOM:
 		default:
 		{
 			return -1.0;

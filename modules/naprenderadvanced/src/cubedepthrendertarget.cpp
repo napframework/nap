@@ -99,7 +99,7 @@ namespace nap
 	void CubeDepthRenderTarget::beginRendering(float minDepth, float maxDepth)
 	{
 		VkClearValue clear_value = {};
-		clear_value.depthStencil = { math::fit(std::clamp(mClearValue, 0.0f, 1.0f), 0.0f, 1.0f, minDepth, maxDepth), 0 };
+		clear_value.depthStencil = { mClearValue, 0 };// { math::fit(std::clamp(mClearValue, 0.0f, 1.0f), 0.0f, 1.0f, minDepth, maxDepth), 0 };
 
 		const glm::ivec2 offset = { 0, 0 };
 
@@ -127,8 +127,8 @@ namespace nap
 		viewport.y = mSize.y + static_cast<float>(offset.y);
 		viewport.width = mSize.x;
 		viewport.height = -mSize.y;
-		viewport.minDepth = minDepth;
-		viewport.maxDepth = maxDepth;
+		viewport.minDepth = 0.0f;
+		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mRenderService->getCurrentCommandBuffer(), 0, 1, &viewport);
 	}
 

@@ -59,8 +59,8 @@ namespace nap
 			inline constexpr const char* falloff = "falloff";
 			inline constexpr const char* flags = "flags";
 
-			inline constexpr const char* lightViewProjection = "lightViewProjection";
-			inline constexpr const char* lightView = "lightView";
+			inline constexpr const char* viewMatrix = "viewMatrix";
+			inline constexpr const char* viewProjectionMatrix = "viewProjectionMatrix";
 			inline constexpr const char* lights = "lights";
 			inline constexpr const char* count = "count";
 		}
@@ -131,6 +131,11 @@ namespace nap
 		virtual bool isShadowEnabled()										{ return mIsShadowEnabled; }
 
 		/**
+		 * @return whether this light was registered with the render advanced service
+		 */
+		bool isRegistered() const											{ return mIsRegistered; }
+
+		/**
 		 * @return the light transform
 		 */
 		const TransformComponentInstance& getTransform() const				{ return *mTransform; }
@@ -174,6 +179,7 @@ namespace nap
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
 		bool mIsShadowEnabled							= false;
+		bool mIsRegistered								= false;
 
 	private:
 		Parameter* getLightUniform(const std::string& memberName);

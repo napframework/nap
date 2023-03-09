@@ -66,7 +66,7 @@ void main()
 	// Shadow
 	for (uint i = 0; i < lit.count; i++)
 	{
-		vec4 coord = lit.lights[i].lightViewProjection * world_position;
+		vec4 coord = lit.lights[i].viewProjectionMatrix * world_position;
 
 		float incidence = getSurfaceIncidence(lit.lights[i], world_position.xyz, world_normal.xyz);
 		float bias = 0.0005 * incidence;

@@ -740,7 +740,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": -3.0
+                            "z": -8.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -770,7 +770,7 @@
                     "Properties": {
                         "FieldOfView": 60.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 50.0,
+                        "FarClippingPlane": 40.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -1271,7 +1271,7 @@
             "Usage": "Static",
             "CullMode": "None",
             "PolygonMode": "Line",
-            "Radius": 10.0,
+            "Radius": 20.0,
             "Rings": 16,
             "Sectors": 16,
             "Color": {

@@ -59,12 +59,21 @@ const uint SHADOWMAP_QUAD = 0;
 const uint SHADOWMAP_CUBE = 1;
 
 
-float remapDepth01(float depth, float near, float far)
+// Maps x [min, max] to [0, 1]
+float map01(float x, float min, float max)
 {
-	return (depth - near) / (far - near);
+	return (x - min) / (max - min);
 }
 
 
+// Maps x [0, 1] to [min, max]
+float map(float x, float min, float max)
+{
+	return min + x * (max - min);
+}
+
+
+// Linearizes depth buffer value
 float linearDepth(float depth, float near, float far)
 {
 	float ndc = depth * 2.0 - 1.0; 
@@ -98,7 +107,6 @@ void main()
 
 		uint map_index = getShadowMapIndex(flags);
 
-		// Quad
 		switch (getShadowMapId(flags))
 		{
 			case SHADOWMAP_QUAD:
@@ -120,22 +128,24 @@ void main()
 			case SHADOWMAP_CUBE:
 			{
 				const float near = 0.1;
-				const float far = 50.0;
+				const float far = 40.0;
 
-				// The direction of the light is the sampling coordinate in the cube map
+				// The direction of the light in view space is the sampling coordinate for the cube map
 				vec3 light_vec = passPosition - lit.lights[i].origin;
 				vec3 light_direction_world = normalize(light_vec);
-				vec3 coord = normalize((lit.lights[i].lightView * vec4(light_direction_world, 0.0)).xyz);
+				vec3 coord = normalize((lit.lights[i].viewMatrix * vec4(light_direction_world, 0.0)).xyz);
 	 
-	 			float depth01 = remapDepth01(texture(cubeShadowMaps[map_index], vec3(coord)).x, near, far);
+	 			float depth01 = texture(cubeShadowMaps[map_index], vec3(coord)).x;
 				float depth = linearDepth(depth01, near, far);
 
-				float frag_light_dist = length((lit.lights[i].lightView * vec4(passPosition, 1.0)).xyz);
-				float frag_depth01 = remapDepth01(frag_light_dist, near, far);
-				float frag_depth = linearDepth(frag_depth01, near, far);
+				vec3 frag_depth_view = (lit.lights[i].viewMatrix * vec4(passPosition, 1.0)).xyz;
+				float frag_depth = -frag_depth_view.z;
 
-				float shadow = frag_depth < depth ? 0.0 : 1.0;
+				// float v = frag_depth/far;
+				// out_Color = vec4(v, v, v, ubo.alpha);
+				// return;
 
+				float shadow = frag_depth <= depth ? 0.0 : 1.0;
 				shadow_result = max(shadow, shadow_result);
 				break;
 			}

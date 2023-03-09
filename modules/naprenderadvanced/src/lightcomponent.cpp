@@ -78,6 +78,7 @@ namespace nap
 		assert(service != nullptr);
 		service->registerLightComponent(*this);
 
+		mIsRegistered = true;
 		return true;
 	}
 
@@ -105,5 +106,7 @@ namespace nap
 		auto* service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
 		assert(service != nullptr);
 		service->removeLightComponent(*this);
+
+		mIsRegistered = false;
 	}
 }
