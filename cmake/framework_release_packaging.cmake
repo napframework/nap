@@ -438,8 +438,23 @@ macro(package_app_into_framework_release DEST_DIR)
     endif()
 endmacro()
 
-# Package module in current CMake source dir into framework release
+# Package (installed) module in current CMake source dir into framework release
 macro(package_module_into_framework_release)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+            DESTINATION modules/${PROJECT_NAME}
+            PATTERN "CMakeLists.txt" EXCLUDE
+            PATTERN "cached_module_json.cmake" EXCLUDE
+            PATTERN "prepare_to_share.*" EXCLUDE
+            PATTERN "regenerate.*" EXCLUDE
+            PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/lib/" EXCLUDE
+            PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/bin/" EXCLUDE
+            PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/build/" EXCLUDE
+            PATTERN
+            )
+endmacro()
+
+# Package system module in current CMake source dir into framework release
+macro(package_system_module_into_framework_release)
     # Package headers
     install(DIRECTORY "src/" DESTINATION "system_modules/${PROJECT_NAME}/include"
             FILES_MATCHING PATTERN "*.h")
