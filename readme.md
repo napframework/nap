@@ -16,8 +16,8 @@
 	*	[Dependencies](#dependencies)
 	*	[Create the Solution](#create-the-solution)
 	*	[Run a Demo](#run-a-demo)
-	*	[Work Against Source](#compile-your-app-against-nap-source)
-	*	[Package](#build-your-own-nap-distribution-package)
+	*	[Work Against Source](#work-against-source)
+	*	[Package](#build-distributable-nap-package)
 *	[Contributing](#contributing)
 *	[License](#license)
 	
@@ -140,22 +140,22 @@ Open the generated solution in `XCode` or `Visual Studio`, select a build config
 
 ---
 
-## Compile your app against NAP source
+## Work Against Source
 
-### Motivation
 Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a pre-compiled NAP package instead.
 
-### Process
+### Create Application
+
 Run `tools/create_app` to create a new application:
 ```
 ./create_app.sh myApp
 ```
 
-This creates a new application called `myApp` in the `apps` directory, adds `myApp` to `solution_info.json` and regenerates the solution for you. Note that when you make manual changes to the build system (by editing CMake or JSON) you must run `generate_solution` to update the solution.
+This creates a new application called `myApp` in the `apps` directory, adds `myApp` to `solution_info.json` and regenerates the solution. Note that when you make manual changes to the build system (by editing CMake or JSON) you must run `generate_solution` to update the solution.
 
 ---
 
-## Build your own NAP distribution package
+## Build Distributable NAP Package
 
 A packaged version of NAP will include all of the following:
 
