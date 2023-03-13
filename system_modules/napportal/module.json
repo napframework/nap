@@ -1,0 +1,10 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napapiwebsocket",
+        "napparameter",
+        "napcalendar"
+    ],
+    "WindowsDllSearchPaths": []
+}

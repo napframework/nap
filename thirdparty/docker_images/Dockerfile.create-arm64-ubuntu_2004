@@ -1,0 +1,56 @@
+FROM ubuntu:20.04
+ARG image_name
+
+ENV cmake_src_path="/tmp/cmake-${image_name}"
+COPY cmake ${cmake_src_path}
+
+RUN \
+  apt-get update && \ 
+  DEBIAN_FRONTEND=noninteractive \
+  TZ=Australia/Darwin \
+  apt-get --no-install-recommends install -y \
+    autoconf \
+    automake \
+    build-essential \
+    ca-certificates \
+    curl \
+    git \
+    libasound2-dev \
+    libbz2-dev \
+    libdbus-1-dev \
+    libdbus-c++-dev \
+    libflac-dev \
+    libglu1-mesa-dev \
+    libjack-dev \
+    libogg-dev \
+    libpng-dev \
+    libpulse-dev \
+    libssl-dev \
+    libtool \
+    libudev-dev \
+    libusb-1.0-0-dev \
+    libvorbis-dev \
+    libwayland-dev \
+    libxcursor-dev \
+    libxext-dev  \
+    libxi-dev \
+    libxinerama-dev \
+    libxrandr-dev \
+    libxss-dev \
+    libxxf86vm-dev \
+    nasm \
+    openssh-client \
+    patchelf \
+    pkg-config \
+    python-is-python2 \
+    python2 \
+    python3 \
+    rsync \
+    unzip \
+    wget \
+    xz-utils \
+    zlib1g-dev \
+    zlibc && \
+ rm -rf /var/lib/apt/lists/* && \
+ rsync -utrK ${cmake_src_path}/ /usr/ && \
+ rm -rf ${cmake_src_path}

@@ -141,6 +141,7 @@ namespace nap
 	{
 		std::unordered_map<std::string, std::string> values({
 			{"ROOT", getNAPRootDir()},
+			{"BUILD_ARCH", sBuildArch},
 			{"BUILD_CONFIG", sBuildConf},
 			{"BUILD_TYPE", sBuildType},
 			{"PROJECT_DIR", getProjectDir()},

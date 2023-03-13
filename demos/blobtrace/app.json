@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "BlobTrace",
+    "Version": "1.0.0",
+    "Data": "data/blobtrace.json",
+    "PathMapping": "cache/path_mapping.json",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napimgui"
+    ],
+    "ServiceConfig": "",
+    "ServiceConfigurations": []
+}

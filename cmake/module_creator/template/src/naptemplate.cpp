@@ -1,0 +1,3 @@
+#include "utility/module.h"
+
+NAP_SERVICE_MODULE("nap@UNPREFIXED_MODULE_NAME_INPUTCASE@", "0.1.0", "nap::@UNPREFIXED_MODULE_NAME_INPUTCASE@Service")

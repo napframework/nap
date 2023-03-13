@@ -1,0 +1,3 @@
+After build:
+
+install_name_tool -id @rpath/libyocto.dylib libyocto.dylib

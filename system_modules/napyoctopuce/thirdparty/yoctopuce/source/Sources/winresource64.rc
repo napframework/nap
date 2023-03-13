@@ -1,0 +1,35 @@
+#include "yapi/yversion.h"
+#define VER_FILEVERSION             1,0
+#define VER_FILEVERSION_STR         YOCTO_API_BUILD_NO
+
+1 VERSIONINFO
+FILEVERSION    	VER_FILEVERSION
+{
+ BLOCK "StringFileInfo"
+ {
+  BLOCK "040904E4"
+  {
+   VALUE "CompanyName", "    Yoctopuce Sarl\0"
+   VALUE "LegalCopyright",   "Copyright (C) 2011 and beyond by Yoctopuce Sarl, Switzerland.\0"
+   VALUE "FileDescription",  "Yoctopuce Cpp API dll (64 bits)\0"
+   VALUE "FileVersion",      VER_FILEVERSION_STR
+   VALUE "InternalName",     "yocto_api\0"
+   VALUE "OriginalFilename", "yocto.dll\0"
+   VALUE "ProductName",      "Yoctopuce Cpp API (64 bits)\0"
+   VALUE "ProductVersion",   YOCTO_API_BUILD_NO
+  }
+ }
+
+ BLOCK "VarFileInfo"
+ {
+    /* The following line should only be modified for localized versions.     */
+    /* It consists of any number of WORD,WORD pairs, with each pair           */
+    /* describing a language,codepage combination supported by the file.      */
+    /*                                                                        */
+    /* For example, a file might have values "0x409,1252" indicating that it  */
+    /* supports English language (0x409) in the Windows ANSI codepage (1252). */
+
+
+  VALUE "Translation", 0x409, 1252
+ }
+}

@@ -1,0 +1,6 @@
+
+To build a .deb:
+
+$ tar -zxf libartnet_1.1.0-1.tar.gz
+$ cd libartnet_1.1.0-1
+$ debuild -us -uc  # don't sign the package

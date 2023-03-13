@@ -1,0 +1,13 @@
+src/libmpg123/check_neon.lo: src/libmpg123/check_neon.S \
+ /usr/include/stdc-predef.h src/libmpg123/mangle.h src/config.h \
+ src/intsym.h src/config.h
+
+/usr/include/stdc-predef.h:
+
+src/libmpg123/mangle.h:
+
+src/config.h:
+
+src/intsym.h:
+
+src/config.h:

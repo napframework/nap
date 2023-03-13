@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Python",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "napapp",
+        "nappython",
+        "napimgui"
+    ],
+    "Data": "data/python.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

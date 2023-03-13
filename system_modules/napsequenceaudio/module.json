@@ -1,0 +1,8 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napsequence",
+        "napaudio"
+    ]
+}

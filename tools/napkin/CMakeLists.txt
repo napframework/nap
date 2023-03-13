@@ -12,11 +12,11 @@ endif()
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
     else()
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
-        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-$<CONFIG>/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/packaging_bin/$<CONFIG>-${ARCH}/napkin)
+        set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_DEBUG ${NAP_ROOT}/packaging_bin/$<CONFIG>-${ARCH}/napkin)
     endif()
 else()
     if(NOT DEFINED NAP_PACKAGED_BUILD)
@@ -38,11 +38,11 @@ if(${ARCH} STREQUAL "armhf")
 endif()
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES mod_napscene mod_napmath mod_napcolor)
+set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
-    list(APPEND NAP_MODULES_DEPENDENCIES mod_nappython)
+    list(APPEND NAP_MODULES_DEPENDENCIES nappython)
 endif()
 
 # Add module lib dependencies
@@ -62,7 +62,7 @@ nap_qt_post(${PROJECT_NAME})
 
 # Add the runtime paths for RTTR
 if(APPLE)
-    add_macos_rttr_rpath()
+    macos_add_rttr_rpath()
 endif()
 
 # Copy resources
@@ -134,14 +134,18 @@ package_qt()
 
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 
-include(${NAP_ROOT}/cmake/packaging_macros.cmake)
-
 if(MSVC)
-    # On Windows, for now, dump our whole napkin directory from packaging_bin
+    # On Windows dump the whole napkin directory from packaging_bin
     # into the release as it contains the required DLLs (as we loaded them in 
     # there for running Napkin against source from its own directory)
-    install(DIRECTORY ${NAP_ROOT}/packaging_bin/${CMAKE_CXX_COMPILER_ID}-${ARCH}-Release/napkin
-            DESTINATION tools/)
+    install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release-${ARCH}/napkin
+            DESTINATION tools/
+            PATTERN "*.pdb" EXCLUDE)
+
+    if(PACKAGE_PDBS)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/napkin)
+    endif()
+
 else()
     # Deploy Napkin binary into release on *nix
     install(TARGETS ${PROJECT_NAME}
@@ -154,13 +158,10 @@ if(APPLE)
     macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                     ${THIRDPARTY_DIR}  
                                                     Release)
-endif()
-if(MSVC AND PACKAGE_PDBS)
-    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/napkin)
-endif()        
+endif()   
 
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
-        DESTINATION tools/napkin/)
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources DESTINATION tools/napkin/)
+module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
 
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 
@@ -168,15 +169,15 @@ set(PATH_TO_THIRDPARTY "../../thirdparty")
 if(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
-    set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-    list(APPEND EXTRA_RPATH lib)
+    list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
+    list(APPEND DEEP_DEPENDENT_RPATHS lib)
 
     foreach(MODULECONFIG Release)
         set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${MODULECONFIG} 
                                                                                 "${NAP_MODULES_DEPENDENCIES}" 
                                                                                 ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                                                 "../.."
-                                                                                "${EXTRA_RPATH}")
+                                                                                "${DEEP_DEPENDENT_RPATHS}")
     endforeach()
 
     # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
@@ -196,10 +197,14 @@ if(APPLE)
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
-        set(EXTRA_RPATH ${PATH_TO_THIRDPARTY}/Qt/lib)
-        list(APPEND EXTRA_RPATH lib)
+        list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
+        list(APPEND DEEP_DEPENDENT_RPATHS lib)
 
-        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_DEPENDENCIES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
+        set_installed_rpath_on_linux_object_for_dependent_modules("${NAP_MODULES_DEPENDENCIES}" 
+                                                                  ${PROJECT_NAME} 
+                                                                  "../.." 
+                                                                  "${DEEP_DEPENDENT_RPATHS}"
+                                                                  )
 
         # Install platform plugin alongside Napkin as it doesn't appear to be able to sourced
         # remotely (from thirdparty)

@@ -1,0 +1,331 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 46;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		F49F3E541F534A060069C715 /* artnet.c in Sources */ = {isa = PBXBuildFile; fileRef = F49F3E461F534A060069C715 /* artnet.c */; };
+		F49F3E551F534A060069C715 /* artnet.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E471F534A060069C715 /* artnet.h */; };
+		F49F3E561F534A060069C715 /* common.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E481F534A060069C715 /* common.h */; };
+		F49F3E571F534A060069C715 /* misc.c in Sources */ = {isa = PBXBuildFile; fileRef = F49F3E4A1F534A060069C715 /* misc.c */; };
+		F49F3E581F534A060069C715 /* misc.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E4B1F534A060069C715 /* misc.h */; };
+		F49F3E591F534A060069C715 /* network.c in Sources */ = {isa = PBXBuildFile; fileRef = F49F3E4C1F534A060069C715 /* network.c */; };
+		F49F3E5A1F534A060069C715 /* packets.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E4E1F534A060069C715 /* packets.h */; };
+		F49F3E5B1F534A060069C715 /* private.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E4F1F534A060069C715 /* private.h */; };
+		F49F3E5C1F534A060069C715 /* receive.c in Sources */ = {isa = PBXBuildFile; fileRef = F49F3E501F534A060069C715 /* receive.c */; };
+		F49F3E5D1F534A060069C715 /* tod.c in Sources */ = {isa = PBXBuildFile; fileRef = F49F3E511F534A060069C715 /* tod.c */; };
+		F49F3E5E1F534A060069C715 /* tod.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E521F534A060069C715 /* tod.h */; };
+		F49F3E5F1F534A060069C715 /* transmit.c in Sources */ = {isa = PBXBuildFile; fileRef = F49F3E531F534A060069C715 /* transmit.c */; };
+		F49F3E611F534A3B0069C715 /* config.h in Headers */ = {isa = PBXBuildFile; fileRef = F49F3E601F534A3B0069C715 /* config.h */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		F49F3E1E1F533BE50069C715 /* libArtnet.dylib */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.dylib"; includeInIndex = 0; path = libArtnet.dylib; sourceTree = BUILT_PRODUCTS_DIR; };
+		F49F3E461F534A060069C715 /* artnet.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = artnet.c; path = ../../../../artnet/artnet.c; sourceTree = "<group>"; };
+		F49F3E471F534A060069C715 /* artnet.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = artnet.h; path = ../../../../artnet/artnet.h; sourceTree = "<group>"; };
+		F49F3E481F534A060069C715 /* common.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = common.h; path = ../../../../artnet/common.h; sourceTree = "<group>"; };
+		F49F3E491F534A060069C715 /* Makefile.am */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; name = Makefile.am; path = ../../../../artnet/Makefile.am; sourceTree = "<group>"; };
+		F49F3E4A1F534A060069C715 /* misc.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = misc.c; path = ../../../../artnet/misc.c; sourceTree = "<group>"; };
+		F49F3E4B1F534A060069C715 /* misc.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = misc.h; path = ../../../../artnet/misc.h; sourceTree = "<group>"; };
+		F49F3E4C1F534A060069C715 /* network.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = network.c; path = ../../../../artnet/network.c; sourceTree = "<group>"; };
+		F49F3E4E1F534A060069C715 /* packets.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = packets.h; path = ../../../../artnet/packets.h; sourceTree = "<group>"; };
+		F49F3E4F1F534A060069C715 /* private.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = private.h; path = ../../../../artnet/private.h; sourceTree = "<group>"; };
+		F49F3E501F534A060069C715 /* receive.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = receive.c; path = ../../../../artnet/receive.c; sourceTree = "<group>"; };
+		F49F3E511F534A060069C715 /* tod.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = tod.c; path = ../../../../artnet/tod.c; sourceTree = "<group>"; };
+		F49F3E521F534A060069C715 /* tod.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = tod.h; path = ../../../../artnet/tod.h; sourceTree = "<group>"; };
+		F49F3E531F534A060069C715 /* transmit.c */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.c; name = transmit.c; path = ../../../../artnet/transmit.c; sourceTree = "<group>"; };
+		F49F3E601F534A3B0069C715 /* config.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = config.h; path = ../../../../artnet/osx/config.h; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F49F3E1B1F533BE50069C715 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		F49F3E151F533BE50069C715 = {
+			isa = PBXGroup;
+			children = (
+				F49F3E201F533BE50069C715 /* Artnet */,
+				F49F3E1F1F533BE50069C715 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+		F49F3E1F1F533BE50069C715 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				F49F3E1E1F533BE50069C715 /* libArtnet.dylib */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		F49F3E201F533BE50069C715 /* Artnet */ = {
+			isa = PBXGroup;
+			children = (
+				F49F3E601F534A3B0069C715 /* config.h */,
+				F49F3E461F534A060069C715 /* artnet.c */,
+				F49F3E471F534A060069C715 /* artnet.h */,
+				F49F3E481F534A060069C715 /* common.h */,
+				F49F3E491F534A060069C715 /* Makefile.am */,
+				F49F3E4A1F534A060069C715 /* misc.c */,
+				F49F3E4B1F534A060069C715 /* misc.h */,
+				F49F3E4C1F534A060069C715 /* network.c */,
+				F49F3E4E1F534A060069C715 /* packets.h */,
+				F49F3E4F1F534A060069C715 /* private.h */,
+				F49F3E501F534A060069C715 /* receive.c */,
+				F49F3E511F534A060069C715 /* tod.c */,
+				F49F3E521F534A060069C715 /* tod.h */,
+				F49F3E531F534A060069C715 /* transmit.c */,
+			);
+			path = Artnet;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXHeadersBuildPhase section */
+		F49F3E1C1F533BE50069C715 /* Headers */ = {
+			isa = PBXHeadersBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F49F3E5E1F534A060069C715 /* tod.h in Headers */,
+				F49F3E551F534A060069C715 /* artnet.h in Headers */,
+				F49F3E581F534A060069C715 /* misc.h in Headers */,
+				F49F3E5B1F534A060069C715 /* private.h in Headers */,
+				F49F3E5A1F534A060069C715 /* packets.h in Headers */,
+				F49F3E561F534A060069C715 /* common.h in Headers */,
+				F49F3E611F534A3B0069C715 /* config.h in Headers */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXHeadersBuildPhase section */
+
+/* Begin PBXNativeTarget section */
+		F49F3E1D1F533BE50069C715 /* Artnet */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F49F3E291F533BE50069C715 /* Build configuration list for PBXNativeTarget "Artnet" */;
+			buildPhases = (
+				F49F3E1A1F533BE50069C715 /* Sources */,
+				F49F3E1B1F533BE50069C715 /* Frameworks */,
+				F49F3E1C1F533BE50069C715 /* Headers */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = Artnet;
+			productName = Artnet;
+			productReference = F49F3E1E1F533BE50069C715 /* libArtnet.dylib */;
+			productType = "com.apple.product-type.library.dynamic";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		F49F3E161F533BE50069C715 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				LastUpgradeCheck = 0830;
+				ORGANIZATIONNAME = "Coen Klosters";
+				TargetAttributes = {
+					F49F3E1D1F533BE50069C715 = {
+						CreatedOnToolsVersion = 8.3.3;
+						DevelopmentTeam = RLCGMG2ZB7;
+						ProvisioningStyle = Automatic;
+					};
+				};
+			};
+			buildConfigurationList = F49F3E191F533BE50069C715 /* Build configuration list for PBXProject "Artnet" */;
+			compatibilityVersion = "Xcode 3.2";
+			developmentRegion = English;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+			);
+			mainGroup = F49F3E151F533BE50069C715;
+			productRefGroup = F49F3E1F1F533BE50069C715 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				F49F3E1D1F533BE50069C715 /* Artnet */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXSourcesBuildPhase section */
+		F49F3E1A1F533BE50069C715 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F49F3E5D1F534A060069C715 /* tod.c in Sources */,
+				F49F3E591F534A060069C715 /* network.c in Sources */,
+				F49F3E5C1F534A060069C715 /* receive.c in Sources */,
+				F49F3E541F534A060069C715 /* artnet.c in Sources */,
+				F49F3E571F534A060069C715 /* misc.c in Sources */,
+				F49F3E5F1F534A060069C715 /* transmit.c in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		F49F3E271F533BE50069C715 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
+			};
+			name = Debug;
+		};
+		F49F3E281F533BE50069C715 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++0x";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				CODE_SIGN_IDENTITY = "-";
+				COPY_PHASE_STRIP = YES;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu99;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = macosx;
+				VALID_ARCHS = x86_64;
+			};
+			name = Release;
+		};
+		F49F3E2A1F533BE50069C715 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = RLCGMG2ZB7;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				"GCC_PREPROCESSOR_DEFINITIONS[arch=*]" = (
+					"DEBUG=1",
+					"$(inherited)",
+					HAVE_CONFIG_H,
+				);
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = /usr/local/lib;
+				MACOSX_DEPLOYMENT_TARGET = 10.9;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Debug;
+		};
+		F49F3E2B1F533BE50069C715 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				DEVELOPMENT_TEAM = RLCGMG2ZB7;
+				DYLIB_COMPATIBILITY_VERSION = "";
+				DYLIB_CURRENT_VERSION = "";
+				EXECUTABLE_PREFIX = lib;
+				GCC_ENABLE_CPP_EXCEPTIONS = YES;
+				GCC_ENABLE_CPP_RTTI = YES;
+				GCC_PREPROCESSOR_DEFINITIONS = HAVE_CONFIG_H;
+				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				INSTALL_PATH = /usr/local/lib;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		F49F3E191F533BE50069C715 /* Build configuration list for PBXProject "Artnet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F49F3E271F533BE50069C715 /* Debug */,
+				F49F3E281F533BE50069C715 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		F49F3E291F533BE50069C715 /* Build configuration list for PBXNativeTarget "Artnet" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F49F3E2A1F533BE50069C715 /* Debug */,
+				F49F3E2B1F533BE50069C715 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = F49F3E161F533BE50069C715 /* Project object */;
+}
