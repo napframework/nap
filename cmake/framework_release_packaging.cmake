@@ -438,8 +438,20 @@ macro(package_app_into_framework_release DEST_DIR)
     endif()
 endmacro()
 
-# Package module in current CMake source dir into framework release
+# Package (installed) module in current CMake source dir into framework release
 macro(package_module_into_framework_release)
+    install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/
+            DESTINATION modules/${PROJECT_NAME}
+            PATTERN "cached_module_json.cmake" EXCLUDE
+            PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/lib/" EXCLUDE
+            PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/bin/" EXCLUDE
+            PATTERN "${CMAKE_CURRENT_SOURCE_DIR}/build/" EXCLUDE
+            PATTERN
+            )
+endmacro()
+
+# Package system module in current CMake source dir into framework release
+macro(package_system_module_into_framework_release)
     # Package headers
     install(DIRECTORY "src/" DESTINATION "system_modules/${PROJECT_NAME}/include"
             FILES_MATCHING PATTERN "*.h")
@@ -743,19 +755,6 @@ macro(ensure_macos_file_has_rpath_at_install FILENAME PATH_TO_ADD)
                                           ${FILENAME}
                                   ERROR_QUIET)")
 endmacro()
-
-# Don't build the app module while doing a framework build unless explicitly requested
-# INCLUDE_ONLY_WITH_NAIVI_APPS: whether the module is for a app that should only be
-#   packaged if packaging Naivi apps
-function(exclude_from_build_when_packaging INCLUDE_ONLY_WITH_NAIVI_APPS)
-    if(NAP_PACKAGED_BUILD)
-        if(NOT BUILD_APPS)
-            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        elseif(${INCLUDE_ONLY_WITH_NAIVI_APPS} AND NOT PACKAGE_NAIVI_APPS)
-            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        endif()
-    endif()
-endfunction()
 
 # Package path mappings, for appropriate platform
 function(package_path_mappings)

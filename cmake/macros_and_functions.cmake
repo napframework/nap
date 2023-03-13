@@ -511,13 +511,13 @@ endmacro()
 
 # Export all FBXs in directory to meshes
 function(export_fbx)
-    if(NAP_PACKAGED_BUILD AND NOT BUILD_APPS)
+    # Don't export when packaging
+    if(NAP_PACKAGED_BUILD)
         return()
     endif()
 
-    set(workdir ${CMAKE_CURRENT_SOURCE_DIR}/data/)
-
     # If we don't have any FBXs bail
+    set(workdir ${CMAKE_CURRENT_SOURCE_DIR}/data/)
     file(GLOB fbx_files ${workdir}/*.fbx)
     list(LENGTH fbx_files fbx_count)
     if(NOT fbx_files)

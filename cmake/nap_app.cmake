@@ -168,16 +168,8 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
 else()
     if(NAP_PACKAGED_BUILD)
         # Package into framework release
-        set(included_with_framework_release FALSE)
-        if(parent_dir MATCHES "^demos$" OR PACKAGE_NAIVI_APPS OR PACKAGING_FORCE_PACKAGE_USER_APP)
-            package_app_into_framework_release(${parent_dir}/${PROJECT_NAME})
-            set(included_with_framework_release TRUE)
-        endif()
-
+        package_app_into_framework_release(${parent_dir}/${PROJECT_NAME})
         # Don't build the apps while doing a framework packaging build unless explicitly requested
-        # (and even when explicitly requested skip excluded apps)
-        if(NOT BUILD_APPS OR NOT included_with_framework_release)
-            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
-        endif()
+        set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
     endif()
 endif()

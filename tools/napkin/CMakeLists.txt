@@ -150,11 +150,17 @@ package_qt()
 set(NAPKIN_PACKAGED_BUILD_TYPE Release)
 
 if(MSVC)
-    # On Windows, for now, dump our whole napkin directory from packaging_bin
+    # On Windows dump the whole napkin directory from packaging_bin
     # into the release as it contains the required DLLs (as we loaded them in 
     # there for running Napkin against source from its own directory)
     install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release-${ARCH}/napkin
-            DESTINATION tools/)
+            DESTINATION tools/
+            PATTERN "*.pdb" EXCLUDE)
+
+    if(PACKAGE_PDBS)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/napkin)
+    endif()
+
 else()
     # Deploy Napkin binary into release on *nix
     install(TARGETS ${PROJECT_NAME}
@@ -167,14 +173,9 @@ if(APPLE)
     macos_remove_rpaths_from_object_at_install_time(${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                     ${THIRDPARTY_DIR}  
                                                     Release)
-endif()
-if(MSVC AND PACKAGE_PDBS)
-    install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/napkin)
-endif()        
+endif()   
 
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources
-        DESTINATION tools/napkin/)
-
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources DESTINATION tools/napkin/)
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
 
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)

@@ -56,7 +56,7 @@ endif()
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${module_folder_name})
 
 # Don't build app modules when packaging release
-if(IMPORTING_APP_MODULE AND NAP_PACKAGED_BUILD AND NOT BUILD_APPS)
+if(IMPORTING_APP_MODULE AND NAP_PACKAGED_BUILD)
     set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
 endif()
 unset(IMPORTING_APP_MODULE)
@@ -164,8 +164,15 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
         endif()
     endif()
 else()
-    # Package into platform release
     if(parent_dir MATCHES "^system_modules$")
-        package_module_into_framework_release()
+        # Package system modules into platform release
+        package_system_module_into_framework_release()
+    elseif(parent_dir MATCHES "^modules")
+        # Package additional modules into platform release
+        if (NAP_PACKAGED_BUILD)
+            package_module_into_framework_release()
+            # Don't build the apps while doing a framework packaging build unless explicitly requested
+            set_target_properties(${PROJECT_NAME} PROPERTIES EXCLUDE_FROM_ALL TRUE)
+        endif ()
     endif()
 endif()

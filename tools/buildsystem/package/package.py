@@ -52,13 +52,11 @@ def call(cwd, cmd, capture_output=False):
 def package(zip_release,
             include_debug_symbols,
             include_docs,
-            include_apps,
             single_app_to_include,
             clean,
             include_timestamp_in_name,
             build_label,
             package_name,
-            build_apps,
             archive_source,
             archive_source_zipped,
             archive_source_only,
@@ -119,12 +117,10 @@ def package(zip_release,
                                              git_revision,
                                              build_label_out,
                                              overwrite,
-                                             include_apps,
                                              single_app_to_include,
                                              include_docs,
                                              zip_release,
                                              include_debug_symbols,
-                                             build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
@@ -134,12 +130,10 @@ def package(zip_release,
                                              git_revision,
                                              build_label_out,
                                              overwrite,
-                                             include_apps,
                                              single_app_to_include,
                                              include_docs,
                                              zip_release,
                                              include_debug_symbols,
-                                             build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
@@ -149,12 +143,10 @@ def package(zip_release,
                                              git_revision,
                                              build_label_out,
                                              overwrite,
-                                             include_apps,
                                              single_app_to_include,
                                              include_docs,
                                              zip_release,
                                              include_debug_symbols,
-                                             build_apps,
                                              sub_dirs,
                                              enable_python
                                              )
@@ -219,7 +211,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             sys.exit(ERROR_PACKAGE_EXISTS)
 
 
-def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_apps, additional_dirs, enable_python):
+def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for Linux"""
 
     for build_type in BUILD_TYPES:
@@ -230,12 +222,10 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
                            '-DNAP_PACKAGED_BUILD=1',
                            '-DCMAKE_BUILD_TYPE=%s' % build_type,
                            '-DINCLUDE_DOCS=%s' % int(include_docs),
-                           '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                            '-DBUILD_TIMESTAMP=%s' % timestamp,
                            '-DBUILD_GIT_REVISION=%s' % git_revision,
                            '-DBUILD_LABEL=%s' % build_label,
                            '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                           '-DBUILD_APPS=%s' % int(build_apps),
                            '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                            '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                            ])
@@ -244,7 +234,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
         call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
 
     # Remove all Naivi apps but the requested one
-    if include_apps and not single_app_to_include is None:
+    if single_app_to_include is not None:
         remove_all_apps_but_specified(single_app_to_include)
 
     # If requested, overwrite any existing package
@@ -257,7 +247,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_apps, additional_dirs, enable_python):
+def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for macOS"""
 
     # Generate app
@@ -267,12 +257,10 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        '-G', 'Xcode',
                        '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
-                       '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DBUILD_APPS=%s' % int(build_apps),
                        '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                        '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                        ])
@@ -286,7 +274,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
 
     # Remove all Naivi apps but the requested one
-    if include_apps and not single_app_to_include is None:
+    if single_app_to_include is not None:
         remove_all_apps_but_specified(single_app_to_include)
 
     # If requested, overwrite any existing package
@@ -299,7 +287,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     else:
         return archive_to_timestamped_dir(package_basename)
 
-def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, include_apps, single_app_to_include, include_docs, zip_release, include_debug_symbols, build_apps, additional_dirs, enable_python):
+def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for Windows"""
 
     # Create build dir if it doesn't exist
@@ -313,12 +301,10 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
                        '-G', 'Visual Studio 16 2019',
                        '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
-                       '-DPACKAGE_NAIVI_APPS=%s' % int(include_apps),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
                        '-DBUILD_GIT_REVISION=%s' % git_revision,
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DBUILD_APPS=%s' % int(build_apps),
                        '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                        '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                        ])
@@ -328,7 +314,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
         call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
     # Remove all Naivi apps but the requested one
-    if include_apps and not single_app_to_include is None:
+    if single_app_to_include is not None:
         remove_all_apps_but_specified(single_app_to_include)
 
     # If requested, overwrite any existing package
@@ -669,8 +655,6 @@ if __name__ == '__main__':
                         help="Overwrite any existing framework or source package")
     core_group.add_argument("-c", "--clean", action="store_true",
                         help="Clean build")
-    core_group.add_argument("--build-apps", action="store_true",
-                        help="Build apps while packaging (not included in package)")
     core_group.add_argument('-p', '--enable-python', action="store_true",
                        help="Enable python integration using pybind (deprecated)")
 
@@ -683,23 +667,15 @@ if __name__ == '__main__':
                         help="Only create a source archive")
 
     nap_apps_group = parser.add_argument_group('Applications')
+    nap_apps_group.add_argument("-sna", "--include-single-app", type=str,
+                        help="Include only a single application with the given name.")
     nap_apps_group.add_argument("-d", "--additional_dirs", nargs='+', type=str, default=[],
                         help="List of additional sub directories to add to the build")
-    nap_apps_group.add_argument("-a", "--include-apps", action="store_true",
-                        help="Include apps")
-    nap_apps_group.add_argument("-sna", "--include-single-app",
-                        type=str,
-                        help="A single app to include. Conflicts with --include-apps.")
 
     unsupported_group = parser.add_argument_group('Unsupported')
     unsupported_group.add_argument("--include-docs", action="store_true",
                         help="Include documentation")
     args = parser.parse_args()
-
-    # Make sure we're not trying to package all Naivi apps and just a single one
-    if args.include_apps and not args.include_single_app is None:
-        print("Error: Can't include a single Naivi app and include all Naivi apps..")
-        sys.exit(ERROR_BAD_INPUT)
 
     # If we're packaging a single Naivi app make sure it exists
     if args.include_single_app:
@@ -718,9 +694,7 @@ if __name__ == '__main__':
                                      or args.include_apps
                                      or args.include_single_app
                                      or args.clean
-                                     or args.include_apps
                                      or args.include_debug_symbols
-                                     or args.build_apps
                                      or args.additional_dirs
                                      ):
         print("Error: You have specified options that don't make sense if only creating a source archive")
@@ -730,13 +704,11 @@ if __name__ == '__main__':
     package(not args.no_zip,
             args.include_debug_symbols,
             args.include_docs,
-            args.include_apps or not args.include_single_app is None,
             args.include_single_app,
             args.clean,
             not args.no_timestamp,
             args.label,
             args.name,
-            args.build_apps,
             args.archive_source or args.source_archive_only,
             args.source_archive_zipped,
             args.source_archive_only,
