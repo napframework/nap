@@ -157,19 +157,21 @@ This creates a new application called `myApp` in the `apps` directory, adds `myA
 
 ## Build your own NAP distribution package
 
-A packaged version of NAP will include all of the following as:
-* object code (headers & binaries)
-	* engine
-	* system modules
-	* editor
-* source code
-	* demos
-	* user modules
-	* apps
+A packaged version of NAP will include all of the following:
 
-After packaging a new zip or folder is created, with the naming convention `NAP-*Version*-*Platform*-*Timestamp*` (Timestamp may be optionally omitted).
+**compiled object code** (headers & binaries)
+* core engine
+* system modules
+* editor
 
-## Package
+**source code** (not compiled)
+* demos
+* user modules
+* apps
+
+After packaging a new zip or folder is created, with the naming convention `NAP-*Version*-*Platform*-*Timestamp*` (Timestamp may be optionally omitted). 
+
+### Package
 
 Run `package` to package NAP:
 ```
