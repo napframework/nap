@@ -16,7 +16,7 @@
 	*	[Dependencies](#dependencies)
 	*	[Create the Solution](#create-the-solution)
 	*	[Run a Demo](#run-a-demo)
-	*	[Work Against Source](#compile-your-project-against-nap-source)
+	*	[Work Against Source](#compile-your-app-against-nap-source)
 	*	[Package](#build-your-own-nap-distribution-package)
 *	[Contributing](#contributing)
 *	[License](#license)
@@ -105,7 +105,7 @@ Raspbian 11<br/>
 
 ## Dependencies
 
-To generate a solution and compile the source code you need to have installed: 
+The editor (Napkin) depends on QT:
 
 - Qt 5
 	- x86_64
@@ -118,15 +118,7 @@ To generate a solution and compile the source code you need to have installed:
 		- [Download](https://download.nap.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
 		- [Download](https://download.nap.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
-NAP also depends on a small set of **precompiled** third party libraries. The precompiled libraries can be [downloaded](https://github.com/napframework/thirdparty) from our Github page. Put the thirdparty directory next to the NAP source directory:
-
-- /dev
-	- nap
-	- thirdparty
-
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.12.11\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP applications do not have a dependency on Qt.
-
-On Windows, make sure the [Visual C++ 2013 Redistributable (x64)](https://www.microsoft.com/en-us/download/details.aspx?id=40784) is installed. This is (unfortunately) required because of a third party dependency. 
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.12.11\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
 ## Create the Solution
 
@@ -136,52 +128,57 @@ Run:
 
 On success, run:
 
-`generate_solution.sh` to generate an `XCode project` (macOS)<br>
 `generate_solution.bat` to generate a `Visual Studio Solution` (Windows)<br>
 `generate_solution.sh` to generate `make files` (Linux)<br>
+`generate_solution.sh` to generate an `XCode project` (macOS)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `Release`. Alternatively you can use `CLion`.
 
 ## Run a Demo
 
-Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `sh build.sh helloworld`.
+Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `./build.sh helloworld`.
 
 ---
 
-## Compile your project against NAP source
+## Compile your app against NAP source
+
 ### Motivation
 Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a pre-compiled NAP package instead.
 
 ### Process
-* To see how you set up an app in source, look at the example in the `apps` folder.
-* Add your project to the main `CMakeLists.txt` file
+Run `tools/create_app` to create a new application:
+```
+./create_app.sh myApp
+```
 
- Running `./generate_solution.sh` or `generate_solution.bat` will re-create the Xcode project, make files or Visual Studio solution and include your project.
+This creates a new application called `myApp` in the `apps` directory, adds `myApp` to `solution_info.json` and regenerates the solution for you. Note that when you make manual changes to the build system (by editing CMake or JSON) you must run `generate_solution` to update the solution.
 
 ---
 
 ## Build your own NAP distribution package
-A packaged version of NAP will include all of the following:
-* core components
-* standard modules
-* editor
-* demos
-* your own project(s) - only if specified
+
+A packaged version of NAP will include all of the following as:
+* object code (headers & binaries)
+	* engine
+	* system modules
+	* editor
+* source code
+	* demos
+	* user modules
+	* apps
 
 After packaging a new zip or folder is created, with the naming convention `NAP-*Version*-*Platform*-*Timestamp*` (Timestamp may be optionally omitted).
 
-**By default only headers and binaries are included; source code and debug symbols will be excluded.**
-
 ## Package
 
-To package NAP run: `package.bat` (Windows) or `package.sh` (macOS / Linux). 
+Run `package` to package NAP:
 ```
 ./package.sh
 ```
 
-This will compile a package including all demos but without your own projects (defined in source). Alternatively, you can use the `-sna` flag to build a package including your own project (plus demos), e.g.:
+Alternatively, you can use the `-sna` flag to build a package that includes only one app, e.g.:
 ```
-./package.sh -sna MyProject
+./package.sh -sna myApp
 ```
 
 Some other useful flags:
