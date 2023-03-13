@@ -90,6 +90,7 @@ report.json
 demos/vinyl/data/snapshots
 /solution_info.json
 additional_targets.cmake
+tools/buildsystem/packaged_dependencies_tester/*/*
 
 
 # Brought over from thirdparty/.gitignore

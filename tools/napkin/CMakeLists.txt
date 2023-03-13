@@ -38,7 +38,7 @@ if(${ARCH} STREQUAL "armhf")
 endif()
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES napscene napmath napcolor napsdlinput napapp napparameter napinput)
+set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
@@ -116,14 +116,6 @@ if(MSVC)
     # RTTR
     find_rttr()
     copy_files_to_target_file_dir($<TARGET_FILE:RTTR::Core>)
-
-    # SDL
-    find_sdl2()
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy ${SDL2_DIR}/msvc/x86_64/lib/SDL2.dll $<TARGET_FILE_DIR:${PROJECT_NAME}>/
-   )
 
     # Python
     if(NAP_ENABLE_PYTHON)
