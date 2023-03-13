@@ -37,11 +37,6 @@ if(${ARCH} STREQUAL "armhf")
    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -z muldefs")
 endif()
 
-# Create library from app for unittests
-set(NAPKIN_LIB ${PROJECT_NAME}_lib)
-add_library(${NAPKIN_LIB} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
-set_target_properties(${NAPKIN_LIB} PROPERTIES FOLDER Tools)
-
 # The NAP modules Napkin needs
 set(NAP_MODULES_DEPENDENCIES napscene napmath napcolor napsdlinput napapp napparameter napinput)
 
@@ -63,8 +58,6 @@ set(LIBS
 
 
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})
-target_link_libraries(${NAPKIN_LIB} ${LIBS})
-target_include_directories(${NAPKIN_LIB} PUBLIC src)
 nap_qt_post(${PROJECT_NAME})
 
 # Add the runtime paths for RTTR
