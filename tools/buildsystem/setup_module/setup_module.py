@@ -119,7 +119,7 @@ class ModuleInitialiser():
         # Handle existing demo
         if os.path.exists(demo_dest_dir):
             if not self.__force_overwrite_demo:
-                if not self.__interactive or not read_yes_no(f"Demo already exists at {demo_dir}, overwrite?"):
+                if not self.__interactive or not read_yes_no(f"Demo already exists at {demo_dest_dir}, overwrite?"):
                     eprint(f"Error: Demo exists at {demo_dest_dir}")
                     return False
             shutil.rmtree(demo_dest_dir)
