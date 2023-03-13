@@ -147,7 +147,8 @@ namespace nap
 		 * For example: 
 		 * 
 		 * ROOT -> path to nap root directory
-		 * BUILD_CONFIG -> Clang-Debug-x86_64
+		 * BUILD_ARCH -> x86_64
+		 * BUILD_CONFIG -> Debug-x86_64
 		 * BUILD_TYPE -> Release
 		 * PROJECT_DIR -> path to project directory
 		 *
@@ -162,7 +163,8 @@ namespace nap
 		 * For example:
 		 *
 		 * ROOT -> path to nap root directory
-		 * BUILD_CONFIG -> Clang-Debug-x86_64
+		 * BUILD_ARCH -> x86_64
+		 * BUILD_CONFIG -> Debug-x86_64
 		 * BUILD_TYPE -> Release
 		 * PROJECT_DIR -> path to project directory
 		 *

@@ -1,0 +1,22 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napinput",
+        "napapp"
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/{BUILD_ARCH}/lib"
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/linux/{BUILD_ARCH}/lib"
+        ],
+        "macOS": [
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/macos/{BUILD_ARCH}/lib"
+        ],
+        "Windows": [
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/{BUILD_ARCH}/lib"
+        ]
+    }
+}

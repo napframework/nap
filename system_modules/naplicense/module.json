@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/naplicense/thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}"
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [],
+        "macOS": [],
+        "Windows": [
+            "{ROOT}/system_modules/naplicense/thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}"
+        ]
+    }
+}

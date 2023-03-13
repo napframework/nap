@@ -1,0 +1,15 @@
+Downloaded from:
+
+- https://www.mpg123.de/download/win64/1.25.13/
+
+Rename files:
+
+- rename libmpg123.dll.def to libmpg123.def 
+- rename libout123.dll.def to libout123.def
+
+Used visual studio command prompt to convert .exp to .lib file
+
+- launch msvc cross tools command prompt
+- change to extracted mpg123 directory
+- run 'lib /def:libmpg123.def'
+- run 'lib /def:libout123.def'

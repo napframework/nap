@@ -1,0 +1,15 @@
+prefix=/home/creywood/workspaces/naivi/thirdparty/ffmpeg/linux/install
+exec_prefix=${prefix}
+libdir=${prefix}/lib
+includedir=${prefix}/include
+
+
+Name: libavfilter
+Description: FFmpeg audio/video filtering library
+Version: 6.107.100
+Requires: 
+Requires.private: libavresample >= 3.7.0, libswscale >= 4.8.100, libavformat >= 57.83.100, libavcodec >= 57.107.100, libswresample >= 2.9.100, libavutil >= 55.78.100
+Conflicts:
+Libs: -L${libdir}  -lavfilter 
+Libs.private: -lxcb -lxcb-xfixes -lxcb-shape -lm -ldl -lz -pthread -pthread
+Cflags: -I${includedir}

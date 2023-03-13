@@ -1,0 +1,13 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "naprender",
+        "napsdlinput"
+    ],
+    "WindowsDllSearchPaths": [],
+    "DataSearchPaths": [
+        "{ROOT}/system_modules/napimgui/data",
+        "{ROOT}/system_modules/{MODULE_NAME}/data"
+    ]
+}

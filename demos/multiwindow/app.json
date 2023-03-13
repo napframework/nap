@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "MultiWindow",
+    "Version": "1.0.0",
+    "Data": "data/multiwindow.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napimgui"
+    ]
+}
