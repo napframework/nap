@@ -96,25 +96,25 @@ namespace nap
 	}
 
 
-	void CubeDepthRenderTarget::beginRendering(float minDepth, float maxDepth)
+	void CubeDepthRenderTarget::beginRendering()
 	{
 		VkClearValue clear_value = {};
-		clear_value.depthStencil = { mClearValue, 0 };// { math::fit(std::clamp(mClearValue, 0.0f, 1.0f), 0.0f, 1.0f, minDepth, maxDepth), 0 };
+		clear_value.depthStencil = { mClearValue, 0 };
 
 		const glm::ivec2 offset = { 0, 0 };
 
 		// Setup render pass
-		VkRenderPassBeginInfo renderPassInfo = {};
-		renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
-		renderPassInfo.renderPass = mRenderPass;
-		renderPassInfo.framebuffer = mFramebuffers[mLayerIndex];
-		renderPassInfo.renderArea.offset = { offset.x, offset.y };
-		renderPassInfo.renderArea.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
-		renderPassInfo.clearValueCount = 1;
-		renderPassInfo.pClearValues = &clear_value;
+		VkRenderPassBeginInfo render_pass_info = {};
+		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+		render_pass_info.renderPass = mRenderPass;
+		render_pass_info.framebuffer = mFramebuffers[mLayerIndex];
+		render_pass_info.renderArea.offset = { offset.x, offset.y };
+		render_pass_info.renderArea.extent = { static_cast<uint32_t>(mSize.x), static_cast<uint32_t>(mSize.y) };
+		render_pass_info.clearValueCount = 1U;
+		render_pass_info.pClearValues = &clear_value;
 
 		// Begin render pass
-		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
+		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &render_pass_info, VK_SUBPASS_CONTENTS_INLINE);
 
 		// Ensure scissor and viewport are covering the cell area
 		VkRect2D rect = {};
@@ -133,12 +133,6 @@ namespace nap
 	}
 
 
-	void CubeDepthRenderTarget::beginRendering()
-	{
-		beginRendering(0.0f, 1.0f);
-	}
-
-
 	void CubeDepthRenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
@@ -152,44 +146,44 @@ namespace nap
 		camera.setGridLocation(0, 0);
 		camera.setGridDimensions(1, 1);
 		camera.setRenderTargetSize(mSize);
-		const float near = camera.getNearClippingPlane();
-		const float far = camera.getFarClippingPlane();
 
 		// Fetch camera transform
 		auto& cam_trans = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
-		const glm::vec3& right		= cam_trans.getLocalTransform()[0];
-		const glm::vec3& up			= cam_trans.getLocalTransform()[1];
-		const glm::vec3& forward	= cam_trans.getLocalTransform()[2];
-
-		// Compute global camera base transform
 		const auto& cam_global = cam_trans.getGlobalTransform();
 
-		// Render to frame buffers
-		// Cube face selection following the Vulkan spec
-		// https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
-		//
+		// Cache axes
+		const glm::vec3& right		= cam_global[0];
+		const glm::vec3& up			= cam_global[1];
+		const glm::vec3& forward	= cam_global[2];
+
+		/**
+		 * Render to frame buffers
+		 * Cube face selection following the Vulkan spec
+		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
+		 **/
+
 		setLayerIndex(5);
-		beginRendering(near, far);
+		beginRendering();
 		{
 			// forward (-Z)
-			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), forward);
-			auto view = glm::inverse(cam_global * r);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), {-1.0f, 1.0f, 1.0f});
+			auto view = glm::inverse(cam_global * trans);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
 
 		setLayerIndex(4);
-		beginRendering(near, far);
+		beginRendering();
 		{
 			// back (+Z)
-			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right);
-			auto view = glm::inverse(cam_global * r);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, -1.0f });
+			auto view = glm::inverse(cam_global * trans);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
 
 		setLayerIndex(3);
-		beginRendering(near, far);
+		beginRendering();
 		{
 			// down (-Y)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), right);
@@ -199,7 +193,7 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(2);
-		beginRendering(near, far);
+		beginRendering();
 		{
 			// up (+Y)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), right);
@@ -209,18 +203,21 @@ namespace nap
 		endRendering();
 
 		setLayerIndex(1);
-		beginRendering(near, far);
+		beginRendering();
 		{
 			// left (-X)
-			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right) *
-				glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), up);
+			//const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right) *
+			//	glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), up);
+
+			const auto r = glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), up);
+
 			auto view = glm::inverse(cam_global * r);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
 		endRendering();
 
 		setLayerIndex(0);
-		beginRendering(near, far);
+		beginRendering();
 		{
 			// right (+X)
 			const auto r = glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right) *

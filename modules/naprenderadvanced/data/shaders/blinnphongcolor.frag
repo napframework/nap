@@ -76,8 +76,7 @@ float map(float x, float min, float max)
 // Linearizes depth buffer value
 float linearDepth(float depth, float near, float far)
 {
-	float ndc = depth * 2.0 - 1.0; 
-	return (2.0 * near * far) / (far + near - ndc * (far - near));
+	return (near * far) / (far - depth * (far - near));
 }
 
 
@@ -128,24 +127,24 @@ void main()
 			case SHADOWMAP_CUBE:
 			{
 				const float near = 0.1;
-				const float far = 40.0;
+				const float far = 50.0;
 
 				// The direction of the light in view space is the sampling coordinate for the cube map
-				vec3 light_vec = passPosition - lit.lights[i].origin;
-				vec3 light_direction_world = normalize(light_vec);
+				vec3 light_direction_world = normalize(passPosition - lit.lights[i].origin);
 				vec3 coord = normalize((lit.lights[i].viewMatrix * vec4(light_direction_world, 0.0)).xyz);
 	 
-	 			float depth01 = texture(cubeShadowMaps[map_index], vec3(coord)).x;
-				float depth = linearDepth(depth01, near, far);
+	 			float depth01 = texture(cubeShadowMaps[map_index], coord).x;
+				float depth = linearDepth(depth01, near, far) * 2.0;
 
+				// Use view matrix corresponding to the right face ??
 				vec3 frag_depth_view = (lit.lights[i].viewMatrix * vec4(passPosition, 1.0)).xyz;
 				float frag_depth = -frag_depth_view.z;
 
-				// float v = frag_depth/far;
+ 				// float v = depth/far;
 				// out_Color = vec4(v, v, v, ubo.alpha);
 				// return;
 
-				float shadow = frag_depth <= depth ? 0.0 : 1.0;
+				float shadow = (frag_depth <= depth) ? 0.0 : 1.0;
 				shadow_result = max(shadow, shadow_result);
 				break;
 			}

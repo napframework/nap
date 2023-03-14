@@ -163,14 +163,6 @@ namespace nap
 		ResourcePtr<DepthRenderTextureCube>		mCubeDepthTexture;											///< Property: 'CubeTexture' Cube texture to render to.
 
 	private:
-		/**
-		 * Starts the render pass. Called by CubeDepthRenderTarget::render().
-		 * Uses the specified depth value range.
-		 * @param minDepth the minimum depth value, 0.0 by default
-		 * @param maxDepth the maximum depth value, 1.0 by default
-		 */
-		void beginRendering(float minDepth, float maxDepth);
-
 		RenderService*							mRenderService;
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
 		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;

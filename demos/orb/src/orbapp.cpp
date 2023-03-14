@@ -77,11 +77,25 @@ namespace nap
 			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 
+		//////////////////////////////////////////////////////////////////////////
+
+		const float x = mResourceManager->findObject<ParameterFloat>("PointLightXParameter")->mValue;
+		const float y = mResourceManager->findObject<ParameterFloat>("PointLightYParameter")->mValue;
+		const float z = mResourceManager->findObject<ParameterFloat>("PointLightZParameter")->mValue;
+		const auto scene = mResourceManager->findObject<Scene>("Scene");
+		auto& transform = scene->findEntity("PointLightEntity")->getComponent<TransformComponentInstance>();
+		transform.setTranslate({ x, y, z });
+
+		//////////////////////////////////////////////////////////////////////////
+
 		// Update GUI
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
+
+		mResourceManager->findObject<ParameterGUI>("ParameterGUI")->show(false);
+
 		ImGui::End();
 	}
 

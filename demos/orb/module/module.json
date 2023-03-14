@@ -6,7 +6,8 @@
         "mod_naprenderadvanced",
         "mod_napscene",
         "mod_napmath",
-        "mod_napparameter"
+        "mod_napparameter",
+        "mod_napparametergui"
     ],
     "WindowsDllSearchPaths": []
 }

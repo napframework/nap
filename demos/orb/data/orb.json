@@ -67,7 +67,7 @@
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": 0.05000000074505806,
+                        "Speed": 0.0,
                         "Offset": 1.0
                     }
                 },
@@ -739,12 +739,12 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": -8.0
+                            "y": 2.0,
+                            "z": 0.0
                         },
                         "Rotate": {
-                            "x": 0.0,
-                            "y": 180.0,
+                            "x": 270.0,
+                            "y": 0.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -770,7 +770,7 @@
                     "Properties": {
                         "FieldOfView": 60.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 40.0,
+                        "FarClippingPlane": 50.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -1115,6 +1115,12 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "OrbParameters"
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "OrbParameters",
             "Parameters": [
@@ -1153,6 +1159,30 @@
                     "Value": 0.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "PointLightYParameter",
+                    "Name": "PointLightY",
+                    "Value": 4.0,
+                    "Minimum": -10.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "PointLightXParameter",
+                    "Name": "PointLightX",
+                    "Value": 0.0,
+                    "Minimum": -10.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "PointLightZParameter",
+                    "Name": "PointLightZ",
+                    "Value": 0.0,
+                    "Minimum": -10.0,
+                    "Maximum": 10.0
                 }
             ],
             "Groups": []
