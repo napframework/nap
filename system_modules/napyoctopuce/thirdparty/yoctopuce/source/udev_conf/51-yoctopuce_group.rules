@@ -1,2 +1,0 @@
-# udev rules to allow write access to all users of "yoctogroup" for Yoctopuce USB devices
-SUBSYSTEM=="usb", ATTR{idVendor}=="24e0", MODE="0664",  GROUP="yoctogroup"
