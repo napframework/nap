@@ -80,6 +80,72 @@ float linearDepth(float depth, float near, float far)
 }
 
 
+float sdfPlane(vec3 planeOrig, vec3 planeNormal, vec3 point)
+{
+	return dot(planeNormal, point - planeOrig);
+}
+
+
+vec3 face(vec3 dir)
+{
+	const float ext = 0.5;
+	vec3 face = vec3(1.0, 0, 0);
+
+	float tmin = -ext / dir.x;
+	float tmax = ext / dir.x;
+	if (tmin > tmax) 
+	{
+		float temp = tmax;
+		tmin = tmax;
+		tmax = temp;
+	}
+
+	float tymin = -ext / dir.y;
+	float tymax = ext / dir.y;
+	if (tymin > tymax)
+	{
+		float temp = tymax;
+		tymin = tymax;
+		tymax = temp;
+	}
+
+	if (tymin > tmin) 
+	{
+		tmin = tymin;
+		face = vec3(0, 1.0, 0);
+	}
+
+	if (tymax < tmax) 
+		tmax = tymax;
+
+	float tzmin = -ext / dir.z;
+	float tzmax = ext / dir.z;
+	if (tzmin > tzmax)
+	{
+		float temp = tzmax;
+		tzmin = tzmax;
+		tzmax = temp;
+	}
+
+	if (tzmin > tmin) 
+	{
+		tmin = tzmin;
+		face = vec3(0, 0, 1.0);
+	}
+
+	if (tzmax < tmax)
+		tmax = tzmax;
+	
+	// perp is perpendicular to the surface 
+	face *= sign(dir);
+
+	// tmin should always be positive as the intersection is in front of the origin of the ray
+	//float dist = tmin;
+
+	return face;
+}
+
+
 void main()
 {
 	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
@@ -130,19 +196,24 @@ void main()
 				const float far = 50.0;
 
 				// The direction of the light in view space is the sampling coordinate for the cube map
-				vec3 light_direction_world = normalize(passPosition - lit.lights[i].origin);
+				vec3 light_vec_world = passPosition - lit.lights[i].origin;
+				vec3 light_direction_world = normalize(light_vec_world);
 				vec3 coord = normalize((lit.lights[i].viewMatrix * vec4(light_direction_world, 0.0)).xyz);
-	 
-	 			float depth01 = texture(cubeShadowMaps[map_index], coord).x;
-				float depth = linearDepth(depth01, near, far) * 2.0;
 
-				// Use view matrix corresponding to the right face ??
-				vec3 frag_depth_view = (lit.lights[i].viewMatrix * vec4(passPosition, 1.0)).xyz;
-				float frag_depth = -frag_depth_view.z;
+				vec3 face_normal_view = face(coord);
+				vec3 face_normal_world = normalize((inverse(lit.lights[i].viewMatrix) * vec4(face_normal_view, 0.0)).xyz);
+				float frag_depth = sdfPlane( lit.lights[i].origin, face_normal_world, passPosition);
+
+				// Only works for the forward face (-Z)
+				// vec3 frag_depth_view = (lit.lights[i].viewMatrix * vec4(passPosition, 1.0)).xyz;
+				// float frag_depth = -frag_depth_view.z;
 
  				// float v = depth/far;
 				// out_Color = vec4(v, v, v, ubo.alpha);
 				// return;
+
+	 			float depth01 = texture(cubeShadowMaps[map_index], coord).x;
+				float depth = linearDepth(depth01, near, far) * 2.0;
 
 				float shadow = (frag_depth <= depth) ? 0.0 : 1.0;
 				shadow_result = max(shadow, shadow_result);

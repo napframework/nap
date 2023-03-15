@@ -3,6 +3,7 @@
 // Light structure for all lights. Not all types use all members.
 struct Light
 {
+	mat4 modelMatrix;
 	mat4 viewMatrix;
 	mat4 viewProjectionMatrix;
 	vec3 origin;
@@ -20,6 +21,14 @@ const uint LIGHT_DIRECTIONAL = 1;
 const uint LIGHT_POINT = 2;
 const uint LIGHT_SPOT = 3;
 
+const uint CUBE_FACE_POS_X = 0;
+const uint CUBE_FACE_NEG_X = 1;
+const uint CUBE_FACE_POS_Y = 2;
+const uint CUBE_FACE_NEG_Y = 3;
+const uint CUBE_FACE_POS_Z = 4;
+const uint CUBE_FACE_NEG_Z = 5;
+
+
 // Returns the light type index of the specified light flag
 uint getLightType(uint flags)
 {
@@ -35,11 +44,11 @@ float getSurfaceIncidence(Light light, vec3 surfaceNormal, vec3 surfacePosition)
 	switch (getLightType(light.flags))
 	{
 		case LIGHT_DIRECTIONAL:
-		case LIGHT_SPOT:
 		{
 			return 1.0 - max(dot(surfaceNormal, -light.direction), 0.0);
 		}
 		case LIGHT_POINT:
+		case LIGHT_SPOT:
 		{
 			vec3 inv_light_direction = normalize(light.origin - surfacePosition);
 			return 1.0 - max(dot(surfaceNormal, inv_light_direction), 0.0);

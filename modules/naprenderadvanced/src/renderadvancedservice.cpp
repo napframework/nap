@@ -407,6 +407,9 @@ namespace nap
 					auto* render_service = getCore().getService<RenderService>();
 					assert(render_service != nullptr);
 
+					const auto& light_model = light->getTransform().getGlobalTransform();
+					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::modelMatrix)->setValue(light_model);
+
 					const auto light_view = light->getShadowCamera()->getViewMatrix();
 					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewMatrix)->setValue(light_view);
 

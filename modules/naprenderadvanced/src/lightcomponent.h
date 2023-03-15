@@ -59,6 +59,7 @@ namespace nap
 			inline constexpr const char* falloff = "falloff";
 			inline constexpr const char* flags = "flags";
 
+			inline constexpr const char* modelMatrix = "modelMatrix";
 			inline constexpr const char* viewMatrix = "viewMatrix";
 			inline constexpr const char* viewProjectionMatrix = "viewProjectionMatrix";
 			inline constexpr const char* lights = "lights";
