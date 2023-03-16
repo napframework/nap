@@ -176,7 +176,7 @@ namespace nap
 		beginRendering();
 		{
 			// back (+Z)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f });
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), right);
 			auto view = glm::inverse(cam_global * trans);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
@@ -186,7 +186,7 @@ namespace nap
 		beginRendering();
 		{
 			// down (-Y)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), right);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), right);
 			auto view = glm::inverse(cam_global * trans);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
@@ -206,7 +206,7 @@ namespace nap
 		beginRendering();
 		{
 			// left (-X)
-			const auto trans = glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), up);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), up);
 			auto view = glm::inverse(cam_global * trans);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}
@@ -216,7 +216,7 @@ namespace nap
 		beginRendering();
 		{
 			// right (+X)
-			const auto trans = glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), up) * glm::scale(glm::identity<glm::mat4>(), {1.0f, -1.0f, 1.0f});
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), up);
 			auto view = glm::inverse(cam_global * trans);
 			renderCallback(*this, camera.getProjectionMatrix(), view);
 		}

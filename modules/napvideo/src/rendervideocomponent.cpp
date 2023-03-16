@@ -72,7 +72,8 @@ namespace nap
 		mOutputTexture = resource->mOutputTexture.get();
 		if (!errorState.check(mOutputTexture != nullptr, "%s: no output texture", resource->mID.c_str()))
 			return false;
-		if (!errorState.check(mOutputTexture->mFormat == RenderTexture2D::EFormat::RGBA8, "%s: output texture color format is not RGBA8", resource->mID.c_str()))
+
+		if (!errorState.check(mOutputTexture->mColorFormat == RenderTexture2D::EFormat::RGBA8, "%s: output texture color format is not RGBA8", resource->mID.c_str()))
 			return false;
 
 		// Setup render target and initialize

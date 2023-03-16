@@ -2,9 +2,9 @@
     "Objects": [
         {
             "Type": "nap::BoxMesh",
-            "mID": "BoxMesh",
+            "mID": "BoundsMesh",
             "Usage": "Static",
-            "CullMode": "Back",
+            "CullMode": "Front",
             "PolygonMode": "Fill",
             "Size": {
                 "x": 1.0,
@@ -27,14 +27,14 @@
         },
         {
             "Type": "nap::BoxMesh",
-            "mID": "FloorMesh",
+            "mID": "BoxMesh",
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Size": {
-                "x": 8.0,
-                "y": 0.5,
-                "z": 8.0
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
             },
             "Position": {
                 "x": 0.0,
@@ -43,9 +43,9 @@
             },
             "Color": {
                 "Values": [
-                    0.1568627506494522,
-                    0.1568627506494522,
-                    0.1568627506494522,
+                    1.0,
+                    1.0,
+                    1.0,
                     1.0
                 ]
             }
@@ -129,7 +129,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundingSphere",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "SphereWireMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -162,6 +162,60 @@
                         "Material": "ConstantMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "BoundsEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformBounds",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 8.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBounds",
+                    "Visible": true,
+                    "Mesh": "BoundsMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PhongColorMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -287,7 +341,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 5.0
+                            "z": 10.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -556,93 +610,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "FloorEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformFloor",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": -2.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderFloor",
-                    "Visible": true,
-                    "Mesh": "FloorMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_77776c6a",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_bc0d6fa3",
-                                        "Name": "diffuse",
-                                        "Value": {
-                                            "x": 0.30000001192092898,
-                                            "y": 0.4000000059604645,
-                                            "z": 0.5
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "UniformVec2_01f24483",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 4.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_ed9be474",
-                                        "Name": "shininess",
-                                        "Value": 128.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "PhongColorMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "OrbEntity",
             "Components": [
                 {
@@ -768,7 +735,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "ShadowCameraPerspective",
                     "Properties": {
-                        "FieldOfView": 60.0,
+                        "FieldOfView": 30.0,
                         "NearClippingPlane": 0.10000000149011612,
                         "FarClippingPlane": 50.0,
                         "GridDimensions": {
@@ -944,10 +911,10 @@
             "Children": [
                 "OrbEntity",
                 "BaseLightEntity",
-                "FloorEntity",
                 "TorusEntity",
                 "BoxEntity",
-                "BoundingSphereEntity"
+                "BoundingSphereEntity",
+                "BoundsEntity"
             ]
         },
         {
@@ -1156,7 +1123,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAttenuationParameter",
                     "Name": "LightAttenuation",
-                    "Value": 0.0,
+                    "Value": 0.20000000298023225,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -1164,7 +1131,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "PointLightYParameter",
                     "Name": "PointLightY",
-                    "Value": 4.0,
+                    "Value": 2.0,
                     "Minimum": -10.0,
                     "Maximum": 10.0
                 },
