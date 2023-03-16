@@ -8,6 +8,7 @@ from subprocess import run, PIPE
 import sys
 import zipfile
 import json
+import tempfile
 
 script_dir = os.path.dirname(__file__)
 nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
@@ -49,6 +50,7 @@ class ArchiveHandler():
                 eprint("Error:", e)
                 return False
 
+            # Get final module path
             module_path = os.path.join(self.__modules_dir, module_name)
             if os.path.exists(module_path):
                 if not self.__force_overwrite_module:
@@ -57,16 +59,17 @@ class ArchiveHandler():
                         return False
                 shutil.rmtree(module_path)
 
-            arch_path = os.path.join(self.__modules_dir, module_dir)
-            if os.path.exists(arch_path):
-                shutil.rmtree(arch_path)
+            # Create (temp) extraction directory
+            temp_dir = tempfile.TemporaryDirectory()
+            extract_path = os.path.join(temp_dir.name, module_dir)
+            print(f"Extracting {archive_path} -> {extract_path}")
 
-            print(f"Extracting {archive_path} -> {module_path}")
+            # Extract to temp location
             if os.name == 'posix':
                 # Use Info-ZIP to preserver symlinks on *nix
                 abs_archive = os.path.abspath(archive_path)
                 cmd = f'unzip {abs_archive}'
-                p = run(cmd, shell=True, cwd=self.__modules_dir, stdout=PIPE)
+                p = run(cmd, shell=True, cwd=temp_dir.name, stdout=PIPE)
             else:
                 archive.extractall(path=self.__modules_dir)
 
@@ -76,8 +79,8 @@ class ArchiveHandler():
                                             self.__force_overwrite_demo
                                             )
 
-            if arch_path is not module_path:
-                shutil.move(arch_path, module_path)
+            print(f"Moving {extract_path} -> {module_path}")
+            shutil.move(extract_path, module_path)
             success = initialiser.setup_module_by_dir(module_path)
         return success
 
