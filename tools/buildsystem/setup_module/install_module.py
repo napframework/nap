@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 
 import argparse
+import json
 import os
 import shutil
 from subprocess import run, PIPE
 import sys
 import zipfile
+import json
 
 script_dir = os.path.dirname(__file__)
 nap_root = os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
@@ -41,7 +43,8 @@ class ArchiveHandler():
         success = False
         with zipfile.ZipFile(archive_path, mode='r') as archive:
             try:
-                module_name = ArchiveHandler.read_module_id_from_archive(archive, archive_path)
+                module_dir, module_name = ArchiveHandler.read_module_id_from_archive(archive, archive_path)
+                print(f"Module name is: {module_name}")
             except InvalidModuleArchive as e:
                 eprint("Error:", e)
                 return False
@@ -53,7 +56,12 @@ class ArchiveHandler():
                         eprint(f"Error: Module exists at {module_path}")
                         return False
                 shutil.rmtree(module_path)
-            print(f"Extracting {archive_path} -> {self.__modules_dir}")
+
+            arch_path = os.path.join(self.__modules_dir, module_dir)
+            if os.path.exists(arch_path):
+                shutil.rmtree(arch_path)
+
+            print(f"Extracting {archive_path} -> {module_path}")
             if os.name == 'posix':
                 # Use Info-ZIP to preserver symlinks on *nix
                 abs_archive = os.path.abspath(archive_path)
@@ -62,23 +70,39 @@ class ArchiveHandler():
             else:
                 archive.extractall(path=self.__modules_dir)
 
-
             initialiser = ModuleInitialiser(self.__interactive,
                                             self.__deploy_demo,
                                             self.__run_demo,
                                             self.__force_overwrite_demo
                                             )
+
+            if arch_path is not module_path:
+                shutil.move(arch_path, module_path)
             success = initialiser.setup_module_by_dir(module_path)
         return success
 
     @staticmethod
     def read_module_id_from_archive(archive, archive_path):
+        # Find module directory in archive
         top = {item.split('/')[0] for item in archive.namelist() if not item.startswith('.')}
         if len(top) == 0:
             raise InvalidModuleArchive(f"{archive_path} doesn't appear to contain a module (empty)")
         elif len(top) > 1:
             raise InvalidModuleArchive(f"{archive_path} doesn't appear to contain a module (more than one top level directory)")
-        return list(top)[0]
+        module_dir = list(top)[0]
+
+        # Read module.json to memory from archive
+        try:
+            module_info_path = f"{module_dir}/module.json"
+            module_info_data = archive.read(module_info_path)
+            module_info_json = json.loads(module_info_data.decode('utf-8'))
+        except Exception as e:
+            raise InvalidModuleArchive(f"Unable to read {module_info_path} in {archive_path}")
+
+        # Get module name
+        if not 'mID' in module_info_json:
+            raise InvalidModuleArchive(f"Missing required 'mID' property in {module_info_path} in {archive_path} ")
+        return module_dir, module_info_json['mID']
 
     def __ensure_modules_dir(self):
         if not os.path.exists(self.__modules_dir):
