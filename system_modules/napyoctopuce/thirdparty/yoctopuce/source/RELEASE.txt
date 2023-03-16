@@ -1,1 +1,0 @@
-- Add support and examples for Yocto-Bridge and Yocto-MaxiBridge
