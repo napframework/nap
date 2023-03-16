@@ -3,8 +3,6 @@
 // Light structure for all lights. Not all types use all members.
 struct Light
 {
-	mat4 modelMatrix;
-	mat4 viewMatrix;
 	mat4 viewProjectionMatrix;
 	vec3 origin;
 	vec3 direction;
@@ -16,17 +14,10 @@ struct Light
 	uint flags;
 };
 
-const uint LIGHT_CUSTOM = 0;
-const uint LIGHT_DIRECTIONAL = 1;
-const uint LIGHT_POINT = 2;
-const uint LIGHT_SPOT = 3;
-
-const uint CUBE_FACE_POS_X = 0;
-const uint CUBE_FACE_NEG_X = 1;
-const uint CUBE_FACE_POS_Y = 2;
-const uint CUBE_FACE_NEG_Y = 3;
-const uint CUBE_FACE_POS_Z = 4;
-const uint CUBE_FACE_NEG_Z = 5;
+const uint LIGHT_CUSTOM			= 0;
+const uint LIGHT_DIRECTIONAL	= 1;
+const uint LIGHT_POINT			= 2;
+const uint LIGHT_SPOT			= 3;
 
 
 // Returns the light type index of the specified light flag

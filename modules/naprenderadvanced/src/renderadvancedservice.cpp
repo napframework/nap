@@ -38,6 +38,15 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
+	static const std::vector<const char*> sDefaultUniforms =
+	{
+		uniform::light::flags,
+		uniform::light::origin,
+		uniform::light::direction,
+		uniform::light::viewProjectionMatrix
+	};
+
+
 	/**
 	 * Get the light uniform struct
 	 */
@@ -210,10 +219,9 @@ namespace nap
 			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
 			if (shadow_camera != nullptr)
 			{
-				switch (light->getLightType())
+				switch (light->getShadowMapType())
 				{
-				case ELightType::Directional:
-				case ELightType::Spot:
+				case EShadowMapType::Quad:
 				{
 					// One shadow render pass per light
 					auto it = mLightDepthMap.find(light);
@@ -227,7 +235,7 @@ namespace nap
 					target->endRendering();
 					break;
 				}
-				case ELightType::Point:
+				case EShadowMapType::Cube:
 				{
 					// One shadow render pass per light
 					auto it = mLightCubeMap.find(light);
@@ -257,11 +265,8 @@ namespace nap
 					});
 					break;
 				}
-				case ELightType::Custom:
-					nap::Logger::warn("Rendering shadows for custom light types not yet supported");
-					break;
 				default:
-					assert(false);
+					NAP_ASSERT_MSG(false, "Unsupported shadow map type");
 				}
 			}
 		}
@@ -340,9 +345,11 @@ namespace nap
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
 				{
+					// Filter default uniforms
 					const auto name = entry.first;
-					if (name == uniform::light::origin || name == uniform::light::direction || name == uniform::light::viewProjectionMatrix)
-						continue;
+					for (const auto& default_uniform : sDefaultUniforms)
+						if (name == default_uniform)
+							continue;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
 					auto* member = struct_decl->findMember(name);
@@ -407,19 +414,12 @@ namespace nap
 					auto* render_service = getCore().getService<RenderService>();
 					assert(render_service != nullptr);
 
-					const auto& light_model = light->getTransform().getGlobalTransform();
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::modelMatrix)->setValue(light_model);
-
-					const auto light_view = light->getShadowCamera()->getViewMatrix();
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewMatrix)->setValue(light_view);
-
-					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light_view;
+					const auto light_view_projection = light->getShadowCamera()->getProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
 					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewProjectionMatrix)->setValue(light_view_projection);
 
-					switch (light->getLightType())
+					switch (light->getShadowMapType())
 					{
-					case ELightType::Directional:
-					case ELightType::Spot:
+					case EShadowMapType::Quad:
 					{
 						auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
 						if (shadow_sampler_array != nullptr)
@@ -441,7 +441,7 @@ namespace nap
 						}
 						break;
 					}
-					case ELightType::Point:
+					case EShadowMapType::Cube:
 					{
 						auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
 						if (shadow_sampler_array != nullptr)
@@ -463,12 +463,9 @@ namespace nap
 						}
 						break;
 					}
-					case ELightType::Custom:
-					{
-						break;
-					}
 					default:
-						assert(false);
+						NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+						return false;
 					}
 				}
 				++count;
@@ -536,10 +533,9 @@ namespace nap
 			flags |= static_cast<uint>(light->isShadowEnabled()) << 8U;
 			flags |= static_cast<uint>(light->getShadowMapType()) << 16U;
 
-			switch (light->getLightType())
+			switch (light->getShadowMapType())
 			{
-			case ELightType::Directional:
-			case ELightType::Spot:
+			case EShadowMapType::Quad:
 			{
 				// Texture
 				auto shadow_map = std::make_unique<DepthRenderTexture2D>(getCore());
@@ -577,7 +573,7 @@ namespace nap
 
 				break;
 			}
-			case ELightType::Point:
+			case EShadowMapType::Cube:
 			{
 				// Cube Texture
 				auto cube_map = std::make_unique<DepthRenderTextureCube>(getCore());
@@ -613,9 +609,9 @@ namespace nap
 
 				break;
 			}
-			case ELightType::Custom:
 			default:
-				nap::Logger::warn("Rendering shadows for custom light types not yet supported");
+				NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+				return false;
 			}
 
 			uint& index = shadow_map_indices[light->getShadowMapType()];
@@ -638,12 +634,10 @@ namespace nap
 			return it == input;
 		});
 
-		if (found_it == mLightComponents.end())
-		{
-			mLightComponents.emplace_back(&light);
-			return;
-		}
-		assert(false);
+		if (found_it != mLightComponents.end())
+			NAP_ASSERT_MSG(false, "Light component was already registered");
+
+		mLightComponents.emplace_back(&light);
 	}
 
 
@@ -654,10 +648,9 @@ namespace nap
 
 		if (mShadowResourcesCreated)
 		{
-			switch (light.getLightType())
+			switch (light.getShadowMapType())
 			{
-			case ELightType::Directional:
-			case ELightType::Spot:
+			case EShadowMapType::Quad:
 			{
 				// Shadow resources
 				auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
@@ -668,7 +661,7 @@ namespace nap
 				mLightDepthMap.erase(found_it);
 				break;
 			}
-			case ELightType::Point:
+			case EShadowMapType::Cube:
 			{
 				auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
 					{
@@ -678,12 +671,8 @@ namespace nap
 				mLightCubeMap.erase(found_it);
 				break;
 			}
-			case ELightType::Custom:
-			{
-				break;
-			}
 			default:
-				assert(false);
+				NAP_ASSERT_MSG(false, "Unsupported shadow map type");
 			}
 
 			// Flags

@@ -67,7 +67,7 @@
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": 0.0,
+                        "Speed": 0.05000000074505806,
                         "Offset": 1.0
                     }
                 },
@@ -95,8 +95,6 @@
                 }
             ],
             "Children": [
-                "DirectionalLight1Entity",
-                "DirectionalLight2Entity",
                 "PointLightEntity"
             ]
         },
@@ -197,9 +195,9 @@
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": 1.0,
+                            "x": 2.0,
                             "y": 1.0,
-                            "z": 1.0
+                            "z": 2.0
                         },
                         "UniformScale": 8.0
                     }
@@ -210,7 +208,66 @@
                     "Visible": true,
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_60da175cxx",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_3019e56axx",
+                                        "Name": "ambient",
+                                        "Value": {
+                                            "x": 0.125,
+                                            "y": 0.125,
+                                            "z": 0.125
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_cdd76af7xx",
+                                        "Name": "diffuse",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 0.5,
+                                            "z": 0.5
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_11cc25f4xx",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 1.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "UniformVec2_f66d0135xx",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 4.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_5b6d8df2xx",
+                                        "Name": "shininess",
+                                        "Value": 32.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_49935e1dxx",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
                         "Samplers": [],
                         "Buffers": [],
                         "Material": "PhongColorMaterial",
@@ -241,8 +298,8 @@
                     "mID": "TransformBox",
                     "Properties": {
                         "Translate": {
-                            "x": 2.0,
-                            "y": -1.0,
+                            "x": 4.0,
+                            "y": -2.0,
                             "z": -2.0
                         },
                         "Rotate": {
@@ -252,10 +309,10 @@
                         },
                         "Scale": {
                             "x": 1.0,
-                            "y": 1.0,
+                            "y": 2.0,
                             "z": 1.0
                         },
-                        "UniformScale": 1.5
+                        "UniformScale": 2.0
                     }
                 },
                 {
@@ -397,13 +454,13 @@
                     "mID": "TransformLight",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
-                            "y": 2.0,
-                            "z": 5.0
+                            "x": 8.0,
+                            "y": 5.0,
+                            "z": 0.0
                         },
                         "Rotate": {
                             "x": -30.0,
-                            "y": 0.0,
+                            "y": 90.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -416,10 +473,10 @@
                 },
                 {
                     "Type": "nap::DirectionalLightComponent",
-                    "mID": "Light",
+                    "mID": "DirectionalLight",
                     "Color": "LightColorParameter",
                     "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": false,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho",
                     "Attenuation": "LightAttenuationParameter"
                 },
@@ -433,7 +490,7 @@
                         "TopPlane": 10.0,
                         "BottomPlane": -10.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 50.0,
+                        "FarClippingPlane": 20.0,
                         "ClipRect": {
                             "Min": {
                                 "x": 0.0,
@@ -448,8 +505,8 @@
                 },
                 {
                     "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderDirectionalLight1",
-                    "Visible": false,
+                    "mID": "RenderDirectionalLight",
+                    "Visible": true,
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -494,116 +551,14 @@
                             "y": 0.0
                         }
                     }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "DirectionalLight2Entity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformLight2",
-                    "Properties": {
-                        "Translate": {
-                            "x": -5.0,
-                            "y": 2.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": -30.0,
-                            "y": -90.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
                 },
                 {
-                    "Type": "nap::DirectionalLightComponent",
-                    "mID": "Light2",
-                    "Color": "LightColorParameter",
-                    "Intensity": "LightIntensityParameter",
-                    "Enable Shadows": false,
-                    "ShadowCamera": "./ShadowCameraOrtho2",
-                    "Attenuation": "LightAttenuationParameter"
-                },
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "ShadowCameraOrtho2",
-                    "Properties": {
-                        "Mode": "Custom",
-                        "LeftPlane": -10.0,
-                        "RightPlane": 10.0,
-                        "TopPlane": 10.0,
-                        "BottomPlane": -10.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 50.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderDirectionalLight2",
-                    "Visible": false,
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_1f3b7f1a",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_32fcaf0a",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_99e1a5c3",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "RenderGnomon2",
+                    "Visible": true,
+                    "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
+                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -737,7 +692,7 @@
                     "Properties": {
                         "FieldOfView": 30.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 50.0,
+                        "FarClippingPlane": 10.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -810,6 +765,120 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "SpotLightEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformSpotLight",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 10.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::SpotLightComponent",
+                    "mID": "SpotLight",
+                    "Color": "LightColorParameter",
+                    "Intensity": "LightIntensityParameter",
+                    "Enable Shadows": true,
+                    "ShadowCamera": "../DirectionalLight1Entity/ShadowCameraOrtho",
+                    "Attenuation": "LightAttenuationParameter",
+                    "Angle": "LightAngleParameter",
+                    "FallOff": "LightFallOffParameter"
+                },
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "ShadowCameraPerspective2",
+                    "Properties": {
+                        "FieldOfView": 90.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 50.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderSpotLight",
+                    "Visible": true,
+                    "Mesh": "",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_440e0c94",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_e0ad67d5",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 1.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_bcdccf34",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "RenderGnomon3",
+                    "Visible": true,
+                    "Gnomon": "GnomonMesh",
+                    "LineWidth": 1.0,
+                    "DepthMode": "ReadWrite"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "TorusEntity",
             "Components": [
                 {
@@ -817,8 +886,8 @@
                     "mID": "TransformTorus",
                     "Properties": {
                         "Translate": {
-                            "x": -2.0,
-                            "y": -1.0,
+                            "x": -4.0,
+                            "y": -3.0,
                             "z": -2.0
                         },
                         "Rotate": {
@@ -831,7 +900,7 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 1.5
+                        "UniformScale": 2.0
                     }
                 },
                 {
@@ -922,7 +991,9 @@
                 "TorusEntity",
                 "BoxEntity",
                 "BoundingSphereEntity",
-                "BoundsEntity"
+                "BoundsEntity",
+                "DirectionalLight1Entity",
+                "SpotLightEntity"
             ]
         },
         {
@@ -1104,30 +1175,6 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::ParameterFloat",
-            "mID": "PointLightTranslateParameter",
-            "Name": "PointLightTranslate",
-            "Value": 0.0,
-            "Minimum": -10.0,
-            "Maximum": 10.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "PointLightYParameter",
-            "Name": "PointLightY",
-            "Value": 2.0,
-            "Minimum": -10.0,
-            "Maximum": 10.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "PointLightZParameter",
-            "Name": "PointLightZ",
-            "Value": 0.0,
-            "Minimum": -10.0,
-            "Maximum": 10.0
-        },
-        {
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
@@ -1196,6 +1243,22 @@
                     "Clamp": true,
                     "Minimum": -10.0,
                     "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightAngleParameter",
+                    "Name": "LightAngle",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightFallOffParameter",
+                    "Name": "LightFallOff",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 }
             ],
             "Groups": []

@@ -31,6 +31,11 @@ namespace nap
 		inline constexpr double SQRT2		= 1.41421356237309504880;   // sqrt(2)
 		inline constexpr double SQRT1_2		= 0.707106781186547524401;  // 1/sqrt(2)
 
+		inline constexpr glm::vec3 X_AXIS	= { 1.0f, 0.0f, 0.0f };
+		inline constexpr glm::vec3 Y_AXIS	= { 0.0f, 1.0f, 0.0f };
+		inline constexpr glm::vec3 Z_AXIS	= { 0.0f, 0.0f, 1.0f };
+		inline constexpr glm::vec3 FORWARD	= { 0.0f, 0.0f, -1.0f };
+
 		/**
 		 * Maps a value from min/max to outMin/outMax.
 		 * For example: fit<float>(10.0f, 0.0f, 20.0f, 100.0f, 200.0f) -> returns 150.0f.

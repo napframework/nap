@@ -24,6 +24,20 @@ float map(float value, float min1, float max1, float min2, float max2)
 }
 
 
+// Maps x [0, 1] to [min, max]
+float map(float x, float min, float max)
+{
+	return min + x * (max - min);
+}
+
+
+// Maps x [min, max] to [0, 1]
+float map01(float x, float min, float max)
+{
+	return (x - min) / (max - min);
+}
+
+
 // Clamps value between 0.0 and 1.0
 float saturate(float value)
 {

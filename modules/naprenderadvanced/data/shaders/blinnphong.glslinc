@@ -27,6 +27,7 @@ bool getLightDirection(Light light, vec3 fragPosition, out vec3 outDirection)
 			return true;
 
 		case LIGHT_POINT:
+		case LIGHT_SPOT:
 			outDirection = normalize(fragPosition - light.origin);
 			return true;
 
@@ -79,27 +80,23 @@ vec3 computeLights(Light lights[8], uint count, BlinnPhongMaterial mtl, vec3 cam
 		switch(getLightType(li.flags))
 		{
 			// Custom
-			case 0:
+			case LIGHT_CUSTOM:
 				// TODO: Support custom light computation functions in some way
 				color += vec3(1.0, 0.0, 1.0);
 				break;
 
 			// Directional
-			case 1:
+			case LIGHT_DIRECTIONAL:
 				color += computeLight(li.direction, li.color, li.intensity, 1.0, mtl, camPosition, surfNormal, fragPosition);
 				break;
 
 			// Point
-			case 2:
+			case LIGHT_POINT:
+			case LIGHT_SPOT:
 				vec3 delta = fragPosition - li.origin;
 				float dist_squared = dot(delta, delta);
 				float atten = min(1.0/(dist_squared * max(li.attenuation, 0.00001)), 1.0);
 				color += computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
-				break;
-
-			// Spot
-			case 3:
-				color += vec3(1.0, 0.0, 1.0);
 				break;
 
 			// Error
