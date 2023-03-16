@@ -16,6 +16,7 @@
 #include <imguiutils.h>
 #include <glm/ext.hpp>
 #include <parameternumeric.h>
+#include <parameterquat.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -79,12 +80,14 @@ namespace nap
 
 		//////////////////////////////////////////////////////////////////////////
 
-		const float x = mResourceManager->findObject<ParameterFloat>("PointLightXParameter")->mValue;
-		const float y = mResourceManager->findObject<ParameterFloat>("PointLightYParameter")->mValue;
-		const float z = mResourceManager->findObject<ParameterFloat>("PointLightZParameter")->mValue;
 		const auto scene = mResourceManager->findObject<Scene>("Scene");
 		auto& transform = scene->findEntity("PointLightEntity")->getComponent<TransformComponentInstance>();
-		transform.setTranslate({ x, y, z });
+
+		const auto& pos = mResourceManager->findObject<ParameterVec3>("PointLightTranslateParam")->mValue;
+		transform.setTranslate(pos);
+
+		const auto& rot = mResourceManager->findObject<ParameterQuat>("PointLightRotationParam")->mValue;
+		transform.setRotate(rot);
 
 		//////////////////////////////////////////////////////////////////////////
 

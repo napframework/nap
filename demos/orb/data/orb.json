@@ -796,6 +796,14 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "RenderGnomon",
+                    "Visible": true,
+                    "Gnomon": "GnomonMesh",
+                    "LineWidth": 1.0,
+                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -916,6 +924,20 @@
                 "BoundingSphereEntity",
                 "BoundsEntity"
             ]
+        },
+        {
+            "Type": "nap::GnomonMesh",
+            "mID": "GnomonMesh",
+            "Size": 1.0,
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "Type": "nap::GnomonShader",
+            "mID": "GnomonShader"
         },
         {
             "Type": "nap::HeightSphereMesh",
@@ -1082,6 +1104,30 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterFloat",
+            "mID": "PointLightTranslateParameter",
+            "Name": "PointLightTranslate",
+            "Value": 0.0,
+            "Minimum": -10.0,
+            "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "PointLightYParameter",
+            "Name": "PointLightY",
+            "Value": 2.0,
+            "Minimum": -10.0,
+            "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "PointLightZParameter",
+            "Name": "PointLightZ",
+            "Value": 0.0,
+            "Minimum": -10.0,
+            "Maximum": 10.0
+        },
+        {
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
@@ -1128,26 +1174,26 @@
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "PointLightYParameter",
-                    "Name": "PointLightY",
-                    "Value": 2.0,
-                    "Minimum": -10.0,
-                    "Maximum": 10.0
+                    "Type": "nap::ParameterQuat",
+                    "mID": "PointLightRotationParam",
+                    "Name": "PointLightRotation",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                    }
                 },
                 {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "PointLightXParameter",
-                    "Name": "PointLightX",
-                    "Value": 0.0,
-                    "Minimum": -10.0,
-                    "Maximum": 10.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "PointLightZParameter",
-                    "Name": "PointLightZ",
-                    "Value": 0.0,
+                    "Type": "nap::ParameterVec3",
+                    "mID": "PointLightTranslateParam",
+                    "Name": "PointLightTranslate",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 2.0,
+                        "z": 3.0
+                    },
+                    "Clamp": true,
                     "Minimum": -10.0,
                     "Maximum": 10.0
                 }
@@ -1166,6 +1212,19 @@
             "Clamp": true,
             "Minimum": -10.0,
             "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterVec3",
+            "mID": "ParameterVec3_1a7aa5c5",
+            "Name": "",
+            "Value": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Clamp": false,
+            "Minimum": 0.0,
+            "Maximum": 1.0
         },
         {
             "Type": "nap::RenderWindow",

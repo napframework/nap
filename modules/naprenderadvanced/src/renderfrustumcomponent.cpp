@@ -96,7 +96,7 @@ namespace nap
 		}
 		else if (mCamera->get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
 		{
-			auto inv_proj_matrix = glm::inverse(mCamera->getRenderProjectionMatrix());
+			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
 			for (uint i = 0; i < mFrustumMesh->getUnitLineBox().size(); i++)
 			{
 				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getUnitLineBox()[i], 1.0f);
