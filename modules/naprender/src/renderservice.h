@@ -8,6 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
 #include "renderutils.h"
+#include "rendermask.h"
 
 // External Includes
 #include <nap/service.h>
@@ -57,19 +58,20 @@ namespace nap
 			CPU = 4			///< CPU as graphics card
 		};
 
-		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
-		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected.
-		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
-		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
-		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
-		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-		bool						mEnableCompute = true;											///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
-		bool						mEnableCaching = true;											///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
-		bool						mEnableRobustBufferAccess = false;								///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
-		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
-		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		bool							mHeadless = false;											///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		EPhysicalDeviceType				mPreferredGPU = EPhysicalDeviceType::Discrete;				///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected.
+		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
+		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
+		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
+		uint32							mVulkanVersionMinor = 0;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
+		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
+		bool							mEnableCaching = true;										///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
+		bool							mEnableRobustBufferAccess = false;							///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
+		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
+		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		std::string						mRenderTagRegistryName = "";								///< Property: 'RenderTagRegistryName' The name of the rendertag registry to use
 
 		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
 	};
@@ -471,7 +473,7 @@ namespace nap
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask = std::numeric_limits<uint64>::max());
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
@@ -481,7 +483,7 @@ namespace nap
 		 * @param comps the components to render to renderTarget
 		 * @param sortFunction The function used to sort the components to render
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = std::numeric_limits<uint64>::max());
 
 		/**
 		 * Renders a specific set of objects to a specific renderTarget.
@@ -492,7 +494,7 @@ namespace nap
 		 * @param comps the components to render to renderTarget
 		 * @param sortFunction The function used to sort the components to render
 		 */
-		void renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		void renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = std::numeric_limits<uint64>::max());
 
 		/**
 		 * Calls onCompute() on a specific set of compute component instances, in the order specified.
@@ -842,6 +844,11 @@ namespace nap
 		 * @return empty texture that is available on the GPU.
 		 */
 		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
+
+		/**
+		 * 
+		 */
+		RenderMask findRenderMask(const std::string& tagName);
 
 		/**
 		 * Returns an existing or new material for the given type of shader that can be shared.
@@ -1227,6 +1234,9 @@ namespace nap
 		bool									mHeadless = false;
 
 		UniqueMaterialCache						mMaterials;
+
+		// The registered render tag registry 
+		rtti::ObjectPtr<RenderTagRegistry>		mRenderTagRegistry;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;

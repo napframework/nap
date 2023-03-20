@@ -6,6 +6,17 @@
 #include "nap/core.h"
 #include "renderservice.h"
 
+
+RTTI_BEGIN_ENUM(nap::RenderTextureCube::EFormat)
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA8, "RGBA8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::BGRA8, "BGRA8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R8, "R8"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA16, "RGBA16"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R16, "R16"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::RGBA32, "RGBA32"),
+	RTTI_ENUM_VALUE(nap::RenderTextureCube::EFormat::R32, "R32")
+RTTI_END_ENUM
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTextureCube)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Width",		&nap::RenderTextureCube::mWidth,			nap::rtti::EPropertyMetaData::Required)
@@ -15,6 +26,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTextureCube)
 	RTTI_PROPERTY("ClearColor", &nap::RenderTextureCube::mClearColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_ENUM(nap::DepthRenderTextureCube::EDepthFormat)
+	RTTI_ENUM_VALUE(nap::DepthRenderTextureCube::EDepthFormat::D16, "D16"),
+	RTTI_ENUM_VALUE(nap::DepthRenderTextureCube::EDepthFormat::D32, "D32")
+RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTextureCube)
 	RTTI_CONSTRUCTOR(nap::Core&)

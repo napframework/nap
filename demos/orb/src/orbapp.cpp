@@ -120,7 +120,7 @@ namespace nap
 		// Shadow pass
 		if (mRenderService->beginHeadlessRecording())
 		{
-			mRenderAdvancedService->renderShadows(render_comps);
+			mRenderAdvancedService->renderShadows(render_comps, true, mRenderService->findRenderMask("Default"));
 			mRenderService->endHeadlessRecording();
 		}
 

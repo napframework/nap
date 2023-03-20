@@ -9,6 +9,7 @@
 #include <component.h>
 #include <utility/dllexport.h>
 #include <cameracomponent.h>
+#include <rendermask.h>
 
 namespace nap
 {
@@ -27,7 +28,8 @@ namespace nap
 		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
 
 	public:
-		bool mVisible = true;	///< Property: 'Visible' if this object is rendered to target by the render service
+		bool mVisible = true;							///< Property: 'Visible' if this object is rendered to target by the render service.
+		std::vector<ResourcePtr<RenderTag>> mTags;		///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
 
 
@@ -72,6 +74,16 @@ namespace nap
 		bool isVisible() const														{ return mVisible; }
 
 		/**
+		 * @return the list of tags
+		 */
+		const std::vector<ResourcePtr<RenderTag>>& getTags() const					{ return getComponent<RenderableComponent>()->mTags; }
+
+		/**
+		 * @return the render mask
+		 */
+		RenderMask getRenderMask() const											{ return mRenderMask; }
+
+		/**
 		 * Called by the Render Service. By default every camera type is supported
 		 * If your renderable component doesn't support a specific camera return false
 		 * In that case the object won't be rendered.
@@ -92,6 +104,7 @@ namespace nap
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
 
 	private:
-		bool mVisible = true;			///< If this object should be drawn or not
+		bool mVisible = true;							///< If this object should be drawn or not
+		RenderMask mRenderMask = 0U;					///< The render mask
 	};
 }

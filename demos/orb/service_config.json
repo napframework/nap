@@ -1,0 +1,130 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::IMGuiServiceConfiguration",
+            "mID": "IMGuiServiceConfiguration_96b29134-7000-4edb-aa63-b46fc3a5e4c9",
+            "ColorScheme": "Dark",
+            "FontSize": 17.0,
+            "GlobalScale": 1.0,
+            "FontFile": "",
+            "FontSampling": {
+                "x": 5,
+                "y": 3
+            },
+            "FontSpacing": 0.25,
+            "Colors": {
+                "BackgroundColor": {
+                    "Values": [
+                        45,
+                        45,
+                        45
+                    ]
+                },
+                "DarkColor": {
+                    "Values": [
+                        0,
+                        0,
+                        0
+                    ]
+                },
+                "MenuColor": {
+                    "Values": [
+                        141,
+                        139,
+                        132
+                    ]
+                },
+                "FrontColor1": {
+                    "Values": [
+                        141,
+                        139,
+                        132
+                    ]
+                },
+                "FrontColor2": {
+                    "Values": [
+                        174,
+                        172,
+                        164
+                    ]
+                },
+                "FrontColor3": {
+                    "Values": [
+                        205,
+                        205,
+                        195
+                    ]
+                },
+                "FrontColor4": {
+                    "Values": [
+                        255,
+                        255,
+                        255
+                    ]
+                },
+                "HighlightColor1": {
+                    "Values": [
+                        41,
+                        88,
+                        255
+                    ]
+                },
+                "HighlightColor2": {
+                    "Values": [
+                        214,
+                        255,
+                        163
+                    ]
+                },
+                "HighlightColor3": {
+                    "Values": [
+                        255,
+                        234,
+                        48
+                    ]
+                },
+                "HighlightColor4": {
+                    "Values": [
+                        255,
+                        80,
+                        80
+                    ]
+                },
+                "InvertIcons": false
+            }
+        },
+        {
+            "Type": "nap::ParameterServiceConfiguration",
+            "mID": "ParameterServiceConfiguration_f5f2f1f8-a0eb-4e60-90f6-4bbb9114ea41",
+            "PresetsDirectory": "Presets"
+        },
+        {
+            "Type": "nap::RenderAdvancedServiceConfiguration",
+            "mID": "RenderAdvancedServiceConfiguration_90affb39-1c6f-4329-b4d3-07b4682d22f7",
+            "ShadowMapSize": 2048,
+            "ShadowCubeMapSize": 512,
+            "Precision": "D32",
+            "CubePrecision": 1
+        },
+        {
+            "Type": "nap::RenderServiceConfiguration",
+            "mID": "RenderServiceConfiguration_065ed2a0-db7e-41bf-a44a-577cb026932d",
+            "Headless": false,
+            "PreferredGPU": "Discrete",
+            "Layers": [
+                "VK_LAYER_KHRONOS_validation"
+            ],
+            "Extensions": [],
+            "VulkanMajor": 1,
+            "VulkanMinor": 0,
+            "AnisotropicSamples": 8,
+            "EnableHighDPI": true,
+            "EnableCompute": true,
+            "EnableCaching": true,
+            "EnableRobustBufferAccess": false,
+            "ShowLayers": false,
+            "ShowExtensions": false,
+            "RenderTagRegistryName": "RenderTagRegistry"
+        }
+    ]
+}

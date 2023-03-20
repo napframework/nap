@@ -128,6 +128,7 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundingSphere",
                     "Visible": false,
+                    "Tags": [],
                     "Mesh": "SphereWireMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -206,6 +207,7 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBounds",
                     "Visible": true,
+                    "Tags": [],
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -319,6 +321,7 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBox",
                     "Visible": true,
+                    "Tags": [],
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -507,6 +510,9 @@
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderDirectionalLight",
                     "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -556,6 +562,9 @@
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomon2",
                     "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -571,6 +580,7 @@
                     "Type": "nap::OrbComponent",
                     "mID": "RenderOrb",
                     "Visible": true,
+                    "Tags": [],
                     "Mesh": "OrbMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -707,6 +717,9 @@
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderPointLight",
                     "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -756,6 +769,9 @@
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomon",
                     "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -774,7 +790,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 10.0
+                            "z": 7.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -804,7 +820,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "ShadowCameraPerspective2",
                     "Properties": {
-                        "FieldOfView": 90.0,
+                        "FieldOfView": 60.0,
                         "NearClippingPlane": 0.10000000149011612,
                         "FarClippingPlane": 50.0,
                         "GridDimensions": {
@@ -821,6 +837,9 @@
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderSpotLight",
                     "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -870,6 +889,9 @@
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomon3",
                     "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -907,6 +929,7 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderTorus",
                     "Visible": true,
+                    "Tags": [],
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1288,6 +1311,22 @@
             "Clamp": false,
             "Minimum": 0.0,
             "Maximum": 1.0
+        },
+        {
+            "Type": "nap::RenderTagRegistry",
+            "mID": "RenderTagRegistry",
+            "Tags": [
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Default",
+                    "Name": "Default"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Gizmo",
+                    "Name": "Gizmo"
+                }
+            ]
         },
         {
             "Type": "nap::RenderWindow",

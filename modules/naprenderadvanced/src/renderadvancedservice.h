@@ -13,6 +13,7 @@
 #include "cuberendertarget.h"
 #include "cubedepthrendertarget.h"
 #include "lightcomponent.h"
+#include "rendermask.h"
 
 namespace nap
 {
@@ -92,7 +93,7 @@ namespace nap
 		/**
 		 * Render shadows
 		 */
-		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true);
+		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true, RenderMask renderMask = 0U);
 
 		/**
 		 * Push light data

@@ -207,7 +207,7 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials)
+	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials, RenderMask renderMask)
 	{
 		auto* render_service = getCore().getService<RenderService>();
 		assert(render_service != nullptr);
@@ -231,7 +231,7 @@ namespace nap
 					assert(target != nullptr);
 
 					target->beginRendering();
-					render_service->renderObjects(*target, *shadow_camera, renderComps);
+					render_service->renderObjects(*target, *shadow_camera, renderComps, renderMask);
 					target->endRendering();
 					break;
 				}
@@ -258,10 +258,10 @@ namespace nap
 
 					auto* cube_target = static_cast<CubeDepthRenderTarget*>(target.get());
 					auto* persp_camera = static_cast<PerspCameraComponentInstance*>(shadow_camera);
-					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps, mask = renderMask](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
 						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
-						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), mask);
 					});
 					break;
 				}

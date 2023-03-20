@@ -205,6 +205,18 @@ namespace nap
 		if (mViewMatrixUniform != nullptr)
 			mViewMatrixUniform->setValue(viewMatrix);
 
+		// Uniforms / samplers
+		//auto* ubo = getMaterialInstance().getOrCreateUniform("UBO");
+		//if (ubo != nullptr)
+		//{
+		//	ubo->getOrCreateUniform<UniformVec3Instance>("color")->setValue({1.0f, 1.0f, 1.0f});
+		//	ubo->getOrCreateUniform<UniformFloatInstance>("alpha")->setValue(1.0f);
+		//}
+
+		//auto* sampler = getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("colorTexture");
+		//if (sampler != nullptr)
+		//	sampler->setTexture()
+
 		// Get valid descriptor set
 		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 

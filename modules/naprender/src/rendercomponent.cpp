@@ -4,9 +4,11 @@
 
 // Local Includes
 #include "rendercomponent.h"
+#include "rendermask.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableComponent)
 	RTTI_PROPERTY("Visible", &nap::RenderableComponent::mVisible, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Tags", &nap::RenderableComponent::mTags, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableComponentInstance)
@@ -16,7 +18,10 @@ namespace nap
 {
 	bool RenderableComponentInstance::init(utility::ErrorState& errorState)
 	{
-		mVisible = getComponent<RenderableComponent>()->mVisible;
+		const auto& resource = getComponent<RenderableComponent>();
+		mVisible = resource->mVisible;
+		mRenderMask = createRenderMask(resource->mTags);
+
 		return true;
 	}
 

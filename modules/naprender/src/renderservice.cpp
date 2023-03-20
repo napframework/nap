@@ -104,6 +104,7 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RenderTagRegistryName",		&nap::RenderServiceConfiguration::mRenderTagRegistryName,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -1304,7 +1305,7 @@ namespace nap
 	}
 	
 
-	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
 		const Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -1372,19 +1373,19 @@ namespace nap
 	}
 
 
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask)
 	{
-		renderObjects(renderTarget, camera, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), renderMask);
 	}
 
 
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask)
 	{
-		// Only gather renderable components that can be rendered using the given caera
+		// Only gather renderable components that can be rendered using the given camera and mask
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera))
+			if (comp->isSupported(camera) && compareRenderMask(comp->getRenderMask(), renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1402,16 +1403,23 @@ namespace nap
 	}
 
 
-	void RenderService::renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask)
 	{
-		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired	
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired
+
+		// Only gather renderable components that can be rendered using the given mask
+		std::vector<nap::RenderableComponentInstance*> render_comps;
+		for (const auto& comp : comps)
+		{
+			if (compareRenderMask(comp->getRenderMask(), renderMask))
+				render_comps.emplace_back(comp);
+		}
 
 		// Sort objects to render
-		std::vector<RenderableComponentInstance*> components_to_render = comps;
-		sortFunction(components_to_render, view);
+		sortFunction(render_comps, view);
 
 		// Draw components
-		for (auto& comp : components_to_render)
+		for (auto& comp : render_comps)
 			comp->draw(renderTarget, mCurrentCommandBuffer, view, projection);
 	}
 
@@ -1451,7 +1459,7 @@ namespace nap
 		assert(mSceneService != nullptr);
 
 		// Enable high dpi support if requested (windows)
-		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
+		auto* render_config = getConfiguration<RenderServiceConfiguration>();
 
 		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
 		mHeadless = render_config->mHeadless;
@@ -1813,6 +1821,22 @@ namespace nap
 	}
 
 
+	RenderMask RenderService::findRenderMask(const std::string& tagName)
+	{
+		if (mRenderTagRegistry == nullptr)
+			return 0U;
+
+		uint count = 0U;
+		for (auto& tag : mRenderTagRegistry->mTags)
+		{
+			if (tag->mName == tagName)
+				return 1U << count;
+			++count;
+		}
+		return 0U;
+	}
+
+
 	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
 	{
 		// Ensure it's a shader
@@ -1907,6 +1931,11 @@ namespace nap
 			frame.mTextureDownloads.clear();
 			frame.mBufferDownloads.clear();
 		}
+
+		// Fetch and store reference to the specified render tag registry
+		auto* render_config = getConfiguration<RenderServiceConfiguration>();
+		if (!render_config->mRenderTagRegistryName.empty())
+			mRenderTagRegistry = getCore().getResourceManager()->findObject<RenderTagRegistry>(render_config->mRenderTagRegistryName);
 	}
 
 
