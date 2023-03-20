@@ -100,85 +100,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "BoundingSphereEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformBoundingSphere",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBoundingSphere",
-                    "Visible": false,
-                    "Tags": [],
-                    "Mesh": "SphereWireMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_42ec7529",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_c96cbffb",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_63bed5dd",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "Opaque",
-                        "DepthMode": "ReadWrite"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "BoundsEntity",
             "Components": [
                 {
@@ -671,8 +592,8 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
+                            "y": -1.0,
+                            "z": 3.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -788,8 +709,8 @@
                     "mID": "TransformSpotLight",
                     "Properties": {
                         "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
+                            "x": 2.0,
+                            "y": 2.5,
                             "z": 7.0
                         },
                         "Rotate": {
@@ -808,10 +729,10 @@
                 {
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
-                    "Color": "LightColorParameter",
+                    "Color": "SecondLightColorParameter",
                     "Intensity": "LightIntensityParameter",
                     "Enable Shadows": true,
-                    "ShadowCamera": "../DirectionalLight1Entity/ShadowCameraOrtho",
+                    "ShadowCamera": "../SpotLightEntity/ShadowCameraPerspective2",
                     "Attenuation": "LightAttenuationParameter",
                     "Angle": "LightAngleParameter",
                     "FallOff": "LightFallOffParameter"
@@ -1013,7 +934,6 @@
                 "BaseLightEntity",
                 "TorusEntity",
                 "BoxEntity",
-                "BoundingSphereEntity",
                 "BoundsEntity",
                 "DirectionalLight1Entity",
                 "SpotLightEntity"
@@ -1220,6 +1140,18 @@
                     }
                 },
                 {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "SecondLightColorParameter",
+                    "Name": "SecondLightColor",
+                    "Value": {
+                        "Values": [
+                            1.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
+                },
+                {
                     "Type": "nap::ParameterFloat",
                     "mID": "LightIntensityParameter",
                     "Name": "LightIntensity",
@@ -1229,17 +1161,9 @@
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "BiasParameter",
-                    "Name": "",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 0.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
                     "mID": "LightAttenuationParameter",
                     "Name": "LightAttenuation",
-                    "Value": 0.20000000298023225,
+                    "Value": 0.009999999776482582,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -1271,17 +1195,17 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAngleParameter",
                     "Name": "LightAngle",
-                    "Value": 1.0,
+                    "Value": 10.0,
                     "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Maximum": 360.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "LightFallOffParameter",
                     "Name": "LightFallOff",
-                    "Value": 0.5,
+                    "Value": 1.0,
                     "Minimum": 0.0,
-                    "Maximum": 1.0
+                    "Maximum": 4.0
                 }
             ],
             "Groups": []
@@ -1298,19 +1222,6 @@
             "Clamp": true,
             "Minimum": -10.0,
             "Maximum": 10.0
-        },
-        {
-            "Type": "nap::ParameterVec3",
-            "mID": "ParameterVec3_1a7aa5c5",
-            "Name": "",
-            "Value": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "Clamp": false,
-            "Minimum": 0.0,
-            "Maximum": 1.0
         },
         {
             "Type": "nap::RenderTagRegistry",
@@ -1409,29 +1320,6 @@
             "Radius": 1.0,
             "Rings": 256,
             "Sectors": 256,
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            }
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "SphereWireMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Line",
-            "Radius": 20.0,
-            "Rings": 16,
-            "Sectors": 16,
             "Color": {
                 "Values": [
                     1.0,

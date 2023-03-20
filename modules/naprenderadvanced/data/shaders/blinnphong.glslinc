@@ -92,13 +92,24 @@ vec3 computeLights(Light lights[8], uint count, BlinnPhongMaterial mtl, vec3 cam
 
 			// Point
 			case LIGHT_POINT:
-			case LIGHT_SPOT:
+			{
 				vec3 delta = fragPosition - li.origin;
 				float dist_squared = dot(delta, delta);
 				float atten = min(1.0/(dist_squared * max(li.attenuation, 0.00001)), 1.0);
 				color += computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
 				break;
-
+			}
+			case LIGHT_SPOT:
+			{
+				vec3 delta = fragPosition - li.origin;
+				float dist_squared = dot(delta, delta);
+				float atten = min(1.0/(dist_squared * max(li.attenuation, 0.00001)), 1.0);
+				float norm_phi = dot(normalize(delta), normalize(li.direction)) * 0.5 + 0.5;
+				float norm_max = li.angle/360.0;
+				float spot = pow(clamp((norm_phi - (1.0-norm_max))/norm_max, 0.0, 1.0), li.falloff);
+				color += spot * computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
+				break;
+			}
 			// Error
 			default:
 				color += vec3(1.0, 0.0, 1.0);

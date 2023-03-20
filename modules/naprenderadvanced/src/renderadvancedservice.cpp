@@ -345,11 +345,20 @@ namespace nap
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
 				{
-					// Filter default uniforms
 					const auto name = entry.first;
+
+					// Filter default uniforms
+					bool skip = false;
 					for (const auto& default_uniform : sDefaultUniforms)
+					{
 						if (name == default_uniform)
-							continue;
+						{
+							skip = true;
+							break;
+						}
+					}
+					if (skip)
+						break;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
 					auto* member = struct_decl->findMember(name);

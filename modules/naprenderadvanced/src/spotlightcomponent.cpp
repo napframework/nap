@@ -16,9 +16,9 @@
 // nap::SpotLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SpotLightComponent)
 	RTTI_PROPERTY("ShadowCamera", &nap::SpotLightComponent::mShadowCamera, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Attenuation", &nap::SpotLightComponent::mAngle, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Angle", &nap::SpotLightComponent::mFallOff, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FallOff", &nap::SpotLightComponent::mAttenuation, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Attenuation", &nap::SpotLightComponent::mAttenuation, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Angle", &nap::SpotLightComponent::mAngle, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FallOff", &nap::SpotLightComponent::mFallOff, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::SpotLightComponentInstance run time class definition

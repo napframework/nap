@@ -4,7 +4,7 @@
 #include "lightcomponent.h"
 
 // External includes
-#include <orthocameracomponent.h>
+#include <perspcameracomponent.h>
 
 namespace nap
 {
@@ -22,7 +22,7 @@ namespace nap
 		ResourcePtr<ParameterFloat> mAttenuation;				///< Property: 'Attenuation'
 		ResourcePtr<ParameterFloat> mAngle;						///< Property: 'Angle'
 		ResourcePtr<ParameterFloat> mFallOff;					///< Property: 'FallOff'
-		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
 	};
 
 
@@ -65,6 +65,6 @@ namespace nap
 
 	private:
 		// Shadow camera
-		ComponentInstancePtr<OrthoCameraComponent> mShadowCamera = { this, &SpotLightComponent::mShadowCamera };
+		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &SpotLightComponent::mShadowCamera };
 	};
 }
