@@ -134,16 +134,20 @@ namespace nap
 						break;
 					
 					case RampMode::Exponential:
+                        if (mValue == mDestination)
+                        {
+                            mFactor = 1.f;
+                            break;
+                        }
+
 						// avoid divisions by zero by avoiding mValue = 0
 						if (mValue == 0)
-							mValue = mDestination *
-							         smallestFactor; // this is a 140dB ramp up from mValue to mDestination
+							mValue = mDestination * smallestFactor; // this is a 140dB ramp up from mValue to mDestination
 						
 						// avoid divisions by zero by avoiding mDestination = 0
 						if (mDestination == 0)
 						{
-							mDestination =
-									mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
+							mDestination = mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
 							mDestinationZero = true;
 						}
 						else
