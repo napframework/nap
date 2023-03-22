@@ -106,7 +106,7 @@ namespace nap
 			EqualPowerTranslator(unsigned int size) : TableTranslator<T>(size)
 			{
 				// fills the table using equal power function
-				TableTranslator<T>::fill([](T x) { return sin(x * M_PI_2); });
+				TableTranslator<T>::fill([](T x) { return sin(x * math::PI_2); });
 			}
 		
 		private:
