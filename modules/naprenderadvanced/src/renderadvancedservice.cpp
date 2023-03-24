@@ -4,6 +4,8 @@
 
 // Local Includes
 #include "renderadvancedservice.h"
+#include "cubemapfromfile.h"
+#include "cubemapshader.h"
 
 // External Includes
 #include <renderservice.h>
@@ -14,6 +16,8 @@
 #include <nap/core.h>
 #include <rtti/factory.h>
 #include <vulkan/vulkan_core.h>
+#include <material.h>
+#include <renderglobals.h>
 
 #include <parameter.h>
 #include <parametervec.h>
@@ -196,6 +200,36 @@ namespace nap
 			errorState.fail("%s: Failed to initialize cube sampler resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 			return false;
 		}
+
+		// Create nap::NoMesh
+		mNoMesh = std::make_unique<NoMesh>(getCore());
+		mNoMesh->mID = utility::stringFormat("%s_NoMesh_%s", RTTI_OF(NoMesh).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mNoMesh->init(errorState))
+		{
+			errorState.fail("%s: Failed to initialize cube sampler resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+			return false;
+		}
+
+		// Create material instance
+		mMaterialInstResource = std::make_unique<MaterialInstanceResource>();
+		mMaterialInstResource->mBlendMode = EBlendMode::Opaque;
+		mMaterialInstResource->mDepthMode = EDepthMode::NoReadWrite;
+
+		mCubeMapMaterial = render_service->getOrCreateMaterial<CubeMapShader>(errorState);
+		if (mCubeMapMaterial == nullptr)
+			return false;
+
+		if (!mCubeMapMaterial->init(errorState))
+			return false;
+
+		mMaterialInstResource->mMaterial = mCubeMapMaterial;
+		if (!mMaterialInstance.init(*render_service, *mMaterialInstResource, errorState))
+			return false;
+
+		// Create the renderable mesh, which represents a valid mesh / material combination
+		mRenderableMesh = render_service->createRenderableMesh(*mNoMesh, mMaterialInstance, errorState);
+		if (!mRenderableMesh.isValid())
+			return false;
 
 		return true;
 	}
@@ -509,7 +543,7 @@ namespace nap
 	{
 		// We now know the number of light components in the scene and can initialize resources accordingly
 		utility::ErrorState error_state;
-		if (!initShadowMappingResources(error_state))
+		if (!initServiceResources(error_state))
 		{
 			nap::Logger::error(error_state.toString());
 			assert(false);
@@ -517,7 +551,7 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::initShadowMappingResources(utility::ErrorState& errorState)
+	bool RenderAdvancedService::initServiceResources(utility::ErrorState& errorState)
 	{
 		// Shadow maps
 		mLightDepthMap.clear();
@@ -632,6 +666,88 @@ namespace nap
 			++index;
 		}
 		mShadowResourcesCreated = true;
+
+		// RENDER PREPASS
+		auto* render_service = getCore().getService<RenderService>();
+		assert(render_service != nullptr);
+
+		auto cube_maps = render_service->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
+		if (!cube_maps.empty())
+		{
+			std::vector<std::unique_ptr<CubeRenderTarget>> cube_targets;
+			cube_targets.reserve(cube_maps.size());
+
+			for (auto& cm : cube_maps)
+			{
+				// Cube map from file render target
+				auto rt = std::make_unique<CubeRenderTarget>(getCore());
+				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+				rt->mRequestedSamples = ERasterizationSamples::One;	
+				rt->mSampleShading = false;
+				rt->mCubeTexture = cm;
+
+				if (!rt->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize cube map from file render target", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+					return false;
+				}
+				cube_targets.emplace_back(std::move(rt));
+			}
+
+			// Updates GPU data
+			render_service->beginFrame();
+
+			if (render_service->beginHeadlessRecording())
+			{
+				// Prerender shadow maps here
+				uint count = 0U;
+				for (auto& cm : cube_maps)
+				{
+					auto commandBuffer = render_service->getCurrentCommandBuffer();
+					auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
+					auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
+
+					auto& rt = cube_targets[count];
+					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+					{
+						// Push MVP
+						auto* mvp = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+						if (mvp != nullptr)
+						{
+							mvp->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix)->setValue({});
+							mvp->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix)->setValue(view);
+							mvp->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix)->setValue(projection);
+						}
+
+						// Set equirectangular texture to convert
+						auto* sampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>("equiTexture");
+						if (sampler != nullptr)
+							sampler->setTexture(*cm->mSourceTexture);
+
+						// Get valid descriptor set
+						const DescriptorSet& descriptor_set = mMaterialInstance.update();
+
+						// Gather draw info
+						MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+						GPUMesh& mesh = mesh_instance.getGPUMesh();
+
+						// Get pipeline to to render with
+						utility::ErrorState error_state;
+						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
+
+						// Bufferless drawing with the cube map shader
+						vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+					});
+					++count;
+				}
+				render_service->endHeadlessRecording();
+			}
+			render_service->endFrame();
+		}
+
 		return true;
 	}
 

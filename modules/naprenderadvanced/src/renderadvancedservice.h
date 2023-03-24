@@ -8,18 +8,21 @@
 #include <nap/service.h>
 #include <depthrendertarget.h>
 #include <rendertexturecube.h>
+#include <materialinstance.h>
+#include <renderablemesh.h>
 
 // Local includes
 #include "cuberendertarget.h"
 #include "cubedepthrendertarget.h"
 #include "lightcomponent.h"
 #include "rendermask.h"
+#include "nomesh.h"
 
 namespace nap
 {
 	// Forward declares
 	class RenderableComponentInstance;
-
+	class Material;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service
@@ -31,7 +34,7 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() const;
 
-		uint mShadowMapSize									= 2048U;										///< Shadow Map Size
+		uint mShadowMapSize									= 1024U;										///< Shadow Map Size
 		uint mShadowCubeMapSize								= 512U;											///< Shadow Cube Map Size
 		DepthRenderTexture2D::EDepthFormat mPrecision		= DepthRenderTexture2D::EDepthFormat::D32;		///< Precision
 		DepthRenderTextureCube::EDepthFormat mCubePrecision	= DepthRenderTextureCube::EDepthFormat::D32;	///< Cubemap Precision
@@ -104,7 +107,7 @@ namespace nap
 		bool pushLights(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-		bool initShadowMappingResources(utility::ErrorState& errorState);
+		bool initServiceResources(utility::ErrorState& errorState);
 
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;
@@ -133,9 +136,22 @@ namespace nap
 			std::unique_ptr<DepthRenderTextureCube> mTexture;
 		};
 
+		struct EnvironmentMapEntry
+		{
+			EnvironmentMapEntry::EnvironmentMapEntry(std::unique_ptr<CubeRenderTarget> target, std::unique_ptr<RenderTextureCube> texture) :
+				mTarget(std::move(target)), mTexture(std::move(texture))
+			{
+				mTarget->mCubeTexture = mTexture.get();
+			}
+
+			std::unique_ptr<CubeRenderTarget> mTarget;
+			std::unique_ptr<RenderTextureCube> mTexture;
+		};
+
 		// Shadow mapping
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeMapEntry>> mLightCubeMap;
+		std::unordered_map<LightComponentInstance*, std::unique_ptr<EnvironmentMapEntry>> mEnvironmentCubeMap;
 		std::unordered_map<LightComponentInstance*, uint> mLightFlagsMap;
 
 		std::unique_ptr<Sampler2DArray> mSampler2DResource;
@@ -143,6 +159,15 @@ namespace nap
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 
 		bool mShadowResourcesCreated = false;
+
+		// Cube maps from file
+		std::unique_ptr<CubeRenderTarget> mCubeMapFromFileRenderTarget;
+		std::unique_ptr<NoMesh> mNoMesh;
+		std::unique_ptr<MaterialInstanceResource> mMaterialInstResource;
+		Material* mCubeMapMaterial = nullptr;
+
+		MaterialInstance						mMaterialInstance;					///< The MaterialInstance as created from the resource. 
+		RenderableMesh							mRenderableMesh;					///< The currently active renderable mesh, either set during init() or set by setMesh.
 
 		static constexpr const uint mMaxShadowMapCount = 8;
 		static constexpr const uint mRequiredVulkanVersionMajor = 1U;

@@ -54,6 +54,7 @@ namespace nap
 			return false;
 
 		mGuiService->selectWindow(mRenderWindow);
+
 		return true;
 	}
 

@@ -150,13 +150,20 @@ namespace nap
 		// Fetch camera transform
 		auto& cam_trans = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
 		const auto& cam_position = math::extractPosition(cam_trans.getGlobalTransform());
-		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), cam_position);
 
+		// Render
+		render(cam_position, camera.getProjectionMatrix(), renderCallback);
+	}
+
+
+	void CubeDepthRenderTarget::render(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, std::function<void(CubeDepthRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback)
+	{
 		/**
 		 * Render to frame buffers
 		 * Cube face selection following the Vulkan spec
 		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
 		 **/
+		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
 
 		setLayerIndex(5);
 		beginRendering();
@@ -164,7 +171,7 @@ namespace nap
 			// forward (-Z)
 			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f });
 			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -174,7 +181,7 @@ namespace nap
 			// back (+Z)
 			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), math::X_AXIS);
 			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -184,7 +191,7 @@ namespace nap
 			// down (-Y)
 			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::X_AXIS);
 			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -194,7 +201,7 @@ namespace nap
 			// up (+Y)
 			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::X_AXIS);
 			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -204,7 +211,7 @@ namespace nap
 			// left (-X)
 			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::Y_AXIS);
 			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -214,7 +221,7 @@ namespace nap
 			// right (+X)
 			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::Y_AXIS);
 			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 

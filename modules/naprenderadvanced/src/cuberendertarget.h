@@ -22,7 +22,7 @@ namespace nap
 	class PerspCameraComponentInstance;
 
 	//////////////////////////////////////////////////////////////////////////
-	// Quilt RenderTarget
+	// Cube RenderTarget
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
@@ -154,6 +154,11 @@ namespace nap
 		 * ~~~~~
 		 */
 		void render(PerspCameraComponentInstance& camera, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
+
+		/**
+		 * 
+		 */
+		void render(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
 
 		/**
 		 * 

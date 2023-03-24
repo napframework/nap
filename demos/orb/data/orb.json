@@ -55,6 +55,24 @@
             "mID": "ConstantShader"
         },
         {
+            "Type": "nap::CubeMapFromFile",
+            "mID": "CubeMap",
+            "Width": 512,
+            "Height": 512,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            },
+            "SourceTexture": "EquirectangularTexture",
+            "GenerateLods": true
+        },
+        {
             "Type": "nap::Entity",
             "mID": "BaseLightEntity",
             "Components": [
@@ -979,6 +997,13 @@
             "Usage": "Static",
             "ImagePath": "dummy.png",
             "GenerateLods": true
+        },
+        {
+            "Type": "nap::ImageFromFile",
+            "mID": "EquirectangularTexture",
+            "Usage": "Static",
+            "ImagePath": "equi.png",
+            "GenerateLods": false
         },
         {
             "Type": "nap::ImageFromFile",

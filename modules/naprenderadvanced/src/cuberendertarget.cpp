@@ -29,7 +29,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	
 	// Creates the color image and view
-	static bool createColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
+	static bool createLayeredColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, layerCount, sampleCount,
 			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
@@ -44,7 +44,7 @@ namespace nap
 
 
 	// Create the depth image and view
-	static bool createDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
+	static bool createLayeredDepthResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
 		if (!createLayered2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, depthFormat, layerCount, sampleCount,
 			VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT,
@@ -53,6 +53,12 @@ namespace nap
 
 		if (!createCubeImageView(renderer.getDevice(), outImage.getImage(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, layerCount, outImage.mView, errorState))
 			return false;
+
+		for (uint i = 0U; i < layerCount; i++)
+		{
+			if (!createLayered2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, VK_IMAGE_ASPECT_DEPTH_BIT, i, 1, outImage.getSubView(i), errorState))
+				return false;
+		}
 
 		return true;
 	}
@@ -118,19 +124,18 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat,
-			mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
 			return false;
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
 			const auto& cube_texture = static_cast<const TextureCube&>(*mCubeTexture);
-			if (!createDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, cube_texture.getHandle().getSubViewCount(), mDepthImage, errorState))
+			if (!createLayeredDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, cube_texture.getLayerCount(), mDepthImage, errorState))
 				return false;
 
-			for (uint i = 0U; i < cube_texture.getHandle().getSubViewCount(); i++)
+			for (uint i = 0U; i < cube_texture.getLayerCount(); i++)
 			{
-				std::array<VkImageView, 2> attachments{ cube_texture.getHandle().getSubView(i), mDepthImage.mView };
+				std::array<VkImageView, 2> attachments{ cube_texture.getHandle().getSubView(i), mDepthImage.getSubView(i) };
 				framebuffer_info.pAttachments = attachments.data();
 				framebuffer_info.attachmentCount = attachments.size();
 				framebuffer_info.renderPass = mRenderPass;
@@ -228,27 +233,37 @@ namespace nap
 
 	void CubeRenderTarget::render(PerspCameraComponentInstance& camera, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback)
 	{
-		// Fetch camera transform
-		auto& camera_transform = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
-		const auto& camera_local = camera_transform.getLocalTransform();
-
-		// Compute global camera base transform
-		const auto& camera_global = camera_transform.getGlobalTransform();
-		const auto camera_global_base = camera_global * glm::inverse(camera_transform.getLocalTransform());
-
-		const glm::vec3& right		= camera_transform.getLocalTransform()[0];
-		const glm::vec3& up			= camera_transform.getLocalTransform()[1];
-		const glm::vec3& forward	= camera_transform.getLocalTransform()[2];
-
-		auto rotation_local = glm::mat4{};
+		// Update camera properties
+		camera.setFieldOfView(90.0f);
+		camera.setGridLocation(0, 0);
+		camera.setGridDimensions(1, 1);
 		camera.setRenderTargetSize(mSize);
 
-		// Render to frame buffers
+		// Fetch camera transform
+		auto& cam_trans = camera.getEntityInstance()->getComponent<TransformComponentInstance>();
+		const auto& cam_position = math::extractPosition(cam_trans.getGlobalTransform());
+
+		// Render
+		render(cam_position, camera.getProjectionMatrix(), renderCallback);
+	}
+
+
+	void CubeRenderTarget::render(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback)
+	{
+		/**
+		 * Render to frame buffers
+		 * Cube face selection following the Vulkan spec
+		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
+		 **/
+		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
+
 		setLayerIndex(5);
 		beginRendering();
 		{
 			// forward (-Z)
-			renderCallback(*this, camera.getProjectionMatrix(), camera.getViewMatrix());
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f });
+			auto view = glm::inverse(cam_translation * trans);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -256,9 +271,9 @@ namespace nap
 		beginRendering();
 		{
 			// back (+Z)
-			rotation_local = glm::rotate(camera_local, glm::pi<float>(), up);
-			auto view = glm::inverse(camera_global_base * rotation_local);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), math::X_AXIS);
+			auto view = glm::inverse(cam_translation * trans);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -266,9 +281,9 @@ namespace nap
 		beginRendering();
 		{
 			// down (-Y)
-			rotation_local = glm::rotate(camera_local, glm::half_pi<float>(), right);
-			auto view = glm::inverse(camera_global_base * rotation_local);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::X_AXIS);
+			auto view = glm::inverse(cam_translation * trans);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -276,9 +291,9 @@ namespace nap
 		beginRendering();
 		{
 			// up (+Y)
-			rotation_local = glm::rotate(camera_local, -glm::half_pi<float>(), right);
-			auto view = glm::inverse(camera_global_base * rotation_local);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::X_AXIS);
+			auto view = glm::inverse(cam_translation * trans);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -286,9 +301,9 @@ namespace nap
 		beginRendering();
 		{
 			// left (-X)
-			rotation_local = glm::rotate(camera_local, -glm::half_pi<float>(), up);
-			auto view = glm::inverse(camera_global_base * rotation_local);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::Y_AXIS);
+			auto view = glm::inverse(cam_translation * trans);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 
@@ -296,9 +311,9 @@ namespace nap
 		beginRendering();
 		{
 			// right (+X)
-			rotation_local = glm::rotate(camera_local, glm::half_pi<float>(), up);
-			auto view = glm::inverse(camera_global_base * rotation_local);
-			renderCallback(*this, camera.getProjectionMatrix(), view);
+			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::Y_AXIS);
+			auto view = glm::inverse(cam_translation * trans);
+			renderCallback(*this, projectionMatrix, view);
 		}
 		endRendering();
 

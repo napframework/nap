@@ -153,6 +153,11 @@ namespace nap
 		/**
 		 * 
 		 */
+		void render(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, std::function<void(CubeDepthRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
+
+		/**
+		 * 
+		 */
 		void setLayerIndex(uint index);
 
 		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
