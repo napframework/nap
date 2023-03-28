@@ -1,18 +1,20 @@
 #version 450 core
 
+// Extensions
+#extension GL_GOOGLE_include_directive : enable
+
+// Includes
+#include "utils.glslinc"
+#include "cubemap.glslinc"                               
+
 // Uniforms
-uniform nap
+uniform UBO
 {
-	mat4 projectionMatrix;
-	mat4 viewMatrix;
-	mat4 modelMatrix;
-	mat4 normalMatrix;
-	vec3 cameraPosition;
-} mvp;
+	uint face;
+} ubo;
 
 // Fragment Input
-in vec3 	passPosition;			//< Fragment position in world space
-in vec3 	passUV0;				//< Texture UVs
+in vec2 passUV;
 
 // Fragment Output
 out vec4 out_Color;
@@ -21,7 +23,18 @@ out vec4 out_Color;
 uniform sampler2D equiTexture;
 
 
+vec4 panoramaToCubeMap(uint face, vec2 uv)
+{
+	vec2 uv_flip = vec2(uv.x*2.0-1.0, (1.0-uv.y)*2.0-1.0);
+	vec3 scan = uvToXYZ(face, uv_flip);
+	vec3 dir = normalize(scan);
+	vec2 src = dirToUV(dir);
+
+	return texture(equiTexture, src);
+}
+
+
 void main()
 {
-	out_Color = texture(equiTexture, passUV0.xy);
+	out_Color = panoramaToCubeMap(ubo.face, passUV);
 }

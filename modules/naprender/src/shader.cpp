@@ -254,7 +254,14 @@ public:
 		if (mSearchPaths.empty())
 			return nullptr;
 
-		auto absolute_path = nap::utility::findFileInDirectories(headerName, { mSearchPaths });
+		std::vector<std::string> shader_search_paths;
+		for (const auto& path : mSearchPaths)
+		{
+			shader_search_paths.emplace_back(path);
+			shader_search_paths.emplace_back(nap::utility::joinPath({ path, "shaders" }));
+		}
+
+		auto absolute_path = nap::utility::findFileInDirectories(headerName, { shader_search_paths });
 		if (absolute_path.empty())
 			return nullptr;
 

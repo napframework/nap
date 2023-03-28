@@ -51,6 +51,31 @@
             }
         },
         {
+            "Type": "nap::BoxMesh",
+            "mID": "SkyBoxMesh",
+            "Usage": "Static",
+            "CullMode": "Front",
+            "PolygonMode": "Fill",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -135,9 +160,9 @@
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": 2.0,
+                            "x": 1.5,
                             "y": 1.0,
-                            "z": 2.0
+                            "z": 1.75
                         },
                         "UniformScale": 8.0
                     }
@@ -340,7 +365,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 10.0
+                            "z": 20.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -720,6 +745,62 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "SkyBoxEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformSkyBox",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderSkyBoxComponent",
+                    "mID": "RenderSkyBox",
+                    "Visible": true,
+                    "Tags": [],
+                    "Mesh": "SkyBoxMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "SkyBoxMaterial",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "ReadOnly"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    },
+                    "CubeTexture": "CubeMap"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "SpotLightEntity",
             "Components": [
                 {
@@ -728,8 +809,8 @@
                     "Properties": {
                         "Translate": {
                             "x": 2.0,
-                            "y": 2.5,
-                            "z": 7.0
+                            "y": 0.5,
+                            "z": 6.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -954,7 +1035,8 @@
                 "BoxEntity",
                 "BoundsEntity",
                 "DirectionalLight1Entity",
-                "SpotLightEntity"
+                "SpotLightEntity",
+                "SkyBoxEntity"
             ]
         },
         {
@@ -993,16 +1075,16 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "DummyTexture",
+            "mID": "EquirectangularTestTexture",
             "Usage": "Static",
-            "ImagePath": "dummy.png",
+            "ImagePath": "equi_test.jpg",
             "GenerateLods": true
         },
         {
             "Type": "nap::ImageFromFile",
             "mID": "EquirectangularTexture",
             "Usage": "Static",
-            "ImagePath": "equi.png",
+            "ImagePath": "equi_uffizi.png",
             "GenerateLods": false
         },
         {
@@ -1067,8 +1149,8 @@
             ],
             "Samplers": [],
             "Buffers": [],
-            "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
+            "Shader": "ConstantShader",
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -1137,8 +1219,19 @@
             ],
             "Samplers": [],
             "Buffers": [],
-            "Shader": "PhongColorShader",
             "VertexAttributeBindings": [],
+            "Shader": "PhongColorShader",
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "SkyBoxMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "VertexAttributeBindings": [],
+            "Shader": "SkyBoxShader",
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -1312,6 +1405,10 @@
             "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/blinnphongcolor.vert",
             "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/blinnphongcolor.frag",
             "RestrictModuleIncludes": false
+        },
+        {
+            "Type": "nap::SkyBoxShader",
+            "mID": "SkyBoxShader"
         },
         {
             "Type": "nap::SphereMesh",

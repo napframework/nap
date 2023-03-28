@@ -3,6 +3,7 @@
 
 const float EPSILON 		= 0.00001;
 const float PI 				= 3.14159265359;
+const float TWO_PI 			= PI*2.0;
 
 const vec4 QUAT_IDENTITY 	= vec4(0.0, 0.0, 0.0, 1.0);
 const vec3 FORWARD 			= vec3(0.0, 0.0, 1.0);

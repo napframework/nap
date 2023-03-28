@@ -34,11 +34,6 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * Generate the cube map
-		 */
-		bool generate(utility::ErrorState& errorState);
-
 	public:
 		ResourcePtr<Texture2D>		mSourceTexture;							///< Property: 'SourceTexture' Texture to convert to cube map
 		bool						mGenerateLods = true;					///< Property: 'GenerateLods' If LODs are generated for this image

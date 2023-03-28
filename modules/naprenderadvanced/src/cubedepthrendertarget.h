@@ -119,7 +119,7 @@ namespace nap
 		/**
 		 * @return used number of samples when rendering to the target.
 		 */
-		virtual VkSampleCountFlagBits getSampleCount() const override			{ return mRasterizationSamples; }
+		virtual VkSampleCountFlagBits getSampleCount() const override			{ return VK_SAMPLE_COUNT_1_BIT; }
 		
 		/**
 		 * @return if sample based shading is enabled when rendering to the target.
@@ -160,6 +160,12 @@ namespace nap
 		 */
 		void setLayerIndex(uint index);
 
+		/**
+		 *
+		 */
+		uint getLayerIndex() const												{ return mLayerIndex; }
+
+
 		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		float									mClearValue = 1.0f;											///< Property: 'ClearValue' value selection used for clearing the render target
 		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;				///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
@@ -170,7 +176,6 @@ namespace nap
 	private:
 		RenderService*							mRenderService;
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
-		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		VkFormat								mVulkanDepthFormat = VK_FORMAT_UNDEFINED;
 
 		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers;

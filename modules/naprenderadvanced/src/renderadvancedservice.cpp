@@ -223,12 +223,8 @@ namespace nap
 			return false;
 
 		mMaterialInstResource->mMaterial = mCubeMapMaterial;
-		if (!mMaterialInstance.init(*render_service, *mMaterialInstResource, errorState))
-			return false;
-
-		// Create the renderable mesh, which represents a valid mesh / material combination
-		mRenderableMesh = render_service->createRenderableMesh(*mNoMesh, mMaterialInstance, errorState);
-		if (!mRenderableMesh.isValid())
+		mMaterialInstance = std::make_unique<MaterialInstance>();
+		if (!mMaterialInstance->init(*render_service, *mMaterialInstResource, errorState))
 			return false;
 
 		return true;
@@ -349,6 +345,7 @@ namespace nap
 			if (light_count == nullptr)
 				continue;
 
+			// Set light count to zero and exit early
 			if (disableLighting)
 			{
 				light_count->setValue(0);
@@ -530,6 +527,13 @@ namespace nap
 		mShadowTextureDummy.reset();
 		mSampler2DResource.reset();
 		mSamplerCubeResource.reset();
+
+		mCubeMapFromFileRenderTarget.reset();
+		mNoMesh.reset();
+		mMaterialInstResource.reset();
+		mMaterialInstance.reset();
+
+		mCubeMapFromFileTargets.clear();
 	}
 
 
@@ -674,17 +678,14 @@ namespace nap
 		auto cube_maps = render_service->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
 		if (!cube_maps.empty())
 		{
-			std::vector<std::unique_ptr<CubeRenderTarget>> cube_targets;
-			cube_targets.reserve(cube_maps.size());
-
+			mCubeMapFromFileTargets.reserve(cube_maps.size());
 			for (auto& cm : cube_maps)
 			{
 				// Cube map from file render target
 				auto rt = std::make_unique<CubeRenderTarget>(getCore());
 				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-				rt->mRequestedSamples = ERasterizationSamples::One;	
-				rt->mSampleShading = false;
+				rt->mSampleShading = true;
 				rt->mCubeTexture = cm;
 
 				if (!rt->init(errorState))
@@ -692,7 +693,7 @@ namespace nap
 					errorState.fail("%s: Failed to initialize cube map from file render target", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
 					return false;
 				}
-				cube_targets.emplace_back(std::move(rt));
+				mCubeMapFromFileTargets.emplace_back(std::move(rt));
 			}
 
 			// Updates GPU data
@@ -708,33 +709,26 @@ namespace nap
 					auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
 					auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
 
-					auto& rt = cube_targets[count];
+					auto& rt = mCubeMapFromFileTargets[count];
 					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
-						// Push MVP
-						auto* mvp = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
-						if (mvp != nullptr)
+						auto* ubo = mMaterialInstance->getOrCreateUniform("UBO");
+						if (ubo != nullptr)
 						{
-							mvp->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix)->setValue({});
-							mvp->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix)->setValue(view);
-							mvp->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix)->setValue(projection);
+							ubo->getOrCreateUniform<UniformUIntInstance>("face")->setValue(target.getLayerIndex());
 						}
 
 						// Set equirectangular texture to convert
-						auto* sampler = mMaterialInstance.getOrCreateSampler<Sampler2DInstance>("equiTexture");
+						auto* sampler = mMaterialInstance->getOrCreateSampler<Sampler2DInstance>("equiTexture");
 						if (sampler != nullptr)
 							sampler->setTexture(*cm->mSourceTexture);
 
 						// Get valid descriptor set
-						const DescriptorSet& descriptor_set = mMaterialInstance.update();
-
-						// Gather draw info
-						MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-						GPUMesh& mesh = mesh_instance.getGPUMesh();
+						const DescriptorSet& descriptor_set = mMaterialInstance->update();
 
 						// Get pipeline to to render with
 						utility::ErrorState error_state;
-						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mMaterialInstance, error_state);
 						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 

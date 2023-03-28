@@ -4,6 +4,7 @@
 
 // Local Includes
 #include "cubedepthrendertarget.h"
+#include "cuberendertarget.h"
 
 // Nap includes
 #include <perspcameracomponent.h>
@@ -46,10 +47,6 @@ namespace nap
 
 	bool CubeDepthRenderTarget::init(utility::ErrorState& errorState)
 	{
-		// Warn if requested number of samples is not matched by hardware
-		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, errorState))
-			nap::Logger::warn(errorState.toString().c_str());
-
 		// Check if sample rate shading is enabled
 		if (mSampleShading && !(mRenderService->sampleShadingSupported()))
 		{
@@ -163,67 +160,18 @@ namespace nap
 		 * Cube face selection following the Vulkan spec
 		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
 		 **/
-		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
+		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), -camPosition);
 
-		setLayerIndex(5);
-		beginRendering();
+		for (int layer_index = 5; layer_index >= 0; layer_index--)
 		{
-			// forward (-Z)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f });
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
+			setLayerIndex(layer_index);
+			beginRendering();
+			{
+				const auto view_matrix = CubeRenderTarget::getCubeMapInverseViewMatrices()[layer_index] * cam_translation;
+				renderCallback(*this, projectionMatrix, view_matrix);
+			}
+			endRendering();
 		}
-		endRendering();
-
-		setLayerIndex(4);
-		beginRendering();
-		{
-			// back (+Z)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), math::X_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(3);
-		beginRendering();
-		{
-			// down (-Y)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::X_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(2);
-		beginRendering();
-		{
-			// up (+Y)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::X_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(1);
-		beginRendering();
-		{
-			// left (-X)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::Y_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(0);
-		beginRendering();
-		{
-			// right (+X)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::Y_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
 
 		mIsFirstPass = false;
 	}

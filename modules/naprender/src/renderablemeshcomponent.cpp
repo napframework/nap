@@ -199,6 +199,7 @@ namespace nap
 
 	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
 	{
+		assert(mRenderableMesh.isValid());
 		return mRenderableMesh.getMaterialInstance();
 	}
 } 

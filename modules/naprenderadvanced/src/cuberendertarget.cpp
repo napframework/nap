@@ -18,16 +18,36 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeRenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("CubeTexture",			&nap::CubeRenderTarget::mCubeTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SampleShading",			&nap::CubeRenderTarget::mSampleShading,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",				&nap::CubeRenderTarget::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",				&nap::CubeRenderTarget::mClearColor,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// Static functions
+	// Static
 	//////////////////////////////////////////////////////////////////////////
-	
+
+	static const std::vector<glm::mat4> sCubeMapViewMatrices =
+	{
+		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(),	math::Y_AXIS),	// right (+X)
+		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::Y_AXIS),	// left (-X)
+		glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(),	math::X_AXIS),	// up (+Y)
+		glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::X_AXIS),	// down (-Y)
+		glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(),		math::X_AXIS),	// back (+Z)
+		glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f })																					// forward (-Z)	
+	};
+
+	static const std::vector<glm::mat4> sCubeMapInverseViewMatrices =
+	{
+		glm::inverse(sCubeMapViewMatrices[0]),
+		glm::inverse(sCubeMapViewMatrices[1]),
+		glm::inverse(sCubeMapViewMatrices[2]),
+		glm::inverse(sCubeMapViewMatrices[3]),
+		glm::inverse(sCubeMapViewMatrices[4]),
+		glm::inverse(sCubeMapViewMatrices[5]),
+	};
+
+
 	// Creates the color image and view
 	static bool createLayeredColorResource(const RenderService& renderer, VkExtent2D targetSize, VkFormat colorFormat, VkSampleCountFlagBits sampleCount, uint layerCount, ImageData& outImage, utility::ErrorState& errorState)
 	{
@@ -38,6 +58,12 @@ namespace nap
 
 		if (!createCubeImageView(renderer.getDevice(), outImage.getImage(), colorFormat, VK_IMAGE_ASPECT_COLOR_BIT, layerCount, outImage.mView, errorState))
 			return false;
+
+		for (uint i = 0U; i < layerCount; i++)
+		{
+			if (!createLayered2DImageView(renderer.getDevice(), outImage.getImage(), colorFormat, VK_IMAGE_ASPECT_DEPTH_BIT, i, 1, outImage.getSubView(i), errorState))
+				return false;
+		}
 
 		return true;
 	}
@@ -88,10 +114,6 @@ namespace nap
 
 	bool CubeRenderTarget::init(utility::ErrorState& errorState)
 	{
-		// Warn if requested number of samples is not matched by hardware
-		if (!mRenderService->getRasterizationSamples(mRequestedSamples, mRasterizationSamples, errorState))
-			nap::Logger::warn(errorState.toString().c_str());
-
 		// Check if sample rate shading is enabled
 		if (mSampleShading && !(mRenderService->sampleShadingSupported()))
 		{
@@ -124,49 +146,23 @@ namespace nap
 
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+		if (!createRenderPass(mRenderService->getDevice(), mVulkanColorFormat, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
 			return false;
 
-		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
+		const auto& cube_texture = static_cast<const TextureCube&>(*mCubeTexture);
+		if (!createLayeredDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, VK_SAMPLE_COUNT_1_BIT, cube_texture.getLayerCount(), mDepthImage, errorState))
+			return false;
+
+		for (uint i = 0U; i < cube_texture.getLayerCount(); i++)
 		{
-			const auto& cube_texture = static_cast<const TextureCube&>(*mCubeTexture);
-			if (!createLayeredDepthResource(*mRenderService, framebuffer_size, mVulkanDepthFormat, mRasterizationSamples, cube_texture.getLayerCount(), mDepthImage, errorState))
+			std::array<VkImageView, 2> attachments{ cube_texture.getHandle().getSubView(i), mDepthImage.getSubView(i) };
+			framebuffer_info.pAttachments = attachments.data();
+			framebuffer_info.attachmentCount = attachments.size();
+			framebuffer_info.renderPass = mRenderPass;
+
+			// Create framebuffer
+			if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
 				return false;
-
-			for (uint i = 0U; i < cube_texture.getLayerCount(); i++)
-			{
-				std::array<VkImageView, 2> attachments{ cube_texture.getHandle().getSubView(i), mDepthImage.getSubView(i) };
-				framebuffer_info.pAttachments = attachments.data();
-				framebuffer_info.attachmentCount = attachments.size();
-				framebuffer_info.renderPass = mRenderPass;
-
-				// Create framebuffer
-				if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
-					return false;
-			}
-		}
-		else
-		{
-			NAP_ASSERT_MSG(false, "Multisampled cube render targets not yet implemented");
-			//// Create multi-sampled color attachments
-			//for (auto& img : mColorImages)
-			//{
-			//	if (!createColorResource(*mRenderService, framebuffer_size, getTextureFormat(color_settings), mRasterizationSamples, img, errorState))
-			//		return false;
-			//}
-
-			//// Create multi-sampled depth attachment
-			//if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
-			//	return false;
-
-			//std::array<VkImageView, 3> attachments{ mColorImage.mTextureView, mDepthImage.mTextureView, mColorTexture->getImageView() };
-			//framebuffer_info.pAttachments = attachments.data();
-			//framebuffer_info.attachmentCount = attachments.size();
-			//framebuffer_info.renderPass = mRenderPass;
-
-			//// Create a framebuffer that links the cell target texture to the appropriate resolved color attachment
-			//if (!errorState.check(vkCreateFramebuffer(mRenderService->getDevice(), &framebuffer_info, nullptr, &mFramebuffers[i]) == VK_SUCCESS, "Failed to create framebuffer"))
-			//	return false;
 		}
 
 		return true;
@@ -257,65 +253,16 @@ namespace nap
 		 **/
 		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
 
-		setLayerIndex(5);
-		beginRendering();
+		for (int layer_index = 5; layer_index >= 0; layer_index--)
 		{
-			// forward (-Z)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f });
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
+			setLayerIndex(layer_index);
+			beginRendering();
+			{
+				const auto view_matrix = CubeRenderTarget::getCubeMapInverseViewMatrices()[layer_index] * cam_translation;
+				renderCallback(*this, projectionMatrix, view_matrix);
+			}
+			endRendering();
 		}
-		endRendering();
-
-		setLayerIndex(4);
-		beginRendering();
-		{
-			// back (+Z)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, -1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::pi<float>(), math::X_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(3);
-		beginRendering();
-		{
-			// down (-Y)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::X_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(2);
-		beginRendering();
-		{
-			// up (+Y)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { 1.0f, 1.0f, -1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::X_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(1);
-		beginRendering();
-		{
-			// left (-X)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), -glm::half_pi<float>(), math::Y_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
-
-		setLayerIndex(0);
-		beginRendering();
-		{
-			// right (+X)
-			const auto trans = glm::scale(glm::identity<glm::mat4>(), { -1.0f, 1.0f, 1.0f }) * glm::rotate(glm::identity<glm::mat4>(), glm::half_pi<float>(), math::Y_AXIS);
-			auto view = glm::inverse(cam_translation * trans);
-			renderCallback(*this, projectionMatrix, view);
-		}
-		endRendering();
 
 		mIsFirstPass = false;
 	}
@@ -325,5 +272,17 @@ namespace nap
 	{
 		assert(index < TextureCube::LAYER_COUNT);
 		mLayerIndex = std::clamp(index, 0U, TextureCube::LAYER_COUNT - 1);
+	}
+
+
+	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapViewMatrices()
+	{
+		return sCubeMapViewMatrices;
+	}
+
+
+	const std::vector<glm::mat4>& CubeRenderTarget::getCubeMapInverseViewMatrices()
+	{
+		return sCubeMapInverseViewMatrices;
 	}
 }

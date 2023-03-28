@@ -23,11 +23,4 @@ namespace nap
 	{
 		return RenderTextureCube::init(errorState);
 	}
-
-
-	bool CubeMapFromFile::generate(utility::ErrorState& errorState)
-	{
-
-		return true;
-	}
 }

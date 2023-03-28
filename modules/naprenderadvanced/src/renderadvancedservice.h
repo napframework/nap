@@ -161,13 +161,14 @@ namespace nap
 		bool mShadowResourcesCreated = false;
 
 		// Cube maps from file
-		std::unique_ptr<CubeRenderTarget> mCubeMapFromFileRenderTarget;
-		std::unique_ptr<NoMesh> mNoMesh;
-		std::unique_ptr<MaterialInstanceResource> mMaterialInstResource;
-		Material* mCubeMapMaterial = nullptr;
+		std::unique_ptr<CubeRenderTarget>			mCubeMapFromFileRenderTarget;
 
-		MaterialInstance						mMaterialInstance;					///< The MaterialInstance as created from the resource. 
-		RenderableMesh							mRenderableMesh;					///< The currently active renderable mesh, either set during init() or set by setMesh.
+		std::unique_ptr<NoMesh>						mNoMesh;
+		std::unique_ptr<MaterialInstanceResource>	mMaterialInstResource;
+		std::unique_ptr<MaterialInstance>			mMaterialInstance;				///< The MaterialInstance as created from the resource. 
+		Material*									mCubeMapMaterial = nullptr;
+
+		std::vector<std::unique_ptr<CubeRenderTarget>> mCubeMapFromFileTargets;
 
 		static constexpr const uint mMaxShadowMapCount = 8;
 		static constexpr const uint mRequiredVulkanVersionMajor = 1U;

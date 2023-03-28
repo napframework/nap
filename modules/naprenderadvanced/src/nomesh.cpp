@@ -14,8 +14,10 @@ namespace nap
 	// NoMesh
 	//////////////////////////////////////////////////////////////////////////
 
-	NoMesh::NoMesh(Core& core) : mRenderService(core.getService<RenderService>())
+	NoMesh::NoMesh(Core& core) :
+		mRenderService(core.getService<RenderService>())
 	{ }
+
 
 	bool NoMesh::init(utility::ErrorState& errorState)
 	{

@@ -124,7 +124,7 @@ namespace nap
 		/**
 		 * @return used number of samples when rendering to the target.
 		 */
-		virtual VkSampleCountFlagBits getSampleCount() const override			{ return mRasterizationSamples; }
+		virtual VkSampleCountFlagBits getSampleCount() const override			{ return VK_SAMPLE_COUNT_1_BIT; }
 		
 		/**
 		 * @return if sample based shading is enabled when rendering to the target.
@@ -165,9 +165,24 @@ namespace nap
 		 */
 		void setLayerIndex(uint index);
 
+		/**
+		 * 
+		 */
+		uint getLayerIndex() const												{ return mLayerIndex; }
+
+		/**
+		 * 
+		 */
+		static const std::vector<glm::mat4>& getCubeMapViewMatrices();
+
+		/**
+		 * 
+		 */
+		static const std::vector<glm::mat4>& getCubeMapInverseViewMatrices();
+
+
 		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
-		ERasterizationSamples					mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
 
 		RenderTexture2D::EFormat				mColorFormat = RenderTexture2D::EFormat::RGBA8;
 		DepthRenderTexture2D::EDepthFormat		mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
@@ -177,7 +192,6 @@ namespace nap
 	private:
 		RenderService*							mRenderService;
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
-		VkSampleCountFlagBits					mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 
 		VkFormat								mVulkanColorFormat = VK_FORMAT_UNDEFINED;
 		VkFormat								mVulkanDepthFormat = VK_FORMAT_UNDEFINED;
