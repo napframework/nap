@@ -105,6 +105,7 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RenderTagRegistryName",		&nap::RenderServiceConfiguration::mRenderTagRegistryName,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("RenderLayerRegistryName",	&nap::RenderServiceConfiguration::mRenderLayerRegistryName,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -1837,6 +1838,22 @@ namespace nap
 	}
 
 
+	LayerIndex RenderService::findLayerIndex(const std::string& layerName)
+	{
+		if (mRenderLayerRegistry == nullptr)
+			return 0U;
+
+		uint count = 0U;
+		for (auto& tag : mRenderLayerRegistry->mLayers)
+		{
+			if (tag->mName == layerName)
+				return count;
+			++count;
+		}
+		return 0U;
+	}
+
+
 	Material* RenderService::getOrCreateMaterial(rtti::TypeInfo shaderType, utility::ErrorState& error)
 	{
 		// Ensure it's a shader
@@ -1936,6 +1953,9 @@ namespace nap
 		auto* render_config = getConfiguration<RenderServiceConfiguration>();
 		if (!render_config->mRenderTagRegistryName.empty())
 			mRenderTagRegistry = getCore().getResourceManager()->findObject<RenderTagRegistry>(render_config->mRenderTagRegistryName);
+
+		if (!render_config->mRenderLayerRegistryName.empty())
+			mRenderLayerRegistry = getCore().getResourceManager()->findObject<RenderLayerRegistry>(render_config->mRenderTagRegistryName);
 	}
 
 

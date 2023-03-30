@@ -104,7 +104,7 @@
             "ShadowMapSize": 2048,
             "ShadowCubeMapSize": 512,
             "Precision": "D32",
-            "CubePrecision": 1
+            "CubePrecision": "D32"
         },
         {
             "Type": "nap::RenderServiceConfiguration",
@@ -124,7 +124,8 @@
             "EnableRobustBufferAccess": false,
             "ShowLayers": false,
             "ShowExtensions": false,
-            "RenderTagRegistryName": "RenderTagRegistry"
+            "RenderTagRegistryName": "RenderTagRegistry",
+            "RenderLayerRegistryName": "RenderLayerRegistry"
         }
     ]
 }

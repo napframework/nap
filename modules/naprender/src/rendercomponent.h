@@ -9,7 +9,10 @@
 #include <component.h>
 #include <utility/dllexport.h>
 #include <cameracomponent.h>
-#include <rendermask.h>
+
+// Local includes
+#include "rendermask.h"
+#include "renderlayer.h"
 
 namespace nap
 {
@@ -29,6 +32,7 @@ namespace nap
 
 	public:
 		bool mVisible = true;							///< Property: 'Visible' if this object is rendered to target by the render service.
+		ResourcePtr<RenderLayer> mLayer;				///< Property: 'Layer' the render layer assigned to this component 
 		std::vector<ResourcePtr<RenderTag>> mTags;		///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
 
@@ -84,6 +88,11 @@ namespace nap
 		RenderMask getRenderMask() const											{ return mRenderMask; }
 
 		/**
+		 * @return the render mask
+		 */
+		LayerIndex getRenderLayer() const											{ return mRenderLayer; }
+
+		/**
 		 * Called by the Render Service. By default every camera type is supported
 		 * If your renderable component doesn't support a specific camera return false
 		 * In that case the object won't be rendered.
@@ -105,6 +114,7 @@ namespace nap
 
 	private:
 		bool mVisible = true;							///< If this object should be drawn or not
+		LayerIndex mRenderLayer = 0U;					///< The layer index
 		RenderMask mRenderMask = 0U;					///< The render mask
 	};
 }

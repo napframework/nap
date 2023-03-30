@@ -9,6 +9,7 @@
 #include "pipelinekey.h"
 #include "renderutils.h"
 #include "rendermask.h"
+#include "renderlayer.h"
 
 // External Includes
 #include <nap/service.h>
@@ -72,6 +73,7 @@ namespace nap
 		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 		std::string						mRenderTagRegistryName = "";								///< Property: 'RenderTagRegistryName' The name of the rendertag registry to use
+		std::string						mRenderLayerRegistryName = "";								///< Property: 'RenderLayerRegistryName' The name of the renderlayer registry to use
 
 		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
 	};
@@ -851,6 +853,11 @@ namespace nap
 		RenderMask findRenderMask(const std::string& tagName);
 
 		/**
+		 *
+		 */
+		LayerIndex findLayerIndex(const std::string& layerName);
+
+		/**
 		 * Returns an existing or new material for the given type of shader that can be shared.
 		 * This only works for hard coded shader types that can be initialized without input arguments.
 		 * If initialization or creation fails, the result is cached but invalid.
@@ -1235,8 +1242,9 @@ namespace nap
 
 		UniqueMaterialCache						mMaterials;
 
-		// The registered render tag registry 
+		// The registered render tag and layer registries
 		rtti::ObjectPtr<RenderTagRegistry>		mRenderTagRegistry;
+		rtti::ObjectPtr<RenderLayerRegistry>	mRenderLayerRegistry;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;

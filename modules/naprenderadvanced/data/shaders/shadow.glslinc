@@ -7,7 +7,7 @@
 const uint SHADOWMAP_QUAD = 0;
 const uint SHADOWMAP_CUBE = 1;
 
-const float SHADOW_POISSON_SPREAD = 1024.0;
+const float SHADOW_POISSON_SPREAD = 512.0;
 
 
 // Returns whether shadows are enabled in the specified light flag
@@ -33,6 +33,13 @@ uint getShadowMapIndex(uint flags)
 float linearDepth(float depth, float near, float far)
 {
 	return (near * far) / (far - depth * (far - near));
+}
+
+
+// Delinearizes linear depth value 
+float nonLinearDepth(float depth, float near, float far)
+{
+	return (far + near - 2.0 * near * far / depth) / (far - near);
 }
 
 

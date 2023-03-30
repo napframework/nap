@@ -17,6 +17,7 @@
 #include <glm/ext.hpp>
 #include <parameternumeric.h>
 #include <parameterquat.h>
+#include <layersorter.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -134,7 +135,7 @@ namespace nap
 
 			// Render world
 			auto& perspective_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
+			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps, &sorter::sortObjectsByLayer);
 
 			// Render composite component
 			//mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { mCompositeComponent });

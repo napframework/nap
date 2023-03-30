@@ -195,4 +195,16 @@ namespace nap
 	{
 		return glm::inverse(mTransformComponent->getGlobalTransform());
 	}
+
+
+	float OrthoCameraComponentInstance::getNearClippingPlane() const
+	{
+		return mProperties.mNearClippingPlane;
+	}
+
+
+	float OrthoCameraComponentInstance::getFarClippingPlane() const
+	{
+		return mProperties.mFarClippingPlane;
+	}
 }

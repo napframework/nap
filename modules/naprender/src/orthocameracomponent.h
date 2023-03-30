@@ -127,6 +127,16 @@ namespace nap
 		void restoreClipRect();
 
 		/**
+		 * @return camera near clipping plane
+		 */
+		virtual float getNearClippingPlane() const override;
+
+		/**
+		 * @return camera far clipping plane
+		 */
+		virtual float getFarClippingPlane() const override;
+
+		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
 	     * Vulkan uses a coordinate system where (-1, -1) is in the top left quadrant, instead of the bottom left quadrant.
 		 * Use this matrix, instead of the one returned by getProjectionMatrix(), when an ortographic projection matrix is required as shader input.

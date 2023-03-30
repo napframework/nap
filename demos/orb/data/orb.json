@@ -172,6 +172,7 @@
                     "mID": "RenderBounds",
                     "Visible": true,
                     "Tags": [],
+                    "Layer": "RenderLayer_Bounds",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -286,6 +287,7 @@
                     "mID": "RenderBox",
                     "Visible": true,
                     "Tags": [],
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -477,6 +479,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -529,6 +532,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "Layer": "RenderLayer_Default",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -545,6 +549,7 @@
                     "mID": "RenderOrb",
                     "Visible": true,
                     "Tags": [],
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "OrbMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -666,7 +671,7 @@
                     "Properties": {
                         "FieldOfView": 30.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 10.0,
+                        "FarClippingPlane": 20.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -684,6 +689,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -736,6 +742,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "Layer": "RenderLayer_Default",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -774,6 +781,7 @@
                     "mID": "RenderSkyBox",
                     "Visible": true,
                     "Tags": [],
+                    "Layer": "RenderLayer_SkyBox",
                     "Mesh": "SkyBoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -860,6 +868,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -912,6 +921,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "Layer": "RenderLayer_Default",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -950,6 +960,7 @@
                     "mID": "RenderTorus",
                     "Visible": true,
                     "Tags": [],
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1062,8 +1073,8 @@
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Radius": 1.0,
-            "Rings": 256,
-            "Sectors": 256,
+            "Rings": 128,
+            "Sectors": 128,
             "Color": {
                 "Values": [
                     1.0,
@@ -1340,6 +1351,27 @@
             "Clamp": true,
             "Minimum": -10.0,
             "Maximum": 10.0
+        },
+        {
+            "Type": "nap::RenderLayerRegistry",
+            "mID": "RenderLayerRegistry",
+            "Layers": [
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_SkyBox",
+                    "Name": "SkyBox"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Bounds",
+                    "Name": "Bounds"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
+                }
+            ]
         },
         {
             "Type": "nap::RenderTagRegistry",

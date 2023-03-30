@@ -96,6 +96,16 @@ namespace nap
 		const glm::ivec2& getRenderTargetSize() const					{ return mRenderTargetSize; }
 
 		/**
+		 * @return the near clipping plane of the camera
+		 */
+		virtual float getNearClippingPlane() const = 0;
+
+		/**
+		 * @return the far clipping plane of the camera
+		 */
+		virtual float getFarClippingPlane() const = 0;
+
+		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
 		 * This can be different from the default if the renderer uses a different coordinate system.
 		 * Use this matrix to transform a 3d scene in to a 2d projection.

@@ -104,12 +104,12 @@ namespace nap
 		/**
 		 * @return camera near clipping plane
 		 */
-		float getNearClippingPlane() const;
+		virtual float getNearClippingPlane() const override;
 
 		/**
 		 * @return camera far clipping plane
 		 */
-		float getFarClippingPlane() const;
+		virtual float getFarClippingPlane() const override;
 
 		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
