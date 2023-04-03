@@ -7,6 +7,54 @@
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// Static
+	//////////////////////////////////////////////////////////////////////////
+
+	static void sortSubsetByDepth(std::vector<RenderableComponentInstance*>& outComps, const std::vector<RenderableComponentInstance*>& subsetComps, const glm::mat4& viewMatrix)
+	{
+		// Split into front to back and back to front meshes
+		std::vector<RenderableComponentInstance*> front_to_back;
+		front_to_back.reserve(subsetComps.size());
+		std::vector<RenderableComponentInstance*> back_to_front;
+		back_to_front.reserve(subsetComps.size());
+
+		for (RenderableComponentInstance* component : subsetComps)
+		{
+			RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
+			if (renderable_mesh != nullptr)
+			{
+				RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
+				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				if (blend_mode == EBlendMode::AlphaBlend)
+					back_to_front.emplace_back(component);
+				else
+					front_to_back.emplace_back(component);
+			}
+			else
+			{
+				front_to_back.emplace_back(component);
+			}
+		}
+
+		// Sort front to back and render those first
+		DepthComparer front_to_back_sorter(DepthComparer::EMode::FrontToBack, viewMatrix);
+		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
+
+		// Then sort back to front and render these
+		DepthComparer back_to_front_sorter(DepthComparer::EMode::BackToFront, viewMatrix);
+		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
+
+		// concatinate both in to the output
+		outComps.insert(outComps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
+		outComps.insert(outComps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// DepthComparer
+	//////////////////////////////////////////////////////////////////////////
+
 	DepthComparer::DepthComparer(EMode mode, const glm::mat4x4& viewMatrix) :
 		mViewMatrix(viewMatrix),
 		mMode(mode) { }
@@ -37,42 +85,36 @@ namespace nap
 	{
 		void sortObjectsByDepth(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix)
 		{
-			// Split into front to back and back to front meshes
-			std::vector<RenderableComponentInstance*> front_to_back;
-			front_to_back.reserve(comps.size());
-			std::vector<RenderableComponentInstance*> back_to_front;
-			back_to_front.reserve(comps.size());
+			// Count layer occurrences
+			std::map<LayerIndex, int> hist;
+			for (const auto& comp : comps)
+				++hist[comp->getRenderLayer()];
 
-			for (RenderableComponentInstance* component : comps)
+			// If all objects are in the same layer, sort the full set by depth and return
+			if (hist.size() == 1)
 			{
-				RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-				if (renderable_mesh != nullptr)
-				{
-					RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-					EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
-					if (blend_mode == EBlendMode::AlphaBlend)
-						back_to_front.emplace_back(component);
-					else
-						front_to_back.emplace_back(component);
-				}
-				else
-				{
-					front_to_back.emplace_back(component);
-				}
+				const auto full_set = comps;
+				comps.clear();
+				sortSubsetByDepth(comps, full_set, viewMatrix);
+				return;
 			}
 
-			// Sort front to back and render those first
-			DepthComparer front_to_back_sorter(DepthComparer::EMode::FrontToBack, viewMatrix);
-			std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
+			std::map<LayerIndex, std::vector<RenderableComponentInstance*>> layer_map;
+			for (const auto& item : hist)
+			{
+				auto& v = layer_map[item.first] = {};
+				v.reserve(item.second);
+			}
 
-			// Then sort back to front and render these
-			DepthComparer back_to_front_sorter(DepthComparer::EMode::BackToFront, viewMatrix);
-			std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
+			for (const auto& comp : comps)
+				layer_map[comp->getRenderLayer()].emplace_back(comp);
 
-			// concatinate both in to the output
 			comps.clear();
-			comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
-			comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
+			for (const auto& entry : layer_map)
+			{
+				auto& layer_comps = entry.second;
+				sortSubsetByDepth(comps, layer_comps, viewMatrix);
+			}
 		}
 	}
 }

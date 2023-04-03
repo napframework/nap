@@ -136,22 +136,9 @@ namespace nap
 			std::unique_ptr<DepthRenderTextureCube> mTexture;
 		};
 
-		struct EnvironmentMapEntry
-		{
-			EnvironmentMapEntry::EnvironmentMapEntry(std::unique_ptr<CubeRenderTarget> target, std::unique_ptr<RenderTextureCube> texture) :
-				mTarget(std::move(target)), mTexture(std::move(texture))
-			{
-				mTarget->mCubeTexture = mTexture.get();
-			}
-
-			std::unique_ptr<CubeRenderTarget> mTarget;
-			std::unique_ptr<RenderTextureCube> mTexture;
-		};
-
 		// Shadow mapping
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeMapEntry>> mLightCubeMap;
-		std::unordered_map<LightComponentInstance*, std::unique_ptr<EnvironmentMapEntry>> mEnvironmentCubeMap;
 		std::unordered_map<LightComponentInstance*, uint> mLightFlagsMap;
 
 		std::unique_ptr<Sampler2DArray> mSampler2DResource;

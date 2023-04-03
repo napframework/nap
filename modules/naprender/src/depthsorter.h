@@ -49,7 +49,7 @@ namespace nap
 	namespace sorter
 	{
 		/**
-		 * Sorts a set of renderable components based on distance to the camera, ie: depth
+		 * Sorts a set of renderable components by layer, then distance to the camera, ie: depth
 		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
 		 * If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
 		 * know the way the object is rendered to screen

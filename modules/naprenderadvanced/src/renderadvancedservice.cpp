@@ -12,7 +12,7 @@
 #include <rendercomponent.h>
 #include <renderablemeshcomponent.h>
 #include <perspcameracomponent.h>
-#include <layersorter.h>
+#include <depthsorter.h>
 #include <nap/core.h>
 #include <rtti/factory.h>
 #include <vulkan/vulkan_core.h>
@@ -291,7 +291,7 @@ namespace nap
 					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps, mask = renderMask](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
 						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
-						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByLayer, std::placeholders::_1, std::placeholders::_2), mask);
+						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), mask);
 					});
 					break;
 				}
