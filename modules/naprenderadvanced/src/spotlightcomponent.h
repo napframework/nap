@@ -23,6 +23,7 @@ namespace nap
 		ResourcePtr<ParameterFloat> mAngle;						///< Property: 'Angle'
 		ResourcePtr<ParameterFloat> mFallOff;					///< Property: 'FallOff'
 		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize'
 	};
 
 
@@ -61,7 +62,6 @@ namespace nap
 		 * @return the shadow map type
 		 */
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
-
 
 	private:
 		// Shadow camera

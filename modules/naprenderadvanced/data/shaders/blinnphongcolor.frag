@@ -54,7 +54,7 @@ uniform samplerCubeShadow cubeShadowMaps[8];
 
 // Constants
 const float SHADOW_STRENGTH = 0.75;
-
+const float MAX_SHADOW_BIAS = 0.005;
 
 void main()
 {
@@ -81,20 +81,18 @@ void main()
 			continue;
 
 		uint map_index = getShadowMapIndex(flags);
-
 		switch (getShadowMapId(flags))
 		{
 			case SHADOWMAP_QUAD:
 			{
 				// Perspective divide and map coordinates to [0.0, 1.0] range
 				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w) + 1.0) * 0.5;
-				float bias = 1.0/textureSize(shadowMaps[map_index], 0).x;
 
 				// Multi sample
 				float shadow = 0.0;
 				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
 				{
-					shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z), bias);
+					shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
 				}
 				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
 				break;
@@ -103,12 +101,13 @@ void main()
 			{
 				// The direction of the light in view space is the sampling coordinate for the cube map
 				vec3 coord = normalize(passPosition - lit.lights[i].origin);
-				float bias = 1.0/textureSize(cubeShadowMaps[map_index], 0).x;
-				vec2 nf = {0.1, 30.0};//lit.lights[i].nearFar;
+				vec2 nf = lit.lights[i].nearFar;
+				nf.y += 10.0;
 
 				// Measure the depth value of the fragment in the reference frame of the light
 				// Ensure the approppriate axis-aligned cube face is used, we derive this from the sampling coordinate
 				float frag_depth = sdfPlane(lit.lights[i].origin, cubeFace(coord), passPosition);
+				float bias = MAX_SHADOW_BIAS * (1.0 - getSurfaceIncidence(lit.lights[i], passNormal, passPosition));
 
 				float shadow = 0.0;
 				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
@@ -116,7 +115,7 @@ void main()
 					// Add some poisson-based rotational jitter to the sampling vector
 					vec2 jitter = POISSON_DISK[s]/SHADOW_POISSON_SPREAD;
 					vec3 sample_coord = normalize(rotationMatrix(vec3(1.0, 0.0, 0.0), jitter.x) * rotationMatrix(vec3(0.0, 1.0, 0.0), jitter.y) * vec4(coord, 0.0)).xyz;
-		 			shadow += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth, nf.x, nf.y)), bias);
+		 			shadow += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth - bias, nf.x, nf.y)));
 				}
 				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
 				break;

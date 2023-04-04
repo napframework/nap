@@ -16,6 +16,7 @@
 // nap::PointLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::PointLightComponent)
 	RTTI_PROPERTY("ShadowCamera", &nap::PointLightComponent::mShadowCamera, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowMapSize", &nap::PointLightComponent::mShadowMapSize, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attenuation", &nap::PointLightComponent::mAttenuation, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -40,7 +41,8 @@ namespace nap
 
 		auto* resource = getComponent<PointLightComponent>();
 		registerLightUniformMember(uniform::light::attenuation, resource->mAttenuation.get());
-		
+		mShadowMapSize = resource->mShadowMapSize;
+
 		return true;
 	}
 }

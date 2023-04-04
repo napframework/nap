@@ -21,6 +21,7 @@ namespace nap
 	public:
 		ResourcePtr<ParameterFloat> mAttenuation;				///< Property: 'Attenuation'
 		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize'
 	};
 
 
@@ -59,7 +60,6 @@ namespace nap
 		 * @return the shadow map type
 		 */
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
-
 
 	private:
 		// Shadow camera

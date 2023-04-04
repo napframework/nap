@@ -104,8 +104,6 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RenderTagRegistryName",		&nap::RenderServiceConfiguration::mRenderTagRegistryName,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RenderLayerRegistryName",	&nap::RenderServiceConfiguration::mRenderLayerRegistryName,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
@@ -1950,12 +1948,19 @@ namespace nap
 		}
 
 		// Fetch and store reference to the specified render tag registry
-		auto* render_config = getConfiguration<RenderServiceConfiguration>();
-		if (!render_config->mRenderTagRegistryName.empty())
-			mRenderTagRegistry = getCore().getResourceManager()->findObject<RenderTagRegistry>(render_config->mRenderTagRegistryName);
+		auto tag_registries = getCore().getResourceManager()->getObjects<RenderTagRegistry>();
+		if (tag_registries.size() > 1)
+			nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_STR(RenderService).c_str(), RTTI_STR(RenderTagRegistry).c_str());
 
-		if (!render_config->mRenderLayerRegistryName.empty())
-			mRenderLayerRegistry = getCore().getResourceManager()->findObject<RenderLayerRegistry>(render_config->mRenderTagRegistryName);
+		if (!tag_registries.empty())
+			mRenderTagRegistry = tag_registries.front();
+
+		auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
+		if (layer_registries.size() > 1)
+			nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_STR(RenderService).c_str(), RTTI_STR(RenderLayerRegistry).c_str());
+
+		if (!layer_registries.empty())
+			mRenderLayerRegistry = layer_registries.front();
 	}
 
 

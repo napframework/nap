@@ -101,10 +101,8 @@
         {
             "Type": "nap::RenderAdvancedServiceConfiguration",
             "mID": "RenderAdvancedServiceConfiguration_90affb39-1c6f-4329-b4d3-07b4682d22f7",
-            "ShadowMapSize": 2048,
-            "ShadowCubeMapSize": 512,
-            "Precision": "D32",
-            "CubePrecision": "D32"
+            "ShadowDepthFormat": "D32",
+            "ShadowDepthFormatCube": "D32"
         },
         {
             "Type": "nap::RenderServiceConfiguration",

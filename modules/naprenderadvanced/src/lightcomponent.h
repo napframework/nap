@@ -88,9 +88,9 @@ namespace nap
 		DECLARE_COMPONENT(LightComponent, LightComponentInstance)
 	public:
 		/**
-		* Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
-		* @param components the components this object depends on
-		*/
+		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
+		 * @param components the components this object depends on
+		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		ResourcePtr<ParameterRGBColorFloat> mColor;				///< Property: 'Color'
@@ -156,6 +156,11 @@ namespace nap
 		virtual EShadowMapType getShadowMapType() const = 0;
 
 		/**
+		 * @return the shadow map resolution
+		 */
+		virtual uint getShadowMapSize() const								{ return mShadowMapSize; }
+
+		/**
 		 * @return the position of the light in world space
 		 */
 		const glm::vec3 getLightPosition() const							{ return math::extractPosition(getTransform().getGlobalTransform()); }
@@ -180,6 +185,7 @@ namespace nap
 		TransformComponentInstance* mTransform			= nullptr;
 		bool mIsShadowEnabled							= false;
 		bool mIsRegistered								= false;
+		uint mShadowMapSize								= 512U;
 
 	private:
 		Parameter* getLightUniform(const std::string& memberName);

@@ -423,8 +423,8 @@
                     "mID": "TransformLight",
                     "Properties": {
                         "Translate": {
-                            "x": 8.0,
-                            "y": 5.0,
+                            "x": 0.0,
+                            "y": -2.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -447,6 +447,7 @@
                     "Intensity": "LightIntensityParameter",
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho",
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParameter"
                 },
                 {
@@ -663,6 +664,7 @@
                     "Intensity": "LightIntensityParameter",
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraPerspective",
+                    "ShadowMapSize": 512,
                     "Attenuation": "LightAttenuationParameter"
                 },
                 {
@@ -840,6 +842,7 @@
                     "Intensity": "LightIntensityParameter",
                     "Enable Shadows": true,
                     "ShadowCamera": "../SpotLightEntity/ShadowCameraPerspective2",
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParameter",
                     "Angle": "LightAngleParameter",
                     "FallOff": "LightFallOffParameter"
@@ -850,7 +853,7 @@
                     "Properties": {
                         "FieldOfView": 60.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 50.0,
+                        "FarClippingPlane": 20.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1

@@ -26,10 +26,8 @@
 #include <parametercolor.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
-	RTTI_PROPERTY("ShadowMapSize",		&nap::RenderAdvancedServiceConfiguration::mShadowMapSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowCubeMapSize",	&nap::RenderAdvancedServiceConfiguration::mShadowCubeMapSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Precision",			&nap::RenderAdvancedServiceConfiguration::mPrecision,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CubePrecision",		&nap::RenderAdvancedServiceConfiguration::mCubePrecision,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowDepthFormat",			&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowDepthFormatCube",		&nap::RenderAdvancedServiceConfiguration::mDepthFormatCube,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAdvancedService)
@@ -155,7 +153,7 @@ namespace nap
 		mShadowTextureDummy->mWidth = 16;
 		mShadowTextureDummy->mHeight = 16;
 		mShadowTextureDummy->mUsage = Texture::EUsage::Static;
-		mShadowTextureDummy->mDepthFormat = configuration->mPrecision;
+		mShadowTextureDummy->mDepthFormat = configuration->mDepthFormat;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
 		mShadowTextureDummy->mClearValue = 1.0f;
 		mShadowTextureDummy->mFill = true;
@@ -588,9 +586,9 @@ namespace nap
 				// Texture
 				auto shadow_map = std::make_unique<DepthRenderTexture2D>(getCore());
 				shadow_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-				shadow_map->mWidth = configuration->mShadowMapSize;
-				shadow_map->mHeight = configuration->mShadowMapSize;
-				shadow_map->mDepthFormat = configuration->mPrecision;
+				shadow_map->mWidth = light->getShadowMapSize();
+				shadow_map->mHeight = light->getShadowMapSize();
+				shadow_map->mDepthFormat = configuration->mDepthFormat;
 				shadow_map->mUsage = Texture::EUsage::Static;
 				shadow_map->mColorSpace = EColorSpace::Linear;
 				shadow_map->mClearValue = 1.0f;
@@ -626,9 +624,9 @@ namespace nap
 				// Cube Texture
 				auto cube_map = std::make_unique<DepthRenderTextureCube>(getCore());
 				cube_map->mID = utility::stringFormat("%s_%s", RTTI_OF(DepthRenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-				cube_map->mWidth = configuration->mShadowCubeMapSize;
-				cube_map->mHeight = configuration->mShadowCubeMapSize;
-				cube_map->mDepthFormat = configuration->mCubePrecision;
+				cube_map->mWidth = light->getShadowMapSize();
+				cube_map->mHeight = light->getShadowMapSize();
+				cube_map->mDepthFormat = configuration->mDepthFormatCube;
 				cube_map->mColorSpace = EColorSpace::Linear;
 				cube_map->mClearValue = 1.0f;
 				cube_map->mFill = true;
@@ -662,13 +660,11 @@ namespace nap
 				return false;
 			}
 
-			uint& index = shadow_map_indices[light->getShadowMapType()];
+			uint index = shadow_map_indices[light->getShadowMapType()]++;
 			flags |= index << 24U;
 
 			const auto it_flag = mLightFlagsMap.insert({ light, flags });
 			assert(it_flag.second);
-
-			++index;
 		}
 		mShadowResourcesCreated = true;
 

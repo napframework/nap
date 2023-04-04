@@ -45,6 +45,8 @@ out vec3 	passUV0;				//< UVs
 out float 	passFresnel;			//< Fresnel
 out vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
+// Constants
+const float MAX_SHADOW_BIAS = 0.005;
 
 void main()
 {
@@ -67,11 +69,8 @@ void main()
 	for (uint i = 0; i < lit.count; i++)
 	{
 		vec4 coord = lit.lights[i].viewProjectionMatrix * world_position;
-
-		float incidence = getSurfaceIncidence(lit.lights[i], world_position.xyz, world_normal.xyz);
-		float bias = 0.0005 * incidence;
+		float bias = MAX_SHADOW_BIAS * (1.0 - getSurfaceIncidence(lit.lights[i], world_normal, world_position.xyz));
 		coord.z -= bias;
-
 		passShadowCoords[i] = coord;
 	}
 }

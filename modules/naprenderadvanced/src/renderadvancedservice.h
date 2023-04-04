@@ -34,10 +34,8 @@ namespace nap
 	public:
 		virtual rtti::TypeInfo getServiceType() const;
 
-		uint mShadowMapSize									= 1024U;										///< Shadow Map Size
-		uint mShadowCubeMapSize								= 512U;											///< Shadow Cube Map Size
-		DepthRenderTexture2D::EDepthFormat mPrecision		= DepthRenderTexture2D::EDepthFormat::D32;		///< Precision
-		DepthRenderTextureCube::EDepthFormat mCubePrecision	= DepthRenderTextureCube::EDepthFormat::D32;	///< Cubemap Precision
+		DepthRenderTexture2D::EDepthFormat mDepthFormat			= DepthRenderTexture2D::EDepthFormat::D32;		///< Quad shadow map depth format
+		DepthRenderTextureCube::EDepthFormat mDepthFormatCube	= DepthRenderTextureCube::EDepthFormat::D32;	///< Cube shadow map depth format
 	};
 
 

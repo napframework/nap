@@ -72,8 +72,6 @@ namespace nap
 		bool							mEnableRobustBufferAccess = false;							///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
 		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
-		std::string						mRenderTagRegistryName = "";								///< Property: 'RenderTagRegistryName' The name of the rendertag registry to use
-		std::string						mRenderLayerRegistryName = "";								///< Property: 'RenderLayerRegistryName' The name of the renderlayer registry to use
 
 		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
 	};
