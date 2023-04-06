@@ -205,20 +205,9 @@ namespace nap
 		if (mViewMatrixUniform != nullptr)
 			mViewMatrixUniform->setValue(viewMatrix);
 
-		// Uniforms / samplers
-		//auto* ubo = getMaterialInstance().getOrCreateUniform("UBO");
-		//if (ubo != nullptr)
-		//{
-		//	ubo->getOrCreateUniform<UniformVec3Instance>("color")->setValue({1.0f, 1.0f, 1.0f});
-		//	ubo->getOrCreateUniform<UniformFloatInstance>("alpha")->setValue(1.0f);
-		//}
-
-		//auto* sampler = getMaterialInstance().getOrCreateSampler<Sampler2DInstance>("colorTexture");
-		//if (sampler != nullptr)
-		//	sampler->setTexture()
-
 		// Get valid descriptor set
-		const DescriptorSet& descriptor_set = mMaterialInstance.update();
+		MaterialInstance& mat_instance = getMaterialInstance();
+		const DescriptorSet& descriptor_set = mat_instance.update();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
@@ -226,7 +215,7 @@ namespace nap
 
 		// Get pipeline to to render with
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
