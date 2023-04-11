@@ -106,17 +106,6 @@ namespace nap
 			void expand(const QStandardItem& item) const;
 
 			/**
-			 * Force the selection to the top item
-			 */
-			void setTopItemSelected();
-
-			/**
-			 * Set the current row + selection to the row of the specified index
-			 * @param index
-			 */
-			void setSelectedAndCurrent(QModelIndex index);
-
-			/**
 			 * @return The first currently selected item.
 			 */
 			QStandardItem* getSelectedItem();
@@ -156,16 +145,6 @@ namespace nap
 			 * @param text The filter text
 			 */
 			void onFilterChanged(const QString& text);
-
-			/**
-			 * invoked when the user wants to expand the selection
-			 */
-			void onExpandSelected();
-
-			/**
-			 * invoked when the user wants to collapse the selection
-			 */
-			void onCollapseSelected();
 
 			/**
 			 * @see QWidget::customContextMenuRequested

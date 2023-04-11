@@ -251,6 +251,16 @@ namespace nap
 		{
 			return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
 		}
+
+		/**
+		 * Common shared rtti defined methods
+		 */
+		namespace method
+		{
+			constexpr const char* assign = "assign";
+			constexpr const char* toString	= "toString";
+			constexpr const char* translateTargetID = "translateTargetID";
+		}
 	}
 
 	namespace detail

@@ -189,10 +189,9 @@ namespace nap
 		// Find in sub-groups
 		for (const auto& child : mChildren)
 		{
-			rtti::ObjectPtr<T> object = child->findObject(id);
-			if (object == nullptr)
-				continue;
-			return object;
+			rtti::ObjectPtr<T> object = child->findObjectRecursive(id);
+			if (object != nullptr)
+				return object;
 		}
 		return nullptr;
 	}
