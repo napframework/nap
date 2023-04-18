@@ -25,7 +25,6 @@ namespace nap
 
 	bool RenderTag::start(utility::ErrorState& errorState)
 	{
-		nap::Logger::warn("Adding tag '%s'", mName.c_str());
 		mRenderService.addTag(*this);
 		return true;
 	}
@@ -33,7 +32,6 @@ namespace nap
 
 	void RenderTag::stop()
 	{
-		nap::Logger::warn("Removing tag '%s'", mName.c_str());
 		mRenderService.removeTag(*this);
 	}
 

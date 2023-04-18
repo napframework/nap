@@ -54,6 +54,7 @@ uniform samplerCubeShadow cubeShadowMaps[8];
 
 // Constants
 const float SHADOW_STRENGTH = 0.75;
+const float FRESNEL_STRENGTH = 0.25;
 const float MAX_SHADOW_BIAS = 0.005;
 
 void main()
@@ -62,16 +63,7 @@ void main()
 	
 	// Lights
 	vec3 color = computeLights(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
-	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), 0.25));
-
-	// Shadows
-	// uint flags[8];
-	// for (uint i = 0; i < lit.count; i++)
-	// 	flags[i] = lit.lights[i].flags;
-
-	//float shadow = computeShadows(shadowMaps, passShadowCoords, flags, lit.count, min(SHADOW_SAMPLE_COUNT, POISSON_DISK.length())) * SHADOW_STRENGTH;
-	//color *= (1.0 - shadow);
-
+	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), FRESNEL_STRENGTH));
 
 	float shadow_result = 0.0;
 	for (uint i = 0; i < lit.count; i++)
@@ -86,15 +78,21 @@ void main()
 			case SHADOWMAP_QUAD:
 			{
 				// Perspective divide and map coordinates to [0.0, 1.0] range
-				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w) + 1.0) * 0.5;
+				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w));
 
-				// Multi sample
-				float shadow = 0.0;
-				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
+				// Clip shadow lookups outside of ndc
+				if (abs(coord.x) <= 1.0 && abs(coord.y) <= 1.0 && abs(coord.z) <= 1.0)
 				{
-					shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
+					coord.xy = (coord.xy + 1.0) * 0.5;
+
+					// Multi sample
+					float shadow = 0.0;
+					for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
+					{
+						shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
+					}
+					shadow_result += shadow / float(SHADOW_SAMPLE_COUNT);
 				}
-				shadow_result += shadow / float(SHADOW_SAMPLE_COUNT);
 				break;
 			}
 			case SHADOWMAP_CUBE:

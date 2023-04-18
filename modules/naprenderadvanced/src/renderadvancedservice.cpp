@@ -172,9 +172,12 @@ namespace nap
 		for (auto& tex : mSampler2DResource->mTextures)
 			tex = mShadowTextureDummy.get();
 
+		mSampler2DResource->mBorderColor = EBorderColor::IntOpaqueWhite;
+		mSampler2DResource->mAddressModeHorizontal = EAddressMode::ClampToEdge;
+		mSampler2DResource->mAddressModeVertical = EAddressMode::ClampToEdge;
 		mSampler2DResource->mCompareMode = EDepthCompareMode::LessOrEqual;
-		mSampler2DResource->mBorderColor = EBorderColor::IntOpaqueBlack;
 		mSampler2DResource->mEnableCompare = true;
+
 		if (!mSampler2DResource->init(errorState))
 		{
 			errorState.fail("%s: Failed to initialize shadow sampler 2d resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
@@ -190,8 +193,8 @@ namespace nap
 		for (auto& tex : mSamplerCubeResource->mTextures)
 			tex = &render_service->getEmptyTextureCube();
 
-		mSamplerCubeResource->mCompareMode = EDepthCompareMode::LessOrEqual;
 		mSamplerCubeResource->mBorderColor = EBorderColor::IntOpaqueBlack;
+		mSamplerCubeResource->mCompareMode = EDepthCompareMode::LessOrEqual;
 		mSamplerCubeResource->mEnableCompare = true;
 		if (!mSamplerCubeResource->init(errorState))
 		{

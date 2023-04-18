@@ -32,7 +32,6 @@ uint getLightType(uint flags)
 // @return incidence value [0.0 - 1.0], -1.0 if the light type is not supported
 float getSurfaceIncidence(Light light, vec3 surfaceNormal, vec3 surfacePosition)
 {
-	// Directional
 	switch (getLightType(light.flags))
 	{
 		case LIGHT_DIRECTIONAL:

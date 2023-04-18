@@ -82,7 +82,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		const auto scene = mResourceManager->findObject<Scene>("Scene");
-		auto& transform = scene->findEntity("PointLightEntity")->getComponent<TransformComponentInstance>();
+		auto& transform = scene->findEntity("SpotLightEntity")->getComponent<TransformComponentInstance>();
 
 		const auto& pos = mResourceManager->findObject<ParameterVec3>("PointLightTranslateParam")->mValue;
 		transform.setTranslate(pos);
@@ -177,8 +177,9 @@ namespace nap
 			{
 				quit();
 			}
+
 			// Toggle fullscreen on 'f'
-			if (press_event->mKey == nap::EKeyCode::KEY_f)
+			else if (press_event->mKey == nap::EKeyCode::KEY_f)
 			{
 				mRenderWindow->toggleFullscreen();
 			}

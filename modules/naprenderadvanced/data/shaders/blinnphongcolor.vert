@@ -6,6 +6,7 @@
 // Includes
 #include "light.glslinc"
 #include "utils.glslinc"
+#include "shadow.glslinc"
 
 // Uniforms
 uniform nap
@@ -68,6 +69,10 @@ void main()
 	// Shadow
 	for (uint i = 0; i < lit.count; i++)
 	{
+		uint flags = lit.lights[i].flags;
+		if (!hasShadow(flags))
+			continue;
+
 		vec4 coord = lit.lights[i].viewProjectionMatrix * world_position;
 		float bias = MAX_SHADOW_BIAS * (1.0 - getSurfaceIncidence(lit.lights[i], world_normal, world_position.xyz));
 		coord.z -= bias;
