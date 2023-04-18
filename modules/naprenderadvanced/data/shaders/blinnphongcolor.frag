@@ -94,7 +94,7 @@ void main()
 				{
 					shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
 				}
-				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
+				shadow_result += shadow / float(SHADOW_SAMPLE_COUNT);
 				break;
 			}
 			case SHADOWMAP_CUBE:
@@ -102,6 +102,8 @@ void main()
 				// The direction of the light in view space is the sampling coordinate for the cube map
 				vec3 coord = normalize(passPosition - lit.lights[i].origin);
 				vec2 nf = lit.lights[i].nearFar;
+
+				// TODO: Address this - removing this line causes shadow glitches
 				nf.y += 10.0;
 
 				// Measure the depth value of the fragment in the reference frame of the light
@@ -117,13 +119,13 @@ void main()
 					vec3 sample_coord = normalize(rotationMatrix(vec3(1.0, 0.0, 0.0), jitter.x) * rotationMatrix(vec3(0.0, 1.0, 0.0), jitter.y) * vec4(coord, 0.0)).xyz;
 		 			shadow += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth - bias, nf.x, nf.y)));
 				}
-				shadow_result = max(shadow / float(SHADOW_SAMPLE_COUNT), shadow_result);
+				shadow_result += shadow / float(SHADOW_SAMPLE_COUNT);
 				break;
 			}
 		}
 	}
 
-	shadow_result = clamp(shadow_result * SHADOW_STRENGTH, 0.0, 1.0);
+	shadow_result = min(shadow_result, 1.0) * SHADOW_STRENGTH;
 	color *= (1.0 - shadow_result);
 
 	out_Color = vec4(color, ubo.alpha);

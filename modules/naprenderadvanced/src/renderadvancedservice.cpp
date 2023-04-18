@@ -209,9 +209,9 @@ namespace nap
 		}
 
 		// Create material instance
-		mMaterialInstResource = std::make_unique<MaterialInstanceResource>();
-		mMaterialInstResource->mBlendMode = EBlendMode::Opaque;
-		mMaterialInstResource->mDepthMode = EDepthMode::NoReadWrite;
+		mCubeMaterialInstanceResource = std::make_unique<MaterialInstanceResource>();
+		mCubeMaterialInstanceResource->mBlendMode = EBlendMode::Opaque;
+		mCubeMaterialInstanceResource->mDepthMode = EDepthMode::NoReadWrite;
 
 		mCubeMapMaterial = render_service->getOrCreateMaterial<CubeMapShader>(errorState);
 		if (mCubeMapMaterial == nullptr)
@@ -220,9 +220,9 @@ namespace nap
 		if (!mCubeMapMaterial->init(errorState))
 			return false;
 
-		mMaterialInstResource->mMaterial = mCubeMapMaterial;
-		mMaterialInstance = std::make_unique<MaterialInstance>();
-		if (!mMaterialInstance->init(*render_service, *mMaterialInstResource, errorState))
+		mCubeMaterialInstanceResource->mMaterial = mCubeMapMaterial;
+		mCubeMaterialInstance = std::make_unique<MaterialInstance>();
+		if (!mCubeMaterialInstance->init(*render_service, *mCubeMaterialInstanceResource, errorState))
 			return false;
 
 		return true;
@@ -239,6 +239,16 @@ namespace nap
 	{
 		auto* render_service = getCore().getService<RenderService>();
 		assert(render_service != nullptr);
+
+		if (updateMaterials)
+		{
+			utility::ErrorState error_state;
+			if (!pushLights(renderComps, error_state))
+			{
+				nap::Logger::error(error_state.toString());
+				assert(false);
+			}
+		}
 
 		// Evaluate registered light components
 		for (const auto& light : mLightComponents)
@@ -296,16 +306,6 @@ namespace nap
 				default:
 					NAP_ASSERT_MSG(false, "Unsupported shadow map type");
 				}
-			}
-		}
-
-		if (updateMaterials)
-		{
-			utility::ErrorState error_state;
-			if (!pushLights(renderComps, error_state))
-			{
-				nap::Logger::error(error_state.toString());
-				assert(false);
 			}
 		}
 	}
@@ -523,15 +523,13 @@ namespace nap
 
 	void RenderAdvancedService::preShutdown()
 	{
-		mShadowTextureDummy.reset();
 		mSampler2DResource.reset();
 		mSamplerCubeResource.reset();
+		mShadowTextureDummy.reset();
 
-		mCubeMapFromFileRenderTarget.reset();
 		mNoMesh.reset();
-		mMaterialInstResource.reset();
-		mMaterialInstance.reset();
-
+		mCubeMaterialInstanceResource.reset();
+		mCubeMaterialInstance.reset();
 		mCubeMapFromFileTargets.clear();
 	}
 
@@ -556,6 +554,9 @@ namespace nap
 
 	bool RenderAdvancedService::initServiceResources(utility::ErrorState& errorState)
 	{
+		if (mShadowResourcesCreated)
+			return true;
+
 		// Shadow maps
 		mLightDepthMap.clear();
 		mLightDepthMap.reserve(mLightComponents.size());
@@ -565,6 +566,8 @@ namespace nap
 
 		mLightFlagsMap.clear();
 		mLightFlagsMap.reserve(mLightComponents.size());
+
+		mCubeMapFromFileTargets.clear();
 
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 
@@ -672,6 +675,7 @@ namespace nap
 		auto* render_service = getCore().getService<RenderService>();
 		assert(render_service != nullptr);
 
+		// Cube maps from file
 		auto cube_maps = render_service->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
 		if (!cube_maps.empty())
 		{
@@ -680,7 +684,7 @@ namespace nap
 			{
 				// Cube map from file render target
 				auto rt = std::make_unique<CubeRenderTarget>(getCore());
-				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 				rt->mSampleShading = true;
 				rt->mCubeTexture = cm;
@@ -709,23 +713,23 @@ namespace nap
 					auto& rt = mCubeMapFromFileTargets[count];
 					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
-						auto* ubo = mMaterialInstance->getOrCreateUniform("UBO");
+						auto* ubo = mCubeMaterialInstance->getOrCreateUniform("UBO");
 						if (ubo != nullptr)
 						{
 							ubo->getOrCreateUniform<UniformUIntInstance>("face")->setValue(target.getLayerIndex());
 						}
 
 						// Set equirectangular texture to convert
-						auto* sampler = mMaterialInstance->getOrCreateSampler<Sampler2DInstance>("equiTexture");
+						auto* sampler = mCubeMaterialInstance->getOrCreateSampler<Sampler2DInstance>("equiTexture");
 						if (sampler != nullptr)
 							sampler->setTexture(*cm->mSourceTexture);
 
 						// Get valid descriptor set
-						const DescriptorSet& descriptor_set = mMaterialInstance->update();
+						const DescriptorSet& descriptor_set = mCubeMaterialInstance->update();
 
 						// Get pipeline to to render with
 						utility::ErrorState error_state;
-						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mMaterialInstance, error_state);
+						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
 						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
@@ -756,7 +760,7 @@ namespace nap
 		mLightComponents.emplace_back(&light);
 	}
 
-
+	 
 	void RenderAdvancedService::removeLightComponent(LightComponentInstance& light)
 	{
 		if (!light.isRegistered())

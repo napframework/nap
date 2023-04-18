@@ -36,7 +36,6 @@ namespace nap
 	class Texture;
 	class Texture2D;
 
-
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
 	//////////////////////////////////////////////////////////////////////////
@@ -274,6 +273,7 @@ namespace nap
 		friend class Texture2D;
 		friend class GPUBuffer;
 		friend class RenderWindow;
+		friend class RenderTag;
 		RTTI_ENABLE(Service)
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
@@ -555,6 +555,21 @@ namespace nap
 		 * @return all available displays
 		 */
 		const DisplayList& getDisplays() const;
+
+		/**
+		 *
+		 */
+		void addTag(const RenderTag& renderTag);
+
+		/**
+		 *
+		 */
+		void removeTag(const RenderTag& renderTag);
+
+		/**
+		 * Asserts if unavailable
+		 */
+		uint getTagIndex(const RenderTag& renderTag) const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -1241,8 +1256,11 @@ namespace nap
 		UniqueMaterialCache						mMaterials;
 
 		// The registered render tag and layer registries
-		rtti::ObjectPtr<RenderTagRegistry>		mRenderTagRegistry;
+		std::vector<const RenderTag*>			mRenderTagRegistry;
+		bool									mTagsChecked = false;
+
 		rtti::ObjectPtr<RenderLayerRegistry>	mRenderLayerRegistry;
+		bool									mLayersChecked = false;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;

@@ -18,6 +18,7 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
+#include "rendermask.h"
 
 // External Includes
 #include <nap/core.h>
@@ -1822,11 +1823,11 @@ namespace nap
 
 	RenderMask RenderService::findRenderMask(const std::string& tagName)
 	{
-		if (mRenderTagRegistry == nullptr)
+		if (mRenderTagRegistry.empty())
 			return 0U;
 
 		uint count = 0U;
-		for (auto& tag : mRenderTagRegistry->mTags)
+		for (auto& tag : mRenderTagRegistry)
 		{
 			if (tag->mName == tagName)
 				return 1U << count;
@@ -1838,6 +1839,18 @@ namespace nap
 
 	LayerIndex RenderService::findLayerIndex(const std::string& layerName)
 	{
+		if (!mLayersChecked)
+		{
+			auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
+			if (layer_registries.size() > 1)
+				nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_STR(RenderService).c_str(), RTTI_STR(RenderLayerRegistry).c_str());
+
+			if (!layer_registries.empty())
+				mRenderLayerRegistry = layer_registries.front();
+
+			mLayersChecked = true;
+		}
+
 		if (mRenderLayerRegistry == nullptr)
 			return 0U;
 
@@ -1849,6 +1862,31 @@ namespace nap
 			++count;
 		}
 		return 0U;
+	}
+
+
+	void RenderService::addTag(const RenderTag& renderTag)
+	{
+		// Ensure the tag is not yet registered
+		assert(std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag) == mRenderTagRegistry.end());
+		mRenderTagRegistry.emplace_back(&renderTag);
+	}
+
+
+	void RenderService::removeTag(const RenderTag& renderTag)
+	{
+		// Ensure the tag is not yet registered
+		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
+		assert(it != mRenderTagRegistry.end());
+		mRenderTagRegistry.erase(it);
+	}
+
+
+	uint RenderService::getTagIndex(const RenderTag& renderTag) const
+	{
+		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
+		assert(it != mRenderTagRegistry.end());
+		return static_cast<uint>(it - mRenderTagRegistry.begin());
 	}
 
 
@@ -1946,21 +1984,6 @@ namespace nap
 			frame.mTextureDownloads.clear();
 			frame.mBufferDownloads.clear();
 		}
-
-		// Fetch and store reference to the specified render tag registry
-		auto tag_registries = getCore().getResourceManager()->getObjects<RenderTagRegistry>();
-		if (tag_registries.size() > 1)
-			nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_STR(RenderService).c_str(), RTTI_STR(RenderTagRegistry).c_str());
-
-		if (!tag_registries.empty())
-			mRenderTagRegistry = tag_registries.front();
-
-		auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
-		if (layer_registries.size() > 1)
-			nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_STR(RenderService).c_str(), RTTI_STR(RenderLayerRegistry).c_str());
-
-		if (!layer_registries.empty())
-			mRenderLayerRegistry = layer_registries.front();
 	}
 
 

@@ -9,56 +9,55 @@
 #include "rtti/typeinfo.h"
 
 // External Includes
-#include <nap/resource.h>
+#include <nap/device.h>
 #include <nap/resourceptr.h>
 #include <nap/numeric.h>
+#include <nap/group.h>
 #include <string>
 #include <vector>
 
 namespace nap
 {
-	// RenderMask supports up to 64 different tags
+	class RenderService;
+	class Core;
+
+	// RenderMask definition, supports up to 64 different tags
 	using RenderMask = uint64;
 
 	/**
 	 * Render tag.
 	 */
-	class NAPAPI RenderTag : public Resource
+	class NAPAPI RenderTag : public Device
 	{
-		friend class RenderTagRegistry;
-		RTTI_ENABLE(Resource)
+		friend class RenderService;
+		RTTI_ENABLE(Device)
 	public:
-		RenderTag() = default;
+		RenderTag(Core& core);
 		virtual ~RenderTag() = default;
+
+		/**
+		 * Register the RenderTag with the RenderService
+		 */
+		virtual bool start(utility::ErrorState& errorState) override;
+
+		/**
+		 * Unregister the RenderTag with the RenderService
+		 */
+		virtual void stop() override;
 
 		/**
 		 * @return the index of the tag in the registry.
 		 */
-		uint getIndex() const					{ return mIndex; }
+		uint getIndex() const;
 
 		std::string mName;									///< Property: 'Name' The tag name
 
 	private:
-		uint8 mIndex = 0U;
+		RenderService& mRenderService;
 	};
-	
+
+	// RenderTagList definition
 	using RenderTagList = std::vector<rtti::ObjectPtr<RenderTag>>;
-
-	
-	/**
-	 * List of render tags.
-	 */
-	class NAPAPI RenderTagRegistry : public Resource
-	{
-		RTTI_ENABLE(Resource)
-	public:
-		RenderTagRegistry() = default;
-		virtual ~RenderTagRegistry() = default;
-
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		RenderTagList mTags;			///< Property: 'Tags' The tag list
-	};
 
 	/**
 	 * Creates a render mask from a list of tags
@@ -84,4 +83,7 @@ namespace nap
 	{
 		return (componentMask == 0U) || ((componentMask & inclusionMask) > 0U);
 	}
+
+	// RenderTagGroup definition
+	using RenderTagGroup = Group<RenderTag>;
 }

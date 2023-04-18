@@ -4,28 +4,42 @@
 
 // Local Includes
 #include "rendermask.h"
+#include "renderservice.h"
 
-RTTI_BEGIN_CLASS(nap::RenderTag)
+// External includes
+#include <nap/core.h>
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTag)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Name", &nap::RenderTag::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS(nap::RenderTagRegistry)
-	RTTI_PROPERTY("Tags", &nap::RenderTagRegistry::mTags, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
-RTTI_END_CLASS
+DEFINE_GROUP(nap::RenderTagGroup)
 
 namespace nap
 {
-	bool RenderTagRegistry::init(utility::ErrorState& errorState)
-	{
-		uint count = 0U;
-		for (auto& tag : mTags)
-		{
-			if (!errorState.check(tag != nullptr, "%s: Empty tag entry encountered", mID.c_str()))
-				return false;
+	RenderTag::RenderTag(Core& core) :
+		mRenderService(*core.getService<RenderService>())
+	{ }
 
-			tag->mIndex = count;
-			++count;
-		}
+
+	bool RenderTag::start(utility::ErrorState& errorState)
+	{
+		nap::Logger::warn("Adding tag '%s'", mName.c_str());
+		mRenderService.addTag(*this);
 		return true;
+	}
+
+
+	void RenderTag::stop()
+	{
+		nap::Logger::warn("Removing tag '%s'", mName.c_str());
+		mRenderService.removeTag(*this);
+	}
+
+
+	uint RenderTag::getIndex() const
+	{
+		return mRenderService.getTagIndex(*this);
 	}
 }

@@ -121,7 +121,7 @@ namespace nap
 		// Shadow pass
 		if (mRenderService->beginHeadlessRecording())
 		{
-			mRenderAdvancedService->renderShadows(render_comps, true, mRenderService->findRenderMask("Default"));
+			mRenderAdvancedService->renderShadows(render_comps, true, mRenderService->findRenderMask("Shadow"));
 			mRenderService->endHeadlessRecording();
 		}
 
@@ -135,9 +135,6 @@ namespace nap
 			// Render world
 			auto& perspective_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
-
-			// Render composite component
-			//mRenderService->renderObjects(*mRenderWindow, mOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>(), { mCompositeComponent });
 
 			// Render GUI elements
 			mGuiService->draw();

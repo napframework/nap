@@ -171,7 +171,10 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBounds",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
+                    ],
                     "Layer": "RenderLayer_Bounds",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
@@ -286,7 +289,10 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBox",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
+                    ],
                     "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
@@ -429,7 +435,7 @@
                         },
                         "Rotate": {
                             "x": -30.0,
-                            "y": 90.0,
+                            "y": 100.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -549,7 +555,10 @@
                     "Type": "nap::OrbComponent",
                     "mID": "RenderOrb",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
+                    ],
                     "Layer": "RenderLayer_Default",
                     "Mesh": "OrbMesh",
                     "MaterialInstance": {
@@ -782,7 +791,9 @@
                     "Type": "nap::RenderSkyBoxComponent",
                     "mID": "RenderSkyBox",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Default"
+                    ],
                     "Layer": "RenderLayer_SkyBox",
                     "Mesh": "SkyBoxMesh",
                     "MaterialInstance": {
@@ -962,7 +973,10 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderTorus",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
+                    ],
                     "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
@@ -1377,9 +1391,9 @@
             ]
         },
         {
-            "Type": "nap::RenderTagRegistry",
-            "mID": "RenderTagRegistry",
-            "Tags": [
+            "Type": "nap::RenderTagGroup",
+            "mID": "RenderTags",
+            "Members": [
                 {
                     "Type": "nap::RenderTag",
                     "mID": "RenderTag_Default",
@@ -1389,8 +1403,14 @@
                     "Type": "nap::RenderTag",
                     "mID": "RenderTag_Gizmo",
                     "Name": "Gizmo"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Shadow",
+                    "Name": "Shadow"
                 }
-            ]
+            ],
+            "Children": []
         },
         {
             "Type": "nap::RenderWindow",

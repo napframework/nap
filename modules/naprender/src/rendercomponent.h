@@ -18,6 +18,7 @@ namespace nap
 {
 	// Forward declares
 	class RenderableComponentInstance;
+	class RenderService;
 
 	/**
 	 * Resource part of the render-able component. 
