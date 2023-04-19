@@ -172,7 +172,7 @@ namespace nap
 		for (auto& tex : mSampler2DResource->mTextures)
 			tex = mShadowTextureDummy.get();
 
-		mSampler2DResource->mBorderColor = EBorderColor::IntOpaqueWhite;
+		mSampler2DResource->mBorderColor = EBorderColor::IntOpaqueBlack;
 		mSampler2DResource->mAddressModeHorizontal = EAddressMode::ClampToEdge;
 		mSampler2DResource->mAddressModeVertical = EAddressMode::ClampToEdge;
 		mSampler2DResource->mCompareMode = EDepthCompareMode::LessOrEqual;

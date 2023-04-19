@@ -63,6 +63,7 @@ namespace nap
 		EMemoryUsage	mUsage			= EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
 		ECullMode		mCullMode		= ECullMode::Back;				///< Property: 'CullMode' controls which triangles are culled, back facing, front facing etc.
 		EPolygonMode	mPolygonMode	= EPolygonMode::Fill;			///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
+		bool			mFlipNormals	= false;						///< Property: 'FlipNormals' Whether to flip the box normals such that they point inwards.
 
 	protected:
 		/**

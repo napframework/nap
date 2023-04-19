@@ -53,25 +53,25 @@ uniform sampler2DShadow shadowMaps[8];
 uniform samplerCubeShadow cubeShadowMaps[8];
 
 // Constants
-const float SHADOW_STRENGTH = 0.75;
-const float FRESNEL_STRENGTH = 0.25;
+const float SHADOW_STRENGTH = 1.0;
+const float FRESNEL_STRENGTH = 2.0;
 const float MAX_SHADOW_BIAS = 0.005;
 
 void main()
 {
 	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
-	
-	// Lights
-	vec3 color = computeLights(lit.lights, lit.count, mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
-	color = mix(color, vec3(1.0), passFresnel * pow(luminance(color), FRESNEL_STRENGTH));
 
-	float shadow_result = 0.0;
+	vec3 color_result = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < lit.count; i++)
 	{
+		vec3 color = computeLight(lit.lights[i], mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
+		color = mix(color, vec3(1.0), passFresnel * luminance(color) * FRESNEL_STRENGTH);
+
 		uint flags = lit.lights[i].flags;
 		if (!hasShadow(flags))
 			continue;
 
+		float shadow = 0.0;
 		uint map_index = getShadowMapIndex(flags);
 		switch (getShadowMapId(flags))
 		{
@@ -83,15 +83,16 @@ void main()
 				// Clip shadow lookups outside of ndc
 				if (abs(coord.x) <= 1.0 && abs(coord.y) <= 1.0 && abs(coord.z) <= 1.0)
 				{
+					// Remap coordinate from ndc [-1, 1] to normalized [0, 1]
 					coord.xy = (coord.xy + 1.0) * 0.5;
 
 					// Multi sample
-					float shadow = 0.0;
+					float sum = 0.0;
 					for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
 					{
-						shadow += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
+						sum += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
 					}
-					shadow_result += shadow / float(SHADOW_SAMPLE_COUNT);
+					shadow += sum / float(SHADOW_SAMPLE_COUNT);
 				}
 				break;
 			}
@@ -99,32 +100,26 @@ void main()
 			{
 				// The direction of the light in view space is the sampling coordinate for the cube map
 				vec3 coord = normalize(passPosition - lit.lights[i].origin);
-				vec2 nf = lit.lights[i].nearFar;
-
-				// TODO: Address this - removing this line causes shadow glitches
-				nf.y += 10.0;
+				vec2 nf = min(lit.lights[i].nearFar + MAX_SHADOW_BIAS, lit.lights[i].nearFar.y);
 
 				// Measure the depth value of the fragment in the reference frame of the light
 				// Ensure the approppriate axis-aligned cube face is used, we derive this from the sampling coordinate
 				float frag_depth = sdfPlane(lit.lights[i].origin, cubeFace(coord), passPosition);
 				float bias = MAX_SHADOW_BIAS * (1.0 - getSurfaceIncidence(lit.lights[i], passNormal, passPosition));
 
-				float shadow = 0.0;
+				float sum = 0.0;
 				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
 				{
 					// Add some poisson-based rotational jitter to the sampling vector
 					vec2 jitter = POISSON_DISK[s]/SHADOW_POISSON_SPREAD;
 					vec3 sample_coord = normalize(rotationMatrix(vec3(1.0, 0.0, 0.0), jitter.x) * rotationMatrix(vec3(0.0, 1.0, 0.0), jitter.y) * vec4(coord, 0.0)).xyz;
-		 			shadow += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth - bias, nf.x, nf.y)));
+		 			sum += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth - bias, nf.x, nf.y)));
 				}
-				shadow_result += shadow / float(SHADOW_SAMPLE_COUNT);
+				shadow += sum / float(SHADOW_SAMPLE_COUNT);
 				break;
 			}
 		}
+		color_result += color * (1.0-shadow*SHADOW_STRENGTH);
 	}
-
-	shadow_result = min(shadow_result, 1.0) * SHADOW_STRENGTH;
-	color *= (1.0 - shadow_result);
-
-	out_Color = vec4(color, ubo.alpha);
+	out_Color = vec4(color_result, ubo.alpha);
 }

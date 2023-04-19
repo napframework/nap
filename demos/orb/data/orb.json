@@ -23,7 +23,8 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "FlipNormals": true
         },
         {
             "Type": "nap::BoxMesh",
@@ -48,7 +49,8 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "FlipNormals": false
         },
         {
             "Type": "nap::BoxMesh",
@@ -73,7 +75,8 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "FlipNormals": false
         },
         {
             "Type": "nap::ConstantShader",
@@ -209,9 +212,9 @@
                                         "mID": "UniformVec3_11cc25f4xx",
                                         "Name": "specular",
                                         "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
+                                            "x": 0.20000000298023225,
+                                            "y": 0.20000000298023225,
+                                            "z": 0.20000000298023225
                                         }
                                     },
                                     {
@@ -227,7 +230,7 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_5b6d8df2xx",
                                         "Name": "shininess",
-                                        "Value": 32.0
+                                        "Value": 8.0
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
@@ -1291,9 +1294,9 @@
                     "Name": "SecondLightColor",
                     "Value": {
                         "Values": [
-                            1.0,
+                            0.20000000298023225,
                             0.0,
-                            0.0
+                            1.0
                         ]
                     }
                 },
@@ -1301,7 +1304,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightIntensityParameter",
                     "Name": "LightIntensity",
-                    "Value": 1.0,
+                    "Value": 0.75,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -1309,7 +1312,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAttenuationParameter",
                     "Name": "LightAttenuation",
-                    "Value": 0.009999999776482582,
+                    "Value": 0.0010000000474974514,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -1329,9 +1332,9 @@
                     "mID": "PointLightTranslateParam",
                     "Name": "PointLightTranslate",
                     "Value": {
-                        "x": 0.0,
-                        "y": 2.0,
-                        "z": 3.0
+                        "x": 2.0,
+                        "y": 0.5,
+                        "z": 6.0
                     },
                     "Clamp": true,
                     "Minimum": -10.0,
@@ -1341,7 +1344,7 @@
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAngleParameter",
                     "Name": "LightAngle",
-                    "Value": 10.0,
+                    "Value": 60.0,
                     "Minimum": 0.0,
                     "Maximum": 360.0
                 },

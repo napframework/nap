@@ -20,6 +20,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
 	RTTI_PROPERTY("Size",			&nap::BoxMesh::mSize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Position",		&nap::BoxMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",			&nap::BoxMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FlipNormals",	&nap::BoxMesh::mFlipNormals,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -182,9 +183,23 @@ namespace nap
 
 		// Set data
 		position_attribute.setData(vertex_data);
-		normal_attribute.setData(boxNormals);
 		uv_attribute.setData(boxUVs);
 		color_attribute.setData({boxVertCount, mColor.toVec4()});
+
+		if (mFlipNormals)
+		{
+			std::vector<glm::vec3> flipped_normals;
+			flipped_normals.reserve(boxNormals.size());
+			std::for_each(boxNormals.begin(), boxNormals.end(), [&flipped_normals](const auto& v)
+			{
+				flipped_normals.emplace_back(-v);
+			});
+			normal_attribute.setData(flipped_normals);
+		}
+		else
+		{
+			normal_attribute.setData(boxNormals);
+		}
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();
