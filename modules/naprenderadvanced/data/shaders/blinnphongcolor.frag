@@ -9,7 +9,7 @@
 #include "utils.glslinc"
 
 // Specialization Constants
-layout (constant_id = 0) const uint SHADOW_SAMPLE_COUNT = 4;
+layout (constant_id = 0) const uint SHADOW_SAMPLE_COUNT = 8;
 
 // Uniforms
 uniform nap

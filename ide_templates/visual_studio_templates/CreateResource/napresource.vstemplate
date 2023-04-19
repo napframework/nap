@@ -1,0 +1,15 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>newresource</DefaultName>
+    <Name>NAP Resource</Name>
+    <Description>Create a NAP Resource</Description>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.h" ReplaceParameters="true">newresource.h</ProjectItem>
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.cpp" ReplaceParameters="true">newresource.cpp</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

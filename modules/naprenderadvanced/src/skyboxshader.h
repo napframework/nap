@@ -14,10 +14,10 @@ namespace nap
 	class Core;
 	class RenderAdvancedService;
 
-	// Video shader sampler names 
+	// Skybox shader sampler names 
 	namespace uniform
 	{
-		namespace texture
+		namespace skybox
 		{
 			namespace sampler
 			{

@@ -1,0 +1,373 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::BoxMesh",
+            "mID": "SkyBoxMesh",
+            "Usage": "Static",
+            "CullMode": "Front",
+            "PolygonMode": "Fill",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0,
+                "z": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "FlipNormals": false
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspCamera",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformCamera",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 20.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "OrbitController",
+                    "MovementSpeed": 0.004999999888241291,
+                    "RotateSpeed": 0.0010000001639127732,
+                    "PerspCameraComponent": "./PerspCamera",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "MinimumZoomDistance": 1.5,
+                    "LimitZoomDistance": true
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "PointerInput"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "DefaultInputRouterEntity",
+            "Components": [
+                {
+                    "Type": "nap::DefaultInputRouterComponent",
+                    "mID": "DefaultInputRouterComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SkyBoxEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformSkyBox",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1000.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderSkyBoxComponent",
+                    "mID": "RenderSkyBox",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Default"
+                    ],
+                    "Layer": "RenderLayer_SkyBox",
+                    "Mesh": "SkyBoxMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "SkyBoxMaterial",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "ReadOnly"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    },
+                    "CubeTexture": "CubeMap"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "WorldEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformWorld",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "SkyBoxEntity"
+            ]
+        },
+        {
+            "Type": "nap::GnomonMesh",
+            "mID": "GnomonMesh",
+            "Size": 1.0,
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "Type": "nap::GnomonShader",
+            "mID": "GnomonShader"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "SkyBoxMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "VertexAttributeBindings": [],
+            "Shader": "SkyBoxShader",
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::RenderLayerRegistry",
+            "mID": "RenderLayerRegistry",
+            "Layers": [
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_SkyBox",
+                    "Name": "SkyBox"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Bounds",
+                    "Name": "Bounds"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
+                }
+            ]
+        },
+        {
+            "Type": "nap::RenderTagGroup",
+            "mID": "RenderTags",
+            "Members": [
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Default",
+                    "Name": "Default"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Gizmo",
+                    "Name": "Gizmo"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Shadow",
+                    "Name": "Shadow"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "RenderWindow",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "orbdemo",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "CubeImages",
+            "Members": [
+                {
+                    "Type": "nap::ImageFromFile",
+                    "mID": "EquirectangularTexture",
+                    "Usage": "Static",
+                    "ImagePath": "equi_uffizi.png",
+                    "GenerateLods": false
+                },
+                {
+                    "Type": "nap::ImageFromFile",
+                    "mID": "EquirectangularTestTexture",
+                    "Usage": "Static",
+                    "ImagePath": "equi_test.jpg",
+                    "GenerateLods": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "CubeMaps",
+            "Members": [
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "CubeMap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SourceTexture": "EquirectangularTexture",
+                    "GenerateLods": true
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "CubeMap2",
+                    "Width": 512,
+                    "Height": 512,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SourceTexture": "EquirectangularTestTexture",
+                    "GenerateLods": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "WorldEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "CameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "DefaultInputRouterEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::SkyBoxShader",
+            "mID": "SkyBoxShader"
+        }
+    ]
+}

@@ -1,0 +1,15 @@
+<VSTemplate Version="3.0.0" xmlns="http://schemas.microsoft.com/developer/vstemplate/2005" Type="Item">
+  <TemplateData>
+    <DefaultName>newcomponent</DefaultName>
+    <Name>NAP Component</Name>
+    <Description>Create a NAP Component Resource and Instance</Description>
+    <ProjectType>VC</ProjectType>
+    <SortOrder>10</SortOrder>
+    <Icon>__TemplateIcon.ico</Icon>
+  </TemplateData>
+  <TemplateContent>
+    <References />
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.h" ReplaceParameters="true">newcomponent.h</ProjectItem>
+    <ProjectItem SubType="" TargetFileName="$fileinputname$.cpp" ReplaceParameters="true">newcomponent.cpp</ProjectItem>
+  </TemplateContent>
+</VSTemplate>

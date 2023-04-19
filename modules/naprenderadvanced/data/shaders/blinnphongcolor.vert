@@ -47,7 +47,7 @@ out float 	passFresnel;			//< Fresnel
 out vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
 // Constants
-const float MAX_SHADOW_BIAS = 0.005;
+const float MAX_SHADOW_BIAS = 0.01;
 
 void main()
 {
