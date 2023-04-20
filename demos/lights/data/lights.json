@@ -1,6 +1,10 @@
 {
     "Objects": [
         {
+            "Type": "nap::BlinnPhongColorShader",
+            "mID": "BlinnPhongColorShader"
+        },
+        {
             "Type": "nap::BoxMesh",
             "mID": "BoundsMesh",
             "Usage": "Static",
@@ -189,7 +193,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "PhongColorMaterial",
+                        "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -275,7 +279,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "PhongColorMaterial",
+                        "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -669,7 +673,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "PhongColorMaterial",
+                        "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -900,7 +904,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Material": "PhongColorMaterial",
+                        "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -1025,42 +1029,7 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "ConstantMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_81357673",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_62017239",
-                            "Name": "color",
-                            "Value": {
-                                "x": 0.20000000298023225,
-                                "y": 0.20000000298023225,
-                                "z": 0.20000000298023225
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_d9d58dc0",
-                            "Name": "alpha",
-                            "Value": 1.0
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Buffers": [],
-            "VertexAttributeBindings": [],
-            "Shader": "ConstantShader",
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "PhongColorMaterial",
+            "mID": "BlinnPhongColorMaterial",
             "Uniforms": [
                 {
                     "Type": "nap::UniformStruct",
@@ -1124,7 +1093,42 @@
             "Samplers": [],
             "Buffers": [],
             "VertexAttributeBindings": [],
-            "Shader": "PhongColorShader",
+            "Shader": "BlinnPhongColorShader",
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ConstantMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_81357673",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_62017239",
+                            "Name": "color",
+                            "Value": {
+                                "x": 0.20000000298023225,
+                                "y": 0.20000000298023225,
+                                "z": 0.20000000298023225
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_d9d58dc0",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "VertexAttributeBindings": [],
+            "Shader": "ConstantShader",
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -1360,13 +1364,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "PhongColorShader",
-            "VertShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/blinnphongcolor.vert",
-            "FragShader": "C:/dev/nap/modules/naprenderadvanced/data/shaders/blinnphongcolor.frag",
-            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::SphereMesh",
