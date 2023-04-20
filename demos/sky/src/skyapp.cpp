@@ -124,6 +124,10 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
+		utility::ErrorState error_state;
+		if (!mRenderAdvancedService->pushLights(render_comps, error_state))
+			nap::Logger::error(error_state.toString().c_str());
+
 		// Begin recording the render commands for the main render window
 		// This prepares a command buffer and starts a render pass
 		if (mRenderService->beginRecording(*mRenderWindow))

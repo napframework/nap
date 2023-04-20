@@ -1,6 +1,10 @@
 {
     "Objects": [
         {
+            "Type": "nap::BlinnPhongColorShader",
+            "mID": "BlinnPhongColorShader"
+        },
+        {
             "Type": "nap::BoxMesh",
             "mID": "SkyBoxMesh",
             "Usage": "Static",
@@ -25,6 +29,10 @@
                 ]
             },
             "FlipNormals": false
+        },
+        {
+            "Type": "nap::ConstantShader",
+            "mID": "ConstantShader"
         },
         {
             "Type": "nap::Entity",
@@ -54,7 +62,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 20.0
+                            "z": 5.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -97,6 +105,47 @@
                 {
                     "Type": "nap::DefaultInputRouterComponent",
                     "mID": "DefaultInputRouterComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LightEntity",
+            "Components": [
+                {
+                    "Type": "nap::SpotLightComponent",
+                    "mID": "SpotLightComponent",
+                    "Color": "LightColorParam",
+                    "Intensity": "LightIntensityParam",
+                    "Enable Shadows": false,
+                    "ShadowCamera": "",
+                    "ShadowMapSize": 1024,
+                    "Attenuation": "LightAttenuationParam",
+                    "Angle": "LightAngleParam",
+                    "FallOff": "LightFalloffParam"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformSpotlight",
+                    "Properties": {
+                        "Translate": {
+                            "x": 1.0,
+                            "y": 2.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 270.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
                 }
             ],
             "Children": []
@@ -155,7 +204,63 @@
                             "y": 0.0
                         }
                     },
-                    "CubeTexture": "CubeMap"
+                    "CubeTexture": "UffiziCubeMap"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TorusEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformTorus",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderTorus",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "TorusMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "BlinnPhongMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -188,7 +293,9 @@
                 }
             ],
             "Children": [
-                "SkyBoxEntity"
+                "SkyBoxEntity",
+                "TorusEntity",
+                "LightEntity"
             ]
         },
         {
@@ -207,6 +314,111 @@
         },
         {
             "Type": "nap::Material",
+            "mID": "BlinnPhongMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_60da175c",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_3019e56a",
+                            "Name": "ambient",
+                            "Value": {
+                                "x": 0.10000000149011612,
+                                "y": 0.10000000149011612,
+                                "z": 0.10000000149011612
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_cdd76af7",
+                            "Name": "diffuse",
+                            "Value": {
+                                "x": 0.10000000149011612,
+                                "y": 0.5,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_11cc25f4",
+                            "Name": "specular",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_f66d0135",
+                            "Name": "fresnel",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 2.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_5b6d8df2",
+                            "Name": "shininess",
+                            "Value": 32.0
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_49935e1d",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "VertexAttributeBindings": [],
+            "Shader": "BlinnPhongColorShader",
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ConstantMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_5898b0a4",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "UniformVec3_57df2031",
+                            "Name": "color",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "UniformFloat_b8d0a938",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "VertexAttributeBindings": [],
+            "Shader": "ConstantShader",
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
             "mID": "SkyBoxMaterial",
             "Uniforms": [],
             "Samplers": [],
@@ -215,6 +427,57 @@
             "Shader": "SkyBoxShader",
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "LightParameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "LightColorParam",
+                    "Name": "LightColor",
+                    "Value": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightIntensityParam",
+                    "Name": "LightIntensity",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightAttenuationParam",
+                    "Name": "LightAttenuation",
+                    "Value": 0.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightAngleParam",
+                    "Name": "LightAngle",
+                    "Value": 90.0,
+                    "Minimum": 0.0,
+                    "Maximum": 360.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightFalloffParam",
+                    "Name": "LightFalloff",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::RenderLayerRegistry",
@@ -310,7 +573,7 @@
             "Members": [
                 {
                     "Type": "nap::CubeMapFromFile",
-                    "mID": "CubeMap",
+                    "mID": "UffiziCubeMap",
                     "Width": 1024,
                     "Height": 1024,
                     "Format": "RGBA8",
@@ -328,7 +591,7 @@
                 },
                 {
                     "Type": "nap::CubeMapFromFile",
-                    "mID": "CubeMap2",
+                    "mID": "TestCubeMap",
                     "Width": 512,
                     "Height": 512,
                     "Format": "RGBA8",
@@ -368,6 +631,26 @@
         {
             "Type": "nap::SkyBoxShader",
             "mID": "SkyBoxShader"
+        },
+        {
+            "Type": "nap::TorusMesh",
+            "mID": "TorusMesh",
+            "Radius": 0.75,
+            "TubeRadius": 0.25,
+            "Segments": 64,
+            "TubeSegments": 64,
+            "AngleOffset": 0.0,
+            "Usage": "Static",
+            "PolygonMode": "Fill",
+            "CullMode": "Back",
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }
