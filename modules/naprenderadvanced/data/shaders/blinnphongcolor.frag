@@ -77,8 +77,8 @@ void main()
 		{
 			case SHADOWMAP_QUAD:
 			{
-				// Perspective divide and map coordinates to [0.0, 1.0] range
-				vec3 coord = ((passShadowCoords[i].xyz / passShadowCoords[i].w));
+				// Apply perspective divide if required
+				vec3 coord = getShadowQuadCoordinate(flags, passShadowCoords[i]);
 
 				// Clip shadow lookups outside of ndc
 				if (abs(coord.x) <= 1.0 && abs(coord.y) <= 1.0 && abs(coord.z) <= 1.0)

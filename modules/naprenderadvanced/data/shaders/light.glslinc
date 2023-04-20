@@ -53,3 +53,26 @@ float getSurfaceIncidence(Light light, vec3 surfaceNormal, vec3 surfacePosition)
 		}
 	}
 }
+
+
+// Perspective divide based on light type
+vec3 getShadowQuadCoordinate(uint flags, vec4 shadowCoord)
+{
+	switch (getLightType(flags))
+	{
+		case LIGHT_DIRECTIONAL:
+		{
+			// No perspective divide
+			return ((shadowCoord.xyz));
+		}
+		case LIGHT_POINT:
+		case LIGHT_SPOT:
+		case LIGHT_CUSTOM:
+		default:
+		{
+			// Perspective divide
+			return ((shadowCoord.xyz / shadowCoord.w));
+		}
+	}
+	
+}

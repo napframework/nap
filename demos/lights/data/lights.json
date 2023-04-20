@@ -119,7 +119,7 @@
                             "z": 0.0
                         },
                         "Scale": {
-                            "x": 1.5,
+                            "x": 1.75,
                             "y": 1.0,
                             "z": 1.75
                         },
@@ -145,22 +145,12 @@
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_3019e56axx",
-                                        "Name": "ambient",
-                                        "Value": {
-                                            "x": 0.125,
-                                            "y": 0.125,
-                                            "z": 0.125
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
                                         "mID": "UniformVec3_cdd76af7xx",
                                         "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.5,
-                                            "y": 0.5,
-                                            "z": 0.5
+                                            "x": 0.8999999761581421,
+                                            "y": 0.8999999761581421,
+                                            "z": 0.8999999761581421
                                         }
                                     },
                                     {
@@ -332,7 +322,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 20.0
+                            "z": 10.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -388,8 +378,8 @@
                     "mID": "TransformLight",
                     "Properties": {
                         "Translate": {
-                            "x": 10.0,
-                            "y": 0.0,
+                            "x": 6.0,
+                            "y": 3.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -408,12 +398,12 @@
                 {
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "DirectionalLight",
-                    "Color": "LightColorParameter",
-                    "Intensity": "LightIntensityParameter",
+                    "Color": "LightColorParam",
+                    "Intensity": "LightIntensityParam",
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho",
                     "ShadowMapSize": 1024,
-                    "Attenuation": "LightAttenuationParameter"
+                    "Attenuation": "LightAttenuationParam"
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -425,7 +415,7 @@
                         "TopPlane": 10.0,
                         "BottomPlane": -10.0,
                         "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 20.0,
+                        "FarClippingPlane": 30.0,
                         "ClipRect": {
                             "Min": {
                                 "x": 0.0,
@@ -508,99 +498,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "OrbEntity",
-            "Components": [
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderOrb",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Default",
-                        "RenderTag_Shadow"
-                    ],
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "OrbMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_ceb0366e",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_aab39b43",
-                                        "Name": "diffuse",
-                                        "Value": {
-                                            "x": 0.4000000059604645,
-                                            "y": 0.45000001788139346,
-                                            "z": 0.6000000238418579
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_dd377790",
-                                        "Name": "specular",
-                                        "Value": {
-                                            "x": 0.75,
-                                            "y": 0.75,
-                                            "z": 0.75
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_ebd12872",
-                                        "Name": "shininess",
-                                        "Value": 16.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "PhongColorMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "OrbTransform",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "PointLightEntity",
             "Components": [
                 {
@@ -628,12 +525,12 @@
                 {
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
-                    "Color": "LightColorParameter",
-                    "Intensity": "LightIntensityParameter",
+                    "Color": "LightColor3Param",
+                    "Intensity": "LightIntensityParam",
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraPerspective",
                     "ShadowMapSize": 512,
-                    "Attenuation": "LightAttenuationParameter"
+                    "Attenuation": "LightAttenuationParam"
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -722,6 +619,99 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "RockEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderRock",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
+                    ],
+                    "Layer": "RenderLayer_Default",
+                    "Mesh": "RockMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_ceb0366e",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_aab39b43",
+                                        "Name": "diffuse",
+                                        "Value": {
+                                            "x": 0.4000000059604645,
+                                            "y": 0.45000001788139346,
+                                            "z": 0.6000000238418579
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_dd377790",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.75,
+                                            "y": 0.75,
+                                            "z": 0.75
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_ebd12872",
+                                        "Name": "shininess",
+                                        "Value": 12.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PhongColorMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "RockTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "SpotLightEntity",
             "Components": [
                 {
@@ -731,7 +721,7 @@
                         "Translate": {
                             "x": 2.0,
                             "y": 0.5,
-                            "z": 6.0
+                            "z": 7.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -749,14 +739,14 @@
                 {
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
-                    "Color": "SecondLightColorParameter",
-                    "Intensity": "LightIntensityParameter",
+                    "Color": "LightColor2Param",
+                    "Intensity": "LightIntensityParam",
                     "Enable Shadows": true,
                     "ShadowCamera": "../SpotLightEntity/ShadowCameraPerspective2",
                     "ShadowMapSize": 1024,
-                    "Attenuation": "LightAttenuationParameter",
-                    "Angle": "LightAngleParameter",
-                    "FallOff": "LightFallOffParameter"
+                    "Attenuation": "LightAttenuationParam",
+                    "Angle": "SpotLightAngleParam",
+                    "FallOff": "SpotLightFallOffParam"
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -957,13 +947,14 @@
                 }
             ],
             "Children": [
-                "OrbEntity",
+                "RockEntity",
                 "BaseLightEntity",
                 "TorusEntity",
                 "BoxEntity",
                 "BoundsEntity",
                 "DirectionalLightEntity",
-                "SpotLightEntity"
+                "SpotLightEntity",
+                "BoxEntity"
             ]
         },
         {
@@ -982,15 +973,15 @@
         },
         {
             "Type": "nap::HeightSphereMesh",
-            "mID": "OrbMesh",
-            "Heightmap": "OrbDisplacementMap",
+            "mID": "RockMesh",
+            "Heightmap": "RockDisplacementMap",
             "Height": 0.5,
             "Usage": "Static",
             "CullMode": "Back",
             "PolygonMode": "Fill",
             "Radius": 1.0,
-            "Rings": 128,
-            "Sectors": 128,
+            "Rings": 256,
+            "Sectors": 256,
             "Color": {
                 "Values": [
                     1.0,
@@ -1002,7 +993,7 @@
         },
         {
             "Type": "nap::ImageFromFile",
-            "mID": "OrbDisplacementMap",
+            "mID": "RockDisplacementMap",
             "Usage": "Static",
             "ImagePath": "noise.jpg",
             "GenerateLods": false
@@ -1081,9 +1072,9 @@
                             "mID": "UniformVec3_3019e56a",
                             "Name": "ambient",
                             "Value": {
-                                "x": 0.125,
-                                "y": 0.125,
-                                "z": 0.125
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
                             }
                         },
                         {
@@ -1141,31 +1132,31 @@
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
-            "Group": "OrbParameters"
+            "Group": "Parameters"
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "OrbParameters",
+            "mID": "Parameters",
             "Parameters": [
                 {
                     "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "LightColorParameter",
+                    "mID": "LightColorParam",
                     "Name": "LightColor",
                     "Value": {
                         "Values": [
-                            1.0,
-                            1.0,
+                            0.0,
+                            0.9411764740943909,
                             1.0
                         ]
                     }
                 },
                 {
                     "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "SecondLightColorParameter",
-                    "Name": "SecondLightColor",
+                    "mID": "LightColor2Param",
+                    "Name": "LightColor2",
                     "Value": {
                         "Values": [
-                            0.20000000298023225,
+                            0.0941176488995552,
                             0.0,
                             1.0
                         ]
@@ -1173,7 +1164,7 @@
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "LightIntensityParameter",
+                    "mID": "LightIntensityParam",
                     "Name": "LightIntensity",
                     "Value": 0.75,
                     "Minimum": 0.0,
@@ -1181,7 +1172,7 @@
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "LightAttenuationParameter",
+                    "mID": "LightAttenuationParam",
                     "Name": "LightAttenuation",
                     "Value": 0.0010000000474974514,
                     "Minimum": 0.0,
@@ -1189,8 +1180,8 @@
                 },
                 {
                     "Type": "nap::ParameterQuat",
-                    "mID": "PointLightRotationParam",
-                    "Name": "PointLightRotation",
+                    "mID": "LightRotationParam",
+                    "Name": "LightRotation",
                     "Value": {
                         "x": 0.0,
                         "y": 0.0,
@@ -1200,32 +1191,44 @@
                 },
                 {
                     "Type": "nap::ParameterVec3",
-                    "mID": "PointLightTranslateParam",
-                    "Name": "PointLightTranslate",
+                    "mID": "LightTranslateParam",
+                    "Name": "LightTranslate",
                     "Value": {
                         "x": 2.0,
                         "y": 0.5,
                         "z": 6.0
                     },
                     "Clamp": true,
-                    "Minimum": -10.0,
-                    "Maximum": 10.0
+                    "Minimum": -20.0,
+                    "Maximum": 20.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "LightAngleParameter",
-                    "Name": "LightAngle",
+                    "mID": "SpotLightAngleParam",
+                    "Name": "SpotLightAngle",
                     "Value": 60.0,
                     "Minimum": 0.0,
                     "Maximum": 360.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "LightFallOffParameter",
-                    "Name": "LightFallOff",
+                    "mID": "SpotLightFallOffParam",
+                    "Name": "SpotLightFallOff",
                     "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "LightColor3Param",
+                    "Name": "LightColor3",
+                    "Value": {
+                        "Values": [
+                            0.9333333373069763,
+                            0.0,
+                            1.0
+                        ]
+                    }
                 }
             ],
             "Groups": []
@@ -1316,7 +1319,37 @@
             "Entities": [
                 {
                     "Entity": "WorldEntity",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./BoxEntity:1/TransformBox",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/z",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_443ef4a6",
+                                        "Value": 2.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Scale/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_8e5ac47b",
+                                        "Value": 1.0
+                                    }
+                                },
+                                {
+                                    "Path": "Properties/Translate/y",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_5f872a35",
+                                        "Value": -3.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 },
                 {
                     "Entity": "CameraEntity",

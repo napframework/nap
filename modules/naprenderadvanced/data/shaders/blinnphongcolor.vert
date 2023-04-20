@@ -69,13 +69,22 @@ void main()
 	// Shadow
 	for (uint i = 0; i < lit.count; i++)
 	{
+		// Check if shadow is enabled on this light, else skip
 		uint flags = lit.lights[i].flags;
 		if (!hasShadow(flags))
 			continue;
 
+		// Compute current shadow coordinate: the world position in lightviewspace
 		vec4 coord = lit.lights[i].viewProjectionMatrix * world_position;
+		
+		// Apply bias
 		float bias = MAX_SHADOW_BIAS * (1.0 - getSurfaceIncidence(lit.lights[i], world_normal, world_position.xyz));
 		coord.z -= bias;
+		
+		// Flip y (Vulkan coordinates are [-1, 1], refer to NAP RenderProjectionMatrix)
+		coord.y = -coord.y;
+		
+		// Pass coordinates
 		passShadowCoords[i] = coord;
 	}
 }

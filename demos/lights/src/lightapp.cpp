@@ -78,24 +78,41 @@ namespace nap
 			mInputService->processWindowEvents(*window, input_router, entities);
 		}
 
-		//////////////////////////////////////////////////////////////////////////
-
-		const auto scene = mResourceManager->findObject<Scene>("Scene");
-		auto& transform = scene->findEntity("SpotLightEntity")->getComponent<TransformComponentInstance>();
-
-		const auto& pos = mResourceManager->findObject<ParameterVec3>("PointLightTranslateParam")->mValue;
-		transform.setTranslate(pos);
-
-		const auto& rot = mResourceManager->findObject<ParameterQuat>("PointLightRotationParam")->mValue;
-		transform.setRotate(rot);
-
-		//////////////////////////////////////////////////////////////////////////
-
 		// Update GUI
 		ImGui::Begin("Controls");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
+
+		std::vector<LightComponentInstance*> lights;
+		mWorldEntity->getComponentsOfTypeRecursive<LightComponentInstance>(lights);
+
+		if (!lights.empty())
+		{
+			std::vector<const char*> labels;
+			labels.reserve(lights.size());
+			std::for_each(lights.begin(), lights.end(), [&labels](const auto& light) {
+				labels.emplace_back(light->mID.c_str());
+			});
+
+			static int item_index = 0;
+			LightComponentInstance* selected_light = lights[item_index];
+
+			if (ImGui::Combo("Move Light", &item_index, labels.data(), lights.size()))
+			{
+				selected_light = lights[item_index];
+				auto& transform = selected_light->getEntityInstance()->getComponent<TransformComponentInstance>();
+				mResourceManager->findObject<ParameterVec3>("LightTranslateParam")->setValue(transform.getTranslate());
+				mResourceManager->findObject<ParameterQuat>("LightRotationParam")->setValue(transform.getRotate());
+			}
+
+			if (selected_light != nullptr)
+			{
+				auto& transform = selected_light->getEntityInstance()->getComponent<TransformComponentInstance>();
+				transform.setTranslate(mResourceManager->findObject<ParameterVec3>("LightTranslateParam")->mValue);
+				transform.setRotate(mResourceManager->findObject<ParameterQuat>("LightRotationParam")->mValue);
+			}
+		}
 
 		mResourceManager->findObject<ParameterGUI>("ParameterGUI")->show(false);
 
