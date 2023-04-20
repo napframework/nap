@@ -68,7 +68,10 @@ void main()
 
 		uint flags = lit.lights[i].flags;
 		if (!hasShadow(flags))
+		{
+			color_result += color;
 			continue;
+		}
 
 		float shadow = 0.0;
 		uint map_index = getShadowMapIndex(flags);
