@@ -529,7 +529,7 @@
                     "Intensity": "LightIntensityParam",
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraPerspective",
-                    "ShadowMapSize": 512,
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam"
                 },
                 {
@@ -1139,6 +1139,62 @@
             "mID": "Parameters",
             "Parameters": [
                 {
+                    "Type": "nap::ParameterVec3",
+                    "mID": "LightTranslateParam",
+                    "Name": "LightTranslate",
+                    "Value": {
+                        "x": 2.0,
+                        "y": 0.5,
+                        "z": 6.0
+                    },
+                    "Clamp": true,
+                    "Minimum": -20.0,
+                    "Maximum": 20.0
+                },
+                {
+                    "Type": "nap::ParameterQuat",
+                    "mID": "LightRotationParam",
+                    "Name": "LightRotation",
+                    "Value": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0,
+                        "w": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightIntensityParam",
+                    "Name": "LightIntensity",
+                    "Value": 0.75,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LightAttenuationParam",
+                    "Name": "LightAttenuation",
+                    "Value": 0.0010000000474974514,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SpotLightAngleParam",
+                    "Name": "SpotLightAngle",
+                    "Value": 60.0,
+                    "Minimum": 0.0,
+                    "Maximum": 360.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SpotLightFallOffParam",
+                    "Name": "SpotLightFallOff",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
                     "Type": "nap::ParameterRGBColorFloat",
                     "mID": "LightColorParam",
                     "Name": "LightColor",
@@ -1161,62 +1217,6 @@
                             1.0
                         ]
                     }
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "LightIntensityParam",
-                    "Name": "LightIntensity",
-                    "Value": 0.75,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "LightAttenuationParam",
-                    "Name": "LightAttenuation",
-                    "Value": 0.0010000000474974514,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterQuat",
-                    "mID": "LightRotationParam",
-                    "Name": "LightRotation",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0,
-                        "w": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "LightTranslateParam",
-                    "Name": "LightTranslate",
-                    "Value": {
-                        "x": 2.0,
-                        "y": 0.5,
-                        "z": 6.0
-                    },
-                    "Clamp": true,
-                    "Minimum": -20.0,
-                    "Maximum": 20.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SpotLightAngleParam",
-                    "Name": "SpotLightAngle",
-                    "Value": 60.0,
-                    "Minimum": 0.0,
-                    "Maximum": 360.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SpotLightFallOffParam",
-                    "Name": "SpotLightFallOff",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
                 },
                 {
                     "Type": "nap::ParameterRGBColorFloat",
@@ -1296,7 +1296,7 @@
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "orbdemo",
+            "Title": "lightdemo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",

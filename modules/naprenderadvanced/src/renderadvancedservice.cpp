@@ -194,6 +194,8 @@ namespace nap
 			tex = &render_service->getEmptyTextureCube();
 
 		mSamplerCubeResource->mBorderColor = EBorderColor::IntOpaqueBlack;
+		mSamplerCubeResource->mAddressModeHorizontal = EAddressMode::ClampToEdge;
+		mSamplerCubeResource->mAddressModeVertical = EAddressMode::ClampToEdge;
 		mSamplerCubeResource->mCompareMode = EDepthCompareMode::LessOrEqual;
 		mSamplerCubeResource->mEnableCompare = true;
 		if (!mSamplerCubeResource->init(errorState))

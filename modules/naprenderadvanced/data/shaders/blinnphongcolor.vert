@@ -46,9 +46,6 @@ out vec3 	passUV0;				//< UVs
 out float 	passFresnel;			//< Fresnel
 out vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
-// Constants
-const float MAX_SHADOW_BIAS = 0.01;
-
 void main()
 {
 	// Calculate frag position
@@ -76,10 +73,6 @@ void main()
 
 		// Compute current shadow coordinate: the world position in lightviewspace
 		vec4 coord = lit.lights[i].viewProjectionMatrix * world_position;
-		
-		// Apply bias
-		float bias = MAX_SHADOW_BIAS * (1.0 - getSurfaceIncidence(lit.lights[i], world_normal, world_position.xyz));
-		coord.z -= bias;
 		
 		// Flip y (Vulkan coordinates are [-1, 1], refer to NAP RenderProjectionMatrix)
 		coord.y = -coord.y;
