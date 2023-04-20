@@ -124,9 +124,15 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
+		// Shadow pass
+		//if (mRenderService->beginHeadlessRecording())
+		//{
+		//	mRenderAdvancedService->renderShadows(render_comps, true, mRenderService->findRenderMask("Shadow"));
+		//	mRenderService->endHeadlessRecording();
+		//}
+
 		utility::ErrorState error_state;
-		if (!mRenderAdvancedService->pushLights(render_comps, error_state))
-			nap::Logger::error(error_state.toString().c_str());
+		mRenderAdvancedService->pushLights(render_comps, error_state);
 
 		// Begin recording the render commands for the main render window
 		// This prepares a command buffer and starts a render pass

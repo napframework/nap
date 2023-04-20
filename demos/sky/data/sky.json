@@ -5,6 +5,12 @@
             "mID": "BlinnPhongColorShader"
         },
         {
+            "Type": "nap::BoxFrameMesh",
+            "mID": "BoxFrame",
+            "PolygonMode": "Line",
+            "Usage": "Static"
+        },
+        {
             "Type": "nap::BoxMesh",
             "mID": "SkyBoxMesh",
             "Usage": "Static",
@@ -119,7 +125,7 @@
                     "Color": "LightColorParam",
                     "Intensity": "LightIntensityParam",
                     "Enable Shadows": false,
-                    "ShadowCamera": "",
+                    "ShadowCamera": "./ShadowCamera",
                     "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "LightAngleParam",
@@ -131,7 +137,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 1.0,
-                            "y": 2.0,
+                            "y": 5.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -145,6 +151,110 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "ShadowCamera",
+                    "Properties": {
+                        "FieldOfView": 50.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 10.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderFrustum",
+                    "Visible": false,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
+                    "Layer": "",
+                    "Mesh": "BoxFrame",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PlaneEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformPlane",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": -2.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": -90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 4.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderPlane",
+                    "Visible": false,
+                    "Tags": [
+                        "RenderTag_Default"
+                    ],
+                    "Layer": "",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "BlinnPhongMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
                     }
                 }
             ],
@@ -295,7 +405,8 @@
             "Children": [
                 "SkyBoxEntity",
                 "TorusEntity",
-                "LightEntity"
+                "LightEntity",
+                "PlaneEntity"
             ]
         },
         {
@@ -478,6 +589,31 @@
                 }
             ],
             "Groups": []
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Rows": 1,
+            "Columns": 1
         },
         {
             "Type": "nap::RenderLayerRegistry",
