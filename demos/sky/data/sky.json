@@ -555,13 +555,6 @@
             "mID": "GnomonShader"
         },
         {
-            "Type": "nap::ImageFromFile",
-            "mID": "EquirectangularTerrainTexture",
-            "Usage": "Static",
-            "ImagePath": "hilly_terrain_01_4k.hdr",
-            "GenerateLods": false
-        },
-        {
             "Type": "nap::Material",
             "mID": "BlinnPhongMaterial",
             "Uniforms": [
@@ -880,24 +873,6 @@
                         ]
                     },
                     "SourceTexture": "EquirectangularTestTexture",
-                    "GenerateLods": false
-                },
-                {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "HDRCubeMap",
-                    "Width": 2048,
-                    "Height": 2048,
-                    "Format": "RGBA32",
-                    "ColorSpace": "Linear",
-                    "ClearColor": {
-                        "Values": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "SourceTexture": "EquirectangularTerrainTexture",
                     "GenerateLods": false
                 }
             ],
