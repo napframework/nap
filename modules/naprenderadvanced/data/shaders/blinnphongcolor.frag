@@ -29,7 +29,7 @@ uniform light
 
 uniform UBO
 {
-	vec3	ambient;				//< Ambient
+	vec4	ambient;				//< Ambient
 	vec3	diffuse;				//< Diffuse
 	vec3	specular;				//< Specular
 	vec2	fresnel;				//< Fresnel [scale, power]
@@ -41,7 +41,6 @@ uniform UBO
 // Fragment Input
 in vec3 	passPosition;			//< Fragment position in world space
 in vec3 	passNormal;				//< Fragment normal in world space
-in vec3 	passUV0;				//< Texture UVs
 in float 	passFresnel;			//< Fresnel term
 
 in vec4 	passShadowCoords[8];	//< Shadow Coordinates

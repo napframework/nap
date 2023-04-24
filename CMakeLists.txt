@@ -155,7 +155,6 @@ add_subdirectory(demos/pipins)
 add_subdirectory(demos/webportal)
 add_subdirectory(demos/python)
 add_subdirectory(demos/lights)
-add_subdirectory(demos/lights/module)
 add_subdirectory(demos/sky)
 add_subdirectory(demos/sky/module)
 

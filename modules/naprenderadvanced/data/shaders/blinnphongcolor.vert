@@ -26,7 +26,7 @@ uniform light
 
 uniform UBO
 {
-	vec3	ambient;				//< Ambient
+	vec4	ambient;				//< Ambient
 	vec3	diffuse;				//< Diffuse
 	vec3	specular;				//< Specular
 	vec2	fresnel;				//< Fresnel [scale, power]
@@ -38,12 +38,10 @@ uniform UBO
 // Vertex Input
 in vec3		in_Position;			//< Vertex position in object space
 in vec3 	in_Normals;				//< Vertex normal in object space
-in vec3 	in_UV0;					//< Texture UVs
 
 // Vertex Output
 out vec3 	passPosition;			//< Vertex position in world space
 out vec3 	passNormal;				//< Vertex normal in world space
-out vec3 	passUV0;				//< UVs
 out float 	passFresnel;			//< Fresnel
 out vec4 	passShadowCoords[8];	//< Shadow Coordinates
 
@@ -54,7 +52,6 @@ void main()
 	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * world_position;
 
 	passPosition = world_position.xyz;
-	passUV0 = in_UV0;
 
 	// Rotate normal based on model matrix and set
 	vec3 world_normal = normalize((mvp.normalMatrix * vec4(in_Normals, 1.0)).xyz);

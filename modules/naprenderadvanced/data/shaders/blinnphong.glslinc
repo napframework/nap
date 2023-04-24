@@ -6,7 +6,7 @@
 // Material structs
 struct BlinnPhongMaterial
 {
-	vec3	ambient;				//< Ambient
+	vec4	ambient;				//< Ambient
 	vec3	diffuse;				//< Diffuse
 	vec3	specular;				//< Specular
 	float	shininess;				//< Shininess
@@ -57,7 +57,7 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, fl
 		specular = pow(max(dot(surfNormal, halfway), 0.0), mtl.shininess);
 	}
 
-	vec3 ambient_color = lightIntensity * mtl.ambient;
+	vec3 ambient_color = lightIntensity * mtl.ambient.rgb + mtl.diffuse * mtl.ambient.a;
 	vec3 diffuse_color = diffuse * lightColor * lightIntensity * mtl.diffuse;
 	vec3 specular_color = specular * lightIntensity * mtl.specular;
 

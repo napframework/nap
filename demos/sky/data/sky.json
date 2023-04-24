@@ -117,6 +117,93 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "Light2Entity",
+            "Components": [
+                {
+                    "Type": "nap::SpotLightComponent",
+                    "mID": "SpotLight2Component",
+                    "Color": "LightColorParam",
+                    "Intensity": "LightIntensityParam",
+                    "Enable Shadows": false,
+                    "ShadowCamera": "./ShadowCamera2",
+                    "ShadowMapSize": 1024,
+                    "Attenuation": "LightAttenuationParam",
+                    "Angle": "LightAngleParam",
+                    "FallOff": "LightFalloffParam"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformSpotlight2",
+                    "Properties": {
+                        "Translate": {
+                            "x": 1.0,
+                            "y": 5.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 270.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "ShadowCamera2",
+                    "Properties": {
+                        "FieldOfView": 50.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 10.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderFrustum2",
+                    "Visible": false,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
+                    "Layer": "",
+                    "Mesh": "BoxFrame",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "LightEntity",
             "Components": [
                 {
@@ -136,7 +223,7 @@
                     "mID": "TransformSpotlight",
                     "Properties": {
                         "Translate": {
-                            "x": 1.0,
+                            "x": -1.0,
                             "y": 5.0,
                             "z": 0.0
                         },
@@ -468,6 +555,13 @@
             "mID": "GnomonShader"
         },
         {
+            "Type": "nap::ImageFromFile",
+            "mID": "EquirectangularTerrainTexture",
+            "Usage": "Static",
+            "ImagePath": "hilly_terrain_01_4k.hdr",
+            "GenerateLods": false
+        },
+        {
             "Type": "nap::Material",
             "mID": "BlinnPhongMaterial",
             "Uniforms": [
@@ -477,13 +571,14 @@
                     "Name": "UBO",
                     "Uniforms": [
                         {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_3019e56a",
+                            "Type": "nap::UniformVec4",
+                            "mID": "UniformVec4_3019e56a",
                             "Name": "ambient",
                             "Value": {
-                                "x": 0.05000000074505806,
-                                "y": 0.05000000074505806,
-                                "z": 0.05000000074505806
+                                "x": 0.02500000037252903,
+                                "y": 0.02500000037252903,
+                                "z": 0.02500000037252903,
+                                "w": 0.5
                             }
                         },
                         {
@@ -709,7 +804,7 @@
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "orbdemo",
+            "Title": "skydemo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
@@ -742,7 +837,7 @@
                     "mID": "EquirectangularTestTexture",
                     "Usage": "Static",
                     "ImagePath": "equi_test.jpg",
-                    "GenerateLods": true
+                    "GenerateLods": false
                 }
             ],
             "Children": []
@@ -767,7 +862,7 @@
                         ]
                     },
                     "SourceTexture": "EquirectangularTexture",
-                    "GenerateLods": true
+                    "GenerateLods": false
                 },
                 {
                     "Type": "nap::CubeMapFromFile",
@@ -785,7 +880,25 @@
                         ]
                     },
                     "SourceTexture": "EquirectangularTestTexture",
-                    "GenerateLods": true
+                    "GenerateLods": false
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "HDRCubeMap",
+                    "Width": 2048,
+                    "Height": 2048,
+                    "Format": "RGBA32",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "SourceTexture": "EquirectangularTerrainTexture",
+                    "GenerateLods": false
                 }
             ],
             "Children": []

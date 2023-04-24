@@ -29,7 +29,7 @@ uniform light
 
 uniform UBO
 {
-	vec3	ambient;				//< Ambient
+	vec4	ambient;				//< Ambient
 	vec3	diffuse;				//< Diffuse
 	vec3	specular;				//< Specular
 	vec2	fresnel;				//< Fresnel [scale, power]
@@ -74,7 +74,7 @@ void main()
 			vec3 R = reflect(I, normalize(passNormal));
 			mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
 		}
-		
+
 		vec3 color = computeLight(lit.lights[i], mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
 		color = mix(color, vec3(1.0), passFresnel * luminance(color) * FRESNEL_STRENGTH);
 

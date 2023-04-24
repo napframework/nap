@@ -97,7 +97,6 @@ namespace nap
 
 			static int item_index = 0;
 			LightComponentInstance* selected_light = lights[item_index];
-
 			if (ImGui::Combo("Move Light", &item_index, labels.data(), lights.size()))
 			{
 				selected_light = lights[item_index];

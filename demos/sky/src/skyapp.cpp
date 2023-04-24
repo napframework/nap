@@ -104,6 +104,18 @@ namespace nap
 			{
 				auto* sampler = skyboxes.front()->getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>(uniform::skybox::sampler::cubeTexture);
 				sampler->setTexture(*mCubeImages[item_index]);
+
+				std::vector<RenderableMeshComponentInstance*> render_comps;
+				mWorldEntity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(render_comps);
+				for (auto& comp : render_comps)
+				{
+					auto* env_sampler = comp->getMaterialInstance().findSampler("environmentMap");
+					if (env_sampler != nullptr)
+					{
+						if (env_sampler->get_type().is_derived_from(RTTI_OF(SamplerCubeInstance)))
+							static_cast<SamplerCubeInstance*>(env_sampler)->setTexture(*mCubeImages[item_index]);
+					}
+				}
 			}
 		}
 		ImGui::End();
