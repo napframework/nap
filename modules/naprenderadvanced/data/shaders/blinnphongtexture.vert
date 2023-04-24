@@ -32,6 +32,7 @@ uniform UBO
 	vec2	fresnel;				//< Fresnel [scale, power]
 	float	shininess;				//< Shininess
 	float	alpha;					//< Alpha
+	uint	environment;			//< Whether to sample an environment map
 } ubo;
 
 // Vertex Input

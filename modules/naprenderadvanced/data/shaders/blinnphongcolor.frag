@@ -35,6 +35,7 @@ uniform UBO
 	vec2	fresnel;				//< Fresnel [scale, power]
 	float	shininess;				//< Shininess
 	float	alpha;					//< Alpha
+	uint	environment;			//< Whether to sample an environment map
 } ubo;
 
 // Fragment Input
@@ -51,6 +52,7 @@ out vec4 out_Color;
 // Shadow Texture Sampler
 uniform sampler2DShadow shadowMaps[8];
 uniform samplerCubeShadow cubeShadowMaps[8];
+uniform samplerCube environmentMap;
 
 // Constants
 const float SHADOW_STRENGTH = 1.0;
@@ -63,6 +65,13 @@ void main()
 	vec3 color_result = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < lit.count; i++)
 	{
+		if (ubo.environment > 0)
+		{
+			vec3 I = normalize(passPosition - mvp.cameraPosition);
+			vec3 R = reflect(I, normalize(passNormal));
+			mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
+		}
+		
 		vec3 color = computeLight(lit.lights[i], mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
 		color = mix(color, vec3(1.0), passFresnel * luminance(color) * FRESNEL_STRENGTH);
 

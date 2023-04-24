@@ -68,7 +68,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 5.0
+                            "z": 3.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -353,8 +353,39 @@
                     "Layer": "",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_b1933c5b",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformUInt",
+                                        "mID": "UniformUInt_f4476cf0",
+                                        "Name": "environment",
+                                        "Value": 1
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [
+                            {
+                                "Type": "nap::SamplerCube",
+                                "mID": "SamplerCube_4161a12b",
+                                "Name": "environmentMap",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "UffiziCubeMap"
+                            }
+                        ],
                         "Buffers": [],
                         "Material": "BlinnPhongMaterial",
                         "BlendMode": "NotSet",
@@ -370,6 +401,19 @@
                             "x": 0.0,
                             "y": 0.0
                         }
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "RotateTorus",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.05000000074505806,
+                        "Offset": 0.0
                     }
                 }
             ],
@@ -437,9 +481,9 @@
                             "mID": "UniformVec3_3019e56a",
                             "Name": "ambient",
                             "Value": {
-                                "x": 0.10000000149011612,
-                                "y": 0.10000000149011612,
-                                "z": 0.10000000149011612
+                                "x": 0.05000000074505806,
+                                "y": 0.05000000074505806,
+                                "z": 0.05000000074505806
                             }
                         },
                         {
@@ -447,8 +491,8 @@
                             "mID": "UniformVec3_cdd76af7",
                             "Name": "diffuse",
                             "Value": {
-                                "x": 0.10000000149011612,
-                                "y": 0.5,
+                                "x": 1.0,
+                                "y": 1.0,
                                 "z": 1.0
                             }
                         },
