@@ -172,7 +172,7 @@ namespace nap
 		 */
 		void requestClear();
 
-		RenderService* mRenderService = nullptr;					///< Handle to the render service
+		RenderService*				mRenderService = nullptr;					///< Handle to the render service
 		std::vector<BufferData>		mRenderBuffers;								///< Render accessible buffers
 		std::vector<BufferData>		mStagingBuffers;							///< Staging buffers, used when uploading or downloading data
 		uint32						mSize = 0;									///< Current used buffer size in bytes
@@ -188,7 +188,7 @@ namespace nap
 		bool setDataInternalStatic(const void* data, size_t size, utility::ErrorState& errorState);
 
 		// Called when usage = dynamic write
-		bool setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
+		bool setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState);
 
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.
@@ -207,7 +207,7 @@ namespace nap
 		void clearDownloads();
 
 		std::vector<BufferReadCallback>	mReadCallbacks;			///< Number of callbacks based on number of frames in flight
-		VkBufferUsageFlags mUsageFlags = 0;						///< Buffer usage flags that are shared over host (staging) and device (gpu) buffers
+		VkBufferUsageFlags mUsageFlags = 0;						///< Buffer usage flags for device (gpu) buffers
 	};
 
 

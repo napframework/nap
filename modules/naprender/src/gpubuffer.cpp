@@ -213,10 +213,8 @@ namespace nap
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
-		// Setup usage flags
-		mUsageFlags |= mMemoryUsage == EMemoryUsage::DynamicRead ?
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		// All GPU buffers may be read and written
+		mUsageFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
 
 		return true;
 	}
@@ -246,12 +244,12 @@ namespace nap
 			return false;
 		}
 
-		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-		VkBufferUsageFlags staging_buffer_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
+		// When read frequently, the staging buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags staging_buffer_usage = (mMemoryUsage == EMemoryUsage::DynamicRead) ?
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-		VmaMemoryUsage staging_memory_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
+		// When read frequently, the staging buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage staging_memory_usage = (mMemoryUsage == EMemoryUsage::DynamicRead) ?
 			VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 		// Create required staging buffers
@@ -304,7 +302,7 @@ namespace nap
 		switch (mMemoryUsage)
 		{
 		case EMemoryUsage::DynamicWrite:
-			return setDataInternalDynamic(data, size, reservedSize, mUsageFlags, errorState);
+			return setDataInternalDynamic(data, size, reservedSize, errorState);
 		case EMemoryUsage::Static:
 			return setDataInternalStatic(data, size, errorState);
 		default:
@@ -349,13 +347,19 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState)
 	{
 		// For each update of data, we cycle through the buffers
 		mCurrentRenderBufferIndex = (mCurrentRenderBufferIndex + 1) % mRenderBuffers.size();
 
 		// Fetch allocator
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
+
+		// When dynamic, the staging buffer is a transfer source
+		VkBufferUsageFlags staging_buffer_usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+
+		// The staging buffer sends to the GPU
+		VmaMemoryUsage staging_memory_usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. 
 		// The final buffer size is calculated based on the reservedNumVertices.
@@ -372,7 +376,7 @@ namespace nap
 			}
 
 			// Create new buffer
-			if (!createBuffer(allocator, reservedSize, deviceUsage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
+			if (!createBuffer(allocator, reservedSize, staging_buffer_usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
 			{
 				errorState.fail("Render buffer error");
 				return false;
