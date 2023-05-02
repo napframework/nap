@@ -5,10 +5,10 @@ const float EPSILON 		= 0.00001;
 const float PI 				= 3.14159265359;
 const float TWO_PI 			= PI*2.0;
 
-const vec4 QUAT_IDENTITY 	= vec4(0.0, 0.0, 0.0, 1.0);
-const vec3 FORWARD 			= vec3(0.0, 0.0, 1.0);
-const vec3 UP 				= vec3(0.0, 1.0, 0.0);
-const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
+const vec4 QUAT_IDENTITY 	= { 0.0, 0.0, 0.0, 1.0 };
+const vec3 FORWARD 			= { 0.0, 0.0, 1.0 };
+const vec3 UP 				= { 0.0, 1.0, 0.0 };
+const vec3 RIGHT 			= { 1.0, 0.0, 0.0 };
 
 
 // Compute luminance value from weighted color channels
@@ -101,6 +101,7 @@ mat4 translate(vec3 d)
 	);
 }
 
+
 // Rotation matrix
 mat4 rotationMatrix(vec3 axis, float angle)
 {
@@ -115,6 +116,13 @@ mat4 rotationMatrix(vec3 axis, float angle)
 		oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
 		0.0,                                0.0,                                0.0,                                1.0
 	));
+}
+
+
+// Returns the translation component of the matrix
+vec3 extractPosition(mat4 matrix)
+{
+	return vec3(matrix[3][0], matrix[3][1], matrix[3][2]);
 }
 
 

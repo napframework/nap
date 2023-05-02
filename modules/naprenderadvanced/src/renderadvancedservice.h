@@ -105,7 +105,9 @@ namespace nap
 		bool pushLights(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
+
 		bool initServiceResources(utility::ErrorState& errorState);
+		bool preRenderCubeMaps(utility::ErrorState& errorState);
 
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;

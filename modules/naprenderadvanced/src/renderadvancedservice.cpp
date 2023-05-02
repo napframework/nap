@@ -526,6 +526,81 @@ namespace nap
 	}
 
 
+	bool RenderAdvancedService::preRenderCubeMaps(utility::ErrorState& errorState)
+	{
+		auto* render_service = getCore().getService<RenderService>();
+		assert(render_service != nullptr);
+
+		// Cube maps from file
+		auto cube_maps = render_service->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
+		if (!cube_maps.empty())
+		{
+			mCubeMapFromFileTargets.reserve(cube_maps.size());
+			for (auto& cm : cube_maps)
+			{
+				// Cube map from file render target
+				auto rt = std::make_unique<CubeRenderTarget>(getCore());
+				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+				rt->mSampleShading = true;
+				rt->mCubeTexture = cm;
+
+				if (!rt->init(errorState))
+				{
+					errorState.fail("%s: Failed to initialize cube map from file render target", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
+					return false;
+				}
+				mCubeMapFromFileTargets.emplace_back(std::move(rt));
+			}
+
+			// Updates GPU data
+			render_service->beginFrame();
+
+			if (render_service->beginHeadlessRecording())
+			{
+				// Prerender shadow maps here
+				uint count = 0U;
+				for (auto& cm : cube_maps)
+				{
+					auto commandBuffer = render_service->getCurrentCommandBuffer();
+					auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
+					auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
+
+					auto& rt = mCubeMapFromFileTargets[count];
+					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+						{
+							auto* ubo = mCubeMaterialInstance->getOrCreateUniform("UBO");
+							if (ubo != nullptr)
+							{
+								ubo->getOrCreateUniform<UniformUIntInstance>("face")->setValue(target.getLayerIndex());
+							}
+
+							// Set equirectangular texture to convert
+							auto* sampler = mCubeMaterialInstance->getOrCreateSampler<Sampler2DInstance>("equiTexture");
+							if (sampler != nullptr)
+								sampler->setTexture(*cm->mSourceTexture);
+
+							// Get valid descriptor set
+							const DescriptorSet& descriptor_set = mCubeMaterialInstance->update();
+
+							// Get pipeline to to render with
+							utility::ErrorState error_state;
+							RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
+							vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+							vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
+
+							// Bufferless drawing with the cube map shader
+							vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+						});
+					++count;
+				}
+				render_service->endHeadlessRecording();
+			}
+			render_service->endFrame();
+		}
+	}
+
+
 	void RenderAdvancedService::preShutdown()
 	{
 		mSampler2DResource.reset();
@@ -553,6 +628,15 @@ namespace nap
 		{
 			nap::Logger::error(error_state.toString());
 			assert(false);
+			return;
+		}
+
+		// Gather initialized cube maps and perform a headless render pass to write the cube faces
+		if (!preRenderCubeMaps(error_state))
+		{
+			nap::Logger::error(error_state.toString());
+			assert(false);
+			return;
 		}
 	}
 
@@ -675,79 +759,6 @@ namespace nap
 			assert(it_flag.second);
 		}
 		mShadowResourcesCreated = true;
-
-		// RENDER PREPASS
-		auto* render_service = getCore().getService<RenderService>();
-		assert(render_service != nullptr);
-
-		// Cube maps from file
-		auto cube_maps = render_service->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
-		if (!cube_maps.empty())
-		{
-			mCubeMapFromFileTargets.reserve(cube_maps.size());
-			for (auto& cm : cube_maps)
-			{
-				// Cube map from file render target
-				auto rt = std::make_unique<CubeRenderTarget>(getCore());
-				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
-				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-				rt->mSampleShading = true;
-				rt->mCubeTexture = cm;
-
-				if (!rt->init(errorState))
-				{
-					errorState.fail("%s: Failed to initialize cube map from file render target", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-					return false;
-				}
-				mCubeMapFromFileTargets.emplace_back(std::move(rt));
-			}
-
-			// Updates GPU data
-			render_service->beginFrame();
-
-			if (render_service->beginHeadlessRecording())
-			{
-				// Prerender shadow maps here
-				uint count = 0U;
-				for (auto& cm : cube_maps)
-				{
-					auto commandBuffer = render_service->getCurrentCommandBuffer();
-					auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
-					auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
-
-					auto& rt = mCubeMapFromFileTargets[count];
-					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
-					{
-						auto* ubo = mCubeMaterialInstance->getOrCreateUniform("UBO");
-						if (ubo != nullptr)
-						{
-							ubo->getOrCreateUniform<UniformUIntInstance>("face")->setValue(target.getLayerIndex());
-						}
-
-						// Set equirectangular texture to convert
-						auto* sampler = mCubeMaterialInstance->getOrCreateSampler<Sampler2DInstance>("equiTexture");
-						if (sampler != nullptr)
-							sampler->setTexture(*cm->mSourceTexture);
-
-						// Get valid descriptor set
-						const DescriptorSet& descriptor_set = mCubeMaterialInstance->update();
-
-						// Get pipeline to to render with
-						utility::ErrorState error_state;
-						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
-						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
-
-						// Bufferless drawing with the cube map shader
-						vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-					});
-					++count;
-				}
-				render_service->endHeadlessRecording();
-			}
-			render_service->endFrame();
-		}
-
 		return true;
 	}
 
