@@ -118,14 +118,14 @@ namespace nap
 		/**
 		 * @return the buffer usage flags.
 		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const { return mUsageFlags; }
+		virtual VkBufferUsageFlags getBufferUsageFlags() const		{ return mUsageFlags; }
 
 		/**
 		 * Ensures the given buffer usage flags are applied when allocating and creating the buffer,
 		 * next to the flags derived from the 'Usage' property. Call this function before allocation.
 		 * @param usage buffer usage flags required on allocation
 		 */
-		void ensureUsage(VkBufferUsageFlags usage) { mUsageFlags |= usage; }
+		void ensureUsage(VkBufferUsageFlags usage)					{ mUsageFlags |= usage; }
 
 		/**
 		 * Implemented by derived classes

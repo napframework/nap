@@ -92,10 +92,14 @@ namespace nap
 		return true;
 	}
 
+	static uint getShadowSampleCount(uint lightFlags)
+	{
+		return static_cast<uint>((lightFlags >> 8U) & 0xff);
+	}
 
 	static bool isShadowEnabled(uint lightFlags)
 	{
-		return (lightFlags & (1 << 8U)) > 0;
+		return getShadowSampleCount(lightFlags) > 0;
 	}
 
 	static uint getLightType(uint lightFlags)
@@ -106,6 +110,16 @@ namespace nap
 	static uint getLightIndex(uint lightFlags)
 	{
 		return static_cast<uint>((lightFlags >> 24U) & 0xff);
+	}
+
+	static uint getLightFlags(const LightComponentInstance& light, uint index)
+	{
+		// Flags [index : 8bit][map_id : 8bit][shadow : 8bit][type : 8bit]
+		uint flags = static_cast<uint>(light.getLightType());
+		flags |= static_cast<uint>(light.isShadowEnabled() ? std::min(light.getShadowSampleCount(), 0xffU) : 0U) << 8U;
+		flags |= static_cast<uint>(light.getShadowMapType()) << 16U;
+		flags |= std::min(index, 0xffU) << 24U;
+		return flags;
 	}
 
 
@@ -365,14 +379,13 @@ namespace nap
 				if (count >= light_array->getMaxNumElements())
 					break;
 
-				// Fetch element
-				auto& light_element = light_array->getElement(count);
+				// Fetch flags
 				auto it_flags = mLightFlagsMap.find(light);
 				assert(it_flags != mLightFlagsMap.end());
 
-				// Light uniform defaults
-				const uint light_flags = it_flags->second;
-				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(light_flags);
+				// Set light uniform defaults
+				auto& light_element = light_array->getElement(count);
+				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
 
@@ -472,16 +485,9 @@ namespace nap
 							if (count >= instance->getNumElements())
 								continue;
 
-							if (light->isShadowEnabled())
-							{
-								const auto it = mLightDepthMap.find(light);
-								assert(it != mLightDepthMap.end());
-								instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
-							}
-							else
-							{
-								instance->setTexture(count, *mShadowTextureDummy);
-							}
+							const auto it = mLightDepthMap.find(light);
+							assert(it != mLightDepthMap.end());
+							instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
 						}
 						break;
 					}
@@ -494,16 +500,9 @@ namespace nap
 							if (count >= instance->getNumElements())
 								continue;
 
-							if (light->isShadowEnabled())
-							{
-								const auto it = mLightCubeMap.find(light);
-								assert(it != mLightCubeMap.end());
-								instance->setTexture(getLightIndex(light_flags), *it->second->mTexture);
-							}
-							else
-							{
-								instance->setTexture(count, render_service->getEmptyTextureCube());
-							}
+							const auto it = mLightCubeMap.find(light);
+							assert(it != mLightCubeMap.end());
+							instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
 						}
 						break;
 					}
@@ -666,11 +665,6 @@ namespace nap
 
 		for (const auto& light : mLightComponents)
 		{
-			// Flags [index : 8bit][map_id : 8bit][padding : 7bit][shadow : 1bit][type : 8bit]
-			uint flags = static_cast<uint>(light->getLightType());
-			flags |= static_cast<uint>(light->isShadowEnabled()) << 8U;
-			flags |= static_cast<uint>(light->getShadowMapType()) << 16U;
-
 			switch (light->getShadowMapType())
 			{
 			case EShadowMapType::Quad:
@@ -753,9 +747,7 @@ namespace nap
 			}
 
 			uint index = shadow_map_indices[light->getShadowMapType()]++;
-			flags |= index << 24U;
-
-			const auto it_flag = mLightFlagsMap.insert({ light, flags });
+			const auto it_flag = mLightFlagsMap.insert({ light, getLightFlags(*light, index) });
 			assert(it_flag.second);
 		}
 		mShadowResourcesCreated = true;

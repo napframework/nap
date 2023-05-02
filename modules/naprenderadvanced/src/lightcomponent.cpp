@@ -27,9 +27,10 @@ RTTI_END_ENUM
 
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
-	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Enable Shadows",		&nap::LightComponent::mEnableShadows,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShadowSampleCount",	&nap::LightComponent::mShadowSampleCount,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Enable Shadows",		&nap::LightComponent::mEnableShadows,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::LightComponentInstance run time class definition
@@ -59,6 +60,7 @@ namespace nap
 	{
 		mResource = getComponent<LightComponent>();
 		mIsShadowEnabled = mResource->mEnableShadows;
+		mShadowSampleCount = mResource->mShadowSampleCount;
 
 		// Fetch transform
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
@@ -69,7 +71,7 @@ namespace nap
 
 		if (mIsShadowEnabled)
 		{
-			if(!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled No shadow camera set", mID.c_str()))
+			if (!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled No shadow camera set", mID.c_str()))
 				return false;
 		}
 
