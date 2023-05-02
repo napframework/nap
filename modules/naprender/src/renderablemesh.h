@@ -64,13 +64,22 @@ namespace nap
 		 */
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
+		/**
+		 * @return A list of the Vulkan vertex buffers, updates the internal buffer cache.
+		 */
 		const std::vector<VkBuffer>& getVertexBuffers();
+
+		/**
+		 * @return A list of the Vulkan vertex buffer offsets
+		 */
 		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const			{ return mVertexBufferOffsets; }
 
 		/**
-		 * 
+		 * Returns the vertex buffer binding index of the given mesh attribute, asserts and returs -1 if not found.
+		 * @param meshVertexAttributeID the vertex attribute buffer name
+		 * @return the vertex buffer binding index of the given mesh attribute
 		 */
-		int getVertexBufferBindingIndex(std::string meshVertexAttributeID) const;
+		int getVertexBufferBindingIndex(const std::string& meshVertexAttributeID) const;
 
 	protected:
 		/**

@@ -143,6 +143,12 @@ namespace nap
 		MeshInstance& getMeshInstance()							{ return getMesh().getMeshInstance(); }
 
 		/**
+		 * Returns the renderable mesh which can be used to extract low-level vertex buffer information 
+		 * @return the renderable mesh
+		 */
+		const RenderableMesh& getRenderableMesh() const			{ return mRenderableMesh; }
+
+		/**
 		 * Sets clipping rectangle on this instance.
 		 * @param rect Rectangle in pixel coordinates.
 		 */
@@ -152,7 +158,7 @@ namespace nap
 		* Sets line width
 		* @param lineWidth New line width
 		*/
-		void setLineWidth(float lineWidth) { mLineWidth = lineWidth; }
+		void setLineWidth(float lineWidth)						{ mLineWidth = lineWidth; }
 
 		/**
 		 * @return the clipping rectangle in pixel coordinates

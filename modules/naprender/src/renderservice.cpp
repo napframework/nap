@@ -1327,7 +1327,7 @@ namespace nap
 
 			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(),
 				"Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
-			return RenderableMesh();
+				return RenderableMesh();
 		}
 
 		return RenderableMesh(mesh, materialInstance);
