@@ -70,6 +70,11 @@ namespace nap
 		const std::vector<VkBuffer>& getVertexBuffers();
 
 		/**
+		 * @return A list of the Vulkan vertex buffers.
+		 */
+		std::vector<VkBuffer> getVertexBuffers() const;
+
+		/**
 		 * @return A list of the Vulkan vertex buffer offsets
 		 */
 		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const			{ return mVertexBufferOffsets; }
