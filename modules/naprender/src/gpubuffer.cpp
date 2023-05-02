@@ -355,12 +355,6 @@ namespace nap
 		// Fetch allocator
 		VmaAllocator allocator = mRenderService->getVulkanAllocator();
 
-		// When dynamic, the staging buffer is a transfer source
-		VkBufferUsageFlags staging_buffer_usage = VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
-
-		// The staging buffer sends to the GPU
-		VmaMemoryUsage staging_memory_usage = VMA_MEMORY_USAGE_CPU_TO_GPU;
-
 		// If we didn't allocate a buffer yet, or if the buffer has grown, we allocate it. 
 		// The final buffer size is calculated based on the reservedNumVertices.
 		BufferData& buffer_data = mRenderBuffers[mCurrentRenderBufferIndex];
@@ -376,7 +370,7 @@ namespace nap
 			}
 
 			// Create new buffer
-			if (!createBuffer(allocator, reservedSize, staging_buffer_usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
+			if (!createBuffer(allocator, reservedSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
 			{
 				errorState.fail("Render buffer error");
 				return false;
