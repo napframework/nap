@@ -55,21 +55,30 @@ const float FRESNEL_STRENGTH = 2.0;
 
 void main()
 {
+	// Material color
 	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
 
+	// Sample environment map
+	if (ubo.environment > 0)
+	{
+		vec3 I = normalize(passPosition - mvp.cameraPosition);
+		vec3 R = reflect(I, normalize(passNormal));
+		mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
+	}
+
+	// Compute light contribution
 	vec3 color_result = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < lit.count; i++)
 	{
-		if (ubo.environment > 0)
-		{
-			vec3 I = normalize(passPosition - mvp.cameraPosition);
-			vec3 R = reflect(I, normalize(passNormal));
-			mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
-		}
-		
+		// Skip light and shadow computation if intensity is zero
+		if (lit.lights[i].intensity <= EPSILON)
+			continue;
+
+		// Lights
 		vec3 color = computeLight(lit.lights[i], mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
 		color = mix(color, vec3(1.0), passFresnel * luminance(color) * FRESNEL_STRENGTH);
 
+		// Shadows
 		uint flags = lit.lights[i].flags;
 		if (!hasShadow(flags))
 		{
@@ -130,5 +139,7 @@ void main()
 		}
 		color_result += color * (1.0-shadow*SHADOW_STRENGTH);
 	}
+
+	// Final color output
 	out_Color = vec4(color_result, ubo.alpha);
 }

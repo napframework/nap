@@ -272,7 +272,10 @@ namespace nap
 		// Evaluate registered light components
 		for (const auto& light : mLightComponents)
 		{
-			// TODO: Only re-render shadow map when light transform or camera matrix has changed
+			// Skip rendering the shadow map when the light intensity is zero
+			if (light->getIntensity() <= math::epsilon<float>())
+				continue;
+
 			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
 			if (shadow_camera != nullptr)
 			{

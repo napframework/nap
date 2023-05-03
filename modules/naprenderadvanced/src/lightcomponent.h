@@ -167,6 +167,16 @@ namespace nap
 		virtual uint getShadowSampleCount() const							{ return mShadowSampleCount; }
 
 		/**
+		 * @return the light intensity
+		 */
+		virtual float getIntensity() const									{ return mResource->mIntensity->mValue; }
+
+		/**
+		 * @return the light color
+		 */
+		virtual const RGBColorFloat& getColor() const						{ return mResource->mColor->getValue(); }
+
+		/**
 		 * @return the position of the light in world space
 		 */
 		const glm::vec3 getLightPosition() const							{ return math::extractPosition(getTransform().getGlobalTransform()); }

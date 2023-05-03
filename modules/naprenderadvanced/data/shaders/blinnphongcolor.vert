@@ -57,7 +57,7 @@ void main()
 	vec3 world_normal = normalize((mvp.normalMatrix * vec4(in_Normals, 1.0)).xyz);
 	passNormal = world_normal;
 
-	// Calculate fresnel term
+	// Compute fresnel contribution
 	vec3 eye_to_surface = normalize(world_position.xyz - mvp.cameraPosition);
 	passFresnel = pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), ubo.fresnel.y) * ubo.fresnel.x;
 
