@@ -213,8 +213,8 @@ namespace nap
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
-		// All GPU buffers may be read and written
-		mUsageFlags |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		// All GPU buffers may be read from and written to with transfer operations
+		this->ensureUsage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
 		return true;
 	}
@@ -369,8 +369,13 @@ namespace nap
 					});
 			}
 
+			// Sustain memory type related usage information when creating a dynamic staging buffer
+			VkBufferUsageFlags staging_usage = mUsageFlags;
+			staging_usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			staging_usage &= ~(1UL << VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
 			// Create new buffer
-			if (!createBuffer(allocator, reservedSize, VK_BUFFER_USAGE_TRANSFER_SRC_BIT, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
+			if (!createBuffer(allocator, reservedSize, staging_usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
 			{
 				errorState.fail("Render buffer error");
 				return false;

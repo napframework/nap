@@ -13,7 +13,13 @@ const float SHADOW_POISSON_SPREAD = 1024.0;
 // Returns whether shadows are enabled in the specified light flag
 bool hasShadow(uint flags)
 {
-	return (flags & (1 << 8)) > 0;
+	return ((flags >> 8) & 0xff) > 0;
+}
+
+// Returns the shadow sample count
+uint getShadowSampleCount(uint flags)
+{
+	return ((flags >> 8) & 0xff);
 }
 
 // Returns an id specifying what shadow sampler the light must use

@@ -95,6 +95,7 @@ namespace nap
 
 		ResourcePtr<ParameterRGBColorFloat> mColor;				///< Property: 'Color'
 		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
+		uint mShadowSampleCount = 4U;							///< Property: 'ShadowSampleCount'
 		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
 	};
 
@@ -128,7 +129,7 @@ namespace nap
 		/**
 		 * @return whether this light component produces shadows
 		 */
-		virtual bool isShadowEnabled()										{ return mIsShadowEnabled; }
+		virtual bool isShadowEnabled() const								{ return mIsShadowEnabled; }
 
 		/**
 		 * @return whether this light was registered with the render advanced service
@@ -161,6 +162,11 @@ namespace nap
 		virtual uint getShadowMapSize() const								{ return mShadowMapSize; }
 
 		/**
+		 * @return the shadow sample count
+		 */
+		virtual uint getShadowSampleCount() const							{ return mShadowSampleCount; }
+
+		/**
 		 * @return the position of the light in world space
 		 */
 		const glm::vec3 getLightPosition() const							{ return math::extractPosition(getTransform().getGlobalTransform()); }
@@ -185,6 +191,7 @@ namespace nap
 		TransformComponentInstance* mTransform			= nullptr;
 		bool mIsShadowEnabled							= false;
 		bool mIsRegistered								= false;
+		uint mShadowSampleCount							= 4U;
 		uint mShadowMapSize								= 512U;
 
 	private:
