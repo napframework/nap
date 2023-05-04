@@ -20,32 +20,32 @@ uniform nap
 
 uniform light
 {
-	Light lights[8];
+	Light lights[MAX_LIGHTS];
 	uint count;
 } lit;
 
 uniform UBO
 {
-	vec4	ambient;				//< Ambient
-	vec3	diffuse;				//< Diffuse
-	vec3	specular;				//< Specular
-	vec2	fresnel;				//< Fresnel [scale, power]
-	float	shininess;				//< Shininess
-	float	alpha;					//< Alpha
-	uint	environment;			//< Whether to sample an environment map
-} ubo;
-
-// Vertex Input
-in vec3		in_Position;			//< Vertex position in object space
-in vec3 	in_Normals;				//< Vertex normal in object space
-in vec3 	in_UV0;					//< Texture UVs
-
-// Vertex Output
-out vec3 	passPosition;			//< Vertex position in world space
-out vec3 	passNormal;				//< Vertex normal in world space
-out vec3 	passUV0;				//< UVs
-out float 	passFresnel;			//< Fresnel
-out vec4 	passShadowCoords[8];	//< Shadow Coordinates
+	vec4	ambient;						//< Ambient
+	vec3	diffuse;						//< Diffuse
+	vec3	specular;						//< Specular
+	vec2	fresnel;						//< Fresnel [scale, power]
+	float	shininess;						//< Shininess
+	float	alpha;							//< Alpha
+	uint	environment;					//< Whether to sample an environment map
+} ubo;		
+		
+// Vertex Input		
+in vec3		in_Position;					//< Vertex position in object space
+in vec3 	in_Normals;						//< Vertex normal in object space
+in vec3 	in_UV0;							//< Texture UVs
+		
+// Vertex Output		
+out vec3 	passPosition;					//< Vertex position in world space
+out vec3 	passNormal;						//< Vertex normal in world space
+out vec3 	passUV0;						//< UVs
+out float 	passFresnel;					//< Fresnel
+out vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
 
 void main()
 {

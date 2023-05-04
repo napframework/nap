@@ -97,19 +97,24 @@ namespace nap
 
 			static int item_index = 0;
 			LightComponentInstance* selected_light = lights[item_index];
-			if (ImGui::Combo("Move Light", &item_index, labels.data(), lights.size()))
-			{
+			if (ImGui::Combo("Selected Light", &item_index, labels.data(), lights.size()))
 				selected_light = lights[item_index];
-				auto& transform = selected_light->getEntityInstance()->getComponent<TransformComponentInstance>();
-				mResourceManager->findObject<ParameterVec3>("LightTranslateParam")->setValue(transform.getTranslate());
-				mResourceManager->findObject<ParameterQuat>("LightRotationParam")->setValue(transform.getRotate());
-			}
 
 			if (selected_light != nullptr)
 			{
 				auto& transform = selected_light->getEntityInstance()->getComponent<TransformComponentInstance>();
-				transform.setTranslate(mResourceManager->findObject<ParameterVec3>("LightTranslateParam")->mValue);
-				transform.setRotate(mResourceManager->findObject<ParameterQuat>("LightRotationParam")->mValue);
+				glm::vec3 translate = transform.getTranslate();
+				glm::vec3 rotate = glm::degrees(glm::eulerAngles(transform.getRotate()));
+
+				if (ImGui::SliderFloat3("Translate", glm::value_ptr(translate), -10.0f, 10.0f))
+					transform.setTranslate(translate);
+
+				if (ImGui::SliderFloat3("Rotate", glm::value_ptr(rotate), 0.0f, 360.0f))
+					transform.setRotate(math::eulerToQuat(glm::radians(rotate)));
+
+				bool enabled = selected_light->isEnabled();
+				if (ImGui::Checkbox("Enable", &enabled))
+					selected_light->enable(enabled);
 			}
 		}
 

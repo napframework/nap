@@ -22,13 +22,13 @@ uint getShadowSampleCount(uint flags)
 	return ((flags >> 8) & 0xff);
 }
 
-// Returns an id specifying what shadow sampler the light must use
-uint getShadowMapId(uint flags)
+// Returns the shadow map type which specifies what shadow sampler the light must use
+uint getShadowMapType(uint flags)
 {
 	return ((flags >> 16) & 0xff);
 }
 
-// Returns an id specifying the shadow sampler index
+// Returns the shadow sampler index
 uint getShadowMapIndex(uint flags)
 {
 	return ((flags >> 24) & 0xff);
@@ -40,7 +40,6 @@ float linearDepth(float depth, float near, float far)
 {
 	return (near * far) / (far - depth * (far - near));
 }
-
 
 // Delinearizes linear depth value 
 float nonLinearDepth(float depth, float near, float far)

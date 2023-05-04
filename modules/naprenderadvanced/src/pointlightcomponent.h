@@ -47,6 +47,11 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
+		 * @return whether this light component supports shadows
+		 */
+		virtual bool isShadowSupported() const override						{ return true; }
+
+		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
 		virtual CameraComponentInstance* getShadowCamera()					{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }

@@ -423,6 +423,7 @@
                 {
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "DirectionalLight",
+                    "Enabled": true,
                     "Color": "LightColorParam",
                     "Intensity": "LightIntensityParam",
                     "ShadowSampleCount": 8,
@@ -644,6 +645,7 @@
                 {
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
+                    "Enabled": true,
                     "Color": "LightColor3Param",
                     "Intensity": "LightIntensityParam",
                     "ShadowSampleCount": 4,
@@ -766,6 +768,7 @@
                 {
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
+                    "Enabled": true,
                     "Color": "LightColor2Param",
                     "Intensity": "LightIntensityParam",
                     "ShadowSampleCount": 8,
@@ -1315,30 +1318,6 @@
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [
-                {
-                    "Type": "nap::ParameterVec3",
-                    "mID": "LightTranslateParam",
-                    "Name": "LightTranslate",
-                    "Value": {
-                        "x": 2.0,
-                        "y": 0.5,
-                        "z": 6.0
-                    },
-                    "Clamp": true,
-                    "Minimum": -20.0,
-                    "Maximum": 20.0
-                },
-                {
-                    "Type": "nap::ParameterQuat",
-                    "mID": "LightRotationParam",
-                    "Name": "LightRotation",
-                    "Value": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0,
-                        "w": 1.0
-                    }
-                },
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "LightIntensityParam",

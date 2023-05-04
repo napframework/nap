@@ -12,9 +12,6 @@
 #include <parametermat.h>
 #include <parametercolor.h>
 
-// Local includes
-#include "light.h"
-
 
 namespace nap
 {
@@ -57,6 +54,7 @@ namespace nap
 			inline constexpr const char* attenuation = "attenuation";
 			inline constexpr const char* angle = "angle";
 			inline constexpr const char* falloff = "falloff";
+			inline constexpr const char* enable = "enable";
 			inline constexpr const char* flags = "flags";
 
 			inline constexpr const char* viewProjectionMatrix = "viewProjectionMatrix";
@@ -75,7 +73,6 @@ namespace nap
 		}
 	}
 
-	using LightFlags = uint;
 	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
 
 
@@ -93,6 +90,7 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
+		bool mEnabled = true;									///< Property: 'Enabled'
 		ResourcePtr<ParameterRGBColorFloat> mColor;				///< Property: 'Color'
 		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
 		uint mShadowSampleCount = 4U;							///< Property: 'ShadowSampleCount'
@@ -127,7 +125,24 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return whether this light component produces shadows
+		 * Enables the light
+		 */
+		virtual void enable(bool enable)									{ mIsEnabled = enable; }
+
+		/**
+		 * @return whether this light is active
+		 */
+		virtual bool isEnabled() const										{ return mIsEnabled; };
+
+		/**
+		 * Returns whether this light component supports shadows. Override this call on a derived
+		 * light component to enable shadow support.
+		 * @return whether this light component supports shadows
+		 */
+		virtual bool isShadowSupported() const								{ return false; }
+
+		/**
+		 * @return whether this light component currently produces shadows
 		 */
 		virtual bool isShadowEnabled() const								{ return mIsShadowEnabled; }
 
@@ -199,8 +214,9 @@ namespace nap
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
+
+		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
-		bool mIsRegistered								= false;
 		uint mShadowSampleCount							= 4U;
 		uint mShadowMapSize								= 512U;
 
@@ -208,5 +224,6 @@ namespace nap
 		Parameter* getLightUniform(const std::string& memberName);
 
 		LightUniformDataMap mUniformDataMap;
+		bool mIsRegistered = false;
 	};
 }

@@ -12,18 +12,32 @@ struct Light
 	float attenuation;
 	float angle;
 	float falloff;
+	uint enable;
 	uint flags;
 };
 
+// Maximum number of supported lights
 const uint MAX_LIGHTS			= 8;
 
+// Light types
 const uint LIGHT_CUSTOM			= 0;
 const uint LIGHT_DIRECTIONAL	= 1;
 const uint LIGHT_POINT			= 2;
 const uint LIGHT_SPOT			= 3;
 
+// Returns whether the light is enabled
+bool isLightEnabled(uint enableFlags)
+{
+	return (enableFlags & 0x1) > 0;
+}
 
-// Returns the light type index of the specified light flag
+// Returns whether the light is enabled
+bool isShadowEnabled(uint enableFlags)
+{
+	return (enableFlags & 0x02) > 0;
+}
+
+// Returns the light type of the specified light flag
 uint getLightType(uint flags)
 {
 	return flags & 0xff;

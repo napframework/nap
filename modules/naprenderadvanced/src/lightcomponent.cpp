@@ -27,6 +27,7 @@ RTTI_END_ENUM
 
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
+	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ShadowSampleCount",	&nap::LightComponent::mShadowSampleCount,	nap::rtti::EPropertyMetaData::Default)
@@ -59,6 +60,7 @@ namespace nap
 	bool LightComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mResource = getComponent<LightComponent>();
+		mIsEnabled = mResource->mEnabled;
 		mIsShadowEnabled = mResource->mEnableShadows;
 		mShadowSampleCount = mResource->mShadowSampleCount;
 

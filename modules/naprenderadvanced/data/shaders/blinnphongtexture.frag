@@ -8,9 +8,6 @@
 #include "blinnphong.glslinc"
 #include "utils.glslinc"
 
-// Specialization Constants
-layout (constant_id = 0) const uint SHADOW_SAMPLE_COUNT = 8;
-
 // Uniforms
 uniform nap
 {
@@ -23,28 +20,28 @@ uniform nap
 
 uniform light
 {
-	Light lights[8];
+	Light lights[MAX_LIGHTS];
 	uint count;
 } lit;
 
 uniform UBO
 {
-	vec4	ambient;				//< Ambient
-	vec3	diffuse;				//< Diffuse
-	vec3	specular;				//< Specular
-	vec2	fresnel;				//< Fresnel [scale, power]
-	float	shininess;				//< Shininess
-	float	alpha;					//< Alpha
-	uint	environment;			//< Whether to sample an environment map
+	vec4	ambient;						//< Ambient
+	vec3	diffuse;						//< Diffuse
+	vec3	specular;						//< Specular
+	vec2	fresnel;						//< Fresnel [scale, power]
+	float	shininess;						//< Shininess
+	float	alpha;							//< Alpha
+	uint	environment;					//< Whether to sample an environment map
 } ubo;
 
 // Fragment Input
-in vec3 	passPosition;			//< Fragment position in world space
-in vec3 	passNormal;				//< Fragment normal in world space
-in vec3 	passUV0;				//< Texture UVs
-in float 	passFresnel;			//< Fresnel term
+in vec3 	passPosition;					//< Fragment position in world space
+in vec3 	passNormal;						//< Fragment normal in world space
+in vec3 	passUV0;						//< Texture UVs
+in float 	passFresnel;					//< Fresnel term
 
-in vec4 	passShadowCoords[8];	//< Shadow Coordinates
+in vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
 
 // Fragment Output
 out vec4 out_Color;
@@ -62,29 +59,43 @@ const float FRESNEL_STRENGTH = 2.0;
 
 void main()
 {
-	BlinnPhongMaterial mtl = { ubo.ambient, ubo.diffuse, ubo.specular, ubo.shininess };
+	// Material color
+	vec4 texture_color = texture(colorTexture, passUV0.xy);
+	BlinnPhongMaterial mtl = { ubo.ambient, texture_color.rgb * ubo.diffuse, ubo.specular, ubo.shininess };
 
+	// Sample environment map
+	if (ubo.environment > 0)
+	{
+		vec3 I = normalize(passPosition - mvp.cameraPosition);
+		vec3 R = reflect(I, normalize(passNormal));
+		mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
+	}
+
+	// Compute light contribution
 	vec3 color_result = { 0.0, 0.0, 0.0 };
 	for (uint i = 0; i < lit.count; i++)
 	{
-		mtl.diffuse = texture(colorTexture, passUV0.xy).rgb * mtl.diffuse;
-		if (ubo.environment > 0)
-		{
-			vec3 I = normalize(passPosition - mvp.cameraPosition);
-			vec3 R = reflect(I, normalize(passNormal));
-			mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
-		}
+		// Skip light and shadow computation if intensity is zero
+		if (lit.lights[i].intensity <= EPSILON || !isLightEnabled(lit.lights[i].enable))
+			continue;
 
+		// Lights
 		vec3 color = computeLight(lit.lights[i], mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
 		color = mix(color, vec3(1.0), passFresnel * luminance(color) * FRESNEL_STRENGTH);
 
+		// Shadows
 		uint flags = lit.lights[i].flags;
-		if (!hasShadow(flags))
+		if (!hasShadow(flags) || !isShadowEnabled(lit.lights[i].enable))
+		{
+			color_result += color;
 			continue;
+		}
+
+		const uint sample_count = getShadowSampleCount(flags);
+		const uint map_index = getShadowMapIndex(flags);
 
 		float shadow = 0.0;
-		uint map_index = getShadowMapIndex(flags);
-		switch (getShadowMapId(flags))
+		switch (getShadowMapType(flags))
 		{
 			case SHADOWMAP_QUAD:
 			{
@@ -99,11 +110,11 @@ void main()
 
 					// Multi sample
 					float sum = 0.0;
-					for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
+					for (int s=0; s<sample_count; s++) 
 					{
 						sum += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
 					}
-					shadow += sum / float(SHADOW_SAMPLE_COUNT);
+					shadow += sum / float(sample_count);
 				}
 				break;
 			}
@@ -120,18 +131,20 @@ void main()
 				float frag_depth = sdfPlane(lit.lights[i].origin, cubeFace(coord), passPosition);
 
 				float sum = 0.0;
-				for (int s=0; s<SHADOW_SAMPLE_COUNT; s++) 
+				for (int s=0; s<sample_count; s++) 
 				{
 					// Add some poisson-based rotational jitter to the sampling vector
 					vec2 jitter = POISSON_DISK[s]/SHADOW_POISSON_SPREAD;
 					vec3 sample_coord = normalize(rotationMatrix(vec3(1.0, 0.0, 0.0), jitter.x) * rotationMatrix(vec3(0.0, 1.0, 0.0), jitter.y) * vec4(coord, 0.0)).xyz;
 		 			sum += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth, nf.x, nf.y)));
 				}
-				shadow += sum / float(SHADOW_SAMPLE_COUNT);
+				shadow += sum / float(sample_count);
 				break;
 			}
 		}
 		color_result += color * (1.0-shadow*SHADOW_STRENGTH);
 	}
+
+	// Final color output
 	out_Color = vec4(color_result, ubo.alpha);
 }

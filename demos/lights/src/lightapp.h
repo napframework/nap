@@ -20,6 +20,7 @@
 #include <renderservice.h>
 #include <parametergui.h>
 #include <parameternumeric.h>
+#include <parameterquat.h>
 #include <nap/signalslot.h>
 
 namespace nap

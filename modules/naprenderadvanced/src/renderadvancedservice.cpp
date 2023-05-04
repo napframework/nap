@@ -92,36 +92,6 @@ namespace nap
 		return true;
 	}
 
-	static uint getShadowSampleCount(uint lightFlags)
-	{
-		return static_cast<uint>((lightFlags >> 8U) & 0xff);
-	}
-
-	static bool isShadowEnabled(uint lightFlags)
-	{
-		return getShadowSampleCount(lightFlags) > 0;
-	}
-
-	static uint getLightType(uint lightFlags)
-	{
-		return static_cast<uint>((lightFlags >> 16U) & 0xff);
-	}
-
-	static uint getLightIndex(uint lightFlags)
-	{
-		return static_cast<uint>((lightFlags >> 24U) & 0xff);
-	}
-
-	static uint getLightFlags(const LightComponentInstance& light, uint index)
-	{
-		// Flags [index : 8bit][map_id : 8bit][shadow : 8bit][type : 8bit]
-		uint flags = static_cast<uint>(light.getLightType());
-		flags |= static_cast<uint>(light.isShadowEnabled() ? std::min(light.getShadowSampleCount(), 0xffU) : 0U) << 8U;
-		flags |= static_cast<uint>(light.getShadowMapType()) << 16U;
-		flags |= std::min(index, 0xffU) << 24U;
-		return flags;
-	}
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service Configuration
@@ -273,7 +243,7 @@ namespace nap
 		for (const auto& light : mLightComponents)
 		{
 			// Skip rendering the shadow map when the light intensity is zero
-			if (light->getIntensity() <= math::epsilon<float>())
+			if (!light->isEnabled() || light->getIntensity() <= math::epsilon<float>())
 				continue;
 
 			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
@@ -388,6 +358,7 @@ namespace nap
 
 				// Set light uniform defaults
 				auto& light_element = light_array->getElement(count);
+				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::enable)->setValue(getLightEnableFlags(*light));
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
@@ -600,6 +571,7 @@ namespace nap
 			}
 			render_service->endFrame();
 		}
+		return true;
 	}
 
 
@@ -749,7 +721,7 @@ namespace nap
 				return false;
 			}
 
-			uint index = shadow_map_indices[light->getShadowMapType()]++;
+			const uint index = shadow_map_indices[light->getShadowMapType()]++;
 			const auto it_flag = mLightFlagsMap.insert({ light, getLightFlags(*light, index) });
 			assert(it_flag.second);
 		}

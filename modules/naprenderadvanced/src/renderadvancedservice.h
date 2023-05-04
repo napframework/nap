@@ -15,6 +15,7 @@
 #include "cuberendertarget.h"
 #include "cubedepthrendertarget.h"
 #include "lightcomponent.h"
+#include "lightflags.h"
 #include "rendermask.h"
 #include "nomesh.h"
 
@@ -139,9 +140,7 @@ namespace nap
 		// Shadow mapping
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeMapEntry>> mLightCubeMap;
-
-		// Light flags (msb)[index : 8bit][map id : 8bit][shadow samples : 8bit][type : 8bit](lsb)
-		std::unordered_map<LightComponentInstance*, uint> mLightFlagsMap;
+		std::unordered_map<LightComponentInstance*, LightFlags> mLightFlagsMap;
 
 		std::unique_ptr<Sampler2DArray> mSampler2DResource;
 		std::unique_ptr<SamplerCubeArray> mSamplerCubeResource;
