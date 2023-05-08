@@ -1,0 +1,9 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napmath",
+        "napsdlinput",
+        "napparameter"
+    ]
+}

@@ -2,11 +2,11 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_naprender",
-        "mod_napmath",
-        "mod_napscene",
-        "mod_napapiwebsocket",
-        "mod_napfont"
+        "naprender",
+        "napmath",
+        "napscene",
+        "napapiwebsocket",
+        "napfont"
     ],
     "WindowsDllSearchPaths": []
 }

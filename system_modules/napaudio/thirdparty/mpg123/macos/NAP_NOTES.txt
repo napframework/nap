@@ -1,0 +1,5 @@
+Configured with options
+--disable-debug --disable-dependency-tracking --with-default-audio=coreaudio
+
+Afterwards:
+install_name_tool -id @rpath/libmpg123.0.dylib libmpg123.0.dylib

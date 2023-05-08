@@ -1,0 +1,11 @@
+prefix=/home/creywood/workspaces/naivi/thirdparty/assimp/linux/install
+exec_prefix=/home/creywood/workspaces/naivi/thirdparty/assimp/linux/install/bin
+libdir=/home/creywood/workspaces/naivi/thirdparty/assimp/linux/install/lib
+includedir=/home/creywood/workspaces/naivi/thirdparty/assimp/linux/install/include/assimp
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 3.3.1
+Libs: -L${libdir} -lassimp
+Libs.private: -lstdc++ -lz
+Cflags: -I${includedir}

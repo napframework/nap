@@ -1,0 +1,8 @@
+Built from source in thirdparty:
+
+./configure --disable-mac-universal --prefix=path/on/disk/portaudio/install
+make install
+
+Post build:
+
+install_name_tool -id @rpath/libportaudio.2.dylib osx/lib/libportaudio.2.dylib

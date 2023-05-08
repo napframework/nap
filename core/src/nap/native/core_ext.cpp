@@ -25,7 +25,7 @@ namespace nap
 
 	bool Core::findProjectInfoFile(std::string& foundFilePath) const
 	{
-		// Locate the project.json file without using the path mapping system as it hasn't been initialized yet.
+		// Locate the app.json file without using the path mapping system as it hasn't been initialized yet.
 
 		const std::string exeDir = utility::getExecutableDir();
 

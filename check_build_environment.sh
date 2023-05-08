@@ -1,7 +1,5 @@
-#!/bin/bash
-if [ -x "$(command -v python3)" ]; then
-    PYTHON="python3"
-else
-    PYTHON="python"
-fi
-${PYTHON} $(dirname $0)/build_tools/check_build_environment/source_user_onboarding.py
+#!/bin/sh
+nap_root=$( cd "$(dirname -- "$0")" ; pwd -P )
+. $nap_root/tools/buildsystem/common/sh_shared.sh
+configure_python $nap_root
+$python $nap_root/tools/buildsystem/check_build_environment/source_user_onboarding.py

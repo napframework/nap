@@ -1,0 +1,44 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napscene",
+        "napfont",
+        "napinput",
+        "napcolor"
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/naprender/thirdparty/assimp/msvc/{BUILD_ARCH}/lib",
+        "{ROOT}/system_modules/naprender/thirdparty/assimp/msvc/{BUILD_ARCH}/bin",
+        "{ROOT}/system_modules/naprender/thirdparty/FreeImage/msvc/{BUILD_ARCH}/Dist/x64",
+        "{ROOT}/system_modules/naprender/thirdparty/vulkansdk/msvc/{BUILD_ARCH}/lib",
+        "{ROOT}/system_modules/naprender/thirdparty/vulkansdk/msvc/{BUILD_ARCH}/bin",
+        "{ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/{BUILD_ARCH}/lib"
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/naprender/thirdparty/assimp/linux/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/FreeImage/linux/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/vulkansdk/linux/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/linux/{BUILD_ARCH}/lib"
+        ],
+        "macOS": [
+            "{ROOT}/system_modules/naprender/thirdparty/assimp/macos/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/FreeImage/macos/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/vulkansdk/macos/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/macos/{BUILD_ARCH}/lib"
+        ],
+        "Windows": [
+            "{ROOT}/system_modules/naprender/thirdparty/assimp/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/assimp/msvc/{BUILD_ARCH}/bin",
+            "{ROOT}/system_modules/naprender/thirdparty/FreeImage/msvc/{BUILD_ARCH}/Dist/x64",
+            "{ROOT}/system_modules/naprender/thirdparty/vulkansdk/msvc/{BUILD_ARCH}/lib",
+            "{ROOT}/system_modules/naprender/thirdparty/vulkansdk/msvc/{BUILD_ARCH}/bin",
+            "{ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/{BUILD_ARCH}/lib"
+        ]
+    },
+    "DataSearchPaths": [
+        "{ROOT}/system_modules/naprender/data",
+        "{ROOT}/system_modules/{MODULE_NAME}/data"
+    ]
+}

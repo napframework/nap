@@ -1,0 +1,20 @@
+ Built from SDL2-2.0.12.tar.gz on Ubuntu 17.10 with GCC 5.4.0
+ 
+ Configure flags:
+./configure --prefix=`pwd`/linux/install --enable-static=no --enable-sndio=no
+
+Output:
+
+Building Shared Libraries
+Enabled modules : atomic audio video render events joystick haptic power filesystem threads timers file loadso cpuinfo assembly
+Assembly Math   : mmx 3dnow sse sse2 sse3
+Audio drivers   : disk dummy oss alsa(dynamic) pulse(dynamic) jack(dynamic)
+Video drivers   : dummy x11(dynamic) opengl opengl_es2 vulkan mir(dynamic)
+X11 libraries   : xcursor xdbe xinerama xinput2 xinput2_multitouch xrandr xscrnsaver xshape xvidmode
+Input drivers   : linuxev linuxkd
+Using libsamplerate : NO
+Using libudev       : YES
+Using dbus          : YES
+Using ime           : YES
+Using ibus          : NO
+Using fcitx         : NO

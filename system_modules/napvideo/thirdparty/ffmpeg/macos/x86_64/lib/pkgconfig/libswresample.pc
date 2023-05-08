@@ -1,0 +1,14 @@
+prefix=/Users/cheywood/workspaces/naivi/thirdparty/ffmpeg/osx/ffmpeg-3.4.2/install/osx
+exec_prefix=${prefix}
+libdir=/Users/cheywood/workspaces/naivi/thirdparty/ffmpeg/osx/ffmpeg-3.4.2/install/osx/lib
+includedir=/Users/cheywood/workspaces/naivi/thirdparty/ffmpeg/osx/ffmpeg-3.4.2/install/osx/include
+
+Name: libswresample
+Description: FFmpeg audio resampling library
+Version: 2.9.100
+Requires: 
+Requires.private: libavutil >= 55.78.100
+Conflicts:
+Libs: -L${libdir}  -lswresample 
+Libs.private: -lm
+Cflags: -I${includedir}

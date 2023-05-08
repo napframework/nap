@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "WebSocketServer",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "napwebsocketserver",
+        "napapp",
+        "napimgui",
+        "napcameracontrol"
+    ],
+    "Data": "data/websocketserver.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

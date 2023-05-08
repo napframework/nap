@@ -1,0 +1,13 @@
+src/libmpg123/dct64_neon_float.lo: src/libmpg123/dct64_neon_float.S \
+ /usr/include/stdc-predef.h src/libmpg123/mangle.h src/config.h \
+ src/intsym.h src/config.h
+
+/usr/include/stdc-predef.h:
+
+src/libmpg123/mangle.h:
+
+src/config.h:
+
+src/intsym.h:
+
+src/config.h:

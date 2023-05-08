@@ -1,0 +1,7 @@
+Built from SDL2-2.0.12.tar.gz
+ 
+Configure flags:
+./configure --prefix=`pwd`/osx/install --without-x --enable-static=no
+
+Afterwards:
+install_name_tool -id @rpath/libSDL2-2.0.0.dylib libSDL2-2.0.0.dylib

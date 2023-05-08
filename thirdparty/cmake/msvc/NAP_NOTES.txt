@@ -1,0 +1,5 @@
+This is v3.18.4 from cmake.org with the following removed (for size):
+- bin/cpack
+- bin/cmake-gui
+- doc/cmake/html
+- doc/cmake/*.qch

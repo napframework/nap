@@ -1,0 +1,9 @@
+Built from CRYPTOPP_8_2_0.tar.gz with: 
+
+mkdir install
+make static
+make install PREFIX=./install
+
+Using static build as recommended by cryptopp for security in their README
+
+Compressed to work around github file size limits

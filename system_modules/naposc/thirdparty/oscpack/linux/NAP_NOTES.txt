@@ -1,0 +1,3 @@
+Built from source in NAP thirdparty repo on Ubuntu 16.04 with GCC 5.4.0
+
+Added -fPIC to makefile

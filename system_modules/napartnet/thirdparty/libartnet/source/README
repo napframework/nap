@@ -1,0 +1,31 @@
+
+Libartnet is an implementation of the ArtNet protocol. ArtNet allows the
+transmission of DMX and related data over IP networks.
+
+For installation notes see the INSTALL file. Run autoreconf -fi to create configure scripts.
+
+Building libartnet with mingw-w64:
+
+set up mingw-w64 (and possibly MSYS).
+
+for a 64-bit build: --host=x86_64-w64-mingw32
+for a 32-bit build: --host=i686-w64-mingw32
+
+./configure ac_cv_func_malloc_0_nonnull=yes  ac_cv_func_realloc_0_nonnull=yes --host=x86_64-w64-mingw32 --prefix=/some/path/prefix
+
+
+Building libartnet with MS Visual Studio:
+
+either open msvc\libartnet\libartnet.sln with devenv.exe or use msbuild:
+
+for 64-bit build: "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x64
+for 32-bit build: "C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\vcvarsall.bat" x86
+
+build libartnet:
+
+cd msvc\libartnet
+
+for 64-bit Release build:  msbuild libartnet.sln /t:libartnet /p:Configuration=Release /p:Platform=x64
+for 32-bit Release build:  msbuild libartnet.sln /t:libartnet /p:Configuration=Release /p:Platform=x86
+for 64-bit Debug build:    msbuild libartnet.sln /t:libartnet /p:Configuration=Debug /p:Platform=x64
+for 32-bit Debug build:    msbuild libartnet.sln /t:libartnet /p:Configuration=Debug /p:Platform=x86
