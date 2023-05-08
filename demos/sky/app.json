@@ -1,16 +1,16 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "Lights",
+    "Title": "Sky",
     "Version": "1.0.0",
-    "Data": "data/lights.json",
+    "Data": "data/sky.json",
     "PathMapping": "cache/path_mapping.json",
     "ServiceConfig": "service_config.json",
     "RequiredModules": [
-        "mod_napapp",
-        "mod_napcameracontrol",
-        "mod_napimgui",
-        "mod_napparametergui",
-        "mod_naprenderadvanced"
+        "napapp",
+        "napcameracontrol",
+        "napimgui",
+        "napparametergui",
+        "naprenderadvanced"
     ]
 }

@@ -68,7 +68,6 @@ add_subdirectory(demos/webportal)
 add_subdirectory(demos/python)
 add_subdirectory(demos/lights)
 add_subdirectory(demos/sky)
-add_subdirectory(demos/sky/module)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
@@ -109,6 +108,7 @@ add_subdirectory(system_modules/napudp)
 add_subdirectory(system_modules/napcalendar)
 add_subdirectory(system_modules/napasio)
 add_subdirectory(system_modules/napportal)
+add_subdirectory(system_modules/naprenderadvanced)
 
 solution_info_to_cmake()
 
