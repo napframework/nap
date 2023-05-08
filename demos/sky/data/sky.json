@@ -122,8 +122,11 @@
                 {
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight2Component",
+                    "Enabled": true,
                     "Color": "LightColorParam",
                     "Intensity": "LightIntensityParam",
+                    "ShadowStrength": 1.0,
+                    "ShadowSampleCount": 4,
                     "Enable Shadows": false,
                     "ShadowCamera": "./ShadowCamera2",
                     "ShadowMapSize": 1024,
@@ -209,8 +212,11 @@
                 {
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLightComponent",
+                    "Enabled": true,
                     "Color": "LightColorParam",
                     "Intensity": "LightIntensityParam",
+                    "ShadowStrength": 1.0,
+                    "ShadowSampleCount": 4,
                     "Enable Shadows": false,
                     "ShadowCamera": "./ShadowCamera",
                     "ShadowMapSize": 1024,
@@ -599,7 +605,7 @@
                             "mID": "UniformVec2_f66d0135",
                             "Name": "fresnel",
                             "Value": {
-                                "x": 1.0,
+                                "x": 0.25,
                                 "y": 2.0
                             }
                         },
