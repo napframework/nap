@@ -176,7 +176,7 @@
                                         "mID": "UniformVec2_f66d0135xx",
                                         "Name": "fresnel",
                                         "Value": {
-                                            "x": 0.5,
+                                            "x": 0.25,
                                             "y": 4.0
                                         }
                                     },
@@ -267,15 +267,6 @@
                                             "x": 1.0,
                                             "y": 1.0,
                                             "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "UniformVec2_62bb8434",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 4.0
                                         }
                                     }
                                 ]
@@ -426,6 +417,7 @@
                     "Enabled": true,
                     "Color": "LightColorParam",
                     "Intensity": "LightIntensityParam",
+                    "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho",
@@ -648,6 +640,7 @@
                     "Enabled": true,
                     "Color": "LightColor3Param",
                     "Intensity": "LightIntensityParam",
+                    "ShadowStrength": 1.0,
                     "ShadowSampleCount": 4,
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraPerspective",
@@ -771,6 +764,7 @@
                     "Enabled": true,
                     "Color": "LightColor2Param",
                     "Intensity": "LightIntensityParam",
+                    "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
                     "Enable Shadows": true,
                     "ShadowCamera": "../SpotLightEntity/ShadowCameraPerspective2",
@@ -916,15 +910,6 @@
                                             "y": 0.0,
                                             "z": 0.10000000149011612
                                         }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "UniformVec2_4ec0a721",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 4.0
-                                        }
                                     }
                                 ]
                             }
@@ -1001,15 +986,6 @@
                                             "x": 0.0,
                                             "y": 0.0,
                                             "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "UniformVec2_d2ad12f1",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 4.0
                                         }
                                     }
                                 ]

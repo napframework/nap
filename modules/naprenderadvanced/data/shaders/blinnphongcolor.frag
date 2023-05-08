@@ -49,10 +49,6 @@ uniform sampler2DShadow shadowMaps[MAX_LIGHTS];
 uniform samplerCubeShadow cubeShadowMaps[MAX_LIGHTS];
 uniform samplerCube environmentMap;
 
-// Constants
-const float SHADOW_STRENGTH = 1.0;
-const float FRESNEL_STRENGTH = 2.0;
-
 void main()
 {
 	// Material color
@@ -76,7 +72,6 @@ void main()
 
 		// Lights
 		vec3 color = computeLight(lit.lights[i], mtl, mvp.cameraPosition, normalize(passNormal), passPosition);
-		color = mix(color, vec3(1.0), passFresnel * luminance(color) * FRESNEL_STRENGTH);
 
 		// Shadows
 		uint flags = lit.lights[i].flags;
@@ -137,8 +132,11 @@ void main()
 				break;
 			}
 		}
-		color_result += color * (1.0-shadow*SHADOW_STRENGTH);
+		color_result += color * (1.0 - shadow * lit.lights[i].shadowStrength);
 	}
+
+	// Add fresnel
+	color_result = mix(color_result, vec3(1.0), passFresnel);
 
 	// Final color output
 	out_Color = vec4(color_result, ubo.alpha);

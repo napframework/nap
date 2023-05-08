@@ -447,6 +447,7 @@ namespace nap
 					const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
 					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewProjectionMatrix)->setValue(light_view_projection);
 					light_element.getOrCreateUniform<UniformVec2Instance>(uniform::light::nearFar)->setValue({ light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() });
+					light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
 
 					switch (light->getShadowMapType())
 					{
@@ -541,30 +542,30 @@ namespace nap
 
 					auto& rt = mCubeMapFromFileTargets[count];
 					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+					{
+						auto* ubo = mCubeMaterialInstance->getOrCreateUniform(uniform::cubemap::uboStruct);
+						if (ubo != nullptr)
 						{
-							auto* ubo = mCubeMaterialInstance->getOrCreateUniform("UBO");
-							if (ubo != nullptr)
-							{
-								ubo->getOrCreateUniform<UniformUIntInstance>("face")->setValue(target.getLayerIndex());
-							}
+							ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face)->setValue(target.getLayerIndex());
+						}
 
-							// Set equirectangular texture to convert
-							auto* sampler = mCubeMaterialInstance->getOrCreateSampler<Sampler2DInstance>("equiTexture");
-							if (sampler != nullptr)
-								sampler->setTexture(*cm->mSourceTexture);
+						// Set equirectangular texture to convert
+						auto* sampler = mCubeMaterialInstance->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
+						if (sampler != nullptr)
+							sampler->setTexture(*cm->mSourceTexture);
 
-							// Get valid descriptor set
-							const DescriptorSet& descriptor_set = mCubeMaterialInstance->update();
+						// Get valid descriptor set
+						const DescriptorSet& descriptor_set = mCubeMaterialInstance->update();
 
-							// Get pipeline to to render with
-							utility::ErrorState error_state;
-							RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
-							vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-							vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
+						// Get pipeline to to render with
+						utility::ErrorState error_state;
+						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
+						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
-							// Bufferless drawing with the cube map shader
-							vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-						});
+						// Bufferless drawing with the cube map shader
+						vkCmdDraw(commandBuffer, 3, 1, 0, 0);
+					});
 					++count;
 				}
 				render_service->endHeadlessRecording();

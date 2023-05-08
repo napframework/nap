@@ -30,6 +30,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowSampleCount",	&nap::LightComponent::mShadowSampleCount,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Enable Shadows",		&nap::LightComponent::mEnableShadows,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -62,6 +63,7 @@ namespace nap
 		mResource = getComponent<LightComponent>();
 		mIsEnabled = mResource->mEnabled;
 		mIsShadowEnabled = mResource->mEnableShadows;
+		mShadowStrength = mResource->mShadowStrength;
 		mShadowSampleCount = mResource->mShadowSampleCount;
 
 		// Fetch transform

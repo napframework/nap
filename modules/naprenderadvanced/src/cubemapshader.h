@@ -14,15 +14,18 @@ namespace nap
 	class Core;
 	class RenderAdvancedService;
 
-	// Video shader sampler names 
+	// Cube map shader sampler names 
 	namespace uniform
 	{
-		namespace texture
+		namespace cubemap
 		{
 			namespace sampler
 			{
-				inline constexpr const char* colorTexture = "equiTexture";		///< Name of the texture sampler
+				inline constexpr const char* equiTexture = "equiTexture";		///< Name of the texture sampler
 			}
+
+			inline constexpr const char* uboStruct = "UBO";						///< Name of the uniform struct
+			inline constexpr const char* face = "face";							///< Name of the face index uniform
 		}
 	}
 

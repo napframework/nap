@@ -12,6 +12,7 @@ struct Light
 	float attenuation;
 	float angle;
 	float falloff;
+	float shadowStrength;
 	uint enable;
 	uint flags;
 };

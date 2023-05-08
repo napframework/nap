@@ -54,6 +54,7 @@ namespace nap
 			inline constexpr const char* attenuation = "attenuation";
 			inline constexpr const char* angle = "angle";
 			inline constexpr const char* falloff = "falloff";
+			inline constexpr const char* shadowStrength = "shadowStrength";
 			inline constexpr const char* enable = "enable";
 			inline constexpr const char* flags = "flags";
 
@@ -93,6 +94,8 @@ namespace nap
 		bool mEnabled = true;									///< Property: 'Enabled'
 		ResourcePtr<ParameterRGBColorFloat> mColor;				///< Property: 'Color'
 		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
+
+		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength'
 		uint mShadowSampleCount = 4U;							///< Property: 'ShadowSampleCount'
 		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
 	};
@@ -187,6 +190,11 @@ namespace nap
 		virtual float getIntensity() const									{ return mResource->mIntensity->mValue; }
 
 		/**
+		 * @return the shadow strength
+		 */
+		virtual float getShadowStrength() const								{ return mShadowStrength; }
+
+		/**
 		 * @return the light color
 		 */
 		virtual const RGBColorFloat& getColor() const						{ return mResource->mColor->getValue(); }
@@ -217,6 +225,7 @@ namespace nap
 
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
+		float mShadowStrength							= 1.0f;
 		uint mShadowSampleCount							= 4U;
 		uint mShadowMapSize								= 512U;
 
