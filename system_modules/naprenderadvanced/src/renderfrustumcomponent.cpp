@@ -83,23 +83,23 @@ namespace nap
 	bool RenderFrustumComponentInstance::updateFrustum(utility::ErrorState& errorState)
 	{
 		auto& positions = getMeshInstance().getOrCreateAttribute<glm::vec3>(vertexid::position).getData();
-		assert(mFrustumMesh->getUnitLineBox().size() == positions.size());
+		assert(mFrustumMesh->getNormalizedLineBox().size() == positions.size());
 
 		if (mCamera->get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
 		{
 			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
-			for (uint i = 0; i < mFrustumMesh->getUnitLineBox().size(); i++)
+			for (uint i = 0; i < mFrustumMesh->getNormalizedLineBox().size(); i++)
 			{
-				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getUnitLineBox()[i], 1.0f);
+				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getNormalizedLineBox()[i], 1.0f);
 				positions[i] = view_edge;
 			}
 		}
 		else if (mCamera->get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
 		{
 			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
-			for (uint i = 0; i < mFrustumMesh->getUnitLineBox().size(); i++)
+			for (uint i = 0; i < mFrustumMesh->getNormalizedLineBox().size(); i++)
 			{
-				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getUnitLineBox()[i], 1.0f);
+				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getNormalizedLineBox()[i], 1.0f);
 				positions[i] = view_edge / view_edge.w; // Perspective divide
 			}
 		}

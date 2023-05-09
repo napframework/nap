@@ -32,6 +32,19 @@ namespace nap
 
 	const static std::vector<glm::vec3> unitLineBox =
 	{
+		{ 0.5, -0.5, 0.5 },
+		{ -0.5, -0.5, 0.5 },
+		{ -0.5, 0.5, 0.5 },
+		{ 0.5, 0.5, 0.5 },
+
+		{ 0.5, -0.5, -0.5 },
+		{ -0.5, -0.5, -0.5 },
+		{ -0.5, 0.5, -0.5 },
+		{ 0.5, 0.5, -0.5 }
+	};
+
+	const static std::vector<glm::vec3> normalizedLineBox =
+	{
 		{ 1, -1, 1 },
 		{ -1, -1, 1 },
 		{ -1, 1, 1 },
@@ -115,5 +128,11 @@ namespace nap
 	const std::vector<glm::vec3>& BoxFrameMesh::getUnitLineBox()
 	{
 		return unitLineBox;
+	}
+
+
+	const std::vector<glm::vec3>& BoxFrameMesh::getNormalizedLineBox()
+	{
+		return normalizedLineBox;
 	}
 }

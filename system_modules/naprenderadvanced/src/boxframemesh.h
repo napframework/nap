@@ -41,12 +41,18 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const override { return *mMeshInstance; }
 
 		/**
-		 * @return the unit line box
+		 * @return the unit line box from (-0.5, -0.5, -0.5) to (0.5, 0.5, 0.5)
 		 */
 		const std::vector<glm::vec3>& getUnitLineBox();
 
+		/**
+		 * @return the normalized line box from (-1, -1, -1) to (1, 1, 1)
+		 */
+		const std::vector<glm::vec3>& getNormalizedLineBox();
+
 		EPolygonMode mPolygonMode = EPolygonMode::Line;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
-		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated.
+		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated
+		bool mUnit = false;									///< Property: 'Extent' Extent of the box (0.5)
 
 	protected:
 		/**
