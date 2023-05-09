@@ -1051,17 +1051,6 @@
             ]
         },
         {
-            "Type": "nap::GeometryFromFile",
-            "mID": "NAPLogoMesh",
-            "Path": "nap_logo.obj",
-            "GenerateNormals": true,
-            "CalculateTangents": false,
-            "NormalSmoothingAngle": 60.0,
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill"
-        },
-        {
             "Type": "nap::GnomonMesh",
             "mID": "GnomonMesh",
             "Size": 1.0,
@@ -1283,6 +1272,14 @@
             "Shader": "ConstantShader",
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::MeshFromFile",
+            "mID": "NAPLogoMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Fill",
+            "Path": "nap_logo.mesh"
         },
         {
             "Type": "nap::ParameterGUI",
