@@ -7,6 +7,9 @@
 // Local Includes
 #include "mesh.h"
 
+// External includes
+#include <box.h>
+
 namespace nap
 {
 	class RenderService;
@@ -29,6 +32,13 @@ namespace nap
 		 * @return if the mesh was successfully created and initialized.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
+		 * Creates and prepares the mesh but doesn't initialize it.
+		 * Call this when you want to prepare a box without creating the GPU representation.
+		 * You have to manually call init() on the mesh instance afterwards.
+		 */
+		bool setup(const math::Box& box, utility::ErrorState& errorState);
 
 		/**
 		 * @return the mesh instance that can be rendered to screen
@@ -64,5 +74,8 @@ namespace nap
 
 		RenderService* mRenderService;
 		std::unique_ptr<MeshInstance> mMeshInstance;
+
+	private:
+		bool mIsSetup = false;
 	};
 }

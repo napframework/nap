@@ -49,6 +49,17 @@ namespace nap
 		*/
 		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
+
+		/**
+		* Computes the bounding box of a mesh using its associated position data.
+		* Note that indices are not considered. This call loops over all available
+		* points regardless of whether if they're drawn or not
+		* @param mesh the mesh to get the bounding box for
+		* @param outBox the computed bounding box
+		*/
+		template <typename T>
+		void NAPAPI computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
+
 		/**
 		* Computes the bounding box of a mesh using its associated position data.
 		* Note that indices are not considered. This call loops over all available
@@ -167,6 +178,26 @@ namespace nap
 		T interpolateVertexAttr(const TriangleData<T>& vertexValues, const glm::vec3& coords)
 		{
 			return (vertexValues.first() * (1.0f - coords.x - coords.y)) + (vertexValues.second() * coords.x) + (vertexValues.third() * coords.y);
+		}
+
+		template <typename T>
+		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
+		{
+			glm::vec3 min(nap::math::max<float>());
+			glm::vec3 max(nap::math::min<float>());
+
+			const nap::VertexAttribute<T>& positions = mesh.getAttribute<T>(vertexid::position);
+			for (const auto& point : positions.getData())
+			{
+				if (point.x < min.x) { min.x = point.x; }
+				if (point.x > max.x) { max.x = point.x; }
+				if (point.y < min.y) { min.y = point.y; }
+				if (point.y > max.y) { max.y = point.y; }
+				if (point.z < min.z) { min.z = point.z; }
+				if (point.z > max.z) { max.z = point.z; }
+			}
+			outBox.mMinCoordinates = min;
+			outBox.mMaxCoordinates = max;
 		}
 	}
 }
