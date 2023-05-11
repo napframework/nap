@@ -385,7 +385,7 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class VertexBuffer final : public TypedGPUBufferNumeric<T>
+	class VertexBuffer : public TypedGPUBufferNumeric<T>
 	{
 		RTTI_ENABLE(TypedGPUBufferNumeric<T>)
 	public:

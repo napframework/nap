@@ -345,7 +345,7 @@ namespace nap
 		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
 		 * changing it after init will not have any effect.
 		 */
-		void setUsage(EMemoryUsage inUsage)									{ mProperties.mUsage = inUsage; }
+		void setUsage(EMemoryUsage inUsage)										{ mProperties.mUsage = inUsage; }
 
 		/**
 		 * @return how this mesh is used at runtime

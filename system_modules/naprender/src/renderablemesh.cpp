@@ -83,30 +83,6 @@ namespace nap
 	}
 
 
-	std::vector<VkBuffer> RenderableMesh::getVertexBuffers() const
-	{
-		if (!mVertexBuffersDirty)
-			return mVertexBuffers;
-
-		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();
-		const Material& material = mMaterialInstance->getMaterial();
-
-		std::vector<VkBuffer> vertex_buffers;
-		vertex_buffers.reserve(material.getShader().getAttributes().size());
-
-		for (auto& kvp : material.getShader().getAttributes())
-		{
-			const Material::VertexAttributeBinding* material_binding = material.findVertexAttributeBinding(kvp.first);
-			assert(material_binding != nullptr);
-
-			GPUBufferNumeric& vertex_buffer = gpu_mesh.getVertexBuffer(material_binding->mMeshAttributeID);
-			vertex_buffers.push_back(vertex_buffer.getBuffer());
-		}
-
-		return vertex_buffers;
-	}
-
-
 	int RenderableMesh::getVertexBufferBindingIndex(const std::string& meshVertexAttributeID) const
 	{
 		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();

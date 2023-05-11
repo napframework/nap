@@ -49,8 +49,8 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		/**
-		* @return the mesh resource to render.
-		*/
+		 * @return the mesh resource to render.
+		 */
 		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
@@ -155,9 +155,9 @@ namespace nap
 		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
 		/**
-		* Sets line width
-		* @param lineWidth New line width
-		*/
+		 * Sets line width
+		 * @param lineWidth New line width
+		 */
 		void setLineWidth(float lineWidth)						{ mLineWidth = lineWidth; }
 
 		/**
