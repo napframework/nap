@@ -20,7 +20,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ConeMesh)
 	RTTI_PROPERTY("CullMode",		&nap::ConeMesh::mCullMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",			&nap::ConeMesh::mColor,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FlipNormals",	&nap::ConeMesh::mFlipNormals,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Vec4Mode",		&nap::ConeMesh::mVec4Mode,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -144,106 +143,6 @@ namespace nap
 	}
 
 
-	static void createConeVec4(MeshInstance& outMeshInstance, uint segmentCount, float height, float bottomRadius, float topRadius, float angleOffset, const RGBAColorFloat& color, bool flipNormals)
-	{
-		assert(segmentCount > 0);
-
-		// Add an additional segment to generate seamless UVs around the cone
-		uint vertex_count = segmentCount * 4;
-		outMeshInstance.setNumVertices(vertex_count);
-
-		auto& pos_attr = outMeshInstance.getOrCreateAttribute<glm::vec4>(vertexid::position);
-		pos_attr.resize(vertex_count);
-
-		auto& normal_attr = outMeshInstance.getOrCreateAttribute<glm::vec4>(vertexid::normal);
-		normal_attr.resize(vertex_count);
-
-		auto& uv_attr = outMeshInstance.getOrCreateAttribute<glm::vec4>(vertexid::getUVName(0));
-		uv_attr.resize(vertex_count);
-
-		auto& color_attribute = outMeshInstance.getOrCreateAttribute<glm::vec4>(vertexid::getColorName(0));
-		color_attribute.setData({ vertex_count, color.toVec4() });
-
-		std::vector<glm::vec4>::iterator v = pos_attr.getData().begin();
-		std::vector<glm::vec4>::iterator n = normal_attr.getData().begin();
-		std::vector<glm::vec4>::iterator t = uv_attr.getData().begin();
-
-		const float R = 1.0f / static_cast<float>(segmentCount);
-		const float angle_offset_rad = math::radians(angleOffset);
-
-		std::vector<glm::vec2> base_coords;
-		base_coords.reserve(segmentCount);
-
-		std::vector<glm::vec2> face_center_coords;
-		face_center_coords.reserve(segmentCount);
-
-		for (uint r = 0; r < segmentCount; r++)
-		{
-			float pct = (r % segmentCount) * R;
-			float phi = glm::two_pi<float>() * pct + angle_offset_rad;
-			glm::vec2 coord = { std::cos(phi), std::sin(phi) };
-			base_coords.emplace_back(coord);
-
-			pct = (static_cast<float>(r % segmentCount) + 0.5f) * R;
-			phi = glm::two_pi<float>() * pct + angle_offset_rad;
-			coord = { std::cos(phi), std::sin(phi) };
-			face_center_coords.emplace_back(coord);
-		}
-
-		// Cone structure segment
-		const float slope = ((bottomRadius - topRadius) * bottomRadius) / height;
-		const float flip = flipNormals ? -1.0f : 1.0f;
-		const uint verts_per_segment = 4;
-
-		for (uint r = 0; r < segmentCount; r++)
-		{
-			const glm::vec2& c0 = base_coords[r];
-			const glm::vec2& c1 = base_coords[(r + 1) % segmentCount];
-
-			// Set vertex coordinates
-			*v++ = { c0.x * bottomRadius,	0.0f,	c0.y * bottomRadius,	0.0f };
-			*v++ = { c0.x * topRadius,		height, c0.y * topRadius,		0.0f };
-			*v++ = { c1.x * bottomRadius,	0.0f,	c1.y * bottomRadius,	0.0f };
-			*v++ = { c1.x * topRadius,		height, c1.y * topRadius,	0.0f };
-
-			// Set normal coordinates
-			const glm::vec2& cn = face_center_coords[r];
-			const glm::vec4 norm = { glm::normalize(glm::vec3(cn.x, slope, cn.y)) * flip, 0.0f };
-			for (uint i = 0; i < verts_per_segment; i++)
-				*n++ = norm;
-
-			// Set texture coordinates
-			*t++ = { c0.x, 0.0f, c0.y, 0.0f };
-			*t++ = { c0.x, 1.0f, c0.y, 0.0f };
-			*t++ = { c1.x, 0.0f, c1.y, 0.0f };
-			*t++ = { c1.x, 1.0f, c1.y, 0.0f };
-		}
-
-		// Cone indices
-		const uint indices_per_segment = 6;
-		const uint index_count = segmentCount * indices_per_segment;
-
-		auto& indices = outMeshInstance.createShape().getIndices();
-		indices.resize(index_count);
-		std::vector<uint>::iterator i = indices.begin();
-
-		for (uint s = 0; s < segmentCount; s++)
-		{
-			uint base_index = s * verts_per_segment;
-
-			// Triangle A
-			*i++ = base_index + 0;
-			*i++ = base_index + 1;
-			*i++ = base_index + 2;
-
-			// Triangle B
-			*i++ = base_index + 3;
-			*i++ = base_index + 2;
-			*i++ = base_index + 1;
-		}
-	}
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// ConeMesh
 	//////////////////////////////////////////////////////////////////////////
@@ -280,11 +179,8 @@ namespace nap
 		mMeshInstance->setPolygonMode(mPolygonMode);
 		mMeshInstance->setCullMode(mCullMode);
 
-		// Create torus
-		if (mVec4Mode)
-			createConeVec4(*mMeshInstance, mSegments, mHeight, mBottomRadius, mTopRadius, mAngleOffset, mColor, mFlipNormals);
-		else
-			createCone(*mMeshInstance, mSegments, mHeight, mBottomRadius, mTopRadius, mAngleOffset, mColor, mFlipNormals);
+		// Create cone
+		createCone(*mMeshInstance, mSegments, mHeight, mBottomRadius, mTopRadius, mAngleOffset, mColor, mFlipNormals);
 
 		return true;
 	}

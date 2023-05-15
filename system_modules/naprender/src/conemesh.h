@@ -49,7 +49,6 @@ namespace nap
 		ECullMode						mCullMode = ECullMode::Back;			///< Property: 'CullMode' the cull mode
 		RGBAColorFloat					mColor = { 1.0f, 1.0f, 1.0f, 1.0f };	///< Property: 'Color' Vertex color
 		bool							mFlipNormals = false;					///< Property: 'FlipNormals' Whether to flip the cone normals such that they point inwards.
-		bool							mVec4Mode = false;
 
 	protected:
 		RenderService*					mRenderService = nullptr;				//< The render service
