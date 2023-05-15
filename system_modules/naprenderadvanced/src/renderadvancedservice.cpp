@@ -199,10 +199,11 @@ namespace nap
 
 		// Create material instance
 		mCubeMaterialInstanceResource = std::make_unique<MaterialInstanceResource>();
-		mCubeMaterialInstanceResource->mBlendMode = EBlendMode::Opaque;
-		mCubeMaterialInstanceResource->mDepthMode = EDepthMode::NoReadWrite;
 
 		mCubeMapMaterial = render_service->getOrCreateMaterial<CubeMapShader>(errorState);
+		mCubeMapMaterial->mBlendMode = EBlendMode::Opaque;
+		mCubeMapMaterial->mDepthMode = EDepthMode::NoReadWrite;
+
 		if (mCubeMapMaterial == nullptr)
 			return false;
 

@@ -686,10 +686,8 @@ namespace nap
 					Sampler2DArrayInstance* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
 					for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
 					{
-						if (sampler_2d_array->hasTexture(index))
-							addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
-						else
-							addImageInfo(mRenderService->getEmptyTexture2D(), vk_sampler);
+						const auto& tex = sampler_2d_array->hasTexture(index) ? sampler_2d_array->getTexture(index) : mRenderService->getEmptyTexture2D();
+						addImageInfo(tex, vk_sampler);
 					}
 					break;
 				}
@@ -698,10 +696,8 @@ namespace nap
 					SamplerCubeArrayInstance* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(sampler_instance);
 					for (int index = 0; index < sampler_cube_array->getNumElements(); ++index)
 					{
-						if (sampler_cube_array->hasTexture(index))
-							addImageInfo(sampler_cube_array->getTexture(index), vk_sampler);
-						else
-							addImageInfo(mRenderService->getEmptyTextureCube(), vk_sampler);
+						const auto& tex = sampler_cube_array->hasTexture(index) ? sampler_cube_array->getTexture(index) : mRenderService->getEmptyTextureCube();
+						addImageInfo(tex, vk_sampler);
 					}
 					break;
 				}
@@ -718,19 +714,15 @@ namespace nap
 				case SamplerDeclaration::EType::Type_2D:
 				{
 					Sampler2DInstance* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
-					if (sampler_2d->hasTexture())
-						addImageInfo(sampler_2d->getTexture(), vk_sampler);
-					else
-						addImageInfo(mRenderService->getEmptyTexture2D(), vk_sampler);
+					const auto& tex = sampler_2d->hasTexture() ? sampler_2d->getTexture() : mRenderService->getEmptyTexture2D();
+					addImageInfo(tex, vk_sampler);
 					break;
 				}
 				case SamplerDeclaration::EType::Type_Cube:
 				{
 					SamplerCubeInstance* sampler_cube = static_cast<SamplerCubeInstance*>(sampler_instance);
-					if (sampler_cube->hasTexture())
-						addImageInfo(sampler_cube->getTexture(), vk_sampler);
-					else
-						addImageInfo(mRenderService->getEmptyTextureCube(), vk_sampler);
+					const auto& tex = sampler_cube->hasTexture() ? sampler_cube->getTexture() : mRenderService->getEmptyTextureCube();
+					addImageInfo(tex, vk_sampler);
 					break;
 				}
 				default:
