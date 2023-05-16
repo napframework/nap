@@ -201,8 +201,6 @@ namespace nap
 		}
 
 		// Create material instance
-		mCubeMaterialInstanceResource = std::make_unique<MaterialInstanceResource>();
-
 		mCubeMapMaterial = render_service->getOrCreateMaterial<CubeMapShader>(errorState);
 		if (!errorState.check(mCubeMapMaterial != nullptr, "Failed to create CubeMap material"))
 			return false;
@@ -212,6 +210,7 @@ namespace nap
 		if (!mCubeMapMaterial->init(errorState))
 			return false;
 
+		mCubeMaterialInstanceResource = std::make_unique<MaterialInstanceResource>();
 		mCubeMaterialInstanceResource->mMaterial = mCubeMapMaterial;
 		mCubeMaterialInstance = std::make_unique<MaterialInstance>();
 		if (!mCubeMaterialInstance->init(*render_service, *mCubeMaterialInstanceResource, errorState))
