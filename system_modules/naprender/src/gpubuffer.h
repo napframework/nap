@@ -439,7 +439,7 @@ namespace nap
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
-	class NAPAPI IndexBuffer final : public TypedGPUBufferNumeric<uint>
+	class NAPAPI IndexBuffer : public TypedGPUBufferNumeric<uint>
 	{
 		RTTI_ENABLE(TypedGPUBufferNumeric<uint>)
 	public:

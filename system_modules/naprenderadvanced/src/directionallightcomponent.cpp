@@ -17,7 +17,6 @@
 RTTI_BEGIN_CLASS(nap::DirectionalLightComponent)
 	RTTI_PROPERTY("ShadowCamera", &nap::DirectionalLightComponent::mShadowCamera, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowMapSize", &nap::DirectionalLightComponent::mShadowMapSize, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Attenuation", &nap::DirectionalLightComponent::mAttenuation, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::DirectionalLightComponentInstance run time class definition
@@ -40,7 +39,6 @@ namespace nap
 			return false;
 
 		auto* resource = getComponent<DirectionalLightComponent>();
-		registerLightUniformMember(uniform::light::attenuation, resource->mAttenuation.get());
 		mShadowMapSize = resource->mShadowMapSize;
 
 		return true;

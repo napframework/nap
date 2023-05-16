@@ -57,7 +57,7 @@ void main()
 	passUV0 = in_UV0;
 
 	// Rotate normal based on model matrix and set
-	vec3 world_normal = normalize((mvp.normalMatrix * vec4(in_Normals, 1.0)).xyz);
+	vec3 world_normal = normalize((mvp.normalMatrix * vec4(in_Normals, 0.0)).xyz);
 	passNormal = world_normal;
 
 	// Calculate fresnel term
