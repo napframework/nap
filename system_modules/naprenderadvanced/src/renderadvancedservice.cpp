@@ -116,7 +116,8 @@ namespace nap
 	bool RenderAdvancedService::init(nap::utility::ErrorState& errorState)
 	{
 		auto* render_service = getCore().getService<RenderService>();
-		assert(render_service != nullptr);
+		if (!errorState.check(render_service != nullptr, "Failed to get nap::RenderService"))
+			return false;
 
 		// Ensure the initialized Vulkan API version meets the render advanced service requirement
 		if (render_service->getVulkanVersionMajor() <= mRequiredVulkanVersionMajor)
@@ -130,6 +131,8 @@ namespace nap
 
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
+		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
+			return false;
 
 		// Create and manage a shadow texture dummy for valid shadow samplers
 		mShadowTextureDummy = std::make_unique<DepthRenderTexture2D>(getCore());
@@ -201,12 +204,11 @@ namespace nap
 		mCubeMaterialInstanceResource = std::make_unique<MaterialInstanceResource>();
 
 		mCubeMapMaterial = render_service->getOrCreateMaterial<CubeMapShader>(errorState);
-		mCubeMapMaterial->mBlendMode = EBlendMode::Opaque;
-		mCubeMapMaterial->mDepthMode = EDepthMode::NoReadWrite;
-
-		if (mCubeMapMaterial == nullptr)
+		if (!errorState.check(mCubeMapMaterial != nullptr, "Failed to create CubeMap material"))
 			return false;
 
+		mCubeMapMaterial->mBlendMode = EBlendMode::Opaque;
+		mCubeMapMaterial->mDepthMode = EDepthMode::NoReadWrite;
 		if (!mCubeMapMaterial->init(errorState))
 			return false;
 
