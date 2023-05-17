@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "lightapp.h"
+#include "lightsandshadowapp.h"
 
  // External Includes
 #include <nap/core.h>
@@ -17,7 +17,7 @@
 #include <parameternumeric.h>
 #include <parameterquat.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightsAndShadowApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -26,7 +26,7 @@ namespace nap
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
-	bool LightApp::init(utility::ErrorState& errorState)
+	bool LightsAndShadowApp::init(utility::ErrorState& errorState)
 	{
 		// Create render service
 		mRenderService			= getCore().getService<RenderService>();
@@ -65,7 +65,7 @@ namespace nap
 	 *
 	 * We also set up our gui that is drawn at a later stage.
 	 */
-	void LightApp::update(double deltaTime)
+	void LightsAndShadowApp::update(double deltaTime)
 	{
 		// Update input
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
@@ -128,7 +128,7 @@ namespace nap
 	 * Render all objects to screen at once
 	 * In this case that's only the particle mesh
 	 */
-	void LightApp::render()
+	void LightsAndShadowApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -177,7 +177,7 @@ namespace nap
 	* On the next update the render service automatically processes all window events.
 	* If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal
 	*/
-	void LightApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void LightsAndShadowApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
@@ -187,7 +187,7 @@ namespace nap
 	* Called by the app loop. It's best to forward messages to the input service for further processing later on
 	* In this case we also check if we need to toggle full-screen or exit the running app
 	*/
-	void LightApp::inputMessageReceived(InputEventPtr inputEvent)
+	void LightsAndShadowApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{

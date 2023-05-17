@@ -55,11 +55,11 @@ namespace nap
 	* It demonstrates how you can modify a buffer and use that buffer to create a mesh that is drawn to screen
 	* More information about rendering, scenes etc. can be found in the other, more basic, examples.
 	*/
-	class LightApp : public App
+	class LightsAndShadowApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
-		LightApp(nap::Core& core) : App(core) { }
+		LightsAndShadowApp(nap::Core& core) : App(core) { }
 
 		/**
 		 *	Initialize all the services and app specific data structures

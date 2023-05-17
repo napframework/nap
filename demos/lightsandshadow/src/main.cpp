@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
-#include "lightapp.h"
+#include "lightsandshadowapp.h"
 
 // External includes
 #include <nap/core.h>
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::LightApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::LightsAndShadowApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

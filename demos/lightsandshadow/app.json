@@ -3,9 +3,9 @@
     "mID": "ProjectInfo",
     "Title": "LightsAndShadow",
     "Version": "1.0.0",
-    "Data": "data/lights.json",
+    "Data": "data/lightsandshadow.json",
     "PathMapping": "cache/path_mapping.json",
-    "ServiceConfig": "service_config.json",
+    "ServiceConfig": "",
     "RequiredModules": [
         "napapp",
         "napcameracontrol",
