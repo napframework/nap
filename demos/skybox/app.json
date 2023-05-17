@@ -1,9 +1,9 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "Sky",
+    "Title": "SkyBox",
     "Version": "1.0.0",
-    "Data": "data/sky.json",
+    "Data": "data/skybox.json",
     "PathMapping": "cache/path_mapping.json",
     "ServiceConfig": "service_config.json",
     "RequiredModules": [

@@ -2,24 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "skyapp.h"
+#include "skyboxapp.h"
 
  // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
-#include <orthocameracomponent.h>
-#include <lightcomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <imguiutils.h>
-#include <glm/ext.hpp>
-#include <parameternumeric.h>
-#include <parameterquat.h>
 #include <renderskyboxcomponent.h>
 #include <skyboxshader.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SkyApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SkyBoxApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -28,7 +22,7 @@ namespace nap
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
-	bool SkyApp::init(utility::ErrorState& errorState)
+	bool SkyBoxApp::init(utility::ErrorState& errorState)
 	{
 		// Create render service
 		mRenderService			= getCore().getService<RenderService>();
@@ -69,7 +63,7 @@ namespace nap
 	 *
 	 * We also set up our gui that is drawn at a later stage.
 	 */
-	void SkyApp::update(double deltaTime)
+	void SkyBoxApp::update(double deltaTime)
 	{
 		// Update input
 		DefaultInputRouter& input_router = mDefaultInputRouter->getComponent<DefaultInputRouterComponentInstance>().mInputRouter;
@@ -126,7 +120,7 @@ namespace nap
 	 * Render all objects to screen at once
 	 * In this case that's only the particle mesh
 	 */
-	void SkyApp::render()
+	void SkyBoxApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -178,7 +172,7 @@ namespace nap
 	* On the next update the render service automatically processes all window events.
 	* If you want to listen to specific events associated with a window it's best to listen to a window's mWindowEvent signal
 	*/
-	void SkyApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void SkyBoxApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
@@ -188,7 +182,7 @@ namespace nap
 	* Called by the app loop. It's best to forward messages to the input service for further processing later on
 	* In this case we also check if we need to toggle full-screen or exit the running app
 	*/
-	void SkyApp::inputMessageReceived(InputEventPtr inputEvent)
+	void SkyBoxApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{

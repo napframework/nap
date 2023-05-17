@@ -803,7 +803,7 @@
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "skydemo",
+            "Title": "skybox demo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",

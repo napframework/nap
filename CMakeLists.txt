@@ -67,7 +67,7 @@ add_subdirectory(demos/artnetreceive)
 add_subdirectory(demos/webportal)
 add_subdirectory(demos/python)
 add_subdirectory(demos/lights)
-add_subdirectory(demos/sky)
+add_subdirectory(demos/skybox)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
