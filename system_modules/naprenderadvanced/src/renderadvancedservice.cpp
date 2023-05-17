@@ -66,25 +66,6 @@ namespace nap
 	}
 
 
-    /*
-	template<typename T>
-	static bool updateLight(UniformStructInstance* lightStruct, uint index, T value, utility::ErrorState& errorState)
-	{
-		auto* ubo_member = lightStruct->findUniform<TypedUniformValueArrayInstance<T>>(memberName);
-		if (!errorState.check(ubo_member != nullptr,
-			"UBO '%s' requires a member of type '%s' with name '%s' in material instance '%s' with shader '%s'",
-			ubo_struct->getDeclaration().mName.c_str(), RTTI_OF(T).get_name().to_string().c_str(), memberName.c_str(), materialInstance.getMaterial().mID.c_str(), materialInstance.getMaterial().getShader().getDisplayName().c_str()))
-			return false;
-
-		// Safely create and set the member
-		auto* instance = materialInstance.getOrCreateUniform(uniform::lightStruct)->getOrCreateUniform<TypedUniformValueArrayInstance<T>>(memberName);
-		instance->setValue(value, index);
-
-		return true;
-	}
-    */
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service Configuration
 	//////////////////////////////////////////////////////////////////////////
@@ -209,12 +190,6 @@ namespace nap
 			return false;
 
 		return true;
-	}
-
-
-	void RenderAdvancedService::update(double deltaTime)
-	{
-		//
 	}
 
 
