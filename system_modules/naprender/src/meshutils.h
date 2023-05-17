@@ -4,10 +4,14 @@
 
 #pragma once
 
+// Local Includes
+#include "mesh.h"
+#include "box.h"
+#include "triangleiterator.h"
+#include "renderglobals.h"
+
+// External Includes
 #include <utility/dllexport.h>
-#include <mesh.h>
-#include <box.h>
-#include <triangleiterator.h>
 
 namespace nap
 {

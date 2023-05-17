@@ -312,7 +312,7 @@ namespace nap
 					}
 					default:
 						errorState.fail("Unsupported sampler declaration type");
-						return false;
+						return nullptr;
 					}
 				}
 				else
@@ -335,7 +335,7 @@ namespace nap
 					}
 					default:
 						errorState.fail("Unsupported sampler declaration type");
-						return false;
+						return nullptr;
 					}
 				}
 

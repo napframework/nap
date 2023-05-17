@@ -115,7 +115,7 @@ namespace nap
 
 		struct ShadowMapEntry
 		{
-			ShadowMapEntry::ShadowMapEntry(std::unique_ptr<DepthRenderTarget> target, std::unique_ptr<DepthRenderTexture2D> texture) :
+			ShadowMapEntry(std::unique_ptr<DepthRenderTarget> target, std::unique_ptr<DepthRenderTexture2D> texture) :
 				mTarget(std::move(target)), mTexture(std::move(texture))
 			{
 				mTarget->mDepthTexture = mTexture.get();
@@ -127,7 +127,7 @@ namespace nap
 
 		struct CubeMapEntry
 		{
-			CubeMapEntry::CubeMapEntry(std::unique_ptr<CubeDepthRenderTarget> target, std::unique_ptr<DepthRenderTextureCube> texture) :
+			CubeMapEntry(std::unique_ptr<CubeDepthRenderTarget> target, std::unique_ptr<DepthRenderTextureCube> texture) :
 				mTarget(std::move(target)), mTexture(std::move(texture))
 			{
 				mTarget->mCubeDepthTexture = mTexture.get();

@@ -1,4 +1,4 @@
-#include "SpotLightComponent.h"
+#include "spotlightcomponent.h"
 
 // Local includes
 #include "renderadvancedservice.h"

@@ -66,16 +66,7 @@ namespace nap
 	}
 
 
-	/**
-	 * Ensures the value member is created without asserting. Reports a verbose error message if this is not the case.
-	 *
-	 * @param materialInstance
-	 * @param uboName
-	 * @param memberName
-	 * @param errorState
-	 * @tparam the uniform instance type to create
-	 * @return if the member was created
-	 */
+    /*
 	template<typename T>
 	static bool updateLight(UniformStructInstance* lightStruct, uint index, T value, utility::ErrorState& errorState)
 	{
@@ -91,6 +82,7 @@ namespace nap
 
 		return true;
 	}
+    */
 
 
 	//////////////////////////////////////////////////////////////////////////

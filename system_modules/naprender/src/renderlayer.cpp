@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "RenderLayer.h"
+#include "renderlayer.h"
 
 RTTI_BEGIN_CLASS(nap::RenderLayer)
 	RTTI_PROPERTY("Name", &nap::RenderLayer::mName, nap::rtti::EPropertyMetaData::Default)
