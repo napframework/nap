@@ -652,7 +652,7 @@
                     "Enabled": true,
                     "Color": "PointColorParam",
                     "Intensity": "PointIntensityParam",
-                    "ShadowStrength": 1.0,
+                    "ShadowStrength": 0.5,
                     "ShadowSampleCount": 4,
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraPerspective",

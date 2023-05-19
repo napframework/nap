@@ -98,5 +98,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
 		rtti::ObjectPtr<EntityInstance> mWorldEntity;
+		std::unordered_map<std::string, glm::vec3> mLightEuler;			//< Light euler rotations
+		std::unordered_map<std::string, glm::vec3> mLightXform;			//< Light transformations
 	};
 }

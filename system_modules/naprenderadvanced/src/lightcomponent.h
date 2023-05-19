@@ -160,6 +160,11 @@ namespace nap
 		const TransformComponentInstance& getTransform() const				{ return *mTransform; }
 
 		/**
+		 * @return the light transform
+		 */
+		TransformComponentInstance& getTransform()							{ return *mTransform; }
+
+		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
 		virtual CameraComponentInstance* getShadowCamera() = 0;

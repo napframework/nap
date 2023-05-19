@@ -50,9 +50,7 @@ namespace nap
 
 		mCameraEntity = scene->findEntity("CameraEntity");
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
-			return false;
-
-		mGuiService->selectWindow(mRenderWindow);
+			return false;	
 
 		return true;
 	}
@@ -93,29 +91,33 @@ namespace nap
 			labels.reserve(lights.size());
 			std::for_each(lights.begin(), lights.end(), [&labels](const auto& light) {
 				labels.emplace_back(light->mID.c_str());
-			});
+				});
 
 			static int item_index = 0;
 			LightComponentInstance* selected_light = lights[item_index];
 			if (ImGui::Combo("Selected Light", &item_index, labels.data(), lights.size()))
 				selected_light = lights[item_index];
 
-			if (selected_light != nullptr)
+			// Calculate position -> default (from initialization) + offset 
+			auto xform_it = mLightXform.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
+			if (ImGui::SliderFloat3("Translate", glm::value_ptr(xform_it.first->second), -10.0f, 10.0f))
 			{
-				auto& transform = selected_light->getEntityInstance()->getComponent<TransformComponentInstance>();
-				glm::vec3 translate = transform.getTranslate();
-				glm::vec3 rotate = glm::degrees(glm::eulerAngles(transform.getRotate()));
-
-				if (ImGui::SliderFloat3("Translate", glm::value_ptr(translate), -10.0f, 10.0f))
-					transform.setTranslate(translate);
-
-				if (ImGui::SliderFloat3("Rotate", glm::value_ptr(rotate), 0.0f, 360.0f))
-					transform.setRotate(math::eulerToQuat(glm::radians(rotate)));
-
-				bool enabled = selected_light->isEnabled();
-				if (ImGui::Checkbox("Enable", &enabled))
-					selected_light->enable(enabled);
+				auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
+				selected_light->getTransform().setTranslate(default_xform->mProperties.mTranslate + xform_it.first->second);
 			}
+
+			// Calculate rotation -> default (from initialization) + offset
+			auto euler_it = mLightEuler.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
+			if (ImGui::SliderFloat3("Rotate", glm::value_ptr(euler_it.first->second), -180.0f, 180.0f))
+			{
+				auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
+				glm::vec3 rot_euler = math::radians(default_xform->mProperties.mRotate + euler_it.first->second);
+				selected_light->getTransform().setRotate(rot_euler);
+			}
+
+			bool enabled = selected_light->isEnabled();
+			if (ImGui::Checkbox("Enable", &enabled))
+				selected_light->enable(enabled);
 		}
 
 		mResourceManager->findObject<ParameterGUI>("ParameterGUI")->show(false);
