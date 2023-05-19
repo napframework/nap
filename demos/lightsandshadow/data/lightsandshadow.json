@@ -385,7 +385,7 @@
                 {
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderDirectionalLight",
-                    "Visible": true,
+                    "Visible": false,
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
