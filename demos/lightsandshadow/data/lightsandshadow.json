@@ -1,70 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::BlinnPhongColorShader",
-            "mID": "BlinnPhongColorShader"
-        },
-        {
-            "Type": "nap::BlinnPhongTextureShader",
-            "mID": "BlinnPhongTextureShader"
-        },
-        {
-            "Type": "nap::BoxMesh",
-            "mID": "BoundsMesh",
-            "Usage": "Static",
-            "CullMode": "Front",
-            "PolygonMode": "Fill",
-            "Size": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "FlipNormals": true
-        },
-        {
-            "Type": "nap::BoxMesh",
-            "mID": "BoxMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Size": {
-                "x": 1.0,
-                "y": 1.0,
-                "z": 1.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "FlipNormals": false
-        },
-        {
-            "Type": "nap::ConstantShader",
-            "mID": "ConstantShader"
-        },
-        {
             "Type": "nap::Entity",
             "mID": "BaseLightEntity",
             "Components": [
@@ -142,7 +78,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Bounds",
+                    "Layer": "",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -250,7 +186,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -453,7 +389,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -506,7 +442,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -526,7 +462,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -683,7 +619,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -736,7 +672,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -809,7 +745,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -862,7 +798,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -904,7 +840,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -981,7 +917,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1079,254 +1015,9 @@
             ]
         },
         {
-            "Type": "nap::GnomonMesh",
-            "mID": "GnomonMesh",
-            "Size": 1.0,
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            }
-        },
-        {
-            "Type": "nap::GnomonShader",
-            "mID": "GnomonShader"
-        },
-        {
-            "Type": "nap::ImageFromFile",
-            "mID": "NAPLogoImage",
-            "Usage": "Static",
-            "ImagePath": "nap_logo.jpg",
-            "GenerateLods": true
-        },
-        {
-            "Type": "nap::Line",
-            "mID": "LightDirectionReferenceMesh",
-            "Properties": {
-                "Color": {
-                    "x": 1.0,
-                    "y": 1.0,
-                    "z": 1.0,
-                    "w": 1.0
-                },
-                "Usage": "Static"
-            },
-            "Start": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "End": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": -1.0
-            },
-            "Closed": false,
-            "Vertices": 2
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "BlinnPhongColorMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_60da175c",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_3019e56a",
-                            "Name": "ambient",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_cdd76af7",
-                            "Name": "diffuse",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 0.5,
-                                "z": 0.5
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_11cc25f4",
-                            "Name": "specular",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec2",
-                            "mID": "UniformVec2_f66d0135",
-                            "Name": "fresnel",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 4.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_5b6d8df2",
-                            "Name": "shininess",
-                            "Value": 32.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_49935e1d",
-                            "Name": "alpha",
-                            "Value": 1.0
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Buffers": [],
-            "VertexAttributeBindings": [],
-            "Shader": "BlinnPhongColorShader",
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "BlinnPhongTextureMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_60da175cx",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_3019e56ax",
-                            "Name": "ambient",
-                            "Value": {
-                                "x": 0.0,
-                                "y": 0.0,
-                                "z": 0.0,
-                                "w": 0.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_cdd76af7x",
-                            "Name": "diffuse",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 0.5,
-                                "z": 0.5
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_11cc25f4x",
-                            "Name": "specular",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec2",
-                            "mID": "UniformVec2_f66d0135x",
-                            "Name": "fresnel",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 4.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_5b6d8df2x",
-                            "Name": "shininess",
-                            "Value": 32.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_49935e1dx",
-                            "Name": "alpha",
-                            "Value": 1.0
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Buffers": [],
-            "VertexAttributeBindings": [],
-            "Shader": "BlinnPhongTextureShader",
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "ConstantMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_81357673",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_62017239",
-                            "Name": "color",
-                            "Value": {
-                                "x": 0.20000000298023225,
-                                "y": 0.20000000298023225,
-                                "z": 0.20000000298023225
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_d9d58dc0",
-                            "Name": "alpha",
-                            "Value": 1.0
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Buffers": [],
-            "VertexAttributeBindings": [],
-            "Shader": "ConstantShader",
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::MeshFromFile",
-            "mID": "NAPLogoMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Path": "nap_logo.mesh"
-        },
-        {
-            "Type": "nap::ParameterGUI",
-            "mID": "ParameterGUI",
-            "Serializable": true,
-            "Group": "Parameters"
-        },
-        {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SpotIntensityParam",
-                    "Name": "Spotlight Intensity",
-                    "Value": 0.800000011920929,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAttenuationParam",
@@ -1334,109 +1025,105 @@
                     "Value": 0.009999999776482582,
                     "Minimum": 0.0,
                     "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SpotAngleParam",
-                    "Name": "Spot Angle",
-                    "Value": 30.0,
-                    "Minimum": 0.0,
-                    "Maximum": 360.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SpotFallOffParam",
-                    "Name": "Spot FallOff",
-                    "Value": 2.5,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
-                },
-                {
-                    "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "SunColor",
-                    "Name": "Sun Color",
-                    "Value": {
-                        "Values": [
-                            1.0,
-                            0.929411768913269,
-                            0.7450980544090271
-                        ]
-                    }
-                },
-                {
-                    "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "SpotColorParam",
-                    "Name": "Spot Color",
-                    "Value": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "PointColorParam",
-                    "Name": "Point Color",
-                    "Value": {
-                        "Values": [
-                            1.0,
-                            0.20392157137393952,
-                            0.4901960790157318
-                        ]
-                    }
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SunIntensityParam",
-                    "Name": "Sun Intensity",
-                    "Value": 0.550000011920929,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "PointIntensityParam",
-                    "Name": "Point Intensity",
-                    "Value": 0.6000000238418579,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
                 }
             ],
-            "Groups": []
-        },
-        {
-            "Type": "nap::ParameterVec3",
-            "mID": "LightPositionParameter",
-            "Name": "LightPosition",
-            "Value": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            },
-            "Clamp": true,
-            "Minimum": -10.0,
-            "Maximum": 10.0
-        },
-        {
-            "Type": "nap::RenderLayerRegistry",
-            "mID": "RenderLayerRegistry",
-            "Layers": [
+            "Groups": [
                 {
-                    "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_SkyBox",
-                    "Name": "SkyBox"
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Spotlight",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "SpotColorParam",
+                            "Name": "Color",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SpotIntensityParam",
+                            "Name": "Intensity",
+                            "Value": 0.800000011920929,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SpotAngleParam",
+                            "Name": "Angle",
+                            "Value": 30.0,
+                            "Minimum": 0.0,
+                            "Maximum": 360.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SpotFallOffParam",
+                            "Name": "Falloff",
+                            "Value": 2.5,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        }
+                    ],
+                    "Groups": []
                 },
                 {
-                    "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Bounds",
-                    "Name": "Bounds"
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Sunlight",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "SunColor",
+                            "Name": "Color",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    0.929411768913269,
+                                    0.7450980544090271
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SunIntensityParam",
+                            "Name": "Intensity",
+                            "Value": 0.550000011920929,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
                 },
                 {
-                    "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Default",
-                    "Name": "Default"
+                    "Type": "nap::ParameterGroup",
+                    "mID": "Pointlight",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "PointColorParam",
+                            "Name": "Color",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    0.20392157137393952,
+                                    0.4901960790157318
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "PointIntensityParam",
+                            "Name": "Intensity",
+                            "Value": 0.6000000238418579,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        }
+                    ],
+                    "Groups": []
                 }
             ]
         },
@@ -1487,6 +1174,401 @@
             "RestorePosition": true
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "GUI",
+            "Members": [
+                {
+                    "Type": "nap::ParameterGUI",
+                    "mID": "ParameterGUI",
+                    "Serializable": true,
+                    "Group": "Parameters"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Geometry",
+            "Members": [
+                {
+                    "Type": "nap::BoxMesh",
+                    "mID": "BoundsMesh",
+                    "Usage": "Static",
+                    "CullMode": "Front",
+                    "PolygonMode": "Fill",
+                    "Size": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "FlipNormals": true
+                },
+                {
+                    "Type": "nap::BoxMesh",
+                    "mID": "BoxMesh",
+                    "Usage": "Static",
+                    "CullMode": "Back",
+                    "PolygonMode": "Fill",
+                    "Size": {
+                        "x": 1.0,
+                        "y": 1.0,
+                        "z": 1.0
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "FlipNormals": false
+                },
+                {
+                    "Type": "nap::GnomonMesh",
+                    "mID": "GnomonMesh",
+                    "Size": 1.0,
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::Line",
+                    "mID": "LightDirectionReferenceMesh",
+                    "Properties": {
+                        "Color": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0,
+                            "w": 1.0
+                        },
+                        "Usage": "Static"
+                    },
+                    "Start": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "End": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": -1.0
+                    },
+                    "Closed": false,
+                    "Vertices": 2
+                },
+                {
+                    "Type": "nap::SphereMesh",
+                    "mID": "LightPositionReferenceMesh",
+                    "Usage": "Static",
+                    "CullMode": "Back",
+                    "PolygonMode": "Fill",
+                    "Radius": 0.10000000149011612,
+                    "Rings": 16,
+                    "Sectors": 16,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::MeshFromFile",
+                    "mID": "NAPLogoMesh",
+                    "Usage": "Static",
+                    "CullMode": "Back",
+                    "PolygonMode": "Fill",
+                    "Path": "nap_logo.mesh"
+                },
+                {
+                    "Type": "nap::SphereMesh",
+                    "mID": "SphereMesh",
+                    "Usage": "Static",
+                    "CullMode": "Back",
+                    "PolygonMode": "Fill",
+                    "Radius": 1.0,
+                    "Rings": 256,
+                    "Sectors": 256,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::TorusMesh",
+                    "mID": "TorusMesh",
+                    "Radius": 0.75,
+                    "TubeRadius": 0.25,
+                    "Segments": 128,
+                    "TubeSegments": 128,
+                    "AngleOffset": 0.0,
+                    "Usage": "Static",
+                    "PolygonMode": "Fill",
+                    "CullMode": "Back",
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Images",
+            "Members": [
+                {
+                    "Type": "nap::ImageFromFile",
+                    "mID": "NAPLogoImage",
+                    "Usage": "Static",
+                    "ImagePath": "nap_logo.jpg",
+                    "GenerateLods": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "Materials",
+            "Members": [
+                {
+                    "Type": "nap::Material",
+                    "mID": "BlinnPhongColorMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UniformStruct_60da175c",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec4",
+                                    "mID": "UniformVec4_3019e56a",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0,
+                                        "w": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_cdd76af7",
+                                    "Name": "diffuse",
+                                    "Value": {
+                                        "x": 0.5,
+                                        "y": 0.5,
+                                        "z": 0.5
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_11cc25f4",
+                                    "Name": "specular",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec2",
+                                    "mID": "UniformVec2_f66d0135",
+                                    "Name": "fresnel",
+                                    "Value": {
+                                        "x": 0.5,
+                                        "y": 4.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformFloat_5b6d8df2",
+                                    "Name": "shininess",
+                                    "Value": 32.0
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformFloat_49935e1d",
+                                    "Name": "alpha",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "VertexAttributeBindings": [],
+                    "Shader": "BlinnPhongColorShader",
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                },
+                {
+                    "Type": "nap::BlinnPhongColorShader",
+                    "mID": "BlinnPhongColorShader"
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "BlinnPhongTextureMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UniformStruct_60da175cx",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec4",
+                                    "mID": "UniformVec4_3019e56ax",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0,
+                                        "w": 0.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_cdd76af7x",
+                                    "Name": "diffuse",
+                                    "Value": {
+                                        "x": 0.5,
+                                        "y": 0.5,
+                                        "z": 0.5
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_11cc25f4x",
+                                    "Name": "specular",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec2",
+                                    "mID": "UniformVec2_f66d0135x",
+                                    "Name": "fresnel",
+                                    "Value": {
+                                        "x": 0.5,
+                                        "y": 4.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformFloat_5b6d8df2x",
+                                    "Name": "shininess",
+                                    "Value": 32.0
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformFloat_49935e1dx",
+                                    "Name": "alpha",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "VertexAttributeBindings": [],
+                    "Shader": "BlinnPhongTextureShader",
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                },
+                {
+                    "Type": "nap::BlinnPhongTextureShader",
+                    "mID": "BlinnPhongTextureShader"
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "ConstantMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UniformStruct_81357673",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "UniformVec3_62017239",
+                                    "Name": "color",
+                                    "Value": {
+                                        "x": 0.20000000298023225,
+                                        "y": 0.20000000298023225,
+                                        "z": 0.20000000298023225
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformFloat",
+                                    "mID": "UniformFloat_d9d58dc0",
+                                    "Name": "alpha",
+                                    "Value": 1.0
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "VertexAttributeBindings": [],
+                    "Shader": "ConstantShader",
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                },
+                {
+                    "Type": "nap::ConstantShader",
+                    "mID": "ConstantShader"
+                },
+                {
+                    "Type": "nap::GnomonShader",
+                    "mID": "GnomonShader"
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
@@ -1503,72 +1585,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "LightPositionReferenceMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Radius": 0.10000000149011612,
-            "Rings": 16,
-            "Sectors": 16,
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            }
-        },
-        {
-            "Type": "nap::SphereMesh",
-            "mID": "SphereMesh",
-            "Usage": "Static",
-            "CullMode": "Back",
-            "PolygonMode": "Fill",
-            "Radius": 1.0,
-            "Rings": 256,
-            "Sectors": 256,
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            }
-        },
-        {
-            "Type": "nap::TorusMesh",
-            "mID": "TorusMesh",
-            "Radius": 0.75,
-            "TubeRadius": 0.25,
-            "Segments": 128,
-            "TubeSegments": 128,
-            "AngleOffset": 0.0,
-            "Usage": "Static",
-            "PolygonMode": "Fill",
-            "CullMode": "Back",
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
         }
     ]
 }
