@@ -87,41 +87,49 @@ namespace nap
 
 		if (!lights.empty())
 		{
-			std::vector<const char*> labels;
-			labels.reserve(lights.size());
-			std::for_each(lights.begin(), lights.end(), [&labels](const auto& light) {
-				labels.emplace_back(light->mID.c_str());
-				});
-
-			static int item_index = 0;
-			LightComponentInstance* selected_light = lights[item_index];
-			if (ImGui::Combo("Selected Light", &item_index, labels.data(), lights.size()))
-				selected_light = lights[item_index];
-
-			// Calculate position -> default (from initialization) + offset 
-			auto xform_it = mLightXform.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
-			if (ImGui::SliderFloat3("Translate", glm::value_ptr(xform_it.first->second), -10.0f, 10.0f))
+			ImGui::BeginTabBar("Lights");
+			if (ImGui::BeginTabItem("Light Controls"))
 			{
-				auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
-				selected_light->getTransform().setTranslate(default_xform->mProperties.mTranslate + xform_it.first->second);
-			}
+				std::vector<const char*> labels;
+				labels.reserve(lights.size());
+				std::for_each(lights.begin(), lights.end(), [&labels](const auto& light) {
+					labels.emplace_back(light->mID.c_str());
+					});
 
-			// Calculate rotation -> default (from initialization) + offset
-			auto euler_it = mLightEuler.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
-			if (ImGui::SliderFloat3("Rotate", glm::value_ptr(euler_it.first->second), -180.0f, 180.0f))
+				static int item_index = 0;
+				LightComponentInstance* selected_light = lights[item_index];
+				if (ImGui::Combo("Selected Light", &item_index, labels.data(), lights.size()))
+					selected_light = lights[item_index];
+
+				// Calculate position -> default (from initialization) + offset 
+				auto xform_it = mLightXform.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
+				if (ImGui::SliderFloat3("Translate", glm::value_ptr(xform_it.first->second), -10.0f, 10.0f))
+				{
+					auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
+					selected_light->getTransform().setTranslate(default_xform->mProperties.mTranslate + xform_it.first->second);
+				}
+
+				// Calculate rotation -> default (from initialization) + offset
+				auto euler_it = mLightEuler.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
+				if (ImGui::SliderFloat3("Rotate", glm::value_ptr(euler_it.first->second), -180.0f, 180.0f))
+				{
+					auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
+					glm::vec3 rot_euler = math::radians(default_xform->mProperties.mRotate + euler_it.first->second);
+					selected_light->getTransform().setRotate(rot_euler);
+				}
+
+				bool enabled = selected_light->isEnabled();
+				if (ImGui::Checkbox("Enable", &enabled))
+					selected_light->enable(enabled);
+				ImGui::EndTabItem();
+			}
+			if (ImGui::BeginTabItem("Light Properties"))
 			{
-				auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
-				glm::vec3 rot_euler = math::radians(default_xform->mProperties.mRotate + euler_it.first->second);
-				selected_light->getTransform().setRotate(rot_euler);
+				mResourceManager->findObject<ParameterGUI>("ParameterGUI")->show(false);
+				ImGui::EndTabItem();
 			}
-
-			bool enabled = selected_light->isEnabled();
-			if (ImGui::Checkbox("Enable", &enabled))
-				selected_light->enable(enabled);
+			ImGui::EndTabBar();
 		}
-
-		mResourceManager->findObject<ParameterGUI>("ParameterGUI")->show(false);
-
 		ImGui::End();
 	}
 
