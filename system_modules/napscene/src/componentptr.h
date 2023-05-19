@@ -270,6 +270,14 @@ namespace nap
 		ComponentInstancePtr() = default;
 
 		/**
+		 * Construct a ComponentInstancePtr from a ComponentInstancePtrInitProxy, which can be retrieved through initComponentInstancePtr.
+		 */
+		template<class SourceComponentType>
+		ComponentInstancePtr(const ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
+			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
+		{ }
+
+		/**
 		 * Construct a ComponentInstancePtr from a ComponentInstance and member pointer to the ComponentPtr containing the target we're pointing at.
 		 * This constructor is deprecated and should not be used anymore; use initComponentInstancePtr instead. It is provided for backwards compatibility only.
 		 */
@@ -278,17 +286,7 @@ namespace nap
 		{
 			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
 			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
-
 			sourceComponentInstance->addToComponentLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
-		}
-
-		/**
-		* Construct a ComponentInstancePtr from a ComponentInstancePtrInitProxy, which can be retrieved through initComponentInstancePtr.
-		*/
-		template<class SourceComponentType>
-		ComponentInstancePtr(const ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
-			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
-		{
 		}
 
 		const TargetComponentInstanceType& operator*() const
@@ -379,12 +377,12 @@ namespace nap
 			return mInstance >= other.mInstance;
 		}
 
-		TargetComponentType* get() const
+		TargetComponentInstanceType* get() const
 		{
 			return mInstance;
 		}
 
-		TargetComponentType* get()
+		TargetComponentInstanceType* get()
 		{
 			return mInstance;
 		}

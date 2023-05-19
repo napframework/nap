@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
+		virtual CameraComponentInstance* getShadowCamera() override			{ return mShadowCamera.get(); }
 
 		/**
 		 * @return the light type
