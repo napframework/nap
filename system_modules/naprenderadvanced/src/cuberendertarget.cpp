@@ -104,7 +104,7 @@ namespace nap
 		for (auto& fb : mFramebuffers)
 			vkDestroyFramebuffer(mRenderService->getDevice(), fb, nullptr);
 
-		if (mRenderPass != nullptr)
+		if (mRenderPass != VK_NULL_HANDLE)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
 
 		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
