@@ -204,6 +204,12 @@
                                             "y": 1.0,
                                             "z": 1.0
                                         }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_b1178570",
+                                        "Name": "shininess",
+                                        "Value": 100.0
                                     }
                                 ]
                             }
@@ -317,135 +323,6 @@
                 {
                     "Type": "nap::DefaultInputRouterComponent",
                     "mID": "DefaultInputRouterComponent"
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "DirectionalLightEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformLight",
-                    "Properties": {
-                        "Translate": {
-                            "x": 6.0,
-                            "y": 3.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": -10.0,
-                            "y": 100.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::DirectionalLightComponent",
-                    "mID": "DirectionalLight",
-                    "Enabled": true,
-                    "Color": "SunColor",
-                    "Intensity": "SunIntensityParam",
-                    "ShadowStrength": 1.0,
-                    "ShadowSampleCount": 8,
-                    "Enable Shadows": true,
-                    "ShadowCamera": "./ShadowCameraOrtho",
-                    "ShadowMapSize": 2048
-                },
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "ShadowCameraOrtho",
-                    "Properties": {
-                        "Mode": "Custom",
-                        "LeftPlane": -10.0,
-                        "RightPlane": 10.0,
-                        "TopPlane": 10.0,
-                        "BottomPlane": -10.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 30.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderDirectionalLight",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "Layer": "",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_dda1e55d",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_335ebe47",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_af3f07b4",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon2",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -591,13 +468,13 @@
                     "ShadowStrength": 0.5,
                     "ShadowSampleCount": 4,
                     "Enable Shadows": true,
-                    "ShadowCamera": "./ShadowCameraPerspective",
-                    "ShadowMapSize": 1024,
+                    "ShadowCamera": "./PointShadowCam",
+                    "ShadowMapSize": 2048,
                     "Attenuation": "LightAttenuationParam"
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
-                    "mID": "ShadowCameraPerspective",
+                    "mID": "PointShadowCam",
                     "Properties": {
                         "FieldOfView": 30.0,
                         "NearClippingPlane": 0.10000000149011612,
@@ -715,15 +592,15 @@
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
                     "Enable Shadows": true,
-                    "ShadowCamera": "../SpotLightEntity/ShadowCameraPerspective2",
-                    "ShadowMapSize": 1024,
+                    "ShadowCamera": "./SpotShadowCam",
+                    "ShadowMapSize": 2048,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "SpotAngleParam",
                     "FallOff": "SpotFallOffParam"
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
-                    "mID": "ShadowCameraPerspective2",
+                    "mID": "SpotShadowCam",
                     "Properties": {
                         "FieldOfView": 60.0,
                         "NearClippingPlane": 0.10000000149011612,
@@ -794,6 +671,135 @@
                 {
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomon3",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
+                    "Layer": "",
+                    "Gnomon": "GnomonMesh",
+                    "LineWidth": 1.0,
+                    "DepthMode": "ReadWrite"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "SunLightEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformLight",
+                    "Properties": {
+                        "Translate": {
+                            "x": 6.0,
+                            "y": 3.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": -10.0,
+                            "y": 100.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::DirectionalLightComponent",
+                    "mID": "SunLight",
+                    "Enabled": true,
+                    "Color": "SunColor",
+                    "Intensity": "SunIntensityParam",
+                    "ShadowStrength": 1.0,
+                    "ShadowSampleCount": 8,
+                    "Enable Shadows": true,
+                    "ShadowCamera": "./SunShadowCam",
+                    "ShadowMapSize": 2048
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "SunShadowCam",
+                    "Properties": {
+                        "Mode": "Custom",
+                        "LeftPlane": -10.0,
+                        "RightPlane": 10.0,
+                        "TopPlane": 10.0,
+                        "BottomPlane": -10.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 30.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderFrustumComponent",
+                    "mID": "RenderDirectionalLight",
+                    "Visible": false,
+                    "Tags": [
+                        "RenderTag_Gizmo"
+                    ],
+                    "Layer": "",
+                    "Mesh": "",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_dda1e55d",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_335ebe47",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 1.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_af3f07b4",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "RenderGnomon2",
                     "Visible": true,
                     "Tags": [
                         "RenderTag_Gizmo"
@@ -1009,7 +1015,7 @@
                 "TorusEntity",
                 "TallBoxEntity",
                 "BoundsEntity",
-                "DirectionalLightEntity",
+                "SunLightEntity",
                 "SpotLightEntity",
                 "BoxEntity"
             ]
@@ -1048,7 +1054,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SpotIntensityParam",
                             "Name": "Intensity",
-                            "Value": 0.800000011920929,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1091,7 +1097,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "SunIntensityParam",
                             "Name": "Intensity",
-                            "Value": 0.550000011920929,
+                            "Value": 0.7749999761581421,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         }
@@ -1156,7 +1162,7 @@
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "lightdemo",
+            "Title": "Light & Shadow Demo",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
