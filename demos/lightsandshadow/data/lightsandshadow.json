@@ -415,14 +415,13 @@
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "DirectionalLight",
                     "Enabled": true,
-                    "Color": "LightColorParam",
-                    "Intensity": "LightIntensityParam",
+                    "Color": "SunColor",
+                    "Intensity": "SunIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
                     "Enable Shadows": true,
                     "ShadowCamera": "./ShadowCameraOrtho",
-                    "ShadowMapSize": 1024,
-                    "Attenuation": "LightAttenuationParam"
+                    "ShadowMapSize": 2048
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -541,9 +540,9 @@
                                         "mID": "UniformVec3_aab39b43",
                                         "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.4000000059604645,
-                                            "y": 0.45000001788139346,
-                                            "z": 0.6000000238418579
+                                            "x": 0.1599999964237213,
+                                            "y": 0.3499999940395355,
+                                            "z": 1.0
                                         }
                                     },
                                     {
@@ -560,7 +559,7 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "UniformFloat_ebd12872",
                                         "Name": "shininess",
-                                        "Value": 12.0
+                                        "Value": 50.0
                                     }
                                 ]
                             }
@@ -602,7 +601,20 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 5.0
+                        "UniformScale": 6.5
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "nap::RotateComponent_b8ff6c0c",
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Speed": -0.10000000149011612,
+                        "Offset": 0.0
                     }
                 }
             ],
@@ -638,8 +650,8 @@
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
                     "Enabled": true,
-                    "Color": "LightColor3Param",
-                    "Intensity": "LightIntensityParam",
+                    "Color": "PointColorParam",
+                    "Intensity": "PointIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 4,
                     "Enable Shadows": true,
@@ -667,7 +679,7 @@
                 {
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderPointLight",
-                    "Visible": true,
+                    "Visible": false,
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
@@ -741,8 +753,8 @@
                     "mID": "TransformSpotLight",
                     "Properties": {
                         "Translate": {
-                            "x": 2.0,
-                            "y": 0.5,
+                            "x": 0.5,
+                            "y": 0.25,
                             "z": 8.0
                         },
                         "Rotate": {
@@ -762,16 +774,16 @@
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
                     "Enabled": true,
-                    "Color": "LightColor2Param",
-                    "Intensity": "LightIntensityParam",
+                    "Color": "SpotColorParam",
+                    "Intensity": "SpotIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
                     "Enable Shadows": true,
                     "ShadowCamera": "../SpotLightEntity/ShadowCameraPerspective2",
                     "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam",
-                    "Angle": "SpotLightAngleParam",
-                    "FallOff": "SpotLightFallOffParam"
+                    "Angle": "SpotAngleParam",
+                    "FallOff": "SpotFallOffParam"
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -793,7 +805,7 @@
                 {
                     "Type": "nap::RenderFrustumComponent",
                     "mID": "RenderSpotLight",
-                    "Visible": true,
+                    "Visible": false,
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
@@ -906,9 +918,9 @@
                                         "mID": "UniformVec3_341baf9b",
                                         "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.5,
-                                            "y": 0.0,
-                                            "z": 0.10000000149011612
+                                            "x": 1.0,
+                                            "y": 0.20000000298023225,
+                                            "z": 0.49000000953674319
                                         }
                                     }
                                 ]
@@ -944,14 +956,14 @@
                     "mID": "TransformTorus",
                     "Properties": {
                         "Translate": {
-                            "x": -4.0,
-                            "y": -3.0,
+                            "x": -5.400000095367432,
+                            "y": -2.565000057220459,
                             "z": -2.0
                         },
                         "Rotate": {
                             "x": 100.0,
                             "y": 0.0,
-                            "z": -20.0
+                            "z": -40.0
                         },
                         "Scale": {
                             "x": 1.0,
@@ -983,9 +995,25 @@
                                         "mID": "UniformVec3_7a99beea",
                                         "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.0,
-                                            "y": 0.0,
+                                            "x": 0.1599999964237213,
+                                            "y": 0.3499999940395355,
                                             "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_4d3afc1a",
+                                        "Name": "shininess",
+                                        "Value": 75.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_c6b7a31d",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 0.5,
+                                            "z": 0.5
                                         }
                                     }
                                 ]
@@ -1293,71 +1321,87 @@
             "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "LightIntensityParam",
-                    "Name": "LightIntensity",
-                    "Value": 0.75,
+                    "mID": "SpotIntensityParam",
+                    "Name": "Spotlight Intensity",
+                    "Value": 0.800000011920929,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "LightAttenuationParam",
-                    "Name": "LightAttenuation",
-                    "Value": 0.0010000000474974514,
+                    "Name": "Light Attenuation",
+                    "Value": 0.009999999776482582,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "SpotLightAngleParam",
-                    "Name": "SpotLightAngle",
-                    "Value": 60.0,
+                    "mID": "SpotAngleParam",
+                    "Name": "Spot Angle",
+                    "Value": 30.0,
                     "Minimum": 0.0,
                     "Maximum": 360.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "SpotLightFallOffParam",
-                    "Name": "SpotLightFallOff",
-                    "Value": 1.0,
+                    "mID": "SpotFallOffParam",
+                    "Name": "Spot FallOff",
+                    "Value": 2.5,
                     "Minimum": 0.0,
                     "Maximum": 4.0
                 },
                 {
                     "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "LightColorParam",
-                    "Name": "LightColor",
+                    "mID": "SunColor",
+                    "Name": "Sun Color",
                     "Value": {
                         "Values": [
-                            0.0,
-                            0.9411764740943909,
+                            1.0,
+                            0.929411768913269,
+                            0.7450980544090271
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "SpotColorParam",
+                    "Name": "Spot Color",
+                    "Value": {
+                        "Values": [
+                            1.0,
+                            1.0,
                             1.0
                         ]
                     }
                 },
                 {
                     "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "LightColor2Param",
-                    "Name": "LightColor2",
+                    "mID": "PointColorParam",
+                    "Name": "Point Color",
                     "Value": {
                         "Values": [
-                            0.0941176488995552,
-                            0.0,
-                            1.0
+                            1.0,
+                            0.20392157137393952,
+                            0.4901960790157318
                         ]
                     }
                 },
                 {
-                    "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "LightColor3Param",
-                    "Name": "LightColor3",
-                    "Value": {
-                        "Values": [
-                            0.9333333373069763,
-                            0.0,
-                            1.0
-                        ]
-                    }
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SunIntensityParam",
+                    "Name": "Sun Intensity",
+                    "Value": 0.550000011920929,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "PointIntensityParam",
+                    "Name": "Point Intensity",
+                    "Value": 0.6000000238418579,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 }
             ],
             "Groups": []
