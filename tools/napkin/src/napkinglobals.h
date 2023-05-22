@@ -27,7 +27,6 @@ namespace napkin
 	inline constexpr const char* JSON_FILE_EXT			= "json";
 	inline constexpr const char* JSON_CONFIG_FILTER		= "NAP Config File (*.json)";
 	inline constexpr const char* JSON_DATA_FILTER		= "NAP Data File (*.json)";
-	inline constexpr const char* JSON_PROJECT_FILTER	= "NAP Project File (*.json)";
 	inline constexpr const char* DEFAULT_SETTINGS_FILE	= "resources/defaultsettings.ini";
 	inline constexpr int MAX_RECENT_FILES			    = 10;
 

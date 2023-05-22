@@ -96,11 +96,11 @@ OpenProjectAction::OpenProjectAction() : Action("Open...", QRC_ICONS_FILE)
 
 void OpenProjectAction::perform()
 {
-	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Project", "", JSON_PROJECT_FILTER);
-	if (filename.isNull())
-		return;
+	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Project", "",
+		QString("NAP Project File (%1)").arg(PROJECT_INFO_FILENAME));
 
-	AppContext::get().loadProject(filename);
+	if (!filename.isEmpty())
+		AppContext::get().loadProject(filename);
 }
 
 
