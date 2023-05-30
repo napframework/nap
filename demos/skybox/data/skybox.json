@@ -390,7 +390,24 @@
                     "Mesh": "SkyBoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
-                        "Samplers": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::SamplerCube",
+                                "mID": "SamplerCube_3b327077",
+                                "Name": "cubeTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MaxLodLevel": 1000,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "UffiziCubeMap"
+                            }
+                        ],
                         "Buffers": [],
                         "Material": "SkyBoxMaterial",
                         "BlendMode": "Opaque",
@@ -866,8 +883,8 @@
                 {
                     "Type": "nap::CubeMapFromFile",
                     "mID": "TestCubeMap",
-                    "Width": 512,
-                    "Height": 512,
+                    "Width": 256,
+                    "Height": 256,
                     "Format": "RGBA8",
                     "ColorSpace": "Linear",
                     "ClearColor": {

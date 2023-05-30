@@ -119,6 +119,13 @@ namespace nap
 		const Texture2D& getTexture() const					{ return *mTexture2D; }
 
 	private:
+		/**
+		 * Whenever a new texture is set that differs from the one registered in the data file,
+		 * we must ensure that the sampler refers to valid memory after destruction of said texture.
+		 */
+		void onTextureDestroyed();
+		nap::Slot<> textureDestroyedSlot = { [&]() -> void { onTextureDestroyed();  } };
+
 		rtti::ObjectPtr<Texture2D> mTexture2D;
 	};
 
@@ -212,6 +219,13 @@ namespace nap
 		const TextureCube& getTexture() const					{ return *mTextureCube; }
 
 	private:
+		/**
+		 * Whenever a new texture is set that differs from the one registered in the data file,
+		 * we must ensure that the sampler refers to valid memory after destruction of said texture.
+		 */
+		void onTextureDestroyed();
+		nap::Slot<> textureDestroyedSlot = { [&]() -> void { onTextureDestroyed();  } };
+
 		rtti::ObjectPtr<TextureCube> mTextureCube;
 	};
 

@@ -115,7 +115,7 @@ namespace nap
 		RTTI_ENABLE(Sampler)
 	public:
 		Sampler2D() = default;
-		rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Property: 'Texture' the texture to bind
+		mutable rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Property: 'Texture' the texture to bind
 	};
 
 
@@ -137,7 +137,7 @@ namespace nap
 		RTTI_ENABLE(Sampler)
 	public:
 		SamplerCube() = default;
-		rtti::ObjectPtr<TextureCube> mTextureCube;			///< Property: 'Texture' the texture to bind
+		mutable rtti::ObjectPtr<TextureCube> mTextureCube;			///< Property: 'Texture' the texture to bind
 	};
 
 

@@ -213,6 +213,11 @@ namespace nap
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
+		 * 
+		 */
+		virtual void onDestroy() override						{ textureDestroyed(); }
+
+		/**
 		 * Starts a transfer of texture data from GPU to CPU. 
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
@@ -227,6 +232,8 @@ namespace nap
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
 		EUsage mUsage = EUsage::Static;							///< Property: 'Usage' If this texture is updated frequently or considered static.
+
+		nap::Signal<> textureDestroyed;
 
 	protected:
 		/**
@@ -332,7 +339,14 @@ namespace nap
 		 */
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
+		/**
+		 *
+		 */
+		virtual void onDestroy() override						{ textureDestroyed(); }
+
 		const EUsage						mUsage = EUsage::Static;					///< Texture usage (cube maps are currently always static)
+
+		nap::Signal<> textureDestroyed;
 
 	protected:
 		/**

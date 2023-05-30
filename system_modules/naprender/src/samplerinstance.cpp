@@ -201,8 +201,29 @@ namespace nap
 
 	void Sampler2DInstance::setTexture(Texture2D& texture)
 	{
+		if (mTexture2D != nullptr)
+			mTexture2D->textureDestroyed.disconnect(textureDestroyedSlot);
+
 		mTexture2D = &texture;
+		mTexture2D->textureDestroyed.connect(textureDestroyedSlot);
+
 		raiseChanged();
+	}
+
+
+	void Sampler2DInstance::onTextureDestroyed()
+	{
+		// Check if the current texture is different from the resource, if so, reset it
+		if (mSampler != nullptr)
+		{
+			const auto* sampler_2d = static_cast<const Sampler2D*>(mSampler);
+			if (mTexture2D != sampler_2d->mTexture.get())
+				setTexture(*sampler_2d->mTexture);
+		}
+		else
+		{
+			setTexture(mRenderService->getEmptyTexture2D());
+		}
 	}
 
 	
@@ -250,8 +271,29 @@ namespace nap
 
 	void SamplerCubeInstance::setTexture(TextureCube& textureCube)
 	{
+		if (mTextureCube != nullptr)
+			mTextureCube->textureDestroyed.disconnect(textureDestroyedSlot);
+
 		mTextureCube = &textureCube;
+		mTextureCube->textureDestroyed.connect(textureDestroyedSlot);
+
 		raiseChanged();
+	}
+
+
+	void SamplerCubeInstance::onTextureDestroyed()
+	{
+		// Check if the current texture is different from the resource, if so, reset it
+		if (mSampler != nullptr)
+		{
+			const auto* sampler_cube = static_cast<const SamplerCube*>(mSampler);
+			if (mTextureCube != sampler_cube->mTextureCube.get())
+				setTexture(*sampler_cube->mTextureCube);
+		}
+		else
+		{
+			setTexture(mRenderService->getEmptyTextureCube());
+		}
 	}
 
 
