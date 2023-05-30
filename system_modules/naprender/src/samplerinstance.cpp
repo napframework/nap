@@ -199,12 +199,6 @@ namespace nap
 	}
 
 
-	void Sampler2DInstance::onTextureChanged(const Texture2D&)
-	{
-		raiseChanged();
-	}
-
-
 	void Sampler2DInstance::setTexture(Texture2D& texture)
 	{
 		mTexture2D = &texture;
@@ -251,12 +245,6 @@ namespace nap
 	{
 		if (samplerCube != nullptr)
 			mTextureCube = samplerCube->mTextureCube;
-	}
-
-
-	void SamplerCubeInstance::onTextureChanged(const Texture2D&)
-	{
-		raiseChanged();
 	}
 
 

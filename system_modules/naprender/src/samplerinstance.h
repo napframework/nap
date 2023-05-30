@@ -119,11 +119,6 @@ namespace nap
 		const Texture2D& getTexture() const					{ return *mTexture2D; }
 
 	private:
-		/**
-		 * Calls SamplerInstance::raiseChanged()
-		 */
-		void onTextureChanged(const Texture2D&);
-
 		rtti::ObjectPtr<Texture2D> mTexture2D;
 	};
 
@@ -217,11 +212,6 @@ namespace nap
 		const TextureCube& getTexture() const					{ return *mTextureCube; }
 
 	private:
-		/**
-		 * Calls SamplerInstance::raiseChanged()
-		 */
-		void onTextureChanged(const Texture2D&);
-
 		rtti::ObjectPtr<TextureCube> mTextureCube;
 	};
 
