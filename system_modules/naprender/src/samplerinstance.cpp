@@ -213,17 +213,9 @@ namespace nap
 
 	void Sampler2DInstance::onTextureDestroyed()
 	{
-		// Check if the current texture is different from the resource, if so, reset it
-		if (mSampler != nullptr)
-		{
-			const auto* sampler_2d = static_cast<const Sampler2D*>(mSampler);
-			if (mTexture2D != sampler_2d->mTexture.get())
-				setTexture(*sampler_2d->mTexture);
-		}
-		else
-		{
-			setTexture(mRenderService->getEmptyTexture2D());
-		}
+		// Texture is different from the resource, dangling reference inbound. Solve by resetting to an empty texture.
+		nap::Logger::warn("Sampler instance pointing to texture '%s' that is about to be destroyed.", mTexture2D->mID.c_str());
+		setTexture(mRenderService->getEmptyTexture2D());
 	}
 
 	
@@ -283,17 +275,9 @@ namespace nap
 
 	void SamplerCubeInstance::onTextureDestroyed()
 	{
-		// Check if the current texture is different from the resource, if so, reset it
-		if (mSampler != nullptr)
-		{
-			const auto* sampler_cube = static_cast<const SamplerCube*>(mSampler);
-			if (mTextureCube != sampler_cube->mTextureCube.get())
-				setTexture(*sampler_cube->mTextureCube);
-		}
-		else
-		{
-			setTexture(mRenderService->getEmptyTextureCube());
-		}
+		// Texture is different from the resource, dangling reference inbound. Solve by resetting to an empty texture.
+		nap::Logger::warn("Sampler instance pointing to texture '%s' that is about to be destroyed.", mTextureCube->mID.c_str());
+		setTexture(mRenderService->getEmptyTextureCube());
 	}
 
 
