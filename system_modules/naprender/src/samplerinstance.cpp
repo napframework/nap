@@ -215,7 +215,7 @@ namespace nap
 	{
 		// Texture is different from the resource, dangling reference inbound. Solve by resetting to an empty texture.
 		nap::Logger::warn("Sampler instance pointing to texture '%s' that is about to be destroyed.", mTexture2D->mID.c_str());
-		setTexture(mRenderService->getEmptyTexture2D());
+		setTexture(mRenderService->getErrorTexture2D());
 	}
 
 	
@@ -277,7 +277,7 @@ namespace nap
 	{
 		// Texture is different from the resource, dangling reference inbound. Solve by resetting to an empty texture.
 		nap::Logger::warn("Sampler instance pointing to texture '%s' that is about to be destroyed.", mTextureCube->mID.c_str());
-		setTexture(mRenderService->getEmptyTextureCube());
+		setTexture(mRenderService->getErrorTextureCube());
 	}
 
 

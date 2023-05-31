@@ -17,6 +17,7 @@
 #include <rendertarget.h>
 #include <material.h>
 #include <rect.h>
+#include <color.h>
 
 namespace nap
 {
@@ -855,10 +856,22 @@ namespace nap
 		Texture2D& getEmptyTexture2D() const										{ return *mEmptyTexture2D; }
 
 		/**
+		 * Returns an error cube texture that can be bound to materials to signal an application warning or error.
+		 * @return the error cube texture.
+		 */
+		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
+
+		/**
+		 * Returns an error 2D texture that can be bound to materials to signal an application warning or error.
+		 * @return the error 2D texture.
+		 */
+		Texture2D& getErrorTexture2D() const										{ return *mErrorTexture2D; }
+
+		/**
 		 * Returns an empty cube texture that is available on the GPU for temporary binding or storage.
 		 * @return empty texture that is available on the GPU.
 		 */
-		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
+		TextureCube& getErrorTextureCube() const									{ return *mErrorTextureCube; }
 
 		/**
 		 * 
@@ -1033,7 +1046,7 @@ namespace nap
 
 	private:
 		/**
-		 * Initializes empty 2d and cube textures, fills them with zero.
+		 * Initializes empty textures filled with zero, and error textures filled with a red error color.
 		 * The textures are uploaded at the beginning of the next frame.
 		 * @param errorState contains the error if the texture could not be initialized
 		 * @return if the textures initialized successfully.
@@ -1216,8 +1229,14 @@ namespace nap
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
 
+		// Empty textures
 		std::unique_ptr<Texture2D>				mEmptyTexture2D;
 		std::unique_ptr<TextureCube>			mEmptyTextureCube;
+
+		// Error textures
+		std::unique_ptr<Texture2D>				mErrorTexture2D;
+		std::unique_ptr<TextureCube>			mErrorTextureCube;
+		const RGBAColorFloat					mErrorColor = { 1.0f, 0.3137f, 0.3137f, 1.0f };
 
 		TextureSet								mTexturesToClear;
 		Texture2DSet							mTexturesToUpload;

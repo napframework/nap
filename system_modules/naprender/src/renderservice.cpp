@@ -1446,7 +1446,17 @@ namespace nap
 
 		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
 		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTextureCube->init(settings, { 0.0f, 0.0f, 0.0f, 0.0f }, 0, errorState))
+		if (!mEmptyTextureCube->init(settings, glm::zero<glm::vec4>(), 0, errorState))
+			return false;
+
+		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
+		mErrorTexture2D->mID = utility::stringFormat("%s_ErrorTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mErrorTexture2D->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+			return false;
+
+		mErrorTextureCube = std::make_unique<TextureCube>(getCore());
+		mErrorTextureCube->mID = utility::stringFormat("%s_ErrorTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mErrorTextureCube->init(settings, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		return true;
@@ -2021,6 +2031,8 @@ namespace nap
 		mFramesInFlight.clear();
 		mEmptyTexture2D.reset();
 		mEmptyTextureCube.reset();
+		mErrorTexture2D.reset();
+		mErrorTextureCube.reset();
 		mDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
 
