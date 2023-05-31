@@ -1135,6 +1135,9 @@ namespace nap
 	RenderService::RenderService(ServiceConfiguration* configuration) :
 		Service(configuration) { }
 
+	// Shut down render service
+	RenderService::~RenderService() { }
+
 
 	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
@@ -1331,14 +1334,6 @@ namespace nap
 		}
 
 		return RenderableMesh(mesh, materialInstance);
-	}
-
-
-	// Shut down render service
-	RenderService::~RenderService()
-	{
-		mEmptyTexture2D.reset();
-		mEmptyTextureCube.reset();
 	}
 
 
