@@ -43,6 +43,11 @@ namespace napkin
 	inline constexpr const char* PROP_COMPONENTS		= "Components";
 	inline constexpr const char* NAP_URI_PREFIX			= "nap";
 
+	// Directory name constants
+	inline constexpr const char* DIR_TOOLS			= "tools";
+	inline constexpr const char* DIR_BIN			= "bin";
+	inline constexpr const char* DIR_APPS			= "apps";
+
     // Testing success exit code. Avoids some common Unix error codes
 	inline constexpr int EXIT_ON_SUCCESS_EXIT_CODE = 180;
 }

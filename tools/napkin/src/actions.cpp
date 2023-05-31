@@ -96,7 +96,8 @@ OpenProjectAction::OpenProjectAction() : Action("Open...", QRC_ICONS_FILE)
 
 void OpenProjectAction::perform()
 {
-	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Project", "",
+	utility::Context nap_ctx = utility::Context::get();
+	QString filename = napkin::utility::getOpenFilename(nullptr, "Select NAP Project", nap_ctx.getRoot().path(),
 		QString("NAP Project File (%1)").arg(PROJECT_INFO_FILENAME));
 
 	if (!filename.isEmpty())
@@ -285,7 +286,7 @@ void napkin::OpenFileAction::perform()
 	}
 
 	// Get file to open
-	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Data File", dir, JSON_DATA_FILTER);
+	QString filename = napkin::utility::getOpenFilename(nullptr, "Select NAP Data File", dir, JSON_DATA_FILTER);
 	if (filename.isNull())
 		return;
 
@@ -884,7 +885,7 @@ void napkin::OpenServiceConfigAction::perform()
 		ctx.getServiceConfig()->getFilename();
 
 	// Get file to open
-	QString filename = napkinutils::getOpenFilename(nullptr, "Select NAP Config File", dir, JSON_CONFIG_FILTER);
+	QString filename = napkin::utility::getOpenFilename(nullptr, "Select NAP Config File", dir, JSON_CONFIG_FILTER);
 	if (filename.isNull())
 		return;
 	
