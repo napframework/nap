@@ -22,10 +22,11 @@ namespace napkin
 		QString getOpenFilename(QWidget *parent = nullptr, const QString& caption = {}, const QString& dir = {}, const QString& filter = {});
 
 		/**
-		 * Defines the context Napkin is running from.
+		 * NAP context and project root.
 		 */
-		struct Context
+		class Context final
 		{
+		public:
 			enum class EType : nap::int8
 			{
 				Source		= 0,	///< Napkin from NAP source
@@ -36,10 +37,10 @@ namespace napkin
 
 			/**
 			 * Context accessor.
-			 * 
+			 *
 			 * Figures out the NAP context by looking at the editor location within the project folder structure.
 			 * This is useful to resolve paths before a project is loaded. The result is cached for faster lookup.
-			 * 
+			 *
 			 * @return the NAP context
 			 */
 			static Context get();
