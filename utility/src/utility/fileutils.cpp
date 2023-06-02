@@ -7,7 +7,6 @@
 
 // External Includes
 #include <cstring>
-#include <assert.h>
 
 // clang-format off
 #include <sys/stat.h>
@@ -108,17 +107,17 @@ namespace nap
 #ifdef _WIN32
 			TCHAR path[MAX_PATH_SIZE];
 			TCHAR** filenameComponent = nullptr;
+			DWORD size = 0;
 #ifdef _MSC_VER
 			const char* p = relPath.c_str();
-			GetFullPathName(_T(p), MAX_PATH_SIZE, path, filenameComponent);
+			size = GetFullPathName(_T(p), MAX_PATH_SIZE, path, filenameComponent);
 #else
-			GetFullPathName((LPCSTR)relPath.c_str(), MAX_PATH_SIZE, path, filenameComponent);
+			size = GetFullPathName((LPCSTR)relPath.c_str(), MAX_PATH_SIZE, path, filenameComponent);
 #endif
-			return std::string((char*)path);
+			return size != 0 ? std::string((char*)path) : "";
 #else
 			char resolved[MAX_PATH_SIZE];
 			auto rvalue = realpath(relPath.c_str(), resolved);
-            assert(rvalue != NULL);
             return rvalue != NULL ? resolved : "";
 #endif
 		}

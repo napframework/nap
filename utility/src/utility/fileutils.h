@@ -42,9 +42,9 @@ namespace nap
 		bool isAbsolutePath(const std::string& path);
 
 		/**
-		 * Given a relative path, return an absolute path
+		 * Given a relative path, return an absolute path.
 		 * @param relPath The path to convert
-		 * @return An absolute file path
+		 * @return Absolute file path, empty string if path can't be resolved.
 		 */
 		std::string getAbsolutePath(const std::string& relPath);
 
