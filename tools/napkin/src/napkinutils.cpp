@@ -36,7 +36,7 @@ namespace napkin
 			if (root_dir.dirName().toLower() == DIR_TOOLS)
 			{
 				root_dir.cdUp();
-				mRoot = root_dir;
+				mRoot = root_dir.path();
 				mType = Context::EType::Package;
 				return;
 			}
@@ -45,7 +45,7 @@ namespace napkin
 			if (QFileInfo(root_dir.path(), PROJECT_INFO_FILENAME).exists())
 			{
 				mType = Context::EType::Application;
-				mRoot = root_dir;
+				mRoot = root_dir.path();
 				return;
 			}
 
@@ -54,7 +54,7 @@ namespace napkin
 			if (root_dir.dirName().toLower() == DIR_BIN)
 			{
 				root_dir.cdUp();
-				mRoot = root_dir;
+				mRoot = root_dir.path();
 				mType = Context::EType::Source;
 			}
 		}

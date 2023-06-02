@@ -53,11 +53,11 @@ namespace napkin
 			/**
 			 * @return the resolved NAP root, invalid (empty) when not known
 			 */
-			const QDir& getRoot() const						{ return mRoot; }
+			const QString& getRoot() const					{ return mRoot; }
 
 		private:
 			EType	mType = EType::Unknown;					///< Resolved context
-			QDir	mRoot = "";								///< NAP Root directory
+			QString	mRoot = "";					            ///< NAP Root directory
 
 			// Guesses the context when constructed
 			Context();
