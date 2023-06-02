@@ -7,6 +7,7 @@
 
 // External Includes
 #include <cstring>
+#include <assert.h>
 
 // clang-format off
 #include <sys/stat.h>
@@ -116,8 +117,9 @@ namespace nap
 			return std::string((char*)path);
 #else
 			char resolved[MAX_PATH_SIZE];
-			realpath(relPath.c_str(), resolved);
-			return resolved;
+			auto rvalue = realpath(relPath.c_str(), resolved);
+            assert(rvalue != NULL);
+            return rvalue != NULL ? resolved : "";
 #endif
 		}
 
