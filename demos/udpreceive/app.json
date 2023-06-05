@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "UDPReceive",
+    "Version": "1.0.0",
+    "Data": "data/udpreceive.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "napapp",
+        "napimgui",
+        "napudp",
+        "napapi"
+    ]
+}

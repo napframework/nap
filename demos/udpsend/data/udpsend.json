@@ -1,0 +1,60 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "Window 1",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::UDPClient",
+            "mID": "UDPClient",
+            "Thread": "UDPThread",
+            "AllowFailure": false,
+            "Endpoint": "127.0.0.1",
+            "Broadcast": false,
+            "Port": 13251,
+            "MaxQueueSize": 1000,
+            "StopOnMaxQueueSizeExceeded": true
+        },
+        {
+            "Type": "nap::UDPThread",
+            "mID": "UDPThread",
+            "Update Method": "Spawn Own Thread"
+        }
+    ]
+}

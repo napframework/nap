@@ -1,0 +1,58 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "UDP Receive",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::UDPServer",
+            "mID": "UDPServer",
+            "Thread": "UDPThread",
+            "AllowFailure": false,
+            "Port": 13251,
+            "IP Address": "",
+            "Multicast Groups": []
+        },
+        {
+            "Type": "nap::UDPThread",
+            "mID": "UDPThread",
+            "Update Method": "Main Thread"
+        }
+    ]
+}
