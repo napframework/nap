@@ -18,6 +18,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RotateComponent)
 	RTTI_PROPERTY("Properties", &nap::RotateComponent::mProperties, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Enabled", &nap::RotateComponent::mEnabled, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotateComponentInstance)
@@ -39,6 +40,7 @@ namespace nap
 		
 		// Copy over properties
 		mProperties = getComponent<RotateComponent>()->mProperties;
+		mEnabled = getComponent<RotateComponent>()->mEnabled;
 
 		// Copy initial rotation
 		mInitialRotate = mTransform->getRotate();
@@ -49,15 +51,18 @@ namespace nap
 
 	void RotateComponentInstance::update(double deltaTime)
 	{
-		// Update elapsed time taking in to account rotation speed
-		mElapsedTime += (deltaTime * mProperties.mSpeed);
-		
-		// Calculate rotation angle including offset
-		float rot_angle = (mElapsedTime + mProperties.mOffset) * 360.0f;
-		glm::quat new_ror = glm::rotate(mInitialRotate, glm::radians(rot_angle), mProperties.mAxis);
+		if (mEnabled)
+		{
+			// Update elapsed time taking in to account rotation speed
+			mElapsedTime += (deltaTime * mProperties.mSpeed);
 
-		// Set new rotation
-		mTransform->setRotate(new_ror);
+			// Calculate rotation angle including offset
+			float rot_angle = (mElapsedTime + mProperties.mOffset) * 360.0f;
+			glm::quat new_ror = glm::rotate(mInitialRotate, glm::radians(rot_angle), mProperties.mAxis);
+
+			// Set new rotation
+			mTransform->setRotate(new_ror);
+		}
 	}
 
 
