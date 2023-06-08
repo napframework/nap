@@ -496,6 +496,12 @@ napkin::ThemeManager& napkin::AppContext::getThemeManager()
 
 void napkin::AppContext::executeCommand(QUndoCommand* cmd)
 {
+	if (!hasDocument())
+	{
+		nap::Logger::warn("Unable to execute command '%s' - Document not loaded",
+			cmd->text().toStdString().c_str());
+		return;
+	}
 	getDocument()->executeCommand(cmd);
 }
 
