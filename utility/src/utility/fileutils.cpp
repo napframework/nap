@@ -117,7 +117,7 @@ namespace nap
 			return size != 0 ? std::string((char*)path) : "";
 #else
             // Dealing with absolute path
-            if(!relPath.empty() && relPath.at(0) == '/')
+            if(relPath.empty() || relPath.at(0) == '/')
                 return relPath;
 
             // Resolve
