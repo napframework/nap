@@ -1,3 +1,7 @@
+if(TARGET FreeImage)
+    return()
+endif()
+
 set(freeimage_search_dir ${NAP_ROOT}/system_modules/naprender/thirdparty/FreeImage)
 if(WIN32)
     find_path(
