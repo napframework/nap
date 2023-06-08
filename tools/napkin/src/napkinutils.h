@@ -43,7 +43,7 @@ namespace napkin
 			 *
 			 * @return the NAP context
 			 */
-			static Context get();
+			static const Context& get();
 
 			/**
 			 * @return the context Napkin is running in.

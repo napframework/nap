@@ -277,9 +277,10 @@ std::string AppContext::documentToString() const
 void AppContext::openRecentProject()
 {
 	auto lastFilename = AppContext::get().getLastOpenedProjectFilename();
-	if (lastFilename.isNull())
-		return;
-	AppContext::get().loadProject(lastFilename);
+	if (!lastFilename.isNull())
+	{
+		AppContext::get().loadProject(lastFilename);
+	}
 }
 
 

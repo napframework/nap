@@ -11,6 +11,7 @@
 #include <QCommandLineParser>
 #include <QSplashScreen>
 #include <utility/fileutils.h>
+#include <napkinutils.h>
 
 namespace napkin
 {
@@ -105,6 +106,9 @@ bool parseCommandline(QApplication& app, napkin::AppContext& context)
 	// Check if there's a project to load
 	bool project_set = parser.isSet(opProject);
 
+	// Check if we should open a recent project
+	bool no_open_recent = parser.isSet(opNoOpenRecent);
+
 	// Bail if exit-after-load flag is set but no project is specified
 	if (exit_after_load && !project_set)
 	{
@@ -114,16 +118,18 @@ bool parseCommandline(QApplication& app, napkin::AppContext& context)
 
 	// Check if we need to load a specific project
 	// This flag has precedence over the 'open no recent' project flag if set simultaneously
+	auto ctx = napkin::utility::Context::get();
 	if (project_set)
 	{
-		std::string projectPath = parser.value(opProject).toStdString();
-		projectPath = nap::utility::getAbsolutePath(projectPath);
-		context.addRecentlyOpenedProject(QString::fromStdString(projectPath));
+		std::string project_path = parser.value(opProject).toStdString();
+		project_path = nap::utility::getAbsolutePath(project_path);
+		context.addRecentlyOpenedProject(QString::fromStdString(project_path));
 	}
-	else if (parser.isSet(opNoOpenRecent))
+	else if (no_open_recent)
 	{
 		context.setOpenRecentProjectOnStartup(false);
 	}
+
 	return exit_after_load;
 }
 
@@ -167,7 +173,16 @@ int main(int argc, char* argv[])
 	splash.show();
 	app.processEvents();
 
-	// Handle command line
+	// We know what project to load when running from a packaged application environment -> No need to explicitly select a project
+	auto run_ctx = napkin::utility::Context::get();
+	if (run_ctx.getType() == napkin::utility::Context::EType::Application)
+	{
+		QFileInfo project_info(run_ctx.getRoot(), PROJECT_INFO_FILENAME);
+		if (project_info.exists())
+			ctx.addRecentlyOpenedProject(project_info.absoluteFilePath());
+	}
+
+	// Handle command line instructions
 	bool exit_after_load = parseCommandline(app, ctx);
 
 	// Create main window and show, this loads a project if set
