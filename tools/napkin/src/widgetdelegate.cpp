@@ -297,7 +297,7 @@ bool PropertyValueItemDelegate::editorEvent(QEvent* event, QAbstractItemModel* m
 
 				auto parent = ctx.getMainWindow();
 				auto filter = ctx.getResourceFactory().getFileFilter(path.getProperty());
-				auto filename = napkinutils::getOpenFilename(parent, "Select File", dir, filter);
+				auto filename = napkin::utility::getOpenFilename(parent, "Select File", dir, filter);
 				if (!filename.isEmpty())
 				{
 					// Make relative if inside resource dir

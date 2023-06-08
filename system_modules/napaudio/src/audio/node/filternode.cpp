@@ -78,6 +78,7 @@ namespace nap
 			calcCoeffs();
 			a0.reset(a0Dest);
 			a1.reset(a1Dest);
+            a2.reset(a2Dest);
 			b1.reset(b1Dest);
 			b2.reset(b2Dest);
 
@@ -131,6 +132,7 @@ namespace nap
 		{
 			a0.setValue(a0Dest);
 			a1.setValue(a1Dest);
+            a2.setValue(a2Dest);
 			b1.setValue(b1Dest);
 			b2.setValue(b2Dest);
 		}
