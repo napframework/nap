@@ -22,4 +22,5 @@ in vec3	in_Position;
 void main(void)
 {
 	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
+	gl_PointSize = 1.0;
 }
