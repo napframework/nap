@@ -123,7 +123,7 @@ namespace nap
             // Resolve
             char resolved[MAX_PATH_SIZE];
             auto rvalue = realpath(relPath.c_str(), resolved);
-            return rvalue != NULL ? resolved : "";
+            return rvalue != NULL || errno == ENOENT ? resolved : "";
 #endif
 		}
 
