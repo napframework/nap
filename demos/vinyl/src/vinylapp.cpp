@@ -86,7 +86,7 @@ namespace nap
 		if (ImGui::CollapsingHeader("Snapshot"))
 		{
 			ImGui::Text("Output directory: %s", mSnapshot->mOutputDirectory.empty() ?
-                getCore().getProjectInfo()->getDataDirectory().c_str() :
+                utility::getCWD().c_str() :
                 utility::getAbsolutePath(mSnapshot->mOutputDirectory).c_str());
 
 			if (ImGui::Button("Take"))
