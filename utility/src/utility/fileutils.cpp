@@ -102,6 +102,7 @@ namespace nap
 #endif
 		}
 
+
 		std::string getAbsolutePath(const std::string& relPath)
 		{
 #ifdef _WIN32
@@ -353,7 +354,7 @@ namespace nap
         {
             char cwd_path[FILENAME_MAX];
 #if defined(_WIN32)
-            _getcwd(cwd_path, FILENAME_MAX)
+			_getcwd(cwd_path, FILENAME_MAX);
 #else
             getcwd(cwd_path, FILENAME_MAX);
 #endif

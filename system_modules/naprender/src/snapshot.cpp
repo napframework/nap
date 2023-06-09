@@ -245,7 +245,7 @@ namespace nap
 
 	bool Snapshot::save()
 	{
-        std::string cur_time = timeFormat(getCurrentTime());
+        std::string cur_time = timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms");
         std::string out_path = mOutputDirectory.empty() ? cur_time : utility::joinPath({ mOutputDirectory, cur_time });
         out_path = utility::appendFileExtension(out_path, utility::toLower(rtti::Variant(mImageFileFormat).to_string()));
         out_path = utility::getAbsolutePath(out_path);
