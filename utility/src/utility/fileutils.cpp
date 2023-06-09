@@ -349,6 +349,18 @@ namespace nap
 		}
 
 
+        std::string getCWD()
+        {
+            char cwd_path[FILENAME_MAX];
+#if defined(_WIN32)
+            _getcwd(cwd_path, FILENAME_MAX)
+#else
+            getcwd(cwd_path, FILENAME_MAX);
+#endif
+            return cwd_path;
+        }
+
+
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)
 		{
 			std::ifstream in(filename, std::ios::in | std::ios::binary);
