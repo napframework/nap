@@ -240,7 +240,7 @@ namespace nap
 		bool makeDirs(const std::string& directory)
 		{
 			std::string parent_dir = getFileDir(directory);
-			if (!dirExists(parent_dir))
+			if (!parent_dir.empty() && !dirExists(parent_dir))
 			{
 				if (!makeDirs(parent_dir))
 					return false;
