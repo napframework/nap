@@ -116,11 +116,6 @@ namespace nap
 #endif
 			return size != 0 ? std::string((char*)path) : "";
 #else
-            // Dealing with absolute path
-            if(relPath.empty() || relPath.at(0) == '/')
-                return relPath;
-
-            // Resolve
             char resolved[MAX_PATH_SIZE];
             auto rvalue = realpath(relPath.c_str(), resolved);
             return rvalue != NULL || errno == ENOENT ? resolved : "";
