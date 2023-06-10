@@ -116,6 +116,7 @@ namespace nap
 				}
 				else
                 {
+					errorState = {};
 					Logger::warn(
                             "Portaudio stream failed to start with: input: %s (%i channels), output: %s (%i channels), samplerate %i, buffersize %i",
                             !device_settings.mInputDevice.empty() ? device_settings.mInputDevice.c_str() : "no input device", device_settings.mInputChannelCount,
