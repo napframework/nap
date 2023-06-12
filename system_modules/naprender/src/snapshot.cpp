@@ -77,17 +77,8 @@ namespace nap
 		// Verify the output directory. The default is 'data/'
 		if (!mOutputDirectory.empty())
 		{
-			// Check if the configured output directory exists
-			std::string absolute_path = utility::getAbsolutePath(mOutputDirectory);
-			if (!utility::dirExists(absolute_path))
-			{
-				// If the directory does not exist, try to create it
-				if (!utility::makeDirs(absolute_path))
-				{
-					errorState.fail("Failed to create directory: %s", absolute_path.c_str());
-					return false;
-				}
-			}
+            if(!errorState.check(utility::ensureDirExists(mOutputDirectory), "Failed to create directory: %s", mOutputDirectory.c_str()))
+                return false;
 		}
 
 		// Make sure not to create textures that exceed the hardware image dimension limit
@@ -254,24 +245,22 @@ namespace nap
 
 	bool Snapshot::save()
 	{
-		// Create a filename for the snapshot file
-		std::string path = utility::appendFileExtension(utility::joinPath(
-		{
-			utility::getAbsolutePath(mOutputDirectory).c_str(),
-			timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms").c_str()
-		}), utility::toLower(rtti::Variant(mImageFileFormat).to_string()));
+        std::string cur_time = timeFormat(getCurrentTime(), "%Y%m%d_%H%M%S_%ms");
+        std::string out_path = mOutputDirectory.empty() ? cur_time : utility::joinPath({ mOutputDirectory, cur_time });
+        out_path = utility::appendFileExtension(out_path, utility::toLower(rtti::Variant(mImageFileFormat).to_string()));
+        out_path = utility::getAbsolutePath(out_path);
 
 		utility::ErrorState error_state;
-		if (!mDestBitmapFileBuffer->save(path, error_state))
+		if (!mDestBitmapFileBuffer->save(out_path, error_state))
 		{
-			error_state.fail("%s: Failed to save snapshot %s", mID.c_str(), path.c_str());
+			error_state.fail("%s: Failed to save snapshot %s", mID.c_str(), out_path.c_str());
 			nap::Logger::error(error_state.toString());
 			return false;
 		};
 
 		if (!error_state.hasErrors())
 		{
-			onSnapshotSaved(path);
+			onSnapshotSaved(out_path);
 		}
 		return true;
 	}
