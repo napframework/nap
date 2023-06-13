@@ -67,13 +67,12 @@ static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
 	// Locate final build directory
     QString build_output = "";
 	QDirIterator it(bin_dir.filePath(), QDir::Dirs | QDir::NoDotAndDotDot);
-	QString napkin_build_type = QString(napkin::BUILD_TYPE).toLower();
 	while (it.hasNext())
 	{
-		QString child_dir = it.next();
-		if (child_dir.toLower().contains(napkin_build_type))
+		it.next();
+		if (it.fileName() == sBuildConf)
 		{
-			build_output = child_dir;
+			build_output = it.filePath();
 			break;
 		}
 	}
