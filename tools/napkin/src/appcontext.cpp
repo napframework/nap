@@ -103,6 +103,13 @@ Document* AppContext::loadDocument(const QString& filename)
 
 const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
+	if (!QFileInfo(projectFilename).exists())
+	{
+		nap::Logger::error("Failed to load project, unable to locate file: %s",
+			projectFilename.toStdString().c_str());
+		return nullptr;
+	}
+
 	// If there's a project already loaded in the current context, quit and restart.
 	// The editor can only load 1 project because it needs to load modules that can't be freed.
 	QString project_file_name = QString::fromStdString(nap::utility::forceSeparator(projectFilename.toStdString()));
@@ -147,8 +154,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::error("No data file specified");
 
 	// All good
+	projectLoaded(*project_info);
 	progressChanged(1.0f);
-	return mCore.getProjectInfo();
+
+	return project_info;
 }
 
 

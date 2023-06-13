@@ -4,9 +4,13 @@
 
 #include "apprunnerpanel.h"
 #include "napkin-resources.h"
+#include "napkinutils.h"
+#include "napkinglobals.h"
+#include "naputils.h"
 
 #include <nap/logger.h>
 #include <napqt/qtutils.h>
+#include <QDirIterator>
 
 napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 {
@@ -18,7 +22,6 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	mLayout.addWidget(&mStartButton);
 	mLayout.addWidget(&mStopButton);
 
-	connect(&mFileSelector, &nap::qt::FileSelector::filenameChanged, this, &AppRunnerPanel::onAppChanged);
 	connect(&mStartButton, &QPushButton::clicked, this, &AppRunnerPanel::onStartApp);
 	connect(&mStopButton, &QPushButton::clicked, this, &AppRunnerPanel::onStopApp);
 	connect(&mProcess, &QProcess::started,	this, &AppRunnerPanel::onAppStarted);
@@ -32,6 +35,9 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 
 	// When theme changes, update icons
 	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &AppRunnerPanel::themeChanged);
+
+	// When project loads find executable and set it
+	connect(&AppContext::get(), &AppContext::projectLoaded, this, &AppRunnerPanel::onProjectLoaded);
 }
 
 napkin::AppRunnerPanel::~AppRunnerPanel()
@@ -40,16 +46,76 @@ napkin::AppRunnerPanel::~AppRunnerPanel()
 }
 
 
-void napkin::AppRunnerPanel::showEvent(QShowEvent* event)
+static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
 {
-	QWidget::showEvent(event);
-	mFileSelector.setFilename(QSettings().value(LAST_CORE_APP).toString());
+	const auto& napkin_ctx = napkin::utility::Context::get();
+	if (napkin_ctx.getRoot().isEmpty())
+		return "";
+
+	// Bin is root when dealing with packaged app
+	QString root = napkin_ctx.getRoot();
+	if (napkin_ctx.getType() == napkin::utility::Context::EType::Application)
+		return root;
+
+	// Otherwise we have to find it, based on build configuration & type
+	if (napkin_ctx.getType() == napkin::utility::Context::EType::Package)
+		root = QString::fromStdString(projectInfo.getProjectDir());
+
+	// Check if the bin dir exists
+	QFileInfo bin_dir(root, "bin");
+	if (!bin_dir.exists() || !bin_dir.isDir())
+		return "";
+
+	QDirIterator it(bin_dir.filePath(), QDir::Dirs | QDir::NoDotAndDotDot); QString build_output = "";
+	QString napkin_build_type = QString(napkin::BUILD_TYPE).toLower();
+	while (it.hasNext())
+	{
+		QString child_dir = it.next();
+		if (child_dir.toLower().contains(napkin_build_type))
+		{
+			build_output = child_dir;
+			break;
+		}
+	}
+	return build_output;
 }
 
-void napkin::AppRunnerPanel::onAppChanged(const QString& filename)
+
+void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
 {
-	QSettings().setValue(LAST_CORE_APP, filename);
+	const auto& napkin_ctx = napkin::utility::Context::get();
+	if (napkin_ctx.getRoot().isEmpty())
+		return;
+
+	// Find build output directory
+	auto build_dir = sGetBuildDir(projectInfo);
+	if (build_dir.isEmpty())
+	{
+		nap::Logger::warn("Unable to find %s build output directory", projectInfo.mTitle.c_str());
+		mFileSelector.setFilename("");
+		return;
+	}
+
+	// Find executable
+	QString exe_file = QString::fromStdString(projectInfo.mTitle).toLower();
+	QDirIterator it(build_dir, QDir::Files | QDir::NoDotAndDotDot);
+	while (it.hasNext())
+	{
+		// Peek and use
+		if (it.fileName().toLower().startsWith(exe_file) &&
+			it.fileInfo().isExecutable())
+		{
+			nap::Logger::info("Setting executable: %s",
+				napkin::toLocalURI(it.fileInfo().filePath().toStdString()).c_str());
+			mFileSelector.setFilename(it.filePath());
+			return;
+		}
+		it.next();
+	}
+	nap::Logger::warn("Unable to find %s executable", projectInfo.mTitle.c_str());
+	mFileSelector.setFilename("");
 }
+
 
 void napkin::AppRunnerPanel::onStartApp()
 {
@@ -120,6 +186,7 @@ void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 {
 	nap::Logger::info("App State Changed: %s", nap::qt::QEnumToString(state).toStdString().c_str());
 }
+
 
 void napkin::AppRunnerPanel::onAppFinished(int exitCode, QProcess::ExitStatus)
 {

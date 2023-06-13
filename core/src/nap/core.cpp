@@ -440,7 +440,7 @@ namespace nap
 
 		// Ensure project info is loaded correctly.
 		if (!err.check(mProjectInfo != nullptr,
-			"Failed to load project info %s", projectFilename.c_str()))
+			"Failed to load project from file %s", projectFilename.c_str()))
 			return false;
 
 		// Set if paths are resolved for editor or application
