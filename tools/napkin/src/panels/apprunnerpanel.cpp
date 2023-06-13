@@ -53,6 +53,7 @@ static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
 	QString root = napkin_ctx.getType() == napkin::utility::Context::EType::Source ?
 		QString::fromStdString(nap::utility::getAbsolutePath(projectInfo.getNAPRootDir())) :
 		QString::fromStdString(nap::utility::getAbsolutePath(projectInfo.getProjectDir()));
+    assert(!root.isEmpty());
 
 	// Build dir is the installation directory when dealing with packaged app
 	if (napkin_ctx.getType() == napkin::utility::Context::EType::Application)
