@@ -91,13 +91,10 @@ void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo
 	auto build_dir = sGetBuildDir(projectInfo);
 	if (build_dir.isEmpty())
 	{
-		nap::Logger::warn("Unable to find '%s' build output directory", projectInfo.mTitle.c_str());
+		nap::Logger::warn("Unable to find '%s' build directory", projectInfo.mTitle.c_str());
 		mFileSelector.setFilename("");
 		return;
 	}
-
-    std::string lala = build_dir.toStdString();
-    nap::Logger::info("Build dir: %s", lala.c_str());
 
 	// Find executable
 	QString exe_file = QString::fromStdString(projectInfo.mTitle).toLower();
