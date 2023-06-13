@@ -105,7 +105,7 @@ void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo
 		if (it.fileName().toLower().startsWith(exe_file) &&
 			it.fileInfo().isExecutable())
 		{
-			nap::Logger::info("Setting executable: %s",
+			nap::Logger::info("Setting executable: '%s'",
 				napkin::toLocalURI(it.fileInfo().filePath().toStdString()).c_str());
 			mFileSelector.setFilename(it.filePath());
 			return;

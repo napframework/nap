@@ -36,14 +36,14 @@ namespace nap
 		// Find module json in given directories
 		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
 		moduleJson = utility::findFileInDirectories(expectedJsonFile, moduleDirs);
-		if (!err.check(!moduleJson.empty(), "File '%s' not found in any of these dirs:\n%s",
+		if (!err.check(!moduleJson.empty(), "Module descriptor '%s' not found in any of these dirs:\n%s",
 			expectedJsonFile.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
 			return false;
 
 		// Find module library in given directories
 		auto expectedFilename = utility::stringFormat("%s.%s", moduleName.c_str(), getModuleExtension().c_str());
 		moduleFile = utility::findFileInDirectories(expectedFilename, moduleDirs);
-		if (!err.check(!moduleFile.empty(), "File '%s' not found in any of these dirs:\n%s",
+		if (!err.check(!moduleFile.empty(), "Module lib '%s' not found in any of these dirs:\n%s",
 			expectedFilename.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
 			return false;
 
