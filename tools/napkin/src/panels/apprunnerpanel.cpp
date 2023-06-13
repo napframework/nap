@@ -51,10 +51,10 @@ static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
 	// Find root based on context
 	const auto& napkin_ctx = napkin::utility::Context::get();
 	QString root = napkin_ctx.getType() == napkin::utility::Context::EType::Source ?
-		QString::fromStdString(projectInfo.getNAPRootDir()) :
-		QString::fromStdString(projectInfo.getProjectDir());
+		QString::fromStdString(nap::utility::getAbsolutePath(projectInfo.getNAPRootDir())) :
+		QString::fromStdString(nap::utility::getAbsolutePath(projectInfo.getProjectDir()));
 
-	// Build dir is the install directory when dealing with packaged app
+	// Build dir is the installation directory when dealing with packaged app
 	if (napkin_ctx.getType() == napkin::utility::Context::EType::Application)
 		return root;
 
@@ -64,7 +64,8 @@ static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
 		return "";
 
 	// Locate final build directory
-	QDirIterator it(bin_dir.filePath(), QDir::Dirs | QDir::NoDotAndDotDot); QString build_output = "";
+    QString build_output = "";
+	QDirIterator it(bin_dir.filePath(), QDir::Dirs | QDir::NoDotAndDotDot);
 	QString napkin_build_type = QString(napkin::BUILD_TYPE).toLower();
 	while (it.hasNext())
 	{
