@@ -48,19 +48,15 @@ napkin::AppRunnerPanel::~AppRunnerPanel()
 
 static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
 {
-	// Without a context we don't know where to look
+	// Find root based on context
 	const auto& napkin_ctx = napkin::utility::Context::get();
-	if (napkin_ctx.getType() == napkin::utility::Context::EType::Unknown)
-		return "";
+	QString root = napkin_ctx.getType() == napkin::utility::Context::EType::Source ?
+		QString::fromStdString(projectInfo.getNAPRootDir()) :
+		QString::fromStdString(projectInfo.getProjectDir());
 
-	// Bin is root when dealing with packaged app
-	QString root = napkin_ctx.getRoot();
+	// Build dir is the install directory when dealing with packaged app
 	if (napkin_ctx.getType() == napkin::utility::Context::EType::Application)
 		return root;
-
-	// Otherwise we have to find it, based on build configuration & type
-	if (napkin_ctx.getType() == napkin::utility::Context::EType::Package)
-		root = QString::fromStdString(projectInfo.getProjectDir());
 
 	// Check if the bin dir exists
 	QFileInfo bin_dir(root, "bin");
