@@ -35,10 +35,14 @@ namespace nap
 {
 	std::string ProjectInfo::getNAPRootDir() const
 	{
-		auto exeDir = nap::utility::getExecutableDir();
-		auto napKinExeToRoot = mPathMapping->mNapkinExeToRoot;
-		auto projectToRoot = mPathMapping->mProjectExeToRoot;
-		return utility::joinPath({exeDir, mContext == EContext::Editor ? napKinExeToRoot : projectToRoot});
+		auto joined_path = utility::joinPath(
+			{
+				utility::getExecutableDir(), mContext == EContext::Editor ? mPathMapping->mNapkinExeToRoot : mPathMapping->mProjectExeToRoot
+			});
+
+		auto absolute_path = utility::getAbsolutePath(joined_path); 
+		assert(!absolute_path.empty());
+		return absolute_path;
 	}
 
 
