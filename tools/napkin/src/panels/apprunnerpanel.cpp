@@ -91,10 +91,13 @@ void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo
 	auto build_dir = sGetBuildDir(projectInfo);
 	if (build_dir.isEmpty())
 	{
-		nap::Logger::warn("Unable to find %s build output directory", projectInfo.mTitle.c_str());
+		nap::Logger::warn("Unable to find '%s' build output directory", projectInfo.mTitle.c_str());
 		mFileSelector.setFilename("");
 		return;
 	}
+
+    std::string lala = build_dir.toStdString();
+    nap::Logger::info("Build dir: %s", lala.c_str());
 
 	// Find executable
 	QString exe_file = QString::fromStdString(projectInfo.mTitle).toLower();
@@ -102,17 +105,16 @@ void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo
 	while (it.hasNext())
 	{
 		// Peek and use
-		if (it.fileName().toLower().startsWith(exe_file) &&
-			it.fileInfo().isExecutable())
+        it.next();
+        if (it.fileInfo().isExecutable() && it.fileName().toLower().startsWith(exe_file))
 		{
-			nap::Logger::info("Setting executable: '%s'",
-				napkin::toLocalURI(it.fileInfo().filePath().toStdString()).c_str());
+			nap::Logger::info("Setting executable '%s'",
+				napkin::toLocalURI(it.filePath().toStdString()).c_str());
 			mFileSelector.setFilename(it.filePath());
 			return;
 		}
-		it.next();
 	}
-	nap::Logger::warn("Unable to find %s executable", projectInfo.mTitle.c_str());
+	nap::Logger::warn("Unable to find '%s' executable", projectInfo.mTitle.c_str());
 	mFileSelector.setFilename("");
 }
 
