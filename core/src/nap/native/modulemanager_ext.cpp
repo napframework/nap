@@ -70,10 +70,8 @@ namespace nap
 			mCore.getResourceManager()->getFactory(),
 			err);
 
-		if (!err.check(modinfo != nullptr,
-					   "Failed to read %s from %s",
-					   RTTI_OF(nap::ModuleInfo).get_name().data(),
-					   moduleJson.c_str()))
+		if (!err.check(modinfo != nullptr, "Failed to read %s from %s",
+			RTTI_OF(nap::ModuleInfo).get_name().data(),  moduleJson.c_str()))
 			return false;
 
 		// Store useful references so we can backtrack if necessary

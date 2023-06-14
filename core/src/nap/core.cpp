@@ -451,15 +451,8 @@ namespace nap
 		if(!loadPathMapping(*mProjectInfo, err))
 			return false;
 
-		// Ensure templates/variables are replaced with their intended values
-		mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename);
-		if (!err.check(mProjectInfo->mPathMapping != nullptr,
-					   "Failed to load path mapping %s: %s",
-					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
-			return false;
-
 		// Notify project info is loaded
-		nap::Logger::info("Loading project '%s' ver. %s (%s)",
+		nap::Logger::info("Loading project '%s' ver. %s (%s)", 
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
 		return true;
@@ -523,8 +516,15 @@ namespace nap
 			return false;
 		}
 
-		// Template/variable replacement
+		// Resolve module paths
 		projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths);
+
+		// Resolve build output
+		projectInfo.patchPath(projectInfo.mPathMapping->mOutputPath);
+
+		// Resolve service config
+		projectInfo.patchPath(mProjectInfo->mServiceConfigFilename);
+
 		return true;
 	}
 

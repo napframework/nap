@@ -8,5 +8,7 @@
         "{ROOT}/system_modules/{MODULE_NAME}/lib/{BUILD_CONFIG}",
         "{ROOT}/modules/{MODULE_NAME}/lib/{BUILD_CONFIG}",
         "{PROJECT_DIR}/module/lib/{BUILD_CONFIG}"
-    ]
+    ],
+    "OutputPath": ",
+    "OutputPath": "{ROOT}/bin/{BUILD_CONFIG}""
 }

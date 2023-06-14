@@ -290,7 +290,7 @@ namespace nap
          * Load path mapping file and replace any template vars with their respective values
          * @param projectInfo The current project info
          * @param err Contains the error if the path mapping operation failed
-         * @return The path mapping that was loaded or nullptr if loading failed
+         * @return if loading the path mapping file succeeded or not
          */
 		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
 

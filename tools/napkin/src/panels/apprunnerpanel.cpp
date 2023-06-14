@@ -46,44 +46,10 @@ napkin::AppRunnerPanel::~AppRunnerPanel()
 }
 
 
-static QString sGetBuildDir(const nap::ProjectInfo& projectInfo)
-{
-	// Find root based on context
-	const auto& napkin_ctx = napkin::utility::Context::get();
-	QString root = napkin_ctx.getType() == napkin::utility::Context::EType::Source ?
-		QString::fromStdString(projectInfo.getNAPRootDir()) :
-		QString::fromStdString(projectInfo.getProjectDir());
-    assert(!root.isEmpty());
-
-	// Build dir is the installation directory when dealing with packaged app
-	if (napkin_ctx.getType() == napkin::utility::Context::EType::Application)
-		return root;
-
-	// Check if the bin dir exists
-	QFileInfo bin_dir(root, "bin");
-	if (!bin_dir.exists() || !bin_dir.isDir())
-		return "";
-
-	// Locate final build directory
-    QString build_output = "";
-	QDirIterator it(bin_dir.filePath(), QDir::Dirs | QDir::NoDotAndDotDot);
-	while (it.hasNext())
-	{
-		it.next();
-		if (it.fileName() == sBuildConf)
-		{
-			build_output = it.filePath();
-			break;
-		}
-	}
-	return build_output;
-}
-
-
 void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
 {
 	// Find build output directory
-	auto build_dir = sGetBuildDir(projectInfo);
+	auto build_dir = QString::fromStdString(projectInfo.getBuildDir());
 	if (build_dir.isEmpty())
 	{
 		nap::Logger::warn("Unable to locate '%s' build directory", projectInfo.mTitle.c_str());

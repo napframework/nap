@@ -35,6 +35,7 @@ namespace nap
 		std::string mProjectExeToRoot;				///< Relative path from project to executable
 		std::string mNapkinExeToRoot;				///< Relative path from napkin to executable
 		std::vector<std::string> mModulePaths;		///< Relative paths to the module directories
+		std::string mOutputPath;					///< Relative path to the build output directory
 
 	private:
 		std::string mFilename;						
@@ -95,6 +96,11 @@ namespace nap
 		 * @return Absolute path to the root of NAP Framework
 		 */
 		std::string getNAPRootDir() const;
+
+		/**
+		 * @return Absolute path to the build output directory
+		 */
+		std::string getBuildDir() const;
 
 		/**
 		 * @return Absolute paths of directories to use when searching for modules
