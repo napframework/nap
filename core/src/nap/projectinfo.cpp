@@ -146,17 +146,10 @@ namespace nap
 	}
 
 
-	static nap::rtti::Factory& getFactory()
-	{
-		static nap::rtti::Factory factory;
-		return factory;
-	}
-
-
 	std::unique_ptr<nap::ProjectInfo> ProjectInfo::clone() const
 	{
-		auto cloned_info = rtti::cloneObject(*this, getFactory());
-		assert(cloned_info != nullptr); utility::ErrorState error;
+		auto cloned_info = std::make_unique<ProjectInfo>();
+		rtti::copyObject(*this, *cloned_info); utility::ErrorState error;
 		cloned_info->init(mFilename, mContext, error);
 		NAP_ASSERT_MSG(!error.hasErrors(), error.toString().c_str());
 		return cloned_info;
@@ -173,10 +166,11 @@ namespace nap
 			return false;
 
 		// Load path mapping (relative to the app.json file)
+		nap::rtti::Factory factory;
 		auto path_mapping_file_name = utility::forceSeparator(utility::joinPath({ mProjectDir, mPathMappingFile }));
 		mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(path_mapping_file_name,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-			getFactory(),
+			factory,
 			error);
 
 		// Ensure path loading path mapping succeeded
@@ -196,8 +190,6 @@ namespace nap
 		// Ensure root is valid
 		if (!error.check(!mRoot.empty(), "Unable to resolve NAP root directory"))
 			return false;
-
-		//////////////////////////////////////////////////////////////////////////
 
 		// Resolve module paths
 		patchPaths(mPathMapping->mModulePaths);
