@@ -286,14 +286,6 @@ namespace nap
 		 */
 		const nap::ProjectInfo* getProjectInfo() const;
 
-        /**
-         * Load path mapping file and replace any template vars with their respective values
-         * @param projectInfo The current project info
-         * @param err Contains the error if the path mapping operation failed
-         * @return if loading the path mapping file succeeded or not
-         */
-		bool loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err);
-
 		/**
  		 * Writes a 'config.json' file, that contains all currently loaded service configurations
  		 * @param path The path to the config file relative to the path of the project info json file

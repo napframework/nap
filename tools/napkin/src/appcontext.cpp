@@ -133,10 +133,8 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 	progressChanged(0.5f);
 
-	// Clone current project information, allows us to edit it
-	const auto* project_info = mCore.getProjectInfo();
-	mProjectInfo = nap::rtti::cloneObject(*project_info, mCore.getResourceManager()->getFactory());
-	mProjectInfo->setFilename(project_info->getFilename());
+	// Clone current project information -> allows us to edit it in Napkin
+	mProjectInfo = mCore.getProjectInfo()->clone();
 
 	// Load service configuration
 	mServiceConfig = std::make_unique<ServiceConfig>(mCore, *mProjectInfo);
@@ -154,10 +152,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::error("No data file specified");
 
 	// All good
-	projectLoaded(*project_info);
+	projectLoaded(*mProjectInfo);
 	progressChanged(1.0f);
 
-	return project_info;
+	return mProjectInfo.get();
 }
 
 

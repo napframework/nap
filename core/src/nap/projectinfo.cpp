@@ -9,6 +9,10 @@
 
 // External Includes
 #include <utility/fileutils.h>
+#include <rtti/factory.h>
+#include <rtti/rttiutilities.h>
+#include <rtti/jsonreader.h>
+#include <nap/assert.h>
 
 RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("ProjectExeToRoot",		&nap::PathMapping::mProjectExeToRoot,		nap::rtti::EPropertyMetaData::Default)
@@ -36,15 +40,8 @@ namespace nap
 {
 	std::string ProjectInfo::getNAPRootDir() const
 	{
-		assert(mPathMapping != nullptr);
-		auto joined_path = utility::joinPath(
-			{
-				utility::getExecutableDir(), mContext == EContext::Editor ? mPathMapping->mNapkinExeToRoot : mPathMapping->mProjectExeToRoot
-			});
-
-		auto absolute_path = utility::getAbsolutePath(joined_path); 
-		assert(!absolute_path.empty());
-		return absolute_path;
+		assert(!mRoot.empty());
+		return mRoot;
 	}
 
 
@@ -84,20 +81,15 @@ namespace nap
 
 	std::string ProjectInfo::getFilename() const
 	{
+		assert(!mFilename.empty());
 		return mFilename;
-	}
-
-	void ProjectInfo::setFilename(const std::string& filename)
-	{
-		mFilename = filename;
 	}
 
 
 	std::string ProjectInfo::getProjectDir() const
 	{
-		assert(!mFilename.empty());
-		auto f = nap::utility::getAbsolutePath(mFilename);
-		return nap::utility::getFileDir(f);
+		assert(!mProjectDir.empty());
+		return mProjectDir;
 	}
 
 
@@ -151,6 +143,72 @@ namespace nap
 		{
 			patchPath(path, additionalValues);
 		}
+	}
+
+
+	static nap::rtti::Factory& getFactory()
+	{
+		static nap::rtti::Factory factory;
+		return factory;
+	}
+
+
+	std::unique_ptr<nap::ProjectInfo> ProjectInfo::clone() const
+	{
+		auto cloned_info = rtti::cloneObject(*this, getFactory());
+		assert(cloned_info != nullptr); utility::ErrorState error;
+		cloned_info->init(mFilename, mContext, error);
+		NAP_ASSERT_MSG(!error.hasErrors(), error.toString().c_str());
+		return cloned_info;
+	}
+
+
+	bool ProjectInfo::init(const std::string fileName, ProjectInfo::EContext context, nap::utility::ErrorState& error)
+	{
+		// Resolve project directory
+		mContext = context; mFilename = fileName;
+		mProjectDir = nap::utility::getFileDir(nap::utility::getAbsolutePath(fileName));
+		if (!error.check(!mProjectDir.empty(), "Unable to resolve project directory from file: %s",
+			fileName.c_str()))
+			return false;
+
+		// Load path mapping (relative to the app.json file)
+		auto path_mapping_file_name = utility::forceSeparator(utility::joinPath({ mProjectDir, mPathMappingFile }));
+		mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(path_mapping_file_name,
+			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
+			getFactory(),
+			error);
+
+		// Ensure path loading path mapping succeeded
+		if (!error.check(mPathMapping != nullptr, "Failed to load path mapping: %s",
+			path_mapping_file_name.c_str()))
+			return false;
+
+		// Resolve the NAP root
+		auto nap_root = utility::joinPath(
+			{
+				utility::getExecutableDir(), context == ProjectInfo::EContext::Editor ?
+					mPathMapping->mNapkinExeToRoot :
+					mPathMapping->mProjectExeToRoot
+			});
+		mRoot = utility::getAbsolutePath(nap_root);
+
+		// Ensure root is valid
+		if (!error.check(!mRoot.empty(), "Unable to resolve NAP root directory"))
+			return false;
+
+		//////////////////////////////////////////////////////////////////////////
+
+		// Resolve module paths
+		patchPaths(mPathMapping->mModulePaths);
+
+		// Resolve build output
+		patchPath(mPathMapping->mOutputPath);
+
+		// Resolve service config
+		patchPath(mServiceConfigFilename);
+
+		return true;
 	}
 
 
