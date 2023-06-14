@@ -146,12 +146,23 @@ namespace nap
 	}
 
 
+	static nap::rtti::Factory& getFactory()
+	{
+		static nap::rtti::Factory factory;
+		return factory;
+	}
+
+
 	std::unique_ptr<nap::ProjectInfo> ProjectInfo::clone() const
 	{
-		auto cloned_info = std::make_unique<ProjectInfo>();
-		rtti::copyObject(*this, *cloned_info); utility::ErrorState error;
-		cloned_info->init(mFilename, mContext, error);
-		NAP_ASSERT_MSG(!error.hasErrors(), error.toString().c_str());
+		auto cloned_info = rtti::cloneObject<ProjectInfo>(*this, getFactory());
+		assert(cloned_info != nullptr);
+		cloned_info->mFilename = mFilename;
+		cloned_info->mContext = mContext;
+		cloned_info->mProjectDir = mProjectDir;
+		cloned_info->mRoot = mRoot;
+		cloned_info->mPathMapping = rtti::cloneObject<PathMapping>(*mPathMapping, getFactory());
+		assert(cloned_info->mPathMapping != nullptr);
 		return cloned_info;
 	}
 
@@ -166,11 +177,10 @@ namespace nap
 			return false;
 
 		// Load path mapping (relative to the app.json file)
-		nap::rtti::Factory factory;
 		auto path_mapping_file_name = utility::forceSeparator(utility::joinPath({ mProjectDir, mPathMappingFile }));
 		mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(path_mapping_file_name,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-			factory,
+			getFactory(),
 			error);
 
 		// Ensure path loading path mapping succeeded
