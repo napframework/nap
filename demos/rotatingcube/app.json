@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "rotatingcube",
+    "Version": "0.1.0",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napparametergui",
+        "naprotatingcube"
+    ],
+    "Data": "data/objects.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

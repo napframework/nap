@@ -19,9 +19,10 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Main application that is called from within the main loop
+	 * Main application that is called from within the main loop.
+	 * Renders a rotating cube at the center of the scene, the rotation speed can be controlled using a slider.
 	 */
-	class @APP_NAME_INPUTCASE@App : public App
+	class RotatingCubeApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -29,7 +30,8 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		@APP_NAME_INPUTCASE@App(nap::Core& core) : App(core) { }
+		RotatingCubeApp(nap::Core& core) : App(core) { }
+
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -77,5 +79,6 @@ namespace nap
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		///< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mGnomonEntity = nullptr;		///< Pointer to the entity that can render the gnomon
+		ObjectPtr<EntityInstance>   mCubeEntity = nullptr;          ///< Pointer to the cube entity
 	};
 }
