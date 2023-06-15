@@ -35,6 +35,7 @@ namespace nap
 		std::string mProjectExeToRoot;				///< Relative path from project to executable
 		std::string mNapkinExeToRoot;				///< Relative path from napkin to executable
 		std::vector<std::string> mModulePaths;		///< Relative paths to the module directories
+		std::string mOutputPath;					///< Relative path to the build output directory
 
 	private:
 		std::string mFilename;						
@@ -82,11 +83,6 @@ namespace nap
 		std::string getFilename() const;
 
 		/**
-		 * Set the filename of this ProjectInfo, only to be called while loading.
-		 */
-		void setFilename(const std::string& filename);
-
-		/**
 		 * @return Absolute path of the project directory
 		 */
 		std::string getProjectDir() const;
@@ -95,6 +91,11 @@ namespace nap
 		 * @return Absolute path to the root of NAP Framework
 		 */
 		std::string getNAPRootDir() const;
+
+		/**
+		 * @return Absolute path to the build output directory
+		 */
+		std::string getBuildDir() const;
 
 		/**
 		 * @return Absolute paths of directories to use when searching for modules
@@ -173,11 +174,27 @@ namespace nap
 		 */
 		void patchPaths(std::vector<std::string>& paths, const std::unordered_map<std::string, std::string>& additionalValues = {}) const;
 
+		/**
+		 * Clones this project info, including all properties.
+		 * @return a clone of this object
+		 */
+		std::unique_ptr<ProjectInfo> clone() const;
+
 	private:
+		/**
+		 * Initialize this project info
+		 * @param the absolute file path to the project info file
+		 * @param runtime context (application or editor)
+		 * @param error contains the error if initialization fails
+		 */
+		bool init(const std::string fileName, ProjectInfo::EContext context, nap::utility::ErrorState& error);
+
 		std::unordered_map<std::string, std::string> getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const;
 		std::string mFilename;								///< The filename from which this data was loaded
 		std::unique_ptr<PathMapping> mPathMapping;			///< The actual path mapping coming from mPathMappingFile
 		EContext mContext = EContext::Application;			///< By default projects are loaded from application context
+		std::string mRoot;									///< Absolute path to the NAP project root
+		std::string mProjectDir;							///< Absolute path to the project directory
 	};
 
 

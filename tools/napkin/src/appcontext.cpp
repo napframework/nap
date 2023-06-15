@@ -103,6 +103,13 @@ Document* AppContext::loadDocument(const QString& filename)
 
 const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 {
+	if (!QFileInfo(projectFilename).exists())
+	{
+		nap::Logger::error("Failed to load project, unable to locate file: %s",
+			projectFilename.toStdString().c_str());
+		return nullptr;
+	}
+
 	// If there's a project already loaded in the current context, quit and restart.
 	// The editor can only load 1 project because it needs to load modules that can't be freed.
 	QString project_file_name = QString::fromStdString(nap::utility::forceSeparator(projectFilename.toStdString()));
@@ -126,10 +133,8 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	}
 	progressChanged(0.5f);
 
-	// Clone current project information, allows us to edit it
-	const auto* project_info = mCore.getProjectInfo();
-	mProjectInfo = nap::rtti::cloneObject(*project_info, mCore.getResourceManager()->getFactory());
-	mProjectInfo->setFilename(project_info->getFilename());
+	// Clone current project information -> allows us to edit it in Napkin
+	mProjectInfo = mCore.getProjectInfo()->clone();
 
 	// Load service configuration
 	mServiceConfig = std::make_unique<ServiceConfig>(mCore, *mProjectInfo);
@@ -147,8 +152,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		nap::Logger::error("No data file specified");
 
 	// All good
+	projectLoaded(*mProjectInfo);
 	progressChanged(1.0f);
-	return mCore.getProjectInfo();
+
+	return mProjectInfo.get();
 }
 
 

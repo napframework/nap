@@ -6,5 +6,6 @@
     "ModulePaths": 
     [
         "{ROOT}/bin/{BUILD_CONFIG}"
-    ]
+    ],
+    "OutputPath": "{ROOT}/bin/{BUILD_CONFIG}"
 }

@@ -469,6 +469,8 @@ macro(set_source_build_configuration)
     endif()
     add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
     add_compile_definitions(NAP_BUILD_COMPILER=${CMAKE_CXX_COMPILER_ID})
+    message(STATUS "Architecture: ${ARCH}" )
+    message(STATUS "Build Configuration: ${BUILD_CONF}")
 endmacro()
 
 # Set a default build type if none was specified (single-configuration generators only, ie. Linux)

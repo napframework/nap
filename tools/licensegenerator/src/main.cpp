@@ -226,8 +226,10 @@ static bool validateSigningScheme(const std::string& signingScheme)
  * -d	license expiry date
  * -t	additional message (tag)
  * -s	signing scheme
+ * -i	unique machine id
  * 
- * If the date is not specified the license is not bound to an end date.
+ * Without a date the license is valid indefinitely.
+ * The uuid ties the license to a specific machine. No uuid creates a 'floating' license.
  * For backwards compatibility with older versions of naplicense, do not specify the signing scheme.
  * Output format of human readable license = '.license'
  * Output format of signed license = '.key'
