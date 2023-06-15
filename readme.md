@@ -17,6 +17,10 @@
 	*	[Create the Solution](#create-the-solution)
 	*	[Run a Demo](#run-a-demo)
 	*	[Work Against Source](#work-against-source)
+		* [Create Application](#create-application)
+		* [Create Module](#create-module)
+		* [Download Module](#download-module)
+		* [Share Module](#share-your-module)
 	*	[Package](#build-distributable-nap-package)
 *	[Contributing](#contributing)
 *	[License](#license)
@@ -151,7 +155,31 @@ Run `tools/create_app` to create a new application:
 ./create_app.sh myApp
 ```
 
-This creates a new application called `myApp` in the `apps` directory, adds `myApp` to `solution_info.json` and regenerates the solution. Note that when you make manual changes to the build system (by editing CMake or JSON) you must run `generate_solution` to update the solution.
+This creates a new application called `myApp` in the `apps` directory. It also adds `myApp` to `solution_info.json` in the root and regenerates the solution. Run the `build` script inside the application directory to compile it:
+
+```
+./build.sh
+```
+
+### Create Module
+
+Run `tools/create_module` to create a new user module:
+```
+./create_app.sh myModule
+```
+
+This creates a new module called `napmyModule` in the `modules` directory. It also adds `napmyModule` to `solution_info.json` in the root and regenerates the solution. You can inlcude this module by adding it to the `RequiredModules` property in `app.json` or `module.json` files.
+
+Note that when you make manual changes to the build system (by editing CMake or JSON) you must run `generate_solution` to update the solution.
+
+
+### Download Module
+
+A list of publicly available user modules can be found at [modules.nap.tech](https://modules.nap.tech). These modules are created, maintained and shared by NAP users, independent of NAP Framework.
+
+### Share Your Module
+
+You can share your module with other NAP users by making it available on [modules.nap.tech](https://modules.nap.tech). Follow the instructions [here](https://github.com/napframework/nap-modules#register-your-module) to share and register it.
 
 ---
 
