@@ -45,7 +45,7 @@ add_subdirectory(apps/example)
 
 # demo targets
 add_subdirectory(demos/helloworld)
-add_subdirectory(demos/rotatingcube)
+add_subdirectory(demos/rotatingtexcube)
 add_subdirectory(demos/vinyl)
 add_subdirectory(demos/multiwindow)
 add_subdirectory(demos/heightmap)

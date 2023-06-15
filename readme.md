@@ -87,7 +87,7 @@ When working against a binary package, follow the official [installation](https:
 
 ## Raspberry Pi
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. Add `arm_64bit=0` to `boot/config.txt` to (force) select the 32 bit kernel.
+Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. Add `arm_64bit=0` to `boot/config.txt` to ensure the 32 bit kernel is loaded - the 64 bit kernel is not yet supported.
 
 # Compilation
 

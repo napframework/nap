@@ -1,4 +1,4 @@
-#include "rotatingcubeapp.h"
+#include "rotatingtexcubeapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -8,7 +8,7 @@
 #include <perspcameracomponent.h>
 #include <rotatecomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotatingCubeApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotatingTexCubeApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -18,7 +18,7 @@ namespace nap
 	 * Initialize the application.
 	 * Fetch all required resources and entities,
 	 */
-	bool RotatingCubeApp::init(utility::ErrorState& error)
+	bool RotatingTexCubeApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -60,7 +60,7 @@ namespace nap
 	
 	
 	// Update the app
-	void RotatingCubeApp::update(double deltaTime)
+	void RotatingTexCubeApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -76,7 +76,7 @@ namespace nap
 	
 	
 	// Render the cube & gui
-	void RotatingCubeApp::render()
+	void RotatingTexCubeApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -116,13 +116,13 @@ namespace nap
 	}
 	
 
-	void RotatingCubeApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void RotatingTexCubeApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void RotatingCubeApp::inputMessageReceived(InputEventPtr inputEvent)
+	void RotatingTexCubeApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -140,7 +140,7 @@ namespace nap
 	}
 
 	
-	int RotatingCubeApp::shutdown()
+	int RotatingTexCubeApp::shutdown()
 	{
 		return 0;
 	}

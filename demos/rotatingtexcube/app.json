@@ -1,13 +1,13 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "rotatingcube",
+    "Title": "rotatingtexcube",
     "Version": "0.1.0",
     "RequiredModules": [
         "napapp",
         "napcameracontrol",
         "napparametergui",
-        "naprotatingcube"
+        "naprotatingtexcube"
     ],
     "Data": "data/objects.json",
     "ServiceConfig": "",

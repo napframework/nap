@@ -22,7 +22,7 @@ namespace nap
 	 * Main application that is called from within the main loop.
 	 * Renders a rotating cube at the center of the scene, the rotation speed can be controlled using a slider.
 	 */
-	class RotatingCubeApp : public App
+	class RotatingTexCubeApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -30,7 +30,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		RotatingCubeApp(nap::Core& core) : App(core) { }
+		RotatingTexCubeApp(nap::Core& core) : App(core) { }
 
 		
 		/**
