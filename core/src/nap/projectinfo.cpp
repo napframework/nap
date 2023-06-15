@@ -18,7 +18,7 @@ RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("ProjectExeToRoot",		&nap::PathMapping::mProjectExeToRoot,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("NapkinExeToRoot",		&nap::PathMapping::mNapkinExeToRoot,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ModulePaths",			&nap::PathMapping::mModulePaths,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputPath",				&nap::PathMapping::mOutputPath,				nap::rtti::EPropertyMetaData::Required)	
+	RTTI_PROPERTY("BuildPath",              &nap::PathMapping::mBuildPath,              nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ProjectInfo)
@@ -48,7 +48,7 @@ namespace nap
 	std::string ProjectInfo::getBuildDir() const
 	{
 		assert(mPathMapping != nullptr);
-		return mPathMapping->mOutputPath;
+		return mPathMapping->mBuildPath;
 	}
 
 
@@ -205,7 +205,7 @@ namespace nap
 		patchPaths(mPathMapping->mModulePaths);
 
 		// Resolve build output
-		patchPath(mPathMapping->mOutputPath);
+		patchPath(mPathMapping->mBuildPath);
 
 		// Resolve service config
 		patchPath(mServiceConfigFilename);

@@ -48,13 +48,6 @@ namespace napkin
 	inline constexpr const char* DIR_BIN			= "bin";
 	inline constexpr const char* DIR_APPS			= "apps";
 
-	// Build info
-#ifdef NDEBUG
-	constexpr const char* BUILD_TYPE = "Release";
-#else
-	constexpr const char* BUILD_TYPE = "Debug";
-#endif
-
     // Testing success exit code. Avoids some common Unix error codes
 	inline constexpr int EXIT_ON_SUCCESS_EXIT_CODE = 180;
 }

@@ -7,5 +7,5 @@
     [
         "{ROOT}/lib/{BUILD_CONFIG}"    
     ],
-    "OutputPath": "{ROOT}/bin/{BUILD_CONFIG}"
+    "BuildPath": "{ROOT}/bin/{BUILD_CONFIG}"
 }

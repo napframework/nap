@@ -35,7 +35,7 @@ namespace nap
 		std::string mProjectExeToRoot;				///< Relative path from project to executable
 		std::string mNapkinExeToRoot;				///< Relative path from napkin to executable
 		std::vector<std::string> mModulePaths;		///< Relative paths to the module directories
-		std::string mOutputPath;					///< Relative path to the build output directory
+		std::string mBuildPath;						///< Relative path to the build output directory
 
 	private:
 		std::string mFilename;						

@@ -5,5 +5,5 @@
     [
         "{PROJECT_DIR}"
     ],
-    "OutputPath": "{PROJECT_DIR}"
+    "BuildPath": "{PROJECT_DIR}"
 }

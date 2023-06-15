@@ -10,5 +10,5 @@
         "{ROOT}/modules/{MODULE_NAME}/lib/{BUILD_CONFIG}",
         "{PROJECT_DIR}/module/lib/{BUILD_CONFIG}"
     ],
-    "OutputPath": "{PROJECT_DIR}/bin/{BUILD_CONFIG}"
+    "BuildPath": "{PROJECT_DIR}/bin/{BUILD_CONFIG}"
 }

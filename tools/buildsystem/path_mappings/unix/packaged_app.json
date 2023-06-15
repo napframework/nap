@@ -5,5 +5,5 @@
     [
         "{PROJECT_DIR}/lib"
     ],
-    "OutputPath": "{PROJECT_DIR}"
+    "BuildPath": "{PROJECT_DIR}"
 }
