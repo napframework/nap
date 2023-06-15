@@ -278,7 +278,6 @@ namespace nap
 		{
 			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
 			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;
-
 			sourceComponentInstance->addToComponentLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
 		}
 
@@ -288,8 +287,7 @@ namespace nap
 		template<class SourceComponentType>
 		ComponentInstancePtr(const ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
 			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
-		{
-		}
+		{ }
 
 		const TargetComponentInstanceType& operator*() const
 		{
@@ -379,12 +377,12 @@ namespace nap
 			return mInstance >= other.mInstance;
 		}
 
-		TargetComponentType* get() const
+		TargetComponentInstanceType* get() const
 		{
 			return mInstance;
 		}
 
-		TargetComponentType* get()
+		TargetComponentInstanceType* get()
 		{
 			return mInstance;
 		}
