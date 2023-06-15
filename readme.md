@@ -113,11 +113,11 @@ The editor (Napkin) depends on QT:
 
 - Qt 5
 	- x86_64
-		- The precompiled package uses Qt 5.12 (LTS), although other versions are known to work.
+		- The precompiled package uses Qt 5.15 (LTS), although other versions are known to work.
 		- Go to [qt.io](https://www.qt.io/download) and select **Downloads for open source users**
 		- Download the Qt online installer
 		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download and install Qt 5.12 for your target platform
+		- Filter on the **LTS** category to download and install Qt 5.15 for your target platform
 	- ARM
 		- [Download](https://download.nap.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
 		- [Download](https://download.nap.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
@@ -172,14 +172,13 @@ This creates a new module called `napmyModule` in the `modules` directory. It al
 
 Note that when you make manual changes to the build system (by editing CMake or JSON) you must run `generate_solution` to update the solution.
 
-
 ### Download Module
 
 A list of publicly available user modules can be found at [modules.nap.tech](https://modules.nap.tech). These modules are created, maintained and shared by NAP users, independent of NAP Framework.
 
 ### Share Your Module
 
-You can share your module with other NAP users by making it available on [modules.nap.tech](https://modules.nap.tech). Follow the instructions [here](https://github.com/napframework/nap-modules#register-your-module) to share and register it.
+You can share your module with other NAP users by making it available on [modules.nap.tech](https://modules.nap.tech). Follow the instructions [here](https://github.com/napframework/nap-modules#register-your-module) to register it.
 
 ---
 
