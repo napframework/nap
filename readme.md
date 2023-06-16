@@ -44,7 +44,7 @@ NAP applications are lean and mean: only package and ship what you actually use.
 
 ## Documentation
 
-NAP documentation can be found online at [docs.nap.tech](https://docs.nap.tech/pages.html). Take note that the installation and project creation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
+NAP documentation can be found online at [docs.nap.tech](https://docs.nap.tech/pages.html). Take note that the installation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
 
 ## Gallery
 
