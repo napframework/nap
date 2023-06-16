@@ -1,0 +1,13 @@
+Compiled from pa_stable_v190600_20161030.tgz on Ubuntu 16.04 with GCC 5.4.0
+
+Configure output:
+
+  Target ...................... x86_64-unknown-linux-gnu
+  C++ bindings ................ no
+  Debug output ................ no
+
+  ALSA ........................ yes
+  ASIHPI ...................... no
+
+  OSS ......................... yes
+  JACK ........................ yes

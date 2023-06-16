@@ -1,0 +1,11 @@
+prefix=C:/dev/Naivi/thirdparty/assimp/msvc64/install
+exec_prefix=C:/dev/Naivi/thirdparty/assimp/msvc64/install/bin
+libdir=C:/dev/Naivi/thirdparty/assimp/msvc64/install/lib
+includedir=C:/dev/Naivi/thirdparty/assimp/msvc64/install/include/assimp
+
+Name: Assimp
+Description: Import various well-known 3D model formats in an uniform manner.
+Version: 3.3.1
+Libs: -L${libdir} -lassimp
+Libs.private:  
+Cflags: -I${includedir}

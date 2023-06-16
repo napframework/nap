@@ -1,0 +1,10 @@
+Built from FreeImage3170.zip using Makefile.osx alongside this file
+
+1. Unzip FreeImage3170.zip
+2. replace Makefile.osx!
+3. make
+4. install_name_tool -id @rpath/libfreeimage-3.18.0.dylib libfreeimage-3.18.0.dylib
+
+Post build steps:
+
+The install_name_tool step above. 

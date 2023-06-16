@@ -9,6 +9,7 @@ find_package(tclap REQUIRED)
 include_directories(${TCLAP_INCLUDE_DIRS})
 
 # Add cryptopp
+list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/naplicense/thirdparty/cmake_find_modules)
 find_package(cryptopp REQUIRED)
 include_directories(${CRYPTOPP_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS})
 
@@ -18,12 +19,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} cryptopp)
 
-#set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
+#set(DEPENDENT_NAP_MODULES naprender napmath napscene)
 #target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Add the runtime paths for RTTR on macOS
 if(APPLE)
-    add_macos_rttr_rpath()
+    macos_add_rttr_rpath()
 endif()
 
 if(WIN32)

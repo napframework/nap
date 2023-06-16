@@ -1,0 +1,23 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napasio",
+        "napmath",
+        "napscene"
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/napartnet/thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release"
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/napartnet/thirdparty/libartnet/linux/{BUILD_ARCH}/lib"
+        ],
+        "macOS": [
+            "{ROOT}/system_modules/napartnet/thirdparty/libartnet/macos/{BUILD_ARCH}/bin/Release"
+        ],
+        "Windows": [
+            "{ROOT}/system_modules/napartnet/thirdparty/libartnet/msvc/{BUILD_ARCH}/bin/Release"
+        ]
+    }
+}

@@ -1,0 +1,12 @@
+prefix=/home/creywood/workspaces/naivi/thirdpartybuild/libsndfile-1.0.28/linux-install
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: sndfile
+Description: A library for reading and writing audio files
+Requires: 
+Version: 1.0.28
+Libs: -L${libdir} -lsndfile
+Libs.private: -lFLAC -logg -lvorbis -lvorbisenc  
+Cflags: -I${includedir} 

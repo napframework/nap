@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "HelloWorld",
+    "Version": "1.0.0",
+    "Data": "data/helloworld.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "napapp",
+        "napimgui",
+        "napcameracontrol"
+    ]
+}

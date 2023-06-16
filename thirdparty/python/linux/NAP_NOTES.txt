@@ -1,0 +1,28 @@
+Built from Python-3.6.4.tar.xz on Ubuntu 16.04 with GCC 5.4.0
+
+Configured with options:
+--enable-shared
+
+# TODO flesh out configuration options, based on any missing modules below that we want
+
+After build:
+
+patchelf --set-rpath \$ORIGIN/../lib bin/python3.6
+patchelf --set-rpath \$ORIGIN/../lib bin/python3.6m
+rm -r lib/python3.6/test
+rm -r lib/python3.6/tkinter
+rm lib/python3.6/config-3.6m-x86_64-linux-gnu/libpython3.6m.a
+
+Output:
+
+Python build finished successfully!
+The necessary bits to build these optional modules were not found:
+_bz2                  _curses               _curses_panel      
+_dbm                  _gdbm                 _lzma              
+_sqlite3              _ssl                  _tkinter           
+readline                                                       
+To find the necessary bits, look in setup.py in detect_modules() for the module's name.
+
+The following modules found by detect_modules() in setup.py, have been
+built by the Makefile instead, as configured by the Setup files:
+atexit                pwd                   time               

@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "DynamicGeo",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "napdynamicgeo",
+        "napapp",
+        "napcameracontrol",
+        "napimgui"
+    ],
+    "Data": "data/dynamicgeo.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}
