@@ -42,9 +42,9 @@ namespace nap
 		bool isAbsolutePath(const std::string& path);
 
 		/**
-		 * Given a relative path, return an absolute path
+		 * Given a relative path, return an absolute path.
 		 * @param relPath The path to convert
-		 * @return An absolute file path
+		 * @return Absolute file path, empty string if path can't be resolved.
 		 */
 		std::string getAbsolutePath(const std::string& relPath);
 
@@ -184,6 +184,12 @@ namespace nap
 		 * @return if working directory changed
 		 */
 		bool changeDir(const std::string& newDir);
+
+        /**
+         * Returns the current working directory
+         * @return the current working directory
+         */
+         std::string getCWD();
 
 		/**
 		 * Read the contents of a file into a string.

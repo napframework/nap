@@ -1,0 +1,21 @@
+Source: libartnet
+Priority: optional
+Maintainer: Simon Newton <nomis52@gmail.com>
+Build-Depends: debhelper (>= 7), autotools-dev
+Standards-Version: 3.8.0
+Section: libs
+Homepage: http://code.google.com/p/linux-lighting/
+
+Package: libartnet-dev
+Section: libdevel
+Architecture: any
+Depends: libartnet1 (= ${binary:Version})
+Description: ArtNet DMX over IP library
+ libartnet is an implementation of the Art-Net DMX over IP protocol
+
+Package: libartnet1
+Section: libs
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: ArtNet DMX over IP library
+ libartnet is an implementation of the Art-Net DMX over IP protocol

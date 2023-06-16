@@ -1,0 +1,11 @@
+{
+    "Type": "nap::PathMapping",
+    "mID": "UnixSourceMapping",
+    "ProjectExeToRoot": "../..",
+    "NapkinExeToRoot": "../../..",
+    "ModulePaths": 
+    [
+        "{ROOT}/lib/{BUILD_CONFIG}"    
+    ],
+    "BuildPath": "{ROOT}/bin/{BUILD_CONFIG}"
+}

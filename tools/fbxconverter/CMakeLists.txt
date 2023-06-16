@@ -11,12 +11,12 @@ add_executable(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
-set(DEPENDENT_NAP_MODULES mod_naprender mod_napmath mod_napscene)
+set(DEPENDENT_NAP_MODULES naprender napmath napscene)
 target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
 
 # Add the runtime paths for RTTR on macOS
 if(APPLE)
-    add_macos_rttr_rpath()
+    macos_add_rttr_rpath()
 endif()
 
 # ======================= UNIT TESTS
@@ -36,7 +36,7 @@ add_test(NAME ConvertFile COMMAND ${PROJECT_NAME} -o
 add_custom_command(OUTPUT always_rebuild COMMAND cmake -E echo)
 
 # copy test data
-add_custom_command(TARGET ${PROJECT_NAME} 
+add_custom_command(TARGET ${PROJECT_NAME}
                    POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_if_different
                            ${CMAKE_CURRENT_LIST_DIR}/res/vinyl_cover.fbx
@@ -53,57 +53,49 @@ add_custom_command(TARGET ${PROJECT_NAME}
 
 # Package into NAP release
 set(FBXCONVERTER_PACKAGED_BUILD_TYPE Release)
-set(FBXCONVERTER_INSTALL_LOCATION tools/platform)
+set(FBXCONVERTER_INSTALL_LOCATION tools/buildsystem)
 
-install(TARGETS ${PROJECT_NAME} 
+install(TARGETS ${PROJECT_NAME}
         DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
         CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
-if(UNIX)
-    # Extra RPATH building for Linux and macOS
-    set(PATH_TO_NAP_ROOT "../..")
-    set(EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/assimp/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/SDL2/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/FreeImage/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/freetype/lib)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/thirdparty/vulkansdk/lib)
-endif()
+# Pull in deep module list, third party RPATHs
+module_list_to_deep_dependencies_cmake("${DEPENDENT_NAP_MODULES}")
 
-# Add extra modules for RPATH building on Linux & macOS, likely related to NAP-225
-list(APPEND DEPENDENT_NAP_MODULES mod_napfont mod_napinput mod_napcolor)
-if (WIN32)   
+if (WIN32)
     file(GLOB PYTHON_DLLS ${THIRDPARTY_DIR}/python/msvc/x86_64/*.dll)
-    file(GLOB ASSIMP_DLLS ${THIRDPARTY_DIR}/assimp/msvc/x86_64/bin/*.dll)
+    file(GLOB ASSIMP_DLLS ${NAP_ROOT}/system_modules/naprender/thirdparty/assimp/msvc/x86_64/bin/*.dll)
 
     # TODO Update to find the libraries then install locating them via TARGET_FILE
-    install(FILES ${THIRDPARTY_DIR}/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
+    install(FILES ${NAP_ROOT}/system_modules/naprender/thirdparty/FreeImage/msvc/x86_64/Dist/x64/FreeImage.dll
                   ${THIRDPARTY_DIR}/rttr/msvc/x86_64/bin/rttr_core.dll
-                  ${THIRDPARTY_DIR}/SDL2/msvc/x86_64/lib/SDL2.dll
-                  ${THIRDPARTY_DIR}/freetype/msvc/x86_64/lib/Release/freetype.dll
+                  ${NAP_ROOT}/system_modules/naprender/thirdparty/SDL2/msvc/x86_64/lib/SDL2.dll
+                  ${NAP_ROOT}/system_modules/napfont/thirdparty/freetype/msvc/x86_64/lib/Release/freetype.dll
                   ${PYTHON_DLLS}
                   ${ASSIMP_DLLS}
             DESTINATION ${FBXCONVERTER_INSTALL_LOCATION})
 
     if(PACKAGE_PDBS)
-        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> 
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}>
                 DESTINATION ${FBXCONVERTER_INSTALL_LOCATION}
                 CONFIGURATIONS ${FBXCONVERTER_PACKAGED_BUILD_TYPE}
                 )
-    endif()            
+    endif()
 elseif(APPLE)
-    list(APPEND EXTRA_RPATH ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
+    list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_NAP_ROOT}/lib/${FBXCONVERTER_PACKAGED_BUILD_TYPE})
 
-    set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE} 
-                                                                            "${DEPENDENT_NAP_MODULES}" 
-                                                                            ${CMAKE_INSTALL_PREFIX}/tools/platform/fbxconverter
+    set_single_config_installed_rpath_on_macos_object_for_dependent_modules(${FBXCONVERTER_PACKAGED_BUILD_TYPE}
+                                                                            "${DEEP_DEPENDENT_NAP_MODULES}"
+                                                                            ${CMAKE_INSTALL_PREFIX}/tools/buildsystem/fbxconverter
                                                                             "../.."
-                                                                            "${EXTRA_RPATH}")
+                                                                            "${DEEP_DEPENDENT_RPATHS}"
+                                                                            )
 elseif(UNIX)
-    set_installed_rpath_on_linux_object_for_dependent_modules("${DEPENDENT_NAP_MODULES}" ${PROJECT_NAME} "../.." "${EXTRA_RPATH}")
+    set_installed_rpath_on_linux_object_for_dependent_modules("${DEEP_DEPENDENT_NAP_MODULES}"
+                                                              ${PROJECT_NAME} "../.."
+                                                              "${DEEP_DEPENDENT_RPATHS}"
+                                                              )
 endif()
 
-# Add tclap license into release
-install(FILES ${THIRDPARTY_DIR}/tclap-1.2.1/README
-              ${THIRDPARTY_DIR}/tclap-1.2.1/COPYING
-        DESTINATION thirdparty/tclap)
-install(DIRECTORY ${TCLAP_INCLUDE_DIRS}/tclap/ DESTINATION thirdparty/tclap/include/tclap)
+# Add tclap into release
+install(DIRECTORY ${TCLAP_DIR} DESTINATION thirdparty)

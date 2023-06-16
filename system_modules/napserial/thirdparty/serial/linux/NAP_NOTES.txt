@@ -1,0 +1,1 @@
+Built from source in NAP thirdparty repo on Ubuntu 18.04 with GCC 7.4.0

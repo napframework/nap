@@ -1,0 +1,3 @@
+Build from FreeImage3170.zip on Ubuntu 16.04 with GCC 5.4.0
+
+Applied part of https://chromium-review.googlesource.com/c/webm/libwebp/+/297211 to fix compilation

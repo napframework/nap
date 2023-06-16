@@ -212,7 +212,7 @@ static bool validateSigningScheme(const std::string& signingScheme)
 
 /**
  * Creates, signs and saves a license.
- * Use this tool to create a signed license that is compatible with mod_naplicense.
+ * Use this tool to create a signed license that is compatible with naplicense.
  *
  * Required arguments: 
  * -k	path to private key
@@ -226,9 +226,11 @@ static bool validateSigningScheme(const std::string& signingScheme)
  * -d	license expiry date
  * -t	additional message (tag)
  * -s	signing scheme
+ * -i	unique machine id
  * 
- * If the date is not specified the license is not bound to an end date.
- * For backwards compatibility with older versions of mod_naplicense, do not specify the signing scheme.
+ * Without a date the license is valid indefinitely.
+ * The uuid ties the license to a specific machine. No uuid creates a 'floating' license.
+ * For backwards compatibility with older versions of naplicense, do not specify the signing scheme.
  * Output format of human readable license = '.license'
  * Output format of signed license = '.key'
  * Returns 0 on success, -1 on failure

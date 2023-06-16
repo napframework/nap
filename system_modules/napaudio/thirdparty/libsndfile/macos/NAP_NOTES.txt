@@ -1,0 +1,7 @@
+Build on 10.13 using libsndfile-1.0.28.tar.gz
+
+Post-build:
+
+install_name_tool -id @rpath/libsndfile.1.dylib libsndfile.1.dylib 
+
+TODO: Remove thirdparty/libsndfile/xcode after branch release-packaging-fixes-the-second has merged

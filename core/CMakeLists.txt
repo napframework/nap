@@ -1,4 +1,3 @@
-include(${NAP_ROOT}/cmake/packaging_macros.cmake)
 project(napcore)
 
 file(GLOB SOURCES src/nap/*.cpp src/nap/*.h)
@@ -83,20 +82,20 @@ endif ()
 
 # Package into release build
 if(WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>
-                                    ARCHIVE DESTINATION lib/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>-${ARCH}
+                                    ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
     if(PACKAGE_PDBS)
-        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>-${ARCH})
     endif()
 elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>)
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>-${ARCH})
 else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE})
+    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
 endif()
 
 if(WIN32)
     # Install for fbxconverter on Win64
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/platform
+    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
             CONFIGURATIONS Release)
 elseif(APPLE)
     set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")

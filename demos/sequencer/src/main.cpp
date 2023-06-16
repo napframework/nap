@@ -19,9 +19,6 @@ int main(int argc, char *argv[])
     // Create app runner
     nap::AppRunner<nap::SequencerApp, nap::GUIAppEventHandler> appRunner(core);
 
-    // Decide which file to load
-	appRunner.getApp().setFilename(argc >= 2 ? argv[1] : "default.json");
-
     // Start
     nap::utility::ErrorState error;
     if (!appRunner.start(error))

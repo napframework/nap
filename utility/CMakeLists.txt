@@ -19,14 +19,11 @@ target_include_directories(${PROJECT_NAME} PUBLIC src ${MOODYCAMEL_INCLUDE_DIRS}
 
 # Package into release build
 if (WIN32)
-    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)
-    if(PACKAGE_PDBS)
-        install(FILES ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.dir/$<CONFIG>/${PROJECT_NAME}.pdb DESTINATION lib/$<CONFIG>)
-    endif()
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
 elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>)  
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
 else()
-    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE})   
+    install(TARGETS ${PROJECT_NAME} ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
 endif()
 
 # Package headers
@@ -40,4 +37,4 @@ if (MSVC)
 endif()
 
 # Package moodycamel into platform release
-install(DIRECTORY ${MOODYCAMEL_INCLUDE_DIRS}/ DESTINATION thirdparty/moodycamel)
+install(DIRECTORY ${MOODYCAMEL_DIR} DESTINATION thirdparty)

@@ -2,11 +2,11 @@
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
     "RequiredModules": [
-        "mod_naprender",
-        "mod_napvideo",
-        "mod_napscene",
-        "mod_napaudio",
-        "mod_napmath"
+        "naprender",
+        "napvideo",
+        "napscene",
+        "napaudio",
+        "napmath"
     ],
     "WindowsDllSearchPaths": []
 }

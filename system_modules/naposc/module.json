@@ -1,0 +1,18 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napmath",
+        "napscene"
+    ],
+    "WindowsDllSearchPaths": [],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/naposc/thirdparty/oscpack/linux/{BUILD_ARCH}/lib"
+        ],
+        "macOS": [
+            "{ROOT}/system_modules/naposc/thirdparty/oscpack/macos/{BUILD_ARCH}/lib/{BUILD_TYPE}"
+        ],
+        "Windows": []
+    }
+}

@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Curveball",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "napcurveball",
+        "napapp",
+        "napimgui",
+        "napcameracontrol"
+    ],
+    "Data": "data/curveball.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}

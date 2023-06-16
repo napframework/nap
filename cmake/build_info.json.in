@@ -5,7 +5,7 @@
   "minorVersion": @NAP_MINOR_VERSION@,
   "patchVersion": @NAP_PATCH_VERSION@,
   "architecture": "@ARCH@",
-  "timetamp": "@BUILD_TIMESTAMP@",
+  "timestamp": "@BUILD_TIMESTAMP@",
   "gitRevision": "@BUILD_GIT_REVISION@",
   "label": "@BUILD_LABEL@"
 }

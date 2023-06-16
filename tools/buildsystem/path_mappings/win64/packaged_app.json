@@ -1,0 +1,9 @@
+{
+    "Type": "nap::PathMapping",
+    "mID": "Win64PackagedAppMapping",
+    "ModulePaths": 
+    [
+        "{PROJECT_DIR}"
+    ],
+    "BuildPath": "{PROJECT_DIR}"
+}

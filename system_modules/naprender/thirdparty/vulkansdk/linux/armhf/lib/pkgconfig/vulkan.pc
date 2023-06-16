@@ -1,0 +1,12 @@
+prefix=/input/x86_64
+exec_prefix=/input/x86_64
+libdir=/input/x86_64/lib
+includedir=/input/x86_64/include
+
+Name: Vulkan-Loader
+Description: Vulkan Loader
+Version: 1.2.189
+Libs: -L${libdir} -lvulkan
+Libs.private:  -lstdc++ -lm -lgcc_s -lgcc -lc -lgcc_s -lgcc
+Cflags: -I${includedir}
+
