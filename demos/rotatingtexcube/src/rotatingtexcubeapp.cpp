@@ -1,4 +1,4 @@
-#include "@APP_NAME_LOWERCASE@app.h"
+#include "rotatingtexcubeapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -6,18 +6,19 @@
 #include <inputrouter.h>
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
+#include <rotatecomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::@APP_NAME_INPUTCASE@App)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotatingTexCubeApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap 
 {
 	/**
-	 * Initialize all the resources and instances used for drawing
-	 * slowly migrating all functionality to NAP
+	 * Initialize the application.
+	 * Fetch all required resources and entities,
 	 */
-	bool @APP_NAME_INPUTCASE@App::init(utility::ErrorState& error)
+	bool RotatingTexCubeApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -48,22 +49,34 @@ namespace nap
 		if (!error.check(mGnomonEntity != nullptr, "unable to find entity with name: %s", "GnomonEntity"))
 			return false;
 
+		// Find the cube entity
+		mCubeEntity = mScene->findEntity("CubeEntity");
+		if (!error.check(mCubeEntity != nullptr, "unable to find entity with name: %s", "CubeEntity"))
+			return false;
+
 		// All done!
 		return true;
 	}
 	
 	
-	// Update app
-	void @APP_NAME_INPUTCASE@App::update(double deltaTime)
+	// Update the app
+	void RotatingTexCubeApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+
+		// Setup cube controls
+		ImGui::Begin("Cube Controls");
+		auto& rotate_component = mCubeEntity->getComponent<nap::RotateComponentInstance>();
+		ImGui::SliderFloat("Rotation Speed", &rotate_component.mProperties.mSpeed, 0.0f, 1.0f);
+		ImGui::End();
+
 	}
 	
 	
-	// Render app
-	void @APP_NAME_INPUTCASE@App::render()
+	// Render the cube & gui
+	void RotatingTexCubeApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -79,13 +92,13 @@ namespace nap
 			// Get Perspective camera to render with
 			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
-			// Add Gnomon
+			// Add cube to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render
 			{
-				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
+				&mCubeEntity->getComponent<RenderableComponentInstance>()
 			};
 
-			// Render Gnomon
+			// Render cube
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render);
 
 			// Render GUI elements
@@ -103,13 +116,13 @@ namespace nap
 	}
 	
 
-	void @APP_NAME_INPUTCASE@App::windowMessageReceived(WindowEventPtr windowEvent)
+	void RotatingTexCubeApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void @APP_NAME_INPUTCASE@App::inputMessageReceived(InputEventPtr inputEvent)
+	void RotatingTexCubeApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -127,7 +140,7 @@ namespace nap
 	}
 
 	
-	int @APP_NAME_INPUTCASE@App::shutdown()
+	int RotatingTexCubeApp::shutdown()
 	{
 		return 0;
 	}

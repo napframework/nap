@@ -438,28 +438,19 @@ namespace nap
 			getResourceManager()->getFactory(),
 			err);
 
-		// Ensure project info is loaded correctly.
-		if (!err.check(mProjectInfo != nullptr,
-			"Failed to load project info %s", projectFilename.c_str()))
+		if (!err.check(mProjectInfo != nullptr, 
+			"Failed to load project from file: %s", projectFilename.c_str()))
 			return false;
 
-		// Set if paths are resolved for editor or application
-		mProjectInfo->mContext = context;
-
-		// Store originating filename so we can reference it later and load path mapping
-		mProjectInfo->mFilename = projectFilename;
-		if(!loadPathMapping(*mProjectInfo, err))
+		// Initialize it
+		if (!mProjectInfo->init(projectFilename, context, err))
+		{
+			err.fail("Failed to initialize project");
 			return false;
-
-		// Ensure templates/variables are replaced with their intended values
-		mProjectInfo->patchPath(mProjectInfo->mServiceConfigFilename);
-		if (!err.check(mProjectInfo->mPathMapping != nullptr,
-					   "Failed to load path mapping %s: %s",
-					   mProjectInfo->mPathMappingFile.c_str(), err.toString().c_str()))
-			return false;
+		}
 
 		// Notify project info is loaded
-		nap::Logger::info("Loading project '%s' ver. %s (%s)",
+		nap::Logger::info("Loading project '%s' ver. %s (%s)", 
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
 		return true;
@@ -503,28 +494,6 @@ namespace nap
 			// File doesn't exist or can't be deserialized
 			nap::Logger::warn(deserialize_error.toString().c_str());
 		}
-		return true;
-	}
-
-
-	bool Core::loadPathMapping(nap::ProjectInfo& projectInfo, nap::utility::ErrorState& err)
-	{
-		// Load path mapping (relative to the app.json file)
-		auto pathMappingFilename = utility::joinPath({projectInfo.getProjectDir(), projectInfo.mPathMappingFile});
-		projectInfo.mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(
-			pathMappingFilename,
-			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,
-			getResourceManager()->getFactory(),
-			err);
-
-		if (err.hasErrors())
-		{
-			nap::Logger::error("Failed to load path mapping %s: %s", pathMappingFilename.c_str(), err.toString().c_str());
-			return false;
-		}
-
-		// Template/variable replacement
-		projectInfo.patchPaths(projectInfo.mPathMapping->mModulePaths);
 		return true;
 	}
 

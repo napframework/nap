@@ -6,5 +6,6 @@
     "ModulePaths": 
     [
         "{ROOT}/lib/{BUILD_CONFIG}"    
-    ]
+    ],
+    "BuildPath": "{ROOT}/bin/{BUILD_CONFIG}"
 }

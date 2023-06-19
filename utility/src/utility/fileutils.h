@@ -185,6 +185,12 @@ namespace nap
 		 */
 		bool changeDir(const std::string& newDir);
 
+        /**
+         * Returns the current working directory
+         * @return the current working directory
+         */
+         std::string getCWD();
+
 		/**
 		 * Read the contents of a file into a string.
 		 * @param filename Name of the file to read from

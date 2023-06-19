@@ -102,6 +102,7 @@ namespace nap
 #endif
 		}
 
+
 		std::string getAbsolutePath(const std::string& relPath)
 		{
 #ifdef _WIN32
@@ -116,9 +117,9 @@ namespace nap
 #endif
 			return size != 0 ? std::string((char*)path) : "";
 #else
-			char resolved[MAX_PATH_SIZE];
-			auto rvalue = realpath(relPath.c_str(), resolved);
-            return rvalue != NULL ? resolved : "";
+            char resolved[MAX_PATH_SIZE];
+            auto rvalue = realpath(relPath.c_str(), resolved);
+            return rvalue != NULL || errno == ENOENT ? resolved : "";
 #endif
 		}
 
@@ -240,7 +241,7 @@ namespace nap
 		bool makeDirs(const std::string& directory)
 		{
 			std::string parent_dir = getFileDir(directory);
-			if (!dirExists(parent_dir))
+			if (!parent_dir.empty() && !dirExists(parent_dir))
 			{
 				if (!makeDirs(parent_dir))
 					return false;
@@ -347,6 +348,18 @@ namespace nap
 			return chdir(newDir.c_str()) == 0;
 #endif
 		}
+
+
+        std::string getCWD()
+        {
+            char cwd_path[FILENAME_MAX];
+#if defined(_WIN32)
+			_getcwd(cwd_path, FILENAME_MAX);
+#else
+            getcwd(cwd_path, FILENAME_MAX);
+#endif
+            return cwd_path;
+        }
 
 
 		bool readFileToString(const std::string& filename, std::string& outBuffer, utility::ErrorState& err)

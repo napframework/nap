@@ -58,8 +58,8 @@ namespace napkin
 				mType = Context::EType::Source;
 			}
 		}
-
-		napkin::utility::Context Context::get()
+		
+		const napkin::utility::Context& Context::get()
 		{
 			static Context sContext;
 			return sContext;
