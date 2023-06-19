@@ -23,11 +23,10 @@
     #include <net/if.h>
 #endif
 
+// Cryptopp includes
 #include <rsa.h>
 #include <files.h>
 #include <sha.h>
-#include <shake.h>
-#include <base32.h>
 #include <hex.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
@@ -185,11 +184,20 @@ namespace nap
 		}
 		std::hash<std::string> hasher;
         num_id ^= static_cast<uint64>(hasher(id_str));
-        auto num_st = std::to_string(num_id);
+        id_str = std::to_string(num_id);
 
-        // Encode it
-        CryptoPP::SHAKE256 hash(8);
-        CryptoPP::StringSource s(num_st, true, new CryptoPP::HashFilter(hash, new CryptoPP::Base32Encoder(new CryptoPP::StringSink(outID))));
+        // Turn into 256 hash, truncated to 10 bits for readability
+        CryptoPP::SHA256 hash; std::string digest;
+        hash.Update((const CryptoPP::byte*)id_str.data(), id_str.size());
+        digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
+        hash.TruncatedFinal((CryptoPP::byte*)&digest[0], digest.size());
+
+        // Encode base 16 and store as str.
+        std::stringstream buffer;
+        CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(buffer));
+        CryptoPP::StringSource string_source(digest, true, new CryptoPP::Redirector(encoder));
+        outID = buffer.str();
+
         return true;
 	}
 
@@ -288,12 +296,12 @@ namespace nap
 		CryptoPP::SHA256 hash; std::string digest;
 		hash.Update((const byte*)id_str.data(), id_str.size());
 		digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
-		hash.TruncatedFinal((byte*)&digest[0], digest.size());
+		hash.TruncatedFinal((CryptoPP::byte*)&digest[0], digest.size());
 
 		// Encode base 16 and store as str.
 		std::stringstream buffer;
-		CryptoPP::StringSource string_source(digest, true,
-			new CryptoPP::Redirector(CryptoPP::HexEncoder(new CryptoPP::FileSink(buffer))));
+        CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(buffer));
+		CryptoPP::StringSource string_source(digest, true, new CryptoPP::Redirector(encoder));
 		outID = buffer.str();
 
 		return true;
