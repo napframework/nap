@@ -98,11 +98,11 @@ namespace nap
 		 * Note that the returned ID is *not* required to be unique, as it is a combination of various components, but therefore difficult to spoof.
 		 * Note that the ID is generated *every time* this function is called, cache it if read frequently.
 		 *
-		 * @param id the generated machine ID
+		 * @param id the generated machine ID (base 16 encoded string)
          * @param error contains the error if generation failed
          * @return if generation succeeded
          */
-         bool getMachineID(uint64& id, nap::utility::ErrorState& error);
+         bool getMachineID(std::string& id, nap::utility::ErrorState& error);
 
 		/**
 		 * Validates the user provided license using a public RSA key.

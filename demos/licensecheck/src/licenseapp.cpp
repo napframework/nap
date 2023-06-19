@@ -92,7 +92,7 @@ namespace nap
 		else {
 			ImGui::TextColored(mGuiService->getPalette().mHighlightColor1, "License: invalid");
 		}
-		ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Machine ID: %llu", mMachineID).c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Machine ID: %s", mMachineID.c_str()).c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		if (ImGui::CollapsingHeader("License"))
 		{

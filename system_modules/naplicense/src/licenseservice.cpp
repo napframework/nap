@@ -20,12 +20,15 @@
 #elif  __linux__
     #include <ifaddrs.h>
     #include <netpacket/packet.h>
+    #include <net/if.h>
 #endif
 
 #include <rsa.h>
-#include <hex.h>
 #include <files.h>
 #include <sha.h>
+#include <shake.h>
+#include <base32.h>
+#include <hex.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
 	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
@@ -147,9 +150,9 @@ namespace nap
 
 
 #ifdef __linux__
-	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(std::string& outID, nap::utility::ErrorState& error)
 	{
-		id = 0;
+		uint64 num_id = 0;
 		struct ifaddrs* if_addresses = nullptr;
 		if (!error.check(getifaddrs(&if_addresses) > -1, "Unable to access network interfaces"))
 			return false;
@@ -157,11 +160,18 @@ namespace nap
 		struct ifaddrs* interface = nullptr;
 		for (interface = if_addresses; interface != nullptr; interface = interface->ifa_next)
 		{
+            // Skip loop back devices
+            if(interface->ifa_flags & IFF_LOOPBACK)
+                continue;
+
+            // Update ID
 			if ((interface->ifa_addr) && (interface->ifa_addr->sa_family == AF_PACKET))
 			{
 				sockaddr_ll* s = reinterpret_cast<sockaddr_ll*>(interface->ifa_addr);
 				for (auto i = 0; i < s->sll_halen; i++)
-					id ^= static_cast<uint64>(s->sll_addr[i]) << (i * 8);
+                {
+                    num_id += static_cast<uint64>(s->sll_addr[i]) << (i * 8);
+                }
 			}
 		}
 		freeifaddrs(if_addresses);
@@ -170,13 +180,17 @@ namespace nap
 		std::string id_str;
 		if (!nap::utility::readFileToString("/etc/machine-id", id_str, error))
 		{
-			error.fail("Unable to access machine identifier");
+			error.fail("Unable to read machine identifier");
 			return false;
 		}
 		std::hash<std::string> hasher;
-		uint64 machine_id = static_cast<uint64>(hasher(id_str));
-		id ^= machine_id;
-		return true;
+        num_id ^= static_cast<uint64>(hasher(id_str));
+        auto num_st = std::to_string(num_id);
+
+        // Encode it
+        CryptoPP::SHAKE256 hash(8);
+        CryptoPP::StringSource s(num_st, true, new CryptoPP::HashFilter(hash, new CryptoPP::Base32Encoder(new CryptoPP::StringSink(outID))));
+        return true;
 	}
 
 #elif _WIN32
@@ -210,7 +224,7 @@ namespace nap
 		for (adapter = p_adapter_info; adapter != nullptr; adapter = adapter->Next)
 		{
 			for (auto i = 0; i < adapter->AddressLength; i++)
-				id ^= static_cast<uint64>(adapter->Address[i]) << (i * 8);
+				id += static_cast<uint64>(adapter->Address[i]) << (i * 8);
 		}
 
 		// Free adapter information
@@ -377,15 +391,14 @@ namespace nap
 		it = arguments.find("id");
 		if (it != arguments.end())
 		{
-			uint64 machine_id;
+			std::string machine_id;
 			if (!getMachineID(machine_id, error))
 			{
 				error.fail("Unable to generate machine identifier");
 				return false;
 			}
 
-			uint64 license_id = std::stoull(it->second);
-			if (!error.check(machine_id == license_id, "Identification failed: machine IDs don't match"))
+			if (!error.check(machine_id == it->second,"Identification failed: machine IDs don't match"))
 				return false;
 		}
 		return true;
@@ -429,7 +442,7 @@ namespace nap
 	}
 
 
-    bool LicenseService::getMachineID(uint64& id, nap::utility::ErrorState& error)
+    bool LicenseService::getMachineID(std::string& id, nap::utility::ErrorState& error)
     {
 		return generateMachineID(id, error);
     }
