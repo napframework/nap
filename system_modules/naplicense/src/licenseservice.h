@@ -98,7 +98,7 @@ namespace nap
 		 * Note that the returned ID is *not* required to be unique, as it is a combination of various components, but therefore difficult to spoof.
 		 * Note that the ID is generated *every time* this function is called, cache it if read frequently.
 		 *
-		 * @param id the generated machine ID (base 16 encoded string)
+		 * @param id the machine ID hash (base 16 encoded string)
          * @param error contains the error if generation failed
          * @return if generation succeeded
          */

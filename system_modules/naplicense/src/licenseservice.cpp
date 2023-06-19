@@ -194,9 +194,9 @@ namespace nap
 	}
 
 #elif _WIN32
-	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(std::string& outID, nap::utility::ErrorState& error)
 	{
-		id = 0;
+		uint64 num_id = 0;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Network adapters
@@ -223,8 +223,12 @@ namespace nap
 		PIP_ADAPTER_INFO adapter = p_adapter_info;
 		for (adapter = p_adapter_info; adapter != nullptr; adapter = adapter->Next)
 		{
+			// Skip lookback device
+			if(adapter->Type == MIB_IF_TYPE_LOOPBACK)
+				continue;
+
 			for (auto i = 0; i < adapter->AddressLength; i++)
-				id += static_cast<uint64>(adapter->Address[i]) << (i * 8);
+				num_id += static_cast<uint64>(adapter->Address[i]) << (i * 8);
 		}
 
 		// Free adapter information
@@ -270,13 +274,30 @@ namespace nap
 			"Could not read registry value"))
 			return false;
 
-		// Hash
+		// zHash
 		std::hash<std::string> hasher;
 		uint64 machine_id = static_cast<uint64>(hasher(id_str));
-		id ^= machine_id;
+		num_id ^= machine_id;
+
+		// TODO: link against static CryptoPP lib instead of dll.
+		// FIPS DLL is obsolete and should not be used. See: https://www.cryptopp.com/wiki/FIPS_DLL
+		// Usage of 'CryptoPP::StringSink' causes heap corruption (MSVC) with dll -> used FileSink instead.
+		id_str = std::to_string(num_id); 
+
+		// Turn into 256 hash, truncated to 10 bits
+		CryptoPP::SHA256 hash; std::string digest;
+		hash.Update((const byte*)id_str.data(), id_str.size());
+		digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
+		hash.TruncatedFinal((byte*)&digest[0], digest.size());
+
+		// Encode base 16 and store as str.
+		std::stringstream buffer;
+		CryptoPP::StringSource string_source(digest, true,
+			new CryptoPP::Redirector(CryptoPP::HexEncoder(new CryptoPP::FileSink(buffer))));
+		outID = buffer.str();
+
 		return true;
 	}
-
 #else
 	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
 	{
@@ -331,6 +352,7 @@ namespace nap
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
 		// I am unable to first load the file to string and use that as a source for the verification operation -> runtime memory error
+		// See: https://www.cryptopp.com/wiki/FIPS_DLL
 		std::string user_license;
 		if (!utility::readFileToString(mLicense, user_license, error))
 			return false;
