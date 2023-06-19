@@ -231,7 +231,7 @@ namespace nap
 		PIP_ADAPTER_INFO adapter = p_adapter_info;
 		for (adapter = p_adapter_info; adapter != nullptr; adapter = adapter->Next)
 		{
-			// Skip lookback device
+			// Skip loopback device
 			if(adapter->Type == MIB_IF_TYPE_LOOPBACK)
 				continue;
 
@@ -282,7 +282,7 @@ namespace nap
 			"Could not read registry value"))
 			return false;
 
-		// zHash
+		// Add uuid
 		std::hash<std::string> hasher;
 		uint64 machine_id = static_cast<uint64>(hasher(id_str));
 		num_id ^= machine_id;
