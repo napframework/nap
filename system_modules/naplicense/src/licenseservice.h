@@ -89,9 +89,9 @@ namespace nap
 		LicenseService(ServiceConfiguration* configuration);
 
 		/**
-		 * Generates a machine identification code.
-		 *
-		 * The machine ID is a hash, derived from the MAC addresses of the network interfaces & unique OS identifier.
+		 * Returns the machine identification code.
+		 * 
+		 * The code is a base 16 encoded SHA256 hash, derived from the MAC addresses of the network interfaces & unique OS identifier.
 		 * The ID doesn't change unless the network interfaces change or the operating system is re-installed.
 		 * Input this identifier into the 'id' field of the license generator to tie a license to a particular machine.
 		 * 
