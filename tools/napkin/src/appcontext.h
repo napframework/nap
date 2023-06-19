@@ -276,6 +276,12 @@ namespace napkin
 
 		/**
 		 * Qt Signal
+		 * Fired after loading a project
+		 */
+		void projectLoaded(const nap::ProjectInfo& projectInfo);
+
+		/**
+		 * Qt Signal
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */

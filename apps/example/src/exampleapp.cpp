@@ -40,7 +40,7 @@ namespace nap
     }
 
 
-    // Called when the window is going to render
+    // Render app
     void CoreApp::render()
     {
 		// Signal the beginning of a new frame, allowing it to be recorded.
@@ -109,6 +109,7 @@ namespace nap
     }
 
 
+	// Update app
     void CoreApp::update(double deltaTime)
     {
 		// Use a default input router to forward input events (recursively) to all input components in the scene

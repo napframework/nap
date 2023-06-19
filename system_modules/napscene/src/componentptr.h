@@ -289,6 +289,14 @@ namespace nap
 			sourceComponentInstance->addToComponentLinkMap(target_component_resource.get(), target_component_resource.getInstancePath(), (ComponentInstance**)&mInstance);
 		}
 
+		/**
+		* Construct a ComponentInstancePtr from a ComponentInstancePtrInitProxy, which can be retrieved through initComponentInstancePtr.
+		*/
+		template<class SourceComponentType>
+		ComponentInstancePtr(const ComponentInstancePtrInitProxy<TargetComponentType, SourceComponentType>& proxy) :
+			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
+		{ }
+
 		const TargetComponentInstanceType& operator*() const
 		{
 			assert(mInstance != nullptr);

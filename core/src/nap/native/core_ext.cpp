@@ -92,7 +92,7 @@ namespace nap
 	{
 		// Get path relative to project
 		std::string config_file_path;
-		if (!errorState.check(findProjectFilePath(filename, config_file_path), "Unable to find: %s", filename.c_str()))
+		if (!errorState.check(findProjectFilePath(filename, config_file_path), "Unable to find service configuration file: %s", filename.c_str()))
 			return false;
 
 		// Load

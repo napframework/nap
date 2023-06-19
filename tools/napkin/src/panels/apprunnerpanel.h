@@ -15,8 +15,6 @@
 
 #include <napqt/fileselector.h>
 
-#define LAST_CORE_APP "lastCoreApp"
-
 namespace napkin
 {
 
@@ -32,55 +30,49 @@ namespace napkin
 
 		~AppRunnerPanel();
 
-	protected:
-		/**
-		 * Reimplemented from QWidget
-		 */
-		void showEvent(QShowEvent* event) override;
-
 	private:
 		/**
-		 * QProcess handler
+		 * Called when a project loaded successfully
 		 */
-		void onAppChanged(const QString& filename);
+		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
 		/**
-		 * QProcess handler
+		 * Called when the app is launched
 		 */
 		void onStartApp();
 
 		/**
-		 * QProcess handler
+		 * Called when the app should be stopped
 		 */
 		void onStopApp();
 
 		/**
-		 * QProcess handler
+		 * Read line output
 		 */
 		void onReadOut();
 
 		/**
-		 * QProcess handler
+		 * Read error output
 		 */
 		void onReadErr();
 
 		/**
-		 * QProcess handler
+		 * Called when the app launched successfully
 		 */
 		void onAppStarted();
 
 		/**
-		 * QProcess handler
+		 * Called when the app produces an error through the cmdline
 		 */
 		void onAppError(QProcess::ProcessError error);
 
 		/**
-		 * QProcess handler
+		 * Called when the state of the app changes
 		 */
 		void onAppState(QProcess::ProcessState state);
 
 		/**
-		 * QProcess handler
+		 * Called when the app finishes execution
 		 */
 		void onAppFinished(int exitCode, QProcess::ExitStatus);
 
@@ -89,10 +81,10 @@ namespace napkin
 		 */
 		void themeChanged(const Theme* theme);
 
-		nap::qt::FileSelector mFileSelector;  // Widget allowing you to select a file
-		QHBoxLayout mLayout;		        // Layout
-		QPushButton mStartButton;           // Button with "Start" on it
-		QPushButton mStopButton;	        // Button with "Stop" on it
-		QProcess mProcess;			        // A handle to the nap application process
+		nap::qt::FileSelector mFileSelector;	// Widget allowing you to select a file
+		QHBoxLayout mLayout;					// Layout
+		QPushButton mStartButton;				// Button with "Start" on it
+		QPushButton mStopButton;				// Button with "Stop" on it
+		QProcess mProcess;						// A handle to the nap application process
 	};
 };
