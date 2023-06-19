@@ -9,7 +9,6 @@
     "RequiredModules": [
         "napapp",
         "napimgui",
-        "napudp",
-        "napapi"
+        "napudpreceive"
     ]
 }

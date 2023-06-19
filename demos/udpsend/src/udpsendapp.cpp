@@ -24,6 +24,10 @@ RTTI_END_CLASS
 
 namespace nap 
 {
+    // Creates an API message with and APIString as argument containing messageContent as value, returns true upon
+    // successful creation, returns false upon failure and errorState contains error description
+    static bool createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent, utility::ErrorState& errorState);
+
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -72,13 +76,21 @@ namespace nap
 
         ImGui::Spacing();
 
-        ImGui::InputTextMultiline("", &mMessage, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10));
+        // Input box to change message content
+        ImGui::InputTextMultiline("", &mMessageContent, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10));
+
+        // Send message content as APIMessage
         if(ImGui::Button("Send"))
         {
+            // Create API message and serialize it as a JSON string, log any errors
+            utility::ErrorState error_state;
             std::string data;
-            if(createAPIMessage(data, mMessage))
+            if(createAPIMessage(data, mMessageContent, error_state))
             {
                 mUDPClient->send(data);
+            }else
+            {
+                nap::Logger::error(error_state.toString());
             }
         }
 
@@ -87,7 +99,7 @@ namespace nap
 
 	
 	/**
-	 * Renders the world and text.
+	 * Renders the GUI
 	 */
 	void UDPSendApp::render()
 	{
@@ -159,27 +171,23 @@ namespace nap
 	}
 
 
-    bool UDPSendApp::createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent)
+    bool createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent, utility::ErrorState& errorState)
     {
         // Create API message with unique UUID
         APIMessage api_message;
         api_message.mName = "APIMessage";
-        api_message.mID = math::generateUUID();
+        api_message.mID = "Message";
 
         // Fill the message with a single API string containing message content
-        auto api_value = APIString("MessageContent", messageContent);
+        auto api_value = APIString("Content", messageContent);
         api_value.mID = math::generateUUID();
         api_message.mArguments.emplace_back(&api_value);
 
         // Serialize message to JSON
-        utility::ErrorState error_state;
-        if(api_message.toJSON(serializedAPIMessage, error_state))
+        if(api_message.toJSON(serializedAPIMessage, errorState))
         {
             return true;
         }
-
-        // log error
-        nap::Logger::error(error_state.toString());
 
         return false;
     }

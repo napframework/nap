@@ -18,6 +18,8 @@
 #include <imguiutils.h>
 #include <apimessage.h>
 #include <mathutils.h>
+#include <udpreceivecomponent.h>
+#include <imgui/misc/cpp/imgui_stdlib.h>
 
 // Register this application with RTTI, this is required by the AppRunner to 
 // validate that this object is indeed an application
@@ -37,19 +39,26 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
+        mAPIService     = getCore().getService<nap::APIService>();
 
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-        mUDPServer = mResourceManager->findObject("UDPServer");
-        mUDPServer->packetReceived.connect([this](const UDPPacket& packet){
-            mLastReceivedPacket = packet.toString();
-        });
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+
+        // Obtain UDP Server
+        mUDPServer = mResourceManager->findObject<UDPServer>("UDPServer");
+        if(!error.check(mUDPServer!= nullptr, "UDPServer not found!"))
+            return false;
+
+        // Find UDP Entity
+        mUDPEntity = scene->findEntity("UDPEntity");
+        if(!error.check(mUDPEntity!= nullptr, "UDPEntity not found!"))
+            return false;
 
 		return true;
 	}
@@ -78,13 +87,28 @@ namespace nap
 
         ImGui::Spacing();
 
-        // Display block of text
-        ImGui::InputTextMultiline("Last Message",
-                                  &mLastReceivedPacket[0],
-                                  mLastReceivedPacket.size(),
-                                  ImVec2(-1.0f, ImGui::GetTextLineHeight() * 25),
-                                  ImGuiInputTextFlags_ReadOnly);
+        // Obtain UDPReceiveComponent from UDP Entity
+        auto& udp_receive_comp = mUDPEntity->getComponent<UDPReceiveComponentInstance>();
 
+        // Copy last received message
+        std::string last_received_message = udp_receive_comp.getLastReceivedMessage();
+
+        // Display last received message
+        ImGui::Text("Last Received Message");
+        ImGui::PushID(0);
+        ImGui::InputText("", &last_received_message[0], ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopID();
+        ImGui::Spacing();
+
+        // Copy last received data
+        std::string last_received_data = udp_receive_comp.getLastReceivedData();
+
+        // Display last received data
+        ImGui::Text("Last Received Data");
+        ImGui::PushID(1);
+        ImGui::InputTextMultiline("", &last_received_data, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 20),
+                                  ImGuiInputTextFlags_ReadOnly);
+        ImGui::PopID();
 		ImGui::End();
 	}
 
@@ -160,29 +184,4 @@ namespace nap
 	{
 		return 0;
 	}
-
-
-    bool UDPReceiveApp::createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent)
-    {
-        // Create API message with unique UUID
-        APIMessage api_message;
-        api_message.mName = "APIMessage";
-        api_message.mID = math::generateUUID();
-
-        // Fill the message with a single API string containing message content
-        auto api_value = APIString("MessageContent", messageContent);
-        api_message.mArguments.emplace_back(&api_value);
-
-        // Serialize message to JSON
-        utility::ErrorState error_state;
-        if(api_message.toJSON(serializedAPIMessage, error_state))
-        {
-            return true;
-        }
-
-        // log error
-        nap::Logger::error(error_state.toString());
-
-        return false;
-    }
 }

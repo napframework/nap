@@ -1,6 +1,45 @@
 {
     "Objects": [
         {
+            "Type": "nap::APISignature",
+            "mID": "APIMessage",
+            "Arguments": [
+                {
+                    "Type": "nap::APIString",
+                    "mID": "Message",
+                    "Name": "Message",
+                    "Value": ""
+                }
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "APIEntity",
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "APIComponent",
+                    "Signatures": [
+                        "APIMessage"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "UDPEntity",
+            "Components": [
+                {
+                    "Type": "nap::UDPReceiveComponent",
+                    "mID": "UDPReceiveComponent",
+                    "Server": "UDPServer",
+                    "APIComponent": "../APIEntity/APIComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Entity",
             "mID": "World",
             "Components": [],
@@ -37,6 +76,14 @@
                 {
                     "Entity": "World",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "UDPEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "APIEntity",
+                    "InstanceProperties": []
                 }
             ]
         },
@@ -52,7 +99,7 @@
         {
             "Type": "nap::UDPThread",
             "mID": "UDPThread",
-            "Update Method": "Main Thread"
+            "Update Method": "Spawn Own Thread"
         }
     ]
 }

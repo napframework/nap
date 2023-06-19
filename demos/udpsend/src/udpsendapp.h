@@ -18,6 +18,10 @@ namespace nap
 {
 	using namespace rtti;
 
+    /**
+     * Demo application that demonstrates the use of UDPClients, which sends raw UDP
+     * Use Napkin to change properties like the IP & Port of the UDPClient
+     */
 	class UDPSendApp : public App
 	{
 		RTTI_ENABLE(App)
@@ -54,7 +58,7 @@ namespace nap
 		 */
 		int shutdown() override;
 
-        bool createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent);
+
 	private:
 		// Nap Services
 		RenderService* mRenderService = nullptr;						//< Render Service that handles render calls
@@ -63,8 +67,9 @@ namespace nap
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
-        ObjectPtr<UDPClient> mUDPClient;
+        ObjectPtr<UDPClient> mUDPClient;                                //< Object pointer to UDPClient
 
-        std::string mMessage = "Hello World!";
+        // The message content to send as UDP Packet
+        std::string mMessageContent = "Hello World!";
 	};
 }
