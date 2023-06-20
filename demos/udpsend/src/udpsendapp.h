@@ -13,13 +13,21 @@
 #include <imguiservice.h>
 #include <app.h>
 #include <udpclient.h>
+#include <parametercolor.h>
+#include <parameter.h>
+#include <parametersimple.h>
+#include <parametergui.h>
 
 namespace nap
 {
 	using namespace rtti;
 
     /**
-     * Demo application that demonstrates the use of UDPClients, which sends raw UDP
+     * Demo application that demonstrates the use of UDPClient that sends raw UDP
+     * The application converts the values of a Color Parameter and a String Parameter to nap API messages using the
+     * UDPSendComponent
+     * API messages are serialized and send as UDP packets using the UDPClient resource.
+     * Run the UDP receive demo to observe the changes.
      * Use Napkin to change properties like the IP & Port of the UDPClient
      */
 	class UDPSendApp : public App
@@ -67,9 +75,9 @@ namespace nap
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
-        ObjectPtr<UDPClient> mUDPClient;                                //< Object pointer to UDPClient
-
-        // The message content to send as UDP Packet
-        std::string mMessageContent = "Hello World!";
+        ObjectPtr<ParameterRGBColor8> mParameterColor;                  //< Pointer to Parameter Color
+        ObjectPtr<ParameterString> mParameterString;                    //< Pointer to Parameter String
+        ObjectPtr<UDPClient> mUDPClient;                                //< Pointer to UDP client
+        ObjectPtr<ParameterGUI> mParameterGUI;                          //< Pointer to Parameter GUI
 	};
 }

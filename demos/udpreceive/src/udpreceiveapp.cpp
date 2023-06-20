@@ -46,6 +46,16 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
+        if(!error.check(mRenderWindow!= nullptr, "Window0 not found!"))
+            return false;
+
+        mParameterColor = mResourceManager->findObject<ParameterRGBColor8>("ColorParameter");
+        if(!error.check(mParameterColor!= nullptr, "ColorParameter not found!"))
+            return false;
+
+        mParameterText = mResourceManager->findObject<ParameterString>("TextParameter");
+        if(!error.check(mParameterText!= nullptr, "TextParameter not found!"))
+            return false;
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -58,6 +68,11 @@ namespace nap
         // Find UDP Entity
         mUDPEntity = scene->findEntity("UDPEntity");
         if(!error.check(mUDPEntity!= nullptr, "UDPEntity not found!"))
+            return false;
+
+        // Find Text Entity
+        mTextEntity = scene->findEntity("TextEntity");
+        if(!error.check(mTextEntity!= nullptr, "TextEntity not found!"))
             return false;
 
 		return true;
@@ -78,38 +93,49 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+        //
+        mRenderWindow->setClearColor(mParameterColor->getValue());
+
 		// Setup GUI
 		ImGui::Begin("UDP Receive");
         ImGui::Text(getCurrentDateTime().toString().c_str());
-        ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Run UDP Send demo to receive the message and display it below.");
+        ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Run UDP Send demo to change the color and text.");
         ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Server Port: %d", mUDPServer->mPort).c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
         ImGui::Spacing();
 
+
         // Obtain UDPReceiveComponent from UDP Entity
         auto& udp_receive_comp = mUDPEntity->getComponent<UDPReceiveComponentInstance>();
-
-        // Copy last received message
-        std::string last_received_message = udp_receive_comp.getLastReceivedMessage();
-
-        // Display last received message
-        ImGui::Text("Last Received Message");
-        ImGui::PushID(0);
-        ImGui::InputText("", &last_received_message[0], ImGuiInputTextFlags_ReadOnly);
-        ImGui::PopID();
-        ImGui::Spacing();
 
         // Copy last received data
         std::string last_received_data = udp_receive_comp.getLastReceivedData();
 
-        // Display last received data
+        // Display last received message
         ImGui::Text("Last Received Data");
-        ImGui::PushID(1);
+        ImGui::PushID(0);
         ImGui::InputTextMultiline("", &last_received_data, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 20),
                                   ImGuiInputTextFlags_ReadOnly);
         ImGui::PopID();
+        ImGui::Spacing();
+
 		ImGui::End();
+
+
+        if(mParameterText->getValue()!=mText)
+        {
+            mText = mParameterText->getValue();
+
+            // Locate component that can render text to screen
+            auto& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+
+            utility::ErrorState error_state;
+            if(!render_text.setText(mText, error_state))
+            {
+                nap::Logger::error(error_state.toString());
+            }
+        }
 	}
 
 	
@@ -128,6 +154,15 @@ namespace nap
 		{
 			// Begin the render pass
 			mRenderWindow->beginRendering();
+
+            // Locate component that can render text to screen
+            auto& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+
+            // Center text and render it using the given draw call,
+            // alternatively you can use an orthographic camera to render the text, similar to how the 3D mesh is rendered:
+            // mRenderService::renderObjects(*mRenderWindow, ortho_camera, components_to_render);
+            render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
+            render_text.draw(*mRenderWindow);
 
 			// Draw our GUI
 			mGuiService->draw();

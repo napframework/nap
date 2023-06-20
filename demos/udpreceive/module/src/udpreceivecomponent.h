@@ -10,6 +10,8 @@
 #include "udpserver.h"
 #include "apiservice.h"
 #include <apicomponent.h>
+#include <parametersimple.h>
+#include <parametercolor.h>
 
 namespace nap
 {
@@ -32,8 +34,12 @@ namespace nap
          */
         void getDependentComponents(std::vector<rtti::TypeInfo> &components) const override;
 
-        ResourcePtr<UDPServer> mServer;	///< Property: "UDPServer" ResourcePtr to the UDPServer
-        ComponentPtr<APIComponent> mAPIComponent; ///< Property: "APIComponent" ComponentPtr to APIComponent
+        ResourcePtr<UDPServer> mServer;	                    ///< Property: "UDPServer" ResourcePtr to the UDPServer
+        ComponentPtr<APIComponent> mAPIComponent;           ///< Property: "APIComponent" ComponentPtr to APIComponent
+        ResourcePtr<APISignature> mTextMessageSignature;    ///< Property: "TextMessageSignature" ResourcePtr to the text message API signature
+        ResourcePtr<APISignature> mColorMessageSignature;   ///< Property: "ColorMessageSignature" ResourcePtr to the color message API signature
+        ResourcePtr<ParameterString> mTextParameter;        ///< Property: "TextParameter" ResourcePtr to the the string parameter
+        ResourcePtr<ParameterRGBColor8> mColorParameter;    ///< Property: "ColorParameter" ResourcePtr to the color parameter
     };
 
 
@@ -64,10 +70,10 @@ namespace nap
          */
         virtual void onDestroy() override;
 
-        // Returns last received message received from APIComponent
-        const std::string& getLastReceivedMessage() const{ return mLastReceivedMessage; }
-
-        // Returns last received data received from UDPServer
+        /**
+         * Get data of last received packet, thread-safe
+         * @return last received data
+         */
         const std::string& getLastReceivedData() const{ return mLastReceivedData; }
     private:
         // Component Instance Pointer to APIComponent
@@ -87,11 +93,17 @@ namespace nap
         // Resolved pointer to APIService
         APIService* mAPIService = nullptr;
 
-        // Last received message (from APIComponent) and last received data (from UDPServer)
-        std::string mLastReceivedMessage = "";
-        std::string mLastReceivedData = "";
+        // Resolved pointers to parameters
+        ParameterString* mTextParameter = nullptr;
+        ParameterRGBColor8* mColorParameter = nullptr;
 
-        // Mutex is locked when data is copied to mLastReceivedData
+        // A map with function pointers handling different API messages, key value is id of API message
+        std::unordered_map<std::string, std::function<void(const APIEvent&)>> mAPIMessageHandlers;
+        void onColorMessage(const APIEvent& colorEvent);
+        void onTextMessage(const APIEvent& textEvent);
+
+        // Store last received data
         std::mutex mMutex;
+        std::string mLastReceivedData;
     };
 }

@@ -7,11 +7,16 @@
 // External Includes
 #include <entity.h>
 #include <nap/logger.h>
+#include <color.h>
 
 // nap::UDPReceiveComponent run time class definition
 RTTI_BEGIN_CLASS(nap::UDPReceiveComponent)
-        RTTI_PROPERTY("Server",	        &nap::UDPReceiveComponent::mServer,	        nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("APIComponent",	&nap::UDPReceiveComponent::mAPIComponent,	nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("Server",	                &nap::UDPReceiveComponent::mServer,	        nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("APIComponent",	        &nap::UDPReceiveComponent::mAPIComponent,	nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("TextMessageSignature",   &nap::UDPReceiveComponent::mTextMessageSignature,	nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("ColorMessageSignature",  &nap::UDPReceiveComponent::mColorMessageSignature,	nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("TextParameter",   &nap::UDPReceiveComponent::mTextParameter,	    nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("ColorParameter",  &nap::UDPReceiveComponent::mColorParameter,    nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::UDPReceiveComponentInstance run time class definition
@@ -52,6 +57,27 @@ namespace nap
         mServer->registerListenerSlot(mPacketReceivedSlot);
         mAPIComponent->messageReceived.connect(mMessageReceivedSlot);
 
+        // Sanity check the API signatures
+        if(!errorState.check(resource->mTextMessageSignature->mArguments.size() > 0, "Text Message Signature must have at least one argument!"))
+            return false;
+
+        if(!errorState.check(RTTI_OF(std::string)==resource->mTextMessageSignature->mArguments[0]->getRepresentedType(), "Text Message Signature argument must be of type std::string!"))
+            return false;
+
+        if(!errorState.check(resource->mColorMessageSignature->mArguments.size() > 0, "Color Message Signature must have at least one argument!"))
+            return false;
+
+        if(!errorState.check(RTTI_OF(std::vector<int>)==resource->mColorMessageSignature->mArguments[0]->getRepresentedType(), "Color Message Signature argument must be of type std::vector<int>!"))
+            return false;
+
+        // Create callbacks for assigned signatures
+        mAPIMessageHandlers.emplace(resource->mTextMessageSignature->mID, [this](const APIEvent& event){ onTextMessage(event); });
+        mAPIMessageHandlers.emplace(resource->mColorMessageSignature->mID, [this](const APIEvent& event){ onColorMessage(event); });
+
+        // resolve parameters
+        mColorParameter = resource->mColorParameter.get();
+        mTextParameter = resource->mTextParameter.get();
+
         return true;
     }
 
@@ -76,7 +102,7 @@ namespace nap
             nap::Logger::error(error_state.toString());
         }
 
-        // Copy received packet
+        // Store last received data
         std::lock_guard<std::mutex> lock(mMutex);
         mLastReceivedData = data;
     }
@@ -84,11 +110,39 @@ namespace nap
 
     void UDPReceiveComponentInstance::onMessageReceived(const nap::APIEvent &event)
     {
-        // Message received is called from API component on the main thread
-        assert(event.getCount() > 0);
-        const auto& argument = event.getArgument(0);
+        auto it = mAPIMessageHandlers.find(event.getID());
+        if(it!=mAPIMessageHandlers.end())
+        {
+            it->second(event);
+        }else
+        {
+            nap::Logger::warn(utility::stringFormat("UDPReceiveComponent received API event with unknown ID : %s", event.getID().c_str()));
+        }
+    }
 
-        assert(argument->isString());
-        mLastReceivedMessage = argument->asString();
+
+    void UDPReceiveComponentInstance::onTextMessage(const nap::APIEvent &textEvent)
+    {
+        assert(textEvent.getCount()==1);
+        const auto& arg = textEvent.getArgument(0);
+
+        assert(arg->isString());
+        auto value = arg->asString();
+
+        mTextParameter->setValue(value);
+    }
+
+
+    void UDPReceiveComponentInstance::onColorMessage(const nap::APIEvent &colorEvent)
+    {
+        assert(colorEvent.getCount()==1);
+        const auto& arg = colorEvent.getArgument(0);
+
+        assert(arg->isArray());
+        auto values = arg->asArray<int>();
+
+        assert(values->size()==3);
+        RGBColor8 color((*values)[0], (*values)[1], (*values)[2]);
+        mColorParameter->setValue(color);
     }
 }

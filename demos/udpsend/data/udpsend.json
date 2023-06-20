@@ -2,9 +2,56 @@
     "Objects": [
         {
             "Type": "nap::Entity",
+            "mID": "UDPEntity",
+            "Components": [
+                {
+                    "Type": "nap::UDPSendComponent",
+                    "mID": "UDPSendComponent",
+                    "Client": "UDPClient",
+                    "MessageParam": "MessageParam",
+                    "ColorParam": "ColorParam",
+                    "TextMessageSignature": "APITextMessage",
+                    "ColorMessageSignature": "APIColorMessage"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "World",
             "Components": [],
             "Children": []
+        },
+        {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": false,
+            "Group": "Parameters"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterString",
+                    "mID": "MessageParam",
+                    "Name": "Message",
+                    "Value": "Hello World!"
+                },
+                {
+                    "Type": "nap::ParameterRGBColor8",
+                    "mID": "ColorParam",
+                    "Name": "Color",
+                    "Value": {
+                        "Values": [
+                            41,
+                            88,
+                            255
+                        ]
+                    }
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::RenderWindow",
@@ -13,7 +60,7 @@
             "Resizable": true,
             "Visible": true,
             "SampleShading": true,
-            "Title": "Window 1",
+            "Title": "UDP Send",
             "Width": 1280,
             "Height": 720,
             "Mode": "Immediate",
@@ -31,11 +78,46 @@
             "RestorePosition": true
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "Signatures",
+            "Members": [
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "APITextMessage",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "Text",
+                            "Name": "Text",
+                            "Value": ""
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "APIColorMessage",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIIntArray",
+                            "mID": "Color",
+                            "Name": "Color",
+                            "Value": []
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
                 {
                     "Entity": "World",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "UDPEntity",
                     "InstanceProperties": []
                 }
             ]

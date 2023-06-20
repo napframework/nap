@@ -24,10 +24,6 @@ RTTI_END_CLASS
 
 namespace nap 
 {
-    // Creates an API message with and APIString as argument containing messageContent as value, returns true upon
-    // successful creation, returns false upon failure and errorState contains error description
-    static bool createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent, utility::ErrorState& errorState);
-
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -44,10 +40,24 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-        mUDPClient = mResourceManager->findObject("UDPClient");
+        if(!error.check(mRenderWindow!= nullptr, "Window0 not found!"))
+            return false;
 
-		// Get the resource that manages all the entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+        mUDPClient = mResourceManager->findObject("UDPClient");
+        if(!error.check(mUDPClient!= nullptr, "UDPClient not found!"))
+            return false;
+
+        mParameterColor = mResourceManager->findObject<ParameterRGBColor8>("ColorParam");
+        if(!error.check(mParameterColor!= nullptr, "ColorParam not found!"))
+            return false;
+
+        mParameterString = mResourceManager->findObject<ParameterString>("MessageParam");
+        if(!error.check(mParameterString!= nullptr, "MessageParam not found!"))
+            return false;
+
+        mParameterGUI = mResourceManager->findObject<ParameterGUI>("ParameterGUI");
+        if(!error.check(mParameterGUI!= nullptr, "ParameterGUI not found!"))
+            return false;
 
 		return true;
 	}
@@ -70,29 +80,15 @@ namespace nap
 		// Setup GUI
 		ImGui::Begin("UDP Send");
         ImGui::Text(getCurrentDateTime().toString().c_str());
-        ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Run UDP Receive demo to receive the message.");
+        ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Run UDP Receive demo to receive and display color and text changes.");
+        ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Change the color & text parameter below to observe changes in UDP Receive demo.");
         ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Client Port: %d", mUDPClient->mPort).c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
         ImGui::Spacing();
 
-        // Input box to change message content
-        ImGui::InputTextMultiline("", &mMessageContent, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 10));
-
-        // Send message content as APIMessage
-        if(ImGui::Button("Send"))
-        {
-            // Create API message and serialize it as a JSON string, log any errors
-            utility::ErrorState error_state;
-            std::string data;
-            if(createAPIMessage(data, mMessageContent, error_state))
-            {
-                mUDPClient->send(data);
-            }else
-            {
-                nap::Logger::error(error_state.toString());
-            }
-        }
+        // Show the parameter GUI
+        mParameterGUI->show(false);
 
 		ImGui::End();
 	}
@@ -169,26 +165,4 @@ namespace nap
 	{
 		return 0;
 	}
-
-
-    bool createAPIMessage(std::string& serializedAPIMessage, const std::string& messageContent, utility::ErrorState& errorState)
-    {
-        // Create API message with unique UUID
-        APIMessage api_message;
-        api_message.mName = "APIMessage";
-        api_message.mID = "Message";
-
-        // Fill the message with a single API string containing message content
-        auto api_value = APIString("Content", messageContent);
-        api_value.mID = math::generateUUID();
-        api_message.mArguments.emplace_back(&api_value);
-
-        // Serialize message to JSON
-        if(api_message.toJSON(serializedAPIMessage, errorState))
-        {
-            return true;
-        }
-
-        return false;
-    }
 }

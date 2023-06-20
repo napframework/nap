@@ -15,6 +15,7 @@
 #include <udpserver.h>
 #include <apimessage.h>
 #include <apiservice.h>
+#include <parametercolor.h>
 
 namespace nap
 {
@@ -23,8 +24,8 @@ namespace nap
     /**
      * Demo application that demonstrates the use of UDPServer & APIComponent
      * The demo comes with a UDPReceiveComponent which relays incoming UDP messages to the API service which in turn
-     * tries to convert incoming packets to NAP API events.
-     * Use Napkin to change properties like the Port & UDP Thread properties as well as the API signature
+     * tries to convert incoming packets to NAP API events changing parameter values.
+     * Use Napkin to change properties like the Port & UDP Thread properties as well as the API signatures
      */
 	class UDPReceiveApp : public App
 	{
@@ -69,8 +70,12 @@ namespace nap
 		InputService* mInputService = nullptr;					//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;					//< Manages gui related update / draw calls
         APIService* mAPIService = nullptr;                      //< Manages API messages and API components
+        ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<RenderWindow> mRenderWindow;					//< Pointer to the render window
         ObjectPtr<EntityInstance> mUDPEntity = nullptr;		    //< Pointer to the entity that holds the UDPReceiveComponent
         ObjectPtr<UDPServer> mUDPServer = nullptr;              //< Pointer to UDPServer
+        ObjectPtr<ParameterRGBColor8> mParameterColor = nullptr;
+        ObjectPtr<ParameterString> mParameterText = nullptr;
+        std::string mText = "";
 	};
 }
