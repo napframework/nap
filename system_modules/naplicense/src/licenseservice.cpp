@@ -307,7 +307,7 @@ namespace nap
 		return true;
 	}
 #else
-	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(std::string& outID, nap::utility::ErrorState& error)
 	{
 		error.fail("Platform not supported");
 		return false;
