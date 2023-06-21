@@ -1,0 +1,14 @@
+prefix=/Users/cheywood/workspaces/naivi/thirdparty/ffmpeg/osx/ffmpeg-3.4.2/install/osx
+exec_prefix=${prefix}
+libdir=/Users/cheywood/workspaces/naivi/thirdparty/ffmpeg/osx/ffmpeg-3.4.2/install/osx/lib
+includedir=/Users/cheywood/workspaces/naivi/thirdparty/ffmpeg/osx/ffmpeg-3.4.2/install/osx/include
+
+Name: libavcodec
+Description: FFmpeg codec library
+Version: 57.107.100
+Requires: 
+Requires.private: libswresample >= 2.9.100, libavutil >= 55.78.100
+Conflicts:
+Libs: -L${libdir}  -lavcodec 
+Libs.private: -framework OpenGL -framework OpenGL -framework Foundation -framework CoreVideo -framework CoreMedia -framework CoreFoundation -framework VideoToolbox -framework CoreMedia -framework CoreVideo -framework VideoDecodeAcceleration -liconv -Wl,-framework,CoreFoundation -Wl,-framework,Security -lm -llzma -lbz2 -lz -pthread -pthread -framework CoreServices -framework CoreGraphics -framework VideoToolbox -framework CoreImage -framework AVFoundation -framework AudioToolbox -framework AppKit
+Cflags: -I${includedir}

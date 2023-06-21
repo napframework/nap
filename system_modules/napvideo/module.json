@@ -1,0 +1,22 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "naprender",
+        "napaudio"
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin"
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/linux/{BUILD_ARCH}/lib"
+        ],
+        "macOS": [
+            "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/macos/{BUILD_ARCH}/lib"
+        ],
+        "Windows": [
+            "{ROOT}/system_modules/napvideo/thirdparty/ffmpeg/msvc/{BUILD_ARCH}/bin"
+        ]
+    }
+}

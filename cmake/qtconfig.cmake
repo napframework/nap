@@ -1,15 +1,19 @@
 macro(nap_qt_pre)
     # Search for hints about our Qt library location
     if(DEFINED ENV{QT_DIR})
+        # TODO After changing to run this once only, using global scope with CMake 3.24+ (see TODO below), remove this
+        if(NOT NAP_QT_ENV_VAR_LOGGED)
+            message(STATUS "Using QT_DIR environment variable: $ENV{QT_DIR}")
+            set(NAP_QT_ENV_VAR_LOGGED TRUE PARENT_SCOPE)
+        endif()
         set(QTDIR $ENV{QT_DIR})
-        message(STATUS "Using QT_DIR environment variable: ${QTDIR}")
     else()
         # Also allow for NAP_QT_DIR set directly (not using QT_DIR so we don't conflict with the variable below)
         if(DEFINED NAP_QT_DIR)
             set(QTDIR, NAP_QT_DIR)
         elseif(DEFINED NAP_PACKAGED_BUILD)
             # If we're doing a platform release let's enforce the an explicit Qt path so that we're
-            # certain what we're bundling with the release       
+            # certain what we're bundling with the release
             message(FATAL_ERROR "Please set the QT_DIR environment variable to define the Qt5 version"
                                 "to be installed with the platform release, eg. \"C:/dev/Qt/5.9.1/msvc2015_64\"")
         endif()
@@ -44,6 +48,7 @@ macro(nap_qt_pre)
                 "\n Linux - \"/home/username/dev/Qt/Qt5.11.3/5.11.3/gcc_64\"")
     endif()
 
+    # TODO Update to CMake 3.24+ and use global scope here to avoid redefining
     find_package(Qt5Core REQUIRED)
     find_package(Qt5Widgets REQUIRED)
     find_package(Qt5Gui REQUIRED)

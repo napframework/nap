@@ -35,7 +35,6 @@ namespace napkin
 			QFileInfo info(file_name);
 			if (!info.exists())
 			{
-				nap::Logger::warn("Unable to find config file: %s", patched.c_str());
 				file_name.clear();
 			}
 		}

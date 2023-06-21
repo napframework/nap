@@ -1,0 +1,9 @@
+
+* ip address set to 2.0.0.99 in ArtPollReply
+* mac address set to 00-00-00-00-00-00-00-00 in ArtPollReply
+* ArtInput (on Receive Tab) is broadcast to (2.255.255.255), spec says broadcasting is not allowed. Open both Viewers, windows discovers linux one, then switch to recv tab and check boxes
+
+
+
+* Missing "Art-Net\0" for RDM packet
+

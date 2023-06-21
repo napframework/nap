@@ -4,9 +4,13 @@
 
 #include "apprunnerpanel.h"
 #include "napkin-resources.h"
+#include "napkinutils.h"
+#include "napkinglobals.h"
+#include "naputils.h"
 
 #include <nap/logger.h>
 #include <napqt/qtutils.h>
+#include <QDirIterator>
 
 napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 {
@@ -18,7 +22,6 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	mLayout.addWidget(&mStartButton);
 	mLayout.addWidget(&mStopButton);
 
-	connect(&mFileSelector, &nap::qt::FileSelector::filenameChanged, this, &AppRunnerPanel::onAppChanged);
 	connect(&mStartButton, &QPushButton::clicked, this, &AppRunnerPanel::onStartApp);
 	connect(&mStopButton, &QPushButton::clicked, this, &AppRunnerPanel::onStopApp);
 	connect(&mProcess, &QProcess::started,	this, &AppRunnerPanel::onAppStarted);
@@ -32,6 +35,9 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 
 	// When theme changes, update icons
 	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &AppRunnerPanel::themeChanged);
+
+	// When project loads find executable and set it
+	connect(&AppContext::get(), &AppContext::projectLoaded, this, &AppRunnerPanel::onProjectLoaded);
 }
 
 napkin::AppRunnerPanel::~AppRunnerPanel()
@@ -40,16 +46,36 @@ napkin::AppRunnerPanel::~AppRunnerPanel()
 }
 
 
-void napkin::AppRunnerPanel::showEvent(QShowEvent* event)
+void napkin::AppRunnerPanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
 {
-	QWidget::showEvent(event);
-	mFileSelector.setFilename(QSettings().value(LAST_CORE_APP).toString());
+	// Find build output directory
+	auto build_dir = QString::fromStdString(projectInfo.getBuildDir());
+	if (build_dir.isEmpty())
+	{
+		nap::Logger::warn("Unable to locate '%s' build directory", projectInfo.mTitle.c_str());
+		mFileSelector.setFilename("");
+		return;
+	}
+
+	// Find executable
+	QString exe_file = QString::fromStdString(projectInfo.mTitle).toLower();
+	QDirIterator it(build_dir, QDir::Files | QDir::NoDotAndDotDot);
+	while (it.hasNext())
+	{
+		// Peek and use
+        it.next();
+        if (it.fileInfo().isExecutable() && it.fileName().toLower().startsWith(exe_file))
+		{
+			nap::Logger::info("Setting executable '%s'",
+				napkin::toLocalURI(it.filePath().toStdString()).c_str());
+			mFileSelector.setFilename(it.filePath());
+			return;
+		}
+	}
+	nap::Logger::warn("Unable to find '%s' executable", projectInfo.mTitle.c_str());
+	mFileSelector.setFilename("");
 }
 
-void napkin::AppRunnerPanel::onAppChanged(const QString& filename)
-{
-	QSettings().setValue(LAST_CORE_APP, filename);
-}
 
 void napkin::AppRunnerPanel::onStartApp()
 {
@@ -120,6 +146,7 @@ void napkin::AppRunnerPanel::onAppState(QProcess::ProcessState state)
 {
 	nap::Logger::info("App State Changed: %s", nap::qt::QEnumToString(state).toStdString().c_str());
 }
+
 
 void napkin::AppRunnerPanel::onAppFinished(int exitCode, QProcess::ExitStatus)
 {

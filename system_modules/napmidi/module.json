@@ -1,0 +1,17 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napscene"
+    ],
+    "WindowsDllSearchPaths": [],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/napmidi/thirdparty/rtmidi/linux/{BUILD_ARCH}/lib"
+        ],
+        "macOS": [
+            "{ROOT}/system_modules/napmidi/thirdparty/rtmidi/macos/{BUILD_ARCH}/lib"
+        ],
+        "Windows": []
+    }
+}

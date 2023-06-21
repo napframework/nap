@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napmath",
+        "napsequence",
+        "naprender",
+        "napimgui"
+    ],
+    "DataSearchPaths": [
+        "{ROOT}/system_modules/napsequencegui/data",
+        "{ROOT}/system_modules/{MODULE_NAME}/data"
+    ]
+}

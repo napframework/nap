@@ -1,0 +1,8 @@
+prefix=/usr/local
+exec_prefix=/usr/local
+libdir=/usr/local/lib
+includedir=/usr/local/includeName: Vulkan-Loader
+Description: Vulkan Loader
+Version: 1.2.189.0
+Libs: -L$(libdir) -lvulkan
+Cflags: -I$[includedir}] 

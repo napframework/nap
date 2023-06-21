@@ -1,0 +1,13 @@
+{
+    "Type": "nap::PathMapping",
+    "mID": "UnixFrameworkReleaseMapping",
+    "ProjectExeToRoot": "../../../..",
+    "NapkinExeToRoot": "../..",
+    "ModulePaths": 
+    [
+        "{ROOT}/system_modules/{MODULE_NAME}/lib/{BUILD_CONFIG}",
+        "{ROOT}/modules/{MODULE_NAME}/lib/{BUILD_CONFIG}",
+        "{PROJECT_DIR}/module/lib/{BUILD_CONFIG}"
+    ],
+    "BuildPath": "{PROJECT_DIR}/bin/{BUILD_CONFIG}"
+}

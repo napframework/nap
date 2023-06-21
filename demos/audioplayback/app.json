@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "AudioPlayback",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "napapp",
+        "napaudio",
+        "napimgui"
+    ],
+    "Data": "data/audioplayback.json",
+    "ServiceConfig": "config.json",
+    "PathMapping": "cache/path_mapping.json"
+}

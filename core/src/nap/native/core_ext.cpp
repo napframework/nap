@@ -25,7 +25,7 @@ namespace nap
 
 	bool Core::findProjectInfoFile(std::string& foundFilePath) const
 	{
-		// Locate the project.json file without using the path mapping system as it hasn't been initialized yet.
+		// Locate the app.json file without using the path mapping system as it hasn't been initialized yet.
 
 		const std::string exeDir = utility::getExecutableDir();
 
@@ -92,7 +92,7 @@ namespace nap
 	{
 		// Get path relative to project
 		std::string config_file_path;
-		if (!errorState.check(findProjectFilePath(filename, config_file_path), "Unable to find: %s", filename.c_str()))
+		if (!errorState.check(findProjectFilePath(filename, config_file_path), "Unable to find service configuration file: %s", filename.c_str()))
 			return false;
 
 		// Load
