@@ -104,7 +104,7 @@ namespace nap
 		LicenseInformation mLicenseInfo;								//< Contains license information after license validation
 		utility::ErrorState mLicenseError;								//< Contains the error if license validation failed
 		bool mLicenseValid = true;										//< If the app has a valid license
-		nap::uint64 mMachineID = 0;										//< Machine identification hash
+		std::string mMachineID;										       //< Machine identification hash
 
 		// Handle license error popup
 		void handleLicensePopup();

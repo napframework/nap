@@ -20,12 +20,14 @@
 #elif  __linux__
     #include <ifaddrs.h>
     #include <netpacket/packet.h>
+    #include <net/if.h>
 #endif
 
+// Cryptopp includes
 #include <rsa.h>
-#include <hex.h>
 #include <files.h>
 #include <sha.h>
+#include <hex.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
 	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
@@ -64,27 +66,27 @@ namespace nap
 		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
 		switch (signingScheme)
 		{
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA1:
+			case nap::ESigningScheme::SHA1:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA224:
+			case nap::ESigningScheme::SHA224:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA256:
+			case nap::ESigningScheme::SHA256:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA384:
+			case nap::ESigningScheme::SHA384:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA512:
+			case nap::ESigningScheme::SHA512:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
 				return verifier;
@@ -147,9 +149,9 @@ namespace nap
 
 
 #ifdef __linux__
-	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(std::string& outID, nap::utility::ErrorState& error)
 	{
-		id = 0;
+		uint64 num_id = 0;
 		struct ifaddrs* if_addresses = nullptr;
 		if (!error.check(getifaddrs(&if_addresses) > -1, "Unable to access network interfaces"))
 			return false;
@@ -157,11 +159,18 @@ namespace nap
 		struct ifaddrs* interface = nullptr;
 		for (interface = if_addresses; interface != nullptr; interface = interface->ifa_next)
 		{
+            // Skip loop back devices
+            if(interface->ifa_flags & IFF_LOOPBACK)
+                continue;
+
+            // Update ID
 			if ((interface->ifa_addr) && (interface->ifa_addr->sa_family == AF_PACKET))
 			{
 				sockaddr_ll* s = reinterpret_cast<sockaddr_ll*>(interface->ifa_addr);
 				for (auto i = 0; i < s->sll_halen; i++)
-					id ^= static_cast<uint64>(s->sll_addr[i]) << (i * 8);
+                {
+                    num_id += static_cast<uint64>(s->sll_addr[i]) << (i * 8);
+                }
 			}
 		}
 		freeifaddrs(if_addresses);
@@ -170,19 +179,32 @@ namespace nap
 		std::string id_str;
 		if (!nap::utility::readFileToString("/etc/machine-id", id_str, error))
 		{
-			error.fail("Unable to access machine identifier");
+			error.fail("Unable to read machine identifier");
 			return false;
 		}
 		std::hash<std::string> hasher;
-		uint64 machine_id = static_cast<uint64>(hasher(id_str));
-		id ^= machine_id;
-		return true;
+        num_id ^= static_cast<uint64>(hasher(id_str));
+        id_str = std::to_string(num_id);
+
+        // Turn into 256 hash, truncated to 10 bits for readability
+        CryptoPP::SHA256 hash; std::string digest;
+        hash.Update((const CryptoPP::byte*)id_str.data(), id_str.size());
+        digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
+        hash.TruncatedFinal((CryptoPP::byte*)&digest[0], digest.size());
+
+        // Encode base 16 and store as str.
+        std::stringstream buffer;
+        CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(buffer));
+        CryptoPP::StringSource string_source(digest, true, new CryptoPP::Redirector(encoder));
+        outID = buffer.str();
+
+        return true;
 	}
 
 #elif _WIN32
-	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(std::string& outID, nap::utility::ErrorState& error)
 	{
-		id = 0;
+		uint64 num_id = 0;
 
 		//////////////////////////////////////////////////////////////////////////
 		// Network adapters
@@ -209,8 +231,12 @@ namespace nap
 		PIP_ADAPTER_INFO adapter = p_adapter_info;
 		for (adapter = p_adapter_info; adapter != nullptr; adapter = adapter->Next)
 		{
+			// Skip loopback device
+			if(adapter->Type == MIB_IF_TYPE_LOOPBACK)
+				continue;
+
 			for (auto i = 0; i < adapter->AddressLength; i++)
-				id ^= static_cast<uint64>(adapter->Address[i]) << (i * 8);
+				num_id += static_cast<uint64>(adapter->Address[i]) << (i * 8);
 		}
 
 		// Free adapter information
@@ -256,15 +282,32 @@ namespace nap
 			"Could not read registry value"))
 			return false;
 
-		// Hash
+		// Add uuid
 		std::hash<std::string> hasher;
 		uint64 machine_id = static_cast<uint64>(hasher(id_str));
-		id ^= machine_id;
+		num_id ^= machine_id;
+
+		// TODO: link against static CryptoPP lib instead of dll.
+		// FIPS DLL is obsolete and should not be used. See: https://www.cryptopp.com/wiki/FIPS_DLL
+		// Usage of 'CryptoPP::StringSink' causes heap corruption (MSVC) with dll -> used FileSink instead.
+		id_str = std::to_string(num_id); 
+
+		// Turn into 256 hash, truncated to 10 bits
+		CryptoPP::SHA256 hash; std::string digest;
+		hash.Update((const byte*)id_str.data(), id_str.size());
+		digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
+		hash.TruncatedFinal((CryptoPP::byte*)&digest[0], digest.size());
+
+		// Encode base 16 and store as str.
+		std::stringstream buffer;
+        CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(buffer));
+		CryptoPP::StringSource string_source(digest, true, new CryptoPP::Redirector(encoder));
+		outID = buffer.str();
+
 		return true;
 	}
-
 #else
-	static bool generateMachineID(uint64& id, nap::utility::ErrorState& error)
+	static bool generateMachineID(std::string& outID, nap::utility::ErrorState& error)
 	{
 		error.fail("Platform not supported");
 		return false;
@@ -283,13 +326,13 @@ namespace nap
 
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey.getKey(), nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+		return validateLicense(publicKey.getKey(), nap::ESigningScheme::SHA256, outInformation, error);
 	}
 
 
 	bool LicenseService::validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+		return validateLicense(publicKey, nap::ESigningScheme::SHA256, outInformation, error);
 	}
 
 
@@ -317,6 +360,7 @@ namespace nap
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
 		// I am unable to first load the file to string and use that as a source for the verification operation -> runtime memory error
+		// See: https://www.cryptopp.com/wiki/FIPS_DLL
 		std::string user_license;
 		if (!utility::readFileToString(mLicense, user_license, error))
 			return false;
@@ -377,15 +421,14 @@ namespace nap
 		it = arguments.find("id");
 		if (it != arguments.end())
 		{
-			uint64 machine_id;
+			std::string machine_id;
 			if (!getMachineID(machine_id, error))
 			{
 				error.fail("Unable to generate machine identifier");
 				return false;
 			}
 
-			uint64 license_id = std::stoull(it->second);
-			if (!error.check(machine_id == license_id, "Identification failed: machine IDs don't match"))
+			if (!error.check(machine_id == it->second,"Identification failed: machine IDs don't match"))
 				return false;
 		}
 		return true;
@@ -429,7 +472,7 @@ namespace nap
 	}
 
 
-    bool LicenseService::getMachineID(uint64& id, nap::utility::ErrorState& error)
+    bool LicenseService::getMachineID(std::string& id, nap::utility::ErrorState& error)
     {
 		return generateMachineID(id, error);
     }

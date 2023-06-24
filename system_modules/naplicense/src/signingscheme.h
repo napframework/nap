@@ -13,10 +13,10 @@ namespace nap
 	 */
 	enum class ESigningScheme : int
 	{
-		RSASS_PKCS1v15_SHA1 = 0,
-		RSASS_PKCS1v15_SHA224 = 1,
-		RSASS_PKCS1v15_SHA256 = 2,
-		RSASS_PKCS1v15_SHA384 = 3,
-		RSASS_PKCS1v15_SHA512 = 4,
+		SHA1	= 0,		//< "SHA1"
+		SHA224	= 1,		//< "SHA224"
+		SHA256	= 2,		//< "SHA256"
+		SHA384	= 3,		//< "SHA384"
+		SHA512	= 4,		//< "SHA512"
 	};
 }
