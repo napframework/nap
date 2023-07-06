@@ -295,8 +295,12 @@ def get_build_arch():
     if machine_arch.lower() in ('x86_64', 'amd64'):
         nap_arch = 'x86_64'
     elif machine_arch == 'aarch64':
-        nap_arch = 'arm64'
-    elif machine_arch != 'x86_64':
+        p = run('getconf LONG_BIT', shell=True, text=True, capture_output=True)
+        if p.stdout.strip() == '64':
+            nap_arch = 'arm64'
+        else:
+            nap_arch = 'armhf'
+    else:
         nap_arch = 'armhf'
     return nap_arch
 

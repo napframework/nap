@@ -4,15 +4,20 @@ configure_python() {
     if [ "$(uname)" = "Linux" ]; then
         case "$(arch)" in
         "x86_64")
-            python="$thirdparty/python/linux/x86_64/bin/python3"
+            nap_arch="x86_64"
             ;;
         "aarch64")
-            python="$thirdparty/python/linux/arm64/bin/python3"
+            if [ "$(getconf LONG_BIT)" = "64" ]; then
+                nap_arch="arm64"
+            else
+                nap_arch="armhf"
+            fi
             ;;
         *)
-            python="$thirdparty/python/linux/armhf/bin/python3"
+            nap_arch="armhf"
             ;;
         esac
+        python="$thirdparty/python/linux/$nap_arch/bin/python3"
     else
         python="$thirdparty/python/macos/x86_64/bin/python3"
     fi

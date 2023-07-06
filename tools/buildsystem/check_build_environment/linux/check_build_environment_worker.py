@@ -32,15 +32,20 @@ def log_test_success(test_item, success):
 
     print("Checking %s: %s" % (test_item, 'PASS' if success else 'FAIL'))
 
-def get_machine_architecture():
-    """Retrieve architecture identifier"""
-    arch = machine()
-    if arch == 'x86_64':
-        return arch
-    elif arch == 'aarch64':
-        return 'arm64'
+def get_build_arch():
+    """Fetch build architecture as used by NAP"""
+    machine_arch = machine()
+    if machine_arch.lower() in ('x86_64', 'amd64'):
+        nap_arch = 'x86_64'
+    elif machine_arch == 'aarch64':
+        p = subprocess.run('getconf LONG_BIT', shell=True, text=True, capture_output=True)
+        if p.stdout.strip() == '64':
+            nap_arch = 'arm64'
+        else:
+            nap_arch = 'armhf'
     else:
-        return 'armhf'
+        nap_arch = 'armhf'
+    return nap_arch
 
 def check_arch():
     """Check if the machine matches the package arch"""
@@ -51,7 +56,7 @@ def check_arch():
         data = json.load(f)
         expected_arch = data['architecture']
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
     arch_ok = arch == expected_arch
     log_test_success('matched architecture', arch_ok)
     return (arch_ok, expected_arch, arch)
@@ -59,7 +64,7 @@ def check_arch():
 def check_distribution():
     """Check if the we're running our supported distro for the arch"""
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
     if arch == 'armhf':
@@ -74,7 +79,7 @@ def check_distribution():
 def check_distribution_version():
     """Check if the we're running our supported distribution version"""
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
     release = call('lsb_release -r')
     release = release.split(':')[1].strip()
     if arch == 'armhf':
@@ -130,13 +135,8 @@ def check_qt_version():
 
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
-    arch = machine()
-    if arch == 'x86_64':
-        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
-    elif arch == 'aarch64':
-        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'arm64', 'bin', 'cmake')
-    else:
-        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'armhf', 'bin', 'cmake')
+    arch = get_build_arch()
+    cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
 
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -214,7 +214,7 @@ def check_and_warn_for_potential_system_qt():
 def check_build_environment(against_source):
     """Check whether Linux build environment appears ready for NAP"""
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
 
     if against_source:
         # Check if supported arch
