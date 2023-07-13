@@ -807,7 +807,6 @@ namespace nap
 	bool Shader::load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
 		// Set display name
-		assert(mRenderService->isInitialized());
 		mDisplayName = displayName;
 
 		VkDevice device = mRenderService->getDevice();

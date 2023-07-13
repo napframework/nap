@@ -1485,7 +1485,7 @@ namespace nap
 			}
 		}
 
-		// Initialize shader compiler
+		// Initialize shader compilation
 		mShInitialized = ShInitialize() != 0;
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
@@ -1657,6 +1657,13 @@ namespace nap
 		mInitialized = true;
 		return true;
 	}
+
+
+	bool RenderService::initShaderCompilation(utility::ErrorState& error)
+	{
+		return init(error);
+	}
+
 
 	void RenderService::waitDeviceIdle()
 	{

@@ -916,6 +916,15 @@ namespace nap
 		uint32 getVulkanVersionMinor() const;
 
 		/**
+		 * Initializes shader compilation and linking.
+		 * Don't call this in your application! Only required by external processes
+		 * that want to use the NAP render engine (such as the editor).
+		 * @error contains the error if initialization fails
+		 * @return if shader compiler and linker initialized successfully
+		 */
+		bool initShaderCompilation(utility::ErrorState& error);
+
+		/**
 		 * Called when a new window is added to the system
 		 */
 		nap::Signal<nap::RenderWindow&> windowAdded;
