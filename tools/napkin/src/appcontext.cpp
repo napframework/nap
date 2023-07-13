@@ -149,7 +149,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	auto* render_service = mCore.getService<nap::RenderService>();
 	if (render_service != nullptr)
 	{
-		if (!render_service->initShaderCompilation(err))
+		if (!render_service->initForShaderCompilation(err))
 		{
 			nap::Logger::error(err.toString());
 			progressChanged(1.0f);
@@ -157,7 +157,9 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 		}
 		assert(render_service != nullptr);
 		auto* constant_material = render_service->getOrCreateMaterial<nap::ConstantShader>(err);
+		nap::Logger::info(constant_material->mID.c_str());
 	}
+
 
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);
@@ -173,7 +175,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	return mProjectInfo.get();
 }
-
 
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {

@@ -1659,9 +1659,63 @@ namespace nap
 	}
 
 
-	bool RenderService::initShaderCompilation(utility::ErrorState& error)
+	bool RenderService::initForShaderCompilation(utility::ErrorState& error)
 	{
-		return init(error);
+		// Initialize shader compilation
+		mShInitialized = ShInitialize() != 0;
+		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
+			return false;
+
+		// Add debug display extension, we need this to relay debug messages
+		std::vector<std::string> instance_extensions = { VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+
+		// Get available vulkan layer extensions, notify when not all could be found
+		std::vector<std::string> found_layers;
+#ifndef NDEBUG
+		// Get all available vulkan layers
+		const std::vector<std::string>& requested_layers = {"VK_LAYER_KHRONOS_validation"};
+		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
+			return false;
+
+		// Warn when not all requested layers could be found
+		if (found_layers.size() != requested_layers.size())
+			nap::Logger::warn("Not all requested layers were found");
+
+		// Print the ones we're enabling
+		for (const auto& layer : found_layers)
+			Logger::info("Applying layer: %s", layer.c_str());
+#endif // NDEBUG
+
+		// Create Vulkan Instance together with required extensions and layers
+		mAPIVersion = VK_MAKE_VERSION(1, 0, 0);
+		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, error))
+			return false;
+
+		// Vulkan messaging callback
+		setupDebugCallback(mInstance, mDebugCallback, error);
+
+		// Get the preferred physical device to select
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
+		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, VK_NULL_HANDLE, req_queue_capabilities, mPhysicalDevice, error))
+			return false;
+
+		// Get extensions that are required for NAP render engine to function.
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+
+		// Create unique set
+		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
+		for (const auto& ext : required_ext_names)
+			unique_ext_names.emplace(ext);
+
+		// Create a logical device that interfaces with the physical device.
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
+			return false;
+
+		mInitialized = true;
+		return true;
 	}
 
 
