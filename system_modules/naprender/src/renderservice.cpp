@@ -1659,7 +1659,7 @@ namespace nap
 	}
 
 
-	bool RenderService::initForShaderCompilation(utility::ErrorState& error)
+	bool RenderService::initShaderCompilation(utility::ErrorState& error)
 	{
 		// Initialize shader compilation
 		mShInitialized = ShInitialize() != 0;
