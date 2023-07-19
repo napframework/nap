@@ -66,27 +66,27 @@ namespace nap
 		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
 		switch (signingScheme)
 		{
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA1:
+			case nap::ESigningScheme::SHA1:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA224:
+			case nap::ESigningScheme::SHA224:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA256:
+			case nap::ESigningScheme::SHA256:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA384:
+			case nap::ESigningScheme::SHA384:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
 				return verifier;
 			}
-			case nap::ESigningScheme::RSASS_PKCS1v15_SHA512:
+			case nap::ESigningScheme::SHA512:
 			{
 				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
 				return verifier;
@@ -326,13 +326,13 @@ namespace nap
 
 	bool LicenseService::validateLicense(const nap::PublicKey& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey.getKey(), nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+		return validateLicense(publicKey.getKey(), nap::ESigningScheme::SHA256, outInformation, error);
 	}
 
 
 	bool LicenseService::validateLicense(const std::string& publicKey, LicenseInformation& outInformation, utility::ErrorState& error)
 	{
-		return validateLicense(publicKey, nap::ESigningScheme::RSASS_PKCS1v15_SHA1, outInformation, error);
+		return validateLicense(publicKey, nap::ESigningScheme::SHA256, outInformation, error);
 	}
 
 

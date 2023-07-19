@@ -24,15 +24,10 @@ using SystemTimeStamp = std::chrono::time_point<SystemClock>;
 constexpr const char* licenceToken = "LICENSE@";
 constexpr const char* licenseExtension = "license";
 constexpr const char* keyExtension = "key";
-constexpr const char* defaultSigningSceme = "RSASS_PKCS1v15_SHA1";
-constexpr const char* supportedSigningSchemes[] =
+constexpr const char* defaultSigningSceme = "SHA256";
+constexpr const char* supportedSigningSchemes[] = 
 {
-	defaultSigningSceme,
-	"RSASS_PKCS1v15_SHA224",
-	"RSASS_PKCS1v15_SHA256",
-	"RSASS_PKCS1v15_SHA384",
-	"RSASS_PKCS1v15_SHA512",
-	""
+	"SHA1", "SHA224", defaultSigningSceme, "SHA384", "SHA512", ""
 };
 
 /**
@@ -90,15 +85,15 @@ static std::unique_ptr<PK_Signer> createSigner(const std::string& privFilename, 
 	FileSource privFile(privFilename.c_str(), true, new HexDecoder);
 	std::unique_ptr<PK_Signer> signer;
 
-	if (signingScheme == "RSASS_PKCS1v15_SHA1")
+	if (signingScheme == "SHA1")
 		signer.reset(new RSASS<PKCS1v15, SHA1>::Signer(privFile));
-	else if (signingScheme == "RSASS_PKCS1v15_SHA224")
+	else if (signingScheme == "SHA224")
 		signer.reset(new RSASS<PKCS1v15, SHA224>::Signer(privFile));
-	else if (signingScheme == "RSASS_PKCS1v15_SHA256")
+	else if (signingScheme == defaultSigningSceme)
 		signer.reset(new RSASS<PKCS1v15, SHA256>::Signer(privFile));
-	else if (signingScheme == "RSASS_PKCS1v15_SHA384")
+	else if (signingScheme == "SHA384")
 		signer.reset(new RSASS<PKCS1v15, SHA384>::Signer(privFile));
-	else if (signingScheme == "RSASS_PKCS1v15_SHA512")
+	else if (signingScheme == "SHA512")
 		signer.reset(new RSASS<PKCS1v15, SHA512>::Signer(privFile));
 
 	return signer;
