@@ -68,9 +68,8 @@ namespace nap
 	 * Contains a list of indices that describe which particular part of the nap::MeshInstance should be drawn.
 	 * Every nap::MeshInstance contains at least one shape.
 	 */
-	class NAPAPI MeshShape
+	struct NAPAPI MeshShape
 	{
-	public:
 		/**
 		 * @return The number of indices in this shape
 		 */
@@ -136,7 +135,6 @@ namespace nap
 		 */
 		const uint32& operator[](std::size_t index) const				{ return mIndices[index]; }
 
-	public:
 		std::vector<uint32>			mIndices;		///< Property: 'Indices' into the mesh's vertex data
 	};
 
