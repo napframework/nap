@@ -22,6 +22,13 @@ RTTI_BEGIN_CLASS(nap::TransformProperties)
 	RTTI_PROPERTY("UniformScale",	&nap::TransformProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::TransformInstanceProperties)
+	RTTI_PROPERTY("Translate",		&nap::TransformInstanceProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Rotate",			&nap::TransformInstanceProperties::mRotate,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Scale",			&nap::TransformInstanceProperties::mScale,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UniformScale",	&nap::TransformInstanceProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS(nap::TransformComponent)
 	RTTI_PROPERTY("Properties", &nap::TransformComponent::mProperties, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

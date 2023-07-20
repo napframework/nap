@@ -35,7 +35,7 @@ namespace nap
 		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
 	public:
-		PerspCameraProperties mProperties;					///< Property: 'Properties' the perspective camera settings
+		PerspCameraProperties mProperties;				///< Property: 'Properties' the perspective camera settings
 	};
 
 
