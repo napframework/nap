@@ -34,7 +34,7 @@ namespace nap
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(T value);
+		virtual void setValue(T value);
 
 		/**
 		 * Sets the min/max range of this parameter to the specified values.
