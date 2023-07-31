@@ -144,13 +144,13 @@ namespace napkin
 		/**
 		 * @param object The object this item should represent
 		 */
-		ObjectItem(nap::rtti::Object* object);
+		ObjectItem(nap::rtti::Object& object);
 
 		/**
 		 * @param object The object this item should represent
 		 * @param isPointer Whether this item should be displayed as a pointer/instance
 		 */
-		ObjectItem(nap::rtti::Object* object, bool isPointer);
+		ObjectItem(nap::rtti::Object& object, bool isPointer);
 
 		/**
 		 * Get the property path this item represents
@@ -172,7 +172,7 @@ namespace napkin
 		/**
 		 * @return The object held by this item
 		 */
-		nap::rtti::Object* getObject() const;
+		nap::rtti::Object& getObject() const;
 
 		/**
 		 * @return The name of the object, which is the object ID
@@ -260,7 +260,7 @@ namespace napkin
 		/**
 		 * @return The entity held by this item
 		 */
-		nap::Entity* getEntity();
+		nap::Entity& getEntity();
 
 		const std::string unambiguousName() const override;
 
@@ -320,7 +320,7 @@ namespace napkin
 		/**
 		 * @return the resource group
 		 */
-		nap::IGroup* getGroup();
+		nap::IGroup& getGroup();
 
 	Q_SIGNALS:
 		/**
@@ -350,7 +350,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		MaterialItem(nap::rtti::Object* object);
+		MaterialItem(nap::rtti::Object& object);
 	};
 
 
@@ -359,15 +359,23 @@ namespace napkin
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * Represents a nap::Shader
+	 * Represents a nap::BaseShader
 	 */
 	class BaseShaderItem : public ObjectItem
 	{
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		BaseShaderItem(nap::rtti::Object* object);
+		BaseShaderItem(nap::rtti::Object& object);
+
+		/**
+		 * @return the shader
+		 */
 		const nap::Shader& getShader() const	{ assert(mShader != nullptr); return *mShader; }
+
+		/**
+		 * @return the shader
+		 */
 		nap::Shader& getShader()				{ assert(mShader != nullptr); return *mShader; }
 			
 	protected:
@@ -390,7 +398,10 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(BaseShaderItem)
 	public:
-		ShaderFromFileItem(nap::rtti::Object* object);
+		/**
+		 * Initializes (compiles) the shader when frag and vert path are valid
+		 */
+		ShaderFromFileItem(nap::rtti::Object& object);
 	};
 
 
@@ -406,7 +417,10 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(BaseShaderItem)
 	public:
-		ShaderItem(nap::rtti::Object* object);
+		/**
+		 * Initializes (compiles) the shader
+		 */
+		ShaderItem(nap::rtti::Object& object);
 	};
 
 
@@ -423,7 +437,12 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit SceneItem(nap::Scene& scene);
+		SceneItem(nap::Scene& scene);
+
+		/**
+		 * @return The scene held by this item
+		 */
+		nap::Scene& getScene();
 	};
 
 

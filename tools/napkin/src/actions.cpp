@@ -726,7 +726,7 @@ void napkin::DeleteGroupAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) :
-	Action(nap::utility::stringFormat("Remove '%s'", entityItem.getEntity()->mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+	Action(nap::utility::stringFormat("Remove '%s'", entityItem.getEntity().mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mEntityItem(&entityItem)
 { }
 
@@ -751,7 +751,7 @@ void RemoveChildEntityAction::perform()
 		return true;
 	}, mEntityItem->index());
 
-	doc->removeChildEntity(*parentItem->getEntity(), index);
+	doc->removeChildEntity(parentItem->getEntity(), index);
 }
 
 

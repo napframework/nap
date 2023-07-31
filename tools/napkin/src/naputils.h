@@ -115,7 +115,7 @@ namespace napkin
 			if (objItem == nullptr)
 				return false;
 
-			if (objItem->getObject() == &obj)
+			if (&objItem->getObject() == &obj)
 			{
 				foundItem = objItem;
 				return true;

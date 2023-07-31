@@ -130,7 +130,7 @@ static nap::IGroup* getItemGroup(const ObjectItem& item)
 		nullptr;
 
 	// Return group from parent, nullptr otherwise
-	return parent_item != nullptr ? parent_item->getGroup() : nullptr;
+	return parent_item != nullptr ? &parent_item->getGroup() : nullptr;
 }
 
 
@@ -157,40 +157,40 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		// Otherwise it's the main resource
 		else
 		{
-			menu.addAction(new AddChildEntityAction(*entity_item->getEntity()));
-			menu.addAction(new AddComponentAction(*entity_item->getEntity()));
-			menu.addAction(new DeleteObjectAction(*entity_item->getObject()));
+			menu.addAction(new AddChildEntityAction(entity_item->getEntity()));
+			menu.addAction(new AddComponentAction(entity_item->getEntity()));
+			menu.addAction(new DeleteObjectAction(entity_item->getObject()));
 		}
 	}
 	// Component
 	else if (qobject_cast<ComponentItem*>(selected_item) != nullptr)
 	{
 		auto component_item = static_cast<ComponentItem*>(selected_item);
-		menu.addAction(new DeleteObjectAction(*component_item->getObject()));
+		menu.addAction(new DeleteObjectAction(component_item->getObject()));
 	}
 	// Group
 	else if (qobject_cast<GroupItem*>(selected_item) != nullptr)
 	{
 		// Create and add new resource
 		GroupItem* group_item = static_cast<GroupItem*>(selected_item);
-		menu.addAction(new AddNewResourceToGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddNewResourceToGroupAction(group_item->getGroup()));
 
 		// Add existing resource
-		menu.addAction(new AddExistingResourceToGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddExistingResourceToGroupAction(group_item->getGroup()));
 
 		// If the item is parented under a group, offer the option to remove it
 		auto* item_group = getItemGroup(*group_item);
 		if (item_group != nullptr)
-			menu.addAction(new RemoveGroupFromGroupAction(*item_group, *group_item->getGroup()));
+			menu.addAction(new RemoveGroupFromGroupAction(*item_group, group_item->getGroup()));
 
 		// Create and add new sub group
-		menu.addAction(new AddChildGroupAction(*group_item->getGroup()));
+		menu.addAction(new AddChildGroupAction(group_item->getGroup()));
 
 		// Add action to move group to another group
-		menu.addAction(new MoveGroupAction(*group_item->getGroup(), item_group));
+		menu.addAction(new MoveGroupAction(group_item->getGroup(), item_group));
 
 		// Delete group action
-		menu.addAction(new DeleteGroupAction(*group_item->getGroup()));
+		menu.addAction(new DeleteGroupAction(group_item->getGroup()));
 	}
 	// General Object
 	else if (qobject_cast<ObjectItem*>(selected_item) != nullptr)
@@ -201,13 +201,13 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		// If the item is parented under a group, offer the option to remove it
 		auto* item_group = getItemGroup(*object_item);
 		if (item_group != nullptr)
-			menu.addAction(new RemoveResourceFromGroupAction(*item_group, *object_item->getObject()));
+			menu.addAction(new RemoveResourceFromGroupAction(*item_group, object_item->getObject()));
 
 		// Move resource to another group
-		menu.addAction(new MoveResourceToGroupAction(*object_item->getObject(), item_group));
+		menu.addAction(new MoveResourceToGroupAction(object_item->getObject(), item_group));
 
 		// Delete resource action
-		menu.addAction(new DeleteObjectAction(*object_item->getObject()));
+		menu.addAction(new DeleteObjectAction(object_item->getObject()));
 	}
 	// Top Resource
 	else if (qobject_cast<RootResourcesItem*>(selected_item) != nullptr)

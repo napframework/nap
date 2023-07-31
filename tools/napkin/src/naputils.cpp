@@ -67,6 +67,7 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type
 	refresh();
 }
 
+
 QVariant napkin::RTTITypeItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
@@ -76,11 +77,12 @@ QVariant napkin::RTTITypeItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+
 napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 {
 	for (auto object : objects)
 	{
-		auto item = new ObjectItem(object, false);
+		auto item = new ObjectItem(*object);
 		item->setEditable(false);
 		appendRow(item);
 	}
