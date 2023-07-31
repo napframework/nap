@@ -2,11 +2,15 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
 #include "naputils.h"
 #include "commands.h"
 #include "appcontext.h"
 
+// External Includes
 #include <nap/logger.h>
+#include <renderservice.h>
+#include <material.h>
 
 using namespace napkin;
 
@@ -334,6 +338,39 @@ void ArrayAddNewObjectCommand::undo()
 {
 	AppContext::get().getDocument()->arrayRemoveElement(mPath, mIndex);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+
+MaterialAddNewBindingCommand::MaterialAddNewBindingCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, size_t index) :
+	mPath(prop), mType(type), mIndex(index), QUndoCommand()
+{
+	auto& ctx = AppContext::get();
+	assert(ctx.getCore().isInitialized());
+	mRenderService = ctx.getCore().getService<nap::RenderService>();
+	mMaterial = rtti_cast<nap::Material>(prop.getObject());
+}
+
+
+MaterialAddNewBindingCommand::MaterialAddNewBindingCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type) :
+	MaterialAddNewBindingCommand(prop, type, prop.getArrayLength())
+{ }
+
+
+void napkin::MaterialAddNewBindingCommand::redo()
+{
+	assert(mRenderService != nullptr);
+	assert(mMaterial != nullptr);
+	if (mMaterial->mShader == nullptr)
+		return;
+}
+
+
+void napkin::MaterialAddNewBindingCommand::undo()
+{
+
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

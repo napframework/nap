@@ -19,6 +19,8 @@
 #include <napqt/filterpopup.h>
 #include <nap/group.h>
 #include <fcurve.h>
+#include <material.h>
+#include <renderservice.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -254,14 +256,25 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		}
 		else if (array_path.isEmbeddedPointer())
 		{
-			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD) , label, [this, array_path, array_type]()
+			// Regular or material array entry handling
+			auto* mat = rtti_cast<nap::Material>(array_path.getObject());
+			if (mat == nullptr)
 			{
-				TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
-				rttr::type elementType = showTypeSelector(this, predicate);
-				if (elementType.is_valid())
-					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
-			});
+				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
+					{
+						TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
+						rttr::type elementType = showTypeSelector(this, predicate);
+						if (elementType.is_valid())
+							AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+					});
+			}
+			else if (mat->mShader != nullptr)
+			{
+				auto& core = AppContext::get().getCore(); assert(core.isInitialized());
+				auto* rser = core.getService<nap::RenderService>(); assert(rser != nullptr);
+				nap::Logger::info("Handle material");
+			}
 		}
 		else
 		{

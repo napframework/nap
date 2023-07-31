@@ -11,6 +11,7 @@
 // External Includes
 #include <scene.h>
 #include <nap/group.h>
+#include <material.h>
 
 namespace napkin
 {
@@ -34,6 +35,7 @@ namespace napkin
 	class RootResourcesItem : public RTTIItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(RTTIItem)
 	public:
 		RootResourcesItem();
 		QVariant data(int role) const override;
@@ -86,6 +88,7 @@ namespace napkin
 	class EntityResourcesItem : public RTTIItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(RTTIItem)
 	public:
 		EntityResourcesItem();
 		QVariant data(int role) const override;
@@ -136,15 +139,21 @@ namespace napkin
 	class ObjectItem : public RTTIItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(RTTIItem)
 	public:
 		/**
-		 * @param o The object this item should represent
-		 * @param isPointer Whether this item should be displayed as a pointer/instance
+		 * @param object The object this item should represent
 		 */
-		explicit ObjectItem(nap::rtti::Object* o, bool isPointer = false);
+		ObjectItem(nap::rtti::Object* object);
 
 		/**
-		 * Get the propertypath this item represents
+		 * @param object The object this item should represent
+		 * @param isPointer Whether this item should be displayed as a pointer/instance
+		 */
+		ObjectItem(nap::rtti::Object* object, bool isPointer);
+
+		/**
+		 * Get the property path this item represents
 		 */
 		virtual const PropertyPath propertyPath() const;
 
@@ -219,7 +228,7 @@ namespace napkin
 		int nameIndex(const ObjectItem& childItem) const;
 
 	protected:
-		nap::rtti::Object* mObject; // THe object held by this item
+		nap::rtti::Object* mObject = nullptr; // The object held by this item
 
 	private:
 		void onPropertyValueChanged(PropertyPath path);
@@ -244,6 +253,7 @@ namespace napkin
 	class EntityItem : public ObjectItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit EntityItem(nap::Entity& entity, bool isPointer = false);
 
@@ -277,6 +287,7 @@ namespace napkin
 	class ComponentItem : public ObjectItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit ComponentItem(nap::Component& comp);
 
@@ -286,6 +297,10 @@ namespace napkin
 		nap::Component& getComponent();
 	};
 
+	//////////////////////////////////////////////////////////////////////////
+	// GroupItem
+	//////////////////////////////////////////////////////////////////////////
+
 	/**
 	 * Represents a nap::IGroup.
 	 * Groups together a set of objects and child -groups.
@@ -293,6 +308,7 @@ namespace napkin
 	class GroupItem : public ObjectItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit GroupItem(nap::IGroup& group);
 
@@ -323,6 +339,78 @@ namespace napkin
 
 
 	//////////////////////////////////////////////////////////////////////////
+	// Material Item
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a nap::Material that is used for shader inspection
+	 */
+	class MaterialItem : public ObjectItem
+	{
+		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
+	public:
+		MaterialItem(nap::rtti::Object* object);
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Shader Item
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a nap::Shader
+	 */
+	class BaseShaderItem : public ObjectItem
+	{
+		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
+	public:
+		BaseShaderItem(nap::rtti::Object* object);
+		const nap::Shader& getShader() const	{ assert(mShader != nullptr); return *mShader; }
+		nap::Shader& getShader()				{ assert(mShader != nullptr); return *mShader; }
+			
+	protected:
+		void init();
+
+	private:
+		nap::Shader* mShader = nullptr;
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ShaderFromFile Item
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a nap::ShaderFromFile, initialized when valid
+	 */
+	class ShaderFromFileItem : public BaseShaderItem
+	{
+		Q_OBJECT
+		RTTI_ENABLE(BaseShaderItem)
+	public:
+		ShaderFromFileItem(nap::rtti::Object* object);
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Shader Item
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a nap::Shader, immediately initialized
+	 */
+	class ShaderItem : public BaseShaderItem
+	{
+		Q_OBJECT
+		RTTI_ENABLE(BaseShaderItem)
+	public:
+		ShaderItem(nap::rtti::Object* object);
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
 	// Scene Model
 	//////////////////////////////////////////////////////////////////////////
 
@@ -333,6 +421,7 @@ namespace napkin
 	class SceneItem : public ObjectItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit SceneItem(nap::Scene& scene);
 	};
@@ -348,6 +437,7 @@ namespace napkin
 	class EntityInstanceItem : public ObjectItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
 		virtual nap::RootEntity& rootEntity() const;
@@ -368,7 +458,8 @@ namespace napkin
 
 	class RootEntityItem : public EntityInstanceItem
 	{
-	Q_OBJECT
+		Q_OBJECT
+		RTTI_ENABLE(EntityInstanceItem)
 	public:
 		explicit RootEntityItem(nap::RootEntity& e);
 		const PropertyPath propertyPath() const override;
@@ -394,6 +485,7 @@ namespace napkin
 	class ComponentInstanceItem : public ObjectItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE(ObjectItem)
 	public:
 		explicit ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
 		const PropertyPath propertyPath() const override;

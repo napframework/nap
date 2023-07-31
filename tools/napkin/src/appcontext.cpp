@@ -155,9 +155,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			progressChanged(1.0f);
 			return nullptr;
 		}
-		assert(render_service != nullptr);
-		auto* constant_material = render_service->getOrCreateMaterial<nap::ConstantShader>(err);
-		nap::Logger::info(constant_material->mID.c_str());
 	}
 
 	// Load document (data file)

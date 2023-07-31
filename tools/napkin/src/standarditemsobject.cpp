@@ -14,7 +14,6 @@
 
 RTTI_DEFINE_BASE(napkin::RootResourcesItem)
 RTTI_DEFINE_BASE(napkin::EntityResourcesItem)
-RTTI_DEFINE_BASE(napkin::ObjectItem)
 RTTI_DEFINE_BASE(napkin::EntityItem)
 RTTI_DEFINE_BASE(napkin::GroupItem)
 RTTI_DEFINE_BASE(napkin::SceneItem)
@@ -22,8 +21,58 @@ RTTI_DEFINE_BASE(napkin::ComponentItem)
 RTTI_DEFINE_BASE(napkin::EntityInstanceItem)
 RTTI_DEFINE_BASE(napkin::RootEntityItem)
 RTTI_DEFINE_BASE(napkin::ComponentInstanceItem)
+RTTI_DEFINE_BASE(napkin::BaseShaderItem)
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ShaderItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object*)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ShaderFromFileItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object*)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MaterialItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object*)
+RTTI_END_CLASS
 
 using namespace napkin;
+
+//////////////////////////////////////////////////////////////////////////
+// Static functions
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Helper function to create an item for the given object
+ * @param object to create object item for
+ */
+static ObjectItem* createObjectItem(nap::rtti::Object* object)
+{
+	struct Binding
+	{
+		nap::rtti::TypeInfo mSource = nap::rtti::TypeInfo::empty();
+		nap::rtti::TypeInfo mTarget = nap::rtti::TypeInfo::empty();
+	};
+
+	const static std::vector<Binding> mMap =
+	{
+		{ RTTI_OF(nap::ShaderFromFile),		RTTI_OF(napkin::ShaderFromFileItem) },
+		{ RTTI_OF(nap::Shader),				RTTI_OF(napkin::ShaderItem)		},
+		{ RTTI_OF(nap::Material),			RTTI_OF(napkin::MaterialItem)	},
+	};
+
+	for(const auto& item : mMap)
+	{
+		if (object->get_type().is_derived_from(item.mSource))
+		{
+			auto* new_obj = item.mTarget.create<napkin::ObjectItem>({ object });
+			assert(new_obj != nullptr);
+			return new_obj;
+		}
+	}
+
+	// Default
+	return new ObjectItem(object);
+};
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,7 +139,7 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 	else
 	{
 		// Add as regular item
-		this->appendRow({ new ObjectItem(obj, false), new RTTITypeItem(obj->get_type()) });
+		this->appendRow({ createObjectItem(obj), new RTTITypeItem(obj->get_type()) });
 	}
 }
 
@@ -185,6 +234,10 @@ const napkin::EntityItem* napkin::EntityResourcesItem::findEntityItem(const nap:
 //////////////////////////////////////////////////////////////////////////
 // ObjectItem 
 //////////////////////////////////////////////////////////////////////////
+
+ObjectItem::ObjectItem(nap::rtti::Object* o) : ObjectItem(o, false)
+{ }
+
 
 ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
 		: mObject(o), mIsPointer(isPointer)
@@ -527,7 +580,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 			// Append members as objects
 			this->appendRow(
 				{
-					new ObjectItem(path.getPointee()),
+					createObjectItem(path.getPointee()),
 					new RTTITypeItem(path.getPointee()->get_type())
 				});
 			return true;
@@ -605,6 +658,64 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
 		childAdded(*this, *new_group);
 	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Material Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::MaterialItem::MaterialItem(nap::rtti::Object* object) : ObjectItem(object, false)
+{ }
+
+
+//////////////////////////////////////////////////////////////////////////
+// Shader Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::BaseShaderItem::BaseShaderItem(nap::rtti::Object* object) :
+	ObjectItem(object), mShader(rtti_cast<nap::Shader>(object))
+{ }
+
+
+void napkin::BaseShaderItem::init()
+{
+	auto cwd = nap::utility::getCWD();
+	nap::utility::changeDir(AppContext::get().getCore().getProjectInfo()->getDataDirectory());
+
+	auto& shader = getShader();
+	nap::utility::ErrorState err;
+	if (!shader.init(err))
+	{
+		nap::Logger::error("Unable to initialize shader: %s", shader.mID.c_str());
+		nap::Logger::error(err.toString());
+	}
+	nap::utility::changeDir(cwd);
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// ShaderFromFile Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ShaderFromFileItem::ShaderFromFileItem(nap::rtti::Object* object) : BaseShaderItem(object)
+{
+	auto* sff = rtti_cast<nap::ShaderFromFile>(object);
+	assert(sff != nullptr);
+	if (!sff->mFragPath.empty() && !sff->mVertPath.empty())
+	{
+		init();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// Shader Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ShaderItem::ShaderItem(nap::rtti::Object* object) : BaseShaderItem(object)
+{
+	init();
 }
 
 

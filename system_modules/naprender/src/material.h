@@ -51,7 +51,6 @@ namespace nap
 
 	private:
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
-		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 		RenderService* mRenderService = nullptr;
 		const BaseShader* mShader = nullptr;
 	};
