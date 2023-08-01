@@ -683,8 +683,13 @@ napkin::BaseShaderItem::BaseShaderItem(nap::rtti::Object& object) :
 void napkin::BaseShaderItem::init()
 {
 	auto cwd = nap::utility::getCWD();
-	nap::utility::changeDir(AppContext::get().getCore().getProjectInfo()->getDataDirectory());
 
+	// Change working directory for compilation
+	auto& core = AppContext::get().getCore();
+	assert(core.isInitialized());
+	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
+
+	// Compile shader
 	auto& shader = getShader();
 	nap::utility::ErrorState err;
 	if (!shader.init(err))
@@ -692,6 +697,8 @@ void napkin::BaseShaderItem::init()
 		nap::Logger::error("Unable to initialize shader: %s", shader.mID.c_str());
 		nap::Logger::error(err.toString());
 	}
+
+	// Change back working dir
 	nap::utility::changeDir(cwd);
 }
 

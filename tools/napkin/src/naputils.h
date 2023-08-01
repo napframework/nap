@@ -64,19 +64,11 @@ namespace napkin
 	nap::rtti::ObjectSet topLevelObjects();
 
 	/**
-	 * Display a selection dialog with all available objects, filtered by a base type
-	 * @param parent The parent widget to attach to.
-	 * @param typeConstraint The base type to filter by.
-	 * @return The selected object or nullptr if no object was selected
-	 */
-	nap::rtti::Object* showObjectSelector(QWidget* parent, const rttr::type& typeConstraint);
-
-	/**
 	 * Display a selection dialog with all available types, filtered by an optional predicate
 	 * @param parent The widget to attach to
 	 * @return The resulting selected type.
 	 */
-	nap::rtti::TypeInfo showTypeSelector(QWidget* parent, const TypePredicate& predicate = nullptr);
+	nap::rtti::TypeInfo showTypeSelector(QWidget* parent, const TypePredicate& predicate);
 
 	/**
 	 * Display a selection dialog with all available objects, filtered by type T
@@ -85,6 +77,14 @@ namespace napkin
 	 * @return The selected object or nullptr if no object was selected
 	 */
 	nap::rtti::Object* showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects);
+
+	/**
+	 * Display a selection dialog with all available objects, filtered by type T
+	 * @param parent The parent widget to attach to.
+	 * @param objects The objects to select from
+	 * @return The selected object or nullptr if no object was selected
+	 */
+	nap::rtti::TypeInfo showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName);
 
 	/**
 	 * Show a dialog box containing the given properties and a custom message.

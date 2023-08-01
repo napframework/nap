@@ -154,6 +154,25 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 }
 
 
+nap::rtti::TypeInfo napkin::showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName)
+{
+	auto* material = rtti_cast<nap::Material>(prop.getObject());
+	assert(material != nullptr);
+	if (material->mShader == nullptr)
+		return nap::rtti::TypeInfo::empty();
+
+	QStringList names;
+	const auto& ubo_decs = material->mShader->getUBODeclarations();
+	for (const auto& dec : ubo_decs)
+	{
+		names << QString::fromStdString(dec.mName);
+	}
+
+	auto selectedID = nap::qt::FilterPopup::show(parent, names).toStdString();
+	return nap::rtti::TypeInfo::empty();
+}
+
+
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
 	QStringList names;
