@@ -107,7 +107,8 @@ namespace napkin
 
 		// Set name and ID
 		auto& new_sampler = mMaterial->mSamplers.back();
-		new_sampler->mID = doc->getUniqueName(declaration.mName, *new_sampler, true);
+		doc->setObjectName(*new_sampler, nap::utility::stringFormat("%s:%s",
+			mPath.getObject()->mID.c_str(), declaration.mName.c_str()));
 		new_sampler->mName = declaration.mName;
 	}
 
@@ -123,7 +124,7 @@ namespace napkin
 		{
 			// Create uniform struct
 			int iidx = path.getArrayLength();
-			int oidx = doc->arrayAddNewObject(mPath, RTTI_OF(nap::UniformStruct), iidx);
+			int oidx = doc->arrayAddNewObject(path, RTTI_OF(nap::UniformStruct), iidx);
 			assert(iidx == oidx);
 
 			// Fetch created item
@@ -134,8 +135,65 @@ namespace napkin
 			assert(child_uni != nullptr);
 
 			// Assign name and ID
-			child_uni->mName = doc->getUniqueName(declaration.mName, *child_uni, true);
-			child_uni->mID = declaration.mName;
+			child_uni->mName = declaration.mName;
+			doc->setObjectName(*child_uni, nap::utility::stringFormat("%s:%s",
+				path.getObject()->mID.c_str(),
+				declaration.mName.c_str()));
+
+			// Create path to members property
+			PropertyPath members_path(*child_uni,
+				child_uni->get_type().get_property(nap::uniform::uniforms), *doc);
+
+			// Add variable binding for every member
+			const auto& struct_dec = static_cast<const nap::ShaderVariableStructDeclaration&>(declaration);
+			for (const auto& member_dec : struct_dec.mMembers)
+			{
+				addVariableBinding(*member_dec, members_path);
+			}
+		}
+
+		// Handle value declaration
+		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableValueDeclaration)))
+		{
+			const auto& value_dec = static_cast<const nap::ShaderVariableValueDeclaration&>(declaration);
+			static const std::unordered_map<nap::EShaderVariableValueType, nap::rtti::TypeInfo> vuni_map =
+			{
+				{ nap::EShaderVariableValueType::Float,	RTTI_OF(nap::UniformFloat)	},
+				{ nap::EShaderVariableValueType::Int,	RTTI_OF(nap::UniformInt)	},
+				{ nap::EShaderVariableValueType::UInt,	RTTI_OF(nap::UniformUInt)	},
+				{ nap::EShaderVariableValueType::Vec2,	RTTI_OF(nap::UniformVec2)	},
+				{ nap::EShaderVariableValueType::Vec3,	RTTI_OF(nap::UniformVec3)	},
+				{ nap::EShaderVariableValueType::Vec4,	RTTI_OF(nap::UniformVec4)	},
+				{ nap::EShaderVariableValueType::IVec4,	RTTI_OF(nap::UniformIVec4)	},
+				{ nap::EShaderVariableValueType::UVec4,	RTTI_OF(nap::UniformUVec4)	},
+				{ nap::EShaderVariableValueType::Mat4,	RTTI_OF(nap::UniformMat4)	}
+			};
+
+			// Make sure the declared type is supported
+			// TODO: Add support for Mat2 & Mat3
+			auto found_it = vuni_map.find(value_dec.mType);
+			if (found_it == vuni_map.end())
+			{
+				nap::Logger::warn("Data type of shader variable %s is not supported", value_dec.mName.c_str());
+				return;
+			}
+
+			// Create uniform struct
+			int iidx = path.getArrayLength();
+			int oidx = doc->arrayAddNewObject(path, found_it->second, iidx);
+			assert(iidx == oidx);
+
+			// Fetch created item
+			auto child_path = path.getArrayElement(oidx);
+			auto child_valu = child_path.getValue();
+			assert(child_valu.get_type().is_wrapper());
+			auto* child_uni = child_valu.extract_wrapped_value().get_value<nap::UniformStruct*>();
+			assert(child_uni != nullptr);
+
+			// Assign name and ID
+			child_uni->mName = value_dec.mName;
+			doc->setObjectName(*child_uni,
+				nap::utility::stringFormat("%s:%s", path.getObject()->mID.c_str(), value_dec.mName.c_str()));
 		}
 	}
 }

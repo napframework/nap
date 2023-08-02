@@ -203,13 +203,13 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 }
 
 
-const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
+const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name, bool appenUUID)
 {
 	if (name.empty())
 		return object.mID;
 
 	// Get name
-	auto new_name = getUniqueName(name, object, false);
+	auto new_name = getUniqueName(name, object, appenUUID);
 	if (new_name == object.mID)
 		return object.mID;
 

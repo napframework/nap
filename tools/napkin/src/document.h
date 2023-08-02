@@ -150,7 +150,7 @@ namespace napkin
 		 *
 		 * TODO: Move to nap::rtti::Object if possible
 		 */
-		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name);
+		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name, bool appenUUID = false);
 
 		/**
 		 * Add a component of the specified type to an Entity.
@@ -476,11 +476,6 @@ namespace napkin
 		 */
 		QUndoStack& getUndoStack() { return mUndoStack; }
 
-		/**
-		 * @return unique object name
-		 */
-		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
-
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -586,6 +581,11 @@ namespace napkin
 		OwnedObjectMap mObjects;					// The objects in this document
 		QString mCurrentFilename;					// This document's filename
 		QUndoStack mUndoStack;						// This document's undostack
+
+		/**
+		 * @return unique object name
+		 */
+		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
 	};
 
 
@@ -605,5 +605,4 @@ namespace napkin
 		}
 		return ret;
 	}
-
 }
