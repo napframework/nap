@@ -58,8 +58,8 @@ namespace napkin
 		void handleSamplerBinding();
 		void handleBufferBinding();
 
-		nap::BaseMaterial& mMaterial;
-		const PropertyPath& mPath;
+		PropertyPath mPath;
+		nap::BaseMaterial* mMaterial = nullptr;
 		nap::BaseShader* mShader = nullptr;
 	};
 }

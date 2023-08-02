@@ -264,15 +264,15 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			auto* material = rtti_cast<nap::BaseMaterial>(mModel.getObject());
 			if (material != nullptr)
 			{
-				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, material]()
-					{
-						auto material_mapper = std::make_unique<MaterialPropertyMapper>(array_path, *material);
-						if (material_mapper->mappable())
+				auto material_mapper = std::make_unique<MaterialPropertyMapper>(array_path, *material);
+				if (material_mapper->mappable())
+				{
+					QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+					menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, material_mapper = std::move(material_mapper)]()
 						{
 							material_mapper->map(this);
-						}
-					});
+						});
+				}
 			}
 			else
 			{

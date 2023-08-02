@@ -7,7 +7,7 @@
 namespace napkin
 {
 	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propPath, nap::BaseMaterial& material) :
-		mPath(propPath), mMaterial(material)
+		mPath(propPath), mMaterial(&material)
 	{
 		// Fetch shader using RTTI
 		auto property_path = nap::rtti::Path::fromString(nap::material::shader);
