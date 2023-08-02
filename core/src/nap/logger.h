@@ -152,7 +152,7 @@ namespace nap
 	/**
 	 * Abstract base class for log handlers.
 	 */
-	class LogHandler
+	class NAPAPI LogHandler
 	{
 	public:
 		LogHandler();
