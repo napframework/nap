@@ -1,4 +1,4 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+	/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
@@ -31,6 +31,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ShaderFromFileItem)
 	RTTI_CONSTRUCTOR(nap::rtti::Object&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ComputeShaderFromFileItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object&)
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MaterialItem)
 	RTTI_CONSTRUCTOR(nap::rtti::Object&)
 RTTI_END_CLASS
@@ -56,9 +60,10 @@ static ObjectItem* createObjectItem(nap::rtti::Object& object)
 	// Object to item map -> order sensitive!
 	const static std::vector<Binding> mMap =
 	{
-		{ RTTI_OF(nap::ShaderFromFile),		RTTI_OF(napkin::ShaderFromFileItem) },
-		{ RTTI_OF(nap::Shader),				RTTI_OF(napkin::ShaderItem)		},
-		{ RTTI_OF(nap::Material),			RTTI_OF(napkin::MaterialItem)	},
+		{ RTTI_OF(nap::ShaderFromFile),			RTTI_OF(napkin::ShaderFromFileItem) },
+		{ RTTI_OF(nap::ComputeShaderFromFile),	RTTI_OF(napkin::ComputeShaderFromFileItem) },
+		{ RTTI_OF(nap::Shader),					RTTI_OF(napkin::ShaderItem)			},
+		{ RTTI_OF(nap::Material),				RTTI_OF(napkin::MaterialItem)		},
 	};
 
 	// Check if there is an item overload for the given object
@@ -675,9 +680,11 @@ napkin::MaterialItem::MaterialItem(nap::rtti::Object& object) : ObjectItem(objec
 // Shader Item
 //////////////////////////////////////////////////////////////////////////
 
-napkin::BaseShaderItem::BaseShaderItem(nap::rtti::Object& object) :
-	ObjectItem(object), mShader(rtti_cast<nap::Shader>(&object))
-{ }
+napkin::BaseShaderItem::BaseShaderItem(nap::rtti::Object& object) : ObjectItem(object)
+{
+	mShader = rtti_cast<nap::BaseShader>(&object);
+	assert(mShader != nullptr);
+}
 
 
 void napkin::BaseShaderItem::init()
@@ -716,6 +723,22 @@ napkin::ShaderFromFileItem::ShaderFromFileItem(nap::rtti::Object& object) : Base
 		init();
 	}
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+// ComputeShaderFromFile Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ComputeShaderFromFileItem::ComputeShaderFromFileItem(nap::rtti::Object& object) : BaseShaderItem(object)
+{
+	auto* csff = rtti_cast<nap::ComputeShaderFromFile>(&object);
+	assert(csff != nullptr);
+	if (!csff->mComputePath.empty())
+	{
+		init();
+	}
+}
+
 
 
 //////////////////////////////////////////////////////////////////////////

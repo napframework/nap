@@ -91,6 +91,7 @@ namespace nap
 	 */
 	class NAPAPI Shader : public BaseShader
 	{
+		RTTI_ENABLE(BaseShader)
 	public:
 		Shader(Core& core);
 		~Shader();
@@ -150,7 +151,7 @@ namespace nap
 	 */
 	class NAPAPI ComputeShader : public BaseShader
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(BaseShader)
 	public:
 		ComputeShader(Core& core);
 		~ComputeShader();
@@ -189,7 +190,6 @@ namespace nap
 	private:
 		glm::u32vec3									mWorkGroupSize;
 		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
-
 		std::vector<int>								mWorkGroupSizeConstantIds;				///< Workgroup size specialization constant IDs
 	};
 

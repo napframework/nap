@@ -371,18 +371,18 @@ namespace napkin
 		/**
 		 * @return the shader
 		 */
-		const nap::Shader& getShader() const	{ assert(mShader != nullptr); return *mShader; }
+		const nap::BaseShader& getShader() const	{ assert(mShader != nullptr); return *mShader; }
 
 		/**
 		 * @return the shader
 		 */
-		nap::Shader& getShader()				{ assert(mShader != nullptr); return *mShader; }
+		nap::BaseShader& getShader()				{ assert(mShader != nullptr); return *mShader; }
 			
 	protected:
 		void init();
 
 	private:
-		nap::Shader* mShader = nullptr;
+		nap::BaseShader* mShader = nullptr;
 	};
 
 
@@ -402,6 +402,25 @@ namespace napkin
 		 * Initializes (compiles) the shader when frag and vert path are valid
 		 */
 		ShaderFromFileItem(nap::rtti::Object& object);
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// ShaderFromFile Item
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Represents a nap::ShaderFromFile, initialized when valid
+	 */
+	class ComputeShaderFromFileItem : public BaseShaderItem
+	{
+		Q_OBJECT
+		RTTI_ENABLE(BaseShaderItem)
+	public:
+		/**
+		 * Initializes (compiles) the shader when frag and vert path are valid
+		 */
+		ComputeShaderFromFileItem(nap::rtti::Object& object);
 	};
 
 
