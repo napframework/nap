@@ -476,6 +476,11 @@ namespace napkin
 		 */
 		QUndoStack& getUndoStack() { return mUndoStack; }
 
+		/**
+		 * @return unique object name
+		 */
+		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
+
 	Q_SIGNALS:
 		/**
 		 * Qt Signal
@@ -577,18 +582,7 @@ namespace napkin
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
 
 	private:
-
-		/**
-		 * @return unique object name
-		 */
-		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
-
-		/**
-		 * @return A basic UUID meant for local object disambiguation
-		 */
-		static std::string createSimpleUUID();
-
-		nap::Core& mCore;                        // nap's core
+		nap::Core& mCore;							// nap's core
 		OwnedObjectMap mObjects;					// The objects in this document
 		QString mCurrentFilename;					// This document's filename
 		QUndoStack mUndoStack;						// This document's undostack

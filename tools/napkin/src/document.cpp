@@ -21,6 +21,17 @@
 using namespace napkin;
 using namespace nap::rtti;
 
+
+static std::string createSimpleUUID()
+{
+	auto uuid = QUuid::createUuid().toString();
+	// just take the last couple of characters
+	int charCount = 8;
+	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
+	return shortuuid.toStdString();
+}
+
+
 void splitNameIndex(const std::string& str, std::string& name, int& index)
 {
 	auto split = nap::utility::splitString(str, ':');
@@ -1263,15 +1274,5 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	std::deque<std::string> path;
 	relativeObjectPathList(origin, target, path);
 	return nap::utility::joinString(path, "/");
-}
-
-
-std::string Document::createSimpleUUID()
-{
-	auto uuid = QUuid::createUuid().toString();
-	// just take the last couple of characters
-	int charCount = 8;
-	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
-	return shortuuid.toStdString();
 }
 
