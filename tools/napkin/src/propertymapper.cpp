@@ -46,9 +46,9 @@ namespace napkin
 		}
 		else if (mPath.getName() == nap::material::buffers)
 		{
-			const auto* dec = selectVariableDeclaration(mShader->getSSBODeclarations(), parent);
-			if (dec == nullptr)
-				return;
+			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
+			if (dec != nullptr)
+				addBufferBinding(*dec, mPath);
 		}
 	}
 
@@ -107,8 +107,7 @@ namespace napkin
 
 		// Set name and ID
 		auto& new_sampler = mMaterial->mSamplers.back();
-		doc->setObjectName(*new_sampler, nap::utility::stringFormat("%s:%s",
-			mPath.getObject()->mID.c_str(), declaration.mName.c_str()));
+		doc->setObjectName(*new_sampler, declaration.mName, true);
 		new_sampler->mName = declaration.mName;
 	}
 
@@ -124,6 +123,7 @@ namespace napkin
 		{
 			// Create uniform struct
 			int iidx = path.getArrayLength();
+			assert(path.getArrayElementType().is_derived_from(RTTI_OF(nap::UniformStruct)));
 			int oidx = doc->arrayAddNewObject(path, RTTI_OF(nap::UniformStruct), iidx);
 			assert(iidx == oidx);
 
@@ -136,9 +136,7 @@ namespace napkin
 
 			// Assign name and ID
 			child_uni->mName = declaration.mName;
-			doc->setObjectName(*child_uni, nap::utility::stringFormat("%s:%s",
-				path.getObject()->mID.c_str(),
-				declaration.mName.c_str()));
+			doc->setObjectName(*child_uni, declaration.mName, true);
 
 			// Create path to members property
 			PropertyPath members_path(*child_uni,
@@ -151,6 +149,7 @@ namespace napkin
 				addVariableBinding(*member_dec, members_path);
 			}
 		}
+
 
 		// Handle value declaration
 		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableValueDeclaration)))
@@ -192,8 +191,28 @@ namespace napkin
 
 			// Assign name and ID
 			child_uni->mName = value_dec.mName;
-			doc->setObjectName(*child_uni,
-				nap::utility::stringFormat("%s:%s", path.getObject()->mID.c_str(), value_dec.mName.c_str()));
+			doc->setObjectName(*child_uni, value_dec.mName, true);
 		}
+	}
+
+
+	const nap::ShaderVariableDeclaration* MaterialPropertyMapper::selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
+	{
+		QStringList names;
+		std::unordered_map<std::string, const nap::ShaderVariableDeclaration*> dec_map;
+		dec_map.reserve(list.size());
+		for (const auto& dec : list)
+		{
+			dec_map.emplace(dec.mName, &dec);
+			names << QString::fromStdString(dec.mName);
+		}
+		auto selection = nap::qt::FilterPopup::show(parent, names);
+		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
+	}
+
+
+	void MaterialPropertyMapper::addBufferBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath)
+	{
+
 	}
 }
