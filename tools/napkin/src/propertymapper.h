@@ -48,14 +48,14 @@ namespace napkin
 		bool mappable() const;
 
 		/**
-		 * Allows the user to select a shader binding
+		 * Select and create a specific shader binding based on the selected property
 		 * @param parent the widget to parent the selection dialog to
 		 */
 		void map(QWidget* parent);
 
 	private:
 		const nap::ShaderVariableDeclaration* selectVariableDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
-		void addVariableBinding(const nap::ShaderVariableDeclaration& declaration);
+		void addVariableBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath);
 
 		const nap::SamplerDeclaration* selectSamplerDeclaration(QWidget* parent);
 		void addSamplerBinding(const nap::SamplerDeclaration& declaration);

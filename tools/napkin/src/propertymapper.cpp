@@ -35,8 +35,8 @@ namespace napkin
 		if (mPath.getName() == nap::material::uniforms)
 		{
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
-			if (dec == nullptr)
-				return;
+			if (dec != nullptr)
+				addVariableBinding(*dec, mPath);
 		}
 		else if (mPath.getName() == nap::material::samplers)
 		{
@@ -100,13 +100,42 @@ namespace napkin
 			RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
 
 		// Add it
+		assert(mPath.isArray());
 		int iidx = mPath.getArrayLength();
-		auto* doc = AppContext::get().getDocument();
-		assert(doc != nullptr);
-		int oidx = doc->arrayAddNewObject(mPath, sampler_type, iidx);
-		assert(oidx == iidx);
+		auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+		int oidx = doc->arrayAddNewObject(mPath, sampler_type, iidx); assert(oidx == iidx);
+
+		// Set name and ID
 		auto& new_sampler = mMaterial->mSamplers.back();
 		new_sampler->mID = doc->getUniqueName(declaration.mName, *new_sampler, true);
 		new_sampler->mName = declaration.mName;
+	}
+
+	
+	void MaterialPropertyMapper::addVariableBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& path)
+	{
+		assert(path.isArray());
+		auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+
+		// Handle struct declaration
+		auto dec_type = declaration.get_type();
+		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableStructDeclaration)))
+		{
+			// Create uniform struct
+			int iidx = path.getArrayLength();
+			int oidx = doc->arrayAddNewObject(mPath, RTTI_OF(nap::UniformStruct), iidx);
+			assert(iidx == oidx);
+
+			// Fetch created item
+			auto child_path = path.getArrayElement(oidx);
+			auto child_valu = child_path.getValue();
+			assert(child_valu.get_type().is_wrapper());
+			auto* child_uni = child_valu.extract_wrapped_value().get_value<nap::UniformStruct*>();
+			assert(child_uni != nullptr);
+
+			// Assign name and ID
+			child_uni->mName = doc->getUniqueName(declaration.mName, *child_uni, true);
+			child_uni->mID = declaration.mName;
+		}
 	}
 }
