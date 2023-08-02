@@ -10,6 +10,7 @@
 #include "naputils.h"
 #include "napkinutils.h"
 #include "napkin-resources.h"
+#include "propertymapper.h"
 
 #include <QApplication>
 #include <QMimeData>
@@ -264,10 +265,13 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			if (material != nullptr)
 			{
 				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, material]()
 					{
-						std::string name;
-						rttr::type element_type = showMaterialSelector(this, array_path, name);
+						auto material_mapper = std::make_unique<MaterialPropertyMapper>(array_path, *material);
+						if (material_mapper->mappable())
+						{
+							material_mapper->map(this);
+						}
 					});
 			}
 			else
