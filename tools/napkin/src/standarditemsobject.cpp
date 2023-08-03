@@ -8,6 +8,7 @@
 #include "sceneservice.h"
 #include "naputils.h"
 #include "napkin-resources.h"
+#include "napkinutils.h"
 
 // External Includes
 #include <nap/assert.h>
@@ -63,7 +64,7 @@ static ObjectItem* createObjectItem(nap::rtti::Object& object)
 		{ RTTI_OF(nap::ShaderFromFile),			RTTI_OF(napkin::ShaderFromFileItem) },
 		{ RTTI_OF(nap::ComputeShaderFromFile),	RTTI_OF(napkin::ComputeShaderFromFileItem) },
 		{ RTTI_OF(nap::Shader),					RTTI_OF(napkin::ShaderItem)			},
-		{ RTTI_OF(nap::Material),				RTTI_OF(napkin::MaterialItem)		},
+		{ RTTI_OF(nap::Material),				RTTI_OF(napkin::MaterialItem)		}
 	};
 
 	// Check if there is an item overload for the given object
@@ -689,24 +690,12 @@ napkin::BaseShaderItem::BaseShaderItem(nap::rtti::Object& object) : ObjectItem(o
 
 void napkin::BaseShaderItem::init()
 {
-	auto cwd = nap::utility::getCWD();
-
-	// Change working directory for compilation
-	auto& core = AppContext::get().getCore();
-	assert(core.isInitialized());
-	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
-
-	// Compile shader
-	auto& shader = getShader();
-	nap::utility::ErrorState err;
-	if (!shader.init(err))
+	nap::utility::ErrorState error;
+	if (!loadShader(getShader(), AppContext::get().getCore(), error))
 	{
-		nap::Logger::error("Unable to initialize shader: %s", shader.mID.c_str());
-		nap::Logger::error(err.toString());
+		nap::Logger::error("Failed to load '%s'", getShader().mID.c_str());
+		nap::Logger::error(error.toString());
 	}
-
-	// Change back working dir
-	nap::utility::changeDir(cwd);
 }
 
 

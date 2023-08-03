@@ -14,6 +14,7 @@
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
 #include <napqt/qtutils.h>
+#include <shader.h>
 
 namespace napkin
 {
@@ -94,6 +95,14 @@ namespace napkin
 	 */
 	bool showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
 									   QString message);
+
+	/**
+	 * Attempts to compile & load a shader
+	 * @param shader the shader to load (compile)
+	 * @param core core environment
+	 * @param error contains the error
+	 */
+	bool loadShader(nap::BaseShader& shader, const nap::Core& core, nap::utility::ErrorState& error);
 
 	/**
 	 * Traverse a model and find the QStandardItem subclass representing the specified object

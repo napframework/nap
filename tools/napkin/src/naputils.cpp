@@ -333,6 +333,21 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	return yesclicked;
 }
 
+
+bool napkin::loadShader(nap::BaseShader& shader, const nap::Core& core, nap::utility::ErrorState& error)
+{
+	// Change working directory for compilation
+	auto cwd = nap::utility::getCWD();
+	assert(core.isInitialized());
+	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
+
+	// Load
+	bool success = shader.init(error);
+	nap::utility::changeDir(cwd);
+	return success;
+}
+
+
 std::string napkin::friendlyTypeName(rttr::type type)
 {
 	// Strip off namespace prefixes when creating new objects

@@ -208,6 +208,13 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 		// Delete resource action
 		menu.addAction(new DeleteObjectAction(object_item->getObject()));
+
+		// If the item is a shader, allow if to be loaded (compiled)
+		// TODO: Create for more generic insertion method for object specific actions
+		if (object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::BaseShader)))
+		{
+			menu.addAction(new LoadShaderAction(static_cast<nap::BaseShader&>(object_item->getObject())));
+		}
 	}
 	// Top Resource
 	else if (qobject_cast<RootResourcesItem*>(selected_item) != nullptr)

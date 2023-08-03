@@ -27,32 +27,32 @@ namespace napkin
 		// Shader must be assigned
 		if (mShader == nullptr)
 		{
-			nap::Logger::warn("Can't create binding for '%s'. Missing shader", mPath.getName().c_str());
+			nap::Logger::warn("Can't create binding for '%s' because shader is missing", mPath.toString().c_str());
 			return;
 		}
 
 		// Make sure the shader is initialized
 		if (mShader->getDescriptorSetLayout() == VK_NULL_HANDLE)
 		{
-			nap::Logger::warn("Can't create binding for '%s'. '%s' not initialized",
-				mPath.getName().c_str(), mShader->mID.c_str());
+			nap::Logger::warn("Can't create binding for '%s' because '%s' is not initialized",
+				mPath.toString().c_str(), mShader->mID.c_str());
 			return;
 		}
 
 		// Now handle the various mapping types
-		if (mPath.getName() == nap::material::uniforms)
+		if (mMaterial && mPath.getName() == nap::material::uniforms)
 		{
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
 			if (dec != nullptr)
 				addVariableBinding(*dec, mPath);
 		}
-		else if (mPath.getName() == nap::material::samplers)
+		else if (mMaterial && mPath.getName() == nap::material::samplers)
 		{
 			const auto* dec = selectSamplerDeclaration(parent);
 			if (dec != nullptr)
 				addSamplerBinding(*dec, mPath);
 		}
-		else if (mPath.getName() == nap::material::buffers)
+		else if (mMaterial && mPath.getName() == nap::material::buffers)
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
@@ -119,7 +119,7 @@ namespace napkin
 
 		// Assign name and ID
 		uni_obj->mName = name;
-		doc.setObjectName(*uni_obj, name, true);
+		doc.setObjectName(*uni_obj, name, false);
 		return uni_obj;
 	}
 
