@@ -48,7 +48,7 @@ namespace napkin
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
-				addBufferBinding(*dec, mPath);
+				addBufferBinding(dec->getBufferDeclaration(), mPath);
 		}
 	}
 
@@ -122,11 +122,16 @@ namespace napkin
 		auto* doc = AppContext::get().getDocument();
 		assert(doc != nullptr);
 
-		// Figure out if we need to add an array or single instance
-		nap::rtti::TypeInfo sampler_type = declaration.mNumArrayElements > 1 ?
-			RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
+		// Only 2D samplers are supports
+		if (declaration.mType != nap::SamplerDeclaration::EType::Type_2D)
+		{
+			nap::Logger::warn("Data type of shader variable %s is not supported", declaration.mName.c_str());
+			return;
+		}
 
-		// Create and add sampler binding
+		// Create binding
+		bool is_array = declaration.mNumArrayElements > 1;
+		nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
 		createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
 	}
 
@@ -153,7 +158,6 @@ namespace napkin
 			for (const auto& member_dec : struct_dec.mMembers)
 				addVariableBinding(*member_dec, members_path);
 		}
-
 
 		// Handle value declaration
 		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableValueDeclaration)))
@@ -184,13 +188,68 @@ namespace napkin
 			// Create and add value binding
 			createBinding<nap::UniformValue>(declaration.mName, found_it->second, path, *doc);
 		}
+
+		// Handle value array declaration
+		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableValueArrayDeclaration)))
+		{
+			const auto& array_dec = static_cast<const nap::ShaderVariableValueArrayDeclaration&>(declaration);
+			static const std::unordered_map<nap::EShaderVariableValueType, nap::rtti::TypeInfo> vuni_map =
+			{
+				{ nap::EShaderVariableValueType::Float,	RTTI_OF(nap::UniformFloatArray)	},
+				{ nap::EShaderVariableValueType::Int,	RTTI_OF(nap::UniformIntArray)	},
+				{ nap::EShaderVariableValueType::UInt,	RTTI_OF(nap::UniformUIntArray)	},
+				{ nap::EShaderVariableValueType::Vec2,	RTTI_OF(nap::UniformVec2Array)	},
+				{ nap::EShaderVariableValueType::Vec3,	RTTI_OF(nap::UniformVec3Array)	},
+				{ nap::EShaderVariableValueType::Vec4,	RTTI_OF(nap::UniformVec4Array)	},
+				{ nap::EShaderVariableValueType::IVec4,	RTTI_OF(nap::UniformIVec4Array)	},
+				{ nap::EShaderVariableValueType::UVec4,	RTTI_OF(nap::UniformUVec4Array)	},
+				{ nap::EShaderVariableValueType::Mat4,	RTTI_OF(nap::UniformMat4Array)	}
+			};
+
+			// Make sure the declared type is supported
+			// TODO: Add support for Mat2 & Mat3
+			auto found_it = vuni_map.find(array_dec.mElementType);
+			if (found_it == vuni_map.end())
+			{
+				nap::Logger::warn("Data type of shader variable %s is not supported", array_dec.mName.c_str());
+				return;
+			}
+
+			// Create and add value binding
+			auto* array_uniform = createBinding<nap::UniformValueArray>(declaration.mName, found_it->second, path, *doc);
+
+			// Get path to values property
+			PropertyPath values_path(*array_uniform,
+				array_uniform->get_type().get_property(nap::uniform::values), *doc);
+
+			// Add value entries
+			for (int i = 0; i < array_dec.mNumElements; i++)
+				doc->arrayAddValue(values_path);
+		}
+
+		// Handle struct array
+		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
+		{
+			const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(declaration);
+
+			// Create and add value binding
+			auto* struct_uni = createBinding<nap::UniformStructArray>(declaration.mName, RTTI_OF(nap::UniformStructArray), path, *doc);
+
+			// Get path to structs property
+			PropertyPath structs_path(*struct_uni,
+				struct_uni->get_type().get_property(nap::uniform::structs), *doc);
+
+			// Add value entries
+			for (const auto& entry : array_dec.mElements)
+				addVariableBinding(*entry, structs_path);
+		}
 	}
 
 
-	const nap::ShaderVariableDeclaration* MaterialPropertyMapper::selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
+	const nap::BufferObjectDeclaration* MaterialPropertyMapper::selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
 	{
 		QStringList names;
-		std::unordered_map<std::string, const nap::ShaderVariableDeclaration*> dec_map;
+		std::unordered_map<std::string, const nap::BufferObjectDeclaration*> dec_map;
 		dec_map.reserve(list.size());
 		for (const auto& dec : list)
 		{
@@ -205,5 +264,9 @@ namespace napkin
 	void MaterialPropertyMapper::addBufferBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath)
 	{
 
+
+		// Get document
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
 	}
 }
