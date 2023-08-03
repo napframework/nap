@@ -262,7 +262,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		{
 			// Material
 			auto* material = rtti_cast<nap::BaseMaterial>(mModel.getObject());
-			if (material != nullptr)
+			if (material != nullptr && array_path.getObject() == material)
 			{
 				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, material]()
