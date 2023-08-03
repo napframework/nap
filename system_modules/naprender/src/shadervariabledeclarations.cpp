@@ -74,15 +74,14 @@ namespace nap
 		ShaderVariableDeclaration(std::move(inRHS)),
 		mMembers(std::move(inRHS.mMembers)),
 		mDescriptorType(std::move(inRHS.mDescriptorType))
-	{
-	}
+	{ }
 
 
 	ShaderVariableStructDeclaration& ShaderVariableStructDeclaration::operator=(ShaderVariableStructDeclaration&& inRHS)
 	{
 		mMembers = std::move(inRHS.mMembers);
 		mDescriptorType = std::move(inRHS.mDescriptorType);
-		ShaderVariableDeclaration::operator=(inRHS);
+		ShaderVariableDeclaration::operator=(std::move(inRHS));
 		return *this;
 	}
 

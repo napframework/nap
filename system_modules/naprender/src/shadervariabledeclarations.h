@@ -62,6 +62,14 @@ namespace nap
 		ShaderVariableDeclaration(const std::string& name, int offset, int size);
 		virtual ~ShaderVariableDeclaration() {}
 
+		// Move is allowed
+		ShaderVariableDeclaration(ShaderVariableDeclaration&& inRHS) = default;
+		ShaderVariableDeclaration& operator=(ShaderVariableDeclaration&& inRHS) = default;
+
+		// Copy is not allowed
+		ShaderVariableDeclaration(const ShaderVariableDeclaration&) = delete;
+		ShaderVariableDeclaration& operator=(const ShaderVariableDeclaration&) = delete;
+
 		std::string					mName;										///< Name of the declaration
 		int							mOffset;									///< Memory offset
 		int							mSize;										///< Total size (in bytes) of declaration
@@ -93,8 +101,6 @@ namespace nap
 
 		ShaderVariableStructDeclaration(ShaderVariableStructDeclaration&& inRHS);
 		ShaderVariableStructDeclaration& operator=(ShaderVariableStructDeclaration&& inRHS);
-		ShaderVariableStructDeclaration(const ShaderVariableStructDeclaration&) = delete;
-		ShaderVariableStructDeclaration& operator=(const ShaderVariableStructDeclaration&) = delete;
 
 		/**
 		 * @return a shader variable shader declaration with the given name.
@@ -170,8 +176,6 @@ namespace nap
 
 		BufferObjectDeclaration(BufferObjectDeclaration&& inRHS);
 		BufferObjectDeclaration& operator=(BufferObjectDeclaration&& inRHS);
-		BufferObjectDeclaration(const BufferObjectDeclaration&) = delete;
-		BufferObjectDeclaration& operator=(const BufferObjectDeclaration&) = delete;
 
 		/**
 		 * Returns the first buffer declaration. Asserts if not present.
