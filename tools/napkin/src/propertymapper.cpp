@@ -42,7 +42,7 @@ namespace napkin
 		{
 			const auto* dec = selectSamplerDeclaration(parent);
 			if (dec != nullptr)
-				addSamplerBinding(*dec);
+				addSamplerBinding(*dec, mPath);
 		}
 		else if (mPath.getName() == nap::material::buffers)
 		{
@@ -93,61 +93,65 @@ namespace napkin
 	}
 
 
-	void MaterialPropertyMapper::addSamplerBinding(const nap::SamplerDeclaration& declaration)
+	template<typename T>
+	static T* createBinding(const std::string& name, const nap::rtti::TypeInfo& uniformType, const PropertyPath& propertyPath, Document& doc)
 	{
+		// Create uniform struct
+		assert(propertyPath.isArray());
+		int iidx = propertyPath.getArrayLength();
+		int oidx = doc.arrayAddNewObject(propertyPath, uniformType, iidx);
+		assert(iidx == oidx);
+
+		// Fetch created uniform
+		auto uni_path = propertyPath.getArrayElement(oidx);
+		auto uni_value = uni_path.getValue();
+		assert(uni_value.get_type().is_wrapper());
+		auto* uni_obj = uni_value.extract_wrapped_value().get_value<T*>();
+		assert(uni_obj != nullptr);
+
+		// Assign name and ID
+		uni_obj->mName = name;
+		doc.setObjectName(*uni_obj, name, true);
+		return uni_obj;
+	}
+
+
+	void MaterialPropertyMapper::addSamplerBinding(const nap::SamplerDeclaration& declaration, const PropertyPath& propPath)
+	{
+		// Get document
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
+
 		// Figure out if we need to add an array or single instance
 		nap::rtti::TypeInfo sampler_type = declaration.mNumArrayElements > 1 ?
 			RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
 
-		// Add it
-		assert(mPath.isArray());
-		int iidx = mPath.getArrayLength();
-		auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
-		int oidx = doc->arrayAddNewObject(mPath, sampler_type, iidx); assert(oidx == iidx);
-
-		// Set name and ID
-		auto& new_sampler = mMaterial->mSamplers.back();
-		doc->setObjectName(*new_sampler, declaration.mName, true);
-		new_sampler->mName = declaration.mName;
+		// Create and add sampler binding
+		createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
 	}
 
 	
 	void MaterialPropertyMapper::addVariableBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& path)
 	{
-		assert(path.isArray());
-		auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+		// Get document
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
 
 		// Handle struct declaration
 		auto dec_type = declaration.get_type();
 		if (dec_type.is_derived_from(RTTI_OF(nap::ShaderVariableStructDeclaration)))
 		{
-			// Create uniform struct
-			int iidx = path.getArrayLength();
-			assert(path.getArrayElementType().is_derived_from(RTTI_OF(nap::UniformStruct)));
-			int oidx = doc->arrayAddNewObject(path, RTTI_OF(nap::UniformStruct), iidx);
-			assert(iidx == oidx);
+			// Create struct binding
+			auto* new_uniform = createBinding<nap::UniformStruct>(declaration.mName, RTTI_OF(nap::UniformStruct), path, *doc);
 
-			// Fetch created item
-			auto child_path = path.getArrayElement(oidx);
-			auto child_valu = child_path.getValue();
-			assert(child_valu.get_type().is_wrapper());
-			auto* child_uni = child_valu.extract_wrapped_value().get_value<nap::UniformStruct*>();
-			assert(child_uni != nullptr);
-
-			// Assign name and ID
-			child_uni->mName = declaration.mName;
-			doc->setObjectName(*child_uni, declaration.mName, true);
-
-			// Create path to members property
-			PropertyPath members_path(*child_uni,
-				child_uni->get_type().get_property(nap::uniform::uniforms), *doc);
+			// Get path to members property
+			PropertyPath members_path(*new_uniform,
+				new_uniform->get_type().get_property(nap::uniform::uniforms), *doc);
 
 			// Add variable binding for every member
 			const auto& struct_dec = static_cast<const nap::ShaderVariableStructDeclaration&>(declaration);
 			for (const auto& member_dec : struct_dec.mMembers)
-			{
 				addVariableBinding(*member_dec, members_path);
-			}
 		}
 
 
@@ -177,21 +181,8 @@ namespace napkin
 				return;
 			}
 
-			// Create uniform struct
-			int iidx = path.getArrayLength();
-			int oidx = doc->arrayAddNewObject(path, found_it->second, iidx);
-			assert(iidx == oidx);
-
-			// Fetch created item
-			auto child_path = path.getArrayElement(oidx);
-			auto child_valu = child_path.getValue();
-			assert(child_valu.get_type().is_wrapper());
-			auto* child_uni = child_valu.extract_wrapped_value().get_value<nap::UniformStruct*>();
-			assert(child_uni != nullptr);
-
-			// Assign name and ID
-			child_uni->mName = value_dec.mName;
-			doc->setObjectName(*child_uni, value_dec.mName, true);
+			// Create and add value binding
+			createBinding<nap::UniformValue>(declaration.mName, found_it->second, path, *doc);
 		}
 	}
 
