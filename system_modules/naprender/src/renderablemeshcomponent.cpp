@@ -38,8 +38,7 @@ namespace nap
 
 
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource),
-		mRenderService(entity.getCore()->getService<nap::RenderService>())
+		RenderableComponentInstance(entity, resource)
 	{ }
 
 

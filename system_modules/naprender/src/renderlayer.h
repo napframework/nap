@@ -19,8 +19,11 @@ namespace nap
 {
 	using LayerIndex = uint;
 
+	// Forward declares
+	class RenderLayerRegistry;
+
 	/**
-	 * Render tag.
+	 * Render layer
 	 */
 	class NAPAPI RenderLayer : public Resource
 	{
@@ -35,7 +38,13 @@ namespace nap
 		 */
 		uint getIndex() const					{ return mIndex; }
 
-		std::string mName;				///< Property: 'Name' The layer name
+		/**
+		 * @return the name of the layer in the registry
+		 */
+		const std::string& getName() const		{ return mName; }
+
+		std::string mName;								///< Property: 'Name' The layer name
+		ResourcePtr<RenderLayerRegistry> mRegistry;		///< Property: 'Registry' The registry
 
 	private:
 		LayerIndex mIndex = 0U;			// The index is set on initialization of a registry
@@ -45,7 +54,7 @@ namespace nap
 
 	
 	/**
-	 * List of render tags.
+	 * List of render layers
 	 */
 	class NAPAPI RenderLayerRegistry : public Resource
 	{

@@ -32,9 +32,10 @@ namespace nap
 		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
 
 	public:
-		bool mVisible = true;							///< Property: 'Visible' if this object is rendered to target by the render service.
-		ResourcePtr<RenderLayer> mLayer;				///< Property: 'Layer' the render layer assigned to this component 
-		std::vector<ResourcePtr<RenderTag>> mTags;		///< Property: 'Tags' List of tags specifying the category this render component belongs to.
+		bool mVisible = true;								///< Property: 'Visible' if this object is rendered to target by the render service.
+		ResourcePtr<RenderLayerRegistry> mLayerRegistry;	///< Property: 'LayerRegistry' the render layer registry this component depends on
+		ResourcePtr<RenderLayer> mLayer;					///< Property: 'Layer' the render layer assigned to this component 
+		std::vector<ResourcePtr<RenderTag>> mTags;			///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
 
 
@@ -48,9 +49,7 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		RenderableComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)
-		{}
+		RenderableComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Make sure to this in derived classes
@@ -112,6 +111,8 @@ namespace nap
 		 * @param projectionMatrix the camera projection matrix
 		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
+
+		RenderService* mRenderService = nullptr;
 
 	private:
 		bool mVisible = true;							///< If this object should be drawn or not
