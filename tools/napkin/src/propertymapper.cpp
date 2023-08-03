@@ -27,7 +27,15 @@ namespace napkin
 		// Shader must be assigned
 		if (mShader == nullptr)
 		{
-			nap::Logger::warn("Can't map '%s', missing shader", mPath.getName().c_str());
+			nap::Logger::warn("Can't create binding for '%s'. Missing shader", mPath.getName().c_str());
+			return;
+		}
+
+		// Make sure the shader is initialized
+		if (mShader->getDescriptorSetLayout() == VK_NULL_HANDLE)
+		{
+			nap::Logger::warn("Can't create binding for '%s'. '%s' not initialized",
+				mPath.getName().c_str(), mShader->mID.c_str());
 			return;
 		}
 
@@ -48,7 +56,7 @@ namespace napkin
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
-				addBufferBinding(dec->getBufferDeclaration(), mPath);
+				addBufferBinding(*dec, mPath);
 		}
 	}
 
@@ -261,12 +269,53 @@ namespace napkin
 	}
 
 
-	void MaterialPropertyMapper::addBufferBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath)
+	void MaterialPropertyMapper::addBufferBinding(const nap::BufferObjectDeclaration& declaration, const PropertyPath& propPath)
 	{
-
-
 		// Get document
 		auto* doc = AppContext::get().getDocument();
 		assert(doc != nullptr);
+
+		// Handle struct buffer
+		const auto& buffer_dec = declaration.getBufferDeclaration();
+		if (buffer_dec.get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructBufferDeclaration)))
+		{
+			const auto& struct_buf_dec = static_cast<const nap::ShaderVariableStructBufferDeclaration&>(buffer_dec);
+			createBinding<nap::BufferBindingStruct>(declaration.mName, RTTI_OF(nap::BufferBindingStruct), propPath, *doc);
+			return;
+		}
+
+		// Handle value array buffer
+		if (buffer_dec.get_type().is_derived_from(RTTI_OF(nap::ShaderVariableValueArrayDeclaration)))
+		{
+			const auto& array_dec = static_cast<const nap::ShaderVariableValueArrayDeclaration&>(buffer_dec);
+			static const std::unordered_map<nap::EShaderVariableValueType, nap::rtti::TypeInfo> vuni_map =
+			{
+				{ nap::EShaderVariableValueType::Float,	RTTI_OF(nap::BufferBindingFloat)	},
+				{ nap::EShaderVariableValueType::Int,	RTTI_OF(nap::BufferBindingInt)		},
+				{ nap::EShaderVariableValueType::UInt,	RTTI_OF(nap::BufferBindingUInt)		},
+				{ nap::EShaderVariableValueType::Vec2,	RTTI_OF(nap::BufferBindingVec2)		},
+				{ nap::EShaderVariableValueType::Vec3,	RTTI_OF(nap::BufferBindingVec3)		},
+				{ nap::EShaderVariableValueType::Vec4,	RTTI_OF(nap::BufferBindingVec4)		},
+				{ nap::EShaderVariableValueType::IVec4,	RTTI_OF(nap::BufferBindingIVec4)	},
+				{ nap::EShaderVariableValueType::UVec4,	RTTI_OF(nap::BufferBindingUVec4)	},
+				{ nap::EShaderVariableValueType::Mat4,	RTTI_OF(nap::BufferBindingMat4)		}
+			};
+
+			// Make sure the declared type is supported
+			// TODO: Add support for Mat2 & Mat3
+			auto found_it = vuni_map.find(array_dec.mElementType);
+			if (found_it == vuni_map.end())
+			{
+				nap::Logger::warn("Data type of shader variable %s is not supported", array_dec.mName.c_str());
+				return;
+			}
+			createBinding<nap::BufferBindingStruct>(declaration.mName, found_it->second, propPath, *doc);
+			return;
+		}
+
+		nap::Logger::warn("Unable to create buffer binding");
+		nap::Logger::warn("Unsupported shader variable declaration '%s'", declaration.get_type().get_name().data());
 	}
+
+
 }

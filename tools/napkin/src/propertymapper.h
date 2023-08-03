@@ -61,7 +61,7 @@ namespace napkin
 		void addSamplerBinding(const nap::SamplerDeclaration& declaration, const PropertyPath& propPath);
 
 		const nap::BufferObjectDeclaration* selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
-		void addBufferBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath);
+		void addBufferBinding(const nap::BufferObjectDeclaration& declaration, const PropertyPath& propPath);
 
 		PropertyPath mPath;
 		nap::BaseMaterial* mMaterial = nullptr;
