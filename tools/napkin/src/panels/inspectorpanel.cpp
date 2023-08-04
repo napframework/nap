@@ -260,7 +260,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		// Embedded pointer
 		else if (array_path.isEmbeddedPointer())
 		{
-			// Material
+			// Material & MaterialInstanceResource
 			auto array_type = array_path.getArrayElementType();
 			if (array_type.is_derived_from(RTTI_OF(nap::Uniform))			||
 				array_type.is_derived_from(RTTI_OF(nap::Sampler))			||

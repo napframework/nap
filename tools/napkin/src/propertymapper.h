@@ -56,14 +56,20 @@ namespace napkin
 		void map(QWidget* parent);
 
 	private:
+		// Uniform value bindings
 		const nap::ShaderVariableDeclaration* selectVariableDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
 		void addVariableBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath);
 
+		// Sampler bindings
 		const nap::SamplerDeclaration* selectSamplerDeclaration(QWidget* parent);
 		void addSamplerBinding(const nap::SamplerDeclaration& declaration, const PropertyPath& propPath);
 
+		// Buffer bindings
 		const nap::BufferObjectDeclaration* selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
 		void addBufferBinding(const nap::BufferObjectDeclaration& declaration, const PropertyPath& propPath);
+
+		// Fallback
+		void addUserBinding(QWidget* parent);
 
 		void resolveShader(const nap::BaseMaterial& material);
 

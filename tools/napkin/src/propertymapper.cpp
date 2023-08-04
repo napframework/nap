@@ -1,5 +1,6 @@
 #include "propertymapper.h"
 #include "naputils.h"
+#include "commands.h"
 
 #include <QStringList>
 #include <napqt/filterpopup.h>
@@ -13,7 +14,7 @@ namespace napkin
 		mPath(propertyPath)
 	{
 		nap::BaseMaterial* material = nullptr;
-		auto* doc = AppContext::get().getDocument();
+		auto* doc = propertyPath.getDocument();
 		assert(doc != nullptr);
 
 		// Walk the tree and find the material
@@ -73,10 +74,10 @@ namespace napkin
 
 	void MaterialPropertyMapper::map(QWidget* parent)
 	{
-		// Shader must be assigned
+		// If a shader is missing revert to regular behavior
 		if (mShader == nullptr)
 		{
-			nap::Logger::warn("Can't create binding for '%s' because shader is missing", mPath.toString().c_str());
+			addUserBinding(parent);
 			return;
 		}
 
@@ -94,20 +95,25 @@ namespace napkin
 			}
 		}
 
-		// Handle the various mappings
-		if (mPath.getName() == nap::material::uniforms)
+		assert(mPath.isArray());
+		auto binding_type = mPath.getArrayElementType();
+
+		// Uniforms
+		if (binding_type.is_derived_from(RTTI_OF(nap::Uniform)))
 		{
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
 			if (dec != nullptr)
 				addVariableBinding(*dec, mPath);
 		}
-		else if (mPath.getName() == nap::material::samplers)
+		// Samplers
+		else if (binding_type.is_derived_from(RTTI_OF(nap::Sampler)))
 		{
 			const auto* dec = selectSamplerDeclaration(parent);
 			if (dec != nullptr)
 				addSamplerBinding(*dec, mPath);
 		}
-		else if (mPath.getName() == nap::material::buffers)
+		// Buffers
+		else if (binding_type.is_derived_from(RTTI_OF(nap::BufferBinding)))
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
@@ -370,5 +376,17 @@ namespace napkin
 
 		nap::Logger::warn("Unable to create buffer binding");
 		nap::Logger::warn("Unsupported shader variable declaration '%s'", declaration.get_type().get_name().data());
+	}
+
+
+	void MaterialPropertyMapper::addUserBinding(QWidget* parent)
+	{
+		auto array_type = mPath.getArrayElementType();
+		TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
+		rttr::type selected_type = showTypeSelector(parent, predicate);
+		if (selected_type.is_valid())
+		{
+			AppContext::get().executeCommand(new ArrayAddNewObjectCommand(mPath, selected_type));
+		}
 	}
 }
