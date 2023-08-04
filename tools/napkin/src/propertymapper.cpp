@@ -9,25 +9,52 @@
 
 namespace napkin
 {
-	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propPath, const nap::BaseMaterial& material) :
-		mPath(propPath)
-	{
-		resolveShader(material);
-	}
-
-
-	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propertyPath, const nap::BaseMaterialInstanceResource& materialInstance) :
+	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propertyPath) :
 		mPath(propertyPath)
 	{
-		// Get material
-		auto material_property = materialInstance.getMaterialProperty();
-		assert(material_property.is_valid());
-		auto material_variant = material_property.get_value(materialInstance);
-		assert(material_variant.is_valid());
-		assert(material_variant.get_type().is_wrapper());
-		nap::BaseMaterial* material = material_variant.extract_wrapped_value().get_value<nap::BaseMaterial*>();
-		if (material != nullptr)
-			resolveShader(*material);
+		nap::BaseMaterial* material = nullptr;
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
+
+		// Walk the tree and find the material
+		nap::rtti::Object* current_object = propertyPath.getObject();
+		while (current_object != nullptr)
+		{
+			// Check if the nested property belongs to a material
+			if (current_object->get_type().is_derived_from(RTTI_OF(nap::BaseMaterial)))
+			{
+				auto& material = static_cast<nap::BaseMaterial&>(*current_object);
+				resolveShader(material);
+				return;
+			}
+
+			// Check if the object has a material instance resource
+			auto properties = current_object->get_type().get_properties();
+			for (const auto& property : properties)
+			{
+				if(!property.get_type().is_derived_from(RTTI_OF(nap::BaseMaterialInstanceResource)))
+					continue;
+
+				// Extract material instance resource
+				auto variant = property.get_value(*current_object);
+				assert(variant.is_valid());
+				const auto& resource = variant.get_value<nap::BaseMaterialInstanceResource>();
+
+				// Locate material
+				auto material_property = resource.getMaterialProperty();
+				assert(material_property.is_valid());
+				auto material_variant = material_property.get_value(resource);
+				assert(material_variant.is_valid());
+				assert(material_variant.get_type().is_wrapper());
+				material = material_variant.extract_wrapped_value().get_value<nap::BaseMaterial*>();
+				if (material != nullptr)
+					resolveShader(*material);
+				return;
+			}
+
+			// Try parent
+			current_object = doc->getEmbeddedObjectOwner(*current_object);
+		}
 	}
 
 
@@ -49,7 +76,7 @@ namespace napkin
 		// Shader must be assigned
 		if (mShader == nullptr)
 		{
-			nap::Logger::warn("Can't create binding for '%s' because shader is missing", mPath.toString().c_str());
+			nap::Logger::error("Can't create binding for '%s' because shader is missing", mPath.toString().c_str());
 			return;
 		}
 

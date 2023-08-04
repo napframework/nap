@@ -15,16 +15,13 @@ namespace napkin
 {
 	/**
 	 * Allows the user to select and create a property based on available shader bindings.
-	 * Works for every type of material and material instance resources.
+	 * Works for every type of material and material instance resource.
 	 */
 	class MaterialPropertyMapper final
 	{
 	public:
 		// Constructor
-		MaterialPropertyMapper(const PropertyPath& propertyPath, const nap::BaseMaterialInstanceResource& materialInstance);
-
-		// Constructor
-		MaterialPropertyMapper(const PropertyPath& propertyPath, const nap::BaseMaterial& material);
+		MaterialPropertyMapper(const PropertyPath& propertyPath);
 
 		/**
 		 * Copy is not allowed
