@@ -26,12 +26,17 @@ namespace nap
 		inline constexpr const char* video = "video";
 	}
 
+
 	VideoShader::VideoShader(Core& core) : Shader(core),
-		mRenderService(core.getService<RenderService>()) { }
+		mRenderService(core.getService<RenderService>())
+	{ }
 
 
 	bool VideoShader::init(utility::ErrorState& errorState)
 	{
+		if (!Shader::init(errorState))
+			return false;
+
 		return loadDefault(shader::video, errorState);
 	}
 }

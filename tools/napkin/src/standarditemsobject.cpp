@@ -960,3 +960,4 @@ bool ComponentInstanceItem::hasInstanceProperties() const
 {
 	return mInstanceProperties.mTargetComponent.get();
 }
+

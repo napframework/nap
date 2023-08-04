@@ -20,6 +20,7 @@
 #include <panels/finderpanel.h>
 #include <cctype>
 #include <napqt/filterpopup.h>
+#include <renderservice.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -334,14 +335,15 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 }
 
 
-bool napkin::loadShader(nap::BaseShader& shader, const nap::Core& core, nap::utility::ErrorState& error)
+bool napkin::loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::ErrorState& error)
 {
 	// Change working directory for compilation
 	auto cwd = nap::utility::getCWD();
 	assert(core.isInitialized());
 	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
 
-	// Load
+	// Clear and load
+	shader.clear();
 	bool success = shader.init(error);
 	nap::utility::changeDir(cwd);
 	return success;
@@ -357,6 +359,7 @@ std::string napkin::friendlyTypeName(rttr::type type)
 		base_name = base_name.substr(last_colon + 1);
 	return base_name;
 }
+
 
 bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
 								  const std::string& a, const std::string& b)

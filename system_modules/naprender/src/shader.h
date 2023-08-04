@@ -57,6 +57,11 @@ namespace nap
 		*/
 		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
 
+		/**
+		 * Clears shader declarations and layout information.
+		 */
+		void clear();
+
 	protected:
 		RenderService*									mRenderService = nullptr;				///< Handle to render engine
 		std::string										mDisplayName;							///< Filename of shader used as display name

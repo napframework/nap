@@ -1,4 +1,5 @@
 #include "propertymapper.h"
+#include "naputils.h"
 
 #include <QStringList>
 #include <napqt/filterpopup.h>
@@ -53,12 +54,16 @@ namespace napkin
 		}
 
 		// Make sure the shader is initialized
-		// TODO: initialize it if required
 		if (mShader->getDescriptorSetLayout() == VK_NULL_HANDLE)
 		{
-			nap::Logger::warn("Can't create binding for '%s' because '%s' is not initialized",
-				mPath.toString().c_str(), mShader->mID.c_str());
-			return;
+			// Load shader
+			nap::utility::ErrorState error;
+			if (!loadShader(*mShader, AppContext::get().getCore(), error))
+			{
+				nap::Logger::error("Can't create binding for '%s' because '%s' is not initialized",
+					mPath.toString().c_str(), mShader->mID.c_str());
+				nap::Logger::error(error.toString());
+			}
 		}
 
 		// Handle the various mappings

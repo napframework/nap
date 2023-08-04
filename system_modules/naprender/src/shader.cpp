@@ -703,16 +703,10 @@ namespace nap
 	BaseShader::BaseShader(Core& core) : mRenderService(core.getService<RenderService>())
 	{ }
 
+
 	BaseShader::~BaseShader()
 	{
-		// Remove all previously made requests and queue buffers for destruction.
-		// If the service is not running, all objects are destroyed immediately.
-		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout](RenderService& renderService)
-		{
-			if (descriptorSetLayout != VK_NULL_HANDLE)
-				vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
-		});
+		clear();
 	}
 
 
@@ -779,6 +773,26 @@ namespace nap
 		return true;
 	}
 
+
+	void BaseShader::clear()
+	{
+		// Remove all previously made requests and queue buffers for destruction.
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		if (mDescriptorSetLayout != VK_NULL_HANDLE)
+		{
+			mRenderService->queueVulkanObjectDestructor([descriptorSetLayout = mDescriptorSetLayout](RenderService& renderService)
+				{
+					vkDestroyDescriptorSetLayout(renderService.getDevice(), descriptorSetLayout, nullptr);
+				});
+		}
+		mDescriptorSetLayout = VK_NULL_HANDLE;
+
+		// Clear declarations
+		mUBODeclarations.clear();
+		mSSBODeclarations.clear();
+		mSamplerDeclarations.clear();
+	}
 
 	//////////////////////////////////////////////////////////////////////////
 	// Shader
@@ -972,6 +986,9 @@ namespace nap
 	// Store path and create display names
 	bool ShaderFromFile::init(utility::ErrorState& errorState)
 	{
+		if (!Shader::init(errorState))
+			return false;
+
 		// Ensure vertex shader exists
 		if (!errorState.check(!mVertPath.empty(), "Vertex shader path not set"))
 			return false;
@@ -1006,6 +1023,9 @@ namespace nap
 	// Store path and create display names
 	bool ComputeShaderFromFile::init(utility::ErrorState& errorState)
 	{
+		if (!ComputeShader::init(errorState))
+			return false;
+
 		// Ensure compute shader exists
 		if (!errorState.check(!mComputePath.empty(), "Compute shader path not set"))
 			return false;

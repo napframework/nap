@@ -729,7 +729,7 @@ void napkin::DeleteGroupAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 LoadShaderAction::LoadShaderAction(nap::BaseShader& shader) :
-	Action(nap::utility::stringFormat("(Re)Load '%s'", shader.mID.c_str()).c_str(), QRC_ICONS_DELETE),
+	Action(nap::utility::stringFormat("(Re)Load '%s'", shader.mID.c_str()).c_str(), QRC_ICONS_RELOAD),
 	mShader(shader)
 { }
 

@@ -102,7 +102,7 @@ namespace napkin
 	 * @param core core environment
 	 * @param error contains the error
 	 */
-	bool loadShader(nap::BaseShader& shader, const nap::Core& core, nap::utility::ErrorState& error);
+	bool loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::ErrorState& error);
 
 	/**
 	 * Traverse a model and find the QStandardItem subclass representing the specified object
