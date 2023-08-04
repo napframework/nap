@@ -8,13 +8,34 @@
 
 namespace napkin
 {
-	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propPath, nap::BaseMaterial& material) :
-		mPath(propPath), mMaterial(&material)
+	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propPath, const nap::BaseMaterial& material) :
+		mPath(propPath)
+	{
+		resolveShader(material);
+	}
+
+
+	MaterialPropertyMapper::MaterialPropertyMapper(const PropertyPath& propertyPath, const nap::BaseMaterialInstanceResource& materialInstance) :
+		mPath(propertyPath)
+	{
+		// Get material
+		auto material_property = materialInstance.getMaterialProperty();
+		assert(material_property.is_valid());
+		auto material_variant = material_property.get_value(materialInstance);
+		assert(material_variant.is_valid());
+		assert(material_variant.get_type().is_wrapper());
+		nap::BaseMaterial* material = material_variant.extract_wrapped_value().get_value<nap::BaseMaterial*>();
+		if (material != nullptr)
+			resolveShader(*material);
+	}
+
+
+	void MaterialPropertyMapper::resolveShader(const nap::BaseMaterial& material)
 	{
 		// Fetch shader using RTTI
 		auto property_path = nap::rtti::Path::fromString(nap::material::shader);
 		nap::rtti::ResolvedPath resolved_path;
-		property_path.resolve(mMaterial, resolved_path);
+		property_path.resolve(&material, resolved_path);
 		assert(resolved_path.isValid());
 		nap::rtti::Variant prop_value = resolved_path.getValue();
 		assert(prop_value.get_type().is_wrapper());
@@ -32,6 +53,7 @@ namespace napkin
 		}
 
 		// Make sure the shader is initialized
+		// TODO: initialize it if required
 		if (mShader->getDescriptorSetLayout() == VK_NULL_HANDLE)
 		{
 			nap::Logger::warn("Can't create binding for '%s' because '%s' is not initialized",
@@ -39,20 +61,20 @@ namespace napkin
 			return;
 		}
 
-		// Now handle the various mapping types
-		if (mMaterial && mPath.getName() == nap::material::uniforms)
+		// Handle the various mappings
+		if (mPath.getName() == nap::material::uniforms)
 		{
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
 			if (dec != nullptr)
 				addVariableBinding(*dec, mPath);
 		}
-		else if (mMaterial && mPath.getName() == nap::material::samplers)
+		else if (mPath.getName() == nap::material::samplers)
 		{
 			const auto* dec = selectSamplerDeclaration(parent);
 			if (dec != nullptr)
 				addSamplerBinding(*dec, mPath);
 		}
-		else if (mMaterial && mPath.getName() == nap::material::buffers)
+		else if (mPath.getName() == nap::material::buffers)
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
@@ -316,6 +338,4 @@ namespace napkin
 		nap::Logger::warn("Unable to create buffer binding");
 		nap::Logger::warn("Unsupported shader variable declaration '%s'", declaration.get_type().get_name().data());
 	}
-
-
 }

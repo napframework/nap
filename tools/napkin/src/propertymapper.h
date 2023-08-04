@@ -9,17 +9,22 @@
 
 // External Includes
 #include <material.h>
+#include <materialinstance.h>
 
 namespace napkin
 {
 	/**
-	 * Allows the user to select and create a property based on available shader bindings
+	 * Allows the user to select and create a property based on available shader bindings.
+	 * Works for every type of material and material instance resources.
 	 */
 	class MaterialPropertyMapper final
 	{
 	public:
 		// Constructor
-		MaterialPropertyMapper(const PropertyPath& propertyPath, nap::BaseMaterial& material);
+		MaterialPropertyMapper(const PropertyPath& propertyPath, const nap::BaseMaterialInstanceResource& materialInstance);
+
+		// Constructor
+		MaterialPropertyMapper(const PropertyPath& propertyPath, const nap::BaseMaterial& material);
 
 		/**
 		 * Copy is not allowed
@@ -63,8 +68,9 @@ namespace napkin
 		const nap::BufferObjectDeclaration* selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
 		void addBufferBinding(const nap::BufferObjectDeclaration& declaration, const PropertyPath& propPath);
 
+		void resolveShader(const nap::BaseMaterial& material);
+
 		PropertyPath mPath;
-		nap::BaseMaterial* mMaterial = nullptr;
 		nap::BaseShader* mShader = nullptr;
 	};
 }

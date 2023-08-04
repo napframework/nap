@@ -261,15 +261,27 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		else if (array_path.isEmbeddedPointer())
 		{
 			// Material
-			auto* material = rtti_cast<nap::BaseMaterial>(mModel.getObject());
-			if (material != nullptr && array_path.getObject() == material)
+			if (array_path.getParent().getType().is_derived_from(RTTI_OF(nap::BaseMaterial)))
 			{
 				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, material]()
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path]()
 				{
+					auto* material = rtti_cast<nap::BaseMaterial>(array_path.getParent().getObject());
 					auto material_mapper = std::make_unique<MaterialPropertyMapper>(array_path, *material);
 					material_mapper->map(this);
 				});
+			}
+			// Material Instance Resource
+			else if (array_path.getParent().getType().is_derived_from(RTTI_OF(nap::BaseMaterialInstanceResource)))
+			{
+				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path]()
+					{
+						auto variant = array_path.getParent().getValue();
+						const auto& material_resource = variant.get_value<nap::BaseMaterialInstanceResource>();
+						auto material_mapper = std::make_unique<MaterialPropertyMapper>(array_path, material_resource);
+						material_mapper->map(this);
+					});
 			}
 			else
 			{
@@ -284,7 +296,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 					});
 			}
 		}
-		// Numberic Value
+		// Numeric Value
 		else
 		{
 			QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));

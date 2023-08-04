@@ -9,6 +9,7 @@
 #include <utility/dllexport.h>
 #include <nap/resource.h>
 #include <nap/signalslot.h>
+#include <rtti/typeinfo.h>
 
 // Local includes
 #include "uniformcontainer.h"
@@ -22,6 +23,13 @@ namespace nap
 	struct DescriptorSet;
 	class DescriptorSetCache;
 
+	// Common property names
+	namespace materialinstanceresource
+	{
+		constexpr const char* materialr	= "Material";
+		constexpr const char* materialc	= "ComputeMaterial";
+	}
+
 	/**
 	 * Base class of MaterialInstanceResource and ComputeMaterialInstanceResource
 	 */
@@ -32,6 +40,22 @@ namespace nap
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
 		std::vector<ResourcePtr<BufferBinding>>		mBuffers;										///< Property: "Buffers" buffer bindings to override
+
+		/**
+		 * @return material property
+		 */
+		rttr::property getMaterialProperty() const;
+
+		/**
+		 * @return material property name
+		 */
+		const std::string& getMaterialPropertyName() const;
+
+	protected:
+		BaseMaterialInstanceResource(std::string&& materialPropertyName);
+
+	protected:
+		std::string mMaterialPropertyName;
 	};
 
 	/**
@@ -42,9 +66,12 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
-		ResourcePtr<Material>						mMaterial;										///< Property: "Material" source material
-		EBlendMode									mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
-		EDepthMode									mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
+		MaterialInstanceResource() :
+			BaseMaterialInstanceResource(materialinstanceresource::materialr)	{}
+
+		ResourcePtr<Material>							mMaterial;										///< Property: "Material" source material
+		EBlendMode										mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
+		EDepthMode										mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
 	};
 
 	/**
@@ -55,6 +82,9 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
+		ComputeMaterialInstanceResource() :
+			BaseMaterialInstanceResource(materialinstanceresource::materialc)	{}
+
 		ResourcePtr<ComputeMaterial>				mComputeMaterial;								///< Property: "ComputeMaterial" source material
 	};
 
