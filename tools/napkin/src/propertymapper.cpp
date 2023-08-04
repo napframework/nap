@@ -76,7 +76,7 @@ namespace napkin
 		// Shader must be assigned
 		if (mShader == nullptr)
 		{
-			nap::Logger::error("Can't create binding for '%s' because shader is missing", mPath.toString().c_str());
+			nap::Logger::warn("Can't create binding for '%s' because shader is missing", mPath.toString().c_str());
 			return;
 		}
 
@@ -90,6 +90,7 @@ namespace napkin
 				nap::Logger::error("Can't create binding for '%s' because '%s' is not initialized",
 					mPath.toString().c_str(), mShader->mID.c_str());
 				nap::Logger::error(error.toString());
+				return;
 			}
 		}
 
@@ -173,7 +174,7 @@ namespace napkin
 
 		// Assign name and ID
 		uni_obj->mName = name;
-		doc.setObjectName(*uni_obj, name, false);
+		doc.setObjectName(*uni_obj, name, true);
 		return uni_obj;
 	}
 
