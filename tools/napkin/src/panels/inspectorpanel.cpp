@@ -260,17 +260,18 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		// Embedded pointer
 		else if (array_path.isEmbeddedPointer())
 		{
-			// Material & MaterialInstanceResource
+			// Material uniform selection -> TODO: Move to factory
 			auto array_type = array_path.getArrayElementType();
-			if (array_type.is_derived_from(RTTI_OF(nap::Uniform))			||
-				array_type.is_derived_from(RTTI_OF(nap::Sampler))			||
-				array_type.is_derived_from(RTTI_OF(nap::BufferBinding)))
+
+			// Check if we can map it to a material
+			// TODO: Move mapping check (for all menu actions) to dedicated factory
+			auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+			if (material_mapper != nullptr)
 			{
 				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path]()
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
 					{
-						auto material_mapper = std::make_unique<MaterialPropertyMapper>(array_path);
-						material_mapper->map(this);
+						mapper->map(this);
 					});
 			}
 			else

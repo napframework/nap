@@ -20,7 +20,9 @@ namespace napkin
 	class MaterialPropertyMapper final
 	{
 	public:
-		// Constructor
+		/**
+		 * Constructor
+		 */
 		MaterialPropertyMapper(const PropertyPath& propertyPath);
 
 		/**
@@ -44,16 +46,21 @@ namespace napkin
 		MaterialPropertyMapper& operator=(MaterialPropertyMapper&&) = delete;
 
 		/**
-		 * If the item can be mapped or not. 
-		 * @return if the item can be mapped or not.
+		 * Returns if the property can be mapped using this object or not.
+		 * @return property mapper instance, nullptr if it can't be mapped by this object
 		 */
-		bool mappable() const;
+		static std::unique_ptr<MaterialPropertyMapper> mappable(const PropertyPath& path);
 
 		/**
 		 * Select and create a specific shader binding based on the selected property
 		 * @param parent the widget to parent the selection dialog to
 		 */
 		void map(QWidget* parent);
+
+		/**
+		 * @return the shader, nullptr if shader could not be resolved
+		 */
+		const nap::BaseShader* getShader() const	{ return mShader; }
 
 	private:
 		// Uniform value bindings
@@ -71,9 +78,11 @@ namespace napkin
 		// Fallback
 		void addUserBinding(QWidget* parent);
 
+		// Find shader on any type of material
 		void resolveShader(const nap::BaseMaterial& material);
 
 		PropertyPath mPath;
 		nap::BaseShader* mShader = nullptr;
+		bool mNested = false;
 	};
 }

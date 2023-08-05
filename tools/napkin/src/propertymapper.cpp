@@ -19,6 +19,7 @@ namespace napkin
 
 		// Walk the tree and find the material
 		nap::rtti::Object* current_object = propertyPath.getObject();
+		mNested = false;
 		while (current_object != nullptr)
 		{
 			// Check if the nested property belongs to a material
@@ -54,6 +55,7 @@ namespace napkin
 			}
 
 			// Try parent
+			mNested = true;
 			current_object = doc->getEmbeddedObjectOwner(*current_object);
 		}
 	}
@@ -74,14 +76,8 @@ namespace napkin
 
 	void MaterialPropertyMapper::map(QWidget* parent)
 	{
-		// If a shader is missing revert to regular behavior
-		if (mShader == nullptr)
-		{
-			addUserBinding(parent);
-			return;
-		}
-
 		// Make sure the shader is initialized
+		assert(mShader != nullptr);
 		if (mShader->getDescriptorSetLayout() == VK_NULL_HANDLE)
 		{
 			// Load shader
@@ -106,25 +102,65 @@ namespace napkin
 				addVariableBinding(*dec, mPath);
 		}
 		// Samplers
-		else if (binding_type.is_derived_from(RTTI_OF(nap::Sampler)))
+		else if (!mNested && binding_type.is_derived_from(RTTI_OF(nap::Sampler)))
 		{
 			const auto* dec = selectSamplerDeclaration(parent);
 			if (dec != nullptr)
 				addSamplerBinding(*dec, mPath);
 		}
 		// Buffers
-		else if (binding_type.is_derived_from(RTTI_OF(nap::BufferBinding)))
+		else if (!mNested && binding_type.is_derived_from(RTTI_OF(nap::BufferBinding)))
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
 				addBufferBinding(*dec, mPath);
 		}
+		// Not supported
+		else
+		{
+			nap::Logger::warn("Can't map '%s' to '%s', binding location not supported",
+				mPath.toString().c_str(), mShader->mID.c_str());
+			addUserBinding(parent);
+		}
 	}
 
 
-	bool MaterialPropertyMapper::mappable() const
+	std::unique_ptr<MaterialPropertyMapper> MaterialPropertyMapper::mappable(const PropertyPath& path)
 	{
-		return mShader != nullptr;
+		if (!path.isArray())
+			return nullptr;
+
+		// All supported mappable types
+		static const std::vector<nap::rtti::TypeInfo> map_types =
+		{
+			RTTI_OF(nap::Uniform),
+			RTTI_OF(nap::Sampler),
+			RTTI_OF(nap::BufferBinding)
+		};
+
+		// Check to see if the array type is mappable
+		auto array_type = path.getArrayElementType();
+		auto compatible = std::find_if(map_types.begin(), map_types.end(), [&array_type](const auto& it)
+			{
+				return array_type.is_derived_from(it);
+			}
+		);
+		if (compatible == map_types.end())
+			return nullptr;
+
+		// Now create it
+		auto material_mapper = std::make_unique<MaterialPropertyMapper>(path);
+
+		// Mapper is only valid when there's a shader
+		if (material_mapper->mShader == nullptr)
+		{
+			nap::Logger::warn("Can't resolve binding for '%s' because shader is missing",
+				path.toString().c_str());
+			return nullptr;
+		}
+
+		// Valid mapper
+		return std::move(material_mapper);
 	}
 
 
