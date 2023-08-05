@@ -755,7 +755,7 @@ void LoadShaderAction::perform()
 	else
 	{
 		QMessageBox::information(parentWidget(), "Information",
-			QString("Successfully (re-)loaded %1").arg(QString::fromStdString(mShader.mID)), QMessageBox::Ok);
+			QString("Successfully (re)loaded %1").arg(QString::fromStdString(mShader.mID)), QMessageBox::Ok);
 	}
 }
 

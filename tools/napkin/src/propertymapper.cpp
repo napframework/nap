@@ -215,9 +215,8 @@ namespace napkin
 					}
 				}
 			}
-
 			// Continue resolving for struct array
-			if (dec.get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
+			else if (dec.get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
 			{
 				const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(dec);
 				assert(!array_dec.mElements.empty());
@@ -227,6 +226,24 @@ namespace napkin
 					return resolved;
 				}
 			}
+		}
+		return nullptr;
+	}
+
+
+	static const nap::ShaderVariableDeclaration* resolveShaderPath(std::vector<const nap::Uniform*>& unipPath, const nap::BufferObjectDeclarationList& declarations)
+	{
+		auto uniform_path = unipPath; auto ini_length = uniform_path.size();
+		for (const auto& dec : declarations)
+		{
+			// Attempt to resolve this path
+			const auto* resolved_dec = resolveShaderDeclaration(uniform_path, dec);
+			if (resolved_dec != nullptr)
+				return resolved_dec;
+
+			// Partial resolves are not allowed
+			if (uniform_path.size() != ini_length)
+				break;
 		}
 		return nullptr;
 	}
@@ -289,40 +306,31 @@ namespace napkin
 				// Find corresponding shader declaration
 				assert(outPath.size() > 0); auto ini_length = outPath.size();
 				const auto& ubo_decs = mShader->getUBODeclarations();
-				for (const auto& dec : ubo_decs)
+				const auto* resolved_dec = resolveShaderPath(outPath, mShader->getUBODeclarations());
+				if (resolved_dec != nullptr)
 				{
-					const auto* resolved_dec = resolveShaderDeclaration(outPath, dec);
-					if (resolved_dec != nullptr)
+					if (resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructDeclaration)))
 					{
-						if (resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructDeclaration)))
-						{
-							// Show type selection for struct
-							const auto& struct_dec = static_cast<const nap::ShaderVariableStructDeclaration&>(*resolved_dec);
-							auto selected_dec = selectVariableDeclaration(struct_dec, parent);
-							if (selected_dec != nullptr)
-								addVariableBinding(*selected_dec, mPath);
-							return;
-						}
-						else if(resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
-						{
-							// Insert new item into array
-							const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(*resolved_dec);
-							assert(array_dec.mElements.size() > 0);
-							addVariableBinding(*array_dec.mElements[0], mPath);
-							return;
-						}
-						break;
+						// Show type selection for struct
+						const auto& struct_dec = static_cast<const nap::ShaderVariableStructDeclaration&>(*resolved_dec);
+						auto selected_dec = selectVariableDeclaration(struct_dec, parent);
+						if (selected_dec != nullptr)
+							addVariableBinding(*selected_dec, mPath);
+						return;
 					}
-					// Check if the path size changed -> declaration was partly resolved
-					else
+					else if (resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
 					{
-						if (outPath.size() != ini_length)
-						{
-							nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
-								mPath.toString().c_str(), mShader->mID.c_str());
-							break;
-						}
+						// Insert new item into array
+						const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(*resolved_dec);
+						assert(array_dec.mElements.size() > 0);
+						addVariableBinding(*array_dec.mElements[0], mPath);
+						return;
 					}
+				}
+				else
+				{
+					nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
+						mPath.toString().c_str(), mShader->mID.c_str());
 				}
 			}
 			else
@@ -333,8 +341,6 @@ namespace napkin
 		}
 
 		// Fallback
-		nap::Logger::warn("Can't map '%s' to '%s': Unsupported binding",
-			mPath.toString().c_str(), mShader->mID.c_str());
 		addUserBinding(parent);
 	}
 
@@ -368,7 +374,7 @@ namespace napkin
 		// Mapper is only valid when there's a shader
 		if (material_mapper->mShader == nullptr)
 		{
-			nap::Logger::warn("Can't resolve binding for '%s' because shader is missing",
+			nap::Logger::warn("Can't resolve binding for '%s': Shader is missing",
 				path.toString().c_str());
 			return nullptr;
 		}
