@@ -294,14 +294,21 @@ namespace napkin
 					const auto* resolved_dec = resolveShaderDeclaration(outPath, dec);
 					if (resolved_dec != nullptr)
 					{
-						nap::Logger::info("Resolved declaration: %s", resolved_dec->mName.c_str());
+						// Show type selection
+						const auto* struct_dec = rtti_cast<const nap::ShaderVariableStructDeclaration>(resolved_dec);
+						assert(struct_dec != nullptr);
+						auto selected_dec = selectVariableDeclaration(*struct_dec, parent);
+						if (selected_dec != nullptr)
+						{
+							addVariableBinding(*selected_dec, mPath);
+						}
 						return;
 					}
 
 					// Check if the path size changed -> declaration was partly resolved
 					if (outPath.size() != path_length)
 					{
-						nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
+						nap::Logger::warn("Can't map '%s' to '%s': Shader declaration from uniform path can't be resolved",
 							mPath.toString().c_str(), mShader->mID.c_str());
 						break;
 					}
@@ -371,6 +378,24 @@ namespace napkin
 			{
 				dec_map.emplace(dec.mName, &dec);
 				names << QString::fromStdString(dec.mName);
+			}
+		}
+		auto selection = nap::qt::FilterPopup::show(parent, names);
+		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
+	}
+
+
+	const nap::ShaderVariableDeclaration* MaterialPropertyMapper::selectVariableDeclaration(const nap::ShaderVariableStructDeclaration& uniform, QWidget* parent)
+	{
+		QStringList names;
+		std::unordered_map<std::string, const nap::ShaderVariableDeclaration*> dec_map;
+		dec_map.reserve(uniform.mMembers.size());
+		for (const auto& dec : uniform.mMembers)
+		{
+			if (dec->mName != nap::uniform::mvpStruct)
+			{
+				dec_map.emplace(dec->mName, dec.get());
+				names << QString::fromStdString(dec->mName);
 			}
 		}
 		auto selection = nap::qt::FilterPopup::show(parent, names);

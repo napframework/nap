@@ -65,6 +65,7 @@ namespace napkin
 	private:
 		// Uniform value bindings
 		const nap::ShaderVariableDeclaration* selectVariableDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
+		const nap::ShaderVariableDeclaration* selectVariableDeclaration(const nap::ShaderVariableStructDeclaration& uniform, QWidget* parent);
 		void addVariableBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath);
 
 		// Sampler bindings
