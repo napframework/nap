@@ -287,26 +287,33 @@ namespace napkin
 			if (resolveUniformPath(mPath, mRootUniforms, outPath))
 			{
 				// Find corresponding shader declaration
-				assert(outPath.size() > 0); auto path_length = outPath.size();
+				assert(outPath.size() > 0); auto ini_length = outPath.size();
 				const auto& ubo_decs = mShader->getUBODeclarations();
 				for (const auto& dec : ubo_decs)
 				{
 					const auto* resolved_dec = resolveShaderDeclaration(outPath, dec);
 					if (resolved_dec != nullptr)
 					{
-						// Show type selection
-						const auto* struct_dec = rtti_cast<const nap::ShaderVariableStructDeclaration>(resolved_dec);
-						assert(struct_dec != nullptr);
-						auto selected_dec = selectVariableDeclaration(*struct_dec, parent);
-						if (selected_dec != nullptr)
+						if (resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructDeclaration)))
 						{
-							addVariableBinding(*selected_dec, mPath);
+							// Show type selection for struct
+							const auto& struct_dec = static_cast<const nap::ShaderVariableStructDeclaration&>(*resolved_dec);
+							auto selected_dec = selectVariableDeclaration(struct_dec, parent);
+							if (selected_dec != nullptr)
+								addVariableBinding(*selected_dec, mPath);
+						}
+						else if(resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
+						{
+							// Use first item for description
+							const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(*resolved_dec);
+							assert(array_dec.mElements.size() > 0);
+							addVariableBinding(*array_dec.mElements[0], mPath);
 						}
 						return;
 					}
 
 					// Check if the path size changed -> declaration was partly resolved
-					if (outPath.size() != path_length)
+					if (outPath.size() != ini_length)
 					{
 						nap::Logger::warn("Can't map '%s' to '%s': Shader declaration from uniform path can't be resolved",
 							mPath.toString().c_str(), mShader->mID.c_str());
