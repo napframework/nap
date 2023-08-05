@@ -301,23 +301,27 @@ namespace napkin
 							auto selected_dec = selectVariableDeclaration(struct_dec, parent);
 							if (selected_dec != nullptr)
 								addVariableBinding(*selected_dec, mPath);
+							return;
 						}
 						else if(resolved_dec->get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
 						{
-							// Use first item for description
+							// Insert new item into array
 							const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(*resolved_dec);
 							assert(array_dec.mElements.size() > 0);
 							addVariableBinding(*array_dec.mElements[0], mPath);
+							return;
 						}
-						return;
-					}
-
-					// Check if the path size changed -> declaration was partly resolved
-					if (outPath.size() != ini_length)
-					{
-						nap::Logger::warn("Can't map '%s' to '%s': Shader declaration from uniform path can't be resolved",
-							mPath.toString().c_str(), mShader->mID.c_str());
 						break;
+					}
+					// Check if the path size changed -> declaration was partly resolved
+					else
+					{
+						if (outPath.size() != ini_length)
+						{
+							nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
+								mPath.toString().c_str(), mShader->mID.c_str());
+							break;
+						}
 					}
 				}
 			}
