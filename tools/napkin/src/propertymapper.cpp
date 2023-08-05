@@ -87,10 +87,10 @@ namespace napkin
 	}
 
 
-	static bool resolveUniformStruct(const nap::UniformStruct& uniformStruct, const nap::Uniform& target, std::vector<std::string>& ioPath)
+	static bool resolveUniformStruct(const nap::UniformStruct& uniformStruct, const nap::Uniform& target, std::vector<const nap::Uniform*>& ioPath)
 	{
 		// Push struct name and validate
-		ioPath.emplace_back(uniformStruct.mName);
+		ioPath.emplace_back(&uniformStruct);
 		if (&uniformStruct == &target)
 			return true;
 
@@ -108,7 +108,7 @@ namespace napkin
 			// Resolve other members
 			{
 				// Push uniform name and check for a match
-				ioPath.emplace_back(uniform->mName);
+				ioPath.emplace_back(uniform.get());
 				if (uniform.get() == &target)
 					return true;
 
@@ -120,7 +120,7 @@ namespace napkin
 					for (const auto& array_struct : struct_array.mStructs)
 					{
 						// Push index and check if it matches
-						ioPath.emplace_back(std::to_string(index));
+						ioPath.emplace_back(array_struct.get());
 						if (array_struct.get() == &target)
 							return true;
 
@@ -151,7 +151,7 @@ namespace napkin
 	}
 
 
-	static bool resolveUniformPath(const PropertyPath& path, rttr::variant root, std::vector<std::string>& outShaderPath)
+	static bool resolveUniformPath(const PropertyPath& path, rttr::variant root, std::vector<const nap::Uniform*>& outPath)
 	{
 		// Get target uniform
 		auto* target_uniform = rtti_cast<nap::Uniform>(path.getObject());
@@ -171,9 +171,13 @@ namespace napkin
 			assert(uniform_struct != nullptr);
 		
 			// Resolve
-			if (resolveUniformStruct(*uniform_struct, *target_uniform, outShaderPath))
+			if (resolveUniformStruct(*uniform_struct, *target_uniform, outPath))
 			{
-				auto p = nap::utility::joinPath(outShaderPath);
+				std::vector<std::string> str_path;
+				for (const auto& uniform : outPath)
+					str_path.emplace_back(uniform->mName);
+
+				auto p = nap::utility::joinPath(str_path);
 				nap::Logger::info(p.c_str());
 				return true;
 			}
@@ -182,19 +186,49 @@ namespace napkin
 	}
 
 
-	static const nap::ShaderVariableDeclaration* resolveDeclaration(std::vector<std::string>& path, const nap::ShaderVariableDeclaration& dec)
+	static const nap::ShaderVariableDeclaration* resolveShaderDeclaration(std::vector<const nap::Uniform*>& path, const nap::ShaderVariableDeclaration& dec)
 	{
+		// Get current uniform
 		assert(!path.empty());
+		const auto* uniform = *path.begin();
 
-		// Check if the name matches 
-		if (dec.mName == path[0])
+		// Check if the uniform name matches the declaration
+		if (dec.mName == uniform->mName)
 		{
+			// Pop it and check if we are done resolving
 			path.erase(path.begin());
 			if (path.empty())
 			{
 				return &dec;
 			}
+
+			// Continue resolving for struct
+			if (dec.get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructDeclaration)))
+			{
+				const auto& struct_dec = static_cast<const nap::ShaderVariableStructDeclaration&>(dec);
+				for (const auto& member : struct_dec.mMembers)
+				{
+					const auto* resolved = resolveShaderDeclaration(path, *member);
+					if (resolved != nullptr)
+					{
+						return resolved;
+					}
+				}
+			}
+
+			// Continue resolving for struct array
+			if (dec.get_type().is_derived_from(RTTI_OF(nap::ShaderVariableStructArrayDeclaration)))
+			{
+				const auto& array_dec = static_cast<const nap::ShaderVariableStructArrayDeclaration&>(dec);
+				assert(!array_dec.mElements.empty());
+				const auto* resolved = resolveShaderDeclaration(path, *array_dec.mElements[0]);
+				if (resolved != nullptr)
+				{
+					return resolved;
+				}
+			}
 		}
+		return nullptr;
 	}
 
 
@@ -224,42 +258,66 @@ namespace napkin
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
 			if (dec != nullptr)
 				addVariableBinding(*dec, mPath);
+			return;
 		}
+
 		// Samplers
-		else if (!mNested && mPath.getName() == nap::material::samplers)
+		if (!mNested && mPath.getName() == nap::material::samplers)
 		{
 			const auto* dec = selectSamplerDeclaration(parent);
 			if (dec != nullptr)
 				addSamplerBinding(*dec, mPath);
+			return;
 		}
+
 		// Buffers
-		else if (!mNested && mPath.getName() == nap::material::buffers)
+		if (!mNested && mPath.getName() == nap::material::buffers)
 		{
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
 				addBufferBinding(*dec, mPath);
+			return;
 		}
+
 		// Nested uniform type
-		else if (mPath.getObject()->get_type().is_derived_from(RTTI_OF(nap::Uniform)))
+		if (mPath.getObject()->get_type().is_derived_from(RTTI_OF(nap::Uniform)))
 		{
-			// Get path to uniform resource
-			std::vector<std::string> outPath;
-			if (!resolveUniformPath(mPath, mRootUniforms, outPath))
+			// Get 'material' path to uniform resource
+			std::vector<const nap::Uniform*> outPath;
+			if (resolveUniformPath(mPath, mRootUniforms, outPath))
 			{
-				nap::Logger::warn("Can't map '%s' to '%s': Binding can't be resolved",
-					mPath.toString().c_str(), mShader->mID.c_str());
-				addUserBinding(parent);
+				// Find corresponding shader declaration
+				assert(outPath.size() > 0); auto path_length = outPath.size();
+				const auto& ubo_decs = mShader->getUBODeclarations();
+				for (const auto& dec : ubo_decs)
+				{
+					const auto* resolved_dec = resolveShaderDeclaration(outPath, dec);
+					if (resolved_dec != nullptr)
+					{
+						nap::Logger::info("Resolved declaration: %s", resolved_dec->mName.c_str());
+						return;
+					}
+
+					// Check if the path size changed -> declaration was partly resolved
+					if (outPath.size() != path_length)
+					{
+						nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
+							mPath.toString().c_str(), mShader->mID.c_str());
+						break;
+					}
+				}
 			}
 			else
 			{
+				nap::Logger::warn("Can't map '%s' to '%s': Uniform binding can't be resolved",
+					mPath.toString().c_str(), mShader->mID.c_str());
 			}
 		}
-		else
-		{
-			nap::Logger::warn("Can't map '%s' to '%s': Unsupported binding",
-				mPath.toString().c_str(), mShader->mID.c_str());
-			addUserBinding(parent);
-		}
+
+		// Fallback
+		nap::Logger::warn("Can't map '%s' to '%s': Unsupported binding",
+			mPath.toString().c_str(), mShader->mID.c_str());
+		addUserBinding(parent);
 	}
 
 
