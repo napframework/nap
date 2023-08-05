@@ -262,13 +262,13 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 		{
 			// Material uniform selection -> TODO: Move to factory
 			auto array_type = array_path.getArrayElementType();
+			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 
 			// Check if we can map it to a material
 			// TODO: Move mapping check (for all menu actions) to dedicated factory
 			auto material_mapper = MaterialPropertyMapper::mappable(array_path);
 			if (material_mapper != nullptr)
 			{
-				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
 					{
 						mapper->map(this);
@@ -277,7 +277,6 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			else
 			{
 				// Regular or material array entry handling
-				QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
 					{
 						TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };

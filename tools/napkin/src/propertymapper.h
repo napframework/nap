@@ -81,8 +81,9 @@ namespace napkin
 		// Find shader on any type of material
 		void resolveShader(const nap::BaseMaterial& material);
 
-		PropertyPath mPath;
-		nap::BaseShader* mShader = nullptr;
-		bool mNested = false;
+		PropertyPath mPath;						///< Current property path
+		nap::BaseShader* mShader = nullptr;		///< Shader to resolve against
+		bool mNested = false;					///< If the path is a nested uniform
+		rttr::variant mRootUniforms;			///< All root uniforms
 	};
 }
