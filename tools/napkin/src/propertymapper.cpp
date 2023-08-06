@@ -565,7 +565,7 @@ namespace napkin
 
 			// Ask if entries should be created for the array
 			if (QMessageBox::question(nullptr, "Array",
-				QString("Create entries for array '%1'").arg(declaration.mName.c_str()),
+				QString("Create entries for array '%1'?").arg(declaration.mName.c_str()),
 				QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
 				return;
 
@@ -589,7 +589,7 @@ namespace napkin
 
 			// Ask if entries should be created for the array
 			if (QMessageBox::question(nullptr, "Array",
-				QString("Create entries for array '%1'").arg(declaration.mName.c_str()),
+				QString("Create entries for array '%1'?").arg(declaration.mName.c_str()),
 				QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
 				return;
 
