@@ -173,15 +173,7 @@ namespace napkin
 		
 			// Resolve
 			if (resolveUniformStruct(*uniform_struct, *target_uniform, outPath))
-			{
-				std::vector<std::string> str_path;
-				for (const auto& uniform : outPath)
-					str_path.emplace_back(uniform->mName);
-
-				auto p = nap::utility::joinPath(str_path);
-				nap::Logger::info(p.c_str());
 				return true;
-			}
 		}
 		return false;
 	}
