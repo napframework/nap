@@ -337,6 +337,14 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 
 bool napkin::loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::ErrorState& error)
 {
+	// Only load shader when a render service is available
+	auto* render_service = core.getService<nap::RenderService>();
+	if (render_service == nullptr)
+	{
+		error.fail("Render service is not available");
+		return false;
+	}
+
 	// Change working directory for compilation
 	auto cwd = nap::utility::getCWD();
 	assert(core.isInitialized());

@@ -498,9 +498,21 @@ bool napkin::AppContext::hasServiceConfig() const
 }
 
 
-const napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
+bool napkin::AppContext::canRender() const
+{
+	return mRenderService != nullptr;
+}
+
+
+napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 {
 	return mServiceConfig.get();
+}
+
+
+nap::RenderService* napkin::AppContext::getRenderService() const
+{
+	return mRenderService;
 }
 
 
@@ -531,12 +543,6 @@ void napkin::AppContext::executeCommand(QUndoCommand* cmd)
 		return;
 	}
 	getDocument()->executeCommand(cmd);
-}
-
-
-napkin::ServiceConfig* napkin::AppContext::getServiceConfig()
-{
-	return mServiceConfig.get();
 }
 
 

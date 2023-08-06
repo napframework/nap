@@ -1275,4 +1275,3 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	relativeObjectPathList(origin, target, path);
 	return nap::utility::joinString(path, "/");
 }
-

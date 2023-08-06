@@ -807,14 +807,21 @@ namespace nap
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->queueVulkanObjectDestructor([vertexModule = mVertexModule, fragmentModule = mFragmentModule](RenderService& renderService)
+		if (mVertexModule != VK_NULL_HANDLE)
 		{
-			if (vertexModule != VK_NULL_HANDLE)
-				vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
+			mRenderService->queueVulkanObjectDestructor([vertexModule = mVertexModule](RenderService& renderService)
+				{
+					vkDestroyShaderModule(renderService.getDevice(), vertexModule, nullptr);
+				});
+		}
 
-			if (fragmentModule != VK_NULL_HANDLE)
-				vkDestroyShaderModule(renderService.getDevice(), fragmentModule, nullptr);
-		});
+		if (mFragmentModule != VK_NULL_HANDLE)
+		{
+			mRenderService->queueVulkanObjectDestructor([fragModule = mFragmentModule](RenderService& renderService)
+				{
+					vkDestroyShaderModule(renderService.getDevice(), fragModule, nullptr);
+				});
+		}
 	}
 
 
@@ -914,11 +921,13 @@ namespace nap
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->queueVulkanObjectDestructor([compModule = mComputeModule](RenderService& renderService)
+		if (mComputeModule != VK_NULL_HANDLE)
 		{
-			if (compModule != VK_NULL_HANDLE)
-				vkDestroyShaderModule(renderService.getDevice(), compModule, nullptr);
-		});
+			mRenderService->queueVulkanObjectDestructor([compModule = mComputeModule](RenderService& renderService)
+				{
+					vkDestroyShaderModule(renderService.getDevice(), compModule, nullptr);
+				});
+		}
 	}
 
 
