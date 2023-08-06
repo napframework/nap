@@ -36,10 +36,6 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ComputeShaderFromFileItem)
 	RTTI_CONSTRUCTOR(nap::rtti::Object&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::MaterialItem)
-	RTTI_CONSTRUCTOR(nap::rtti::Object&)
-RTTI_END_CLASS
-
 using namespace napkin;
 
 //////////////////////////////////////////////////////////////////////////
@@ -63,8 +59,7 @@ static ObjectItem* createObjectItem(nap::rtti::Object& object)
 	{
 		{ RTTI_OF(nap::ShaderFromFile),			RTTI_OF(napkin::ShaderFromFileItem) },
 		{ RTTI_OF(nap::ComputeShaderFromFile),	RTTI_OF(napkin::ComputeShaderFromFileItem) },
-		{ RTTI_OF(nap::Shader),					RTTI_OF(napkin::ShaderItem)			},
-		{ RTTI_OF(nap::Material),				RTTI_OF(napkin::MaterialItem)		}
+		{ RTTI_OF(nap::Shader),					RTTI_OF(napkin::ShaderItem)			}
 	};
 
 	// Check if there is an item overload for the given object
@@ -667,14 +662,6 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		childAdded(*this, *new_group);
 	}
 }
-
-
-//////////////////////////////////////////////////////////////////////////
-// Material Item
-//////////////////////////////////////////////////////////////////////////
-
-napkin::MaterialItem::MaterialItem(nap::rtti::Object& object) : ObjectItem(object, false)
-{ }
 
 
 //////////////////////////////////////////////////////////////////////////
