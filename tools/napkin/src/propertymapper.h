@@ -88,3 +88,4 @@ namespace napkin
 		rttr::variant mRootUniforms;			///< All root uniforms
 	};
 }
+
