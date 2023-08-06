@@ -141,6 +141,7 @@ namespace nap
 		return VK_PHYSICAL_DEVICE_TYPE_OTHER;
 	}
 
+
 	/**
 	 * @return NAP physical device type
 	 */
@@ -163,6 +164,7 @@ namespace nap
 		}
 		return RenderServiceConfiguration::EPhysicalDeviceType::Other;
 	}
+
 
 	/**
 	 * @return VK queue flags
