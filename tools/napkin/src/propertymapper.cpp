@@ -3,6 +3,7 @@
 #include "commands.h"
 
 #include <QStringList>
+#include <QMessageBox>
 #include <napqt/filterpopup.h>
 #include <rtti/path.h>
 #include <renderglobals.h>
@@ -530,6 +531,7 @@ namespace napkin
 
 			// Create and add value binding
 			createBinding<nap::UniformValue>(declaration.mName, found_it->second, path, *doc);
+			return;
 		}
 
 		// Handle value array declaration
@@ -561,6 +563,12 @@ namespace napkin
 			// Create and add value binding
 			auto* array_uniform = createBinding<nap::UniformValueArray>(declaration.mName, found_it->second, path, *doc);
 
+			// Ask if entries should be created for the array
+			if (QMessageBox::question(nullptr, "Array",
+				QString("Create entries for array '%1'").arg(declaration.mName.c_str()),
+				QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+				return;
+
 			// Get path to values property
 			PropertyPath values_path(*array_uniform,
 				array_uniform->get_type().get_property(nap::uniform::values), *doc);
@@ -568,6 +576,7 @@ namespace napkin
 			// Add value entries
 			for (int i = 0; i < array_dec.mNumElements; i++)
 				doc->arrayAddValue(values_path);
+			return;
 		}
 
 		// Handle struct array
@@ -578,6 +587,12 @@ namespace napkin
 			// Create and add value binding
 			auto* struct_uni = createBinding<nap::UniformStructArray>(declaration.mName, RTTI_OF(nap::UniformStructArray), path, *doc);
 
+			// Ask if entries should be created for the array
+			if (QMessageBox::question(nullptr, "Array",
+				QString("Create entries for array '%1'").arg(declaration.mName.c_str()),
+				QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+				return;
+
 			// Get path to structs property
 			PropertyPath structs_path(*struct_uni,
 				struct_uni->get_type().get_property(nap::uniform::structs), *doc);
@@ -585,8 +600,10 @@ namespace napkin
 			// Add value entries
 			for (const auto& entry : array_dec.mElements)
 				addVariableBinding(*entry, structs_path);
+			return;
 		}
 	}
+
 
 
 	const nap::BufferObjectDeclaration* MaterialPropertyMapper::selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
