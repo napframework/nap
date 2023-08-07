@@ -636,7 +636,6 @@ namespace nap
 		// Otherwise first compatible one based on priority rating
 		if (select_idx < 0)
 		{
-			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
 			for (int i = 0, gpu_rating = -1; i < valid_devices.size(); i++)
 			{
 				int type = static_cast<int>(getPhysicalDeviceType(valid_devices[i].getProperties().deviceType));

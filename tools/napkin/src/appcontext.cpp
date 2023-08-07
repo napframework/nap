@@ -149,7 +149,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	mRenderService = mCore.getService<nap::RenderService>();
 	if (mRenderService != nullptr)
 	{
-		nap::Logger::info("Initializing shader compilation");
+		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
 		if (!mRenderService->initShaderCompilation(err))
 		{
 			nap::Logger::error(err.toString());

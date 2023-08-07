@@ -181,13 +181,11 @@ endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources DESTINATION tools/napkin/)
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
-
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
-
 set(PATH_TO_THIRDPARTY "../../thirdparty")
+
 if(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
-
     list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND DEEP_DEPENDENT_RPATHS lib)
 
@@ -213,6 +211,8 @@ if(APPLE)
                                                   ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                   "@rpath"
                                                   )
+
+        
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")
