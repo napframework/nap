@@ -146,11 +146,11 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	progressChanged(0.75f);
 
 	// Enable shader compilation if render service has been loaded
-	auto* render_service = mCore.getService<nap::RenderService>();
-	if (render_service != nullptr)
+	mRenderService = mCore.getService<nap::RenderService>();
+	if (mRenderService != nullptr)
 	{
 		nap::Logger::info("Initializing shader compilation");
-		if (!render_service->initShaderCompilation(err))
+		if (!mRenderService->initShaderCompilation(err))
 		{
 			nap::Logger::error(err.toString());
 			progressChanged(1.0f);
