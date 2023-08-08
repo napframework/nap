@@ -242,39 +242,35 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	{
 		PropertyPath array_path = path_item->getPath();
 		auto array_type = array_path.getArrayElementType();
+		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 
-		// Regular resource pointer
-		if (array_path.isNonEmbeddedPointer())
+		// Check if we can map it to a material
+		// TODO: Move mapping check (for all menu actions) to dedicated factory
+		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+		if (material_mapper != nullptr)
 		{
-			// Build 'Add Existing' menu, populated with all existing objects matching the array type
 			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
 			{
-				auto objects = AppContext::get().getDocument()->getObjects(array_type);
-				nap::rtti::Object* selected_object = showObjectSelector(this, objects);
-				if (selected_object != nullptr)
-					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
+				mapper->map(this);
 			});
-
 		}
-		// Embedded pointer
-		else if (array_path.isEmbeddedPointer())
+		else
 		{
-			// Material uniform selection -> TODO: Move to factory
-			auto array_type = array_path.getArrayElementType();
-			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-
-			// Check if we can map it to a material
-			// TODO: Move mapping check (for all menu actions) to dedicated factory
-			auto material_mapper = MaterialPropertyMapper::mappable(array_path);
-			if (material_mapper != nullptr)
+			// Regular resource pointer
+			if (array_path.isNonEmbeddedPointer())
 			{
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
+				// Build 'Add Existing' menu, populated with all existing objects matching the array type
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
 					{
-						mapper->map(this);
+						auto objects = AppContext::get().getDocument()->getObjects(array_type);
+						nap::rtti::Object* selected_object = showObjectSelector(this, objects);
+						if (selected_object != nullptr)
+							AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
 					});
 			}
-			else
+			// Embedded pointer
+			else if (array_path.isEmbeddedPointer())
 			{
 				// Regular or material array entry handling
 				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
@@ -285,16 +281,16 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 							AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
 					});
 			}
-		}
-		// Numeric Value
-		else
-		{
-			QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
+			// Numeric Value
+			else
 			{
-				AppContext::get().executeCommand(new ArrayAddValueCommand(array_path));
-			});
+				QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
+					{
+						AppContext::get().executeCommand(new ArrayAddValueCommand(array_path));
+					});
 
+			}
 		}
 	}
 }

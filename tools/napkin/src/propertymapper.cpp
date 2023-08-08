@@ -18,7 +18,7 @@ namespace napkin
 		auto* doc = propertyPath.getDocument();
 		assert(doc != nullptr);
 
-		// Walk the tree and find the material
+		// Walk the tree and find the nap::Material or nap::BaseMaterialInstanceResource
 		nap::rtti::Object* current_object = propertyPath.getObject();
 		mNested = false;
 		while (current_object != nullptr)
@@ -64,7 +64,9 @@ namespace napkin
 				assert(material_variant.get_type().is_wrapper());
 				material = material_variant.extract_wrapped_value().get_value<nap::BaseMaterial*>();
 				if (material != nullptr)
+				{
 					resolveShader(*material);
+				}
 				return;
 			}
 
@@ -77,7 +79,7 @@ namespace napkin
 
 	void MaterialPropertyMapper::resolveShader(const nap::BaseMaterial& material)
 	{
-		// Fetch shader using RTTI
+		// Fetch shader using RTTI, can be null -> in that case the property can't be mapped
 		auto property_path = nap::rtti::Path::fromString(nap::material::shader);
 		nap::rtti::ResolvedPath resolved_path;
 		property_path.resolve(&material, resolved_path);
@@ -259,10 +261,8 @@ namespace napkin
 			}
 		}
 
-		assert(mPath.isArray());
-		auto binding_type = mPath.getArrayElementType();
-
 		// Uniforms
+		assert(mPath.isArray());
 		if (!mNested && mPath.getName() == nap::material::uniforms)
 		{
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
@@ -286,6 +286,16 @@ namespace napkin
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
 				addBufferBinding(*dec, mPath);
+			return;
+		}
+
+		// Vertex binding
+		auto array_type = mPath.getArrayElementType();
+		if (array_type.is_derived_from(RTTI_OF(nap::Material::VertexAttributeBinding)))
+		{
+			const auto* dec = selectVertexAttrDeclaration(parent);
+			if (dec != nullptr)
+				addVertexBinding(*dec, mPath);
 			return;
 		}
 
@@ -320,21 +330,19 @@ namespace napkin
 						return;
 					}
 				}
-				else
-				{
-					nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
-						mPath.toString().c_str(), mShader->mID.c_str());
-				}
 			}
-			else
-			{
-				nap::Logger::warn("Can't map '%s' to '%s': Uniform binding can't be resolved",
-					mPath.toString().c_str(), mShader->mID.c_str());
-			}
+
+			// Uniform can't be resolved -> fallback
+			nap::Logger::warn("Can't map '%s' to '%s': Uniform binding can't be resolved",
+				mPath.toString().c_str(), mShader->mID.c_str());
+
+			addUserBinding(parent);
+			return;
 		}
 
-		// Fallback
-		addUserBinding(parent);
+		// Property can't be resolved by this mapper.
+		NAP_ASSERT_MSG(false,
+			nap::utility::stringFormat("%s can't be resolved by this mapper!", mPath.toString().c_str()).c_str());
 	}
 
 
@@ -348,7 +356,8 @@ namespace napkin
 		{
 			RTTI_OF(nap::Uniform),
 			RTTI_OF(nap::Sampler),
-			RTTI_OF(nap::BufferBinding)
+			RTTI_OF(nap::BufferBinding),
+			RTTI_OF(nap::Material::VertexAttributeBinding)
 		};
 
 		// Check to see if the array type is mappable
@@ -364,7 +373,7 @@ namespace napkin
 		// Now create it
 		auto material_mapper = std::make_unique<MaterialPropertyMapper>(path);
 
-		// Mapper is only valid when there's a shader
+		// Mapper is only valid when shader is resolved from object
 		if (material_mapper->mShader == nullptr)
 		{
 			nap::Logger::warn("Can't resolve binding for '%s': Shader is missing",
@@ -423,6 +432,25 @@ namespace napkin
 		{
 			dec_map.emplace(dec.mName, &dec);
 			names << QString::fromStdString(dec.mName);
+		}
+		auto selection = nap::qt::FilterPopup::show(parent, names);
+		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
+	}
+
+
+	const nap::VertexAttributeDeclaration* MaterialPropertyMapper::selectVertexAttrDeclaration(QWidget* parent)
+	{
+		nap::Shader* shader = rtti_cast<nap::Shader>(mShader);
+		assert(shader != nullptr);
+
+		QStringList names;
+		const auto& vert_attrs = shader->getAttributes();
+		std::unordered_map<std::string, const nap::VertexAttributeDeclaration*> dec_map;
+		dec_map.reserve(vert_attrs.size());
+		for (const auto& attr : vert_attrs)
+		{
+			dec_map.emplace(attr.second->mName, attr.second.get());
+			names << QString::fromStdString(attr.second->mName);
 		}
 		auto selection = nap::qt::FilterPopup::show(parent, names);
 		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
@@ -671,5 +699,26 @@ namespace napkin
 		{
 			AppContext::get().executeCommand(new ArrayAddNewObjectCommand(mPath, selected_type));
 		}
+	}
+
+
+	void MaterialPropertyMapper::addVertexBinding(const nap::VertexAttributeDeclaration& declaration, const PropertyPath& propPath)
+	{
+		// Get document
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
+
+		// Add new entry
+		int clen = propPath.getArrayLength();
+		int nidx = doc->arrayAddValue(propPath);
+		assert(nidx == clen);
+
+		// Get inserted element and update shader declaration.
+		auto vert_path = propPath.getArrayElement(nidx);
+		auto vert_vari = vert_path.getValue();
+		assert(vert_vari.is_valid());
+		auto vertex_binding = vert_vari.get_value<nap::Material::VertexAttributeBinding>();
+		vertex_binding.mShaderAttributeID = declaration.mName;
+		propPath.getArrayElement(nidx).setValue(vertex_binding);
 	}
 }
