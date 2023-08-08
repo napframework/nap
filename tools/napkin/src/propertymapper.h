@@ -57,6 +57,7 @@ namespace napkin
 
 		/**
 		 * Select and create a specific shader binding based on the selected property
+		 * Only call this on a mapper obtained through the mappable() function!
 		 * @param parent the widget to parent the selection dialog to
 		 */
 		void map(QWidget* parent);

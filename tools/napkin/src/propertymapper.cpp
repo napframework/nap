@@ -291,7 +291,7 @@ namespace napkin
 
 		// Vertex binding
 		auto array_type = mPath.getArrayElementType();
-		if (array_type.is_derived_from(RTTI_OF(nap::Material::VertexAttributeBinding)))
+		if (!mNested && mPath.getName() == nap::material::vbindings)
 		{
 			const auto* dec = selectVertexAttrDeclaration(parent);
 			if (dec != nullptr)
@@ -463,7 +463,8 @@ namespace napkin
 		// Create uniform struct
 		assert(propertyPath.isArray());
 		int iidx = propertyPath.getArrayLength();
-		int oidx = doc.arrayAddNewObject(propertyPath, uniformType, iidx);
+		AppContext::get().executeCommand(new ArrayAddNewObjectCommand(propertyPath, uniformType));
+		int oidx = propertyPath.getArrayLength() - 1;
 		assert(iidx == oidx);
 
 		// Fetch created uniform
@@ -595,7 +596,7 @@ namespace napkin
 
 			// Add value entries
 			for (int i = 0; i < array_dec.mNumElements; i++)
-				doc->arrayAddValue(values_path);
+				AppContext::get().executeCommand(new ArrayAddValueCommand(values_path, i));
 			return;
 		}
 
@@ -704,13 +705,10 @@ namespace napkin
 
 	void MaterialPropertyMapper::addVertexBinding(const nap::VertexAttributeDeclaration& declaration, const PropertyPath& propPath)
 	{
-		// Get document
-		auto* doc = AppContext::get().getDocument();
-		assert(doc != nullptr);
-
 		// Add new entry
 		int clen = propPath.getArrayLength();
-		int nidx = doc->arrayAddValue(propPath);
+		AppContext::get().executeCommand(new ArrayAddValueCommand(propPath));
+		int nidx = propPath.getArrayLength() - 1;
 		assert(nidx == clen);
 
 		// Get inserted element and update shader declaration.

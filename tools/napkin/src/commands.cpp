@@ -299,8 +299,6 @@ ArrayAddValueCommand::ArrayAddValueCommand(const PropertyPath& prop) : mPath(pro
 	setText("Add element to: " + QString::fromStdString(prop.toString()));
 }
 
-
-
 void ArrayAddValueCommand::redo()
 {
 	AppContext::get().getDocument()->arrayAddValue(mPath);
