@@ -254,8 +254,22 @@ namespace napkin
 			nap::utility::ErrorState error;
 			if (!loadShader(*mShader, AppContext::get().getCore(), error))
 			{
-				nap::Logger::error("Can't create binding for '%s' because '%s' is not initialized",
-					mPath.toString().c_str(), mShader->mID.c_str());
+				// Show msg
+				std::string err_msg = nap::utility::stringFormat("Can't create '%s' binding", mPath.getName().c_str());
+				QMessageBox msg(parent);
+				msg.setText(QString::fromStdString(err_msg));
+				msg.setInformativeText(QString("Failed to load %1").arg(QString::fromStdString(mShader->mID)));
+				msg.setDetailedText(QString::fromStdString(error.toString()));
+				msg.setStandardButtons(QMessageBox::Ok);
+				msg.setIcon(QMessageBox::Critical);
+				msg.setWindowTitle("Error");
+				QSpacerItem* spacer = new QSpacerItem(300, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+				QGridLayout* layout = (QGridLayout*)msg.layout();
+				layout->addItem(spacer, layout->rowCount(), 0, 1, layout->columnCount());
+				msg.exec();
+
+				// Log
+				nap::Logger::error(err_msg);
 				nap::Logger::error(error.toString());
 				return;
 			}
@@ -376,7 +390,7 @@ namespace napkin
 		// Mapper is only valid when shader is resolved from object
 		if (material_mapper->mShader == nullptr)
 		{
-			nap::Logger::warn("Can't resolve binding for '%s': Shader is missing",
+			nap::Logger::warn("Can't resolve '%s' binding: Shader is missing",
 				path.toString().c_str());
 			return nullptr;
 		}
