@@ -19,6 +19,8 @@
 #include <rtti/jsonreader.h>
 #include <rtti/jsonwriter.h>
 #include <mathutils.h>
+#include <renderservice.h>
+#include <constantshader.h>
 
 // local
 #include <naputils.h>
@@ -143,6 +145,19 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	coreInitialized();
 	progressChanged(0.75f);
 
+	// Enable shader compilation if render service has been loaded
+	mRenderService = mCore.getService<nap::RenderService>();
+	if (mRenderService != nullptr)
+	{
+		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
+		if (!mRenderService->initShaderCompilation(err))
+		{
+			nap::Logger::error(err.toString());
+			progressChanged(1.0f);
+			return nullptr;
+		}
+	}
+
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);
 	auto dataFilename = QString::fromStdString(mCore.getProjectInfo()->getDataFile());
@@ -157,7 +172,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	return mProjectInfo.get();
 }
-
 
 const nap::ProjectInfo* AppContext::getProjectInfo() const
 {
@@ -192,6 +206,7 @@ Document* AppContext::newDocument()
 	documentChanged(mDocument.get());
 	return mDocument.get();
 }
+
 
 Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
 {
@@ -258,6 +273,7 @@ bool AppContext::saveDocumentAs(const QString& filename)
 	documentChanged(mDocument.get());
 	return true;
 }
+
 
 std::string AppContext::documentToString() const
 {
@@ -422,10 +438,12 @@ void AppContext::handleURI(const QString& uri)
 	}
 }
 
+
 nap::Core& AppContext::getCore()
 {
 	return mCore;
 }
+
 
 Document* AppContext::getDocument()
 {
@@ -434,10 +452,12 @@ Document* AppContext::getDocument()
 	return mDocument.get();
 }
 
+
 const Document* AppContext::getDocument() const
 {
 	return mDocument.get();
 }
+
 
 void AppContext::onUndoIndexChanged()
 {
@@ -478,9 +498,21 @@ bool napkin::AppContext::hasServiceConfig() const
 }
 
 
-const napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
+bool napkin::AppContext::canRender() const
+{
+	return mRenderService != nullptr;
+}
+
+
+napkin::ServiceConfig* napkin::AppContext::getServiceConfig() const
 {
 	return mServiceConfig.get();
+}
+
+
+nap::RenderService* napkin::AppContext::getRenderService() const
+{
+	return mRenderService;
 }
 
 
@@ -511,12 +543,6 @@ void napkin::AppContext::executeCommand(QUndoCommand* cmd)
 		return;
 	}
 	getDocument()->executeCommand(cmd);
-}
-
-
-napkin::ServiceConfig* napkin::AppContext::getServiceConfig()
-{
-	return mServiceConfig.get();
 }
 
 

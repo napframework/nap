@@ -32,6 +32,9 @@ namespace nap
 
 	bool ConstantShader::init(utility::ErrorState& errorState)
 	{
+		if (!Shader::init(errorState))
+			return false;
+
 		return loadDefault(shader::constant, errorState);
 	}
 }

@@ -55,12 +55,20 @@ namespace nap
 	/**
 	 * Shader variable shader declaration base class.
 	 */
-	class ShaderVariableDeclaration
+	class NAPAPI ShaderVariableDeclaration
 	{
 		RTTI_ENABLE()
 	public:
 		ShaderVariableDeclaration(const std::string& name, int offset, int size);
 		virtual ~ShaderVariableDeclaration() {}
+
+		// Move is allowed
+		ShaderVariableDeclaration(ShaderVariableDeclaration&& inRHS) = default;
+		ShaderVariableDeclaration& operator=(ShaderVariableDeclaration&& inRHS) = default;
+
+		// Copy is not allowed
+		ShaderVariableDeclaration(const ShaderVariableDeclaration&) = delete;
+		ShaderVariableDeclaration& operator=(const ShaderVariableDeclaration&) = delete;
 
 		std::string					mName;										///< Name of the declaration
 		int							mOffset;									///< Memory offset
@@ -71,7 +79,7 @@ namespace nap
 	/**
 	 * Shader variable value shader declaration (float, int etc.)
 	 */
-	class ShaderVariableValueDeclaration : public ShaderVariableDeclaration
+	class NAPAPI ShaderVariableValueDeclaration : public ShaderVariableDeclaration
 	{
 		RTTI_ENABLE(ShaderVariableDeclaration)
 
@@ -93,8 +101,6 @@ namespace nap
 
 		ShaderVariableStructDeclaration(ShaderVariableStructDeclaration&& inRHS);
 		ShaderVariableStructDeclaration& operator=(ShaderVariableStructDeclaration&& inRHS);
-		ShaderVariableStructDeclaration(const ShaderVariableStructDeclaration&) = delete;
-		ShaderVariableStructDeclaration& operator=(const ShaderVariableStructDeclaration&) = delete;
 
 		/**
 		 * @return a shader variable shader declaration with the given name.
@@ -110,11 +116,14 @@ namespace nap
 	/**
 	 * List of shader variable struct shader declarations.
 	 */
-	class ShaderVariableStructArrayDeclaration : public ShaderVariableDeclaration
+	class NAPAPI ShaderVariableStructArrayDeclaration : public ShaderVariableDeclaration
 	{
 		RTTI_ENABLE(ShaderVariableDeclaration)
 	public:
 		ShaderVariableStructArrayDeclaration(const std::string& name, int offset, int size);
+
+		ShaderVariableStructArrayDeclaration(const ShaderVariableStructArrayDeclaration&) = delete;
+		ShaderVariableStructArrayDeclaration& operator=(const ShaderVariableStructArrayDeclaration&) = delete;
 
 		std::vector<std::unique_ptr<ShaderVariableStructDeclaration>> mElements; ///< Struct declaration
 	};
@@ -128,7 +137,7 @@ namespace nap
 	 * Therefore, we only store the declaration of a single struct item as a ShaderVariableStructDeclaration, and set it to the element member
 	 * of the ShaderVariableStructBufferDeclaration along with the element stride and count.
 	 */
-	class ShaderVariableStructBufferDeclaration : public ShaderVariableDeclaration
+	class NAPAPI ShaderVariableStructBufferDeclaration : public ShaderVariableDeclaration
 	{
 		RTTI_ENABLE(ShaderVariableDeclaration)
 	public:
@@ -143,7 +152,7 @@ namespace nap
 	/**
 	 * List of ShaderVariable value shader declarations.
 	 */
-	class ShaderVariableValueArrayDeclaration : public ShaderVariableDeclaration
+	class NAPAPI ShaderVariableValueArrayDeclaration : public ShaderVariableDeclaration
 	{
 		RTTI_ENABLE(ShaderVariableDeclaration)
 	public:
@@ -159,7 +168,7 @@ namespace nap
 	 * Buffer Object Declaration struct.
 	 * Stores shader variable declarations and is used as a descriptor object for UBOs and SSBOs.
 	 */
-	class BufferObjectDeclaration : public ShaderVariableStructDeclaration
+	class NAPAPI BufferObjectDeclaration : public ShaderVariableStructDeclaration
 	{
 		RTTI_ENABLE(ShaderVariableStructDeclaration)
 	public:
@@ -167,8 +176,6 @@ namespace nap
 
 		BufferObjectDeclaration(BufferObjectDeclaration&& inRHS);
 		BufferObjectDeclaration& operator=(BufferObjectDeclaration&& inRHS);
-		BufferObjectDeclaration(const BufferObjectDeclaration&) = delete;
-		BufferObjectDeclaration& operator=(const BufferObjectDeclaration&) = delete;
 
 		/**
 		 * Returns the first buffer declaration. Asserts if not present.

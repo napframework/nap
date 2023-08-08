@@ -16,6 +16,7 @@
 #include <rtti/jsonwriter.h>
 #include <utility/errorstate.h>
 #include <entity.h>
+#include <shader.h>
 
 using namespace napkin;
 
@@ -674,6 +675,7 @@ void DeleteObjectAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
+
 napkin::DeleteGroupAction::DeleteGroupAction(nap::IGroup& group) :
 	Action(nap::utility::stringFormat("Delete '%s'", group.mID.c_str()).c_str(), QRC_ICONS_DELETE),
 	mGroup(group)
@@ -723,10 +725,45 @@ void napkin::DeleteGroupAction::perform()
 	AppContext::get().executeCommand(new DeleteObjectCommand(mGroup));
 }
 
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+LoadShaderAction::LoadShaderAction(nap::BaseShader& shader) :
+	Action(nap::utility::stringFormat("(Re)Load '%s'", shader.mID.c_str()).c_str(), QRC_ICONS_RELOAD),
+	mShader(shader)
+{ }
+
+
+void LoadShaderAction::perform()
+{
+	nap::utility::ErrorState error;
+	if (!loadShader(mShader, AppContext::get().getCore(), error))
+	{
+		QMessageBox msg(parentWidget());
+		msg.setText(QString("Failed to (re)load %1").arg(QString::fromStdString(mShader.mID)));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setDefaultButton(QMessageBox::Ok);
+		msg.setDetailedText(QString::fromStdString(error.toString()));
+		msg.setIcon(QMessageBox::Critical);
+		msg.setMinimumWidth(1000);
+		msg.setWindowTitle("Error");
+		msg.exec();
+
+		nap::Logger::error("Failed to load '%s'", mShader.mID.c_str());
+		nap::Logger::error(error.toString());
+	}
+	else
+	{
+		QMessageBox::information(parentWidget(), "Information",
+			QString("Successfully (re)loaded %1").arg(QString::fromStdString(mShader.mID)), QMessageBox::Ok);
+	}
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) :
-	Action(nap::utility::stringFormat("Remove '%s'", entityItem.getEntity()->mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+	Action(nap::utility::stringFormat("Remove '%s'", entityItem.getEntity().mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mEntityItem(&entityItem)
 { }
 
@@ -751,7 +788,7 @@ void RemoveChildEntityAction::perform()
 		return true;
 	}, mEntityItem->index());
 
-	doc->removeChildEntity(*parentItem->getEntity(), index);
+	doc->removeChildEntity(parentItem->getEntity(), index);
 }
 
 

@@ -21,6 +21,16 @@ namespace nap
 	class DescriptorSetCache;
 	class Core;
 
+	// Common material property names
+	namespace material
+	{
+		constexpr const char* shader	= "Shader";
+		constexpr const char* uniforms	= "Uniforms";
+		constexpr const char* samplers	= "Samplers";
+		constexpr const char* buffers	= "Buffers";
+		constexpr const char* vbindings	= "VertexAttributeBindings";
+	}
+
 	/**
 	 * Acts as the main interface to any type of shader.
 	 * Creates and holds a set of uniform struct instances, matching those exposed by the shader.
@@ -51,7 +61,6 @@ namespace nap
 
 	private:
 		using UniformStructMap = std::unordered_map<std::string, std::unique_ptr<UniformStruct>>;
-		using UniformStructArrayMap = std::unordered_map<std::string, std::unique_ptr<UniformStructArray>>;
 		RenderService* mRenderService = nullptr;
 		const BaseShader* mShader = nullptr;
 	};
