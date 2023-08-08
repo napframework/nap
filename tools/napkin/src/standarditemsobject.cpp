@@ -1,4 +1,4 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
+	/* This Source Code Form is subject to the terms of the Mozilla Public
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
@@ -8,13 +8,13 @@
 #include "sceneservice.h"
 #include "naputils.h"
 #include "napkin-resources.h"
+#include "napkinutils.h"
 
 // External Includes
 #include <nap/assert.h>
 
 RTTI_DEFINE_BASE(napkin::RootResourcesItem)
 RTTI_DEFINE_BASE(napkin::EntityResourcesItem)
-RTTI_DEFINE_BASE(napkin::ObjectItem)
 RTTI_DEFINE_BASE(napkin::EntityItem)
 RTTI_DEFINE_BASE(napkin::GroupItem)
 RTTI_DEFINE_BASE(napkin::SceneItem)
@@ -22,8 +22,60 @@ RTTI_DEFINE_BASE(napkin::ComponentItem)
 RTTI_DEFINE_BASE(napkin::EntityInstanceItem)
 RTTI_DEFINE_BASE(napkin::RootEntityItem)
 RTTI_DEFINE_BASE(napkin::ComponentInstanceItem)
+RTTI_DEFINE_BASE(napkin::BaseShaderItem)
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ShaderItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ShaderFromFileItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object&)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::ComputeShaderFromFileItem)
+	RTTI_CONSTRUCTOR(nap::rtti::Object&)
+RTTI_END_CLASS
 
 using namespace napkin;
+
+//////////////////////////////////////////////////////////////////////////
+// Static functions
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Helper function to create an item for the given object.
+ * @param object to create object item for
+ */
+static ObjectItem* createObjectItem(nap::rtti::Object& object)
+{
+	struct Binding
+	{
+		nap::rtti::TypeInfo mSource = nap::rtti::TypeInfo::empty();
+		nap::rtti::TypeInfo mTarget = nap::rtti::TypeInfo::empty();
+	};
+
+	// Object to item map -> order sensitive!
+	const static std::vector<Binding> mMap =
+	{
+		{ RTTI_OF(nap::ShaderFromFile),			RTTI_OF(napkin::ShaderFromFileItem) },
+		{ RTTI_OF(nap::ComputeShaderFromFile),	RTTI_OF(napkin::ComputeShaderFromFileItem) },
+		{ RTTI_OF(nap::Shader),					RTTI_OF(napkin::ShaderItem)			}
+	};
+
+	// Check if there is an item overload for the given object
+	for(const auto& item : mMap)
+	{
+		if (object.get_type().is_derived_from(item.mSource))
+		{
+			auto* new_obj = item.mTarget.create<napkin::ObjectItem>({ object });
+			assert(new_obj != nullptr);
+			return new_obj;
+		}
+	}
+
+	// Default
+	return new ObjectItem(object);
+};
 
 
 //////////////////////////////////////////////////////////////////////////
@@ -90,7 +142,7 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 	else
 	{
 		// Add as regular item
-		this->appendRow({ new ObjectItem(obj, false), new RTTITypeItem(obj->get_type()) });
+		this->appendRow({ createObjectItem(*obj), new RTTITypeItem(obj->get_type()) });
 	}
 }
 
@@ -173,7 +225,7 @@ const napkin::EntityItem* napkin::EntityResourcesItem::findEntityItem(const nap:
 	for (int i = 0; i < rowCount(); i++)
 	{
 		auto entity_item = qitem_cast<EntityItem*>(this->child(i));
-		if (entity_item != nullptr && entity_item->getObject() == &entity)
+		if (entity_item != nullptr && &entity_item->getObject() == &entity)
 		{
 			return entity_item;
 		}
@@ -186,11 +238,15 @@ const napkin::EntityItem* napkin::EntityResourcesItem::findEntityItem(const nap:
 // ObjectItem 
 //////////////////////////////////////////////////////////////////////////
 
-ObjectItem::ObjectItem(nap::rtti::Object* o, bool isPointer)
-		: mObject(o), mIsPointer(isPointer)
+ObjectItem::ObjectItem(nap::rtti::Object& o) : ObjectItem(o, false)
+{ }
+
+
+ObjectItem::ObjectItem(nap::rtti::Object& o, bool isPointer) :
+	mObject(&o), mIsPointer(isPointer)
 {
 	auto& ctx = AppContext::get();
-	setText(QString::fromStdString(o->mID));
+	setText(QString::fromStdString(o.mID));
 	connect(&ctx, &AppContext::propertyValueChanged, this, &ObjectItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::removingObject, this, &ObjectItem::onObjectRemoved);
 	connect(&ctx, &AppContext::objectReparenting, this, &ObjectItem::onObjectReparenting);
@@ -236,9 +292,9 @@ const QString ObjectItem::getName() const
 	return QString::fromStdString(mObject->mID);
 }
 
-nap::rtti::Object* ObjectItem::getObject() const
+nap::rtti::Object& ObjectItem::getObject() const
 {
-	return mObject;
+	return *mObject;
 }
 
 void ObjectItem::setData(const QVariant& value, int role)
@@ -269,8 +325,7 @@ QVariant ObjectItem::data(int role) const
 	switch (role)
 	{
 	case Qt::DecorationRole:
-		assert(getObject() != nullptr);
-		return AppContext::get().getResourceFactory().getIcon(*getObject());
+		return AppContext::get().getResourceFactory().getIcon(getObject());
 	case Qt::ForegroundRole:
 	{
 		return isPointer() ?
@@ -373,7 +428,7 @@ int ObjectItem::childIndex(const ObjectItem& childItem) const
 
 int ObjectItem::nameIndex(const ObjectItem& childItem) const
 {
-	auto childName = childItem.getObject()->mID;
+	auto childName = childItem.getObject().mID;
 	int index = 0;
 	for (int row = 0; row < rowCount(); row++)
 	{
@@ -384,8 +439,8 @@ int ObjectItem::nameIndex(const ObjectItem& childItem) const
 		if (otherChildItem == &childItem)
 			return index;
 
-		auto id = otherChildItem->getObject()->mID;
-		if (otherChildItem->getObject()->mID == childName)
+		auto id = otherChildItem->getObject().mID;
+		if (otherChildItem->getObject().mID == childName)
 			++index;
 	}
 	return -1;
@@ -411,7 +466,7 @@ void ObjectItem::onObjectRemoved(nap::rtti::Object* object)
 
 const std::string ObjectItem::unambiguousName() const
 {
-	return getObject()->mID;
+	return getObject().mID;
 }
 
 
@@ -422,7 +477,7 @@ void napkin::ObjectItem::onObjectReparenting(nap::rtti::Object& object, Property
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity, isPointer)
+EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity, isPointer)
 {
 	// Populate item
 	populate();
@@ -433,9 +488,10 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(&entity
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
 }
 
-nap::Entity* EntityItem::getEntity()
+
+nap::Entity& EntityItem::getEntity()
 {
-	return rtti_cast<nap::Entity>(mObject);
+	return static_cast<nap::Entity&>(getObject());
 }
 
 
@@ -470,7 +526,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(*getEntity(),
+	PropertyPath childrenPath(getEntity(),
 		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
 
 	// Check if this property was edited
@@ -496,15 +552,15 @@ const std::string EntityItem::unambiguousName() const
 void napkin::EntityItem::populate()
 {
 	removeChildren();
-	auto* entity = getEntity();
-	for (auto& child : entity->mChildren)
+	auto& entity = getEntity();
+	for (auto& child : entity.mChildren)
 	{
 		auto* child_entity = new EntityItem(*child, true);
 		child_entity->connect(child_entity, &EntityItem::childAdded, this, &EntityItem::childAdded);
 		appendRow({ child_entity, new RTTITypeItem(child->get_type()) });
 	}
 
-	for (auto& comp : entity->mComponents)
+	for (auto& comp : entity.mComponents)
 	{
 		// Create and add new component
 		auto comp_item = new ComponentItem(*comp);
@@ -516,10 +572,10 @@ void napkin::EntityItem::populate()
 // Group Item
 //////////////////////////////////////////////////////////////////////////
 
-napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
+napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(group, false)
 {
 	// Get group members property
-	PropertyPath members_path(*getGroup(), getGroup()->getMembersProperty(), *AppContext::get().getDocument());
+	PropertyPath members_path(getGroup(), getGroup().getMembersProperty(), *AppContext::get().getDocument());
 
 	// Create child item for every member object
 	members_path.iterateChildren([this](const PropertyPath& path)
@@ -527,14 +583,14 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(&group, false)
 			// Append members as objects
 			this->appendRow(
 				{
-					new ObjectItem(path.getPointee()),
+					createObjectItem(*path.getPointee()),
 					new RTTITypeItem(path.getPointee()->get_type())
 				});
 			return true;
 		}, 0);
 
 	// Get sub-group property
-	PropertyPath children_path(*getGroup(), getGroup()->getChildrenProperty(), *AppContext::get().getDocument());
+	PropertyPath children_path(getGroup(), getGroup().getChildrenProperty(), *AppContext::get().getDocument());
 
 	// Create child group item for every sub-group
 	children_path.iterateChildren([this](const PropertyPath& path)
@@ -563,28 +619,28 @@ QVariant napkin::GroupItem::data(int role) const
 }
 
 
-nap::IGroup* napkin::GroupItem::getGroup()
+nap::IGroup& napkin::GroupItem::getGroup()
 {
-	return rtti_cast<nap::IGroup>(mObject);
+	return static_cast<nap::IGroup&>(getObject());
 }
 
 
 void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int index)
 {
 	// Check if this group has changed
-	nap::IGroup* group = getGroup();
-	if (!(path.getObject() == group))
+	nap::IGroup& group = getGroup();
+	if (!(path.getObject() == &group))
 		return;
 
 	// Check if an item has been added to the members property.
 	// If so, figure out the correct index to insert the child.
 	// The NAP group has 2 properties: members and children, but the group item
 	// displays them as 1 long list. First the members, then the children.
-	if (path.getProperty() == group->getMembersProperty())
+	if (path.getProperty() == group.getMembersProperty())
 	{
-		PropertyPath array_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+		PropertyPath array_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
 		auto member_el = path.getArrayElement(index);
-		ObjectItem* new_item = new ObjectItem(member_el.getPointee());
+		ObjectItem* new_item = new ObjectItem(*member_el.getPointee());
 		this->insertRow(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
 		childAdded(*this, *new_item);
 	}
@@ -598,7 +654,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		this->connect(new_group, &GroupItem::childAdded, this, &GroupItem::childAdded);
 
 		// Figure out where to insert
-		PropertyPath members_path(*group, group->getMembersProperty(), *AppContext::get().getDocument());
+		PropertyPath members_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
 		int child_index = index + members_path.getArrayLength();
 
 		// Insert
@@ -609,10 +665,73 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 
 
 //////////////////////////////////////////////////////////////////////////
+// Shader Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::BaseShaderItem::BaseShaderItem(nap::rtti::Object& object) : ObjectItem(object)
+{
+	mShader = rtti_cast<nap::BaseShader>(&object);
+	assert(mShader != nullptr);
+}
+
+
+void napkin::BaseShaderItem::init()
+{
+	nap::utility::ErrorState error;
+	if (!loadShader(getShader(), AppContext::get().getCore(), error))
+	{
+		nap::Logger::error("Failed to load '%s'", getShader().mID.c_str());
+		nap::Logger::error(error.toString());
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// ShaderFromFile Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ShaderFromFileItem::ShaderFromFileItem(nap::rtti::Object& object) : BaseShaderItem(object)
+{
+	auto* sff = rtti_cast<nap::ShaderFromFile>(&object);
+	assert(sff != nullptr);
+	if (!sff->mFragPath.empty() && !sff->mVertPath.empty())
+	{
+		init();
+	}
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// ComputeShaderFromFile Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ComputeShaderFromFileItem::ComputeShaderFromFileItem(nap::rtti::Object& object) : BaseShaderItem(object)
+{
+	auto* csff = rtti_cast<nap::ComputeShaderFromFile>(&object);
+	assert(csff != nullptr);
+	if (!csff->mComputePath.empty())
+	{
+		init();
+	}
+}
+
+
+
+//////////////////////////////////////////////////////////////////////////
+// Shader Item
+//////////////////////////////////////////////////////////////////////////
+
+napkin::ShaderItem::ShaderItem(nap::rtti::Object& object) : BaseShaderItem(object)
+{
+	init();
+}
+
+
+//////////////////////////////////////////////////////////////////////////
 // ComponentItem
 //////////////////////////////////////////////////////////////////////////
 
-ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(&comp, false)
+ComponentItem::ComponentItem(nap::Component& comp) : ObjectItem(comp, false)
 { }
 
 
@@ -626,19 +745,24 @@ nap::Component& ComponentItem::getComponent()
 // SceneItem
 //////////////////////////////////////////////////////////////////////////
 
-SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(&scene, false)
+SceneItem::SceneItem(nap::Scene& scene) : ObjectItem(scene, false)
 {
 	for (auto& entity : scene.getEntityResourcesRef())
 		appendRow(new RootEntityItem(entity));
 }
 
 
+nap::Scene& napkin::SceneItem::getScene()
+{
+	return static_cast<nap::Scene&>(getObject());
+}
+
 //////////////////////////////////////////////////////////////////////////
 // EntityInstanceItem
 //////////////////////////////////////////////////////////////////////////
 
 EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
-		: mRootEntity(rootEntity), ObjectItem(&e, false)
+		: mRootEntity(rootEntity), ObjectItem(e, false)
 {
 	assert(&mRootEntity);
 	for (auto comp : e.mComponents)
@@ -766,7 +890,7 @@ SceneItem* RootEntityItem::sceneItem()
 //////////////////////////////////////////////////////////////////////////
 
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity)
-		: ObjectItem(&comp, false), mRootEntity(rootEntity)
+		: ObjectItem(comp, false), mRootEntity(rootEntity)
 {
 	assert(&mRootEntity);
 }
@@ -823,3 +947,4 @@ bool ComponentInstanceItem::hasInstanceProperties() const
 {
 	return mInstanceProperties.mTargetComponent.get();
 }
+

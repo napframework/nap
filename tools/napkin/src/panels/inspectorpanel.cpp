@@ -10,6 +10,7 @@
 #include "naputils.h"
 #include "napkinutils.h"
 #include "napkin-resources.h"
+#include "propertymapper.h"
 
 #include <QApplication>
 #include <QMimeData>
@@ -19,6 +20,8 @@
 #include <napqt/filterpopup.h>
 #include <nap/group.h>
 #include <fcurve.h>
+#include <material.h>
+#include <renderservice.h>
 
 using namespace nap::rtti;
 using namespace napkin;
@@ -239,6 +242,8 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	{
 		PropertyPath array_path = path_item->getPath();
 		auto array_type = array_path.getArrayElementType();
+
+		// Regular resource pointer
 		if (array_path.isNonEmbeddedPointer())
 		{
 			// Build 'Add Existing' menu, populated with all existing objects matching the array type
@@ -252,17 +257,36 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 			});
 
 		}
+		// Embedded pointer
 		else if (array_path.isEmbeddedPointer())
 		{
+			// Material uniform selection -> TODO: Move to factory
+			auto array_type = array_path.getArrayElementType();
 			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD) , label, [this, array_path, array_type]()
+
+			// Check if we can map it to a material
+			// TODO: Move mapping check (for all menu actions) to dedicated factory
+			auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+			if (material_mapper != nullptr)
 			{
-				TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
-				rttr::type elementType = showTypeSelector(this, predicate);
-				if (elementType.is_valid())
-					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
-			});
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
+					{
+						mapper->map(this);
+					});
+			}
+			else
+			{
+				// Regular or material array entry handling
+				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
+					{
+						TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
+						rttr::type elementType = showTypeSelector(this, predicate);
+						if (elementType.is_valid())
+							AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+					});
+			}
 		}
+		// Numeric Value
 		else
 		{
 			QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));

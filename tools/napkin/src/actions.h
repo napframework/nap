@@ -19,6 +19,7 @@
 #include <entity.h>
 #include <nap/logger.h>
 #include <nap/group.h>
+#include <shader.h>
 
 namespace napkin
 {
@@ -366,6 +367,19 @@ namespace napkin
 	private:
 		void perform() override;
 		nap::rtti::Object& mObject;
+	};
+
+
+	/**
+	 * Compile a shader.
+	 */
+	class LoadShaderAction : public Action
+	{
+	public:
+		explicit LoadShaderAction(nap::BaseShader& object);
+	private:
+		void perform() override;
+		nap::BaseShader& mShader;
 	};
 
 

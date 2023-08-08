@@ -150,7 +150,7 @@ namespace napkin
 		 *
 		 * TODO: Move to nap::rtti::Object if possible
 		 */
-		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name);
+		const std::string& setObjectName(nap::rtti::Object& object, const std::string& name, bool appenUUID = false);
 
 		/**
 		 * Add a component of the specified type to an Entity.
@@ -577,21 +577,15 @@ namespace napkin
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
 
 	private:
+		nap::Core& mCore;							// nap's core
+		OwnedObjectMap mObjects;					// The objects in this document
+		QString mCurrentFilename;					// This document's filename
+		QUndoStack mUndoStack;						// This document's undostack
 
 		/**
 		 * @return unique object name
 		 */
 		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
-
-		/**
-		 * @return A basic UUID meant for local object disambiguation
-		 */
-		static std::string createSimpleUUID();
-
-		nap::Core& mCore;                        // nap's core
-		OwnedObjectMap mObjects;					// The objects in this document
-		QString mCurrentFilename;					// This document's filename
-		QUndoStack mUndoStack;						// This document's undostack
 	};
 
 
@@ -611,5 +605,4 @@ namespace napkin
 		}
 		return ret;
 	}
-
 }

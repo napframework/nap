@@ -489,9 +489,8 @@ bool napkin::PropertyPath::referencesObject(const std::string& name)
 
 std::string PropertyPath::toString() const
 {
-	if (hasProperty())
-		return objectPathStr() + "@" + propPathStr();
-	return objectPathStr();
+	return hasProperty() ? propPathStr() + "@" + objectPathStr() :
+		objectPathStr();
 }
 
 

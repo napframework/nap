@@ -32,6 +32,9 @@ namespace nap
 
 	bool TextureShader::init(utility::ErrorState& errorState)
 	{
+		if (!Shader::init(errorState))
+			return false;
+
 		return loadDefault(shader::texture, errorState);
 	}
 }
