@@ -387,13 +387,9 @@ namespace napkin
 		// Now create it
 		auto material_mapper = std::make_unique<MaterialPropertyMapper>(path);
 
-		// Mapper is only valid when shader is resolved from object
+		// Mapper is only valid when shader is resolved from object 
 		if (material_mapper->mShader == nullptr)
-		{
-			nap::Logger::warn("Can't resolve '%s' binding: Shader is missing",
-				path.toString().c_str());
 			return nullptr;
-		}
 
 		// Valid mapper
 		return std::move(material_mapper);
