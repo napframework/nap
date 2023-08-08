@@ -18,7 +18,7 @@ namespace napkin
 		auto* doc = propertyPath.getDocument();
 		assert(doc != nullptr);
 
-		// Walk the tree and find the material
+		// Walk the tree and find the nap::Material or nap::BaseMaterialInstanceResource
 		nap::rtti::Object* current_object = propertyPath.getObject();
 		mNested = false;
 		while (current_object != nullptr)
@@ -64,7 +64,9 @@ namespace napkin
 				assert(material_variant.get_type().is_wrapper());
 				material = material_variant.extract_wrapped_value().get_value<nap::BaseMaterial*>();
 				if (material != nullptr)
+				{
 					resolveShader(*material);
+				}
 				return;
 			}
 
@@ -77,7 +79,7 @@ namespace napkin
 
 	void MaterialPropertyMapper::resolveShader(const nap::BaseMaterial& material)
 	{
-		// Fetch shader using RTTI
+		// Fetch shader using RTTI, can be null -> in that case the property can't be mapped
 		auto property_path = nap::rtti::Path::fromString(nap::material::shader);
 		nap::rtti::ResolvedPath resolved_path;
 		property_path.resolve(&material, resolved_path);
@@ -252,17 +254,29 @@ namespace napkin
 			nap::utility::ErrorState error;
 			if (!loadShader(*mShader, AppContext::get().getCore(), error))
 			{
-				nap::Logger::error("Can't create binding for '%s' because '%s' is not initialized",
-					mPath.toString().c_str(), mShader->mID.c_str());
+				// Show msg
+				std::string err_msg = nap::utility::stringFormat("Can't create '%s' binding", mPath.getName().c_str());
+				QMessageBox msg(parent);
+				msg.setText(QString::fromStdString(err_msg));
+				msg.setInformativeText(QString("Failed to load %1").arg(QString::fromStdString(mShader->mID)));
+				msg.setDetailedText(QString::fromStdString(error.toString()));
+				msg.setStandardButtons(QMessageBox::Ok);
+				msg.setIcon(QMessageBox::Critical);
+				msg.setWindowTitle("Error");
+				QSpacerItem* spacer = new QSpacerItem(300, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+				QGridLayout* layout = (QGridLayout*)msg.layout();
+				layout->addItem(spacer, layout->rowCount(), 0, 1, layout->columnCount());
+				msg.exec();
+
+				// Log
+				nap::Logger::error(err_msg);
 				nap::Logger::error(error.toString());
 				return;
 			}
 		}
 
-		assert(mPath.isArray());
-		auto binding_type = mPath.getArrayElementType();
-
 		// Uniforms
+		assert(mPath.isArray());
 		if (!mNested && mPath.getName() == nap::material::uniforms)
 		{
 			const auto* dec = selectVariableDeclaration(mShader->getUBODeclarations(), parent);
@@ -286,6 +300,16 @@ namespace napkin
 			const auto* dec = selectBufferDeclaration(mShader->getSSBODeclarations(), parent);
 			if (dec != nullptr)
 				addBufferBinding(*dec, mPath);
+			return;
+		}
+
+		// Vertex binding
+		auto array_type = mPath.getArrayElementType();
+		if (!mNested && mPath.getName() == nap::material::vbindings)
+		{
+			const auto* dec = selectVertexAttrDeclaration(parent);
+			if (dec != nullptr)
+				addVertexBinding(*dec, mPath);
 			return;
 		}
 
@@ -320,21 +344,19 @@ namespace napkin
 						return;
 					}
 				}
-				else
-				{
-					nap::Logger::warn("Can't map '%s' to '%s': Shader declaration can't be resolved",
-						mPath.toString().c_str(), mShader->mID.c_str());
-				}
 			}
-			else
-			{
-				nap::Logger::warn("Can't map '%s' to '%s': Uniform binding can't be resolved",
-					mPath.toString().c_str(), mShader->mID.c_str());
-			}
+
+			// Uniform can't be resolved -> fallback
+			nap::Logger::warn("Can't map '%s' to '%s': Uniform binding can't be resolved",
+				mPath.toString().c_str(), mShader->mID.c_str());
+
+			addUserBinding(parent);
+			return;
 		}
 
-		// Fallback
-		addUserBinding(parent);
+		// Property can't be resolved by this mapper.
+		NAP_ASSERT_MSG(false,
+			nap::utility::stringFormat("%s can't be resolved by this mapper!", mPath.toString().c_str()).c_str());
 	}
 
 
@@ -348,7 +370,8 @@ namespace napkin
 		{
 			RTTI_OF(nap::Uniform),
 			RTTI_OF(nap::Sampler),
-			RTTI_OF(nap::BufferBinding)
+			RTTI_OF(nap::BufferBinding),
+			RTTI_OF(nap::Material::VertexAttributeBinding)
 		};
 
 		// Check to see if the array type is mappable
@@ -364,13 +387,9 @@ namespace napkin
 		// Now create it
 		auto material_mapper = std::make_unique<MaterialPropertyMapper>(path);
 
-		// Mapper is only valid when there's a shader
+		// Mapper is only valid when shader is resolved from object 
 		if (material_mapper->mShader == nullptr)
-		{
-			nap::Logger::warn("Can't resolve binding for '%s': Shader is missing",
-				path.toString().c_str());
 			return nullptr;
-		}
 
 		// Valid mapper
 		return std::move(material_mapper);
@@ -429,13 +448,33 @@ namespace napkin
 	}
 
 
+	const nap::VertexAttributeDeclaration* MaterialPropertyMapper::selectVertexAttrDeclaration(QWidget* parent)
+	{
+		nap::Shader* shader = rtti_cast<nap::Shader>(mShader);
+		assert(shader != nullptr);
+
+		QStringList names;
+		const auto& vert_attrs = shader->getAttributes();
+		std::unordered_map<std::string, const nap::VertexAttributeDeclaration*> dec_map;
+		dec_map.reserve(vert_attrs.size());
+		for (const auto& attr : vert_attrs)
+		{
+			dec_map.emplace(attr.second->mName, attr.second.get());
+			names << QString::fromStdString(attr.second->mName);
+		}
+		auto selection = nap::qt::FilterPopup::show(parent, names);
+		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
+	}
+
+
 	template<typename T>
 	static T* createBinding(const std::string& name, const nap::rtti::TypeInfo& uniformType, const PropertyPath& propertyPath, Document& doc)
 	{
 		// Create uniform struct
 		assert(propertyPath.isArray());
 		int iidx = propertyPath.getArrayLength();
-		int oidx = doc.arrayAddNewObject(propertyPath, uniformType, iidx);
+		AppContext::get().executeCommand(new ArrayAddNewObjectCommand(propertyPath, uniformType));
+		int oidx = propertyPath.getArrayLength() - 1;
 		assert(iidx == oidx);
 
 		// Fetch created uniform
@@ -567,7 +606,7 @@ namespace napkin
 
 			// Add value entries
 			for (int i = 0; i < array_dec.mNumElements; i++)
-				doc->arrayAddValue(values_path);
+				AppContext::get().executeCommand(new ArrayAddValueCommand(values_path, i));
 			return;
 		}
 
@@ -671,5 +710,23 @@ namespace napkin
 		{
 			AppContext::get().executeCommand(new ArrayAddNewObjectCommand(mPath, selected_type));
 		}
+	}
+
+
+	void MaterialPropertyMapper::addVertexBinding(const nap::VertexAttributeDeclaration& declaration, const PropertyPath& propPath)
+	{
+		// Add new entry
+		int clen = propPath.getArrayLength();
+		AppContext::get().executeCommand(new ArrayAddValueCommand(propPath));
+		int nidx = propPath.getArrayLength() - 1;
+		assert(nidx == clen);
+
+		// Get inserted element and update shader declaration.
+		auto vert_path = propPath.getArrayElement(nidx);
+		auto vert_vari = vert_path.getValue();
+		assert(vert_vari.is_valid());
+		auto vertex_binding = vert_vari.get_value<nap::Material::VertexAttributeBinding>();
+		vertex_binding.mShaderAttributeID = declaration.mName;
+		propPath.getArrayElement(nidx).setValue(vertex_binding);
 	}
 }

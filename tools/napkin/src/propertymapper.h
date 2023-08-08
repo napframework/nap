@@ -14,8 +14,12 @@
 namespace napkin
 {
 	/**
-	 * Allows the user to select and create a property based on available shader bindings.
-	 * Works for every type of material and material instance resource.
+	 * Allows the user to create new properties based on available shader bindings.
+	 * This works for every type of material and material instance resource.
+	 * 
+	 * Call mappable() to determine if the path can be mapped using this object.
+	 * A property is (probaly) mappable if it is has a nap::Material or nap::BaseMaterialInstanceResource as parent,
+	 * and that parent links to a shader.
 	 */
 	class MaterialPropertyMapper final
 	{
@@ -53,6 +57,7 @@ namespace napkin
 
 		/**
 		 * Select and create a specific shader binding based on the selected property
+		 * Only call this on a mapper obtained through the mappable() function!
 		 * @param parent the widget to parent the selection dialog to
 		 */
 		void map(QWidget* parent);
@@ -67,6 +72,7 @@ namespace napkin
 		const nap::ShaderVariableDeclaration* selectVariableDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
 		const nap::ShaderVariableDeclaration* selectVariableDeclaration(const nap::ShaderVariableStructDeclaration& uniform, QWidget* parent);
 		void addVariableBinding(const nap::ShaderVariableDeclaration& declaration, const PropertyPath& propPath);
+		void addUserBinding(QWidget* parent);
 
 		// Sampler bindings
 		const nap::SamplerDeclaration* selectSamplerDeclaration(QWidget* parent);
@@ -76,8 +82,11 @@ namespace napkin
 		const nap::BufferObjectDeclaration* selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
 		void addBufferBinding(const nap::BufferObjectDeclaration& declaration, const PropertyPath& propPath);
 
-		// Fallback
-		void addUserBinding(QWidget* parent);
+		// Vertex bindings
+		const nap::VertexAttributeDeclaration* selectVertexAttrDeclaration(QWidget* parent);
+		void addVertexBinding(const nap::VertexAttributeDeclaration& declaration, const PropertyPath& propPath);
+
+
 
 		// Find shader on any type of material
 		void resolveShader(const nap::BaseMaterial& material);

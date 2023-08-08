@@ -745,8 +745,10 @@ void LoadShaderAction::perform()
 		msg.setDefaultButton(QMessageBox::Ok);
 		msg.setDetailedText(QString::fromStdString(error.toString()));
 		msg.setIcon(QMessageBox::Critical);
-		msg.setMinimumWidth(1000);
 		msg.setWindowTitle("Error");
+		QSpacerItem* spacer = new QSpacerItem(300, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
+		QGridLayout* layout = (QGridLayout*)msg.layout();
+		layout->addItem(spacer, layout->rowCount(), 0, 1, layout->columnCount());
 		msg.exec();
 
 		nap::Logger::error("Failed to load '%s'", mShader.mID.c_str());
