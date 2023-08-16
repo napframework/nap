@@ -14,8 +14,16 @@ namespace nap
 {
 	// Forward Declares
 	class UniformInstance;
-
 	using UniformCreatedCallback = std::function<void()>;
+
+	// Common uniform property names
+	namespace uniform
+	{
+		constexpr const char* uniforms	= "Uniforms";
+		constexpr const char* value		= "Value";
+		constexpr const char* values	= "Values";
+		constexpr const char* structs	= "Structs";
+	}
 
 	/**
 	 * Shader uniform resource base class.

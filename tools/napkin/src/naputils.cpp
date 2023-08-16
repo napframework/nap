@@ -20,6 +20,7 @@
 #include <panels/finderpanel.h>
 #include <cctype>
 #include <napqt/filterpopup.h>
+#include <renderservice.h>
 
 using namespace nap::rtti;
 using namespace nap::utility;
@@ -67,6 +68,7 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type
 	refresh();
 }
 
+
 QVariant napkin::RTTITypeItem::data(int role) const
 {
 	if (role == Qt::ForegroundRole)
@@ -76,11 +78,12 @@ QVariant napkin::RTTITypeItem::data(int role) const
 	return QStandardItem::data(role);
 }
 
+
 napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 {
 	for (auto object : objects)
 	{
-		auto item = new ObjectItem(object, false);
+		auto item = new ObjectItem(*object);
 		item->setEditable(false);
 		appendRow(item);
 	}
@@ -149,6 +152,25 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 		return nullptr;
 
 	return *it;
+}
+
+
+nap::rtti::TypeInfo napkin::showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName)
+{
+	auto* material = rtti_cast<nap::Material>(prop.getObject());
+	assert(material != nullptr);
+	if (material->mShader == nullptr)
+		return nap::rtti::TypeInfo::empty();
+
+	QStringList names;
+	const auto& ubo_decs = material->mShader->getUBODeclarations();
+	for (const auto& dec : ubo_decs)
+	{
+		names << QString::fromStdString(dec.mName);
+	}
+
+	auto selectedID = nap::qt::FilterPopup::show(parent, names).toStdString();
+	return nap::rtti::TypeInfo::empty();
 }
 
 
@@ -312,6 +334,26 @@ bool napkin::showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> 
 	return yesclicked;
 }
 
+
+bool napkin::loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::ErrorState& error)
+{
+	// Only load shader when a render service is available
+	if (!AppContext::get().canRender())
+		return false;
+
+	// Change working directory for compilation
+	auto cwd = nap::utility::getCWD();
+	assert(core.isInitialized());
+	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
+
+	// Clear and load
+	shader.clear();
+	bool success = shader.init(error);
+	nap::utility::changeDir(cwd);
+	return success;
+}
+
+
 std::string napkin::friendlyTypeName(rttr::type type)
 {
 	// Strip off namespace prefixes when creating new objects
@@ -321,6 +363,7 @@ std::string napkin::friendlyTypeName(rttr::type type)
 		base_name = base_name.substr(last_colon + 1);
 	return base_name;
 }
+
 
 bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
 								  const std::string& a, const std::string& b)

@@ -21,6 +21,17 @@
 using namespace napkin;
 using namespace nap::rtti;
 
+
+static std::string createSimpleUUID()
+{
+	auto uuid = QUuid::createUuid().toString();
+	// just take the last couple of characters
+	int charCount = 8;
+	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
+	return shortuuid.toStdString();
+}
+
+
 void splitNameIndex(const std::string& str, std::string& name, int& index)
 {
 	auto split = nap::utility::splitString(str, ':');
@@ -192,13 +203,13 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 }
 
 
-const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name)
+const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name, bool appenUUID)
 {
 	if (name.empty())
 		return object.mID;
 
 	// Get name
-	auto new_name = getUniqueName(name, object, false);
+	auto new_name = getUniqueName(name, object, appenUUID);
 	if (new_name == object.mID)
 		return object.mID;
 
@@ -1264,14 +1275,3 @@ std::string Document::relativeObjectPath(const nap::rtti::Object& origin, const 
 	relativeObjectPathList(origin, target, path);
 	return nap::utility::joinString(path, "/");
 }
-
-
-std::string Document::createSimpleUUID()
-{
-	auto uuid = QUuid::createUuid().toString();
-	// just take the last couple of characters
-	int charCount = 8;
-	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
-	return shortuuid.toStdString();
-}
-

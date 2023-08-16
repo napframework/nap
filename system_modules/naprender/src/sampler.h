@@ -20,6 +20,12 @@ namespace nap
 	class SamplerInstance;
 	class RenderService;
 
+	namespace sampler
+	{
+		constexpr const char* texture	= "Texture";
+		constexpr const char* textures	= "Textures";
+	}
+
 	/**
 	 *	Supported sampler filter modes.
 	 */

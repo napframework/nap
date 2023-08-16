@@ -37,7 +37,7 @@ RTTI_BEGIN_ENUM(nap::EPolygonMode)
 	RTTI_ENUM_VALUE(nap::EPolygonMode::Point,		"Point")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::MeshShape)
+RTTI_BEGIN_STRUCT(nap::MeshShape)
 	RTTI_PROPERTY("Indices",		&nap::MeshShape::mIndices,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -49,7 +49,7 @@ RTTI_BEGIN_CLASS(nap::RTTIMeshProperties)
 	RTTI_PROPERTY("PolygonMode",	&nap::RTTIMeshProperties::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attributes",		&nap::RTTIMeshProperties::mAttributes,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("Shapes",			&nap::RTTIMeshProperties::mShapes,		nap::rtti::EPropertyMetaData::Default)
-RTTI_END_CLASS	
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Mesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -165,8 +165,7 @@ namespace nap
 
 	MeshShape& MeshInstance::createShape()
 	{
-		mProperties.mShapes.emplace_back(MeshShape());
-		return mProperties.mShapes.back();
+		return mProperties.mShapes.emplace_back();
 	}
 
 

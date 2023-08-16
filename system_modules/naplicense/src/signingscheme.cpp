@@ -10,14 +10,12 @@
 
 // Orientation enum
 RTTI_BEGIN_ENUM(nap::ESigningScheme)
-	RTTI_ENUM_VALUE(nap::ESigningScheme::RSASS_PKCS1v15_SHA1,    "RSASS_PKCS1v15_SHA1"),
-	RTTI_ENUM_VALUE(nap::ESigningScheme::RSASS_PKCS1v15_SHA224,  "RSASS_PKCS1v15_SHA224"),
-	RTTI_ENUM_VALUE(nap::ESigningScheme::RSASS_PKCS1v15_SHA256,  "RSASS_PKCS1v15_SHA256"),
-	RTTI_ENUM_VALUE(nap::ESigningScheme::RSASS_PKCS1v15_SHA384,  "RSASS_PKCS1v15_SHA384"),
-	RTTI_ENUM_VALUE(nap::ESigningScheme::RSASS_PKCS1v15_SHA512,  "RSASS_PKCS1v15_SHA512")
+	RTTI_ENUM_VALUE(nap::ESigningScheme::SHA1,    "SHA1"),
+	RTTI_ENUM_VALUE(nap::ESigningScheme::SHA224,  "SHA224"),
+	RTTI_ENUM_VALUE(nap::ESigningScheme::SHA256,  "SHA256"),
+	RTTI_ENUM_VALUE(nap::ESigningScheme::SHA384,  "SHA384"),
+	RTTI_ENUM_VALUE(nap::ESigningScheme::SHA512,  "SHA512")
 RTTI_END_ENUM
 
 namespace nap
-{
-
-}
+{ }
