@@ -38,7 +38,7 @@ def get_build_arch():
     if machine_arch.lower() in ('x86_64', 'amd64'):
         nap_arch = 'x86_64'
     elif machine_arch == 'aarch64':
-        p = subprocess.run('getconf LONG_BIT', shell=True, text=True, capture_output=True)
+        p = subprocess.run('getconf LONG_BIT', shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         if p.stdout.strip() == '64':
             nap_arch = 'arm64'
         else:

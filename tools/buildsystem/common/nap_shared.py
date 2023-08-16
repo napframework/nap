@@ -2,7 +2,7 @@ from collections import OrderedDict
 import json
 import os
 from platform import machine
-from subprocess import Popen, run
+from subprocess import Popen, run, PIPE
 import sys
 
 PROJECT_INFO_FILENAME = 'app.json'
@@ -295,7 +295,7 @@ def get_build_arch():
     if machine_arch.lower() in ('x86_64', 'amd64'):
         nap_arch = 'x86_64'
     elif machine_arch == 'aarch64':
-        p = run('getconf LONG_BIT', shell=True, text=True, capture_output=True)
+        p = run('getconf LONG_BIT', shell=True, universal_newlines=True, stdout=PIPE, stderr=PIPE)
         if p.stdout.strip() == '64':
             nap_arch = 'arm64'
         else:
