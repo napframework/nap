@@ -195,7 +195,7 @@ def check_qt_version():
         shutil.rmtree(temp_build_dir)
     
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, 'thirdparty')
     cmake = os.path.join(thirdparty_dir, 'cmake', 'macos', 'x86_64', 'bin', 'cmake')
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -263,7 +263,7 @@ def check_and_warn_for_potential_packaged_qt():
 def get_nap_root():
     """Get framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(script_dir, "../../../.."))
 
 def check_build_environment(against_source):
     """Check whether macOS build environment appears ready for NAP"""
