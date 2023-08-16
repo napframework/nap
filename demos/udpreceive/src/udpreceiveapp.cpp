@@ -93,7 +93,7 @@ namespace nap
 		std::vector<nap::EntityInstance*> entities = { };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
-        //
+        // Clear the background to the received color
         mRenderWindow->setClearColor(mParameterColor->getValue());
 
 		// Setup GUI
@@ -102,7 +102,6 @@ namespace nap
         ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Run UDP Send demo to change the color and text.");
         ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Server Port: %d", mUDPServer->mPort).c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
         ImGui::Spacing();
 
 
@@ -115,23 +114,23 @@ namespace nap
         // Display last received message
         ImGui::Text("Last Received Data");
         ImGui::PushID(0);
-        ImGui::InputTextMultiline("", &last_received_data, ImVec2(-1.0f, ImGui::GetTextLineHeight() * 20),
-                                  ImGuiInputTextFlags_ReadOnly);
+        ImGui::InputTextMultiline("", &last_received_data,
+			ImVec2(-1.0f, ImGui::GetTextLineHeight() * 20), ImGuiInputTextFlags_ReadOnly);
         ImGui::PopID();
         ImGui::Spacing();
 
 		ImGui::End();
 
-
-        if(mParameterText->getValue()!=mText)
+		// Update message if different
+        if(mParameterText->getValue() != mMessage)
         {
-            mText = mParameterText->getValue();
-
-            // Locate component that can render text to screen
+			// Locate component that can render text to screen
+            mMessage = mParameterText->getValue();
             auto& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 
+			// Change message
             utility::ErrorState error_state;
-            if(!render_text.setText(mText, error_state))
+            if(!render_text.setText(mMessage, error_state))
             {
                 nap::Logger::error(error_state.toString());
             }

@@ -84,7 +84,6 @@ namespace nap
         ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "Change the color & text parameter below to observe changes in UDP Receive demo.");
         ImGui::TextColored(mGuiService->getPalette().mHighlightColor3, utility::stringFormat("Client Port: %d", mUDPClient->mPort).c_str());
         ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-
         ImGui::Spacing();
 
         // Show the parameter GUI

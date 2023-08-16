@@ -23,10 +23,11 @@ namespace nap
 	using namespace rtti;
 
     /**
-     * Demo application that demonstrates the use of UDPClient that sends raw UDP
-     * The application converts the values of a Color Parameter and a String Parameter to nap API messages using the
-     * UDPSendComponent
-     * API messages are serialized and send as UDP packets using the UDPClient resource.
+     * Demo application that demonstrates the use of UDPClient that sends raw UDP packets.
+	 * 
+     * The application converts the values of a Color Parameter and a String Parameter to nap API messages,
+	 * using the UDPSendComponent. API messages are serialized and send as UDP packets using the UDPClient resource.
+	 * 
      * Run the UDP receive demo to observe the changes.
      * Use Napkin to change properties like the IP & Port of the UDPClient
      */

@@ -11,12 +11,12 @@
 
 // nap::UDPReceiveComponent run time class definition
 RTTI_BEGIN_CLASS(nap::UDPReceiveComponent)
-        RTTI_PROPERTY("Server",	                &nap::UDPReceiveComponent::mServer,	        nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("APIComponent",	        &nap::UDPReceiveComponent::mAPIComponent,	nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("Server",	                &nap::UDPReceiveComponent::mServer,					nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("APIComponent",	        &nap::UDPReceiveComponent::mAPIComponent,			nap::rtti::EPropertyMetaData::Required)
         RTTI_PROPERTY("TextMessageSignature",   &nap::UDPReceiveComponent::mTextMessageSignature,	nap::rtti::EPropertyMetaData::Required)
         RTTI_PROPERTY("ColorMessageSignature",  &nap::UDPReceiveComponent::mColorMessageSignature,	nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("TextParameter",   &nap::UDPReceiveComponent::mTextParameter,	    nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("ColorParameter",  &nap::UDPReceiveComponent::mColorParameter,    nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("TextParameter",			&nap::UDPReceiveComponent::mTextParameter,			nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("ColorParameter",			&nap::UDPReceiveComponent::mColorParameter,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::UDPReceiveComponentInstance run time class definition
@@ -58,16 +58,20 @@ namespace nap
         mAPIComponent->messageReceived.connect(mMessageReceivedSlot);
 
         // Sanity check the API signatures
-        if(!errorState.check(resource->mTextMessageSignature->mArguments.size() > 0, "Text Message Signature must have at least one argument!"))
+        if(!errorState.check(resource->mTextMessageSignature->mArguments.size() > 0,
+			"Text Message Signature must have at least one argument!"))
             return false;
 
-        if(!errorState.check(RTTI_OF(std::string)==resource->mTextMessageSignature->mArguments[0]->getRepresentedType(), "Text Message Signature argument must be of type std::string!"))
+        if(!errorState.check(RTTI_OF(std::string)==resource->mTextMessageSignature->mArguments[0]->getRepresentedType(),
+			"Text Message Signature argument must be of type std::string!"))
             return false;
 
-        if(!errorState.check(resource->mColorMessageSignature->mArguments.size() > 0, "Color Message Signature must have at least one argument!"))
+        if(!errorState.check(resource->mColorMessageSignature->mArguments.size() > 0,
+			"Color Message Signature must have at least one argument!"))
             return false;
 
-        if(!errorState.check(RTTI_OF(std::vector<int>)==resource->mColorMessageSignature->mArguments[0]->getRepresentedType(), "Color Message Signature argument must be of type std::vector<int>!"))
+        if(!errorState.check(RTTI_OF(std::vector<int>)==resource->mColorMessageSignature->mArguments[0]->getRepresentedType(),
+			"Color Message Signature argument must be of type std::vector<int>!"))
             return false;
 
         // Create callbacks for assigned signatures

@@ -23,8 +23,8 @@ namespace nap
     /**
      * UDPSendComponent listens to changes of the assign ParameterString and ParameterColor and converts them into
      * API messages according to the assigned signatures.
+	 * 
      * API Events will be serialized in JSON format and send as UDP packets using the UDP Client
-     *
      * This demonstrates both the use of the napapi module and napudp
      */
     class NAPAPI UDPSendComponent : public Component
@@ -33,11 +33,11 @@ namespace nap
     DECLARE_COMPONENT(UDPSendComponent, UDPSendComponentInstance)
     public:
 
-        ResourcePtr<UDPClient>              mClient;
-        ResourcePtr<APISignature>           mTextMessageSignature;
-        ResourcePtr<APISignature>           mColorMessageSignature;
-        ResourcePtr<ParameterString>        mMessageParam;
-        ResourcePtr<ParameterRGBColor8>     mColorParam;
+        ResourcePtr<UDPClient>              mClient;					///< Property: 'Client' The UDP client to send the packets to
+        ResourcePtr<APISignature>           mTextMessageSignature;		///< Property: 'TextMessageSignature' text message description
+        ResourcePtr<APISignature>           mColorMessageSignature;		///< Property: 'ColorMessageSignature' color message description
+        ResourcePtr<ParameterString>        mMessageParam;				///< Property: 'MessageParam' text parameter
+        ResourcePtr<ParameterRGBColor8>     mColorParam;				///< Property: 'ColorParam' color parameter
     };
 
     /**

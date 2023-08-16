@@ -10,9 +10,9 @@
 
 // nap::UDPReceiveComponent run time class definition
 RTTI_BEGIN_CLASS(nap::UDPSendComponent)
-        RTTI_PROPERTY("Client",	        &nap::UDPSendComponent::mClient,	        nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("MessageParam",	&nap::UDPSendComponent::mMessageParam,	    nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("ColorParam",	    &nap::UDPSendComponent::mColorParam,	    nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("Client",					&nap::UDPSendComponent::mClient,				nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("MessageParam",			&nap::UDPSendComponent::mMessageParam,			nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("ColorParam",				&nap::UDPSendComponent::mColorParam,			nap::rtti::EPropertyMetaData::Required)
         RTTI_PROPERTY("TextMessageSignature",   &nap::UDPSendComponent::mTextMessageSignature,	nap::rtti::EPropertyMetaData::Required)
         RTTI_PROPERTY("ColorMessageSignature",  &nap::UDPSendComponent::mColorMessageSignature,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -81,7 +81,8 @@ namespace nap
 
         // Fill the message with a single API string containing message content
         assert(mColorMessageSignature->mArguments.size() > 0);
-        auto api_value = APIIntArray(mColorMessageSignature->mArguments[0]->mName, {value.getRed(), value.getGreen(), value.getBlue()});
+        auto api_value = APIIntArray(mColorMessageSignature->mArguments[0]->mName,
+			{value.getRed(), value.getGreen(), value.getBlue()});
         api_value.mID = math::generateUUID();
         api_message.mArguments.emplace_back(&api_value);
 
@@ -116,7 +117,8 @@ namespace nap
         if(apiMessage.toJSON(data, error_state))
         {
             mClient->send(data);
-        }else
+        }
+		else
         {
             nap::Logger::error(error_state.toString());
         }

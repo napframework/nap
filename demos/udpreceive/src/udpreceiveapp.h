@@ -22,10 +22,11 @@ namespace nap
 	using namespace rtti;
 
     /**
-     * Demo application that demonstrates the use of UDPServer & APIComponent
+     * Demo application that demonstrates the use of UDPServer & APIComponent.
+	 * 
      * The demo comes with a UDPReceiveComponent which relays incoming UDP messages to the API service which in turn
      * tries to convert incoming packets to NAP API events changing parameter values.
-     * Use Napkin to change properties like the Port & UDP Thread properties as well as the API signatures
+     * Use Napkin to change properties like the Port & UDP Thread and the API signatures
      */
 	class UDPReceiveApp : public App
 	{
@@ -64,18 +65,18 @@ namespace nap
 		int shutdown() override;
 	private:
 		// Nap Services
-		RenderService* mRenderService = nullptr;				//< Render Service that handles render calls
-		ResourceManager* mResourceManager = nullptr;			//< Manages all the loaded resources
-		SceneService* mSceneService = nullptr;					//< Manages all the objects in the scene
-		InputService* mInputService = nullptr;					//< Input service for processing input
-		IMGuiService* mGuiService = nullptr;					//< Manages gui related update / draw calls
-        APIService* mAPIService = nullptr;                      //< Manages API messages and API components
-        ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
-		ObjectPtr<RenderWindow> mRenderWindow;					//< Pointer to the render window
-        ObjectPtr<EntityInstance> mUDPEntity = nullptr;		    //< Pointer to the entity that holds the UDPReceiveComponent
-        ObjectPtr<UDPServer> mUDPServer = nullptr;              //< Pointer to UDPServer
-        ObjectPtr<ParameterRGBColor8> mParameterColor = nullptr;
-        ObjectPtr<ParameterString> mParameterText = nullptr;
-        std::string mText = "";
+		RenderService* mRenderService = nullptr;					//< Render Service that handles render calls
+		ResourceManager* mResourceManager = nullptr;				//< Manages all the loaded resources
+		SceneService* mSceneService = nullptr;						//< Manages all the objects in the scene
+		InputService* mInputService = nullptr;						//< Input service for processing input
+		IMGuiService* mGuiService = nullptr;						//< Manages gui related update / draw calls
+        APIService* mAPIService = nullptr;							//< Manages API messages and API components
+        ObjectPtr<EntityInstance> mTextEntity = nullptr;			//< Pointer to the entity that can display text
+		ObjectPtr<RenderWindow> mRenderWindow;						//< Pointer to the render window
+        ObjectPtr<EntityInstance> mUDPEntity = nullptr;				//< Pointer to the entity that holds the UDPReceiveComponent
+        ObjectPtr<UDPServer> mUDPServer = nullptr;					//< Pointer to UDPServer
+        ObjectPtr<ParameterRGBColor8> mParameterColor = nullptr;	//< Color that is received
+        ObjectPtr<ParameterString> mParameterText = nullptr;		//< Message that is received
+        std::string mMessage = "";									//< Cached message
 	};
 }
