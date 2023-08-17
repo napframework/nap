@@ -530,9 +530,8 @@ namespace nap
                                       {
                                           if(minimum!=maximum)
                                           {
-                                              float value =
-                                                      point.mPos.mValue * (track_curve->mMaximum - track_curve->mMinimum) +
-                                                      track_curve->mMinimum;
+                                              float value = point.mPos.mValue * (track_curve->mMaximum - track_curve->mMinimum) +
+																				track_curve->mMinimum;
 
                                               point.mPos.mValue = (value - minimum) / (maximum - minimum);
                                               point.mPos.mValue = math::clamp<float>(point.mPos.mValue, 0, 1);
