@@ -505,7 +505,7 @@ namespace nap
                                           {
                                               float value = point.mPos.mValue * (track_curve->mMaximum[curve_count] -
                                                                                  track_curve->mMinimum[curve_count]) +
-                                                            track_curve->mMinimum[curve_count];
+																				track_curve->mMinimum[curve_count];
 
                                               point.mPos.mValue = (value - minimum[curve_count]) /
                                                                   (maximum[curve_count] - minimum[curve_count]);
