@@ -53,10 +53,6 @@ namespace nap
         // Get API Service
         mAPIService = getEntityInstance()->getCore()->getService<APIService>();
 
-        // Register slots to server and API Component
-        mServer->registerListenerSlot(mPacketReceivedSlot);
-        mAPIComponent->messageReceived.connect(mMessageReceivedSlot);
-
         // Sanity check the API signatures
         if(!errorState.check(resource->mTextMessageSignature->mArguments.size() > 0,
 			"Text Message Signature must have at least one argument!"))
@@ -74,13 +70,41 @@ namespace nap
 			"Color Message Signature argument must be of type std::vector<int>!"))
             return false;
 
-        // Create callbacks for assigned signatures
-        mAPIMessageHandlers.emplace(resource->mTextMessageSignature->mID, [this](const APIEvent& event){ onTextMessage(event); });
-        mAPIMessageHandlers.emplace(resource->mColorMessageSignature->mID, [this](const APIEvent& event){ onColorMessage(event); });
+        // Find the color message signature. A signature describes the interface of a message, ie:
+        // The intent of the message and additional arguments. In this case we expect to find a
+        // signature that has the ID of the color message signature.
+        // When the callback is triggered you can safely extract the argument, the system
+        // already validated and converted the message from you from json. The argument
+        // contains the vector with int values that is used to update the RGB background color.
+        const nap::APISignature* color_message_signature = mAPIComponent->findSignature(resource->mColorMessageSignature->mID);
+        if (!errorState.check(color_message_signature != nullptr,
+                              "%s: unable to find '%s' signature", this->mID.c_str(), resource->mColorMessageSignature->mID.c_str()))
+        {
+            errorState.fail("unable to install callback!");
+            return false;
+        }
+
+        // Register callback, the slot calls onColorMessage.
+        mAPIComponent->registerCallback(*color_message_signature, mColorMessageSlot);
+
+        // Find the text message signature. The argument contains the string value that is used to update the text.
+        const nap::APISignature* text_message_signature = mAPIComponent->findSignature(resource->mTextMessageSignature->mID);
+        if (!errorState.check(text_message_signature != nullptr,
+                              "%s: unable to find '%s' signature", this->mID.c_str(), resource->mTextMessageSignature->mID.c_str()))
+        {
+            errorState.fail("unable to install callback!");
+            return false;
+        }
+
+        // Register callback, the slot calls onTextMessage.
+        mAPIComponent->registerCallback(*text_message_signature, mTextMessageSlot);
 
         // resolve parameters
         mColorParameter = resource->mColorParameter.get();
         mTextParameter = resource->mTextParameter.get();
+
+        // Register packet received slot to server
+        mServer->registerListenerSlot(mPacketReceivedSlot);
 
         return true;
     }
@@ -90,7 +114,6 @@ namespace nap
     {
         // Remove slots
         mServer->removeListenerSlot(mPacketReceivedSlot);
-        mAPIComponent->messageReceived.disconnect(mMessageReceivedSlot);
     }
 
 
@@ -112,16 +135,10 @@ namespace nap
     }
 
 
-    void UDPReceiveComponentInstance::onMessageReceived(const nap::APIEvent &event)
+    void UDPReceiveComponentInstance::getLastReceivedData(std::string& data)
     {
-        auto it = mAPIMessageHandlers.find(event.getID());
-        if(it!=mAPIMessageHandlers.end())
-        {
-            it->second(event);
-        }else
-        {
-            nap::Logger::warn(utility::stringFormat("UDPReceiveComponent received API event with unknown ID : %s", event.getID().c_str()));
-        }
+        std::lock_guard<std::mutex> lock(mMutex);
+        data = mLastReceivedData;
     }
 
 

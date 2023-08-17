@@ -109,7 +109,8 @@ namespace nap
         auto& udp_receive_comp = mUDPEntity->getComponent<UDPReceiveComponentInstance>();
 
         // Copy last received data
-        std::string last_received_data = udp_receive_comp.getLastReceivedData();
+        std::string last_received_data;
+        udp_receive_comp.getLastReceivedData(last_received_data);
 
         // Display last received message
         ImGui::Text("Last Received Data");

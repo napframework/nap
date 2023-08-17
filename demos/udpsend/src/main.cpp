@@ -11,8 +11,8 @@
 #include <guiappeventhandler.h>
 
 /**
- * Hello World Demo
- * refer to helloworldapp.h for a more detailed description of the application
+ * UDPSend Demo
+ * refer to udpsendapp.h for a more detailed description of the application
  */
 int main(int argc, char *argv[])
 {

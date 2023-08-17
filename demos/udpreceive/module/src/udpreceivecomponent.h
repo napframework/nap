@@ -71,10 +71,10 @@ namespace nap
         virtual void onDestroy() override;
 
         /**
-         * Get data of last received packet, thread-safe
-         * @return last received data
+         * Fill data with latest received data. Thread-safe
+         * @param data reference string to be filled with latest received data
          */
-        const std::string& getLastReceivedData() const{ return mLastReceivedData; }
+        void getLastReceivedData(std::string& data);
     private:
         // Component Instance Pointer to APIComponent
         ComponentInstancePtr<APIComponent> mAPIComponent = { this, &UDPReceiveComponent::mAPIComponent };
@@ -82,10 +82,6 @@ namespace nap
         // Slot contains function pointer to onPacketReceived, connected on Init & disconnected onDestroy
         Slot<const UDPPacket&> mPacketReceivedSlot = { this, &UDPReceiveComponentInstance::onPacketReceived };
         void onPacketReceived(const UDPPacket& packet);
-
-        // Slot contains function pointer to onMessageReceived, connected on Init & disconnected onDestroy
-        Slot<const APIEvent&> mMessageReceivedSlot = { this, &UDPReceiveComponentInstance::onMessageReceived };
-        void onMessageReceived(const APIEvent& event);
 
         // Resolved pointer to UDPServer
         UDPServer* mServer = nullptr;
@@ -97,9 +93,10 @@ namespace nap
         ParameterString* mTextParameter = nullptr;
         ParameterRGBColor8* mColorParameter = nullptr;
 
-        // A map with function pointers handling different API messages, key value is id of API message
-        std::unordered_map<std::string, std::function<void(const APIEvent&)>> mAPIMessageHandlers;
+        Slot<const APIEvent&> mColorMessageSlot = { this, &UDPReceiveComponentInstance::onColorMessage };
         void onColorMessage(const APIEvent& colorEvent);
+
+        Slot<const APIEvent&> mTextMessageSlot = { this, &UDPReceiveComponentInstance::onTextMessage };
         void onTextMessage(const APIEvent& textEvent);
 
         // Store last received data

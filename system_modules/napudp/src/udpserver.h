@@ -39,13 +39,20 @@ namespace nap
          */
         virtual ~UDPServer();
 
+        /**
+         * Connects a listener slot to the packetReceived signal. Thread-Safe
+         * @param slot the slot that will be invoked when a packet is received
+         */
         void registerListenerSlot(Slot<const UDPPacket&>& slot);
 
+        /**
+         * Disconnects a listener slot from the packetReceived signal. Thread-Safe
+         * @param slot the slot that will be disconnected
+         */
         void removeListenerSlot(Slot<const UDPPacket&>& slot);
 
 		int mPort 						= 13251;		///< Property: 'Port' the port the server socket binds to
 		std::string mIPAddress			= "";	        ///< Property: 'IP Address' local ip address to bind to, if left empty will bind to any local address
-
         std::vector<std::string> mMulticastGroups;      ///< Property: 'Multicast Groups' multicast groups to join
 	protected:
         /**
