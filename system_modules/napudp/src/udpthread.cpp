@@ -137,8 +137,8 @@ namespace nap
 			{
 				return it == adapter;
 			});
-		assert(found_it != mAdapters.end());
-		mAdapters.erase(found_it);
+		if(found_it != mAdapters.end())
+		    mAdapters.erase(found_it);
 	}
 
 

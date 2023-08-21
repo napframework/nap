@@ -1,0 +1,195 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "APIEntity",
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "APIComponent",
+                    "Signatures": [
+                        "APITextMessage",
+                        "APIColorMessage"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TextEntity",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "nap::Renderable2DTextComponent_4f8c91eb",
+                    "Visible": true,
+                    "Text": "",
+                    "Font": "Font",
+                    "TextColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "UDPEntity",
+            "Components": [
+                {
+                    "Type": "nap::UDPReceiveComponent",
+                    "mID": "UDPReceiveComponent",
+                    "Server": "UDPServer",
+                    "APIComponent": "../APIEntity/APIComponent",
+                    "TextMessageSignature": "APITextMessage",
+                    "ColorMessageSignature": "APIColorMessage",
+                    "TextParameter": "TextParameter",
+                    "ColorParameter": "ColorParameter"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "World",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "Font",
+            "Properties": {
+                "Size": 38
+            },
+            "Font": "fonts/Manrope-Light.otf"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterString",
+                    "mID": "TextParameter",
+                    "Name": "Text",
+                    "Value": "Hello World!"
+                },
+                {
+                    "Type": "nap::ParameterRGBColor8",
+                    "mID": "ColorParameter",
+                    "Name": "Color",
+                    "Value": {
+                        "Values": [
+                            41,
+                            88,
+                            255
+                        ]
+                    }
+                }
+            ],
+            "Groups": []
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window0",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "UDP Receive",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "APISignatures",
+            "Members": [
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "APIColorMessage",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIIntArray",
+                            "mID": "Color",
+                            "Name": "Color",
+                            "Value": []
+                        }
+                    ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "APITextMessage",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "Text",
+                            "Name": "Text",
+                            "Value": ""
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "World",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "UDPEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "APIEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "TextEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::UDPServer",
+            "mID": "UDPServer",
+            "Thread": "UDPThread",
+            "AllowFailure": false,
+            "Port": 13251,
+            "IP Address": "",
+            "Multicast Groups": []
+        },
+        {
+            "Type": "nap::UDPThread",
+            "mID": "UDPThread",
+            "Update Method": "Spawn Own Thread"
+        }
+    ]
+}

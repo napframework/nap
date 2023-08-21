@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "UDPSend",
+    "Version": "1.0.0",
+    "Data": "data/udpsend.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "napapp",
+        "napimgui",
+        "napudpsend",
+        "napparametergui"
+    ]
+}
