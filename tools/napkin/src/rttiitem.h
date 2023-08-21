@@ -16,6 +16,7 @@ namespace napkin
 	class RTTIItem : public QObject, public QStandardItem
 	{
 		Q_OBJECT
+		RTTI_ENABLE()
 	public:
 		/**
 		 * @return parent item, nullptr if there is no parent, asserts if parent not of type RTTIItem

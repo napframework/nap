@@ -146,37 +146,32 @@ void napkin::ScenePanel::menuHook(QMenu& menu)
 {
 	auto item (mFilterView.getSelectedItem());
 
-	auto sceneItem = qitem_cast<SceneItem*>(item);
-	if (sceneItem != nullptr)
+	auto scene_item = qitem_cast<SceneItem*>(item);
+	if (scene_item != nullptr)
 	{
-		auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
-		assert(scene->get_type().is_derived_from<nap::Scene>());
-		auto addEntityAction = menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY), "Add Entity...");
-		connect(addEntityAction, &QAction::triggered, [this, sceneItem, scene]()
+		auto& scene = scene_item->getScene();
+		auto add_entity_action = menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ENTITY), "Add Entity...");
+		connect(add_entity_action, &QAction::triggered, [this, &scene]()
 			{
 				auto entities = AppContext::get().getDocument()->getObjects(RTTI_OF(nap::Entity));
 				auto entity = rtti_cast<nap::Entity>(napkin::showObjectSelector(this, entities));
 				if (entity != nullptr)
 				{
-					AppContext::get().executeCommand(new AddEntityToSceneCommand(*scene, *entity));
+					AppContext::get().executeCommand(new AddEntityToSceneCommand(scene, *entity));
 				}
 			});
 	}
 
-	auto rootEntityItem = qitem_cast<RootEntityItem*>(item);
-	if (rootEntityItem)
+	auto root_entity_item = qitem_cast<RootEntityItem*>(item);
+	if (root_entity_item != nullptr)
 	{
-		auto sceneItem = rootEntityItem->sceneItem();
-		if (sceneItem)
+		auto scene_item = root_entity_item->sceneItem();
+		if (scene_item)
 		{
-			auto scene = rtti_cast<nap::Scene>(sceneItem->getObject());
-			assert(scene);
-			auto rootEntity = &rootEntityItem->rootEntity();
-			assert(rootEntity);
 			auto removeEntityAction = menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), "Delete Instance");
-			connect(removeEntityAction, &QAction::triggered, [rootEntityItem]
+			connect(removeEntityAction, &QAction::triggered, [root_entity_item]
 			{
-				AppContext::get().executeCommand(new RemoveCommand(rootEntityItem->propertyPath()));
+				AppContext::get().executeCommand(new RemoveCommand(root_entity_item->propertyPath()));
 			});
 		}
 	}

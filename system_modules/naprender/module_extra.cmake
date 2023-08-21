@@ -6,6 +6,7 @@ function(copy_assimp_dll)
     if(NOT WIN32)
         return()
     endif()
+    
     file(GLOB ASSIMP_DLL ${ASSIMP_ROOT_DIR}/bin/*.dll)
     add_custom_command(
         TARGET ${PROJECT_NAME}

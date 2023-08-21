@@ -38,7 +38,7 @@ if(${ARCH} STREQUAL "armhf")
 endif()
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath)
+set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napinput napfont)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
@@ -74,12 +74,6 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
 
 # MSVC copy steps
 if(MSVC)
-    if(DEFINED NAP_PACKAGED_BUILD)
-        set(NAPKIN_COPY_SRC ${NAP_ROOT}/packaging_bin)
-    else()
-        set(NAPKIN_COPY_SRC ${NAP_ROOT}/bin)
-    endif()
-
     # Deploy dependent modules on Win64
     foreach(MODULE_NAME ${NAP_MODULES_DEPENDENCIES})
         add_custom_command(TARGET ${PROJECT_NAME}
@@ -112,6 +106,31 @@ if(MSVC)
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy $<TARGET_FILE:napcore> $<TARGET_FILE_DIR:${PROJECT_NAME}>
         )
+
+    # Copy naprender dependencies
+    set(NAPRENDER_THIRDPARTY ${NAP_ROOT}/system_modules/naprender/thirdparty)
+    list(APPEND CMAKE_MODULE_PATH  "${NAPRENDER_THIRDPARTY}/cmake_find_modules")
+    
+    # Freeimage
+    find_package(freeimage REQUIRED)
+    copy_freeimage_dll()
+
+    # SDL2
+    find_sdl2()
+    copy_files_to_target_file_dir(${SDL2_DIR}/msvc/x86_64/lib/SDL2.dll)
+
+    # Assimp
+    set(assimp_parent ${NAP_ROOT}/system_modules/naprender/thirdparty/assimp)
+    set(assimp_DIR ${assimp_parent}/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/cmake/assimp-3.3)
+    find_package(assimp REQUIRED)
+    file(GLOB ASSIMP_DLL ${ASSIMP_ROOT_DIR}/bin/*.dll)
+    copy_files_to_target_file_dir(${ASSIMP_DLL})
+
+    # Copy napfont dependencies
+    set(NAPFONT_THIRDPARTY ${NAP_ROOT}/system_modules/napfont/thirdparty)
+    list(APPEND CMAKE_MODULE_PATH  "${NAPFONT_THIRDPARTY}/cmake_find_modules")
+    find_package(freetype REQUIRED)
+    copy_freetype_dll()
 
     # RTTR
     find_rttr()
@@ -162,13 +181,11 @@ endif()
 
 install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources DESTINATION tools/napkin/)
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
-
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
-
 set(PATH_TO_THIRDPARTY "../../thirdparty")
+
 if(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
-
     list(APPEND DEEP_DEPENDENT_RPATHS ${PATH_TO_THIRDPARTY}/Qt/lib)
     list(APPEND DEEP_DEPENDENT_RPATHS lib)
 
@@ -194,6 +211,8 @@ if(APPLE)
                                                   ${CMAKE_INSTALL_PREFIX}/tools/napkin/napkin
                                                   "@rpath"
                                                   )
+
+        
 
 elseif(UNIX)
     if (${CMAKE_BUILD_TYPE} STREQUAL "Release")

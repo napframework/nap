@@ -15,6 +15,12 @@
 #include <scene.h>
 #include <nap/group.h>
 
+namespace nap
+{
+	class RenderService;
+	class Material;
+}
+
 namespace napkin
 {
 	class AddObjectCommand : public QUndoCommand
@@ -216,6 +222,7 @@ namespace napkin
 		size_t mIndex; ///< The index of the newly created element
 	};
 
+
 	/**
 	 * Add an element to an array
 	 */
@@ -239,6 +246,34 @@ namespace napkin
 		const PropertyPath& mPath; ///< The path to the array property
 		nap::rtti::TypeInfo mType; ///< The type of object to create
 		size_t mIndex; ///< The index of the newly created element
+	};
+
+
+	/**
+	 * Add a new binding to a material
+	 */
+	class MaterialAddNewBindingCommand : public QUndoCommand
+	{
+	public:
+		/**
+		 * @param prop The array property to add the element to
+		 */
+		MaterialAddNewBindingCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type, size_t index);
+
+		/**
+		 * @param prop The array property to add the element to
+		 * @param index The index at which to insert the value
+		 */
+		MaterialAddNewBindingCommand(const PropertyPath& prop, const nap::rtti::TypeInfo& type);
+
+		void redo() override;
+		void undo() override;
+	private:
+		const PropertyPath& mPath; ///< The path to the array property
+		nap::rtti::TypeInfo mType; ///< The type of object to create
+		size_t mIndex; ///< The index of the newly created element
+		nap::RenderService* mRenderService = nullptr;
+		nap::Material* mMaterial = nullptr;
 	};
 
 

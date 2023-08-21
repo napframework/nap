@@ -9,6 +9,7 @@
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/core.h>
+#include <shader.h>
 
 namespace napkin
 {
@@ -22,6 +23,7 @@ namespace napkin
 			return QFileDialog::getOpenFileName(parent, caption, dir, filter, nullptr);
 #endif
 		}
+
 
 		/**
 		 * Guesses the Napkin context by looking at it's location within the folder structure.

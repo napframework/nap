@@ -166,14 +166,6 @@ def handle_xcode_license_approval():
         re_run_tests = False
     return re_run_tests
 
-def check_for_thirdparty():
-    """Check for the thirdparty repository"""
-
-    nap_root = get_nap_root()
-    thirdparty_ok = os.path.exists(os.path.join(nap_root, os.pardir, 'thirdparty'))
-    log_test_success('for third party repository', thirdparty_ok)
-    return thirdparty_ok
-
 def check_qt_env_var():
     """Check Qt env. var. for source user"""
 
@@ -188,14 +180,14 @@ def check_qt_version():
     qt_version_ok = False
 
     # Remove temporary directory for CMake project files to go into if it exists
-    nap_root = get_nap_root()
+    nap_root = get_nap_source_root()
     qt_checker_path = os.path.join(nap_root, 'cmake', 'qt_checker')
     temp_build_dir = os.path.join(qt_checker_path, 'project_temp')
     if os.path.exists(temp_build_dir):
         shutil.rmtree(temp_build_dir)
     
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, 'thirdparty')
     cmake = os.path.join(thirdparty_dir, 'cmake', 'macos', 'x86_64', 'bin', 'cmake')
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -260,10 +252,10 @@ def check_and_warn_for_potential_packaged_qt():
             packaging_systems.append('Fink')
         print("\nWarning: A third party package manager (%s) was found on your system. Be mindful of interactions with this and the NAP packaging process." % " & ".join(packaging_systems))
     
-def get_nap_root():
-    """Get framework root directory"""
+def get_nap_source_root():
+    """Get framework source root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(script_dir, "../../../.."))
 
 def check_build_environment(against_source):
     """Check whether macOS build environment appears ready for NAP"""
@@ -287,14 +279,6 @@ def check_build_environment(against_source):
     xcode_license_ok = xcode_installed and xcode_cli_tools_installed and xcode_license_accepted()
 
     if against_source:
-        # Check for thirdparty repo
-        thirdparty_ok = check_for_thirdparty()
-
-        if not thirdparty_ok:
-            print("\nThe third party repository ('thirdparty') needs to be cloned alongside the main repository.")
-            print("\nNot continuing checks. Re-run this script after cloning.")
-            sys.exit(1)
-
         # Check for Qt
         qt_env_var_ok = check_qt_env_var()
         
@@ -309,7 +293,7 @@ def check_build_environment(against_source):
 
     # If we're running for source users check source requirements are met
     extra_source_requirements_ok = True
-    if against_source and (not thirdparty_ok or not qt_env_var_ok or not qt_version_ok):
+    if against_source and (not qt_env_var_ok or not qt_version_ok):
         extra_source_requirements_ok = False 
 
     # If everything looks good log and exit

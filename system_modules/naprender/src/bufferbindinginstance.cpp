@@ -109,17 +109,17 @@ namespace nap
 		// Creates a BufferBindingStructInstance
 		if (declaration_type == RTTI_OF(ShaderVariableStructBufferDeclaration))
 		{
-			const ShaderVariableStructBufferDeclaration* struct_buffer_declaration = rtti_cast<const ShaderVariableStructBufferDeclaration>(&buffer_declaration);
+			const auto& struct_buffer_declaration = static_cast<const ShaderVariableStructBufferDeclaration&>(buffer_declaration);
 			if (binding != nullptr)
 			{
 				// Verify count
-				if (!errorState.check(binding->getCount() == struct_buffer_declaration->mNumElements,
+				if (!errorState.check(binding->getCount() == struct_buffer_declaration.mNumElements,
 					"Encountered mismatch in array elements between array in material and array in shader"))
 					return nullptr;
 			}
 
 			return createBufferBindingInstance<BufferBindingStructInstance, BufferBindingStruct, ShaderVariableStructBufferDeclaration>(
-				*struct_buffer_declaration, binding, bufferChangedCallback, errorState);
+				struct_buffer_declaration, binding, bufferChangedCallback, errorState);
 		}
 
 		// Creates a BufferBindingNumericInstance

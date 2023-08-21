@@ -105,14 +105,6 @@ def check_compiler():
     log_test_success('C++ is GCC', gcc_ok)
     return gcc_ok
 
-def check_for_thirdparty():
-    """Check for the thirdparty repository"""
-
-    nap_root = get_source_nap_root()
-    thirdparty_ok = os.path.exists(os.path.join(nap_root, os.pardir, 'thirdparty'))
-    log_test_success('for third party repository', thirdparty_ok)
-    return thirdparty_ok
-
 def check_qt_env_var():
     """Check Qt env. var. for source user"""
 
@@ -195,7 +187,7 @@ def get_nap_root():
 def get_source_nap_root():
     """Get source framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(script_dir, "../../../.."))
 
 def check_and_warn_for_potential_system_qt():
     """Attempt to detect if the Qt installation might be a system version and warn if so"""
@@ -266,14 +258,6 @@ def check_build_environment(against_source):
         glut_installed = apt_package_installed('libglu1-mesa-dev')
         log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
 
-        # Check for thirdparty repo
-        thirdparty_ok = check_for_thirdparty()
-
-        if not thirdparty_ok:
-            print("\nThe third party repository ('thirdparty') needs to be cloned alongside the main repository.")
-            print("\nNot continuing checks. Re-run this script after cloning.")
-            sys.exit(1)
-
         # Check for Qt
         qt_env_var_ok = check_qt_env_var()
 
@@ -288,7 +272,7 @@ def check_build_environment(against_source):
 
     # If we're running for source users check source requirements are met
     extra_source_requirements_ok = True
-    if against_source and (not thirdparty_ok or not qt_env_var_ok or not qt_version_ok or not glut_installed):
+    if against_source and (not qt_env_var_ok or not qt_version_ok or not glut_installed):
         extra_source_requirements_ok = False
 
     # If everything looks good log and exit

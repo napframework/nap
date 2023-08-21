@@ -14,6 +14,7 @@
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
 #include <napqt/qtutils.h>
+#include <shader.h>
 
 namespace napkin
 {
@@ -64,19 +65,11 @@ namespace napkin
 	nap::rtti::ObjectSet topLevelObjects();
 
 	/**
-	 * Display a selection dialog with all available objects, filtered by a base type
-	 * @param parent The parent widget to attach to.
-	 * @param typeConstraint The base type to filter by.
-	 * @return The selected object or nullptr if no object was selected
-	 */
-	nap::rtti::Object* showObjectSelector(QWidget* parent, const rttr::type& typeConstraint);
-
-	/**
 	 * Display a selection dialog with all available types, filtered by an optional predicate
 	 * @param parent The widget to attach to
 	 * @return The resulting selected type.
 	 */
-	nap::rtti::TypeInfo showTypeSelector(QWidget* parent, const TypePredicate& predicate = nullptr);
+	nap::rtti::TypeInfo showTypeSelector(QWidget* parent, const TypePredicate& predicate);
 
 	/**
 	 * Display a selection dialog with all available objects, filtered by type T
@@ -87,6 +80,14 @@ namespace napkin
 	nap::rtti::Object* showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects);
 
 	/**
+	 * Display a selection dialog with all available objects, filtered by type T
+	 * @param parent The parent widget to attach to.
+	 * @param objects The objects to select from
+	 * @return The selected object or nullptr if no object was selected
+	 */
+	nap::rtti::TypeInfo showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName);
+
+	/**
 	 * Show a dialog box containing the given properties and a custom message.
 	 * @param parent The parent widget to attach the dialog to
 	 * @param props The properties to display in the dialog
@@ -94,6 +95,14 @@ namespace napkin
 	 */
 	bool showPropertyListConfirmDialog(QWidget* parent, QList<PropertyPath> props, const QString& title,
 									   QString message);
+
+	/**
+	 * Attempts to compile & load a shader
+	 * @param shader the shader to load (compile)
+	 * @param core core environment
+	 * @param error contains the error
+	 */
+	bool loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::ErrorState& error);
 
 	/**
 	 * Traverse a model and find the QStandardItem subclass representing the specified object
@@ -115,7 +124,7 @@ namespace napkin
 			if (objItem == nullptr)
 				return false;
 
-			if (objItem->getObject() == &obj)
+			if (&objItem->getObject() == &obj)
 			{
 				foundItem = objItem;
 				return true;
