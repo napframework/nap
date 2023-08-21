@@ -61,6 +61,23 @@ set(archdetect_c_code "
 # Set ppc_support to TRUE before including this file or ppc and ppc64
 # will be treated as invalid architectures since they are no longer supported by Apple
 
+
+
+function(linux_fetch_long_bits output_var)
+    execute_process(COMMAND getconf LONG_BIT
+                    OUTPUT_VARIABLE BITS_OUTPUT
+                    RESULT_VARIABLE EXIT_CODE)
+    if(NOT ${EXIT_CODE} EQUAL 0)
+        message(FATAL_ERROR "Failed to fetch number of bits for long type")
+    endif()
+    if(${BITS_OUTPUT} STREQUAL "32")
+        set(LONG_BITS 32)
+    else()
+        set(LONG_BITS 64)
+    endif()
+    set(${output_var} "${LONG_BITS}" PARENT_SCOPE)
+endfunction()
+
 function(target_architecture output_var)
     if(APPLE AND CMAKE_OSX_ARCHITECTURES)
         # On macOS we use CMAKE_OSX_ARCHITECTURES *if* it was set
@@ -145,6 +162,13 @@ function(target_architecture output_var)
                "${ARCH}" STREQUAL "armv7" OR
                "${ARCH}" STREQUAL "armv8")
                 set(ARCH armhf)
+            elseif("${ARCH}" STREQUAL "arm64")
+                # Handle 64bit ARM kernels running on 32bit ARM Linux instances. Common for Raspberry Pi v4 in 2023.
+                linux_fetch_long_bits(LONG_BITS)
+                if(LONG_BITS EQUAL 32)
+                    message(STATUS "Seeing ARM64 kernel with ARMhf libs, setting ARCH for 32bit libs")
+                    set(ARCH armhf)
+                endif()
             endif()
         endif()
     endif()

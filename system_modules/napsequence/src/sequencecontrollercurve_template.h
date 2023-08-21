@@ -501,13 +501,19 @@ namespace nap
                                   {
                                       for(auto &point: curve->mPoints)
                                       {
-                                          float value = point.mPos.mValue * (track_curve->mMaximum[curve_count] -
-                                                                             track_curve->mMinimum[curve_count]) +
-                                                        track_curve->mMinimum[curve_count];
+                                          if(minimum[curve_count]!=maximum[curve_count])
+                                          {
+                                              float value = point.mPos.mValue * (track_curve->mMaximum[curve_count] -
+                                                                                 track_curve->mMinimum[curve_count]) +
+																				track_curve->mMinimum[curve_count];
 
-                                          point.mPos.mValue = (value - minimum[curve_count]) /
-                                                              (maximum[curve_count] - minimum[curve_count]);
-                                          point.mPos.mValue = math::clamp<float>(point.mPos.mValue, 0, 1);
+                                              point.mPos.mValue = (value - minimum[curve_count]) /
+                                                                  (maximum[curve_count] - minimum[curve_count]);
+                                              point.mPos.mValue = math::clamp<float>(point.mPos.mValue, 0, 1);
+                                          }else
+                                          {
+                                              point.mPos.mValue = 0.0f;
+                                          }
                                       }
                                       curve_count++;
                                   }
