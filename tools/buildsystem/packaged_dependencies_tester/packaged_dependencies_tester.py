@@ -11,7 +11,7 @@ from multiprocessing import cpu_count
 import os
 from platform import machine
 import re
-from subprocess import call, Popen, PIPE, check_output, TimeoutExpired
+from subprocess import call, Popen, PIPE, check_output, TimeoutExpired, run
 import shlex
 import shutil
 import signal
@@ -62,13 +62,18 @@ MSVC_BUILD_DIR = 'msvc64'
 LINUX_ACCEPTED_SYSTEM_LIB_PATHS = []
 if sys.platform.startswith('linux'):
     arch = machine()
+    if arch == 'aarch64':
+        p = run('getconf LONG_BIT', shell=True, text=True, capture_output=True)
+        if p.stdout.strip() == '64':
+            arch = 'arm64'
+        else:
+            arch = 'armhf'
     if arch == 'x86_64':
         LINUX_ACCEPTED_SYSTEM_LIB_PATHS.extend(['/usr/lib/x86_64-linux-gnu/', 
             '/lib/x86_64-linux-gnu', 
             '/usr/lib/mesa-diverted/x86_64-linux-gnu/'])
-    elif arch == 'aarch64':
+    elif arch in ('arm64', 'armhf'):
         LINUX_ACCEPTED_SYSTEM_LIB_PATHS.append('/usr/lib/aarch64-linux-gnu/')
-    else:
         LINUX_ACCEPTED_SYSTEM_LIB_PATHS.extend(['/usr/lib/arm-linux-gnueabihf/',
             '/opt/vc/lib/'])
 
