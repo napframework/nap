@@ -103,6 +103,31 @@ namespace nap
 			RGBColor8 mHighlightColor4 = { 0xFF, 0x50, 0x50 };		///< Property: 'HighlightColor4' Special highlight color 4 (errors)
 			bool mInvertIcon = false;								///< Property: 'InvertIcon' If icons should be inverted
 		};
+
+		/**
+		 * Configurable GUI style options
+		 */
+		struct NAPAPI Style
+		{
+			Style() = default;
+			glm::vec2 mWindowPadding = { 10.0, 10.0f };				///< Property: 'WindowPadding'
+			float mWindowRounding = 0.0f;							///< Property: 'WindowRounding'
+			glm::vec2 mFramePadding = { 5.0f, 5.0f };				///< Property: 'FramePadding'
+			float mFrameRounding = 0.0f;							///< Property: 'FrameRounding'
+			glm::vec2 mItemSpacing = { 12.0f, 6.0f };				///< Property: 'ItemSpacing'
+			glm::vec2 mItemInnerSpacing = { 8.0f, 6.0f };			///< Property: 'ItemInnerSpacing'
+			float mIndentSpacing = 25.0f;							///< Property: 'IndentSpacing'
+			float mScrollbarSize = 13.0f;							///< Property: 'ScrollbarSize'
+			float mScrollbarRounding = 0.0f;						///< Property: 'ScrollbarRounding'
+			float mGrabMinSize = 5.0f;								///< Property: 'GrabMinSize'
+			float mGrabRounding = 0.0f;								///< Property: 'GrabRounding'
+			float mWindowBorderSize = 0.0f;							///< Property: 'WindowBorderSize'
+			float mPopupRounding = 0.0f;							///< Property: 'PopupRounding'
+			float mChildRounding = 0.0f;							///< Property: 'ChildRounding'
+			glm::vec2 mWindowTitleAlign = { 0.5f, 0.5f };			///< Property: 'WindowTitleAlign'
+			float mPopupBorderSize = 0.0f;							///< Property: 'PopupBorderSize'
+			float mTabRounding = 0.0f;								///< Property: 'TabRounding'
+		};
 	}
 
 
@@ -119,7 +144,8 @@ namespace nap
 		std::string mFontFile = "";										///< Property: 'FontFile' Path to a '.ttf' font file. If left empty the default NAP font will be used
 		glm::ivec2 mFontOversampling = { 5, 3 };						///< Property: 'FontSampling' Horizontal and vertical font oversampling, higher values result in sharper text in exchange for more memory.
 		float mFontSpacing = 0.25f;										///< Property: 'FontSpacing' Extra horizontal spacing (in pixels) between glyphs.
-		gui::ColorPalette mCustomColors;								///< Property: 'Colors' Gui color overrides if scheme is set to custom
+		gui::ColorPalette mCustomColors;								///< Property: 'Colors' Color overrides if scheme is set to custom
+		gui::Style mStyle;												///< Property: 'Style' Configurable style elements
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
 	 
@@ -422,17 +448,18 @@ namespace nap
 		 */
 		void handleTouchEvent(const TouchEvent& touchEvent, GUIContext& context);
 
+		// Everything related to ImGUI
 		RenderService* mRenderService = nullptr;
 		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;
 		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
-		IMGuiServiceConfiguration* mConfiguration = nullptr;
 		float mGuiScale = 1.0f;		///< Overall GUI scaling factor
 		float mDPIScale = 1.0f;		///< Max font scaling factor, based on the highest display dpi or 1.0 (default) when high dpi if off
 
-		// Color palette
+		// Selected colour palette and style
+		IMGuiServiceConfiguration* mConfiguration = nullptr;
 		const gui::ColorPalette* mColorPalette = nullptr;
 
 		// Icons
