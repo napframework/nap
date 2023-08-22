@@ -300,7 +300,7 @@ namespace nap
 		style->WindowRounding = 0.0f;
 		style->FramePadding = ImVec2(5, 5);
 		style->FrameRounding = 0.0f;
-		style->ItemSpacing = ImVec2(12, 6);
+		style->ItemSpacing = ImVec2(12, 9);
 		style->ItemInnerSpacing = ImVec2(8, 6);
 		style->IndentSpacing = 25.0f;
 		style->ScrollbarSize = 13.0f;
