@@ -386,7 +386,7 @@ namespace nap
 		gui_style->WindowBorderSize = style.mWindowBorderSize;
 		gui_style->PopupRounding = style.mPopupRounding;
 		gui_style->ChildRounding = style.mChildRounding;
-		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mItemInnerSpacing.y };
+		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mWindowTitleAlign.y };
 		gui_style->PopupBorderSize = style.mPopupBorderSize;
 		gui_style->TabRounding = style.mTabRounding;
 		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
