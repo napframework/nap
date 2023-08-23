@@ -370,6 +370,8 @@ namespace nap
 		gui_style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
 
 		// Apply style settings
+		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
+		gui_style->AntiAliasedLines = style.mAntiAliasedLines;
 		gui_style->WindowPadding = { style.mWindowPadding.x, style.mWindowPadding.y };
 		gui_style->WindowRounding = style.mWindowRounding;
 		gui_style->FramePadding = { style.mFramePadding.x, style.mFramePadding.y };
@@ -388,8 +390,6 @@ namespace nap
 		gui_style->PopupBorderSize = style.mPopupBorderSize;
 		gui_style->TabRounding = style.mTabRounding;
 		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
-		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
-		gui_style->AntiAliasedLines = style.mAntiAliasedLines;
 
 		return gui_style;
 	}
