@@ -148,6 +148,5 @@ namespace nap
 
 		// Handle debug popup
 		void handlePopup();
-		bool mPopupOpened = false;
 	};
 }
