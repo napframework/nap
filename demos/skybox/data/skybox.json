@@ -128,7 +128,7 @@
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 4,
                     "Enable Shadows": false,
-                    "ShadowCamera": "./ShadowCamera2",
+                    "ShadowCamera": "",
                     "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "LightAngleParam",
@@ -155,52 +155,6 @@
                         },
                         "UniformScale": 1.0
                     }
-                },
-                {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "ShadowCamera2",
-                    "Properties": {
-                        "FieldOfView": 50.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 10.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderFrustum2",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "Layer": "",
-                    "Mesh": "BoxFrame",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
                 }
             ],
             "Children": []
@@ -218,7 +172,7 @@
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 4,
                     "Enable Shadows": false,
-                    "ShadowCamera": "./ShadowCamera",
+                    "ShadowCamera": "",
                     "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "LightAngleParam",
@@ -244,110 +198,6 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "ShadowCamera",
-                    "Properties": {
-                        "FieldOfView": 50.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 10.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderFrustum",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "Layer": "",
-                    "Mesh": "BoxFrame",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "PlaneEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformPlane",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": -2.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": -90.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 4.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderPlane",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Default"
-                    ],
-                    "Layer": "",
-                    "Mesh": "PlaneMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "BlinnPhongMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
                     }
                 }
             ],
@@ -386,6 +236,7 @@
                     "Tags": [
                         "RenderTag_Default"
                     ],
+                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_SkyBox",
                     "Mesh": "SkyBoxMesh",
                     "MaterialInstance": {
@@ -411,7 +262,7 @@
                         "Buffers": [],
                         "Material": "SkyBoxMaterial",
                         "BlendMode": "Opaque",
-                        "DepthMode": "ReadOnly"
+                        "DepthMode": "NoReadWrite"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -460,7 +311,8 @@
                     "mID": "RenderTorus",
                     "Visible": true,
                     "Tags": [],
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -498,8 +350,8 @@
                         ],
                         "Buffers": [],
                         "Material": "BlinnPhongMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "BlendMode": "Opaque",
+                        "DepthMode": "ReadWrite"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -524,7 +376,8 @@
                         },
                         "Speed": 0.05000000074505806,
                         "Offset": 0.0
-                    }
+                    },
+                    "Enabled": true
                 }
             ],
             "Children": []
@@ -559,8 +412,7 @@
             "Children": [
                 "SkyBoxEntity",
                 "TorusEntity",
-                "LightEntity",
-                "PlaneEntity"
+                "LightEntity"
             ]
         },
         {
@@ -778,11 +630,6 @@
                     "Type": "nap::RenderLayer",
                     "mID": "RenderLayer_SkyBox",
                     "Name": "SkyBox"
-                },
-                {
-                    "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Bounds",
-                    "Name": "Bounds"
                 },
                 {
                     "Type": "nap::RenderLayer",
