@@ -46,6 +46,8 @@ RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_STRUCT(nap::gui::Style)
+	RTTI_PROPERTY("AntiAliasedLines",	&nap::gui::Style::mAntiAliasedLines,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AntiAliasedFill",	&nap::gui::Style::mAntiAliasedFill,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WindowPadding",		&nap::gui::Style::mWindowPadding,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("WindowRounding",		&nap::gui::Style::mWindowRounding,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FramePadding",		&nap::gui::Style::mFramePadding,			nap::rtti::EPropertyMetaData::Default)
@@ -63,6 +65,7 @@ RTTI_BEGIN_STRUCT(nap::gui::Style)
 	RTTI_PROPERTY("WindowTitleAlign",	&nap::gui::Style::mWindowTitleAlign,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("PopupBorderSize",	&nap::gui::Style::mPopupBorderSize,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("TabRounding",		&nap::gui::Style::mTabRounding,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TouchExtraPadding",	&nap::gui::Style::mTouchExtraPadding,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
@@ -316,25 +319,7 @@ namespace nap
 		// Create style
 		std::unique_ptr<ImGuiStyle> gui_style = std::make_unique<ImGuiStyle>();
 
-		// Apply settings from config
-		gui_style->WindowPadding = { style.mWindowPadding.x, style.mWindowPadding.y };
-		gui_style->WindowRounding = style.mWindowRounding;
-		gui_style->FramePadding = { style.mFramePadding.x, style.mFramePadding.y };
-		gui_style->FrameRounding = style.mFrameRounding;
-		gui_style->ItemSpacing = { style.mItemSpacing.x, style.mItemSpacing.y };
-		gui_style->ItemInnerSpacing = { style.mItemInnerSpacing.x, style.mItemInnerSpacing.y };
-		gui_style->IndentSpacing = style.mIndentSpacing;
-		gui_style->ScrollbarSize = style.mScrollbarSize;
-		gui_style->ScrollbarRounding = style.mScrollbarRounding;
-		gui_style->GrabMinSize = style.mGrabMinSize;
-		gui_style->GrabRounding = style.mGrabRounding;
-		gui_style->WindowBorderSize = style.mWindowBorderSize;
-		gui_style->PopupRounding = style.mPopupRounding;
-		gui_style->ChildRounding = style.mChildRounding;
-		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mItemInnerSpacing.y };
-		gui_style->PopupBorderSize = style.mPopupBorderSize;
-		gui_style->TabRounding = style.mTabRounding;
-
+		// Apply colors
 		gui_style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
 		gui_style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
 		gui_style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
@@ -383,6 +368,28 @@ namespace nap
 		gui_style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
 		gui_style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
 		gui_style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
+
+		// Apply style settings
+		gui_style->WindowPadding = { style.mWindowPadding.x, style.mWindowPadding.y };
+		gui_style->WindowRounding = style.mWindowRounding;
+		gui_style->FramePadding = { style.mFramePadding.x, style.mFramePadding.y };
+		gui_style->FrameRounding = style.mFrameRounding;
+		gui_style->ItemSpacing = { style.mItemSpacing.x, style.mItemSpacing.y };
+		gui_style->ItemInnerSpacing = { style.mItemInnerSpacing.x, style.mItemInnerSpacing.y };
+		gui_style->IndentSpacing = style.mIndentSpacing;
+		gui_style->ScrollbarSize = style.mScrollbarSize;
+		gui_style->ScrollbarRounding = style.mScrollbarRounding;
+		gui_style->GrabMinSize = style.mGrabMinSize;
+		gui_style->GrabRounding = style.mGrabRounding;
+		gui_style->WindowBorderSize = style.mWindowBorderSize;
+		gui_style->PopupRounding = style.mPopupRounding;
+		gui_style->ChildRounding = style.mChildRounding;
+		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mItemInnerSpacing.y };
+		gui_style->PopupBorderSize = style.mPopupBorderSize;
+		gui_style->TabRounding = style.mTabRounding;
+		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
+		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
+		gui_style->AntiAliasedLines = style.mAntiAliasedLines;
 
 		return gui_style;
 	}

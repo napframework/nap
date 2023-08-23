@@ -110,23 +110,26 @@ namespace nap
 		struct NAPAPI Style
 		{
 			Style() = default;
-			glm::vec2 mWindowPadding = { 10.0, 10.0f };				///< Property: 'WindowPadding'
-			float mWindowRounding = 0.0f;							///< Property: 'WindowRounding'
-			glm::vec2 mFramePadding = { 5.0f, 5.0f };				///< Property: 'FramePadding'
-			float mFrameRounding = 0.0f;							///< Property: 'FrameRounding'
-			glm::vec2 mItemSpacing = { 12.0f, 6.0f };				///< Property: 'ItemSpacing'
-			glm::vec2 mItemInnerSpacing = { 8.0f, 6.0f };			///< Property: 'ItemInnerSpacing'
-			float mIndentSpacing = 25.0f;							///< Property: 'IndentSpacing'
-			float mScrollbarSize = 13.0f;							///< Property: 'ScrollbarSize'
-			float mScrollbarRounding = 0.0f;						///< Property: 'ScrollbarRounding'
-			float mGrabMinSize = 5.0f;								///< Property: 'GrabMinSize'
-			float mGrabRounding = 0.0f;								///< Property: 'GrabRounding'
-			float mWindowBorderSize = 0.0f;							///< Property: 'WindowBorderSize'
-			float mPopupRounding = 0.0f;							///< Property: 'PopupRounding'
-			float mChildRounding = 0.0f;							///< Property: 'ChildRounding'
-			glm::vec2 mWindowTitleAlign = { 0.5f, 0.5f };			///< Property: 'WindowTitleAlign'
-			float mPopupBorderSize = 0.0f;							///< Property: 'PopupBorderSize'
-			float mTabRounding = 0.0f;								///< Property: 'TabRounding'
+			bool mAntiAliasedLines = true;							///< Property: 'AntiAliasedLines' Enable anti-aliasing on lines/borders. Disable if you are really tight on CPU/GPU.
+			bool mAntiAliasedFill = true;							///< Property: 'AntiAliasedFill' Enable anti-aliasing on filled shapes (rounded rectangles, circles, etc.)
+			glm::vec2 mWindowPadding = { 10.0, 10.0f };				///< Property: 'WindowPadding' Padding within a window.
+			float mWindowRounding = 0.0f;							///< Property: 'WindowRounding' Radius of window corners rounding. Set to 0.0f to have rectangular windows.
+			glm::vec2 mFramePadding = { 5.0f, 5.0f };				///< Property: 'FramePadding' Padding within a framed rectangle (used by most widgets).
+			float mFrameRounding = 0.0f;							///< Property: 'FrameRounding' Radius of frame corners rounding. Set to 0.0f to have rectangular frame (used by most widgets).
+			glm::vec2 mItemSpacing = { 12.0f, 6.0f };				///< Property: 'ItemSpacing' Horizontal and vertical spacing between widgets/lines.
+			glm::vec2 mItemInnerSpacing = { 8.0f, 6.0f };			///< Property: 'ItemInnerSpacing' Horizontal and vertical spacing between within elements of a composed widget (e.g. a slider and its label).
+			float mIndentSpacing = 25.0f;							///< Property: 'IndentSpacing' Horizontal indentation when e.g. entering a tree node. Generally == (FontSize + FramePadding.x*2).
+			float mScrollbarSize = 13.0f;							///< Property: 'ScrollbarSize' Width of the vertical scrollbar, Height of the horizontal scrollbar.
+			float mScrollbarRounding = 0.0f;						///< Property: 'ScrollbarRounding' Radius of grab corners for scrollbar.
+			float mGrabMinSize = 5.0f;								///< Property: 'GrabMinSize' Minimum width/height of a grab box for slider/scrollbar.
+			float mGrabRounding = 0.0f;								///< Property: 'GrabRounding' Radius of grabs corners rounding. Set to 0.0f to have rectangular slider grabs.
+			float mWindowBorderSize = 0.0f;							///< Property: 'WindowBorderSize' Thickness of border around windows. Generally set to 0.0f or 1.0f. (Other values are not well tested and more CPU/GPU costly).
+			float mPopupRounding = 0.0f;							///< Property: 'PopupRounding' Radius of popup window corners rounding. (Note that tooltip windows use WindowRounding)
+			float mChildRounding = 0.0f;							///< Property: 'ChildRounding' Radius of child window corners rounding. Set to 0.0f to have rectangular windows.
+			glm::vec2 mWindowTitleAlign = { 0.5f, 0.5f };			///< Property: 'WindowTitleAlign' Alignment for title bar text. Defaults to (0.0f,0.5f) for left-aligned,vertically centered.
+			float mPopupBorderSize = 0.0f;							///< Property: 'PopupBorderSize' Thickness of border around popup/tooltip windows. Generally set to 0.0f or 1.0f. (Other values are not well tested and more CPU/GPU costly).
+			float mTabRounding = 0.0f;								///< Property: 'TabRounding' Radius of upper corners of a tab. Set to 0.0f to have rectangular tabs.
+			glm::vec2 mTouchExtraPadding = { 0.0f, 0.0f };			///< Property: 'TouchExtraPadding' Expand reactive bounding box for touch-based system where touch position is not accurate enough. We don't sort widgets so priority on overlap will always be given to the first widget. So don't grow this too much!
 		};
 	}
 
