@@ -126,7 +126,7 @@ namespace nap
 			float mWindowBorderSize = 0.0f;							///< Property: 'WindowBorderSize' Thickness of border around windows. Generally set to 0.0f or 1.0f. (Other values are not well tested and more CPU/GPU costly).
 			float mPopupRounding = 0.0f;							///< Property: 'PopupRounding' Radius of popup window corners rounding. (Note that tooltip windows use WindowRounding)
 			float mChildRounding = 0.0f;							///< Property: 'ChildRounding' Radius of child window corners rounding. Set to 0.0f to have rectangular windows.
-			glm::vec2 mWindowTitleAlign = { 0.5f, 0.5f };			///< Property: 'WindowTitleAlign' Alignment for title bar text. Defaults to (0.0f,0.5f) for left-aligned,vertically centered.
+			glm::vec2 mWindowTitleAlign = { 0.5f, 0.5f };			///< Property: 'WindowTitleAlign' Alignment for title bar text. Defaults to (0.5f,0.5f) for vertically & horizontally centered.
 			float mPopupBorderSize = 0.0f;							///< Property: 'PopupBorderSize' Thickness of border around popup/tooltip windows. Generally set to 0.0f or 1.0f. (Other values are not well tested and more CPU/GPU costly).
 			float mTabRounding = 0.0f;								///< Property: 'TabRounding' Radius of upper corners of a tab. Set to 0.0f to have rectangular tabs.
 			glm::vec2 mTouchExtraPadding = { 0.0f, 0.0f };			///< Property: 'TouchExtraPadding' Expand reactive bounding box for touch-based system where touch position is not accurate enough. We don't sort widgets so priority on overlap will always be given to the first widget. So don't grow this too much!
