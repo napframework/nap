@@ -80,6 +80,10 @@ namespace nap
 	// Render Advanced Service
 	//////////////////////////////////////////////////////////////////////////
 
+	RenderAdvancedService::RenderAdvancedService(ServiceConfiguration* configuration) :
+		Service(configuration) { }
+
+
 	void RenderAdvancedService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(RenderService));
@@ -88,14 +92,13 @@ namespace nap
 
 	bool RenderAdvancedService::init(nap::utility::ErrorState& errorState)
 	{
-		auto* render_service = getCore().getService<RenderService>();
-		if (!errorState.check(render_service != nullptr, "Failed to get nap::RenderService"))
-			return false;
+		mRenderService = getCore().getService<RenderService>();
+		assert(mRenderService != nullptr);
 
 		// Ensure the initialized Vulkan API version meets the render advanced service requirement
-		if (render_service->getVulkanVersionMajor() <= mRequiredVulkanVersionMajor)
+		if (mRenderService->getVulkanVersionMajor() <= mRequiredVulkanVersionMajor)
 		{
-			if (render_service->getVulkanVersionMajor() < mRequiredVulkanVersionMajor || render_service->getVulkanVersionMinor() < mRequiredVulkanVersionMinor)
+			if (mRenderService->getVulkanVersionMajor() < mRequiredVulkanVersionMajor || mRenderService->getVulkanVersionMinor() < mRequiredVulkanVersionMinor)
 			{
 				errorState.fail("%s: Vulkan API Version %d.%d required", this->get_type().get_name().to_string().c_str(), mRequiredVulkanVersionMajor, mRequiredVulkanVersionMinor);
 				return false;
@@ -151,7 +154,7 @@ namespace nap
 
 		// Copy pointers
 		for (auto& tex : mSamplerCubeResource->mTextures)
-			tex = &render_service->getEmptyTextureCube();
+			tex = &mRenderService->getEmptyTextureCube();
 
 		mSamplerCubeResource->mBorderColor = EBorderColor::IntOpaqueBlack;
 		mSamplerCubeResource->mAddressModeHorizontal = EAddressMode::ClampToEdge;
@@ -174,7 +177,7 @@ namespace nap
 		}
 
 		// Create material instance
-		mCubeMapMaterial = render_service->getOrCreateMaterial<CubeMapShader>(errorState);
+		mCubeMapMaterial = mRenderService->getOrCreateMaterial<CubeMapShader>(errorState);
 		if (!errorState.check(mCubeMapMaterial != nullptr, "Failed to create CubeMap material"))
 			return false;
 
@@ -186,7 +189,7 @@ namespace nap
 		mCubeMaterialInstanceResource = std::make_unique<MaterialInstanceResource>();
 		mCubeMaterialInstanceResource->mMaterial = mCubeMapMaterial;
 		mCubeMaterialInstance = std::make_unique<MaterialInstance>();
-		if (!mCubeMaterialInstance->init(*render_service, *mCubeMaterialInstanceResource, errorState))
+		if (!mCubeMaterialInstance->init(*mRenderService, *mCubeMaterialInstanceResource, errorState))
 			return false;
 
 		return true;
@@ -195,13 +198,11 @@ namespace nap
 
 	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials, RenderMask renderMask)
 	{
-		auto* render_service = getCore().getService<RenderService>();
-		assert(render_service != nullptr);
-
+		auto render_comps = mRenderService->filterObjects(renderComps, renderMask);
 		if (updateMaterials)
 		{
 			utility::ErrorState error_state;
-			if (!pushLights(renderComps, error_state))
+			if (!pushLights(render_comps, error_state))
 			{
 				nap::Logger::error(error_state.toString());
 				assert(false);
@@ -230,7 +231,7 @@ namespace nap
 					assert(target != nullptr);
 
 					target->beginRendering();
-					render_service->renderObjects(*target, *shadow_camera, renderComps, renderMask);
+					mRenderService->renderObjects(*target, *shadow_camera, render_comps);
 					target->endRendering();
 					break;
 				}
@@ -257,10 +258,10 @@ namespace nap
 
 					auto* cube_target = static_cast<CubeDepthRenderTarget*>(target.get());
 					auto* persp_camera = static_cast<PerspCameraComponentInstance*>(shadow_camera);
-					cube_target->render(*persp_camera, [rs = render_service, comps = renderComps, mask = renderMask](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+					cube_target->render(*persp_camera, [rs = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 					{
 						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
-						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), mask);
+						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
 					});
 					break;
 				}
@@ -471,11 +472,8 @@ namespace nap
 
 	bool RenderAdvancedService::preRenderCubeMaps(utility::ErrorState& errorState)
 	{
-		auto* render_service = getCore().getService<RenderService>();
-		assert(render_service != nullptr);
-
 		// Cube maps from file
-		auto cube_maps = render_service->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
+		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
 		if (!cube_maps.empty())
 		{
 			mCubeMapFromFileTargets.reserve(cube_maps.size());
@@ -497,15 +495,15 @@ namespace nap
 			}
 
 			// Updates GPU data
-			render_service->beginFrame();
+			mRenderService->beginFrame();
 
-			if (render_service->beginHeadlessRecording())
+			if (mRenderService->beginHeadlessRecording())
 			{
 				// Prerender shadow maps here
 				uint count = 0U;
 				for (auto& cm : cube_maps)
 				{
-					auto commandBuffer = render_service->getCurrentCommandBuffer();
+					auto commandBuffer = mRenderService->getCurrentCommandBuffer();
 					auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
 					auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
 
@@ -528,7 +526,7 @@ namespace nap
 
 						// Get pipeline to to render with
 						utility::ErrorState error_state;
-						RenderService::Pipeline pipeline = render_service->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
+						RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
 						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
@@ -537,9 +535,9 @@ namespace nap
 					});
 					++count;
 				}
-				render_service->endHeadlessRecording();
+				mRenderService->endHeadlessRecording();
 			}
-			render_service->endFrame();
+			mRenderService->endFrame();
 		}
 		return true;
 	}

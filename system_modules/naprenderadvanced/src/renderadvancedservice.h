@@ -22,6 +22,7 @@
 namespace nap
 {
 	// Forward declares
+	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
 
@@ -49,8 +50,7 @@ namespace nap
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
-		RenderAdvancedService(ServiceConfiguration* configuration) :
-			Service(configuration) { }
+		RenderAdvancedService(ServiceConfiguration* configuration);
 
 		/**
 		 * Use this call to register service dependencies
@@ -101,6 +101,9 @@ namespace nap
 
 		bool initServiceResources(utility::ErrorState& errorState);
 		bool preRenderCubeMaps(utility::ErrorState& errorState);
+
+		// Reference to render service
+		RenderService* mRenderService = nullptr;
 
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;

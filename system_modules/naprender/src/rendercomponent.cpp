@@ -34,6 +34,13 @@ namespace nap
 		const auto& resource = getComponent<RenderableComponent>();
 		mVisible = resource->mVisible;
 
+		if (resource->mLayer != nullptr && resource->mLayerRegistry == nullptr)
+		{
+			// The layer must be assigned an index by the registry
+			errorState.fail("%s: Layer specified without registry. Please provide a registry to ensure it is initialized before the layer.", resource->mID.c_str());
+			return false;
+		}
+
 		if (resource->mLayerRegistry != nullptr)
 		{
 			mRenderLayer = (resource->mLayer != nullptr) ?

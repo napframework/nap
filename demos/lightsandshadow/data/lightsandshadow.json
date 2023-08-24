@@ -15,7 +15,8 @@
                         },
                         "Speed": 0.05000000074505806,
                         "Offset": 1.0
-                    }
+                    },
+                    "Enabled": true
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -78,6 +79,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
@@ -186,6 +188,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
@@ -339,6 +342,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
@@ -428,7 +432,8 @@
                         },
                         "Speed": -0.10000000149011612,
                         "Offset": 0.0
-                    }
+                    },
+                    "Enabled": true
                 }
             ],
             "Children": []
@@ -496,6 +501,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "",
                     "MaterialInstance": {
@@ -549,6 +555,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
@@ -622,6 +629,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "",
                     "MaterialInstance": {
@@ -675,6 +683,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
@@ -751,6 +760,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "",
                     "MaterialInstance": {
@@ -804,6 +814,7 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Gnomon": "GnomonMesh",
                     "LineWidth": 1.0,
@@ -846,6 +857,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
@@ -923,6 +935,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
+                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {

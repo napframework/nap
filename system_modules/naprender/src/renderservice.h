@@ -505,6 +505,14 @@ namespace nap
 		void computeObjects(const std::vector<ComputeComponentInstance*>& comps);
 
 		/**
+		 * Filters list of renderable components with the specified render mask.
+		 * @param comps the render components to filter
+		 * @param renderMask the render mask used to filter
+		 * @return a list of filtered objects
+		 */
+		std::vector<RenderableComponentInstance*> filterObjects(const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask);
+
+		/**
 		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added

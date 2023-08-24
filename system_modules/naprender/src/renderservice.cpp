@@ -1405,12 +1405,7 @@ namespace nap
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired
 
 		// Only gather renderable components that can be rendered using the given mask
-		std::vector<nap::RenderableComponentInstance*> render_comps;
-		for (const auto& comp : comps)
-		{
-			if (compareRenderMask(comp->getRenderMask(), renderMask))
-				render_comps.emplace_back(comp);
-		}
+		auto render_comps = filterObjects(comps, renderMask);
 
 		// Sort objects to render
 		sortFunction(render_comps, view);
@@ -1428,6 +1423,19 @@ namespace nap
 
 		for (auto* comp : components_to_compute)
 			comp->compute(mCurrentCommandBuffer);
+	}
+
+
+	std::vector<RenderableComponentInstance*> RenderService::filterObjects(const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask)
+	{
+		// Only gather renderable components that can be rendered using the given mask
+		std::vector<RenderableComponentInstance*> render_comps;
+		for (const auto& comp : comps)
+		{
+			if (compareRenderMask(comp->getRenderMask(), renderMask))
+				render_comps.emplace_back(comp);
+		}
+		return render_comps;
 	}
 
 
