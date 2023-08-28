@@ -177,8 +177,12 @@ namespace nap
 
 		// Notify user that painting in debug mode is slow
 #ifndef NDEBUG
-		if (!mPopupOpened)
+		static bool popup_opened = false;
+		if (!popup_opened)
+		{
 			ImGui::OpenPopup(popupID);
+			popup_opened = true;
+		}
 		handlePopup();
 #endif // DEBUG
 
@@ -206,7 +210,6 @@ namespace nap
 			ImGui::SameLine();
 			if (ImGui::ImageButton(mGuiService->getIcon(icon::ok), "Gotcha"))
 			{
-				mPopupOpened = true;
 				ImGui::CloseCurrentPopup();
 			}
 			ImGui::EndPopup();
