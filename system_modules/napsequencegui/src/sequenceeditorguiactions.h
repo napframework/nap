@@ -9,7 +9,7 @@
 
 // External Includes
 #include <rtti/rtti.h>
-
+#include <imgui/imgui.h>
 #include <utility>
 
 namespace nap
@@ -515,12 +515,16 @@ namespace nap
         {
         RTTI_ENABLE(TrackAction)
         public:
-            TrackOptionsPopup(const std::string& trackID)
-                    : TrackAction(trackID)
+            TrackOptionsPopup(const std::string& trackID, ImVec2 pos)
+                    : TrackAction(trackID), mPos(std::move(pos))
             {}
 
             // indicates whether the handler should open the popup
             bool mPopupOpened = false;
+            // position of the popup in screen coordinates
+            ImVec2 mPos;
+            // scroll at the moment of opening, popup closes when the user scrolls within the sequence editor gui
+            float mScrollY = 0.0f;
         };
     }
 }

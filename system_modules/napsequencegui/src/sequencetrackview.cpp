@@ -146,9 +146,10 @@ namespace nap
             const float upper_right_alignment = ImGui::GetWindowWidth() - 30.0f * mState.mScale;
             ImGui::SameLine(upper_right_alignment);
 
+            float x = ImGui::GetCursorScreenPos().x;
             if(ImGui::ImageButton(gui.getIcon(icon::settings), "Track Settings"))
             {
-                mState.mAction = createAction<TrackOptionsPopup>(track.mID);
+                mState.mAction = createAction<TrackOptionsPopup>(track.mID, ImVec2(x, ImGui::GetCursorScreenPos().y));
             }
 
             // offset inspector cursor
@@ -349,7 +350,13 @@ namespace nap
         {
             ImGui::OpenPopup("TrackOptions");
             action->mPopupOpened = true;
+            action->mScrollY = mState.mScroll.y; // store scroll, close popup when user is scrolling
+            ImGui::SetNextWindowPos(action->mPos);
         }
+
+        // scale down everything
+        float global_scale = 0.25f;
+        ImGui::GetStyle().ScaleAllSizes(global_scale);
 
         if(ImGui::BeginPopup("TrackOptions"))
         {
@@ -403,6 +410,13 @@ namespace nap
                 ImGui::CloseCurrentPopup();
             }
 
+            // close popup on scroll
+            if(mState.mScroll.y != action->mScrollY)
+            {
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                ImGui::CloseCurrentPopup();
+            }
+
             ImGui::EndPopup();
         }else
         {
@@ -410,6 +424,9 @@ namespace nap
             mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
             ImGui::CloseCurrentPopup();
         }
+
+        // scale up
+        ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
     }
 
 
