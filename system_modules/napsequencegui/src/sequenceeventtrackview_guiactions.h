@@ -11,29 +11,9 @@ namespace nap
     namespace sequenceguiactions
     {
         /**
-         * TrackAction to tell the GUI to open an insert event segment popup
-         */
-        class NAPAPI OpenInsertEventSegmentPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID the track id of the track where the new segment should be inserted
-             * @param time the time at which to insert the track
-             */
-            OpenInsertEventSegmentPopup(const std::string& trackID, double time)
-                : TrackAction(trackID), mTime(time)
-            {}
-
-
-            double mTime;
-        };
-
-        /**
          * TrackAction that tells the GUI we're currently in an insert event segment popup
          */
-        class NAPAPI InsertingEventSegment : public TrackAction
+        class NAPAPI InsertEventSegmentPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
         public:
@@ -42,11 +22,11 @@ namespace nap
              * @param trackID the track id of the track where the new segment should be inserted
              * @param time the time at which to insert the track
              */
-            InsertingEventSegment(const std::string& trackID, double time)
+            InsertEventSegmentPopup(const std::string& trackID, double time)
                 : TrackAction(trackID), mTime(time)
             {}
 
-
+            bool mOpened = false;
             double mTime;
             std::string mMessage = "hello world";
             std::string mErrorString;
@@ -72,7 +52,6 @@ namespace nap
             OpenEditEventSegmentPopup(const std::string& trackID, std::string segmentID, ImVec2 windowPos, T value, double startTime)
                 : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(value), mStartTime(startTime)
             {}
-
 
             std::string mSegmentID;
             ImVec2 mWindowPos;

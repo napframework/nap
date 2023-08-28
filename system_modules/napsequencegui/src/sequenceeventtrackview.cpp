@@ -23,13 +23,11 @@ namespace nap
         : SequenceTrackView(view, state)
     {
         // register applicable action handlers
-        registerActionHandler(RTTI_OF(OpenInsertEventSegmentPopup), [this] { handleInsertEventSegmentPopup(); });
-        registerActionHandler(RTTI_OF(InsertingEventSegment), [this] { handleInsertEventSegmentPopup(); });
-        registerActionHandler(RTTI_OF(OpenEditSegmentPopup), [this] { handleEditSegmentValuePopup(); });
-        registerActionHandler(RTTI_OF(EditingSegmentPopup), [this] { handleEditSegmentValuePopup(); });
+        registerActionHandler(RTTI_OF(InsertEventSegmentPopup), [this] { handleInsertEventSegmentPopup(); });
+        registerActionHandler(RTTI_OF(EditSegmentPopup), [this] { handleEditSegmentValuePopup(); });
         registerActionHandler(RTTI_OF(AssignOutputIDToTrack), [this] { handleAssignOutputIDToTrack(); });
         registerActionHandler(RTTI_OF(DraggingSegment), [this] { handleSegmentDrag(); });
-        registerActionHandler(RTTI_OF(ShowLoadPresetPopup), [this] { handleLoadPresetPopup(); });
+        registerActionHandler(RTTI_OF(LoadPresetPopup), [this] { handleLoadPresetPopup(); });
 
         /**
          * register all edit popups for all registered views for possible event actions
@@ -140,7 +138,7 @@ namespace nap
                         double time = mState.mMouseCursorTime;
 
                         //
-                        mState.mAction = createAction<OpenInsertEventSegmentPopup>(
+                        mState.mAction = createAction<InsertEventSegmentPopup>(
                             track.mID,
                             time);
                     }
@@ -148,9 +146,9 @@ namespace nap
             }
 
             // draw line in track while in inserting segment popup
-            if(mState.mAction->isAction<OpenInsertEventSegmentPopup>())
+            if(mState.mAction->isAction<InsertEventSegmentPopup>())
             {
-                auto *action = mState.mAction->getDerived<OpenInsertEventSegmentPopup>();
+                auto *action = mState.mAction->getDerived<InsertEventSegmentPopup>();
                 if(action->mTrackID == track.mID)
                 {
                     // position of insertion in track
@@ -163,9 +161,9 @@ namespace nap
                 }
             }
 
-            if(mState.mAction->isAction<InsertingEventSegment>())
+            if(mState.mAction->isAction<InsertEventSegmentPopup>())
             {
-                auto *action = mState.mAction->getDerived<InsertingEventSegment>();
+                auto *action = mState.mAction->getDerived<InsertEventSegmentPopup>();
                 if(action->mTrackID == track.mID)
                 {
                     // position of insertion in track
@@ -208,99 +206,95 @@ namespace nap
 
     void SequenceEventTrackView::handleInsertEventSegmentPopup()
     {
-        if(mState.mAction->isAction<OpenInsertEventSegmentPopup>())
+        auto* action = mState.mAction->getDerived<InsertEventSegmentPopup>();
+        assert(action!= nullptr);
+        
+        if(!action->mOpened)
         {
             // invoke insert sequence popup
             ImGui::OpenPopup("Insert Event");
-
-            auto *action = mState.mAction->getDerived<OpenInsertEventSegmentPopup>();
-            mState.mAction = createAction<InsertingEventSegment>(action->mTrackID, action->mTime);
+            action->mOpened = true;
         }
 
         // handle insert segment popup
-        if(mState.mAction->isAction<InsertingEventSegment>())
+        if(ImGui::BeginPopup("Insert Event"))
         {
-            if(ImGui::BeginPopup("Insert Event"))
+            auto &event_map = mService.getRegisteredSegmentEventTypes();
+            for(auto &type: event_map)
             {
-                auto *action = mState.mAction->getDerived<InsertingEventSegment>();
-
-                auto &event_map = mService.getRegisteredSegmentEventTypes();
-                for(auto &type: event_map)
+                std::string type_str = utility::stripNamespace(type.get_name().to_string());
+                std::string btn_str = "Insert " + type_str;
+                ImGui::PushID(type_str.c_str());
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_str.c_str()))
                 {
-                    std::string type_str = utility::stripNamespace(type.get_name().to_string());
-                    std::string btn_str = "Insert " + type_str;
-                    ImGui::PushID(type_str.c_str());
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_str.c_str()))
-                    {
-                        auto it = mSegmentViews.find(type);
-                        assert(it != mSegmentViews.end()); // type not found
+                    auto it = mSegmentViews.find(type);
+                    assert(it != mSegmentViews.end()); // type not found
 
-                        it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
-                        ImGui::CloseCurrentPopup();
-                        mState.mAction = createAction<None>();
-                    }
-                    ImGui::SameLine();
-                    ImGui::Text(type_str.c_str());
-                    ImGui::PopID();
-                }
-
-                // handle paste if event segment is in clipboard
-                if(mState.mClipboard->isClipboard<EventSegmentClipboard>())
-                {
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
-                    {
-                        // call appropriate paste method
-                        utility::ErrorState error_state;
-                        if(!pasteEventsFromClipboard(action->mTrackID, action->mTime, error_state))
-                        {
-                            ImGui::OpenPopup("Error");
-                            action->mErrorString = error_state.toString();
-                        } else
-                        {
-                            // exit popup
-                            ImGui::CloseCurrentPopup();
-                            mState.mAction = createAction<None>();
-                        }
-                    }
-                    ImGui::SameLine();
-                }
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
-                {
-                    if(mState.mClipboard->getTrackType() != RTTI_OF(SequenceTrackEvent))
-                    {
-                        mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent),
-                                                                                   getEditor().mSequencePlayer->getSequenceFilename());
-                    }
-                    mState.mAction = createAction<ShowLoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackEvent));
-                    ImGui::CloseCurrentPopup();
-                }
-
-                if(ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-                {
-                    ImGui::Text(action->mErrorString.c_str());
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-                    {
-                        mState.mDirty = true;
-                        mState.mAction = createAction<None>();
-                        ImGui::CloseCurrentPopup();
-                    }
-
-                    ImGui::EndPopup();
-                }
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
-                {
+                    it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
                     ImGui::CloseCurrentPopup();
                     mState.mAction = createAction<None>();
                 }
+                ImGui::SameLine();
+                ImGui::Text(type_str.c_str());
+                ImGui::PopID();
+            }
+
+            // handle paste if event segment is in clipboard
+            if(mState.mClipboard->isClipboard<EventSegmentClipboard>())
+            {
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
+                {
+                    // call appropriate paste method
+                    utility::ErrorState error_state;
+                    if(!pasteEventsFromClipboard(action->mTrackID, action->mTime, error_state))
+                    {
+                        ImGui::OpenPopup("Error");
+                        action->mErrorString = error_state.toString();
+                    } else
+                    {
+                        // exit popup
+                        ImGui::CloseCurrentPopup();
+                        mState.mAction = createAction<None>();
+                    }
+                }
+                ImGui::SameLine();
+            }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
+            {
+                if(mState.mClipboard->getTrackType() != RTTI_OF(SequenceTrackEvent))
+                {
+                    mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent),
+                                                                               getEditor().mSequencePlayer->getSequenceFilename());
+                }
+                mState.mAction = createAction<LoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackEvent));
+                ImGui::CloseCurrentPopup();
+            }
+
+            if(ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text(action->mErrorString.c_str());
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+                {
+                    mState.mDirty = true;
+                    mState.mAction = createAction<None>();
+                    ImGui::CloseCurrentPopup();
+                }
 
                 ImGui::EndPopup();
-            } else
+            }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
             {
-                // click outside popup so cancel action
+                ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = createAction<None>();
         }
     }
 
@@ -375,7 +369,7 @@ namespace nap
             // right mouse in deletion popup
             if(ImGui::IsMouseDown(1))
             {
-                mState.mAction = createAction<OpenEditSegmentPopup>(track.mID, segment.mID, segment.get_type());
+                mState.mAction = createAction<EditSegmentPopup>(track.mID, segment.mID, segment.get_type());
             }
 
             // handled shift click for add/remove to clipboard
@@ -458,161 +452,158 @@ namespace nap
 
     void SequenceEventTrackView::handleEditSegmentValuePopup()
     {
-        if(mState.mAction->isAction<OpenEditSegmentPopup>())
+        auto* action = mState.mAction->getDerived<EditSegmentPopup>();
+        assert(action!= nullptr);
+        if(!action->mOpened)
         {
             // invoke insert sequence popup
             ImGui::OpenPopup("Edit Segment");
-
-            auto *action = mState.mAction->getDerived<OpenEditSegmentPopup>();
-            mState.mAction = createAction<EditingSegmentPopup>(action->mTrackID, action->mSegmentID, action->mSegmentType);
+            action->mOpened = true;
         }
 
-        // handle delete segment popup
-        if(mState.mAction->isAction<EditingSegmentPopup>())
+        // handle edit segment popup
+        if(ImGui::BeginPopup("Edit Segment"))
         {
-            if(ImGui::BeginPopup("Edit Segment"))
+            auto *action = mState.mAction->getDerived<EditSegmentPopup>();
+
+            bool display_copy = !mState.mClipboard->isClipboard<EventSegmentClipboard>();
+
+            // if clipboard is from different sequence, create new clipboard, so display copy
+            if(!display_copy)
             {
-                auto *action = mState.mAction->getDerived<EditingSegmentPopup>();
+                if(mState.mClipboard->getDerived<EventSegmentClipboard>()->getSequenceName() !=
+                   getEditor().mSequencePlayer->getSequenceFilename())
+                    mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+            }
 
-                bool display_copy = !mState.mClipboard->isClipboard<EventSegmentClipboard>();
-
-                // if clipboard is from different sequence, create new clipboard, so display copy
-                if(!display_copy)
+            if(display_copy)
+            {
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
                 {
-                    if(mState.mClipboard->getDerived<EventSegmentClipboard>()->getSequenceName() !=
-                       getEditor().mSequencePlayer->getSequenceFilename())
-                        mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+                    // create clipboard
+                    mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+
+                    // serialize segment
+                    utility::ErrorState errorState;
+                    auto &controller = getEditor().getController<SequenceControllerEvent>();
+                    const auto *event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+                    mState.mClipboard->addObject(event_segment, getPlayer().getSequenceFilename(), errorState);
+
+                    // exit popup
+                    ImGui::CloseCurrentPopup();
+                    mState.mAction = createAction<None>();
+                    ImGui::EndPopup();
+
+                    return;
                 }
+            } else
+            {
+                // obtain derived clipboard
+                auto *clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
 
-                if(display_copy)
+                // is event contained by clipboard ? if so, add remove button
+                bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename());
+
+                if(display_remove_from_clipboard)
                 {
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
                     {
-                        // create clipboard
-                        mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+                        clipboard->removeObject(action->mSegmentID);
 
-                        // serialize segment
-                        utility::ErrorState errorState;
-                        auto &controller = getEditor().getController<SequenceControllerEvent>();
-                        const auto *event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-                        mState.mClipboard->addObject(event_segment, getPlayer().getSequenceFilename(), errorState);
+                        // if clipboard is empty, remove current clipboard
+                        if(clipboard->getObjectCount() == 0)
+                        {
+                            mState.mClipboard = createClipboard<Empty>();
+                        }
 
                         // exit popup
                         ImGui::CloseCurrentPopup();
                         mState.mAction = createAction<None>();
                         ImGui::EndPopup();
-
                         return;
                     }
                 } else
                 {
-                    // obtain derived clipboard
-                    auto *clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
-
-                    // is event contained by clipboard ? if so, add remove button
-                    bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename());
-
-                    if(display_remove_from_clipboard)
+                    // clipboard is of correct type, but does not contain this segment, present the user with an add button
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
                     {
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
+                        // obtain controller
+                        auto &controller = getEditor().getController<SequenceControllerEvent>();
+
+                        // fetch segment
+                        const auto *segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+
+                        // serialize object into clipboard
+                        utility::ErrorState errorState;
+                        clipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
+
+                        // log any errors
+                        if(errorState.hasErrors())
                         {
-                            clipboard->removeObject(action->mSegmentID);
-
-                            // if clipboard is empty, remove current clipboard
-                            if(clipboard->getObjectCount() == 0)
-                            {
-                                mState.mClipboard = createClipboard<Empty>();
-                            }
-
-                            // exit popup
-                            ImGui::CloseCurrentPopup();
-                            mState.mAction = createAction<None>();
-                            ImGui::EndPopup();
-                            return;
+                            nap::Logger::error(errorState.toString());
                         }
-                    } else
-                    {
-                        // clipboard is of correct type, but does not contain this segment, present the user with an add button
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
-                        {
-                            // obtain controller
-                            auto &controller = getEditor().getController<SequenceControllerEvent>();
 
-                            // fetch segment
-                            const auto *segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-
-                            // serialize object into clipboard
-                            utility::ErrorState errorState;
-                            clipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
-
-                            // log any errors
-                            if(errorState.hasErrors())
-                            {
-                                nap::Logger::error(errorState.toString());
-                            }
-
-                            // exit popup
-                            ImGui::CloseCurrentPopup();
-                            mState.mAction = createAction<None>();
-                            ImGui::EndPopup();
-                            return;
-                        }
+                        // exit popup
+                        ImGui::CloseCurrentPopup();
+                        mState.mAction = createAction<None>();
+                        ImGui::EndPopup();
+                        return;
                     }
                 }
-                ImGui::SameLine();
+            }
+            ImGui::SameLine();
 
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
+            {
+                auto &controller = getEditor().getController<SequenceControllerEvent>();
+                controller.deleteSegment(action->mTrackID, action->mSegmentID);
+
+                // remove segment from clipboard
+                if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
                 {
-                    auto &controller = getEditor().getController<SequenceControllerEvent>();
-                    controller.deleteSegment(action->mTrackID, action->mSegmentID);
-
-                    // remove segment from clipboard
-                    if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
-                    {
-                        mState.mClipboard->removeObject(action->mSegmentID);
-                    }
-
-                    mState.mDirty = true;
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                } else
-                {
-                    if(action->mSegmentType.is_derived_from<SequenceTrackSegmentEventBase>())
-                    {
-                        ImGui::SameLine();
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::edit)))
-                        {
-                            auto &eventController = getEditor().getController<SequenceControllerEvent>();
-                            const auto *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase *>(eventController.getSegment(action->mTrackID, action->mSegmentID));
-
-                            assert(eventSegment != nullptr);
-
-                            if(eventSegment != nullptr)
-                            {
-                                rttr::type type = eventSegment->get_type();
-
-                                auto it = mSegmentViews.find(type);
-                                assert(it != mSegmentViews.end()); // type not found
-                                mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
-                            }
-                            ImGui::CloseCurrentPopup();
-                        }
-                    }
+                    mState.mClipboard->removeObject(action->mSegmentID);
                 }
 
-                ImGui::SameLine();
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
-                {
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                }
-
-                ImGui::EndPopup();
+                mState.mDirty = true;
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
             } else
             {
-                // click outside popup so cancel action
+                if(action->mSegmentType.is_derived_from<SequenceTrackSegmentEventBase>())
+                {
+                    ImGui::SameLine();
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::edit)))
+                    {
+                        auto &eventController = getEditor().getController<SequenceControllerEvent>();
+                        const auto *eventSegment = dynamic_cast<const SequenceTrackSegmentEventBase *>(eventController.getSegment(action->mTrackID, action->mSegmentID));
+
+                        assert(eventSegment != nullptr);
+
+                        if(eventSegment != nullptr)
+                        {
+                            rttr::type type = eventSegment->get_type();
+
+                            auto it = mSegmentViews.find(type);
+                            assert(it != mSegmentViews.end()); // type not found
+                            mState.mAction = it->second->createEditAction(eventSegment, action->mTrackID, action->mSegmentID);
+                        }
+                        ImGui::CloseCurrentPopup();
+                    }
+                }
+            }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
+            {
+                ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = createAction<None>();
         }
     }
 
@@ -736,9 +727,9 @@ namespace nap
 
     void SequenceEventTrackView::handleLoadPresetPopup()
     {
-        if(mState.mAction->isAction<ShowLoadPresetPopup>())
+        if(mState.mAction->isAction<LoadPresetPopup>())
         {
-            auto *load_action = mState.mAction->getDerived<ShowLoadPresetPopup>();
+            auto *load_action = mState.mAction->getDerived<LoadPresetPopup>();
             auto *controller = getEditor().getControllerWithTrackType(load_action->mTrackType);
 
             if(controller->get_type().is_derived_from<SequenceControllerEvent>())

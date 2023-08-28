@@ -16,120 +16,110 @@ namespace nap
     template<typename T>
     void SequenceCurveTrackView::handleCurvePointActionPopup()
     {
-        if(mState.mAction->isAction<sequenceguiactions::OpenCurvePointActionPopup<T>>())
+        auto *action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<T>>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            auto *action = mState.mAction->getDerived<sequenceguiactions::OpenCurvePointActionPopup<T>>();
-            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::CurvePointActionPopup<T>>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mControlPointIndex,
-                action->mCurveIndex,
-                action->mValue,
-                action->mTime,
-                action->mMinimum,
-                action->mMaximum);
             ImGui::OpenPopup("Curve Point Actions");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<sequenceguiactions::CurvePointActionPopup<T>>())
+        if(ImGui::BeginPopup("Curve Point Actions"))
         {
-            if(ImGui::BeginPopup("Curve Point Actions"))
+            int curveIndex = action->mCurveIndex;
+
+            float value = action->mValue * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) +
+                          action->mMinimum[curveIndex];
+            if(ImGui::InputFloat("value", &value))
             {
-                auto *action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<T>>();
-                int curveIndex = action->mCurveIndex;
-
-                float value = action->mValue * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) +
-                              action->mMinimum[curveIndex];
-                if(ImGui::InputFloat("value", &value))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex,
-                        action->mTime,
-                        value);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-
-                    mState.mDirty = true;
-                }
-
-                /**
-                 * Handle adjusting time of point
-                 * Calculate mTime value to time in sequence, show InputInt3 (mm::ss::ms).
-                 * On edit : validate input and call controller
-                 */
-                // obtain segment
                 auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
-                assert(segment != nullptr);
+                curve_controller.changeCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex,
+                    action->mTime,
+                    value);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
-                double time = action->mTime * segment->mDuration + segment->mStartTime;
-                double min_time = segment->mStartTime;
-                double max_time = segment->mStartTime + segment->mDuration;
-
-                std::vector<int> time_array = convertTimeToMMSSMSArray(time);
-
-                bool edit_time = false;
-
-                ImGui::Separator();
-                ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                if(edit_time)
-                {
-                    double new_time = convertMMSSMSArrayToTime(time_array);
-                    new_time = math::clamp(new_time, min_time, max_time);
-
-                    float perc = (new_time - segment->mStartTime) / segment->mDuration;
-                    action->mTime = perc;
-                    curve_controller.changeCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex,
-                        perc,
-                        action->mValue);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-                    mState.mDirty = true;
-                }
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(nap::icon::del)))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.deleteCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-                    mCurveCache.clear();
-
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    mState.mDirty = true;
-
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
-                {
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // click outside popup so cancel action
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                mState.mDirty = true;
             }
+
+            /**
+             * Handle adjusting time of point
+             * Calculate mTime value to time in sequence, show InputInt3 (mm::ss::ms).
+             * On edit : validate input and call controller
+             */
+            // obtain segment
+            auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+            const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
+            assert(segment != nullptr);
+
+            double time = action->mTime * segment->mDuration + segment->mStartTime;
+            double min_time = segment->mStartTime;
+            double max_time = segment->mStartTime + segment->mDuration;
+
+            std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+
+            bool edit_time = false;
+
+            ImGui::Separator();
+            ImGui::PushItemWidth(100.0f * mState.mScale);
+
+            edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            if(edit_time)
+            {
+                double new_time = convertMMSSMSArrayToTime(time_array);
+                new_time = math::clamp(new_time, min_time, max_time);
+
+                float perc = (new_time - segment->mStartTime) / segment->mDuration;
+                action->mTime = perc;
+                curve_controller.changeCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex,
+                    perc,
+                    action->mValue);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                mState.mDirty = true;
+            }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(nap::icon::del)))
+            {
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.deleteCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                mCurveCache.clear();
+
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                mState.mDirty = true;
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
+            {
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
         }
     }
 
@@ -137,60 +127,50 @@ namespace nap
     template<typename T>
     void SequenceCurveTrackView::handleSegmentValueActionPopup()
     {
-        if(mState.mAction->isAction<sequenceguiactions::OpenEditSegmentCurveValuePopup<T>>())
+        auto *action = mState.mAction->getDerived<sequenceguiactions::EditingSegmentCurveValue<T>>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            auto *action = mState.mAction->getDerived<sequenceguiactions::OpenEditSegmentCurveValuePopup<T>>();
-            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingSegmentCurveValue<T>>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mType,
-                action->mCurveIndex,
-                action->mValue,
-                action->mMinimum,
-                action->mMaximum
-            );
             ImGui::OpenPopup("Segment Value Actions");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<sequenceguiactions::EditingSegmentCurveValue<T>>())
+        if(ImGui::BeginPopup("Segment Value Actions"))
         {
-            if(ImGui::BeginPopup("Segment Value Actions"))
+            int curveIndex = action->mCurveIndex;
+
+            float value =
+                action->mValue[curveIndex] * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) +
+                action->mMinimum[curveIndex];
+            if(ImGui::InputFloat("value", &value))
             {
-                auto *action = mState.mAction->getDerived<sequenceguiactions::EditingSegmentCurveValue<T>>();
-                int curveIndex = action->mCurveIndex;
+                float translated_value = (value - action->mMinimum[curveIndex]) /
+                                         (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]);
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.changeCurveSegmentValue(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    translated_value,
+                    curveIndex,
+                    action->mType);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
-                float value =
-                    action->mValue[curveIndex] * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) +
-                    action->mMinimum[curveIndex];
-                if(ImGui::InputFloat("value", &value))
-                {
-                    float translated_value = (value - action->mMinimum[curveIndex]) /
-                                             (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]);
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurveSegmentValue(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        translated_value,
-                        curveIndex,
-                        action->mType);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-
-                    mState.mDirty = true;
-                }
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
-                {
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // click outside popup so cancel action
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                mState.mDirty = true;
             }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(nap::icon::ok)))
+            {
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
         }
     }
 
@@ -291,7 +271,7 @@ namespace nap
 
                         if(ImGui::IsMouseClicked(1))
                         {
-                            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::OpenInsertCurvePointPopup>(
+                            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::InsertingCurvePoint>(
                                 track.mID,
                                 segment.mID,
                                 i, x_in_segment);
@@ -586,7 +566,7 @@ namespace nap
                         const auto &curve_segment = static_cast<const SequenceTrackSegmentCurve<T> &>(segment);
                         const auto &curve_track = static_cast<const SequenceTrackCurve<T> &>(track);
 
-                        mState.mAction = sequenceguiactions::createAction<sequenceguiactions::OpenEditSegmentCurveValuePopup<T>>(
+                        mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingSegmentCurveValue<T>>(
                             track.mID,
                             segment.mID,
                             segmentType,
@@ -774,7 +754,7 @@ namespace nap
                         // if we clicked right mouse button, open curve action popup
                     else if(ImGui::IsMouseClicked(1))
                     {
-                        mState.mAction = sequenceguiactions::createAction<sequenceguiactions::OpenCurvePointActionPopup<T>>(
+                        mState.mAction = sequenceguiactions::createAction<sequenceguiactions::CurvePointActionPopup<T>>(
                             track.mID,
                             segment.mID,
                             i,
@@ -972,7 +952,7 @@ namespace nap
                                     type);
                             } else if(ImGui::IsMouseDown(1)) // open edit popup
                             {
-                                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::OpenEditTanPointPopup>(
+                                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingTanPointPopup>(
                                     track.mID,
                                     segment.mID,
                                     controlPointIndex,
