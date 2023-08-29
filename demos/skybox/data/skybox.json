@@ -1,10 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::BlinnPhongColorShader",
-            "mID": "BlinnPhongColorShader"
-        },
-        {
             "Type": "nap::BoxFrameMesh",
             "mID": "BoxFrame",
             "PolygonMode": "Line",
@@ -111,94 +107,6 @@
                 {
                     "Type": "nap::DefaultInputRouterComponent",
                     "mID": "DefaultInputRouterComponent"
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "Light2Entity",
-            "Components": [
-                {
-                    "Type": "nap::SpotLightComponent",
-                    "mID": "SpotLight2Component",
-                    "Enabled": true,
-                    "Color": "LightColorParam",
-                    "Intensity": "LightIntensityParam",
-                    "ShadowStrength": 1.0,
-                    "ShadowSampleCount": 4,
-                    "Enable Shadows": false,
-                    "ShadowCamera": "",
-                    "ShadowMapSize": 1024,
-                    "Attenuation": "LightAttenuationParam",
-                    "Angle": "LightAngleParam",
-                    "FallOff": "LightFalloffParam"
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformSpotlight2",
-                    "Properties": {
-                        "Translate": {
-                            "x": 1.0,
-                            "y": 5.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 270.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "LightEntity",
-            "Components": [
-                {
-                    "Type": "nap::SpotLightComponent",
-                    "mID": "SpotLightComponent",
-                    "Enabled": true,
-                    "Color": "LightColorParam",
-                    "Intensity": "LightIntensityParam",
-                    "ShadowStrength": 1.0,
-                    "ShadowSampleCount": 4,
-                    "Enable Shadows": false,
-                    "ShadowCamera": "",
-                    "ShadowMapSize": 1024,
-                    "Attenuation": "LightAttenuationParam",
-                    "Angle": "LightAngleParam",
-                    "FallOff": "LightFalloffParam"
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformSpotlight",
-                    "Properties": {
-                        "Translate": {
-                            "x": -1.0,
-                            "y": 5.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 270.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
                 }
             ],
             "Children": []
@@ -320,14 +228,7 @@
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_b1933c5b",
                                 "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformUInt",
-                                        "mID": "UniformUInt_f4476cf0",
-                                        "Name": "environment",
-                                        "Value": 1
-                                    }
-                                ]
+                                "Uniforms": []
                             }
                         ],
                         "Samplers": [
@@ -349,7 +250,7 @@
                             }
                         ],
                         "Buffers": [],
-                        "Material": "BlinnPhongMaterial",
+                        "Material": "EnvironmentMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
                     },
@@ -411,8 +312,7 @@
             ],
             "Children": [
                 "SkyBoxEntity",
-                "TorusEntity",
-                "LightEntity"
+                "TorusEntity"
             ]
         },
         {
@@ -428,77 +328,6 @@
         {
             "Type": "nap::GnomonShader",
             "mID": "GnomonShader"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "BlinnPhongMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_60da175c",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec4",
-                            "mID": "UniformVec4_3019e56a",
-                            "Name": "ambient",
-                            "Value": {
-                                "x": 0.02500000037252903,
-                                "y": 0.02500000037252903,
-                                "z": 0.02500000037252903,
-                                "w": 0.5
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_cdd76af7",
-                            "Name": "diffuse",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "UniformVec3_11cc25f4",
-                            "Name": "specular",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec2",
-                            "mID": "UniformVec2_f66d0135",
-                            "Name": "fresnel",
-                            "Value": {
-                                "x": 0.25,
-                                "y": 2.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_5b6d8df2",
-                            "Name": "shininess",
-                            "Value": 32.0
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "UniformFloat_49935e1d",
-                            "Name": "alpha",
-                            "Value": 1.0
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Buffers": [],
-            "VertexAttributeBindings": [],
-            "Shader": "BlinnPhongColorShader",
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -532,6 +361,34 @@
             "Buffers": [],
             "VertexAttributeBindings": [],
             "Shader": "ConstantShader",
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "EnvironmentMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UniformStruct_60da175c",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "UniformVec2_f66d0135",
+                            "Name": "fresnel",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 4.0
+                            }
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "VertexAttributeBindings": [],
+            "Shader": "EnvironmentShader",
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -765,6 +622,13 @@
                     "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "EnvironmentShader",
+            "VertShader": "shaders/environment.vert",
+            "FragShader": "shaders/environment.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::SkyBoxShader",
