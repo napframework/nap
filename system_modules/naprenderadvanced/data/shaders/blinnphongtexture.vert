@@ -8,6 +8,8 @@
 #include "utils.glslinc"
 #include "shadow.glslinc"
 
+layout (constant_id = 0) const uint MAX_LIGHTS = 8;
+
 // Uniforms
 uniform nap
 {
@@ -18,11 +20,12 @@ uniform nap
 	vec3 cameraPosition;
 } mvp;
 
-uniform light
+uniform shadow
 {
-	Light lights[MAX_LIGHTS];
+	mat4 lightViewProjectionMatrix[MAX_LIGHTS];
+	uint flags;
 	uint count;
-} lit;
+} sdw;
 
 uniform UBO
 {
@@ -41,11 +44,11 @@ in vec3 	in_Normals;						//< Vertex normal in object space
 in vec3 	in_UV0;							//< Texture UVs
 		
 // Vertex Output		
-out vec3 	passPosition;					//< Vertex position in world space
-out vec3 	passNormal;						//< Vertex normal in world space
-out vec3 	passUV0;						//< UVs
-out float 	passFresnel;					//< Fresnel
-out vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
+out vec3 	passPosition;							//< Vertex position in world space
+out vec3 	passNormal;								//< Vertex normal in world space
+out vec3 	passUV0;								//< UVs
+out float 	passFresnel;							//< Fresnel
+out vec4 	passShadowCoords[MAX_LIGHTS_ABSOLUTE];	//< Shadow Coordinates
 
 void main()
 {
@@ -65,15 +68,14 @@ void main()
 	passFresnel = pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), ubo.fresnel.y) * ubo.fresnel.x;
 
 	// Shadow
-	for (uint i = 0; i < lit.count; i++)
+	for (uint i = 0; i < sdw.count; i++)
 	{
 		// Check if shadow is enabled on this light, else skip
-		uint flags = lit.lights[i].flags;
-		if (!hasShadow(flags))
+		if (((sdw.flags >> i) & 0x1) > 0)
 			continue;
 
 		// Compute current shadow coordinate: the world position in lightviewspace
-		vec4 coord = lit.lights[i].viewProjectionMatrix * world_position;
+		vec4 coord = sdw.lightViewProjectionMatrix[i] * world_position;
 		
 		// Flip y (Vulkan coordinates are [-1, 1], refer to NAP RenderProjectionMatrix)
 		coord.y = -coord.y;

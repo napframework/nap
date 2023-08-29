@@ -304,7 +304,7 @@ static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, V
 }
 
 
-static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
+static std::unique_ptr<glslang::TShader> parseShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
 	const char* sources[] = { shaderCode };
 	int source_sizes[] = { shaderSize };
@@ -347,7 +347,7 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 	bool result = shader->parse(&defaultResource, default_version, false, messages, includer);
 	if (!result)
 	{
-		errorState.fail("Failed to compile shader: %s", shader->getInfoLog());
+		errorState.fail("Failed to parse shader: %s", shader->getInfoLog());
 		return nullptr;
 	}
 
@@ -358,12 +358,12 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName,
 	std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, searchPaths, errorState);
-	if (!errorState.check(vertex_shader != nullptr, "Unable to compile vertex shader"))
+	std::unique_ptr<glslang::TShader> vertex_shader = parseShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, searchPaths, errorState);
+	if (!errorState.check(vertex_shader != nullptr, "Unable to parse vertex shader"))
 		return false;
 
-	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, searchPaths, errorState);
-	if (!errorState.check(fragment_shader != nullptr, "Unable to compile fragment shader"))
+	std::unique_ptr<glslang::TShader> fragment_shader = parseShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, searchPaths, errorState);
+	if (!errorState.check(fragment_shader != nullptr, "Unable to parse fragment shader"))
 		return false;
 
 	EShMessages messages = EShMsgDefault;
@@ -407,7 +407,7 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 		spv::SpvBuildLogger logger;
 		glslang::GlslangToSpv(*program.getIntermediate(EShLangVertex), vertexSPIRV, &logger, &spv_options);
 
-		if (!errorState.check(!vertexSPIRV.empty(), "Failed to compile vertex shader: %s", logger.getAllMessages().c_str()))
+		if (!errorState.check(!vertexSPIRV.empty(), "Failed to compile vertex shader to SPIR-V: %s", logger.getAllMessages().c_str()))
 			return false;
 	}
 
@@ -416,7 +416,7 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 		spv::SpvBuildLogger logger;
 		glslang::GlslangToSpv(*program.getIntermediate(EShLangFragment), fragmentSPIRV, &logger, &spv_options);
 
-		if (!errorState.check(!fragmentSPIRV.empty(), "Failed to compile fragment shader: %s", logger.getAllMessages().c_str()))
+		if (!errorState.check(!fragmentSPIRV.empty(), "Failed to compile fragment shader to SPIR-V: %s", logger.getAllMessages().c_str()))
 			return false;
 	}
 
@@ -426,8 +426,8 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 
 static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, searchPaths, errorState);
-	if (!errorState.check(compute_shader != nullptr, "Unable to compile compute shader"))
+	std::unique_ptr<glslang::TShader> compute_shader = parseShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, searchPaths, errorState);
+	if (!errorState.check(compute_shader != nullptr, "Unable to parse compute shader"))
 		return false;
 
 	EShMessages messages = EShMsgDefault;
@@ -470,7 +470,7 @@ static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, co
 		spv::SpvBuildLogger logger;
 		glslang::GlslangToSpv(*program.getIntermediate(EShLangCompute), computeSPIRV, &logger, &spv_options);
 
-		if (!errorState.check(!computeSPIRV.empty(), "Failed to compile compute shader: %s", logger.getAllMessages().c_str()))
+		if (!errorState.check(!computeSPIRV.empty(), "Failed to compile compute shader to SPIR-V: %s", logger.getAllMessages().c_str()))
 			return false;
 	}
 
@@ -914,9 +914,11 @@ namespace nap
 			return false;
 
 		//auto frag_constants = fragment_shader_compiler.get_specialization_constants();
-		//if (!frag_constants.empty())
+		//for (const auto& frag_const : frag_constants)
 		//{
-		//	nap::Logger::info("");
+		//	auto& spir_const = fragment_shader_compiler.get_constant(frag_const.id);
+		//	auto value = spir_const.m.c[0].r[0];
+		//	nap::Logger::info("%d: %s = %d", frag_const.constant_id, fragment_shader_compiler.get_name(frag_const.id).c_str(), value);
 		//}
 
 		// Verify the shader variable declarations
@@ -1064,7 +1066,7 @@ namespace nap
 		auto search_paths = !mRestrictModuleIncludes ? mRenderService->getShaderSearchPaths() : std::vector<std::string>{};
 		search_paths.emplace_back(utility::getFileDir(mVertPath));
 
-		// Compile shader
+		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
 		return this->load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
@@ -1093,7 +1095,7 @@ namespace nap
 		auto search_paths = !mRestrictModuleIncludes ? mRenderService->getShaderSearchPaths() : std::vector<std::string>{};
 		search_paths.emplace_back(utility::getFileDir(mComputePath));
 
-		// Compile shader
+		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
 		return this->load(shader_name, search_paths, comp_source.data(), comp_source.size(), errorState);
 	}

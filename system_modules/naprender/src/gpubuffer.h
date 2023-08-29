@@ -244,6 +244,15 @@ namespace nap
 		{ }
 
 		/**
+		 * Initialize this buffer. This will allocate all required staging and device buffers based on the specified properties.
+		 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
+		 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has priority
+		 * over the latter.
+		 * @param errorState contains the error if initialization fails
+		 */
+		virtual bool init(utility::ErrorState& errorState) override;
+
+		/**
 		 * @return the number of buffer values
 		 */
 		virtual uint getCount() const override						{ return mCount; }

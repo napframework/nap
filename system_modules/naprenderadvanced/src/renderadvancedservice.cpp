@@ -44,8 +44,7 @@ namespace nap
 	{
 		uniform::light::flags,
 		uniform::light::origin,
-		uniform::light::direction,
-		uniform::light::viewProjectionMatrix
+		uniform::light::direction
 	};
 
 
@@ -305,15 +304,32 @@ namespace nap
 			if (light_count == nullptr)
 				continue;
 
+			auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
+			if (light_struct == nullptr)
+				continue;
+
+			auto* light_count_vert = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
+			if (light_count_vert == nullptr)
+				continue;
+
 			// Set light count to zero and exit early
 			if (disableLighting)
 			{
 				light_count->setValue(0);
+				light_count_vert->setValue(0);
 				return true;
 			}
 
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
 			if (light_array == nullptr)
+				continue;
+
+			auto* view_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
+			if (view_array == nullptr)
+				continue;
+
+			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
+			if (shadow_flags == nullptr)
 				continue;
 
 			uint count = 0;
@@ -332,6 +348,7 @@ namespace nap
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
+				shadow_flags->setValue(shadow_flags->getValue() & ~(1 << count) | (uint)(light->isShadowEnabled()) << count);
 
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
@@ -410,12 +427,13 @@ namespace nap
 
 				if (light->isShadowEnabled())
 				{
-					// Shadows
-					auto* render_service = getCore().getService<RenderService>();
-					assert(render_service != nullptr);
+					if (count >= view_array->getMaxNumElements())
+						break;
 
+					// Set light view projection matrix in shadow struct
 					const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewProjectionMatrix)->setValue(light_view_projection);
+					view_array->setValue(light_view_projection, count);
+
 					light_element.getOrCreateUniform<UniformVec2Instance>(uniform::light::nearFar)->setValue({ light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() });
 					light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
 
@@ -459,6 +477,7 @@ namespace nap
 				++count;
 			}
 			light_count->setValue(count);
+			light_count_vert->setValue(count);
 		}
 		return true;
 	}

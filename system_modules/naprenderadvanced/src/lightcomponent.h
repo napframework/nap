@@ -43,7 +43,8 @@ namespace nap
 	 */
 	namespace uniform
 	{
-		inline constexpr const char* lightStruct = "light";							// Default light UBO struct name
+		inline constexpr const char* lightStruct = "light";						// Default light UBO struct name
+		inline constexpr const char* shadowStruct = "shadow";					// Default shadow UBO struct name
 
 		namespace light
 		{
@@ -57,10 +58,15 @@ namespace nap
 			inline constexpr const char* shadowStrength = "shadowStrength";
 			inline constexpr const char* enable = "enable";
 			inline constexpr const char* flags = "flags";
-
-			inline constexpr const char* viewProjectionMatrix = "viewProjectionMatrix";
 			inline constexpr const char* nearFar = "nearFar";
 			inline constexpr const char* lights = "lights";
+			inline constexpr const char* count = "count";
+		}
+
+		namespace shadow
+		{
+			inline constexpr const char* lightViewProjectionMatrix = "lightViewProjectionMatrix";
+			inline constexpr const char* flags = "flags";
 			inline constexpr const char* count = "count";
 		}
 	}

@@ -3,7 +3,6 @@
 // Light structure for all lights. Not all types use all members.
 struct Light
 {
-	mat4 viewProjectionMatrix;
 	vec3 origin;
 	vec3 direction;
 	vec3 color;
@@ -17,8 +16,9 @@ struct Light
 	uint flags;
 };
 
-// Maximum number of supported lights
-const uint MAX_LIGHTS			= 8;
+// Absolute maximum number of supported lights
+// Used during SPIR-V compilation to sync vertex and fragment stages
+const uint MAX_LIGHTS_ABSOLUTE	= 8;
 
 // Light types
 const uint LIGHT_CUSTOM			= 0;

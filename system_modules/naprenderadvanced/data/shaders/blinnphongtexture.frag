@@ -8,6 +8,8 @@
 #include "blinnphong.glslinc"
 #include "utils.glslinc"
 
+layout (constant_id = 0) const uint MAX_LIGHTS = 8;
+
 // Uniforms
 uniform nap
 {
@@ -36,12 +38,12 @@ uniform UBO
 } ubo;
 
 // Fragment Input
-in vec3 	passPosition;					//< Fragment position in world space
-in vec3 	passNormal;						//< Fragment normal in world space
-in vec3 	passUV0;						//< Texture UVs
-in float 	passFresnel;					//< Fresnel term
+in vec3 	passPosition;							//< Fragment position in world space
+in vec3 	passNormal;								//< Fragment normal in world space
+in vec3 	passUV0;								//< Texture UVs
+in float 	passFresnel;							//< Fresnel term
 
-in vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
+in vec4 	passShadowCoords[MAX_LIGHTS_ABSOLUTE];	//< Shadow Coordinates
 
 // Fragment Output
 out vec4 out_Color;

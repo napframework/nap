@@ -952,6 +952,26 @@ namespace nap
 		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName = shader::main;
 
+		// // Register specialization constants
+		// std::vector<VkSpecializationMapEntry> spec_entries;
+		// std::vector<uint> spec_data;
+		// {
+		// 	// MAX_LIGHTS
+		// 	VkSpecializationMapEntry entry = {};
+		// 	entry.constantID = 0;
+		// 	entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
+		// 	entry.size = sizeof(uint);
+		// 	spec_entries.emplace_back(std::move(entry));
+		// 	spec_data.emplace_back(8);
+		// }
+
+		// VkSpecializationInfo spec_info = {};
+		// spec_info.pMapEntries = spec_entries.data();
+		// spec_info.mapEntryCount = spec_entries.size();
+		// spec_info.pData = spec_data.data();
+		// spec_info.dataSize = spec_data.size() * sizeof(uint);
+		// frag_shader_stage_info.pSpecializationInfo = !spec_entries.empty() ? &spec_info : NULL;
+
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
 		VkPipelineVertexInputStateCreateInfo vertex_input_info = {};
