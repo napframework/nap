@@ -1480,7 +1480,7 @@
                 },
                 {
                     "Type": "nap::BlinnPhongColorShader",
-                    "mID": "BlinnPhongCoorShader",
+                    "mID": "BlinnPhongColorShader",
                     "QuadSampleCount": 8,
                     "CubeSampleCount": 4
                 },

@@ -5,7 +5,7 @@
 
 // Includes
 #include "shadow.glslinc"
-#include "blinnphong.glslinc"
+#include "blinnphongutils.glslinc"
 #include "utils.glslinc"
 
 // Specialization constants

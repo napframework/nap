@@ -754,7 +754,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 }
 
 
-static void getSpecializationConstants(spirv_cross::Compiler& compiler, nap::Shader::ConstantMap& outMap)
+static void getSpecializationConstants(spirv_cross::Compiler& compiler, nap::SpecializationConstantMap& outMap)
 {
 	for (auto& spec_const : compiler.get_specialization_constants())
 	{
@@ -766,14 +766,14 @@ static void getSpecializationConstants(spirv_cross::Compiler& compiler, nap::Sha
 }
 
 
-static bool setSpecializationConstant(const std::string& name, nap::uint value, nap::Shader::ConstantMap& outMap)
+static bool setSpecializationConstant(const std::string& name, nap::uint value, nap::SpecializationConstantMap& outMap)
 {
 	for (auto& item : outMap)
 	{
-		nap::Shader::ConstantEntry& entry = item.second;
-		if (entry.first == name)
+		nap::SpecializationConstantEntry& entry = item.second;
+		if (entry.mName == name)
 		{
-			entry.second = value;
+			entry.mValue = value;
 			return true;
 		}
 	}
@@ -945,8 +945,8 @@ namespace nap
 			return false;
 
 		// Extract specialization constants
-		getSpecializationConstants(vertex_shader_compiler, mVertSpecConstants);
-		getSpecializationConstants(fragment_shader_compiler, mFragSpecConstants);
+		getSpecializationConstants(vertex_shader_compiler, mVertexSpecConstants);
+		getSpecializationConstants(fragment_shader_compiler, mFragmentSpecConstants);
 
 		return initLayout(device, errorState);
 	}
@@ -987,7 +987,7 @@ namespace nap
 		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
 			return false;
 
-		if (!setSpecializationConstant(name, value, mVertSpecConstants))
+		if (!setSpecializationConstant(name, value, mVertexSpecConstants))
 		{
 			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
 			return false;
@@ -1001,7 +1001,7 @@ namespace nap
 		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
 			return false;
 
-		if (!setSpecializationConstant(name, value, mFragSpecConstants))
+		if (!setSpecializationConstant(name, value, mFragmentSpecConstants))
 		{
 			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
 			return false;
@@ -1081,6 +1081,20 @@ namespace nap
 		}
 
 		return initLayout(device, errorState);
+	}
+
+
+	bool ComputeShader::setComputeSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
+	{
+		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
+			return false;
+
+		if (!setSpecializationConstant(name, value, mComputeSpecConstants))
+		{
+			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+			return false;
+		}
+		return true;
 	}
 
 

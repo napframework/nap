@@ -2,15 +2,7 @@
 
 // Includes
 #include "light.glslinc"
-
-// Material structs
-struct BlinnPhongMaterial
-{
-	vec4	ambient;				//< Ambient
-	vec3	diffuse;				//< Diffuse
-	vec3	specular;				//< Specular
-	float	shininess;				//< Shininess
-};
+#include "blinnphongmaterial.glslinc"
 
 
 // Shades a fragment based on a light, incoming normal and position should be in object space

@@ -904,6 +904,32 @@ namespace nap
 
 
 	/**
+	 * Prepares Vulkan specialization constant info structure
+	 */
+	static void getSpecializationInfo(const nap::SpecializationConstantMap& inMap, VkSpecializationInfo& outInfo)
+	{
+		std::vector<VkSpecializationMapEntry> spec_entries;
+		std::vector<uint> spec_data;
+		for (uint i = 0; i < inMap.size(); i++)
+		{
+			const auto it = inMap.find(i);
+			assert(it != inMap.end());
+
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			spec_entries.emplace_back(std::move(entry));
+			spec_data.emplace_back((*it).second.mValue);
+		}
+		outInfo.pMapEntries = spec_entries.data();
+		outInfo.mapEntryCount = spec_entries.size();
+		outInfo.pData = spec_data.data();
+		outInfo.dataSize = spec_data.size() * sizeof(uint);
+	}
+
+
+	/**
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
@@ -946,27 +972,9 @@ namespace nap
 		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName = shader::main;
 
-		std::vector<VkSpecializationMapEntry> vert_spec_entries;
-		std::vector<uint> vert_spec_data;
-		for (uint i = 0; i < shader.getVertexSpecializationConstants().size(); i++)
-		{
-			const auto it = shader.getVertexSpecializationConstants().find(i);
-			assert(it != shader.getVertexSpecializationConstants().end());
-
-			VkSpecializationMapEntry entry = {};
-			entry.constantID = (*it).first;
-			entry.offset = static_cast<uint>(vert_spec_entries.size() * sizeof(uint));
-			entry.size = sizeof(uint);
-			vert_spec_entries.emplace_back(std::move(entry));
-			vert_spec_data.emplace_back((*it).second.second);
-		}
-
 		VkSpecializationInfo vert_spec_info = {};
-		vert_spec_info.pMapEntries = vert_spec_entries.data();
-		vert_spec_info.mapEntryCount = vert_spec_entries.size();
-		vert_spec_info.pData = vert_spec_data.data();
-		vert_spec_info.dataSize = vert_spec_data.size() * sizeof(uint);
-		vert_shader_stage_info.pSpecializationInfo = !vert_spec_entries.empty() ? &vert_spec_info : NULL;
+		getSpecializationInfo(shader.getVertexSpecializationConstants(), vert_spec_info);
+		vert_shader_stage_info.pSpecializationInfo = !vert_spec_info.dataSize > 0 ? &vert_spec_info : NULL;
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -974,27 +982,9 @@ namespace nap
 		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName = shader::main;
 
-		std::vector<VkSpecializationMapEntry> frag_spec_entries;
-		std::vector<uint> frag_spec_data;
-		for (uint i = 0; i < shader.getFragmentSpecializationConstants().size(); i++)
-		{
-			const auto it = shader.getFragmentSpecializationConstants().find(i);
-			assert(it != shader.getFragmentSpecializationConstants().end());
-
-			VkSpecializationMapEntry entry = {};
-			entry.constantID = (*it).first;
-			entry.offset = static_cast<uint>(frag_spec_entries.size() * sizeof(uint));
-			entry.size = sizeof(uint);
-			frag_spec_entries.emplace_back(std::move(entry));
-			frag_spec_data.emplace_back((*it).second.second);
-		}
-
 		VkSpecializationInfo frag_spec_info = {};
-		frag_spec_info.pMapEntries = frag_spec_entries.data();
-		frag_spec_info.mapEntryCount = frag_spec_entries.size();
-		frag_spec_info.pData = frag_spec_data.data();
-		frag_spec_info.dataSize = frag_spec_data.size() * sizeof(uint);
-		frag_shader_stage_info.pSpecializationInfo = !frag_spec_entries.empty() ? &frag_spec_info : NULL;
+		getSpecializationInfo(shader.getFragmentSpecializationConstants(), frag_spec_info);
+		frag_shader_stage_info.pSpecializationInfo = !frag_spec_info.dataSize > 0 ? &frag_spec_info : NULL;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1140,12 +1130,9 @@ namespace nap
 			}
 		}
 
-		VkSpecializationInfo spec_info = {};
-		spec_info.pMapEntries = spec_entries.data();
-		spec_info.mapEntryCount = spec_entries.size();
-		spec_info.pData = spec_data.data();
-		spec_info.dataSize = spec_data.size() * sizeof(uint);
-		comp_shader_stage_info.pSpecializationInfo = !spec_entries.empty() ? &spec_info : NULL;
+		VkSpecializationInfo comp_spec_info = {};
+		getSpecializationInfo(computeShader.getSpecializationConstants(), comp_spec_info);
+		comp_shader_stage_info.pSpecializationInfo = !comp_spec_info.dataSize > 0 ? &comp_spec_info : NULL;
 		
 		auto layout = computeShader.getDescriptorSetLayout();
 
