@@ -50,7 +50,7 @@ namespace nap
 		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find %s vertex shader %s", mRenderAdvancedService->getModule().getName().c_str(), shader_name.c_str(), vertex_shader_path.c_str()))
 			return false;
 
-		relative_path = utility::joinPath({ "shaders", utility::appendFileExtension(shader::blinnphongtexture, "frag") });
+		relative_path = utility::joinPath({ "shaders", utility::appendFileExtension(shader_name.c_str(), "frag") });
 		const std::string fragment_shader_path = mRenderAdvancedService->getModule().findAsset(relative_path);
 		if (!errorState.check(!vertex_shader_path.empty(), "%s: Unable to find %s fragment shader %s", mRenderAdvancedService->getModule().getName().c_str(), shader_name.c_str(), fragment_shader_path.c_str()))
 			return false;
