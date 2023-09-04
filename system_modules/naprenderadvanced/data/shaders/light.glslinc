@@ -16,9 +16,6 @@ struct Light
 	uint flags;
 };
 
-// Total maximum supported number of lights
-const uint MAX_LIGHTS			= 8;
-
 // Light types
 const uint LIGHT_CUSTOM			= 0;
 const uint LIGHT_DIRECTIONAL	= 1;
