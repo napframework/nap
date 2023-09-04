@@ -16,9 +16,8 @@ struct Light
 	uint flags;
 };
 
-// Absolute maximum number of supported lights
-// Used during SPIR-V compilation to sync vertex and fragment stages
-const uint MAX_LIGHTS_ABSOLUTE	= 8;
+// Total maximum supported number of lights
+const uint MAX_LIGHTS			= 8;
 
 // Light types
 const uint LIGHT_CUSTOM			= 0;

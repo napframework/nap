@@ -92,6 +92,9 @@ namespace nap
 	class NAPAPI Shader : public BaseShader
 	{
 	public:
+		using ConstantEntry = std::pair<std::string, uint>;
+		using ConstantMap = std::map<uint, ConstantEntry>;
+
 		Shader(Core& core);
 		~Shader();
 
@@ -109,6 +112,9 @@ namespace nap
 		 * @return Vulkan fragment module.
 		 */
 		VkShaderModule getFragmentModule() const { return mFragmentModule; }
+
+		const ConstantMap& getVertexSpecializationConstants() const	{ return mVertSpecConstants; }
+		const ConstantMap& getFragmentSpecializationConstants() const { return mFragSpecConstants; }
 
 	protected:
 		/**
@@ -135,10 +141,31 @@ namespace nap
 		  */
 		 bool loadDefault(const std::string& displayName, utility::ErrorState& errorState);
 
+		 /**
+		  * Registers a new specialization constant to the vertex shader.
+		  * Must be called after shader load, and before shader compilation (on pipeline creation).
+		  * @param name
+		  * @param value
+		  * @param errorState
+		  */
+		 bool setVertexSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+
+		 /**
+		  * Registers a new specialization constant to the vertex shader.
+		  * Must be called after shader load, and before shader compilation (on pipeline creation).
+		  * @param name
+		  * @param value
+		  * @param errorState
+		  */
+		 bool setFragmentSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+
 	private:
 		VertexAttributeDeclarations						mShaderAttributes;						///< Shader program vertex attribute inputs
 		VkShaderModule									mVertexModule = VK_NULL_HANDLE;			///< Loaded vertex module
 		VkShaderModule									mFragmentModule = VK_NULL_HANDLE;		///< Loaded fragment module
+
+		ConstantMap										mVertSpecConstants;
+		ConstantMap										mFragSpecConstants;
 	};
 
 

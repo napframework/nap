@@ -11,6 +11,8 @@
 // nap::BlinnPhongTextureShader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BlinnPhongTextureShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("QuadSampleCount", &nap::BlinnPhongTextureShader::mQuadSampleCount, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CubeSampleCount", &nap::BlinnPhongTextureShader::mCubeSampleCount, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -21,6 +23,12 @@ namespace nap
 	namespace shader
 	{
 		inline constexpr const char* blinnphongtexture = "blinnphongtexture";
+
+		namespace constant
+		{
+			inline constexpr const char* QUAD_SAMPLE_COUNT = "QUAD_SAMPLE_COUNT";
+			inline constexpr const char* CUBE_SAMPLE_COUNT = "CUBE_SAMPLE_COUNT";
+		}
 	}
 
 	BlinnPhongTextureShader::BlinnPhongTextureShader(Core& core) :
@@ -54,6 +62,16 @@ namespace nap
 		const auto search_paths = mRenderAdvancedService->getModule().getInformation().mDataSearchPaths;
 
 		// Compile shader
-		return this->load(shader::blinnphongtexture, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		if (!load(shader::blinnphongtexture, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
+			return false;
+
+		// Set shadow map sample counts
+		if (!setFragmentSpecializationConstant(shader::constant::QUAD_SAMPLE_COUNT, std::max<uint>(mQuadSampleCount, 1), errorState))
+			return false;
+
+		if (!setFragmentSpecializationConstant(shader::constant::CUBE_SAMPLE_COUNT, std::max<uint>(mCubeSampleCount, 1), errorState))
+			return false;
+
+		return true;
 	}
 }

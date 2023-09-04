@@ -44,6 +44,9 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+	
+		uint mQuadSampleCount = 8;
+		uint mCubeSampleCount = 4;
 
 	private:
 		RenderAdvancedService* mRenderAdvancedService = nullptr;

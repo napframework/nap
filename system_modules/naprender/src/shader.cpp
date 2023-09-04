@@ -754,6 +754,33 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 }
 
 
+static void getSpecializationConstants(spirv_cross::Compiler& compiler, nap::Shader::ConstantMap& outMap)
+{
+	for (auto& spec_const : compiler.get_specialization_constants())
+	{
+		const std::string& constant_name = compiler.get_name(spec_const.id);
+		const auto& spir_const = compiler.get_constant(spec_const.id);
+		nap::uint value = spir_const.m.c[0].r[0].u32;
+		outMap.insert({ spec_const.constant_id, { constant_name, value } });
+	}
+}
+
+
+static bool setSpecializationConstant(const std::string& name, nap::uint value, nap::Shader::ConstantMap& outMap)
+{
+	for (auto& item : outMap)
+	{
+		nap::Shader::ConstantEntry& entry = item.second;
+		if (entry.first == name)
+		{
+			entry.second = value;
+			return true;
+		}
+	}
+	return false;
+}
+
+
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -913,17 +940,13 @@ namespace nap
 		if (!parseShaderVariables(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		//auto frag_constants = fragment_shader_compiler.get_specialization_constants();
-		//for (const auto& frag_const : frag_constants)
-		//{
-		//	auto& spir_const = fragment_shader_compiler.get_constant(frag_const.id);
-		//	auto value = spir_const.m.c[0].r[0];
-		//	nap::Logger::info("%d: %s = %d", frag_const.constant_id, fragment_shader_compiler.get_name(frag_const.id).c_str(), value);
-		//}
-
 		// Verify the shader variable declarations
 		if (!verifyShaderVariableDeclarations(errorState))
 			return false;
+
+		// Extract specialization constants
+		getSpecializationConstants(vertex_shader_compiler, mVertSpecConstants);
+		getSpecializationConstants(fragment_shader_compiler, mFragSpecConstants);
 
 		return initLayout(device, errorState);
 	}
@@ -956,6 +979,34 @@ namespace nap
 
 		// Compile shader
 		return this->load(displayName, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+	}
+
+
+	bool Shader::setVertexSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
+	{
+		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
+			return false;
+
+		if (!setSpecializationConstant(name, value, mVertSpecConstants))
+		{
+			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+			return false;
+		}
+		return true;
+	}
+
+
+	bool Shader::setFragmentSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
+	{
+		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
+			return false;
+
+		if (!setSpecializationConstant(name, value, mFragSpecConstants))
+		{
+			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+			return false;
+		}
+		return true;
 	}
 
 

@@ -8,7 +8,6 @@
 #include "utils.glslinc"
 #include "shadow.glslinc"
 
-layout (constant_id = 0) const uint MAX_LIGHTS = 8;
 
 // Uniforms
 uniform nap
@@ -39,14 +38,14 @@ uniform UBO
 } ubo;
 
 // Vertex Input
-in vec3		in_Position;							//< Vertex position in object space
-in vec3 	in_Normals;								//< Vertex normal in object space
+in vec3		in_Position;					//< Vertex position in object space
+in vec3 	in_Normals;						//< Vertex normal in object space
 
 // Vertex Output
-out vec3 	passPosition;							//< Vertex position in world space
-out vec3 	passNormal;								//< Vertex normal in world space
-out float 	passFresnel;							//< Fresnel
-out vec4 	passShadowCoords[MAX_LIGHTS_ABSOLUTE];	//< Shadow Coordinates
+out vec3 	passPosition;					//< Vertex position in world space
+out vec3 	passNormal;						//< Vertex normal in world space
+out float 	passFresnel;					//< Fresnel
+out vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
 
 void main()
 {

@@ -8,7 +8,9 @@
 #include "blinnphong.glslinc"
 #include "utils.glslinc"
 
-layout (constant_id = 0) const uint MAX_LIGHTS = 8;
+// Specialization constants
+layout (constant_id = 0) const uint QUAD_SAMPLE_COUNT = 8;
+layout (constant_id = 1) const uint CUBE_SAMPLE_COUNT = 4;
 
 // Uniforms
 uniform nap
@@ -38,12 +40,12 @@ uniform UBO
 } ubo;
 
 // Fragment Input
-in vec3 	passPosition;							//< Fragment position in world space
-in vec3 	passNormal;								//< Fragment normal in world space
-in vec3 	passUV0;								//< Texture UVs
-in float 	passFresnel;							//< Fresnel term
+in vec3 	passPosition;					//< Fragment position in world space
+in vec3 	passNormal;						//< Fragment normal in world space
+in vec3 	passUV0;						//< Texture UVs
+in float 	passFresnel;					//< Fresnel term
 
-in vec4 	passShadowCoords[MAX_LIGHTS_ABSOLUTE];	//< Shadow Coordinates
+in vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
 
 // Fragment Output
 out vec4 out_Color;
@@ -52,7 +54,7 @@ out vec4 out_Color;
 uniform sampler2DShadow shadowMaps[MAX_LIGHTS];
 uniform samplerCubeShadow cubeShadowMaps[MAX_LIGHTS];
 uniform samplerCube environmentMap;
-
+ 
 uniform sampler2D colorTexture;
 
 void main()
@@ -107,11 +109,11 @@ void main()
 
 					// Multi sample
 					float sum = 0.0;
-					for (int s=0; s<sample_count; s++) 
+					for (int s=0; s<QUAD_SAMPLE_COUNT; s++) 
 					{
 						sum += 1.0 - texture(shadowMaps[map_index], vec3(coord.xy + POISSON_DISK[s]/SHADOW_POISSON_SPREAD, coord.z));
 					}
-					shadow += sum / float(sample_count);
+					shadow += sum / float(QUAD_SAMPLE_COUNT);
 				}
 				break;
 			}
@@ -128,14 +130,14 @@ void main()
 				float frag_depth = sdfPlane(lit.lights[i].origin, cubeFace(coord), passPosition);
 
 				float sum = 0.0;
-				for (int s=0; s<sample_count; s++) 
+				for (int s=0; s<CUBE_SAMPLE_COUNT; s++) 
 				{
 					// Add some poisson-based rotational jitter to the sampling vector
 					vec2 jitter = POISSON_DISK[s]/SHADOW_POISSON_SPREAD;
 					vec3 sample_coord = normalize(rotationMatrix(vec3(1.0, 0.0, 0.0), jitter.x) * rotationMatrix(vec3(0.0, 1.0, 0.0), jitter.y) * vec4(coord, 0.0)).xyz;
 		 			sum += 1.0 - texture(cubeShadowMaps[map_index], vec4(sample_coord, nonLinearDepth(frag_depth, nf.x, nf.y)));
 				}
-				shadow += sum / float(sample_count);
+				shadow += sum / float(CUBE_SAMPLE_COUNT);
 				break;
 			}
 		}

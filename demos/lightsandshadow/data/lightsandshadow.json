@@ -79,8 +79,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Bounds",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -188,8 +188,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -342,8 +342,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -474,7 +474,7 @@
                     "ShadowSampleCount": 4,
                     "Enable Shadows": true,
                     "ShadowCamera": "./PointShadowCam",
-                    "ShadowMapSize": 2048,
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam"
                 },
                 {
@@ -501,8 +501,8 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -629,8 +629,8 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -760,8 +760,8 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -857,8 +857,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -935,8 +935,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1147,6 +1147,22 @@
             ]
         },
         {
+            "Type": "nap::RenderLayerRegistry",
+            "mID": "RenderLayerRegistry",
+            "Layers": [
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Bounds",
+                    "Name": "Bounds"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
+                }
+            ]
+        },
+        {
             "Type": "nap::RenderTagGroup",
             "mID": "RenderTags",
             "Members": [
@@ -1174,7 +1190,7 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "Light & Shadow Demo",
             "Width": 1280,
             "Height": 720,
@@ -1464,7 +1480,9 @@
                 },
                 {
                     "Type": "nap::BlinnPhongColorShader",
-                    "mID": "BlinnPhongColorShader"
+                    "mID": "BlinnPhongCoorShader",
+                    "QuadSampleCount": 8,
+                    "CubeSampleCount": 4
                 },
                 {
                     "Type": "nap::Material",
@@ -1538,10 +1556,6 @@
                     "DepthMode": "InheritFromBlendMode"
                 },
                 {
-                    "Type": "nap::BlinnPhongTextureShader",
-                    "mID": "BlinnPhongTextureShader"
-                },
-                {
                     "Type": "nap::Material",
                     "mID": "ConstantMaterial",
                     "Uniforms": [
@@ -1583,6 +1597,12 @@
                 {
                     "Type": "nap::GnomonShader",
                     "mID": "GnomonShader"
+                },
+                {
+                    "Type": "nap::BlinnPhongTextureShader",
+                    "mID": "BlinnPhongTextureShader",
+                    "QuadSampleCount": 8,
+                    "CubeSampleCount": 4
                 }
             ],
             "Children": []

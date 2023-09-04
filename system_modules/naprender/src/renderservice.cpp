@@ -946,31 +946,55 @@ namespace nap
 		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName = shader::main;
 
+		std::vector<VkSpecializationMapEntry> vert_spec_entries;
+		std::vector<uint> vert_spec_data;
+		for (uint i = 0; i < shader.getVertexSpecializationConstants().size(); i++)
+		{
+			const auto it = shader.getVertexSpecializationConstants().find(i);
+			assert(it != shader.getVertexSpecializationConstants().end());
+
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(vert_spec_entries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			vert_spec_entries.emplace_back(std::move(entry));
+			vert_spec_data.emplace_back((*it).second.second);
+		}
+
+		VkSpecializationInfo vert_spec_info = {};
+		vert_spec_info.pMapEntries = vert_spec_entries.data();
+		vert_spec_info.mapEntryCount = vert_spec_entries.size();
+		vert_spec_info.pData = vert_spec_data.data();
+		vert_spec_info.dataSize = vert_spec_data.size() * sizeof(uint);
+		vert_shader_stage_info.pSpecializationInfo = !vert_spec_entries.empty() ? &vert_spec_info : NULL;
+
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName = shader::main;
 
-		// // Register specialization constants
-		// std::vector<VkSpecializationMapEntry> spec_entries;
-		// std::vector<uint> spec_data;
-		// {
-		// 	// MAX_LIGHTS
-		// 	VkSpecializationMapEntry entry = {};
-		// 	entry.constantID = 0;
-		// 	entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
-		// 	entry.size = sizeof(uint);
-		// 	spec_entries.emplace_back(std::move(entry));
-		// 	spec_data.emplace_back(8);
-		// }
+		std::vector<VkSpecializationMapEntry> frag_spec_entries;
+		std::vector<uint> frag_spec_data;
+		for (uint i = 0; i < shader.getFragmentSpecializationConstants().size(); i++)
+		{
+			const auto it = shader.getFragmentSpecializationConstants().find(i);
+			assert(it != shader.getFragmentSpecializationConstants().end());
 
-		// VkSpecializationInfo spec_info = {};
-		// spec_info.pMapEntries = spec_entries.data();
-		// spec_info.mapEntryCount = spec_entries.size();
-		// spec_info.pData = spec_data.data();
-		// spec_info.dataSize = spec_data.size() * sizeof(uint);
-		// frag_shader_stage_info.pSpecializationInfo = !spec_entries.empty() ? &spec_info : NULL;
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(frag_spec_entries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			frag_spec_entries.emplace_back(std::move(entry));
+			frag_spec_data.emplace_back((*it).second.second);
+		}
+
+		VkSpecializationInfo frag_spec_info = {};
+		frag_spec_info.pMapEntries = frag_spec_entries.data();
+		frag_spec_info.mapEntryCount = frag_spec_entries.size();
+		frag_spec_info.pData = frag_spec_data.data();
+		frag_spec_info.dataSize = frag_spec_data.size() * sizeof(uint);
+		frag_shader_stage_info.pSpecializationInfo = !frag_spec_entries.empty() ? &frag_spec_info : NULL;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1303,7 +1327,6 @@ namespace nap
 	{
 		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
 	}
-
 
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{

@@ -559,12 +559,6 @@ namespace nap
 	// GPU Buffer Numeric
 	//////////////////////////////////////////////////////////////////////////
 
-	bool GPUBufferNumeric::init(utility::ErrorState& errorState)
-	{
-		return GPUBuffer::init(errorState);
-	}
-
-
 	bool GPUBufferNumeric::setData(const void* data, size_t elementCount, size_t reservedElementCount, utility::ErrorState& errorState)
 	{
 		if (setDataInternal(data, getElementSize() * elementCount, getElementSize() * reservedElementCount, errorState))

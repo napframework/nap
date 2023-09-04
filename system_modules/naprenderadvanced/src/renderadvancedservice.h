@@ -151,8 +151,9 @@ namespace nap
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;
 
-		static constexpr const uint mMaxShadowMapCount = 8;
-		static constexpr const uint mRequiredVulkanVersionMajor = 1U;
-		static constexpr const uint mRequiredVulkanVersionMinor = 0U;
+		static constexpr const uint mRequiredVulkanVersionMajor = 1;
+		static constexpr const uint mRequiredVulkanVersionMinor = 0;
+
+		static constexpr const uint mMaxLightCount = 8;
 	};
 }

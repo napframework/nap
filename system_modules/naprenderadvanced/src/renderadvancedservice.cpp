@@ -126,7 +126,7 @@ namespace nap
 		}
 
 		// Sampler2D
-		mSampler2DResource = std::make_unique<Sampler2DArray>(mMaxShadowMapCount);
+		mSampler2DResource = std::make_unique<Sampler2DArray>(mMaxLightCount);
 		mSampler2DResource->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mSampler2DResource->mName = sampler::light::shadowMaps;
 
@@ -147,7 +147,7 @@ namespace nap
 		}
 
 		// SamplerCube
-		mSamplerCubeResource = std::make_unique<SamplerCubeArray>(mMaxShadowMapCount);
+		mSamplerCubeResource = std::make_unique<SamplerCubeArray>(mMaxLightCount);
 		mSamplerCubeResource->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(SamplerCubeArray).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mSamplerCubeResource->mName = sampler::light::cubeShadowMaps;
 
