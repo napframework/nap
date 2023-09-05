@@ -16,12 +16,12 @@ uniform nap
 	vec3 cameraPosition;
 } mvp;
 
-uniform shadow
-{
-	mat4 lightViewProjectionMatrix[MAX_LIGHTS];
-	uint flags;
-	uint count;
-} sdw;
+// uniform shadow
+// {
+// 	mat4 lightViewProjectionMatrix[MAX_LIGHTS];
+// 	uint flags;
+// 	uint count;
+// } sdw;
 
 uniform UBO
 {
@@ -61,19 +61,19 @@ void main()
 	passFresnel = pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), ubo.fresnel.y) * ubo.fresnel.x;
 
 	// Shadow
-	for (uint i = 0; i < sdw.count; i++)
+	for (uint i = 0; i < 1; i++)
 	{
 		// Check if shadow is enabled on this light, else skip
-		if (((sdw.flags >> i) & 0x1) != 1)
-			continue;
+		// if (((sdw.flags >> i) & 0x1) != 1)
+		// 	continue;
 
 		// Compute current shadow coordinate: the world position in lightviewspace
-		vec4 coord = sdw.lightViewProjectionMatrix[i] * world_position;
+		//vec4 coord = sdw.lightViewProjectionMatrix[i] * world_position;
 		
 		// Flip y (Vulkan coordinates are [-1, 1], refer to NAP RenderProjectionMatrix)
-		coord.y = -coord.y;
+//		coord.y = -coord.y;
 		
 		// Pass coordinates
-		passShadowCoords[i] = coord;
+		passShadowCoords[i] = vec4(1.0, 1.0, 1.0, 1.0);//coord;
 	}
 }

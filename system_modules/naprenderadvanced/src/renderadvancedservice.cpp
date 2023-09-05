@@ -19,7 +19,6 @@
 #include <material.h>
 #include <renderglobals.h>
 
-#include <parameter.h>
 #include <parametervec.h>
 #include <parameternumeric.h>
 #include <parametermat.h>
@@ -103,6 +102,9 @@ namespace nap
 				return false;
 			}
 		}
+
+        // Log the maximum supported number of lights. Differs on low spec devices.
+        nap::Logger::info("Maximum supported number of nap::LightComponents: %d", mMaxLightCount);
 
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
@@ -304,19 +306,19 @@ namespace nap
 			if (light_count == nullptr)
 				continue;
 
-			auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
-			if (light_struct == nullptr)
-				continue;
-
-			auto* light_count_vert = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
-			if (light_count_vert == nullptr)
-				continue;
+//			auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
+//			if (light_struct == nullptr)
+//				continue;
+//
+//			auto* light_count_vert = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
+//			if (light_count_vert == nullptr)
+//				continue;
 
 			// Set light count to zero and exit early
 			if (disableLighting)
 			{
 				light_count->setValue(0);
-				light_count_vert->setValue(0);
+//				light_count_vert->setValue(0);
 				return true;
 			}
 
@@ -324,13 +326,13 @@ namespace nap
 			if (light_array == nullptr)
 				continue;
 
-			auto* view_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
-			if (view_array == nullptr)
-				continue;
-
-			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
-			if (shadow_flags == nullptr)
-				continue;
+//			auto* view_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
+//			if (view_array == nullptr)
+//				continue;
+//
+//			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
+//			if (shadow_flags == nullptr)
+//				continue;
 
 			uint count = 0;
 			for (const auto& light : mLightComponents)
@@ -348,7 +350,7 @@ namespace nap
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
-				shadow_flags->setValue(shadow_flags->getValue() & ~(1 << count) | (uint)(light->isShadowEnabled()) << count);
+//				shadow_flags->setValue(shadow_flags->getValue() & ~(1 << count) | (uint)(light->isShadowEnabled()) << count);
 
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
@@ -369,13 +371,17 @@ namespace nap
 						break;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
-					auto* member = struct_decl->findMember(name);
+                    assert(struct_decl != nullptr);
+
+                    auto* member = struct_decl->findMember(name);
 					if (!errorState.check(member != nullptr, "Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
 						return false;
 
 					if (member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)))
 					{
 						auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
+                        assert(value_member != nullptr);
+
 						if (value_member->mType == EShaderVariableValueType::Float)
 						{
 							auto* param = light->getLightUniform(name);
@@ -410,6 +416,7 @@ namespace nap
 							auto* param = light->getLightUniform(name);
 							if (!errorState.check(param != nullptr, "Unsupported member data type"))
 								return false;
+
 							light_element.getOrCreateUniform<UniformMat4Instance>(name)->setValue(static_cast<ParameterMat4*>(param)->mValue);
 						}
 						else
@@ -427,15 +434,15 @@ namespace nap
 
 				if (light->isShadowEnabled())
 				{
-					if (count >= view_array->getMaxNumElements())
-						break;
+//					if (count >= view_array->getMaxNumElements())
+//						break;
 
 					// Set light view projection matrix in shadow struct
 					const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-					view_array->setValue(light_view_projection, count);
+//					view_array->setValue(light_view_projection, count);
 
 					light_element.getOrCreateUniform<UniformVec2Instance>(uniform::light::nearFar)->setValue({ light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() });
-					light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
+                    light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
 
 					switch (light->getShadowMapType())
 					{
@@ -445,6 +452,8 @@ namespace nap
 						if (shadow_sampler_array != nullptr)
 						{
 							auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
+                            assert(instance != nullptr);
+
 							if (count >= instance->getNumElements())
 								continue;
 
@@ -460,7 +469,9 @@ namespace nap
 						if (shadow_sampler_array != nullptr)
 						{
 							auto* instance = static_cast<SamplerCubeArrayInstance*>(shadow_sampler_array);
-							if (count >= instance->getNumElements())
+                            assert(instance != nullptr);
+
+                            if (count >= instance->getNumElements())
 								continue;
 
 							const auto it = mLightCubeMap.find(light);
@@ -477,7 +488,7 @@ namespace nap
 				++count;
 			}
 			light_count->setValue(count);
-			light_count_vert->setValue(count);
+//			light_count_vert->setValue(count);
 		}
 		return true;
 	}

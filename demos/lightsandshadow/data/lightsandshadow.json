@@ -472,7 +472,7 @@
                     "Intensity": "PointIntensityParam",
                     "ShadowStrength": 0.5,
                     "ShadowSampleCount": 4,
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./PointShadowCam",
                     "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam"
@@ -598,7 +598,7 @@
                     "Intensity": "SpotIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./SpotShadowCam",
                     "ShadowMapSize": 2048,
                     "Attenuation": "LightAttenuationParam",
@@ -726,7 +726,7 @@
                     "Intensity": "SunIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./SunShadowCam",
                     "ShadowMapSize": 2048
                 },
@@ -1336,12 +1336,15 @@
                     }
                 },
                 {
-                    "Type": "nap::MeshFromFile",
+                    "Type": "nap::GeometryFromFile",
                     "mID": "NAPLogoMesh",
+                    "Path": "nap_logo.fbx",
+                    "GenerateNormals": false,
+                    "CalculateTangents": true,
+                    "NormalSmoothingAngle": 60.0,
                     "Usage": "Static",
                     "CullMode": "Back",
-                    "PolygonMode": "Fill",
-                    "Path": "nap_logo.mesh"
+                    "PolygonMode": "Fill"
                 },
                 {
                     "Type": "nap::SphereMesh",
@@ -1481,7 +1484,7 @@
                 {
                     "Type": "nap::BlinnPhongColorShader",
                     "mID": "BlinnPhongColorShader",
-                    "QuadSampleCount": 8,
+                    "QuadSampleCount": 4,
                     "CubeSampleCount": 4
                 },
                 {
@@ -1599,9 +1602,9 @@
                     "mID": "GnomonShader"
                 },
                 {
-                    "Type": "nap::BlinnPhongTextureShader",
+                    "Type": "nap::BlinnPhongColorShader",
                     "mID": "BlinnPhongTextureShader",
-                    "QuadSampleCount": 8,
+                    "QuadSampleCount": 4,
                     "CubeSampleCount": 4
                 }
             ],

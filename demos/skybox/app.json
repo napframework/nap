@@ -5,6 +5,7 @@
     "Version": "1.0.0",
     "Data": "data/skybox.json",
     "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
     "RequiredModules": [
         "napapp",
         "napcameracontrol",

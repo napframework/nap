@@ -224,10 +224,8 @@ namespace nap
 		{
 			if (declaration.mName == name)
 			{
-				bool is_array = declaration.mNumArrayElements > 1;
-
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
+				if (declaration.mIsArray)
 				{
 					switch (declaration.mType)
 					{
@@ -267,7 +265,7 @@ namespace nap
 				result = &addSamplerInstance(std::move(sampler_instance_override));
 				break;
 			}
-			image_start_index += declaration.mNumArrayElements;
+			image_start_index += declaration.mNumElements;
 		}
 		return result;
 	}
@@ -289,12 +287,10 @@ namespace nap
 		{
 			if (declaration.mName == resource.mName)
 			{
-				bool is_array = declaration.mNumArrayElements > 1;
-
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
+				if (declaration.mIsArray)
 				{
-					switch (declaration.mType)
+                    switch (declaration.mType)
 					{
 					case SamplerDeclaration::EType::Type_2D:
 					{
@@ -346,7 +342,7 @@ namespace nap
 				result = &addSamplerInstance(std::move(sampler_instance_override));
 				break;
 			}
-			image_start_index += declaration.mNumArrayElements;
+			image_start_index += declaration.mNumElements;
 		}
 
 		if (result == nullptr)
@@ -582,7 +578,7 @@ namespace nap
 
 		int num_sampler_images = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
-			num_sampler_images += declaration.mNumArrayElements;
+			num_sampler_images += declaration.mNumElements;
 
 		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
@@ -609,7 +605,6 @@ namespace nap
 		for (int sampler_index = 0; sampler_index < sampler_declarations.size(); ++sampler_index)
 		{
 			const SamplerDeclaration& declaration = sampler_declarations[sampler_index];
-			bool is_array = declaration.mNumArrayElements > 1;
 
 			// Check if the sampler is set as override in the MaterialInstance
 			const Sampler* sampler = findSamplerResource(instanceResource.mSamplers, declaration);
@@ -618,9 +613,9 @@ namespace nap
 			{
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
+				if (declaration.mIsArray)
 				{
-					switch (declaration.mType)
+                    switch (declaration.mType)
 					{
 					case SamplerDeclaration::EType::Type_2D:
 					{
@@ -676,7 +671,7 @@ namespace nap
 			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
 			size_t sampler_descriptor_start_index = mSamplerDescriptors.size();
 			VkSampler vk_sampler = sampler_instance->getVulkanSampler();
-			if (is_array)
+			if (declaration.mIsArray)
 			{
 				// Create all VkDescriptorImageInfo for all elements in the array
 				switch(declaration.mType)

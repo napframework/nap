@@ -154,6 +154,10 @@ namespace nap
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;
 		static constexpr const uint mRequiredVulkanVersionMinor = 0;
 
-		static constexpr const uint mMaxLightCount = 8;
+#ifdef RENDERADVANCED_RPI
+		static constexpr const uint mMaxLightCount = 1;
+#else
+        static constexpr const uint mMaxLightCount = 8;
+#endif
 	};
 }

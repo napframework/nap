@@ -573,8 +573,8 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 		if (!errorState.check(member_type.array.size() <= 1, "Multidimensional arrays are not supported"))
 			return false;
 
-		bool isArray = !member_type.array.empty();
-		if (isArray)
+		bool is_array = !member_type.array.empty();
+		if (is_array)
 		{
 			int num_elements = member_type.array[0];
 
@@ -747,8 +747,12 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 		}
 
 		nap::uint32 binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
-		samplerDeclarations.emplace_back(nap::SamplerDeclaration(sampled_image.name, binding, inStage, type, num_elements));
-	}
+
+        if (is_array)
+            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type, true, num_elements);
+        else
+            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type);
+    }
 
 	return true;
 }
@@ -834,7 +838,7 @@ namespace nap
 		{
 			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
 			samplerLayoutBinding.binding = declaration.mBinding;
-			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
+			samplerLayoutBinding.descriptorCount = declaration.mNumElements;
 			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			samplerLayoutBinding.pImmutableSamplers = nullptr;
 			samplerLayoutBinding.stageFlags = declaration.mStage;
