@@ -228,14 +228,14 @@ namespace nap
 	{
 		if (sampler2DArray != nullptr)
 		{
-			assert(sampler2DArray->mTextures.size() <= declaration.mNumArrayElements);
+			assert(sampler2DArray->mTextures.size() <= declaration.mNumElements);
 			mTextures = sampler2DArray->mTextures;
 		}
 
 		// Ensure we create array entries for all textures
-		mTextures.reserve(declaration.mNumArrayElements);
+		mTextures.reserve(declaration.mNumElements);
 		uint count = mTextures.size();
-		for (uint i = count; i < declaration.mNumArrayElements; i++)
+		for (uint i = count; i < declaration.mNumElements; i++)
 			mTextures.emplace_back();
 	}
 
@@ -243,7 +243,7 @@ namespace nap
 	void Sampler2DArrayInstance::setTexture(int index, Texture2D& texture)
 	{
 		assert(index < mTextures.size());
-		assert(index < mDeclaration->mNumArrayElements);
+		assert(index < mDeclaration->mNumElements);
 		mTextures[index] = &texture;
 		raiseChanged(index);
 	}
@@ -290,14 +290,14 @@ namespace nap
 	{
 		if (samplerCubeArray != nullptr)
 		{
-			assert(samplerCubeArray->mTextures.size() <= declaration.mNumArrayElements);
+			assert(samplerCubeArray->mTextures.size() <= declaration.mNumElements);
 			mTextures = samplerCubeArray->mTextures;
 		}
 
 		// Ensure we create array entries for all textures
-		mTextures.reserve(declaration.mNumArrayElements);
+		mTextures.reserve(declaration.mNumElements);
 		uint count = mTextures.size();
-		for (uint i = count; i < declaration.mNumArrayElements; i++)
+		for (uint i = count; i < declaration.mNumElements; i++)
 			mTextures.emplace_back();
 	}
 
@@ -305,7 +305,7 @@ namespace nap
 	void SamplerCubeArrayInstance::setTexture(int index, TextureCube& textureCube)
 	{
 		assert(index < mTextures.size());
-		assert(index < mDeclaration->mNumArrayElements);
+		assert(index < mDeclaration->mNumElements);
 		mTextures[index] = &textureCube;
 		raiseChanged(index);
 	}

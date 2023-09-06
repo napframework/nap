@@ -36,6 +36,6 @@ namespace nap
 
 	public:
 		ResourcePtr<Texture2D>		mSourceTexture;							///< Property: 'SourceTexture' Texture to convert to cube map
-		bool						mGenerateLods = true;					///< Property: 'GenerateLods' If LODs are generated for this image
+		bool						mSampleShading = false;					///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
 	};
 }

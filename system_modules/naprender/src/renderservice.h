@@ -518,7 +518,6 @@ namespace nap
 		 * @param errorState contains the error message if the window could not be added
 		 */
 		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
-
 		/**
 		 * Remove a window as a valid target from the render engine.
 		 * @param window the window to remove from the render service

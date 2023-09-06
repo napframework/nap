@@ -7,11 +7,8 @@
 #include <entity.h>
 #include <nap/core.h>
 #include <transformcomponent.h>
-#include <uniforminstance.h>
 #include <materialinstance.h>
 #include <renderablemeshcomponent.h>
-#include <glm/gtc/matrix_transform.hpp>
-#include <glm/gtx/quaternion.hpp>
 
 // nap::SpotLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SpotLightComponent)
@@ -44,7 +41,7 @@ namespace nap
 		auto* resource = getComponent<SpotLightComponent>();
 		registerLightUniformMember(uniform::light::attenuation,	resource->mAttenuation.get());
 		registerLightUniformMember(uniform::light::angle,		resource->mAngle.get());
-		registerLightUniformMember(uniform::light::falloff,		resource->mFallOff.get());
+        registerLightUniformMember(uniform::light::falloff,		resource->mFallOff.get());
 		mShadowMapSize = resource->mShadowMapSize;
 
 		return true;

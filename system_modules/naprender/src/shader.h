@@ -22,6 +22,19 @@ namespace nap
 	class RenderService;
 	class Core;
 
+	// Specialization constants
+	struct NAPAPI SpecializationConstantEntry
+	{
+		SpecializationConstantEntry(const std::string& name, uint value) :
+			mName(name), mValue(value) {}
+
+		std::string mName;
+		uint mValue = 0;
+	};
+	using SpecializationConstantID = uint;
+	using SpecializationConstantMap = std::map<SpecializationConstantID, SpecializationConstantEntry>;
+
+
 	/**
 	 * Base class of all shaders
 	 */
@@ -35,27 +48,27 @@ namespace nap
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const SamplerDeclarations& getSamplerDeclarations() const { return mSamplerDeclarations; }
+		const SamplerDeclarations& getSamplerDeclarations() const					{ return mSamplerDeclarations; }
 
 		/**
 		 * @return all UniformBufferObject declarations.
 		 */
-		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const		{ return mUBODeclarations; }
 
 		/**
 		 * @return all Shader Storage Buffer Object declarations.
 		 */
-		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const { return mSSBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const		{ return mSSBODeclarations; }
 
 		/**
 		 * @return shader display name
 		 */
-		const std::string& getDisplayName() const { return mDisplayName; }
+		const std::string& getDisplayName() const									{ return mDisplayName; }
 
 		/**
 		* @return Vulkan descriptorSetLayout.
 		*/
-		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+		VkDescriptorSetLayout getDescriptorSetLayout() const						{ return mDescriptorSetLayout; }
 
 	protected:
 		RenderService*									mRenderService = nullptr;				///< Handle to render engine
@@ -98,17 +111,27 @@ namespace nap
 		/**
 		* @return all vertex shader attribute declarations.
 		*/
-		const VertexAttributeDeclarations& getAttributes() const { return mShaderAttributes; }
+		const VertexAttributeDeclarations& getAttributes() const					{ return mShaderAttributes; }
 
 		/**
 		 * @return Vulkan vertex module.
 		 */
-		VkShaderModule getVertexModule() const { return mVertexModule; }
+		VkShaderModule getVertexModule() const										{ return mVertexModule; }
 
 		/**
 		 * @return Vulkan fragment module.
 		 */
-		VkShaderModule getFragmentModule() const { return mFragmentModule; }
+		VkShaderModule getFragmentModule() const									{ return mFragmentModule; }
+
+		/**
+		 * @return the specialization constant map of the vertex shader
+		 */
+		const SpecializationConstantMap& getVertexSpecializationConstants() const	{ return mVertexSpecConstants; }
+
+		/**
+		 * @return the specialization constant map of the fragment shader
+		 */
+		const SpecializationConstantMap& getFragmentSpecializationConstants() const { return mFragmentSpecConstants; }
 
 	protected:
 		/**
@@ -135,10 +158,31 @@ namespace nap
 		  */
 		 bool loadDefault(const std::string& displayName, utility::ErrorState& errorState);
 
+		 /**
+		  * Registers a new specialization constant to the vertex shader.
+		  * Must be called after shader load, and before shader compilation (on pipeline creation).
+		  * @param name
+		  * @param value
+		  * @param errorState
+		  */
+		 bool setVertexSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+
+		 /**
+		  * Registers a new specialization constant to the vertex shader.
+		  * Must be called after shader load, and before shader compilation (on pipeline creation).
+		  * @param name
+		  * @param value
+		  * @param errorState
+		  */
+		 bool setFragmentSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+
 	private:
 		VertexAttributeDeclarations						mShaderAttributes;						///< Shader program vertex attribute inputs
 		VkShaderModule									mVertexModule = VK_NULL_HANDLE;			///< Loaded vertex module
 		VkShaderModule									mFragmentModule = VK_NULL_HANDLE;		///< Loaded fragment module
+
+		SpecializationConstantMap						mVertexSpecConstants;					///< Specialization constants of vertex shader
+		SpecializationConstantMap						mFragmentSpecConstants;					///< Specialization constants of fragment shader
 	};
 
 
@@ -159,12 +203,12 @@ namespace nap
 		/**
 		 * @return Vulkan vertex module.
 		 */
-		VkShaderModule getComputeModule() const { return mComputeModule; }
+		VkShaderModule getComputeModule() const										{ return mComputeModule; }
 
 		/**
 		 * @return local work group size
 		 */
-		glm::u32vec3 getWorkGroupSize() const { return mWorkGroupSize; }
+		glm::u32vec3 getWorkGroupSize() const										{ return mWorkGroupSize; }
 
 		/**
 		 * Workgroup specialization constant IDs. 
@@ -173,7 +217,12 @@ namespace nap
 		 * specialization constant defined in the compute shader.
 		 * @return a vector of work group size specialization constant IDs
 		 */
-		const std::vector<int>& getWorkGroupSizeConstantIds() const { return mWorkGroupSizeConstantIds; }
+		const std::vector<int>& getWorkGroupSizeConstantIds() const					{ return mWorkGroupSizeConstantIds; }
+
+		/**
+		 * @return the specialization constant map
+		 */
+		const SpecializationConstantMap& getSpecializationConstants() const			{ return mComputeSpecConstants; }
 
 	protected:
 		/**
@@ -188,10 +237,20 @@ namespace nap
 		 */
 		virtual bool load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState);
 
+		/**
+		 * Registers a new specialization constant to the compute shader.
+		 * Must be called after shader load, and before shader compilation (on pipeline creation).
+		 * @param name
+		 * @param value
+		 * @param errorState
+		 */
+		bool setComputeSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+
 	private:
-		glm::u32vec3									mWorkGroupSize;
+		glm::u32vec3									mWorkGroupSize;							///< Workgroup size dimensions (x, y, z)
 		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
 
+		SpecializationConstantMap						mComputeSpecConstants;					///< Specialization constants
 		std::vector<int>								mWorkGroupSizeConstantIds;				///< Workgroup size specialization constant IDs
 	};
 

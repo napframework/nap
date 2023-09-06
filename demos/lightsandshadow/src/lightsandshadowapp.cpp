@@ -35,7 +35,14 @@ namespace nap
 		mSceneService			= getCore().getService<SceneService>();
 		mGuiService				= getCore().getService<IMGuiService>();
 
-		// Get resource manager and load
+#ifdef RENDERADVANCED_RPI
+        // Require Vulkan 1.1 on Raspberry Pi
+        if (!errorState.check(mRenderService->getVulkanVersionMajor() >= 1 && mRenderService->getVulkanVersionMinor() >= 1,
+            "The lightsandshadow demo requires Vulkan version 1.1 on Raspberry Pi"))
+            return false;
+#endif
+
+        // Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
 
 		// Gather resources
@@ -82,9 +89,7 @@ namespace nap
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
-		std::vector<LightComponentInstance*> lights;
-		mWorldEntity->getComponentsOfTypeRecursive<LightComponentInstance>(lights);
-
+		const auto& lights = mRenderAdvancedService->getLights();
 		if (!lights.empty())
 		{
 			ImGui::BeginTabBar("Lights");

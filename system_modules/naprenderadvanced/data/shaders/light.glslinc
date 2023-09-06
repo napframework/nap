@@ -3,7 +3,6 @@
 // Light structure for all lights. Not all types use all members.
 struct Light
 {
-	mat4 viewProjectionMatrix;
 	vec3 origin;
 	vec3 direction;
 	vec3 color;
@@ -16,9 +15,6 @@ struct Light
 	uint enable;
 	uint flags;
 };
-
-// Maximum number of supported lights
-const uint MAX_LIGHTS			= 8;
 
 // Light types
 const uint LIGHT_CUSTOM			= 0;

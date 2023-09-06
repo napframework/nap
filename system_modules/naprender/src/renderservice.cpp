@@ -904,6 +904,32 @@ namespace nap
 
 
 	/**
+	 * Prepares Vulkan specialization constant info structure
+	 */
+	static void getSpecializationInfo(const nap::SpecializationConstantMap& inMap, VkSpecializationInfo& outInfo)
+	{
+		std::vector<VkSpecializationMapEntry> spec_entries;
+		std::vector<uint> spec_data;
+		for (uint i = 0; i < inMap.size(); i++)
+		{
+			const auto it = inMap.find(i);
+			assert(it != inMap.end());
+
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			spec_entries.emplace_back(std::move(entry));
+			spec_data.emplace_back((*it).second.mValue);
+		}
+		outInfo.pMapEntries = spec_entries.data();
+		outInfo.mapEntryCount = spec_entries.size();
+		outInfo.pData = spec_data.data();
+		outInfo.dataSize = spec_data.size() * sizeof(uint);
+	}
+
+
+	/**
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
@@ -946,11 +972,19 @@ namespace nap
 		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName = shader::main;
 
+		VkSpecializationInfo vert_spec_info = {};
+		getSpecializationInfo(shader.getVertexSpecializationConstants(), vert_spec_info);
+		vert_shader_stage_info.pSpecializationInfo = !vert_spec_info.dataSize > 0 ? &vert_spec_info : NULL;
+
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName = shader::main;
+
+		VkSpecializationInfo frag_spec_info = {};
+		getSpecializationInfo(shader.getFragmentSpecializationConstants(), frag_spec_info);
+		frag_shader_stage_info.pSpecializationInfo = !frag_spec_info.dataSize > 0 ? &frag_spec_info : NULL;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1096,12 +1130,9 @@ namespace nap
 			}
 		}
 
-		VkSpecializationInfo spec_info = {};
-		spec_info.pMapEntries = spec_entries.data();
-		spec_info.mapEntryCount = spec_entries.size();
-		spec_info.pData = spec_data.data();
-		spec_info.dataSize = spec_data.size() * sizeof(uint);
-		comp_shader_stage_info.pSpecializationInfo = !spec_entries.empty() ? &spec_info : NULL;
+		VkSpecializationInfo comp_spec_info = {};
+		getSpecializationInfo(computeShader.getSpecializationConstants(), comp_spec_info);
+		comp_shader_stage_info.pSpecializationInfo = !comp_spec_info.dataSize > 0 ? &comp_spec_info : NULL;
 		
 		auto layout = computeShader.getDescriptorSetLayout();
 
@@ -1284,7 +1315,6 @@ namespace nap
 		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
 	}
 
-
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
 		// Create pipeline key based on draw properties
@@ -1441,7 +1471,7 @@ namespace nap
 
 	bool RenderService::initEmptyTextures(nap::utility::ErrorState& errorState)
 	{
-		SurfaceDescriptor settings = { 16, 16, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
+		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
 		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
 		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		if (!mEmptyTexture2D->init(settings, false, 0, errorState))

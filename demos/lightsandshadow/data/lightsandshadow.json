@@ -79,8 +79,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Bounds",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -188,8 +188,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -342,8 +342,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -423,7 +423,7 @@
                 },
                 {
                     "Type": "nap::RotateComponent",
-                    "mID": "nap::RotateComponent_b8ff6c0c",
+                    "mID": "RotateLogo",
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
@@ -472,9 +472,9 @@
                     "Intensity": "PointIntensityParam",
                     "ShadowStrength": 0.5,
                     "ShadowSampleCount": 4,
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./PointShadowCam",
-                    "ShadowMapSize": 2048,
+                    "ShadowMapSize": 512,
                     "Attenuation": "LightAttenuationParam"
                 },
                 {
@@ -501,8 +501,8 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -598,9 +598,9 @@
                     "Intensity": "SpotIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./SpotShadowCam",
-                    "ShadowMapSize": 2048,
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "SpotAngleParam",
                     "FallOff": "SpotFallOffParam"
@@ -629,8 +629,8 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -726,9 +726,9 @@
                     "Intensity": "SunIntensityParam",
                     "ShadowStrength": 1.0,
                     "ShadowSampleCount": 8,
-                    "Enable Shadows": true,
+                    "Enable Shadows": false,
                     "ShadowCamera": "./SunShadowCam",
-                    "ShadowMapSize": 2048
+                    "ShadowMapSize": 1024
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -760,8 +760,8 @@
                     "Tags": [
                         "RenderTag_Gizmo"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -857,8 +857,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -935,8 +935,8 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "",
-                    "Layer": "",
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1024,12 +1024,12 @@
             ],
             "Children": [
                 "LogoEntity",
+                "SpotLightEntity",
+                "SunLightEntity",
                 "BaseLightEntity",
                 "TorusEntity",
                 "TallBoxEntity",
                 "BoundsEntity",
-                "SunLightEntity",
-                "SpotLightEntity",
                 "BoxEntity"
             ]
         },
@@ -1143,6 +1143,22 @@
                         }
                     ],
                     "Groups": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::RenderLayerRegistry",
+            "mID": "RenderLayerRegistry",
+            "Layers": [
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Bounds",
+                    "Name": "Bounds"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
                 }
             ]
         },
@@ -1320,12 +1336,15 @@
                     }
                 },
                 {
-                    "Type": "nap::MeshFromFile",
+                    "Type": "nap::GeometryFromFile",
                     "mID": "NAPLogoMesh",
+                    "Path": "nap_logo.fbx",
+                    "GenerateNormals": false,
+                    "CalculateTangents": true,
+                    "NormalSmoothingAngle": 60.0,
                     "Usage": "Static",
                     "CullMode": "Back",
-                    "PolygonMode": "Fill",
-                    "Path": "nap_logo.mesh"
+                    "PolygonMode": "Fill"
                 },
                 {
                     "Type": "nap::SphereMesh",
@@ -1464,7 +1483,10 @@
                 },
                 {
                     "Type": "nap::BlinnPhongColorShader",
-                    "mID": "BlinnPhongColorShader"
+                    "mID": "BlinnPhongColorShader",
+                    "QuadSampleCount": 4,
+                    "CubeSampleCount": 4,
+                    "EnableEnvironmentMap": false
                 },
                 {
                     "Type": "nap::Material",
@@ -1538,10 +1560,6 @@
                     "DepthMode": "InheritFromBlendMode"
                 },
                 {
-                    "Type": "nap::BlinnPhongTextureShader",
-                    "mID": "BlinnPhongTextureShader"
-                },
-                {
                     "Type": "nap::Material",
                     "mID": "ConstantMaterial",
                     "Uniforms": [
@@ -1583,6 +1601,13 @@
                 {
                     "Type": "nap::GnomonShader",
                     "mID": "GnomonShader"
+                },
+                {
+                    "Type": "nap::BlinnPhongTextureShader",
+                    "mID": "BlinnPhongTextureShader",
+                    "QuadSampleCount": 4,
+                    "CubeSampleCount": 4,
+                    "EnableEnvironmentMap": false
                 }
             ],
             "Children": []

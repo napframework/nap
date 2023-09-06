@@ -77,7 +77,7 @@ namespace nap
 		/**
 		 * @return total number of textures that can be assigned
 		 */
-		virtual int getNumElements() const					{ return mDeclaration->mNumArrayElements; }
+		virtual int getNumElements() const					{ return mDeclaration->mNumElements; }
 	};
 
 

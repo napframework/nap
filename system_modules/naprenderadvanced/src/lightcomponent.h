@@ -43,7 +43,8 @@ namespace nap
 	 */
 	namespace uniform
 	{
-		inline constexpr const char* lightStruct = "light";							// Default light UBO struct name
+		inline constexpr const char* lightStruct = "light";						// Default light UBO struct name
+		inline constexpr const char* shadowStruct = "shadow";					// Default shadow UBO struct name
 
 		namespace light
 		{
@@ -57,10 +58,15 @@ namespace nap
 			inline constexpr const char* shadowStrength = "shadowStrength";
 			inline constexpr const char* enable = "enable";
 			inline constexpr const char* flags = "flags";
-
-			inline constexpr const char* viewProjectionMatrix = "viewProjectionMatrix";
 			inline constexpr const char* nearFar = "nearFar";
 			inline constexpr const char* lights = "lights";
+			inline constexpr const char* count = "count";
+		}
+
+		namespace shadow
+		{
+			inline constexpr const char* lightViewProjectionMatrix = "lightViewProjectionMatrix";
+			inline constexpr const char* flags = "flags";
 			inline constexpr const char* count = "count";
 		}
 	}
@@ -96,7 +102,6 @@ namespace nap
 		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
 
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength'
-		uint mShadowSampleCount = 4U;							///< Property: 'ShadowSampleCount'
 		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
 	};
 
@@ -185,11 +190,6 @@ namespace nap
 		virtual uint getShadowMapSize() const								{ return mShadowMapSize; }
 
 		/**
-		 * @return the shadow sample count
-		 */
-		virtual uint getShadowSampleCount() const							{ return mShadowSampleCount; }
-
-		/**
 		 * @return the light intensity
 		 */
 		virtual float getIntensity() const									{ return mResource->mIntensity->mValue; }
@@ -231,7 +231,6 @@ namespace nap
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
 		float mShadowStrength							= 1.0f;
-		uint mShadowSampleCount							= 4U;
 		uint mShadowMapSize								= 512U;
 
 	private:

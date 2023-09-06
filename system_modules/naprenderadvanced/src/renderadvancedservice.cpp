@@ -19,7 +19,6 @@
 #include <material.h>
 #include <renderglobals.h>
 
-#include <parameter.h>
 #include <parametervec.h>
 #include <parameternumeric.h>
 #include <parametermat.h>
@@ -44,8 +43,7 @@ namespace nap
 	{
 		uniform::light::flags,
 		uniform::light::origin,
-		uniform::light::direction,
-		uniform::light::viewProjectionMatrix
+		uniform::light::direction
 	};
 
 
@@ -105,6 +103,9 @@ namespace nap
 			}
 		}
 
+        // Log the maximum supported number of lights. Differs on low spec devices.
+        nap::Logger::info("Maximum supported number of nap::LightComponents: %d", mMaxLightCount);
+
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
@@ -113,8 +114,8 @@ namespace nap
 		// Create and manage a shadow texture dummy for valid shadow samplers
 		mShadowTextureDummy = std::make_unique<DepthRenderTexture2D>(getCore());
 		mShadowTextureDummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
-		mShadowTextureDummy->mWidth = 16;
-		mShadowTextureDummy->mHeight = 16;
+		mShadowTextureDummy->mWidth = 1;
+		mShadowTextureDummy->mHeight = 1;
 		mShadowTextureDummy->mUsage = Texture::EUsage::Static;
 		mShadowTextureDummy->mDepthFormat = configuration->mDepthFormat;
 		mShadowTextureDummy->mColorSpace = EColorSpace::Linear;
@@ -127,7 +128,7 @@ namespace nap
 		}
 
 		// Sampler2D
-		mSampler2DResource = std::make_unique<Sampler2DArray>(mMaxShadowMapCount);
+		mSampler2DResource = std::make_unique<Sampler2DArray>(mMaxLightCount);
 		mSampler2DResource->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(Sampler2DArray).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mSampler2DResource->mName = sampler::light::shadowMaps;
 
@@ -148,7 +149,7 @@ namespace nap
 		}
 
 		// SamplerCube
-		mSamplerCubeResource = std::make_unique<SamplerCubeArray>(mMaxShadowMapCount);
+		mSamplerCubeResource = std::make_unique<SamplerCubeArray>(mMaxLightCount);
 		mSamplerCubeResource->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(SamplerCubeArray).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mSamplerCubeResource->mName = sampler::light::cubeShadowMaps;
 
@@ -305,10 +306,19 @@ namespace nap
 			if (light_count == nullptr)
 				continue;
 
+			auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
+			if (shadow_struct == nullptr)
+				continue;
+
+			auto* light_count_vert = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
+			if (light_count_vert == nullptr)
+				continue;
+
 			// Set light count to zero and exit early
 			if (disableLighting)
 			{
 				light_count->setValue(0);
+				light_count_vert->setValue(0);
 				return true;
 			}
 
@@ -316,10 +326,18 @@ namespace nap
 			if (light_array == nullptr)
 				continue;
 
-			uint count = 0;
+			auto* view_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
+			if (view_array == nullptr)
+				continue;
+
+			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
+			if (shadow_flags == nullptr)
+				continue;
+
+			uint light_index = 0;
 			for (const auto& light : mLightComponents)
 			{
-				if (count >= light_array->getMaxNumElements())
+				if (light_index >= mMaxLightCount)
 					break;
 
 				// Fetch flags
@@ -327,11 +345,14 @@ namespace nap
 				assert(it_flags != mLightFlagsMap.end());
 
 				// Set light uniform defaults
-				auto& light_element = light_array->getElement(count);
+				auto& light_element = light_array->getElement(light_index);
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::enable)->setValue(getLightEnableFlags(*light));
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
+
+                // Set shadow enabled bit
+				shadow_flags->setValue(shadow_flags->getValue() & ~(1 << light_index) | (uint)(light->isShadowEnabled()) << light_index);
 
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
@@ -352,13 +373,17 @@ namespace nap
 						break;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
-					auto* member = struct_decl->findMember(name);
+                    assert(struct_decl != nullptr);
+
+                    auto* member = struct_decl->findMember(name);
 					if (!errorState.check(member != nullptr, "Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
 						return false;
 
 					if (member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)))
 					{
 						auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
+                        assert(value_member != nullptr);
+
 						if (value_member->mType == EShaderVariableValueType::Float)
 						{
 							auto* param = light->getLightUniform(name);
@@ -393,6 +418,7 @@ namespace nap
 							auto* param = light->getLightUniform(name);
 							if (!errorState.check(param != nullptr, "Unsupported member data type"))
 								return false;
+
 							light_element.getOrCreateUniform<UniformMat4Instance>(name)->setValue(static_cast<ParameterMat4*>(param)->mValue);
 						}
 						else
@@ -410,14 +436,12 @@ namespace nap
 
 				if (light->isShadowEnabled())
 				{
-					// Shadows
-					auto* render_service = getCore().getService<RenderService>();
-					assert(render_service != nullptr);
-
+					// Set light view projection matrix in shadow struct
 					const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-					light_element.getOrCreateUniform<UniformMat4Instance>(uniform::light::viewProjectionMatrix)->setValue(light_view_projection);
+					view_array->setValue(light_view_projection, light_index);
+
 					light_element.getOrCreateUniform<UniformVec2Instance>(uniform::light::nearFar)->setValue({ light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() });
-					light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
+                    light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
 
 					switch (light->getShadowMapType())
 					{
@@ -427,8 +451,13 @@ namespace nap
 						if (shadow_sampler_array != nullptr)
 						{
 							auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
-							if (count >= instance->getNumElements())
-								continue;
+                            assert(instance != nullptr);
+
+							if (light_index >= instance->getNumElements())
+                            {
+                                assert(false);
+                                continue;
+                            }
 
 							const auto it = mLightDepthMap.find(light);
 							assert(it != mLightDepthMap.end());
@@ -442,10 +471,15 @@ namespace nap
 						if (shadow_sampler_array != nullptr)
 						{
 							auto* instance = static_cast<SamplerCubeArrayInstance*>(shadow_sampler_array);
-							if (count >= instance->getNumElements())
-								continue;
+                            assert(instance != nullptr);
 
-							const auto it = mLightCubeMap.find(light);
+                            if (light_index >= instance->getNumElements())
+                            {
+                                assert(false);
+								continue;
+                            }
+
+                            const auto it = mLightCubeMap.find(light);
 							assert(it != mLightCubeMap.end());
 							instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
 						}
@@ -456,9 +490,10 @@ namespace nap
 						return false;
 					}
 				}
-				++count;
+				++light_index;
 			}
-			light_count->setValue(count);
+			light_count->setValue(light_index);
+			light_count_vert->setValue(light_index);
 		}
 		return true;
 	}
@@ -483,7 +518,7 @@ namespace nap
 				auto rt = std::make_unique<CubeRenderTarget>(getCore());
 				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-				rt->mSampleShading = true;
+				rt->mSampleShading = cm->mSampleShading;
 				rt->mCubeTexture = cm;
 
 				if (!rt->init(errorState))
@@ -709,6 +744,10 @@ namespace nap
 			NAP_ASSERT_MSG(false, "Light component was already registered");
 
 		mLightComponents.emplace_back(&light);
+
+        // Warn when a light component is ignored
+        if (mLightComponents.size() > mMaxLightCount)
+            nap::Logger::warn("'%s' exceeds the maximum of %d nap::LightComponent(s)", light.mID.c_str(), mMaxLightCount);
 	}
 
 	 

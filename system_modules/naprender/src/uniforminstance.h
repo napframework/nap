@@ -297,6 +297,11 @@ namespace nap
 		virtual const ShaderVariableDeclaration& getDeclaration() const override	{ return *mDeclaration; }
 
 		/**
+		 * @return maximum number of values that can be assigned
+		 */
+		int getMaxNumElements() const												{ return mDeclaration->mNumElements; }
+
+		/**
 		 * Required override, sets up default values.
 		 */
 		virtual void setDefault() = 0;
