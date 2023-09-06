@@ -84,5 +84,6 @@ namespace nap
         if (!setFragmentSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAPPING, static_cast<uint>(mEnableEnvironmentMapping), errorState))
             return false;
 
+        return true;
 	}
 }

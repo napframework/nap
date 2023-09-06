@@ -1601,7 +1601,7 @@
                     "mID": "GnomonShader"
                 },
                 {
-                    "Type": "nap::BlinnPhongColorShader",
+                    "Type": "nap::BlinnPhongTextureShader",
                     "mID": "BlinnPhongTextureShader",
                     "QuadSampleCount": 4,
                     "CubeSampleCount": 4,
