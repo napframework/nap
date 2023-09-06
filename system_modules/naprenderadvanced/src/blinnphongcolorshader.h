@@ -47,7 +47,8 @@ namespace nap
 
 		uint mQuadSampleCount = 8;
 		uint mCubeSampleCount = 4;
-		bool mEnableEnvironmentMap = true;
+		bool mEnableShadowMapping = true;
+		bool mEnableEnvironmentMapping = true;
 
 	private:
 		RenderAdvancedService* mRenderAdvancedService = nullptr;

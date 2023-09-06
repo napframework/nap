@@ -55,10 +55,8 @@ namespace nap
 			inline constexpr const char* attenuation = "attenuation";
 			inline constexpr const char* angle = "angle";
 			inline constexpr const char* falloff = "falloff";
-			inline constexpr const char* shadowStrength = "shadowStrength";
 			inline constexpr const char* enable = "enable";
 			inline constexpr const char* flags = "flags";
-			inline constexpr const char* nearFar = "nearFar";
 			inline constexpr const char* lights = "lights";
 			inline constexpr const char* count = "count";
 		}
@@ -66,7 +64,9 @@ namespace nap
 		namespace shadow
 		{
 			inline constexpr const char* lightViewProjectionMatrix = "lightViewProjectionMatrix";
-			inline constexpr const char* flags = "flags";
+            inline constexpr const char* nearFar = "nearFar";
+            inline constexpr const char* strength = "strength";
+            inline constexpr const char* flags = "flags";
 			inline constexpr const char* count = "count";
 		}
 	}

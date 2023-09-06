@@ -38,7 +38,8 @@ namespace nap
 
 		DepthRenderTexture2D::EDepthFormat mDepthFormat			= DepthRenderTexture2D::EDepthFormat::D32;		///< Quad shadow map depth format
 		DepthRenderTextureCube::EDepthFormat mDepthFormatCube	= DepthRenderTextureCube::EDepthFormat::D32;	///< Cube shadow map depth format
-	};
+	    bool mEnableShadowMapping                               = true;                                         ///< Whether shadow mapping is enabled
+    };
 
 
 	/**
@@ -83,6 +84,11 @@ namespace nap
 		 * Invoked after the resource manager successfully loaded resources
 		 */
 		virtual void postResourcesLoaded() override;
+
+        /**
+         * @return whether shadow mapping is enabled
+         */
+        bool isShadowMappingEnabled() const { return mShadowMappingEnabled; }
 
         /**
          * @return the registered light components
@@ -146,6 +152,7 @@ namespace nap
 		std::unique_ptr<SamplerCubeArray> mSamplerCubeResource;
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;
 
+		bool mShadowMappingEnabled = true;
 		bool mShadowResourcesCreated = false;
 
 		// Cube maps from file
@@ -158,7 +165,6 @@ namespace nap
 
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;
 		static constexpr const uint mRequiredVulkanVersionMinor = 0;
-
 		static constexpr const uint mMaxLightCount = 8;
 	};
 }

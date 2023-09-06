@@ -25,8 +25,9 @@
 #include <parametercolor.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
-	RTTI_PROPERTY("ShadowDepthFormat",			&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowDepthFormatCube",		&nap::RenderAdvancedServiceConfiguration::mDepthFormatCube,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowDepthFormatCube",	&nap::RenderAdvancedServiceConfiguration::mDepthFormatCube,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableShadowMapping",	&nap::RenderAdvancedServiceConfiguration::mEnableShadowMapping,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAdvancedService)
@@ -103,15 +104,38 @@ namespace nap
 			}
 		}
 
-        // Log the maximum supported number of lights. Differs on low spec devices.
-        nap::Logger::info("Maximum supported number of nap::LightComponents: %d", mMaxLightCount);
-
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
 			return false;
 
-		// Create and manage a shadow texture dummy for valid shadow samplers
+        // Enable shadow mapping
+        mShadowMappingEnabled = configuration->mEnableShadowMapping;
+
+#ifdef RENDERADVANCED_RPI
+        // Disable shadows on Vulkan version <1.1
+        if (!errorState.check(mRenderService->getVulkanVersionMajor() >= 1, "Vulkan version 1.0+ required"))
+            return false;
+
+        if (mRenderService->getVulkanVersionMajor() == 1 && mRenderService->getVulkanVersionMinor() < 1)
+        {
+            nap::Logger::warn("Shadow mapping is not supported for RPI with Vulkan version <1.1");
+            mShadowMappingEnabled = false;
+        }
+#endif
+
+        // Log shadow mapping information
+        nap::Logger::info("Shadow mapping: %s", mShadowMappingEnabled ? "enabled" : "disabled");
+        if (mShadowMappingEnabled)
+        {
+            auto quad_format_type = RTTI_OF(DepthRenderTexture2D::EDepthFormat).get_enumeration();
+            nap::Logger::info("Shadow quad format: %s", quad_format_type.value_to_name(configuration->mDepthFormat).to_string().c_str());
+
+            auto cube_format_type = RTTI_OF(DepthRenderTextureCube::EDepthFormat).get_enumeration();
+            nap::Logger::info("Shadow cube format: %s", cube_format_type.value_to_name(configuration->mDepthFormatCube).to_string().c_str());
+        }
+
+        // Create and manage a shadow texture dummy for valid shadow samplers
 		mShadowTextureDummy = std::make_unique<DepthRenderTexture2D>(getCore());
 		mShadowTextureDummy->mID = utility::stringFormat("%s_Dummy_%s", RTTI_OF(DepthRenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		mShadowTextureDummy->mWidth = 1;
@@ -210,6 +234,10 @@ namespace nap
 			}
 		}
 
+        // Bail if shadow mapping is disabled
+        if (!isShadowMappingEnabled())
+            return;
+
 		// Evaluate registered light components
 		for (const auto& light : mLightComponents)
 		{
@@ -297,42 +325,19 @@ namespace nap
 		// Update materials for color pass
 		for (auto& mesh_comp : filtered_mesh_comps)
 		{
-			// Verify shader interface for lights
+			// Shader interface for lights
 			auto* light_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::lightStruct);
-			if (light_struct == nullptr)
-				continue;
-
 			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
-			if (light_count == nullptr)
-				continue;
-
-			auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
-			if (shadow_struct == nullptr)
-				continue;
-
-			auto* light_count_vert = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
-			if (light_count_vert == nullptr)
-				continue;
 
 			// Set light count to zero and exit early
 			if (disableLighting)
 			{
 				light_count->setValue(0);
-				light_count_vert->setValue(0);
-				return true;
+				continue;
 			}
+            light_count->setValue(mLightComponents.size());
 
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
-			if (light_array == nullptr)
-				continue;
-
-			auto* view_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
-			if (view_array == nullptr)
-				continue;
-
-			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
-			if (shadow_flags == nullptr)
-				continue;
 
 			uint light_index = 0;
 			for (const auto& light : mLightComponents)
@@ -350,9 +355,6 @@ namespace nap
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
-
-                // Set shadow enabled bit
-				shadow_flags->setValue(shadow_flags->getValue() & ~(1 << light_index) | (uint)(light->isShadowEnabled()) << light_index);
 
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
@@ -433,68 +435,103 @@ namespace nap
 						return false;
 					}
 				}
-
-				if (light->isShadowEnabled())
-				{
-					// Set light view projection matrix in shadow struct
-					const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
-					view_array->setValue(light_view_projection, light_index);
-
-					light_element.getOrCreateUniform<UniformVec2Instance>(uniform::light::nearFar)->setValue({ light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() });
-                    light_element.getOrCreateUniform<UniformFloatInstance>(uniform::light::shadowStrength)->setValue(light->getShadowStrength());
-
-					switch (light->getShadowMapType())
-					{
-					case EShadowMapType::Quad:
-					{
-						auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
-						if (shadow_sampler_array != nullptr)
-						{
-							auto* instance = static_cast<Sampler2DArrayInstance*>(shadow_sampler_array);
-                            assert(instance != nullptr);
-
-							if (light_index >= instance->getNumElements())
-                            {
-                                assert(false);
-                                continue;
-                            }
-
-							const auto it = mLightDepthMap.find(light);
-							assert(it != mLightDepthMap.end());
-							instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
-						}
-						break;
-					}
-					case EShadowMapType::Cube:
-					{
-						auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
-						if (shadow_sampler_array != nullptr)
-						{
-							auto* instance = static_cast<SamplerCubeArrayInstance*>(shadow_sampler_array);
-                            assert(instance != nullptr);
-
-                            if (light_index >= instance->getNumElements())
-                            {
-                                assert(false);
-								continue;
-                            }
-
-                            const auto it = mLightCubeMap.find(light);
-							assert(it != mLightCubeMap.end());
-							instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
-						}
-						break;
-					}
-					default:
-						NAP_ASSERT_MSG(false, "Unsupported shadow map type");
-						return false;
-					}
-				}
-				++light_index;
+                ++light_index;
 			}
-			light_count->setValue(light_index);
-			light_count_vert->setValue(light_index);
-		}
+        }
+
+        if (!isShadowMappingEnabled())
+            return true;
+
+        // Shadow data
+        for (auto& mesh_comp : filtered_mesh_comps)
+        {
+            auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
+            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
+            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar);
+            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength);
+            auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
+            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
+
+            // Set light count to zero and exit early
+            if (disableLighting)
+            {
+                light_count->setValue(0);
+                continue;
+            }
+            light_count->setValue(mLightComponents.size());
+
+            uint light_index = 0;
+            for (const auto& light : mLightComponents)
+            {
+                if (light_index >= mMaxLightCount)
+                    break;
+
+                // Set shadow enabled bit
+                shadow_flags->setValue(shadow_flags->getValue() & ~(1 << light_index) | (uint)(light->isShadowEnabled()) << light_index);
+
+                if (light->isShadowEnabled())
+                {
+                    // Set light view projection matrix in shadow struct
+                    const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
+                    view_matrix_array->setValue(light_view_projection, light_index);
+
+                    // Set near/far plane and strength in shadow struct
+                    glm::vec2 near_far = { light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() };
+                    near_far_array->setValue(near_far, light_index);
+                    strength_array->setValue(light->getShadowStrength(), light_index);
+
+                    // Fetch flags
+                    auto it_flags = mLightFlagsMap.find(light);
+                    assert(it_flags != mLightFlagsMap.end());
+
+                    switch (light->getShadowMapType())
+                    {
+                        case EShadowMapType::Quad:
+                        {
+                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
+                            if (shadow_sampler_array != nullptr)
+                            {
+                                auto *instance = static_cast<Sampler2DArrayInstance *>(shadow_sampler_array);
+                                assert(instance != nullptr);
+
+                                if (light_index >= instance->getNumElements())
+                                {
+                                    assert(false);
+                                    continue;
+                                }
+
+                                const auto it = mLightDepthMap.find(light);
+                                assert(it != mLightDepthMap.end());
+                                instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
+                            }
+                            break;
+                        }
+                        case EShadowMapType::Cube: {
+                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(
+                                    *mSamplerCubeResource, errorState);
+                            if (shadow_sampler_array != nullptr) {
+                                auto *instance = static_cast<SamplerCubeArrayInstance *>(shadow_sampler_array);
+                                assert(instance != nullptr);
+
+                                if (light_index >= instance->getNumElements()) {
+                                    assert(false);
+                                    continue;
+                                }
+
+                                const auto it = mLightCubeMap.find(light);
+                                assert(it != mLightCubeMap.end());
+                                instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
+                            }
+                            break;
+                        }
+                        default:
+                            NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+                            return false;
+                    }
+                }
+                ++light_index;
+            }
+        }
 		return true;
 	}
 

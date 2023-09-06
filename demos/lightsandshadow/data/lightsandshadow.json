@@ -470,11 +470,10 @@
                     "Enabled": true,
                     "Color": "PointColorParam",
                     "Intensity": "PointIntensityParam",
-                    "ShadowStrength": 0.5,
-                    "ShadowSampleCount": 4,
-                    "Enable Shadows": false,
+                    "ShadowStrength": 0.6,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./PointShadowCam",
-                    "ShadowMapSize": 512,
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam"
                 },
                 {
@@ -597,10 +596,9 @@
                     "Color": "SpotColorParam",
                     "Intensity": "SpotIntensityParam",
                     "ShadowStrength": 1.0,
-                    "ShadowSampleCount": 8,
-                    "Enable Shadows": false,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./SpotShadowCam",
-                    "ShadowMapSize": 1024,
+                    "ShadowMapSize": 2048,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "SpotAngleParam",
                     "FallOff": "SpotFallOffParam"
@@ -725,10 +723,9 @@
                     "Color": "SunColor",
                     "Intensity": "SunIntensityParam",
                     "ShadowStrength": 1.0,
-                    "ShadowSampleCount": 8,
-                    "Enable Shadows": false,
+                    "Enable Shadows": true,
                     "ShadowCamera": "./SunShadowCam",
-                    "ShadowMapSize": 1024
+                    "ShadowMapSize": 2048
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -1486,7 +1483,8 @@
                     "mID": "BlinnPhongColorShader",
                     "QuadSampleCount": 4,
                     "CubeSampleCount": 4,
-                    "EnableEnvironmentMap": false
+                    "EnableShadowMapping": true,
+                    "EnableEnvironmentMapping": true
                 },
                 {
                     "Type": "nap::Material",
@@ -1603,11 +1601,12 @@
                     "mID": "GnomonShader"
                 },
                 {
-                    "Type": "nap::BlinnPhongTextureShader",
+                    "Type": "nap::BlinnPhongColorShader",
                     "mID": "BlinnPhongTextureShader",
                     "QuadSampleCount": 4,
                     "CubeSampleCount": 4,
-                    "EnableEnvironmentMap": false
+                    "EnableShadowMapping": true,
+                    "EnableEnvironmentMapping": true
                 }
             ],
             "Children": []

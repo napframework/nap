@@ -6,12 +6,10 @@ struct Light
 	vec3 origin;
 	vec3 direction;
 	vec3 color;
-	vec2 nearFar;
 	float intensity;
 	float attenuation;
 	float angle;
 	float falloff;
-	float shadowStrength;
 	uint enable;
 	uint flags;
 };

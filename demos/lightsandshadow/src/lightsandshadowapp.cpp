@@ -8,14 +8,11 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <perspcameracomponent.h>
-#include <orthocameracomponent.h>
 #include <lightcomponent.h>
 #include <scene.h>
 #include <imgui/imgui.h>
-#include <imguiutils.h>
 #include <glm/ext.hpp>
 #include <parameternumeric.h>
-#include <parameterquat.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightsAndShadowApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -34,13 +31,13 @@ namespace nap
 		mInputService			= getCore().getService<InputService>();
 		mSceneService			= getCore().getService<SceneService>();
 		mGuiService				= getCore().getService<IMGuiService>();
-
-#ifdef RENDERADVANCED_RPI
-        // Require Vulkan 1.1 on Raspberry Pi
-        if (!errorState.check(mRenderService->getVulkanVersionMajor() >= 1 && mRenderService->getVulkanVersionMinor() >= 1,
-            "The lightsandshadow demo requires Vulkan version 1.1 on Raspberry Pi"))
-            return false;
-#endif
+//
+//#ifdef RENDERADVANCED_RPI
+//        // Require Vulkan 1.1 on Raspberry Pi
+//        if (!errorState.check(mRenderService->getVulkanVersionMajor() >= 1 && mRenderService->getVulkanVersionMinor() >= 1,
+//            "The lightsandshadow demo requires Vulkan version 1.1 on Raspberry Pi"))
+//            return false;
+//#endif
 
         // Get resource manager and load
 		mResourceManager = getCore().getResourceManager();

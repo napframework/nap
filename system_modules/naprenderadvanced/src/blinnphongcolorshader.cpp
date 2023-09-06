@@ -5,15 +5,17 @@
 #include "blinnphongcolorshader.h"
 #include "renderadvancedservice.h"
 
-// Local includes
+// NAP includes
 #include <nap/core.h>
+#include <renderservice.h>
 
 // nap::BlinnPhongColorShader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BlinnPhongColorShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("QuadSampleCount", &nap::BlinnPhongColorShader::mQuadSampleCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CubeSampleCount", &nap::BlinnPhongColorShader::mCubeSampleCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableEnvironmentMap", &nap::BlinnPhongColorShader::mEnableEnvironmentMap, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableShadowMapping", &nap::BlinnPhongColorShader::mEnableShadowMapping, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableEnvironmentMapping", &nap::BlinnPhongColorShader::mEnableEnvironmentMapping, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -24,13 +26,13 @@ namespace nap
 	namespace shader
 	{
 		inline constexpr const char* blinnphongcolor = "blinnphongcolor";
-		inline constexpr const char* blinnphongcolorpi = "blinnphongcolorpi";
+		inline constexpr const char* blinnphongcolornoshadow = "blinnphongcolornoshadow";
 
 		namespace constant
 		{
 			inline constexpr const char* QUAD_SAMPLE_COUNT = "QUAD_SAMPLE_COUNT";
 			inline constexpr const char* CUBE_SAMPLE_COUNT = "CUBE_SAMPLE_COUNT";
-			inline constexpr const char* ENABLE_ENVIRONMENT_MAP = "ENABLE_ENVIRONMENT_MAP";
+			inline constexpr const char* ENABLE_ENVIRONMENT_MAPPING = "ENABLE_ENVIRONMENT_MAPPING";
 		}
 	}
 
@@ -41,11 +43,8 @@ namespace nap
 
 	bool BlinnPhongColorShader::init(utility::ErrorState& errorState)
 	{
-#ifdef RENDERADVANCED_RPI
-		const std::string shader_name = shader::blinnphongcolorpi;
-#else
-		const std::string shader_name = shader::blinnphongcolor;
-#endif
+        std::string shader_name = mRenderAdvancedService->isShadowMappingEnabled() ?
+                                  shader::blinnphongcolor : shader::blinnphongcolornoshadow;
 
 		std::string relative_path = utility::joinPath({ "shaders", utility::appendFileExtension(shader_name, "vert") });
 		const std::string vertex_shader_path = mRenderAdvancedService->getModule().findAsset(relative_path);
@@ -81,7 +80,7 @@ namespace nap
 		if (!setFragmentSpecializationConstant(shader::constant::CUBE_SAMPLE_COUNT, std::max<uint>(mCubeSampleCount, 1), errorState))
 			return false;
 
-        if (!setFragmentSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAP, static_cast<uint>(mEnableEnvironmentMap), errorState))
+        if (!setFragmentSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAPPING, static_cast<uint>(mEnableEnvironmentMapping), errorState))
             return false;
 
 		return true;

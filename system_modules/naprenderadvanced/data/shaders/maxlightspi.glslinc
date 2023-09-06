@@ -1,4 +1,0 @@
-// NAP Shader include file
-
-// Total maximum supported number of lights
-const uint MAX_LIGHTS			= 3;
