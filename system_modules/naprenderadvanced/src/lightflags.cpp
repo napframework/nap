@@ -9,35 +9,30 @@ namespace nap
 {
 	uint getLightType(LightFlags flags)
 	{
-		return static_cast<uint>((flags >> 1U) & 0x7f);
-	}
-
-	uint getShadowSampleCount(LightFlags flags)
-	{
-		return static_cast<uint>((flags >> 8U) & 0xff);
+		return static_cast<uint>((flags >> 1) & 0x7f);
 	}
 
 	bool isShadowSupported(LightFlags flags)
 	{
-		return getShadowSampleCount(flags) > 0U;
+		return static_cast<uint>((flags >> 8) & 0x1) > 0;
 	}
 
 	uint getShadowMapType(LightFlags flags)
 	{
-		return static_cast<uint>((flags >> 16U) & 0xff);
+		return static_cast<uint>((flags >> 16) & 0xff);
 	}
 
 	uint getLightIndex(LightFlags flags)
 	{
-		return static_cast<uint>((flags >> 24U) & 0xff);
+		return static_cast<uint>((flags >> 24) & 0xff);
 	}
 
 	LightFlags getLightFlags(const LightComponentInstance& light, uint index)
 	{
 		LightFlags flags = (static_cast<uint>(light.getLightType()) & 0xff);
-		flags |= (static_cast<uint>(light.isShadowSupported() ? std::min(light.getShadowSampleCount(), 0xffU) : 0U) << 8U);
-		flags |= (static_cast<uint>(light.getShadowMapType()) & 0xffU) << 16U;
-		flags |= std::min(index, 0xffU) << 24U;
+		flags |= (static_cast<uint>(light.isShadowSupported()) << 8);
+		flags |= (static_cast<uint>(light.getShadowMapType()) & 0xff) << 16;
+		flags |= std::min<uint>(index, 0xff) << 24;
 
 		return flags;
 	}

@@ -47,6 +47,7 @@ namespace nap
 
 		uint mQuadSampleCount = 8;
 		uint mCubeSampleCount = 4;
+		bool mEnableEnvironmentMap = true;
 
 	private:
 		RenderAdvancedService* mRenderAdvancedService = nullptr;

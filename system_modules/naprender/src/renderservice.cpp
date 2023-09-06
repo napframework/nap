@@ -1471,7 +1471,7 @@ namespace nap
 
 	bool RenderService::initEmptyTextures(nap::utility::ErrorState& errorState)
 	{
-		SurfaceDescriptor settings = { 16, 16, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
+		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
 		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
 		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
 		if (!mEmptyTexture2D->init(settings, false, 0, errorState))

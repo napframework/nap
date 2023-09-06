@@ -4,7 +4,7 @@
 #extension GL_GOOGLE_include_directive : enable
 
 // Total maximum supported number of lights
-const uint MAX_LIGHTS = 1;
+const uint MAX_LIGHTS = 8;
 
 // Includes
 #include "blinnphongcolorfragment.glslinc"

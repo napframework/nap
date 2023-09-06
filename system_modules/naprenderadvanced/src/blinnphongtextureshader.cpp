@@ -13,6 +13,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BlinnPhongTextureShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("QuadSampleCount", &nap::BlinnPhongTextureShader::mQuadSampleCount, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CubeSampleCount", &nap::BlinnPhongTextureShader::mCubeSampleCount, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("EnableEnvironmentMap", &nap::BlinnPhongTextureShader::mEnableEnvironmentMap, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,6 +30,7 @@ namespace nap
 		{
 			inline constexpr const char* QUAD_SAMPLE_COUNT = "QUAD_SAMPLE_COUNT";
 			inline constexpr const char* CUBE_SAMPLE_COUNT = "CUBE_SAMPLE_COUNT";
+			inline constexpr const char* ENABLE_ENVIRONMENT_MAP = "ENABLE_ENVIRONMENT_MAP";
 		}
 	}
 
@@ -78,6 +80,9 @@ namespace nap
 
 		if (!setFragmentSpecializationConstant(shader::constant::CUBE_SAMPLE_COUNT, std::max<uint>(mCubeSampleCount, 1), errorState))
 			return false;
+
+        if (!setFragmentSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAP, static_cast<uint>(mEnableEnvironmentMap), errorState))
+            return false;
 
 		return true;
 	}

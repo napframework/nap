@@ -102,7 +102,6 @@ namespace nap
 		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
 
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength'
-		uint mShadowSampleCount = 4U;							///< Property: 'ShadowSampleCount'
 		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
 	};
 
@@ -191,11 +190,6 @@ namespace nap
 		virtual uint getShadowMapSize() const								{ return mShadowMapSize; }
 
 		/**
-		 * @return the shadow sample count
-		 */
-		virtual uint getShadowSampleCount() const							{ return mShadowSampleCount; }
-
-		/**
 		 * @return the light intensity
 		 */
 		virtual float getIntensity() const									{ return mResource->mIntensity->mValue; }
@@ -237,7 +231,6 @@ namespace nap
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
 		float mShadowStrength							= 1.0f;
-		uint mShadowSampleCount							= 4U;
 		uint mShadowMapSize								= 512U;
 
 	private:

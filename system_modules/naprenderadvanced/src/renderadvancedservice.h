@@ -84,6 +84,11 @@ namespace nap
 		 */
 		virtual void postResourcesLoaded() override;
 
+        /**
+         * @return the registered light components
+         */
+       const std::vector<LightComponentInstance*>& getLights() { return mLightComponents; }
+
 		/**
 		 * Render shadows
 		 */
@@ -154,10 +159,6 @@ namespace nap
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;
 		static constexpr const uint mRequiredVulkanVersionMinor = 0;
 
-#ifdef RENDERADVANCED_RPI
-		static constexpr const uint mMaxLightCount = 1;
-#else
-        static constexpr const uint mMaxLightCount = 8;
-#endif
+		static constexpr const uint mMaxLightCount = 8;
 	};
 }

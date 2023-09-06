@@ -9,6 +9,7 @@
 // Specialization constants
 layout (constant_id = 0) const uint QUAD_SAMPLE_COUNT = 8;
 layout (constant_id = 1) const uint CUBE_SAMPLE_COUNT = 4;
+layout (constant_id = 2) const uint ENABLE_ENVIRONMENT_MAP = 1;
 
 // Uniforms
 uniform nap
@@ -42,7 +43,6 @@ in vec3 	passPosition;					//< Fragment position in world space
 in vec3 	passNormal;						//< Fragment normal in world space
 in vec3 	passUV0;						//< Texture UVs
 in float 	passFresnel;					//< Fresnel term
-
 in vec4 	passShadowCoords[MAX_LIGHTS];	//< Shadow Coordinates
 
 // Fragment Output
@@ -62,7 +62,7 @@ void main()
 	BlinnPhongMaterial mtl = { ubo.ambient, texture_color.rgb * ubo.diffuse, ubo.specular, ubo.shininess };
 
 	// Sample environment map
-	if (ubo.environment > 0)
+	if (ENABLE_ENVIRONMENT_MAP > 0 && ubo.environment > 0)
 	{
 		vec3 I = normalize(passPosition - mvp.cameraPosition);
 		vec3 R = reflect(I, normalize(passNormal));
@@ -88,9 +88,6 @@ void main()
 			continue;
 		}
 
-		const uint sample_count = getShadowSampleCount(flags);
-		const uint map_index = getShadowMapIndex(flags);
-
 		float shadow = 0.0;
 		switch (getShadowMapType(flags))
 		{
@@ -106,6 +103,7 @@ void main()
 					coord.xy = (coord.xy + 1.0) * 0.5;
 
 					// Multi sample
+					const uint map_index = getShadowMapIndex(flags);	
 					float sum = 0.0;
 					for (int s=0; s<QUAD_SAMPLE_COUNT; s++) 
 					{
@@ -127,6 +125,7 @@ void main()
 				// Ensure the approppriate axis-aligned cube face is used, we derive this from the sampling coordinate
 				float frag_depth = sdfPlane(lit.lights[i].origin, cubeFace(coord), passPosition);
 
+				const uint map_index = getShadowMapIndex(flags);
 				float sum = 0.0;
 				for (int s=0; s<CUBE_SAMPLE_COUNT; s++) 
 				{

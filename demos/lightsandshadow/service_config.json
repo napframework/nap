@@ -101,8 +101,8 @@
         {
             "Type": "nap::RenderAdvancedServiceConfiguration",
             "mID": "RenderAdvancedServiceConfiguration_3542a56f-9631-4764-a2bc-1cba254ce335",
-            "ShadowDepthFormat": "D32",
-            "ShadowDepthFormatCube": "D32"
+            "ShadowDepthFormat": "D16",
+            "ShadowDepthFormatCube": "D16"
         },
         {
             "Type": "nap::RenderServiceConfiguration",

@@ -7,4 +7,4 @@
 const uint MAX_LIGHTS = 8;
 
 // Includes
-#include "blinnphongtexturevertex.glslinc"
+#include "blinnphongcolorvertex.glslinc"

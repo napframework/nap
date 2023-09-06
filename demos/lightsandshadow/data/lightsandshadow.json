@@ -423,7 +423,7 @@
                 },
                 {
                     "Type": "nap::RotateComponent",
-                    "mID": "nap::RotateComponent_b8ff6c0c",
+                    "mID": "RotateLogo",
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
@@ -474,7 +474,7 @@
                     "ShadowSampleCount": 4,
                     "Enable Shadows": false,
                     "ShadowCamera": "./PointShadowCam",
-                    "ShadowMapSize": 1024,
+                    "ShadowMapSize": 512,
                     "Attenuation": "LightAttenuationParam"
                 },
                 {
@@ -600,7 +600,7 @@
                     "ShadowSampleCount": 8,
                     "Enable Shadows": false,
                     "ShadowCamera": "./SpotShadowCam",
-                    "ShadowMapSize": 2048,
+                    "ShadowMapSize": 1024,
                     "Attenuation": "LightAttenuationParam",
                     "Angle": "SpotAngleParam",
                     "FallOff": "SpotFallOffParam"
@@ -728,7 +728,7 @@
                     "ShadowSampleCount": 8,
                     "Enable Shadows": false,
                     "ShadowCamera": "./SunShadowCam",
-                    "ShadowMapSize": 2048
+                    "ShadowMapSize": 1024
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",
@@ -1024,12 +1024,12 @@
             ],
             "Children": [
                 "LogoEntity",
+                "SpotLightEntity",
+                "SunLightEntity",
                 "BaseLightEntity",
                 "TorusEntity",
                 "TallBoxEntity",
                 "BoundsEntity",
-                "SunLightEntity",
-                "SpotLightEntity",
                 "BoxEntity"
             ]
         },
@@ -1485,7 +1485,8 @@
                     "Type": "nap::BlinnPhongColorShader",
                     "mID": "BlinnPhongColorShader",
                     "QuadSampleCount": 4,
-                    "CubeSampleCount": 4
+                    "CubeSampleCount": 4,
+                    "EnableEnvironmentMap": false
                 },
                 {
                     "Type": "nap::Material",
@@ -1602,10 +1603,11 @@
                     "mID": "GnomonShader"
                 },
                 {
-                    "Type": "nap::BlinnPhongColorShader",
+                    "Type": "nap::BlinnPhongTextureShader",
                     "mID": "BlinnPhongTextureShader",
                     "QuadSampleCount": 4,
-                    "CubeSampleCount": 4
+                    "CubeSampleCount": 4,
+                    "EnableEnvironmentMap": false
                 }
             ],
             "Children": []
