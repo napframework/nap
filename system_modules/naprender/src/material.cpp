@@ -37,22 +37,22 @@ RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial)
-	RTTI_PROPERTY("Uniforms",					&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Buffers",					&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::uniforms,		&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::samplers,		&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::buffers,		&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("VertexAttributeBindings",	&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Shader",						&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::material::shader,		&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::material::vbindings,		&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",					&nap::Material::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Shader",						&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::material::shader,		&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 

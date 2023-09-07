@@ -32,15 +32,20 @@ def log_test_success(test_item, success):
 
     print("Checking %s: %s" % (test_item, 'PASS' if success else 'FAIL'))
 
-def get_machine_architecture():
-    """Retrieve architecture identifier"""
-    arch = machine()
-    if arch == 'x86_64':
-        return arch
-    elif arch == 'aarch64':
-        return 'arm64'
+def get_build_arch():
+    """Fetch build architecture as used by NAP"""
+    machine_arch = machine()
+    if machine_arch.lower() in ('x86_64', 'amd64'):
+        nap_arch = 'x86_64'
+    elif machine_arch == 'aarch64':
+        p = subprocess.run('getconf LONG_BIT', shell=True, universal_newlines=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+        if p.stdout.strip() == '64':
+            nap_arch = 'arm64'
+        else:
+            nap_arch = 'armhf'
     else:
-        return 'armhf'
+        nap_arch = 'armhf'
+    return nap_arch
 
 def check_arch():
     """Check if the machine matches the package arch"""
@@ -51,7 +56,7 @@ def check_arch():
         data = json.load(f)
         expected_arch = data['architecture']
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
     arch_ok = arch == expected_arch
     log_test_success('matched architecture', arch_ok)
     return (arch_ok, expected_arch, arch)
@@ -59,7 +64,7 @@ def check_arch():
 def check_distribution():
     """Check if the we're running our supported distro for the arch"""
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
     if arch == 'armhf':
@@ -74,7 +79,7 @@ def check_distribution():
 def check_distribution_version():
     """Check if the we're running our supported distribution version"""
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
     release = call('lsb_release -r')
     release = release.split(':')[1].strip()
     if arch == 'armhf':
@@ -100,14 +105,6 @@ def check_compiler():
     log_test_success('C++ is GCC', gcc_ok)
     return gcc_ok
 
-def check_for_thirdparty():
-    """Check for the thirdparty repository"""
-
-    nap_root = get_source_nap_root()
-    thirdparty_ok = os.path.exists(os.path.join(nap_root, os.pardir, 'thirdparty'))
-    log_test_success('for third party repository', thirdparty_ok)
-    return thirdparty_ok
-
 def check_qt_env_var():
     """Check Qt env. var. for source user"""
 
@@ -130,13 +127,8 @@ def check_qt_version():
 
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
-    arch = machine()
-    if arch == 'x86_64':
-        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
-    elif arch == 'aarch64':
-        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'arm64', 'bin', 'cmake')
-    else:
-        cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'armhf', 'bin', 'cmake')
+    arch = get_build_arch()
+    cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
 
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -195,7 +187,7 @@ def get_nap_root():
 def get_source_nap_root():
     """Get source framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))
+    return os.path.abspath(os.path.join(script_dir, "../../../.."))
 
 def check_and_warn_for_potential_system_qt():
     """Attempt to detect if the Qt installation might be a system version and warn if so"""
@@ -214,7 +206,7 @@ def check_and_warn_for_potential_system_qt():
 def check_build_environment(against_source):
     """Check whether Linux build environment appears ready for NAP"""
 
-    arch = get_machine_architecture()
+    arch = get_build_arch()
 
     if against_source:
         # Check if supported arch
@@ -266,14 +258,6 @@ def check_build_environment(against_source):
         glut_installed = apt_package_installed('libglu1-mesa-dev')
         log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
 
-        # Check for thirdparty repo
-        thirdparty_ok = check_for_thirdparty()
-
-        if not thirdparty_ok:
-            print("\nThe third party repository ('thirdparty') needs to be cloned alongside the main repository.")
-            print("\nNot continuing checks. Re-run this script after cloning.")
-            sys.exit(1)
-
         # Check for Qt
         qt_env_var_ok = check_qt_env_var()
 
@@ -288,7 +272,7 @@ def check_build_environment(against_source):
 
     # If we're running for source users check source requirements are met
     extra_source_requirements_ok = True
-    if against_source and (not thirdparty_ok or not qt_env_var_ok or not qt_version_ok or not glut_installed):
+    if against_source and (not qt_env_var_ok or not qt_version_ok or not glut_installed):
         extra_source_requirements_ok = False
 
     # If everything looks good log and exit

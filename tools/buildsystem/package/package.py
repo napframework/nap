@@ -12,7 +12,7 @@ from sys import platform
 from enum import Enum
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root
+from nap_shared import get_cmake_path, get_nap_root, get_build_arch
 
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
@@ -471,15 +471,10 @@ def build_package_basename(timestamp, label):
 
 def get_architecture():
     """Retrieve architecture identifier"""
-    v = 'x86_64'
     if platform.startswith('linux'):
-        arch = machine()
-        if arch == 'x86_64':
-            v = arch
-        elif arch == 'aarch64':
-            v = 'arm64'
-        else:
-            v = 'armhf'
+        v = get_build_arch()
+    else:
+        v = 'x86_64'
     return v
 
 def verify_clean_git_repo():

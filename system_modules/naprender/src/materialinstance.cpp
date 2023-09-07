@@ -15,19 +15,19 @@
 #include <rtti/rttiutilities.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
-	RTTI_PROPERTY("Uniforms",					&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Samplers",					&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Buffers",					&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::uniforms,		&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::samplers,		&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::buffers,		&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
-	RTTI_PROPERTY("Material",					&nap::MaterialInstanceResource::mMaterial,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendMode",					&nap::MaterialInstanceResource::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",					&nap::MaterialInstanceResource::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY(nap::materialinstanceresource::materialr,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendMode",	&nap::MaterialInstanceResource::mBlendMode,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",	&nap::MaterialInstanceResource::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
-	RTTI_PROPERTY("ComputeMaterial",			&nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::materialinstanceresource::materialc, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)
@@ -149,6 +149,26 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 	// BaseMaterialInstance
 	//////////////////////////////////////////////////////////////////////////
+
+
+	BaseMaterialInstanceResource::BaseMaterialInstanceResource(std::string&& materialPropertyName) :
+		mMaterialPropertyName(std::move(materialPropertyName))
+	{ }
+
+
+	rttr::property BaseMaterialInstanceResource::getMaterialProperty() const
+	{
+		auto prop = get_type().get_property(mMaterialPropertyName.data());
+		assert(prop.is_valid());
+		return prop;
+	}
+
+
+	const std::string& BaseMaterialInstanceResource::getMaterialPropertyName() const
+	{
+		return mMaterialPropertyName;
+	}
+
 
 	UniformStructInstance* BaseMaterialInstance::getOrCreateUniform(const std::string& name)
 	{

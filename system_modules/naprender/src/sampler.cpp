@@ -63,11 +63,11 @@ RTTI_END_CLASS
 RTTI_DEFINE_BASE(nap::SamplerArray)
 
 RTTI_BEGIN_CLASS(nap::Sampler2D)
-	RTTI_PROPERTY("Texture", &nap::Sampler2D::mTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::sampler::texture, &nap::Sampler2D::mTexture, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Sampler2DArray)
-	RTTI_PROPERTY("Textures", &nap::Sampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::sampler::textures,&nap::Sampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::SamplerCube)

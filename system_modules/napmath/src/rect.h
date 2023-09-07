@@ -4,6 +4,7 @@
 
 #pragma once
 
+// External Includes
 #include <utility/dllexport.h>
 #include <rtti/rtti.h>
 #include <glm/glm.hpp>
@@ -14,7 +15,6 @@ namespace nap
 	{
 		/**
 		 *	Simple 2D rectangle.
-		 * 	This is a relatively light weight object that can be both copy and move constructed or assigned.
 		 */
 		class NAPAPI Rect final
 		{
@@ -36,12 +36,20 @@ namespace nap
 				mMinPosition({ x, y }), mMaxPosition(mMinPosition + glm::vec2(width, height)) {};
 
 			/**
-			 * Utility constructor
+			 * Utility min max constructor
 			 * @param min: the min x, y position of the rectangle
 			 * @param max: the max x, y position of the rectangle
 			 */
 			constexpr Rect(const glm::vec2& min, const glm::vec2& max) :
 				mMinPosition(min), mMaxPosition(max) {}
+
+			/**
+			 * Utility min max move constructor
+			 * @param min: the min x, y position of the rectangle
+			 * @param max: the max x, y position of the rectangle
+			 */
+			constexpr Rect(glm::vec2&& min, glm::vec2&& max) :
+				mMinPosition(std::move(min)), mMaxPosition(std::move(max)) {}
 
 			// Equal-to operator overload
 			bool operator==(const Rect& other) const;
@@ -77,22 +85,22 @@ namespace nap
 			/**
 			 *	@return the min rectangle coordinates
 			 */
-			const glm::vec2& getMin() const;
+			const glm::vec2& getMin() const					{ return mMinPosition; }
 
 			/**
 			 *	@return the max rectangle coordinates
 			 */
-			const glm::vec2& getMax() const;
+			const glm::vec2& getMax() const					{ return mMaxPosition; }
 
 			glm::vec2 mMinPosition = { 0.0f, 0.0f };		// min x,y position
 			glm::vec2 mMaxPosition = { 0.0f, 0.0f };		// max x,y position
 		};
 
 		// Static rectangles
-		static constexpr Rect topRightRect		{ { 0.0f, 0.0f},	{ 1.0f,  1.0f} };
-		static constexpr Rect topLeftRect		{ { -1.0f, 0.0f },	{ 0.0f,  1.0f} };
-		static constexpr Rect bottomLeftRect	{ { -1.0f, -1.0f },	{ 0.0f,  0.0f} };
-		static constexpr Rect bottomRightRect	{ { 0.0f, -1.0f },	{ 1.0f,  0.0f} };
-		static constexpr Rect centeredRect		{ { -0.5f, -0.5f },	{ 0.5f,  0.5f} };
+		static constexpr Rect topRightRect		{ {  0.0f,	 0.0f }, { 1.0f,  1.0f} };
+		static constexpr Rect topLeftRect		{ { -1.0f,	 0.0f }, { 0.0f,  1.0f} };
+		static constexpr Rect bottomLeftRect	{ { -1.0f,  -1.0f }, { 0.0f,  0.0f} };
+		static constexpr Rect bottomRightRect	{ {  0.0f,  -1.0f }, { 1.0f,  0.0f} };
+		static constexpr Rect centeredRect		{ { -0.5f,  -0.5f }, { 0.5f,  0.5f} };
 	}
 }

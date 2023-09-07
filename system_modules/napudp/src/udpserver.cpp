@@ -141,6 +141,8 @@ namespace nap
 			{
 				// make UDPPacket and forward packet to any listeners
 				UDPPacket packet(std::move(buffer));
+
+                std::lock_guard<std::mutex> lock(mMutex);
 				packetReceived.trigger(packet);
 			}
 		}
@@ -150,4 +152,18 @@ namespace nap
 			nap::Logger::error(*this, asio_error.message());
 		}
 	}
+
+
+    void UDPServer::registerListenerSlot(Slot<const nap::UDPPacket &>& slot)
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        packetReceived.connect(slot);
+    }
+
+
+    void UDPServer::removeListenerSlot(Slot<const nap::UDPPacket &> &slot)
+    {
+        std::lock_guard<std::mutex> lock(mMutex);
+        packetReceived.disconnect(slot);
+    }
 }

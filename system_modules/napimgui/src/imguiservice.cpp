@@ -45,6 +45,29 @@ RTTI_BEGIN_STRUCT(nap::gui::ColorPalette)
 	RTTI_PROPERTY("InvertIcons",		&nap::gui::ColorPalette::mInvertIcon,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
+RTTI_BEGIN_STRUCT(nap::gui::Style)
+	RTTI_PROPERTY("AntiAliasedLines",	&nap::gui::Style::mAntiAliasedLines,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("AntiAliasedFill",	&nap::gui::Style::mAntiAliasedFill,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("WindowPadding",		&nap::gui::Style::mWindowPadding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("WindowRounding",		&nap::gui::Style::mWindowRounding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FramePadding",		&nap::gui::Style::mFramePadding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FrameRounding",		&nap::gui::Style::mFrameRounding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ItemSpacing",		&nap::gui::Style::mItemSpacing,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ItemInnerSpacing",	&nap::gui::Style::mItemInnerSpacing,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("IndentSpacing",		&nap::gui::Style::mIndentSpacing,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ScrollbarSize",		&nap::gui::Style::mScrollbarSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ScrollbarRounding",	&nap::gui::Style::mScrollbarRounding,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GrabMinSize",		&nap::gui::Style::mGrabMinSize,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GrabRounding",		&nap::gui::Style::mGrabRounding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("WindowBorderSize",	&nap::gui::Style::mWindowBorderSize,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PopupRounding",		&nap::gui::Style::mPopupRounding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ChildRounding",		&nap::gui::Style::mChildRounding,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("WindowTitleAlign",	&nap::gui::Style::mWindowTitleAlign,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PopupBorderSize",	&nap::gui::Style::mPopupBorderSize,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TabRounding",		&nap::gui::Style::mTabRounding,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("TouchExtraPadding",	&nap::gui::Style::mTouchExtraPadding,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("ColorScheme", &nap::IMGuiServiceConfiguration::mColorScheme,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FontSize",			&nap::IMGuiServiceConfiguration::mFontSize,			nap::rtti::EPropertyMetaData::Default)
@@ -53,6 +76,7 @@ RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("FontSampling",		&nap::IMGuiServiceConfiguration::mFontOversampling, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("FontSpacing",		&nap::IMGuiServiceConfiguration::mFontSpacing,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Colors",				&nap::IMGuiServiceConfiguration::mCustomColors,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Style",				&nap::IMGuiServiceConfiguration::mStyle,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
@@ -96,7 +120,7 @@ namespace nap
 				icon::remove,
 				icon::add,
 				icon::change,
-                icon::subtract
+				icon::subtract
 			};
 			return map;
 		}
@@ -136,7 +160,7 @@ namespace nap
 
 			// Add custom scheme if not present
 			scheme_map.emplace(std::make_pair(EColorScheme::Custom, customPalette));
-			
+
 			// Return color palette
 			assert(scheme_map.find(colorScheme) != scheme_map.end());
 			return scheme_map[colorScheme];
@@ -237,8 +261,8 @@ namespace nap
 
 	static void destroyDeviceObjects(RenderService& renderService)
 	{
-		if (gDescriptorSetLayout)	{ vkDestroyDescriptorSetLayout(renderService.getDevice(), gDescriptorSetLayout, nullptr); }
-		if (gSampler)				{ vkDestroySampler(renderService.getDevice(), gSampler, nullptr); }
+		if (gDescriptorSetLayout) { vkDestroyDescriptorSetLayout(renderService.getDevice(), gDescriptorSetLayout, nullptr); }
+		if (gSampler) { vkDestroySampler(renderService.getDevice(), gSampler, nullptr); }
 	}
 
 
@@ -277,7 +301,7 @@ namespace nap
 	}
 
 
-	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette)
+	static std::unique_ptr<ImGuiStyle> createStyle(const gui::ColorPalette& palette, const gui::Style& style)
 	{
 		// Get ImGUI colors
 		ImVec4 IMGUI_NAPBACK(palette.mBackgroundColor, 0.94f);
@@ -293,77 +317,81 @@ namespace nap
 		ImVec4 IMGUI_NAPHIG3(palette.mHighlightColor3, 1.0f);
 
 		// Create style
-		std::unique_ptr<ImGuiStyle> style = std::make_unique<ImGuiStyle>();
+		std::unique_ptr<ImGuiStyle> gui_style = std::make_unique<ImGuiStyle>();
 
-		// Apply settings from config
-		style->WindowPadding = ImVec2(10, 10);
-		style->WindowRounding = 0.0f;
-		style->FramePadding = ImVec2(5, 5);
-		style->FrameRounding = 0.0f;
-		style->ItemSpacing = ImVec2(12, 6);
-		style->ItemInnerSpacing = ImVec2(8, 6);
-		style->IndentSpacing = 25.0f;
-		style->ScrollbarSize = 13.0f;
-		style->ScrollbarRounding = 0.0f;
-		style->GrabMinSize = 5.0f;
-		style->GrabRounding = 0.0f;
-		style->WindowBorderSize = 0.0f;
-		style->PopupRounding = 0.0f;
-		style->ChildRounding = 0.0f;
-        style->WindowTitleAlign = { 0.5f, 0.5f };
-		style->PopupBorderSize = 0.0f;
-		style->TabRounding = 0.0f;
+		// Apply colors
+		gui_style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
+		gui_style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
+		gui_style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
+		gui_style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
+		gui_style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
+		gui_style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
+		gui_style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
+		gui_style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
+		gui_style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
+		gui_style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
+		gui_style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
+		gui_style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
+		gui_style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
+		gui_style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
+		gui_style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
+		gui_style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
+		gui_style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
+		gui_style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
+		gui_style->Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
+		gui_style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
+		gui_style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
+		gui_style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
 
-		style->Colors[ImGuiCol_Text] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_TextDisabled] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_WindowBg] = IMGUI_NAPBACK;
-		style->Colors[ImGuiCol_ChildBg] = IMGUI_NAPBACK;
-		style->Colors[ImGuiCol_PopupBg] = IMGUI_NAPBACK;
-		style->Colors[ImGuiCol_Border] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_BorderShadow] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_FrameBg] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_FrameBgHovered] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_FrameBgActive] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_TitleBg] = IMGUI_NAPMENU;
-		style->Colors[ImGuiCol_TitleBgCollapsed] = IMGUI_NAPMENU;
-		style->Colors[ImGuiCol_TitleBgActive] = IMGUI_NAPFRO2;
-		style->Colors[ImGuiCol_MenuBarBg] = IMGUI_NAPMENU;
-		style->Colors[ImGuiCol_ScrollbarBg] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_ScrollbarGrab] = IMGUI_NAPMENU;
-		style->Colors[ImGuiCol_ScrollbarGrabHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_ScrollbarGrabActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_CheckMark] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_SliderGrab] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_SliderGrabActive] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_Button] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_ButtonHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_ButtonActive] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_Header] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_HeaderHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_HeaderActive] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_ResizeGrip] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_ResizeGripHovered] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_ResizeGripActive] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_Tab] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TabHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_TabActive] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_TabUnfocused] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_TabUnfocusedActive] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_PlotLines] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_PlotLinesHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_PlotHistogram] = IMGUI_NAPFRO3;
-		style->Colors[ImGuiCol_PlotHistogramHovered] = IMGUI_NAPHIG1;
-		style->Colors[ImGuiCol_TextSelectedBg] = IMGUI_NAPFRO1;
-		style->Colors[ImGuiCol_ModalWindowDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_Separator] = IMGUI_NAPDARK;
-		style->Colors[ImGuiCol_SeparatorHovered] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_SeparatorActive] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_NavHighlight] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_NavWindowingHighlight] = IMGUI_NAPFRO4;
-		style->Colors[ImGuiCol_NavWindowingDimBg] = IMGUI_NAPMODA;
-		style->Colors[ImGuiCol_DragDropTarget] = IMGUI_NAPHIG1;
+		// Apply style settings
+		gui_style->AntiAliasedFill = style.mAntiAliasedFill;
+		gui_style->AntiAliasedLines = style.mAntiAliasedLines;
+		gui_style->WindowPadding = { style.mWindowPadding.x, style.mWindowPadding.y };
+		gui_style->WindowRounding = style.mWindowRounding;
+		gui_style->FramePadding = { style.mFramePadding.x, style.mFramePadding.y };
+		gui_style->FrameRounding = style.mFrameRounding;
+		gui_style->ItemSpacing = { style.mItemSpacing.x, style.mItemSpacing.y };
+		gui_style->ItemInnerSpacing = { style.mItemInnerSpacing.x, style.mItemInnerSpacing.y };
+		gui_style->IndentSpacing = style.mIndentSpacing;
+		gui_style->ScrollbarSize = style.mScrollbarSize;
+		gui_style->ScrollbarRounding = style.mScrollbarRounding;
+		gui_style->GrabMinSize = style.mGrabMinSize;
+		gui_style->GrabRounding = style.mGrabRounding;
+		gui_style->WindowBorderSize = style.mWindowBorderSize;
+		gui_style->PopupRounding = style.mPopupRounding;
+		gui_style->ChildRounding = style.mChildRounding;
+		gui_style->WindowTitleAlign = { style.mWindowTitleAlign.x, style.mWindowTitleAlign.y };
+		gui_style->PopupBorderSize = style.mPopupBorderSize;
+		gui_style->TabRounding = style.mTabRounding;
+		gui_style->TouchExtraPadding = { style.mTouchExtraPadding.x, style.mTouchExtraPadding.y };
 
-		return style;
+		return gui_style;
 	}
 
 
@@ -827,7 +855,6 @@ namespace nap
 				for (const auto& display : mRenderService->getDisplays())
 				{
 					float dpi_scale = math::max<float>(display.getHorizontalDPI(), gui::dpi) / gui::dpi;
-					//nap::Logger::info("Display: %d, DPI Scale: %.2f", display.getIndex(), dpi_scale);
 					mDPIScale = dpi_scale > mDPIScale ? dpi_scale : mDPIScale;
 				}
 			}
@@ -838,7 +865,8 @@ namespace nap
 			mFontAtlas = createFontAtlas(font_size, mConfiguration->mFontOversampling, mConfiguration->mFontSpacing, font_file);
 
 			// Create style
-			mStyle = createStyle(getPalette());
+			assert(mConfiguration != nullptr);
+			mStyle = createStyle(getPalette(), mConfiguration->mStyle);
 
 			// Create context using font & style
 			new_context = createContext(*getConfiguration<IMGuiServiceConfiguration>(), *mFontAtlas, *mStyle, getIniFilePath(window.mID));
@@ -1048,7 +1076,6 @@ namespace nap
 			// Overall font scaling factor is always <= 1.0, because the font is created based on the display with the highest DPI value
 			float gscale = mGuiScale * (math::max<float>(display.getHorizontalDPI(), gui::dpi) / gui::dpi);
 			float fscale = math::max<float>(display.getHorizontalDPI(), gui::dpi) / (mDPIScale * gui::dpi);
-			//nap::Logger::info("font scale: %.2f", fscale);
 
 			// Push scaling for window and font based on new display
 			// We must push the original style first before we can scale

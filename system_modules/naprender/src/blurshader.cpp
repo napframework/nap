@@ -49,6 +49,9 @@ namespace nap
     template <EBlurSamples KERNEL>
     bool BlurShader<KERNEL>::init(utility::ErrorState& errorState)
     {
+		if (!Shader::init(errorState))
+			return false;
+
 		std::string shader_name;
 		switch (KERNEL)
 		{

@@ -8,10 +8,12 @@ from sys import platform
 import sys
 import argparse
 
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
+from nap_shared import get_cmake_path, get_nap_root
+
 LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
-THIRDPARTY = 'thirdparty'
 DEFAULT_BUILD_TYPE = 'Release'
 
 def call(cwd, cmd, shell=False):
@@ -21,29 +23,6 @@ def call(cwd, cmd, shell=False):
     proc.communicate()
     if proc.returncode != 0:
         sys.exit(proc.returncode)
-
-def get_cmake_path():
-    """Fetch the path to the CMake binary"""
-
-    cmake_thirdparty_root = os.path.join(os.pardir, THIRDPARTY, 'cmake')
-    if platform.startswith('linux'):
-        arch = machine()
-        if arch == 'x86_64':
-            return os.path.join(cmake_thirdparty_root, 'linux', 'x86_64', 'bin', 'cmake')
-        elif arch == 'aarch64':
-            return os.path.join(cmake_thirdparty_root, 'linux', 'arm64', 'bin', 'cmake')
-        else:
-            return os.path.join(cmake_thirdparty_root, 'linux', 'armhf', 'bin', 'cmake')
-    elif platform == 'darwin':
-        return os.path.join(cmake_thirdparty_root, 'macos', 'x86_64', 'bin', 'cmake')
-    else:
-        return os.path.join(cmake_thirdparty_root, 'msvc', 'x86_64', 'bin', 'cmake')
-
-def get_nap_root():
-    """Get absolute path to NAP root"""
-    script_path = os.path.realpath(__file__)
-    script_to_nap_root = os.path.join(os.pardir, os.pardir, os.pardir)
-    return os.path.abspath(os.path.join(os.path.dirname(script_path), script_to_nap_root))    
 
 def main(target, clean_build, build_type, enable_python):
     build_dir = None

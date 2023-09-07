@@ -71,17 +71,5 @@ namespace nap
 		{
 			return getHeight() > math::epsilon<float>();
 		}
-
-
-		const glm::vec2& Rect::getMin() const
-		{
-			return mMinPosition;
-		}
-
-
-		const glm::vec2& Rect::getMax() const
-		{
-			return mMaxPosition;
-		}
 	}
 }

@@ -49,14 +49,15 @@ namespace nap
 		RTTI_ENABLE(ServiceConfiguration)
 	public:
 		/**
-		 * Supported Vulkan device types.
+		 * Supported Vulkan device types in order of preference
 		 */
 		enum class EPhysicalDeviceType : int
 		{
-			Integrated = 1,	///< Integrated graphics card
-			Discrete = 2,	///< Discrete (dedicated) graphics card
-			Virtual = 3,	///< Virtual graphics card
-			CPU = 4			///< CPU as graphics card
+			Discrete	= 4,	///< Discrete (dedicated) graphics card
+			Integrated	= 3,	///< Integrated graphics card
+			CPU			= 2,	///< CPU as graphics card
+			Virtual		= 1,	///< Virtual graphics card
+			Other		= 0		///< Unknown type graphics card
 		};
 
 		bool							mHeadless = false;											///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
@@ -980,6 +981,15 @@ namespace nap
 		 * @return Vulkan minor api version
 		 */
 		uint32 getVulkanVersionMinor() const;
+
+		/**
+		 * Initializes GLSL shader compilation and linking.
+		 * Don't call this in your application! Only required by external processes
+		 * that want to use the nap render interface.
+		 * @error contains the error if initialization fails
+		 * @return if shader compiler and linker initialized successfully
+		 */
+		bool initShaderCompilation(utility::ErrorState& error);
 
 		/**
 		 * Called when a new window is added to the system

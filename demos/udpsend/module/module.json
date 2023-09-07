@@ -1,0 +1,10 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napudp",
+        "napapi",
+        "napparameter"
+    ],
+    "WindowsDllSearchPaths": []
+}

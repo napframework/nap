@@ -111,14 +111,14 @@ def check_qt_version():
     qt_version_ok = False
     
     # Remove temporary directory for CMake project files to go into if it exists 
-    nap_root = get_nap_root()
+    nap_root = get_nap_source_root()
     qt_checker_path = os.path.join(nap_root, 'cmake', 'qt_checker')
     temp_build_dir = os.path.join(qt_checker_path, 'project_temp')
     if os.path.exists(temp_build_dir):
         shutil.rmtree(temp_build_dir)
     
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, 'thirdparty')
     cmake = os.path.join(thirdparty_dir, 'cmake', 'msvc', 'x86_64', 'bin', 'cmake')
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -149,10 +149,10 @@ def log_qt_help(qt_env_var_ok, qt_found_version):
     else:
         print("\nThis version of NAP requires Qt v%s, however you appear to have v%s. Other versions may work but are not supported." % (REQUIRED_QT_VERSION, qt_found_version))    
     
-def get_nap_root():
+def get_nap_source_root():
     """Get framework root directory"""
     script_dir = os.path.dirname(os.path.realpath(__file__))
-    return os.path.abspath(os.path.join(script_dir, os.pardir, os.pardir, os.pardir))        
+    return os.path.abspath(os.path.join(script_dir, "../../../.."))        
 
 def check_build_environment(against_source):
     """Check whether Windows build environment appears ready for NAP"""

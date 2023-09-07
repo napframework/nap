@@ -70,6 +70,11 @@ namespace nap
 		*/
 		VkDescriptorSetLayout getDescriptorSetLayout() const						{ return mDescriptorSetLayout; }
 
+		/**
+		 * Clears shader declarations and layout information.
+		 */
+		void clear();
+
 	protected:
 		RenderService*									mRenderService = nullptr;				///< Handle to render engine
 		std::string										mDisplayName;							///< Filename of shader used as display name
@@ -104,6 +109,7 @@ namespace nap
 	 */
 	class NAPAPI Shader : public BaseShader
 	{
+		RTTI_ENABLE(BaseShader)
 	public:
 		Shader(Core& core);
 		~Shader();
@@ -195,7 +201,7 @@ namespace nap
 	 */
 	class NAPAPI ComputeShader : public BaseShader
 	{
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(BaseShader)
 	public:
 		ComputeShader(Core& core);
 		~ComputeShader();

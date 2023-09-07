@@ -85,10 +85,11 @@ namespace nap
 }
 
 RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
-	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete,		"Discrete"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Integrated,	"Integrated"),
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU"),
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::Virtual,		"Virtual"),
-	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"CPU")
+	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"Other")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
@@ -133,11 +134,38 @@ namespace nap
 			return VK_PHYSICAL_DEVICE_TYPE_CPU;
 		case RenderServiceConfiguration::EPhysicalDeviceType::Virtual:
 			return VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU;
+		case RenderServiceConfiguration::EPhysicalDeviceType::Other:
+			return VK_PHYSICAL_DEVICE_TYPE_OTHER;
 		default:
 			assert(false);
 		}
 		return VK_PHYSICAL_DEVICE_TYPE_OTHER;
 	}
+
+
+	/**
+	 * @return NAP physical device type
+	 */
+	static RenderServiceConfiguration::EPhysicalDeviceType getPhysicalDeviceType(VkPhysicalDeviceType type)
+	{
+		switch(type)
+		{
+		case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_DISCRETE_GPU:
+			return RenderServiceConfiguration::EPhysicalDeviceType::Discrete;
+		case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_INTEGRATED_GPU:
+			return RenderServiceConfiguration::EPhysicalDeviceType::Integrated;
+		case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_CPU:
+			return RenderServiceConfiguration::EPhysicalDeviceType::CPU;
+		case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_VIRTUAL_GPU:
+			return RenderServiceConfiguration::EPhysicalDeviceType::Virtual;
+		case VkPhysicalDeviceType::VK_PHYSICAL_DEVICE_TYPE_OTHER:
+			return RenderServiceConfiguration::EPhysicalDeviceType::Other;
+		default:
+			assert(false);
+		}
+		return RenderServiceConfiguration::EPhysicalDeviceType::Other;
+	}
+
 
 	/**
 	 * @return VK queue flags
@@ -631,17 +659,26 @@ namespace nap
 		if (!errorState.check(!valid_devices.empty(), "No compatible device found"))
 			return false;
 
-		// If the preferred GPU is found, use that one, otherwise first compatible one
-		int selected_idx = preferred_idx;
-		if (preferred_idx < 0)
+		// If the preferred GPU is found, use that one
+		int select_idx = preferred_idx;
+
+		// Otherwise first compatible one based on priority rating
+		if (select_idx < 0)
 		{
-			nap::Logger::warn("Unable to find preferred device, selecting first compatible one");
-			selected_idx = 0;
+			for (int i = 0, gpu_rating = -1; i < valid_devices.size(); i++)
+			{
+				int type = static_cast<int>(getPhysicalDeviceType(valid_devices[i].getProperties().deviceType));
+				if (type > gpu_rating)
+				{
+					gpu_rating = type;
+					select_idx = i;
+				}
+			}
 		}
 
 		// Set the output
-		outDevice = valid_devices[selected_idx];
-		nap::Logger::info("Selected device: %d", selected_idx, outDevice.getProperties().deviceName);
+		outDevice = valid_devices[select_idx];
+		nap::Logger::info("Selected device: %d", select_idx, outDevice.getProperties().deviceName);
 		return true;
 	}
 
@@ -1543,7 +1580,7 @@ namespace nap
 			}
 		}
 
-		// Initialize shader compiler
+		// Initialize shader compilation
 		mShInitialized = ShInitialize() != 0;
 		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
@@ -1726,6 +1763,67 @@ namespace nap
 		mInitialized = true;
 		return true;
 	}
+
+
+	bool RenderService::initShaderCompilation(utility::ErrorState& error)
+	{
+		// Initialize shader compilation
+		mShInitialized = ShInitialize() != 0;
+		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
+			return false;
+
+		// Add debug display extension, we need this to relay debug messages
+		std::vector<std::string> instance_extensions = { VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+
+		// Get available vulkan layer extensions, notify when not all could be found
+		std::vector<std::string> found_layers;
+#ifndef NDEBUG
+		// Get all available vulkan layers
+		const std::vector<std::string>& requested_layers = {"VK_LAYER_KHRONOS_validation"};
+		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
+			return false;
+
+		// Warn when not all requested layers could be found
+		if (found_layers.size() != requested_layers.size())
+			nap::Logger::warn("Not all requested layers were found");
+
+		// Print the ones we're enabling
+		for (const auto& layer : found_layers)
+			Logger::info("Applying layer: %s", layer.c_str());
+#endif // NDEBUG
+
+		// Create Vulkan Instance together with required extensions and layers
+		mAPIVersion = VK_MAKE_VERSION(1, 0, 0);
+		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, error))
+			return false;
+
+		// Vulkan messaging callback
+		setupDebugCallback(mInstance, mDebugCallback, error);
+
+		// Get the preferred physical device to select
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
+		VkQueueFlags req_queue_capabilities = getQueueFlags(false);
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, VK_NULL_HANDLE, req_queue_capabilities, mPhysicalDevice, error))
+			return false;
+
+		// Get extensions that are required for NAP render engine to function.
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+
+		// Create unique set
+		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
+		for (const auto& ext : required_ext_names)
+			unique_ext_names.emplace(ext);
+
+		// Create a logical device that interfaces with the physical device.
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
+			return false;
+
+		mInitialized = true;
+		return true;
+	}
+
 
 	void RenderService::waitDeviceIdle()
 	{

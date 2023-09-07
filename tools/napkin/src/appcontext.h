@@ -23,6 +23,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <entity.h>
+#include <renderservice.h>
 #include <QtCore/QSettings>
 
 namespace napkin
@@ -209,16 +210,22 @@ namespace napkin
 		bool hasServiceConfig() const;
 
 		/**
-		 * Get the current service configuration object, nullptr if no project is loaded
-		 * @return the service configuration object, nullptr if no project is loaded
+		 * If there's a render service, only available when project is loaded and project depends on nap::Render
+		 * @return if the render service is available.
 		 */
-		const ServiceConfig* getServiceConfig() const;
+		bool canRender() const;
 
 		/**
 		 * Get the current service configuration object, nullptr if no project is loaded
 		 * @return the service configuration object, nullptr if no project is loaded
 		 */
-		ServiceConfig* getServiceConfig();
+		ServiceConfig* getServiceConfig() const;
+
+		/**
+		 * Returns the NAP render service, nullptr if project is not loaded or project doesn't depend upon render module.
+		 * @return the NAP render service, nullptr if project is not loaded or project doesn't depend upon render module.
+		 */
+		nap::RenderService* getRenderService() const;
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
@@ -476,10 +483,11 @@ namespace napkin
 		ThemeManager mThemeManager;			 										// The theme manager
 		ResourceFactory mResourceFactory;											// Le resource factory
 		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
+		nap::RenderService* mRenderService = nullptr;								// The render service (if available)
 
 		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;					// Clone of core project info
-		QString mCurrentFilename;													// The currently opened file
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
+		QString mCurrentFilename;													// The currently opened file
 
 		std::unique_ptr<ServiceConfig> mServiceConfig = nullptr;					// Service configuration
 		std::vector<std::unique_ptr<nap::ServiceConfiguration>> mServiceConfigs;	// Current loaded service configuration
