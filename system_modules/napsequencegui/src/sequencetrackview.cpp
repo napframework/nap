@@ -145,11 +145,11 @@ namespace nap
             // draw move and delete controls aligned to upper right corner of inspector
             const float upper_right_alignment = ImGui::GetWindowWidth() - 30.0f * mState.mScale;
             ImGui::SameLine(upper_right_alignment);
+            float track_options_popup_x = ImGui::GetCursorScreenPos().x; // store x position for track settings popup placement
 
-            float x = ImGui::GetCursorScreenPos().x;
             if(ImGui::ImageButton(gui.getIcon(icon::settings), "Track Settings"))
             {
-                mState.mAction = createAction<TrackOptionsPopup>(track.mID, ImVec2(x, ImGui::GetCursorScreenPos().y));
+                mState.mAction = createAction<TrackOptionsPopup>(track.mID, ImVec2(track_options_popup_x, ImGui::GetCursorScreenPos().y));
             }
 
             // offset inspector cursor
@@ -350,13 +350,17 @@ namespace nap
         {
             ImGui::OpenPopup("TrackOptions");
             action->mPopupOpened = true;
-            action->mScrollY = mState.mScroll.y; // store scroll, close popup when user is scrolling
-            ImGui::SetNextWindowPos(action->mPos);
+            action->mScrollY = mState.mScroll.y; // store scroll, close popup when user begins scrolling
+            const float window_offset = 3.0f * mState.mScale;
+            ImGui::SetNextWindowPos({ action->mPos.x - window_offset, action->mPos.y } );
         }
 
         // scale down everything
         float global_scale = 0.25f;
         ImGui::GetStyle().ScaleAllSizes(global_scale);
+
+        // indicate whether we should close the popup at the end of this function
+        bool close_popup = false;
 
         if(ImGui::BeginPopup("TrackOptions"))
         {
@@ -406,27 +410,27 @@ namespace nap
             if(performed_edit)
             {
                 mState.mDirty = true;
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                ImGui::CloseCurrentPopup();
+                close_popup = true;
             }
 
             // close popup on scroll
-            if(mState.mScroll.y != action->mScrollY)
-            {
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                ImGui::CloseCurrentPopup();
-            }
+            close_popup = close_popup || mState.mScroll.y != action->mScrollY;
 
             ImGui::EndPopup();
         }else
         {
-            // click outside popup so cancel action
-            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-            ImGui::CloseCurrentPopup();
+            // click outside popup so cancel action and close popup
+            close_popup = true;
         }
 
         // scale up
         ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
+
+        if(close_popup)
+        {
+            mState.mAction = sequenceguiactions::createAction<None>();
+            ImGui::CloseCurrentPopup();
+        }
     }
 
 
