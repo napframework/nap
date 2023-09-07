@@ -470,7 +470,7 @@
                     "Enabled": true,
                     "Color": "PointColorParam",
                     "Intensity": "PointIntensityParam",
-                    "ShadowStrength": 0.6,
+                    "ShadowStrength": 0.6000000238418579,
                     "Enable Shadows": true,
                     "ShadowCamera": "./PointShadowCam",
                     "ShadowMapSize": 1024,
@@ -1473,8 +1473,8 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
-                    "VertexAttributeBindings": [],
                     "Shader": "BlinnPhongColorShader",
+                    "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
                 },
@@ -1552,8 +1552,8 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
-                    "VertexAttributeBindings": [],
                     "Shader": "BlinnPhongTextureShader",
+                    "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
                 },
@@ -1587,8 +1587,8 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
-                    "VertexAttributeBindings": [],
                     "Shader": "ConstantShader",
+                    "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
                     "DepthMode": "InheritFromBlendMode"
                 },

@@ -505,7 +505,7 @@ namespace napkin
 		}
 
 		// Create binding
-		bool is_array = declaration.mNumArrayElements > 1;
+		bool is_array = declaration.mNumElements > 1;
 		nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
 		createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
 	}

@@ -1011,7 +1011,7 @@ namespace nap
 
 		VkSpecializationInfo vert_spec_info = {};
 		getSpecializationInfo(shader.getVertexSpecializationConstants(), vert_spec_info);
-		vert_shader_stage_info.pSpecializationInfo = !vert_spec_info.dataSize > 0 ? &vert_spec_info : NULL;
+		vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1021,7 +1021,7 @@ namespace nap
 
 		VkSpecializationInfo frag_spec_info = {};
 		getSpecializationInfo(shader.getFragmentSpecializationConstants(), frag_spec_info);
-		frag_shader_stage_info.pSpecializationInfo = !frag_spec_info.dataSize > 0 ? &frag_spec_info : NULL;
+		frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1169,7 +1169,7 @@ namespace nap
 
 		VkSpecializationInfo comp_spec_info = {};
 		getSpecializationInfo(computeShader.getSpecializationConstants(), comp_spec_info);
-		comp_shader_stage_info.pSpecializationInfo = !comp_spec_info.dataSize > 0 ? &comp_spec_info : NULL;
+		comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
 		
 		auto layout = computeShader.getDescriptorSetLayout();
 
