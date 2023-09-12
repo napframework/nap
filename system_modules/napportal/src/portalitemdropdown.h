@@ -14,7 +14,7 @@
 namespace nap
 {
     /**
-     *
+     * Represents a dropdown item in a NAP Portal
      */
     class PortalItemDropDown : public PortalItem
     {
@@ -23,14 +23,14 @@ namespace nap
     public:
 
         /**
-         *
-         * @param errorState
-         * @return
+         * Subscribes to the parameter changed signal
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
          */
         bool init(utility::ErrorState& errorState) override;
 
         /**
-         *
+         * Unsubscribes from the parameter changed signal
          */
         void onDestroy() override;
 
@@ -52,16 +52,17 @@ namespace nap
          */
         virtual APIEventPtr getValue() const override;
 
-        ResourcePtr<ParameterDropDown> mParameter;	///<
+        // Properties
+        ResourcePtr<ParameterDropDown> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
     private:
         /**
-         *
+         * The slot and callback called when index of drop down changes
          */
         Slot<int> mIndexChangedSlot = { this, &PortalItemDropDown::onIndexChanged };
         void onIndexChanged(int newIndex);
 
         /**
-         *
+         * The slot and callback called when items of dropdown change
          */
         Slot<const std::vector<std::string>&> mItemsChangedSlot = { this, &PortalItemDropDown::onItemsChanged };
         void onItemsChanged(const std::vector<std::string>& newItems);

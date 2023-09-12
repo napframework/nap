@@ -12,9 +12,9 @@
 
 namespace nap
 {
-	/**
-	 *
-	 */
+    /**
+     * Parameter that acts as a dropdown menu, holds an array of string values and a selected index
+     */
 	class NAPAPI ParameterDropDown : public Parameter
 	{
 		RTTI_ENABLE(Parameter)
@@ -26,17 +26,19 @@ namespace nap
 		virtual void setValue(const Parameter& value) override;
 
 		/**
-		 * @param
+		 * Sets the selected index
+		 * @param selectedIndex the selected index
 		 */
 		void setSelectedIndex(int selectedIndex);
 
 		/**
-		 * @return
+		 * Gets the selected index
+		 * @return the selected index
 		 */
 		int getSelectedIndex(){ return mSelectedIndex; }
 
         /**
-         *
+         * Sets the items of the dropdown menu
          */
         void setItems(const std::vector<std::string>& items);
 
@@ -44,8 +46,8 @@ namespace nap
         Signal<int>				                indexChanged;
         Signal<const std::vector<std::string>&> itemsChanged;
 	public:
-        std::vector<std::string> mItems; ///<
-        int mSelectedIndex = 0; ///<
+        std::vector<std::string> mItems; ///< Property: 'Items' items of this dropdown
+        int mSelectedIndex = 0; ///< Property: 'SelectedIndex' selected index of this dropdown
 	private:
 
 	};
