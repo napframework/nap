@@ -549,7 +549,7 @@ namespace nap
 		TransformComponentInstance* transform = entity.findComponent<TransformComponentInstance>();
 		bool has_transform = (transform != nullptr);
 		bool is_dirty = parentDirty;
-		if (has_transform && (transform->isDirty() || parentDirty))
+		if (has_transform && (transform->isDirty() || is_dirty))
 		{
 			is_dirty = true;
 			transform->update(parentTransform);
