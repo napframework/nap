@@ -546,19 +546,16 @@ namespace nap
 	 */
 	static void sUpdateTransformsRecursive(EntityInstance& entity, bool parentDirty, const glm::mat4& parentTransform)
 	{
-		glm::mat4 new_transform = parentTransform;
-
-		bool is_dirty = parentDirty;
 		TransformComponentInstance* transform = entity.findComponent<TransformComponentInstance>();
-		if (transform && (transform->isDirty() || parentDirty))
+		bool has_transform = (transform != nullptr);
+		if (has_transform && (transform->isDirty() || parentDirty))
 		{
-			is_dirty = true;
+			parentDirty = true;
 			transform->update(parentTransform);
-			new_transform = transform->getGlobalTransform();
 		}
-
+		const glm::mat4& next_parent = (has_transform) ? transform->getGlobalTransform() : parentTransform;
 		for (EntityInstance* child : entity.getChildren())
-			sUpdateTransformsRecursive(*child, is_dirty, new_transform);
+			sUpdateTransformsRecursive(*child, parentDirty, next_parent);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
