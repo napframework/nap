@@ -84,7 +84,7 @@ void main()
 	for (uint i = 0; i < min(lit.count, MAX_LIGHTS); i++)
 	{
 		// Skip light and shadow computation if intensity is zero
-		if (lit.lights[i].intensity <= EPSILON || !isLightEnabled(lit.lights[i].enable))
+		if (lit.lights[i].intensity <= EPSILON || !isLightEnabled(lit.lights[i].flags))
 			continue;
 
 		// Lights
@@ -92,7 +92,7 @@ void main()
 
 		// Shadows
 		uint flags = lit.lights[i].flags;
-		if (!hasShadow(flags) || !isShadowEnabled(lit.lights[i].enable))
+		if (!hasShadow(flags) || !isShadowEnabled(lit.lights[i].flags))
 		{
 			color_result += color;
 			continue;

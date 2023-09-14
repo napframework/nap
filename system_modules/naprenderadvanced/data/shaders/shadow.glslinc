@@ -16,12 +16,6 @@ bool hasShadow(uint flags)
 	return ((flags >> 8) & 0xff) > 0;
 }
 
-// Returns the shadow sample count
-uint getShadowSampleCount(uint flags)
-{
-	return ((flags >> 8) & 0xff);
-}
-
 // Returns the shadow map type which specifies what shadow sampler the light must use
 uint getShadowMapType(uint flags)
 {
@@ -33,7 +27,6 @@ uint getShadowMapIndex(uint flags)
 {
 	return ((flags >> 24) & 0xff);
 }
-
 
 // Linearizes depth buffer value
 float linearDepth(float depth, float near, float far)

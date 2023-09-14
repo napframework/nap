@@ -304,6 +304,8 @@ namespace nap
 
 	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState)
 	{
+		// TODO: Cache light uniforms
+
 		// Exit early if there are no lights in the scene
 		if (mLightComponents.empty())
 			return true;
@@ -351,7 +353,6 @@ namespace nap
 
 				// Set light uniform defaults
 				auto& light_element = light_array->getElement(light_index);
-				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::enable)->setValue(getLightEnableFlags(*light));
 				light_element.getOrCreateUniform<UniformUIntInstance>(uniform::light::flags)->setValue(it_flags->second);
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::origin)->setValue(light->getLightPosition());
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
@@ -445,6 +446,7 @@ namespace nap
         // Shadow data
         for (auto& mesh_comp : filtered_mesh_comps)
         {
+			// Ensure the shader interface is valid
             auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
             auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
             auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar);
@@ -460,14 +462,14 @@ namespace nap
             }
             light_count->setValue(mLightComponents.size());
 
+			// Set shadow flags
+			shadow_flags->setValue(getShadowFlags(mLightComponents));
+
             uint light_index = 0;
             for (const auto& light : mLightComponents)
             {
                 if (light_index >= mMaxLightCount)
                     break;
-
-                // Set shadow enabled bit
-                shadow_flags->setValue(shadow_flags->getValue() & ~(1 << light_index) | (uint)(light->isShadowEnabled()) << light_index);
 
                 if (light->isShadowEnabled())
                 {
@@ -483,6 +485,7 @@ namespace nap
                     // Fetch flags
                     auto it_flags = mLightFlagsMap.find(light);
                     assert(it_flags != mLightFlagsMap.end());
+					updateLightFlags(*light, it_flags->second);
 
                     switch (light->getShadowMapType())
                     {

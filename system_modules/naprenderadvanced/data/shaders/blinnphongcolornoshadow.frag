@@ -70,7 +70,7 @@ void main()
 	for (uint i = 0; i < min(lit.count, MAX_LIGHTS); i++)
 	{
 		// Skip light and shadow computation if intensity is zero
-		if (lit.lights[i].intensity <= EPSILON || !isLightEnabled(lit.lights[i].enable))
+		if (lit.lights[i].intensity <= EPSILON || !isLightEnabled(lit.lights[i].flags))
 			continue;
 
 		// Lights

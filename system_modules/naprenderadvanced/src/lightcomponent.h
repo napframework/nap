@@ -21,7 +21,7 @@ namespace nap
 	/**
 	 * Light Type Flag
 	 */
-	enum class ELightType : uint
+	enum class ELightType : uint8
 	{
 		Custom			= 0,
 		Directional		= 1,
@@ -32,7 +32,7 @@ namespace nap
 	/**
 	 * Shadow Map Type
 	 */
-	enum class EShadowMapType : uint
+	enum class EShadowMapType : uint8
 	{
 		Quad = 0,
 		Cube = 1

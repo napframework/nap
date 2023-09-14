@@ -31,13 +31,6 @@ namespace nap
 		mInputService			= getCore().getService<InputService>();
 		mSceneService			= getCore().getService<SceneService>();
 		mGuiService				= getCore().getService<IMGuiService>();
-//
-//#ifdef RENDERADVANCED_RPI
-//        // Require Vulkan 1.1 on Raspberry Pi
-//        if (!errorState.check(mRenderService->getVulkanVersionMajor() >= 1 && mRenderService->getVulkanVersionMinor() >= 1,
-//            "The lightsandshadow demo requires Vulkan version 1.1 on Raspberry Pi"))
-//            return false;
-//#endif
 
         // Get resource manager and load
 		mResourceManager = getCore().getResourceManager();
@@ -123,6 +116,7 @@ namespace nap
 				bool enabled = selected_light->isEnabled();
 				if (ImGui::Checkbox("Enable", &enabled))
 					selected_light->enable(enabled);
+
 				ImGui::EndTabItem();
 			}
 			if (ImGui::BeginTabItem("Light Properties"))
