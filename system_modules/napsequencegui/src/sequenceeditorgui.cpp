@@ -297,7 +297,7 @@ namespace nap
             {
                 if(ImGui::Button("Save Preset"))
                 {
-                    mState.mAction = createAction<ShowSavePresetPopup>("segments");
+                    mState.mAction = createAction<SavePresetPopup>("segments");
                 }
             }
 
@@ -305,7 +305,7 @@ namespace nap
 
             if(ImGui::ImageButton(gui.getIcon(icon::help)))
             {
-                mState.mAction = createAction<OpenHelpPopup>();
+                mState.mAction = createAction<HelpPopup>();
             }
 
             ImGui::Spacing();
@@ -500,7 +500,7 @@ namespace nap
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
             if(ImGui::ImageButton(gui.getIcon(icon::add)))
             {
-                mState.mAction = createAction<OpenInsertTrackPopup>();
+                mState.mAction = createAction<InsertTrackPopup>();
             }
             ImGui::SetCursorPosX(ImGui::GetCursorPosX() + mState.mScroll.x);
             ImGui::Text("Add Track");
@@ -722,7 +722,7 @@ namespace nap
                         mState.mAction = createAction<DragSequenceMarker>(marker->mID);
                     } else if(ImGui::IsMouseDown(1))
                     {
-                        mState.mAction = createAction<OpenEditSequenceMarkerPopup>(marker->mID, marker->mMessage, marker->mTime);
+                        mState.mAction = createAction<EditSequenceMarkerPopup>(marker->mID, marker->mMessage, marker->mTime);
                     }
                 }
 
@@ -767,7 +767,7 @@ namespace nap
                     {
                         double time = ((ImGui::GetMousePos().x - window_top_left.x) / mState.mTimelineWidth) *
                                       sequencePlayer.getDuration();
-                        mState.mAction = createAction<OpenInsertSequenceMarkerPopup>(time);
+                        mState.mAction = createAction<InsertingSequenceMarkerPopup>(time);
                     }
                 }
             }
@@ -984,7 +984,7 @@ namespace nap
 
                         if(ImGui::IsMouseDown(1))
                         {
-                            mState.mAction = createAction<OpenSequenceDurationPopup>();
+                            mState.mAction = createAction<EditSequenceDurationPopup>();
                         }
                     } else
                     {
@@ -1374,10 +1374,10 @@ namespace nap
 
     void SequenceEditorGUIView::handleSaveClipboardPopup()
     {
-        if(mState.mAction->isAction<ShowSavePresetPopup>())
+        if(mState.mAction->isAction<SavePresetPopup>())
         {
             const std::string popup_name = "Save segments in clipboard as preset..";
-            auto *save_as_action = mState.mAction->getDerived<ShowSavePresetPopup>();
+            auto *save_as_action = mState.mAction->getDerived<SavePresetPopup>();
 
             if(!ImGui::IsPopupOpen(popup_name.c_str()))
                 ImGui::OpenPopup(popup_name.c_str());
@@ -1525,164 +1525,157 @@ namespace nap
 
     void SequenceEditorGUIView::handleInsertTrackPopup()
     {
-        if(mState.mAction->isAction<OpenInsertTrackPopup>())
+        auto* action = mState.mAction->getDerived<sequenceguiactions::InsertTrackPopup>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            mState.mAction = createAction<InsertingTrackPopup>();
             ImGui::OpenPopup("Insert New Track");
         }
 
-        if(mState.mAction->isAction<InsertingTrackPopup>())
+        if(ImGui::BeginPopup("Insert New Track"))
         {
-            if(ImGui::BeginPopup("Insert New Track"))
+            const auto &track_types = mService.getAllTrackTypes();
+            for(const auto &track_type: track_types)
             {
-                const auto &track_types = mService.getAllTrackTypes();
-                for(const auto &track_type: track_types)
+                const auto &name = track_type.get_name().to_string();
+                if(ImGui::Button(name.c_str()))
                 {
-                    const auto &name = track_type.get_name().to_string();
-                    if(ImGui::Button(name.c_str()))
+                    auto *controller = mEditor.getControllerWithTrackType(track_type);
+                    assert(controller != nullptr);
+                    if(controller != nullptr)
                     {
-                        auto *controller = mEditor.getControllerWithTrackType(track_type);
-                        assert(controller != nullptr);
-                        if(controller != nullptr)
-                        {
-                            controller->insertTrack(track_type);
-                            mState.mAction = createAction<None>();
-                            ImGui::CloseCurrentPopup();
-                        }
+                        controller->insertTrack(track_type);
+                        mState.mAction = createAction<None>();
+                        ImGui::CloseCurrentPopup();
                     }
                 }
-
-                auto &gui = mService.getGui();
-                if(ImGui::ImageButton(gui.getIcon(icon::cancel)))
-                {
-                    mState.mAction = createAction<None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // clicked outside so exit popup
-                mState.mAction = createAction<None>();
             }
+
+            auto &gui = mService.getGui();
+            if(ImGui::ImageButton(gui.getIcon(icon::cancel)))
+            {
+                mState.mAction = createAction<None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // clicked outside so exit popup
+            mState.mAction = createAction<None>();
         }
     }
 
 
     void SequenceEditorGUIView::handleEditMarkerPopup()
     {
-        if(mState.mAction->isAction<OpenEditSequenceMarkerPopup>())
-        {
-            auto *action = mState.mAction->getDerived<OpenEditSequenceMarkerPopup>();
+        auto* action = mState.mAction->getDerived<EditSequenceMarkerPopup>();
+        assert(action!= nullptr);
 
-            mState.mAction = createAction<EditingSequenceMarkerPopup>(action->mID, action->mMessage, action->mTime);
+        if(!action->mOpened)
+        {
             ImGui::OpenPopup("Edit Sequence Marker");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<EditingSequenceMarkerPopup>())
+        if(ImGui::BeginPopup("Edit Sequence Marker"))
         {
-            if(ImGui::BeginPopup("Edit Sequence Marker"))
+            auto *action = mState.mAction->getDerived<EditSequenceMarkerPopup>();
+
+            double time = action->mTime;
+
+            std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+
+            bool edit_time = false;
+
+            ImGui::Separator();
+            ImGui::PushItemWidth(100.0f * mState.mScale);
+
+            edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            if(edit_time)
             {
-                auto *action = mState.mAction->getDerived<EditingSequenceMarkerPopup>();
-
-                double time = action->mTime;
-
-                std::vector<int> time_array = convertTimeToMMSSMSArray(time);
-
-                bool edit_time = false;
-
-                ImGui::Separator();
-                ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                if(edit_time)
-                {
-                    double new_time = convertMMSSMSArrayToTime(time_array);
-                    action->mTime = new_time;
-                    mEditor.changeMarkerTime(action->mID, new_time);
-                }
-
-                char buffer[256];
-                strcpy(buffer, action->mMessage.c_str());
-                if(ImGui::InputText("Message", buffer, 256))
-                {
-                    action->mMessage = std::string(buffer);
-                    mEditor.changeMarkerMessage(action->mID, action->mMessage);
-                }
-
-                auto &gui = mService.getGui();
-                if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete"))
-                {
-                    mEditor.deleteMarker(action->mID);
-                    mState.mAction = createAction<None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-                if(ImGui::ImageButton(gui.getIcon(icon::ok)))
-                {
-                    mState.mAction = createAction<None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // clicked outside so exit popup
-                mState.mAction = createAction<None>();
+                double new_time = convertMMSSMSArrayToTime(time_array);
+                action->mTime = new_time;
+                mEditor.changeMarkerTime(action->mID, new_time);
             }
+
+            char buffer[256];
+            strcpy(buffer, action->mMessage.c_str());
+            if(ImGui::InputText("Message", buffer, 256))
+            {
+                action->mMessage = std::string(buffer);
+                mEditor.changeMarkerMessage(action->mID, action->mMessage);
+            }
+
+            auto &gui = mService.getGui();
+            if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete"))
+            {
+                mEditor.deleteMarker(action->mID);
+                mState.mAction = createAction<None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(gui.getIcon(icon::ok)))
+            {
+                mState.mAction = createAction<None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // clicked outside so exit popup
+            mState.mAction = createAction<None>();
         }
     }
 
 
     void SequenceEditorGUIView::handleInsertMarkerPopup()
     {
-        if(mState.mAction->isAction<OpenInsertSequenceMarkerPopup>())
-        {
-            auto *action = mState.mAction->getDerived<OpenInsertSequenceMarkerPopup>();
+        auto *action = mState.mAction->getDerived<InsertingSequenceMarkerPopup>();
+        assert(action!= nullptr);
 
-            mState.mAction = createAction<InsertingSequenceMarkerPopup>(action->mTime, "your message");
+        if(!action->mOpened)
+        {
             ImGui::OpenPopup("Insert Sequence Marker");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<InsertingSequenceMarkerPopup>())
+        if(ImGui::BeginPopup("Insert Sequence Marker"))
         {
-            if(ImGui::BeginPopup("Insert Sequence Marker"))
+            char buffer[256];
+            strcpy(buffer, action->mMessage.c_str());
+            if(ImGui::InputText("Message", buffer, 256))
             {
-                auto *action = mState.mAction->getDerived<InsertingSequenceMarkerPopup>();
-
-                char buffer[256];
-                strcpy(buffer, action->mMessage.c_str());
-                if(ImGui::InputText("Message", buffer, 256))
-                {
-                    action->mMessage = std::string(buffer);
-                }
-
-                auto &gui = mService.getGui();
-                if(ImGui::ImageButton(gui.getIcon(icon::ok), "Insert Marker"))
-                {
-                    mEditor.insertMarker(action->mTime, action->mMessage);
-                    mState.mAction = createAction<None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-                if(ImGui::ImageButton(gui.getIcon(icon::cancel)))
-                {
-                    mState.mAction = createAction<None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // clicked outside so exit popup
-                mState.mAction = createAction<None>();
+                action->mMessage = std::string(buffer);
             }
+
+            auto &gui = mService.getGui();
+            if(ImGui::ImageButton(gui.getIcon(icon::ok), "Insert Marker"))
+            {
+                mEditor.insertMarker(action->mTime, action->mMessage);
+                mState.mAction = createAction<None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(gui.getIcon(icon::cancel)))
+            {
+                mState.mAction = createAction<None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // clicked outside so exit popup
+            mState.mAction = createAction<None>();
         }
     }
 
@@ -1722,55 +1715,54 @@ namespace nap
 
     void SequenceEditorGUIView::handleSequenceDurationPopup()
     {
-        if(mState.mAction->isAction<OpenSequenceDurationPopup>())
+        auto* action = mState.mAction->getDerived<EditSequenceDurationPopup>();
+        assert(action!= nullptr);
+        if(!action->mOpened)
         {
-            mState.mAction = createAction<EditSequenceDurationPopup>();
+            action->mOpened = true;
             ImGui::OpenPopup("Edit Sequence Duration");
         }
 
-        if(mState.mAction->isAction<EditSequenceDurationPopup>())
+        if(ImGui::BeginPopup("Edit Sequence Duration"))
         {
-            if(ImGui::BeginPopup("Edit Sequence Duration"))
+            double duration = mEditor.mSequencePlayer->getDuration();
+
+            std::vector<int> time_array = convertTimeToMMSSMSArray(duration);
+
+            bool edit_time = false;
+
+            ImGui::Separator();
+
+            ImGui::PushItemWidth(100.0f);
+
+            edit_time = ImGui::InputInt3("Duration (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            if(edit_time)
             {
-                double duration = mEditor.mSequencePlayer->getDuration();
-
-                std::vector<int> time_array = convertTimeToMMSSMSArray(duration);
-
-                bool edit_time = false;
-
-                ImGui::Separator();
-
-                ImGui::PushItemWidth(100.0f);
-
-                edit_time = ImGui::InputInt3("Duration (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                if(edit_time)
-                {
-                    double new_duration = convertMMSSMSArrayToTime(time_array);
-                    mEditor.changeSequenceDuration(new_duration);
-                    mState.mDirty = true;
-                }
-
-                ImGui::PopItemWidth();
-
-                ImGui::Separator();
-
-                auto &gui = mService.getGui();
-                if(ImGui::ImageButton(gui.getIcon(icon::ok)))
-                {
-                    mState.mAction = createAction<None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // clicked outside so exit popup
-                mState.mAction = createAction<None>();
+                double new_duration = convertMMSSMSArrayToTime(time_array);
+                mEditor.changeSequenceDuration(new_duration);
+                mState.mDirty = true;
             }
+
+            ImGui::PopItemWidth();
+
+            ImGui::Separator();
+
+            auto &gui = mService.getGui();
+            if(ImGui::ImageButton(gui.getIcon(icon::ok)))
+            {
+                mState.mAction = createAction<None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // clicked outside so exit popup
+            mState.mAction = createAction<None>();
         }
     }
 
@@ -1788,69 +1780,65 @@ namespace nap
 
     void SequenceEditorGUIView::handleHelpPopup()
     {
-        if(mState.mAction->isAction<OpenHelpPopup>())
+        auto* action = mState.mAction->getDerived<sequenceguiactions::HelpPopup>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            mState.mAction = createAction<ShowHelpPopup>();
             ImGui::OpenPopup("Help");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<ShowHelpPopup>())
+        if(ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            if(ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-            {
-                const float width = 200.0f * mState.mScale;
-                auto color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
-                ImGui::Text("Select & drag :");
-                ImGui::SameLine(width);
-                ImGui::TextColored(color, "Left mouse button");
-                ImGui::Text("Select & open edit popup :");
-                ImGui::SameLine(width);
-                ImGui::TextColored(color, "Right mouse button");
-                ImGui::Text("Copy segment :");
-                ImGui::SameLine(width);
-                ImGui::TextColored(color, "Shift + Left click segment handler");
-                ImGui::Text("Zoom in & out :");
-                ImGui::SameLine(width);
-                ImGui::TextColored(color, "Control + Scroll Wheel");
-                ImGui::Text("Horizontal Scroll :");
-                ImGui::SameLine(width);
-                ImGui::TextColored(color, "Shift + Scroll Wheel");
+            const float width = 200.0f * mState.mScale;
+            auto color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
+            ImGui::Text("Select & drag :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Left mouse button");
+            ImGui::Text("Select & open edit popup :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Right mouse button");
+            ImGui::Text("Copy segment :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Shift + Left click segment handler");
+            ImGui::Text("Zoom in & out :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Control + Scroll Wheel");
+            ImGui::Text("Horizontal Scroll :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Shift + Scroll Wheel");
 
-                ImGui::Spacing();
-                ImGui::Separator();
-                ImGui::Spacing();
+            ImGui::Spacing();
+            ImGui::Separator();
+            ImGui::Spacing();
 
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-                {
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                }
-                ImGui::EndPopup();
-            } else
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
             {
-                // clicked outside so exit popup
+                ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }
+            ImGui::EndPopup();
+        } else
+        {
+            // clicked outside so exit popup
+            mState.mAction = createAction<None>();
         }
+
     }
 
 
     void SequenceEditorGUIView::registerActionHandlers()
     {
         // register handlers for popups
-        registerActionHandler(RTTI_OF(OpenEditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
-        registerActionHandler(RTTI_OF(EditingSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
+        registerActionHandler(RTTI_OF(EditSequenceMarkerPopup), [this] { handleEditMarkerPopup(); });
         registerActionHandler(RTTI_OF(InsertingSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); });
-        registerActionHandler(RTTI_OF(OpenInsertTrackPopup), [this] { handleInsertTrackPopup(); });
-        registerActionHandler(RTTI_OF(InsertingTrackPopup), [this] { handleInsertTrackPopup(); });
-        registerActionHandler(RTTI_OF(OpenSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
+        registerActionHandler(RTTI_OF(InsertTrackPopup), [this] { handleInsertTrackPopup(); });
         registerActionHandler(RTTI_OF(EditSequenceDurationPopup), [this] { handleSequenceDurationPopup(); });
         registerActionHandler(RTTI_OF(LoadPopup), [this] { handleLoadPopup(); });
         registerActionHandler(RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); });
-        registerActionHandler(RTTI_OF(OpenInsertSequenceMarkerPopup), [this] { handleInsertMarkerPopup(); });
-        registerActionHandler(RTTI_OF(OpenHelpPopup), [this] { handleHelpPopup(); });
-        registerActionHandler(RTTI_OF(ShowHelpPopup), [this] { handleHelpPopup(); });
-        registerActionHandler(RTTI_OF(ShowSavePresetPopup), [this] { handleSaveClipboardPopup(); });
+        registerActionHandler(RTTI_OF(HelpPopup), [this] { handleHelpPopup(); });
+        registerActionHandler(RTTI_OF(SavePresetPopup), [this] { handleSaveClipboardPopup(); });
 
         /**
          * action handlers for changing horizontal resolution (zoom)
@@ -1864,39 +1852,6 @@ namespace nap
             mState.mAction = createAction<None>();
         });
 
-        /**
-         * action handlers for moving and deleting tracks
-         */
-        registerActionHandler(RTTI_OF(DeleteTrack), [this]
-        {
-            assert(mState.mAction->isAction<DeleteTrack>());
-            auto *action = mState.mAction->getDerived<DeleteTrack>();
-            auto *controller = mEditor.getControllerWithTrackID(action->mTrackID);
-            assert(controller != nullptr); // controller not found
-            controller->deleteTrack(action->mTrackID);
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
-        registerActionHandler(RTTI_OF(MoveTrackUp), [this]
-        {
-            assert(mState.mAction->isAction<MoveTrackUp>());
-            auto *action = mState.mAction->getDerived<MoveTrackUp>();
-            auto *controller = mEditor.getControllerWithTrackID(action->mTrackID);
-            assert(controller != nullptr); // controller not found
-            controller->moveTrackUp(action->mTrackID);
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
-        registerActionHandler(RTTI_OF(MoveTrackDown), [this]
-        {
-            assert(mState.mAction->isAction<MoveTrackDown>());
-            auto *action = mState.mAction->getDerived<MoveTrackDown>();
-            auto *controller = mEditor.getControllerWithTrackID(action->mTrackID);
-            assert(controller != nullptr); // controller not found
-            controller->moveTrackDown(action->mTrackID);
-            mState.mDirty = true;
-            mState.mAction = createAction<None>();
-        });
         registerActionHandler(RTTI_OF(ChangeTrackName), [this]
         {
             assert(mState.mAction->isAction<ChangeTrackName>());

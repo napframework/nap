@@ -28,31 +28,18 @@ namespace nap
     SequenceCurveTrackView::SequenceCurveTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
         : SequenceTrackView(view, state)
     {
-        registerActionHandler(RTTI_OF(OpenInsertSegmentPopup), std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
         registerActionHandler(RTTI_OF(InsertingSegmentPopup), std::bind(&SequenceCurveTrackView::handleInsertSegmentPopup, this));
-        registerActionHandler(RTTI_OF(OpenInsertCurvePointPopup), std::bind(&SequenceCurveTrackView::handleInsertCurvePointPopup, this));
         registerActionHandler(RTTI_OF(InsertingCurvePoint), std::bind(&SequenceCurveTrackView::handleInsertCurvePointPopup, this));
-        registerActionHandler(RTTI_OF(OpenCurveTypePopup), std::bind(&SequenceCurveTrackView::handleCurveTypePopup, this));
         registerActionHandler(RTTI_OF(CurveTypePopup), std::bind(&SequenceCurveTrackView::handleCurveTypePopup, this));
-        registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<float>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<float>, this));
         registerActionHandler(RTTI_OF(CurvePointActionPopup<float>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<float>, this));
-        registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<glm::vec2>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec2>, this));
         registerActionHandler(RTTI_OF(CurvePointActionPopup<glm::vec2>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec2>, this));
-        registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<glm::vec3>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec3>, this));
         registerActionHandler(RTTI_OF(CurvePointActionPopup<glm::vec3>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec3>, this));
-        registerActionHandler(RTTI_OF(OpenCurvePointActionPopup<glm::vec4>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec4>, this));
         registerActionHandler(RTTI_OF(CurvePointActionPopup<glm::vec4>), std::bind(&SequenceCurveTrackView::handleCurvePointActionPopup<glm::vec4>, this));
-        registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<float>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<float>, this));
         registerActionHandler(RTTI_OF(EditingSegmentCurveValue<float>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<float>, this));
-        registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<glm::vec2>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec2>, this));
         registerActionHandler(RTTI_OF(EditingSegmentCurveValue<glm::vec2>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec2>, this));
-        registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<glm::vec3>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec3>, this));
         registerActionHandler(RTTI_OF(EditingSegmentCurveValue<glm::vec3>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec3>, this));
-        registerActionHandler(RTTI_OF(OpenEditSegmentCurveValuePopup<glm::vec4>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec4>, this));
         registerActionHandler(RTTI_OF(EditingSegmentCurveValue<glm::vec4>), std::bind(&SequenceCurveTrackView::handleSegmentValueActionPopup<glm::vec4>, this));
-        registerActionHandler(RTTI_OF(OpenEditTanPointPopup), std::bind(&SequenceCurveTrackView::handleTanPointActionPopup, this));
         registerActionHandler(RTTI_OF(EditingTanPointPopup), std::bind(&SequenceCurveTrackView::handleTanPointActionPopup, this));
-        registerActionHandler(RTTI_OF(OpenEditCurveSegmentPopup), std::bind(&SequenceCurveTrackView::handleEditSegmentPopup, this));
         registerActionHandler(RTTI_OF(EditingCurveSegment), std::bind(&SequenceCurveTrackView::handleEditSegmentPopup, this));
         registerActionHandler(RTTI_OF(ChangeMinMaxCurve<float>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<float>, this));
         registerActionHandler(RTTI_OF(ChangeMinMaxCurve<glm::vec2>), std::bind(&SequenceCurveTrackView::handleChangeMinMaxCurve<glm::vec2>, this));
@@ -63,7 +50,7 @@ namespace nap
         registerActionHandler(RTTI_OF(AssignOutputIDToTrack), std::bind(&SequenceCurveTrackView::handleAssignOutputIDToTrack, this));
         registerActionHandler(RTTI_OF(DraggingSegmentValue), std::bind(&SequenceCurveTrackView::handleDraggingSegmentValue, this));
         registerActionHandler(RTTI_OF(DraggingControlPoint), std::bind(&SequenceCurveTrackView::handleDraggingControlPoints, this));
-        registerActionHandler(RTTI_OF(ShowLoadPresetPopup), std::bind(&SequenceCurveTrackView::handleLoadPresetPopup, this));
+        registerActionHandler(RTTI_OF(LoadPresetPopup), std::bind(&SequenceCurveTrackView::handleLoadPresetPopup, this));
     }
 
 
@@ -269,15 +256,15 @@ namespace nap
                         double time = mState.mMouseCursorTime;
 
                         //
-                        mState.mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
+                        mState.mAction = createAction<InsertingSegmentPopup>(track.mID, time, track.get_type());
                     }
                 }
             }
 
             // draw line in track while in inserting segment popup
-            if(mState.mAction->isAction<OpenInsertSegmentPopup>())
+            if(mState.mAction->isAction<InsertingSegmentPopup>())
             {
-                auto *action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
+                auto *action = mState.mAction->getDerived<InsertingSegmentPopup>();
 
                 if(action->mTrackID == track.mID)
                 {
@@ -391,7 +378,7 @@ namespace nap
                 // right mouse is edit popup
             else if(ImGui::IsMouseDown(1))
             {
-                mState.mAction = createAction<OpenEditCurveSegmentPopup>(
+                mState.mAction = createAction<EditingCurveSegment>(
                     track.mID,
                     segment.mID,
                     segment.get_type(),
@@ -499,409 +486,408 @@ namespace nap
                  RTTI_OF(SequenceTrackCurveVec3),
                  RTTI_OF(SequenceTrackCurveVec4)};
 
-        if(mState.mAction->isAction<OpenInsertSegmentPopup>())
+        auto *action = mState.mAction->getDerived<InsertingSegmentPopup>();
+        assert(action!= nullptr);
+
+        auto it = std::find(allowed_types.begin(), allowed_types.end(), action->mTrackType);
+        assert(it != allowed_types.end());
+
+        // invoke insert sequence popup
+        if(!action->mOpened)
         {
-            auto *action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
-
-            auto it = std::find(allowed_types.begin(), allowed_types.end(), action->mTrackType);
-            if(it != allowed_types.end())
-            {
-                // invoke insert sequence popup
-                ImGui::OpenPopup("Insert Segment");
-
-                mState.mAction = createAction<InsertingSegmentPopup>(action->mTrackID, action->mTime, action->mTrackType);
-            }
+            action->mOpened = true;
+            ImGui::OpenPopup("Insert Segment");
         }
 
-        // handle insert segment popup
-        if(mState.mAction->isAction<InsertingSegmentPopup>())
+
+        if(ImGui::BeginPopup("Insert Segment"))
         {
-            auto *action = mState.mAction->getDerived<InsertingSegmentPopup>();
-
-            auto it = std::find(allowed_types.begin(), allowed_types.end(), action->mTrackType);
-            if(it != allowed_types.end())
+            std::string btn_msg =
+                "Insert " + utility::stripNamespace(action->mTrackType.get_name().to_string());
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_msg.data()))
             {
-                if(ImGui::BeginPopup("Insert Segment"))
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.insertSegment(action->mTrackID, action->mTime);
+                updateSegmentsInClipboard(action->mTrackID);
+                mState.mAction = createAction<None>();
+
+                mCurveCache.clear();
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            // handle paste
+            if(mState.mClipboard->isClipboard<CurveSegmentClipboard>() &&
+               mState.mClipboard->getObjectCount() > 0)
+            {
+                ImGui::SameLine();
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
                 {
-                    std::string btn_msg =
-                        "Insert " + utility::stripNamespace(action->mTrackType.get_name().to_string());
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert), btn_msg.data()))
+                    static const std::unordered_map<rtti::TypeInfo, bool (SequenceCurveTrackView::*)(const std::string &, double, utility::ErrorState &)> paste_map =
+                        {{RTTI_OF(SequenceTrackCurveFloat), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveFloat>},
+                         {RTTI_OF(SequenceTrackCurveVec2),  &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec2>},
+                         {RTTI_OF(SequenceTrackCurveVec3),  &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec3>},
+                         {RTTI_OF(SequenceTrackCurveVec4),  &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec4>}};
+
+                    // call the correct pasteClipboardSegments method for this track-type
+                    utility::ErrorState error_state;
+                    auto paste_map_it = paste_map.find(action->mTrackType);
+                    assert(paste_map_it != paste_map.end()); // type not found
+                    if((*this.*paste_map_it->second)(action->mTrackID, action->mTime, error_state))
                     {
-                        auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                        curve_controller.insertSegment(action->mTrackID, action->mTime);
-                        updateSegmentsInClipboard(action->mTrackID);
+                        mState.mDirty = true;
                         mState.mAction = createAction<None>();
-
-                        mCurveCache.clear();
-
                         ImGui::CloseCurrentPopup();
-                    }
-
-                    // handle paste
-                    if(mState.mClipboard->isClipboard<CurveSegmentClipboard>() &&
-                       mState.mClipboard->getObjectCount() > 0)
+                    } else
                     {
-                        ImGui::SameLine();
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
-                        {
-                            static const std::unordered_map<rtti::TypeInfo, bool (SequenceCurveTrackView::*)(const std::string &, double, utility::ErrorState &)> paste_map =
-                                {{RTTI_OF(SequenceTrackCurveFloat), &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveFloat>},
-                                 {RTTI_OF(SequenceTrackCurveVec2),  &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec2>},
-                                 {RTTI_OF(SequenceTrackCurveVec3),  &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec3>},
-                                 {RTTI_OF(SequenceTrackCurveVec4),  &SequenceCurveTrackView::pasteClipboardSegments<SequenceTrackSegmentCurveVec4>}};
-
-                            // call the correct pasteClipboardSegments method for this track-type
-                            utility::ErrorState error_state;
-                            auto paste_map_it = paste_map.find(action->mTrackType);
-                            assert(paste_map_it != paste_map.end()); // type not found
-                            if((*this.*paste_map_it->second)(action->mTrackID, action->mTime, error_state))
-                            {
-                                mState.mDirty = true;
-                                mState.mAction = createAction<None>();
-                                ImGui::CloseCurrentPopup();
-                            } else
-                            {
-                                ImGui::OpenPopup("Error");
-                                action->mErrorString = error_state.toString();
-                            }
-                        }
+                        ImGui::OpenPopup("Error");
+                        action->mErrorString = error_state.toString();
                     }
-
-                    ImGui::SameLine();
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
-                    {
-                        if(mState.mClipboard->getTrackType() != action->mTrackType)
-                        {
-                            mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mTrackType,
-                                                                                       action->mTrackID,
-                                                                                       getEditor().mSequencePlayer->getSequenceFilename());
-                        }
-                        mState.mAction = createAction<ShowLoadPresetPopup>(action->mTrackID, action->mTime, action->mTrackType);
-                        ImGui::CloseCurrentPopup();
-                    }
-
-                    ImGui::SameLine();
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
-                    {
-                        ImGui::CloseCurrentPopup();
-                        mState.mAction = createAction<None>();
-                    }
-
-                    if(ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
-                    {
-                        ImGui::Text(action->mErrorString.c_str());
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-                        {
-                            mState.mDirty = true;
-                            mState.mAction = createAction<None>();
-                            ImGui::CloseCurrentPopup();
-                        }
-
-                        ImGui::EndPopup();
-                    }
-
-                    ImGui::EndPopup();
-                } else
-                {
-                    // click outside popup so cancel action
-                    mState.mAction = createAction<None>();
                 }
             }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
+            {
+                if(mState.mClipboard->getTrackType() != action->mTrackType)
+                {
+                    mState.mClipboard = createClipboard<CurveSegmentClipboard>(action->mTrackType,
+                                                                               action->mTrackID,
+                                                                               getEditor().mSequencePlayer->getSequenceFilename());
+                }
+                mState.mAction = createAction<LoadPresetPopup>(action->mTrackID, action->mTime, action->mTrackType);
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
+            {
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+            }
+
+            if(ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                ImGui::Text(action->mErrorString.c_str());
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+                {
+                    mState.mDirty = true;
+                    mState.mAction = createAction<None>();
+                    ImGui::CloseCurrentPopup();
+                }
+
+                ImGui::EndPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = createAction<None>();
         }
     }
 
 
     void SequenceCurveTrackView::handleCurveTypePopup()
     {
-        if(mState.mAction->isAction<OpenCurveTypePopup>())
-        {
-            // invoke insert sequence popup
-            ImGui::OpenPopup("Change Curve Type");
+        auto *action = mState.mAction->getDerived<sequenceguiactions::CurveTypePopup>();
+        assert(action!= nullptr);
 
-            auto *action = mState.mAction->getDerived<OpenCurveTypePopup>();
-            mState.mAction = createAction<CurveTypePopup>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mCurveIndex,
-                action->mPos,
-                action->mWindowPos);
+        if(!action->mOpened)
+        {
+            ImGui::OpenPopup("Change Curve Type");
+            action->mOpened = true;
         }
 
-        // handle insert segment popup
-        if(mState.mAction->isAction<CurveTypePopup>())
+        if(ImGui::BeginPopup("Change Curve Type"))
         {
-            auto *action = mState.mAction->getDerived<CurveTypePopup>();
+            ImGui::SetWindowPos(action->mWindowPos);
 
-            if(ImGui::BeginPopup("Change Curve Type"))
+            if(ImGui::Button("Linear"))
             {
-                ImGui::SetWindowPos(action->mWindowPos);
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear, action->mCurveIndex);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
-                if(ImGui::Button("Linear"))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Linear, action->mCurveIndex);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                    mCurveCache.clear();
-                }
-                ImGui::SameLine();
-                if(ImGui::Button("Bezier"))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier, action->mCurveIndex);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                    mCurveCache.clear();
-                }
-                ImGui::SameLine();
-                if(ImGui::Button("Stepped"))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Stepped, action->mCurveIndex);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                    mCurveCache.clear();
-                }
-                ImGui::SameLine();
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
-                {
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                }
-
-                ImGui::EndPopup();
-            } else
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+                mCurveCache.clear();
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("Bezier"))
             {
-                // click outside popup so cancel action
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Bezier, action->mCurveIndex);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+                mCurveCache.clear();
+            }
+            ImGui::SameLine();
+            if(ImGui::Button("Stepped"))
+            {
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.changeCurveType(action->mTrackID, action->mSegmentID, math::ECurveInterp::Stepped, action->mCurveIndex);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+                mCurveCache.clear();
+            }
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
+            {
+                ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = createAction<None>();
         }
     }
 
 
     void SequenceCurveTrackView::handleInsertCurvePointPopup()
     {
-        if(mState.mAction->isAction<OpenInsertCurvePointPopup>())
-        {
-            // invoke insert sequence popup
-            ImGui::OpenPopup("Insert Curve Point");
+        auto *action = mState.mAction->getDerived<sequenceguiactions::InsertingCurvePoint>();
+        assert(action!= nullptr);
 
-            auto *action = mState.mAction->getDerived<OpenInsertCurvePointPopup>();
-            mState.mAction = createAction<InsertingCurvePoint>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mSelectedIndex,
-                action->mPos);
+        if(!action->mOpened)
+        {
+            ImGui::OpenPopup("Insert Curve Point");
+            action->mOpened = true;
         }
 
-        // handle insert segment popup
-        if(mState.mAction->isAction<InsertingCurvePoint>())
+        if(ImGui::BeginPopup("Insert Curve Point"))
         {
-            if(ImGui::BeginPopup("Insert Curve Point"))
+            auto *action = mState.mAction->getDerived<InsertingCurvePoint>();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::add), "Insert Point"))
             {
-                auto *action = mState.mAction->getDerived<InsertingCurvePoint>();
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::add), "Insert Point"))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.insertCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mPos,
-                        action->mSelectedIndex);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.insertCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mPos,
+                    action->mSelectedIndex);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
-                    mCurveCache.clear();
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
+                mCurveCache.clear();
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
 
-                }
+            }
 
-                ImGui::SameLine();
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::change), "Change Curve Type"))
-                {
-                    ImGui::CloseCurrentPopup();
-
-                    mState.mAction = createAction<OpenCurveTypePopup>(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mSelectedIndex,
-                        action->mPos,
-                        ImGui::GetWindowPos());
-                }
-
-                ImGui::SameLine();
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
-                {
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                }
-
-                ImGui::EndPopup();
-            } else
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::change), "Change Curve Type"))
             {
-                // click outside popup so cancel action
+                ImGui::CloseCurrentPopup();
+
+                mState.mAction = createAction<CurveTypePopup>(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mSelectedIndex,
+                    action->mPos,
+                    ImGui::GetWindowPos());
+            }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
+            {
+                ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = createAction<None>();
         }
     }
 
 
     void SequenceCurveTrackView::handleTanPointActionPopup()
     {
-        if(mState.mAction->isAction<sequenceguiactions::OpenEditTanPointPopup>())
-        {
-            auto *action = mState.mAction->getDerived<sequenceguiactions::OpenEditTanPointPopup>();
-            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingTanPointPopup>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mControlPointIndex,
-                action->mCurveIndex,
-                action->mType,
-                action->mValue,
-                action->mTime);
+        auto *action = mState.mAction->getDerived<sequenceguiactions::EditingTanPointPopup>();
+        assert(action!= nullptr);
 
+        if(!action->mOpened)
+        {
             ImGui::OpenPopup("Tan Point Actions");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<EditingTanPointPopup>())
+        if(ImGui::BeginPopup("Tan Point Actions"))
         {
-            if(ImGui::BeginPopup("Tan Point Actions"))
+            int curveIndex = action->mCurveIndex;
+
+            bool change = false;
+            if(ImGui::InputFloat("time", &action->mTime))
             {
-                auto *action = mState.mAction->getDerived<sequenceguiactions::EditingTanPointPopup>();
-                int curveIndex = action->mCurveIndex;
+                change = true;
 
-                bool change = false;
-                if(ImGui::InputFloat("time", &action->mTime))
-                {
-                    change = true;
-
-                    // time cannot be 0
-                    action->mTime = math::max<float>(0.1f, action->mTime);
-                }
-
-                if(ImGui::InputFloat("value", &action->mValue))
-                {
-                    change = true;
-                }
-
-                if(change)
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-
-                    bool tangents_flipped = curve_controller.changeTanPoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex,
-                        action->mType,
-                        action->mTime,
-                        action->mValue);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-
-                    if(tangents_flipped && action->mType == sequencecurveenums::ETanPointTypes::IN)
-                    {
-                        action->mType = sequencecurveenums::ETanPointTypes::OUT;
-                    } else if(tangents_flipped && action->mType == sequencecurveenums::ETanPointTypes::OUT)
-                    {
-                        action->mType = sequencecurveenums::ETanPointTypes::IN;
-                    }
-
-                    mState.mDirty = true;
-                }
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-                {
-                    mState.mAction = createAction<sequenceguiactions::None>();
-
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // click outside popup so cancel action
-                mState.mAction = createAction<None>();
+                // time cannot be 0
+                action->mTime = math::max<float>(0.1f, action->mTime);
             }
+
+            if(ImGui::InputFloat("value", &action->mValue))
+            {
+                change = true;
+            }
+
+            if(change)
+            {
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+
+                bool tangents_flipped = curve_controller.changeTanPoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex,
+                    action->mType,
+                    action->mTime,
+                    action->mValue);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
+                if(tangents_flipped && action->mType == sequencecurveenums::ETanPointTypes::IN)
+                {
+                    action->mType = sequencecurveenums::ETanPointTypes::OUT;
+                } else if(tangents_flipped && action->mType == sequencecurveenums::ETanPointTypes::OUT)
+                {
+                    action->mType = sequencecurveenums::ETanPointTypes::IN;
+                }
+
+                mState.mDirty = true;
+            }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+            {
+                mState.mAction = createAction<sequenceguiactions::None>();
+
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = createAction<None>();
         }
     }
 
 
     void SequenceCurveTrackView::handleEditSegmentPopup()
     {
-        if(mState.mAction->isAction<OpenEditCurveSegmentPopup>())
+        auto *action = mState.mAction->getDerived<sequenceguiactions::EditingCurveSegment>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            // invoke insert sequence popup
             ImGui::OpenPopup("Edit Segment");
-
-            auto *action = mState.mAction->getDerived<OpenEditCurveSegmentPopup>();
-
-            mState.mAction = createAction<EditingCurveSegment>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mSegmentType,
-                action->mStartTime,
-                action->mDuration,
-                action->mSegmentLabel
-            );
+            action->mOpened = true;
         }
 
-        // handle edit segment popup
-        if(mState.mAction->isAction<EditingCurveSegment>())
+        auto &controller = getEditor().getController<SequenceControllerCurve>();
+        auto *track = controller.getTrack(action->mTrackID);
+
+        static const std::vector<rtti::TypeInfo> allowed_types =
+            {RTTI_OF(SequenceTrackCurveFloat),
+             RTTI_OF(SequenceTrackCurveVec2),
+             RTTI_OF(SequenceTrackCurveVec3),
+             RTTI_OF(SequenceTrackCurveVec4)};
+
+        auto allowed_types_it = std::find(allowed_types.begin(), allowed_types.end(), track->get_type());
+        if(allowed_types_it != allowed_types.end())
         {
-            auto *action = mState.mAction->getDerived<EditingCurveSegment>();
-            auto &controller = getEditor().getController<SequenceControllerCurve>();
-            auto *track = controller.getTrack(action->mTrackID);
-
-            static const std::vector<rtti::TypeInfo> allowed_types =
-                {RTTI_OF(SequenceTrackCurveFloat),
-                 RTTI_OF(SequenceTrackCurveVec2),
-                 RTTI_OF(SequenceTrackCurveVec3),
-                 RTTI_OF(SequenceTrackCurveVec4)};
-
-            auto allowed_types_it = std::find(allowed_types.begin(), allowed_types.end(), track->get_type());
-            if(allowed_types_it != allowed_types.end())
+            if(ImGui::BeginPopup("Edit Segment"))
             {
-                if(ImGui::BeginPopup("Edit Segment"))
+                // see if we have a curve segment in the clipboard
+                bool display_copy = !mState.mClipboard->isClipboard<CurveSegmentClipboard>();
+                if(!display_copy)
                 {
-                    // see if we have a curve segment in the clipboard
-                    bool display_copy = !mState.mClipboard->isClipboard<CurveSegmentClipboard>();
-                    if(!display_copy)
+                    // yes ? see if the track is the same
+                    auto *clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+                    // if no, display copy, which will override the existing clipboard
+                    if(clipboard->getTrackID() != track->mID)
                     {
-                        // yes ? see if the track is the same
-                        auto *clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-
-                        // if no, display copy, which will override the existing clipboard
-                        if(clipboard->getTrackID() != track->mID)
-                        {
-                            display_copy = true;
-                        }
-
-                        // check if clipboard is from different sequence
-                        if(clipboard->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename())
-                        {
-                            display_copy = true;
-                        }
+                        display_copy = true;
                     }
 
-                    if(display_copy)
+                    // check if clipboard is from different sequence
+                    if(clipboard->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename())
                     {
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Copy"))
+                        display_copy = true;
+                    }
+                }
+
+                if(display_copy)
+                {
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Copy"))
+                    {
+                        // create new clipboard
+                        mState.mClipboard = createClipboard<CurveSegmentClipboard>(track->get_type(), track->mID, getEditor().mSequencePlayer->getSequenceFilename());
+
+                        // get curve segment
+                        const auto *curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+
+                        // add object to clipboard
+                        utility::ErrorState errorState;
+                        mState.mClipboard->addObject(curve_segment, getPlayer().getSequenceFilename(), errorState);
+
+                        // log any errors
+                        if(errorState.hasErrors())
                         {
-                            // create new clipboard
-                            mState.mClipboard = createClipboard<CurveSegmentClipboard>(track->get_type(), track->mID, getEditor().mSequencePlayer->getSequenceFilename());
+                            nap::Logger::error(errorState.toString());
 
-                            // get curve segment
-                            const auto *curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+                            // remove faulty/empty clipboard
+                            mState.mClipboard = createClipboard<Empty>();
+                        }
 
+                        // exit popup
+                        ImGui::CloseCurrentPopup();
+                        mState.mAction = createAction<None>();
+                    }
+                    ImGui::SameLine();
+                }
+
+                if(!display_copy)
+                {
+                    // get clipboard
+                    auto *clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+
+                    // get curve segment
+                    const auto *curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+
+                    // does the clipboard already contain this segment ?
+                    if(clipboard->containsObject(curve_segment->mID, getPlayer().getSequenceFilename()))
+                    {
+                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
+                        {
+                            // remove the object from the clipboard
+                            clipboard->removeObject(curve_segment->mID);
+
+                            // if clipboard is empty, create empty clipboard
+                            if(clipboard->getObjectCount() == 0)
+                            {
+                                mState.mClipboard = createClipboard<Empty>();
+                            }
+
+                            // exit popup
+                            ImGui::CloseCurrentPopup();
+                            mState.mAction = createAction<None>();
+                        }
+                    } else
+                    {
+                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
+                        {
                             // add object to clipboard
                             utility::ErrorState errorState;
-                            mState.mClipboard->addObject(curve_segment, getPlayer().getSequenceFilename(), errorState);
+                            clipboard->addObject(curve_segment, getPlayer().getSequenceFilename(), errorState);
 
                             // log any errors
                             if(errorState.hasErrors())
@@ -916,174 +902,123 @@ namespace nap
                             ImGui::CloseCurrentPopup();
                             mState.mAction = createAction<None>();
                         }
-                        ImGui::SameLine();
                     }
+                    ImGui::SameLine();
+                }
 
-                    if(!display_copy)
+                // see if we can replace the contents of this segment with the one from the clipboard
+                // this can only happen when we have 1 segment in the clipboard
+                bool display_replace = mState.mClipboard->isClipboard<CurveSegmentClipboard>() && mState.mClipboard->getObjectCount();
+                if(display_replace)
+                {
+                    display_replace = mState.mClipboard->getObjectCount() == 1;
+                }
+
+                // display the replace option
+                if(display_replace)
+                {
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste), "Paste into this"))
                     {
-                        // get clipboard
-                        auto *clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+                        static const std::unordered_map<rtti::TypeInfo, void (SequenceCurveTrackView::*)(const std::string &, const std::string &)> paste_map =
+                            {{RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveFloat>},
+                             {RTTI_OF(SequenceTrackSegmentCurveVec2),  &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec2>},
+                             {RTTI_OF(SequenceTrackSegmentCurveVec3),  &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec3>},
+                             {RTTI_OF(SequenceTrackSegmentCurveVec4),  &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec4>}};
 
-                        // get curve segment
-                        const auto *curve_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
+                        // call the correct pasteClipboardSegments method for this segment-type
+                        auto paste_map_it = paste_map.find(action->mSegmentType);
+                        assert(paste_map_it != paste_map.end());
+                        (*this.*paste_map_it->second)(action->mTrackID, action->mSegmentID);
 
-                        // does the clipboard already contain this segment ?
-                        if(clipboard->containsObject(curve_segment->mID, getPlayer().getSequenceFilename()))
-                        {
-                            if(ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
-                            {
-                                // remove the object from the clipboard
-                                clipboard->removeObject(curve_segment->mID);
-
-                                // if clipboard is empty, create empty clipboard
-                                if(clipboard->getObjectCount() == 0)
-                                {
-                                    mState.mClipboard = createClipboard<Empty>();
-                                }
-
-                                // exit popup
-                                ImGui::CloseCurrentPopup();
-                                mState.mAction = createAction<None>();
-                            }
-                        } else
-                        {
-                            if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
-                            {
-                                // add object to clipboard
-                                utility::ErrorState errorState;
-                                clipboard->addObject(curve_segment, getPlayer().getSequenceFilename(), errorState);
-
-                                // log any errors
-                                if(errorState.hasErrors())
-                                {
-                                    nap::Logger::error(errorState.toString());
-
-                                    // remove faulty/empty clipboard
-                                    mState.mClipboard = createClipboard<Empty>();
-                                }
-
-                                // exit popup
-                                ImGui::CloseCurrentPopup();
-                                mState.mAction = createAction<None>();
-                            }
-                        }
-                        ImGui::SameLine();
-                    }
-
-                    // see if we can replace the contents of this segment with the one from the clipboard
-                    // this can only happen when we have 1 segment in the clipboard
-                    bool display_replace = mState.mClipboard->isClipboard<CurveSegmentClipboard>() && mState.mClipboard->getObjectCount();
-                    if(display_replace)
-                    {
-                        display_replace = mState.mClipboard->getObjectCount() == 1;
-                    }
-
-                    // display the replace option
-                    if(display_replace)
-                    {
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste), "Paste into this"))
-                        {
-                            static const std::unordered_map<rtti::TypeInfo, void (SequenceCurveTrackView::*)(const std::string &, const std::string &)> paste_map =
-                                {{RTTI_OF(SequenceTrackSegmentCurveFloat), &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveFloat>},
-                                 {RTTI_OF(SequenceTrackSegmentCurveVec2),  &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec2>},
-                                 {RTTI_OF(SequenceTrackSegmentCurveVec3),  &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec3>},
-                                 {RTTI_OF(SequenceTrackSegmentCurveVec4),  &SequenceCurveTrackView::pasteClipboardSegmentInto<SequenceTrackSegmentCurveVec4>}};
-
-                            // call the correct pasteClipboardSegments method for this segment-type
-                            auto paste_map_it = paste_map.find(action->mSegmentType);
-                            assert(paste_map_it != paste_map.end());
-                            (*this.*paste_map_it->second)(action->mTrackID, action->mSegmentID);
-
-                            // redraw cached curves
-                            mState.mDirty = true;
-
-                            // exit popup
-                            ImGui::CloseCurrentPopup();
-                            mState.mAction = createAction<None>();
-                        }
-                        ImGui::SameLine();
-                    }
-
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::del), "Delete"))
-                    {
-                        controller.deleteSegment(
-                            action->mTrackID,
-                            action->mSegmentID);
-                        mCurveCache.clear();
-
-                        // remove delete object from clipboard
-                        if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
-                        {
-                            mState.mClipboard->removeObject(action->mSegmentID);
-                        }
-                        updateSegmentsInClipboard(action->mTrackID);
+                        // redraw cached curves
+                        mState.mDirty = true;
 
                         // exit popup
                         ImGui::CloseCurrentPopup();
                         mState.mAction = createAction<None>();
                     }
+                    ImGui::SameLine();
+                }
 
-                    // Ensure the action is valid
-                    if(!mState.mAction->isAction<None>())
-                    {
-                        ImGui::Separator();
-                        ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                        // show segment label
-                        std::string label_copy = action->mSegmentLabel;
-                        label_copy.resize(32);
-
-                        bool edit_label = ImGui::InputText("Label", &label_copy[0], 32);
-
-                        if(edit_label)
-                        {
-                            controller.changeSegmentLabel(action->mTrackID, action->mSegmentID, label_copy);
-
-                            // update any segments we have in the clipboard
-                            updateSegmentsInClipboard(action->mTrackID);
-
-                            action->mSegmentLabel = label_copy;
-                            mState.mDirty = true;
-                        }
-
-                        std::vector<int> time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
-                        bool edit_time = false;
-
-                        edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
-                        time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                        time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                        time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                        if(edit_time)
-                        {
-                            double new_time = convertMMSSMSArrayToTime(time_array);
-                            double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float) (
-                                new_time - action->mStartTime));
-
-                            // make the controller re-align start & end points of segments
-                            controller.updateCurveSegments(action->mTrackID);
-
-                            updateSegmentsInClipboard(action->mTrackID);
-
-                            action->mDuration = new_duration;
-                            mState.mDirty = true;
-                            mCurveCache.clear();
-                        }
-
-                        ImGui::PopItemWidth();
-                        ImGui::Separator();
-                        if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok), "Done"))
-                        {
-                            ImGui::CloseCurrentPopup();
-                            mState.mAction = createAction<None>();
-                        }
-                    }
-                    ImGui::EndPopup();
-                } else
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::del), "Delete"))
                 {
-                    // click outside popup so cancel action
+                    controller.deleteSegment(
+                        action->mTrackID,
+                        action->mSegmentID);
+                    mCurveCache.clear();
+
+                    // remove delete object from clipboard
+                    if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
+                    {
+                        mState.mClipboard->removeObject(action->mSegmentID);
+                    }
+                    updateSegmentsInClipboard(action->mTrackID);
+
+                    // exit popup
+                    ImGui::CloseCurrentPopup();
                     mState.mAction = createAction<None>();
                 }
+
+                // Ensure the action is valid
+                if(!mState.mAction->isAction<None>())
+                {
+                    ImGui::Separator();
+                    ImGui::PushItemWidth(100.0f * mState.mScale);
+
+                    // show segment label
+                    std::string label_copy = action->mSegmentLabel;
+                    label_copy.resize(32);
+
+                    bool edit_label = ImGui::InputText("Label", &label_copy[0], 32);
+
+                    if(edit_label)
+                    {
+                        controller.changeSegmentLabel(action->mTrackID, action->mSegmentID, label_copy);
+
+                        // update any segments we have in the clipboard
+                        updateSegmentsInClipboard(action->mTrackID);
+
+                        action->mSegmentLabel = label_copy;
+                        mState.mDirty = true;
+                    }
+
+                    std::vector<int> time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
+                    bool edit_time = false;
+
+                    edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
+                    time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+                    time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+                    time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+                    if(edit_time)
+                    {
+                        double new_time = convertMMSSMSArrayToTime(time_array);
+                        double new_duration = controller.segmentDurationChange(action->mTrackID, action->mSegmentID, (float) (
+                            new_time - action->mStartTime));
+
+                        // make the controller re-align start & end points of segments
+                        controller.updateCurveSegments(action->mTrackID);
+
+                        updateSegmentsInClipboard(action->mTrackID);
+
+                        action->mDuration = new_duration;
+                        mState.mDirty = true;
+                        mCurveCache.clear();
+                    }
+
+                    ImGui::PopItemWidth();
+                    ImGui::Separator();
+                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok), "Done"))
+                    {
+                        ImGui::CloseCurrentPopup();
+                        mState.mAction = createAction<None>();
+                    }
+                }
+                ImGui::EndPopup();
+            } else
+            {
+                // click outside popup so cancel action
+                mState.mAction = createAction<None>();
             }
         }
     }
@@ -1244,117 +1179,105 @@ namespace nap
     template<>
     void SequenceCurveTrackView::handleCurvePointActionPopup<float>()
     {
-        if(mState.mAction->isAction<sequenceguiactions::OpenCurvePointActionPopup<float>>())
+        auto *action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<float>>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            auto *action = mState.mAction->getDerived<sequenceguiactions::OpenCurvePointActionPopup<float>>();
-            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::CurvePointActionPopup<float>>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mControlPointIndex,
-                action->mCurveIndex,
-                action->mValue,
-                action->mTime,
-                action->mMinimum,
-                action->mMaximum
-            );
             ImGui::OpenPopup("Curve Point Actions");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<sequenceguiactions::CurvePointActionPopup<float>>())
+        if(ImGui::BeginPopup("Curve Point Actions"))
         {
-            if(ImGui::BeginPopup("Curve Point Actions"))
+            float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
+            if(ImGui::InputFloat("value", &value))
             {
-                auto *action = mState.mAction->getDerived<sequenceguiactions::CurvePointActionPopup<float>>();
+                float new_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
 
-                float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
-                if(ImGui::InputFloat("value", &value))
-                {
-                    float new_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
-
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex,
-                        action->mTime,
-                        new_value);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-                    mState.mDirty = true;
-                }
-
-                /**
-                 * Handle adjusting time of point
-                 * Calculate mTime value to time in sequence, show InputInt3 (mm::ss::ms).
-                 * On edit : validate input and call controller
-                 */
-                // obtain segment
                 auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
-                assert(segment != nullptr);
-
-                double time = action->mTime * segment->mDuration + segment->mStartTime;
-                double min_time = segment->mStartTime;
-                double max_time = segment->mStartTime + segment->mDuration;
-
-                std::vector<int> time_array = convertTimeToMMSSMSArray(time);
-
-                bool edit_time = false;
-
-                ImGui::Separator();
-                ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                if(edit_time)
-                {
-                    double new_time = convertMMSSMSArrayToTime(time_array);
-                    new_time = math::clamp(new_time, min_time, max_time);
-
-                    float perc = (new_time - segment->mStartTime) / segment->mDuration;
-                    action->mTime = perc;
-                    curve_controller.changeCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex,
-                        perc,
-                        action->mValue);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-                    mState.mDirty = true;
-                }
-
-                // delete button
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
-                {
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.deleteCurvePoint(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        action->mControlPointIndex,
-                        action->mCurveIndex);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-                    mCurveCache.clear();
-
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::SameLine();
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-                {
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    ImGui::CloseCurrentPopup();
-                }
-                ImGui::EndPopup();
-            } else
-            {
-                // click outside popup so cancel action
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                curve_controller.changeCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex,
+                    action->mTime,
+                    new_value);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                mState.mDirty = true;
             }
+
+            /**
+             * Handle adjusting time of point
+             * Calculate mTime value to time in sequence, show InputInt3 (mm::ss::ms).
+             * On edit : validate input and call controller
+             */
+            // obtain segment
+            auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+            const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
+            assert(segment != nullptr);
+
+            double time = action->mTime * segment->mDuration + segment->mStartTime;
+            double min_time = segment->mStartTime;
+            double max_time = segment->mStartTime + segment->mDuration;
+
+            std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+
+            bool edit_time = false;
+
+            ImGui::Separator();
+            ImGui::PushItemWidth(100.0f * mState.mScale);
+
+            edit_time = ImGui::InputInt3("Time (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            if(edit_time)
+            {
+                double new_time = convertMMSSMSArrayToTime(time_array);
+                new_time = math::clamp(new_time, min_time, max_time);
+
+                float perc = (new_time - segment->mStartTime) / segment->mDuration;
+                action->mTime = perc;
+                curve_controller.changeCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex,
+                    perc,
+                    action->mValue);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                mState.mDirty = true;
+            }
+
+            // delete button
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
+            {
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.deleteCurvePoint(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    action->mControlPointIndex,
+                    action->mCurveIndex);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                mCurveCache.clear();
+
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::SameLine();
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+            {
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                ImGui::CloseCurrentPopup();
+            }
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
         }
     }
 
@@ -1362,55 +1285,45 @@ namespace nap
     template<>
     void SequenceCurveTrackView::handleSegmentValueActionPopup<float>()
     {
-        if(mState.mAction->isAction<sequenceguiactions::OpenEditSegmentCurveValuePopup<float>>())
+        auto *action = mState.mAction->getDerived<sequenceguiactions::EditingSegmentCurveValue<float>>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
-            auto *action = mState.mAction->getDerived<sequenceguiactions::OpenEditSegmentCurveValuePopup<float>>();
-            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::EditingSegmentCurveValue<float>>(
-                action->mTrackID,
-                action->mSegmentID,
-                action->mType,
-                action->mCurveIndex,
-                action->mValue,
-                action->mMinimum,
-                action->mMaximum
-            );
             ImGui::OpenPopup("Segment Value Actions");
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<sequenceguiactions::EditingSegmentCurveValue<float>>())
+        if(ImGui::BeginPopup("Segment Value Actions"))
         {
-            if(ImGui::BeginPopup("Segment Value Actions"))
+            int curveIndex = action->mCurveIndex;
+
+            float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
+            if(ImGui::InputFloat("value", &value))
             {
-                auto *action = mState.mAction->getDerived<sequenceguiactions::EditingSegmentCurveValue<float>>();
-                int curveIndex = action->mCurveIndex;
-
-                float value = action->mValue * (action->mMaximum - action->mMinimum) + action->mMinimum;
-                if(ImGui::InputFloat("value", &value))
-                {
-                    float translated_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
-                    auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                    curve_controller.changeCurveSegmentValue(
-                        action->mTrackID,
-                        action->mSegmentID,
-                        translated_value,
-                        curveIndex,
-                        action->mType);
-                    updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
-                    mState.mDirty = true;
-                }
-
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
-                {
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                ImGui::EndPopup();
-            } else
-            {
-                // click outside popup so cancel action
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                float translated_value = (value - action->mMinimum) / (action->mMaximum - action->mMinimum);
+                auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
+                curve_controller.changeCurveSegmentValue(
+                    action->mTrackID,
+                    action->mSegmentID,
+                    translated_value,
+                    curveIndex,
+                    action->mType);
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+                mState.mDirty = true;
             }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+            {
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
         }
     }
 
@@ -1632,9 +1545,9 @@ namespace nap
 
     void SequenceCurveTrackView::handleLoadPresetPopup()
     {
-        if(mState.mAction->isAction<ShowLoadPresetPopup>())
+        if(mState.mAction->isAction<LoadPresetPopup>())
         {
-            auto *load_action = mState.mAction->getDerived<ShowLoadPresetPopup>();
+            auto *load_action = mState.mAction->getDerived<LoadPresetPopup>();
             auto *controller = getEditor().getControllerWithTrackID(load_action->mTrackID);
 
             if(controller->get_type().is_derived_from<SequenceControllerCurve>())

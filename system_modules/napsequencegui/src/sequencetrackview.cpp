@@ -19,7 +19,7 @@ namespace nap
     SequenceTrackView::SequenceTrackView(SequenceEditorGUIView& view, SequenceEditorGUIState& state) :
             mView(view), mState(state), mService(view.getService())
     {
-        registerActionHandler(RTTI_OF(ResizeTrackHeight), [this] { handleResizeTrackHeight(); });
+        registerActionHandler(RTTI_OF(TrackOptionsPopup), [this]{ handleTrackOptionsPopup(); });
     }
 
 
@@ -62,10 +62,9 @@ namespace nap
 
     void SequenceTrackView::showInspector(const SequenceTrack& track)
     {
-        bool delete_track = false;
-        bool move_track_up = false;
-        bool move_track_down = false;
         const float track_height = track.mTrackHeight * mState.mScale;
+
+        auto &gui = mService.getGui();
 
         // begin inspector
         std::ostringstream inspector_id_stream;
@@ -144,33 +143,13 @@ namespace nap
             ImGui::PopID();
 
             // draw move and delete controls aligned to upper right corner of inspector
-            const float upper_right_alignment = ImGui::GetWindowWidth() - 115.0f * mState.mScale;
+            const float upper_right_alignment = ImGui::GetWindowWidth() - 30.0f * mState.mScale;
             ImGui::SameLine(upper_right_alignment);
-            auto &gui = mService.getGui();
+            float track_options_popup_x = ImGui::GetCursorScreenPos().x; // store x position for track settings popup placement
 
-            if(ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
+            if(ImGui::ImageButton(gui.getIcon(icon::settings), "Track Settings"))
             {
-                move_track_down = true;
-            }
-            ImGui::SameLine();
-            if(ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
-            {
-                move_track_up = true;
-            }
-            ImGui::SameLine();
-            if(ImGui::ImageButton(gui.getIcon(icon::subtract), "Minimize"))
-            {
-                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getMinimumTrackHeight());
-            }
-            ImGui::SameLine();
-            if(ImGui::ImageButton(gui.getIcon(icon::add), "Extend"))
-            {
-                mState.mAction = createAction<ResizeTrackHeight>(track.mID, track.getExtendedTrackHeight());
-            }
-            ImGui::SameLine();
-            if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
-            {
-                delete_track = true;
+                mState.mAction = createAction<TrackOptionsPopup>(track.mID, ImVec2(track_options_popup_x, ImGui::GetCursorScreenPos().y));
             }
 
             // offset inspector cursor
@@ -202,22 +181,6 @@ namespace nap
         ImGui::PopStyleColor();
 
         ImGui::SetCursorPos(cursor_pos);
-
-        /**
-         * Create necessary action handled by GUI after it's done drawing
-         */
-        if(delete_track)
-        {
-            mState.mAction = createAction<DeleteTrack>(track.mID);
-        }
-        if(move_track_up)
-        {
-            mState.mAction = createAction<MoveTrackUp>(track.mID);
-        }
-        if(move_track_down)
-        {
-            mState.mAction = createAction<MoveTrackDown>(track.mID);
-        }
     }
 
 
@@ -378,21 +341,96 @@ namespace nap
     }
 
 
-    void SequenceTrackView::handleResizeTrackHeight()
+    void SequenceTrackView::handleTrackOptionsPopup()
     {
-        // obtain action
-        assert(mState.mAction->isAction<ResizeTrackHeight>());
-        auto *action = mState.mAction->getDerived<ResizeTrackHeight>();
+        assert(mState.mAction.get()->get_type().is_derived_from<sequenceguiactions::TrackOptionsPopup>());
+        auto* action = static_cast<sequenceguiactions::TrackOptionsPopup*>(mState.mAction.get());
 
-        // obtain controller
-        auto *controller = getEditor().getControllerWithTrackID(action->mTrackID);
+        if(!action->mPopupOpened)
+        {
+            ImGui::OpenPopup("TrackOptions");
+            action->mPopupOpened = true;
+            action->mScrollY = mState.mScroll.y; // store scroll, close popup when user begins scrolling
+            const float window_offset = 3.0f * mState.mScale;
+            ImGui::SetNextWindowPos({ action->mPos.x - window_offset, action->mPos.y } );
+        }
 
-        // change the trackheight
-        controller->changeTrackHeight(action->mTrackID, action->mNewTrackHeight);
+        // scale down everything
+        float global_scale = 0.25f;
+        ImGui::GetStyle().ScaleAllSizes(global_scale);
 
-        // content needs to be redrawn so set dirty flag
-        mState.mAction = createAction<None>();
-        mState.mDirty = true;
+        // indicate whether we should close the popup at the end of this function
+        bool close_popup = false;
+
+        if(ImGui::BeginPopup("TrackOptions"))
+        {
+            // fetch controller and track
+            auto* controller = getEditor().getControllerWithTrackID(action->mTrackID);
+            assert(controller!= nullptr);
+            auto *track = controller->getTrack(action->mTrackID);
+            assert(track!= nullptr);
+
+            // gui is needed to draw necessary icons
+            auto &gui = mService.getGui();
+
+            // bool indicating we performed an edit and we should end the action and close the popup
+            bool performed_edit = false;
+
+            if(ImGui::ImageButton(gui.getIcon(icon::sequencer::up), "Move track up"))
+            {
+                controller->moveTrackUp(action->mTrackID);
+                performed_edit = true;
+            }
+
+            if(ImGui::ImageButton(gui.getIcon(icon::sequencer::down), "Move track down"))
+            {
+                controller->moveTrackDown(action->mTrackID);
+                performed_edit = true;
+            }
+
+            if(ImGui::ImageButton(gui.getIcon(icon::subtract), "Minimize"))
+            {
+                controller->changeTrackHeight(action->mTrackID, track->getMinimumTrackHeight());
+                performed_edit = true;
+            }
+
+            if(ImGui::ImageButton(gui.getIcon(icon::add), "Extend"))
+            {
+                controller->changeTrackHeight(action->mTrackID, track->getExtendedTrackHeight());
+                performed_edit = true;
+            }
+
+            if(ImGui::ImageButton(gui.getIcon(icon::del), "Delete track"))
+            {
+                controller->deleteTrack(action->mTrackID);
+                performed_edit = true;
+            }
+
+            // if edit is performed, close popup and end action
+            if(performed_edit)
+            {
+                mState.mDirty = true;
+                close_popup = true;
+            }
+
+            // close popup on scroll
+            close_popup = close_popup || mState.mScroll.y != action->mScrollY;
+
+            ImGui::EndPopup();
+        }else
+        {
+            // click outside popup so cancel action and close popup
+            close_popup = true;
+        }
+
+        // scale up
+        ImGui::GetStyle().ScaleAllSizes(1.0f / global_scale);
+
+        if(close_popup)
+        {
+            mState.mAction = sequenceguiactions::createAction<None>();
+            ImGui::CloseCurrentPopup();
+        }
     }
 
 

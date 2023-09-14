@@ -103,29 +103,6 @@ namespace nap
             int mCurveIndex;
         };
 
-        /**
-         * TrackAction that tells the GUI to open an insert curve point popup
-         */
-        class NAPAPI OpenInsertCurvePointPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track that contains the segment we want to edit
-             * @param segmentID the segment id we want to edit
-             * @param selectedCurve the selected curve index
-             * @param pos normalized position on curve
-             */
-            OpenInsertCurvePointPopup(std::string trackID, std::string segmentID, int selectedCurve, float pos)
-                : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSelectedIndex(selectedCurve), mPos(pos)
-            {}
-
-
-            std::string mSegmentID;
-            int mSelectedIndex;
-            float mPos;
-        };
 
         /**
          * TrackAction that tells the GUI we're inside an insert curve point popup
@@ -145,45 +122,12 @@ namespace nap
                 : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSelectedIndex(selectedCurve), mPos(pos)
             {}
 
-
+            bool mOpened = false;
             std::string mSegmentID;
             int mSelectedIndex;
             float mPos;
         };
 
-        /**
-         * TrackAction that tells the GUI to open an insert curve point action popup for a curved segment
-         * @tparam T the type of curve segment
-         */
-        template<typename T>
-        class OpenCurvePointActionPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track holding the segment being edited
-             * @param segmentID the segment being edited
-             * @param controlPointIndex the control point index
-             * @param curveIndex the curve index
-             * @param value the new value of the curve point
-             * @param time the new time of the curve point
-             * @param minimum minimum value of the curve point
-             * @param maximum maximum value of the curve point
-             */
-            OpenCurvePointActionPopup(const std::string& trackID, std::string segmentID, int controlPointIndex, int curveIndex, float value, float time, T minimum, T maximum)
-                : TrackAction(trackID), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mValue(value), mTime(time), mMinimum(minimum), mMaximum(maximum)
-            {}
-
-
-            std::string mSegmentID;
-            int mControlPointIndex;
-            int mCurveIndex;
-            float mValue;
-            float mTime;
-            T mMinimum;
-            T mMaximum;
-        };
 
         /**
          * TrackAction that tells the GUI we're inside an insert curve point action popup for a curved segment
@@ -211,7 +155,7 @@ namespace nap
                   mValue(value), mMinimum(minimum), mMaximum(maximum), mTime(time)
             {}
 
-
+            bool mOpened = false;
             std::string mSegmentID;
             int mControlPointIndex;
             int mCurveIndex;
@@ -221,35 +165,6 @@ namespace nap
             float mTime;
         };
 
-        /**
-         * TrackAction that tells the GUI to open a curve type popup
-         */
-        class NAPAPI OpenCurveTypePopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track holding the segment being edited
-             * @param segmentID the segment being edited
-             * @param index index of the curve
-             * @param pos normalized position on the curve
-             * @param windowPos current window position
-             */
-            OpenCurveTypePopup(std::string trackID, std::string segmentID, int index, float pos, ImVec2 windowPos) :
-                TrackAction(std::move(trackID)),
-                mSegmentID(std::move(segmentID)),
-                mCurveIndex(index),
-                mPos(pos),
-                mWindowPos(windowPos)
-            {}
-
-
-            std::string mSegmentID;
-            int mCurveIndex;
-            float mPos;
-            ImVec2 mWindowPos;
-        };
 
         /**
          * TrackAction that tells the GUI we're inside a curve type popup
@@ -270,7 +185,7 @@ namespace nap
                 TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mCurveIndex(index), mPos(pos), mWindowPos(windowPos)
             {}
 
-
+            bool mOpened = false;
             std::string mSegmentID;
             int mCurveIndex;
             float mPos;
@@ -306,35 +221,6 @@ namespace nap
             float mNewTime = 0.0f;
         };
 
-        /**
-         * TrackAction that tells the GUI we need to open a tan point edit popup
-         */
-        class NAPAPI OpenEditTanPointPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track holding the segment being edited
-             * @param segmentID the segment being edited
-             * @param controlPointIndex control point index
-             * @param curveIndex curve index
-             * @param type tan point type, in or out
-             * @param value new tan point value
-             * @param time new tan point time
-             */
-            OpenEditTanPointPopup(std::string trackID, std::string segmentID, int controlPointIndex, int curveIndex, sequencecurveenums::ETanPointTypes type, float value, float time)
-                : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time)
-            {}
-
-
-            std::string mSegmentID;
-            int mControlPointIndex;
-            int mCurveIndex;
-            sequencecurveenums::ETanPointTypes mType;
-            float mValue;
-            float mTime;
-        };
 
         /**
          * TrackAction that tells the GUI we're inside a tan point edit popup
@@ -357,7 +243,7 @@ namespace nap
                 : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mControlPointIndex(controlPointIndex), mCurveIndex(curveIndex), mType(type), mValue(value), mTime(time)
             {}
 
-
+            bool mOpened = false;
             std::string mSegmentID;
             int mControlPointIndex;
             int mCurveIndex;
@@ -366,33 +252,6 @@ namespace nap
             float mTime;
         };
 
-        /**
-         * TrackAction that tells the GUI to open an edit curve segment popup
-         */
-        class NAPAPI OpenEditCurveSegmentPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track holding the segment being edited
-             * @param segmentID the segment being edited
-             * @param segmentType segment type info
-             * @param startTime new start time of segment
-             * @param duration new duration of segment
-             * @param label new label of segment
-             */
-            OpenEditCurveSegmentPopup(std::string trackID, std::string segmentID, const rtti::TypeInfo &segmentType, double startTime, double duration, std::string label)
-                : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration), mSegmentLabel(label)
-            {}
-
-
-            std::string mSegmentID;
-            rtti::TypeInfo mSegmentType;
-            double mStartTime;
-            double mDuration;
-            std::string mSegmentLabel;
-        };
 
         /**
          * TrackAction that tells the GUI we're inside an edit curve segment popup
@@ -414,7 +273,7 @@ namespace nap
                 : TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration), mSegmentLabel(label)
             {}
 
-
+            bool mOpened = false;
             std::string mSegmentID;
             rttr::type mSegmentType;
             double mStartTime;
@@ -422,41 +281,6 @@ namespace nap
             std::string mSegmentLabel;
         };
 
-        /**
-         * TrackAction that tells the GUI to open an edit curve value popup
-         * @tparam T value type of curve
-         */
-        template<typename T>
-        class OpenEditSegmentCurveValuePopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID track id of the track holding the segment being edited
-             * @param segmentID the segment being edited
-             * @param type segment value type, begin or end
-             * @param curveIndex the index of the curve
-             * @param value the new value
-             * @param minimum the new minimum
-             * @param maximum the new maximum
-             */
-            OpenEditSegmentCurveValuePopup(const std::string& trackId, std::string segmentID,
-                                           sequencecurveenums::ESegmentValueTypes type, int curveIndex, T value,
-                                           T minimum, T maximum) :
-                TrackAction(trackId), mSegmentID(std::move(segmentID)),
-                mType(type), mCurveIndex(curveIndex), mValue(value),
-                mMinimum(minimum), mMaximum(maximum)
-            {}
-
-
-            std::string mSegmentID;
-            sequencecurveenums::ESegmentValueTypes mType;
-            int mCurveIndex;
-            T mValue;
-            T mMinimum;
-            T mMaximum;
-        };
 
         /**
          * TrackAction that tells the GUI we're inside an edit curve value popup
@@ -481,7 +305,7 @@ namespace nap
                 : TrackAction(trackId), mSegmentID(std::move(segmentID)), mType(type), mCurveIndex(curveIndex), mValue(value), mMinimum(minimum), mMaximum(maximum)
             {}
 
-
+            bool mOpened = false;
             std::string mSegmentID;
             sequencecurveenums::ESegmentValueTypes mType;
             int mCurveIndex;
