@@ -46,19 +46,15 @@ namespace nap
         {
             handleSegmentDrag();
         });
-        registerActionHandler(RTTI_OF(OpenInsertSegmentPopup), [this]
+        registerActionHandler(RTTI_OF(InsertingSegmentPopup), [this]
         {
             handleSegmentInsert();
         });
-        registerActionHandler(RTTI_OF(InsertingAudioSegmentPopup), [this]
+        registerActionHandler(RTTI_OF(InsertAudioSegmentPopup), [this]
         {
             handleSegmentInsert();
         });
-        registerActionHandler(RTTI_OF(OpenEditAudioSegmentPopup), [this]
-        {
-            handleEditSegment();
-        });
-        registerActionHandler(RTTI_OF(EditingAudioSegmentPopup), [this]
+        registerActionHandler(RTTI_OF(EditAudioSegmentPopup), [this]
         {
             handleEditSegment();
         });
@@ -70,7 +66,7 @@ namespace nap
         {
             handleRightHandlerDrag();
         });
-        registerActionHandler(RTTI_OF(ShowLoadPresetPopup), [this]
+        registerActionHandler(RTTI_OF(LoadPresetPopup), [this]
         {
             handleLoadPresetPopup();
         });
@@ -174,15 +170,15 @@ namespace nap
                 if(ImGui::IsMouseClicked(1))
                 {
                     double time = mState.mMouseCursorTime;
-                    mState.mAction = createAction<OpenInsertSegmentPopup>(track.mID, time, track.get_type());
+                    mState.mAction = createAction<InsertingSegmentPopup>(track.mID, time, track.get_type());
                 }
             }
         }
 
         // draw line in track while in inserting segment popup
-        if(mState.mAction->isAction<OpenInsertSegmentPopup>())
+        if(mState.mAction->isAction<InsertingSegmentPopup>())
         {
-            auto *action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
+            auto *action = mState.mAction->getDerived<InsertingSegmentPopup>();
 
             if(action->mTrackID == track.mID)
             {
@@ -347,7 +343,7 @@ namespace nap
                 {
                     if(mState.mAction->isAction<HoveringSegment>())
                     {
-                        mState.mAction = createAction<OpenEditAudioSegmentPopup>(track.mID, segment->mID, mState.mMousePos);
+                        mState.mAction = createAction<EditAudioSegmentPopup>(track.mID, segment->mID, mState.mMousePos);
                     }
                 }
             }
@@ -628,21 +624,21 @@ namespace nap
 
     void SequenceAudioTrackView::handleSegmentInsert()
     {
-        if(mState.mAction->isAction<OpenInsertSegmentPopup>())
+        if(mState.mAction->isAction<InsertingSegmentPopup>())
         {
-            auto *action = mState.mAction->getDerived<OpenInsertSegmentPopup>();
+            auto *action = mState.mAction->getDerived<InsertingSegmentPopup>();
 
             // invoke insert sequence popup
             ImGui::OpenPopup("Insert Audio Segment");
 
-            mState.mAction = createAction<InsertingAudioSegmentPopup>(action->mTrackID, action->mTime, 0);
+            mState.mAction = createAction<InsertAudioSegmentPopup>(action->mTrackID, action->mTime, 0);
         }
 
         // handle insert segment popup
-        if(mState.mAction->isAction<InsertingAudioSegmentPopup>())
+        if(mState.mAction->isAction<InsertAudioSegmentPopup>())
         {
             auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
-            auto *action = mState.mAction->getDerived<InsertingAudioSegmentPopup>();
+            auto *action = mState.mAction->getDerived<InsertAudioSegmentPopup>();
 
             if(ImGui::BeginPopup("Insert Audio Segment"))
             {
@@ -724,7 +720,7 @@ namespace nap
                 ImGui::SameLine();
                 if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
                 {
-                    mState.mAction = createAction<ShowLoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackAudio));
+                    mState.mAction = createAction<LoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackAudio));
                     ImGui::CloseCurrentPopup();
                     ImGui::EndPopup();
                     return;
@@ -763,147 +759,142 @@ namespace nap
 
     void SequenceAudioTrackView::handleEditSegment()
     {
-        if(mState.mAction->isAction<OpenEditAudioSegmentPopup>())
+        auto* action = mState.mAction->getDerived<EditAudioSegmentPopup>();
+        assert(action!= nullptr);
+
+        if(!action->mOpened)
         {
             ImGui::OpenPopup("Edit Audio Segment");
-
-            auto *action = mState.mAction->getDerived<OpenEditAudioSegmentPopup>();
             ImGui::SetNextWindowPos(action->mWindowPos);
-
-            mState.mAction = createAction<EditingAudioSegmentPopup>(action->mTrackID, action->mSegmentID, action->mWindowPos);
+            action->mOpened = true;
         }
 
-        if(mState.mAction->isAction<EditingAudioSegmentPopup>())
+        if(ImGui::BeginPopup("Edit Audio Segment"))
         {
-            auto *action = mState.mAction->getDerived<EditingAudioSegmentPopup>();
+            /**
+             * obtain controller & segment
+             */
+            auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
+            const auto *segment = audio_controller.getSegment(action->mTrackID, action->mSegmentID);
+            assert(segment->get_type() == RTTI_OF(SequenceTrackSegmentAudio));
+            const auto *audio_segment = static_cast<const SequenceTrackSegmentAudio *>(segment);
 
-            if(ImGui::BeginPopup("Edit Audio Segment"))
+            ImGui::Separator();
+
+            /**
+             * handle start time in track
+             */
+            std::vector<int> time_array = convertTimeToMMSSMSArray(audio_segment->mStartTime);
+            bool edit_time = false;
+
+            ImGui::PushItemWidth(100.0f * mState.mScale);
+
+            edit_time = ImGui::InputInt3("Start Time (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            ImGui::PopItemWidth();
+
+            if(edit_time)
             {
-                /**
-                 * obtain controller & segment
-                 */
-                auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
-                const auto *segment = audio_controller.getSegment(action->mTrackID, action->mSegmentID);
-                assert(segment->get_type() == RTTI_OF(SequenceTrackSegmentAudio));
-                const auto *audio_segment = static_cast<const SequenceTrackSegmentAudio *>(segment);
-
-                ImGui::Separator();
-
-                /**
-                 * handle start time in track
-                 */
-                std::vector<int> time_array = convertTimeToMMSSMSArray(audio_segment->mStartTime);
-                bool edit_time = false;
-
-                ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                edit_time = ImGui::InputInt3("Start Time (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                ImGui::PopItemWidth();
-
-                if(edit_time)
-                {
-                    double new_time = convertMMSSMSArrayToTime(time_array);
-                    audio_controller.segmentAudioStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
-                    mState.mDirty = true;
-                }
-
-                /**
-                 * handle start time in audio segment
-                 */
-                time_array = convertTimeToMMSSMSArray(audio_segment->mStartTimeInAudioSegment);
-
-                ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                edit_time = ImGui::InputInt3("Start Time in audio segment (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                ImGui::PopItemWidth();
-
-                if(edit_time)
-                {
-                    double new_time = convertMMSSMSArrayToTime(time_array);
-                    audio_controller.segmentAudioStartTimeInSegmentChange(action->mTrackID, action->mSegmentID, new_time);
-                    mState.mDirty = true;
-                }
-
-                /**
-                 * handle duration
-                 */
-                time_array = convertTimeToMMSSMSArray(audio_segment->mDuration);
-
-                ImGui::PushItemWidth(100.0f * mState.mScale);
-
-                edit_time = ImGui::InputInt3("Audio segment duration (mm:ss:ms)", &time_array[0]);
-                time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
-                time_array[1] = math::clamp<int>(time_array[1], 0, 59);
-                time_array[2] = math::clamp<int>(time_array[2], 0, 99);
-
-                ImGui::PopItemWidth();
-
-                if(edit_time)
-                {
-                    double new_time = convertMMSSMSArrayToTime(time_array);
-                    audio_controller.segmentAudioDurationChange(action->mTrackID, action->mSegmentID, new_time);
-                    mState.mDirty = true;
-                }
-
-                ImGui::Separator();
-
-                auto audio_buffers = getAudioBuffersForTrack(action->mTrackID);
-                int selection = 0;
-                for(int i = 0; i < audio_buffers.size(); i++)
-                {
-                    if(audio_segment->mAudioBufferID == audio_buffers[i])
-                    {
-                        selection = i;
-                    }
-                }
-
-                /**
-                 * Select audio buffer available in output
-                 */
-                if(Combo("Audio Buffer", &selection, audio_buffers))
-                {
-                    audio_controller.changeAudioSegmentAudioBuffer(action->mTrackID, action->mSegmentID, audio_buffers[selection]);
-                    mState.mDirty = true;
-                }
-
-                /**
-                 * Handle delete
-                 */
-                auto &gui = mService.getGui();
-                if(ImGui::ImageButton(gui.getIcon(icon::del)))
-                {
-                    audio_controller.deleteSegment(action->mTrackID, action->mSegmentID);
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    mState.mDirty = true;
-                    ImGui::CloseCurrentPopup();
-                }
-
-                /**
-                 * Handle exit
-                 */
-                ImGui::SameLine();
-                if(ImGui::ImageButton(gui.getIcon(icon::ok)))
-                {
-                    mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
-                    ImGui::CloseCurrentPopup();
-                }
-
-                action->mWindowPos = ImGui::GetWindowPos();
-
-                ImGui::EndPopup();
-            } else
-            {
-                // click outside popup so cancel action
-                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                double new_time = convertMMSSMSArrayToTime(time_array);
+                audio_controller.segmentAudioStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
+                mState.mDirty = true;
             }
+
+            /**
+             * handle start time in audio segment
+             */
+            time_array = convertTimeToMMSSMSArray(audio_segment->mStartTimeInAudioSegment);
+
+            ImGui::PushItemWidth(100.0f * mState.mScale);
+
+            edit_time = ImGui::InputInt3("Start Time in audio segment (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            ImGui::PopItemWidth();
+
+            if(edit_time)
+            {
+                double new_time = convertMMSSMSArrayToTime(time_array);
+                audio_controller.segmentAudioStartTimeInSegmentChange(action->mTrackID, action->mSegmentID, new_time);
+                mState.mDirty = true;
+            }
+
+            /**
+             * handle duration
+             */
+            time_array = convertTimeToMMSSMSArray(audio_segment->mDuration);
+
+            ImGui::PushItemWidth(100.0f * mState.mScale);
+
+            edit_time = ImGui::InputInt3("Audio segment duration (mm:ss:ms)", &time_array[0]);
+            time_array[0] = math::clamp<int>(time_array[0], 0, 99999);
+            time_array[1] = math::clamp<int>(time_array[1], 0, 59);
+            time_array[2] = math::clamp<int>(time_array[2], 0, 99);
+
+            ImGui::PopItemWidth();
+
+            if(edit_time)
+            {
+                double new_time = convertMMSSMSArrayToTime(time_array);
+                audio_controller.segmentAudioDurationChange(action->mTrackID, action->mSegmentID, new_time);
+                mState.mDirty = true;
+            }
+
+            ImGui::Separator();
+
+            auto audio_buffers = getAudioBuffersForTrack(action->mTrackID);
+            int selection = 0;
+            for(int i = 0; i < audio_buffers.size(); i++)
+            {
+                if(audio_segment->mAudioBufferID == audio_buffers[i])
+                {
+                    selection = i;
+                }
+            }
+
+            /**
+             * Select audio buffer available in output
+             */
+            if(Combo("Audio Buffer", &selection, audio_buffers))
+            {
+                audio_controller.changeAudioSegmentAudioBuffer(action->mTrackID, action->mSegmentID, audio_buffers[selection]);
+                mState.mDirty = true;
+            }
+
+            /**
+             * Handle delete
+             */
+            auto &gui = mService.getGui();
+            if(ImGui::ImageButton(gui.getIcon(icon::del)))
+            {
+                audio_controller.deleteSegment(action->mTrackID, action->mSegmentID);
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                mState.mDirty = true;
+                ImGui::CloseCurrentPopup();
+            }
+
+            /**
+             * Handle exit
+             */
+            ImGui::SameLine();
+            if(ImGui::ImageButton(gui.getIcon(icon::ok)))
+            {
+                mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+                ImGui::CloseCurrentPopup();
+            }
+
+            action->mWindowPos = ImGui::GetWindowPos();
+
+            ImGui::EndPopup();
+        } else
+        {
+            // click outside popup so cancel action
+            mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
         }
     }
 
@@ -1030,9 +1021,9 @@ namespace nap
 
     void SequenceAudioTrackView::handleLoadPresetPopup()
     {
-        if(mState.mAction->isAction<ShowLoadPresetPopup>())
+        if(mState.mAction->isAction<LoadPresetPopup>())
         {
-            auto *load_action = mState.mAction->getDerived<ShowLoadPresetPopup>();
+            auto *load_action = mState.mAction->getDerived<LoadPresetPopup>();
             auto *controller = getEditor().getControllerWithTrackType(load_action->mTrackType);
 
             if(controller->get_type().is_derived_from<SequenceControllerAudio>())

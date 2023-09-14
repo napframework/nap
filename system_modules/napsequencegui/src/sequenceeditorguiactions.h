@@ -9,7 +9,7 @@
 
 // External Includes
 #include <rtti/rtti.h>
-
+#include <imgui/imgui.h>
 #include <utility>
 
 namespace nap
@@ -156,7 +156,7 @@ namespace nap
                 : TrackAction(std::move(trackID)), mTime(time), mTrackType(trackType)
             {}
 
-
+            bool mOpened = false;
             double mTime;
             rttr::type mTrackType;
             std::string mErrorString;
@@ -164,32 +164,9 @@ namespace nap
 
 
         /**
-         * Action for opening the popup to insert a segment into a track of a certain type
-         */
-        class NAPAPI OpenInsertSegmentPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID the track id
-             * @param time time at which to insert new segment
-             * @param trackType type information about the track type
-             */
-            OpenInsertSegmentPopup(std::string trackID, double time, const rttr::type &trackType)
-                : TrackAction(std::move(trackID)), mTime(time), mTrackType(trackType)
-            {}
-
-
-            double mTime;
-            rttr::type mTrackType;
-        };
-
-
-        /**
          * Action when inside edit segment popup
          */
-        class NAPAPI EditingSegmentPopup : public TrackAction
+        class NAPAPI EditSegmentPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
         public:
@@ -199,34 +176,11 @@ namespace nap
              * @param segmentID the segment id being edited
              * @param segmentType type info about the segment being edited
              */
-            EditingSegmentPopup(std::string trackID, std::string segmentID, const rttr::type &segmentType)
+            EditSegmentPopup(std::string trackID, std::string segmentID, const rttr::type &segmentType)
                 : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType)
             {}
 
-
-            std::string mSegmentID;
-            rttr::type mSegmentType;
-        };
-
-
-        /**
-         * Action when edit segment popup needs to be opened
-         */
-        class NAPAPI OpenEditSegmentPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID the track id of the track containing the segment being edited
-             * @param segmentID the segment id being edited
-             * @param segmentType type info about the segment being edited
-             */
-            OpenEditSegmentPopup(std::string trackID, std::string segmentID, const rttr::type &segmentType)
-                : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType)
-            {}
-
-
+            bool mOpened = false;
             std::string mSegmentID;
             rttr::type mSegmentType;
         };
@@ -285,20 +239,14 @@ namespace nap
 
 
         /**
-         * Action when a insert track popup needs to be opened
+         * Action of insert track popup
          */
-        class NAPAPI OpenInsertTrackPopup : public Action
+        class NAPAPI InsertTrackPopup : public Action
         {
         RTTI_ENABLE(Action)
-        };
-
-
-        /**
-         * Action when inside insert track popup
-         */
-        class NAPAPI InsertingTrackPopup : public Action
-        {
-        RTTI_ENABLE(Action)
+        public:
+            // indicates whether the handler should open the popup
+            bool mOpened = false;
         };
 
 
@@ -347,53 +295,21 @@ namespace nap
 
 
         /**
-         * Action when open sequence duration popup needs to be opened
-         */
-        class NAPAPI OpenSequenceDurationPopup : public Action
-        {
-        RTTI_ENABLE(Action)
-        public:
-        };
-
-
-        /**
          * Action when inside sequence duration popup
          */
         class NAPAPI EditSequenceDurationPopup : public Action
         {
         RTTI_ENABLE(Action)
         public:
-        };
-
-
-        /**
-         * Action when sequence marker popup needs to be openend
-         */
-        class NAPAPI OpenEditSequenceMarkerPopup : public Action
-        {
-        RTTI_ENABLE(Action)
-        public:
-            /**
-             * Constructor
-             * @param id the id of the marker
-             * @param message the marker message
-             * @param time time at which to insert the marker in sequence ( seconds )
-             */
-            OpenEditSequenceMarkerPopup(std::string id, std::string message, double time)
-                : mID(std::move(id)), mMessage(std::move(message)), mTime(time)
-            {}
-
-
-            std::string mID;
-            std::string mMessage;
-            double mTime;
+            // indicates whether the handler should open the popup
+            bool mOpened = false;
         };
 
 
         /**
          * Action when inside edit marker popup
          */
-        class NAPAPI EditingSequenceMarkerPopup : public Action
+        class NAPAPI EditSequenceMarkerPopup : public Action
         {
         RTTI_ENABLE(Action)
         public:
@@ -403,38 +319,23 @@ namespace nap
              * @param message the marker message
              * @param time time at which to insert the marker in sequence ( seconds )
              */
-            EditingSequenceMarkerPopup(std::string id, std::string message, double time)
+            EditSequenceMarkerPopup(std::string id, std::string message, double time)
                 : mID(std::move(id)), mMessage(std::move(message)), mTime(time)
             {}
 
-
+            // marker id
             std::string mID;
-            std::string mMessage;
+            // indicates whether the handler should open the popup
+            bool mOpened = false;
+            // time of the marker
             double mTime;
+            // marker message content
+            std::string mMessage = "Message";
         };
 
 
         /**
-         * Action when insert marker popup needs to be opened
-         */
-        class NAPAPI OpenInsertSequenceMarkerPopup : public Action
-        {
-        RTTI_ENABLE(Action)
-        public:
-            /**
-             * Constructor
-             * @param time point in sequence where to insert marker ( seconds )
-             */
-            explicit OpenInsertSequenceMarkerPopup(double time) : mTime(time)
-            {}
-
-
-            double mTime;
-        };
-
-
-        /**
-         * Action when inside insert marker popup
+         * Action of insert marker popup
          */
         class NAPAPI InsertingSequenceMarkerPopup : public Action
         {
@@ -443,15 +344,17 @@ namespace nap
             /**
              * Constructor
              * @param time point in sequence where to insert marker ( seconds )
-             * @param message message of marker
              */
-            InsertingSequenceMarkerPopup(double time, std::string message)
-                : mTime(time), mMessage(std::move(message))
+            InsertingSequenceMarkerPopup(double time)
+                : mTime(time)
             {}
 
-
+            // indicates whether the handler should open the popup
+            bool mOpened = false;
+            // time of the marker
             double mTime;
-            std::string mMessage;
+            // marker message content
+            std::string mMessage = "Message";
         };
 
 
@@ -497,22 +400,14 @@ namespace nap
 
 
         /**
-         * Action that tells the gui to open help popup
-         */
-        class NAPAPI OpenHelpPopup : public Action
-        {
-        RTTI_ENABLE(Action)
-        public:
-        };
-
-
-        /**
          * Action that tells the gui its inside the help popup
          */
-        class NAPAPI ShowHelpPopup : public Action
+        class NAPAPI HelpPopup : public Action
         {
         RTTI_ENABLE(Action)
         public:
+            // indicates whether the handler should open the popup
+            bool mOpened = false;
         };
 
         /**
@@ -531,39 +426,6 @@ namespace nap
 
 
             float mHorizontalResolution;
-        };
-
-        /**
-         * Action that tells the gui to delete the track with specified track id
-         */
-        class DeleteTrack : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            DeleteTrack(const std::string& id) : TrackAction(id)
-            {}
-        };
-
-        /**
-         * Action that tells the gui to move the track with specified track id up in hierarchy
-         */
-        class MoveTrackUp : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            MoveTrackUp(const std::string& id) : TrackAction(id)
-            {}
-        };
-
-        /**
-         * Action that tells the gui to move the track with specified track id down in hierarchy
-         */
-        class MoveTrackDown : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            MoveTrackDown(const std::string& id) : TrackAction(id)
-            {}
         };
 
         /**
@@ -613,11 +475,11 @@ namespace nap
         /**
          * An action that tells the GUI to show the save clipboard contents popup (presets)
          */
-        class ShowSavePresetPopup : public Action
+        class SavePresetPopup : public Action
         {
         RTTI_ENABLE(Action)
         public:
-            ShowSavePresetPopup(const std::string& filePath)
+            SavePresetPopup(const std::string& filePath)
                 : mFilePath(filePath)
             {}
 
@@ -630,11 +492,11 @@ namespace nap
         /**
          * An action that tells the GUI to show to load clipboard contents popup (presets)
          */
-        class ShowLoadPresetPopup : public TrackAction
+        class LoadPresetPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
         public:
-            ShowLoadPresetPopup(const std::string& id, double time, rtti::TypeInfo trackType)
+            LoadPresetPopup(const std::string& id, double time, rtti::TypeInfo trackType)
                 : TrackAction(id), mTime(time), mTrackType(trackType)
             {}
 
@@ -647,18 +509,22 @@ namespace nap
         };
 
         /**
-         * A TrackAction that tells the GUI we're dragging a segment value
-         */
-        class ResizeTrackHeight : public TrackAction
+        *
+        */
+        class TrackOptionsPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
         public:
-            ResizeTrackHeight(const std::string& trackID, float newHeight)
-                : TrackAction(trackID), mNewTrackHeight(newHeight)
+            TrackOptionsPopup(const std::string& trackID, ImVec2 pos)
+                    : TrackAction(trackID), mPos(std::move(pos))
             {}
 
-
-            float mNewTrackHeight;
+            // indicates whether the handler should open the popup
+            bool mPopupOpened = false;
+            // position of the popup in screen coordinates
+            ImVec2 mPos;
+            // scroll at the moment of opening, popup closes when the user scrolls within the sequence editor gui
+            float mScrollY = 0.0f;
         };
     }
 }

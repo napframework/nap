@@ -11,7 +11,7 @@ namespace nap
         /**
          * Action is invoked when user wants to insert a new audio segment
          */
-        class InsertingAudioSegmentPopup : public TrackAction
+        class InsertAudioSegmentPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
         public:
@@ -21,7 +21,7 @@ namespace nap
              * @param time the time at which to insert the segment
              * @param currentSelectedItem current selected item in popup combo box
              */
-            InsertingAudioSegmentPopup(std::string trackID, double time, int currentSelectedItem)
+            InsertAudioSegmentPopup(std::string trackID, double time, int currentSelectedItem)
                 : TrackAction(std::move(trackID)), mTime(time), mCurrentItem(currentSelectedItem)
             {
             }
@@ -33,34 +33,11 @@ namespace nap
             std::string mErrorString;
         };
 
-        /**
-         * Action is invoked when user wants to edit an audio segment
-         */
-        class OpenEditAudioSegmentPopup : public TrackAction
-        {
-        RTTI_ENABLE(TrackAction)
-        public:
-            /**
-             * Constructor
-             * @param trackID the track id of the track that contains the segment being edited
-             * @param segmentID the segment id of the segment being edited
-             * @param windowPos the window position the popup needs to get
-             */
-            OpenEditAudioSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos)
-                : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
-            {
-            }
-
-
-        public:
-            std::string mSegmentID;
-            ImVec2 mWindowPos;
-        };
 
         /**
          * Action is being invoked when user is inside an Edit Audio Segment popup
          */
-        class EditingAudioSegmentPopup : public TrackAction
+        class EditAudioSegmentPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
         public:
@@ -70,13 +47,14 @@ namespace nap
              * @param segmentID the segment id of the segment being edited
              * @param windowPos the window position the popup needs to get
              */
-            EditingAudioSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos)
+            EditAudioSegmentPopup(std::string trackID, std::string segmentID, ImVec2 windowPos)
                 : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
             {
             }
 
 
         public:
+            bool mOpened = false;
             std::string mSegmentID;
             ImVec2 mWindowPos;
         };

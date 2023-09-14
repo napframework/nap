@@ -95,10 +95,7 @@ namespace nap
         static std::string formatTimeString(double time);
 
     protected:
-        /**
-         * Handles resizing of track height
-         */
-        void handleResizeTrackHeight();
+        void handleTrackOptionsPopup();
 
         /**
          * this methods needs to be overloaded, contents for the inspector of a specific track type can be drawn in this function
