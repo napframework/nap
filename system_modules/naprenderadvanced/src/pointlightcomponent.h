@@ -19,7 +19,7 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(PointLightComponent, PointLightComponentInstance)
 	public:
-		ResourcePtr<ParameterFloat> mAttenuation;				///< Property: 'Attenuation'
+		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation'
 		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
 		uint mShadowMapSize = 512U;								///< Property: 'ShadowMapSize'
 	};

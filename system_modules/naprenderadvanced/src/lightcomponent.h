@@ -6,12 +6,8 @@
 #include <cameracomponent.h>
 #include <transformcomponent.h>
 
-#include <parameter.h>
-#include <parameternumeric.h>
-#include <parametervec.h>
-#include <parametermat.h>
-#include <parametercolor.h>
-
+#include <parameterentrynumeric.h>
+#include <parameterentrycolor.h>
 
 namespace nap
 {
@@ -55,10 +51,10 @@ namespace nap
 			inline constexpr const char* attenuation = "attenuation";
 			inline constexpr const char* angle = "angle";
 			inline constexpr const char* falloff = "falloff";
-			inline constexpr const char* enable = "enable";
 			inline constexpr const char* flags = "flags";
 			inline constexpr const char* lights = "lights";
 			inline constexpr const char* count = "count";
+			inline constexpr const uint defaultMemberCount = 8;
 		}
 
 		namespace shadow
@@ -81,6 +77,7 @@ namespace nap
 	}
 
 	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
+	using LightParameterList = std::vector<std::unique_ptr<Parameter>>;
 
 
 	/**
@@ -98,8 +95,8 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		bool mEnabled = true;									///< Property: 'Enabled'
-		ResourcePtr<ParameterRGBColorFloat> mColor;				///< Property: 'Color'
-		ResourcePtr<ParameterFloat> mIntensity;					///< Property: 'Intensity'
+		ResourcePtr<ParameterEntryRGBColorFloat> mColor;		///< Property: 'Color'
+		ResourcePtr<ParameterEntryFloat> mIntensity;			///< Property: 'Intensity'
 
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength'
 		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
@@ -192,7 +189,7 @@ namespace nap
 		/**
 		 * @return the light intensity
 		 */
-		virtual float getIntensity() const									{ return mResource->mIntensity->mValue; }
+		virtual float getIntensity() const { return 1.0f; }// mResource->mIntensity.getValue(); }
 
 		/**
 		 * @return the shadow strength
@@ -222,8 +219,11 @@ namespace nap
 
 		/**
 		 * Registers a light uniform member for updating the shader interface.
+		 * @param memberName the uniform member name of the light variable
+		 * @param parameter pointer to the parameter to register. If nullptr, creates and registers a default parameter at runtime
 		 */
-		void registerLightUniformMember(const std::string& memberName, Parameter* parameter);
+		template <typename ParameterType, typename DataType>
+		void registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value);
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
@@ -233,10 +233,34 @@ namespace nap
 		float mShadowStrength							= 1.0f;
 		uint mShadowMapSize								= 512U;
 
+		LightParameterList mParameterList;				// List of parameters that are owned by light component instead of the the resource manager
+
 	private:
 		Parameter* getLightUniform(const std::string& memberName);
 
-		LightUniformDataMap mUniformDataMap;
+		LightUniformDataMap mUniformDataMap;			// Maps uniform names to parameters
 		bool mIsRegistered = false;
 	};
+}
+
+
+template <typename ParameterType, typename DataType>
+void nap::LightComponentInstance::registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value)
+{
+	auto* param = parameter;
+	if (param == nullptr)
+	{
+		param = mParameterList.emplace_back(std::make_unique<ParameterType>()).get();
+		auto* typed_param = static_cast<ParameterType*>(param);
+		typed_param->mName = memberName;
+		typed_param->mValue = value;
+
+		utility::ErrorState error_state;
+		if (!param->init(error_state))
+			assert(false);
+	}
+	assert(param != nullptr);
+
+	const auto it = mUniformDataMap.insert({ memberName, param });
+	assert(it.second);
 }

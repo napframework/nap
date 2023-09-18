@@ -468,13 +468,34 @@
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
                     "Enabled": true,
-                    "Color": "PointColorParam",
-                    "Intensity": "PointIntensityParam",
+                    "Color": {
+                        "Type": "nap::ParameterEntryRGBColorFloat",
+                        "mID": "ParameterEntryRGBColorFloat_7120af13",
+                        "Parameter": "PointColorParam",
+                        "Default": {
+                            "Values": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    },
+                    "Intensity": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_4e76ed97",
+                        "Parameter": "PointIntensityParam",
+                        "Default": 1.0
+                    },
                     "ShadowStrength": 0.6000000238418579,
                     "Enable Shadows": true,
                     "ShadowCamera": "./PointShadowCam",
                     "ShadowMapSize": 1024,
-                    "Attenuation": "LightAttenuationParam"
+                    "Attenuation": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_87b554bb",
+                        "Parameter": "LightAttenuationParam",
+                        "Default": 0.10000000149011612
+                    }
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -593,15 +614,46 @@
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
                     "Enabled": true,
-                    "Color": "SpotColorParam",
-                    "Intensity": "SpotIntensityParam",
+                    "Color": {
+                        "Type": "nap::ParameterEntryRGBColorFloat",
+                        "mID": "ParameterEntryRGBColorFloat_6dd36537",
+                        "Parameter": "SpotColorParam",
+                        "Default": {
+                            "Values": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    },
+                    "Intensity": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_d310b0e2",
+                        "Parameter": "SpotIntensityParam",
+                        "Default": 1.0
+                    },
                     "ShadowStrength": 1.0,
                     "Enable Shadows": true,
                     "ShadowCamera": "./SpotShadowCam",
                     "ShadowMapSize": 2048,
-                    "Attenuation": "LightAttenuationParam",
-                    "Angle": "SpotAngleParam",
-                    "FallOff": "SpotFallOffParam"
+                    "Attenuation": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_7ee59e8f",
+                        "Parameter": "LightAttenuationParam",
+                        "Default": 0.10000000149011612
+                    },
+                    "Angle": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_07425983",
+                        "Parameter": "SpotAngleParam",
+                        "Default": 90.0
+                    },
+                    "FallOff": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_5cc1308f",
+                        "Parameter": "SpotFallOffParam",
+                        "Default": 0.5
+                    }
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -720,8 +772,24 @@
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "SunLight",
                     "Enabled": true,
-                    "Color": "SunColor",
-                    "Intensity": "SunIntensityParam",
+                    "Color": {
+                        "Type": "nap::ParameterEntryRGBColorFloat",
+                        "mID": "ParameterEntryRGBColorFloat_7fa4e4fd",
+                        "Parameter": "SunColor",
+                        "Default": {
+                            "Values": [
+                                1.0,
+                                1.0,
+                                1.0
+                            ]
+                        }
+                    },
+                    "Intensity": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_36cbb143",
+                        "Parameter": "SunIntensityParam",
+                        "Default": 1.0
+                    },
                     "ShadowStrength": 1.0,
                     "Enable Shadows": true,
                     "ShadowCamera": "./SunShadowCam",

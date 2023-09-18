@@ -15,8 +15,8 @@
 
 // nap::DirectionalLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::DirectionalLightComponent)
-	RTTI_PROPERTY("ShadowCamera", &nap::DirectionalLightComponent::mShadowCamera, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowMapSize", &nap::DirectionalLightComponent::mShadowMapSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowCamera",	&nap::DirectionalLightComponent::mShadowCamera,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowMapSize",	&nap::DirectionalLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::DirectionalLightComponentInstance run time class definition

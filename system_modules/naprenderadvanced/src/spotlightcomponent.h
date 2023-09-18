@@ -19,9 +19,9 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(SpotLightComponent, SpotLightComponentInstance)
 	public:
-		ResourcePtr<ParameterFloat> mAttenuation;				///< Property: 'Attenuation'
-		ResourcePtr<ParameterFloat> mAngle;						///< Property: 'Angle'
-		ResourcePtr<ParameterFloat> mFallOff;					///< Property: 'FallOff'
+		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation'
+		ResourcePtr<ParameterEntryFloat> mAngle;				///< Property: 'Angle'
+		ResourcePtr<ParameterEntryFloat> mFallOff;				///< Property: 'FallOff'
 		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
 		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize'
 	};

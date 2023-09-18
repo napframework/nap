@@ -100,7 +100,7 @@ namespace nap
 }
 
 /**
- * Helper macro that can be used to define the RTTI for a numeric (vector) parameter type
+ * Helper macro that can be used to define the RTTI for a numeric parameter type
  */
 #define DEFINE_NUMERIC_PARAMETER(Type)																		\
 	RTTI_BEGIN_CLASS(Type)																					\

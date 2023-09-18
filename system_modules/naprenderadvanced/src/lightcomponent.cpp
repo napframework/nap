@@ -28,8 +28,8 @@ RTTI_END_ENUM
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Enable Shadows",		&nap::LightComponent::mEnableShadows,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -67,9 +67,14 @@ namespace nap
 		// Fetch transform
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
 
+		// Reserve memory for light parameter list
+		// It may never be reallocated outside of init()
+		if (mParameterList.capacity() == 0)
+			mParameterList.reserve(uniform::light::defaultMemberCount);
+
 		// Create default parameters
-		registerLightUniformMember(uniform::light::color, mResource->mColor.get());
-		registerLightUniformMember(uniform::light::intensity, mResource->mIntensity.get());
+		registerLightUniformMember<ParameterRGBColorFloat, RGBColorFloat>(uniform::light::color, mResource->mColor->mParameter.get(), mResource->mColor->getValue());
+		registerLightUniformMember<ParameterFloat, float>(uniform::light::intensity, mResource->mIntensity->mParameter.get(), mResource->mIntensity->getValue());
 
 		if (mIsShadowEnabled)
 		{
@@ -87,13 +92,6 @@ namespace nap
             mIsRegistered = true;
         }
 		return true;
-	}
-
-
-	void LightComponentInstance::registerLightUniformMember(const std::string& memberName, Parameter* parameter)
-	{
-		const auto it = mUniformDataMap.insert({ memberName, parameter });
-		assert(it.second);
 	}
 
 
