@@ -10,16 +10,18 @@
 #include "formatutils.h"
 
 // External Includes
-#include <utility/fileutils.h>
-#include <nap/logger.h>
 #include <fstream>
 #include <assert.h>
-#include <utility/stringutils.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_parser.hpp>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <glslang/MachineIndependent/iomapper.h>
+
+#include <utility/stringutils.h>
+#include <utility/fileutils.h>
+#include <nap/logger.h>
 #include <nap/core.h>
 #include <nap/numeric.h>
 
@@ -758,7 +760,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 }
 
 
-static void getSpecializationConstants(spirv_cross::Compiler& compiler, nap::SpecializationConstantMap& outMap)
+static void parseSpecializationConstants(spirv_cross::Compiler& compiler, nap::SpecializationConstantMap& outMap)
 {
 	for (auto& spec_const : compiler.get_specialization_constants())
 	{
@@ -770,7 +772,7 @@ static void getSpecializationConstants(spirv_cross::Compiler& compiler, nap::Spe
 }
 
 
-static bool setSpecializationConstant(const std::string& name, nap::uint value, nap::SpecializationConstantMap& outMap)
+static bool updateSpecializationConstant(const std::string& name, nap::uint value, nap::SpecializationConstantMap& outMap)
 {
 	for (auto& item : outMap)
 	{
@@ -968,9 +970,9 @@ namespace nap
 		if (!verifyShaderVariableDeclarations(errorState))
 			return false;
 
-		// Extract specialization constants
-		getSpecializationConstants(vertex_shader_compiler, mVertexSpecConstants);
-		getSpecializationConstants(fragment_shader_compiler, mFragmentSpecConstants);
+		// Parse specialization constants
+		parseSpecializationConstants(vertex_shader_compiler, mVertexSpecConstants);
+		parseSpecializationConstants(fragment_shader_compiler, mFragmentSpecConstants);
 
 		return initLayout(device, errorState);
 	}
@@ -1006,29 +1008,26 @@ namespace nap
 	}
 
 
-	bool Shader::setVertexSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
+	bool Shader::setSpecializationConstant(const std::string& name, uint value, ShaderTypeFlags flags, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
 			return false;
 
-		if (!setSpecializationConstant(name, value, mVertexSpecConstants))
+		if (flags & EShaderType::Vertex > 0)
 		{
-			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-			return false;
+			if (!updateSpecializationConstant(name, value, mVertexSpecConstants))
+			{
+				errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+				return false;
+			}
 		}
-		return true;
-	}
-
-
-	bool Shader::setFragmentSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
-			return false;
-
-		if (!setSpecializationConstant(name, value, mFragmentSpecConstants))
+		else if (flags & EShaderType::Fragment > 0)
 		{
-			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-			return false;
+			if (!updateSpecializationConstant(name, value, mFragmentSpecConstants))
+			{
+				errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+				return false;
+			}
 		}
 		return true;
 	}
@@ -1083,21 +1082,23 @@ namespace nap
 		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Cache workgroup size specialization constants
-		std::array<spirv_cross::SpecializationConstant, 3> spec_constants;
-		comp_shader_compiler.get_work_group_size_specialization_constants(spec_constants[0], spec_constants[1], spec_constants[2]);
+		// Parse specialization constants
+		parseSpecializationConstants(comp_shader_compiler, mComputeSpecConstants);
 
-		// Set to invalid (-1) by default
-		mWorkGroupSizeConstantIds.resize(3, -1);
+		// Get workgroup size specialization constants specified in shader
+		std::array<spirv_cross::SpecializationConstant, 3> work_group_spec_constants;
+		comp_shader_compiler.get_work_group_size_specialization_constants(work_group_spec_constants[0], work_group_spec_constants[1], work_group_spec_constants[2]);
 
 		// Search for workgroup specialization constants
-		for (uint i = 0; i < spec_constants.size(); i++)
+		std::map<uint, uint> workgroup_const_map;
+		const glm::uvec3& max_work_group_size = glm::make_vec3(&mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
+		for (uint i = 0; i < work_group_spec_constants.size(); i++)
 		{
-			if (spec_constants[i].id != spirv_cross::ID(0))
+			if (work_group_spec_constants[i].id != spirv_cross::ID(0))
 			{
 				// Overwrite workgroup size with quaried maximum supported workgroup size
-				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
-				mWorkGroupSize[i] = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[i];
+				mWorkGroupSize[i] = max_work_group_size[i];
+				workgroup_const_map.insert({ work_group_spec_constants[i].constant_id, max_work_group_size[i] });
 			}
 			else
 			{
@@ -1106,16 +1107,38 @@ namespace nap
 			}
 		}
 
+#ifdef __APPLE__
+		// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
+		// which doesn't necessarily match physical device limits, especially on older devices.
+		// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
+		// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
+		for (auto& entry : workgroup_const_map)
+			entry.second = math::min<uint32>(entry.second, 512);
+#endif // __APPLE__
+
+		// Overwrite workgroup size with device maximum when specialization constants are defined.
+		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
+		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
+		for (const auto& entry : workgroup_const_map)
+		{
+			auto it = mComputeSpecConstants.find(entry.first);
+			if (it != mComputeSpecConstants.end())
+			{
+				uint32 overwrite_work_group_size = entry.second;
+				it->second.mValue = overwrite_work_group_size;
+			}
+		}
+
 		return initLayout(device, errorState);
 	}
 
 
-	bool ComputeShader::setComputeSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
+	bool ComputeShader::setSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
 	{
 		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
 			return false;
 
-		if (!setSpecializationConstant(name, value, mComputeSpecConstants))
+		if (!updateSpecializationConstant(name, value, mComputeSpecConstants))
 		{
 			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
 			return false;

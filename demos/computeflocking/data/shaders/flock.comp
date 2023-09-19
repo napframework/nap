@@ -29,12 +29,16 @@
 
 // NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
 // size supported by the device on pipeline creation.
-layout(local_size_x_id = 0) in;
+layout(local_size_x_id = 1) in;
 
 // When declaring the workgroup size specialization constant to be higher than 0, NAP will not 
-// override the workgroup size when creating the compute pipeline. Uncommenting this bit and commenting out 
-// the above will let the shader define the workgroup size.
+// override the workgroup size when creating the compute pipeline. Uncommenting this line and commenting 
+// the line above will let the shader define the workgroup size.
 //layout(local_size_x = 512) in;
+
+// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;
+//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 struct Boid
 {
@@ -92,10 +96,6 @@ const vec3 UP 				= vec3(0.0, 1.0, 0.0);
 const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
 const float avoidBoundWeightConst = 4.0;
-
-// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
-layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
-//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 // Allocate a block of shared data in which we can store positions and velocities (2*sizeof(vec4)) 
 // of a boid for each local thread in the group/warp.

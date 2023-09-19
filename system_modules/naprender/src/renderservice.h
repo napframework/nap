@@ -347,7 +347,7 @@ namespace nap
 		void endFrame();
 
 		/**
-		 * Starts a headless render operation. Records any queued render 
+		 * Starts a headless render operation. Records any queued headless render commands.
 		 * Call this when you want to render objects to a render-target instead of a render window.
 		 * Make sure to call RenderService::endHeadlessRecording() afterwards.
 		 *
@@ -382,19 +382,6 @@ namespace nap
 
 		/**
 		 * Queue headless rendering commands.
-		 * Call this when you want to render objects to a render-target instead of a render window.
-		 * Make sure to call RenderService::endHeadlessRecording() afterwards.
-		 *
-		 * ~~~~~{.cpp}
-		 *		mRenderService->beginFrame();
-		 *		if (mRenderService->beginHeadlessRecording())
-		 *		{
-		 *			...
-		 *			mRenderService->endHeadlessRecording();
-		 *		}
-		 *		mRenderService->endFrame();
-		 * ~~~~~
-		 * @return if the headless record operation started successfully.
 		 */
 		void queueRenderCommand(const RenderCommand* command);
 
@@ -432,7 +419,8 @@ namespace nap
 		void endRecording();
 
 		/**
-		 * Starts a compute operation. Call this when you want to start recording general purpose computate operations to the compute queue.
+		 * Starts a compute operation. Records any queued compute render commands.
+		 * Call this when you want to start recording general purpose computate operations to the compute queue.
 		 * Always call RenderService::endComputeRecording() afterwards, on success.
 		 * Must be called before any (headless) rendering has been recorded in the current frame.
 		 *

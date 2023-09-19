@@ -1,8 +1,5 @@
 #pragma once
 
-// External Includes
-#include <nap/resource.h>
-
 namespace nap
 {
 	// Forward declares

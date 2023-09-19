@@ -951,12 +951,13 @@ namespace nap
 		{
 			const auto it = inMap.find(i);
 			assert(it != inMap.end());
-
-			VkSpecializationMapEntry entry = {};
-			entry.constantID = (*it).first;
-			entry.offset = static_cast<uint>(outEntries.size() * sizeof(uint));
-			entry.size = sizeof(uint);
-			outEntries.emplace_back(std::move(entry));
+			{
+				VkSpecializationMapEntry entry = {};
+				entry.constantID = (*it).first;
+				entry.offset = static_cast<uint>(outEntries.size() * sizeof(uint));
+				entry.size = sizeof(uint);
+				outEntries.emplace_back(std::move(entry));
+			}
 			outData.emplace_back((*it).second.mValue);
 		}
 	}
@@ -1149,38 +1150,9 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = shader::main;
 
-		// Overwrite workgroup size with device maximum when specialization constants are defined.
-		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
-		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
-		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
 		std::vector<VkSpecializationMapEntry> spec_entries;
 		std::vector<uint> spec_data;
-
-		for (uint i = 0; i < const_ids.size(); i++)
-		{
-			if (const_ids[i] != -1)
-			{
-				VkSpecializationMapEntry entry = {};
-				entry.constantID = static_cast<uint>(const_ids[i]);
-				entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
-				entry.size = sizeof(uint);
-				spec_entries.emplace_back(std::move(entry));
-				uint32 work_group_size = computeShader.getWorkGroupSize()[i];
-#ifdef __APPLE__
-				// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
-				// which doesn't necessarily match physical device limits, especially on older devices.
-				// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
-				// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
-				work_group_size = math::min<uint32>(work_group_size, 512);
-#endif // __APPLE__
-				spec_data.emplace_back(work_group_size);
-			}
-		}
-
-		// TODO: Add workgroup specialization constants to new system 
-		//std::vector<VkSpecializationMapEntry> comp_spec_entries;
-		//std::vector<uint> comp_spec_data;
-		//getSpecializationInfo(computeShader.getSpecializationConstants(), comp_spec_entries, comp_spec_data);
+		getSpecializationInfo(computeShader.getSpecializationConstants(), spec_entries, spec_data);
 
 		// Workgroup only
 		VkSpecializationInfo comp_spec_info = {};

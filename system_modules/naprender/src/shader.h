@@ -111,6 +111,16 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseShader)
 	public:
+		/**
+		 * Shader type flag bits
+		 */
+		enum EShaderType : uint
+		{
+			Vertex		= 0x01,
+			Fragment	= 0x02
+		};
+		using ShaderTypeFlags = uint;
+
 		Shader(Core& core);
 		~Shader();
 
@@ -169,18 +179,10 @@ namespace nap
 		  * Must be called after shader load, and before shader compilation (on pipeline creation).
 		  * @param name
 		  * @param value
+		  * @param flags
 		  * @param errorState
 		  */
-		 bool setVertexSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
-
-		 /**
-		  * Registers a new specialization constant to the vertex shader.
-		  * Must be called after shader load, and before shader compilation (on pipeline creation).
-		  * @param name
-		  * @param value
-		  * @param errorState
-		  */
-		 bool setFragmentSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+		 bool setSpecializationConstant(const std::string& name, uint value, ShaderTypeFlags flags, utility::ErrorState& errorState);
 
 	private:
 		VertexAttributeDeclarations						mShaderAttributes;						///< Shader program vertex attribute inputs
@@ -217,15 +219,6 @@ namespace nap
 		glm::u32vec3 getWorkGroupSize() const										{ return mWorkGroupSize; }
 
 		/**
-		 * Workgroup specialization constant IDs. 
-		 * When a workgroup size specialization constant is detected, NAP automatically overwrites it with the
-		 * maximum group size of the device on pipeline creation. Entries with the value -1 have no associated
-		 * specialization constant defined in the compute shader.
-		 * @return a vector of work group size specialization constant IDs
-		 */
-		const std::vector<int>& getWorkGroupSizeConstantIds() const					{ return mWorkGroupSizeConstantIds; }
-
-		/**
 		 * @return the specialization constant map
 		 */
 		const SpecializationConstantMap& getSpecializationConstants() const			{ return mComputeSpecConstants; }
@@ -250,14 +243,12 @@ namespace nap
 		 * @param value
 		 * @param errorState
 		 */
-		bool setComputeSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
+		bool setSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
 
 	private:
-		glm::u32vec3									mWorkGroupSize;							///< Workgroup size dimensions (x, y, z)
-		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
-
-		SpecializationConstantMap						mComputeSpecConstants;					///< Specialization constants
-		std::vector<int>								mWorkGroupSizeConstantIds;				///< Workgroup size specialization constant IDs
+		glm::u32vec3									mWorkGroupSize;								///< Workgroup size dimensions (x, y, z)
+		VkShaderModule									mComputeModule = VK_NULL_HANDLE;			///< Loaded compute module
+		SpecializationConstantMap						mComputeSpecConstants;						///< Specialization constants
 	};
 
 

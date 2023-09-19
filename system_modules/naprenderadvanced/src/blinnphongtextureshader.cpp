@@ -75,13 +75,13 @@ namespace nap
             return false;
 
         // Set shadow map sample counts
-        if (!setFragmentSpecializationConstant(shader::constant::QUAD_SAMPLE_COUNT, std::max<uint>(mQuadSampleCount, 1), errorState))
+        if (!setSpecializationConstant(shader::constant::QUAD_SAMPLE_COUNT, std::max<uint>(mQuadSampleCount, 1), EShaderType::Fragment, errorState))
             return false;
 
-        if (!setFragmentSpecializationConstant(shader::constant::CUBE_SAMPLE_COUNT, std::max<uint>(mCubeSampleCount, 1), errorState))
+        if (!setSpecializationConstant(shader::constant::CUBE_SAMPLE_COUNT, std::max<uint>(mCubeSampleCount, 1), EShaderType::Fragment, errorState))
             return false;
 
-        if (!setFragmentSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAPPING, static_cast<uint>(mEnableEnvironmentMapping), errorState))
+        if (!setSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAPPING, static_cast<uint>(mEnableEnvironmentMapping), EShaderType::Fragment, errorState))
             return false;
 
         return true;
