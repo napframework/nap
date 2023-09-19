@@ -2421,6 +2421,11 @@ namespace nap
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &begin_info);
 		assert(result == VK_SUCCESS);
 
+		// Record queued headless render commands
+		for (const auto& command : mHeadlessCommandQueue)
+			command->record(*this);
+
+		mHeadlessCommandQueue.clear();
 		return true;
 	}
 
@@ -2441,6 +2446,22 @@ namespace nap
 		// Set the headless bit of queue submit ops of the current frame
 		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::HeadlessRendering;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
+	}
+
+
+	void RenderService::queueRenderCommand(const RenderCommand* command)
+	{
+		if (command->get_type().is_derived_from(RTTI_OF(HeadlessCommand)))
+		{
+			mHeadlessCommandQueue.emplace_back(static_cast<const HeadlessCommand*>(command));
+			return;
+		}
+		else if (command->get_type().is_derived_from(RTTI_OF(ComputeCommand)))
+		{
+			mComputeCommandQueue.emplace_back(static_cast<const ComputeCommand*>(command));
+			return;
+		}
+		NAP_ASSERT_MSG(false, "Unsupported nap::RenderCommand type");
 	}
 
 
@@ -2500,6 +2521,12 @@ namespace nap
 		mCurrentCommandBuffer = compute_command_buffer;
 		if (mCurrentCommandBuffer == VK_NULL_HANDLE)
 			return false;
+
+		// Record queued headless render commands
+		for (const auto& command : mComputeCommandQueue)
+			command->record(*this);
+
+		mComputeCommandQueue.clear();
 
 		return true;
 	}

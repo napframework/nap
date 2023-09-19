@@ -18,6 +18,7 @@
 #include "lightflags.h"
 #include "rendermask.h"
 #include "nomesh.h"
+#include "rendercommand.h"
 
 namespace nap
 {
@@ -33,6 +34,7 @@ namespace nap
 	class NAPAPI RenderAdvancedServiceConfiguration : public ServiceConfiguration
 	{
 		RTTI_ENABLE(ServiceConfiguration)
+		friend class PreRenderCubeMapsCommand;
 	public:
 		virtual rtti::TypeInfo getServiceType() const;
 
@@ -111,13 +113,20 @@ namespace nap
 		void removeLightComponent(LightComponentInstance& light);
 
 		bool initServiceResources(utility::ErrorState& errorState);
-		bool preRenderCubeMaps(utility::ErrorState& errorState);
+		bool initCubeMapTargets(utility::ErrorState& errorState);
+		void onPreRenderCubeMaps(RenderService& renderService);
 
-		// Reference to render service
-		RenderService* mRenderService = nullptr;
+		class PreRenderCubeMapsCommand : public HeadlessCommand
+		{
+			RTTI_ENABLE(HeadlessCommand)
+		public:
+			PreRenderCubeMapsCommand(RenderAdvancedService& renderAdvancedService) :
+				mRenderAdvancedService(renderAdvancedService), HeadlessCommand() {}
 
-		// Registered light component instances
-		std::vector<LightComponentInstance*> mLightComponents;
+			RenderAdvancedService& mRenderAdvancedService;
+		private:
+			virtual void record(RenderService& renderService) const override { mRenderAdvancedService.onPreRenderCubeMaps(renderService); }
+		};
 
 		struct ShadowMapEntry
 		{
@@ -143,6 +152,12 @@ namespace nap
 			std::unique_ptr<DepthRenderTextureCube> mTexture;
 		};
 
+		// Reference to render service
+		RenderService* mRenderService = nullptr;
+
+		// Registered light component instances
+		std::vector<LightComponentInstance*> mLightComponents;
+
 		// Shadow mapping
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeMapEntry>> mLightCubeMap;
@@ -162,6 +177,8 @@ namespace nap
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;
+
+		std::unique_ptr<PreRenderCubeMapsCommand>	mPreRenderCubeMapsCommand;
 
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;
 		static constexpr const uint mRequiredVulkanVersionMinor = 0;

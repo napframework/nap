@@ -10,6 +10,7 @@
 #include "renderutils.h"
 #include "rendermask.h"
 #include "renderlayer.h"
+#include "rendercommand.h"
 
 // External Includes
 #include <nap/service.h>
@@ -346,7 +347,7 @@ namespace nap
 		void endFrame();
 
 		/**
-		 * Starts a headless render operation.
+		 * Starts a headless render operation. Records any queued render 
 		 * Call this when you want to render objects to a render-target instead of a render window.
 		 * Make sure to call RenderService::endHeadlessRecording() afterwards.
 		 *
@@ -378,6 +379,24 @@ namespace nap
 		 * ~~~~~
 		 */
 		void endHeadlessRecording();
+
+		/**
+		 * Queue headless rendering commands.
+		 * Call this when you want to render objects to a render-target instead of a render window.
+		 * Make sure to call RenderService::endHeadlessRecording() afterwards.
+		 *
+		 * ~~~~~{.cpp}
+		 *		mRenderService->beginFrame();
+		 *		if (mRenderService->beginHeadlessRecording())
+		 *		{
+		 *			...
+		 *			mRenderService->endHeadlessRecording();
+		 *		}
+		 *		mRenderService->endFrame();
+		 * ~~~~~
+		 * @return if the headless record operation started successfully.
+		 */
+		void queueRenderCommand(const RenderCommand* command);
 
 		/**
 		 * Starts a window render operation. Call this when you want to render geometry to a render window.
@@ -687,7 +706,17 @@ namespace nap
 		/**
 		 * @return main Vulkan allocator
 		 */
-		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
+		VmaAllocator getVulkanAllocator() const										{ return mVulkanAllocator; }
+
+		/**
+		 * @return whether there are headless render commands in the queue 
+		 */
+		bool isHeadlessCommandQueued() const										{ return !mHeadlessCommandQueue.empty(); }
+
+		/**
+		 * @return whether there are compute render commands in the queue 
+		 */
+		bool isComputeCommandQueued() const											{ return !mComputeCommandQueue.empty(); }
 		
 		/**
 		 * Returns if the render engine runs headless. 
@@ -1290,6 +1319,10 @@ namespace nap
 		bool									mHeadless = false;
 
 		UniqueMaterialCache						mMaterials;
+
+		// Render command queues
+		std::vector<const HeadlessCommand*>		mHeadlessCommandQueue;
+		std::vector<const ComputeCommand*>		mComputeCommandQueue;
 
 		// The registered render tag and layer registries
 		std::vector<const RenderTag*>			mRenderTagRegistry;

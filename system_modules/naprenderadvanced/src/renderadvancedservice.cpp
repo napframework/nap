@@ -42,9 +42,9 @@ namespace nap
 
 	static const std::vector<const char*> sDefaultUniforms =
 	{
-		uniform::light::flags,
 		uniform::light::origin,
-		uniform::light::direction
+		uniform::light::direction,
+		uniform::light::flags
 	};
 
 
@@ -372,7 +372,7 @@ namespace nap
 							break;
 						}
 					}
-					if (skip)
+					if (skip)                                                           
 						break;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
@@ -414,7 +414,6 @@ namespace nap
 								errorState.fail("Unsupported member data type");
 								return false;
 							}
-
 						}
 						else if (value_member->mType == EShaderVariableValueType::Mat4)
 						{
@@ -545,12 +544,13 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::preRenderCubeMaps(utility::ErrorState& errorState)
+	bool RenderAdvancedService::initCubeMapTargets(utility::ErrorState& errorState)
 	{
 		// Cube maps from file
 		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
 		if (!cube_maps.empty())
 		{
+			// Prepare render targets
 			mCubeMapFromFileTargets.reserve(cube_maps.size());
 			for (auto& cm : cube_maps)
 			{
@@ -568,53 +568,52 @@ namespace nap
 				}
 				mCubeMapFromFileTargets.emplace_back(std::move(rt));
 			}
-
-			// Updates GPU data
-			mRenderService->beginFrame();
-
-			if (mRenderService->beginHeadlessRecording())
-			{
-				// Prerender shadow maps here
-				uint count = 0U;
-				for (auto& cm : cube_maps)
-				{
-					auto commandBuffer = mRenderService->getCurrentCommandBuffer();
-					auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
-					auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
-
-					auto& rt = mCubeMapFromFileTargets[count];
-					rt->render(origin, projection_matrix, [&](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
-					{
-						auto* ubo = mCubeMaterialInstance->getOrCreateUniform(uniform::cubemap::uboStruct);
-						if (ubo != nullptr)
-						{
-							ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face)->setValue(target.getLayerIndex());
-						}
-
-						// Set equirectangular texture to convert
-						auto* sampler = mCubeMaterialInstance->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
-						if (sampler != nullptr)
-							sampler->setTexture(*cm->mSourceTexture);
-
-						// Get valid descriptor set
-						const DescriptorSet& descriptor_set = mCubeMaterialInstance->update();
-
-						// Get pipeline to to render with
-						utility::ErrorState error_state;
-						RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(*rt, *mNoMesh, *mCubeMaterialInstance, error_state);
-						vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-						vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
-
-						// Bufferless drawing with the cube map shader
-						vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-					});
-					++count;
-				}
-				mRenderService->endHeadlessRecording();
-			}
-			mRenderService->endFrame();
 		}
 		return true;
+	}
+
+
+	void RenderAdvancedService::onPreRenderCubeMaps(RenderService& renderService)
+	{
+		// Prerender shadow maps here
+		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
+
+		uint count = 0U;
+		for (auto& cube_map : cube_maps)
+		{
+			auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
+			auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
+
+			auto& rt = mCubeMapFromFileTargets[count];
+			rt->render(origin, projection_matrix, [rs = &renderService, cm = cube_map.get(), mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
+				(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+			{
+				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);
+				if (ubo != nullptr)
+				{
+					ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face)->setValue(target.getLayerIndex());
+				}
+
+				// Set equirectangular texture to convert
+				auto* sampler = mtl->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
+				if (sampler != nullptr)
+					sampler->setTexture(*cm->mSourceTexture);
+
+				// Get valid descriptor set
+				const DescriptorSet& descriptor_set = mtl->update();
+
+				// Get pipeline to to render with
+				utility::ErrorState error_state;
+				RenderService::Pipeline pipeline = rs->getOrCreatePipeline(target, *mesh, *mtl, error_state);
+						
+				vkCmdBindPipeline(rs->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+				vkCmdBindDescriptorSets(rs->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
+
+				// Bufferless drawing with the cube map shader
+				vkCmdDraw(rs->getCurrentCommandBuffer(), 3, 1, 0, 0);
+			});
+			++count;
+		}
 	}
 
 
@@ -628,6 +627,8 @@ namespace nap
 		mCubeMaterialInstanceResource.reset();
 		mCubeMaterialInstance.reset();
 		mCubeMapFromFileTargets.clear();
+
+		mPreRenderCubeMapsCommand.reset();
 	}
 
 
@@ -649,12 +650,15 @@ namespace nap
 		}
 
 		// Gather initialized cube maps and perform a headless render pass to write the cube faces
-		if (!preRenderCubeMaps(error_state))
+		if (!initCubeMapTargets(error_state))
 		{
 			nap::Logger::error(error_state.toString());
 			assert(false);
 			return;
 		}
+
+		mPreRenderCubeMapsCommand = std::make_unique<PreRenderCubeMapsCommand>(*this);
+		mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
 	}
 
 

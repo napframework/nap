@@ -127,6 +127,12 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		if (mRenderService->isHeadlessCommandQueued())
+		{
+			if (mRenderService->beginHeadlessRecording())
+				mRenderService->endHeadlessRecording();
+		}
+
 		std::vector<RenderableComponentInstance*> render_comps;
 		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
