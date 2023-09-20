@@ -29,17 +29,26 @@ RTTI_DEFINE_BASE(nap::BaseShader)
 RTTI_DEFINE_BASE(nap::Shader)
 RTTI_DEFINE_BASE(nap::ComputeShader)
 
+RTTI_BEGIN_STRUCT(nap::SpecializationConstantEntry)
+	RTTI_VALUE_CONSTRUCTOR(const nap::SpecializationConstantEntry&)
+	RTTI_PROPERTY("Name", &nap::SpecializationConstantEntry::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::SpecializationConstantEntry::mValue, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("VertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
 	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("VertexSpecializationConstants", &nap::ShaderFromFile::mVertexSpecializationConstants, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FragmentSpecializationConstants", &nap::ShaderFromFile::mFragmentSpecializationConstants, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
 	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SpecializationConstants", &nap::ComputeShaderFromFile::mSpecializationConstants, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
@@ -1185,7 +1194,22 @@ namespace nap
 
 		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
-		return this->load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		if (!load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
+			return false;
+
+		for (const auto& constant : mVertexSpecializationConstants)
+		{
+			if (!setSpecializationConstant(constant.mName, constant.mValue, EShaderType::Vertex, errorState))
+				return false;
+		}
+
+		for (const auto& constant : mFragmentSpecializationConstants)
+		{
+			if (!setSpecializationConstant(constant.mName, constant.mValue, EShaderType::Fragment, errorState))
+				return false;
+		}
+
+		return true;
 	}
 
 
@@ -1217,6 +1241,15 @@ namespace nap
 
 		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
-		return this->load(shader_name, search_paths, comp_source.data(), comp_source.size(), errorState);
+		if (!this->load(shader_name, search_paths, comp_source.data(), comp_source.size(), errorState))
+			return false;
+
+		for (const auto& constant : mSpecializationConstants)
+		{
+			if (!setSpecializationConstant(constant.mName, constant.mValue, errorState))
+				return false;
+		}
+
+		return true;
 	}
 }

@@ -35,15 +35,12 @@ RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("LightPosition",				&nap::FlockingSystemComponent::mLightPositionParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LightIntensity",				&nap::FlockingSystemComponent::mLightIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DiffuseColor",				&nap::FlockingSystemComponent::mDiffuseColorParam,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DiffuseColorEx",				&nap::FlockingSystemComponent::mDiffuseColorExParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LightColor",					&nap::FlockingSystemComponent::mLightColorParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("HaloColor",					&nap::FlockingSystemComponent::mHaloColorParam,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SpecularColor",				&nap::FlockingSystemComponent::mSpecularColorParam,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Shininess",					&nap::FlockingSystemComponent::mShininessParam,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AmbientIntensity",			&nap::FlockingSystemComponent::mAmbientIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DiffuseIntensity",			&nap::FlockingSystemComponent::mDiffuseIntensityParam,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SpecularIntensity",			&nap::FlockingSystemComponent::mSpecularIntensityParam,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MateColorRate",				&nap::FlockingSystemComponent::mMateColorRateParam,			nap::rtti::EPropertyMetaData::Default)
 
 	RTTI_PROPERTY("TargetTransforms",			&nap::FlockingSystemComponent::mTargetTransforms,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -67,14 +64,11 @@ namespace nap
 		constexpr const char* lightPosition = "lightPosition";
 		constexpr const char* lightIntensity = "lightIntensity";
 		constexpr const char* diffuseColor = "diffuseColor";
-		constexpr const char* diffuseColorEx = "diffuseColorEx";
 		constexpr const char* lightColor = "lightColor";
 		constexpr const char* haloColor = "haloColor";
 		constexpr const char* specularIntensity = "specularIntensity";
 		constexpr const char* specularColor = "specularColor";
-		constexpr const char* mateColorRate = "mateColorRate";
 		constexpr const char* shininess = "shininess";
-		constexpr const char* ambientIntensity = "ambientIntensity";
 		constexpr const char* diffuseIntensity = "diffuseIntensity";
 		constexpr const char* fresnelScale = "fresnelScale";
 		constexpr const char* fresnelPower = "fresnelPower";
@@ -185,7 +179,6 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius)->setValue(mResource->mBoundsRadiusParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::numBoids)->setValue(mNumBoids);
 		}
 	}
 
@@ -218,15 +211,12 @@ namespace nap
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor)->setValue(mResource->mDiffuseColorParam->mValue.toVec3());
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColorEx)->setValue(mResource->mDiffuseColorExParam->mValue.toVec3());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->mValue.toVec3());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::haloColor)->setValue(mResource->mHaloColorParam->mValue.toVec3());
 			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::specularColor)->setValue(mResource->mSpecularColorParam->mValue.toVec3());
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::shininess)->setValue(mResource->mShininessParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::ambientIntensity)->setValue(mResource->mAmbientIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity)->setValue(mResource->mDiffuseIntensityParam->mValue);
 			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity)->setValue(mResource->mSpecularIntensityParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::mateColorRate)->setValue(mResource->mMateColorRateParam->mValue);
 		}
 	}
 

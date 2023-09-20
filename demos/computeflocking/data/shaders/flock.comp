@@ -8,15 +8,15 @@
 // For an introduction to computational flocking systems, please refer to the seminal work by Reynolds:
 // `Reynolds, C. W. (1987, August). Flocks, herds and schools: A distributed behavioral model.`
 
-// This compute shader updates: (1) all boid transformations; position, velocity and orientation and 
-// (2) `mateRate`; the ratio of boids in the flock within one's view radius. In order to do this, we must 
-// first calculate the distances between all boids in the storage buffer (O^2). Then, based on the boids 
-// in close proximity (mates), calculate three individual forces that dictate the flocking behavior;
-// (1) alignment, (2) cohesion and (3) separation. The sum of these forces gives us the acceleration
-// vector of a boid that we can use to update the velocity. We use the direction of the velocity vector
-// to generate a quaternion describing the boid's orientation. The position is updated and clamped to the 
-// sphere bounds. Boids that come near the bounds are directed to the reflection between the view direction
-// and surface direction with an additional force.
+// This compute shader updates all boid transformations; position, velocity and orientation.
+// In order to do this, we must first calculate the distances between all boids in the storage 
+// buffer (O^2). Then, based on the boids in close proximity (mates), calculate three individual 
+// forces that dictate the flocking behavior; (1) alignment, (2) cohesion and (3) separation. 
+// The sum of these forces gives us the acceleration vector of a boid that we can use to update 
+// the velocity. We use the direction of the velocity vector to generate a quaternion describing 
+// the boid's orientation. The position is updated and clamped to the sphere bounds. Boids that 
+// come near the bounds are directed to the reflection between the view direction and surface 
+// direction with an additional force.
 
 // For simplicity's sake, this algorithm takes a brute force approach to evaluating the distances between 
 // boids. Lots of interesting optimizations exist for this kind of GPU problem, however. Feel free to 
@@ -38,6 +38,7 @@ layout(local_size_x_id = 0) in;
 
 // The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
 layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;
+layout(constant_id = 1) const uint BOID_COUNT = 10000;
 //const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 struct Boid
@@ -45,12 +46,6 @@ struct Boid
 	vec4 position;
 	vec4 velocity;
 	vec4 orientation;
-
-	uint padding_0;
-	uint padding_1;
-	uint padding_2;
-
-	float mateRate;
 };
 
 // STORAGE
@@ -70,7 +65,6 @@ uniform UBO
 {
 	vec3 targets[8];
 	uint targetCount;
-	uint numBoids;
 	float deltaTime;
 	float elapsedTime;
 	float viewRadius;
@@ -272,10 +266,10 @@ void computeForces(
 
 	vec3 dir = safeNormalize(velocity);
 
-	for (uint i = 1; i < ubo.numBoids; i++) 
+	for (uint i = 1; i < BOID_COUNT; i++) 
 	{
 		// Evaluate all indices, except gid
-		uint idx = (gid + i) % ubo.numBoids;
+		uint idx = (gid + i) % BOID_COUNT;
 
 		// Fetch other position and velocity
 		vec4 other_pos = ssbo_in.boids[idx].position;
@@ -349,13 +343,13 @@ void computeForcesShared(
 
 	// Copy to fast shared data and process in chunks of MAX_GROUP_SIZE_X
 	uint local_id = gl_LocalInvocationID.x;
-	for (uint chunk_id = 0; chunk_id*MAX_GROUP_SIZE_X < ubo.numBoids; chunk_id++)
+	for (uint chunk_id = 0; chunk_id*MAX_GROUP_SIZE_X < BOID_COUNT; chunk_id++)
 	{
 		// Total boids processed by this workgroup
 		uint proc = chunk_id*MAX_GROUP_SIZE_X;
 
 		// Number of boids to process in the current chunk
-		uint chunk_size = (proc+MAX_GROUP_SIZE_X > ubo.numBoids) ? ubo.numBoids - proc : MAX_GROUP_SIZE_X;
+		const uint chunk_size = (proc+MAX_GROUP_SIZE_X > BOID_COUNT) ? BOID_COUNT - proc : MAX_GROUP_SIZE_X;
 
 		uint id = clamp(proc+local_id, 0, proc+chunk_size-1);
 
@@ -408,6 +402,7 @@ void computeForcesShared(
 		memoryBarrierShared();
 		barrier();
 	}
+	flockWeight = max(flockWeight, EPSILON);
 }
 
 
@@ -428,7 +423,7 @@ void main()
 
 	// Comment/uncomment to compare the performance difference between computeForcesShared() and computeForces()
 	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
-	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
 
 	vec3 acceleration = vec3(0.0);
 
@@ -489,10 +484,6 @@ void main()
 
 	// Compose a new orientation from last frame's quat and the delta
 	b.orientation = mulQuat(q_delta, b.orientation);
-
-	// Write mate rate
-	b.mateRate = max(pow(flock_weight/float(ubo.numBoids), 0.55), b.mateRate);
-	b.mateRate = clamp(b.mateRate, 0.0, 1.0) * 0.97;
 
 	// Write boid to output buffer
 	ssbo_out.boids[global_id] = b;

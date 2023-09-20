@@ -25,6 +25,7 @@ namespace nap
 	// Specialization constants
 	struct NAPAPI SpecializationConstantEntry
 	{
+		SpecializationConstantEntry() {}
 		SpecializationConstantEntry(const std::string& name, uint value) :
 			mName(name), mValue(value) {}
 
@@ -273,6 +274,9 @@ namespace nap
 		std::string mVertPath;							///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string	mFragPath;							///< Property: 'mFragShader' path to the fragment shader on disk
 		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
+
+		std::vector<SpecializationConstantEntry> mVertexSpecializationConstants;
+		std::vector<SpecializationConstantEntry> mFragmentSpecializationConstants;
 	};
 
 
@@ -296,6 +300,8 @@ namespace nap
 
 		std::string mComputePath;						///< Property: 'ComputeShader' path to the vertex shader on disk
 		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
+
+		std::vector<SpecializationConstantEntry> mSpecializationConstants;
 	};
 }
 

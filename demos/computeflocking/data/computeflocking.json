@@ -30,6 +30,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoidTarget",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "BoidTargetPointMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -91,6 +94,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoidTarget2",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "BoidTargetPointMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -152,6 +158,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoidTarget3",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "BoidTargetPointMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -191,6 +200,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundsFill",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "SphereBoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -291,6 +303,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderBoundsWireFrame",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "SphereBoundsWireFrameMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -419,6 +434,9 @@
                     "Type": "nap::FlockingSystemComponent",
                     "mID": "FlockingSystemComponent",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "CapsuleMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -446,7 +464,7 @@
                             "y": 0.0
                         }
                     },
-                    "NumBoids": 20000,
+                    "NumBoids": 10000,
                     "RandomColor": "RandomColorParameter",
                     "BoidSize": "BoidSizeParameter",
                     "FresnelScale": "FresnelScaleParameter",
@@ -463,15 +481,12 @@
                     "LightPosition": "LightPositionParameter",
                     "LightIntensity": "LightIntensityParameter",
                     "DiffuseColor": "DiffuseColorParameter",
-                    "DiffuseColorEx": "DiffuseColorExParameter",
                     "LightColor": "LightColorParameter",
                     "HaloColor": "HaloColorParameter",
                     "SpecularColor": "SpecularColorParameter",
                     "Shininess": "ShininessParameter",
-                    "AmbientIntensity": "AmbientIntensityParameter",
                     "DiffuseIntensity": "DiffuseIntensityParameter",
                     "SpecularIntensity": "SpecularIntensityParameter",
-                    "MateColorRate": "MateColorRateParameter",
                     "TargetTransforms": [
                         "../BoidTargetEntity/TransformTarget",
                         "../BoidTargetEntity2/TransformTarget2",
@@ -503,6 +518,7 @@
                 {
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent_A",
+                    "Enabled": true,
                     "ComputeMaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -527,6 +543,7 @@
                 {
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeComponent_B",
+                    "Enabled": true,
                     "ComputeMaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -643,6 +660,9 @@
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "ChangeColor",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "OutputTexture": "ColorTextureFX",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -711,6 +731,9 @@
                     "Type": "nap::RenderBloomComponent",
                     "mID": "ApplyBloom",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "PassCount": 2,
                     "Kernel": "13x13",
                     "InputTexture": "ColorTextureFX",
@@ -720,6 +743,9 @@
                     "Type": "nap::RenderToTextureComponent",
                     "mID": "BlendTogether",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "OutputTexture": "DummyRT",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -848,7 +874,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ViewRadiusParameter",
                             "Name": "ViewRadius",
-                            "Value": 0.5,
+                            "Value": 0.6,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -856,7 +882,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "AvoidRadiusParameter",
                             "Name": "AvoidRadius",
-                            "Value": 0.4,
+                            "Value": 0.4000000059604645,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -880,7 +906,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "TargetWeightParameter",
                             "Name": "TargetWeight",
-                            "Value": 1.20,
+                            "Value": 1.2000000476837159,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -949,25 +975,13 @@
                         },
                         {
                             "Type": "nap::ParameterRGBColorFloat",
-                            "mID": "DiffuseColorExParameter",
-                            "Name": "DiffuseColorEx",
-                            "Value": {
-                                "Values": [
-                                    0.8392156958580017,
-                                    1.0,
-                                    0.6392157077789307
-                                ]
-                            }
-                        },
-                        {
-                            "Type": "nap::ParameterRGBColorFloat",
                             "mID": "LightColorParameter",
                             "Name": "LightColor",
                             "Value": {
                                 "Values": [
                                     1.0,
-                                    0.3137255012989044,
-                                    0.3137255012989044
+                                    1.0,
+                                    1.0
                                 ]
                             }
                         },
@@ -1026,17 +1040,9 @@
                         },
                         {
                             "Type": "nap::ParameterFloat",
-                            "mID": "AmbientIntensityParameter",
-                            "Name": "AmbientIntensity",
-                            "Value": 1.0,
-                            "Minimum": 0.0,
-                            "Maximum": 1.0
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
                             "mID": "DiffuseIntensityParameter",
                             "Name": "DiffuseIntensity",
-                            "Value": 0.800000011920929,
+                            "Value": 1.0,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1052,7 +1058,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "FresnelScaleParameter",
                             "Name": "FresnelScale",
-                            "Value": 1.0,
+                            "Value": 1.5,
                             "Minimum": 0.0,
                             "Maximum": 4.0
                         },
@@ -1095,14 +1101,6 @@
                             "Value": 1.350000023841858,
                             "Minimum": 0.0,
                             "Maximum": 5.0
-                        },
-                        {
-                            "Type": "nap::ParameterFloat",
-                            "mID": "MateColorRateParameter",
-                            "Name": "MateColorRate",
-                            "Value": 0.15000000596046449,
-                            "Minimum": 0.05000000074505806,
-                            "Maximum": 1.0
                         }
                     ],
                     "Groups": []
@@ -1149,7 +1147,13 @@
                     "Type": "nap::ComputeShaderFromFile",
                     "mID": "ComputeShader",
                     "ComputeShader": "shaders/flock.comp",
-                    "RestrictModuleIncludes": false
+                    "RestrictModuleIncludes": false,
+                    "SpecializationConstants": [
+                        {
+                            "Name": "BOID_COUNT",
+                            "Value": 10000
+                        }
+                    ]
                 }
             ],
             "Children": [
@@ -1200,22 +1204,6 @@
                                                 "z": 0.0,
                                                 "w": 0.0
                                             }
-                                        },
-                                        {
-                                            "Type": "nap::UniformUIntArray",
-                                            "mID": "UniformUIntArray_abd57a26",
-                                            "Name": "padding",
-                                            "Values": [
-                                                0,
-                                                0,
-                                                0
-                                            ]
-                                        },
-                                        {
-                                            "Type": "nap::UniformFloat",
-                                            "mID": "UniformFloat_b51ccdc7",
-                                            "Name": "mateRate",
-                                            "Value": 0.0
                                         }
                                     ]
                                 },
@@ -1266,22 +1254,6 @@
                                                 "z": 0.0,
                                                 "w": 0.0
                                             }
-                                        },
-                                        {
-                                            "Type": "nap::UniformUIntArray",
-                                            "mID": "UniformUIntArray_83218a4c",
-                                            "Name": "padding",
-                                            "Values": [
-                                                0,
-                                                0,
-                                                0
-                                            ]
-                                        },
-                                        {
-                                            "Type": "nap::UniformFloat",
-                                            "mID": "UniformFloat_6eef5086",
-                                            "Name": "mateRate",
-                                            "Value": 0.0
                                         }
                                     ]
                                 },
@@ -1430,7 +1402,13 @@
                     "mID": "BoidShader",
                     "VertShader": "shaders/boid.vert",
                     "FragShader": "shaders/boid.frag",
-                    "RestrictModuleIncludes": false
+                    "RestrictModuleIncludes": false,
+                    "VertexSpecializationConstants": [
+                        {
+                            "Name": "BOID_COUNT",
+                            "Value": 10000
+                        }
+                    ]
                 },
                 {
                     "Type": "nap::Material",
@@ -1530,7 +1508,8 @@
                                     1.0,
                                     1.0
                                 ]
-                            }
+                            },
+                            "FlipNormals": false
                         },
                         {
                             "Type": "nap::MeshFromFile",
@@ -1621,7 +1600,8 @@
                             "mID": "BoundsShader",
                             "VertShader": "shaders/halo.vert",
                             "FragShader": "shaders/halo.frag",
-                            "RestrictModuleIncludes": false
+                            "RestrictModuleIncludes": false,
+                            "SpecializationConstants": []
                         },
                         {
                             "Type": "nap::Material",
@@ -1689,7 +1669,8 @@
                             "mID": "CompositeShader",
                             "VertShader": "shaders/composite.vert",
                             "FragShader": "shaders/composite.frag",
-                            "RestrictModuleIncludes": false
+                            "RestrictModuleIncludes": false,
+                            "SpecializationConstants": []
                         }
                     ],
                     "Children": []
