@@ -38,6 +38,7 @@
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BoidTargetPointMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -102,6 +103,7 @@
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BoidTargetPointMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -166,6 +168,7 @@
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BoidTargetPointMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -261,6 +264,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BoundsMaterial",
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadOnly"
@@ -279,7 +283,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_0c25b852",
+                    "mID": "TransformBounds",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -335,6 +339,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantMaterial",
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadWrite"
@@ -375,7 +380,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
+                    "mID": "TransformCamera",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -421,7 +426,7 @@
             "Components": [
                 {
                     "Type": "nap::DefaultInputRouterComponent",
-                    "mID": "nap::DefaultInputRouterComponent"
+                    "mID": "DefaultInputRouterComponent"
                 }
             ],
             "Children": []
@@ -449,6 +454,7 @@
                                 "Buffer": "BoidBufferB"
                             }
                         ],
+                        "Constants": [],
                         "Material": "BoidsMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -495,7 +501,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "TransformFlock",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -536,6 +542,7 @@
                                 "Buffer": "BoidBufferB"
                             }
                         ],
+                        "Constants": [],
                         "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
@@ -561,6 +568,7 @@
                                 "Buffer": "BoidBufferA"
                             }
                         ],
+                        "Constants": [],
                         "ComputeMaterial": "ComputeMaterial"
                     },
                     "Invocations": 1
@@ -607,7 +615,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_df119f14",
+                    "mID": "TransformOrthoCamera",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -636,7 +644,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_f20cac36",
+                    "mID": "TransformRenderEntity",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -711,6 +719,7 @@
                             }
                         ],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ColorAdjustmentMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "InheritFromBlendMode"
@@ -785,6 +794,7 @@
                             }
                         ],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "CompositeMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -810,7 +820,7 @@
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_fcf0d6a2",
+                    "mID": "TransformWorld",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -874,7 +884,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "ViewRadiusParameter",
                             "Name": "ViewRadius",
-                            "Value": 0.6,
+                            "Value": 0.6000000238418579,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1141,19 +1151,33 @@
                     "Uniforms": [],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_9870b118",
+                            "Name": "BOID_COUNT",
+                            "Value": 10000
+                        },
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_42f0d0e1",
+                            "Name": "FORCE_TARGETS",
+                            "Value": 1
+                        },
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_31672908",
+                            "Name": "SHARED_MEMORY_PATH",
+                            "Value": 1
+                        }
+                    ],
                     "Shader": "ComputeShader"
                 },
                 {
                     "Type": "nap::ComputeShaderFromFile",
                     "mID": "ComputeShader",
                     "ComputeShader": "shaders/flock.comp",
-                    "RestrictModuleIncludes": false,
-                    "SpecializationConstants": [
-                        {
-                            "Name": "BOID_COUNT",
-                            "Value": 10000
-                        }
-                    ]
+                    "RestrictModuleIncludes": false
                 }
             ],
             "Children": [
@@ -1339,6 +1363,7 @@
                     "Uniforms": [],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "BoidShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
@@ -1402,13 +1427,7 @@
                     "mID": "BoidShader",
                     "VertShader": "shaders/boid.vert",
                     "FragShader": "shaders/boid.frag",
-                    "RestrictModuleIncludes": false,
-                    "VertexSpecializationConstants": [
-                        {
-                            "Name": "BOID_COUNT",
-                            "Value": 10000
-                        }
-                    ]
+                    "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::Material",
@@ -1416,6 +1435,7 @@
                     "Uniforms": [],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "ConstantShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
@@ -1451,6 +1471,7 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "ConstantShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
@@ -1600,8 +1621,7 @@
                             "mID": "BoundsShader",
                             "VertShader": "shaders/halo.vert",
                             "FragShader": "shaders/halo.frag",
-                            "RestrictModuleIncludes": false,
-                            "SpecializationConstants": []
+                            "RestrictModuleIncludes": false
                         },
                         {
                             "Type": "nap::Material",
@@ -1609,6 +1629,7 @@
                             "Uniforms": [],
                             "Samplers": [],
                             "Buffers": [],
+                            "Constants": [],
                             "Shader": "BoundsShader",
                             "VertexAttributeBindings": [],
                             "BlendMode": "Opaque",
@@ -1627,6 +1648,7 @@
                             "Uniforms": [],
                             "Samplers": [],
                             "Buffers": [],
+                            "Constants": [],
                             "Shader": "ColorAdjustmentShader",
                             "VertexAttributeBindings": [],
                             "BlendMode": "Opaque",
@@ -1659,6 +1681,7 @@
                             "Uniforms": [],
                             "Samplers": [],
                             "Buffers": [],
+                            "Constants": [],
                             "Shader": "CompositeShader",
                             "VertexAttributeBindings": [],
                             "BlendMode": "Opaque",
@@ -1669,8 +1692,7 @@
                             "mID": "CompositeShader",
                             "VertShader": "shaders/composite.vert",
                             "FragShader": "shaders/composite.frag",
-                            "RestrictModuleIncludes": false,
-                            "SpecializationConstants": []
+                            "RestrictModuleIncludes": false
                         }
                     ],
                     "Children": []

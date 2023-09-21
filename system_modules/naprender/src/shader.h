@@ -9,6 +9,8 @@
 #include "vertexattributedeclaration.h"
 #include "samplerdeclaration.h"
 #include "shadervariabledeclarations.h"
+#include "shaderconstant.h"
+#include "shaderconstantdeclaration.h"
 #include "uniform.h"
 
 // External Includes
@@ -21,20 +23,6 @@ namespace nap
 	// Forward Declares
 	class RenderService;
 	class Core;
-
-	// Specialization constants
-	struct NAPAPI SpecializationConstantEntry
-	{
-		SpecializationConstantEntry() {}
-		SpecializationConstantEntry(const std::string& name, uint value) :
-			mName(name), mValue(value) {}
-
-		std::string mName;
-		uint mValue = 0;
-	};
-	using SpecializationConstantID = uint;
-	using SpecializationConstantMap = std::map<SpecializationConstantID, SpecializationConstantEntry>;
-
 
 	/**
 	 * Base class of all shaders
@@ -62,6 +50,11 @@ namespace nap
 		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const		{ return mSSBODeclarations; }
 
 		/**
+		 * @return all Shader Constant declarations.
+		 */
+		const ShaderConstantDeclarations& getConstantDeclarations() const			{ return mConstantDeclarations; }
+
+		/**
 		 * @return shader display name
 		 */
 		const std::string& getDisplayName() const									{ return mDisplayName; }
@@ -82,6 +75,7 @@ namespace nap
 		BufferObjectDeclarationList						mUBODeclarations;						///< All uniform buffer object declarations
 		BufferObjectDeclarationList						mSSBODeclarations;						///< All storage buffer object declarations
 		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
+		ShaderConstantDeclarations						mConstantDeclarations;					///< All shader constant declarations
 		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 
 		/**
@@ -140,16 +134,6 @@ namespace nap
 		 */
 		VkShaderModule getFragmentModule() const									{ return mFragmentModule; }
 
-		/**
-		 * @return the specialization constant map of the vertex shader
-		 */
-		const SpecializationConstantMap& getVertexSpecializationConstants() const	{ return mVertexSpecConstants; }
-
-		/**
-		 * @return the specialization constant map of the fragment shader
-		 */
-		const SpecializationConstantMap& getFragmentSpecializationConstants() const { return mFragmentSpecConstants; }
-
 	protected:
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
@@ -175,23 +159,10 @@ namespace nap
 		  */
 		 bool loadDefault(const std::string& displayName, utility::ErrorState& errorState);
 
-		 /**
-		  * Registers a new specialization constant to the vertex shader.
-		  * Must be called after shader load, and before shader compilation (on pipeline creation).
-		  * @param name
-		  * @param value
-		  * @param flags
-		  * @param errorState
-		  */
-		 bool setSpecializationConstant(const std::string& name, uint value, ShaderTypeFlags flags, utility::ErrorState& errorState);
-
 	private:
 		VertexAttributeDeclarations						mShaderAttributes;						///< Shader program vertex attribute inputs
 		VkShaderModule									mVertexModule = VK_NULL_HANDLE;			///< Loaded vertex module
 		VkShaderModule									mFragmentModule = VK_NULL_HANDLE;		///< Loaded fragment module
-
-		SpecializationConstantMap						mVertexSpecConstants;					///< Specialization constants of vertex shader
-		SpecializationConstantMap						mFragmentSpecConstants;					///< Specialization constants of fragment shader
 	};
 
 
@@ -219,11 +190,6 @@ namespace nap
 		 */
 		glm::u32vec3 getWorkGroupSize() const										{ return mWorkGroupSize; }
 
-		/**
-		 * @return the specialization constant map
-		 */
-		const SpecializationConstantMap& getSpecializationConstants() const			{ return mComputeSpecConstants; }
-
 	protected:
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
@@ -237,19 +203,9 @@ namespace nap
 		 */
 		virtual bool load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState);
 
-		/**
-		 * Registers a new specialization constant to the compute shader.
-		 * Must be called after shader load, and before shader compilation (on pipeline creation).
-		 * @param name
-		 * @param value
-		 * @param errorState
-		 */
-		bool setSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState);
-
 	private:
-		glm::u32vec3									mWorkGroupSize;								///< Workgroup size dimensions (x, y, z)
-		VkShaderModule									mComputeModule = VK_NULL_HANDLE;			///< Loaded compute module
-		SpecializationConstantMap						mComputeSpecConstants;						///< Specialization constants
+		glm::u32vec3									mWorkGroupSize;							///< Workgroup size dimensions (x, y, z)
+		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
 	};
 
 
@@ -274,9 +230,6 @@ namespace nap
 		std::string mVertPath;							///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string	mFragPath;							///< Property: 'mFragShader' path to the fragment shader on disk
 		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
-
-		std::vector<SpecializationConstantEntry> mVertexSpecializationConstants;
-		std::vector<SpecializationConstantEntry> mFragmentSpecializationConstants;
 	};
 
 
@@ -300,8 +253,6 @@ namespace nap
 
 		std::string mComputePath;						///< Property: 'ComputeShader' path to the vertex shader on disk
 		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
-
-		std::vector<SpecializationConstantEntry> mSpecializationConstants;
 	};
 }
 

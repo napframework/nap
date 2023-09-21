@@ -40,6 +40,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial)
 	RTTI_PROPERTY(nap::material::uniforms,		&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::samplers,		&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::buffers,		&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::constants,		&nap::BaseMaterial::mConstants,				nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
@@ -166,8 +167,28 @@ namespace nap
 			addSamplerInstance(std::move(sampler_instance));
 		}
 
+		// Constants
+		const auto& constant_declarations = shader.getConstantDeclarations();
+		for (const auto& declaration : constant_declarations)
+		{
+			std::unique_ptr<ShaderConstantInstance> constant_instance;
+			for (const auto& constant : mConstants)
+			{
+				if (constant->mName == declaration.mName)
+				{
+					constant_instance = std::make_unique<ShaderConstantInstance>(declaration, constant.get());
+					break;
+				}
+			}
+			if (constant_instance == nullptr)
+				constant_instance = std::make_unique<ShaderConstantInstance>(declaration, nullptr);
+
+			addConstantInstance(std::move(constant_instance));
+		}
+
 		return true;
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Material

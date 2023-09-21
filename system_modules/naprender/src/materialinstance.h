@@ -40,6 +40,7 @@ namespace nap
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
 		std::vector<ResourcePtr<BufferBinding>>		mBuffers;										///< Property: "Buffers" buffer bindings to override
+		std::vector<ResourcePtr<ShaderConstant>>	mConstants;										///< Property: "Constants" shader constants to override
 
 		/**
 		 * @return material property
@@ -180,6 +181,19 @@ namespace nap
 		const BaseMaterial* getMaterial() const								{ assert(mMaterial != nullptr); return mMaterial; }
 
 		/**
+		 * Creates specialization constant info structure for pipeline creation.
+		 * @param stage the shader stage to retrieve specialization constant info for.
+		 * @param outInfo the specialization constant info structure, set if this function returns true.
+		 * @return whether any specialization constant overrides are defined in this material.
+		 */
+		bool getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const;
+
+		/**
+		 * @return constant hash
+		 */
+		ShaderConstantHash getConstantHash() const							{ return mConstantHash; }
+
+		/**
 		 * This must be called before each draw. It will push the current uniform and sampler data into memory
 		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
 		 * before the Vulkan draw call is issued.
@@ -210,6 +224,8 @@ namespace nap
 		bool initSamplers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 		void addImageInfo(const Texture& texture, VkSampler sampler);
 
+		bool initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
+
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
 
@@ -227,6 +243,10 @@ namespace nap
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerDescriptors;					// List of sampler images, used to update Descriptor Sets.
+
+		using ShaderStageConstantMap = std::map<VkShaderStageFlagBits, ShaderConstantMap>;
+		ShaderStageConstantMap					mShaderStageConstantMap;				// Reference of all shader constants per shader stage, generated on materialinstance init
+		ShaderConstantHash						mConstantHash;							// Shader constant hash used to create a pipeline key
 
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
 	};

@@ -29,26 +29,17 @@ RTTI_DEFINE_BASE(nap::BaseShader)
 RTTI_DEFINE_BASE(nap::Shader)
 RTTI_DEFINE_BASE(nap::ComputeShader)
 
-RTTI_BEGIN_STRUCT(nap::SpecializationConstantEntry)
-	RTTI_VALUE_CONSTRUCTOR(const nap::SpecializationConstantEntry&)
-	RTTI_PROPERTY("Name", &nap::SpecializationConstantEntry::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Value", &nap::SpecializationConstantEntry::mValue, nap::rtti::EPropertyMetaData::Default)
-RTTI_END_STRUCT
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("VertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
 	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VertexSpecializationConstants", &nap::ShaderFromFile::mVertexSpecializationConstants, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FragmentSpecializationConstants", &nap::ShaderFromFile::mFragmentSpecializationConstants, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
 	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SpecializationConstants", &nap::ComputeShaderFromFile::mSpecializationConstants, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
@@ -769,30 +760,18 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 }
 
 
-static void parseSpecializationConstants(spirv_cross::Compiler& compiler, nap::SpecializationConstantMap& outMap)
+static void parseConstants(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::ShaderConstantDeclarations& outDeclarations)
 {
 	for (auto& spec_const : compiler.get_specialization_constants())
 	{
 		const std::string& constant_name = compiler.get_name(spec_const.id);
+		if (constant_name.empty())
+			continue;
+
 		const auto& spir_const = compiler.get_constant(spec_const.id);
 		nap::uint value = spir_const.m.c[0].r[0].u32;
-		outMap.insert({ spec_const.constant_id, { constant_name, value } });
+		outDeclarations.emplace_back(constant_name, value, spec_const.constant_id, inStage);
 	}
-}
-
-
-static bool updateSpecializationConstant(const std::string& name, nap::uint value, nap::SpecializationConstantMap& outMap)
-{
-	for (auto& item : outMap)
-	{
-		nap::SpecializationConstantEntry& entry = item.second;
-		if (entry.mName == name)
-		{
-			entry.mValue = value;
-			return true;
-		}
-	}
-	return false;
 }
 
 
@@ -894,6 +873,7 @@ namespace nap
 		mUBODeclarations.clear();
 		mSSBODeclarations.clear();
 		mSamplerDeclarations.clear();
+		mConstantDeclarations.clear();
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -980,8 +960,8 @@ namespace nap
 			return false;
 
 		// Parse specialization constants
-		parseSpecializationConstants(vertex_shader_compiler, mVertexSpecConstants);
-		parseSpecializationConstants(fragment_shader_compiler, mFragmentSpecConstants);
+		parseConstants(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mConstantDeclarations);
+		parseConstants(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mConstantDeclarations);
 
 		return initLayout(device, errorState);
 	}
@@ -1017,29 +997,29 @@ namespace nap
 	}
 
 
-	bool Shader::setSpecializationConstant(const std::string& name, uint value, ShaderTypeFlags flags, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
-			return false;
+	//bool Shader::setSpecializationConstant(const std::string& name, uint value, ShaderTypeFlags flags, utility::ErrorState& errorState)
+	//{
+	//	if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
+	//		return false;
 
-		if (flags & EShaderType::Vertex > 0)
-		{
-			if (!updateSpecializationConstant(name, value, mVertexSpecConstants))
-			{
-				errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-				return false;
-			}
-		}
-		else if (flags & EShaderType::Fragment > 0)
-		{
-			if (!updateSpecializationConstant(name, value, mFragmentSpecConstants))
-			{
-				errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-				return false;
-			}
-		}
-		return true;
-	}
+	//	if (flags & EShaderType::Vertex > 0)
+	//	{
+	//		if (!updateConstant(name, value, mVertexConstants))
+	//		{
+	//			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+	//			return false;
+	//		}
+	//	}
+	//	else if (flags & EShaderType::Fragment > 0)
+	//	{
+	//		if (!updateConstant(name, value, mFragmentConstants))
+	//		{
+	//			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
+	//			return false;
+	//		}
+	//	}
+	//	return true;
+	//}
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -1092,14 +1072,14 @@ namespace nap
 			return false;
 
 		// Parse specialization constants
-		parseSpecializationConstants(comp_shader_compiler, mComputeSpecConstants);
+		parseConstants(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mConstantDeclarations);
 
 		// Get workgroup size specialization constants specified in shader
 		std::array<spirv_cross::SpecializationConstant, 3> work_group_spec_constants;
 		comp_shader_compiler.get_work_group_size_specialization_constants(work_group_spec_constants[0], work_group_spec_constants[1], work_group_spec_constants[2]);
 
 		// Search for workgroup specialization constants
-		std::map<uint, uint> workgroup_const_map;
+		std::map<ShaderConstantID, uint> workgroup_const_map;
 		const glm::uvec3& max_work_group_size = glm::make_vec3(&mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
 		for (uint i = 0; i < work_group_spec_constants.size(); i++)
 		{
@@ -1130,29 +1110,17 @@ namespace nap
 		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
 		for (const auto& entry : workgroup_const_map)
 		{
-			auto it = mComputeSpecConstants.find(entry.first);
-			if (it != mComputeSpecConstants.end())
+			for (auto& constant_declaration : mConstantDeclarations)
 			{
-				uint32 overwrite_work_group_size = entry.second;
-				it->second.mValue = overwrite_work_group_size;
+				if (constant_declaration.mConstantID == entry.first)
+				{
+					uint32 overwrite_work_group_size = entry.second;
+					constant_declaration.mValue = overwrite_work_group_size;
+				}
 			}
 		}
 
 		return initLayout(device, errorState);
-	}
-
-
-	bool ComputeShader::setSpecializationConstant(const std::string& name, uint value, utility::ErrorState& errorState)
-	{
-		if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
-			return false;
-
-		if (!updateSpecializationConstant(name, value, mComputeSpecConstants))
-		{
-			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-			return false;
-		}
-		return true;
 	}
 
 
@@ -1197,18 +1165,6 @@ namespace nap
 		if (!load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
 			return false;
 
-		for (const auto& constant : mVertexSpecializationConstants)
-		{
-			if (!setSpecializationConstant(constant.mName, constant.mValue, EShaderType::Vertex, errorState))
-				return false;
-		}
-
-		for (const auto& constant : mFragmentSpecializationConstants)
-		{
-			if (!setSpecializationConstant(constant.mName, constant.mValue, EShaderType::Fragment, errorState))
-				return false;
-		}
-
 		return true;
 	}
 
@@ -1243,12 +1199,6 @@ namespace nap
 		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
 		if (!this->load(shader_name, search_paths, comp_source.data(), comp_source.size(), errorState))
 			return false;
-
-		for (const auto& constant : mSpecializationConstants)
-		{
-			if (!setSpecializationConstant(constant.mName, constant.mValue, errorState))
-				return false;
-		}
 
 		return true;
 	}

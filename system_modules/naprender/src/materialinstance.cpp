@@ -18,6 +18,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
 	RTTI_PROPERTY(nap::material::uniforms,		&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::samplers,		&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::buffers,		&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::constants,		&nap::MaterialInstanceResource::mConstants,					nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
@@ -68,6 +69,17 @@ namespace nap
 		for (auto& sampler : samplers)
 			if (sampler->mName == declaration.mName)
 				return sampler.get();
+
+		return nullptr;
+	}
+
+
+	template<class T>
+	const ShaderConstant* findConstantResource(const std::vector<T>& constants, const ShaderConstantDeclaration& declaration)
+	{
+		for (auto& constant : constants)
+			if (constant->mName == declaration.mName)
+				return constant.get();
 
 		return nullptr;
 	}
@@ -761,6 +773,87 @@ namespace nap
 	}
 
 
+	bool BaseMaterialInstance::initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState)
+	{
+		BaseMaterial* material = getMaterial();
+		const auto& declarations = material->getShader().getConstantDeclarations();
+
+		for (const auto& declaration : declarations)
+		{
+			// Check if the constant is set as override in the MaterialInstanceResource
+			const ShaderConstant* constant = findConstantResource(resource.mConstants, declaration);
+			ShaderConstantInstance* constant_instance = nullptr;
+			if (constant != nullptr)
+			{
+				// Shader Constant is overridden, create a new ShaderConstantInstance object
+				auto constant_instance_override = std::make_unique<ShaderConstantInstance>(declaration, constant);
+				constant_instance = &addConstantInstance(std::move(constant_instance_override));
+			}
+			else
+			{
+				constant_instance = material->findConstant(declaration.mName);
+			}
+
+			// If a constant is overriden
+			if (constant_instance != nullptr)
+			{		
+				auto it = mShaderStageConstantMap.find(constant_instance->mDeclaration.mStage);
+				if (it != mShaderStageConstantMap.end())
+				{
+					// Insert entry in the constant map associated with the specified stage
+					it->second.insert({ constant_instance->mDeclaration.mConstantID, constant_instance->mValue });
+				}
+				else
+				{
+					// Create new map for the specified stage and insert entry
+					ShaderConstantMap const_map = { { constant_instance->mDeclaration.mConstantID, constant_instance->mValue } };
+					mShaderStageConstantMap.insert({ constant_instance->mDeclaration.mStage, std::move(const_map) });
+				}
+			}
+		}
+
+		// Recompute the shader constant hash used to create a pipeline key
+		mConstantHash = 0;
+		for (const auto& entry : mShaderStageConstantMap)
+		{
+			auto stage = entry.first;
+			const auto& constant_map = entry.second;
+			for (const auto& constant : constant_map)
+			{
+				const auto& value = constant.second;
+				mConstantHash ^= std::hash<uint>{}(value);
+			}
+		}
+		
+		return true;
+	}
+
+
+	bool BaseMaterialInstance::getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const
+	{
+		const auto it = mShaderStageConstantMap.find(stage);
+		if (it == mShaderStageConstantMap.end())
+			return false;
+
+		const auto& constant_map = it->second;
+		for (uint i = 0; i < constant_map.size(); i++)
+		{
+			const auto it = constant_map.find(i);
+			assert(it != constant_map.end());
+			{
+				VkSpecializationMapEntry entry = {};
+				entry.constantID = (*it).first;
+				entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
+				entry.size = sizeof(uint);
+				outInfo.mEntries.emplace_back(std::move(entry));
+			}
+			outInfo.mData.emplace_back((*it).second);
+		}
+
+		return true;
+	}
+
+
 	void BaseMaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
 	{
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
@@ -837,6 +930,9 @@ namespace nap
 			return false;
 
 		if (!initSamplers(instanceResource, errorState))
+			return false;
+
+		if (!initConstants(instanceResource, errorState))
 			return false;
 
 		// We get/create an allocator that is compatible with the layout of the shader that this material is bound to. Practically this
@@ -931,6 +1027,7 @@ namespace nap
 
 		return mResource->mMaterial->getDepthMode();
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// ComputeMaterialInstance

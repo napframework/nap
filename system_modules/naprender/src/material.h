@@ -28,6 +28,7 @@ namespace nap
 		constexpr const char* uniforms	= "Uniforms";
 		constexpr const char* samplers	= "Samplers";
 		constexpr const char* buffers	= "Buffers";
+		constexpr const char* constants = "Constants";
 		constexpr const char* vbindings	= "VertexAttributeBindings";
 	}
 
@@ -50,11 +51,12 @@ namespace nap
 		/**
 		 * @return The shader
 		 */
-		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
+		const BaseShader& getShader() const					{ assert(mShader != nullptr); return *mShader; }
 
 		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<ShaderConstant>>		mConstants;												///< Property: 'Constants'
 
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);

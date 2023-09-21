@@ -19,6 +19,7 @@
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
 #include "rendermask.h"
+#include "shaderconstant.h"
 
 // External Includes
 #include <nap/core.h>
@@ -941,29 +942,6 @@ namespace nap
 
 
 	/**
-	 * Prepares Vulkan specialization constant info structure
-	 */
-	static void getSpecializationInfo(const nap::SpecializationConstantMap& inMap, std::vector<VkSpecializationMapEntry>& outEntries, std::vector<uint>& outData)
-	{
-		outEntries.clear();
-		outData.clear();
-		for (uint i = 0; i < inMap.size(); i++)
-		{
-			const auto it = inMap.find(i);
-			assert(it != inMap.end());
-			{
-				VkSpecializationMapEntry entry = {};
-				entry.constantID = (*it).first;
-				entry.offset = static_cast<uint>(outEntries.size() * sizeof(uint));
-				entry.size = sizeof(uint);
-				outEntries.emplace_back(std::move(entry));
-			}
-			outData.emplace_back((*it).second.mValue);
-		}
-	}
-
-
-	/**
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
@@ -1006,16 +984,16 @@ namespace nap
 		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName = shader::main;
 
-		std::vector<VkSpecializationMapEntry> vert_spec_entries;
-		std::vector<uint> vert_spec_data;
-		getSpecializationInfo(shader.getVertexSpecializationConstants(), vert_spec_entries, vert_spec_data);
-
+		ShaderSpecializationConstantInfo vert_const_info = {};
 		VkSpecializationInfo vert_spec_info = {};
-		vert_spec_info.pMapEntries = vert_spec_entries.data();
-		vert_spec_info.mapEntryCount = vert_spec_entries.size();
-		vert_spec_info.pData = vert_spec_data.data();
-		vert_spec_info.dataSize = vert_spec_data.size() * sizeof(uint);
-		vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
+		if (materialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_VERTEX_BIT, vert_const_info))
+		{
+			vert_spec_info.pMapEntries = vert_const_info.mEntries.data();
+			vert_spec_info.mapEntryCount = vert_const_info.mEntries.size();
+			vert_spec_info.pData = vert_const_info.mData.data();
+			vert_spec_info.dataSize = vert_const_info.mData.size() * sizeof(uint);
+			vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
+		}
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1023,16 +1001,16 @@ namespace nap
 		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName = shader::main;
 
-		std::vector<VkSpecializationMapEntry> frag_spec_entries;
-		std::vector<uint> frag_spec_data;
-		getSpecializationInfo(shader.getFragmentSpecializationConstants(), frag_spec_entries, frag_spec_data);
-
+		ShaderSpecializationConstantInfo frag_const_info = {};
 		VkSpecializationInfo frag_spec_info = {};
-		frag_spec_info.pMapEntries = frag_spec_entries.data();
-		frag_spec_info.mapEntryCount = frag_spec_entries.size();
-		frag_spec_info.pData = frag_spec_data.data();
-		frag_spec_info.dataSize = frag_spec_data.size() * sizeof(uint);
-		frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
+		if (materialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_FRAGMENT_BIT, frag_const_info))
+		{
+			frag_spec_info.pMapEntries = frag_const_info.mEntries.data();
+			frag_spec_info.mapEntryCount = frag_const_info.mEntries.size();
+			frag_spec_info.pData = frag_const_info.mData.data();
+			frag_spec_info.dataSize = frag_const_info.mData.size() * sizeof(uint);
+			frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
+		}
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1140,9 +1118,12 @@ namespace nap
 	}
 
 
-	static bool createComputePipeline(VkDevice device, const ComputeShader& computeShader, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
+	static bool createComputePipeline(VkDevice device, const ComputeMaterialInstance& computeMaterialInstance, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
 	{
-		VkShaderModule comp_shader_module = computeShader.getComputeModule();
+		const ComputeMaterial& compute_material = computeMaterialInstance.getMaterial();
+		const ComputeShader& compute_shader = compute_material.getShader();
+
+		VkShaderModule comp_shader_module = compute_shader.getComputeModule();
 
 		VkPipelineShaderStageCreateInfo comp_shader_stage_info = {};
 		comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1150,19 +1131,18 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = shader::main;
 
-		std::vector<VkSpecializationMapEntry> spec_entries;
-		std::vector<uint> spec_data;
-		getSpecializationInfo(computeShader.getSpecializationConstants(), spec_entries, spec_data);
-
-		// Workgroup only
+		ShaderSpecializationConstantInfo comp_const_info = {};
 		VkSpecializationInfo comp_spec_info = {};
-		comp_spec_info.pMapEntries = spec_entries.data();
-		comp_spec_info.mapEntryCount = spec_entries.size();
-		comp_spec_info.pData = spec_data.data();
-		comp_spec_info.dataSize = spec_data.size() * sizeof(uint);
-		comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
+		if (computeMaterialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_COMPUTE_BIT, comp_const_info))
+		{
+			comp_spec_info.pMapEntries = comp_const_info.mEntries.data();
+			comp_spec_info.mapEntryCount = comp_const_info.mEntries.size();
+			comp_spec_info.pData = comp_const_info.mData.data();
+			comp_spec_info.dataSize = comp_const_info.mData.size() * sizeof(uint);
+			comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
+		}
 
-		auto layout = computeShader.getDescriptorSetLayout();
+		auto layout = compute_shader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -1301,7 +1281,8 @@ namespace nap
 			shader,
 			draw_mode, 
 			materialInstance.getDepthMode(), 
-			materialInstance.getBlendMode(), 
+			materialInstance.getBlendMode(),
+			materialInstance.getConstantHash(),
 			renderTarget.getWindingOrder(), 
 			renderTarget.getColorFormat(), 
 			renderTarget.getDepthFormat(), 
@@ -1345,10 +1326,14 @@ namespace nap
 
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
-		// Create pipeline key based on draw properties
-		const ComputeMaterial& material = computeMaterialInstance.getMaterial();
-		const ComputeShader& shader = material.getShader();
-		ComputePipelineKey pipeline_key(shader);
+		const ComputeMaterial& compute_material = computeMaterialInstance.getMaterial();
+		const ComputeShader& compute_shader = compute_material.getShader();
+
+		// Create pipeline key based on material properties
+		ComputePipelineKey pipeline_key(
+			compute_shader,
+			computeMaterialInstance.getConstantHash()
+		);
 
 		// Find key in cache and use previously created pipeline
 		ComputePipelineCache::iterator pos = mComputePipelineCache.find(pipeline_key);
@@ -1357,9 +1342,9 @@ namespace nap
 
 		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (createComputePipeline(mDevice, shader, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (createComputePipeline(mDevice, computeMaterialInstance, pipeline.mLayout, pipeline.mPipeline, errorState))
 		{
-			mComputePipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			mComputePipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
 		}
 
@@ -2055,12 +2040,12 @@ namespace nap
 		if (!shader->init(error) || !material->init(error))
 		{
 			// Add invalid combo
-			mMaterials.emplace(std::make_pair(shaderType, std::make_unique<UniqueMaterial>()));
+			mMaterials.emplace(shaderType, std::make_unique<UniqueMaterial>());
 			return nullptr;
 		}
 
 		// Initialization succeeded, valid entry
-		auto inserted = mMaterials.emplace(std::make_pair(shaderType, std::make_unique<UniqueMaterial>(std::move(shader), std::move(material))));
+		auto inserted = mMaterials.emplace(shaderType, std::make_unique<UniqueMaterial>(std::move(shader), std::move(material)));
 		return inserted.first->second->mMaterial.get();
 	}
 

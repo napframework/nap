@@ -66,6 +66,12 @@ namespace nap
 
 
 	/**
+	 * Hash value for shader specialization constants
+	 */
+	using ShaderConstantHash = uint;
+
+
+	/**
 	 * Non-hierarchical structure that holds pointers to all uniform leaf elements. These can point to either Material
 	 * or MaterialInstance instance uniforms, depending on whether the resource is overridden by an instance.
 	 * Rebuilt each time an override is made or new instance is created at runtime. This is handled in

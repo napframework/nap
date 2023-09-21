@@ -29,16 +29,18 @@
 
 // NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
 // size supported by the device on pipeline creation.
-layout(local_size_x_id = 0) in;
+//layout(local_size_x_id = 0) in;
 
 // When declaring the workgroup size specialization constant to be higher than 0, NAP will not 
 // override the workgroup size when creating the compute pipeline. Uncommenting this line and commenting 
 // the line above will let the shader define the workgroup size.
-//layout(local_size_x = 512) in;
+layout(local_size_x = 512) in;
 
 // The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
 layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;
 layout(constant_id = 1) const uint BOID_COUNT = 10000;
+layout(constant_id = 2) const uint FORCE_TARGETS = 0;
+layout(constant_id = 3) const uint SHARED_MEMORY_PATH = 0;
 //const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 struct Boid
@@ -402,7 +404,6 @@ void computeForcesShared(
 		memoryBarrierShared();
 		barrier();
 	}
-	flockWeight = max(flockWeight, EPSILON);
 }
 
 
@@ -421,33 +422,34 @@ void main()
 	vec4 flock_center;
 	float flock_weight;
 
-	// Comment/uncomment to compare the performance difference between computeForcesShared() and computeForces()
-	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
-	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
+	// Use specialization constant SHARED_MEMORY_PATH to compare the
+	// performance difference between computeForcesShared() and computeForces()
+	if (SHARED_MEMORY_PATH > 0)
+		computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
+	else
+		computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
 
+	flock_weight = max(flock_weight, EPSILON);
 	vec3 acceleration = vec3(0.0);
 
 	// Calculate individual forces (direction and magnitude)
 	// 'alignment' indicates a force pushing towards the average heading of the flock
 	// 'cohesion' indicates a force pushing towards the center of the flock
 	// 'separation' indicates a force steering away from flock mates within an avoidance radius
-	if (flock_weight > EPSILON)
-	{
-		vec4 mean_flock_center = flock_center / flock_weight;
-		vec4 mean_flock_heading = flock_heading / flock_weight;
-		vec4 mean_avoidance_heading = avoidance_heading / flock_weight;
+	vec4 mean_flock_center = flock_center / flock_weight;
+	vec4 mean_flock_heading = flock_heading / flock_weight;
+	vec4 mean_avoidance_heading = avoidance_heading / flock_weight;
 
-		vec3 alignment = blendForce(mean_flock_heading.xyz, b.velocity.xyz) * ubo.alignmentWeight;
-		vec3 cohesion = blendForce(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz) * ubo.cohesionWeight;
-		vec3 seperation = blendForce(mean_avoidance_heading.xyz, b.velocity.xyz) * ubo.separationWeight;
+	vec3 alignment = blendForce(mean_flock_heading.xyz, b.velocity.xyz) * ubo.alignmentWeight;
+	vec3 cohesion = blendForce(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz) * ubo.cohesionWeight;
+	vec3 seperation = blendForce(mean_avoidance_heading.xyz, b.velocity.xyz) * ubo.separationWeight;
 
-		acceleration += alignment;
-		acceleration += cohesion;
-		acceleration += seperation;
-	}
+	acceleration += alignment;
+	acceleration += cohesion;
+	acceleration += seperation;
 
 	// Calculate target weight
-	if (ubo.targetCount > 0)
+	if (FORCE_TARGETS > 0 || ubo.targetCount > 0)
 	{
 		vec3 target_offset = weightedDistAvg(b.position.xyz, ubo.targets, ubo.targetCount);
 		acceleration += blendForce(target_offset.xyz, b.velocity.xyz) * ubo.targetWeight;
