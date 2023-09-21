@@ -12,10 +12,6 @@
 // nap::BlinnPhongTextureShader run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BlinnPhongTextureShader)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("QuadSampleCount", &nap::BlinnPhongTextureShader::mQuadSampleCount, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CubeSampleCount", &nap::BlinnPhongTextureShader::mCubeSampleCount, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("EnableShadowMapping", &nap::BlinnPhongTextureShader::mEnableShadowMapping, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("EnableEnvironmentMapping", &nap::BlinnPhongTextureShader::mEnableEnvironmentMapping, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -27,14 +23,6 @@ namespace nap
 	{
 		inline constexpr const char* blinnphongtexture = "blinnphongtexture";
 		inline constexpr const char* blinnphongtexturenoshadow = "blinnphongtexturenoshadow";
-
-		namespace constant
-		{
-			inline constexpr const char* QUAD_SAMPLE_COUNT = "QUAD_SAMPLE_COUNT";
-			inline constexpr const char* CUBE_SAMPLE_COUNT = "CUBE_SAMPLE_COUNT";
-            inline constexpr const char* ENABLE_SHADOW_MAPPING = "ENABLE_SHADOW_MAPPING";
-            inline constexpr const char* ENABLE_ENVIRONMENT_MAPPING = "ENABLE_ENVIRONMENT_MAPPING";
-		}
 	}
 
 	BlinnPhongTextureShader::BlinnPhongTextureShader(Core& core) :
@@ -72,16 +60,6 @@ namespace nap
 
         // Compile shader
         if (!load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
-            return false;
-
-        // Set shadow map sample counts
-        if (!setSpecializationConstant(shader::constant::QUAD_SAMPLE_COUNT, std::max<uint>(mQuadSampleCount, 1), EShaderType::Fragment, errorState))
-            return false;
-
-        if (!setSpecializationConstant(shader::constant::CUBE_SAMPLE_COUNT, std::max<uint>(mCubeSampleCount, 1), EShaderType::Fragment, errorState))
-            return false;
-
-        if (!setSpecializationConstant(shader::constant::ENABLE_ENVIRONMENT_MAPPING, static_cast<uint>(mEnableEnvironmentMapping), EShaderType::Fragment, errorState))
             return false;
 
         return true;

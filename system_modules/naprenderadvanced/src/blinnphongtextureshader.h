@@ -44,11 +44,6 @@ namespace nap
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-	
-		uint mQuadSampleCount = 8;
-		uint mCubeSampleCount = 4;
-        bool mEnableShadowMapping = true;
-        bool mEnableEnvironmentMapping = true;
 
 	private:
 		RenderAdvancedService* mRenderAdvancedService = nullptr;

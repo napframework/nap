@@ -135,6 +135,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -236,6 +237,7 @@
                             }
                         ],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BlinnPhongTextureMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -383,6 +385,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -552,6 +555,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -710,6 +714,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -856,6 +861,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -947,6 +953,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -1041,6 +1048,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -1541,6 +1549,20 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_8f0f9d2e",
+                            "Name": "QUAD_SAMPLE_COUNT",
+                            "Value": 4
+                        },
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_68ef2f06",
+                            "Name": "ENABLE_ENVIRONMENT_MAPPING",
+                            "Value": 0
+                        }
+                    ],
                     "Shader": "BlinnPhongColorShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
@@ -1548,11 +1570,7 @@
                 },
                 {
                     "Type": "nap::BlinnPhongColorShader",
-                    "mID": "BlinnPhongColorShader",
-                    "QuadSampleCount": 4,
-                    "CubeSampleCount": 4,
-                    "EnableShadowMapping": true,
-                    "EnableEnvironmentMapping": true
+                    "mID": "BlinnPhongColorShader"
                 },
                 {
                     "Type": "nap::Material",
@@ -1620,6 +1638,20 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_f1205988",
+                            "Name": "QUAD_SAMPLE_COUNT",
+                            "Value": 4
+                        },
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_66580480",
+                            "Name": "ENABLE_ENVIRONMENT_MAPPING",
+                            "Value": 0
+                        }
+                    ],
                     "Shader": "BlinnPhongTextureShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
@@ -1655,6 +1687,7 @@
                     ],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "ConstantShader",
                     "VertexAttributeBindings": [],
                     "BlendMode": "Opaque",
@@ -1670,11 +1703,7 @@
                 },
                 {
                     "Type": "nap::BlinnPhongTextureShader",
-                    "mID": "BlinnPhongTextureShader",
-                    "QuadSampleCount": 4,
-                    "CubeSampleCount": 4,
-                    "EnableShadowMapping": true,
-                    "EnableEnvironmentMapping": true
+                    "mID": "BlinnPhongTextureShader"
                 }
             ],
             "Children": []
