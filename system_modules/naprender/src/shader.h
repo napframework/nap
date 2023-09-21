@@ -183,12 +183,19 @@ namespace nap
 		/**
 		 * @return Vulkan vertex module.
 		 */
-		VkShaderModule getComputeModule() const										{ return mComputeModule; }
+		VkShaderModule getComputeModule() const											{ return mComputeModule; }
 
 		/**
 		 * @return local work group size
 		 */
-		glm::u32vec3 getWorkGroupSize() const										{ return mWorkGroupSize; }
+		glm::uvec3 getWorkGroupSize() const												{ return mWorkGroupSize; }
+
+		/**
+		 * Map of specialization constant names that are available to override a workgroup dimension size.
+		 * Key : dimension[0, 1, 2], Value: constant_name
+		 * @return workgroup dimension to override specialization constant name
+		 */
+		const std::unordered_map<uint, std::string>& getWorkGroupSizeOverrides() const	{ return mWorkGroupSizeOverrides; }
 
 	protected:
 		/**
@@ -204,8 +211,9 @@ namespace nap
 		virtual bool load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState);
 
 	private:
-		glm::u32vec3									mWorkGroupSize;							///< Workgroup size dimensions (x, y, z)
-		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
+		glm::uvec3											mWorkGroupSize;							///< Workgroup size dimensions (x, y, z)
+		std::unordered_map<uint, std::string>				mWorkGroupSizeOverrides;				///< Map of constant IDs that override a workgroup dimension size <dimension[0, 1, 2], constant_name>
+		VkShaderModule										mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
 	};
 
 

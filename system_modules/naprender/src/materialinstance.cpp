@@ -839,7 +839,12 @@ namespace nap
 		for (uint i = 0; i < constant_map.size(); i++)
 		{
 			const auto it = constant_map.find(i);
-			assert(it != constant_map.end());
+			if (it == constant_map.end())
+			{
+				nap::Logger::error("%s: Specialization Constant IDs are not in a sequence starting from 0", getMaterial()->getShader().mID.c_str());
+				return false;
+			}
+
 			{
 				VkSpecializationMapEntry entry = {};
 				entry.constantID = (*it).first;
@@ -1038,6 +1043,23 @@ namespace nap
 		mResource = &resource;
 		if (!initInternal(renderService,*resource.mComputeMaterial, resource, errorState))
 			return false;
+
+		// Set work group size
+		mWorkGroupSize = getMaterial().getWorkGroupSize();
+
+		// Set any work group size overrides
+		const auto& override_map = getMaterial().getShader().getWorkGroupSizeOverrides();
+		for (const auto& entry : override_map)
+		{
+			assert(entry.first <= mWorkGroupSize.length());
+			auto* constant = findConstant(entry.second);
+			if (constant == nullptr)
+				constant = getMaterial().findConstant(entry.second);
+
+			if (constant != nullptr)
+				mWorkGroupSize[entry.first] = constant->mValue;
+		}
+
 		return true;
 	}
 }

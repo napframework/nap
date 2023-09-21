@@ -29,15 +29,15 @@
 
 // NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
 // size supported by the device on pipeline creation.
-//layout(local_size_x_id = 0) in;
+layout(local_size_x_id = 0) in;
 
 // When declaring the workgroup size specialization constant to be higher than 0, NAP will not 
 // override the workgroup size when creating the compute pipeline. Uncommenting this line and commenting 
 // the line above will let the shader define the workgroup size.
-layout(local_size_x = 512) in;
+//layout(local_size_x = 512) in;
 
 // The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
-layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
 layout(constant_id = 1) const uint BOID_COUNT = 10000;
 layout(constant_id = 2) const uint FORCE_TARGETS = 0;
 layout(constant_id = 3) const uint SHARED_MEMORY_PATH = 0;

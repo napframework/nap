@@ -49,12 +49,7 @@ namespace nap
 		/**
 		 * @return constant value
 		 */
-		const uint& getValue() const										{ return mValue; }
-
-		/**
-		 * Sets the constant value. Must be set before pipeline creation for it to be effective.
-		 */
-		void setValue(uint value)											{ mValue = value; }
+		const uint getValue() const											{ return mValue; }
 
 		const ShaderConstantDeclaration& mDeclaration;
 		const ShaderConstant* mConstant = nullptr;

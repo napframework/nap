@@ -1079,46 +1079,42 @@ namespace nap
 		comp_shader_compiler.get_work_group_size_specialization_constants(work_group_spec_constants[0], work_group_spec_constants[1], work_group_spec_constants[2]);
 
 		// Search for workgroup specialization constants
-		std::map<ShaderConstantID, uint> workgroup_const_map;
 		const glm::uvec3& max_work_group_size = glm::make_vec3(&mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
 		for (uint i = 0; i < work_group_spec_constants.size(); i++)
 		{
+			// Check if the workgroup size is specified explicitly in the shader
 			if (work_group_spec_constants[i].id != spirv_cross::ID(0))
 			{
-				// Overwrite workgroup size with quaried maximum supported workgroup size
-				mWorkGroupSize[i] = max_work_group_size[i];
-				workgroup_const_map.insert({ work_group_spec_constants[i].constant_id, max_work_group_size[i] });
+				// Workgroup size of current dimension is a specialization constant
+				// Overwrite workgroup size with queried maximum supported workgroup size
+				mWorkGroupSize[i] = max_work_group_size[i]; // Set max as default
+				for (auto& constant_declaration : mConstantDeclarations)
+				{
+					if (constant_declaration.mConstantID == work_group_spec_constants[i].constant_id)
+					{
+						mWorkGroupSize[i] = constant_declaration.mValue;
+						mWorkGroupSizeOverrides.insert({ i, constant_declaration.mName });
+						break;
+					}
+				}
 			}
 			else
 			{
+				// Workgroup size of current dimension is explicitly specified
 				// Use reflection to store constant defined in shader source
 				mWorkGroupSize[i] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, i);
 			}
 		}
+		assert(glm::all(glm::greaterThan(mWorkGroupSize, { 0, 0, 0 })));
 
 #ifdef __APPLE__
 		// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
 		// which doesn't necessarily match physical device limits, especially on older devices.
 		// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
 		// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
-		for (auto& entry : workgroup_const_map)
-			entry.second = math::min<uint32>(entry.second, 512);
+		for (uint i = 0; i< mWorkGroupSize.length(); i++)
+			mWorkGroupSize[i] = math::min<uint32>(mWorkGroupSize[i], 512);
 #endif // __APPLE__
-
-		// Overwrite workgroup size with device maximum when specialization constants are defined.
-		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
-		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
-		for (const auto& entry : workgroup_const_map)
-		{
-			for (auto& constant_declaration : mConstantDeclarations)
-			{
-				if (constant_declaration.mConstantID == entry.first)
-				{
-					uint32 overwrite_work_group_size = entry.second;
-					constant_declaration.mValue = overwrite_work_group_size;
-				}
-			}
-		}
 
 		return initLayout(device, errorState);
 	}

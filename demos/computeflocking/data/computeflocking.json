@@ -1169,6 +1169,12 @@
                             "mID": "ShaderConstant_31672908",
                             "Name": "SHARED_MEMORY_PATH",
                             "Value": 1
+                        },
+                        {
+                            "Type": "nap::ShaderConstant",
+                            "mID": "ShaderConstant_b872e2f9",
+                            "Name": "MAX_GROUP_SIZE_X",
+                            "Value": 512
                         }
                     ],
                     "Shader": "ComputeShader"

@@ -260,11 +260,28 @@ namespace nap
 	{
 	}
 
+
 	bool ComputeMaterial::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
-		return rebuild(*mShader, errorState);
+		if (!rebuild(*mShader, errorState))
+			return false;
+
+		// Set work group size
+		mWorkGroupSize = getShader().getWorkGroupSize();
+
+		// Set any work group size overrides
+		const auto& override_map = getShader().getWorkGroupSizeOverrides();
+		for (const auto& entry : override_map)
+		{
+			assert(entry.first <= mWorkGroupSize.length());
+			auto* constant = findConstant(entry.second);
+			if (constant != nullptr)
+				mWorkGroupSize[entry.first] = constant->mValue;
+		}
+
+		return true;
 	}
 }

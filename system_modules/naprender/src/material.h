@@ -202,6 +202,14 @@ namespace nap
 		 */
 		const ComputeShader& getShader() const						{ assert(ComputeMaterial::mShader != nullptr); return *ComputeMaterial::mShader; }
 
+		/**
+		 * @return the workgroup size
+		 */
+		const glm::uvec3& getWorkGroupSize() const					{ return mWorkGroupSize; }
+
 		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
+
+	protected:
+		glm::uvec3 mWorkGroupSize = { 1, 1, 1 };
 	};
 }

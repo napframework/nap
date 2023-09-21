@@ -70,11 +70,11 @@ namespace nap
 		MaterialInstanceResource() :
 			BaseMaterialInstanceResource(materialinstanceresource::materialr)	{}
 
-		ResourcePtr<Material>							mMaterial;										///< Property: "Material" source material
-		EBlendMode										mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
-		EDepthMode										mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
-		EDepthCompareMode								mDepthCompareMode = EDepthCompareMode::LessOrEqual;	///< Property: 'DepthCompareMode' ...
-		bool											mEnableDepthCompare = false;						///< Property: 'EnableDepthCompare' ...
+		ResourcePtr<Material>						mMaterial;											///< Property: "Material" source material
+		EBlendMode									mBlendMode = EBlendMode::NotSet;					///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
+		EDepthMode									mDepthMode = EDepthMode::NotSet;					///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
+		EDepthCompareMode							mDepthCompareMode = EDepthCompareMode::LessOrEqual;	///< Property: 'DepthCompareMode' ...
+		bool										mEnableDepthCompare = false;						///< Property: 'EnableDepthCompare' ...
 	};
 
 	/**
@@ -362,8 +362,14 @@ namespace nap
 		 */
 		const ComputeMaterial& getMaterial() const										{ return static_cast<const ComputeMaterial&>(*BaseMaterialInstance::getMaterial()); }
 
+		/**
+		 * @return the workgroup size
+		 */
+		const glm::uvec3& getWorkGroupSize() const										{ return mWorkGroupSize; }
+
 	private:
 		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
+		glm::uvec3								mWorkGroupSize = { 1, 1, 1 };
 	};
 
 

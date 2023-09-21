@@ -104,7 +104,7 @@ namespace nap
 		/**
 		 * @return the local workgroup size
 		 */
-		glm::u32vec3 getWorkGroupSize() const							{ return mComputeMaterialInstance.getMaterial().getShader().getWorkGroupSize(); }
+		glm::uvec3 getWorkGroupSize() const								{ return mComputeMaterialInstance.getWorkGroupSize(); }
 
 		/**
 		 * Sets the number of compute shader invocations for this instance
