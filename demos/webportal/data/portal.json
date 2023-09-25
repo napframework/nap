@@ -390,7 +390,7 @@
             "Title": "Portal Demo",
             "Width": 1280,
             "Height": 720,
-            "Mode": "FIFO",
+            "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
                     0.0,
@@ -430,7 +430,7 @@
                     "Type": "nap::WebSocketTicket",
                     "mID": "WebSocketTicket",
                     "UserName": "napuser",
-                    "Password": "letmein!2"
+                    "Password": "letmein!"
                 }
             ]
         }

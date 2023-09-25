@@ -6,8 +6,8 @@
 #include "parameterdropdown.h"
 
 RTTI_BEGIN_CLASS(nap::ParameterDropDown)
-RTTI_PROPERTY("Items", &nap::ParameterDropDown::mItems, nap::rtti::EPropertyMetaData::Default)
-RTTI_PROPERTY("SelectedIndex", &nap::ParameterDropDown::mSelectedIndex, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Items", &nap::ParameterDropDown::mItems, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("SelectedIndex", &nap::ParameterDropDown::mSelectedIndex, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
@@ -25,8 +25,9 @@ namespace nap
 
     void ParameterDropDown::setSelectedIndex(int selectedIndex)
     {
-        if(mSelectedIndex!=selectedIndex && selectedIndex < mItems.size())
+        if(selectedIndex!=mSelectedIndex)
         {
+            assert(selectedIndex >= 0 && selectedIndex < mItems.size());
             mSelectedIndex = selectedIndex;
             indexChanged.trigger(mSelectedIndex);
         }

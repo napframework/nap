@@ -56,14 +56,7 @@ namespace nap
         if (!error.check(selected_index_type == RTTI_OF(int), "%s: cannot process value type %s", mID.c_str(), selected_index_type.get_name().data()))
             return false;
 
-        int index = selected_index_arg->asInt();
-
-        mParameter->indexChanged.disconnect(mIndexChangedSlot);
-
-        if(index!=mParameter->getSelectedIndex())
-            mParameter->setSelectedIndex(index);
-
-        mParameter->indexChanged.connect(mIndexChangedSlot);
+        mParameter->setSelectedIndex(selected_index_arg->asInt());
 
         return true;
     };
