@@ -71,7 +71,7 @@ class ArchiveHandler():
                 cmd = f'unzip {abs_archive}'
                 p = run(cmd, shell=True, cwd=temp_dir.name, stdout=PIPE)
             else:
-                archive.extractall(path=self.__modules_dir)
+                archive.extractall(path=temp_dir.name)
 
             initialiser = ModuleInitialiser(self.__interactive,
                                             self.__deploy_demo,
