@@ -67,6 +67,12 @@ namespace nap
 			showIntParameter(*int_parameter);
 		});
 
+		registerParameterEditor(RTTI_OF(ParameterUInt), [](Parameter& parameter)
+		{
+			ParameterUInt* uint_parameter = rtti_cast<ParameterUInt>(&parameter);
+			showIntParameter(*uint_parameter);
+		});
+
 		registerParameterEditor(RTTI_OF(ParameterLong), [](Parameter& parameter)
 		{
 			ParameterLong* long_parameter = rtti_cast<ParameterLong>(&parameter);

@@ -60,6 +60,7 @@ namespace nap
 
 	using ParameterFloat	= ParameterNumeric<float>;
 	using ParameterInt		= ParameterNumeric<int>;
+	using ParameterUInt		= ParameterNumeric<uint>;
 	using ParameterByte		= ParameterNumeric<uint8_t>;
 	using ParameterDouble	= ParameterNumeric<double>;
 	using ParameterLong		= ParameterNumeric<int64_t>;
