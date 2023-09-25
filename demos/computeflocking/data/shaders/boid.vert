@@ -4,9 +4,6 @@
 
 #version 450 core
 
-// Specialization constants
-layout(constant_id = 0) const uint BOID_COUNT = 10000;
-
 struct Boid
 {
 	vec4 position;
