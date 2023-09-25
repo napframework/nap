@@ -172,9 +172,6 @@ namespace nap
 		uint getNumBoids() const;
 
 	private:
-		void updateRenderMaterial();
-		void updateComputeMaterial(ComputeComponentInstance* comp);
-
 		FlockingSystemComponent*					mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
 
@@ -182,9 +179,21 @@ namespace nap
 		double										mDeltaTime = 0.0;
 		double										mElapsedTime = 0.0;
 
-		std::vector<ComputeComponentInstance*>		mComputeInstances;					//< Compute instances found in the entity
-		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	//< The current compute instance
-		int											mComputeInstanceIndex = 0;			//< Current compute instance index
+		ComputeComponentInstance*					mComputeInstance = nullptr;
+
+		BufferBindingStructInstance*				mBindingIn = nullptr;
+		BufferBindingStructInstance*				mBindingOut = nullptr;
+		StructBuffer*								mBoidBufferInput = nullptr;
+		StructBuffer*								mBoidBufferOutput = nullptr;
+
+		BufferBindingStructInstance*				mRenderStorageBinding = nullptr;
+		UniformStructInstance*						mComputeUBOStruct = nullptr;
+
+		UniformVec3ArrayInstance*					mTargetsUniform = nullptr;
+		UniformUIntInstance*						mTargetCountUniform = nullptr;
+
+		std::unique_ptr<ParameterFloat>				mElapsedTimeParam;
+		std::unique_ptr<ParameterFloat>				mDeltaTimeParam;
 
 		std::vector<ComponentInstancePtr<TransformComponent>> mTargetTransforms = initComponentInstancePtr(this, &FlockingSystemComponent::mTargetTransforms);
 	};

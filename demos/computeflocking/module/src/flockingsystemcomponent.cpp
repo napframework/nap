@@ -15,6 +15,7 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
+#include <uniformupdate.h>
 
 RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("NumBoids",					&nap::FlockingSystemComponent::mNumBoids,					nap::rtti::EPropertyMetaData::Default)
@@ -120,9 +121,10 @@ namespace nap
 		// Cache resource
 		mResource = getComponent<FlockingSystemComponent>();
 
-		// Collect compute instances under this entity
-		getEntityInstance()->getComponentsOfType<ComputeComponentInstance>(mComputeInstances);
-		mCurrentComputeInstance = mComputeInstances.front();
+		// Fetch compute instance under this entity
+		mComputeInstance = getEntityInstance()->findComponent<ComputeComponentInstance>();
+		if (!errorState.check(mComputeInstance != nullptr, "Missing compute component"))
+			return false;
 
 		// Initialize base class
 		if (!RenderableMeshComponentInstance::init(errorState))
@@ -136,10 +138,71 @@ namespace nap
 		mNumBoids = mResource->mNumBoids;
 #endif
 
-		for (auto& comp : mComputeInstances)
-			comp->setInvocations(mNumBoids);
+		mBindingIn = mComputeInstance->getMaterialInstance().getOrCreateBuffer<BufferBindingStructInstance>("BoidBuffer_In");
+		mBindingOut = mComputeInstance->getMaterialInstance().getOrCreateBuffer<BufferBindingStructInstance>("BoidBuffer_Out");
+		mBoidBufferInput = &mBindingIn->getBuffer();
+		mBoidBufferOutput = &mBindingOut->getBuffer();
 
-		mComputeInstanceIndex = -1;
+		mComputeInstance->setInvocations(mNumBoids);
+		mComputeUBOStruct = mComputeInstance->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
+		if (mComputeUBOStruct == nullptr)
+			return false;
+
+		mTargetsUniform = mComputeUBOStruct->getOrCreateUniform<UniformVec3ArrayInstance>(computeuniform::targets);
+		if (mTargetsUniform == nullptr)
+			return false;
+
+		mTargetCountUniform = mComputeUBOStruct->getOrCreateUniform<UniformUIntInstance>(computeuniform::targetCount);
+		if (mTargetCountUniform == nullptr)
+			return false;
+
+		mRenderStorageBinding = rtti_cast<BufferBindingStructInstance>(getMaterialInstance().findBinding("VERTSSBO"));
+		if (mRenderStorageBinding == nullptr)
+			return false;
+
+		mElapsedTimeParam = std::make_unique<ParameterFloat>();
+		mDeltaTimeParam = std::make_unique<ParameterFloat>();
+
+		// Compute shader uniforms
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime),		*mElapsedTimeParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime),			*mDeltaTimeParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius),			*mResource->mViewRadiusParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius),		*mResource->mAvoidRadiusParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed),			*mResource->mMinSpeedParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed),			*mResource->mMaxSpeedParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight),		*mResource->mTargetWeightParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight),	*mResource->mAlignmentWeightParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight),		*mResource->mCohesionWeightParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight),	*mResource->mSeparationWeightParam);
+		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius),		*mResource->mBoundsRadiusParam);
+
+
+		// Vertex shader uniforms
+		auto* vert_ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
+		if (vert_ubo_struct == nullptr)
+			return false;
+
+		registerUniformUpdate(*vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize),			*mResource->mBoidSizeParam);
+		registerUniformUpdate(*vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale),		*mResource->mFresnelScaleParam);
+		registerUniformUpdate(*vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower),		*mResource->mFresnelPowerParam);
+
+
+		// Fragment shader uniforms
+		auto* frag_ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
+		if (frag_ubo_struct == nullptr)
+			return false;
+
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor),			*mResource->mRandomColorParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition),		*mResource->mLightPositionParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity),		*mResource->mLightIntensityParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor),			*mResource->mDiffuseColorParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor),			*mResource->mLightColorParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::haloColor),			*mResource->mHaloColorParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::specularColor),		*mResource->mSpecularColorParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::shininess),			*mResource->mShininessParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity),	*mResource->mDiffuseIntensityParam);
+		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity),	*mResource->mSpecularIntensityParam);
+
 		return true;
 	}
 
@@ -149,91 +212,36 @@ namespace nap
 		// Update time variables
 		mDeltaTime = deltaTime;
 		mElapsedTime += deltaTime;
-	}
 
-
-	void FlockingSystemComponentInstance::updateComputeMaterial(ComputeComponentInstance* comp)
-	{
-		// Update compute shader uniforms
-		UniformStructInstance* ubo_struct = comp->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
-		if (ubo_struct != nullptr)
-		{
-			std::vector<glm::vec3> targets;
-			targets.reserve(mTargetTransforms.size());
-
-			auto* targets_uni = ubo_struct->getOrCreateUniform<UniformVec3ArrayInstance>(computeuniform::targets);
-			uint count = std::min<uint>(mTargetTransforms.size(), targets_uni->getNumElements());
-			for (uint i = 0; i < count; i++)
-				targets.emplace_back(mTargetTransforms[i]->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
-
-			targets_uni->setValues(targets);
-			ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::targetCount)->setValue(targets.size());
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime)->setValue(static_cast<float>(mElapsedTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime)->setValue(static_cast<float>(mDeltaTime));
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius)->setValue(mResource->mViewRadiusParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius)->setValue(mResource->mAvoidRadiusParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed)->setValue(mResource->mMinSpeedParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed)->setValue(mResource->mMaxSpeedParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight)->setValue(mResource->mTargetWeightParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight)->setValue(mResource->mAlignmentWeightParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight)->setValue(mResource->mCohesionWeightParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight)->setValue(mResource->mSeparationWeightParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius)->setValue(mResource->mBoundsRadiusParam->mValue);
-		}
-	}
-
-
-	void FlockingSystemComponentInstance::updateRenderMaterial()
-	{
-		// Update vertex shader uniforms
-		UniformStructInstance* ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::VERTUBO);
-		if (ubo_struct != nullptr)
-		{
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize)->setValue(mResource->mBoidSizeParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale)->setValue(mResource->mFresnelScaleParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower)->setValue(mResource->mFresnelPowerParam->mValue);
-		}
-
-		// Update vertex shader buffer bindings
-		auto* compute_storage_binding = rtti_cast<BufferBindingStructInstance>(mCurrentComputeInstance->getMaterialInstance().findBinding("BoidBuffer_Out"));
-		if (compute_storage_binding != nullptr)
-		{
-			auto* render_storage_binding = rtti_cast<BufferBindingStructInstance>(getMaterialInstance().findBinding("VERTSSBO"));
-			if (render_storage_binding != nullptr)
-				render_storage_binding->setBuffer(compute_storage_binding->getBuffer());
-		}
-
-		// Update fragment shader uniforms
-		ubo_struct = getMaterialInstance().getOrCreateUniform(uniform::FRAGUBO);
-		if (ubo_struct != nullptr)
-		{
-			ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor)->setValue(mResource->mRandomColorParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition)->setValue(mResource->mLightPositionParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity)->setValue(mResource->mLightIntensityParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor)->setValue(mResource->mDiffuseColorParam->mValue.toVec3());
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor)->setValue(mResource->mLightColorParam->mValue.toVec3());
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::haloColor)->setValue(mResource->mHaloColorParam->mValue.toVec3());
-			ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::specularColor)->setValue(mResource->mSpecularColorParam->mValue.toVec3());
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::shininess)->setValue(mResource->mShininessParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity)->setValue(mResource->mDiffuseIntensityParam->mValue);
-			ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity)->setValue(mResource->mSpecularIntensityParam->mValue);
-		}
+		// Update time parameters
+		mDeltaTimeParam->setValue(static_cast<float>(mDeltaTime));
+		mElapsedTimeParam->setValue(static_cast<float>(mElapsedTime));
 	}
 
 
 	void FlockingSystemComponentInstance::compute()
 	{
-		// Update current compute instance and index
-		assert(mComputeInstanceIndex >= -1);
-		mComputeInstanceIndex = (mComputeInstanceIndex + 1) % mComputeInstances.size();
-		mCurrentComputeInstance = mComputeInstances[mComputeInstanceIndex];
+		// Swap buffers
+		mBindingIn->setBuffer(*mBoidBufferInput);
+		mBindingOut->setBuffer(*mBoidBufferOutput);
 
-		// Update the compute material uniforms of the current compute instance
-		updateComputeMaterial(mCurrentComputeInstance);
+		// Update the compute material uniforms of the compute instance
+		std::vector<glm::vec3> targets;
+		targets.reserve(mTargetTransforms.size());
 
-		// Compute the current compute instance
+		uint count = std::min<uint>(mTargetTransforms.size(), mTargetsUniform->getNumElements());
+		for (uint i = 0; i < count; i++)
+			targets.emplace_back(mTargetTransforms[i]->getGlobalTransform() * glm::vec4(0.0f, 0.0f, 0.0f, 1.0f));
+
+		mTargetsUniform->setValues(targets);
+		mTargetCountUniform->setValue(targets.size());
+
+		// Compute the compute instance
 		// This updates the boid storage buffers to use for rendering
-		mRenderService->computeObjects({ mCurrentComputeInstance });
+		mRenderService->computeObjects({ mComputeInstance });
+
+		// Swap buffers
+		std::swap(mBoidBufferInput, mBoidBufferOutput);
 	}
 
 
@@ -252,8 +260,8 @@ namespace nap
 			return;
 		}
 
-		// Update render uniforms
-		updateRenderMaterial();
+		// Update render storage binding
+		mRenderStorageBinding->setBuffer(mBindingOut->getBuffer());
 
 		// Set mvp matrices if present in material
 		if (mProjectMatUniform != nullptr)

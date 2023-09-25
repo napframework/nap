@@ -437,7 +437,7 @@
             "Components": [
                 {
                     "Type": "nap::FlockingSystemComponent",
-                    "mID": "FlockingSystemComponent",
+                    "mID": "FlockingSystem",
                     "Visible": true,
                     "Tags": [],
                     "LayerRegistry": "",
@@ -523,7 +523,7 @@
                 },
                 {
                     "Type": "nap::ComputeComponent",
-                    "mID": "ComputeComponent_A",
+                    "mID": "ComputeFlock",
                     "Enabled": true,
                     "ComputeMaterialInstance": {
                         "Uniforms": [],
@@ -548,34 +548,8 @@
                     "Invocations": 1
                 },
                 {
-                    "Type": "nap::ComputeComponent",
-                    "mID": "ComputeComponent_B",
-                    "Enabled": true,
-                    "ComputeMaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [
-                            {
-                                "Type": "nap::BufferBindingStruct",
-                                "mID": "BufferBindingStruct_00f5d2ba",
-                                "Name": "BoidBuffer_In",
-                                "Buffer": "BoidBufferB"
-                            },
-                            {
-                                "Type": "nap::BufferBindingStruct",
-                                "mID": "BufferBindingStruct_8f875ea7",
-                                "Name": "BoidBuffer_Out",
-                                "Buffer": "BoidBufferA"
-                            }
-                        ],
-                        "Constants": [],
-                        "ComputeMaterial": "ComputeMaterial"
-                    },
-                    "Invocations": 1
-                },
-                {
                     "Type": "nap::SelectMeshComponent",
-                    "mID": "SelectMeshComponent",
+                    "mID": "SelectBoidMesh",
                     "Meshes": [
                         "BoxMesh",
                         "CapsuleMesh",

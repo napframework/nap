@@ -68,7 +68,7 @@ namespace nap
 		/**
 		 * @return all uniform instances contained by this struct.
 		 */
-		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const	{ return mUniforms; }
+		const std::vector<std::unique_ptr<UniformInstance>>& getUniforms() const		{ return mUniforms; }
 
 		/**
 		 * Tries to find a uniform with the given name.
@@ -252,18 +252,18 @@ namespace nap
 		 * Updates the uniform value, data is not pushed immediately. 
 		 * @param value new uniform value
 		 */
-		void setValue(const T& value)					    { mValue = value; }
+		void setValue(const T& value)													{ mValue = value; }
 
 		/**
 		 * Returns the uniform value
 		 */
-		const T& getValue() const							{ return mValue; }
-		
+		const T& getValue() const														{ return mValue; }
+			
 		/**
 		 * Update instance from resource, data is not pushed immediately. 
 		 * @param resource the resource to copy the value from
 		 */
-		void set(const TypedUniformValue<T>& resource)		{ mValue = resource.mValue; }
+		void set(const TypedUniformValue<T>& resource)									{ mValue = resource.mValue; }
 
 		/**
 		 * Pushes the data to the 'Shader'.
@@ -323,20 +323,20 @@ namespace nap
 
 	public:
 		TypedUniformValueArrayInstance(const ShaderVariableValueArrayDeclaration& declaration) :
-			UniformValueArrayInstance(declaration)				{ }
+			UniformValueArrayInstance(declaration) { }
 
 		/**
 		 * Updates the uniform value from a resource, data is not pushed immediately. 
 		 * @param resource resource to copy data from.
 		 */
-		void set(const TypedUniformValueArray<T>& resource)		{ mValues = resource.mValues; }
+		void set(const TypedUniformValueArray<T>& resource)							{ mValues = resource.mValues; }
 
 		/**
 		 * Updates the uniform value, data is not pushed immediately.
 		 * Note that the length of the given values must be =< than length declared in shader.
 		 * @param values new list of values
 		 */
-		void setValues(const std::vector<T>& values)			{ assert(values.size() <= mDeclaration->mNumElements); mValues = values; }
+		void setValues(const std::vector<T>& values)								{ assert(values.size() <= mDeclaration->mNumElements); mValues = values; }
 
 		/**
 		 * Updates a single uniform value in the array, data is not pushed immediately.
@@ -344,22 +344,22 @@ namespace nap
 		 * @param value the value to set
 		 * @param index the index in the array
 		 */
-		void setValue(T value, int index)						{ assert(index < mValues.size()); mValues[index] = value; }
+		void setValue(T value, int index)											{ assert(index < mValues.size()); mValues[index] = value; }
 
 		/**
 		 * Resize based on shader declaration.
 		 */
-		virtual void setDefault() override						{ mValues.resize(mDeclaration->mNumElements, T()); }
+		virtual void setDefault() override											{ mValues.resize(mDeclaration->mNumElements, T()); }
 
 		/**
 		 * @return total number of elements in array
 		 */
-		int getNumElements() const								{ return static_cast<int>(mValues.size()); }
+		int getNumElements() const													{ return static_cast<int>(mValues.size()); }
 
 		/**
 		 * @return entire array as a reference
 		 */
-		std::vector<T>& getValues()								{ return mValues; }
+		std::vector<T>& getValues()													{ return mValues; }
 
 		/**
 		 * Pushes the data to the 'Shader'
