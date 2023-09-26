@@ -71,6 +71,7 @@ namespace nap
 		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
 		bool							mEnableCaching = true;										///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
+		bool							mEnableDebug = true;										///< Property: 'EnableDebug' Loads debug extension for printing Vulkan debug messages.
 		bool							mEnableRobustBufferAccess = false;							///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
 		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
 		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
@@ -1287,6 +1288,8 @@ namespace nap
 		VkInstance								mInstance = VK_NULL_HANDLE;
 		VmaAllocator							mVulkanAllocator = VK_NULL_HANDLE;
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
+		VkDebugUtilsMessengerEXT				mDebugUtilsMessengerCallback = VK_NULL_HANDLE;
+
 		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
 		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;

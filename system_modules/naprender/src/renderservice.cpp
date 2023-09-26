@@ -104,6 +104,7 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
@@ -323,29 +324,14 @@ namespace nap
 	/**
 	 * @return the set of required device extension names
 	 */
-	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
+	static std::vector<std::string> getRequiredDeviceExtensionNames(uint32 apiVersion)
 	{
-		const static std::vector<std::string> layers = 
-		{ 
-			VK_KHR_MAINTENANCE1_EXTENSION_NAME
-		};
-		return layers;
-	}
+		// VK_KHR_maintenance1 has been promoted to VK_VERSION_1_1, require it under Vulkan 1.1
+		if (apiVersion < VK_VERSION_1_1)
+			return { VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
-
-	/**
-	 * Callback that receives a debug message from Vulkan
-	 */
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
-		uint64_t obj,
-		size_t location,
-		int32_t code,
-		const char* layerPrefix,
-		const char* msg,
-		void* userData)
-	{
-		nap::Logger::warn("Vulkan Layer [%s]:\n%s", layerPrefix, msg);
-		return VK_FALSE;
+		// No required extensions from Vulkan 1.1
+		return {};
 	}
 
 
@@ -355,32 +341,99 @@ namespace nap
 	static VkResult createDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
 	{
 		auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
-		return func != VK_NULL_HANDLE ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
+		return (func != VK_NULL_HANDLE) ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
 
 	/**
 	 * Destroys a debug report callback object
 	 */
-	static void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback)
+	static void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback, const VkAllocationCallbacks* pAllocator)
+
 	{
 		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
 		if (func != VK_NULL_HANDLE)
-			func(instance, pCallback, nullptr);
+			func(instance, pCallback, pAllocator);
 	}
 
 
 	/**
-	 * Sets up the vulkan messaging callback specified above
+	 * Legacy callback that receives a debug message from Vulkan
+	 */
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
+		uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData)
+	{
+		nap::Logger::warn("Vulkan Layer [%s]:\n%s", layerPrefix, msg);
+		return VK_FALSE;
+	}
+
+
+	/**
+	 * Sets up legacy Vulkan debug report callback specified above
 	 */
 	static bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback, utility::ErrorState& errorState)
 	{
 		VkDebugReportCallbackCreateInfoEXT create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-		create_info.pfnCallback = debugCallback;
+		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
+		create_info.pfnCallback = debugReportCallback;
 
 		return errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
+	}
+
+
+	/**
+	 * Creates a debug utils messenger callback object
+	 */
+	static VkResult createDebugUtilsMessengerCallbackEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback)
+	{
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+		return (func != VK_NULL_HANDLE) ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+
+
+	/**
+	 * Destroys a debug utils messenger callback object
+	 */
+	static void destroyDebugUtilsMessengerCallbackEXT(VkInstance instance, VkDebugUtilsMessengerEXT pCallback, const VkAllocationCallbacks* pAllocator)
+	{
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (func != VK_NULL_HANDLE)
+			func(instance, pCallback, pAllocator);
+	}
+
+
+	/**
+	 * Callback that receives a debug message from Vulkan
+	 */
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
+	{
+		if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			nap::Logger::error("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			nap::Logger::warn("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+			nap::Logger::info("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+			nap::Logger::debug("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+
+		return VK_FALSE;
+	}
+
+
+	/**
+	 * Sets up the Vulkan messaging callback specified above
+	 */
+	static bool setupDebugUtilsMessengerCallback(VkInstance instance, VkDebugUtilsMessengerEXT& callback, utility::ErrorState& errorState)
+	{
+		VkDebugUtilsMessengerCreateInfoEXT create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+		create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+		create_info.pfnUserCallback = debugUtilsMessengerCallback;
+
+		return errorState.check(createDebugUtilsMessengerCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
 	}
 
 
@@ -414,6 +467,45 @@ namespace nap
 				outLayers.emplace_back(layer.layerName);
 		}
 		return true;
+	}
+
+
+	/**
+	 * Returns debug instance extension
+	 */
+	static bool getDebugInstanceExtensions(bool& debugUtilsExtensionFound, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	{
+		// Add debug messenger extension, we need this to relay debug messages
+		// First gather the available instance extensions
+		uint instance_extension_count;
+		vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+
+		std::vector<VkExtensionProperties> available_instance_extensions(instance_extension_count);
+		vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, available_instance_extensions.data());
+
+		// Check if VK_EXT_debug_utils is supported, which supersedes VK_EXT_debug_report
+		debugUtilsExtensionFound = false;
+		for (const auto& ext : available_instance_extensions)
+		{
+			if (std::strcmp(ext.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
+			{
+				outExtensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+				debugUtilsExtensionFound = true;
+				return true;
+			}
+		}
+
+		// Fallback to VK_EXT_debug_report
+		for (const auto& ext : available_instance_extensions)
+		{
+			if (std::strcmp(ext.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0)
+			{
+				outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+				return true;
+			}
+		}
+		errorState.fail("No available debug messenging extension found!");
+		return false;
 	}
 
 
@@ -1584,7 +1676,13 @@ namespace nap
 		}
 
 		// Add debug display extension, we need this to relay debug messages
-		instance_extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		bool is_debug_utils_found = false;
+		const bool is_debug_enabled = render_config->mEnableDebug;
+		if (is_debug_enabled)
+		{
+			if (!errorState.check(getDebugInstanceExtensions(is_debug_utils_found, instance_extensions, errorState), "Failed to find available debug extension while debug is enabled"))
+				return false;
+		}
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
@@ -1609,8 +1707,14 @@ namespace nap
 		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
 			return false;
 
-		// Vulkan messaging callback
-		setupDebugCallback(mInstance, mDebugCallback, errorState);
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_enabled)
+		{
+			if (is_debug_utils_found)
+				setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, errorState);
+			else 
+				setupDebugCallback(mInstance, mDebugCallback, errorState);
+		}
 
 		// Create presentation surface if not running headless. Can only do this after creation of instance.
 		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
@@ -1648,7 +1752,7 @@ namespace nap
 		nap::Logger::info("Non solid fill mode: %s", mNonSolidFillModeSupported ? "Supported" : "Not Supported");
 
 		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
 
 		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
 		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
@@ -1748,14 +1852,17 @@ namespace nap
 		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
-		// Add debug display extension, we need this to relay debug messages
-		std::vector<std::string> instance_extensions = { VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+		// Get available debug instance extensions, notify when not all could be found
+		std::vector<std::string> required_instance_extensions;
+		bool is_debug_utils_found = false;
+		if (!error.check(getDebugInstanceExtensions(is_debug_utils_found, required_instance_extensions, error), "Failed to find available debug extension while debug is enabled"))
+			return false;
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
 #ifndef NDEBUG
 		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = {"VK_LAYER_KHRONOS_validation"};
+		const std::vector<std::string>& requested_layers = { "VK_LAYER_KHRONOS_validation" };
 		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
 			return false;
 
@@ -1769,12 +1876,15 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_MAKE_VERSION(1, 0, 0);
-		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, error))
+		mAPIVersion = VK_API_VERSION_1_0;
+		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
 			return false;
 
-		// Vulkan messaging callback
-		setupDebugCallback(mInstance, mDebugCallback, error);
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_utils_found)
+			setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, error);
+		else
+			setupDebugCallback(mInstance, mDebugCallback, error);
 
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
@@ -1785,7 +1895,7 @@ namespace nap
 			return false;
 
 		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
 
 		// Create unique set
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
@@ -2161,9 +2271,15 @@ namespace nap
 			mDevice = VK_NULL_HANDLE;
 		}
 
+		if (mDebugUtilsMessengerCallback != VK_NULL_HANDLE)
+		{
+			destroyDebugUtilsMessengerCallbackEXT(mInstance, mDebugUtilsMessengerCallback, nullptr);
+			mDebugUtilsMessengerCallback = VK_NULL_HANDLE;
+		}
+
 		if (mDebugCallback != VK_NULL_HANDLE)
 		{
-			destroyDebugReportCallbackEXT(mInstance, mDebugCallback);
+			destroyDebugReportCallbackEXT(mInstance, mDebugCallback, nullptr);
 			mDebugCallback = VK_NULL_HANDLE;
 		}
 
