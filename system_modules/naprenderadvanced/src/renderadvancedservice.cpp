@@ -657,8 +657,12 @@ namespace nap
 			return;
 		}
 
-		mPreRenderCubeMapsCommand = std::make_unique<PreRenderCubeMapsCommand>(*this);
-		mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
+		// Queue cube maps pre-render command if they are present in the scene
+		if (!mCubeMapFromFileTargets.empty())
+		{
+			mPreRenderCubeMapsCommand = std::make_unique<PreRenderCubeMapsCommand>(*this);
+			mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
+		}
 	}
 
 
