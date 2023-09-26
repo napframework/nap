@@ -141,6 +141,11 @@ namespace nap
 			 */
 			 void shutdown() override;
 
+             /**
+              * Called before shutting down the services. Stops the running audio stream if any.
+              */
+             void preShutdown() override;
+
 			/**
 			 * @return the audio node manager owned by the audio service. The @NodeManager contains a node system that performs all the DSP.
 			 */
