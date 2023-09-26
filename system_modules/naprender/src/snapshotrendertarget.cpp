@@ -28,7 +28,7 @@ namespace nap
 			color_attachment.format = colorFormat;
 			color_attachment.samples = samples;
 			color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
