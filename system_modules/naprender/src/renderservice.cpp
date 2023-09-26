@@ -327,7 +327,7 @@ namespace nap
 	static std::vector<std::string> getRequiredDeviceExtensionNames(uint32 apiVersion)
 	{
 		// VK_KHR_maintenance1 has been promoted to VK_VERSION_1_1, require it under Vulkan 1.1
-		if (apiVersion < VK_VERSION_1_1)
+		if (apiVersion < VK_API_VERSION_1_1)
 			return { VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
 		// No required extensions from Vulkan 1.1
