@@ -1632,6 +1632,11 @@ namespace nap
 		}
 #endif // _WIN32
 
+		// Metal limits sampler descriptors per shader to 16 by default. Here we explicitly unlock this limitation.
+#if defined(__APPLE__)
+		setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
+#endif // __APPLE__
+
 		// Initialize SDL video
 		mSDLInitialized = SDL::initVideo(errorState);
 		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))

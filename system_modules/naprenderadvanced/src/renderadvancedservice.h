@@ -182,6 +182,6 @@ namespace nap
 
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;
 		static constexpr const uint mRequiredVulkanVersionMinor = 0;
-		static constexpr const uint mMaxLightCount = 6;
+		static constexpr const uint mMaxLightCount = 8;
 	};
 }
