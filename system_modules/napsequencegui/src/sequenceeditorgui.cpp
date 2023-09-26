@@ -105,8 +105,6 @@ namespace nap
         const Sequence &sequence = mEditor.mSequencePlayer->getSequenceConst();
         SequencePlayer &sequence_player = *mEditor.mSequencePlayer.get();
 
-        // hotkeys
-
         // Start stop player with keyboard
         if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
         {
@@ -169,7 +167,14 @@ namespace nap
         // begin window
         if(visible)
         {
-            //
+            // if the sequence has changed, mark the state dirty so caches can get cleared
+            if(mState.mSequenceName!=sequence_player.getSequenceFilename())
+            {
+                mState.mSequenceName=sequence_player.getSequenceFilename();
+                mState.mDirty = true;
+            }
+
+            // check if window is resized
             ImVec2 windowSize = ImGui::GetWindowSize();
             if(windowSize.x != mState.mWindowSize.x || windowSize.y != mState.mWindowSize.y)
             {
