@@ -44,6 +44,13 @@ namespace nap
          */
         void removeAdapter(SequencePlayerCurveAdapterBase* curveAdapter);
 
+        /**
+         * Initializes output, checks if given parameter type is allowed, returns true on success
+         * @param errorState contains any error message
+         * @return true on success
+         */
+        bool init(utility::ErrorState& errorState) override;
+
     protected:
         /**
          * called from update loop sequence service main thread

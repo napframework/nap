@@ -7,6 +7,7 @@
 #include "sequenceplayercurveadapter.h"
 
 #include <nap/logger.h>
+#include <parametersimple.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerCurveOutput)
         RTTI_PROPERTY("Parameter", &nap::SequencePlayerCurveOutput::mParameter, nap::rtti::EPropertyMetaData::Required)
@@ -15,6 +16,18 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    static std::vector<rtti::TypeInfo> allowed_parameter_types =
+    {
+        RTTI_OF(ParameterFloat),
+        RTTI_OF(ParameterBool),
+        RTTI_OF(ParameterDouble),
+        RTTI_OF(ParameterLong),
+        RTTI_OF(ParameterInt),
+        RTTI_OF(ParameterVec2),
+        RTTI_OF(ParameterVec3),
+        RTTI_OF(ParameterVec4)
+    };
+
     SequencePlayerCurveOutput::SequencePlayerCurveOutput(SequenceService& service)
         : SequencePlayerOutput(service)
     {
@@ -56,5 +69,19 @@ namespace nap
         {
             mAdapters.erase(found_it);
         }
+    }
+
+
+    bool SequencePlayerCurveOutput::init(utility::ErrorState &errorState)
+    {
+        if(!errorState.check(std::find(allowed_parameter_types.begin(),
+                                       allowed_parameter_types.end(),
+                                       mParameter->get_type())!=allowed_parameter_types.end(),
+                             utility::stringFormat("Parameter %s not allowed", std::string(mParameter->get_type().get_name()).c_str())))
+        {
+            return false;
+        }
+
+        return SequencePlayerOutput::init(errorState);
     }
 }
