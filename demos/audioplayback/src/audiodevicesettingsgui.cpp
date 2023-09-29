@@ -21,7 +21,7 @@ namespace nap
         }
 
 
-        AudioDeviceSettingsGui::AudioDeviceSettingsGui(AudioService& audioService, bool hasInputs) : mAudioService(audioService), mHasInputs(hasInputs)
+        AudioDeviceSettingsGui::AudioDeviceSettingsGui(PortAudioService& portAudioService, bool hasInputs) : mAudioService(portAudioService), mHasInputs(hasInputs)
         {
             mDriverSelection = mAudioService.getCurrentHostApiIndex() + 1;
             mInputDeviceSelection = 0;
