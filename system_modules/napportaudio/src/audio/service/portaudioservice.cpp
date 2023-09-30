@@ -12,9 +12,6 @@
 #include <utility/stringutils.h>
 #include <nap/core.h>
 
-// Third party includes
-#include <mpg123.h>
-
 RTTI_BEGIN_STRUCT(nap::audio::PortAudioServiceConfiguration::DeviceSettings)
         RTTI_PROPERTY("HostApi", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mHostApi,
                       nap::rtti::EPropertyMetaData::Default)
