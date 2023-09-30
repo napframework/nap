@@ -35,11 +35,6 @@ namespace nap
 			~AudioService() = default;
 			
 			/**
-			 * Register specific object creators
-			 */
-			void registerObjectCreators(rtti::Factory& factory) override;
-			
-			/**
 			 * Initializes portaudio.
 			 */
 			bool init(nap::utility::ErrorState& errorState) override;

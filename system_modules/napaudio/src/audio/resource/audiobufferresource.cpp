@@ -8,17 +8,18 @@
 #include <audio/service/audioservice.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioBufferResource)
-	RTTI_CONSTRUCTOR(nap::audio::AudioService &)
+	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
 namespace nap
 {
 	namespace audio
 	{
-		
-		AudioBufferResource::AudioBufferResource(AudioService& service)
+
+        AudioBufferResource::AudioBufferResource(nap::Core& core)
 		{
-			mBuffer = service.getNodeManager().makeSafe<MultiSampleBuffer>();
+            auto audioService = core.getService<AudioService>();
+			mBuffer = audioService->getNodeManager().makeSafe<MultiSampleBuffer>();
 		}
 		
 	}

@@ -5,18 +5,13 @@
 // Std includes
 #include <iostream>
 
-// Nap includes
-#include <nap/logger.h>
-#include <utility/stringutils.h>
-
 // Audio includes
 #include "audioservice.h"
-#include <audio/resource/audiobufferresource.h>
-#include <audio/resource/audiofileresource.h>
 
 // Third party includes
-#include <mpg123.h>
-
+#ifdef NAP_AUDIOFILE_SUPPORT
+    #include <mpg123.h>
+#endif
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
 		RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -34,19 +29,13 @@ namespace nap
 		}
 		
 		
-		void AudioService::registerObjectCreators(rtti::Factory& factory)
-		{
-			factory.addObjectCreator(std::make_unique<AudioBufferResourceObjectCreator>(*this));
-			factory.addObjectCreator(std::make_unique<AudioFileResourceObjectCreator>(*this));
-			factory.addObjectCreator(std::make_unique<MultiAudioFileResourceObjectCreator>(*this));
-		}
-		
-		
 		bool AudioService::init(nap::utility::ErrorState& errorState)
 		{
-			// Initialize mpg123 library
+#ifdef NAP_AUDIOFILE_SUPPORT
+            // Initialize mpg123 library
 			mpg123_init();
 			mMpg123Initialized = true;
+#endif
 			checkLockfreeTypes();
             return true;
 		}
@@ -54,9 +43,11 @@ namespace nap
 
 		void AudioService::shutdown()
 		{
+#ifdef NAP_AUDIOFILE_SUPPORT
 			// Close mpg123 library
-			if(mMpg123Initialized)
+			if (mMpg123Initialized)
 				mpg123_exit();
+#endif
 		}
 
 
