@@ -174,10 +174,21 @@ endmacro()
 # Add a source directory to an already defined target
 # NAME of the source group in the IDE
 # DIR directory of the source files relative to the project directory
+# ARGN additional optional arguments are regex expressions to filter from the file list
 #
 function(add_source_dir NAME DIR)
-    source_group(${NAME} ${DIR}/*.*)
-    file(GLOB SOURCES ${DIR}/*.cpp ${DIR}/*.h)
+    # Collect source files in directory
+    file(GLOB SOURCES ${DIR}/*.cpp ${DIR}/*.h ${DIR}/*.hpp)
+
+    # Loop through optional arguments and exclude them from the sources list
+    foreach(element ${ARGN})
+        list(FILTER SOURCES EXCLUDE REGEX ${element})
+    endforeach()
+
+    # Create source group for IDE
+    source_group(${NAME} FILES ${SOURCES})
+
+    # Add sources to target
     target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
 endfunction()
 
