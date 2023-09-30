@@ -3,7 +3,7 @@ if(NOT TARGET portaudio)
 endif()
 
 if(NAP_BUILD_CONTEXT MATCHES "source")
-    source_group("service" src/audio/service/*.*)
+    add_source_dir("service" "src/audio/service")
 
     set(LIBRARIES portaudio)
     if(APPLE)

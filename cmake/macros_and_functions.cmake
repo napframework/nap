@@ -171,6 +171,16 @@ macro(check_raspbian_os RASPBERRY)
     endif()
 endmacro()
 
+# Add a source directory to an already defined target
+# NAME of the source group in the IDE
+# DIR directory of the source files relative to the project directory
+#
+function(add_source_dir NAME DIR)
+    source_group(${NAME} ${DIR}/*.*)
+    file(GLOB SOURCES ${DIR}/*.cpp ${DIR}/*.h)
+    target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
+endfunction()
+
 # Initialise our Python environment
 # _LIB AND _EXECUTABLE are used to help find_package(pybind11)
 function(configure_python)
