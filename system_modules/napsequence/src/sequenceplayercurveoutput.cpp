@@ -16,17 +16,25 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    static std::vector<rtti::TypeInfo> allowed_parameter_types =
+    bool isParameterAllowed(rtti::TypeInfo parameterType)
     {
-        RTTI_OF(ParameterFloat),
-        RTTI_OF(ParameterBool),
-        RTTI_OF(ParameterDouble),
-        RTTI_OF(ParameterLong),
-        RTTI_OF(ParameterInt),
-        RTTI_OF(ParameterVec2),
-        RTTI_OF(ParameterVec3),
-        RTTI_OF(ParameterVec4)
-    };
+        static std::vector<rtti::TypeInfo> allowed_parameter_types =
+        {
+            RTTI_OF(ParameterFloat),
+            RTTI_OF(ParameterBool),
+            RTTI_OF(ParameterDouble),
+            RTTI_OF(ParameterLong),
+            RTTI_OF(ParameterInt),
+            RTTI_OF(ParameterVec2),
+            RTTI_OF(ParameterVec3),
+            RTTI_OF(ParameterVec4)
+        };
+
+        return std::find(allowed_parameter_types.begin(),
+                         allowed_parameter_types.end(),
+                         parameterType)!=allowed_parameter_types.end();
+    }
+
 
     SequencePlayerCurveOutput::SequencePlayerCurveOutput(SequenceService& service)
         : SequencePlayerOutput(service)
@@ -74,9 +82,7 @@ namespace nap
 
     bool SequencePlayerCurveOutput::init(utility::ErrorState &errorState)
     {
-        if(!errorState.check(std::find(allowed_parameter_types.begin(),
-                                       allowed_parameter_types.end(),
-                                       mParameter->get_type())!=allowed_parameter_types.end(),
+        if(!errorState.check(isParameterAllowed(mParameter->get_type()),
                              utility::stringFormat("Parameter %s not allowed", std::string(mParameter->get_type().get_name()).c_str())))
         {
             return false;
