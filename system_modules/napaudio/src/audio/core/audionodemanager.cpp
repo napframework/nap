@@ -8,7 +8,9 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 
-#include <xmmintrin.h>
+#ifndef RASPBERRY
+    #include <xmmintrin.h>
+#endif
 
 namespace nap
 {
@@ -28,10 +30,12 @@ namespace nap
 
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
+#ifndef RASPBERRY
 			// Disable denormals
 			int oldMXCSR = _mm_getcsr();
 			int newMXCSR = oldMXCSR | 0x8040;
 			_mm_setcsr( newMXCSR);
+#endif
 
 			// clean the output buffers
 			for (auto channel = 0; channel < mOutputChannelCount; ++channel)
@@ -67,8 +71,10 @@ namespace nap
 			if (mInternalBufferOffset != framesPerBuffer)
 				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
 
-			// Reset previous denormal handling mode
+#ifndef RASPBERRY
+            // Reset previous denormal handling mode
 			_mm_setcsr(oldMXCSR);
+#endif
 		}
 
 
