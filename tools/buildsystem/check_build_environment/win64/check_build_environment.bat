@@ -1,17 +1,16 @@
 @echo OFF
 
-reg Query "HKLM\Hardware\Description\System\CentralProcessor\0" | find /i "x86" > NUL && set OS=32BIT || set OS=64BIT
+for /F "tokens=2* skip=2" %%a in ('reg query "HKLM\System\CurrentControlSet\Control\Session Manager\Environment" /v "PROCESSOR_ARCHITECTURE"') do set ARCH=%%b
 
-rem set OS=32BIT
-if %OS%==32BIT (
+if %ARCH%==AMD64 (
+    echo Checking x86-64 architecture: PASS
+) else (
     echo Checking x86-64 architecture: FAIL
     echo.
     echo NAP only supports x86-64 systems. Not continuing checks.
     echo Press key to close...
     pause
     exit /B
-) else (
-    echo Checking x86-64 architecture: PASS
 )
 
 set PYTHONPATH=""
