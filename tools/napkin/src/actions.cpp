@@ -82,7 +82,9 @@ static bool continueAfterSavingChanges(const QString& reason, const QString& typ
 
 void NewFileAction::perform()
 {
-	if (continueAfterSavingChanges("creating a new", "document"))
+	// Bail if project isn't loaded
+	auto& ctx = AppContext::get();
+	if (ctx.getProjectInfo() != nullptr && continueAfterSavingChanges("creating a new", "document"))
 	{
 		AppContext::get().newDocument();
 	}
@@ -91,7 +93,7 @@ void NewFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenProjectAction::OpenProjectAction() : Action("Open...", QRC_ICONS_FILE)
+OpenProjectAction::OpenProjectAction() : Action("Open...", QRC_ICONS_PROJECT)
 { }
 
 
@@ -114,12 +116,13 @@ napkin::UpdateDefaultFileAction::UpdateDefaultFileAction() : Action("Set as proj
 
 void napkin::UpdateDefaultFileAction::perform()
 {
-	// No document, core is not initialized
-	Document* doc = AppContext::get().getDocument();
-	if (doc == nullptr)
+	// Bail if there's no project loaded
+	auto& ctx = AppContext::get();
+	if (!ctx.getProjectLoaded())
 		return;
 
 	// Save if not saved yet
+	Document* doc = ctx.getDocument(); assert(doc != nullptr);
 	if (doc->getFilename().isNull())
 	{
 		// Attempt to save document
@@ -170,7 +173,12 @@ ReloadFileAction::ReloadFileAction() : Action("Reload", QRC_ICONS_RELOAD)
 
 void ReloadFileAction::perform()
 {
-	AppContext::get().reloadDocument();
+	// Bail if there's no project loaded
+	auto& ctx = AppContext::get();
+	if (ctx.getProjectLoaded())
+	{
+		ctx.reloadDocument();
+	}
 }
 
 
@@ -184,15 +192,15 @@ SaveFileAction::SaveFileAction() : Action("Save", QRC_ICONS_SAVE)
 
 void SaveFileAction::perform()
 {
+	// Don't do anything when project isn't loaded
+	auto& ctx = AppContext::get();
+	if (!ctx.getProjectLoaded())
+		return;
+
 	// Get current document, nullptr when there is no document and document can't be created
 	// This is the case when no project is loaded or core failed to initialize
-	auto& ctx = AppContext::get();
 	napkin::Document* doc = AppContext::get().getDocument();
-	if (doc == nullptr)
-	{
-		nap::Logger::warn("Unable to save document to file, no document loaded");
-		return;
-	}
+	assert(doc != nullptr);
 
 	// No previous save
 	if (doc->getFilename().isNull())
@@ -219,12 +227,14 @@ SaveFileAsAction::SaveFileAsAction() : Action("Save as...", QRC_ICONS_SAVE_AS)
 
 void SaveFileAsAction::perform()
 {
+	// Bail if project isn't loaded
 	auto& ctx = AppContext::get();
-	napkin::Document* doc = ctx.getDocument();
-	
-	// Core not initialized
-	if (doc == nullptr)
+	if (!ctx.getProjectLoaded())
 		return;
+
+	// Get document
+	napkin::Document* doc = ctx.getDocument();
+	assert(doc != nullptr);
 
 	// Get name and location to store
 	auto cur_file_name = doc->getFilename();
@@ -274,7 +284,10 @@ napkin::OpenFileAction::OpenFileAction() : Action("Open...", QRC_ICONS_FILE)
 
 void napkin::OpenFileAction::perform()
 {
+	// Bail if there's no project loaded
 	auto& ctx = AppContext::get();
+	if (ctx.getProjectInfo() == nullptr)
+		return;
 
 	// Doc exists, use current file or data directory as starting point
 	napkin::Document* doc = ctx.getDocument();
@@ -907,7 +920,7 @@ void napkin::SaveServiceConfigurationAs::perform()
 }
 
 
-napkin::OpenServiceConfigAction::OpenServiceConfigAction() : Action("Open...", QRC_ICONS_FILE)
+napkin::OpenServiceConfigAction::OpenServiceConfigAction() : Action("Open...", QRC_ICONS_CONFIGURATION)
 { }
 
 

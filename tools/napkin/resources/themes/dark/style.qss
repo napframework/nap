@@ -165,6 +165,19 @@ QPushButton:hover, QToolButton:hover {
     background: @front3;
 }
 
+QToolBar::separator { 
+    background-color: @status;
+    margin:2px;
+}
+
+QToolBar {
+    margin: 5px;
+}
+
+QToolButton {
+    margin: 5px 10px 5px 2px;
+}
+
 QTabBar {
     qproperty-drawBase: 0;
 }

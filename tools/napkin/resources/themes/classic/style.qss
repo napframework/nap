@@ -26,6 +26,19 @@ QMenu {
     color: @front3;
 }
 
+QToolBar::separator { 
+    background-color: @status;
+    margin:2px;
+}
+
+QToolBar {
+    margin: 5px;
+}
+
+QToolButton {
+    margin: 5px 10px 5px 2px;
+}
+
 QDialog, QLabel {
     color: @front3;
     background-color: @background2;

@@ -126,7 +126,12 @@ namespace napkin
 		nap::ProjectInfo* getProjectInfo();
 
 		/**
-		 * Reload the current document from disk
+		 * @return if a project is loaded
+		 */
+		bool getProjectLoaded() const;
+
+		/**
+		 * Reload the current document from disk. Doesn't do anything if no document is loaded.
 		 */
 		void reloadDocument();
 

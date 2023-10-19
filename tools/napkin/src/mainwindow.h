@@ -6,6 +6,7 @@
 
 #include <QStatusBar>
 #include <QTimer>
+#include <QToolbar>
 
 #include <napqt/basewindow.h>
 #include <napqt/errordialog.h>
@@ -69,6 +70,11 @@ namespace napkin
 		 * Add all the docks/panels
 		 */
 		void addDocks();
+
+		/**
+		 * Add the menu bar
+		 */
+		void addToolstrip();
 
 		/**
 		 * Called when a new dock widget is activated.
@@ -173,6 +179,7 @@ namespace napkin
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;
+		QToolBar* mToolbar = nullptr;
 		std::unique_ptr<QProgressDialog> mProgressDialog = nullptr;
 	};
 };

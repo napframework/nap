@@ -95,9 +95,7 @@ void MainWindow::addMenu()
 	// Project
 	auto projectmenu = new QMenu("Project", menuBar());
 	{
-		auto openFileAction = new OpenProjectAction();
-		addAction(openFileAction);
-		projectmenu->addAction(openFileAction);
+		projectmenu->addAction(new OpenProjectAction());
 		mRecentProjectsMenu = projectmenu->addMenu("Recent Projects");
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), projectmenu);
@@ -105,46 +103,25 @@ void MainWindow::addMenu()
 	// File (Data)
 	auto filemenu = new QMenu("File", menuBar());
 	{
-		auto newFileAction = new NewFileAction();
-		addAction(newFileAction);
-		filemenu->addAction(newFileAction);
-
-		auto openFileAction = new OpenFileAction();
-		addAction(openFileAction);
-		filemenu->addAction(openFileAction);
-
-		auto saveFileAction = new SaveFileAction();
-		addAction(saveFileAction);
-		filemenu->addAction(saveFileAction);
-
-		auto saveFileAsAction = new SaveFileAsAction();
-		addAction(saveFileAction);
-		filemenu->addAction(saveFileAsAction);
-
-		auto reloadFileAction = new ReloadFileAction();
-		addAction(reloadFileAction);
-		filemenu->addAction(reloadFileAction);
-
-		auto updateDefaultAction = new UpdateDefaultFileAction();
-		addAction(updateDefaultAction);
-		filemenu->addAction(updateDefaultAction);
+		filemenu->addAction(new NewFileAction());
+		filemenu->addAction(new OpenFileAction());
+		filemenu->addAction(new SaveFileAction());
+		filemenu->addAction(new SaveFileAsAction());
+		filemenu->addAction(new ReloadFileAction());
+		filemenu->addAction(new UpdateDefaultFileAction());
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
 
 	// Service Configuration menu
 	auto config_menu = new QMenu("Configuration", menuBar());
 	{
-		auto newServiceConfigAction = new NewServiceConfigAction();
-		config_menu->addAction(newServiceConfigAction);
-		auto openServiceConfigAction = new OpenServiceConfigAction();
-		config_menu->addAction(openServiceConfigAction);
-		auto saveServiceConfigACtion = new SaveServiceConfigAction();
-		config_menu->addAction(saveServiceConfigACtion);
-		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
-		config_menu->addAction(saveServiceConfigurationAs);
-		auto setDefaultServiceConfig = new SetAsDefaultServiceConfigAction();
-		config_menu->addAction(setDefaultServiceConfig);
+		config_menu->addAction(new NewServiceConfigAction());
+		config_menu->addAction(new OpenServiceConfigAction());
+		config_menu->addAction(new SaveServiceConfigAction());
+		config_menu->addAction(new SaveServiceConfigurationAs());
+		config_menu->addAction(new SetAsDefaultServiceConfigAction());
 	}
+
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), &mThemeMenu);
 
@@ -152,7 +129,6 @@ void MainWindow::addMenu()
 	auto help_menu = new QMenu("Help", menuBar());
 	{
 		auto open_url_action = new OpenURLAction("NAP Documentation", QUrl("https://docs.nap.tech"));
-		addAction(open_url_action);
 		help_menu->addAction(open_url_action);
 	}
 	menuBar()->insertMenu(getWindowMenu()->menuAction(), help_menu);
@@ -188,6 +164,7 @@ MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
 	addMenu();
+	addToolstrip();
 	addDocks();
 	bindSignals();
 }
@@ -331,6 +308,34 @@ void MainWindow::onDocked(QDockWidget *dockWidget)
 AppContext& MainWindow::getContext() const
 {
 	return AppContext::get();
+}
+
+
+void napkin::MainWindow::addToolstrip()
+{
+	mToolbar = this->addToolBar("Toolbar");
+	mToolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonIconOnly);
+	mToolbar->setMovable(false);
+
+	// Project Actions
+	auto open_project_action = new OpenProjectAction();
+	open_project_action->setText("Open Project");
+	mToolbar->addAction(open_project_action);
+
+	// File Actions
+	mToolbar->addSeparator();
+	mToolbar->addAction(new NewFileAction());
+	mToolbar->addAction(new OpenFileAction());
+	mToolbar->addAction(new SaveFileAction());
+	mToolbar->addAction(new SaveFileAsAction());
+	mToolbar->addAction(new ReloadFileAction());
+	mToolbar->addAction(new UpdateDefaultFileAction());
+
+	// Resource Actions
+	mToolbar->addSeparator();
+	mToolbar->addAction(new CreateResourceAction());
+	mToolbar->addAction(new CreateEntityAction());
+	mToolbar->addAction(new CreateGroupAction());
 }
 
 

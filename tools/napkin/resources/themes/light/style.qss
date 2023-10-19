@@ -12,6 +12,19 @@ QWidget
     border: none;
 }
 
+QToolBar::separator { 
+    background-color: @front2;
+    margin:2px;
+}
+
+QToolBar {
+    margin: 5px;
+}
+
+QToolButton {
+    margin: 5px 10px 5px 2px;
+}
+
 QMenuBar {
     color: @front3;
 }
