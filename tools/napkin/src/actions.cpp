@@ -93,7 +93,7 @@ void NewFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenProjectAction::OpenProjectAction() : Action("Open...", QRC_ICONS_PROJECT)
+OpenProjectAction::OpenProjectAction() : Action("Open project...", QRC_ICONS_PROJECT)
 { }
 
 

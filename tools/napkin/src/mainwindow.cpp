@@ -87,51 +87,47 @@ void MainWindow::addDocks()
 	addDock("Modules", &mModulePanel);
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Configuration", &mServiceConfigPanel);
+	menuBar()->addMenu(getWindowMenu());
 }
 
 
-void MainWindow::addMenu()
+void MainWindow::configureMenu()
 {
 	// Project
-	auto projectmenu = new QMenu("Project", menuBar());
-	{
-		projectmenu->addAction(new OpenProjectAction());
-		mRecentProjectsMenu = projectmenu->addMenu("Recent Projects");
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), projectmenu);
+	mProjectMenu.setTitle("Project");
+	const auto& project_actions = mActionController.getProjectActions();
+	for (auto* action : project_actions)
+		mProjectMenu.addAction(action);
+	mRecentProjectsMenu.setTitle("Recent Projects");
+	mProjectMenu.addMenu(&mRecentProjectsMenu);
+	menuBar()->addMenu(&mProjectMenu);
 
 	// File (Data)
-	auto filemenu = new QMenu("File", menuBar());
-	{
-		filemenu->addAction(new NewFileAction());
-		filemenu->addAction(new OpenFileAction());
-		filemenu->addAction(new SaveFileAction());
-		filemenu->addAction(new SaveFileAsAction());
-		filemenu->addAction(new ReloadFileAction());
-		filemenu->addAction(new UpdateDefaultFileAction());
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
+	mFileMenu.setTitle("File");
+	const auto& file_actions = mActionController.getFileActions();
+	for (auto* action : file_actions)
+		mFileMenu.addAction(action);
+	menuBar()->addMenu(&mFileMenu);
 
 	// Service Configuration menu
-	auto config_menu = new QMenu("Configuration", menuBar());
-	{
-		config_menu->addAction(new NewServiceConfigAction());
-		config_menu->addAction(new OpenServiceConfigAction());
-		config_menu->addAction(new SaveServiceConfigAction());
-		config_menu->addAction(new SaveServiceConfigurationAs());
-		config_menu->addAction(new SetAsDefaultServiceConfigAction());
-	}
+	mConfigMenu.setTitle("Configuration");
+	const auto& config_actions = mActionController.getServiceActions();
+	for (auto* action : config_actions)
+		mConfigMenu.addAction(action);
+	menuBar()->addMenu(&mConfigMenu);
 
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), &mThemeMenu);
+	// Theme
+	menuBar()->addMenu(&mThemeMenu);
 
 	// Help
-	auto help_menu = new QMenu("Help", menuBar());
-	{
-		auto open_url_action = new OpenURLAction("NAP Documentation", QUrl("https://docs.nap.tech"));
-		help_menu->addAction(open_url_action);
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), help_menu);
+	mHelpMenu.setTitle("Help");
+	const auto& help_actions = mActionController.getHelpActions();
+	for (auto* action : help_actions)
+		mHelpMenu.addAction(action);
+	menuBar()->addMenu(&mHelpMenu);
+
+	// Panels
+	menuBar()->addMenu(getWindowMenu());
 }
 
 
@@ -163,7 +159,7 @@ void MainWindow::updateWindowTitle()
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
-	addMenu();
+	configureMenu();
 	addToolstrip();
 	addDocks();
 	bindSignals();
@@ -286,18 +282,18 @@ bool MainWindow::confirmSaveCurrentFile()
 
 void MainWindow::rebuildRecentMenu()
 {
-	mRecentProjectsMenu->clear();
+	mRecentProjectsMenu.clear();
 	auto recentFiles = getContext().getRecentlyOpenedProjects();
 	for (const auto& filename : recentFiles)
 	{
-		auto action = mRecentProjectsMenu->addAction(filename);
+		auto action = mRecentProjectsMenu.addAction(filename);
 		connect(action, &QAction::triggered, [this, filename]()
 		{
 			if (confirmSaveCurrentFile())
 				getContext().loadProject(filename);
 		});
 	}
-	mRecentProjectsMenu->setEnabled(!mRecentProjectsMenu->isEmpty());
+	mRecentProjectsMenu.setEnabled(!mRecentProjectsMenu.isEmpty());
 }
 
 
@@ -318,18 +314,15 @@ void napkin::MainWindow::addToolstrip()
 	mToolbar->setMovable(false);
 
 	// Project Actions
-	auto open_project_action = new OpenProjectAction();
-	open_project_action->setText("Open Project");
-	mToolbar->addAction(open_project_action);
+	const auto& project_actions = mActionController.getProjectActions();
+	for (const auto& action : project_actions)
+		mToolbar->addAction(action);
 
 	// File Actions
 	mToolbar->addSeparator();
-	mToolbar->addAction(new NewFileAction());
-	mToolbar->addAction(new OpenFileAction());
-	mToolbar->addAction(new SaveFileAction());
-	mToolbar->addAction(new SaveFileAsAction());
-	mToolbar->addAction(new ReloadFileAction());
-	mToolbar->addAction(new UpdateDefaultFileAction());
+	const auto& file_actions = mActionController.getFileActions();
+	for (const auto& action : file_actions)
+		mToolbar->addAction(action);
 
 	// Resource Actions
 	mToolbar->addSeparator();

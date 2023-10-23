@@ -12,7 +12,7 @@
 #include <napqt/errordialog.h>
 #include <panels/pathbrowserpanel.h>
 
-#include "actions.h"
+#include "actioncontroller.h"
 #include "appcontext.h"
 #include "themeselectionmenu.h"
 
@@ -82,9 +82,9 @@ namespace napkin
 		void onDocked(QDockWidget *dockWidget);
 
 		/**
-		 * Add the menu
+		 * Configure the menu
 		 */
-		void addMenu();
+		void configureMenu();
 
 		/**
 		 * Makes the window title up to date
@@ -163,6 +163,7 @@ namespace napkin
 
 	private:
 		bool mShown = false;
+		ActionController mActionController;
 		ResourcePanel mResourcePanel;
 //		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
@@ -174,8 +175,12 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ServiceConfigPanel mServiceConfigPanel;
 		ThemeSelectionMenu mThemeMenu;
+		QMenu mProjectMenu;
+		QMenu mFileMenu;
+		QMenu mConfigMenu;
+		QMenu mHelpMenu;
 		ScenePanel mScenePanel;
-		QMenu* mRecentProjectsMenu = nullptr;
+		QMenu mRecentProjectsMenu;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;
