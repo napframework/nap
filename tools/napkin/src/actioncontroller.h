@@ -5,18 +5,21 @@
 
 namespace napkin
 {
-	// Action groups
-	namespace actions
+	namespace action
 	{
-		constexpr const char* project	= "Project";
-		constexpr const char* file		= "File";
-		constexpr const char* config	= "Configuration";
-		constexpr const char* help		= "Help";
-		constexpr const char* create	= "Create";
+		// All available action group names
+		namespace groups
+		{
+			constexpr const char* project	= "Project";
+			constexpr const char* file		= "File";
+			constexpr const char* config	= "Configuration";
+			constexpr const char* help		= "Help";
+			constexpr const char* create	= "Create";
+		}
 	}
 
 	/**
-	 * Creates and manages all actions in Napkin.
+	 * Creates and groups actions in Napkin
 	 */
 	class ActionController final
 	{
@@ -52,32 +55,21 @@ namespace napkin
 		ActionController& operator=(ActionController&&) = delete;
 
 		/**
-		 * @return project actions
+		 * Returns all actions in a certain group
+		 * @param name the group name
+		 * @return action group, nullptr if not available
 		 */
-		const std::vector<Action*>& getProjectActions() const	{ return mProjectActions; }
+		const std::vector<Action*>* findGroup(const std::string& name) const;
 
 		/**
-		 * @return file actions
+		 * Returns all actions in a certain group, asserts if group doesn't exist
+		 * @param name the group name
+		 * @return action group, asserts if group doesn't exist
 		 */
-		const std::vector<Action*>& getFileActions() const		{ return mFileActions; }
-
-		/**
-		 * @return service actions
-		 */
-		const std::vector<Action*>& getServiceActions() const	{ return mServiceActions; }
-
-		/**
-		 * @return help actions
-		 */
-		const std::vector<Action*>& getHelpActions() const		{ return mHelpActions; }
+		const std::vector<Action*>& getGroup(const std::string& name) const;
 
 	private:
-		std::vector<std::unique_ptr<Action>> mActions;	///< All registered actions
-
-		std::vector<Action*> mProjectActions;			///< All project actions
-		std::vector<Action*> mFileActions;				///< All file actions
-		std::vector<Action*> mServiceActions;			///< All service actions
-		std::vector<Action*> mHelpActions;				///< All help actions
-		std::vector<std::vector<Action*>*> mGroups;		///< All groups
+		std::vector<std::unique_ptr<Action>> mActions;					///< All registered actions
+		std::unordered_map<std::string, std::vector<Action*>> mGroups;	///< All registered groups
 	};
 }

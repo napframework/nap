@@ -16,42 +16,72 @@ namespace napkin
 	}
 
 
+	/**
+	 * Creates and registers a new group with the given name
+	 * @param name the group name
+	 */
+	std::vector<Action*>& registerGroup(std::string&& name, std::unordered_map<std::string, std::vector<Action*>>& outGroups)
+	{
+		auto group_it = outGroups.try_emplace(std::move(name), std::vector<Action*>()); assert(group_it.second);
+		return group_it.first->second;
+	}
+
+
 	ActionController::ActionController()
 	{
 		// Project actions
-		mActions.reserve(1);
-		registerAction<OpenProjectAction>(mActions, mProjectActions);
-		mGroups.emplace_back(&mProjectActions);
+		auto& project_group = registerGroup(action::groups::project, mGroups);
+		registerAction<OpenProjectAction>(mActions, project_group);
 
 		// File actions
-		registerAction<NewFileAction>(mActions, mFileActions);
-		registerAction<OpenFileAction>(mActions, mFileActions);
-		registerAction<SaveFileAction>(mActions, mFileActions);
-		registerAction<SaveFileAsAction>(mActions, mFileActions);
-		registerAction<ReloadFileAction>(mActions, mFileActions);
-		registerAction<UpdateDefaultFileAction>(mActions, mFileActions);
-		mGroups.emplace_back(&mFileActions);
+		auto& file_group = registerGroup(action::groups::file, mGroups);
+		registerAction<NewFileAction>(mActions, file_group);
+		registerAction<OpenFileAction>(mActions, file_group);
+		registerAction<SaveFileAction>(mActions, file_group);
+		registerAction<SaveFileAsAction>(mActions, file_group);
+		registerAction<ReloadFileAction>(mActions, file_group);
+		registerAction<UpdateDefaultFileAction>(mActions, file_group);
 
 		// Service actions
-		registerAction<NewServiceConfigAction>(mActions, mServiceActions);
-		registerAction<OpenServiceConfigAction>(mActions, mServiceActions);
-		registerAction<SaveServiceConfigAction>(mActions, mServiceActions);
-		registerAction<SaveServiceConfigurationAs>(mActions, mServiceActions);
-		registerAction<SetAsDefaultServiceConfigAction>(mActions, mServiceActions);
-		mGroups.emplace_back(&mServiceActions);
+		auto& config_group = registerGroup(action::groups::config, mGroups);
+		registerAction<NewServiceConfigAction>(mActions, config_group);
+		registerAction<OpenServiceConfigAction>(mActions, config_group);
+		registerAction<SaveServiceConfigAction>(mActions, config_group);
+		registerAction<SaveServiceConfigurationAs>(mActions, config_group);
+		registerAction<SetAsDefaultServiceConfigAction>(mActions, config_group);
 
 		// Help actions
-		registerAction<OpenURLAction>(mActions, mHelpActions, "NAP Documentation", QUrl("https://docs.nap.tech"));
-		mGroups.emplace_back(&mHelpActions);
+		auto& help_group = registerGroup(action::groups::help, mGroups);
+		registerAction<OpenURLAction>(mActions, help_group, "NAP Documentation", QUrl("https://docs.nap.tech"));
+
+		// Create actions
+		auto& create_group = registerGroup(action::groups::create, mGroups);
+		registerAction<CreateResourceAction>(mActions, create_group);
+		registerAction<CreateEntityAction>(mActions, create_group);
+		registerAction<CreateGroupAction>(mActions, create_group);
 	}
 
 
 	ActionController::~ActionController()
 	{
 		// Clear groups and delete actions
-		for (auto* group : mGroups)
-			group->clear();
+		for (auto& group : mGroups)
+			group.second.clear();
 		mActions.clear();
+	}
+
+
+	const std::vector<Action*>* ActionController::findGroup(const std::string& name) const
+	{
+		auto it = mGroups.find(name);
+		return it != mGroups.end() ? &(it->second) : nullptr;
+	}
+
+
+	const std::vector<Action*>& ActionController::getGroup(const std::string& name) const
+	{
+		auto* group = findGroup(name); assert(group != nullptr);
+		return *group;
 	}
 
 }

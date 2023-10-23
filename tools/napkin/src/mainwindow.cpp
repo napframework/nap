@@ -94,25 +94,25 @@ void MainWindow::addDocks()
 void MainWindow::configureMenu()
 {
 	// Project
-	mProjectMenu.setTitle("Project");
-	const auto& project_actions = mActionController.getProjectActions();
-	for (auto* action : project_actions)
+	mProjectMenu.setTitle(action::groups::project);
+	const auto& p_actions = mActionController.getGroup(action::groups::project);
+	for (auto* action : p_actions)
 		mProjectMenu.addAction(action);
 	mRecentProjectsMenu.setTitle("Recent Projects");
 	mProjectMenu.addMenu(&mRecentProjectsMenu);
 	menuBar()->addMenu(&mProjectMenu);
 
 	// File (Data)
-	mFileMenu.setTitle("File");
-	const auto& file_actions = mActionController.getFileActions();
-	for (auto* action : file_actions)
+	mFileMenu.setTitle(action::groups::file);
+	const auto& f_actions = mActionController.getGroup(action::groups::file);
+	for (auto* action : f_actions)
 		mFileMenu.addAction(action);
 	menuBar()->addMenu(&mFileMenu);
 
 	// Service Configuration menu
-	mConfigMenu.setTitle("Configuration");
-	const auto& config_actions = mActionController.getServiceActions();
-	for (auto* action : config_actions)
+	mConfigMenu.setTitle(action::groups::config);
+	const auto& c_actions = mActionController.getGroup(action::groups::config);
+	for (auto* action : c_actions)
 		mConfigMenu.addAction(action);
 	menuBar()->addMenu(&mConfigMenu);
 
@@ -120,9 +120,9 @@ void MainWindow::configureMenu()
 	menuBar()->addMenu(&mThemeMenu);
 
 	// Help
-	mHelpMenu.setTitle("Help");
-	const auto& help_actions = mActionController.getHelpActions();
-	for (auto* action : help_actions)
+	mHelpMenu.setTitle(action::groups::help);
+	const auto& h_actions = mActionController.getGroup(action::groups::help);
+	for (auto* action : h_actions)
 		mHelpMenu.addAction(action);
 	menuBar()->addMenu(&mHelpMenu);
 
@@ -314,21 +314,21 @@ void napkin::MainWindow::addToolstrip()
 	mToolbar->setMovable(false);
 
 	// Project Actions
-	const auto& project_actions = mActionController.getProjectActions();
-	for (const auto& action : project_actions)
+	const auto& p_actions = mActionController.getGroup(action::groups::project);
+	for (const auto& action : p_actions)
 		mToolbar->addAction(action);
 
 	// File Actions
 	mToolbar->addSeparator();
-	const auto& file_actions = mActionController.getFileActions();
-	for (const auto& action : file_actions)
+	const auto& f_actions = mActionController.getGroup(action::groups::file);
+	for (const auto& action : f_actions)
 		mToolbar->addAction(action);
 
-	// Resource Actions
+	// Create Actions
 	mToolbar->addSeparator();
-	mToolbar->addAction(new CreateResourceAction());
-	mToolbar->addAction(new CreateEntityAction());
-	mToolbar->addAction(new CreateGroupAction());
+	const auto& c_actions  = mActionController.getGroup(action::groups::create);
+	for (const auto& action : c_actions)
+		mToolbar->addAction(action);
 }
 
 
