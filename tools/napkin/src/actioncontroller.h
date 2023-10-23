@@ -3,6 +3,9 @@
 // Local Includes
 #include "actions.h"
 
+// External Includes
+#include <QObject>
+
 namespace napkin
 {
 	namespace action
@@ -21,8 +24,9 @@ namespace napkin
 	/**
 	 * Creates and groups actions in Napkin
 	 */
-	class ActionController final
+	class ActionController : public QObject
 	{
+		Q_OBJECT
 	public:
 		/**
 		 * Creates the actions
@@ -71,5 +75,11 @@ namespace napkin
 	private:
 		std::vector<std::unique_ptr<Action>> mActions;					///< All registered actions
 		std::unordered_map<std::string, std::vector<Action*>> mGroups;	///< All registered groups
+
+		// Slots
+		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
+
+		// Enable / Disable project related actions
+		void enableProjectActions(bool enable);
 	};
 }
