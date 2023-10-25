@@ -335,6 +335,12 @@ void napkin::MainWindow::addToolstrip()
 	const auto& c_actions  = mActionController.getGroup(action::groups::create);
 	for (const auto& action : c_actions)
 		mToolbar->addAction(action);
+
+	// Create help actions
+	mToolbar->addSeparator();
+	const auto& h_actions = mActionController.getGroup(action::groups::help);
+	for (const auto& action : h_actions)
+		mToolbar->addAction(action);
 }
 
 

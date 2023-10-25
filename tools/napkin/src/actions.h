@@ -448,4 +448,17 @@ namespace napkin
 		void perform() override;
 		QUrl mAddress;
 	};
+
+
+	/**
+	 * Open NAP Documentation in browser
+	 */
+	class OpenDocsAction : public Action
+	{
+	public:
+        explicit OpenDocsAction(QObject* parent);
+	private:
+		void perform() override;
+		QUrl mAddress;
+	};
 }

@@ -999,3 +999,15 @@ void napkin::OpenURLAction::perform()
 {
 	QDesktopServices::openUrl(mAddress);
 }
+
+
+napkin::OpenDocsAction::OpenDocsAction(QObject* parent) :
+	Action(parent, "NAP Documentation", QRC_ICONS_HELP)
+{ }
+
+
+void napkin::OpenDocsAction::perform()
+{
+	QDesktopServices::openUrl(QUrl("https://docs.nap.tech/pages.html"));
+}
+
