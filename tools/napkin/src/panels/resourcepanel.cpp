@@ -94,11 +94,14 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
-	const auto& resources_item = mModel.getRootResourcesItem();
+	auto& resources_item = mModel.getRootResourcesItem();
+	resources_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
 
-	const auto& entities_item = mModel.getEntityResourcesItem();
+	auto& entities_item = mModel.getEntityResourcesItem();
+	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
+	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
 }
 
 
@@ -230,6 +233,13 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	{
 		menu.addAction(new CreateEntityAction(&menu));
 	}
+}
+
+
+void napkin::ResourcePanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
+{
+	mModel.getRootResourcesItem().setEnabled(true);
+	mModel.getEntityResourcesItem().setEnabled(true);
 }
 
 

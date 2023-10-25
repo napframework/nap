@@ -1,5 +1,5 @@
 // Local Includes
-#include "actioncontroller.h"
+#include "actionmodel.h"
 #include "appcontext.h"
 
 namespace napkin
@@ -29,7 +29,7 @@ namespace napkin
 	}
 
 
-	ActionController::ActionController()
+	ActionModel::ActionModel()
 	{
 		// Project actions6
 		auto& project_group = registerGroup(action::groups::project, mGroups);
@@ -65,7 +65,7 @@ namespace napkin
 	}
 
 
-	ActionController::~ActionController()
+	ActionModel::~ActionModel()
 	{
 		// Clear groups and delete actions
 		for (auto& group : mGroups)
@@ -74,17 +74,16 @@ namespace napkin
 	}
 
 
-	const std::vector<Action*>* ActionController::findGroup(const std::string& name) const
+	const std::vector<Action*>* ActionModel::findGroup(const std::string& name) const
 	{
 		auto it = mGroups.find(name);
 		return it != mGroups.end() ? &(it->second) : nullptr;
 	}
 
 
-	const std::vector<Action*>& ActionController::getGroup(const std::string& name) const
+	const std::vector<Action*>& ActionModel::getGroup(const std::string& name) const
 	{
 		auto* group = findGroup(name); assert(group != nullptr);
 		return *group;
 	}
 }
-

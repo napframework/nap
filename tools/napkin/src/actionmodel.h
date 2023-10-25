@@ -22,42 +22,42 @@ namespace napkin
 	}
 
 	/**
-	 * Creates actions and groups them for repeated use.
+	 * Basic action model - creates actions and groups them for repeated use.
 	 * Use `getGroup()` in combination with the `napkin::action::groups` namespace to get
 	 * all the actions associated with a specific group.
 	 */
-	class ActionController final
+	class ActionModel final
 	{
 	public:
 		/**
 		 * Creates the actions
 		 */
-		ActionController();
+		ActionModel();
 
 		/**
 		 * Destroys the actions
 		 */
-		virtual ~ActionController();
+		virtual ~ActionModel();
 
 		/**
 		 * Copy is not allowed
 		 */
-		ActionController(ActionController&) = delete;
+		ActionModel(ActionModel&) = delete;
 
 		/**
 		 * Copy assignment is not allowed
 		 */
-		ActionController& operator=(const ActionController&) = delete;
+		ActionModel& operator=(const ActionModel&) = delete;
 
 		/**
 		 * Move is not allowed
 		 */
-		ActionController(ActionController&&) = delete;
+		ActionModel(ActionModel&&) = delete;
 
 		/**
 		 * Move assignment is not allowed
 		 */
-		ActionController& operator=(ActionController&&) = delete;
+		ActionModel& operator=(ActionModel&&) = delete;
 
 		/**
 		 * Returns all actions in a certain group

@@ -97,7 +97,7 @@ void MainWindow::configureMenu()
 {
 	// Project
 	mProjectMenu.setTitle(action::groups::project);
-	const auto& p_actions = mActionController.getGroup(action::groups::project);
+	const auto& p_actions = mActionModel.getGroup(action::groups::project);
 	for (auto* action : p_actions)
 		mProjectMenu.addAction(action);
 	mRecentProjectsMenu.setTitle("Recent Projects");
@@ -106,14 +106,14 @@ void MainWindow::configureMenu()
 
 	// File (Data)
 	mFileMenu.setTitle(action::groups::file);
-	const auto& f_actions = mActionController.getGroup(action::groups::file);
+	const auto& f_actions = mActionModel.getGroup(action::groups::file);
 	for (auto* action : f_actions)
 		mFileMenu.addAction(action);
 	menuBar()->addMenu(&mFileMenu);
 
 	// Service Configuration menu
 	mConfigMenu.setTitle(action::groups::config);
-	const auto& c_actions = mActionController.getGroup(action::groups::config);
+	const auto& c_actions = mActionModel.getGroup(action::groups::config);
 	for (auto* action : c_actions)
 		mConfigMenu.addAction(action);
 	menuBar()->addMenu(&mConfigMenu);
@@ -123,7 +123,7 @@ void MainWindow::configureMenu()
 
 	// Help
 	mHelpMenu.setTitle(action::groups::help);
-	const auto& h_actions = mActionController.getGroup(action::groups::help);
+	const auto& h_actions = mActionModel.getGroup(action::groups::help);
 	for (auto* action : h_actions)
 		mHelpMenu.addAction(action);
 	menuBar()->addMenu(&mHelpMenu);
@@ -162,10 +162,11 @@ void MainWindow::updateWindowTitle()
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
-	enableProjectDependentActions(false);
 	configureMenu();
 	addToolstrip();
 	addDocks();
+
+	enableProjectDependentActions(AppContext::get().getProjectLoaded());
 	bindSignals();
 }
 
@@ -320,25 +321,25 @@ void napkin::MainWindow::addToolstrip()
 	mToolbar->setMovable(false);
 
 	// Project Actions
-	const auto& p_actions = mActionController.getGroup(action::groups::project);
+	const auto& p_actions = mActionModel.getGroup(action::groups::project);
 	for (const auto& action : p_actions)
 		mToolbar->addAction(action);
 
 	// File Actions
 	mToolbar->addSeparator();
-	const auto& f_actions = mActionController.getGroup(action::groups::file);
+	const auto& f_actions = mActionModel.getGroup(action::groups::file);
 	for (const auto& action : f_actions)
 		mToolbar->addAction(action);
 
 	// Create Actions
 	mToolbar->addSeparator();
-	const auto& c_actions  = mActionController.getGroup(action::groups::create);
+	const auto& c_actions  = mActionModel.getGroup(action::groups::create);
 	for (const auto& action : c_actions)
 		mToolbar->addAction(action);
 
 	// Create help actions
 	mToolbar->addSeparator();
-	const auto& h_actions = mActionController.getGroup(action::groups::help);
+	const auto& h_actions = mActionModel.getGroup(action::groups::help);
 	for (const auto& action : h_actions)
 		mToolbar->addAction(action);
 }
@@ -377,7 +378,7 @@ void napkin::MainWindow::enableProjectDependentActions(bool enable)
 	// Disable / Enable based
 	for (const auto& group_name : project_groups)
 	{
-		auto& group = mActionController.getGroup(group_name);
+		auto& group = mActionModel.getGroup(group_name);
 		for (const auto& action : group)
 		{
 			action->setEnabled(enable);

@@ -42,12 +42,12 @@ namespace napkin
 		/**
 		 * @return Root resources item
 		 */
-		const RootResourcesItem& getRootResourcesItem() const		{ return mObjectsItem; }
+		RootResourcesItem& getRootResourcesItem()					{ return mObjectsItem; }
 
 		/**
 		 * @return Entity resources item
 		 */
-		const EntityResourcesItem& getEntityResourcesItem() const	{ return mEntitiesItem; }
+		EntityResourcesItem& getEntityResourcesItem()				{ return mEntitiesItem; }
 
 	Q_SIGNALS:
 		/**
@@ -135,6 +135,7 @@ namespace napkin
 
 	private:
 		void emitSelectionChanged();
+		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
 		QVBoxLayout mLayout;	  // Layout
 		ResourceModel mModel;	 // Model

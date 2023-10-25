@@ -12,7 +12,7 @@
 #include <napqt/errordialog.h>
 #include <panels/pathbrowserpanel.h>
 
-#include "actioncontroller.h"
+#include "actionmodel.h"
 #include "appcontext.h"
 #include "themeselectionmenu.h"
 
@@ -139,7 +139,7 @@ namespace napkin
 		void onProgress(float fraction, const QString& message);
 
 		/**
-		 * Called when the project loaded
+		 * Called when a project loaded
 		 */
 		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
@@ -174,9 +174,8 @@ namespace napkin
 
 	private:
 		bool mShown = false;
-		ActionController mActionController;
+		ActionModel mActionModel;
 		ResourcePanel mResourcePanel;
-//		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
 		ModulePanel mModulePanel;
