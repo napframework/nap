@@ -14,6 +14,7 @@
 #include <parametercolor.h>
 #include <parameterquat.h>
 #include <parameterbutton.h>
+#include <parameterdropdown.h>
 #include <imgui/imgui.h>
 #include <parameterservice.h>
 
@@ -291,6 +292,25 @@ namespace nap
 			if (ImGui::IsItemClicked())
 				button_parameter->click();
 		});
+
+
+        registerParameterEditor(RTTI_OF(ParameterDropDown), [](Parameter& parameter)
+        {
+            auto* parameter_dropdown = rtti_cast<ParameterDropDown>(&parameter);
+            int index = parameter_dropdown->getSelectedIndex();
+
+            std::vector<rttr::string_view> items(parameter_dropdown->mItems.begin(), parameter_dropdown->mItems.end());
+
+            if (ImGui::Combo(parameter.getDisplayName().c_str(), &index, [](void* data, int index, const char** out_text)
+            {
+                std::vector<rttr::string_view>* items = (std::vector<rttr::string_view>*)data;
+                *out_text = (*items)[index].data();
+                return true;
+            }, &items, items.size()))
+            {
+                parameter_dropdown->setSelectedIndex(index);
+            }
+        });
 	}
 
 

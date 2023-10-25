@@ -99,6 +99,11 @@
                             "Type": "nap::PortalItemIVec3",
                             "mID": "PortalItemIVec3",
                             "Parameter": "ParameterIVec3"
+                        },
+                        {
+                            "Type": "nap::PortalItemDropDown",
+                            "mID": "PortalItemDropDown",
+                            "Parameter": "ParameterDropDown"
                         }
                     ]
                 }
@@ -352,6 +357,18 @@
                     "Clamp": false,
                     "Minimum": -128,
                     "Maximum": 128
+                },
+                {
+                    "Type": "nap::ParameterDropDown",
+                    "mID": "ParameterDropDown",
+                    "Name": "My DropDown Parameter",
+                    "Items": [
+                        "Apples",
+                        "Bananas",
+                        "Oranges",
+                        "Melons"
+                    ],
+                    "SelectedIndex": 1
                 }
             ],
             "Groups": []
@@ -383,7 +400,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",
