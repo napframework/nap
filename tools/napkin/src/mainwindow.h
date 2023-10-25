@@ -139,6 +139,17 @@ namespace napkin
 		void onProgress(float fraction, const QString& message);
 
 		/**
+		 * Called when the project loaded
+		 */
+		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
+
+		/**
+		 * Enabled / Disable project dependent actions
+		 * @param enable / disable project dependent actions
+		 */
+		void enableProjectDependentActions(bool enable);
+
+		/**
 		 * Show a logmessage in the error dialog
 		 * @param msg The message to be displayed
 		 */

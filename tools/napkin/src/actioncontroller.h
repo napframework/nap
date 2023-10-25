@@ -22,11 +22,11 @@ namespace napkin
 	}
 
 	/**
-	 * Creates and groups actions in Napkin
+	 * Creates actions and groups them for repeated use.
+	 * Use the napkin::action::groups namespace to get the names of all available groups.
 	 */
-	class ActionController : public QObject
+	class ActionController final
 	{
-		Q_OBJECT
 	public:
 		/**
 		 * Creates the actions
@@ -75,11 +75,5 @@ namespace napkin
 	private:
 		std::vector<std::unique_ptr<Action>> mActions;					///< All registered actions
 		std::unordered_map<std::string, std::vector<Action*>> mGroups;	///< All registered groups
-
-		// Slots
-		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
-
-		// Enable / Disable project related actions
-		void enableProjectActions(bool enable);
 	};
 }

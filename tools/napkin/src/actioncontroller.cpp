@@ -61,10 +61,6 @@ namespace napkin
 		registerAction<CreateResourceAction>(mActions, create_group);
 		registerAction<CreateEntityAction>(mActions, create_group);
 		registerAction<CreateGroupAction>(mActions, create_group);
-
-		// Enable / Disable actions based on project state
-		enableProjectActions(false);
-		connect(&AppContext::get(), &AppContext::projectLoaded, this, &ActionController::onProjectLoaded);
 	}
 
 
@@ -88,33 +84,5 @@ namespace napkin
 	{
 		auto* group = findGroup(name); assert(group != nullptr);
 		return *group;
-	}
-
-
-	void ActionController::onProjectLoaded(const nap::ProjectInfo& projectInfo)
-	{
-		enableProjectActions(true);
-	}
-
-
-	void ActionController::enableProjectActions(bool enable)
-	{
-		// Project aware action groups
-		static const std::vector<std::string> project_groups
-		{
-			action::groups::file,
-			action::groups::config,
-			action::groups::create
-		};
-
-		// Disable / Enable based
-		for(const auto& group_name : project_groups)
-		{
-			auto& group = getGroup(group_name);
-			for (const auto& action : group)
-			{
-				action->setEnabled(enable);
-			}
-		}
 	}
 }

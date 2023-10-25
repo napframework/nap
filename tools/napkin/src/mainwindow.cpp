@@ -24,6 +24,7 @@ void MainWindow::bindSignals()
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
+	connect(ctx, &AppContext::projectLoaded, this, &MainWindow::onProjectLoaded);
 }
 
 
@@ -38,6 +39,7 @@ void MainWindow::unbindSignals()
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::projectLoaded, this, &MainWindow::onProjectLoaded);
 }
 
 
@@ -156,19 +158,23 @@ void MainWindow::updateWindowTitle()
 												QApplication::applicationName()));
 }
 
+
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
+	enableProjectDependentActions(false);
 	configureMenu();
 	addToolstrip();
 	addDocks();
 	bindSignals();
 }
 
+
 MainWindow::~MainWindow()
 {
 	unbindSignals();
 }
+
 
 void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 {
@@ -342,5 +348,33 @@ void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
 	{
 		auto path = paths.first();
 		mInspectorPanel.setPath(paths.first());
+	}
+}
+
+
+void napkin::MainWindow::onProjectLoaded(const nap::ProjectInfo& projectInfo)
+{
+	enableProjectDependentActions(true);
+}
+
+
+void napkin::MainWindow::enableProjectDependentActions(bool enable)
+{
+	// Project aware action groups
+	static const std::vector<std::string> project_groups
+	{
+		action::groups::file,
+		action::groups::config,
+		action::groups::create
+	};
+
+	// Disable / Enable based
+	for (const auto& group_name : project_groups)
+	{
+		auto& group = mActionController.getGroup(group_name);
+		for (const auto& action : group)
+		{
+			action->setEnabled(enable);
+		}
 	}
 }
