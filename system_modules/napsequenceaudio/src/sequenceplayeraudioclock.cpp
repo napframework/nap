@@ -42,7 +42,6 @@ namespace nap
     SequencePlayerAudioClockProcess::SequencePlayerAudioClockProcess(audio::NodeManager& nodeManager)
             :audio::Process(nodeManager)
     {
-        mSampleRate = nodeManager.getSampleRate();
         mTime = nodeManager.getSampleTime();
         getNodeManager().registerRootProcess(*this);
     }
@@ -87,7 +86,9 @@ namespace nap
         // calculate delta time in seconds
         const auto& now = getNodeManager().getSampleTime();
         audio::DiscreteTimeValue elapsed_samples = now-mTime;
-        double delta_time = static_cast<double>(elapsed_samples)/(double) mSampleRate;
+        double delta_time = 0.0;
+        if(elapsed_samples > 0)
+            delta_time = static_cast<double>(elapsed_samples)/static_cast<double>(getNodeManager().getSampleRate());
         mTime = now;
 
         // dispatch delta time
