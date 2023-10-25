@@ -9,6 +9,7 @@
 #include <nap/logger.h>
 #include <entity.h>
 #include <scene.h>
+#include <QPainter>
 
 using namespace nap;
 using namespace nap::rtti;
@@ -19,20 +20,47 @@ napkin::FileType::FileType(const nap::rtti::EPropertyFileType filetype, const QS
 { }
 
 
-napkin::Icon::Icon(const QString& path) : mPath(path), mIcon(path)
+static void paintDisabledIcon(QIcon& outIcon, const QPixmap& pixmap)
+{
+	QImage image(pixmap.size(), QImage::Format_ARGB32_Premultiplied);
+	image.fill(Qt::transparent);
+	QPainter p(&image);
+	p.setOpacity(0.3f);
+	p.drawPixmap(0, 0, pixmap);
+	p.end();
+	outIcon.addPixmap(QPixmap::fromImage(image), QIcon::Mode::Disabled);
+}
+
+
+napkin::Icon::Icon(const QString& path) : mPath(path)
 { }
+
+
+QIcon napkin::Icon::get() const
+{
+	if (mIcon.isNull())
+	{
+		QPixmap pix(mPath);
+		mIcon.addPixmap(pix);
+		paintDisabledIcon(mIcon, pix);
+	}
+	return mIcon;
+}
 
 
 QIcon napkin::Icon::inverted() const
 {
-	assert(!mIcon.isNull());
 	if (mIconInverted.isNull())
 	{
+		// Add default icon
 		QImage img(mPath);
 		QPixmap pix;
 		img.invertPixels(QImage::InvertMode::InvertRgb);
 		pix.convertFromImage(img);
 		mIconInverted = QIcon(pix);
+
+		// Add disabled icon
+		paintDisabledIcon(mIconInverted, pix);
 	}
 	return mIconInverted;
 }

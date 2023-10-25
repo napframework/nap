@@ -29,12 +29,11 @@ namespace napkin
 	{
 	public:
 		Icon(const QString& path);
-		QIcon get() const				{ return mIcon;  }
+		QIcon get() const;
 		QIcon inverted() const;
-		bool valid() const				{ return !mIcon.isNull(); }
 	private:
 		QString mPath;
-		QIcon mIcon;
+		mutable QIcon mIcon;
 		mutable QIcon mIconInverted;
 	};
 
