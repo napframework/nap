@@ -23,7 +23,8 @@ namespace napkin
 
 	/**
 	 * Creates actions and groups them for repeated use.
-	 * Use the napkin::action::groups namespace to get the names of all available groups.
+	 * Use `getGroup()` in combination with the `napkin::action::groups` namespace to get
+	 * all the actions associated with a specific group.
 	 */
 	class ActionController final
 	{

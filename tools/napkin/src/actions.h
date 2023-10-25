@@ -33,10 +33,11 @@ namespace napkin
 	{
 	public:
 		/**
+		 * @param parent parent of action, nullptr if there is no parent
 		 * @param text action description
 		 * @param iconName name of icon to load, nullptr if there is no icon
 		 */
-		Action(const char* text, const char* iconName);
+		Action(QObject* parent, const char* text, const char* iconName);
 	protected:
 		/**
 		 * This method will be called if the action is triggered
@@ -56,7 +57,7 @@ namespace napkin
 	class NewFileAction : public Action
 	{
 	public:
-		NewFileAction();
+		NewFileAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -68,7 +69,7 @@ namespace napkin
 	class OpenProjectAction : public Action
 	{
 	public:
-		OpenProjectAction();
+		OpenProjectAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -80,7 +81,7 @@ namespace napkin
 	class ReloadFileAction : public Action
 	{
 	public:
-		ReloadFileAction();
+		ReloadFileAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -92,7 +93,7 @@ namespace napkin
 	class SaveFileAction : public Action
 	{
 	public:
-		SaveFileAction();
+		SaveFileAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -104,7 +105,7 @@ namespace napkin
 	class SaveFileAsAction : public Action
 	{
 	public:
-		SaveFileAsAction();
+		SaveFileAsAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -116,7 +117,7 @@ namespace napkin
 	class OpenFileAction : public Action
 	{
 	public:
-		OpenFileAction();
+		OpenFileAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -128,7 +129,7 @@ namespace napkin
 	class UpdateDefaultFileAction : public Action
 	{
 	public:
-		UpdateDefaultFileAction();
+		UpdateDefaultFileAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -140,7 +141,7 @@ namespace napkin
 	class NewServiceConfigAction : public Action
 	{
 	public:
-		NewServiceConfigAction();
+		NewServiceConfigAction(QObject* parent);
 	private:
 		void perform();
 	};
@@ -152,7 +153,7 @@ namespace napkin
 	class SaveServiceConfigAction : public Action
 	{
 	public: 
-		SaveServiceConfigAction();
+		SaveServiceConfigAction(QObject* parent);
 	private:
 		void perform();
 	};
@@ -164,7 +165,7 @@ namespace napkin
 	class SaveServiceConfigurationAs : public Action
 	{
 	public:
-		SaveServiceConfigurationAs();
+		SaveServiceConfigurationAs(QObject* parent);
 	private:
 		void perform();
 	};
@@ -176,7 +177,7 @@ namespace napkin
 	class OpenServiceConfigAction : public Action
 	{
 	public:
-		OpenServiceConfigAction();
+		OpenServiceConfigAction(QObject* parent);
 	private:
 		void perform();
 	};
@@ -188,7 +189,7 @@ namespace napkin
 	class SetAsDefaultServiceConfigAction : public Action
 	{
 	public:
-		SetAsDefaultServiceConfigAction();
+		SetAsDefaultServiceConfigAction(QObject* parent);
 	private:
 		void perform();
 	};
@@ -200,7 +201,7 @@ namespace napkin
 	class CreateResourceAction : public Action
 	{
 	public:
-		explicit CreateResourceAction();
+		CreateResourceAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -212,7 +213,7 @@ namespace napkin
 	class CreateGroupAction : public Action
 	{
 	public:
-		explicit CreateGroupAction();
+		CreateGroupAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -224,7 +225,7 @@ namespace napkin
 	class AddNewResourceToGroupAction : public Action
 	{
 	public:
-		explicit AddNewResourceToGroupAction(nap::IGroup& group);
+		AddNewResourceToGroupAction(QObject* parent, nap::IGroup& group);
 	private:
 		void perform() override;
 		nap::IGroup* mGroup = nullptr;
@@ -237,7 +238,7 @@ namespace napkin
 	class AddChildGroupAction : public Action
 	{
 	public:
-		explicit AddChildGroupAction(nap::IGroup& group);
+		AddChildGroupAction(QObject* parent, nap::IGroup& group);
 	private:
 		void perform() override;
 		nap::IGroup* mGroup = nullptr;
@@ -252,7 +253,7 @@ namespace napkin
 	class MoveResourceToGroupAction : public Action
 	{
 	public:
-		explicit MoveResourceToGroupAction(nap::rtti::Object& resource, nap::IGroup* currentGroup);
+		explicit MoveResourceToGroupAction(QObject* parent, nap::rtti::Object& resource, nap::IGroup* currentGroup);
 	private:
 		void perform() override;
 		nap::IGroup* mCurrentGroup = nullptr;
@@ -268,7 +269,7 @@ namespace napkin
 	class MoveGroupAction : public Action
 	{
 	public:
-		explicit MoveGroupAction(nap::IGroup& group, nap::IGroup* parentGroup);
+		explicit MoveGroupAction(QObject* parent, nap::IGroup& group, nap::IGroup* parentGroup);
 	private:
 		void perform() override;
 		nap::IGroup* mGroup = nullptr;
@@ -284,7 +285,7 @@ namespace napkin
 	class AddExistingResourceToGroupAction : public Action
 	{
 	public:
-		explicit AddExistingResourceToGroupAction(nap::IGroup& group);
+		explicit AddExistingResourceToGroupAction(QObject* parent, nap::IGroup& group);
 	private:
 		void perform() override;
 		nap::IGroup* mGroup = nullptr;
@@ -297,7 +298,7 @@ namespace napkin
 	class RemoveResourceFromGroupAction : public Action
 	{
 	public:
-		explicit RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
+		explicit RemoveResourceFromGroupAction(QObject* parent, nap::IGroup& group, nap::rtti::Object& resource);
 		void perform() override;
 	private:
 		nap::IGroup* mGroup = nullptr;
@@ -311,7 +312,7 @@ namespace napkin
 	class RemoveGroupFromGroupAction : public Action
 	{
 	public:
-		explicit RemoveGroupFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource);
+		explicit RemoveGroupFromGroupAction(QObject* parent, nap::IGroup& group, nap::rtti::Object& resource);
 		void perform() override;
 	private:
 		nap::IGroup* mGroup = nullptr;
@@ -325,7 +326,7 @@ namespace napkin
 	class CreateEntityAction : public Action
 	{
 	public:
-		explicit CreateEntityAction();
+		explicit CreateEntityAction(QObject* parent);
 	private:
 		void perform() override;
 	};
@@ -337,7 +338,7 @@ namespace napkin
 	class AddChildEntityAction : public Action
 	{
 	public:
-		explicit AddChildEntityAction(nap::Entity& entity);
+		explicit AddChildEntityAction(QObject* parent, nap::Entity& entity);
 	private:
 		void perform() override;
 		nap::Entity* mEntity;
@@ -350,7 +351,7 @@ namespace napkin
 	class AddComponentAction : public Action
 	{
 	public:
-		explicit AddComponentAction(nap::Entity& entity);
+		explicit AddComponentAction(QObject* parent, nap::Entity& entity);
 	private:
 		void perform() override;
 		nap::Entity* mEntity;
@@ -363,7 +364,7 @@ namespace napkin
 	class DeleteObjectAction : public Action
 	{
 	public:
-		explicit DeleteObjectAction(nap::rtti::Object& object);
+		explicit DeleteObjectAction(QObject* parent, nap::rtti::Object& object);
 	private:
 		void perform() override;
 		nap::rtti::Object& mObject;
@@ -376,7 +377,7 @@ namespace napkin
 	class LoadShaderAction : public Action
 	{
 	public:
-		explicit LoadShaderAction(nap::BaseShader& object);
+		explicit LoadShaderAction(QObject* parent, nap::BaseShader& object);
 	private:
 		void perform() override;
 		nap::BaseShader& mShader;
@@ -390,7 +391,7 @@ namespace napkin
 	class DeleteGroupAction : public Action
 	{
 	public:
-		explicit DeleteGroupAction(nap::IGroup& group);
+		explicit DeleteGroupAction(QObject* parent, nap::IGroup& group);
 	private:
 		void perform() override;
 		nap::IGroup& mGroup;
@@ -403,7 +404,7 @@ namespace napkin
 	class RemoveChildEntityAction : public Action
 	{
 	public:
-		explicit RemoveChildEntityAction(EntityItem& entityItem);
+		explicit RemoveChildEntityAction(QObject* parent, EntityItem& entityItem);
 	private:
 		void perform() override;
 		EntityItem* mEntityItem;
@@ -416,7 +417,7 @@ namespace napkin
 	class RemovePathAction : public Action
 	{
 	public:
-		explicit RemovePathAction(const PropertyPath& path);
+		explicit RemovePathAction(QObject* parent, const PropertyPath& path);
 	private:
 		void perform() override;
 		PropertyPath mPath;
@@ -429,7 +430,7 @@ namespace napkin
 	class SetThemeAction : public Action
 	{
 	public:
-        explicit SetThemeAction(const QString& themeName);
+        explicit SetThemeAction(QObject* parent, const QString& themeName);
 	private:
 		void perform() override;
 		QString mTheme;	// The theme to set
@@ -442,7 +443,7 @@ namespace napkin
 	class OpenURLAction : public Action
 	{
 	public:
-        explicit OpenURLAction(const char* text, const QUrl& address);
+        explicit OpenURLAction(QObject* parent, const char* text, const QUrl& address);
 	private:
 		void perform() override;
 		QUrl mAddress;

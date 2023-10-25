@@ -279,7 +279,7 @@ bool MainWindow::confirmSaveCurrentFile()
 
 	if (result == QMessageBox::Yes)
 	{
-		SaveFileAction action;
+		SaveFileAction action(nullptr);
 		action.trigger();
 		return true;
 	}

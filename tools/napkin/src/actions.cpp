@@ -20,8 +20,8 @@
 
 using namespace napkin;
 
-Action::Action(const char* text, const char* iconName) :
-	QAction(), mIconName(iconName)
+Action::Action(QObject* parent, const char* text, const char* iconName) :
+	QAction(parent), mIconName(iconName)
 {
 	setText(text);
 	connect(this, &QAction::triggered, this, &Action::perform);
@@ -40,7 +40,7 @@ void napkin::Action::loadIcon()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-NewFileAction::NewFileAction() : Action("New", QRC_ICONS_EDIT)
+NewFileAction::NewFileAction(QObject* parent) : Action(parent, "New", QRC_ICONS_EDIT)
 {
 	setShortcut(QKeySequence::New);
 }
@@ -71,7 +71,7 @@ static bool continueAfterSavingChanges(const QString& reason, const QString& typ
 	{
 		if (result == QMessageBox::Yes)
 		{
-			SaveFileAction action;
+			SaveFileAction action(nullptr);
 			action.trigger();
 		}
 		return true;
@@ -93,7 +93,7 @@ void NewFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-OpenProjectAction::OpenProjectAction() : Action("Open project...", QRC_ICONS_PROJECT)
+OpenProjectAction::OpenProjectAction(QObject* parent) : Action(parent, "Open project...", QRC_ICONS_PROJECT)
 { }
 
 
@@ -110,7 +110,7 @@ void OpenProjectAction::perform()
 
 //////////////////////////////////////////////////////////////////////////
 
-napkin::UpdateDefaultFileAction::UpdateDefaultFileAction() : Action("Set as project default", QRC_ICONS_CHANGE)
+napkin::UpdateDefaultFileAction::UpdateDefaultFileAction(QObject* parent) : Action(parent, "Set as project default", QRC_ICONS_CHANGE)
 { }
 
 
@@ -126,7 +126,7 @@ void napkin::UpdateDefaultFileAction::perform()
 	if (doc->getFilename().isNull())
 	{
 		// Attempt to save document
-		SaveFileAsAction().trigger();
+		SaveFileAsAction(nullptr).trigger();
 		if (doc->getFilename().isNull())
 		{
 			return;
@@ -167,7 +167,7 @@ void napkin::UpdateDefaultFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ReloadFileAction::ReloadFileAction() : Action("Reload", QRC_ICONS_RELOAD)
+ReloadFileAction::ReloadFileAction(QObject* parent) : Action(parent, "Reload", QRC_ICONS_RELOAD)
 { }
 
 
@@ -184,7 +184,7 @@ void ReloadFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SaveFileAction::SaveFileAction() : Action("Save", QRC_ICONS_SAVE)
+SaveFileAction::SaveFileAction(QObject* parent) : Action(parent, "Save", QRC_ICONS_SAVE)
 {
 	setShortcut(QKeySequence::Save);
 }
@@ -205,7 +205,7 @@ void SaveFileAction::perform()
 	// No previous save
 	if (doc->getFilename().isNull())
 	{
-		SaveFileAsAction().trigger();
+		SaveFileAsAction(nullptr).trigger();
 		return;
 	}
 
@@ -219,7 +219,7 @@ void SaveFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SaveFileAsAction::SaveFileAsAction() : Action("Save as...", QRC_ICONS_SAVE_AS)
+SaveFileAsAction::SaveFileAsAction(QObject* parent) : Action(parent, "Save as...", QRC_ICONS_SAVE_AS)
 {
 	setShortcut(QKeySequence::SaveAs);
 }
@@ -263,7 +263,7 @@ void SaveFileAsAction::perform()
 				QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
 
 			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction().trigger();
+				UpdateDefaultFileAction(nullptr).trigger();
 		}
 	}
 	else
@@ -276,7 +276,7 @@ void SaveFileAsAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-napkin::OpenFileAction::OpenFileAction() : Action("Open...", QRC_ICONS_FILE)
+napkin::OpenFileAction::OpenFileAction(QObject* parent) : Action(parent, "Open...", QRC_ICONS_FILE)
 {
 	setShortcut(QKeySequence::Open);
 }
@@ -318,7 +318,7 @@ void napkin::OpenFileAction::perform()
 				"Set as Project Default?", QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
 
 			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction().trigger();
+				UpdateDefaultFileAction(nullptr).trigger();
 		}
 	}
 }
@@ -326,7 +326,7 @@ void napkin::OpenFileAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CreateResourceAction::CreateResourceAction() : Action("Create Resource...", QRC_ICONS_RTTIOBJECT)
+CreateResourceAction::CreateResourceAction(QObject* parent) : Action(parent, "Create Resource...", QRC_ICONS_RTTIOBJECT)
 { }
 
 
@@ -347,7 +347,8 @@ void CreateResourceAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::CreateGroupAction::CreateGroupAction() : Action("Create Group...", QRC_ICONS_GROUP)
+napkin::CreateGroupAction::CreateGroupAction(QObject* parent) :
+	Action(parent, "Create Group...", QRC_ICONS_GROUP)
 { }
 
 
@@ -366,8 +367,8 @@ void napkin::CreateGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddNewResourceToGroupAction::AddNewResourceToGroupAction(nap::IGroup& group) :
-	Action("Create Resource...", QRC_ICONS_RTTIOBJECT), mGroup(&group)
+AddNewResourceToGroupAction::AddNewResourceToGroupAction(QObject* parent, nap::IGroup& group) :
+	Action(parent, "Create Resource...", QRC_ICONS_RTTIOBJECT), mGroup(&group)
 { }
 
 void AddNewResourceToGroupAction::perform()
@@ -396,8 +397,8 @@ void AddNewResourceToGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::AddChildGroupAction::AddChildGroupAction(nap::IGroup& group) :
-	Action("Create Group...", QRC_ICONS_GROUP), mGroup(&group)
+napkin::AddChildGroupAction::AddChildGroupAction(QObject* parent, nap::IGroup& group) :
+	Action(parent, "Create Group...", QRC_ICONS_GROUP), mGroup(&group)
 { }
 
 
@@ -411,8 +412,8 @@ void napkin::AddChildGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::MoveResourceToGroupAction::MoveResourceToGroupAction(nap::rtti::Object& resource, nap::IGroup* currentGroup) :
-	Action("Move to Group...", QRC_ICONS_CHANGE), mObject(&resource), mCurrentGroup(currentGroup)
+napkin::MoveResourceToGroupAction::MoveResourceToGroupAction(QObject* parent, nap::rtti::Object& resource, nap::IGroup* currentGroup) :
+	Action(parent, "Move to Group...", QRC_ICONS_CHANGE), mObject(&resource), mCurrentGroup(currentGroup)
 { }
 
 
@@ -460,8 +461,8 @@ void napkin::MoveResourceToGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::MoveGroupAction::MoveGroupAction(nap::IGroup& group, nap::IGroup* parentGroup) :
-	Action("Move to Group...", QRC_ICONS_CHANGE), mGroup(&group), mParentGroup(parentGroup)
+napkin::MoveGroupAction::MoveGroupAction(QObject* parent, nap::IGroup& group, nap::IGroup* parentGroup) :
+	Action(parent, "Move to Group...", QRC_ICONS_CHANGE), mGroup(&group), mParentGroup(parentGroup)
 { }
 
 
@@ -529,8 +530,8 @@ void napkin::MoveGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddExistingResourceToGroupAction::AddExistingResourceToGroupAction(nap::IGroup& group) :
-	Action("Add Resource...", QRC_ICONS_ADD), mGroup(&group)
+AddExistingResourceToGroupAction::AddExistingResourceToGroupAction(QObject* parent, nap::IGroup& group) :
+	Action(parent, "Add Resource...", QRC_ICONS_ADD), mGroup(&group)
 { }
 
 
@@ -572,8 +573,8 @@ void AddExistingResourceToGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
-	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+napkin::RemoveResourceFromGroupAction::RemoveResourceFromGroupAction(QObject* parent, nap::IGroup& group, nap::rtti::Object& resource) :
+	Action(parent, nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mGroup(&group), mObject(&resource)
 { }
 
@@ -588,8 +589,8 @@ void napkin::RemoveResourceFromGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-napkin::RemoveGroupFromGroupAction::RemoveGroupFromGroupAction(nap::IGroup& group, nap::rtti::Object& resource) :
-	Action(nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+napkin::RemoveGroupFromGroupAction::RemoveGroupFromGroupAction(QObject* parent, nap::IGroup& group, nap::rtti::Object& resource) :
+	Action(parent, nap::utility::stringFormat("Remove From '%s'", group.mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mGroup(&group), mObject(&resource)
 { }
 
@@ -604,7 +605,8 @@ void napkin::RemoveGroupFromGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-CreateEntityAction::CreateEntityAction() : Action("Create Entity", QRC_ICONS_ENTITY)
+CreateEntityAction::CreateEntityAction(QObject* parent) :
+	Action(parent, "Create Entity", QRC_ICONS_ENTITY)
 { }
 
 
@@ -616,8 +618,8 @@ void CreateEntityAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddChildEntityAction::AddChildEntityAction(nap::Entity& entity) :
-	Action("Add Child Entity...", QRC_ICONS_ADD), mEntity(&entity)
+AddChildEntityAction::AddChildEntityAction(QObject* parent, nap::Entity& entity) :
+	Action(parent, "Add Child Entity...", QRC_ICONS_ADD), mEntity(&entity)
 { }
 
 
@@ -645,8 +647,8 @@ void AddChildEntityAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddComponentAction::AddComponentAction(nap::Entity& entity) :
-	Action("Add Component...", QRC_ICONS_ADD), mEntity(&entity)
+AddComponentAction::AddComponentAction(QObject* parent, nap::Entity& entity) :
+	Action(parent, "Add Component...", QRC_ICONS_ADD), mEntity(&entity)
 { }
 
 
@@ -665,8 +667,8 @@ void AddComponentAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-DeleteObjectAction::DeleteObjectAction(nap::rtti::Object& object) :
-	Action(nap::utility::stringFormat("Delete '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DELETE),
+DeleteObjectAction::DeleteObjectAction(QObject* parent, nap::rtti::Object& object) :
+	Action(parent, nap::utility::stringFormat("Delete '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DELETE),
 	mObject(object)
 { }
 
@@ -689,8 +691,8 @@ void DeleteObjectAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 
-napkin::DeleteGroupAction::DeleteGroupAction(nap::IGroup& group) :
-	Action(nap::utility::stringFormat("Delete '%s'", group.mID.c_str()).c_str(), QRC_ICONS_DELETE),
+napkin::DeleteGroupAction::DeleteGroupAction(QObject* parent, nap::IGroup& group) :
+	Action(parent, nap::utility::stringFormat("Delete '%s'", group.mID.c_str()).c_str(), QRC_ICONS_DELETE),
 	mGroup(group)
 { }
 
@@ -741,8 +743,8 @@ void napkin::DeleteGroupAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-LoadShaderAction::LoadShaderAction(nap::BaseShader& shader) :
-	Action(nap::utility::stringFormat("(Re)Load '%s'", shader.mID.c_str()).c_str(), QRC_ICONS_RELOAD),
+LoadShaderAction::LoadShaderAction(QObject* parent, nap::BaseShader& shader) :
+	Action(parent, nap::utility::stringFormat("(Re)Load '%s'", shader.mID.c_str()).c_str(), QRC_ICONS_RELOAD),
 	mShader(shader)
 { }
 
@@ -777,8 +779,8 @@ void LoadShaderAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemoveChildEntityAction::RemoveChildEntityAction(EntityItem& entityItem) :
-	Action(nap::utility::stringFormat("Remove '%s'", entityItem.getEntity().mID.c_str()).c_str(), QRC_ICONS_REMOVE),
+RemoveChildEntityAction::RemoveChildEntityAction(QObject* parent, EntityItem& entityItem) :
+	Action(parent, nap::utility::stringFormat("Remove '%s'", entityItem.getEntity().mID.c_str()).c_str(), QRC_ICONS_REMOVE),
 	mEntityItem(&entityItem)
 { }
 
@@ -809,8 +811,8 @@ void RemoveChildEntityAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemovePathAction::RemovePathAction(const PropertyPath& path) :
-	Action(nap::utility::stringFormat("Remove '%s'", path.getName().c_str()).c_str(), QRC_ICONS_REMOVE), mPath(path)
+RemovePathAction::RemovePathAction(QObject* parent, const PropertyPath& path) :
+	Action(parent, nap::utility::stringFormat("Remove '%s'", path.getName().c_str()).c_str(), QRC_ICONS_REMOVE), mPath(path)
 { }
 
 
@@ -822,8 +824,8 @@ void RemovePathAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-SetThemeAction::SetThemeAction(const QString& themeName) :
-	Action(themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName.toStdString().c_str(), nullptr),
+SetThemeAction::SetThemeAction(QObject* parent, const QString& themeName) :
+	Action(parent, themeName.isEmpty() ? napkin::TXT_THEME_DEFAULT : themeName.toStdString().c_str(), nullptr),
 	mTheme(themeName)
 {
     setCheckable(true);
@@ -835,7 +837,8 @@ void SetThemeAction::perform()
 }
 
 
-napkin::NewServiceConfigAction::NewServiceConfigAction() : Action("New", QRC_ICONS_EDIT)
+napkin::NewServiceConfigAction::NewServiceConfigAction(QObject* parent) :
+	Action(parent, "New", QRC_ICONS_EDIT)
 { }
 
 
@@ -848,7 +851,8 @@ void napkin::NewServiceConfigAction::perform()
 }
 
 
-napkin::SaveServiceConfigAction::SaveServiceConfigAction() : Action("Save", QRC_ICONS_SAVE)
+napkin::SaveServiceConfigAction::SaveServiceConfigAction(QObject* parent) :
+	Action(parent, "Save", QRC_ICONS_SAVE)
 { }
 
 
@@ -860,7 +864,7 @@ void napkin::SaveServiceConfigAction::perform()
 		// Save as if no file associated with config
 		if (ctx.getServiceConfig()->getFilename().isNull())
 		{
-			SaveServiceConfigurationAs().trigger();
+			SaveServiceConfigurationAs(nullptr).trigger();
 			return;
 		}
 
@@ -874,7 +878,8 @@ void napkin::SaveServiceConfigAction::perform()
 }
 
  
-napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs() : Action("Save as...", QRC_ICONS_SAVE_AS)
+napkin::SaveServiceConfigurationAs::SaveServiceConfigurationAs(QObject* parent) :
+	Action(parent, "Save as...", QRC_ICONS_SAVE_AS)
 { }
 
 
@@ -915,12 +920,13 @@ void napkin::SaveServiceConfigurationAs::perform()
 			QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
 
 		if (result == QMessageBox::StandardButton::Yes)
-			SetAsDefaultServiceConfigAction().trigger();
+			SetAsDefaultServiceConfigAction(nullptr).trigger();
 	}
 }
 
 
-napkin::OpenServiceConfigAction::OpenServiceConfigAction() : Action("Open...", QRC_ICONS_CONFIGURATION)
+napkin::OpenServiceConfigAction::OpenServiceConfigAction(QObject* parent) :
+	Action(parent, "Open...", QRC_ICONS_CONFIGURATION)
 { }
 
 
@@ -951,13 +957,14 @@ void napkin::OpenServiceConfigAction::perform()
 				"Set as Project Default?", QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
 
 			if (result == QMessageBox::StandardButton::Yes)
-				SetAsDefaultServiceConfigAction().trigger();
+				SetAsDefaultServiceConfigAction(nullptr).trigger();
 		}
 	}
 }
 
 
-napkin::SetAsDefaultServiceConfigAction::SetAsDefaultServiceConfigAction() : Action("Set as project default", QRC_ICONS_CHANGE)
+napkin::SetAsDefaultServiceConfigAction::SetAsDefaultServiceConfigAction(QObject* parent) :
+	Action(parent, "Set as project default", QRC_ICONS_CHANGE)
 { }
 
 
@@ -971,7 +978,7 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 	if (ctx.getServiceConfig()->getFilename().isNull())
 	{
 		// Attempt to save document
-		SaveServiceConfigurationAs().trigger();
+		SaveServiceConfigurationAs(nullptr).trigger();
 		if (ctx.getServiceConfig()->getFilename().isNull())
 		{
 			return;
@@ -983,8 +990,8 @@ void napkin::SetAsDefaultServiceConfigAction::perform()
 }
 
 
-napkin::OpenURLAction::OpenURLAction(const char* text, const QUrl& address) :
-	Action(text, QRC_ICONS_URL), mAddress(address)
+napkin::OpenURLAction::OpenURLAction(QObject* parent, const char* text, const QUrl& address) :
+	Action(parent, text, QRC_ICONS_URL), mAddress(address)
 { }
 
 

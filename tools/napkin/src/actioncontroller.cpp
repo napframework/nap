@@ -13,7 +13,7 @@ namespace napkin
 	template<typename T, typename... Args>
 	static void registerAction(std::vector<std::unique_ptr<Action>>& outActions, std::vector<Action*>& outGroup, Args&&... args)
 	{
-		auto& i = outActions.emplace_back(std::make_unique<T>(std::forward<Args>(args)...));
+		auto& i = outActions.emplace_back(std::make_unique<T>(nullptr, std::forward<Args>(args)... ));
 		outGroup.emplace_back(i.get());
 	}
 
@@ -31,9 +31,10 @@ namespace napkin
 
 	ActionController::ActionController()
 	{
-		// Project actions
+		// Project actions6
 		auto& project_group = registerGroup(action::groups::project, mGroups);
 		registerAction<OpenProjectAction>(mActions, project_group);
+		auto p = project_group[0]->parent();
 
 		// File actions
 		auto& file_group = registerGroup(action::groups::file, mGroups);
