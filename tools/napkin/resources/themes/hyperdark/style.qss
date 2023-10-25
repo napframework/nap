@@ -175,7 +175,7 @@ QPushButton:!enabled {
 }
 
 QPushButton:hover, QToolButton:hover {
-    background: @front3;
+    background: @highlight1;
 }
 
 QTabBar {
