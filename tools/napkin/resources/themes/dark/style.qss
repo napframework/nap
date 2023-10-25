@@ -26,6 +26,10 @@ QMenu {
     color: @front3;
 }
 
+QMenu::item:disabled {
+    color: @front1;
+ }
+
 QDialog, QLabel {
     color: @front1;
     background-color: @background2;

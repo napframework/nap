@@ -21,6 +21,10 @@ QMenuBar::item:selected {
     background: @front3;
 }
 
+QMenu::item:disabled {
+    color: @front1;
+ }
+
 QMenu {
     background-color: @dark2;
     color: @front3;
