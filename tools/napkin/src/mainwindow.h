@@ -188,9 +188,10 @@ namespace napkin
 		QMenu mProjectMenu;
 		QMenu mFileMenu;
 		QMenu mConfigMenu;
+		QMenu mCreateMenu;
 		QMenu mHelpMenu;
-		ScenePanel mScenePanel;
 		QMenu mRecentProjectsMenu;
+		ScenePanel mScenePanel;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;

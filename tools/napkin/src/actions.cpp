@@ -96,7 +96,9 @@ void NewFileAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 OpenProjectAction::OpenProjectAction(QObject* parent) : Action(parent, "Open project...", QRC_ICONS_PROJECT)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::Key_P));
+}
 
 
 void OpenProjectAction::perform()
@@ -113,7 +115,9 @@ void OpenProjectAction::perform()
 //////////////////////////////////////////////////////////////////////////
 
 napkin::UpdateDefaultFileAction::UpdateDefaultFileAction(QObject* parent) : Action(parent, "Set as project default", QRC_ICONS_CHANGE)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_D));
+}
 
 
 void napkin::UpdateDefaultFileAction::perform()
@@ -170,7 +174,9 @@ void napkin::UpdateDefaultFileAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 ReloadFileAction::ReloadFileAction(QObject* parent) : Action(parent, "Reload", QRC_ICONS_RELOAD)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_R));
+}
 
 
 void ReloadFileAction::perform()
@@ -223,7 +229,7 @@ void SaveFileAction::perform()
 
 SaveFileAsAction::SaveFileAsAction(QObject* parent) : Action(parent, "Save as...", QRC_ICONS_SAVE_AS)
 {
-	setShortcut(QKeySequence::SaveAs);
+	setShortcut(QKeySequence(Qt::CTRL | Qt::SHIFT | Qt::Key_S));
 }
 
 
@@ -329,7 +335,9 @@ void napkin::OpenFileAction::perform()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 CreateResourceAction::CreateResourceAction(QObject* parent) : Action(parent, "Create Resource...", QRC_ICONS_RTTIOBJECT)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::Key_R));
+}
 
 
 void CreateResourceAction::perform()
@@ -351,7 +359,9 @@ void CreateResourceAction::perform()
 
 napkin::CreateGroupAction::CreateGroupAction(QObject* parent) :
 	Action(parent, "Create Group...", QRC_ICONS_GROUP)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::Key_G));
+}
 
 
 void napkin::CreateGroupAction::perform()
@@ -609,7 +619,9 @@ void napkin::RemoveGroupFromGroupAction::perform()
 
 CreateEntityAction::CreateEntityAction(QObject* parent) :
 	Action(parent, "Create Entity", QRC_ICONS_ENTITY)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::Key_E));
+}
 
 
 void CreateEntityAction::perform()
@@ -1012,7 +1024,9 @@ void napkin::OpenURLAction::perform()
 
 napkin::OpenDocsAction::OpenDocsAction(QObject* parent) :
 	Action(parent, "NAP Documentation", QRC_ICONS_HELP)
-{ }
+{
+	setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Question));
+}
 
 
 void napkin::OpenDocsAction::perform()

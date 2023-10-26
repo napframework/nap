@@ -58,7 +58,7 @@ namespace napkin
 		registerAction<OpenDocsAction>(mActions, help_group);
 
 		// Create actions
-		auto& create_group = registerGroup(action::groups::create, mGroups);
+		auto& create_group = registerGroup(action::groups::object, mGroups);
 		registerAction<CreateResourceAction>(mActions, create_group);
 		registerAction<CreateEntityAction>(mActions, create_group);
 		registerAction<CreateGroupAction>(mActions, create_group);

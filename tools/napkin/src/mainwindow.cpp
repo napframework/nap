@@ -113,10 +113,17 @@ void MainWindow::configureMenu()
 
 	// Service Configuration menu
 	mConfigMenu.setTitle(action::groups::config);
-	const auto& c_actions = mActionModel.getGroup(action::groups::config);
-	for (auto* action : c_actions)
+	const auto& s_actions = mActionModel.getGroup(action::groups::config);
+	for (auto* action : s_actions)
 		mConfigMenu.addAction(action);
 	menuBar()->addMenu(&mConfigMenu);
+
+	// Create menu
+	mCreateMenu.setTitle(action::groups::object);
+	const auto& c_actions = mActionModel.getGroup(action::groups::object);
+	for (auto* action : c_actions)
+		mCreateMenu.addAction(action);
+	menuBar()->addMenu(&mCreateMenu);
 
 	// Theme
 	menuBar()->addMenu(&mThemeMenu);
@@ -338,7 +345,7 @@ void napkin::MainWindow::addToolstrip()
 
 	// Create Actions
 	mToolbar->addSeparator();
-	const auto& c_actions  = mActionModel.getGroup(action::groups::create);
+	const auto& c_actions  = mActionModel.getGroup(action::groups::object);
 	for (const auto& action : c_actions)
 		mToolbar->addAction(action);
 
@@ -377,7 +384,7 @@ void napkin::MainWindow::enableProjectDependentActions(bool enable)
 	{
 		action::groups::file,
 		action::groups::config,
-		action::groups::create
+		action::groups::object
 	};
 
 	// Disable / Enable based
