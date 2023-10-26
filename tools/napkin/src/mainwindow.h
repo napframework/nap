@@ -6,7 +6,7 @@
 
 #include <QStatusBar>
 #include <QTimer>
-#include <QToolbar>
+#include <QToolBar>
 
 #include <napqt/basewindow.h>
 #include <napqt/errordialog.h>
