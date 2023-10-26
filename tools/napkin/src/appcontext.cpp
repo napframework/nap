@@ -210,7 +210,7 @@ Document* AppContext::newDocument()
 }
 
 
-Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
+Document* AppContext::loadDocumentFromString(const std::string& data, QString filename)
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;

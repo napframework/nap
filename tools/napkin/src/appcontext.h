@@ -137,10 +137,11 @@ namespace napkin
 
 		/**
 		 * Load a json string as document
-		 * @param data The json data to load.
+		 * @param data the json data to load
+		 * @param filename file source of the data if present
 		 * @return A Document instance if loading succeeded, nullptr otherwise
 		 */
-		Document* loadDocumentFromString(const std::string& data, const QString& filename = "");
+		Document* loadDocumentFromString(const std::string& data, QString filename = "");
 
 		/**
 		 * Save the current data to disk using the currently set filename.
