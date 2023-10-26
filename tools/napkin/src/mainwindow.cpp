@@ -273,10 +273,15 @@ bool MainWindow::confirmSaveCurrentFile()
 	if (!getContext().getDocument()->isDirty())
 		return true;
 
-	auto result = QMessageBox::question(this, "Save changes?",
-									"The current document has unsaved changes.\n"
-									"Save the changes before exit?",
-									QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+	QMessageBox msg(this);
+	msg.setWindowTitle("Save Changes?");
+	msg.setText("The current document has unsaved changes.\nSave the changes before exit?");
+	msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
+		QRC_ICONS_QUESTION).pixmap(32, 32)
+	);
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+	msg.setDefaultButton(QMessageBox::Yes);
+	auto result = msg.exec();
 
 	if (result == QMessageBox::Yes)
 	{

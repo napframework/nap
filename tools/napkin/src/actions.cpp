@@ -771,8 +771,14 @@ void LoadShaderAction::perform()
 	}
 	else
 	{
-		QMessageBox::information(parentWidget(), "Information",
-			QString("Successfully (re)loaded %1").arg(QString::fromStdString(mShader.mID)), QMessageBox::Ok);
+		QMessageBox msg(parentWidget());
+		msg.setWindowTitle("Information");
+		msg.setText(QString("Successfully (re)loaded %1").arg(QString::fromStdString(mShader.mID)));
+		msg.setStandardButtons(QMessageBox::Ok);
+		msg.setDefaultButton(QMessageBox::Ok);
+		msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
+			QRC_ICONS_CHECK).pixmap(32, 32));
+		msg.exec();
 	}
 }
 
