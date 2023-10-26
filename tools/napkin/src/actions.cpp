@@ -57,14 +57,16 @@ static bool continueAfterSavingChanges(const QString& reason, const QString& typ
 		return true;
 
 	// Document is dirty
-	auto result = QMessageBox::question
-	(
-		AppContext::get().getMainWindow(),
-		QString("Save before %1 %2").arg(reason, type),
-		QString("The current document has unsaved changes.\n"
-		"Save the changes before %1 %2?").arg(reason, type),
-		QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel
+	QMessageBox msg(AppContext::get().getMainWindow());
+	msg.setWindowTitle(QString("Save before %1 %2").arg(reason, type));
+	msg.setText(QString("The current document has unsaved changes.\n"
+		"Save changes before %1 %2?").arg(reason, type));
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+	msg.setDefaultButton(QMessageBox::Yes);
+	msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
+		QRC_ICONS_QUESTION).pixmap(32, 32)
 	);
+	auto result = msg.exec();
 
 	// Handle
 	if (result == QMessageBox::No || result == QMessageBox::Yes)
@@ -759,7 +761,8 @@ void LoadShaderAction::perform()
 		msg.setStandardButtons(QMessageBox::Ok);
 		msg.setDefaultButton(QMessageBox::Ok);
 		msg.setDetailedText(QString::fromStdString(error.toString()));
-		msg.setIcon(QMessageBox::Critical);
+		msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
+			QRC_ICONS_ERROR).pixmap(32, 32));
 		msg.setWindowTitle("Error");
 		QSpacerItem* spacer = new QSpacerItem(300, 0, QSizePolicy::Minimum, QSizePolicy::Expanding);
 		QGridLayout* layout = (QGridLayout*)msg.layout();

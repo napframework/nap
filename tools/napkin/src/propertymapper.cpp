@@ -596,7 +596,7 @@ namespace napkin
 			auto* array_uniform = createBinding<nap::UniformValueArray>(declaration.mName, found_it->second, path, *doc);
 
 			// Ask if entries should be created for the array
-			QMessageBox msg(nullptr);
+			QMessageBox msg(AppContext::get().getMainWindow());
 			msg.setWindowTitle("Array");
 			msg.setText(QString("Create entries for array '%1'?").arg(declaration.mName.c_str()));
 			msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
