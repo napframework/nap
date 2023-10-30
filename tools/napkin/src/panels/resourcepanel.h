@@ -67,6 +67,9 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
+		/**
+		 * Construct widget
+		 */
 		ResourcePanel();
 
 		/**
@@ -78,6 +81,9 @@ namespace napkin
 		 * @return The tree view held by this panel
 		 */
 		nap::qt::FilterTreeView& treeView() { return mTreeView; }
+
+	protected:
+		bool eventFilter(QObject* obj, QEvent* ev) override;
 
 	Q_SIGNALS:
 		void selectionChanged(QList<PropertyPath> obj);

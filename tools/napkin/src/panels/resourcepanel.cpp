@@ -9,6 +9,7 @@
 #include <napqt/filterpopup.h>
 #include <napqt/qtutils.h>
 #include <napkin-resources.h>
+#include <QKeyEvent>
 
 using namespace napkin;
 
@@ -102,6 +103,8 @@ napkin::ResourcePanel::ResourcePanel()
 	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
 	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
+
+	mTreeView.installEventFilter(this);
 }
 
 
@@ -265,6 +268,29 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 {
 	emitSelectionChanged();
 }
+
+
+bool napkin::ResourcePanel::eventFilter(QObject* obj, QEvent* ev)
+{
+	if (obj == &mTreeView && ev->type() == QEvent::KeyPress)
+	{
+		// Handle deletion of object
+		QKeyEvent* key_event = static_cast<QKeyEvent*>(ev);
+		if (key_event->key() == Qt::Key_Delete)
+		{
+			// Cast to 
+			auto obj_item = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
+			if (obj_item != nullptr)
+			{
+				DeleteObjectAction action(nullptr, obj_item->getObject());
+				action.trigger();
+			}
+			return true;
+		}
+	}
+	return QWidget::eventFilter(obj, ev);
+}
+
 
 void napkin::ResourcePanel::clear()
 {
