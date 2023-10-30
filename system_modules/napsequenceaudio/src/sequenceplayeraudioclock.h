@@ -113,9 +113,6 @@ namespace nap
         // last known timestamp in samples
         audio::DiscreteTimeValue mTime;
 
-        // the current sample rate
-        float mSampleRate;
-
         // queue of tasks to perform on process()
         moodycamel::ConcurrentQueue<std::function<void()>> mTasks;
     };
