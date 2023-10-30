@@ -14,6 +14,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("DepthTexture",			&nap::RenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default)
@@ -86,6 +87,9 @@ namespace nap
 			mSampleShading = false;
 		}
 
+		// Store whether a depth texture resource is set
+		mHasDepthTexture = mDepthTexture != nullptr;
+
 		// Set framebuffer size
 		glm::ivec2 size = mColorTexture->getSize();
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
@@ -93,10 +97,25 @@ namespace nap
 		// Store as attachments
 		std::array<VkImageView, 3> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
 
+		// Ensure the sample count is 1 when a depth texture resource is used
+		if (hasDepthTexture())
+		{
+			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
+				return false;
+		}
+
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
-			return false;
+		if (hasDepthTexture())
+		{
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, true, mRenderPass, errorState))
+				return false;
+		}
+		else
+		{
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+				return false;
+		}
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
@@ -106,7 +125,7 @@ namespace nap
 
 			// Bind textures as attachments
 			attachments[0] = mColorTexture->getHandle().getView();
-			attachments[1] = mDepthImage.getView();
+			attachments[1] = hasDepthTexture() ? mDepthTexture->getHandle().getView() : mDepthImage.getView();
 			attachments[2] = VK_NULL_HANDLE;
 		}
 		else
@@ -195,6 +214,12 @@ namespace nap
 	RenderTexture2D& RenderTarget::getColorTexture()
 	{
 		return *mColorTexture;
+	}
+
+
+	DepthRenderTexture2D* RenderTarget::getDepthTexture()
+	{
+		return mDepthTexture.get();
 	}
 
 

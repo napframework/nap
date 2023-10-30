@@ -87,6 +87,11 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual const ImageData& getHandle() const override { return mImageData; }
+
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space

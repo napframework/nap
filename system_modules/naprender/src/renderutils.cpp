@@ -22,7 +22,7 @@ namespace nap
 {
 	namespace utility
 	{
-		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, bool consumeDepth, VkRenderPass& renderPass, utility::ErrorState& errorState)
 		{
 			if (!errorState.check(targetLayout == VK_IMAGE_LAYOUT_PRESENT_SRC_KHR || targetLayout == VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, "Failed to create render pass. Unsupported target layout."))
 				return false;
@@ -43,11 +43,11 @@ namespace nap
 			depth_attachment.format = depthFormat;
 			depth_attachment.samples = samples;
 			depth_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			depth_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			depth_attachment.storeOp = consumeDepth ? VK_ATTACHMENT_STORE_OP_STORE : VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			depth_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			depth_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			depth_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-			depth_attachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+			depth_attachment.finalLayout = consumeDepth ? targetLayout : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
 			VkAttachmentReference color_attachment_ref = {};
 			color_attachment_ref.attachment = 0;
@@ -74,7 +74,7 @@ namespace nap
 
 			dependencies[1].srcSubpass = 0;
 			dependencies[1].dstSubpass = VK_SUBPASS_EXTERNAL;
-			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT;
+			dependencies[1].srcStageMask = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT | VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | (consumeDepth ? VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT : 0);
 			dependencies[1].dstStageMask = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 			dependencies[1].srcAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT;
 			dependencies[1].dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
@@ -122,6 +122,12 @@ namespace nap
 
 				return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
 			}
+		}
+
+
+		bool createRenderPass(VkDevice device, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits samples, VkImageLayout targetLayout, VkRenderPass& renderPass, utility::ErrorState& errorState)
+		{
+			return createRenderPass(device, colorFormat, depthFormat, samples, targetLayout, false, renderPass, errorState);
 		}
 
 

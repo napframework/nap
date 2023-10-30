@@ -159,7 +159,7 @@ namespace nap
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
-		EMemoryUsage			mUsage = EMemoryUsage::Static;	///< Property: 'Usage' GPU memory usage
+		EMemoryUsage			mUsage = EMemoryUsage::Static;		///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
 		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be the default

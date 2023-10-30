@@ -133,9 +133,19 @@ namespace nap
 		virtual VkRenderPass getRenderPass() const override						{ return mRenderPass; }
 
 		/**
+		 * @return whether this render target writes to a specified depth texture resource
+		 */
+		bool hasDepthTexture() const											{ return mHasDepthTexture; }
+
+		/**
 		 * @return the texture that holds the result of the render pass.
 		 */
 		RenderTexture2D& getColorTexture();
+
+		/**
+		 * @return the depth texture that holds the result of the render pass.
+		 */
+		DepthRenderTexture2D* getDepthTexture();
 
 		/**
 		 * @return render target color format. This is the format of the linked in color texture.
@@ -161,7 +171,8 @@ namespace nap
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		RGBAColorFloat						mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to, format needs to be: 'Backbuffer'
+		ResourcePtr<RenderTexture2D>		mColorTexture;										///< Property: 'ColorTexture' texture to render to
+		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' optional depth texture to render to
 
 	private:
 		RenderService*						mRenderService;
@@ -170,5 +181,6 @@ namespace nap
 		VkSampleCountFlagBits				mRasterizationSamples = VK_SAMPLE_COUNT_1_BIT;
 		ImageData							mDepthImage;
 		ImageData							mColorImage;
+		bool								mHasDepthTexture = false;
 	};
 }
