@@ -290,6 +290,7 @@ namespace nap
 	class NAPAPI TextureCube : public Texture
 	{
 		friend class RenderService;
+		friend class CubeRenderTarget; // TODO: Move CubeRenderTarget to naprender ??
 		RTTI_ENABLE(Texture)
 	public:
 		// The image layer count is equal to the number of sides of a cube
@@ -307,7 +308,7 @@ namespace nap
 		 * @param errorState contains the error if the texture can't be initialized.
 		 * @return if the texture initialized successfully.
 		 */
-		bool init(const SurfaceDescriptor& descriptor, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
 		 * @return size of the texture in texels.
@@ -325,6 +326,11 @@ namespace nap
 		int getHeight() const									{ return mDescriptor.mHeight; }
 
 		/**
+		 *	@return the vulkan image usage flags
+		 */
+		VkImageUsageFlags getImageUsageFlags() const			{ return mImageUsageFlags; }
+
+		/**
 		 * @return the number of texture layers
 		 */
 		virtual uint getLayerCount() const override				{ return LAYER_COUNT; }
@@ -332,7 +338,7 @@ namespace nap
 		/**
 		 * @return the number of texture mip-map levels
 		 */
-		virtual uint getMipLevels() const override				{ return 1; }
+		virtual uint getMipLevels() const override				{ return mMipLevels; }
 
 		/**
 		 * @return Vulkan GPU data handle, including image and view.
@@ -355,5 +361,9 @@ namespace nap
 		virtual ImageData& getHandle() override					{ return mImageData; }
 
 		ImageData							mImageData = { TextureCube::LAYER_COUNT };	///< Cube Texture vulkan image buffers
+		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
+
+	private:
+		VkImageUsageFlags					mImageUsageFlags = 0;
 	};
 }

@@ -141,17 +141,17 @@ namespace nap
 	/**
 	 * Creates a Vulkan layered image based on the described image usage and given properties.
 	 */
-	bool NAPAPI createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImageCreateFlags flags, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState);
+	bool NAPAPI createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImageCreateFlags flags, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState);
 
 	/**
 	 * Creates a Vulkan layered image view based on the described image usage and given properties.
 	 */
-	bool NAPAPI createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32 layerIndex, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState);
+	bool NAPAPI createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, uint32 layerIndex, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState);
 
 	/**
 	 * Creates a Vulkan cube image view based on the described image usage and given properties.
 	 */
-	bool NAPAPI createCubeImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState);
+	bool NAPAPI createCubeImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState);
 
 	/**
 	 * Destroys a Vulkan image and Vulkan ImageView if present in data

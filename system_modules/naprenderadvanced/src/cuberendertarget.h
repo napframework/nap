@@ -182,6 +182,7 @@ namespace nap
 
 
 		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		bool									mUpdateLODs = false;								///< Property: 'UpdateLODs' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
 		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
 
 		RenderTexture2D::EFormat				mColorFormat = RenderTexture2D::EFormat::RGBA8;

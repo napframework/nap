@@ -410,13 +410,13 @@ namespace nap
 		const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
 	{
 		if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
-			nap::Logger::error("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+			nap::Logger::error("%s\n", callbackData->pMessage);
 		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
-			nap::Logger::warn("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+			nap::Logger::warn("%s\n", callbackData->pMessage);
 		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
-			nap::Logger::info("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+			nap::Logger::info("%s\n", callbackData->pMessage);
 		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
-			nap::Logger::debug("%s [%s]:\n%s", callbackData->pMessageIdName, callbackData->pMessage);
+			nap::Logger::debug("%s\n", callbackData->pMessage);
 
 		return VK_FALSE;
 	}
@@ -1584,7 +1584,7 @@ namespace nap
 
 		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
 		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mEmptyTextureCube->init(settings, glm::zero<glm::vec4>(), 0, errorState))
+		if (!mEmptyTextureCube->init(settings, false, glm::zero<glm::vec4>(), 0, errorState))
 			return false;
 
 		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
@@ -1594,7 +1594,7 @@ namespace nap
 
 		mErrorTextureCube = std::make_unique<TextureCube>(getCore());
 		mErrorTextureCube->mID = utility::stringFormat("%s_ErrorTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
-		if (!mErrorTextureCube->init(settings, mErrorColor.toVec4(), 0, errorState))
+		if (!mErrorTextureCube->init(settings, false, mErrorColor.toVec4(), 0, errorState))
 			return false;
 
 		return true;

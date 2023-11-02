@@ -166,9 +166,9 @@ namespace nap
 		samplerInfo.compareEnable			= mSampler == nullptr ? VK_FALSE : mSampler->mEnableCompare ? VK_TRUE : VK_FALSE;
 		samplerInfo.compareOp				= mSampler == nullptr ? VK_COMPARE_OP_LESS_OR_EQUAL : getDepthCompareOp(mSampler->mCompareMode);
 		samplerInfo.mipmapMode				= mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
-		samplerInfo.minLod					= 0.0f;
+		samplerInfo.minLod					= mSampler == nullptr ? 0.0f : static_cast<float>(mSampler->mMinLodLevel);
 		samplerInfo.maxLod					= mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
-		samplerInfo.mipLodBias				= 0.0f;
+		samplerInfo.mipLodBias				= mSampler == nullptr ? 0.0f : static_cast<float>(mSampler->mLodBias);
 
 		return errorState.check(vkCreateSampler(mRenderService->getDevice(), &samplerInfo, nullptr, &mVulkanSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}

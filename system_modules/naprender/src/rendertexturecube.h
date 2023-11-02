@@ -51,6 +51,9 @@ namespace nap
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture
+
+	protected:
+		bool				mGenerateLODs = false;
 	};
 
 

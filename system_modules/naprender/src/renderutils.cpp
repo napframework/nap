@@ -227,7 +227,7 @@ namespace nap
 	}
 
 
-	bool createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImageCreateFlags flags, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
+	bool createLayered2DImage(VmaAllocator allocator, uint32 width, uint32 height, VkFormat format, uint32 mipLevels, uint32 layerCount, VkSampleCountFlagBits samples, VkImageTiling tiling, VkImageUsageFlags imageUsage, VmaMemoryUsage memoryUsage, VkImageCreateFlags flags, VkImage& outImage, VmaAllocation& outAllocation, VmaAllocationInfo& outAllocationInfo, utility::ErrorState& errorState)
 	{
 		// Image creation info
 		VkImageCreateInfo image_info = {};
@@ -236,7 +236,7 @@ namespace nap
 		image_info.extent.width = width;
 		image_info.extent.height = height;
 		image_info.extent.depth = 1;
-		image_info.mipLevels = 1;
+		image_info.mipLevels = mipLevels;
 		image_info.arrayLayers = layerCount;
 		image_info.format = format;
 		image_info.tiling = tiling;
@@ -261,14 +261,14 @@ namespace nap
 	}
 
 
-	bool createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32 layerIndex, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState)
+	bool createLayered2DImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, uint32 layerIndex, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState)
 	{
 		VkImageViewCreateInfo viewInfo = {};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = image;
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;
 		viewInfo.format = format;
-		viewInfo.subresourceRange = { aspectFlags, 0, 1, layerIndex, layerCount };
+		viewInfo.subresourceRange = { aspectFlags, 0, mipLevels, layerIndex, layerCount };
 
 		if (!errorState.check(vkCreateImageView(device, &viewInfo, nullptr, &outImageView) == VK_SUCCESS, "Failed to create image view"))
 			return false;
@@ -277,14 +277,14 @@ namespace nap
 	}
 
 
-	bool createCubeImageView(VkDevice device, VkImage image, VkFormat format, VkImageAspectFlags aspectFlags, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState)
+	bool createCubeImageView(VkDevice device, VkImage image, VkFormat format, uint32 mipLevels, VkImageAspectFlags aspectFlags, uint32 layerCount, VkImageView& outImageView, utility::ErrorState& errorState)
 	{
 		VkImageViewCreateInfo viewInfo = {};
 		viewInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
 		viewInfo.image = image;
 		viewInfo.viewType = VK_IMAGE_VIEW_TYPE_CUBE;
 		viewInfo.format = format;
-		viewInfo.subresourceRange = { aspectFlags, 0, 1, 0, layerCount };
+		viewInfo.subresourceRange = { aspectFlags, 0, mipLevels, 0, layerCount };
 
 		if (!errorState.check(vkCreateImageView(device, &viewInfo, nullptr, &outImageView) == VK_SUCCESS, "Failed to create image view"))
 			return false;

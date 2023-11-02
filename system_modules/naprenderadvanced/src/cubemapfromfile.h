@@ -37,5 +37,8 @@ namespace nap
 	public:
 		ResourcePtr<Texture2D>		mSourceTexture;							///< Property: 'SourceTexture' Texture to convert to cube map
 		bool						mSampleShading = false;					///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+
+	public:
+		using RenderTextureCube::mGenerateLODs;
 	};
 }

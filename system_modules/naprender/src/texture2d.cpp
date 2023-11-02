@@ -98,65 +98,6 @@ namespace nap
 	}
 
 
-	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels, uint32 layerCount)
-	{
-		int32 mipWidth  = static_cast<int32>(texWidth);
-		int32 mipHeight = static_cast<int32>(texHeight);
-
-		for (uint32 i = 1; i < mipLevels; i++)
-		{
-			// Prepare LOD for blit operation
-			transitionImageLayout(buffer, image,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_TRANSFER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT,
-				i - 1,									1,
-				aspect);
-
-			// Create blit structure
-			VkImageBlit blit{};
-			blit.srcOffsets[0] = { 0, 0, 0 };
-			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-			blit.srcSubresource.aspectMask = aspect;
-			blit.srcSubresource.mipLevel = i - 1;
-			blit.srcSubresource.baseArrayLayer = 0;
-			blit.srcSubresource.layerCount = 1;
-			blit.dstOffsets[0] = { 0, 0, 0 };
-			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-			blit.dstSubresource.aspectMask = aspect;
-			blit.dstSubresource.mipLevel = i;
-			blit.dstSubresource.baseArrayLayer = 0;
-			blit.dstSubresource.layerCount = 1;
-
-			// Blit
-			vkCmdBlitImage(buffer,
-				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1, &blit,
-				VK_FILTER_LINEAR);
-
-			// Prepare LOD for shader read
-			transitionImageLayout(buffer, image,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	targetLayout,
-				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				i - 1,									1,
-				aspect);
-
-			if (mipWidth  > 1) mipWidth  /= 2;
-			if (mipHeight > 1) mipHeight /= 2;
-		}
-
-		// Prepare final LOD for shader read
-		transitionImageLayout(buffer, image,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	targetLayout,
-			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			mipLevels - 1,							1,
-			aspect);
-	}
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Texture
 	//////////////////////////////////////////////////////////////////////////
@@ -189,7 +130,7 @@ namespace nap
 
 		// Get image ready for clear, applied to all mipmap layers
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		transitionImageLayout(commandBuffer, getHandle().mImage,
+		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
 			getHandle().mCurrentLayout,		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask,						dstMask,
 			srcStage,						dstStage,
@@ -210,7 +151,7 @@ namespace nap
 		}
 
 		// Transition image layout
-		transitionImageLayout(commandBuffer, getHandle().mImage,
+		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
 			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
@@ -257,7 +198,7 @@ namespace nap
 	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
-		mFormat = getTextureFormat(descriptor);
+		mFormat = utility::getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 
@@ -414,7 +355,7 @@ namespace nap
 
 		// Get image ready for copy, applied to all mipmap layers
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		transitionImageLayout(commandBuffer, mImageData.mImage, 
+		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
 			srcMask,			dstMask,
 			srcStage,			dstStage,
@@ -427,11 +368,11 @@ namespace nap
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			createMipmaps(commandBuffer, mImageData.mImage, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels, getLayerCount());
+			utility::createMipmaps(commandBuffer, mImageData.mImage, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
-			transitionImageLayout(commandBuffer, mImageData.mImage,
+			utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
@@ -468,7 +409,7 @@ namespace nap
 
 		// Transition for copy
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		transitionImageLayout(commandBuffer, mImageData.mImage, 
+		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
@@ -479,7 +420,7 @@ namespace nap
 		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
-		transitionImageLayout(commandBuffer, mImageData.mImage, 
+		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
@@ -589,10 +530,10 @@ namespace nap
 	}
 
 
-	bool TextureCube::init(const SurfaceDescriptor& descriptor, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	bool TextureCube::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
-		mFormat = getTextureFormat(descriptor);
+		mFormat = utility::getTextureFormat(descriptor);
 		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 
@@ -605,13 +546,24 @@ namespace nap
 			return false;
 		}
 
+		// If mip mapping is enabled, ensure it is supported
+		if (generateMipMaps)
+		{
+			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			{
+				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
+				return false;
+			}
+			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
+		}
+
 		// Set image usage flags: can be written to, read and sampled
-		VkImageUsageFlags usage = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		mImageUsageFlags = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create GPU image
 		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
-		if (!createLayered2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, getLayerCount(),
-			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
+		if (!createLayered2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, getLayerCount(),
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, mImageUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
 		// Check whether the texture is flagged as depth
@@ -619,12 +571,14 @@ namespace nap
 
 		// Create GPU image view
 		VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (!createCubeImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, aspect, getLayerCount(), mImageData.mView, errorState))
+		if (!createCubeImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, mMipLevels, aspect, getLayerCount(), mImageData.mView, errorState))
 			return false;
 
 		for (uint i = 0; i < mImageData.getSubViewCount(); i++)
 		{
-			if (!createLayered2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, aspect, i, 1, mImageData.getSubView(i), errorState))
+			// Set mipLevels to 1 as we typically only render to the first mip level of each layer individually
+			// After the render operation we can update the mip maps using a blit operation if desired
+			if (!createLayered2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, 1, aspect, i, 1, mImageData.getSubView(i), errorState))
 				return false;
 		}
 

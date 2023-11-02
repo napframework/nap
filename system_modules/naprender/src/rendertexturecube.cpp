@@ -115,7 +115,7 @@ namespace nap
 		VkImageUsageFlags required_flags = VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT;
 
 		// Create render texture
-		return TextureCube::init(settings, mClearColor.toVec4(), required_flags, errorState);
+		return TextureCube::init(settings, mGenerateLODs, mClearColor.toVec4(), required_flags, errorState);
 	}
 
 
@@ -147,12 +147,12 @@ namespace nap
 		case DepthRenderTextureCube::EDepthFormat::D16:
 		{
 			settings.mDataType = ESurfaceDataType::USHORT;
-			return TextureCube::init(settings, clear_color, required_flags, errorState);
+			return TextureCube::init(settings, false, clear_color, required_flags, errorState);
 		}
 		case DepthRenderTextureCube::EDepthFormat::D32:
 		{
 			settings.mDataType = ESurfaceDataType::FLOAT;
-			return TextureCube::init(settings, clear_color, required_flags, errorState);
+			return TextureCube::init(settings, false, clear_color, required_flags, errorState);
 		}
 		default:
 		{
