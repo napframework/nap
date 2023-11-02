@@ -253,7 +253,7 @@ void SaveFileAsAction::perform()
 		cur_file_name += "/untitled.json";
 	}
 
-	QString filename = QFileDialog::getSaveFileName(ctx.getMainWindow(), "Save NAP Data File", 	cur_file_name, JSON_DATA_FILTER);
+	QString filename = utility::getSaveFilename(ctx.getMainWindow(), "Save NAP Data File", 	cur_file_name, JSON_DATA_FILTER);
 	if (filename.isNull())
 		return;
 
@@ -918,10 +918,9 @@ void napkin::SaveServiceConfigurationAs::perform()
 		cur_file_name = QString::fromStdString(AppContext::get().getProjectInfo()->getProjectDir());
 		cur_file_name += "/service_config." + QString(JSON_FILE_EXT);
 	}
-	QString filename = QFileDialog::getSaveFileName(ctx.getMainWindow(), "Save NAP Config File",
-		cur_file_name, JSON_CONFIG_FILTER);
 
 	// Cancelled
+    QString filename = utility::getSaveFilename(ctx.getMainWindow(), "Save NAP Config File", cur_file_name, JSON_CONFIG_FILTER);
 	if (filename.isNull())
 		return;
 
