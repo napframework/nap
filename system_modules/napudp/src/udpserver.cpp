@@ -123,6 +123,9 @@ namespace nap
         {
             nap::Logger::error(*this, asio_error_code.message());
         }
+
+        // explicitly delete socket
+        mImpl = nullptr;
 	}
 
 
