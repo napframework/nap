@@ -103,9 +103,27 @@ namespace napkin
 		 */
 		void menuHook(QMenu& menu);
 
+		/**
+		 * @return the scene tree view
+		 */
 		nap::qt::FilterTreeView& treeView();
 
+		/**
+		 * Select an entity based on the given pointer and object path
+		 * @param rootEntity the top level entity
+		 * @param path child entity path
+		 */
 		void select(nap::RootEntity* rootEntity, const QString& path);
+
+	protected:
+        /**
+         * Filters out and handles certain events prior to child widget
+         * @param obj the object that generated the event
+         * @param ev the event itself
+         * @return if the filter handled the event
+         */
+		bool eventFilter(QObject* obj, QEvent* ev) override;
+
 	Q_SIGNALS:
 		void selectionChanged(QList<PropertyPath> obj);
 
@@ -114,8 +132,8 @@ namespace napkin
 		void onModelPopulated(const std::vector<SceneItem*>& scenes);
 		ComponentInstanceItem* resolveItem(nap::RootEntity* rootEntity, const QString& path);
 
-		QVBoxLayout mLayout;		// Layout
-		nap::qt::FilterTreeView mFilterView; // The tree view
-		SceneModel mModel;		// The model for the treeview
+		QVBoxLayout mLayout;					// Layout
+		nap::qt::FilterTreeView mFilterView;	// The tree view
+		SceneModel mModel;						// The model for the tree view
 	};
 }; // napkin

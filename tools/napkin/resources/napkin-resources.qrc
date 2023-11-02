@@ -39,5 +39,9 @@
 		<file>icons/url.png</file>
 		<file>icons/property.png</file>
 		<file>icons/array.png</file>
+		<file>icons/project.png</file>
+		<file>icons/warning.png</file>
+		<file>icons/error.png</file>
+		<file>icons/check.png</file>
 	</qresource>
 </RCC>

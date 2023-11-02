@@ -75,12 +75,8 @@ void AppContext::destroy()
 
 Document* AppContext::loadDocument(const QString& filename)
 {
-	mCurrentFilename = filename;
 	nap::Logger::info("Loading data '%s'", toLocalURI(filename.toStdString()).c_str());
-
-	ErrorState err;
-	nap::rtti::DeserializeResult result;
-	std::string buffer;
+	ErrorState err; nap::rtti::DeserializeResult result; std::string buffer;
 
 	if (!QFile::exists(filename))
 	{
@@ -181,8 +177,14 @@ const nap::ProjectInfo* AppContext::getProjectInfo() const
 
 void AppContext::reloadDocument()
 {
-	loadDocument(mCurrentFilename);
+	// Get current document
+	auto* doc = getDocument();
+	if (doc != nullptr && !doc->getFilename().isNull())
+	{
+		loadDocument(doc->getFilename());
+	}
 }
+
 
 Document* AppContext::newDocument()
 {
@@ -208,7 +210,7 @@ Document* AppContext::newDocument()
 }
 
 
-Document* AppContext::loadDocumentFromString(const std::string& data, const QString& filename)
+Document* AppContext::loadDocumentFromString(const std::string& data, QString filename)
 {
 	ErrorState err;
 	nap::rtti::DeserializeResult result;
@@ -447,9 +449,7 @@ nap::Core& AppContext::getCore()
 
 Document* AppContext::getDocument()
 {
-	if (mDocument == nullptr)
-		newDocument();
-	return mDocument.get();
+	return mDocument == nullptr ? newDocument() : mDocument.get();
 }
 
 
@@ -543,6 +543,12 @@ void napkin::AppContext::executeCommand(QUndoCommand* cmd)
 		return;
 	}
 	getDocument()->executeCommand(cmd);
+}
+
+
+bool napkin::AppContext::getProjectLoaded() const
+{
+	return mProjectInfo != nullptr;
 }
 
 

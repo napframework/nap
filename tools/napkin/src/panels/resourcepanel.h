@@ -37,17 +37,17 @@ namespace napkin
 		/**
 		 * Clears all items from the model
 		 */
-		void clear();
+		void clearItems();
 
 		/**
 		 * @return Root resources item
 		 */
-		const RootResourcesItem& getRootResourcesItem() const		{ return mObjectsItem; }
+		RootResourcesItem& getRootResourcesItem()					{ return mObjectsItem; }
 
 		/**
 		 * @return Entity resources item
 		 */
-		const EntityResourcesItem& getEntityResourcesItem() const	{ return mEntitiesItem; }
+		EntityResourcesItem& getEntityResourcesItem()				{ return mEntitiesItem; }
 
 	Q_SIGNALS:
 		/**
@@ -67,6 +67,9 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
+		/**
+		 * Construct widget
+		 */
 		ResourcePanel();
 
 		/**
@@ -78,6 +81,15 @@ namespace napkin
 		 * @return The tree view held by this panel
 		 */
 		nap::qt::FilterTreeView& treeView() { return mTreeView; }
+
+	protected:
+        /**
+         * Filters out and handles certain events prior to child widget
+         * @param obj the object that generated the event
+         * @param ev the event itself
+         * @return if the filter handled the event
+         */
+		bool eventFilter(QObject* obj, QEvent* ev) override;
 
 	Q_SIGNALS:
 		void selectionChanged(QList<PropertyPath> obj);
@@ -135,6 +147,7 @@ namespace napkin
 
 	private:
 		void emitSelectionChanged();
+		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
 		QVBoxLayout mLayout;	  // Layout
 		ResourceModel mModel;	 // Model

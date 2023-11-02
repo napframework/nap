@@ -10,7 +10,7 @@
 #include <commands.h>
 #include <napqt/filterpopup.h>
 #include <naputils.h>
-#include <QtDebug>
+#include <QKeyEvent>
 
 
 napkin::SceneModel::SceneModel() : QStandardItemModel()
@@ -139,6 +139,32 @@ napkin::ScenePanel::ScenePanel() : QWidget()
 	// Listen to changes
 	connect(mFilterView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ScenePanel::onSelectionChanged);
 	connect(&mModel, &SceneModel::populated, this, &ScenePanel::onModelPopulated);
+
+	// Filter events
+	mFilterView.installEventFilter(this);
+}
+
+
+bool napkin::ScenePanel::eventFilter(QObject* obj, QEvent* ev)
+{
+	if (obj == &mFilterView && ev->type() == QEvent::KeyPress)
+	{
+		// Handle deletion of object
+		QKeyEvent* key_event = static_cast<QKeyEvent*>(ev);
+		if (key_event->key() == Qt::Key_Delete)
+		{
+			// Cast to root entity item
+			auto entity_item = qitem_cast<RootEntityItem*>(mFilterView.getSelectedItem());
+			if (entity_item != nullptr)
+			{
+				AppContext::get().executeCommand(
+					new RemoveCommand(entity_item->propertyPath())
+				);
+			}
+			return true;
+		}
+	}
+	return QWidget::eventFilter(obj, ev);
 }
 
 
@@ -228,7 +254,7 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 {
 	EntityInstanceItem* rootEntityItem = mModel.rootEntityItem(*rootEntity);
 	assert(rootEntityItem);
-	EntityInstanceItem* currentParent = rootEntityItem;
+	EntityInstanceItem* current_parent = rootEntityItem;
 
 	auto splitstring = nap::utility::splitString(path.toStdString(), '/');
 	for (int i = 0; i < splitstring.size(); i++)
@@ -241,9 +267,9 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 		if (i == splitstring.size() - 1)
 		{
 			// component
-			for (int row = 0; row < currentParent->rowCount(); row++)
+			for (int row = 0; row < current_parent->rowCount(); row++)
 			{
-				auto child = qitem_cast<ComponentInstanceItem*>(currentParent->child(row));
+				auto child = qitem_cast<ComponentInstanceItem*>(current_parent->child(row));
 				if (child->component().mID == part)
 					return child;
 			}
@@ -256,9 +282,9 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 				index = 0;
 
 			int foundIndex = 0;
-			for (int row = 0; row < currentParent->rowCount(); row++)
+			for (int row = 0; row < current_parent->rowCount(); row++)
 			{
-				auto child = qitem_cast<EntityInstanceItem*>(currentParent->child(row));
+				auto child = qitem_cast<EntityInstanceItem*>(current_parent->child(row));
 				if (!child)
 					continue;
 
@@ -266,7 +292,7 @@ napkin::ComponentInstanceItem* napkin::ScenePanel::resolveItem(nap::RootEntity* 
 				{
 					if (foundIndex == index)
 					{
-						currentParent = child;
+						current_parent = child;
 						break;
 					}
 					foundIndex++;

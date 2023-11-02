@@ -26,6 +26,10 @@ QMenu {
     color: @front3;
 }
 
+QMenu::item:disabled {
+    color: @front1;
+ }
+
 QDialog, QLabel {
     color: @front1;
     background-color: @background2;
@@ -162,7 +166,20 @@ QPushButton:!enabled {
 }
 
 QPushButton:hover, QToolButton:hover {
-    background: @front3;
+    background: @highlight1;
+}
+
+QToolBar::separator { 
+    background-color: @status;
+    margin:2px;
+}
+
+QToolBar {
+    margin: 5px;
+}
+
+QToolButton {
+    margin: 5px 10px 5px 2px;
 }
 
 QTabBar {

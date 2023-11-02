@@ -9,6 +9,7 @@
 #include <napqt/filterpopup.h>
 #include <napqt/qtutils.h>
 #include <napkin-resources.h>
+#include <QKeyEvent>
 
 using namespace napkin;
 
@@ -94,11 +95,16 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
 
-	const auto& resources_item = mModel.getRootResourcesItem();
+	auto& resources_item = mModel.getRootResourcesItem();
+	resources_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
 
-	const auto& entities_item = mModel.getEntityResourcesItem();
+	auto& entities_item = mModel.getEntityResourcesItem();
+	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
+	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
+
+	mTreeView.installEventFilter(this);
 }
 
 
@@ -112,7 +118,7 @@ void napkin::ResourceModel::populate()
 }
 
 
-void napkin::ResourceModel::clear()
+void napkin::ResourceModel::clearItems()
 {
 	mEntitiesItem.clear();
 	mObjectsItem.clear();
@@ -151,46 +157,46 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 			auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
 			if (parent_item)
 			{
-				menu.addAction(new RemovePathAction(entity_item->propertyPath()));
+				menu.addAction(new RemovePathAction(&menu, entity_item->propertyPath()));
 			}
 		}
 		// Otherwise it's the main resource
 		else
 		{
-			menu.addAction(new AddChildEntityAction(entity_item->getEntity()));
-			menu.addAction(new AddComponentAction(entity_item->getEntity()));
-			menu.addAction(new DeleteObjectAction(entity_item->getObject()));
+			menu.addAction(new AddChildEntityAction(&menu, entity_item->getEntity()));
+			menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
+			menu.addAction(new DeleteObjectAction(&menu, entity_item->getObject()));
 		}
 	}
 	// Component
 	else if (qobject_cast<ComponentItem*>(selected_item) != nullptr)
 	{
 		auto component_item = static_cast<ComponentItem*>(selected_item);
-		menu.addAction(new DeleteObjectAction(component_item->getObject()));
+		menu.addAction(new DeleteObjectAction(&menu, component_item->getObject()));
 	}
 	// Group
 	else if (qobject_cast<GroupItem*>(selected_item) != nullptr)
 	{
 		// Create and add new resource
 		GroupItem* group_item = static_cast<GroupItem*>(selected_item);
-		menu.addAction(new AddNewResourceToGroupAction(group_item->getGroup()));
+		menu.addAction(new AddNewResourceToGroupAction(&menu, group_item->getGroup()));
 
 		// Add existing resource
-		menu.addAction(new AddExistingResourceToGroupAction(group_item->getGroup()));
+		menu.addAction(new AddExistingResourceToGroupAction(&menu, group_item->getGroup()));
 
 		// If the item is parented under a group, offer the option to remove it
 		auto* item_group = getItemGroup(*group_item);
 		if (item_group != nullptr)
-			menu.addAction(new RemoveGroupFromGroupAction(*item_group, group_item->getGroup()));
+			menu.addAction(new RemoveGroupFromGroupAction(&menu, *item_group, group_item->getGroup()));
 
 		// Create and add new sub group
-		menu.addAction(new AddChildGroupAction(group_item->getGroup()));
+		menu.addAction(new AddChildGroupAction(&menu, group_item->getGroup()));
 
 		// Add action to move group to another group
-		menu.addAction(new MoveGroupAction(group_item->getGroup(), item_group));
+		menu.addAction(new MoveGroupAction(&menu, group_item->getGroup(), item_group));
 
 		// Delete group action
-		menu.addAction(new DeleteGroupAction(group_item->getGroup()));
+		menu.addAction(new DeleteGroupAction(&menu, group_item->getGroup()));
 	}
 	// General Object
 	else if (qobject_cast<ObjectItem*>(selected_item) != nullptr)
@@ -201,35 +207,42 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		// If the item is parented under a group, offer the option to remove it
 		auto* item_group = getItemGroup(*object_item);
 		if (item_group != nullptr)
-			menu.addAction(new RemoveResourceFromGroupAction(*item_group, object_item->getObject()));
+			menu.addAction(new RemoveResourceFromGroupAction(&menu, *item_group, object_item->getObject()));
 
 		// Move resource to another group
-		menu.addAction(new MoveResourceToGroupAction(object_item->getObject(), item_group));
+		menu.addAction(new MoveResourceToGroupAction(&menu, object_item->getObject(), item_group));
 
 		// Delete resource action
-		menu.addAction(new DeleteObjectAction(object_item->getObject()));
+		menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
 
 		// If the item is a shader, allow if to be loaded (compiled)
 		// TODO: Create for more generic insertion method for object specific actions
 		if (object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::BaseShader)))
 		{
-			menu.addAction(new LoadShaderAction(static_cast<nap::BaseShader&>(object_item->getObject())));
+			menu.addAction(new LoadShaderAction(&menu, static_cast<nap::BaseShader&>(object_item->getObject())));
 		}
 	}
 	// Top Resource
 	else if (qobject_cast<RootResourcesItem*>(selected_item) != nullptr)
 	{
 		// Add Resource selection
-		menu.addAction(new CreateResourceAction());
+		menu.addAction(new CreateResourceAction(&menu));
 
 		// Add groups
-		menu.addAction(new CreateGroupAction());
+		menu.addAction(new CreateGroupAction(&menu));
 	}
 	// Top Entity
 	else if (qobject_cast<EntityResourcesItem*>(selected_item) != nullptr)
 	{
-		menu.addAction(new CreateEntityAction());
+		menu.addAction(new CreateEntityAction(&menu));
 	}
+}
+
+
+void napkin::ResourcePanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
+{
+	mModel.getRootResourcesItem().setEnabled(true);
+	mModel.getEntityResourcesItem().setEnabled(true);
 }
 
 
@@ -256,10 +269,33 @@ void napkin::ResourcePanel::onSelectionChanged(const QItemSelection& selected, c
 	emitSelectionChanged();
 }
 
+
+bool napkin::ResourcePanel::eventFilter(QObject* obj, QEvent* ev)
+{
+	if (obj == &mTreeView && ev->type() == QEvent::KeyPress)
+	{
+		// Handle deletion of object
+		QKeyEvent* key_event = static_cast<QKeyEvent*>(ev);
+		if (key_event->key() == Qt::Key_Delete)
+		{
+			// Cast to 
+			auto obj_item = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
+			if (obj_item != nullptr)
+			{
+				DeleteObjectAction action(nullptr, obj_item->getObject());
+				action.trigger();
+			}
+			return true;
+		}
+	}
+	return QWidget::eventFilter(obj, ev);
+}
+
+
 void napkin::ResourcePanel::clear()
 {
 	mTreeView.getTreeView().selectionModel()->clear();
-	mModel.clear();
+	mModel.clearItems();
 }
 
 
