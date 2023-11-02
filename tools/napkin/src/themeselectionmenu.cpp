@@ -13,6 +13,7 @@ ThemeSelectionMenu::ThemeSelectionMenu() : QMenu("Theme")
 			&ThemeSelectionMenu::onThemeChanged);
 }
 
+
 void ThemeSelectionMenu::refresh()
 {
 	clear();
@@ -23,24 +24,28 @@ void ThemeSelectionMenu::refresh()
 		setEnabled(false);
 		return;
 	}
+
 	setEnabled(true);
-
 	for (const auto& theme : themes)
-		addAction(new SetThemeAction(theme->getName()));
-
+		addAction(new SetThemeAction(this, theme->getName()));
 	checkCurrentTheme();
 }
+
 
 void ThemeSelectionMenu::onThemeChanged(const Theme* theme)
 {
 	checkCurrentTheme();
 }
 
+
 void ThemeSelectionMenu::checkCurrentTheme()
 {
 	const auto theme = AppContext::get().getThemeManager().getCurrentTheme();
-	if (theme == nullptr)
-		return;
-	for (auto action : actions())
-		action->setChecked(action->text() == theme->getName());
+	if (theme != nullptr)
+	{
+		for (auto action : actions())
+		{
+			action->setChecked(action->text() == theme->getName());
+		}
+	}
 }

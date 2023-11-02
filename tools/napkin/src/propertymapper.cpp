@@ -1,6 +1,7 @@
 #include "propertymapper.h"
 #include "naputils.h"
 #include "commands.h"
+#include "napkin-resources.h"
 
 #include <QStringList>
 #include <QMessageBox>
@@ -595,9 +596,14 @@ namespace napkin
 			auto* array_uniform = createBinding<nap::UniformValueArray>(declaration.mName, found_it->second, path, *doc);
 
 			// Ask if entries should be created for the array
-			if (QMessageBox::question(nullptr, "Array",
-				QString("Create entries for array '%1'?").arg(declaration.mName.c_str()),
-				QMessageBox::Yes, QMessageBox::No) == QMessageBox::No)
+			QMessageBox msg(AppContext::get().getMainWindow());
+			msg.setWindowTitle("Array");
+			msg.setText(QString("Create entries for array '%1'?").arg(declaration.mName.c_str()));
+			msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
+				QRC_ICONS_QUESTION).pixmap(32, 32));
+			msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+			msg.setDefaultButton(QMessageBox::Yes);
+			if (msg.exec() == QMessageBox::No)
 				return;
 
 			// Get path to values property

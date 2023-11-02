@@ -24,6 +24,7 @@ void MainWindow::bindSignals()
 	connect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	connect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
 	connect(this, &QMainWindow::tabifiedDockWidgetActivated, this, &MainWindow::onDocked);
+	connect(ctx, &AppContext::projectLoaded, this, &MainWindow::onProjectLoaded);
 }
 
 
@@ -38,6 +39,7 @@ void MainWindow::unbindSignals()
 	disconnect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
 	disconnect(ctx, &AppContext::selectionChanged, &mResourcePanel, &ResourcePanel::selectObjects);
 	disconnect(ctx, &AppContext::logMessage, this, &MainWindow::onLog);
+	disconnect(ctx, &AppContext::projectLoaded, this, &MainWindow::onProjectLoaded);
 }
 
 
@@ -87,75 +89,54 @@ void MainWindow::addDocks()
 	addDock("Modules", &mModulePanel);
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Configuration", &mServiceConfigPanel);
+	menuBar()->addMenu(getWindowMenu());
 }
 
 
-void MainWindow::addMenu()
+void MainWindow::configureMenu()
 {
 	// Project
-	auto projectmenu = new QMenu("Project", menuBar());
-	{
-		auto openFileAction = new OpenProjectAction();
-		addAction(openFileAction);
-		projectmenu->addAction(openFileAction);
-		mRecentProjectsMenu = projectmenu->addMenu("Recent Projects");
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), projectmenu);
+	mProjectMenu.setTitle(action::groups::project);
+	const auto& p_actions = mActionModel.getGroup(action::groups::project);
+	for (auto* action : p_actions)
+		mProjectMenu.addAction(action);
+	mRecentProjectsMenu.setTitle("Recent Projects");
+	mProjectMenu.addMenu(&mRecentProjectsMenu);
+	menuBar()->addMenu(&mProjectMenu);
 
 	// File (Data)
-	auto filemenu = new QMenu("File", menuBar());
-	{
-		auto newFileAction = new NewFileAction();
-		addAction(newFileAction);
-		filemenu->addAction(newFileAction);
-
-		auto openFileAction = new OpenFileAction();
-		addAction(openFileAction);
-		filemenu->addAction(openFileAction);
-
-		auto saveFileAction = new SaveFileAction();
-		addAction(saveFileAction);
-		filemenu->addAction(saveFileAction);
-
-		auto saveFileAsAction = new SaveFileAsAction();
-		addAction(saveFileAction);
-		filemenu->addAction(saveFileAsAction);
-
-		auto reloadFileAction = new ReloadFileAction();
-		addAction(reloadFileAction);
-		filemenu->addAction(reloadFileAction);
-
-		auto updateDefaultAction = new UpdateDefaultFileAction();
-		addAction(updateDefaultAction);
-		filemenu->addAction(updateDefaultAction);
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), filemenu);
+	mFileMenu.setTitle(action::groups::file);
+	const auto& f_actions = mActionModel.getGroup(action::groups::file);
+	for (auto* action : f_actions)
+		mFileMenu.addAction(action);
+	menuBar()->addMenu(&mFileMenu);
 
 	// Service Configuration menu
-	auto config_menu = new QMenu("Configuration", menuBar());
-	{
-		auto newServiceConfigAction = new NewServiceConfigAction();
-		config_menu->addAction(newServiceConfigAction);
-		auto openServiceConfigAction = new OpenServiceConfigAction();
-		config_menu->addAction(openServiceConfigAction);
-		auto saveServiceConfigACtion = new SaveServiceConfigAction();
-		config_menu->addAction(saveServiceConfigACtion);
-		auto saveServiceConfigurationAs = new SaveServiceConfigurationAs();
-		config_menu->addAction(saveServiceConfigurationAs);
-		auto setDefaultServiceConfig = new SetAsDefaultServiceConfigAction();
-		config_menu->addAction(setDefaultServiceConfig);
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), config_menu);
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), &mThemeMenu);
+	mConfigMenu.setTitle(action::groups::config);
+	const auto& s_actions = mActionModel.getGroup(action::groups::config);
+	for (auto* action : s_actions)
+		mConfigMenu.addAction(action);
+	menuBar()->addMenu(&mConfigMenu);
+
+	// Create menu
+	mCreateMenu.setTitle(action::groups::object);
+	const auto& c_actions = mActionModel.getGroup(action::groups::object);
+	for (auto* action : c_actions)
+		mCreateMenu.addAction(action);
+	menuBar()->addMenu(&mCreateMenu);
+
+	// Theme
+	menuBar()->addMenu(&mThemeMenu);
 
 	// Help
-	auto help_menu = new QMenu("Help", menuBar());
-	{
-		auto open_url_action = new OpenURLAction("NAP Documentation", QUrl("https://docs.nap.tech"));
-		addAction(open_url_action);
-		help_menu->addAction(open_url_action);
-	}
-	menuBar()->insertMenu(getWindowMenu()->menuAction(), help_menu);
+	mHelpMenu.setTitle(action::groups::help);
+	const auto& h_actions = mActionModel.getGroup(action::groups::help);
+	for (auto* action : h_actions)
+		mHelpMenu.addAction(action);
+	menuBar()->addMenu(&mHelpMenu);
+
+	// Panels
+	menuBar()->addMenu(getWindowMenu());
 }
 
 
@@ -184,18 +165,24 @@ void MainWindow::updateWindowTitle()
 												QApplication::applicationName()));
 }
 
+
 MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 {
 	setStatusBar(&mStatusBar);
-	addMenu();
+	configureMenu();
+	addToolstrip();
 	addDocks();
+
+	enableProjectDependentActions(AppContext::get().getProjectLoaded());
 	bindSignals();
 }
+
 
 MainWindow::~MainWindow()
 {
 	unbindSignals();
 }
+
 
 void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 {
@@ -293,14 +280,19 @@ bool MainWindow::confirmSaveCurrentFile()
 	if (!getContext().getDocument()->isDirty())
 		return true;
 
-	auto result = QMessageBox::question(this, "Save changes?",
-									"The current document has unsaved changes.\n"
-									"Save the changes before exit?",
-									QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+	QMessageBox msg(this);
+	msg.setWindowTitle("Save Changes?");
+	msg.setText("The current document has unsaved changes.\nSave changes before exit?");
+	msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(
+		QRC_ICONS_QUESTION).pixmap(32, 32)
+	);
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel);
+	msg.setDefaultButton(QMessageBox::Yes);
+	auto result = msg.exec();
 
 	if (result == QMessageBox::Yes)
 	{
-		SaveFileAction action;
+		SaveFileAction action(nullptr);
 		action.trigger();
 		return true;
 	}
@@ -309,18 +301,18 @@ bool MainWindow::confirmSaveCurrentFile()
 
 void MainWindow::rebuildRecentMenu()
 {
-	mRecentProjectsMenu->clear();
+	mRecentProjectsMenu.clear();
 	auto recentFiles = getContext().getRecentlyOpenedProjects();
 	for (const auto& filename : recentFiles)
 	{
-		auto action = mRecentProjectsMenu->addAction(filename);
+		auto action = mRecentProjectsMenu.addAction(filename);
 		connect(action, &QAction::triggered, [this, filename]()
 		{
 			if (confirmSaveCurrentFile())
 				getContext().loadProject(filename);
 		});
 	}
-	mRecentProjectsMenu->setEnabled(!mRecentProjectsMenu->isEmpty());
+	mRecentProjectsMenu.setEnabled(!mRecentProjectsMenu.isEmpty());
 }
 
 
@@ -334,6 +326,38 @@ AppContext& MainWindow::getContext() const
 }
 
 
+void napkin::MainWindow::addToolstrip()
+{
+	mToolbar = this->addToolBar("Toolbar");
+    mToolbar->setObjectName("MainToolbar");
+	mToolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonIconOnly);
+	mToolbar->setMovable(false);
+
+	// Project Actions
+	const auto& p_actions = mActionModel.getGroup(action::groups::project);
+	for (const auto& action : p_actions)
+		mToolbar->addAction(action);
+
+	// File Actions
+	mToolbar->addSeparator();
+	const auto& f_actions = mActionModel.getGroup(action::groups::file);
+	for (const auto& action : f_actions)
+		mToolbar->addAction(action);
+
+	// Create Actions
+	mToolbar->addSeparator();
+	const auto& c_actions  = mActionModel.getGroup(action::groups::object);
+	for (const auto& action : c_actions)
+		mToolbar->addAction(action);
+
+	// Create help actions
+	mToolbar->addSeparator();
+	const auto& h_actions = mActionModel.getGroup(action::groups::help);
+	for (const auto& action : h_actions)
+		mToolbar->addAction(action);
+}
+
+
 void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
 {
 	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
@@ -344,5 +368,33 @@ void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
 	{
 		auto path = paths.first();
 		mInspectorPanel.setPath(paths.first());
+	}
+}
+
+
+void napkin::MainWindow::onProjectLoaded(const nap::ProjectInfo& projectInfo)
+{
+	enableProjectDependentActions(true);
+}
+
+
+void napkin::MainWindow::enableProjectDependentActions(bool enable)
+{
+	// Project aware action groups
+	static const std::vector<std::string> project_groups
+	{
+		action::groups::file,
+		action::groups::config,
+		action::groups::object
+	};
+
+	// Disable / Enable based
+	for (const auto& group_name : project_groups)
+	{
+		auto& group = mActionModel.getGroup(group_name);
+		for (const auto& action : group)
+		{
+			action->setEnabled(enable);
+		}
 	}
 }

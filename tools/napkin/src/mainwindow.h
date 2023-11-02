@@ -6,12 +6,13 @@
 
 #include <QStatusBar>
 #include <QTimer>
+#include <QToolBar>
 
 #include <napqt/basewindow.h>
 #include <napqt/errordialog.h>
 #include <panels/pathbrowserpanel.h>
 
-#include "actions.h"
+#include "actionmodel.h"
 #include "appcontext.h"
 #include "themeselectionmenu.h"
 
@@ -71,14 +72,19 @@ namespace napkin
 		void addDocks();
 
 		/**
+		 * Add the menu bar
+		 */
+		void addToolstrip();
+
+		/**
 		 * Called when a new dock widget is activated.
 		 */
 		void onDocked(QDockWidget *dockWidget);
 
 		/**
-		 * Add the menu
+		 * Configure the menu
 		 */
-		void addMenu();
+		void configureMenu();
 
 		/**
 		 * Makes the window title up to date
@@ -133,6 +139,17 @@ namespace napkin
 		void onProgress(float fraction, const QString& message);
 
 		/**
+		 * Called when a project loaded
+		 */
+		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
+
+		/**
+		 * Enabled / Disable project dependent actions
+		 * @param enable / disable project dependent actions
+		 */
+		void enableProjectDependentActions(bool enable);
+
+		/**
 		 * Show a logmessage in the error dialog
 		 * @param msg The message to be displayed
 		 */
@@ -157,8 +174,8 @@ namespace napkin
 
 	private:
 		bool mShown = false;
+		ActionModel mActionModel;
 		ResourcePanel mResourcePanel;
-//		PathBrowserPanel mPathBrowser;
 		InspectorPanel mInspectorPanel;
 		HistoryPanel mHistoryPanel;
 		ModulePanel mModulePanel;
@@ -168,11 +185,17 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ServiceConfigPanel mServiceConfigPanel;
 		ThemeSelectionMenu mThemeMenu;
+		QMenu mProjectMenu;
+		QMenu mFileMenu;
+		QMenu mConfigMenu;
+		QMenu mCreateMenu;
+		QMenu mHelpMenu;
+		QMenu mRecentProjectsMenu;
 		ScenePanel mScenePanel;
-		QMenu* mRecentProjectsMenu = nullptr;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;
+		QToolBar* mToolbar = nullptr;
 		std::unique_ptr<QProgressDialog> mProgressDialog = nullptr;
 	};
 };
