@@ -118,7 +118,7 @@ void napkin::ResourceModel::populate()
 }
 
 
-void napkin::ResourceModel::clear()
+void napkin::ResourceModel::clearItems()
 {
 	mEntitiesItem.clear();
 	mObjectsItem.clear();
@@ -295,7 +295,7 @@ bool napkin::ResourcePanel::eventFilter(QObject* obj, QEvent* ev)
 void napkin::ResourcePanel::clear()
 {
 	mTreeView.getTreeView().selectionModel()->clear();
-	mModel.clear();
+	mModel.clearItems();
 }
 
 

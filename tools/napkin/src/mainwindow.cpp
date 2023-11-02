@@ -329,6 +329,7 @@ AppContext& MainWindow::getContext() const
 void napkin::MainWindow::addToolstrip()
 {
 	mToolbar = this->addToolBar("Toolbar");
+    mToolbar->setObjectName("MainToolbar");
 	mToolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonIconOnly);
 	mToolbar->setMovable(false);
 

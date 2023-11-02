@@ -34,7 +34,6 @@ namespace napkin
 		// Project actions6
 		auto& project_group = registerGroup(action::groups::project, mGroups);
 		registerAction<OpenProjectAction>(mActions, project_group);
-		auto p = project_group[0]->parent();
 
 		// File actions
 		auto& file_group = registerGroup(action::groups::file, mGroups);
