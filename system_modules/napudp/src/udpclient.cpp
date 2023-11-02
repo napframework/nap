@@ -99,6 +99,9 @@ namespace nap
 		{
 			nap::Logger::error(*this, "error closing socket : %s", err.message().c_str());
 		}
+
+        // explicitly delete socket 
+        mImpl = nullptr;
 	}
 
 
