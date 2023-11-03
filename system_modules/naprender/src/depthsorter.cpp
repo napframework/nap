@@ -110,9 +110,9 @@ namespace nap
 				layer_map[comp->getRenderLayer()].emplace_back(comp);
 
 			comps.clear();
-			for (const auto& entry : layer_map)
+			for (auto it = layer_map.rbegin(); it != layer_map.rend(); it++)
 			{
-				auto& layer_comps = entry.second;
+				auto& layer_comps = it->second;
 				sortSubsetByDepth(comps, layer_comps, viewMatrix);
 			}
 		}
