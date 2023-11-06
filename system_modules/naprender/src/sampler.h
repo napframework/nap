@@ -99,7 +99,7 @@ namespace nap
 		EBorderColor		mBorderColor			= EBorderColor::IntOpaqueBlack;			///< Property: 'BorderColor' border color used for texture lookups
 		EDepthCompareMode	mCompareMode			= EDepthCompareMode::LessOrEqual;		///< Property: 'DepthCompareMode' 
 		bool				mEnableCompare			= false;								///< Property: 'EnableCompare'
-		uint32				mLodBias				= 0;									///< Property: 'LodBias' bias value that is added to the LOD level
+		float				mLodBias				= 0.0f;									///< Property: 'LodBias' bias value that is added to the LOD level
 		uint32				mMinLodLevel			= 0;									///< Property: 'MinLodLevel' minimum considered LOD, > 0 = exclude highest lod
 		uint32				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
 	};

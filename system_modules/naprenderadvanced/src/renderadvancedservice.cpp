@@ -509,8 +509,7 @@ namespace nap
                             break;
                         }
                         case EShadowMapType::Cube: {
-                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(
-                                    *mSamplerCubeResource, errorState);
+                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
                             if (shadow_sampler_array != nullptr) {
                                 auto *instance = static_cast<SamplerCubeArrayInstance *>(shadow_sampler_array);
                                 assert(instance != nullptr);

@@ -168,8 +168,8 @@ namespace nap
 		samplerInfo.mipmapMode				= mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
 		samplerInfo.minLod					= mSampler == nullptr ? 0.0f : static_cast<float>(mSampler->mMinLodLevel);
 		samplerInfo.maxLod					= mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
-		samplerInfo.mipLodBias				= mSampler == nullptr ? 0.0f : static_cast<float>(mSampler->mLodBias);
-
+		samplerInfo.mipLodBias				= mSampler == nullptr ? 0.0f : mSampler->mLodBias;
+		
 		return errorState.check(vkCreateSampler(mRenderService->getDevice(), &samplerInfo, nullptr, &mVulkanSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}
 
