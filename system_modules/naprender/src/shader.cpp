@@ -1152,9 +1152,19 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(mFragPath, frag_source, errorState), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
 
-		// Search paths
-		auto search_paths = !mRestrictModuleIncludes ? mRenderService->getShaderSearchPaths() : std::vector<std::string>{};
-		search_paths.emplace_back(utility::getFileDir(mVertPath));
+		std::vector<std::string> search_paths = { "shaders" };
+		if (!mRestrictModuleIncludes)
+		{
+			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			{
+				for (const auto& path : mod->getInformation().mDataSearchPaths)
+				{
+					auto shader_path = utility::joinPath({ path, "shaders" });
+					if (utility::dirExists(shader_path))
+						search_paths.emplace_back(shader_path);
+				}
+			}
+		}
 
 		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
