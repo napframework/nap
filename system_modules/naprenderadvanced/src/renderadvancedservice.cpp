@@ -714,7 +714,7 @@ namespace nap
 
 				// Target
 				auto shadow_target = std::make_unique<DepthRenderTarget>(getCore());
-				shadow_target->mID = utility::stringFormat("%s_ShadowTarget_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				shadow_target->mID = utility::stringFormat("%s_ShadowMap_%s", RTTI_OF(DepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				shadow_target->mDepthTexture = shadow_map.get();
 				shadow_target->mClearValue = 1.0f;
 				shadow_target->mRequestedSamples = ERasterizationSamples::One;
@@ -735,7 +735,7 @@ namespace nap
 			{
 				// Cube Texture
 				auto cube_map = std::make_unique<DepthRenderTextureCube>(getCore());
-				cube_map->mID = utility::stringFormat("%s_ShadowCubeMap_%s", RTTI_OF(DepthRenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+				cube_map->mID = utility::stringFormat("%s_ShadowMap_%s", RTTI_OF(DepthRenderTextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
 				cube_map->mWidth = light->getShadowMapSize();
 				cube_map->mHeight = light->getShadowMapSize();
 				cube_map->mDepthFormat = configuration->mDepthFormatCube;
@@ -751,7 +751,7 @@ namespace nap
 
 				// Target
 				auto cube_target = std::make_unique<CubeDepthRenderTarget>(getCore());
-				cube_target->mID = utility::stringFormat("%s_ShadowCubeMapTarget_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+				cube_target->mID = utility::stringFormat("%s_ShadowMap_%s", RTTI_OF(CubeDepthRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				cube_target->mClearValue = 1.0f;
 				cube_target->mRequestedSamples = ERasterizationSamples::One;
 				cube_target->mSampleShading = false;
