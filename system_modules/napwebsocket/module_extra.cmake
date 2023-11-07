@@ -3,6 +3,9 @@ if(NOT TARGET websocketpp)
     find_package(websocketpp REQUIRED)
 endif()
 
+target_link_libraries(${PROJECT_NAME} libcrypto)
+target_link_libraries(${PROJECT_NAME} libssl)
+
 if(NAP_BUILD_CONTEXT MATCHES "source")
     target_include_directories(${PROJECT_NAME} PUBLIC ${WEBSOCKETPP_INCLUDE_DIR})
 

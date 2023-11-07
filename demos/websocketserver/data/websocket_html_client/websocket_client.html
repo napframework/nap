@@ -77,7 +77,7 @@
 		function requestLogin()
 		{
 			const req = new XMLHttpRequest()
-			const url = 'http://' + uri
+			const url = 'https://' + uri
 			req.open("POST", url, true)
 			req.onreadystatechange =  function()
 			{
@@ -102,7 +102,7 @@
 			status_header.innerHTML = "connecting"
 			status_header.style.color = "#5D5E73"
 
-			const ws_uri = "ws://" + uri
+			const ws_uri = "wss://" + uri
 			websocket = new WebSocket(ws_uri, ticket)
 			writeToBox("connecting to: " + ws_uri)
 

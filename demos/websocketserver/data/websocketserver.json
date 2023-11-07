@@ -90,7 +90,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",
@@ -105,6 +107,8 @@
         {
             "Type": "nap::WebSocketServerEndPoint",
             "mID": "WebSocketServerEndPoint",
+            "CertificateFile": "server.pem",
+            "PrivateKeyFile": "key.pem",
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
             "Port": 2000,

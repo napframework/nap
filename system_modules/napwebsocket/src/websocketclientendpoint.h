@@ -83,7 +83,8 @@ namespace nap
 
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
-
+        std::string mCertificateFile = "server.pem";                            ///< Property: 'CertificateFile' the certificate file to use for SSL encryption.
+        std::string mPrivateKeyFile = "key.pem";                                ///< Property: 'PrivateKeyFile' the private key file to use for SSL encryption.
 	private:
 		uint32 mLogLevel = 0;													///< Converted library log level
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
@@ -113,6 +114,12 @@ namespace nap
 		 * @param client the client to remove.
 		 */
 		void unregisterClient(const IWebSocketClient& client);
+
+        /**
+         * Called on TLSHandshake
+         * @param connection handle to the connection with the server
+         */
+        std::shared_ptr<asio::ssl::context> onTlsInit(wspp::ConnectionHandle con);
 	};
 
 

@@ -198,7 +198,8 @@ namespace nap
 		std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
 		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
 		std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
-
+        std::string mCertificateFile = "server.pem";                        ///< Property: 'CertificateFile' the certificate file to use for SSL encryption.
+        std::string mPrivateKeyFile = "key.pem";                            ///< Property: 'PrivateKeyFile' the private key file to use for SSL encryption.
 	private:
 		std::mutex mListenerMutex;
 		std::vector<IWebSocketServer*> mListeners;
@@ -249,13 +250,19 @@ namespace nap
 		 */
 		bool disconnect(nap::utility::ErrorState& error);
 
+        /**
+         * Called on TLSHandshake
+         * @param connection handle to the connection with the server
+         */
+        std::shared_ptr<asio::ssl::context> onTlsInit(wspp::ConnectionHandle con);
+
 		bool mRunning = false;													///< If the server is accepting and managing client connections.
 		std::mutex mConnectionMutex;											///< Ensures connections are added / removed safely.
 		std::unordered_set<WebSocketTicketHash> mClientHashes;					///< Accepted client ticket hashes
-		wspp::ServerEndPoint mEndPoint;											///< The websocketpp server end-point
+        wspp::ServerEndPoint mEndPoint;	                                        ///< The websocketpp server end-point
 		uint32 mLogLevel = 0;													///< Converted library log level
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		std::future<void> mServerTask;											///< The background server thread
-		std::vector<wspp::ConnectionHandle> mConnections;						///< List of all low level connections
-	};
+        std::vector<wspp::ConnectionHandle> mConnections;						///< List of all low level connections
+    };
 }

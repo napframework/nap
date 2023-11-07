@@ -12,6 +12,23 @@ find_path(WEBSOCKETPP_DIR
           )
 set(WEBSOCKETPP_INCLUDE_DIR ${WEBSOCKETPP_DIR}/include)
 
+set(LIBCRYPTO_LIBS "${WEBSOCKETPP_ROOT_DIR}/../libcrypto/libcrypto.so")
+add_library(libcrypto SHARED IMPORTED)
+set_target_properties(libcrypto PROPERTIES
+        IMPORTED_CONFIGURATIONS "Debug;Release"
+        IMPORTED_LOCATION_RELEASE ${LIBCRYPTO_LIBS}
+        IMPORTED_LOCATION_DEBUG ${LIBCRYPTO_LIBS}
+)
+
+set(LIBSSL_LIBS "${WEBSOCKETPP_ROOT_DIR}/../libssl/libssl.so")
+add_library(libssl SHARED IMPORTED)
+set_target_properties(libssl PROPERTIES
+        IMPORTED_CONFIGURATIONS "Debug;Release"
+        IMPORTED_LOCATION_RELEASE ${LIBSSL_LIBS}
+        IMPORTED_LOCATION_DEBUG ${LIBSSL_LIBS}
+)
+
+
 mark_as_advanced(WEBSOCKETPP_DIR)
 mark_as_advanced(WEBSOCKETPP_ROOT_DIR)
 mark_as_advanced(WEBSOCKETPP_INCLUDE_DIR)

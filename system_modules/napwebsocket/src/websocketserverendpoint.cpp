@@ -22,6 +22,8 @@ RTTI_BEGIN_ENUM(nap::WebSocketServerEndPoint::EAccessMode)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
+    RTTI_PROPERTY("CertificateFile",        &nap::WebSocketServerEndPoint::mCertificateFile,            nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
+    RTTI_PROPERTY("PrivateKeyFile",         &nap::WebSocketServerEndPoint::mPrivateKeyFile,             nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPoint::mAllowPortReuse,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPoint::mLogConnectionUpdates,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPoint::mPort,						nap::rtti::EPropertyMetaData::Required)
@@ -33,12 +35,13 @@ RTTI_BEGIN_CLASS(nap::WebSocketServerEndPoint)
 	RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPoint::mClients,					nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
+
 namespace nap
 {
 	WebSocketServerEndPoint::WebSocketServerEndPoint()
 	{
-
 	}
+
 
 	bool WebSocketServerEndPoint::start(nap::utility::ErrorState& error)
 	{
@@ -62,6 +65,11 @@ namespace nap
 			error.fail(stdec.message());
 			return false;
 		}
+
+        // Set TLS init handler
+        mEndPoint.set_tls_init_handler([this](websocketpp::connection_hdl hdl) {
+            return onTlsInit(hdl);
+        });
 
 		// Queues a connection accept operation 
 		mEndPoint.start_accept(stdec);
@@ -140,7 +148,7 @@ namespace nap
 	std::string WebSocketServerEndPoint::getHostName(const WebSocketConnection& connection)
 	{
 		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
+		auto cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
 		return stdec ? "" : cptr->get_host();
 	}
 
@@ -153,7 +161,7 @@ namespace nap
 		outHosts.reserve(mConnections.size());
 		for (auto& connection : mConnections)
 		{
-			wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+			auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
 			if (!stdec)
 				outHosts.emplace_back(cptr->get_host());
 		}
@@ -286,7 +294,7 @@ namespace nap
 	void WebSocketServerEndPoint::onConnectionOpened(wspp::ConnectionHandle connection)
 	{
 		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+		auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
@@ -307,7 +315,7 @@ namespace nap
 	void WebSocketServerEndPoint::onConnectionClosed(wspp::ConnectionHandle connection)
 	{
 		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+        auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
@@ -323,7 +331,7 @@ namespace nap
 			std::lock_guard<std::mutex> lock(mConnectionMutex);
 			auto found_it = std::find_if(mConnections.begin(), mConnections.end(), [&](const auto& it)
 			{
-				wspp::ConnectionPtr client_ptr = mEndPoint.get_con_from_hdl(it, stdec);
+                auto client_ptr = mEndPoint.get_con_from_hdl(it, stdec);
 				if (stdec)
 				{
 					nap::Logger::error(stdec.message());
@@ -346,7 +354,7 @@ namespace nap
 	void WebSocketServerEndPoint::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
 		std::error_code stdec;
-		wspp::ConnectionPtr cptr = mEndPoint.get_con_from_hdl(connection, stdec);
+        auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
@@ -370,7 +378,7 @@ namespace nap
 	{
 		// Get handle to connection
 		std::error_code stdec;
-		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con, stdec);
+        auto conp = mEndPoint.get_con_from_hdl(con, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
@@ -491,7 +499,7 @@ namespace nap
 	{
 		// Get connection handle
 		std::error_code stdec;
-		wspp::ConnectionPtr conp = mEndPoint.get_con_from_hdl(con, stdec);
+        auto conp = mEndPoint.get_con_from_hdl(con, stdec);
 		if (stdec)
 		{
 			nap::Logger::error(stdec.message());
@@ -584,4 +592,57 @@ namespace nap
 		mConnections.clear();
 		return success;
 	}
+
+
+    std::shared_ptr<asio::ssl::context> WebSocketServerEndPoint::onTlsInit(wspp::ConnectionHandle con)
+    {
+        namespace asio = websocketpp::lib::asio;
+        // See https://wiki.mozilla.org/Security/Server_Side_TLS for more details about
+        // the TLS modes. The code below demonstrates how to implement both the modern
+        enum tls_mode {
+            MOZILLA_INTERMEDIATE = 1,
+            MOZILLA_MODERN = 2
+        };
+
+        auto tls_mode = MOZILLA_INTERMEDIATE;
+        auto ctx = websocketpp::lib::make_shared<asio::ssl::context>(asio::ssl::context::sslv23);
+
+        try {
+            if (tls_mode == MOZILLA_MODERN) {
+                // Modern disables TLSv1
+                ctx->set_options(asio::ssl::context::default_workarounds |
+                                 asio::ssl::context::no_sslv2 |
+                                 asio::ssl::context::no_sslv3 |
+                                 asio::ssl::context::no_tlsv1 |
+                                 asio::ssl::context::single_dh_use);
+            } else {
+                ctx->set_options(asio::ssl::context::default_workarounds |
+                                 asio::ssl::context::no_sslv2 |
+                                 asio::ssl::context::no_sslv3 |
+                                 asio::ssl::context::single_dh_use);
+            }
+
+            ctx->use_certificate_chain_file(mCertificateFile);
+            ctx->use_private_key_file(mPrivateKeyFile, asio::ssl::context::pem);
+
+            std::string ciphers;
+            if (tls_mode == MOZILLA_MODERN)
+            {
+                ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK";
+            } else
+            {
+                ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA";
+            }
+
+            if (SSL_CTX_set_cipher_list(ctx->native_handle() , ciphers.c_str()) != 1)
+            {
+                nap::Logger::warn("Error setting cipher list");
+            }
+        }
+        catch (std::exception& e)
+        {
+            nap::Logger::error(*this, "Exception: %s", e.what());
+        }
+        return ctx;
+    }
 }

@@ -11,6 +11,8 @@
 
 // nap::websocketclientendpoint run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketClientEndPoint)
+    RTTI_PROPERTY("CertificateFile",        &nap::WebSocketClientEndPoint::mCertificateFile,            nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
+    RTTI_PROPERTY("PrivateKeyFile",         &nap::WebSocketClientEndPoint::mPrivateKeyFile,             nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketClientEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketClientEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -34,7 +36,7 @@ namespace nap
 		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
 		mEndPoint.set_access_channels(mAccessLogLevel);
 
-		// Init asio
+        // Init asio
 		std::error_code stdec;
 		mEndPoint.init_asio(stdec);
 		if (stdec)
@@ -42,6 +44,12 @@ namespace nap
 			errorState.fail(stdec.message());
 			return false;
 		}
+
+        // set TLS init handler
+        mEndPoint.set_tls_init_handler([this](websocketpp::connection_hdl hdl)
+                                       {
+                                           return onTlsInit(hdl);
+                                       });
 
 		return true;
 	}
@@ -163,7 +171,7 @@ namespace nap
 		// TRY to connect, this occurs on a background thread.
 		// All connection related state changes are handled in the WebSocketClientWrapper.
 		mEndPoint.connect(client_connection);
-	
+
 		return true;
 	}
 
@@ -188,6 +196,60 @@ namespace nap
 		}
 		mClients.erase(found_it);
 	}
+
+
+    std::shared_ptr<asio::ssl::context> WebSocketClientEndPoint::onTlsInit(wspp::ConnectionHandle con)
+    {
+        namespace asio = websocketpp::lib::asio;
+        // See https://wiki.mozilla.org/Security/Server_Side_TLS for more details about
+        // the TLS modes. The code below demonstrates how to implement both the modern
+        enum tls_mode {
+            MOZILLA_INTERMEDIATE = 1,
+            MOZILLA_MODERN = 2
+        };
+
+        auto tls_mode = MOZILLA_INTERMEDIATE;
+        auto ctx = websocketpp::lib::make_shared<asio::ssl::context>(asio::ssl::context::sslv23);
+
+        try {
+            if (tls_mode == MOZILLA_MODERN) {
+                // Modern disables TLSv1
+                ctx->set_options(asio::ssl::context::default_workarounds |
+                                 asio::ssl::context::no_sslv2 |
+                                 asio::ssl::context::no_sslv3 |
+                                 asio::ssl::context::no_tlsv1 |
+                                 asio::ssl::context::single_dh_use);
+            } else {
+                ctx->set_options(asio::ssl::context::default_workarounds |
+                                 asio::ssl::context::no_sslv2 |
+                                 asio::ssl::context::no_sslv3 |
+                                 asio::ssl::context::single_dh_use);
+            }
+
+            ctx->use_certificate_chain_file(mCertificateFile);
+            ctx->use_private_key_file(mPrivateKeyFile, asio::ssl::context::pem);
+
+            std::string ciphers;
+            if (tls_mode == MOZILLA_MODERN)
+            {
+                ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK";
+            } else
+            {
+                ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA";
+            }
+
+            if (SSL_CTX_set_cipher_list(ctx->native_handle() , ciphers.c_str()) != 1)
+            {
+                nap::Logger::warn("Error setting cipher list");
+            }
+        }
+        catch (std::exception& e)
+        {
+            nap::Logger::error(*this, "Exception: %s", e.what());
+        }
+
+        return ctx;
+    }
 
 
 	WebSocketClientWrapper::WebSocketClientWrapper(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection) :
