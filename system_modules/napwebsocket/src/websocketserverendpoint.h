@@ -24,6 +24,7 @@
 namespace nap
 {
 	class IWebSocketServer;
+    class WebSocketServerEndpointImplementation;
 
 	/**
 	 * Server endpoint role. Manages all client connections.
@@ -71,7 +72,8 @@ namespace nap
 	 */
 	class NAPAPI WebSocketServerEndPoint : public Device
 	{
-		friend class IWebSocketServer;
+		friend class WebSocketServerEndpointImplementation;
+        friend class IWSServerEndpoint;
 		RTTI_ENABLE(Device)
 	public:
 
@@ -198,71 +200,127 @@ namespace nap
 		std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
 		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
 		std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
+    protected:
+        std::unique_ptr<WebSocketServerEndpointImplementation> mImplementation;				    ///< The server endpoint interface
+    };
+
+    class NAPAPI WebSocketServerEndPointTLS : public WebSocketServerEndPoint
+    {
+        friend class WebSocketServerEndpointImplementation;
+        friend class IWSServerEndpoint;
+        RTTI_ENABLE(WebSocketServerEndPoint)
+    public:
+        bool init(utility::ErrorState &errorState) override;
+
         std::string mCertificateFile = "server.pem";                        ///< Property: 'CertificateFile' the certificate file to use for SSL encryption.
         std::string mPrivateKeyFile = "key.pem";                            ///< Property: 'PrivateKeyFile' the private key file to use for SSL encryption.
-	private:
-		std::mutex mListenerMutex;
-		std::vector<IWebSocketServer*> mListeners;
+    };
 
-		/**
-		 * Runs the end point in a background thread until stopped.
-		 */
-		void run();
+    class NAPAPI WebSocketServerEndpointImplementation
+    {
+    public:
+        WebSocketServerEndpointImplementation(WebSocketServerEndPoint& endPoint);
 
-		/**
-		 * Called when a new client connection opened.
-		 */
-		void onConnectionOpened(wspp::ConnectionHandle connection);
+        virtual bool init(utility::ErrorState& errorState) = 0;
 
-		/**
-		 * Called when a client collection is closed
-		 */
-		void onConnectionClosed(wspp::ConnectionHandle connection);
+        virtual bool start(nap::utility::ErrorState& error)  = 0;
 
-		/**
-		 * Called on a failed client connection attempt.
-		 */
-		void onConnectionFailed(wspp::ConnectionHandle connection);
+        virtual void stop() = 0;
 
-		/**
-		 * Called when a new client message is received.
-		 */
-		void onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg);
+        virtual bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
-		/**
-		 * Called when a http request is made.
-		 * Creates and serves a ticket based on the current Access Mode.
-		 */
-		void onHTTP(wspp::ConnectionHandle con);
+        virtual bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
-		/**
-		 * Validates the incoming connection. For now all connections are accepted.
-		 */
-		bool onValidate(wspp::ConnectionHandle con);
+        virtual bool broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
-		/**
-		 * Called when the server receives a ping message. Automatically pongs back.
-		 */
-		bool onPing(wspp::ConnectionHandle con, std::string msg);
+        virtual bool broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
-		/**
-		 * Closes all active client connections.
-		 */
-		bool disconnect(nap::utility::ErrorState& error);
+        virtual ~WebSocketServerEndpointImplementation() = default;
 
         /**
-         * Called on TLSHandshake
-         * @param connection handle to the connection with the server
+         * Called when a new client connection opened.
          */
-        std::shared_ptr<asio::ssl::context> onTlsInit(wspp::ConnectionHandle con);
+        virtual void onConnectionOpened(const WebSocketConnection& connection) = 0;
 
-		bool mRunning = false;													///< If the server is accepting and managing client connections.
-		std::mutex mConnectionMutex;											///< Ensures connections are added / removed safely.
-		std::unordered_set<WebSocketTicketHash> mClientHashes;					///< Accepted client ticket hashes
-        wspp::ServerEndPoint mEndPoint;	                                        ///< The websocketpp server end-point
-		uint32 mLogLevel = 0;													///< Converted library log level
-		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
-		std::future<void> mServerTask;											///< The background server thread
+        /**
+         * Called when a client collection is closed
+         */
+        virtual void onConnectionClosed(const WebSocketConnection& connection) = 0;
+
+        /**
+         * Called on a failed client connection attempt.
+         */
+        virtual void onConnectionFailed(const WebSocketConnection& connection) = 0;
+
+        /**
+         * Called when a new client message is received.
+         */
+        virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) = 0;
+
+        /**
+         * Called when a http request is made.
+         * Creates and serves a ticket based on the current Access Mode.
+         */
+        virtual void onHTTP(const WebSocketConnection& connection) = 0;
+
+        /**
+         * Validates the incoming connection. For now all connections are accepted.
+         */
+        virtual bool onValidate(const WebSocketConnection& connection) = 0;
+
+        /**
+         * Called when the server receives a ping message. Automatically pongs back.
+         */
+        virtual bool onPing(const WebSocketConnection& connection, const std::string& message) = 0;
+
+        /**
+         * @return if the current end point is open and running
+         */
+        bool isOpen() const { return mRunning; }
+
+        virtual std::string getHostName(const WebSocketConnection& connection) = 0;
+
+        virtual void getHostNames(std::vector<std::string>& outHosts) = 0;
+
+        virtual int getConnectionCount() = 0;
+
+        virtual bool acceptsNewConnections() = 0;
+
+        virtual bool disconnect(utility::ErrorState& error) = 0;
+
+        virtual void registerListener(IWebSocketServer& server) = 0;
+
+        virtual void unregisterListener(IWebSocketServer& server) = 0;
+    protected:
+        /**
+         * Runs the end point in a background thread until stopped.
+         */
+        virtual void run() = 0;
+
+        virtual void attachTLSHandler() = 0;
+
+        WebSocketServerEndPoint& mEndPoint;
+
+        std::mutex mListenerMutex;
+        std::vector<IWebSocketServer*> mListeners;
+
+        bool mRunning = false;													///< If the server is accepting and managing client connections.
+        std::mutex mConnectionMutex;											///< Ensures connections are added / removed safely.
+        std::unordered_set<WebSocketTicketHash> mClientHashes;					///< Accepted client ticket hashes
+        uint32 mLogLevel = 0;													///< Converted library log level
+        uint32 mAccessLogLevel = 0;												///< Log client / server connection data
+        std::future<void> mServerTask;											///< The background server thread
         std::vector<wspp::ConnectionHandle> mConnections;						///< List of all low level connections
+        WebSocketServerEndPoint::EAccessMode mMode = WebSocketServerEndPoint::EAccessMode::EveryOne;							///< Property: "AccessMode" client connection access mode.
+        int mConnectionLimit = -1;											///< Property: "ConnectionLimit" number of allowed client connections at once, -1 = no limit
+        int mPort = 80;														///< Property: "Port" to open and listen to for client requests.
+        bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
+        bool mAllowPortReuse = false;										///< Property: "AllowPortReuse" if the server connection can be re-used by other processes.
+        EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;	///< Property: "LibraryLogLevel" library messages equal to or higher than requested are logged.
+        std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
+        std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
+        std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
+        std::string mCertificateFile = "server.pem";                        ///< Property: 'CertificateFile' the certificate file to use for SSL encryption.
+        std::string mPrivateKeyFile = "key.pem";                            ///< Property: 'PrivateKeyFile' the private key file to use for SSL encryption.
     };
 }

@@ -26,6 +26,7 @@ namespace nap
 	{
 		friend class WebSocketServerEndPoint;
 		friend class WebSocketClientEndPoint;
+        friend class WebSocketServerEndpointImplementation;
 
 	public:
 		// Creates an invalid (expired) connection
@@ -39,12 +40,15 @@ namespace nap
 		// Default copy assignment operator
 		WebSocketConnection& operator=(const WebSocketConnection& other) = default;
 
+        /**
+         * Constructs a web-socket connection based on the underling websocketpp connection handle
+         * @param connection the websocketpp connection handle
+         */
+        WebSocketConnection(wspp::ConnectionHandle connection);
+
+        const wspp::ConnectionHandle getConnectionHandle() const{ return mConnection; }
 	private:
-		/**
-		 * Constructs a web-socket connection based on the underling websocketpp connection handle
-		 * @param connection the websocketpp connection handle
-		 */
-		WebSocketConnection(wspp::ConnectionHandle connection);
+
 
 		wspp::ConnectionHandle mConnection;		///< Weak pointer to the underlying websocketpp connection, invalid by default.
 	};

@@ -57,6 +57,13 @@ namespace nap
 		// Default copy assignment operator
 		WebSocketMessage& operator=(const WebSocketMessage& other) = default;
 
+        /**
+         * Constructs this message based on the a received websocketpp message.
+         * Only available to web-socket endpoints.
+         * @param message the websocketpp message
+         */
+        WebSocketMessage(wspp::MessagePtr message);
+
 		/**
 		 * @return a reference to the message's payload string
 		 */
@@ -82,12 +89,7 @@ namespace nap
 		bool getFin() const;
 
 	private:
-		/**
-		 * Constructs this message based on the a received websocketpp message.
-		 * Only available to web-socket endpoints.
-		 * @param message the websocketpp message
-		 */
-		WebSocketMessage(wspp::MessagePtr message);
+
 
 		std::string mMessage;							///< The received or to be sent message.
 		EWebSocketOPCode mCode;							///< OP code of the message.

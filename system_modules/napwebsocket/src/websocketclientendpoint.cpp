@@ -45,12 +45,6 @@ namespace nap
 			return false;
 		}
 
-        // set TLS init handler
-        mEndPoint.set_tls_init_handler([this](websocketpp::connection_hdl hdl)
-                                       {
-                                           return onTlsInit(hdl);
-                                       });
-
 		return true;
 	}
 

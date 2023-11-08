@@ -13,7 +13,8 @@ namespace nap
 	// Wrapping often used web-socket library types
 	namespace wspp
 	{
-		using Config = websocketpp::config::asio_tls;								///< web-socket low level config
+        using ConfigTLS = websocketpp::config::asio_tls;							    ///< web-socket low level config
+		using Config = websocketpp::config::asio;								    ///< web-socket low level config
 		using ConnectionHandle = std::weak_ptr<void>;								///< server / client connection
 		using MessagePtr = Config::message_type::ptr;								///< internal message format
 		using OpCode = websocketpp::frame::opcode::value;							///< web-socket op codes
@@ -21,6 +22,7 @@ namespace nap
 		using MessageHandler = std::function<void(ConnectionHandle, MessagePtr)>;	///< message received handle function
 		using EndPoint = websocketpp::endpoint<websocketpp::connection<wspp::Config>, wspp::Config>;
 		using ServerEndPoint = websocketpp::server<Config>;							///< Web socket server end point
+        using ServerEndPointTLS = websocketpp::server<ConfigTLS>;							///< Web socket server end point
 		using ClientEndPoint = websocketpp::client<Config>;							///< Web socket client end point
 		using ConnectionPtr = EndPoint::connection_ptr;								///< Shared connection pointer
 	}
