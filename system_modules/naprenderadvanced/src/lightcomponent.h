@@ -189,12 +189,17 @@ namespace nap
 		/**
 		 * @return the light intensity
 		 */
-		virtual float getIntensity() const { return 1.0f; }// mResource->mIntensity.getValue(); }
+		virtual float getIntensity() const									{ return mResource->mIntensity->getValue(); }
 
 		/**
 		 * @return the shadow strength
 		 */
 		virtual float getShadowStrength() const								{ return mShadowStrength; }
+
+		/**
+		 * Sets the shadow strength
+		 */
+		virtual void setShadowStrength(float strength)						{ mShadowStrength = strength; }
 
 		/**
 		 * @return the light color

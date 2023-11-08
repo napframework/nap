@@ -16,9 +16,11 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
+#include <uniformupdate.h>
 
 RTTI_BEGIN_CLASS(nap::RenderSkyBoxComponent)
 	RTTI_PROPERTY("CubeTexture", &nap::RenderSkyBoxComponent::mCubeTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Color", &nap::RenderSkyBoxComponent::mColor, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderSkyBoxComponentInstance)
@@ -62,6 +64,25 @@ namespace nap
 			return false;
 
 		sampler->setTexture(*mResource->mCubeTexture);
+
+		// Color uniform
+		auto* uni = getMaterialInstance().getOrCreateUniform("UBO");
+		if (!errorState.check(uni != nullptr, "Missing uniform struct with name `UBO`"))
+			return false;
+
+		auto* color = uni->getOrCreateUniform<UniformVec3Instance>("color");
+		if (!errorState.check(color != nullptr, "Missing uniform vec3 member with name `color`"))
+			return false;
+
+		if (mResource->mColor != nullptr)
+		{
+			if (mResource->mColor->hasParameter())
+				registerUniformUpdate(*color, *mResource->mColor->mParameter);
+			else
+				color->setValue(mResource->mColor->getValue().toVec3());
+		}
+		else
+			color->setValue({ 1.0f, 1.0f, 1.0f });
 
 		return true;
 	}

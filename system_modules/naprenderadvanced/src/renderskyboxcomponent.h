@@ -10,7 +10,7 @@
 #include <nap/resourceptr.h>
 #include <componentptr.h>
 #include <boxmesh.h>
-
+#include <parameterentrycolor.h>
 
 namespace nap
 {
@@ -34,6 +34,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		ResourcePtr<TextureCube> mCubeTexture;
+		ResourcePtr<ParameterEntryRGBColorFloat> mColor;
 	};
 
 
