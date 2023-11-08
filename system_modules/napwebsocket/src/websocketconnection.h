@@ -24,10 +24,6 @@ namespace nap
 	 */
 	class NAPAPI WebSocketConnection final
 	{
-		friend class WebSocketServerEndPoint;
-		friend class WebSocketClientEndPoint;
-        friend class WebSocketServerEndpointImplementation;
-
 	public:
 		// Creates an invalid (expired) connection
 		WebSocketConnection() = default;
@@ -48,8 +44,6 @@ namespace nap
 
         const wspp::ConnectionHandle getConnectionHandle() const{ return mConnection; }
 	private:
-
-
 		wspp::ConnectionHandle mConnection;		///< Weak pointer to the underlying websocketpp connection, invalid by default.
 	};
 

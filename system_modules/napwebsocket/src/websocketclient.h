@@ -86,9 +86,9 @@ namespace nap
 		ResourcePtr<WebSocketClientEndPoint> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
 		ResourcePtr<WebSocketTicket> mTicket = nullptr;					///< Property: 'Ticket' optional identification token. 
 		std::string mURI;												///< Property: "UIR" Server URI to open connection to.
-
+        WebSocketConnection mConnection;								///< Web-socket connection
 	protected:
-		WebSocketConnection mConnection;								///< Web-socket connection
+
 
 		/**
 		 * Occurs when a new connection to the server is opened.

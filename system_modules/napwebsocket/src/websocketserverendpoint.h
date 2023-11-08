@@ -24,7 +24,7 @@
 namespace nap
 {
 	class IWebSocketServer;
-    class WebSocketServerEndpointImplementation;
+    class WebSocketServerEndpointImplementationBase;
 
 	/**
 	 * Server endpoint role. Manages all client connections.
@@ -72,7 +72,7 @@ namespace nap
 	 */
 	class NAPAPI WebSocketServerEndPoint : public Device
 	{
-		friend class WebSocketServerEndpointImplementation;
+		friend class WebSocketServerEndpointImplementationBase;
         friend class IWSServerEndpoint;
 		RTTI_ENABLE(Device)
 	public:
@@ -201,12 +201,12 @@ namespace nap
 		std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
 		std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
     protected:
-        std::unique_ptr<WebSocketServerEndpointImplementation> mImplementation;				    ///< The server endpoint interface
+        std::unique_ptr<WebSocketServerEndpointImplementationBase> mImplementation = nullptr;				    ///< The server endpoint implementation
     };
 
     class NAPAPI WebSocketServerEndPointTLS : public WebSocketServerEndPoint
     {
-        friend class WebSocketServerEndpointImplementation;
+        friend class WebSocketServerEndpointImplementationBase;
         friend class IWSServerEndpoint;
         RTTI_ENABLE(WebSocketServerEndPoint)
     public:
@@ -216,10 +216,10 @@ namespace nap
         std::string mPrivateKeyFile = "key.pem";                            ///< Property: 'PrivateKeyFile' the private key file to use for SSL encryption.
     };
 
-    class NAPAPI WebSocketServerEndpointImplementation
+    class NAPAPI WebSocketServerEndpointImplementationBase
     {
     public:
-        WebSocketServerEndpointImplementation(WebSocketServerEndPoint& endPoint);
+        WebSocketServerEndpointImplementationBase(WebSocketServerEndPoint& endPoint);
 
         virtual bool init(utility::ErrorState& errorState) = 0;
 
@@ -235,7 +235,7 @@ namespace nap
 
         virtual bool broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
-        virtual ~WebSocketServerEndpointImplementation() = default;
+        virtual ~WebSocketServerEndpointImplementationBase() = default;
 
         /**
          * Called when a new client connection opened.

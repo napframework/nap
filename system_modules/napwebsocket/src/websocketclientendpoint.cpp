@@ -11,8 +11,6 @@
 
 // nap::websocketclientendpoint run time class definition 
 RTTI_BEGIN_CLASS(nap::WebSocketClientEndPoint)
-    RTTI_PROPERTY("CertificateFile",        &nap::WebSocketClientEndPoint::mCertificateFile,            nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("PrivateKeyFile",         &nap::WebSocketClientEndPoint::mPrivateKeyFile,             nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
 	RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketClientEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketClientEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -21,179 +19,233 @@ RTTI_END_CLASS
 
 
 namespace nap
-{	
+{
+    template<typename T>
+    class WebSocketClientEndPointImplementation : public WebSocketClientEndPointImplementationBase
+    {
+    public:
+        WebSocketClientEndPointImplementation(nap::WebSocketClientEndPoint& endPoint) : WebSocketClientEndPointImplementationBase(endPoint), mClientEndPoint()
+        {
+        }
+
+        bool init(utility::ErrorState &errorState) override
+        {
+            // Convert log levels
+            mLogLevel = computeWebSocketLogLevel(mLibraryLogLevel);
+            mAccessLogLevel = mLogConnectionUpdates ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
+                                                    : websocketpp::log::alevel::fail;
+
+            // Initiate logging
+            mClientEndPoint.clear_error_channels(websocketpp::log::elevel::all);
+            mClientEndPoint.set_error_channels(mLogLevel);
+
+            mClientEndPoint.clear_access_channels(websocketpp::log::alevel::all);
+            mClientEndPoint.set_access_channels(mAccessLogLevel);
+
+            // Init asio
+            std::error_code stdec;
+            mClientEndPoint.init_asio(stdec);
+            if (stdec)
+            {
+                errorState.fail(stdec.message());
+                return false;
+            }
+
+            return true;
+        }
+
+        void stop() override
+        {
+            // At this state we need to have an open end point and client thread
+            assert(mRunning);
+            assert(mClientTask.valid());
+
+            // Make sure the end point doesn't restart
+            mClientEndPoint.stop_perpetual();
+
+            // Wait until all still active clients exit clean
+            for (auto& client : mClients)
+            {
+                utility::ErrorState error;
+                if (!client->disconnect(error))
+                    nap::Logger::error(error.toString());
+            }
+
+            // Wait until all clients exited
+            mClientTask.wait();
+            mRunning = false;
+
+            // Clear all clients
+            mClients.clear();
+        }
+
+
+        bool registerClient(nap::IWebSocketClient &client, utility::ErrorState &error)
+        {
+            // Get shared pointer to connection
+            std::error_code stdec;
+            wspp::ConnectionPtr client_connection = mClientEndPoint.get_connection(client.mURI, stdec);
+            if (stdec)
+            {
+                error.fail(stdec.message());
+                return false;
+            }
+
+            // Send identification information if present on client
+            if (client.mTicket != nullptr)
+            {
+                // Convert ticket into binary string
+                std::string binary_string;
+                if (!client.mTicket->toBinaryString(binary_string, error))
+                    return false;
+
+                // Add as sub-protocol identifier.
+                client_connection->add_subprotocol(binary_string, stdec);
+                if (stdec)
+                {
+                    error.fail(stdec.message());
+                    return false;
+                }
+            }
+
+            // Create meta client and add to the list of internally managed clients
+            std::unique_ptr<WebSocketClientWrapper> meta_client(new WebSocketClientWrapper(client,
+                                                                                           mClientEndPoint,
+                                                                                           client_connection));
+            mClients.emplace_back(std::move(meta_client));
+
+            // Store connection handle in client
+            client.mConnection = WebSocketConnection(client_connection->get_handle());
+
+            // TRY to connect, this occurs on a background thread.
+            // All connection related state changes are handled in the WebSocketClientWrapper.
+            mClientEndPoint.connect(client_connection);
+
+            return true;
+        }
+
+        void unregisterClient(const nap::IWebSocketClient &client) override
+        {
+            auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
+            {
+                return it->getResource() == &client;
+            });
+
+            if (found_it == mClients.end())
+            {
+                return;
+            }
+
+            // Disconnect if connected previously
+            utility::ErrorState error;
+            if (!(*found_it)->disconnect(error))
+            {
+                nap::Logger::error(error.toString());
+            }
+            mClients.erase(found_it);
+        }
+
+
+        bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) override
+        {
+            std::error_code stdec;
+            mClientEndPoint.send(connection.getConnectionHandle(), message, static_cast<wspp::OpCode>(code), stdec);
+            if (stdec)
+            {
+                error.fail(stdec.message());
+                return false;
+            }
+            return true;
+        }
+
+
+        bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) override
+        {
+            std::error_code stdec;
+            mClientEndPoint.send(connection.getConnectionHandle(), payload, length, static_cast<wspp::OpCode>(code), stdec);
+            if (stdec)
+            {
+                error.fail(stdec.message());
+                return false;
+            }
+            return true;
+        }
+
+        bool start(nap::utility::ErrorState &error) override
+        {
+            // Ensure state
+            assert(!mRunning);
+
+            // Ensure connection exists when server disconnects
+            mClientEndPoint.start_perpetual();
+
+            // Run client in background
+            mClientTask = std::async(std::launch::async, [this] { run(); });
+
+            mRunning = true;
+
+            return true;
+        }
+    private:
+        void run()
+        {
+            mClientEndPoint.run();
+        }
+
+        T mClientEndPoint;
+    };
+
+    WebSocketClientEndPointImplementationBase::WebSocketClientEndPointImplementationBase(nap::WebSocketClientEndPoint &endPoint) : mEndPoint(endPoint)
+    {
+    }
+
+
 	bool WebSocketClientEndPoint::init(utility::ErrorState& errorState)
 	{
-		// Convert log levels
-		mLogLevel = computeWebSocketLogLevel(mLibraryLogLevel);
-		mAccessLogLevel = mLogConnectionUpdates ? websocketpp::log::alevel::all ^ websocketpp::log::alevel::frame_payload
-			: websocketpp::log::alevel::fail;
-
-		// Initiate logging
-		mEndPoint.clear_error_channels(websocketpp::log::elevel::all);
-		mEndPoint.set_error_channels(mLogLevel);
-
-		mEndPoint.clear_access_channels(websocketpp::log::alevel::all);
-		mEndPoint.set_access_channels(mAccessLogLevel);
-
-        // Init asio
-		std::error_code stdec;
-		mEndPoint.init_asio(stdec);
-		if (stdec)
-		{
-			errorState.fail(stdec.message());
-			return false;
-		}
-
-		return true;
+        mImplementation = std::make_unique<WebSocketClientEndPointImplementation<wspp::ClientEndPoint>>(*this);
+        return mImplementation->init(errorState);
 	}
 
 
 	void WebSocketClientEndPoint::stop()
 	{		
-		// At this state we need to have an open end point and client thread
-		assert(mRunning);
-		assert(mClientTask.valid());
-
-		// Make sure the end point doesn't restart
-		mEndPoint.stop_perpetual();
-
-		// Wait until all still active clients exit clean
-		for (auto& client : mClients)
-		{
-			utility::ErrorState error;
-			if (!client->disconnect(error))
-				nap::Logger::error(error.toString());
-		}
-
-		// Wait until all clients exited
-		mClientTask.wait();
-		mRunning = false;
-
-		// Clear all clients
-		mClients.clear();
+        mImplementation->stop();
 	}
 
 
 	bool WebSocketClientEndPoint::start(utility::ErrorState& error)
 	{		
-		// Ensure state
-		assert(!mRunning);
-
-		// Ensure connection exists when server disconnects
-		mEndPoint.start_perpetual();
-
-		// Run client in background
-		mClientTask = std::async(std::launch::async, std::bind(&WebSocketClientEndPoint::run, this));
-
-		mRunning = true;
-
-		return true;
+        mImplementation->start(error);
 	}
 
 
 	bool WebSocketClientEndPoint::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
-		std::error_code stdec;
-		mEndPoint.send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
-		if (stdec)
-		{
-			error.fail(stdec.message());
-			return false;
-		}
-		return true;
+        return mImplementation->send(connection, message, code, error);
 	}
 	
 
 	bool WebSocketClientEndPoint::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
-		std::error_code stdec;
-		mEndPoint.send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);
-		if (stdec)
-		{
-			error.fail(stdec.message());
-			return false;
-		}
-		return true;
-	}
-
-
-	void WebSocketClientEndPoint::run()
-	{
-		// Start running until stopped
-		mEndPoint.run();
+        return mImplementation->send(connection, payload, length, code, error);
 	}
 
 
 	bool WebSocketClientEndPoint::registerClient(IWebSocketClient& client, utility::ErrorState& error)
 	{
-		// Get shared pointer to connection
-		std::error_code stdec;
-		wspp::ConnectionPtr client_connection = mEndPoint.get_connection(client.mURI, stdec);
-		if (stdec)
-		{
-			error.fail(stdec.message());
-			return false;
-		}
-
-		// Send identification information if present on client
-		if (client.mTicket != nullptr)
-		{
-			// Convert ticket into binary string
-			std::string binary_string;
-			if (!client.mTicket->toBinaryString(binary_string, error))
-				return false;
-
-			// Add as sub-protocol identifier.
-			client_connection->add_subprotocol(binary_string, stdec);
-			if (stdec)
-			{
-				error.fail(stdec.message());
-				return false;
-			}
-		}
-
-		// Create meta client and add to the list of internally managed clients
-		std::unique_ptr<WebSocketClientWrapper> meta_client(new WebSocketClientWrapper(client,
-			mEndPoint,
-			client_connection));
-		mClients.emplace_back(std::move(meta_client));
-
-		// Store connection handle in client
-		client.mConnection = WebSocketConnection(client_connection->get_handle());
-
-		// TRY to connect, this occurs on a background thread.
-		// All connection related state changes are handled in the WebSocketClientWrapper.
-		mEndPoint.connect(client_connection);
-
-		return true;
+        return mImplementation->registerClient(client, error);
 	}
 
 
 	void WebSocketClientEndPoint::unregisterClient(const IWebSocketClient& client)
 	{
-		auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
-		{
-			return it->mResource == &client;
-		});
-
-		if (found_it == mClients.end())
-		{
-			return;
-		}
-
-		// Disconnect if connected previously
-		utility::ErrorState error;
-		if (!(*found_it)->disconnect(error))
-		{
-			nap::Logger::error(error.toString());
-		}
-		mClients.erase(found_it);
+		mImplementation->unregisterClient(client);
 	}
 
-
+/*
     std::shared_ptr<asio::ssl::context> WebSocketClientEndPoint::onTlsInit(wspp::ConnectionHandle con)
     {
+        /*
         namespace asio = websocketpp::lib::asio;
         // See https://wiki.mozilla.org/Security/Server_Side_TLS for more details about
         // the TLS modes. The code below demonstrates how to implement both the modern
@@ -244,7 +296,7 @@ namespace nap
 
         return ctx;
     }
-
+*/
 
 	WebSocketClientWrapper::WebSocketClientWrapper(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection) :
 		mResource(&client), mEndPoint(&endPoint), mHandle(connection->get_handle())

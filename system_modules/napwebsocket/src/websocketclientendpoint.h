@@ -19,6 +19,7 @@ namespace nap
 	// Forward Declares
 	class IWebSocketClient;
 	class WebSocketClientWrapper;
+    class WebSocketClientEndPointImplementationBase;
 
 	/**
 	 * Manages a list of client-server connections and acts as the main portal for the client to the server.
@@ -83,20 +84,13 @@ namespace nap
 
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
-        std::string mCertificateFile = "server.pem";                            ///< Property: 'CertificateFile' the certificate file to use for SSL encryption.
-        std::string mPrivateKeyFile = "key.pem";                                ///< Property: 'PrivateKeyFile' the private key file to use for SSL encryption.
 	private:
 		uint32 mLogLevel = 0;													///< Converted library log level
 		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
 		bool mRunning = false;													///< If the client connection to the server is open						
-		wspp::ClientEndPoint mEndPoint;											///< websocketpp client end point
+		std::unique_ptr<WebSocketClientEndPointImplementationBase> mImplementation;
 		std::future<void> mClientTask;											///< The client server thread
 		std::vector<std::unique_ptr<WebSocketClientWrapper>> mClients;			///< All unique client connections
-
-		/**
-		 * Runs the endpoint in a background thread until stopped.
-		 */
-		void run();
 
 		/**
 		 * Connects a nap client to a server. The new connection is managed by this endpoint.
@@ -114,13 +108,81 @@ namespace nap
 		 * @param client the client to remove.
 		 */
 		void unregisterClient(const IWebSocketClient& client);
+	};
+
+
+    class NAPAPI WebSocketClientEndPointImplementationBase
+    {
+    public:
+        WebSocketClientEndPointImplementationBase(WebSocketClientEndPoint& endPoint);
 
         /**
-         * Called on TLSHandshake
-         * @param connection handle to the connection with the server
+         * Initialize this object after de-serialization
+         * @param errorState contains the error message when initialization fails.
+         * @return if the endpoint initialized correctly.
          */
-        std::shared_ptr<asio::ssl::context> onTlsInit(wspp::ConnectionHandle con);
-	};
+        virtual bool init(utility::ErrorState& errorState) = 0;
+
+        /**
+         * Stops the endpoint. All active connections are closed.
+         */
+        virtual void stop() = 0;
+
+        /**
+         * Starts the endpoint. This is a non-blocking call.
+         * New connections are accepted. Connection updates and messages are received in a background thread.
+         * @param error contains the error if the endpoint can't be started.
+         * @return if the endpoint started.
+         */
+        virtual bool start(nap::utility::ErrorState& error) = 0;
+
+        /**
+         * Sends a message to a server.
+         * @param connection the client connection to the server.
+         * @param message the message to send.
+         * @param code type of message.
+         * @param error contains the error if sending fails.
+         * @return if message was sent successfully
+         */
+        virtual bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
+
+        /**
+         * Sends a message using the given payload and opcode to a server.
+         * @param connection the client connection to the server.
+         * @param payload the message buffer.
+         * @param length buffer size in bytes.
+         * @param code type of message.
+         * @param error contains the error if sending fails.
+         * @return if message was sent successfully.
+         */
+        virtual bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
+
+        /**
+         * Connects a nap client to a server. The new connection is managed by this endpoint.
+         * The client is added to the list of internally managed clients.
+         * @param client the client to register
+         * @param error contains the error is registration fails.
+         * @return if the client was registered successfully
+         */
+        virtual bool registerClient(IWebSocketClient& client, utility::ErrorState& error) = 0;
+
+        /**
+         * Removes a client (resource) from the list of actively managed connection.
+         * If the client connection is currently open it will be closed.
+         * Asserts if the client isn't part of the system or can't be removed.
+         * @param client the client to remove.
+         */
+        virtual void unregisterClient(const IWebSocketClient& client) = 0;
+    protected:
+        WebSocketClientEndPoint& mEndPoint;
+        bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
+        EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
+        uint32 mLogLevel = 0;													///< Converted library log level
+        uint32 mAccessLogLevel = 0;												///< Log client / server connection data
+        bool mRunning = false;													///< If the client connection to the server is open
+        std::future<void> mClientTask;											///< The client server thread
+        std::vector<std::unique_ptr<WebSocketClientWrapper>> mClients;			///< All unique client connections
+    };
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -139,7 +201,6 @@ namespace nap
 		// Destructor
 		~WebSocketClientWrapper();
 
-	private:
 		/**
 		 * Called when a new connection is made
 		 * @param connection handle to the connection with the server
@@ -181,6 +242,8 @@ namespace nap
 		 */
 		bool disconnect(nap::utility::ErrorState& error);
 
+        const IWebSocketClient* getResource() const{ return mResource; }
+    private:
 		IWebSocketClient* mResource = nullptr;
 		wspp::ClientEndPoint* mEndPoint = nullptr;
 		wspp::ConnectionHandle mHandle;

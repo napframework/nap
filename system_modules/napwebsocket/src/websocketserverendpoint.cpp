@@ -41,15 +41,15 @@ RTTI_END_CLASS
 
 namespace nap
 {
-    WebSocketServerEndpointImplementation::WebSocketServerEndpointImplementation(nap::WebSocketServerEndPoint &endPoint) : mEndPoint(endPoint)
+    WebSocketServerEndpointImplementationBase::WebSocketServerEndpointImplementationBase(nap::WebSocketServerEndPoint &endPoint) : mEndPoint(endPoint)
     {
     }
 
     template<typename T>
-    class IWebSocketServerEndpoint : public WebSocketServerEndpointImplementation
+    class WebSocketServerEndpointImplementation : public WebSocketServerEndpointImplementationBase
     {
     public:
-        IWebSocketServerEndpoint(WebSocketServerEndPoint& endPoint) : WebSocketServerEndpointImplementation(endPoint)
+        WebSocketServerEndpointImplementation(WebSocketServerEndPoint& endPoint) : WebSocketServerEndpointImplementationBase(endPoint)
         {
             mMode = mEndPoint.mMode;
             mConnectionLimit = mEndPoint.mConnectionLimit;
@@ -62,7 +62,7 @@ namespace nap
             mIPAddress = mEndPoint.mIPAddress;
         }
 
-        virtual ~IWebSocketServerEndpoint() = default;
+        virtual ~WebSocketServerEndpointImplementation() = default;
 
         virtual bool start(nap::utility::ErrorState& error) override
         {
@@ -631,7 +631,7 @@ namespace nap
     };
 
     template<>
-    IWebSocketServerEndpoint<wspp::ServerEndPointTLS>::IWebSocketServerEndpoint(WebSocketServerEndPoint& endPoint) : WebSocketServerEndpointImplementation(endPoint)
+    WebSocketServerEndpointImplementation<wspp::ServerEndPointTLS>::WebSocketServerEndpointImplementation(WebSocketServerEndPoint& endPoint) : WebSocketServerEndpointImplementationBase(endPoint)
     {
         mMode = mEndPoint.mMode;
         mConnectionLimit = mEndPoint.mConnectionLimit;
@@ -650,7 +650,7 @@ namespace nap
     }
 
     template<>
-    void IWebSocketServerEndpoint<wspp::ServerEndPointTLS>::attachTLSHandler()
+    void WebSocketServerEndpointImplementation<wspp::ServerEndPointTLS>::attachTLSHandler()
     {
         mServerEndPoint.set_tls_init_handler([this](auto && PH1) { return onTlsInit(std::forward<decltype(PH1)>(PH1)); });
     }
@@ -747,14 +747,14 @@ namespace nap
 
 	bool WebSocketServerEndPoint::init(utility::ErrorState& errorState)
 	{
-        mImplementation = std::make_unique<IWebSocketServerEndpoint<wspp::ServerEndPoint>>(*this);
+        mImplementation = std::make_unique<WebSocketServerEndpointImplementation<wspp::ServerEndPoint>>(*this);
         return mImplementation->init(errorState);
 	}
 
 
     bool WebSocketServerEndPointTLS::init(utility::ErrorState &errorState)
     {
-        mImplementation = std::make_unique<IWebSocketServerEndpoint<wspp::ServerEndPointTLS>>(*this);
+        mImplementation = std::make_unique<WebSocketServerEndpointImplementation<wspp::ServerEndPointTLS>>(*this);
         return mImplementation->init(errorState);
     }
 }
