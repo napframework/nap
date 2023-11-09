@@ -17,7 +17,7 @@ namespace nap
 	/**
 	 * Interface for all web-socket servers.
 	 * Derive from this class to implement your own web-socket server.
-	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint.
+	 * On initialization the client registers itself with a nap::WebSocketClientEndPointBase.
 	 */
 	class NAPAPI IWebSocketServer : public WebSocketInterface
 	{
@@ -53,7 +53,7 @@ namespace nap
 		// Called by web-socket server endpoint when a client connection failed to establish
 		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) = 0;
 
-		ResourcePtr<WebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
+		ResourcePtr<WebSocketServerEndPointBase> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
 	};
 
 

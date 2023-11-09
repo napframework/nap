@@ -24,7 +24,7 @@ namespace nap
 	 * Override the various virtual functions to receive web-socket client updates.
 	 * The virtual functions are called from a different thread than the main thread.
 	 * It is your responsibility to ensure thread-safety.
-	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint and
+	 * On initialization the client registers itself with a nap::WebSocketClientEndPointBase and
 	 * tries to connect to the server. When a connection is established the onConnectionOpened
 	 * function is called. If the connection failed to establish the onConnectionFailed function
 	 * is called. Call reconnect() to establish a new connection at run-time.
@@ -36,7 +36,9 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketClient : public WebSocketInterface
 	{
+        template<typename T>
 		friend class WebSocketClientEndPoint;
+        template<typename T>
 		friend class WebSocketClientWrapper;
 
 		RTTI_ENABLE(WebSocketInterface)
@@ -83,12 +85,12 @@ namespace nap
 		 */
 		const WebSocketConnection& getConnection() const				{ return mConnection; }
 
-		ResourcePtr<WebSocketClientEndPoint> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
+		ResourcePtr<WebSocketClientEndPointBase> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
 		ResourcePtr<WebSocketTicket> mTicket = nullptr;					///< Property: 'Ticket' optional identification token. 
 		std::string mURI;												///< Property: "UIR" Server URI to open connection to.
-        WebSocketConnection mConnection;								///< Web-socket connection
-	protected:
 
+	protected:
+		WebSocketConnection mConnection;								///< Web-socket connection
 
 		/**
 		 * Occurs when a new connection to the server is opened.
@@ -139,7 +141,7 @@ namespace nap
 	 * These events are consumed by the nap::WebSocketService on the main application thread.
 	 * On update all events in the queue are forwarded to a nap::WebSocketComponent.
 	 * Use a nap::WebSocketComponent to receive and react to web-socket events in your application.
-	 * On initialization the client registers itself with a nap::WebSocketClientEndPoint and
+	 * On initialization the client registers itself with a nap::WebSocketClientEndPointBase and
 	 * tries to connect to the server. Call reconnect() to establish a new connection at run-time.
 	 *
 	 * A 'ticket' can be added to specify additional authorization information (username / password).

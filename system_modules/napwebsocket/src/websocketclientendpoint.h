@@ -18,8 +18,8 @@ namespace nap
 {
 	// Forward Declares
 	class IWebSocketClient;
+    template<typename config>
 	class WebSocketClientWrapper;
-    class WebSocketClientEndPointImplementationBase;
 
 	/**
 	 * Manages a list of client-server connections and acts as the main portal for the client to the server.
@@ -35,31 +35,11 @@ namespace nap
 	 * Note that depending on your operating system you might have to run the application as administrator
 	 * to open a web-socket.
 	 */
-	class NAPAPI WebSocketClientEndPoint : public Device
+	class NAPAPI WebSocketClientEndPointBase : public Device
 	{
 		friend class IWebSocketClient;
 		RTTI_ENABLE(Device)
 	public:
-
-		/**
-		 * Initialize this object after de-serialization
-		 * @param errorState contains the error message when initialization fails.
-		 * @return if the endpoint initialized correctly.
-		 */
-		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * Stops the endpoint. All active connections are closed.
-		 */
-		virtual void stop() override;
-
-		/**
-		 * Starts the endpoint. This is a non-blocking call.
-		 * New connections are accepted. Connection updates and messages are received in a background thread.
-		 * @param error contains the error if the endpoint can't be started.
-		 * @return if the endpoint started.
-		 */
-		virtual bool start(nap::utility::ErrorState& error) override;
 
 		/**
 		 * Sends a message to a server.
@@ -69,7 +49,7 @@ namespace nap
 		 * @param error contains the error if sending fails.
 		 * @return if message was sent successfully
 		 */
-		bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error);
+		virtual bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
 		/**
 		 * Sends a message using the given payload and opcode to a server.
@@ -80,17 +60,12 @@ namespace nap
 		 * @param error contains the error if sending fails.
 		 * @return if message was sent successfully.
 		 */
-		bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error);
+		virtual bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 
 		bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
 		EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
-	private:
-		uint32 mLogLevel = 0;													///< Converted library log level
-		uint32 mAccessLogLevel = 0;												///< Log client / server connection data
-		bool mRunning = false;													///< If the client connection to the server is open						
-		std::unique_ptr<WebSocketClientEndPointImplementationBase> mImplementation;
-		std::future<void> mClientTask;											///< The client server thread
-		std::vector<std::unique_ptr<WebSocketClientWrapper>> mClients;			///< All unique client connections
+
+	protected:
 
 		/**
 		 * Connects a nap client to a server. The new connection is managed by this endpoint.
@@ -99,7 +74,7 @@ namespace nap
 		 * @param error contains the error is registration fails.
 		 * @return if the client was registered successfully
 		 */
-		bool registerClient(IWebSocketClient& client, utility::ErrorState& error);
+		virtual bool registerClient(IWebSocketClient& client, utility::ErrorState& error) = 0;
 
 		/**
 		 * Removes a client (resource) from the list of actively managed connection.
@@ -107,26 +82,26 @@ namespace nap
 		 * Asserts if the client isn't part of the system or can't be removed.
 		 * @param client the client to remove.
 		 */
-		void unregisterClient(const IWebSocketClient& client);
+		virtual void unregisterClient(const IWebSocketClient& client) = 0;
 	};
 
-
-    class NAPAPI WebSocketClientEndPointImplementationBase
+    template<typename config>
+    class NAPAPI WebSocketClientEndPoint : public WebSocketClientEndPointBase
     {
+    RTTI_ENABLE(WebSocketClientEndPointBase)
     public:
-        WebSocketClientEndPointImplementationBase(WebSocketClientEndPoint& endPoint);
 
         /**
          * Initialize this object after de-serialization
          * @param errorState contains the error message when initialization fails.
          * @return if the endpoint initialized correctly.
          */
-        virtual bool init(utility::ErrorState& errorState) = 0;
+        virtual bool init(utility::ErrorState& errorState) override;
 
         /**
          * Stops the endpoint. All active connections are closed.
          */
-        virtual void stop() = 0;
+        virtual void stop() override;
 
         /**
          * Starts the endpoint. This is a non-blocking call.
@@ -134,7 +109,7 @@ namespace nap
          * @param error contains the error if the endpoint can't be started.
          * @return if the endpoint started.
          */
-        virtual bool start(nap::utility::ErrorState& error) = 0;
+        bool start(nap::utility::ErrorState& error) override;
 
         /**
          * Sends a message to a server.
@@ -144,7 +119,7 @@ namespace nap
          * @param error contains the error if sending fails.
          * @return if message was sent successfully
          */
-        virtual bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
+        bool send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) override;
 
         /**
          * Sends a message using the given payload and opcode to a server.
@@ -155,7 +130,12 @@ namespace nap
          * @param error contains the error if sending fails.
          * @return if message was sent successfully.
          */
-        virtual bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
+        bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) override;
+    protected:
+        /**
+         * Runs the endpoint in a background thread until stopped.
+         */
+        void run();
 
         /**
          * Connects a nap client to a server. The new connection is managed by this endpoint.
@@ -164,7 +144,7 @@ namespace nap
          * @param error contains the error is registration fails.
          * @return if the client was registered successfully
          */
-        virtual bool registerClient(IWebSocketClient& client, utility::ErrorState& error) = 0;
+        bool registerClient(IWebSocketClient& client, utility::ErrorState& error) override;
 
         /**
          * Removes a client (resource) from the list of actively managed connection.
@@ -172,18 +152,42 @@ namespace nap
          * Asserts if the client isn't part of the system or can't be removed.
          * @param client the client to remove.
          */
-        virtual void unregisterClient(const IWebSocketClient& client) = 0;
-    protected:
-        WebSocketClientEndPoint& mEndPoint;
-        bool mLogConnectionUpdates = true;										///< Property: "LogConnectionUpdates" if client / server connection information is logged to the console.
-        EWebSocketLogLevel mLibraryLogLevel = EWebSocketLogLevel::Warning;		///< Property: "LibraryLogLevel" library related equal to or higher than requested are logged.
+        void unregisterClient(const IWebSocketClient& client) override;
+
         uint32 mLogLevel = 0;													///< Converted library log level
         uint32 mAccessLogLevel = 0;												///< Log client / server connection data
         bool mRunning = false;													///< If the client connection to the server is open
         std::future<void> mClientTask;											///< The client server thread
-        std::vector<std::unique_ptr<WebSocketClientWrapper>> mClients;			///< All unique client connections
+        std::vector<std::unique_ptr<WebSocketClientWrapper<config>>> mClients;	///< All unique client connections
+        websocketpp::client<config> mEndPoint; ///< websocketpp client end point
     };
 
+    using WebSocketClientEndPointNoTLS = WebSocketClientEndPoint<wspp::Config>;
+
+    class WebSocketClientEndPointTLS : public WebSocketClientEndPoint<wspp::ConfigTLS>
+    {
+    RTTI_ENABLE(WebSocketClientEndPoint<wspp::ConfigTLS>)
+    public:
+        /**
+         * Starts the endpoint. This is a non-blocking call.
+         * New connections are accepted. Connection updates and messages are received in a background thread.
+         * @param error contains the error if the endpoint can't be started.
+         * @return if the endpoint started.
+         */
+        bool start(nap::utility::ErrorState &error) override;
+
+        std::string mCertificateChainFile = ""; ///< Property: "CertificateChainFile" path to the certificate chain file
+        std::string mHostName = ""; ///< Property: "HostName" host name to verify against the certificate
+    private:
+        /**
+         * Called when a new connection is made
+         * @param handle connection handle to the connection with the server
+         * @return shared pointer to the context
+         */
+        std::shared_ptr<asio::ssl::context> onTLSInit(websocketpp::connection_hdl);
+
+        bool verifyCertificate(const char * hostname, bool preverified, asio::ssl::verify_context& ctx);
+    };
 
 	//////////////////////////////////////////////////////////////////////////
 	// WebSocketClientWrapper
@@ -194,13 +198,16 @@ namespace nap
 	 * Connections and messages are received from various threads. This objects
 	 * ensures that new information is forwarded to the right client without locking any resources.
 	 */
+    template<typename config>
 	class NAPAPI WebSocketClientWrapper final
 	{
+        template<typename X>
 		friend class WebSocketClientEndPoint;
 	public:
 		// Destructor
 		~WebSocketClientWrapper();
 
+	private:
 		/**
 		 * Called when a new connection is made
 		 * @param connection handle to the connection with the server
@@ -232,7 +239,9 @@ namespace nap
 		 * @param endPoint websocketpp end point.
 		 * @param connection websocketpp pointer to connection.
 		 */
-		WebSocketClientWrapper(IWebSocketClient& client, wspp::ClientEndPoint& endPoint, wspp::ConnectionPtr connection);
+		WebSocketClientWrapper(IWebSocketClient& client,
+                               websocketpp::client<config>& endPoint,
+                               typename websocketpp::endpoint<websocketpp::connection<config>, config>::connection_ptr connection);
 
 		/**
 		 * Disconnects the web-socket client, ensuring no callbacks are triggered when
@@ -242,10 +251,8 @@ namespace nap
 		 */
 		bool disconnect(nap::utility::ErrorState& error);
 
-        const IWebSocketClient* getResource() const{ return mResource; }
-    private:
 		IWebSocketClient* mResource = nullptr;
-		wspp::ClientEndPoint* mEndPoint = nullptr;
+        websocketpp::client<config>* mEndPoint = nullptr;
 		wspp::ConnectionHandle mHandle;
 		std::atomic<bool> mOpen = { false };
 	};

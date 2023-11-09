@@ -14,8 +14,11 @@
 namespace nap
 {
 	// Forward Declares
-	class WebSocketServerEndPoint;
+    template<typename T>
+    class WebSocketServerEndPoint;
+    template<typename T>
 	class WebSocketClientEndPoint;
+    template<typename T>
 	class WebSocketClientWrapper;
 
 	/**
@@ -25,8 +28,11 @@ namespace nap
 	 */
 	class NAPAPI WebSocketMessage final
 	{
-		friend class WebSocketServerEndPoint;
+        template<typename T>
+        friend class WebSocketServerEndPoint;
+        template<typename T>
 		friend class WebSocketClientEndPoint;
+        template<typename T>
 		friend class WebSocketClientWrapper;
 
 	public:
@@ -57,13 +63,6 @@ namespace nap
 		// Default copy assignment operator
 		WebSocketMessage& operator=(const WebSocketMessage& other) = default;
 
-        /**
-         * Constructs this message based on the a received websocketpp message.
-         * Only available to web-socket endpoints.
-         * @param message the websocketpp message
-         */
-        WebSocketMessage(wspp::MessagePtr message);
-
 		/**
 		 * @return a reference to the message's payload string
 		 */
@@ -89,7 +88,12 @@ namespace nap
 		bool getFin() const;
 
 	private:
-
+		/**
+		 * Constructs this message based on the a received websocketpp message.
+		 * Only available to web-socket endpoints.
+		 * @param message the websocketpp message
+		 */
+		WebSocketMessage(wspp::MessagePtr message);
 
 		std::string mMessage;							///< The received or to be sent message.
 		EWebSocketOPCode mCode;							///< OP code of the message.
