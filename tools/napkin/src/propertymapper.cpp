@@ -507,17 +507,23 @@ namespace napkin
 		auto* doc = AppContext::get().getDocument();
 		assert(doc != nullptr);
 
-		// Only 2D samplers are supports
-		if (declaration.mType != nap::SamplerDeclaration::EType::Type_2D)
+		// Only 2D and Cube samplers are supported
+		if (declaration.mType == nap::SamplerDeclaration::EType::Type_2D)
 		{
-			nap::Logger::warn("Data type of shader variable %s is not supported", declaration.mName.c_str());
+			bool is_array = declaration.mNumElements > 1;
+			nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
+			createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
+			return;
+		}
+		else if (declaration.mType == nap::SamplerDeclaration::EType::Type_Cube)
+		{
+			bool is_array = declaration.mNumElements > 1;
+			nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::SamplerCubeArray) : RTTI_OF(nap::SamplerCube);
+			createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
 			return;
 		}
 
-		// Create binding
-		bool is_array = declaration.mNumElements > 1;
-		nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
-		createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
+		nap::Logger::warn("Data type of shader variable %s is not supported", declaration.mName.c_str());
 	}
 
 	
