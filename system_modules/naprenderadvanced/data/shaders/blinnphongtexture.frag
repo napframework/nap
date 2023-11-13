@@ -49,6 +49,7 @@ uniform UBO
 	vec2	fresnel;						//< Fresnel [scale, power]
 	float	shininess;						//< Shininess
 	float	alpha;							//< Alpha
+	float	reflection;						//< Reflection	
 	uint	environment;					//< Whether to sample an environment map
 } ubo;
 
@@ -80,7 +81,7 @@ void main()
 	{
 		vec3 I = normalize(passPosition - mvp.cameraPosition);
 		vec3 R = reflect(I, normalize(passNormal));
-		mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, 1.0);
+		mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, ubo.reflection);
 	}
 
 	// Compute light contribution
