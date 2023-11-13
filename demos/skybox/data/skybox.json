@@ -159,7 +159,9 @@
                                 "MipMapMode": "Linear",
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
                                 "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
                                 "AnisotropicSamples": "Default",
                                 "BorderColor": "IntOpaqueBlack",
                                 "CompareMode": "LessOrEqual",
@@ -168,6 +170,7 @@
                             }
                         ],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "SkyBoxMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "NoReadWrite"
@@ -183,7 +186,8 @@
                             "y": 0.0
                         }
                     },
-                    "CubeTexture": "UffiziCubeMap"
+                    "CubeTexture": "UffiziCubeMap",
+                    "Color": ""
                 }
             ],
             "Children": []
@@ -228,7 +232,17 @@
                                 "Type": "nap::UniformStruct",
                                 "mID": "UniformStruct_b1933c5b",
                                 "Name": "UBO",
-                                "Uniforms": []
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "fresnel_63ed4ccc",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 0.75,
+                                            "y": 4.0
+                                        }
+                                    }
+                                ]
                             }
                         ],
                         "Samplers": [
@@ -241,7 +255,9 @@
                                 "MipMapMode": "Linear",
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
                                 "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
                                 "AnisotropicSamples": "Default",
                                 "BorderColor": "IntOpaqueBlack",
                                 "CompareMode": "LessOrEqual",
@@ -250,6 +266,7 @@
                             }
                         ],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "EnvironmentMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
@@ -359,8 +376,9 @@
             ],
             "Samplers": [],
             "Buffers": [],
-            "VertexAttributeBindings": [],
+            "Constants": [],
             "Shader": "ConstantShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -387,8 +405,9 @@
             ],
             "Samplers": [],
             "Buffers": [],
-            "VertexAttributeBindings": [],
+            "Constants": [],
             "Shader": "EnvironmentShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -398,8 +417,9 @@
             "Uniforms": [],
             "Samplers": [],
             "Buffers": [],
-            "VertexAttributeBindings": [],
+            "Constants": [],
             "Shader": "SkyBoxShader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
@@ -485,13 +505,13 @@
             "Layers": [
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_SkyBox",
-                    "Name": "SkyBox"
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Default",
-                    "Name": "Default"
+                    "mID": "RenderLayer_SkyBox",
+                    "Name": "SkyBox"
                 }
             ]
         },
@@ -582,7 +602,8 @@
                         ]
                     },
                     "SourceTexture": "EquirectangularTexture",
-                    "GenerateLods": false
+                    "SampleShading": false,
+                    "GenerateLODs": true
                 },
                 {
                     "Type": "nap::CubeMapFromFile",
@@ -600,7 +621,8 @@
                         ]
                     },
                     "SourceTexture": "EquirectangularTestTexture",
-                    "GenerateLods": false
+                    "SampleShading": false,
+                    "GenerateLODs": true
                 }
             ],
             "Children": []
