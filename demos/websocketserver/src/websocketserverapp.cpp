@@ -36,7 +36,7 @@ namespace nap
 
 		// Extract loaded resources
 		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mServerEndPoint = mResourceManager->findObject<nap::WebSocketServerEndPoint>("WebSocketServerEndPoint");
+		mServerEndPoint = mResourceManager->findObject<nap::WebSocketServerEndPointBase>("WebSocketServerEndPoint");
 
 		// Extract the only scene
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

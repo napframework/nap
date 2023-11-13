@@ -256,4 +256,13 @@ namespace nap
 		wspp::ConnectionHandle mHandle;
 		std::atomic<bool> mOpen = { false };
 	};
+
+    template<typename config>
+    WebSocketClientWrapper<config>::~WebSocketClientWrapper()
+    {
+        // Not disconnected by server or client
+        assert(!mOpen);
+        mResource = nullptr;
+        mEndPoint = nullptr;
+    }
 }

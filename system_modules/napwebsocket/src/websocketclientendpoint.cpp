@@ -25,6 +25,9 @@ RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
+#ifdef WIN32
+#define strcasecmp(s1, s2) _stricmp(s1, s2)
+#endif
 
 namespace nap
 {
@@ -294,15 +297,6 @@ namespace nap
 		connection->set_message_handler(std::bind(
 			&WebSocketClientWrapper::onMessageReceived, this,
 			std::placeholders::_1, std::placeholders::_2));
-	}
-
-    template<typename config>
-	WebSocketClientWrapper<config>::~WebSocketClientWrapper()
-	{
-		// Not disconnected by server or client
-		assert(!mOpen);
-		mResource = nullptr;
-		mEndPoint = nullptr;
 	}
 
     template<typename config>

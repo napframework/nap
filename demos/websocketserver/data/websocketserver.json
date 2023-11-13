@@ -105,10 +105,8 @@
             ]
         },
         {
-            "Type": "nap::WebSocketServerEndPoint",
+            "Type": "nap::WebSocketServerEndPointNoTLS",
             "mID": "WebSocketServerEndPoint",
-            "CertificateFile": "server.pem",
-            "PrivateKeyFile": "key.pem",
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
             "Port": 2000,
