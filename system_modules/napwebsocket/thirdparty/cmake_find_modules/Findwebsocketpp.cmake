@@ -12,20 +12,24 @@ find_path(WEBSOCKETPP_DIR
           )
 set(WEBSOCKETPP_INCLUDE_DIR ${WEBSOCKETPP_DIR}/include)
 
-set(LIBCRYPTO_LIBS "${WEBSOCKETPP_ROOT_DIR}/../libcrypto/libcrypto.so")
+# lib ssl
+set(LIBCRYPTO_LIB "${WEBSOCKETPP_ROOT_DIR}/../libcrypto/linux/x86_64/lib/libcrypto.so")
+file(GLOB LIBCRYPTO_LIBS "${WEBSOCKETPP_ROOT_DIR}/../libcrypto/linux/x86_64/lib/libcrypto*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
 add_library(libcrypto SHARED IMPORTED)
 set_target_properties(libcrypto PROPERTIES
         IMPORTED_CONFIGURATIONS "Debug;Release"
-        IMPORTED_LOCATION_RELEASE ${LIBCRYPTO_LIBS}
-        IMPORTED_LOCATION_DEBUG ${LIBCRYPTO_LIBS}
+        IMPORTED_LOCATION_RELEASE ${LIBCRYPTO_LIB}
+        IMPORTED_LOCATION_DEBUG ${LIBCRYPTO_LIB}
 )
 
-set(LIBSSL_LIBS "${WEBSOCKETPP_ROOT_DIR}/../libssl/libssl.so")
+# lib crypto
+set(LIBSSL_LIB "${WEBSOCKETPP_ROOT_DIR}/../libssl/linux/x86_64/lib/libssl.so")
+file(GLOB LIBSSL_LIBS "${WEBSOCKETPP_ROOT_DIR}/../libssl/linux/x86_64/lib/libssl*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
 add_library(libssl SHARED IMPORTED)
 set_target_properties(libssl PROPERTIES
         IMPORTED_CONFIGURATIONS "Debug;Release"
-        IMPORTED_LOCATION_RELEASE ${LIBSSL_LIBS}
-        IMPORTED_LOCATION_DEBUG ${LIBSSL_LIBS}
+        IMPORTED_LOCATION_RELEASE ${LIBSSL_LIB}
+        IMPORTED_LOCATION_DEBUG ${LIBSSL_LIB}
 )
 
 
