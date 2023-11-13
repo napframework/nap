@@ -303,6 +303,15 @@ namespace napkin
 			return;
 		}
 
+		// Constants
+		if (!mNested && mPath.getName() == nap::material::constants)
+		{
+			const auto* dec = selectConstantDeclaration(parent);
+			if (dec != nullptr)
+				addConstantBinding(*dec, mPath);
+			return;
+		}
+
 		// Vertex binding
 		auto array_type = mPath.getArrayElementType();
 		if (!mNested && mPath.getName() == nap::material::vbindings)
@@ -371,6 +380,7 @@ namespace napkin
 			RTTI_OF(nap::Uniform),
 			RTTI_OF(nap::Sampler),
 			RTTI_OF(nap::BufferBinding),
+			RTTI_OF(nap::ShaderConstant),
 			RTTI_OF(nap::Material::VertexAttributeBinding)
 		};
 
@@ -636,7 +646,6 @@ namespace napkin
 	}
 
 
-
 	const nap::BufferObjectDeclaration* MaterialPropertyMapper::selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
 	{
 		QStringList names;
@@ -698,6 +707,36 @@ namespace napkin
 
 		nap::Logger::warn("Unable to create buffer binding");
 		nap::Logger::warn("Unsupported shader variable declaration '%s'", declaration.get_type().get_name().data());
+	}
+
+
+	const nap::ShaderConstantDeclaration* MaterialPropertyMapper::selectConstantDeclaration(QWidget* parent)
+	{
+		QStringList names;
+		const auto& shader_decs = mShader->getConstantDeclarations();
+		std::unordered_map<std::string, const nap::ShaderConstantDeclaration*> dec_map;
+		dec_map.reserve(shader_decs.size());
+		for (const auto& dec : shader_decs)
+		{
+			dec_map.emplace(dec.mName, &dec);
+			names << QString::fromStdString(dec.mName);
+		}
+		auto selection = nap::qt::FilterPopup::show(parent, names);
+		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
+	}
+
+
+	void MaterialPropertyMapper::addConstantBinding(const nap::ShaderConstantDeclaration& declaration, const PropertyPath& propPath)
+	{
+		// Get document
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
+
+		// Create binding
+		auto* binding = createBinding<nap::ShaderConstant>(declaration.mName, RTTI_OF(nap::ShaderConstant), propPath, *doc);
+
+		// Set it to the default value specified in the shader
+		binding->mValue = declaration.mValue;
 	}
 
 
