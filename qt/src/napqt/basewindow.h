@@ -34,7 +34,7 @@ namespace nap
 			}
 
 			/**
-			 * @return The QMenu that contains the list of available windows
+			 * @return The QMenu that contains the list of available widgets
 			 */
 			QMenu* getWindowMenu()
 			{

@@ -31,22 +31,22 @@ namespace nap
          * @return true if event is derived from T
          */
         template<typename T>
-        bool isEventType()
+        bool isEventType() const
         {
             return RTTI_OF(T) == this->get_type();
         }
 
 
         /**
-         * Returns derived class instance reference
+         * Returns derived class instance const reference
          * @tparam T the type of derived class
-         * @return reference to derived class
+         * @return const reference to derived class
          */
         template<typename T>
-        T& getEventType()
+        const T& getEventType() const
         {
             assert(this->get_type() == RTTI_OF(T)); // type mismatch
-            return static_cast<T &>(*this);
+            return static_cast<const T &>(*this);
         }
     };
 
@@ -55,7 +55,7 @@ namespace nap
      * @tparam T the value type
      */
     template<typename T>
-    class SequenceEvent : public SequenceEventBase
+    class NAPAPI SequenceEvent : public SequenceEventBase
     {
     RTTI_ENABLE(SequenceEventBase)
     public:

@@ -13,7 +13,6 @@ BaseWindow::BaseWindow()
 	setWindowTitle(QApplication::applicationName());
 	setDockNestingEnabled(true);
 	mWindowMenu = new QMenu("Panels");
-	menuBar()->addMenu(mWindowMenu);
 }
 
 QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area)
