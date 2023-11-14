@@ -109,7 +109,7 @@ add_subdirectory(system_modules/napudp)
 add_subdirectory(system_modules/napcalendar)
 add_subdirectory(system_modules/napasio)
 add_subdirectory(system_modules/napportal)
-
+add_subdirectory(system_modules/napopenssl)
 solution_info_to_cmake()
 
 # Add additional directories if specified from command line.
