@@ -120,8 +120,8 @@ namespace nap
 		{
 			RTTI_ENABLE(HeadlessCommand)
 		public:
-			PreRenderCubeMapsCommand(RenderAdvancedService& renderAdvancedService) :
-				mRenderAdvancedService(renderAdvancedService), HeadlessCommand() {}
+			PreRenderCubeMapsCommand(RenderAdvancedService& renderAdvancedService) : HeadlessCommand(),
+				mRenderAdvancedService(renderAdvancedService) {}
 
 			RenderAdvancedService& mRenderAdvancedService;
 		private:

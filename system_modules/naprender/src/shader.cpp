@@ -997,31 +997,6 @@ namespace nap
 	}
 
 
-	//bool Shader::setSpecializationConstant(const std::string& name, uint value, ShaderTypeFlags flags, utility::ErrorState& errorState)
-	//{
-	//	if (!errorState.check(getDescriptorSetLayout() != VK_NULL_HANDLE, "Shader must be loaded before specialization constant can be set"))
-	//		return false;
-
-	//	if (flags & EShaderType::Vertex > 0)
-	//	{
-	//		if (!updateConstant(name, value, mVertexConstants))
-	//		{
-	//			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-	//			return false;
-	//		}
-	//	}
-	//	else if (flags & EShaderType::Fragment > 0)
-	//	{
-	//		if (!updateConstant(name, value, mFragmentConstants))
-	//		{
-	//			errorState.fail("No specialization constant with name '%s' found in shader", name.c_str());
-	//			return false;
-	//		}
-	//	}
-	//	return true;
-	//}
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// Compute Shader
 	//////////////////////////////////////////////////////////////////////////
@@ -1152,7 +1127,8 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(mFragPath, frag_source, errorState), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
 
-		std::vector<std::string> search_paths = { "shaders" };
+		// Search paths
+		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mVertPath), utility::getFileDir(mFragPath) };
 		if (!mRestrictModuleIncludes)
 		{
 			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
@@ -1198,8 +1174,19 @@ namespace nap
 			return false;
 
 		// Search paths
-		auto search_paths = !mRestrictModuleIncludes ? mRenderService->getShaderSearchPaths() : std::vector<std::string>{};
-		search_paths.emplace_back(utility::getFileDir(mComputePath));
+		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mComputePath) };
+		if (!mRestrictModuleIncludes)
+		{
+			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			{
+				for (const auto& path : mod->getInformation().mDataSearchPaths)
+				{
+					auto shader_path = utility::joinPath({ path, "shaders" });
+					if (utility::dirExists(shader_path))
+						search_paths.emplace_back(shader_path);
+				}
+			}
+		}
 
 		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
