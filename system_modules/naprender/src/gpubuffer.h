@@ -8,6 +8,7 @@
 #include "fillpolicy.h"
 #include "formatutils.h"
 #include "renderutils.h"
+#include "bufferdata.h"
 
 // External Includes
 #include <nap/resourceptr.h>

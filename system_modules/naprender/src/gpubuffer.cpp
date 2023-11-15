@@ -256,7 +256,7 @@ namespace nap
 		for (auto& staging_buffer : mStagingBuffers)
 		{
 			// Create staging buffer
-			if (!createBuffer(allocator, size, staging_buffer_usage, staging_memory_usage, 0, staging_buffer, errorState))
+			if (!utility::createBuffer(allocator, size, staging_buffer_usage, staging_memory_usage, 0, staging_buffer, errorState))
 			{
 				errorState.fail("Unable to create staging buffer");
 				return false;
@@ -337,7 +337,7 @@ namespace nap
 		for (auto& staging_buffer : mStagingBuffers)
 		{
 			// Copy data into staging buffer
-			if (!errorState.check(uploadToBuffer(allocator, size, data, staging_buffer), "Unable to upload data to staging buffer"))
+			if (!errorState.check(utility::uploadToBuffer(allocator, size, data, staging_buffer), "Unable to upload data to staging buffer"))
 				return false;
 		}
 
@@ -365,7 +365,7 @@ namespace nap
 			{
 				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService) mutable
 					{
-						destroyBuffer(renderService.getVulkanAllocator(), buffer);
+						utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 					});
 			}
 
@@ -386,7 +386,7 @@ namespace nap
 		mSize = size;
 
 		// Upload directly into buffer, use exact data size
-		if (!errorState.check(uploadToBuffer(allocator, size, data, buffer_data), "Buffer upload failed"))
+		if (!errorState.check(utility::uploadToBuffer(allocator, size, data, buffer_data), "Buffer upload failed"))
 			return false;
 
 		bufferChanged();
@@ -435,7 +435,7 @@ namespace nap
 			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService& renderService) mutable
 			{
 				for (BufferData& buffer : staging_buffers)
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+					utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 			});
 			for (BufferData& buffer : mStagingBuffers)
 				buffer.release();
@@ -545,12 +545,12 @@ namespace nap
 		{
 			// Destroy render buffers
 			for (BufferData& buffer : render_buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 
 			// Also destroy the staging buffers if we reach this point before the initial upload has occurred.
 			// This could happen e.g. if app initialization fails.
 			for (BufferData& buffer : staging_buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 		});
 	}
 

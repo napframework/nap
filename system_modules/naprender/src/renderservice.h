@@ -8,6 +8,7 @@
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
 #include "renderutils.h"
+#include "imagedata.h"
 #include "rendermask.h"
 #include "renderlayer.h"
 #include "rendercommand.h"

@@ -186,10 +186,10 @@ namespace nap
 		mRenderService.removeTextureRequests(*this);
 		mRenderService.queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService) mutable
 		{
-			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+			utility::destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
 			for (BufferData& buffer : stagingBuffers)
 			{
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 			}
 		});
 	}
@@ -391,7 +391,7 @@ namespace nap
 			assert(mStagingBuffers.size() == 1);
 			mRenderService.queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService) mutable
 			{
-				destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
 			});
 			buffer.release();
 		}
@@ -525,7 +525,7 @@ namespace nap
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
 		mRenderService.queueVulkanObjectDestructor([imageData = mImageData](RenderService& renderService) mutable
 		{
-			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+			utility::destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
 		});
 	}
 

@@ -9,6 +9,7 @@
 #include "renderservice.h"
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
+#include "imagedata.h"
 
 // External includes
 #include <nap/logger.h>
