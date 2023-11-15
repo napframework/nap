@@ -217,9 +217,11 @@ namespace nap
 	}
 
 
-	DepthRenderTexture2D* RenderTarget::getDepthTexture()
+	DepthRenderTexture2D& RenderTarget::getDepthTexture()
 	{
-		return mDepthTexture.get();
+		assert(mHasDepthTexture);
+		assert(mDepthTexture != nullptr);
+		return *mDepthTexture;
 	}
 
 
