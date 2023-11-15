@@ -19,10 +19,10 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * Renders to a depth attachment exclusively. Skips the fragment shader of all material instances.
+	 * A resource that is used to render one or multiple objects to nap::DepthRenderTexture2D exclusively.
+	 * Usage of this target creates a graphics pipeline that skips the fragment shader stage of all material instances. 
 	 * 
-	 * A resource that is used to render one or multiple objects to a nap::RenderTexture2D instead of a nap::RenderWindow.
-	 * This objects requires a link to a nap::RenderTexture2D to store the result of the render pass.
+	 * This objects requires a link to a nap::DepthRenderTexture2D to store the result of the render pass.
 	 * Only render to a render target within a headless recording pass, failure to do so will result in undefined behavior.
 	 * Make sure to call beginRendering() to start the render pass and endRendering() to end the render pass.
 	 * Always call RenderService::endHeadlessRecording after having recorded all off-screen render operations.
@@ -113,8 +113,8 @@ namespace nap
 		virtual const glm::ivec2 getBufferSize() const override;
 
 		/**
-		 * Updates the render target clear color.
-		 * @param color the new clear color to use.
+		 * Updates the render target clear value. Stores the red component of `color` as the clear value.
+		 * @param color the new clear value to use.
 		 */
 		virtual void setClearColor(const RGBAColorFloat& color) override		{ mClearValue = color.getRed(); }
 		
@@ -144,9 +144,9 @@ namespace nap
 		virtual bool getSampleShadingEnabled() const override					{ return false; };
 
 		/**
-		 * @return render target color format. This is the format of the linked in color texture.
+		 * @return VK_FORMAT_UNDEFINED as the depth render target has no color attachment.
 		 */
-		virtual VkFormat getColorFormat() const override { return VK_FORMAT_UNDEFINED; }
+		virtual VkFormat getColorFormat() const override						{ return VK_FORMAT_UNDEFINED; }
 
 		/**
 		 * @return render target depth format
@@ -162,7 +162,7 @@ namespace nap
 		float								mClearValue = 1.0f;									///< Property: 'ClearValue' value selection used for clearing the render target
 		bool								mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		ERasterizationSamples				mRequestedSamples = ERasterizationSamples::One;		///< Property: 'Samples' The number of samples used during Rasterization. For better results turn on 'SampleShading'.
-		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' texture to render to, format needs to be: 'Backbuffer'
+		ResourcePtr<DepthRenderTexture2D>	mDepthTexture;										///< Property: 'DepthTexture' depth texture to render to
 
 	private:
 		RenderService*						mRenderService;

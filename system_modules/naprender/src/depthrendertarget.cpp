@@ -23,7 +23,7 @@ RTTI_END_CLASS
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
-	// RenderTarget
+	// DepthRenderTarget
 	//////////////////////////////////////////////////////////////////////////
 
 	DepthRenderTarget::DepthRenderTarget(Core& core) :
@@ -147,4 +147,4 @@ namespace nap
 	{
 		return mDepthTexture->getFormat();
 	}
-} // nap
+}

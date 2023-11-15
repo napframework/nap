@@ -10,8 +10,7 @@
 namespace nap
 {
 	/**
-	 * Parameter Color Entry
-	 * Wraps parameter and default value so that a reference to the parameter is optional
+	 * A Parameter Entry wraps both a Color Parameter and default value so that a ResourcePtr to the Parameter is optional
 	 */
 	template<typename T>
 	class ParameterColorEntry : public Resource
@@ -21,7 +20,15 @@ namespace nap
 		ResourcePtr<ParameterSimple<T>> mParameter;
 		T mDefault;
 
+		/**
+		 * @return true whether the current entry holds a valid reference to a Parameter.
+		 */
 		bool hasParameter() const { return (mParameter != nullptr); }
+
+		/**
+		 * Returns the parameter value if it is available, otherwise returns the default value.
+		 * @return the value of this parameter entry
+		 */
 		const T& getValue() const { return hasParameter() ? mParameter->mValue : mDefault; }
 	};
 
