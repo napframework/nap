@@ -29,7 +29,7 @@ namespace nap
 	 */
 	enum class ECullWindingOrder : int
 	{
-		Clockwise,
+		Clockwise = 0,
 		CounterClockwise
 	};
 
@@ -49,11 +49,11 @@ namespace nap
 
 
 	/**
-	 *	Supported depth compare modes.
+	 *	Supported depth compare modes for shadow texture samplers e.g. `sampler2DShadow`.
 	 */
 	enum class EDepthCompareMode : int
 	{
-		NotSet = 0,				///<
+		NotSet = 0,
 		Never,
 		Less,
 		Equal,

@@ -56,7 +56,7 @@ namespace nap
 		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
-		std::vector<ResourcePtr<ShaderConstant>>		mConstants;												///< Property: 'Constants'
+		std::vector<ResourcePtr<ShaderConstant>>		mConstants;												///< Property: 'Constants' Static constants (as read from file, or as set in code before calling init())
 
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
