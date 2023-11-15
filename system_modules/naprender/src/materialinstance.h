@@ -70,11 +70,9 @@ namespace nap
 		MaterialInstanceResource() :
 			BaseMaterialInstanceResource(materialinstanceresource::materialr)	{}
 
-		ResourcePtr<Material>						mMaterial;											///< Property: "Material" source material
+		ResourcePtr<Material>						mMaterial;											///< Property: "Material" Source material
 		EBlendMode									mBlendMode = EBlendMode::NotSet;					///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
 		EDepthMode									mDepthMode = EDepthMode::NotSet;					///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
-		EDepthCompareMode							mDepthCompareMode = EDepthCompareMode::LessOrEqual;	///< Property: 'DepthCompareMode' ...
-		bool										mEnableDepthCompare = false;						///< Property: 'EnableDepthCompare' ...
 	};
 
 	/**
