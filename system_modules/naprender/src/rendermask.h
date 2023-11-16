@@ -25,7 +25,13 @@ namespace nap
 	using RenderMask = uint64;
 
 	/**
-	 * Render tag.
+	 * Render tags can be used to categorize render components ...
+	 *
+	 * One useful example would be to categorize specific components as "ShadowCaster" and ...
+	 * 
+	 * `````{.cpp}
+	 * mRenderService->renderObjects(renderTarget, camera, render_comps, mRenderService->findRenderMask("Headless"));
+	 * `````
 	 */
 	class NAPAPI RenderTag : public Device
 	{

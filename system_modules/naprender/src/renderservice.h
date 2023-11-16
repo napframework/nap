@@ -901,12 +901,16 @@ namespace nap
 		TextureCube& getErrorTextureCube() const									{ return *mErrorTextureCube; }
 
 		/**
-		 * 
+		 * Returns the render mask denoting the render tag with the name of the tagName argument or 0 if no match is found.
+		 * @return a render mask of the tag to be found or 0 if there is no match.
 		 */
 		RenderMask findRenderMask(const std::string& tagName);
 
 		/**
-		 *
+		 * Returns the layer index of the layer with the name of the layerName argument or 0 if no match or registry is found.
+		 * Queries the resource manager for `nap::RenderLayerRegistry` objects and selects the first occurrence.
+		 * Logs a warning when more than one layer registry is found.
+		 * @return the layer index of the layer to be found or 0 if no match or registry is found.
 		 */
 		LayerIndex findLayerIndex(const std::string& layerName);
 
