@@ -51,7 +51,7 @@ namespace nap
 		TextureCube(core)
 	{ }
 
-	// Initializes 2D texture. 
+	// Initializes Cube texture. 
 	bool RenderTextureCube::init(utility::ErrorState& errorState)
 	{
 		SurfaceDescriptor settings;
@@ -62,53 +62,53 @@ namespace nap
 		// Initialize based on selected format
 		switch (mColorFormat)
 		{
-		case RenderTextureCube::EFormat::RGBA8:
-		{
-			settings.mDataType = ESurfaceDataType::BYTE;
-			settings.mChannels = ESurfaceChannels::RGBA;
-			break;
-		}
-		case RenderTextureCube::EFormat::BGRA8:
-		{
-			settings.mDataType = ESurfaceDataType::BYTE;
-			settings.mChannels = ESurfaceChannels::BGRA;
-			break;
-		}
-		case RenderTextureCube::EFormat::R8:
-		{
-			settings.mDataType = ESurfaceDataType::BYTE;
-			settings.mChannels = ESurfaceChannels::R;
-			break;
-		}
-		case RenderTextureCube::EFormat::RGBA16:
-		{
-			settings.mDataType = ESurfaceDataType::USHORT;
-			settings.mChannels = ESurfaceChannels::RGBA;
-			break;
-		}
-		case RenderTextureCube::EFormat::R16:
-		{
-			settings.mDataType = ESurfaceDataType::USHORT;
-			settings.mChannels = ESurfaceChannels::R;
-			break;
-		}
-		case RenderTextureCube::EFormat::RGBA32:
-		{
-			settings.mDataType = ESurfaceDataType::FLOAT;
-			settings.mChannels = ESurfaceChannels::RGBA;
-			break;
-		}
-		case RenderTextureCube::EFormat::R32:
-		{
-			settings.mDataType = ESurfaceDataType::FLOAT;
-			settings.mChannels = ESurfaceChannels::R;
-			break;
-		}
-		default:
-		{
-			errorState.fail("Unsupported format");
-			return false;
-		}
+			case RenderTextureCube::EFormat::RGBA8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				break;
+			}
+			case RenderTextureCube::EFormat::BGRA8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::BGRA;
+				break;
+			}
+			case RenderTextureCube::EFormat::R8:
+			{
+				settings.mDataType = ESurfaceDataType::BYTE;
+				settings.mChannels = ESurfaceChannels::R;
+				break;
+			}
+			case RenderTextureCube::EFormat::RGBA16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				break;
+			}
+			case RenderTextureCube::EFormat::R16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				settings.mChannels = ESurfaceChannels::R;
+				break;
+			}
+			case RenderTextureCube::EFormat::RGBA32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				settings.mChannels = ESurfaceChannels::RGBA;
+				break;
+			}
+			case RenderTextureCube::EFormat::R32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				settings.mChannels = ESurfaceChannels::R;
+				break;
+			}
+			default:
+			{
+				errorState.fail("Unsupported format");
+				return false;
+			}
 		}
 
 		// Ensure texture can be used as an attachment for a render pass
@@ -144,21 +144,21 @@ namespace nap
 		// Initialize based on selected format
 		switch (mDepthFormat)
 		{
-		case DepthRenderTextureCube::EDepthFormat::D16:
-		{
-			settings.mDataType = ESurfaceDataType::USHORT;
-			return TextureCube::init(settings, false, clear_color, required_flags, errorState);
-		}
-		case DepthRenderTextureCube::EDepthFormat::D32:
-		{
-			settings.mDataType = ESurfaceDataType::FLOAT;
-			return TextureCube::init(settings, false, clear_color, required_flags, errorState);
-		}
-		default:
-		{
-			errorState.fail("Unsupported format");
-			return false;
-		}
+			case DepthRenderTextureCube::EDepthFormat::D16:
+			{
+				settings.mDataType = ESurfaceDataType::USHORT;
+				return TextureCube::init(settings, false, clear_color, required_flags, errorState);
+			}
+			case DepthRenderTextureCube::EDepthFormat::D32:
+			{
+				settings.mDataType = ESurfaceDataType::FLOAT;
+				return TextureCube::init(settings, false, clear_color, required_flags, errorState);
+			}
+			default:
+			{
+				errorState.fail("Unsupported format");
+				return false;
+			}
 		}
 	}
 }

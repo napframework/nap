@@ -227,7 +227,9 @@ namespace nap
 
 
 	/**
-	 * @return Vulkan topology mode based on given NAP draw mode
+	 * Returns whether the specified NAP draw mode is a Vulkan list topology. This is used to determine whether to enable a
+	 * primitive restart index when creating a pipeline input assembly state.
+	 * @return whether the specified NAP draw mode is a Vulkan list topology.
 	 */
 	static bool isListTopology(EDrawMode drawMode)
 	{
@@ -1830,17 +1832,6 @@ namespace nap
 		{
 			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
 			nap::Logger::warn(errorState.toString());
-		}
-
-		// Gather shader search paths
-		for (auto* mod : getCore().getModuleManager().getModules())
-		{
-			for (const auto& path : mod->getInformation().mDataSearchPaths)
-			{
-				auto shader_path = utility::joinPath({ path, "shaders" });
-				if (utility::dirExists(shader_path))
-					mShaderSearchPaths.emplace_back(shader_path);
-			}
 		}
 
 		mInitialized = true;

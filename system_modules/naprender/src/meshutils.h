@@ -53,11 +53,11 @@ namespace nap
 		*/
 		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
-
 		/**
 		* Computes the bounding box of a mesh using its associated position data.
 		* Note that indices are not considered. This call loops over all available
 		* points regardless of whether if they're drawn or not
+		* @tparam the data type of the position attribute
 		* @param mesh the mesh to get the bounding box for
 		* @param outBox the computed bounding box
 		*/
@@ -65,31 +65,15 @@ namespace nap
 		void NAPAPI computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
 
 		/**
-		* Computes the bounding box of a mesh using its associated position data.
-		* Note that indices are not considered. This call loops over all available
-		* points regardless of whether if they're drawn or not
-		* @param mesh the mesh to get the bounding box for
-		* @param outBox the computed bounding box
-		*/
-		void NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, nap::math::Box& outBox);
-
-		/**
-		* Computes the bounding box of a mesh using its associated position data
-		* Note that indices are not considered. This call loops over all available
-		* points regardless of whether they're drawn or not
-		* @param mesh the mesh to get the bounding box for
-		* @return the computed bounding box
-		*/
-		math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh);
-
-		/**
 		* Computes the bounding box of a single shape within a mesh using its associated position data.
 		* Note that the given shape must be part of the mesh.
+		* @tparam the data type of the position attribute
 		* @param mesh the mesh that contains position data
 		* @param shape the shape to compute the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape);
+		template <typename T>
+		void NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
 
 		/**
 		* Automatically re-computes all the normals of a mesh
@@ -172,7 +156,7 @@ namespace nap
 		* @return the interpolated vertex attribute value
 		*/
 		template<typename T>
-		T interpolateVertexAttr(const TriangleData<T>& vertexValues, const glm::vec3& barycentricCoordinates);
+		T NAPAPI interpolateVertexAttr(const TriangleData<T>& vertexValues, const glm::vec3& barycentricCoordinates);
 
 
 		//////////////////////////////////////////////////////////////////////////
@@ -188,12 +172,33 @@ namespace nap
 		template <typename T>
 		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
 		{
-			glm::vec3 min(nap::math::max<float>());
-			glm::vec3 max(nap::math::min<float>());
+			glm::vec3 min(math::max<float>());
+			glm::vec3 max(math::min<float>());
 
 			const nap::VertexAttribute<T>& positions = mesh.getAttribute<T>(vertexid::position);
 			for (const auto& point : positions.getData())
 			{
+				if (point.x < min.x) { min.x = point.x; }
+				if (point.x > max.x) { max.x = point.x; }
+				if (point.y < min.y) { min.y = point.y; }
+				if (point.y > max.y) { max.y = point.y; }
+				if (point.z < min.z) { min.z = point.z; }
+				if (point.z > max.z) { max.z = point.z; }
+			}
+			outBox.mMinCoordinates = min;
+			outBox.mMaxCoordinates = max;
+		}
+
+		template <typename T>
+		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox)
+		{
+			glm::vec3 min(math::max<float>());
+			glm::vec3 max(math::min<float>());
+
+			const nap::VertexAttribute<T>& positions = mesh.getAttribute<T>(vertexid::position);
+			for (unsigned int i : shape.getIndices())
+			{
+				const auto& point = positions[i];
 				if (point.x < min.x) { min.x = point.x; }
 				if (point.x > max.x) { max.x = point.x; }
 				if (point.y < min.y) { min.y = point.y; }

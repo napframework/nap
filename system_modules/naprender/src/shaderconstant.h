@@ -22,8 +22,9 @@ namespace nap
 		std::vector<uint> mData;
 	};
 
-
-	// Shader constant instance
+	/**
+	 * Shader constant resource. Assigns a unsigned integer constant to a material.
+	 */
 	class NAPAPI ShaderConstant : public Resource
 	{
 		RTTI_ENABLE(Resource)
@@ -33,7 +34,9 @@ namespace nap
 	};
 
 
-	// Shader constant instance
+	/**
+	 * Shader constant instance. Assigns a unsigned integer constant to a material instance.
+	 */
 	class NAPAPI ShaderConstantInstance
 	{
 	public:

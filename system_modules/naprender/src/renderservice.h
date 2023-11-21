@@ -575,17 +575,20 @@ namespace nap
 		const DisplayList& getDisplays() const;
 
 		/**
-		 *
+		 * Registers a new render tag to the render service. Called by RenderTag::start.
+		 * @param the render tag to register. Asserts if already registered.
 		 */
 		void addTag(const RenderTag& renderTag);
 
 		/**
-		 *
+		 * Removes a render tag from the render service. Called by RenderTag::stop.
+		 * @param the render tag to remove. Asserts if not found.
 		 */
 		void removeTag(const RenderTag& renderTag);
 
 		/**
-		 * Asserts if unavailable
+		 * Returns the render tag index in the render tag registry. Asserts if unavailable.
+		 * @return the render tag index in the render tag registry.
 		 */
 		uint getTagIndex(const RenderTag& renderTag) const;
 
@@ -1040,11 +1043,6 @@ namespace nap
 		 */
 		void waitForFence(int frameIndex);
 
-		/**
-		 * @return shader search paths present in module data folders
-		 */
-		const std::vector<std::string>& getShaderSearchPaths() const				{ return mShaderSearchPaths; }
-
 	protected:
 		/**
 		 * Register dependencies, render module depends on scene
@@ -1329,8 +1327,5 @@ namespace nap
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;
-
-		// Shader search paths
-		std::vector<std::string>				mShaderSearchPaths;
 	};
 } // nap

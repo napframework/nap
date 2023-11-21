@@ -197,19 +197,19 @@ namespace nap
 		 * Constructs the instance based on the shader declaration and resource.
 		 * @param renderService render engine
 		 * @param declaration sampler shader declaration
-		 * @param sampler2D the sampler resource used to create this instance.
+		 * @param samplerCube the sampler resource used to create this instance.
 		 * @param samplerChangedCallback called when the 'texture' changes.
 		 */
 		SamplerCubeInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCube* samplerCube, const SamplerChangedCallback& samplerChangedCallback);
 
 		/**
-		 * Binds a texture to the 2D sampler.
+		 * Binds a texture to the cube sampler.
 		 * @param texture the new texture to bind
 		 */
 		void setTexture(TextureCube& textureCube);
 
 		/**
-		 * @return if a texture is bound to the 2D sampler.
+		 * @return if a texture is bound to the cube sampler.
 		 */
 		bool hasTexture() const									{ return mTextureCube != nullptr; }
 
@@ -235,7 +235,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	/**
-	 * 2D sampler array instance. Binds multiple 2D textures to a shader.
+	 * Cube sampler array instance. Binds multiple cube textures to a shader.
 	 * The array can be changed at runtime.
 	 */
 	class NAPAPI SamplerCubeArrayInstance : public SamplerArrayInstance
@@ -246,7 +246,7 @@ namespace nap
 		 * Constructs the instance based on the shader declaration and resource.
 		 * @param renderService render engine
 		 * @param declaration sampler shader declaration
-		 * @param sampler2DArray the sampler resource used to create this instance.
+		 * @param samplerCubeArray the sampler resource used to create this instance.
 		 * @param samplerChangedCallback called when the 'texture' changes.
 		 */
 		SamplerCubeArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCubeArray* samplerCubeArray, const SamplerChangedCallback& samplerChangedCallback);

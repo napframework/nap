@@ -17,7 +17,6 @@ namespace nap
 {
 	// Forward Declares
 	class TextureCube;
-	class RenderTexture2D;
 	class RenderService;
 	class PerspCameraComponentInstance;
 
@@ -109,7 +108,7 @@ namespace nap
 		/**
 		 * @return the texture that holds the result of the render pass.
 		 */
-		//RenderTexture2D& getColorTexture()									{ return *mColorTexture; }
+		TextureCube& getColorTexture()											{ return *mCubeTexture; }
 
 		/**
 		 * @return render target color format.
@@ -181,14 +180,14 @@ namespace nap
 		static const std::vector<glm::mat4>& getCubeMapInverseViewMatrices();
 
 
-		bool									mSampleShading = true;								///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		bool									mUpdateLODs = false;								///< Property: 'UpdateLODs' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
-		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };			///< Property: 'ClearColor' color selection used for clearing the render target.
+		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
+		bool									mUpdateLODs = false;										///< Property: 'UpdateLODs' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
+		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };					///< Property: 'ClearColor' color selection used for clearing the render target.
 
-		RenderTexture2D::EFormat				mColorFormat = RenderTexture2D::EFormat::RGBA8;
-		DepthRenderTexture2D::EDepthFormat		mDepthFormat = DepthRenderTexture2D::EDepthFormat::D16;
+		RenderTextureCube::EFormat				mColorFormat = RenderTextureCube::EFormat::RGBA8;			///< Property: 'ColorFormat' texture to render to.
+		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;	///< Property: 'DepthFormat' texture to render to.
 
-		ResourcePtr<TextureCube>				mCubeTexture;										///< Property: 'CubeTexture' texture to render to.
+		ResourcePtr<TextureCube>				mCubeTexture;												///< Property: 'CubeTexture' cube texture to render to.
 
 	private:
 		RenderService*							mRenderService;
