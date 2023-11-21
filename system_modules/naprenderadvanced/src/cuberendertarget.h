@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "irendertarget.h"
-#include "rendertexture2d.h"
+#include "rendertexturecube.h"
 
 // External Includes
 #include <nap/resource.h>

@@ -14,7 +14,7 @@
 #include "mesh.h"
 #include "depthsorter.h"
 #include "gpubuffer.h"
-#include "texture2d.h"
+#include "texture.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"

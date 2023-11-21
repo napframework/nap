@@ -12,7 +12,7 @@
 #include <nap/device.h>
 #include <nap/resourceptr.h>
 #include <nap/numeric.h>
-#include <texture2d.h>
+#include <texture.h>
 
 namespace nap
 {

@@ -5,7 +5,7 @@
 #pragma once
 
 // External Includes
-#include "texture2d.h"
+#include "texture.h"
 #include "irendertarget.h"
 #include <color.h>
 

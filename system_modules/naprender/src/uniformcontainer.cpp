@@ -4,7 +4,7 @@
 
 // Local Includes
 #include "uniformcontainer.h"
-#include "texture2d.h"
+#include "texture.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>

@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "texture2d.h"
+#include "texture.h"
 #include "bitmap.h"
 #include "renderservice.h"
 #include "copyimagedata.h"
