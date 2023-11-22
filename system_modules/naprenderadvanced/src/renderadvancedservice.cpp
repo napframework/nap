@@ -558,7 +558,7 @@ namespace nap
 				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
 				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
 				rt->mSampleShading = cm->mSampleShading;
-				rt->mUpdateLODs = true;
+				rt->mUpdateLODs = cm->mGenerateLODs;
 				rt->mCubeTexture = cm;
 
 				if (!rt->init(errorState))

@@ -15,7 +15,9 @@ namespace nap
 	class Core;
 
 	/**
-	 * CubeMapFromFile
+	 * Loads equirectangular image from disk, uploads it to the GPU, and schedules a rendering operation to generate a cube
+	 * map from it in the `nap::RenderAdvancedService`. If `GenerateLODs` is enabled, GPU memory for mip-maps (LODs) are
+	 * allocated and will be updated using blit operations after the cube face render passes.
 	 */
 	class NAPAPI CubeMapFromFile : public RenderTextureCube
 	{
@@ -30,9 +32,10 @@ namespace nap
 		CubeMapFromFile(Core& core);
 
 		/**
-		* Initialize this object after de-serialization
-		* @param errorState contains the error message when initialization fails
-		*/
+		 * Loads the image from disk and schedules the upload to the GPU on success.
+		 * @param errorState contains the error when initialization fails
+		 * @return true when successful, otherwise false.
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
