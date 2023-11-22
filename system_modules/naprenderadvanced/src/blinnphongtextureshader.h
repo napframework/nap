@@ -15,21 +15,31 @@ namespace nap
 	class RenderAdvancedService;
 
 	/**
-	 * Texture shader. Renders an object using a texture. Set color and alpha to 1.0 to render the texture in its original color.
+	 * Blinn Phong Texture Shader
 	 *
-	 * The texture shader exposes the following shader variables:
+	 * This shader is compatible with the `naprenderadvanced` light system.
+	 * The blinnphongcolor shader exposes the following shader variables for users:
 	 *
-	 * ~~~~~{.vert}
-	 *		uniform UBO
-	 *		{
-	 *			uniform vec3 color;
-	 *			uniform float alpha;
-	 *		} ubo;
+	 * ~~~~~{.vert}{.frag}
+	 * uniform UBO
+	 * {
+	 *		vec4	ambient;						//< Ambient
+	 * 		vec3	diffuse;						//< Diffuse
+	 * 		vec3	specular;						//< Specular
+	 * 		vec2	fresnel;						//< Fresnel [scale, power]
+	 * 		float	shininess;						//< Shininess
+	 * 		float	alpha;							//< Alpha
+	 *		float	reflection;						//< Reflection
+	 *		uint	environment;					//< Whether to sample an environment map
+	 * } ubo;
 	 * ~~~~
 	 *
 	 * ~~~~{.frag}
 	 *		uniform sampler2D colorTexture;
+	 *		uniform samplerCube environmentMap;
 	 * ~~~~
+	 *
+	 * The remaining uniforms are set automatically by the `nap::RenderAdvancedService`.
 	 */
 	class NAPAPI BlinnPhongTextureShader : public Shader
 	{

@@ -24,6 +24,34 @@ namespace nap
 
 	/**
 	 * Shader constant resource. Assigns an unsigned integer constant to a material.
+	 *
+	 * Shaders are parsed on initialization, but not actually compiled until creation of a graphics pipeline. Shader
+	 * constants implement Vulkan specialization constants and are a powerful way to compile specialized versions of
+	 * shaders per material instance. Graphics and compute pipeline keys are distinguished by a shader constant
+	 * hash that is generated from the material instance resource. This way you can benefit from compiler optimizations
+	 * like loop unrolling and branch elimination per material setup.
+	 * 
+	 * ~~~~~{.frag}
+	 * layout (constant_id = 0) const uint SAMPLE_COUNT = 8;
+	 * layout (constant_id = 1) const uint USE_EXPENSIVE_ROUTINE = 0;
+	 *
+	 * // main()
+	 * // Loop unrolling
+	 * for (uint i = 0; i < SAMPLE_COUNT; i++)
+	 * {
+	 *		// Perform expensive texture samples here
+	 * }
+	 *
+	 * // Branch elimination
+	 * if (USE_EXPENSIVE_ROUTINE > 0)
+	 * {
+	 *		// Perform an expensive computation here
+	 * }
+	 * else
+	 * {
+	 *		// Exit early here
+	 * }
+	 * ~~~~~
 	 */
 	class NAPAPI ShaderConstant : public Resource
 	{
@@ -36,6 +64,34 @@ namespace nap
 
 	/**
 	 * Shader constant instance. Assigns a unsigned integer constant to a material instance.
+	 * 
+	 * Shaders are parsed on initialization, but not actually compiled until creation of a graphics pipeline. Shader
+	 * constants implement Vulkan specialization constants and are a powerful way to compile specialized versions of
+	 * shaders per material instance. Graphics and compute pipeline keys are distinguished by a shader constant
+	 * hash that is generated from the material instance resource. This way you can benefit from compiler optimizations
+	 * like loop unrolling and branch elimination per material setup.
+	 *
+	 * ~~~~~{.frag}
+	 * layout (constant_id = 0) const uint SAMPLE_COUNT = 8;
+	 * layout (constant_id = 1) const uint USE_EXPENSIVE_ROUTINE = 0;
+	 *
+	 * // main()
+	 * // Loop unrolling
+	 * for (uint i = 0; i < SAMPLE_COUNT; i++)
+	 * {
+	 *		// Perform expensive texture samples here
+	 * }
+	 *
+	 * // Branch elimination
+	 * if (USE_EXPENSIVE_ROUTINE > 0)
+	 * {
+	 *		// Perform an expensive computation here
+	 * }
+	 * else
+	 * {
+	 *		// Exit early here
+	 * }
+	 * ~~~~~
 	 */
 	class NAPAPI ShaderConstantInstance
 	{

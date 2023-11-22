@@ -16,9 +16,8 @@ namespace nap
 	class CameraComponentInstance;
 
 	/**
-	 * Predefined box mesh with additional uv, color and normal vertex attributes.
-	 * The UV coordinates are always 0-1. The box consists of 6 planes.
-	 * The vertices of the individual planes are not shared.
+	 * Predefined box frame line mesh for objects to aid in visual debugging (e.g. `nap::RenderFrustumComponent`).
+	 * Consists of a position attribute only. Should only be rendered with polygon mode `EPolygonMode::Line`.
 	 */
 	class NAPAPI BoxFrameMesh : public IMesh
 	{
