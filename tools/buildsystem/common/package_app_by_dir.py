@@ -7,7 +7,7 @@ import sys
 
 from nap_shared import read_console_char, get_python_path, get_nap_root
 
-def package_app_by_dir(app_path, include_napkin, zip_package, show, pause_on_package):
+def package_app_by_dir(app_path, include_napkin, zip_package, show, bundle, codesign, pause_on_package):
     app_name = os.path.basename(app_path.strip('\\'))
     nap_root = get_nap_root()
     script_path = os.path.join(nap_root, 'tools', 'buildsystem', 'common', 'package_app_by_name.py')
@@ -23,6 +23,11 @@ def package_app_by_dir(app_path, include_napkin, zip_package, show, pause_on_pac
         cmd.append('--no-zip')
     if not show:
         cmd.append('--no-show')
+    if bundle:
+        cmd.append('--bundle')
+        if not codesign is None:
+            cmd.append('--codesign')
+            cmd.append(codesign)
     exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
@@ -43,6 +48,11 @@ if __name__ == '__main__':
                         help="Don't include napkin")
     parser.add_argument("-nz", "--no-zip", action="store_true",
                         help="Don't zip package")
+    if sys.platform.startswith('darwin'):
+        parser.add_argument("-b", "--bundle", action="store_true",
+                            help="Create macos app bundle")
+        parser.add_argument("-cs", "--codesign", type=str, required=False,
+                            help="Codesign app bundle")
     if not sys.platform.startswith('linux'):
         parser.add_argument("-np", "--no-pause", action="store_true",
                             help="Don't pause afterwards")
@@ -51,7 +61,18 @@ if __name__ == '__main__':
     pause_on_package = False
     if not sys.platform.startswith('linux') and not args.no_pause:
         pause_on_package = True
-    exit_code = package_app_by_dir(args.APP_PATH, not args.no_napkin, not args.no_zip, not args.no_show, pause_on_package)
+    bundle = False
+    codesign = None
+    if sys.platform.startswith('darwin'):
+        if args.bundle:
+            bundle = True
+            codesign = args.codesign
+            if args.no_zip:
+                print("Warning: --no-zip argument will be ignored because MacOS app bundle output was chosen.")
+        else:
+            if not args.codesign is None:
+                print("Warning: --codesign argument will be ignored because MacOS app bundle was not chosen.")
+    exit_code = package_app_by_dir(args.APP_PATH, not args.no_napkin, not args.no_zip, not args.no_show, bundle, codesign, pause_on_package)
 
     # Expose exit code
     sys.exit(exit_code)
