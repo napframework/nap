@@ -48,7 +48,8 @@ namespace nap
 
 	protected:
 		/**
-		 * Called when the texture changes
+		 * Called when the texture changes.
+		 * @param the texture index, zero unless the noninitial texture in a sampler array is changed.
 		 */
 		void raiseChanged(int index = 0)					{ if (mSamplerChangedCallback) mSamplerChangedCallback(*this, index); }
 

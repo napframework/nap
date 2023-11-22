@@ -98,5 +98,10 @@ namespace nap
 		 * @param comps the renderable components to sort
 		 */
 		void NAPAPI sortObjectsByZ(std::vector<RenderableComponentInstance*>& comps);
+
+		/**
+		 * Empty function that does not sort.
+		 */
+		void NAPAPI noSort() {}
 	}
 }

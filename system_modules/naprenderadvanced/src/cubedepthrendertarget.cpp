@@ -136,7 +136,14 @@ namespace nap
 	}
 
 
-	void CubeDepthRenderTarget::render(PerspCameraComponentInstance& camera, std::function<void(CubeDepthRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback)
+	void CubeDepthRenderTarget::render(CubeDepthRenderTargetCallback renderCallback)
+	{
+		static const auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
+		renderInternal(glm::zero<glm::vec3>(), projection_matrix, renderCallback);
+	}
+
+
+	void CubeDepthRenderTarget::render(PerspCameraComponentInstance& camera, CubeDepthRenderTargetCallback renderCallback)
 	{
 		// Update camera properties
 		camera.setFieldOfView(90.0f);
@@ -149,11 +156,11 @@ namespace nap
 		const auto& cam_position = math::extractPosition(cam_trans.getGlobalTransform());
 
 		// Render
-		render(cam_position, camera.getProjectionMatrix(), renderCallback);
+		renderInternal(cam_position, camera.getProjectionMatrix(), renderCallback);
 	}
 
 
-	void CubeDepthRenderTarget::render(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, std::function<void(CubeDepthRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback)
+	void CubeDepthRenderTarget::renderInternal(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, CubeDepthRenderTargetCallback renderCallback)
 	{
 		/**
 		 * Render to frame buffers

@@ -581,11 +581,8 @@ namespace nap
 		uint count = 0U;
 		for (auto& cube_map : cube_maps)
 		{
-			auto projection_matrix = glm::perspective(90.0f, 1.0f, 0.01f, 1000.0f);
-			auto origin = glm::vec3(0.0f, 0.0f, 0.0f);
-
 			auto& rt = mCubeMapFromFileTargets[count];
-			rt->render(origin, projection_matrix, [rs = &renderService, cm = cube_map.get(), mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
+			rt->render([rs = &renderService, cm = cube_map.get(), mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
 				(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 			{
 				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);

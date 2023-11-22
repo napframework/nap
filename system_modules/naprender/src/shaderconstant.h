@@ -23,7 +23,7 @@ namespace nap
 	};
 
 	/**
-	 * Shader constant resource. Assigns a unsigned integer constant to a material.
+	 * Shader constant resource. Assigns an unsigned integer constant to a material.
 	 */
 	class NAPAPI ShaderConstant : public Resource
 	{

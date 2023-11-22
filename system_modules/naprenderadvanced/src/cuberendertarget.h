@@ -20,6 +20,10 @@ namespace nap
 	class RenderService;
 	class PerspCameraComponentInstance;
 
+	// Called when rendering a cube texture layer
+	using CubeRenderTargetCallback = std::function<void(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)>;
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Cube RenderTarget
 	//////////////////////////////////////////////////////////////////////////
@@ -27,32 +31,20 @@ namespace nap
 	/**
 	 * CubeRenderTarget
 	 *
-	 * A specialized version of nap::RenderTarget that renders a quilt texture, comprising a number of views of one or
-	 * multiple objects in a single nap::RenderTexture2D. The layout of the quilt is determined by the nap::QuiltSettings
-	 * acquired from the nap::LookingGlassDevice resource in the "Device" property. 
+	 * A specialized version of nap::RenderTarget that renders a cube texture. As a cube texture comprises
+	 * six views of the scene, the `render` function carries out six render passes, each from a different point
+	 * of view by means of particular view and projection transformations. The result of these render passes is
+	 * stored in a multi-layer Vulkan image, each layer representing one view through the side of a unit cube.
 	 *
-	 * When rendering, the perspective shift between views is handled automatically by nap::CubeRenderTarget and 
-	 * specified nap::QuiltCameraComponentInstance when using the function CubeRenderTarget::render(). This is 
-	 * necessary as the rendering of multiple views requires the setup of a renderpass for each view, as opposed to 
-	 * regular use of nap::RenderTarget or nap::RenderWindow. Refer to the following example:
-	 *
-	 * ~~~~~{.cpp} 
-	 *	if (mRenderService->beginHeadlessRecording())
-	 *	{
-	 *		quilt_target->render(quilt_camera, [render_service = mRenderService, comps = render_comps](CubeRenderTarget& target, QuiltCameraComponentInstance& camera)
-	 *		{
-	 *			render_service->renderObjects(target, camera, comps);
-	 *		});
-	 *		mRenderService->endHeadlessRecording();
-	 *	}
-	 * ~~~~~
+	 * Cube textures also support LODs. Enabling the `UpdateLODs` will automatically perform a blit operation to
+	 * all mip-map levels after the cube texture was updated in the `render` function.
 	 */
 	class NAPAPI CubeRenderTarget : public Resource, public IRenderTarget
 	{
 		RTTI_ENABLE(Resource)
 	public:
 		/**
-		 * Every render target requires a reference to core.
+		 * Every cube render target requires a reference to core.
 		 * @param core link to a nap core instance
 		 */
 		CubeRenderTarget(Core& core);
@@ -63,19 +55,19 @@ namespace nap
 		~CubeRenderTarget();
 
 		/**
-		 * Initializes the render target, including all the required resources.
+		 * Initializes the cube render target, including all the required resources.
 		 * @param errorState contains the error if initialization failed.
 		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Starts the render pass. Called by CubeRenderTarget::render().
+		 * Starts a render pass for the current layer index. Called by CubeRenderTarget::renderInternal.
 		 */
 		virtual void beginRendering() override;
 
 		/**
-		 * Ends the render pass. Called by CubeRenderTarget::render().
+		 * Ends a render pass for the current layer index. Called by CubeRenderTarget::renderInternal.
 		 */
 		virtual void endRendering() override;
 
@@ -106,7 +98,7 @@ namespace nap
 		virtual VkRenderPass getRenderPass() const override						{ return mRenderPass; }
 
 		/**
-		 * @return the texture that holds the result of the render pass.
+		 * @return the cube texture that holds the result of the render pass.
 		 */
 		TextureCube& getColorTexture()											{ return *mCubeTexture; }
 
@@ -121,6 +113,7 @@ namespace nap
 		virtual VkFormat getDepthFormat() const override						{ return mVulkanDepthFormat; }
 
 		/**
+		 * Cube textures currently only support single sample render pass. Therefore, this function always returns `VK_SAMPLE_COUNT_1_BIT`.
 		 * @return used number of samples when rendering to the target.
 		 */
 		virtual VkSampleCountFlagBits getSampleCount() const override			{ return VK_SAMPLE_COUNT_1_BIT; }
@@ -136,60 +129,80 @@ namespace nap
 		glm::ivec2 getSize() const												{ return mSize; }
 
 		/**
-		 * Renders a quilt to nap::RenderTexture2D using the specified nap::CubeRenderTarget. Use 'renderCallback' to
-		 * group the rendering work of a single render pass. This pass is repeated a number of times to create the 
-		 * resulting quilt texture. The perspective shift between views is handled automatically.
-		 * Call this function as follows:
+		 * Renders objects to nap::RenderTextureCube using the specified nap::CubeRenderTarget. Use 'renderCallback' to
+		 * group the rendering work of a single render pass. This pass is repeated six times to create the resulting
+		 * cube texture. The view and projection transformations are computed by nap::CubeRenderTarget and passed as
+		 * arguments to a callback function. The following example demonstrates this using a lambda function:
 		 *
-		 * ~~~~~{.cpp} 
+		 * ~~~~~{.cpp}
 		 *	if (mRenderService->beginHeadlessRecording())
 		 *	{
-		 *		quilt_target->render(quilt_camera, [render_service = mRenderService, comps = render_comps](CubeRenderTarget& target, QuiltCameraComponentInstance& camera)
+		 *		cube_target->render([rs = mRenderService, comps = render_comps](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 		 *		{
-		 *			render_service->renderObjects(target, camera, comps);
+		 *			rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
 		 *		});
 		 *		mRenderService->endHeadlessRecording();
 		 *	}
 		 * ~~~~~
 		 */
-		void render(PerspCameraComponentInstance& camera, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
+		void render(CubeRenderTargetCallback renderCallback);
 
 		/**
-		 * 
+		 * Renders objects to nap::RenderTextureCube using the specified nap::CubeRenderTarget. Use 'renderCallback' to
+		 * group the rendering work of a single render pass. This pass is repeated six times to create the resulting
+		 * cube texture. The view and projection transformations are computed by nap::CubeRenderTarget and passed as
+		 * arguments to a callback function. The following example demonstrates this using a lambda function:
+		 *
+		 * ~~~~~{.cpp}
+		 *	if (mRenderService->beginHeadlessRecording())
+		 *	{
+		 *		cube_target->render(*persp_camera, [rs = mRenderService, comps = render_comps](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+		 *		{
+		 *			rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+		 *		});
+		 *		mRenderService->endHeadlessRecording();
+		 *	}
+		 * ~~~~~
 		 */
-		void render(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, std::function<void(CubeRenderTarget&, const glm::mat4& projection, const glm::mat4& view)> renderCallback);
+		void render(PerspCameraComponentInstance& camera, CubeRenderTargetCallback renderCallback);
 
 		/**
-		 * 
-		 */
-		void setLayerIndex(uint index);
-
-		/**
-		 * 
+		 * Returns the current texture layer index. This value only changes when the individual render layer commands are
+		 * being recorded to the command buffer. Generally only useful when building highly custom rendering operations.
+		 * @return the current texture layer index.
 		 */
 		uint getLayerIndex() const												{ return mLayerIndex; }
 
 		/**
-		 * 
+		 * @return a list of view matrices that correspond to each cube texture layer index.
 		 */
 		static const std::vector<glm::mat4>& getCubeMapViewMatrices();
 
 		/**
-		 * 
+		 * @return a list of inverse view matrices that correspond to each cube texture layer index.
 		 */
 		static const std::vector<glm::mat4>& getCubeMapInverseViewMatrices();
-
 
 		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
 		bool									mUpdateLODs = false;										///< Property: 'UpdateLODs' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
 		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };					///< Property: 'ClearColor' color selection used for clearing the render target.
 
-		RenderTextureCube::EFormat				mColorFormat = RenderTextureCube::EFormat::RGBA8;			///< Property: 'ColorFormat' texture to render to.
-		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;	///< Property: 'DepthFormat' texture to render to.
+		RenderTextureCube::EFormat				mColorFormat = RenderTextureCube::EFormat::RGBA8;			///< Property: 'ColorFormat' the cube texture color format.
+		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;	///< Property: 'DepthFormat' the cube texture depth format.
 
 		ResourcePtr<TextureCube>				mCubeTexture;												///< Property: 'CubeTexture' cube texture to render to.
 
 	private:
+		/**
+		 * Internal cube texture rendering routine. Called by CubeRenderTarget::render.
+		 */
+		void renderInternal(const glm::vec3& camPosition, const glm::mat4& projectionMatrix, CubeRenderTargetCallback renderCallback);
+
+		/**
+		 * Sets the texture layer index. Called by CubeRenderTarget::renderInternal.
+		 */
+		void setLayerIndex(uint index);
+
 		RenderService*							mRenderService;
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
 
