@@ -30,8 +30,9 @@ namespace nap
 	}
 
 	/**
-	 * Cube Map shader.
-	 *
+	 * Renders cube texture faces from an equirectangular texture. Used by `nap::RenderAdvancedService` to render
+	 * `nap::CubeMapFromFile` on initialization.
+	 * 
 	 * The cube map shader exposes the following shader variables:
 	 *
 	 * ~~~~~{.frag}

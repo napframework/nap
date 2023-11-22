@@ -594,7 +594,7 @@ namespace nap
 				// Set equirectangular texture to convert
 				auto* sampler = mtl->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
 				if (sampler != nullptr)
-					sampler->setTexture(*cm->mSourceTexture);
+					sampler->setTexture(cm->getSourceTexture());
 
 				// Get valid descriptor set
 				const DescriptorSet& descriptor_set = mtl->update();

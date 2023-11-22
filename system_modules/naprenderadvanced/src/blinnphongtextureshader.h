@@ -17,7 +17,10 @@ namespace nap
 	/**
 	 * Blinn Phong Texture Shader
 	 *
-	 * This shader is compatible with the `naprenderadvanced` light system.
+	 * This is NAP's default blinn-phong shader program and is compatible with the `naprenderadvanced` light system.
+	 * It also supports shadows and environment maps. When compiling NAP for Raspberry Pi, shadows are disabled when
+	 * the Vulkan version is lower than 1.1.
+	 *
 	 * The blinnphongcolor shader exposes the following shader variables for users:
 	 *
 	 * ~~~~~{.vert}{.frag}

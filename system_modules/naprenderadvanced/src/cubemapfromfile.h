@@ -4,6 +4,7 @@
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
 #include <rendertexturecube.h>
+#include <image.h>
 
 // Local includes
 #include "cuberendertarget.h"
@@ -34,11 +35,18 @@ namespace nap
 		*/
 		virtual bool init(utility::ErrorState& errorState) override;
 
-	public:
-		ResourcePtr<Texture2D>		mSourceTexture;							///< Property: 'SourceTexture' Texture to convert to cube map
-		bool						mSampleShading = false;					///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+		/**
+		 * @return the source texture
+		 */
+		Texture2D& getSourceTexture() { return *mSourceImage; }
 
 	public:
-		using RenderTextureCube::mGenerateLODs;
+		std::string					mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
+		bool						mSampleShading = false;					///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost
+
+		using RenderTextureCube::mGenerateLODs;								///< Property: 'GenerateLODs' whether to use and update mip-maps each time the cube texture is updated
+
+	private:
+		std::unique_ptr<Image> mSourceImage;
 	};
 }
