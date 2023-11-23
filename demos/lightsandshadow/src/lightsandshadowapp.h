@@ -100,5 +100,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mWorldEntity;
 		std::unordered_map<std::string, glm::vec3> mLightEuler;			//< Light euler rotations
 		std::unordered_map<std::string, glm::vec3> mLightXform;			//< Light transformations
+
+		RenderMask mShadowMask = 0;
 	};
 }

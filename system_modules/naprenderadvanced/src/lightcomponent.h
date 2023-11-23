@@ -35,7 +35,7 @@ namespace nap
 	};
 
 	/**
-	 * Light Globals
+	 * Light Component default light uniforms
 	 */
 	namespace uniform
 	{
@@ -67,6 +67,9 @@ namespace nap
 		}
 	}
 
+	/**
+	 * Light Component default shadow samplers
+	 */
 	namespace sampler
 	{
 		namespace light
@@ -79,9 +82,51 @@ namespace nap
 	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
 	using LightParameterList = std::vector<std::unique_ptr<Parameter>>;
 
-
 	/**
-	 * LightComponent
+	 * Base class of light components for NAP RenderAdvanced's light system.
+	 *
+	 * When present in the scene, the render advanced service can update light uniform data for material instances that are
+	 * compatible with the light's shader interface. On initialization, each light component sets up its own registry of
+	 * light uniform data and registers itself at the render advanced service. This way, the service is aware of the lights
+	 * in the scene and creates the necessary resources for light information and shadow maps. NAP currently supports up to
+	 * 8 lights in a scene (`RenderAdvancedService::mMaxLightCount`). The way in which these blend/interact depends on the
+	 * implementation of the shader program. Increasing the maximum number of lights is trivial, however, with the current
+	 * implementation it would take up more shader resource slots.
+	 *
+	 * Each light component has three default uniforms that are set by the RenderAdvanced service:
+	 * - `origin`: `vec3` world position of the light.
+	 * - `direction`: `vec3` direction of the light. Some lights may choose to ignore this however (e.g. point lights).
+	 * - `flags`: an unsigned integer encoding information such as whether shadows are enabled, see `lightflags.h`.
+	 *
+	 * Other uniforms may be defined by derived light types. They must be in accordance with the data and shader interface
+	 * in the `light.glslinc` file in the RenderAdvanced shader folder. New light types can be added here in the future,
+	 * or user implementations can use the 'Custom' enum.
+	 * 
+	 * NAP comes with a default nap::BlinnPhongShader that is compatible with the light system. Hooking this up to a
+	 * nap::Material allows for quick scene lighting setups. Material surface uniforms as defined by the shader interface
+	 * must be set in data or at runtime. A description of these can be found in the documentation of the shader or its
+	 * source file.
+	 *
+	 * The depth format of shadow maps can be configured in the `nap::RenderAdvancedServiceConfiguration`.
+	 *
+	 * Rendering with lights requires an additional call to the render advanced service. You can either use `pushLights` on
+	 * the render components you wish to render or `renderShadows` with the `updateMaterials` argument set to `true` if you
+	 * wish to use shadows too.
+	 * 
+	 * Update light uniforms of lit components when shadows are disabled.
+	 * ~~~~~{.cpp}
+	 *	mRenderAdvancedService->pushLights(components_to_render, error_state);
+	 *	// mRenderService->renderObjects ...
+	 * ~~~~~
+	 *
+	 * Re-render shadow map and update light uniforms.
+	 * ~~~~~{.cpp}
+	 *	if (mRenderService->beginHeadlessRecording())
+	 *	{
+	 *		mRenderAdvancedService->renderShadows(render_comps, true);
+	 *		mRenderService->endHeadlessRecording();
+	 *	}
+	 * ~~~~~
 	 */
 	class NAPAPI LightComponent : public Component
 	{
@@ -94,17 +139,60 @@ namespace nap
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		bool mEnabled = true;									///< Property: 'Enabled'
-		ResourcePtr<ParameterEntryRGBColorFloat> mColor;		///< Property: 'Color'
-		ResourcePtr<ParameterEntryFloat> mIntensity;			///< Property: 'Intensity'
+		bool mEnabled = true;									///< Property: 'Enabled' Whether the light is enabled
+		ResourcePtr<ParameterEntryRGBColorFloat> mColor;		///< Property: 'Color' The light color
+		ResourcePtr<ParameterEntryFloat> mIntensity;			///< Property: 'Intensity' The light intensity
 
-		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength'
-		bool mEnableShadows = false;							///< Property: 'Enable Shadows'
+		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
+		bool mEnableShadows = false;							///< Property: 'Enable Shadows' Enables shadows and creates shadow map resources for this light.
 	};
 
 
 	/**
-	 * LightComponentInstance	
+	 * Base class of light component instances for NAP RenderAdvanced's light system.
+	 *
+	 * When present in the scene, the render advanced service can update light uniform data for material instances that are
+	 * compatible with the light's shader interface. On initialization, each light component sets up its own registry of
+	 * light uniform data and registers itself at the render advanced service. This way, the service is aware of the lights
+	 * in the scene and creates the necessary resources for light information and shadow maps. NAP currently supports up to
+	 * 8 lights in a scene (`RenderAdvancedService::mMaxLightCount`). The way in which these blend/interact depends on the
+	 * implementation of the shader program. Increasing the maximum number of lights is trivial, however, with the current
+	 * implementation it would take up more shader resource slots.
+	 *
+	 * Each light component has three default uniforms that are set by the RenderAdvanced service:
+	 * - `origin`: `vec3` world position of the light.
+	 * - `direction`: `vec3` direction of the light. Some lights may choose to ignore this however (e.g. point lights).
+	 * - `flags`: an unsigned integer encoding information such as whether shadows are enabled, see `lightflags.h`.
+	 *
+	 * Other uniforms may be defined by derived light types. They must be in accordance with the data and shader interface
+	 * in the `light.glslinc` file in the RenderAdvanced shader folder. New light types can be added here in the future,
+	 * or user implementations can use the 'Custom' enum.
+	 *
+	 * NAP comes with a default nap::BlinnPhongShader that is compatible with the light system. Hooking this up to a
+	 * nap::Material allows for quick scene lighting setups. Material surface uniforms as defined by the shader interface
+	 * must be set in data or at runtime. A description of these can be found in the documentation of the shader or its
+	 * source file.
+	 *
+	 * The depth format of shadow maps can be configured in the `nap::RenderAdvancedServiceConfiguration`.
+	 *
+	 * Rendering with lights requires an additional call to the render advanced service. You can either use `pushLights` on
+	 * the render components you wish to render or `renderShadows` with the `updateMaterials` argument set to `true` if you
+	 * wish to use shadows too.
+	 *
+	 * Update light uniforms of lit components when shadows are disabled.
+	 * ~~~~~{.cpp}
+	 *	mRenderAdvancedService->pushLights(components_to_render, error_state);
+	 *	// mRenderService->renderObjects ...
+	 * ~~~~~
+	 *
+	 * Re-render shadow map and update light uniforms.
+	 * ~~~~~{.cpp}
+	 *	if (mRenderService->beginHeadlessRecording())
+	 *	{
+	 *		mRenderAdvancedService->renderShadows(render_comps, true);
+	 *		mRenderService->endHeadlessRecording();
+	 *	}
+	 * ~~~~~
 	 */
 	class NAPAPI LightComponentInstance : public ComponentInstance
 	{
@@ -248,6 +336,10 @@ namespace nap
 	};
 }
 
+
+//////////////////////////////////////////////////////////////////////////
+// Template definitions
+//////////////////////////////////////////////////////////////////////////
 
 template <typename ParameterType, typename DataType>
 void nap::LightComponentInstance::registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value)

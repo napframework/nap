@@ -12,7 +12,10 @@ namespace nap
 	class DirectionalLightComponentInstance;
 
 	/**
-	 *	DirectionalLightComponent
+	 * Directional light component for NAP RenderAdvanced's light system.
+	 *
+	 * Unidirectional light that emits from its origin to a specified direction. The Render Advanced service creates and
+	 * manages a `nap::DepthRenderTarget` and `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
 	 */
 	class NAPAPI DirectionalLightComponent : public LightComponent
 	{
@@ -25,7 +28,10 @@ namespace nap
 
 
 	/**
-	 * DirectionalLightComponentInstance
+	 * Directional light component instance for NAP RenderAdvanced's light system.
+	 *
+	 * Unidirectional light that emits from its origin to a specified direction. The Render Advanced service creates and
+	 * manages a `nap::DepthRenderTarget` and `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
 	 */
 	class NAPAPI DirectionalLightComponentInstance : public LightComponentInstance
 	{

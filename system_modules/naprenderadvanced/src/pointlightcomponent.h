@@ -12,21 +12,29 @@ namespace nap
 	class PointLightComponentInstance;
 
 	/**
-	 *	PointLightComponent
+	 * Point light component for NAP RenderAdvanced's light system.
+	 * 
+	 * Omnidirectional light that emits from its origin. Therefore, ignores the `direction` uniform. The Render Advanced
+	 * service creates and manages a `nap::CubeDepthRenderTarget` and `nap::DepthRenderTextureCube` for rendering this
+	 * light's shadow maps.
 	 */
 	class NAPAPI PointLightComponent : public LightComponent
 	{
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(PointLightComponent, PointLightComponentInstance)
 	public:
-		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation'
+		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
 		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 512U;								///< Property: 'ShadowMapSize'
+		uint mShadowMapSize = 512U;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
 
 	/**
-	 * PointLightComponentInstance
+	 * Point light component instance for NAP RenderAdvanced's light system.
+	 *
+	 * Omnidirectional light that emits from its origin. Therefore, ignores the `direction` uniform. The Render Advanced
+	 * service creates and manages a `nap::CubeDepthRenderTarget` and `nap::DepthRenderTextureCube` for rendering this
+	 * light's shadow maps.
 	 */
 	class NAPAPI PointLightComponentInstance : public LightComponentInstance
 	{

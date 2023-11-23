@@ -1,5 +1,11 @@
 {
     "Type": "nap::SolutionInfo",
     "mID": "SolutionInfo",
-    "AdditionalTargets": []
+    "AdditionalTargets": [
+        "apps/graphictool",
+        "apps/artefacts",
+        "apps/spits",
+        "modules/napappgui",
+        "modules/napfft"
+    ]
 }

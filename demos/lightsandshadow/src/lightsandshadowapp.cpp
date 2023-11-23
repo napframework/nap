@@ -47,7 +47,9 @@ namespace nap
 
 		mCameraEntity = scene->findEntity("CameraEntity");
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
-			return false;	
+			return false;
+
+		mShadowMask = mRenderService->findRenderMask("Shadow");
 
 		return true;
 	}
@@ -147,7 +149,7 @@ namespace nap
 		// Shadow pass
 		if (mRenderService->beginHeadlessRecording())
 		{
-			mRenderAdvancedService->renderShadows(render_comps, true, mRenderService->findRenderMask("Shadow"));
+			mRenderAdvancedService->renderShadows(render_comps, true, mShadowMask);
 			mRenderService->endHeadlessRecording();
 		}
 

@@ -12,23 +12,33 @@ namespace nap
 	class SpotLightComponentInstance;
 
 	/**
-	 *	SpotLightComponent
+	 * Spot light component for NAP RenderAdvanced's light system.
+	 *
+	 * Omnidirectional light that emits from its origin to a specified direction with an angle of view (i.e. cone light).
+	 * The shadow map for this light is a 2D depth texture; therefore, the reach of the light can exceed the extent beyond
+	 * that of the depth map. The Render Advanced service creates and manages a `nap::DepthRenderTarget` and
+	 * `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
 	 */
 	class NAPAPI SpotLightComponent : public LightComponent
 	{
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(SpotLightComponent, SpotLightComponentInstance)
 	public:
-		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation'
-		ResourcePtr<ParameterEntryFloat> mAngle;				///< Property: 'Angle'
-		ResourcePtr<ParameterEntryFloat> mFallOff;				///< Property: 'FallOff'
+		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
+		ResourcePtr<ParameterEntryFloat> mAngle;				///< Property: 'Angle' The light's angle of view (focus)
+		ResourcePtr<ParameterEntryFloat> mFallOff;				///< Property: 'FallOff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
 		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize'
+		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
 
 	/**
-	 * SpotLightComponentInstance
+	 * Spot light component instance for NAP RenderAdvanced's light system.
+	 *
+	 * Omnidirectional light that emits from its origin to a specified direction with an angle of view (i.e. cone light).
+	 * The shadow map for this light is a 2D depth texture; therefore, the reach of the light can exceed the extent beyond
+	 * that of the depth map. The Render Advanced service creates and manages a `nap::DepthRenderTarget` and
+	 * `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
 	 */
 	class NAPAPI SpotLightComponentInstance : public LightComponentInstance
 	{
