@@ -20,10 +20,10 @@ namespace nap
 		NodeManager::~NodeManager()
 		{
 			// Tell the nodes that their node manager is outta here, so they won't try to unregister themselves in their dtors.
-			for (auto& node : mProcesses)
+			for (auto& process : mProcesses)
 			{
-				node->mNodeManager = nullptr;
-				node->mRegisteredWithNodeManager.store(false);
+				process->mNodeManager = nullptr;
+                process->mRegisteredWithNodeManager.store(false);
 			}
 		}
 
