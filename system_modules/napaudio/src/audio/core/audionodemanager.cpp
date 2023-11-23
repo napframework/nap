@@ -121,8 +121,6 @@ namespace nap
 		{
 			auto result = mTaskQueue.enqueue(task);
 			assert(result);
-			if (!result)
-				Logger::warn("NodeManager: Failed to enqueue task");
 		}
 
 
