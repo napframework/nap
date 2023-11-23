@@ -233,17 +233,17 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 		for (auto& comp : components)
 		{
 			auto props = comp->get_type().get_properties();
-			for (auto& prop : props)
+			for (auto& ptr_prop : props)
 			{
-				if (prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
-					prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
+				if (ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
+					ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
 				{
 					// Get to string (path) method
-					rttr::method string_method = nap::rtti::findMethodRecursive(prop.get_type(), nap::rtti::method::toString);
+					rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
 					assert(string_method.is_valid());
 
 					// Get path and check for entity inclusion - exclude partial names
-					auto path = string_method.invoke(prop.get_value(comp)).to_string();
+					auto path = string_method.invoke(ptr_prop.get_value(comp)).to_string();
 					auto index = path.find(old_name);
 					while (index != std::string::npos)
 					{
@@ -272,10 +272,14 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 						continue;
 					}
 
-					// Assign new path
-					rttr::method assign_method = nap::rtti::findMethodRecursive(prop.get_type(), nap::rtti::method::assign);
+					// Create and assign new path
+					rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
 					assert(assign_method.is_valid());
-					assign_method.invoke(prop.get_value(comp), path, *target);
+					auto ptr_variant = ptr_prop.get_value(comp);
+					assign_method.invoke(ptr_variant, path, *target);
+
+					// Set as new property value
+					ptr_prop.set_value(comp, ptr_variant);
 				}
 			}
 		}
