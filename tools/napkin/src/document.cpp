@@ -279,7 +279,11 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 					assign_method.invoke(ptr_variant, path, *target);
 
 					// Set as new property value
-					ptr_prop.set_value(comp, ptr_variant);
+					if (!ptr_prop.set_value(comp, ptr_variant))
+					{
+						nap::Logger::error("Unable to update: %s",
+							PropertyPath(*comp, ptr_prop, *this).toString().c_str());
+					}
 				}
 			}
 		}
