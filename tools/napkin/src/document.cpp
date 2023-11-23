@@ -226,6 +226,61 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	mObjects.erase(it);
 	mObjects.emplace(std::make_pair(new_name, std::unique_ptr<nap::rtti::Object>(released_obj)));
 
+	// Ensure that the path of every component or entity ptr, pointing to the old entity, is updated.
+	if (object.get_type().is_derived_from(RTTI_OF(nap::Entity)))
+	{
+		auto components = getObjects<nap::Component>();
+		for (auto& comp : components)
+		{
+			auto props = comp->get_type().get_properties();
+			for (auto& prop : props)
+			{
+				if (prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
+					prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
+				{
+					// Get to string (path) method
+					rttr::method string_method = nap::rtti::findMethodRecursive(prop.get_type(), nap::rtti::method::toString);
+					assert(string_method.is_valid());
+
+					// Get path and check for entity inclusion - exclude partial names
+					auto path = string_method.invoke(prop.get_value(comp)).to_string();
+					auto index = path.find(old_name);
+					while (index != std::string::npos)
+					{
+						auto end_index = index + old_name.size();
+						if (end_index >= path.size() ||
+							path[end_index] == '/'	 ||
+							path[end_index] == ':')
+							break;
+
+						index = path.find(old_name, index+1);
+					}
+
+					// No match
+					if(index == std::string::npos)
+						continue;
+
+					// Update path and find target object
+					path.replace(index, old_name.size(), new_name);
+					size_t obj_pos = path.find_last_of('/'); assert(obj_pos != std::string::npos);
+					nap::rtti::Object* target = getObject(path.substr(obj_pos + 1));
+
+					// Target doesn't exist
+					if (target == nullptr)
+					{
+						assert(false);
+						continue;
+					}
+
+					// Assign new path
+					rttr::method assign_method = nap::rtti::findMethodRecursive(prop.get_type(), nap::rtti::method::assign);
+					assert(assign_method.is_valid());
+					assign_method.invoke(prop.get_value(comp), path, *target);
+				}
+			}
+		}
+	}
+
 	// Notify listeners
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);
 	assert(path.isValid());
