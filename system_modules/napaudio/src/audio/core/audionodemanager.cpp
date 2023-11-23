@@ -31,7 +31,10 @@ namespace nap
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
 #ifndef RASPBERRY
-			// Disable denormals
+			// Disable denormal math
+            // Denormal math can have a dramatic impact on the CPU load for any DSP algorithm that contains a feedback loop.
+            // However denormal precision doesn't produce any audible result to the human ear.
+            // Unfortunately this code is not supported on ARM32 processors though, hence the #ifndef .
 			int oldMXCSR = _mm_getcsr();
 			int newMXCSR = oldMXCSR | 0x8040;
 			_mm_setcsr( newMXCSR);
