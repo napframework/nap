@@ -35,18 +35,35 @@ namespace nap
 
 	RenderSkyBoxComponentInstance::RenderSkyBoxComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableMeshComponentInstance(entity, resource),
-		mRenderService(*entity.getCore()->getService<RenderService>())
+		mRenderService(*entity.getCore()->getService<RenderService>()),
+		mSkyBoxMesh(std::make_unique<BoxMesh>(*entity.getCore()))
 	{ }
 
 
 	bool RenderSkyBoxComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Fetch resource
 		mResource = getComponent<RenderSkyBoxComponent>();
-		if (!errorState.check(mResource->mMesh != nullptr, utility::stringFormat("%s: Property 'Mesh' cannot be NULL", mID.c_str()).c_str()))
-			return false;
 
+		// Initialize base renderable mesh component instance
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
+
+		// Initialize skybox mesh
+		mSkyBoxMesh->mPolygonMode = EPolygonMode::Fill;
+		mSkyBoxMesh->mUsage = EMemoryUsage::Static;
+		mSkyBoxMesh->mCullMode = ECullMode::Front;
+		mSkyBoxMesh->mFlipNormals = false;
+		if (!errorState.check(mSkyBoxMesh->init(errorState), "Unable to create box mesh"))
+			return false;
+
+		// Create renderable mesh
+		RenderableMesh renderable_mesh = createRenderableMesh(*mSkyBoxMesh, errorState);
+		if (!renderable_mesh.isValid())
+			return false;
+
+		// Set the skybox mesh to be used when drawing
+		setMesh(renderable_mesh);
 
 		// Set equirectangular texture to convert
 		auto* sampler = mMaterialInstance.getOrCreateSampler<SamplerCubeInstance>("cubeTexture");

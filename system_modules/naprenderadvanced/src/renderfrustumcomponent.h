@@ -20,7 +20,13 @@ namespace nap
 	class CameraComponentInstance;
 
 	/**
-	 * RenderFrustumComponent
+	 * Resource part of RenderFrustumComponent
+	 * 
+	 * Renders a camera frustum to aid in visual debugging. The is a dynamic line mesh that is updated on the CPU to match
+	 * the latest camera properties e.g. field of view. Ignores the `Mesh` property and creates a `nap::BoxFrameMesh` with
+	 * usage `EMemoryUsage::DynamicWrite` and polygon mode `EPolygonMode::Line`. Supports `nap::PerspCameraComponent` and
+	 * `nap::OrthoCameraComponent`. As the box frame mesh only has a position attribute this component must be rendered
+	 * with a simple shader such as `nap::ConstantShader`.
 	 */
 	class NAPAPI RenderFrustumComponent : public RenderableMeshComponent
 	{
@@ -37,7 +43,13 @@ namespace nap
 
 
 	/**
-	 * RenderFrustumComponentInstance
+	 * Instance part of RenderFrustumComponent
+	 *
+	 * Renders a camera frustum to aid in visual debugging. The is a dynamic line mesh that is updated on the CPU to match
+	 * the latest camera properties e.g. field of view. Ignores the `Mesh` property and creates a `nap::BoxFrameMesh` with
+	 * usage `EMemoryUsage::DynamicWrite` and polygon mode `EPolygonMode::Line`. Supports `nap::PerspCameraComponent` and
+	 * `nap::OrthoCameraComponent`. As the box frame mesh only has a position attribute this component must be rendered
+	 * with a simple shader such as `nap::ConstantShader`.
 	 */
 	class NAPAPI RenderFrustumComponentInstance : public RenderableMeshComponentInstance
 	{
