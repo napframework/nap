@@ -36,6 +36,12 @@ namespace nap
 		virtual std::string toString() const = 0;
 
 		/**
+		 * Convert the pointer to an rtti object
+		 * @return The rtti object, nullptr if it doesn't exist
+		 */
+		virtual rtti::Object* toObject() const = 0;
+
+		/**
 		 * Assign the target ID & object to this pointer. Used for pointer resolving by the ResourceManager,
 		 * should not be called manually (is only public so that we can register it in RTTI)
 		 * @param targetID The ID of the target
@@ -104,6 +110,11 @@ namespace nap
 		{
 			mPath = targetID;
 			mResource = rtti_cast<ComponentType>(&targetObject);
+		}
+
+		virtual rtti::Object* toObject() const override
+		{
+			return mResource.get();
 		}
 
 		const ComponentType& operator*() const
