@@ -19,7 +19,13 @@ namespace nap
 	class CameraComponentInstance;
 
 	/**
-	 * RenderSkyBoxComponent
+	 * Resource part of RenderSkyBoxComponent
+	 *
+	 * Renders a skybox from a cube texture. Should be used with a `nap::SkyBoxShader` and `nap::BoxMesh` in the material
+	 * resource, but custom implementations are possible. The default sjybox shader negates the translational component of
+	 * the view matrix to fake unlimited depth. This object should be rendered first to fill the background; to do this,
+	 * ensure it is in the back layer. You may also want to exclude this object from a shadow rendering pass using tags.
+	 * The shader variables are set automatically from this component's properties.
 	 */
 	class NAPAPI RenderSkyBoxComponent : public RenderableMeshComponent
 	{
@@ -27,19 +33,19 @@ namespace nap
 		DECLARE_COMPONENT(RenderSkyBoxComponent, RenderSkyBoxComponentInstance)
 
 	public:
-		/**
-		 * RenderSkyBoxComponent requires a camera whose frustum to render
-		 * @param components the components this component depends upon.
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 		ResourcePtr<TextureCube> mCubeTexture;
 		ResourcePtr<ParameterEntryRGBColorFloat> mColor;
 	};
 
 
 	/**
-	 * RenderSkyBoxComponentInstance
+	 * Instance part of RenderSkyBoxComponent
+	 *
+	 * Renders a skybox from a cube texture. Should be used with a `nap::SkyBoxShader` and `nap::BoxMesh` in the material
+	 * resource, but custom implementations are possible. The default sjybox shader negates the translational component of
+	 * the view matrix to fake unlimited depth. This object should be rendered first to fill the background; to do this,
+	 * ensure it is in the back layer. You may also want to exclude this object from a shadow rendering pass using tags.
+	 * The shader variables are set automatically from this component's properties.
 	 */
 	class NAPAPI RenderSkyBoxComponentInstance : public RenderableMeshComponentInstance
 	{

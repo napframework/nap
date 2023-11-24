@@ -27,21 +27,17 @@ namespace nap
 	}
 
 	/**
-	 * Texture shader. Renders an object using a texture. Set color and alpha to 1.0 to render the texture in its original color.
+	 * SkyBox Shader
 	 *
-	 * The texture shader exposes the following shader variables:
+	 * Renders a skybox from a cube texture. Negates the translational component of the view matrix to fake unlimited depth.
+	 * Should render a `nap::BoxMesh` as the first object to fill the background. The shader variables are set
+	 * automatically using the helper component `nap::RenderSkyBoxComponent`.
 	 *
-	 * ~~~~~{.vert}
-	 *		uniform UBO
-	 *		{
-	 *			uniform vec3 color;
-	 *			uniform float alpha;
-	 *		} ubo;
-	 * ~~~~
+	 * The skybox shader exposes the following shader variables for users:
 	 *
-	 * ~~~~{.frag}
-	 *		uniform sampler2D colorTexture;
-	 * ~~~~
+	 * ~~~~~{.frag}
+	 *	samplerCube	cubeTexture;
+	 * ~~~~~
 	 */
 	class NAPAPI SkyBoxShader : public Shader
 	{

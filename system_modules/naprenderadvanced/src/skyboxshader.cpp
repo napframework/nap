@@ -51,10 +51,7 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read %s fragment shader file", name.c_str()))
 			return false;
 
-		// Copy data search paths
-		const auto search_paths = mRenderAdvancedService->getModule().getInformation().mDataSearchPaths;
-
 		// Compile shader
-		return this->load(name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		return this->load(name, {}, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 }
