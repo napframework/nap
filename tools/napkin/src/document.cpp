@@ -220,7 +220,7 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string ne
 			rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
 			assert(string_method.is_valid());
 
-			// Get path and check for entity inclusion - exclude partial names
+			// Get path and check for ID inclusion - exclude partial names
 			auto path = string_method.invoke(ptr_prop.get_value(comp)).to_string();
 			auto index = path.find(oldID);
 			while (index != std::string::npos)
