@@ -228,7 +228,9 @@
                                 "MipMapMode": "Linear",
                                 "AddressModeVertical": "ClampToEdge",
                                 "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
                                 "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
                                 "AnisotropicSamples": "Default",
                                 "BorderColor": "IntOpaqueBlack",
                                 "CompareMode": "LessOrEqual",
@@ -328,6 +330,62 @@
                 {
                     "Type": "nap::DefaultInputRouterComponent",
                     "mID": "DefaultInputRouterComponent"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "FaderEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformFader",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderFaderComponent",
+                    "mID": "RenderFader",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Default"
+                    ],
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Fader",
+                    "FadeDuration": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_332fb58b",
+                        "Parameter": "",
+                        "Default": 2.0
+                    },
+                    "Camera": "../../CameraEntity/PerspCamera",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "FadeMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "StartBlack": true
                 }
             ],
             "Children": []
@@ -1103,7 +1161,8 @@
                 "TorusEntity",
                 "TallBoxEntity",
                 "BoundsEntity",
-                "BoxEntity"
+                "BoxEntity",
+                "FaderEntity"
             ]
         },
         {
@@ -1223,6 +1282,11 @@
             "Type": "nap::RenderLayerRegistry",
             "mID": "RenderLayerRegistry",
             "Layers": [
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Fader",
+                    "Name": "Fader"
+                },
                 {
                     "Type": "nap::RenderLayer",
                     "mID": "RenderLayer_Bounds",
@@ -1704,6 +1768,22 @@
                 {
                     "Type": "nap::BlinnPhongTextureShader",
                     "mID": "BlinnPhongTextureShader"
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "FadeMaterial",
+                    "Uniforms": [],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "Constants": [],
+                    "Shader": "FadeShader",
+                    "VertexAttributeBindings": [],
+                    "BlendMode": "AlphaBlend",
+                    "DepthMode": "NoReadWrite"
+                },
+                {
+                    "Type": "nap::FadeShader",
+                    "mID": "FadeShader"
                 }
             ],
             "Children": []
