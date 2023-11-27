@@ -9,10 +9,6 @@
 #ifdef _WIN32 
 	#include <dll.h>
 #endif
-#include <rsa.h>
-#include <hex.h>
-#include <randpool.h>
-#include <files.h>
 #include <openssl/rsa.h>
 #include <openssl/pem.h>
 
@@ -33,14 +29,16 @@ static EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
 
     /* Create context using RSA algorithm. "RSA-PSS" could also be used here. */
     genctx = EVP_PKEY_CTX_new_from_name(libctx, "RSA", propq);
-    if (genctx == NULL) {
-        fprintf(stderr, "EVP_PKEY_CTX_new_from_name() failed\n");
+    if (genctx == NULL)
+    {
+        std::cout << "EVP_PKEY_CTX_new_from_name() failed" << std::endl;
         goto cleanup;
     }
 
     /* Initialize context for key generation purposes. */
-    if (EVP_PKEY_keygen_init(genctx) <= 0) {
-        fprintf(stderr, "EVP_PKEY_keygen_init() failed\n");
+    if (EVP_PKEY_keygen_init(genctx) <= 0)
+    {
+        std::cout << "EVP_PKEY_keygen_init() failed" << std::endl;
         goto cleanup;
     }
 
@@ -48,8 +46,9 @@ static EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
      * Here we set the number of bits to use in the RSA key.
      * See comment at top of file for information on appropriate values.
      */
-    if (EVP_PKEY_CTX_set_rsa_keygen_bits(genctx, bits) <= 0) {
-        fprintf(stderr, "EVP_PKEY_CTX_set_rsa_keygen_bits() failed\n");
+    if (EVP_PKEY_CTX_set_rsa_keygen_bits(genctx, bits) <= 0)
+    {
+        std::cout << "EVP_PKEY_CTX_set_rsa_keygen_bits() failed" << std::endl;
         goto cleanup;
     }
 
@@ -61,8 +60,9 @@ static EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
      * Both of these parameters can also be set via EVP_PKEY_CTX_set_params, but
      * these functions provide a more concise way to do so.
      */
-    if (EVP_PKEY_CTX_set_rsa_keygen_primes(genctx, primes) <= 0) {
-        fprintf(stderr, "EVP_PKEY_CTX_set_rsa_keygen_primes() failed\n");
+    if (EVP_PKEY_CTX_set_rsa_keygen_primes(genctx, primes) <= 0)
+    {
+        std::cout << "EVP_PKEY_CTX_set_rsa_keygen_primes() failed" << std::endl;
         goto cleanup;
     }
 
@@ -76,14 +76,13 @@ static EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
      * you can set a progress callback using EVP_PKEY_set_cb; see the example in
      * EVP_PKEY_generate(3).
      */
-    fprintf(stdout, "Generating RSA key, this may take some time...\n");
-    if (EVP_PKEY_generate(genctx, &pkey) <= 0) {
-        fprintf(stderr, "EVP_PKEY_generate() failed\n");
+    if (EVP_PKEY_generate(genctx, &pkey) <= 0)
+    {
+        std::cout << "EVP_PKEY_generate() failed" << std::endl;
         goto cleanup;
     }
 
     /* pkey is now set to an object representing the generated key pair. */
-
     cleanup:
     EVP_PKEY_CTX_free(genctx);
     return pkey;
@@ -96,7 +95,7 @@ static EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
  * @param pubFilename public key filename
  * @param seed random seed
  */
-bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, const std::string& pubFilename, const std::string& seed)
+bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, const std::string& pubFilename)
 {
     int ret = EXIT_FAILURE;
     OSSL_LIB_CTX *libctx = NULL;
@@ -108,7 +107,7 @@ bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, con
 
     /* Avoid using key sizes less than 2048 bits; see comment at top of file. */
     if (bits < keyLength)
-        fprintf(stderr, "Warning: very weak key size\n\n");
+        std::cout << "Warning: key size is less than 2048 bits" << std::endl;
 
     /* Generate RSA key. */
     pkey = generate_rsa_key_long(libctx, bits);
@@ -117,9 +116,9 @@ bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, con
         goto cleanup;
 
     /* Output a PEM encoding of the public key. */
-
-    if (PEM_write_PUBKEY(pub_file, pkey) == 0) {
-        fprintf(stderr, "Failed to output PEM-encoded public key\n");
+    if (PEM_write_PUBKEY(pub_file, pkey) == 0)
+    {
+        std::cout << "Failed to output PEM-encoded public key" << std::endl;
         goto cleanup;
     }
 
@@ -128,8 +127,9 @@ bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, con
      * not encrypted. You may wish to use the arguments to specify encryption of
      * the key if you are storing it on disk. See PEM_write_PrivateKey(3).
      */
-    if (PEM_write_PrivateKey(priv_file, pkey, NULL, NULL, 0, NULL, NULL) == 0) {
-        fprintf(stderr, "Failed to output PEM-encoded private key\n");
+    if (PEM_write_PrivateKey(priv_file, pkey, NULL, NULL, 0, NULL, NULL) == 0)
+    {
+        std::cout << "Failed to output PEM-encoded private key" << std::endl;
         goto cleanup;
     }
 
@@ -170,7 +170,7 @@ int main(int argc, char* argv[])
 	pri_loc << commandLine.mOutputDirectory << "/" << commandLine.mKeyName << ".private";
 
 	// Generate
-	if (!GenerateRSAKey(1024, pri_loc.str(), pub_loc.str(), commandLine.mSeed))
+	if (!GenerateRSAKey(1024, pri_loc.str(), pub_loc.str()))
 		return -1;
 
 	std::cout << "Successfully generated keys: " << std::endl;

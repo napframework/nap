@@ -13,11 +13,17 @@ list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/naplicense/thirdparty/c
 find_package(cryptopp REQUIRED)
 include_directories(${CRYPTOPP_INCLUDE_DIRS} ${TCLAP_INCLUDE_DIRS})
 
+# Add openssl
+list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/napopenssl/thirdparty/cmake_find_modules)
+find_package(openssl REQUIRED)
+include_directories(${OPENSSL_INCLUDE_DIRS})
+
 add_executable(${PROJECT_NAME} ${sources})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} cryptopp)
+target_link_libraries(${PROJECT_NAME} ${LIBCRYPTO_LIB} ${LIBSSL_LIB})
 
 #set(DEPENDENT_NAP_MODULES naprender napmath napscene)
 #target_link_libraries(${PROJECT_NAME} napcore ${DEPENDENT_NAP_MODULES})
