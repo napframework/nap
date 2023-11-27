@@ -88,10 +88,10 @@ namespace nap
 	 * When present in the scene, the render advanced service can update light uniform data for material instances that are
 	 * compatible with the light's shader interface. On initialization, each light component sets up its own registry of
 	 * light uniform data and registers itself at the render advanced service. This way, the service is aware of the lights
-	 * in the scene and creates the necessary resources for light information and shadow maps. NAP currently supports up to
-	 * 8 lights in a scene (`RenderAdvancedService::mMaxLightCount`). The way in which these blend/interact depends on the
-	 * implementation of the shader program. Increasing the maximum number of lights is trivial, however, with the current
-	 * implementation it would take up more shader resource slots.
+	 * in the scene and creates the necessary resources for light information and shadow maps. NAP supports a limited
+	 * number of lights per scene (`RenderAdvancedService::getMaximumLightCount`). The way in which these blend/interact
+	 * depends on the implementation of the shader program. Increasing the maximum number of lights is trivial, however,
+	 * with the current implementation it would take up more shader resource slots.
 	 *
 	 * Each light component has three default uniforms that are set by the RenderAdvanced service:
 	 * - `origin`: `vec3` world position of the light.
@@ -154,10 +154,10 @@ namespace nap
 	 * When present in the scene, the render advanced service can update light uniform data for material instances that are
 	 * compatible with the light's shader interface. On initialization, each light component sets up its own registry of
 	 * light uniform data and registers itself at the render advanced service. This way, the service is aware of the lights
-	 * in the scene and creates the necessary resources for light information and shadow maps. NAP currently supports up to
-	 * 8 lights in a scene (`RenderAdvancedService::mMaxLightCount`). The way in which these blend/interact depends on the
-	 * implementation of the shader program. Increasing the maximum number of lights is trivial, however, with the current
-	 * implementation it would take up more shader resource slots.
+	 * in the scene and creates the necessary resources for light information and shadow maps. NAP supports a limited
+	 * number of lights per scene (`RenderAdvancedService::getMaximumLightCount`). The way in which these blend/interact
+	 * depends on the implementation of the shader program. Increasing the maximum number of lights is trivial, however,
+	 * with the current implementation it would take up more shader resource slots.
 	 *
 	 * Each light component has three default uniforms that are set by the RenderAdvanced service:
 	 * - `origin`: `vec3` world position of the light.
