@@ -17,6 +17,7 @@ namespace nap
 {
 	// Forward Declares
 	class TextureCube;
+    class CubeRenderTarget;
 	class RenderService;
 	class PerspCameraComponentInstance;
 

@@ -16,9 +16,9 @@
 namespace nap
 {
 	// Forward Declares
-	class TextureCube;
 	class DepthRenderTextureCube;
-	class RenderService;
+    class CubeDepthRenderTarget;
+    class RenderService;
 	class PerspCameraComponentInstance;
 
 	// Called when rendering a cube depth texture layer
