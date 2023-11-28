@@ -30,31 +30,15 @@ namespace nap
 	class PerspCameraComponentInstance;
 
 	/**
-	* Demo application that is called from within the main loop
-	*
-	* Shows upward floating textured particles
-	* Use the 'wasd' keys and the left mouse button to move through the scene
-	*
-	* This application uses it's own module: mod_dynamicgeo. In there sits an object
-	* that creates, removes and updates the particles. It also renders the particles as a single mesh to screen
-	* It demonstrates one important thing: the creation of dynamic geometry. Because the particle
-	* count changes constantly the mesh is updated every frame to reflect those changes. 
-	* Refer to particleemittercomponent.h for more information
-	*
-	* Mouse and key events are forwarded to the input service, the input service collects input events
-	* and processes all of them on update. Because NAP does not have a default space (objects can
-	* be rendered in multiple ways), you need to specify what input actually means to the application.
-	* The input router does that for you. This demo uses the default one that forwards the events to every input component
-	* Refer to the cpp-update() call for more information on handling input
-	*
-	* We simply render all the objects in the scene to the primary screen at once. 
-	* This makes sense because there is only 1 drawable object (the particle simulation) and
-	* we don't use any other render targets. 
-	*
-	* The particle object is an example and not something that should be considered final.
-	* It demonstrates how you can modify a buffer and use that buffer to create a mesh that is drawn to screen
-	* More information about rendering, scenes etc. can be found in the other, more basic, examples.
-	*/
+	 * Demo application that renders a scene of geometric objects with three lights of distinct types that also cast shadows.
+	 * 
+	 * The layer setup is such that the bounds are always rendered first, then scene objects, and finally a fader component
+	 * that acts as a color overlay that can fade in to and out from black. Objects that are included in the shadow map are
+	 * distinguished using the `Shadow` tag. The RenderAdvanced service call `renderShadows` is responsible for most of the
+	 * heavy lifting as it updates the shadow maps of all lights and updates the uniform and sampler information of all
+	 * objects. When rendering our scene to the window using `RenderService::renderObjects`, all of the information is in
+	 * place for the system to resolve and execute the render passes appropriately.
+	 */
 	class LightsAndShadowApp : public App
 	{
 		RTTI_ENABLE(App)
@@ -101,6 +85,6 @@ namespace nap
 		std::unordered_map<std::string, glm::vec3> mLightEuler;			//< Light euler rotations
 		std::unordered_map<std::string, glm::vec3> mLightXform;			//< Light transformations
 
-		RenderMask mShadowMask = 0;
+		RenderMask mShadowMask = 0;										//< Shadow mask cache
 	};
 }
