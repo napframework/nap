@@ -15,6 +15,31 @@ namespace nap
 	class RenderAdvancedService;
 
 	/**
+	 * Uniform names
+	 */
+	namespace uniform
+	{
+		namespace blinnphongcolor
+		{
+			namespace sampler
+			{
+				inline constexpr const char* environmentMap = "environmentMap";		///< Name of the environment map sampler
+			}
+
+			inline constexpr const char* ambient = "ambient";						///< Ambient color material property
+			inline constexpr const char* diffuse = "diffuse";						///< Diffuse color material property
+			inline constexpr const char* specular = "specular";						///< Specular color material property
+			inline constexpr const char* fresnel = "fresnel";						///< Fresnel [scale, power]
+			inline constexpr const char* shininess = "shininess";					///< Shininess [0, x]
+			inline constexpr const char* alpha = "alpha";							///< Alpha [0, 1]
+			inline constexpr const char* reflection = "reflection";					///< Reflection [0, 1]
+			inline constexpr const char* environment = "environment";				///< Whether to sample an environment map [0, 1]
+
+			inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
+		}
+	}
+
+	/**
 	 * Blinn Phong Color Shader
 	 *
 	 * This is NAP's default blinn-phong shader program and is compatible with the `naprenderadvanced` light system.
