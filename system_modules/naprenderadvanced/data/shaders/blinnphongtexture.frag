@@ -15,6 +15,7 @@
 layout (constant_id = 0) const uint QUAD_SAMPLE_COUNT = 8;
 layout (constant_id = 1) const uint CUBE_SAMPLE_COUNT = 4;
 layout (constant_id = 2) const uint ENABLE_ENVIRONMENT_MAPPING = 1;
+layout (constant_id = 3) const uint DIFFUSE_ONLY = 0;
 
 // Uniforms
 uniform nap
@@ -72,6 +73,13 @@ uniform sampler2D colorTexture;
 
 void main()
 {
+	// Diffuse-only early exit for debugging purposes
+	if (DIFFUSE_ONLY > 0)
+	{
+		out_Color = vec4(ubo.diffuse, ubo.alpha);
+		return;
+	}
+	
 	// Material color
 	vec4 texture_color = texture(colorTexture, passUV0.xy);
 	BlinnPhongMaterial mtl = { ubo.ambient, texture_color.rgb * ubo.diffuse, ubo.specular, ubo.shininess };
