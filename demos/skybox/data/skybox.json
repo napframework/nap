@@ -350,18 +350,6 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::ParameterRGBColorFloat",
-            "mID": "LightColorParam",
-            "Name": "LightColor",
-            "Value": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
-        },
-        {
             "Type": "nap::RenderLayerRegistry",
             "mID": "RenderLayerRegistry",
             "Layers": [
