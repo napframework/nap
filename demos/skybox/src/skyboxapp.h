@@ -30,31 +30,20 @@ namespace nap
 	class PerspCameraComponentInstance;
 
 	/**
-	* Demo application that is called from within the main loop
-	*
-	* Shows upward floating textured particles
-	* Use the 'wasd' keys and the left mouse button to move through the scene
-	*
-	* This application uses it's own module: mod_dynamicgeo. In there sits an object
-	* that creates, removes and updates the particles. It also renders the particles as a single mesh to screen
-	* It demonstrates one important thing: the creation of dynamic geometry. Because the particle
-	* count changes constantly the mesh is updated every frame to reflect those changes. 
-	* Refer to particleemittercomponent.h for more information
-	*
-	* Mouse and key events are forwarded to the input service, the input service collects input events
-	* and processes all of them on update. Because NAP does not have a default space (objects can
-	* be rendered in multiple ways), you need to specify what input actually means to the application.
-	* The input router does that for you. This demo uses the default one that forwards the events to every input component
-	* Refer to the cpp-update() call for more information on handling input
-	*
-	* We simply render all the objects in the scene to the primary screen at once. 
-	* This makes sense because there is only 1 drawable object (the particle simulation) and
-	* we don't use any other render targets. 
-	*
-	* The particle object is an example and not something that should be considered final.
-	* It demonstrates how you can modify a buffer and use that buffer to create a mesh that is drawn to screen
-	* More information about rendering, scenes etc. can be found in the other, more basic, examples.
-	*/
+	 * Demo application that renders a sky box and a reflective 3D object.
+	 *
+	 * This app uses `naprenderadvanced` object `nap::RenderSkyBoxComponent` with a `nap::SkyBoxShader` to render a skybox.
+	 * The `nap::TorusMesh` is rendered with a `nap::BlinnPhongColorShader` that samples the same cube map used for the
+	 * skybox to display a (fake) reflection. Additionally, we create a simple combobox GUI in the `SkyBoxApp::update` hook
+	 * that allows the user to switch between cube maps. Here we make sure to update the sampler instances of both the skybox
+	 * and the torus.
+	 *
+	 * We also demonstrate how to use render layers to your advantage `nap::RenderLayer`. A `nap::RenderLayerRegistry` defines
+	 * two layers `SkyBox` and `Default` where the skybox layer is the bottom layer, and therefore rendered first. As the
+	 * `nap::RenderSkyBoxComponent` is assigned the `SkyBox` layer, we can set its `DepthMode` to `NoReadWrite`. This is
+	 * becausehe skybox should be behind all other objects and we do not need to read depth fragments when rendering the inside
+	 * of a box. This mode makes the render pass more efficient.
+	 */
 	class SkyBoxApp : public App
 	{
 		RTTI_ENABLE(App)
@@ -97,8 +86,8 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
 		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;
+		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//< Entity that serves as the root of the render object tree
 
-		std::vector<rtti::ObjectPtr<CubeMapFromFile>> mCubeImages;
+		std::vector<rtti::ObjectPtr<CubeMapFromFile>> mCubeMaps;		//< Cube maps cache
 	};
 }

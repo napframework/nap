@@ -74,7 +74,7 @@ namespace nap
 
 	/**
 	 * Creates a render mask from a list of tags
-	 * @param tags
+	 * @param tags a list of tags to create a mask from
 	 * @return the render mask
 	 */
 	static RenderMask createRenderMask(const RenderTagList& tags)
@@ -86,9 +86,9 @@ namespace nap
 	}
 
 	/**
-	 * Compares component and inclusion masks
-	 * @param componentMask
-	 * @param inclusionMask
+	 * Compares component and inclusion masks, returns true if any of the tags overlap using bitwise AND
+	 * @param componentMask the render mask of a component
+	 * @param inclusionMask the render mask to compare with
 	 * @return true if the componentMask is included in the inclusionMask
 	 */
 	static bool compareRenderMask(RenderMask componentMask, RenderMask inclusionMask)

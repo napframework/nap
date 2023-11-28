@@ -34,17 +34,22 @@ namespace nap
 		const auto& resource = getComponent<RenderableComponent>();
 		mVisible = resource->mVisible;
 
-		if (resource->mLayer != nullptr && resource->mLayerRegistry == nullptr)
+		// Check if this component is assigned to a layer
+		if (resource->mLayer != nullptr)
 		{
-			// The layer must be assigned an index by the registry
-			errorState.fail("%s: Layer specified without registry. Please provide a registry to ensure it is initialized before the layer.", resource->mID.c_str());
-			return false;
+			// Bail early if there is no layer registry
+			if (!errorState.check(resource->mLayerRegistry != nullptr, "%s: Layer specified without registry. Please provide a registry to ensure it is initialized before the layer.", resource->mID.c_str()))
+				return false;
+
+			// Store the layer index
+			mRenderLayer = resource->mLayer->getIndex();
 		}
 
-		if (resource->mLayerRegistry != nullptr)
+		// Ensure there are no tag entries that are nullptrs
+		for (const auto& tag : resource->mTags)
 		{
-			mRenderLayer = (resource->mLayer != nullptr) ?
-				resource->mLayer->getIndex() : 0U;
+			if (!errorState.check(tag != nullptr, "%s: Empty tag entry encountered", resource->mID.c_str()))
+				return false;
 		}
 		mRenderMask = createRenderMask(resource->mTags);
 

@@ -12,6 +12,7 @@
 #include <imgui/imgui.h>
 #include <renderskyboxcomponent.h>
 #include <skyboxshader.h>
+#include <blinnphongcolorshader.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SkyBoxApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -48,7 +49,8 @@ namespace nap
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
 
-		mCubeImages = mResourceManager->getObjects<CubeMapFromFile>();
+		// Cache cube maps
+		mCubeMaps = mResourceManager->getObjects<CubeMapFromFile>();
 
 		mGuiService->selectWindow(mRenderWindow);
 
@@ -81,33 +83,38 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
+		// Here we create a simple combobox that allows the user to switch between cube maps
+		// On selection, we must update the sampler instance of the sky box and all render components that display its reflection
+
+		// Gather all skyboxes, there should be only one however
 		std::vector<RenderSkyBoxComponentInstance*> skyboxes;
 		mWorldEntity->getComponentsOfTypeRecursive<RenderSkyBoxComponentInstance>(skyboxes);
 		if (!skyboxes.empty())
 		{
-			auto* skybox = skyboxes.front();
-			
+			// Create a list of cubemap labels
 			std::vector<const char*> labels;
-			labels.reserve(mCubeImages.size());
-			std::for_each(mCubeImages.begin(), mCubeImages.end(), [&labels](const auto& cube) {
+			labels.reserve(mCubeMaps.size());
+			std::for_each(mCubeMaps.begin(), mCubeMaps.end(), [&labels](const auto& cube) {
 				labels.emplace_back(cube->mID.c_str());
 			});
 
 			static int item_index = 0;
-			if (ImGui::Combo("CubeMaps", &item_index, labels.data(), mCubeImages.size()))
+			if (ImGui::Combo("CubeMaps", &item_index, labels.data(), mCubeMaps.size()))
 			{
+				// Update the sampler instance of the skybox
 				auto* sampler = skyboxes.front()->getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>(uniform::skybox::sampler::cubeTexture);
-				sampler->setTexture(*mCubeImages[item_index]);
+				sampler->setTexture(*mCubeMaps[item_index]);
 
+				// Update the sampler isntances of all render components that display the reflection of the skybox
 				std::vector<RenderableMeshComponentInstance*> render_comps;
 				mWorldEntity->getComponentsOfTypeRecursive<RenderableMeshComponentInstance>(render_comps);
 				for (auto& comp : render_comps)
 				{
-					auto* env_sampler = comp->getMaterialInstance().findSampler("environmentMap");
+					auto* env_sampler = comp->getMaterialInstance().findSampler(uniform::blinnphongcolor::sampler::environmentMap);
 					if (env_sampler != nullptr)
 					{
 						if (env_sampler->get_type().is_derived_from(RTTI_OF(SamplerCubeInstance)))
-							static_cast<SamplerCubeInstance*>(env_sampler)->setTexture(*mCubeImages[item_index]);
+							static_cast<SamplerCubeInstance*>(env_sampler)->setTexture(*mCubeMaps[item_index]);
 					}
 				}
 			}
@@ -117,8 +124,7 @@ namespace nap
 
 
 	/**
-	 * Render all objects to screen at once
-	 * In this case that's only the particle mesh
+	 * Render all objects to screen
 	 */
 	void SkyBoxApp::render()
 	{
@@ -127,6 +133,9 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		// Our scene contains a `nap::CubeMapFromFile` which must be pre-rendered in a headless render pass. This only needs to happen once, and there
+		// are no other objects that require headless rendering each frame. Therefore, `isHeadlessCommandQueued` should only be true in the first frame
+		// of rendering and record pre-render operations for our cube map resources.
 		if (mRenderService->isHeadlessCommandQueued())
 		{
 			if (mRenderService->beginHeadlessRecording())

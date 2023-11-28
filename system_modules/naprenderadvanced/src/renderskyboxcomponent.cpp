@@ -54,7 +54,7 @@ namespace nap
 		mSkyBoxMesh->mUsage = EMemoryUsage::Static;
 		mSkyBoxMesh->mCullMode = ECullMode::Front;
 		mSkyBoxMesh->mFlipNormals = false;
-		if (!errorState.check(mSkyBoxMesh->init(errorState), "Unable to create box mesh"))
+		if (!mSkyBoxMesh->init(errorState))
 			return false;
 
 		// Create renderable mesh
