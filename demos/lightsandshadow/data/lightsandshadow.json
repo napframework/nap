@@ -138,7 +138,7 @@
                         "Constants": [],
                         "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "DepthMode": "WriteOnly"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -1289,13 +1289,13 @@
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Bounds",
-                    "Name": "Bounds"
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Default",
-                    "Name": "Default"
+                    "mID": "RenderLayer_Bounds",
+                    "Name": "Bounds"
                 }
             ]
         },
