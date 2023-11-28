@@ -314,7 +314,7 @@ namespace nap
 		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
 		for (auto& comp : renderComps)
 		{
-			// Ensure the component is visible and had a material instance
+			// Ensure the component is visible and has a material instance
 			if (comp->isVisible() && comp->get_type().is_derived_from(RTTI_OF(RenderableMeshComponentInstance)))
 			{
 				// Ensure the shader interface supports lights
@@ -350,6 +350,7 @@ namespace nap
 				// Fetch flags
 				auto it_flags = mLightFlagsMap.find(light);
 				assert(it_flags != mLightFlagsMap.end());
+                updateLightFlags(*light, it_flags->second);
 
 				// Set light uniform defaults
 				auto& light_element = light_array->getElement(light_index);
@@ -484,7 +485,6 @@ namespace nap
                     // Fetch flags
                     auto it_flags = mLightFlagsMap.find(light);
                     assert(it_flags != mLightFlagsMap.end());
-					updateLightFlags(*light, it_flags->second);
 
                     switch (light->getShadowMapType())
                     {
