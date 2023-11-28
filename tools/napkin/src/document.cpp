@@ -203,7 +203,7 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 }
 
 
-void napkin::Document::patchLinks(const std::string& oldID, const std::string newID)
+void napkin::Document::patchLinks(const std::string& oldID, const std::string& newID)
 {
 	auto components = getObjects<nap::Component>();
 	for (auto& comp : components)

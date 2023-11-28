@@ -596,7 +596,7 @@ namespace napkin
 		 * @param oldID old entity or component ID
 		 * @param newID new entity or component ID
 		 */
-		void patchLinks(const std::string& oldID, const std::string newID);
+		void patchLinks(const std::string& oldID, const std::string& newID);
 	};
 
 
