@@ -15,9 +15,7 @@ namespace nap
 	std::string ComponentPtrBase::translateTargetID(const std::string& targetID)
 	{
 		size_t pos = targetID.find_last_of('/');
-		if (pos == std::string::npos)
-			return targetID;
-
-		return targetID.substr(pos + 1);
+		return pos == std::string::npos ? targetID :
+			targetID.substr(pos + 1);
 	}
 }

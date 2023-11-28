@@ -4,6 +4,7 @@
 
 #include "typeconversion.h"
 #include "appcontext.h"
+#include <rtti/objectptr.h>
 #include <qdebug.h>
 
 using namespace nap::rtti;
@@ -223,7 +224,14 @@ namespace napkin
 		{
 			// Pointer type
 			if (type.get_wrapped_type().is_pointer())
-				instance_property_type = RTTI_OF(nap::PointerInstancePropertyValue);
+			{
+				// Regular resource pointer only -> component ptr overrides not supported atm.
+				// TODO: Add support for 'nap::ComponentPtrInstancePropertyValue'
+				if (type.is_derived_from(RTTI_OF(ObjectPtrBase)))
+				{
+					instance_property_type = RTTI_OF(nap::PointerInstancePropertyValue);
+				}
+			}
 		}
 
 		// Bail if invalid
