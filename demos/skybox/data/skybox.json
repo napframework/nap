@@ -563,27 +563,6 @@
         },
         {
             "Type": "nap::ResourceGroup",
-            "mID": "CubeImages",
-            "Members": [
-                {
-                    "Type": "nap::ImageFromFile",
-                    "mID": "EquirectangularTexture",
-                    "Usage": "Static",
-                    "ImagePath": "equi_uffizi.png",
-                    "GenerateLods": false
-                },
-                {
-                    "Type": "nap::ImageFromFile",
-                    "mID": "EquirectangularTestTexture",
-                    "Usage": "Static",
-                    "ImagePath": "equi_test.jpg",
-                    "GenerateLods": false
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::ResourceGroup",
             "mID": "CubeMaps",
             "Members": [
                 {
@@ -601,7 +580,7 @@
                             0.0
                         ]
                     },
-                    "SourceTexture": "EquirectangularTexture",
+                    "ImagePath": "equi_uffizi.png",
                     "SampleShading": false,
                     "GenerateLODs": true
                 },
@@ -620,7 +599,7 @@
                             0.0
                         ]
                     },
-                    "SourceTexture": "EquirectangularTestTexture",
+                    "ImagePath": "equi_test.jpg",
                     "SampleShading": false,
                     "GenerateLODs": true
                 }
