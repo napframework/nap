@@ -6,6 +6,7 @@
 
 RTTI_BEGIN_CLASS(nap::EntityPtr)
 	RTTI_FUNCTION(nap::rtti::method::toString,			&nap::EntityPtr::toString)
+	RTTI_FUNCTION(nap::rtti::method::toObject,			&nap::EntityPtr::toObject)
 	RTTI_FUNCTION(nap::rtti::method::assign,			&nap::EntityPtr::assign)
 	RTTI_FUNCTION(nap::rtti::method::translateTargetID,	&nap::EntityPtr::translateTargetID)
 RTTI_END_CLASS
@@ -15,9 +16,7 @@ namespace nap
 	std::string EntityPtr::translateTargetID(const std::string& targetID)
 	{
 		size_t pos = targetID.find_last_of('/');
-		if (pos == std::string::npos)
-			return targetID;
-
-		return targetID.substr(pos + 1);
+		return pos == std::string::npos ? targetID :
+			targetID.substr(pos + 1);
 	}
 }

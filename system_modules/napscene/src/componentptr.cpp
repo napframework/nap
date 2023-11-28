@@ -6,8 +6,8 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComponentPtrBase)
 	RTTI_FUNCTION(nap::rtti::method::toString,				&nap::ComponentPtrBase::toString)
-	RTTI_FUNCTION(nap::rtti::method::assign,				&nap::ComponentPtrBase::assign)
 	RTTI_FUNCTION(nap::rtti::method::toObject,				&nap::ComponentPtrBase::toObject)
+	RTTI_FUNCTION(nap::rtti::method::assign,				&nap::ComponentPtrBase::assign)
 	RTTI_FUNCTION(nap::rtti::method::translateTargetID,		&nap::ComponentPtrBase::translateTargetID)
 RTTI_END_CLASS
 

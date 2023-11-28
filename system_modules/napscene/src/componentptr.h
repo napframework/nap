@@ -30,24 +30,25 @@ namespace nap
 		static std::string translateTargetID(const std::string& targetID);
 
 		/**
-		 * Convert the pointer to a string for serialization
+		 * Convert the path to a string for serialization
 		 * @return The string representation of this object
 		 */
 		virtual std::string toString() const = 0;
 
 		/**
-		 * Convert the pointer to an rtti object
+		 * Returns the assigned component
 		 * @return The rtti object, nullptr if it doesn't exist
 		 */
-		virtual rtti::Object* toObject() const = 0;
+		virtual Component* toObject() const = 0;
 
 		/**
-		 * Assign the target ID & object to this pointer. Used for pointer resolving by the ResourceManager,
-		 * should not be called manually (is only public so that we can register it in RTTI)
-		 * @param targetID The ID of the target
+		 * Assign the path to the component (including ID) and object to this pointer.
+		 * Used for pointer resolving by the ResourceManager.
+		 * Should not be called manually (is only public so that we can register it in RTTI)
+		 * @param targetPath path to the target object including ID
 		 * @param targetObject The pointer to be assigned
 		 */
-		virtual void assign(const std::string& targetID, rtti::Object& targetObject) = 0;
+		virtual void assign(const std::string& targetPath, rtti::Object& targetObject) = 0;
 	};
 
 	/**
@@ -94,131 +95,68 @@ namespace nap
 	public:
 		ComponentPtr() = default;
 
-		ComponentPtr(ComponentType* component) :
-			mResource(component)
-		{
-		}
+		ComponentPtr(ComponentType* component) : mResource(component)								{ }
 
-		const std::string& getInstancePath() const { return mPath; }
+		const std::string& getInstancePath() const							{ return mPath; }
 
-		virtual std::string toString() const override
-		{
-			return mPath;
-		}
+		virtual std::string toString() const override						{ return mPath; }
 
-		virtual void assign(const std::string& targetID, rtti::Object& targetObject) override
-		{
-			mPath = targetID;
-			mResource = rtti_cast<ComponentType>(&targetObject);
-		}
+		virtual Component* toObject() const override						{ return rtti_cast<nap::Component>(mResource.get()); }
 
-		virtual rtti::Object* toObject() const override
-		{
-			return mResource.get();
-		}
+		virtual void assign(const std::string& targetID, rtti::Object& targetObject) override;
 
-		const ComponentType& operator*() const
-		{
-			assert(mResource != nullptr);
-			return *mResource;
-		}
+		ComponentType* get() const { return mResource.get(); }
 
-		ComponentType& operator*()
-		{
-			assert(mResource != nullptr);
-			return *mResource;
-		}
+		ComponentType* get() { return mResource.get(); }
 
-		const ComponentType* operator->() const
-		{
-			assert(mResource != nullptr);
-			return mResource.get();
-		}
+		const ComponentType& operator*() const								{ assert(mResource != nullptr); return *mResource; }
 
-		ComponentType* operator->()
-		{
-			assert(mResource != nullptr);
-			return mResource.get();
-		}
+		ComponentType& operator*()											{ assert(mResource != nullptr); return *mResource; }
 
-		bool operator==(const ComponentPtr<ComponentType>& other) const
-		{
-			return mResource == other.mResource;
-		}
+		const ComponentType* operator->() const								{ assert(mResource != nullptr); return mResource.get(); }
+
+		ComponentType* operator->()											{ assert(mResource != nullptr); return mResource.get(); }
+
+		bool operator==(const ComponentPtr<ComponentType>& other) const		{ return mResource == other.mResource; }
 
 		template<typename OTHER>
-		bool operator==(const ComponentPtr<OTHER>& other) const
-		{
-			return mResource == other.mResource;
-		}
+		bool operator==(const ComponentPtr<OTHER>& other) const				{ return mResource == other.mResource; }
 
 		template<typename OTHER>
-		bool operator==(const OTHER* ptr) const
-		{
-			return mResource == ptr;
-		}
+		bool operator==(const OTHER* ptr) const								{ return mResource == ptr; }
 
-		bool operator==(std::nullptr_t) const
-		{
-			return mResource == nullptr;
-		}
+		bool operator==(std::nullptr_t) const								{ return mResource == nullptr; }
 
-		bool operator!=(const ComponentPtr<ComponentType>& other) const
-		{
-			return mResource != other.mResource;
-		}
+		bool operator!=(const ComponentPtr<ComponentType>& other) const		{ return mResource != other.mResource; }
 
 		template<typename OTHER>
-		bool operator!=(const ComponentPtr<OTHER>& other) const
-		{
-			return mResource != other.mResource;
-		}
+		bool operator!=(const ComponentPtr<OTHER>& other) const				{ return mResource != other.mResource; }
 
-		template<typename OTHER>
-		bool operator!=(const OTHER* ptr) const
-		{
-			return mResource != ptr;
-		}
+		template<typename OTHER>											
+		bool operator!=(const OTHER* ptr) const								{ return mResource != ptr; }
 
-		bool operator!=(std::nullptr_t) const
-		{
-			return mResource != nullptr;
-		}
+		bool operator!=(std::nullptr_t) const								{ return mResource != nullptr; }
 
-		bool operator<(const ComponentPtr<ComponentType>& other) const
-		{
-			return mResource < other.mResource;
-		}
+		bool operator<(const ComponentPtr<ComponentType>& other) const		{ return mResource < other.mResource; }
 
-		bool operator>(const ComponentPtr<ComponentType>& other) const
-		{
-			return mResource > other.mResource;
-		}
+		bool operator>(const ComponentPtr<ComponentType>& other) const		{ return mResource > other.mResource; }
 
-		bool operator<=(const ComponentPtr<ComponentType>& other) const
-		{
-			return mResource <= other.mResource;
-		}
+		bool operator<=(const ComponentPtr<ComponentType>& other) const		{ return mResource <= other.mResource; }
 
-		bool operator>=(const ComponentPtr<ComponentType>& other) const
-		{
-			return mResource >= other.mResource;
-		}
-
-		ComponentType* get() const
-		{
-			return mResource.get();
-		}
-
-		ComponentType* get()
-		{
-			return mResource.get();
-		}
+		bool operator>=(const ComponentPtr<ComponentType>& other) const		{ return mResource >= other.mResource; }
 
 	private:
 		rtti::ObjectPtr<ComponentType>	mResource;		///< Pointer to the target resource
 		std::string						mPath;			///< Path in the entity hierarchy, either relative or absolute
 	};
+
+	template<class ComponentType>
+	void nap::ComponentPtr<ComponentType>::assign(const std::string& targetID, rtti::Object& targetObject)
+	{
+		mPath = targetID;
+		mResource = rtti_cast<ComponentType>(&targetObject);
+	}
+
 
 	/**
 	 * The ComponentInstancePtrInitProxy is a proxy object that is only used to pass arguments to the correct constructor of ComponentInstancePtr
@@ -299,103 +237,45 @@ namespace nap
 			ComponentInstancePtr(proxy.mSourceComponentInstance, proxy.mComponentMemberPointer)
 		{ }
 
-		const TargetComponentInstanceType& operator*() const
-		{
-			assert(mInstance != nullptr);
-			return *mInstance;
-		}
+		const TargetComponentInstanceType& operator*() const							{ assert(mInstance != nullptr); return *mInstance; }
 
-		TargetComponentInstanceType& operator*()
-		{
-			assert(mInstance != nullptr);
-			return *mInstance;
-		}
+		TargetComponentInstanceType& operator*()										{ assert(mInstance != nullptr); return *mInstance; }
 
-		TargetComponentInstanceType* operator->() const
-		{
-			assert(mInstance != nullptr);
-			return mInstance;
-		}
+		TargetComponentInstanceType* operator->() const									{ assert(mInstance != nullptr); return mInstance; }
 
-		TargetComponentInstanceType* operator->()
-		{
-			assert(mInstance != nullptr);
-			return mInstance;
-		}
+		TargetComponentInstanceType* operator->()										{ assert(mInstance != nullptr); return mInstance; }
 
-		bool operator==(const ComponentInstancePtr<TargetComponentType>& other) const
-		{
-			return mInstance == other.mPtr;
-		}
+		bool operator==(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance == other.mPtr; }
 
 		template<typename OTHER>
-		bool operator==(const ComponentInstancePtr<OTHER>& other) const
-		{
-			return mInstance == other.mPtr;
-		}
+		bool operator==(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance == other.mPtr; }
 
 		template<typename OTHER>
-		bool operator==(const OTHER* ptr) const
-		{
-			return mInstance == ptr;
-		}
+		bool operator==(const OTHER* ptr) const											{ return mInstance == ptr; }
 
-		bool operator==(std::nullptr_t) const
-		{
-			return mInstance == nullptr;
-		}
+		bool operator==(std::nullptr_t) const											{ return mInstance == nullptr; }
 
-		bool operator!=(const ComponentInstancePtr<TargetComponentType>& other) const
-		{
-			return mInstance != other.mPtr;
-		}
+		bool operator!=(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance != other.mPtr; }
 
 		template<typename OTHER>
-		bool operator!=(const ComponentInstancePtr<OTHER>& other) const
-		{
-			return mInstance != other.mPtr;
-		}
+		bool operator!=(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance != other.mPtr; }
 
-		template<typename OTHER>
-		bool operator!=(const OTHER* ptr) const
-		{
-			return mInstance != ptr;
-		}
+		template<typename OTHER>														
+		bool operator!=(const OTHER* ptr) const											{ return mInstance != ptr; }
 
-		bool operator!=(std::nullptr_t) const
-		{
-			return mInstance != nullptr;
-		}
+		bool operator!=(std::nullptr_t) const											{ return mInstance != nullptr; }
 
-		bool operator<(const ComponentInstancePtr<TargetComponentType>& other) const
-		{
-			return mInstance < other.mInstance;
-		}
+		bool operator<(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance < other.mInstance; }
 
-		bool operator>(const ComponentInstancePtr<TargetComponentType>& other) const
-		{
-			return mInstance > other.mInstance;
-		}
+		bool operator>(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance > other.mInstance; }
 
-		bool operator<=(const ComponentInstancePtr<TargetComponentType>& other) const
-		{
-			return mInstance <= other.mInstance;
-		}
+		bool operator<=(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance <= other.mInstance; }
 
-		bool operator>=(const ComponentInstancePtr<TargetComponentType>& other) const
-		{
-			return mInstance >= other.mInstance;
-		}
+		bool operator>=(const ComponentInstancePtr<TargetComponentType>& other) const	{ return mInstance >= other.mInstance; }
 
-		TargetComponentInstanceType* get() const
-		{
-			return mInstance;
-		}
+		TargetComponentInstanceType* get() const										{ return mInstance; }
 
-		TargetComponentInstanceType* get()
-		{
-			return mInstance;
-		}
+		TargetComponentInstanceType* get()												{ return mInstance; }
 
 	private:
 		template<typename TargetComponentType_, typename SourceComponentType_>
@@ -440,16 +320,8 @@ namespace rttr
 	{
 		using wrapped_type = T*;
 		using type = nap::ComponentPtr<T>;
-
-		inline static wrapped_type get(const type& obj)
-		{
-			return obj.get();
-		}
-
-		inline static type create(const wrapped_type& value)
-		{
-			return nap::ComponentPtr<T>(value);
-		}
+		inline static wrapped_type get(const type& obj)			{ return obj.get(); }
+		inline static type create(const wrapped_type& value)	{ return nap::ComponentPtr<T>(value); }
 	};
 }
 
