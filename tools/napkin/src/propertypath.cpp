@@ -373,14 +373,14 @@ void PropertyPath::setPointee(Object* pointee)
 		prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
 	{
 		// Assign the new value to the pointer (note that we're modifying a copy)
-		rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
-		auto target_val = getValue();
 		assert(mDocument != nullptr);
 		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-		assign_method.invoke(target_val, path, *pointee);
+		auto new_value = getValue();
+		rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
+		assign_method.invoke(new_value, path, *pointee);
 
 		// Apply the modified value back to the source property
-		setValue(target_val);
+		setValue(new_value);
 		return;
 	}
 
