@@ -18,7 +18,11 @@ list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/napopenssl/thirdparty/c
 find_package(openssl REQUIRED)
 include_directories(${OPENSSL_INCLUDE_DIRS})
 
-add_executable(${PROJECT_NAME} ${sources})
+# Add napopenssl utility methods
+include_directories("${NAP_ROOT}/system_modules/napopenssl/src")
+file(GLOB NAP_OPENSSL_SOURCES "${NAP_ROOT}/system_modules/napopenssl/src/opensslutils.cpp")
+
+add_executable(${PROJECT_NAME} ${sources} ${NAP_OPENSSL_SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES VS_DEBUGGER_WORKING_DIRECTORY "$(OutDir)")
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})

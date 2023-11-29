@@ -2,11 +2,11 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <openssl/pem.h>
-#include <openssl/rsa.h>
-#include <openssl/sha.h>
 #include <commandline.h>
 #include <chrono>
+#include <fstream>
+
+#include "opensslutils.h"
 
 using namespace std;
 using SystemClock = std::chrono::system_clock;
@@ -108,65 +108,6 @@ static bool validateDate(const std::string& date)
     return true;
 }
 
-/**
- * Creates, signs and saves the license
- * @param privFilename path to private key, used to sign the license
- * @param signingScheme the signing scheme
- * @param license the license to sign and save
- * @param signatureFilename path to signature file
- * @param licenseFileName to license file
- */
-static bool signLicense(const std::string& privFilename, const std::string& signingScheme, const std::string& license, const std::string& signatureFilename, const std::string& licenseFileName)
-{
-    // Calculate SHA256 digest for datafile
-    unsigned char digest[SHA256_DIGEST_LENGTH];
-    SHA256_CTX ctx;
-    SHA256_Init(&ctx);
-
-    SHA256_Update(&ctx, license.c_str(), strlen(license.c_str()));
-
-    SHA256_Final(digest, &ctx);
-
-    FILE* pvtkey = fopen(privFilename.c_str(), "r");
-
-    // Read pvt key from file
-    RSA* rsa_pvtkey = PEM_read_RSAPrivateKey(pvtkey, NULL, NULL, NULL);
-
-    unsigned bytes;
-    int result = RSA_sign(NID_sha256, digest, SHA256_DIGEST_LENGTH, buffer, &bytes, rsa_pvtkey);
-    assert (result==1); // success
-
-    // 256-byte signature will fit:
-    char encodedData[1024];
-    // https://wiki.openssl.org/index.php/Base64
-    int n=EVP_EncodeBlock((unsigned char *)encodedData, buffer, bytes);
-    assert (n<sizeof(encodedData));
-
-    FILE* signature_file = fopen(signatureFilename.c_str(), "w");
-    if (signature_file != NULL)
-    {
-        fputs(encodedData, signature_file);
-        fclose(signature_file);
-    }else
-    {
-        return false;
-    }
-
-    FILE* license_file = fopen(licenseFileName.c_str(), "w");
-    if (license_file != NULL)
-    {
-        fputs(license.c_str(), license_file);
-        fclose(license_file);
-    }else
-    {
-        return false;
-    }
-
-    RSA_free(rsa_pvtkey);
-    fclose(pvtkey);
-
-    return true;
-}
 
 /**
  * Creates, signs and saves a license.
@@ -200,6 +141,21 @@ static bool signLicense(const std::string& privFilename, const std::string& sign
  */
 int main(int argc, char *argv[])
 {
+    const std::string pubkey = "-----BEGIN PUBLIC KEY-----\n"
+                               "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2/tBm7WFGCx5XRE+AKOD\n"
+                               "PkPsjWFqOLBWhcE4wkpHjAMOI/XXtJZYVlO8kAoKRKF7oBaCmqbErSrfvUjoxWcX\n"
+                               "kPlZlX392vVG5IKA8CAjEoGVLaobg5Vc1RkfpdyCwGCxLbSwriP8FC03qg1MwCwo\n"
+                               "cDmcpk1bZluWkZO98+HXXysmhGCTFwWKAW/EOZgjXVYS3Z4ANre8ky6ivGOdCitB\n"
+                               "85I8W7tkmKzDPeKIpWd/xx9CxT5wNSx0uanu9LfEcyBmZFdZyFeVxcGyvm08DJLc\n"
+                               "Jv85NDTrqVJ+8BFbiJeD5F9D5PNN2YtOX8muc1vD4UpX+3litcp8GrAVe+IEdiCu\n"
+                               "dVyWZdRR/5HBqEsB8ZmzXPTB4m9YaxoCXq9fKdcf3iI4BROdnPF+1Zt8i39IbZuN\n"
+                               "01G1ER6K1pGopqK2mNd/C1emG8HONX+OLXfh43uAyUPAOmzN9bsea0DhZk7jY+1d\n"
+                               "clq5a2wZdo72YA9gig5FTz8UzmucKo58cCkg0cFoneQNwBkAidNWxhG4/bqyPL/q\n"
+                               "WuEBzHLz/rOEAjqYELH9bOm63d4yna3xOGBFT9vr+WsxpyvWkxDYTK1/TA0dOYVi\n"
+                               "2E5fo7l395k/TkGNYOayaaJvEVZISUjDC8DOKKStV3BgdRqNQgYv3VTyg2//ZvJJ\n"
+                               "14dZKIuWf27OtPho5hMK0tUCAwEAAQ==\n"
+                               "-----END PUBLIC KEY-----\n";
+
     // Parse command-line
     CommandLine commandLine;
     if (!CommandLine::parse(argc, argv, commandLine))
@@ -257,8 +213,40 @@ int main(int argc, char *argv[])
             << commandLine.mApplication << "_" << commandLine.mFistName << "_" << commandLine.mLastName <<
             "." << licenseExtension;
 
-    // Create license
-    if (!signLicense(commandLine.mKey, signingScheme, lic_content.str(), key_loc.str(), lic_loc.str()))
+    // Read privkey from disk
+    std::ifstream priv_key_stream(commandLine.mKey);
+    std::stringstream priv_key;
+    priv_key << priv_key_stream.rdbuf();
+    priv_key_stream.close();
+
+    // Create signature
+    std::string signature;
+    if (!nap::openssl::utility::createSignature(priv_key.str(), lic_content.str(), signingScheme, signature))
+        return -1;
+
+    if (!nap::openssl::utility::verifyMessage(pubkey, lic_content.str(), signingScheme, signature))
+        return -1;
+
+    // Save license
+    std::ofstream lic_file(lic_loc.str());
+    lic_file << lic_content.str();
+    lic_file.close();
+
+    // Save signature
+    std::ofstream key_file(key_loc.str());
+    key_file << signature;
+    key_file.close();
+
+    // Read signature from disk
+    std::ifstream t(key_loc.str());
+    std::stringstream signature2;
+    signature2 << t.rdbuf();
+    t.close();
+
+    std::string l = signature2.str();
+
+    // Verify license
+    if (!nap::openssl::utility::verifyMessage(pubkey, lic_content.str(), signingScheme, signature2.str()))
         return -1;
 
     std::cout << "Successfully created and signed license" << std::endl;

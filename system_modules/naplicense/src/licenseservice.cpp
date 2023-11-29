@@ -29,6 +29,8 @@
 #include <sha.h>
 #include <hex.h>
 
+#include "opensslutils.h"
+
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
 	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -36,6 +38,8 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LicenseService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
+
+bool digest_message(unsigned char *message, unsigned char **digest, unsigned int *digest_len);
 
 namespace nap
 {
@@ -99,38 +103,6 @@ namespace nap
 
 		return nullptr;
 	}
-
-
-	static bool rsaVerifyFile(const std::string& publicKey, nap::ESigningScheme signingScheme, const std::string& licenseFile, const std::string& signatureFile)
-	{
-		try
-		{
-			// Load public key
-			std::unique_ptr<CryptoPP::PK_Verifier> verifier = createVerifier(publicKey, signingScheme);
-
-			// Load license signature file and ensure byte length matches
-			CryptoPP::FileSource signature_file(signatureFile.c_str(), true, new CryptoPP::HexDecoder);
-			if (signature_file.MaxRetrievable() != verifier->SignatureLength())
-				return false;
-
-			// Copy into signature
-			CryptoPP::SecByteBlock signature(verifier->SignatureLength());
-			signature_file.Get(signature, signature.size());
-
-			// Load license and verify
-			CryptoPP::SignatureVerificationFilter *verifier_filter = new CryptoPP::SignatureVerificationFilter(*verifier);
-			verifier_filter->Put(signature, verifier->SignatureLength());
-
-			CryptoPP::FileSource license_file(licenseFile.c_str(), true, verifier_filter);
-			return verifier_filter->GetLastResult();
-		}
-		catch (const std::exception& e)
-		{
-			nap::Logger::error(e.what());
-			return false;
-		}
-	}
-
 
 	static void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue)
 	{
@@ -355,7 +327,7 @@ namespace nap
 		assert(utility::fileExists(mSignature));
 
 		// Verify license using provided public application key
-		if (!error.check(rsaVerifyFile(publicKey, signingScheme, mLicense, mSignature), "Signature verification failed"))
+		if (!error.check(openssl::utility::verifyMessage(publicKey, mLicense, "SHA256", mSignature), "Signature verification failed"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
