@@ -2,6 +2,8 @@
 
 #include <string>
 
+#include <utility/dllexport.h>
+
 namespace nap
 {
 namespace openssl
@@ -16,7 +18,7 @@ namespace openssl
          * @param outSignature The signature
          * @return True if the signature was created successfully
          */
-        bool createSignature(const std::string& privkey, const std::string& message, const std::string& signingScheme, std::string& outSignature);
+        bool NAPAPI createSignature(const std::string& privkey, const std::string& message, const std::string& signingScheme, std::string& outSignature);
 
         /**
          * @brief Verify a message against a signature
@@ -26,7 +28,7 @@ namespace openssl
          * @param signature The signature
          * @return True if the message was verified successfully
          */
-        bool verifyMessage(const std::string& pubkey, const std::string& message, const std::string& signingScheme, const std::string& signature);
+        bool NAPAPI verifyMessage(const std::string& pubkey, const std::string& message, const std::string& signingScheme, const std::string& signature);
     }
 }
 }

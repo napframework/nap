@@ -326,8 +326,20 @@ namespace nap
 			return false;
 		assert(utility::fileExists(mSignature));
 
+        // Read license from disk
+        std::ifstream license_stream(mLicense);
+        std::stringstream license_content;
+        license_content << license_stream.rdbuf();
+        license_stream.close();
+
+        // Read signature from disk
+        std::ifstream signature_stream(mSignature);
+        std::stringstream signature_content;
+        signature_content << signature_stream.rdbuf();
+        signature_stream.close();
+
 		// Verify license using provided public application key
-		if (!error.check(openssl::utility::verifyMessage(publicKey, mLicense, "SHA256", mSignature), "Signature verification failed"))
+		if (!error.check(openssl::utility::verifyMessage(publicKey, license_content.str(), "SHA256", signature_content.str()), "Signature verification failed"))
 			return false;
 
 		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
