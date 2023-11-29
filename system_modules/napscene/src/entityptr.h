@@ -47,8 +47,17 @@ namespace nap
 		void assign(const std::string& targetPath, rtti::Object& targetObject)	{ mPath = targetPath; mResource = rtti_cast<Entity>(&targetObject); }
 
 		/**
+		 * @return the (raw) pointer to the target entity
+		 */
+		Entity* get() const														{ return mResource.get(); }
+
+		/**
+		 * @return the (raw) pointer of the target entity
+		 */
+		Entity* get()															{ return mResource.get(); }
+
+		/**
 		 * Convert the full target ID as specified to an ID that can be resolved to an object
-		 *
 		 * @param targetID The target ID to translate
 		 * @return The translated ID
 		 */
@@ -77,10 +86,6 @@ namespace nap
 		bool operator<=(const EntityPtr& other) const							{ return mResource <= other.mResource; }
 
 		bool operator>=(const EntityPtr& other) const							{ return mResource >= other.mResource; }
-
-		Entity* get() const														{ return mResource.get(); }
-
-		Entity* get()															{ return mResource.get(); }
 
 	private:
 		rtti::ObjectPtr<Entity>	mResource;		///< Pointer to the target resource

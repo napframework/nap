@@ -45,7 +45,7 @@ namespace nap
 		 * Assign the path to the component (including ID) and object to this pointer.
 		 * Used for pointer resolving by the ResourceManager.
 		 * Should not be called manually (is only public so that we can register it in RTTI)
-		 * @param targetPath path to the target object including ID
+		 * @param targetPath path to the target component including ID
 		 * @param targetObject The pointer to be assigned
 		 */
 		virtual void assign(const std::string& targetPath, rtti::Object& targetObject) = 0;
@@ -93,21 +93,48 @@ namespace nap
 		RTTI_ENABLE(ComponentPtrBase)
 
 	public:
+		// ctr
 		ComponentPtr() = default;
 
+		// ctr override
 		ComponentPtr(ComponentType* component) : mResource(component)								{ }
 
+		/**
+		 * Returns the path to the target component including component ID 
+		 * @return the path to the target component including component ID
+		 */
 		const std::string& getInstancePath() const							{ return mPath; }
 
+		/**
+		 * Convert the path to a string for serialization
+		 * @return The string representation of this object
+		 */
 		virtual std::string toString() const override						{ return mPath; }
 
+		/**
+		 * Returns the assigned component
+		 * @return The rtti object, nullptr if it doesn't exist
+		 */
 		virtual Component* toObject() const override						{ return rtti_cast<nap::Component>(mResource.get()); }
 
+		/**
+		 * Assign the path to the component (including ID) and object to this pointer.
+		 * Used for pointer resolving by the ResourceManager.
+		 * Should not be called manually (is only public so that we can register it in RTTI)
+		 * @param targetPath path to the target component including ID
+		 * @param targetObject The pointer to be assigned
+		 */
 		virtual void assign(const std::string& targetID, rtti::Object& targetObject) override;
 
-		ComponentType* get() const { return mResource.get(); }
+		/**
+		 * @return the raw pointer of the target component
+		 */
+		ComponentType* get() const											{ return mResource.get(); }
 
-		ComponentType* get() { return mResource.get(); }
+		/**
+		 * @return the raw pointer of the target component
+		 */
+		ComponentType* get()												{ return mResource.get(); }
 
 		const ComponentType& operator*() const								{ assert(mResource != nullptr); return *mResource; }
 
