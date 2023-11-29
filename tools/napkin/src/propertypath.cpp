@@ -258,13 +258,13 @@ rttr::variant PropertyPath::getValue() const
 }
 
 
-bool PropertyPath::setValue(rttr::variant value)
+bool PropertyPath::setValue(rttr::variant new_value)
 {
 	// Regular property
 	auto resolved_path = resolve();
 	if (!isInstanceProperty())
 	{
-		return resolved_path.setValue(value);
+		return resolved_path.setValue(new_value);
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -275,8 +275,23 @@ bool PropertyPath::setValue(rttr::variant value)
 	// Strengthen and simplify the entire model!
 	//////////////////////////////////////////////////////////////////////////
 
-	// Instance property: If the value is the same, remove property or bail
-	if (resolved_path.getValue() == value)
+	// Check if the new value overrides default.
+	auto cur_value = resolved_path.getValue();
+	bool override_default = cur_value != new_value;
+
+	// Regular variant comparison doesn't work with component and entity pointers because their template types aren't resolved.
+	// TODO: implement type::register_comparators<T>() to ennable component and entity pointer comparison using rtti
+	auto object_method = nap::rtti::findMethodRecursive(cur_value.get_type(), nap::rtti::method::toObject);
+	if (object_method.is_valid())
+	{
+		auto a = object_method.invoke(cur_value).get_value<nap::rtti::Object*>();
+		assert(nap::rtti::findMethodRecursive(new_value.get_type(), nap::rtti::method::toObject).is_valid());
+		auto b = object_method.invoke(new_value).get_value<nap::rtti::Object*>();
+		override_default = a != b;
+	}
+
+	// New value doesn't override default, remove instance property and bail
+	if (!override_default)
 	{
 		auto target_attr = targetAttribute();
 		if (target_attr != nullptr)
@@ -302,7 +317,7 @@ bool PropertyPath::setValue(rttr::variant value)
 
 	// Set instance property value
 	rttr::variant val = target_attr->mValue.get();
-	return setInstancePropertyValue(val, value);
+	return setInstancePropertyValue(val, new_value);
 }
 
 
@@ -343,8 +358,8 @@ Object* PropertyPath::getPointee() const
 
 	auto value = getValue();
 	auto type = value.get_type();
-	auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : type;
-	return wrappedType != type ?
+	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	return wrapped_type != type ?
 		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
 		value.get_value<nap::rtti::Object*>();
 }
@@ -791,10 +806,9 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 			return;
 	}
 
-	auto pointee = getPointee();
-
 	// prune here if there is no pointer value
-	if (!pointee)
+	auto pointee = getPointee();
+	if (pointee == nullptr)
 		return;
 
 	for (auto childprop : pointee->get_type().get_properties())

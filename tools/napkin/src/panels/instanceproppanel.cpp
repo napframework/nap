@@ -27,7 +27,7 @@ QVariant InstPropAttribItem::data(int role) const
 		auto override_variant = mAttrib.mValue->get_type().get_property_value(
 			nap::rtti::instanceproperty::value, mAttrib.mValue);
 
-		// Extract value using rtti
+		// Extract value as string using rtti
 		QString value;
 		if (override_variant.get_type().is_wrapper())
 		{
@@ -39,7 +39,6 @@ QVariant InstPropAttribItem::data(int role) const
 		{
 			value = QString::fromStdString(override_variant.to_string());
 		}
-
 		assert(!value.isEmpty());
 		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), value);
 	}
