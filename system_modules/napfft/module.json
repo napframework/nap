@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+        "napmath",
+        "napscene",
+        "napparameter",
+        "napaudio"
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/bin/{BUILD_ARCH}",
+        "{ROOT}/system_modules/napfft/thirdparty/kissfft/msvc/{BUILD_ARCH}/bin/{BUILD_TYPE}"
+    ]
+}

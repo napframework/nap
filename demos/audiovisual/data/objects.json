@@ -1,0 +1,351 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::ConstantShader",
+            "mID": "ConstantShader"
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "AudioEntity",
+            "Components": [
+                {
+                    "Type": "nap::FFTAudioNodeComponent",
+                    "mID": "FFTAudioNode",
+                    "Input": "./AudioPlayback",
+                    "Overlaps": "Five",
+                    "Channel": 0
+                },
+                {
+                    "Type": "nap::audio::PlaybackComponent",
+                    "mID": "AudioPlayback",
+                    "Buffer": "AudioFile",
+                    "ChannelRouting": [
+                        0,
+                        1
+                    ],
+                    "Gain": 1.0,
+                    "StereoPanning": 0.5,
+                    "AutoPlay": true,
+                    "StartPosition": 0.0,
+                    "Duration": 0.0,
+                    "FadeInTime": 0.0,
+                    "FadeOutTime": 0.0,
+                    "Pitch": 1.0
+                },
+                {
+                    "Type": "nap::audio::OutputComponent",
+                    "mID": "AudioOutput",
+                    "Input": "./AudioPlayback",
+                    "Routing": [
+                        0,
+                        1
+                    ]
+                },
+                {
+                    "Type": "nap::FluxMeasurementComponent",
+                    "mID": "FluxMeasurement",
+                    "Parameters": [
+                        {
+                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
+                            "mID": "FilterParameterItem_a5e484a3",
+                            "Parameter": "UniformScaleParameter",
+                            "Multiplier": "",
+                            "ThresholdDecay": "",
+                            "MinHertz": 0.0,
+                            "MaxHertz": 44100.0,
+                            "SmoothTime": 0.05000000074505806
+                        }
+                    ],
+                    "Enable": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspectiveCamera",
+                    "Properties": {
+                        "FieldOfView": 50.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CameraTransform",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 3.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "OrbitController",
+                    "MovementSpeed": 0.009999999776482582,
+                    "RotateSpeed": 0.0024999999441206457,
+                    "PerspCameraComponent": "./PerspectiveCamera",
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    },
+                    "MinimumZoomDistance": 0.5,
+                    "LimitZoomDistance": false
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "CameraPointerInput"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "GnomonEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "RenderGnomon",
+                    "Visible": true,
+                    "Gnomon": "Gnomon",
+                    "LineWidth": 1.0,
+                    "DepthMode": "ReadWrite"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PositionGnomon",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "WorldEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformWorld",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderMesh",
+                    "Visible": true,
+                    "Mesh": "TorusMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::UpdateTransformComponent",
+                    "mID": "UpdateTransform",
+                    "Position": "",
+                    "Orientation": "",
+                    "UniformScale": "UniformScaleParameter"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::GnomonMesh",
+            "mID": "Gnomon",
+            "Size": 1.0,
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ConstantMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UBO_fb358fc5",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "color_3e137eee",
+                            "Name": "color",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "alpha_85db4f5b",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "ConstantShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "UniformScaleParameter",
+            "Name": "UniformScale",
+            "Value": 1.0,
+            "Minimum": 0.0,
+            "Maximum": 2.0
+        },
+        {
+            "Type": "nap::RenderWindow",
+            "mID": "Window",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": true,
+            "SampleShading": true,
+            "Title": "audiovisual",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "Scene",
+            "Entities": [
+                {
+                    "Entity": "GnomonEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "CameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "AudioEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "WorldEntity",
+                    "InstanceProperties": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::TorusMesh",
+            "mID": "TorusMesh",
+            "Radius": 0.75,
+            "TubeRadius": 0.25,
+            "Segments": 64,
+            "TubeSegments": 32,
+            "AngleOffset": 0.0,
+            "Usage": "Static",
+            "PolygonMode": "Line",
+            "CullMode": "None",
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::audio::AudioFileResource",
+            "mID": "AudioFile",
+            "AudioFilePath": "hang.mp3"
+        }
+    ]
+}
