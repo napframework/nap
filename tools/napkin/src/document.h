@@ -73,6 +73,13 @@ namespace napkin
 		std::vector<nap::rtti::Object*> getObjects(const nap::rtti::TypeInfo& type);
 
 		/**
+		 * Get all objects from this document, derived from the specified types.
+		 * @param types List of types the object has to be derived from
+		 * @return All the objects in this document, derived from the provided types
+		 */
+		std::vector<nap::rtti::Object*> getObjects(const std::vector<nap::rtti::TypeInfo>& types);
+
+		/**
 		 * Get all objects from this document, derived from the specified type.
 		 * @tparam T The type each object has to be derived from
 		 * @return All the objects in this document, derived from the provided type
@@ -590,7 +597,7 @@ namespace napkin
 		/**
 		 * Patches entity and component ptr links. This occurs when
 		 * the name of an entity or a component changes, which invalidates existing links to those objects.
-		 * All components that reference the component or entity are re-assigned the updated path.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
 		 * Note that entity and component links are string based and handled separately from regular resources,
 		 * hence the manual patching here.
 		 * @param oldID old entity or component ID
