@@ -196,7 +196,7 @@ namespace napkin
 		std::string toString() const;
 
 		/**
-		 * @return True if this path represents an instance
+		 * @return True if this path edits an instance property
 		 */
 		bool isInstanceProperty() const;
 
@@ -289,6 +289,10 @@ namespace napkin
 		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
 		std::vector<PropertyPath> getProperties(int flags = 0) const;
 		std::string getComponentInstancePath() const;
+
+		/**
+		 * @return entity as root in the scene, along with it's instance properties
+		 */
 		nap::RootEntity* getRootEntity() const;
 
 		/**

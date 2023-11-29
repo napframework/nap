@@ -169,6 +169,7 @@ std::string PropertyPath::getComponentInstancePath() const
 	return "./" + nap::utility::joinString(newPath, "/");
 }
 
+
 nap::RootEntity* PropertyPath::getRootEntity() const
 {
 	if (mObjectPath.size() < 2)
@@ -176,20 +177,20 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 
 	assert(mDocument != nullptr);
 	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
-	if (!scene)
+	if (scene == nullptr)
 		return nullptr;
 
 	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
-	if (!entity)
+	if (entity == nullptr)
 		return nullptr;
 
 	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
-	for (auto& rootEntity : scene->mEntities)
+	for (auto& scene_entity : scene->mEntities)
 	{
-		if (idx == nameIdx && rootEntity.mEntity.get() == entity)
-			return &rootEntity;
+		if (idx == nameIdx && scene_entity.mEntity.get() == entity)
+			return &scene_entity;
 
-		if (rootEntity.mEntity.get() == entity)
+		if (scene_entity.mEntity.get() == entity)
 			++idx;
 	}
 	return nullptr;
@@ -496,7 +497,7 @@ std::string PropertyPath::toString() const
 
 bool PropertyPath::isInstanceProperty() const
 {
-	return hasProperty() && getRootEntity();
+	return this->getRootEntity();
 }
 
 
