@@ -30,7 +30,7 @@ bool convertSigningScheme(ESigningScheme scheme, std::string& out)
 }
 
 
-bool nap::openssl::utility::createSignature(const std::string& privkey, const std::string& message, ESigningScheme scheme, std::string& outSignature)
+bool nap::utility::createSignature(const std::string& privkey, const std::string& message, ESigningScheme scheme, std::string& outSignature)
 {
     std::string signing_scheme;
     if(!convertSigningScheme(scheme, signing_scheme))
@@ -41,7 +41,7 @@ bool nap::openssl::utility::createSignature(const std::string& privkey, const st
 }
 
 
-bool nap::openssl::utility::verifyMessage(const std::string &pubkey, const std::string &message, ESigningScheme scheme, const std::string &signature)
+bool nap::utility::verifyMessage(const std::string &pubkey, const std::string &message, ESigningScheme scheme, const std::string &signature)
 {
     std::string signing_scheme;
     if(!convertSigningScheme(scheme, signing_scheme))
@@ -52,25 +52,25 @@ bool nap::openssl::utility::verifyMessage(const std::string &pubkey, const std::
 }
 
 
-bool nap::openssl::utility::generateRSAKey(unsigned int bits, std::string &outPrivKey, std::string &outPubKey)
+bool nap::utility::generateRSAKey(unsigned int bits, std::string &outPrivKey, std::string &outPubKey)
 {
     return opensslapi::generateRSAKey(bits, outPrivKey, outPubKey);
 }
 
 
-std::string nap::openssl::utility::sha256(const std::string& str)
+std::string nap::utility::sha256(const std::string& str)
 {
     return opensslapi::sha256(str);
 }
 
 
-std::string nap::openssl::utility::encode64(const std::string& str)
+std::string nap::utility::encode64(const std::string& str)
 {
     return opensslapi::encode64(str);
 }
 
 
-std::string nap::openssl::utility::decode64(const std::string& str)
+std::string nap::utility::decode64(const std::string& str)
 {
     return opensslapi::decode64(str);
 }

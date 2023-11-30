@@ -57,7 +57,7 @@ namespace nap
 		outFile = file_found ? *it : "";
 		return file_found;
 	}
-    
+
 
 	static void setArgument(const std::unordered_map<std::string, std::string>& args, const std::string& key, std::string& outValue)
 	{
@@ -111,8 +111,8 @@ namespace nap
 		}
 
         // hash and encode
-        std::string hashed_id = openssl::utility::sha256(id_str);
-		std::string id_encoded = openssl::utility::encode64(hashed_id);
+        std::string hashed_id = utility::sha256(id_str);
+		std::string id_encoded = utility::encode64(hashed_id);
         assert(id_encoded.size() >= 10);
 
         // convert to hex and truncate for readability
@@ -279,7 +279,7 @@ namespace nap
         signature_stream.close();
 
 		// Verify license using provided public application key
-		if (!error.check(openssl::utility::verifyMessage(publicKey, license_content.str(), signingScheme, signature_content.str()), "Signature verification failed"))
+		if (!error.check(utility::verifyMessage(publicKey, license_content.str(), signingScheme, signature_content.str()), "Signature verification failed"))
 			return false;
 
 		// Remove first part

@@ -243,7 +243,7 @@ namespace nap
             ret = 1;
             err:
 
-            // If successfull, encode the signature
+            // If successful, encode the signature
             if(ret == 1)
             {
                 // encode the signature
@@ -300,6 +300,7 @@ namespace nap
             // Clean up
             if(mdctx) EVP_MD_CTX_destroy(mdctx);
             if(in) BIO_free(in);
+            if(sig) OPENSSL_free(sig);
 
             return ret == 1;
         }
