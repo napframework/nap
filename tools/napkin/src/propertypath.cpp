@@ -260,6 +260,7 @@ rttr::variant PropertyPath::getValue() const
 
 rttr::variant napkin::PropertyPath::patchValue(const rttr::variant& value) const
 {
+	// Only patch component and entity ptr paths
 	auto prop_type = getType();
 	if (!prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
 		!prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
