@@ -105,20 +105,23 @@ size_t calcDecodeLength(const char* b64input)
     return (len*3)/4 - padding;
 }
 
-void base64Decode(const char* b64message, unsigned char** buffer, size_t* length)
+void base64Decode(const char* b64message, std::string& out)
 {
     BIO *bio, *b64;
 
     int decodeLen = calcDecodeLength(b64message);
-    *buffer = (unsigned char*)malloc(decodeLen + 1);
-    (*buffer)[decodeLen] = '\0';
+    unsigned char *buffer = (unsigned char*)malloc(decodeLen + 1);
+    buffer[decodeLen] = '\0';
 
     bio = BIO_new_mem_buf(b64message, -1);
     b64 = BIO_new(BIO_f_base64());
     bio = BIO_push(b64, bio);
 
-    *length = BIO_read(bio, *buffer, strlen(b64message));
+    int length = BIO_read(bio, buffer, strlen(b64message));
     BIO_free_all(bio);
+
+    out = std::string(reinterpret_cast<char*>(buffer), length);
+    OPENSSL_free(buffer);
 }
 
 constexpr const char* supportedSigningSchemes[] =
@@ -268,7 +271,11 @@ namespace nap
             const evp_md_st *scheme = NULL;
 
             // Decode signature
-            base64Decode(signature.c_str(), &sig, &slen);
+            std::string decodedSignature;
+            base64Decode(signature.c_str(), decodedSignature);
+            slen = decodedSignature.length();
+            sig = reinterpret_cast<unsigned char *>(OPENSSL_malloc(sizeof(unsigned char) * (slen)));
+            memcpy(sig, decodedSignature.c_str(), slen);
 
             // Read the public key
             BIO *in = BIO_new_mem_buf((unsigned char *) pubkey.c_str(), strlen(pubkey.c_str()));
@@ -323,12 +330,9 @@ namespace nap
 
         std::string decode64(const std::string& str)
         {
-            unsigned char* out;
-            size_t len;
-            base64Decode(str.c_str(), &out, &len);
-            std::string return_str = { reinterpret_cast<const char*>(out), len };
-            OPENSSL_free(out);
-            return return_str;
+            std::string out;
+            base64Decode(str.c_str(), out);
+            return out;
         }
     }
 }
