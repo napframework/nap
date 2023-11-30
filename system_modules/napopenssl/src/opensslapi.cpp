@@ -254,9 +254,9 @@ namespace nap
             }
 
             // Clean up
-            if(*sig && !ret) OPENSSL_free(reinterpret_cast<void *>(*sig));
-            if(mdctx) EVP_MD_CTX_destroy(mdctx);
-            if(in) BIO_free(in);
+            OPENSSL_free(sig);
+            EVP_MD_CTX_destroy(mdctx);
+            BIO_free(in);
 
             return ret == 1;
         }
@@ -305,9 +305,9 @@ namespace nap
             err:
 
             // Clean up
-            if(mdctx) EVP_MD_CTX_destroy(mdctx);
-            if(in) BIO_free(in);
-            if(sig) OPENSSL_free(sig);
+            EVP_MD_CTX_destroy(mdctx);
+            BIO_free(in);
+            OPENSSL_free(sig);
 
             return ret == 1;
         }
