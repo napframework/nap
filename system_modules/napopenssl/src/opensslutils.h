@@ -1,8 +1,12 @@
 #pragma once
 
-#include <string>
+// Local Includes
+#include "signingscheme.h"
 
+// External Includes
+#include <string>
 #include <utility/dllexport.h>
+
 
 namespace nap
 {
@@ -18,7 +22,7 @@ namespace openssl
          * @param outSignature The signature
          * @return True if the signature was created successfully
          */
-        bool NAPAPI createSignature(const std::string& privkey, const std::string& message, const std::string& signingScheme, std::string& outSignature);
+        bool NAPAPI createSignature(const std::string& privkey, const std::string& message, ESigningScheme scheme, std::string& outSignature);
 
         /**
          * @brief Verify a message against a signature
@@ -28,7 +32,37 @@ namespace openssl
          * @param signature The signature
          * @return True if the message was verified successfully
          */
-        bool NAPAPI verifyMessage(const std::string& pubkey, const std::string& message, const std::string& signingScheme, const std::string& signature);
+        bool NAPAPI verifyMessage(const std::string& pubkey, const std::string& message, ESigningScheme scheme, const std::string& signature);
+
+        /**
+         * @brief Generate a RSA key pair
+         * @param bits number of bits
+         * @param outPrivKey string will be filled with the private key
+         * @param outPubKey string will be filled with the public key
+         * @return True if the key pair was generated successfully
+         */
+        bool NAPAPI generateRSAKey(unsigned int bits, std::string& outPrivKey, std::string& outPubKey);
+
+        /**
+         * @brief Generate a SHA256 hash of a string
+         * @param str The string to hash
+         * @return The hash
+         */
+        std::string NAPAPI sha256(const std::string& str);
+
+        /**
+         * @brief Encode a string to base64
+         * @param str The string to encode
+         * @return The encoded string
+         */
+        std::string NAPAPI encode64(const std::string& str);
+
+        /**
+         * @brief Decode a base64 string
+         * @param str The string to decode
+         * @return The decoded string
+         */
+        std::string NAPAPI decode64(const std::string& str);
     }
 }
 }

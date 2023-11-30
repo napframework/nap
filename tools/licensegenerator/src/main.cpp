@@ -6,7 +6,7 @@
 #include <chrono>
 #include <fstream>
 
-#include "opensslutils.h"
+#include "opensslapi.h"
 
 using namespace std;
 using SystemClock = std::chrono::system_clock;
@@ -141,21 +141,6 @@ static bool validateDate(const std::string& date)
  */
 int main(int argc, char *argv[])
 {
-    const std::string pubkey = "-----BEGIN PUBLIC KEY-----\n"
-                               "MIICIjANBgkqhkiG9w0BAQEFAAOCAg8AMIICCgKCAgEA2/tBm7WFGCx5XRE+AKOD\n"
-                               "PkPsjWFqOLBWhcE4wkpHjAMOI/XXtJZYVlO8kAoKRKF7oBaCmqbErSrfvUjoxWcX\n"
-                               "kPlZlX392vVG5IKA8CAjEoGVLaobg5Vc1RkfpdyCwGCxLbSwriP8FC03qg1MwCwo\n"
-                               "cDmcpk1bZluWkZO98+HXXysmhGCTFwWKAW/EOZgjXVYS3Z4ANre8ky6ivGOdCitB\n"
-                               "85I8W7tkmKzDPeKIpWd/xx9CxT5wNSx0uanu9LfEcyBmZFdZyFeVxcGyvm08DJLc\n"
-                               "Jv85NDTrqVJ+8BFbiJeD5F9D5PNN2YtOX8muc1vD4UpX+3litcp8GrAVe+IEdiCu\n"
-                               "dVyWZdRR/5HBqEsB8ZmzXPTB4m9YaxoCXq9fKdcf3iI4BROdnPF+1Zt8i39IbZuN\n"
-                               "01G1ER6K1pGopqK2mNd/C1emG8HONX+OLXfh43uAyUPAOmzN9bsea0DhZk7jY+1d\n"
-                               "clq5a2wZdo72YA9gig5FTz8UzmucKo58cCkg0cFoneQNwBkAidNWxhG4/bqyPL/q\n"
-                               "WuEBzHLz/rOEAjqYELH9bOm63d4yna3xOGBFT9vr+WsxpyvWkxDYTK1/TA0dOYVi\n"
-                               "2E5fo7l395k/TkGNYOayaaJvEVZISUjDC8DOKKStV3BgdRqNQgYv3VTyg2//ZvJJ\n"
-                               "14dZKIuWf27OtPho5hMK0tUCAwEAAQ==\n"
-                               "-----END PUBLIC KEY-----\n";
-
     // Parse command-line
     CommandLine commandLine;
     if (!CommandLine::parse(argc, argv, commandLine))
@@ -221,11 +206,11 @@ int main(int argc, char *argv[])
 
     // Create signature
     std::string signature;
-    if (!nap::openssl::utility::createSignature(priv_key.str(), lic_content.str(), signingScheme, signature))
+    if (!nap::opensslapi::createSignature(priv_key.str(), lic_content.str(), signingScheme, signature))
+    {
+        std::cout << "Failed to create signature" << std::endl;
         return -1;
-
-    if (!nap::openssl::utility::verifyMessage(pubkey, lic_content.str(), signingScheme, signature))
-        return -1;
+    }
 
     // Save license
     std::ofstream lic_file(lic_loc.str());
@@ -237,17 +222,6 @@ int main(int argc, char *argv[])
     key_file << signature;
     key_file.close();
 
-    // Read signature from disk
-    std::ifstream t(key_loc.str());
-    std::stringstream signature2;
-    signature2 << t.rdbuf();
-    t.close();
-
-    std::string l = signature2.str();
-
-    // Verify license
-    if (!nap::openssl::utility::verifyMessage(pubkey, lic_content.str(), signingScheme, signature2.str()))
-        return -1;
 
     std::cout << "Successfully created and signed license" << std::endl;
     std::cout << "Key location:         " << key_loc.str() << std::endl;
