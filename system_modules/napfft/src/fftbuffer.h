@@ -33,8 +33,13 @@ namespace nap
 			Eleven	= 11
 		};
 
-		// Constructor
+		/**
+		 * @param dataSize
+		 * @param overlap
+		 */
 		FFTBuffer(uint dataSize, EOverlap overlap = EOverlap::One);
+
+		// Destructor
 		~FFTBuffer();
 
 		/**
@@ -73,23 +78,21 @@ namespace nap
 		std::unique_ptr<KissContext, KissContextDeleter> mContext;
 
 		std::vector<std::complex<float>> mComplexOut;
-		std::vector<std::complex<float>> mComplexOutAverage;
+		std::vector<std::complex<float>> mComplexOutAverage;		//< Complex 
 
-		AmplitudeSpectrum mAmplitude;					//< magnitude (rho)
-		PhaseSpectrum mPhase;							//< phase angle (theta)
+		AmplitudeSpectrum mAmplitude;								//< magnitude (rho)
+		PhaseSpectrum mPhase;										//< phase angle (theta)
 
-		std::vector<float> mForwardHammingWindow;		//< preprocess samples for fft window
-		float mHammingWindowSum = 0.0f;
-		float mNormalizationFactor;
+		std::vector<float> mForwardHammingWindow;					//< Preprocessed window function coefficients
+		float mHammingWindowSum;									//< The sum of all window function coefficients
+		float mNormalizationFactor;									//< Inverse of the window sum (2/sum)
 
-		// The sample buffer is accessed on both the audio and main thread. Use mutex for read/write.
-		std::vector<float> mSampleBuffer;
-		float* mSampleBufferHalfPtr = nullptr;
-		std::mutex mSampleBufferMutex;
+		std::vector<float> mSampleBuffer;							//< The sample buffer is accessed on both the audio and main thread. Use mutex for read/write.
+		std::mutex mSampleBufferMutex;								//< The mutex for accessing the sample buffer
 
-		std::vector<float> mSampleBufferWindowed;
+		std::vector<float> mSampleBufferWindowed;					//< The sample buffer after application of a window function
 
-		uint mBinCount;
+		uint mBinCount;									
 		float mBinFrequency;
 
 		EOverlap mOverlap;

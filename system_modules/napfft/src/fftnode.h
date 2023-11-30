@@ -25,38 +25,38 @@ namespace nap
 	class AudioService;
 		
 	/**
-	 * Node to measure the amplitude level of an audio signal.
-	 * Can be used for VU meters or envelope followers for example.
-	 * Can switch between measuring peaks of the signal or the root mean square.
+	 * Node to compute the FFT of an audio signal.
+	 * Useful for equalizers and audioreactive parameters.
 	 */
 	class NAPAPI FFTNode : public audio::Node
 	{
 	public:
 		/**
-		 * @param audioService: the NAP audio service.
-		 * @param analysisWindowSize: the time window in milliseconds that will be used to generate one single output value. Also the period that corresponds to the analysis frequency.
-		 * @param rootProcess: indicates that the node is registered as root process with the @AudioNodeManager and is processed automatically.
+		 * @param audioService the NAP audio service.
+		 * @param nodeManager the node manager this node must be registered to.
+		 * @param overlaps the number of overlaps 
 		 */
 		FFTNode(audio::NodeManager& nodeManager, FFTBuffer::EOverlap overlaps = FFTBuffer::EOverlap::One);
 
+		// Destructor
 		virtual ~FFTNode();
 
 		/**
-		 * Inherited from Node
+		 * Inherited from audio::Node
 		 */
 		void process() override;
 
 		/**
-		 *
+		 * @return the FFT buffer
 		 */
 		const FFTBuffer& getFFTBuffer() const				{ return *mFFTBuffer; }
 
 		/**
-		 * 
+		 * @return the FFT buffer
 		 */
 		FFTBuffer& getFFTBuffer()							{ return *mFFTBuffer; }
 
-		// The input for the audio signal that will be analyzed.
+		// The input for the audio signal that will be analyzed
 		audio::InputPin mInput = { this };
 
 		// The FFT buffer

@@ -34,9 +34,11 @@ namespace nap
 		public:
 			bool init(utility::ErrorState& errorState) override { return true; }
 
-			rtti::ObjectPtr<ParameterFloat> mParameter;
-			rtti::ObjectPtr<ParameterFloat> mMultiplier;
-			rtti::ObjectPtr<ParameterFloat> mThresholdDecay;
+			ResourcePtr<ParameterFloat> mParameter;
+			ResourcePtr<ParameterFloat> mMultiplier;
+			ResourcePtr<ParameterFloat> mOffset;
+			ResourcePtr<ParameterFloat> mDecay;
+
 			float mMinHz = 0.0f;
 			float mMaxHz = 44100.0f;
 			float mSmoothTime = 0.05f;
@@ -70,7 +72,8 @@ namespace nap
 			OnsetData(FluxMeasurementComponent::FilterParameterItem& item) :
 				mParameter(*item.mParameter),
 				mMultiplier(item.mMultiplier.get()),
-				mThresholdDecay(item.mThresholdDecay.get()),
+				mOffset(item.mOffset.get()),
+				mDecay(item.mDecay.get()),
 				mOnsetSmoother({ 0.0f, item.mSmoothTime }),
 				mMinHz(std::clamp(item.mMinHz, 0.0f, 44100.0f)),
 				mMaxHz(std::clamp(item.mMaxHz, 0.0f, 44100.0f))
@@ -78,7 +81,9 @@ namespace nap
 
 			ParameterFloat& mParameter;
 			ParameterFloat* mMultiplier = nullptr;
-			ParameterFloat* mThresholdDecay = nullptr;
+			ParameterFloat* mOffset = nullptr;
+			ParameterFloat* mDecay = nullptr;
+
 			float mMinHz = 0.0f;
 			float mMaxHz = 44100.0f;
 			float mOnsetValue = 0.0f;

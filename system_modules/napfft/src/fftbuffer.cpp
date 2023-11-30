@@ -79,6 +79,7 @@ namespace nap
 	FFTBuffer::FFTBuffer(uint dataSize, EOverlap overlap)
 	{
 		// Create kiss context
+		assert(dataSize >= 2);
 		mContext = std::unique_ptr<FFTBuffer::KissContext, FFTBuffer::KissContextDeleter>(new FFTBuffer::KissContext(dataSize));
 		const uint data_size = mContext->getSize();
 
@@ -92,10 +93,10 @@ namespace nap
 		// Create sample buffer
 		mSampleBuffer.resize(data_size * 2);
 		mSampleBufferWindowed.resize(data_size);
-		mSampleBufferHalfPtr = mSampleBuffer.data() + mSampleBuffer.size() / 2;
 
 		// Compute hamming window
 		mForwardHammingWindow.resize(data_size);
+		mHammingWindowSum = 0.0;
 		for (uint i = 0; i < data_size; ++i)
 		{
 			mForwardHammingWindow[i] = 0.54f - 0.46f * std::cos(2.0f * glm::pi<float>() * (i / static_cast<float>(data_size)));
@@ -103,7 +104,7 @@ namespace nap
 		}
 		mNormalizationFactor = 2.0f / mHammingWindowSum;
 
-		// Bins
+		// The number of bins (+1 nyquist bin)
 		mBinCount = data_size / 2 + 1;
 
 		// Create FFT buffers
@@ -123,20 +124,21 @@ namespace nap
 
 		{
 			std::lock_guard<std::mutex> lock(mSampleBufferMutex);
+			auto* half_ptr = mSampleBuffer.data() + mSampleBuffer.size() / 2;
 
 			// Copy second half to first half
-			std::memcpy(mSampleBuffer.data(), mSampleBufferHalfPtr, data_bytes);
+			std::memcpy(mSampleBuffer.data(), half_ptr, data_bytes);
 
 			// Copy new samples to second half
 			if (samples.size() == data_size)
 			{
-				std::memcpy(mSampleBufferHalfPtr, samples.data(), data_bytes);
+				std::memcpy(half_ptr, samples.data(), data_bytes);
 			}
 			else if (samples.size() > data_size)
 			{
 				// Zero-padding
 				mSampleBuffer.clear();
-				std::memcpy(mSampleBufferHalfPtr, samples.data(), data_bytes);
+				std::memcpy(half_ptr, samples.data(), data_bytes);
 			}
 			else
 			{
@@ -159,9 +161,10 @@ namespace nap
 
 			{
 				std::lock_guard<std::mutex> lock(mSampleBufferMutex);
+				auto* half_ptr = mSampleBuffer.data() + mSampleBuffer.size() / 2;
 
 				// Perform FFT
-				std::memcpy(mSampleBufferWindowed.data(), mSampleBufferHalfPtr, sizeof(float) * data_size);
+				std::memcpy(mSampleBufferWindowed.data(), half_ptr, sizeof(float) * data_size);
 
 				for (uint h = 0; h < hop_count; h++)
 				{
@@ -191,9 +194,10 @@ namespace nap
 			// Compute amplitudes and phase angles
 			for (uint i = 0; i < mBinCount; i++)
 			{
-				const auto& cpx = mComplexOut[i];
-				mAmplitude[i] = std::abs(cpx) * mNormalizationFactor;
-				mPhase[i] = std::arg(cpx);
+				const auto& cpx = mComplexOutAverage[i];
+				const auto cpx_norm = cpx * mNormalizationFactor;
+				mAmplitude[i] = std::abs(cpx_norm);
+				mPhase[i] = std::arg(cpx_norm);
 			}
 			mDirty = false;
 		}

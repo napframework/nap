@@ -1,6 +1,31 @@
 {
     "Objects": [
         {
+            "Type": "nap::BoxMesh",
+            "mID": "BoxMesh",
+            "Usage": "Static",
+            "CullMode": "None",
+            "PolygonMode": "Line",
+            "Size": {
+                "x": 2.5,
+                "y": 2.5,
+                "z": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": -0.5
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
+        },
+        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -48,12 +73,24 @@
                         {
                             "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
                             "mID": "FilterParameterItem_a5e484a3",
-                            "Parameter": "UniformScaleParameter",
+                            "Parameter": "LowScaleParameter",
                             "Multiplier": "",
-                            "ThresholdDecay": "",
+                            "Offset": "OffsetParameter",
+                            "Decay": "",
                             "MinHertz": 0.0,
-                            "MaxHertz": 44100.0,
-                            "SmoothTime": 0.05000000074505806
+                            "MaxHertz": 4000.0,
+                            "SmoothTime": 0.0333000011742115
+                        },
+                        {
+                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
+                            "mID": "FilterParameterItem_5ba51e75",
+                            "Parameter": "HighScaleParameter",
+                            "Multiplier": "MultiplierParameter",
+                            "Offset": "OffsetParameter",
+                            "Decay": "",
+                            "MinHertz": 4000.0,
+                            "MaxHertz": 20000.0,
+                            "SmoothTime": 0.0333000011742115
                         }
                     ],
                     "Enable": true
@@ -70,7 +107,7 @@
                     "mID": "PerspectiveCamera",
                     "Properties": {
                         "FieldOfView": 50.0,
-                        "NearClippingPlane": 1.0,
+                        "NearClippingPlane": 0.10000000149011612,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
                             "x": 1,
@@ -115,8 +152,8 @@
                         "y": 0.0,
                         "z": 0.0
                     },
-                    "MinimumZoomDistance": 0.5,
-                    "LimitZoomDistance": false
+                    "MinimumZoomDistance": 1.0,
+                    "LimitZoomDistance": true
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -127,67 +164,8 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "GnomonEntity",
+            "mID": "TorusEntity",
             "Components": [
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon",
-                    "Visible": true,
-                    "Gnomon": "Gnomon",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "PositionGnomon",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "WorldEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformWorld",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderMesh",
@@ -218,10 +196,89 @@
                     "mID": "UpdateTransform",
                     "Position": "",
                     "Orientation": "",
-                    "UniformScale": "UniformScaleParameter"
+                    "UniformScale": "LowScaleParameter"
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformTorus",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBox",
+                    "Visible": true,
+                    "Mesh": "BoxMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "WorldEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformWorld",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "TorusEntity",
+                "TorusEntity"
+            ]
         },
         {
             "Type": "nap::GnomonMesh",
@@ -270,11 +327,35 @@
         },
         {
             "Type": "nap::ParameterFloat",
-            "mID": "UniformScaleParameter",
-            "Name": "UniformScale",
+            "mID": "HighScaleParameter",
+            "Name": "High",
             "Value": 1.0,
             "Minimum": 0.0,
             "Maximum": 2.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "LowScaleParameter",
+            "Name": "Low",
+            "Value": 1.0,
+            "Minimum": 0.0,
+            "Maximum": 2.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "MultiplierParameter",
+            "Name": "Multiplier",
+            "Value": 5.0,
+            "Minimum": 0.0,
+            "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "OffsetParameter",
+            "Name": "Offset",
+            "Value": 0.5,
+            "Minimum": 0.0,
+            "Maximum": 1.0
         },
         {
             "Type": "nap::RenderWindow",
@@ -305,10 +386,6 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "GnomonEntity",
-                    "InstanceProperties": []
-                },
-                {
                     "Entity": "CameraEntity",
                     "InstanceProperties": []
                 },
@@ -318,7 +395,60 @@
                 },
                 {
                     "Entity": "WorldEntity",
-                    "InstanceProperties": []
+                    "InstanceProperties": [
+                        {
+                            "TargetComponent": "./TorusEntity:0/UpdateTransform",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "UniformScale",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "override_76217faa",
+                                        "Value": "LowScaleParameter"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./TorusEntity:1/UpdateTransform",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "UniformScale",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "override_d92ca632",
+                                        "Value": "HighScaleParameter"
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./TorusEntity:0/TransformTorus",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_b8c82a1a",
+                                        "Value": -1.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./TorusEntity:1/TransformTorus",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "Properties/Translate/x",
+                                    "Value": {
+                                        "Type": "nap::FloatInstancePropertyValue",
+                                        "mID": "override_1f6d3c95",
+                                        "Value": 1.0
+                                    }
+                                }
+                            ]
+                        }
+                    ]
                 }
             ]
         },
@@ -327,8 +457,8 @@
             "mID": "TorusMesh",
             "Radius": 0.75,
             "TubeRadius": 0.25,
-            "Segments": 64,
-            "TubeSegments": 32,
+            "Segments": 32,
+            "TubeSegments": 16,
             "AngleOffset": 0.0,
             "Usage": "Static",
             "PolygonMode": "Line",

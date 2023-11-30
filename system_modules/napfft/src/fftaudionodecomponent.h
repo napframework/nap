@@ -57,12 +57,12 @@ namespace nap
 		void setInput(audio::AudioComponentBaseInstance& input);
 
 		/**
-		 * 
+		 * @return the FFT buffer
 		 */
 		virtual const FFTBuffer& getFFTBuffer() const		{ return *mFFTBuffer; }
 
 		/**
-		 *
+		 * @return the FFT buffer
 		 */
 		virtual FFTBuffer& getFFTBuffer()					{ return *mFFTBuffer; }
 	

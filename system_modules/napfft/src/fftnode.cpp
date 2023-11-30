@@ -17,7 +17,10 @@ namespace nap
 	FFTNode::FFTNode(audio::NodeManager& nodeManager, FFTBuffer::EOverlap overlaps) :
 		audio::Node(nodeManager)
 	{
-		mFFTBuffer = std::make_unique<FFTBuffer>(getNodeManager().getInternalBufferSize(), overlaps);
+		const auto buffer_size = getNodeManager().getInternalBufferSize();
+		assert(buffer_size >= 2);
+
+		mFFTBuffer = std::make_unique<FFTBuffer>(buffer_size, overlaps);
 		getNodeManager().registerRootProcess(*this);
 	}
 
