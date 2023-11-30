@@ -285,32 +285,16 @@ rttr::variant napkin::PropertyPath::patchValue(const rttr::variant& value) const
 }
 
 
-bool PropertyPath::setValue(rttr::variant value)
+bool PropertyPath::setValue(rttr::variant new_value)
 {
-	// Handle assignment for component and entity ptr
-	auto patched_value = patchValue(value);
-
-	// Set patched property directly when we're not dealing with an instance override
+	// Resolve path to property
 	auto resolved_path = resolve();
-	if (!isInstanceProperty())
-		return resolved_path.setValue(patched_value);
+	auto resource_value = resolved_path.getValue();
 
-	//////////////////////////////////////////////////////////////////////////
-	// TODO: Drastically improve handling of instance properties!!!
-	// The current implementation is shaky at best. It works, but that's about it. What to do?
-	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
-	// Properly implement callbacks, they're too scattered and hard to trace!
-	// Strengthen and simplify the entire model!
-	//////////////////////////////////////////////////////////////////////////
-
-	// Check if the new value overrides default.
-	auto cur_value = resolved_path.getValue();
-
-	// New value doesn't override default, remove instance property and bail
-	// Note that we're comparing the input value, not the patched value.
-	// TODO: Implement type::register_comparators<T>() to properly compare component and entity ptrs.
-	if (cur_value == value) 
+	// New value doesn't override resource value
+	if (resource_value == new_value)
 	{
+		// Delete instance override when currently set
 		auto target_attr = targetAttribute();
 		if (target_attr != nullptr)
 		{
@@ -319,6 +303,20 @@ bool PropertyPath::setValue(rttr::variant value)
 		}
 		return true;
 	}
+
+	// Set value directly when we're not dealing with an instance override
+	// We patch the value to ensure component and entity ptr paths are also updated
+	auto patched_value = patchValue(new_value);
+	if (!isInstanceProperty())
+		return resolved_path.setValue(patched_value);
+
+	//////////////////////////////////////////////////////////////////////////
+	// TODO: Improve handling of instance properties!!!
+	// The current implementation is shaky at best. It works, but that's about it. What to do?
+	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
+	// Properly implement callbacks, they're too scattered and hard to trace!
+	// Strengthen and simplify the entire model!
+	//////////////////////////////////////////////////////////////////////////
 
 	// Get instance property (as target). Create one if it doesn't exist.
 	// If it does exist: discard instance property value if the provided value is the same as the original
