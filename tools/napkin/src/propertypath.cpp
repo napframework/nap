@@ -258,14 +258,42 @@ rttr::variant PropertyPath::getValue() const
 }
 
 
-bool PropertyPath::setValue(rttr::variant new_value)
+rttr::variant napkin::PropertyPath::patchValue(const rttr::variant& value) const
 {
-	// Regular property
+	auto prop_type = getType();
+	if (!prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+		!prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
+	{
+		return value;
+	}
+
+	// Get pointer from value
+	auto* target_object = value.get_type().is_wrapper() ?
+		value.get_wrapped_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
+	assert(target_object != nullptr);
+
+	// Assign the new value to the pointer (note that we're modifying a copy)
+	auto patched_ptr = getValue();
+	nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
+	auto path = mDocument->relativeObjectPath(*getObject(), *target_object);
+	rttr::method assign_method = nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
+	assert(assign_method.is_valid());
+	assign_method.invoke(patched_ptr, path, *target_object);
+
+	// Return it
+	return patched_ptr;
+}
+
+
+bool PropertyPath::setValue(rttr::variant value)
+{
+	// Handle assignment for component and entity ptr
+	auto patched_value = patchValue(value);
+
+	// Set patched property directly when we're not dealing with an instance override
 	auto resolved_path = resolve();
 	if (!isInstanceProperty())
-	{
-		return resolved_path.setValue(new_value);
-	}
+		return resolved_path.setValue(patched_value);
 
 	//////////////////////////////////////////////////////////////////////////
 	// TODO: Drastically improve handling of instance properties!!!
@@ -277,21 +305,11 @@ bool PropertyPath::setValue(rttr::variant new_value)
 
 	// Check if the new value overrides default.
 	auto cur_value = resolved_path.getValue();
-	bool override_default = cur_value != new_value;
-
-	// Regular variant comparison doesn't work with component and entity pointers because their template types aren't resolved.
-	// TODO: implement type::register_comparators<T>() to ennable component and entity pointer comparison using rtti
-	auto object_method = nap::rtti::findMethodRecursive(cur_value.get_type(), nap::rtti::method::toObject);
-	if (object_method.is_valid())
-	{
-		auto a = object_method.invoke(cur_value).get_value<nap::rtti::Object*>();
-		assert(nap::rtti::findMethodRecursive(new_value.get_type(), nap::rtti::method::toObject).is_valid());
-		auto b = object_method.invoke(new_value).get_value<nap::rtti::Object*>();
-		override_default = a != b;
-	}
 
 	// New value doesn't override default, remove instance property and bail
-	if (!override_default)
+	// Note that we're comparing the input value, not the patched value.
+	// TODO: Implement type::register_comparators<T>() to properly compare component and entity ptrs.
+	if (cur_value == value) 
 	{
 		auto target_attr = targetAttribute();
 		if (target_attr != nullptr)
@@ -317,7 +335,7 @@ bool PropertyPath::setValue(rttr::variant new_value)
 
 	// Set instance property value
 	rttr::variant val = target_attr->mValue.get();
-	return setInstancePropertyValue(val, new_value);
+	return setInstancePropertyValue(val, patched_value);
 }
 
 
@@ -362,30 +380,6 @@ Object* PropertyPath::getPointee() const
 	return wrapped_type != type ?
 		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
 		value.get_value<nap::rtti::Object*>();
-}
-
-
-void PropertyPath::setPointee(Object* pointee)
-{
-	// Handle assignment for component and entity ptr
-	auto prop_type = getType();
-	if (prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
-		prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
-	{
-		// Assign the new value to the pointer (note that we're modifying a copy)
-		assert(mDocument != nullptr);
-		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-		auto new_value = getValue();
-		rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
-		assign_method.invoke(new_value, path, *pointee);
-
-		// Apply the modified value back to the source property
-		setValue(new_value);
-		return;
-	}
-
-	// Regular object
-	setValue(pointee);
 }
 
 

@@ -122,12 +122,6 @@ namespace napkin
 		nap::rtti::Object* getPointee() const;
 
 		/**
-		 * If this path refers to a pointer, set the Object it's pointing to
-		 * @param pointee The Object this property will be pointing to.
-		 */
-		void setPointee(nap::rtti::Object* pointee);
-
-		/**
 		 * Get the parent of this path
 		 */
 		PropertyPath getParent() const;
@@ -343,6 +337,7 @@ namespace napkin
 
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
+		rttr::variant patchValue(const rttr::variant& value) const;
 
 		Document* mDocument = nullptr;
 		PPath mObjectPath;

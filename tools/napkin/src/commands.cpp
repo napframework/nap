@@ -109,11 +109,8 @@ void SetPointerValueCommand::redo()
 {
 	nap::rtti::ResolvedPath resolved_path = mPath.resolve();
 	assert(resolved_path.isValid());
-
 	nap::rtti::Object* new_object = AppContext::get().getDocument()->getObject(mNewValue);
-
-	mPath.setPointee(new_object);
-
+	mPath.setValue(new_object);
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
@@ -503,7 +500,7 @@ void ReplaceEmbeddedPointerCommand::redo()
 
 	// Create and point to new object
 	auto obj = doc->addObject(mType, mPath.getObject());
-	mPath.setPointee(obj);
+	mPath.setValue(obj);
 	doc->propertyValueChanged(mPath);
 }
 
