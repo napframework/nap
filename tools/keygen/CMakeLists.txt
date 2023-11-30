@@ -11,7 +11,7 @@ include_directories(${TCLAP_INCLUDE_DIRS})
 # Add openssl
 list(APPEND CMAKE_MODULE_PATH ${NAP_ROOT}/system_modules/napopenssl/thirdparty/cmake_find_modules)
 find_package(openssl REQUIRED)
-include_directories(${OPENSSL_INCLUDE_DIRS})
+include_directories(${OPENSSL_INCLUDE_DIR})
 
 # Add napopenssl utility methods
 include_directories("${NAP_ROOT}/system_modules/napopenssl/src")
@@ -30,6 +30,10 @@ target_link_libraries(${PROJECT_NAME} ${LIBCRYPTO_LIB} ${LIBSSL_LIB})
 if(APPLE)
     macos_add_rttr_rpath()
 endif()
+
+if(WIN32)
+    copy_openssl_dll()
+endif ()
 
 # ==================================
 

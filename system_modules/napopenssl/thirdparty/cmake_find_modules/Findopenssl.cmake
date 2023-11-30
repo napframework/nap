@@ -4,7 +4,7 @@ find_path(OPENSSL_ROOT_DIR
     HINTS ${NAP_ROOT}/system_modules/napopenssl/thirdparty/openssl)
 set(OPENSSL_LICENSE_FILES ${OPENSSL_ROOT_DIR}/LICENSE)
 
-#
+# Include dir
 set(OPENSSL_INCLUDE_DIR "${OPENSSL_ROOT_DIR}/include")
 
 # openssl libs
@@ -28,8 +28,8 @@ if(UNIX)
 else (WIN32)
     set(LIBCRYPTO_LIB "${OPENSSL_ROOT_DIR}/msvc/x86_64/libs/libcrypto.lib")
     set(LIBSSL_LIB "${OPENSSL_ROOT_DIR}/msvc/x86_64/libs/libssl.lib")
-    set(LIBCRYPTO_DLL "${OPENSSL_ROOT_DIR}/msvc/x86_64/libs/libssl-1_1-x64.dll")
-    set(LIBSSL_DLL "${OPENSSL_ROOT_DIR}/msvc/x86_64/libs/libcrypto-1_1-x64.dll")
+    set(LIBCRYPTO_DLL "${OPENSSL_ROOT_DIR}/msvc/x86_64/libs/libcrypto-3-x64.dll")
+    set(LIBSSL_DLL "${OPENSSL_ROOT_DIR}/msvc/x86_64/libs/libssl-3-x64.dll")
     file(GLOB OPENSSL_LIBS "${LIBCRYPTO_LIB}" "${LIBSSL_LIB}")
     add_library(libcrypto SHARED IMPORTED)
     set_target_properties(libcrypto PROPERTIES

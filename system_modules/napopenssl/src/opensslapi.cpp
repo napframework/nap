@@ -121,7 +121,7 @@ void base64Decode(const char* b64message, std::string& out)
     BIO_free_all(bio);
 
     out = std::string(reinterpret_cast<char*>(buffer), length);
-    OPENSSL_free(buffer);
+    free(buffer);
 }
 
 constexpr const char* supportedSigningSchemes[] =

@@ -12,8 +12,7 @@
 #include <unordered_map>
 #include <nap/assert.h>
 
-#ifdef _WIN32 
-	#include <dll.h>
+#ifdef _WIN32
 	#include <windows.h>
 	#include <intrin.h>       
 	#include <iphlpapi.h>
@@ -206,8 +205,8 @@ namespace nap
 			return false;
 
         // hash and encode
-        std::string hashed_id = openssl::utility::sha256(id_str);
-		std::string id_encoded = openssl::utility::encode64(hashed_id);
+        std::string hashed_id = utility::sha256(id_str);
+		std::string id_encoded = utility::encode64(hashed_id);
         assert(id_encoded.size() >= 10);
 
         // convert to hex and truncate for readability

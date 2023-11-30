@@ -6,11 +6,6 @@
 #include <fstream>
 #include "commandline.h"
 
-// Required for cryptopp library on windows
-#ifdef _WIN32 
-	#include <dll.h>
-#endif
-
 #include "opensslapi.h"
 
 /**
