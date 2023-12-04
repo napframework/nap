@@ -117,7 +117,7 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 
 		// Construct label based on array type
 		QString label("Remove ");
-		if (path_item->getPath().isPointer())
+		if (path_item->getPath().getPointee() != nullptr)
 		{
 			auto pointee = path_item->getPath().getPointee();
 			assert(pointee != nullptr);

@@ -117,7 +117,8 @@ namespace napkin
 
 		/**
 		 * If this path refers to a pointer, get the Object it's pointing to.
-		 * @return The object this property is pointing to or nullptr if this path does not represent a pointer.
+		 * Return nullptr if the object doesn't exist or is not a pointer.
+		 * @return The object this property is pointing to, nullptr if the object doesn't exist or isn't a pointer
 		 */
 		nap::rtti::Object* getPointee() const;
 
