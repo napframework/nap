@@ -264,6 +264,8 @@ namespace napkin
 			return value_property.set_value(instance_property, value);
 
 		// Handle component ptr overrides, which can't be copied - only assigned!
+		// TODO: Properly implement copy assignment and comparison of nap::ComponentPtr<> to avoid explicit assignment.
+		// Look into explicit registration of comparison operators for templated types in RTTR using 'rttr::type::register_comparators()'.
 		rttr::method string_method = nap::rtti::findMethodRecursive(value.get_type().get_raw_type(), nap::rtti::method::toString);
 		assert(string_method.is_valid());
 		auto path = string_method.invoke(value).to_string();
