@@ -27,17 +27,13 @@ namespace nap
 		class NAPAPI ObjectPtrBase
 		{
 			RTTI_ENABLE()
-
 		public:
             virtual ~ObjectPtrBase() = default;
             
 		    /**
 		     * @return the type of the object pointed to
 		     */
-			rttr::type getWrappedType() const
-			{
-				return mPtr->get_type();
-			}
+			rttr::type getWrappedType() const		{ return mPtr->get_type();	 }
 
 		private:
 			ObjectPtrBase() = default;
@@ -46,25 +42,17 @@ namespace nap
 			 * ctor taking direct pointer.
 			 */
 			ObjectPtrBase(rtti::Object* ptr) :
-			mPtr(ptr)
-			{
-			}
+				mPtr(ptr)							{ }
 
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			rtti::Object* get()
-			{
-				return mPtr;
-			}
+			rtti::Object* get()						{ return mPtr; }
 
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			const rtti::Object* get() const
-			{
-				return mPtr;
-			}
+			const rtti::Object* get() const			{ return mPtr; }
 
 		private:
 			/**
@@ -83,10 +71,10 @@ namespace nap
 		private:
 			template<class T> friend class ObjectPtr;
 			friend class ObjectPtrManager;
-        
 			rtti::Object* mPtr = nullptr;
 		};
-    
+
+
 		/**
 		 * Holds a set of all ObjectPtrs in the application. The purpose of the manager is to be able to
 		 * retarget ObjectPtrs if objects get replaced by another object in the real-time updating system.

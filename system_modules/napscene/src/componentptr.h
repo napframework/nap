@@ -23,8 +23,7 @@ namespace nap
         virtual ~ComponentPtrBase() = default;
 
 		/**
-		 * Convert the full target ID as specified to an ID that can be resolved to an object
-		 *
+		 * Convert the full target path to an ID that can be resolved against an object
 		 * @param targetID The target ID to translate
 		 * @return The translated ID
 		 */
