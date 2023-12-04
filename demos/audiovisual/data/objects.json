@@ -85,12 +85,23 @@
                             "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
                             "mID": "FilterParameterItem_5ba51e75",
                             "Parameter": "HighScaleParameter",
-                            "Multiplier": "MultiplierParameter",
+                            "Multiplier": "HighMultiplyParameter",
+                            "Offset": "OffsetParameter",
+                            "Decay": "",
+                            "MinHertz": 10000.0,
+                            "MaxHertz": 20000.0,
+                            "SmoothTime": 0.0333000011742115
+                        },
+                        {
+                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
+                            "mID": "FilterParameterItem_785b0a01",
+                            "Parameter": "MidScaleParameter",
+                            "Multiplier": "MidMultiplyParameter",
                             "Offset": "OffsetParameter",
                             "Decay": "",
                             "MinHertz": 4000.0,
-                            "MaxHertz": 20000.0,
-                            "SmoothTime": 0.0333000011742115
+                            "MaxHertz": 10000.0,
+                            "SmoothTime": 0.05000000074505806
                         }
                     ],
                     "Enable": true
@@ -121,12 +132,12 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "CameraTransform",
+                    "mID": "TransformCamera",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 3.0
+                            "z": 4.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -277,6 +288,7 @@
             ],
             "Children": [
                 "TorusEntity",
+                "TorusEntity",
                 "TorusEntity"
             ]
         },
@@ -327,6 +339,14 @@
         },
         {
             "Type": "nap::ParameterFloat",
+            "mID": "HighMultiplyParameter",
+            "Name": "HighMultiply",
+            "Value": 5.0,
+            "Minimum": 0.0,
+            "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
             "mID": "HighScaleParameter",
             "Name": "High",
             "Value": 1.0,
@@ -343,11 +363,19 @@
         },
         {
             "Type": "nap::ParameterFloat",
-            "mID": "MultiplierParameter",
-            "Name": "Multiplier",
-            "Value": 5.0,
+            "mID": "MidMultiplyParameter",
+            "Name": "MidMultiply",
+            "Value": 3.0,
             "Minimum": 0.0,
             "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "MidScaleParameter",
+            "Name": "Mid",
+            "Value": 1.0,
+            "Minimum": 0.0,
+            "Maximum": 2.0
         },
         {
             "Type": "nap::ParameterFloat",
@@ -430,7 +458,7 @@
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "override_b8c82a1a",
-                                        "Value": -1.0
+                                        "Value": -2.0
                                     }
                                 }
                             ]
@@ -443,7 +471,20 @@
                                     "Value": {
                                         "Type": "nap::FloatInstancePropertyValue",
                                         "mID": "override_1f6d3c95",
-                                        "Value": 1.0
+                                        "Value": 2.0
+                                    }
+                                }
+                            ]
+                        },
+                        {
+                            "TargetComponent": "./TorusEntity:2/UpdateTransform",
+                            "TargetAttributes": [
+                                {
+                                    "Path": "UniformScale",
+                                    "Value": {
+                                        "Type": "nap::PointerInstancePropertyValue",
+                                        "mID": "override_49165e5e",
+                                        "Value": "MidScaleParameter"
                                     }
                                 }
                             ]
