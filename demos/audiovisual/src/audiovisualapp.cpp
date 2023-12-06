@@ -6,6 +6,8 @@
 #include <inputrouter.h>
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
+#include <orthocameracomponent.h>
+#include <rendertotexturecomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audiovisualApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -44,7 +46,11 @@ namespace nap
 			return false;
 
 		mWorldEntity = mScene->findEntity("WorldEntity");
-		if (!error.check(mCameraEntity != nullptr, "unable to find entity with name: %s", "WorldEntity"))
+		if (!error.check(mWorldEntity != nullptr, "unable to find entity with name: %s", "WorldEntity"))
+			return false;
+
+		mRenderEntity = mScene->findEntity("RenderEntity");
+		if (!error.check(mRenderEntity != nullptr, "unable to find entity with name: %s", "RenderEntity"))
 			return false;
 
 		// All done!
@@ -69,23 +75,30 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		auto& render_texture_comp = mRenderEntity->getComponent<RenderToTextureComponentInstance>();
+		if (mRenderService->beginHeadlessRecording())
+		{
+			render_texture_comp.draw();
+			mRenderService->endHeadlessRecording();
+		}
+
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Get Perspective camera to render with
-			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			// Background
+			auto& ortho_cam = mRenderEntity->getComponent<OrthoCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &render_texture_comp });
 
-			// The world entity holds all visible renderable components in the scene.
+			// World
+			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 			std::vector<RenderableComponentInstance*> render_comps;
 			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
-
-			// Render Gnomon
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps);
 
-			// Render GUI elements
+			// GUI
 			mGuiService->draw();
 
 			// Stop render pass

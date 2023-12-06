@@ -26,6 +26,19 @@
             }
         },
         {
+            "Type": "nap::ComputeMaterial",
+            "mID": "PopulateComputeMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "PopulateMeshComputeShader"
+        },
+        {
+            "Type": "nap::ComputeShaderFromFile",
+            "mID": "PopulateMeshComputeShader",
+            "ComputeShader": "shaders/populate.comp"
+        },
+        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -62,8 +75,8 @@
                     "mID": "AudioOutput",
                     "Input": "./AudioPlayback",
                     "Routing": [
-                        0,
-                        1
+                        -1,
+                        -1
                     ]
                 },
                 {
@@ -78,18 +91,7 @@
                             "Offset": "OffsetParameter",
                             "Decay": "",
                             "MinHertz": 0.0,
-                            "MaxHertz": 4000.0,
-                            "SmoothTime": 0.0333000011742115
-                        },
-                        {
-                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
-                            "mID": "FilterParameterItem_5ba51e75",
-                            "Parameter": "HighScaleParameter",
-                            "Multiplier": "HighMultiplyParameter",
-                            "Offset": "OffsetParameter",
-                            "Decay": "",
-                            "MinHertz": 10000.0,
-                            "MaxHertz": 20000.0,
+                            "MaxHertz": 2000.0,
                             "SmoothTime": 0.0333000011742115
                         },
                         {
@@ -102,6 +104,17 @@
                             "MinHertz": 4000.0,
                             "MaxHertz": 10000.0,
                             "SmoothTime": 0.05000000074505806
+                        },
+                        {
+                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
+                            "mID": "FilterParameterItem_5ba51e75",
+                            "Parameter": "HighScaleParameter",
+                            "Multiplier": "HighMultiplyParameter",
+                            "Offset": "OffsetParameter",
+                            "Decay": "",
+                            "MinHertz": 20000.0,
+                            "MaxHertz": 24000.0,
+                            "SmoothTime": 0.0333000011742115
                         }
                     ],
                     "Enable": true
@@ -169,6 +182,160 @@
                 {
                     "Type": "nap::PointerInputComponent",
                     "mID": "CameraPointerInput"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "PlaneEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformPlane",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 100.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderPlane",
+                    "Visible": false,
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "RenderToTexture",
+                    "Visible": true,
+                    "OutputTexture": "AmplitudeTexture",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "AmplitudeMaterial",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "Samples": "One",
+                    "ClearColor": {
+                        "Values": [
+                            255,
+                            255,
+                            255,
+                            255
+                        ]
+                    },
+                    "SampleShading": true,
+                    "PreserveAspect": false
+                },
+                {
+                    "Type": "nap::RenderFFTComponent",
+                    "mID": "RenderFFT",
+                    "FFT": "../AudioEntity/FFTAudioNode"
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "OrthoCamera",
+                    "Properties": {
+                        "Mode": "Custom",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 1280.0,
+                        "TopPlane": 720.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": -1.0,
+                        "FarClippingPlane": 1.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformRender",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::ComputeComponent",
+                    "mID": "ComputeComponent",
+                    "ComputeMaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "OutPositions_c729b6a4",
+                                "Name": "OutPositions",
+                                "Buffer": "PlaneVertexBuffer"
+                            }
+                        ],
+                        "ComputeMaterial": "PopulateComputeMaterial"
+                    },
+                    "Invocations": 1
                 }
             ],
             "Children": []
@@ -289,7 +456,8 @@
             "Children": [
                 "TorusEntity",
                 "TorusEntity",
-                "TorusEntity"
+                "TorusEntity",
+                "PlaneEntity"
             ]
         },
         {
@@ -301,6 +469,17 @@
                 "y": 0.0,
                 "z": 0.0
             }
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "AmplitudeMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "AmplitudeShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -341,7 +520,7 @@
             "Type": "nap::ParameterFloat",
             "mID": "HighMultiplyParameter",
             "Name": "HighMultiply",
-            "Value": 5.0,
+            "Value": 8.0,
             "Minimum": 0.0,
             "Maximum": 10.0
         },
@@ -365,7 +544,7 @@
             "Type": "nap::ParameterFloat",
             "mID": "MidMultiplyParameter",
             "Name": "MidMultiply",
-            "Value": 3.0,
+            "Value": 4.0,
             "Minimum": 0.0,
             "Maximum": 10.0
         },
@@ -384,6 +563,48 @@
             "Value": 0.5,
             "Minimum": 0.0,
             "Maximum": 1.0
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "None",
+            "PolygonMode": "Line",
+            "Size": {
+                "x": 1.0,
+                "y": 4.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Rows": 2048,
+            "Columns": 512
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "AmplitudeTexture",
+            "Usage": "Static",
+            "Width": 1280,
+            "Height": 720,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
         },
         {
             "Type": "nap::RenderWindow",
@@ -490,8 +711,18 @@
                             ]
                         }
                     ]
+                },
+                {
+                    "Entity": "RenderEntity",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "AmplitudeShader",
+            "VertShader": "shaders/amp.vert",
+            "FragShader": "shaders/amp.frag"
         },
         {
             "Type": "nap::TorusMesh",
@@ -512,6 +743,14 @@
                     1.0
                 ]
             }
+        },
+        {
+            "Type": "nap::VertexBufferVec4",
+            "mID": "PlaneVertexBuffer",
+            "Usage": "Static",
+            "Count": 5224288,
+            "Clear": true,
+            "FillPolicy": ""
         },
         {
             "Type": "nap::audio::AudioFileResource",

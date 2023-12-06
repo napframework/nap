@@ -1,0 +1,23 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#version 450
+
+layout(std430) writeonly buffer OutPositions
+{  
+	vec4 positions[5224288];
+} ssbo;
+
+uniform UBO
+{
+	float amps[513];
+	uint row;
+} ubo;
+
+
+void main()
+{
+	// Fetch global compute shader invocation ID
+	uint global_id = gl_GlobalInvocationID.x;
+	ssbo.positions[global_id].y = ubo.amps[global_id];
+}
