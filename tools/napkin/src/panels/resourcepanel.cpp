@@ -237,7 +237,10 @@ void napkin::ResourcePanel::createMenuCallbacks()
 			}
 			obj_parent = obj_parent->parentItem();
 		}
-		menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
+
+		// Allow object to be deleted if it's not a reference
+		if(!object_item->isPointer())
+			menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
 	});
 
 	// Top Resource
