@@ -81,6 +81,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	mTreeView.getTreeView().setItemDelegateForColumn(1, &mWidgetDelegate);
 	mTreeView.getTreeView().setDragEnabled(true);
 
+	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
 	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
@@ -102,86 +103,14 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 {
 	// Get property path item
 	auto path_item = qitem_cast<PropertyPathItem*>(mTreeView.getSelectedItem());
-	if (path_item == nullptr)
-		return;
+	if (path_item != nullptr)
+	{
+		mMenuController.populate(*path_item, menu);
+	}
 		
 	// In Array?
 	auto parent_item = path_item->parentItem();
 	auto parent_array_item = qobject_cast<ArrayPropertyItem*>(parent_item);
-	if (parent_array_item != nullptr)
-	{
-		// Remove
-		auto parent_array_item = static_cast<ArrayPropertyItem*>(parent_item);
-		PropertyPath parent_property = parent_array_item->getPath();
-		long element_index = path_item->row();
-
-		// Construct label based on array type
-		QString label("Remove ");
-		if (path_item->getPath().getPointee() != nullptr)
-		{
-			auto pointee = path_item->getPath().getPointee();
-			assert(pointee != nullptr);
-			label += pointee->mID.c_str();
-		}
-		else
-		{
-			auto array_type = parent_array_item->getPath().getArrayElementType();
-			label += array_type.get_name().data();
-		}
-
-		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [parent_property, element_index]()
-			{
-				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
-			});
-	}
-
-	// File link?
-	auto& path = path_item->getPath();
-	const auto& type = path.getType();
-	const auto& prop = path.getProperty();
-	if (type.is_derived_from<std::string>() && nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
-	{
-		bool ok;
-		std::string filename = path_item->getPath().getValue().to_string(&ok);
-		if (nap::utility::fileExists(filename))
-		{
-			menu.addAction("Show file in " + nap::qt::fileBrowserName(), [filename]()
-			{
-				nap::qt::revealInFileBrowser(QString::fromStdString(filename));
-			});
-			menu.addAction("Open in external editor", [filename]()
-			{
-				nap::qt::openInExternalEditor(QString::fromStdString(filename));
-			});
-		}
-
-	}
-
-	// Instance property?
-	if (path.isInstanceProperty() && path.isOverridden())
-	{
-		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), 
-			"Remove override", [path]()
-			{
-				PropertyPath p = path;
-				p.removeOverride();
-			});
-	}
-
-	// Pointer?
-	if (qobject_cast<PointerItem*>(path_item) != nullptr)
-	{
-		nap::rtti::Object* pointee = path_item->getPath().getPointee();
-		if (pointee != nullptr)
-		{
-			QAction* action = menu.addAction(AppContext::get().getResourceFactory().getIcon(*pointee),
-				"Select Resource", [pointee]
-				{
-					QList<nap::rtti::Object*> objects = { pointee };
-					AppContext::get().selectionChanged(objects);
-				});
-		}
-	}
 
 	// Embedded pointer?
 	if (qobject_cast<EmbeddedPointerItem*>(path_item) != nullptr)
@@ -404,6 +333,94 @@ void napkin::InspectorPanel::onObjectRenamed(nap::rtti::Object& object, const st
 		mPathField.setText(QString::fromStdString(mPath.toString()));
 		mTitle.setText(mPath.getName().c_str());
 	}
+}
+
+
+void napkin::InspectorPanel::createMenuCallbacks()
+{
+	// In array -> add option to remove
+	mMenuController.addOption([](auto& item, auto& menu)
+	{
+		// Check if parent is an array property
+		auto path_item = qobject_cast<PropertyPathItem*>(&item);
+		auto parent_array = qobject_cast<ArrayPropertyItem*>(path_item->parentItem());
+		if (parent_array == nullptr)
+			return;
+
+		// Create label based on type
+		QString label = QString("Remove %1").arg(path_item->getPath().getPointee() != nullptr ?
+			path_item->getPath().getPointee()->mID.c_str() :
+			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
+		);
+
+		// Add action
+		long element_index = path_item->row();
+		const auto& parent_property = parent_array->getPath();
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [parent_property, element_index]()
+			{
+				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
+			});
+	});
+
+	// String & file link -> show file options
+	mMenuController.addOption([](auto& item, auto& menu)
+	{
+		const auto& path = qobject_cast<PropertyPathItem*>(&item)->getPath();
+		const auto& type = path.getType();
+		if (!type.is_derived_from<std::string>())
+			return;
+
+		const auto& prop = path.getProperty();
+		if (!nap::rtti::hasFlag(prop, nap::rtti::EPropertyMetaData::FileLink))
+			return;
+
+		// TODO: This always fails -> path is relative & needs to be resolved
+		std::string filename = path.getValue().to_string();
+		if (!nap::utility::fileExists(filename))
+			return;
+
+		menu.addAction("Show file in " + nap::qt::fileBrowserName(), [filename](){
+				nap::qt::revealInFileBrowser(QString::fromStdString(filename));
+			});
+
+		menu.addAction("Open in external editor", [filename]() {
+				nap::qt::openInExternalEditor(QString::fromStdString(filename));
+			});
+	});
+
+	// Instance property
+	mMenuController.addOption([](auto& item, auto& menu)
+	{
+		const auto& path = qobject_cast<PropertyPathItem*>(&item)->getPath();
+		if (!path.isInstanceProperty() || !path.isOverridden())
+			return;
+
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE),
+			"Remove override", [path]()
+			{
+				PropertyPath p = path;
+				p.removeOverride();
+			});
+	});
+
+	// Pointer
+	mMenuController.addOption([](auto& item, auto& menu)
+	{
+		auto pointer_item = qobject_cast<PointerItem*>(&item);
+		if (pointer_item == nullptr)
+			return;
+
+		nap::rtti::Object* pointee = pointer_item->getPath().getPointee();
+		if (pointee != nullptr)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(*pointee),
+				"Select Resource", [pointee]
+				{
+					QList<nap::rtti::Object*> objects = { pointee };
+					AppContext::get().selectionChanged(objects);
+				});
+		}
+	});
 }
 
 

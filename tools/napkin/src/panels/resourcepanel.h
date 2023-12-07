@@ -161,6 +161,6 @@ namespace napkin
 		QVBoxLayout mLayout;					// Layout
 		ResourceModel mModel;					// Model
 		nap::qt::FilterTreeView mTreeView;		// Treeview
-		MenuItemController mMenuController;		// Menu controller
+		MenuItemController mMenuController;		// Menu option controller
 	};
 }
