@@ -4,7 +4,11 @@
 
 #pragma once
 
+// Local includes
 #include "actions.h"
+#include "menuitemcontroller.h"
+
+// External includes
 #include <standarditemsobject.h>
 #include <napqt/filtertreeview.h>
 
@@ -145,12 +149,18 @@ namespace napkin
 		 */
 		void menuHook(QMenu& menu);
 
+		/**
+		 * Creates possible actions for menu hook
+		 */
+		void createMenuCallbacks();
+
 	private:
 		void emitSelectionChanged();
 		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
-		QVBoxLayout mLayout;	  // Layout
-		ResourceModel mModel;	 // Model
-		nap::qt::FilterTreeView mTreeView; // Treeview
+		QVBoxLayout mLayout;					// Layout
+		ResourceModel mModel;					// Model
+		nap::qt::FilterTreeView mTreeView;		// Treeview
+		MenuItemController mMenuController;		// Menu controller
 	};
 }
