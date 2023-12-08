@@ -107,121 +107,6 @@ void InspectorPanel::onItemContextMenu(QMenu& menu)
 	{
 		mMenuController.populate(*path_item, menu);
 	}
-		
-	// In Array?
-	auto parent_item = path_item->parentItem();
-	auto parent_array_item = qobject_cast<ArrayPropertyItem*>(parent_item);
-
-	// Embedded pointer?
-	if (qobject_cast<EmbeddedPointerItem*>(path_item) != nullptr)
-	{
-		nap::rtti::Object* pointee = path_item->getPath().getPointee();
-		auto path = path_item->getPath();
-		auto type = path.getWrappedType();
-
-		if (pointee != nullptr)
-		{
-			QString label = QString("Replace %1").arg(pointee->mID.c_str());
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE), label, [this, path, type]
-				{
-					TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
-					rttr::type chosenType = showTypeSelector(this, predicate);
-					if (!chosenType.is_valid())
-						return;
-
-					path.getDocument()->executeCommand(new ReplaceEmbeddedPointerCommand(path, chosenType));
-				});
-
-			// Only add option to delete if not in array.
-			if (parent_array_item == nullptr)
-			{
-				label = QString("Delete %1").arg(pointee->mID.c_str());
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [path_item, pointee]
-					{
-						// TODO: Make this a command
-						auto doc = path_item->getPath().getDocument();
-						auto pointeePath = PropertyPath(*pointee, *doc);
-						auto ownerPath = doc->getEmbeddedObjectOwnerPath(*pointeePath.getObject());
-						doc->removeObject(*pointeePath.getObject());
-						if (ownerPath.isValid())
-						{
-							doc->propertyValueChanged(ownerPath);
-						}
-					});
-			}
-		}
-		else
-		{
-			QString label = QString("Create %1...").arg(type.get_raw_type().get_name().data());
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(type), label, [this, path, type]
-				{
-					// TODO: Make this a command
-					TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
-					rttr::type chosenType = showTypeSelector(this, predicate);
-					if (!chosenType.is_valid())
-						return;
-					path.getDocument()->executeCommand(new ReplaceEmbeddedPointerCommand(path, chosenType));
-				});
-		}
-	}
-
-	// Array?
-	auto* array_item = qobject_cast<ArrayPropertyItem*>(path_item);
-	if (array_item != nullptr && array_item->getPath().getArrayEditable())
-	{
-		PropertyPath array_path = path_item->getPath();
-		auto array_type = array_path.getArrayElementType();
-		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-
-		// Check if we can map it to a material
-		// TODO: Move mapping check (for all menu actions) to dedicated factory
-		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
-		if (material_mapper != nullptr)
-		{
-			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
-			{
-				mapper->map(this);
-			});
-		}
-		else
-		{
-			// Regular resource pointer
-			if (array_path.isNonEmbeddedPointer())
-			{
-				// Build 'Add Existing' menu, populated with all existing objects matching the array type
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
-					{
-						auto objects = AppContext::get().getDocument()->getObjects(array_type);
-						nap::rtti::Object* selected_object = showObjectSelector(this, objects);
-						if (selected_object != nullptr)
-							AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
-					});
-			}
-			// Embedded pointer
-			else if (array_path.isEmbeddedPointer())
-			{
-				// Regular or material array entry handling
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
-					{
-						TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
-						rttr::type elementType = showTypeSelector(this, predicate);
-						if (elementType.is_valid())
-							AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
-					});
-			}
-			// Numeric Value
-			else
-			{
-				QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
-				menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
-					{
-						AppContext::get().executeCommand(new ArrayAddValueCommand(array_path));
-					});
-
-			}
-		}
-	}
 }
 
 
@@ -421,6 +306,182 @@ void napkin::InspectorPanel::createMenuCallbacks()
 				});
 		}
 	});
+
+	// Embedded pointer -> create
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto pointer_item = qobject_cast<EmbeddedPointerItem*>(&item);
+		if( pointer_item == nullptr || pointer_item->getPath().getPointee() != nullptr)
+			return;
+
+		const auto& path = pointer_item->getPath();
+		auto type = path.getWrappedType();
+		QString label = QString("Create %1...").arg(type.get_raw_type().get_name().data());
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(type), label, [this, path, type]
+			{
+				TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
+				rttr::type chosenType = showTypeSelector(this, predicate);
+				if (chosenType.is_valid())
+				{
+					path.getDocument()->executeCommand(new ReplaceEmbeddedPointerCommand(path, chosenType));
+				}
+			});
+	});
+
+	// Embedded pointer -> replace
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto pointer_item = qobject_cast<EmbeddedPointerItem*>(&item);
+		if (pointer_item == nullptr ||
+			pointer_item->getPath().getPointee() == nullptr)
+			return;
+
+		auto pointee = pointer_item->getPath().getPointee();
+		const auto& path = pointer_item->getPath();
+		auto type = path.getWrappedType();
+
+		QString label = QString("Replace %1").arg(pointee->mID.c_str());
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE), label, [this, path, type]
+			{
+				TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
+				rttr::type chosenType = showTypeSelector(this, predicate);
+				if (!chosenType.is_valid())
+					return;
+
+				path.getDocument()->executeCommand(new ReplaceEmbeddedPointerCommand(path, chosenType));
+			});
+	});
+
+	// Embedded pointer -> delete
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto pointer_item = qobject_cast<EmbeddedPointerItem*>(&item);
+		if (pointer_item == nullptr ||
+			pointer_item->getPath().getPointee() == nullptr)
+			return;
+
+		// Only add option to delete if not in array.
+		auto parent_array_item = qobject_cast<ArrayPropertyItem*>(pointer_item->parentItem());
+		if (parent_array_item != nullptr)
+			return;
+
+		auto pointee = pointer_item->getPath().getPointee();
+		QString label = QString("Delete %1").arg(pointee->mID.c_str());
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [pointer_item, pointee]
+			{
+				// TODO: Make this a command
+				auto doc = pointer_item->getPath().getDocument();
+				auto pointeePath = PropertyPath(*pointee, *doc);
+				auto ownerPath = doc->getEmbeddedObjectOwnerPath(*pointeePath.getObject());
+				doc->removeObject(*pointeePath.getObject());
+				if (ownerPath.isValid())
+				{
+					doc->propertyValueChanged(ownerPath);
+				}
+			});
+	});
+
+	// Array -> add material binding
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
+		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+			return;
+
+		PropertyPath array_path = array_item->getPath();
+		auto array_type = array_path.getArrayElementType();
+		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+
+		// Check if we can map it to a material
+		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+		if (material_mapper != nullptr)
+		{
+			QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, mapper = std::move(material_mapper)]()
+			{
+				mapper->map(this);
+			});
+		}
+	});
+
+	// Array -> add resource pointer
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
+		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+			return;
+
+		PropertyPath array_path = array_item->getPath();
+		auto array_type = array_path.getArrayElementType();
+
+		// Check if it's a regular resource pointer
+		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+		if (!array_path.isNonEmbeddedPointer() ||
+			MaterialPropertyMapper::mappable(array_path))
+			return;
+
+		// Build 'Add Existing' menu, populated with all existing objects matching the array type
+		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
+			{
+				auto objects = AppContext::get().getDocument()->getObjects(array_type);
+				nap::rtti::Object* selected_object = showObjectSelector(this, objects);
+				if (selected_object != nullptr)
+					AppContext::get().executeCommand(new ArrayAddExistingObjectCommand(array_path, *selected_object));
+			});
+	});
+
+	// Array -> add embedded pointer
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
+		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+			return;
+
+		PropertyPath array_path = array_item->getPath();
+		auto array_type = array_path.getArrayElementType();
+
+		// Check if it's a regular resource pointer
+		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+		if (!array_path.isEmbeddedPointer() ||
+			MaterialPropertyMapper::mappable(array_path))
+			return;
+
+		// Regular array entry handling
+		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [this, array_path, array_type]()
+			{
+				TypePredicate predicate = [array_type](auto t) { return t.is_derived_from(array_type); };
+				rttr::type elementType = showTypeSelector(this, predicate);
+				if (elementType.is_valid())
+					AppContext::get().executeCommand(new ArrayAddNewObjectCommand(array_path, elementType));
+			});
+	});
+
+	// Array -> add regular value
+	mMenuController.addOption([this](auto& item, auto& menu)
+	{
+		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
+		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+			return;
+
+		PropertyPath array_path = array_item->getPath();
+		auto array_type = array_path.getArrayElementType();
+
+		// Check if it's a regular resource pointer
+		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
+		if (!array_path.isEmbeddedPointer()		||
+			!array_path.isNonEmbeddedPointer()	||
+			MaterialPropertyMapper::mappable(array_path))
+			return;
+
+		// Regular array entry handling
+		QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
+			{
+				AppContext::get().executeCommand(new ArrayAddValueCommand(array_path));
+			});
+	});
 }
 
 
@@ -583,9 +644,9 @@ Qt::ItemFlags InspectorModel::flags(const QModelIndex& index) const
 }
 
 
-QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
+QMimeData* InspectorModel::mimeData(const QModelIndexList& indices) const
 {
-	if (indexes.empty())
+	if (indices.empty())
 		return nullptr;
 
 	auto mime_data = new QMimeData();
@@ -594,7 +655,7 @@ QMimeData* InspectorModel::mimeData(const QModelIndexList& indexes) const
 
 	// As soon as the first valid item is found, use that, ignore subsequent items
 	// TODO: Handle dragging multiple items
-	for (auto index : indexes)
+	for (auto index : indices)
 	{
 		auto object_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
 		if (object_item == nullptr)
