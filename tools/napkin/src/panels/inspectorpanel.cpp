@@ -342,12 +342,9 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Pointer
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
 	{
-		auto pointer_item = qobject_cast<PointerItem*>(&item);
-		if (pointer_item == nullptr)
-			return;
-
+		auto pointer_item = static_cast<PointerItem*>(&item);
 		nap::rtti::Object* pointee = pointer_item->getPath().getPointee();
 		if (pointee != nullptr)
 		{
@@ -361,10 +358,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Embedded pointer -> create
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
-		auto pointer_item = qobject_cast<EmbeddedPointerItem*>(&item);
-		if( pointer_item == nullptr || pointer_item->getPath().getPointee() != nullptr)
+		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
+		if(pointer_item->getPath().getPointee() != nullptr)
 			return;
 
 		const auto& path = pointer_item->getPath();
@@ -382,11 +379,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Embedded pointer -> replace
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
-		auto pointer_item = qobject_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item == nullptr ||
-			pointer_item->getPath().getPointee() == nullptr)
+		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
+		if (pointer_item->getPath().getPointee() == nullptr)
 			return;
 
 		auto pointee = pointer_item->getPath().getPointee();
@@ -406,11 +402,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Embedded pointer -> delete
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
-		auto pointer_item = qobject_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item == nullptr ||
-			pointer_item->getPath().getPointee() == nullptr)
+		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
+		if (pointer_item->getPath().getPointee() == nullptr)
 			return;
 
 		// Only add option to delete if not in array.
@@ -435,10 +430,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Array -> add material binding
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
-		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
-		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -458,10 +453,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Array -> add resource pointer
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
-		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
-		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -485,10 +480,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Array -> add embedded pointer
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
-		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
-		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -512,10 +507,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	});
 
 	// Array -> add regular value
-	mMenuController.addOption([this](auto& item, auto& menu)
+	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
-		auto* array_item = qobject_cast<ArrayPropertyItem*>(&item);
-		if (array_item == nullptr || !array_item->getPath().getArrayEditable())
+		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();

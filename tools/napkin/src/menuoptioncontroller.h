@@ -6,6 +6,7 @@
 
 // External Includes
 #include <QMenu>
+#include <rtti/typeinfo.h>
 
 namespace napkin
 {
@@ -14,7 +15,7 @@ namespace napkin
 	class MenuOptionController;
 
 	/**
-	 * Individual callable menu option for item of type T
+	 * Individual callable menu option for item of base type T
 	 */
 	template<typename T>
 	class MenuOption final
@@ -36,35 +37,95 @@ namespace napkin
 
 
 	/**
-	 * Collects and assigns menu options for items of type T
+	 * Collects and assigns menu options for items of type T - grouped by optional type D.
 	 */
 	template<typename T>
 	class MenuOptionController final
 	{
 	public:
 		MenuOptionController() = default;
+
+		/**
+		 * Assigns the given callback associated with 'itemType' to a new menu option.
+		 * Note that itemType must be derived from base type T.
+		 * @param itemType item type associated with given callback
+		 * @param action the callback to assign to the menu option
+		 */
+		void addOption(const nap::rtti::TypeInfo& itemType, const typename MenuOption<T>::Callback& action);
+
 		/**
 		 * Assigns the given callback to a new menu option
 		 * @param action the callback to assign to the menu option
 		 */
-		void addOption(const typename MenuOption<T>::Callback& action)	{ mOptions.emplace_back(MenuOption<T>(action)); }
+		void addOption(const typename MenuOption<T>::Callback& action)				{ addOption(RTTI_OF(T), action); }
 
 		/**
-		 * Populates the menu 
+		 * Assigns the given callback associated with item D to a new menu option.
+		 * Note that D must be derived from base type T.
+		 * @param action the callback to assign to the menu option
+		 */
+		template<typename D>
+		void addOption(const typename MenuOption<T>::Callback& action)				{ addOption(RTTI_OF(D), action); }
+
+		/**
+		 * Populates a menu with options for the given item
+		 * @param item the menu item
+		 * @param menu the menu to populate
 		 */
 		void populate(T& item, QMenu& menu);
 
 	private:
-		std::vector<MenuOption<T>> mOptions;	///< All available menu action options
+
+		// Binds an item of type D to a set of possible menu actions
+		struct Binding
+		{
+			Binding(const nap::rtti::TypeInfo& itemType) : mItemType(itemType) { }
+			nap::rtti::TypeInfo mItemType;			///< Node type
+			std::vector<MenuOption<T>> mOptions;	///< All available options
+		};
+
+		std::vector<Binding> mBindings;	///< All node to callable option bindings
 	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Template Definitions
+	//////////////////////////////////////////////////////////////////////////
+
+	template<typename T>
+	void napkin::MenuOptionController<T>::addOption(const nap::rtti::TypeInfo& itemType, const typename MenuOption<T>::Callback& action)
+	{
+		// Find binding
+		auto raw_type = itemType.get_raw_type();
+		assert(raw_type.get_raw_type().is_derived_from(RTTI_OF(T)));
+		auto& found_binding = std::find_if(mBindings.begin(), mBindings.end(), [&raw_type](const auto& binding) {
+				return binding.mItemType == raw_type;
+			}
+		);
+
+		// Non existing binding
+		auto* current_binding = found_binding == mBindings.end() ? nullptr : &(*found_binding);
+		if (current_binding == nullptr)
+			current_binding = &(mBindings.emplace_back(Binding(itemType.get_raw_type())));
+
+		// Add action
+		current_binding->mOptions.emplace_back(action);
+		int next = current_binding->mOptions.size();
+	}
 
 
 	template<typename T>
 	void MenuOptionController<T>::populate(T& item, QMenu& menu)
 	{
-		for (const auto& action : mOptions)
+		// Iterate over all the possible options -> only include options
+		// when item is derived from binding type
+		for (const auto& binding : mBindings)
 		{
-			action.mCallback(item, menu);
+			if (item.get_type().get_raw_type().is_derived_from(binding.mItemType))
+			{
+				for (const auto& option : binding.mOptions)
+					option.mCallback(item, menu);
+			}
 		}
 	}
 }

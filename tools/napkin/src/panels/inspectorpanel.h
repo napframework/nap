@@ -205,6 +205,6 @@ namespace napkin
 		QLabel mPathLabel;							// label before path
 		QLineEdit mPathField;						// Display path to object
 		PropertyPath mPath;							// Path to display
-		MenuOptionController<napkin::PropertyPathItem> mMenuController;	// Menu option controller
+		MenuOptionController<PropertyPathItem> mMenuController;	// Menu option controller
 	};
 };

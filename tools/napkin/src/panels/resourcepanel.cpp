@@ -155,37 +155,32 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 void napkin::ResourcePanel::createMenuCallbacks()
 {
 	// Child Entity
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
-		auto entity_item = qobject_cast<EntityItem*>(&item);
-		if (entity_item != nullptr && entity_item->isPointer())
-		{
-			auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
-			if (parent_item)
-			{
-				menu.addAction(new RemovePathAction(&menu, entity_item->propertyPath()));
-			}
-		}
+		auto entity_item = static_cast<EntityItem*>(&item);
+		if (!entity_item->isPointer())
+			return;
+
+		auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
+		assert(parent_item != nullptr);
+		menu.addAction(new RemovePathAction(&menu, entity_item->propertyPath()));
 	});
 
 	// Resource Entity
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
-		auto entity_item = qobject_cast<EntityItem*>(&item);
-		if (entity_item != nullptr && !entity_item->isPointer())
-		{
-			menu.addAction(new AddChildEntityAction(&menu, entity_item->getEntity()));
-			menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
-		}
+		auto entity_item = static_cast<EntityItem*>(&item);
+		if (entity_item->isPointer())
+			return;
+
+		menu.addAction(new AddChildEntityAction(&menu, entity_item->getEntity()));
+		menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
 	});
 
 	// Group
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<GroupItem>([](auto& item, auto& menu)
 	{
-		auto group_item = qobject_cast<GroupItem*>(&item);
-		if (group_item == nullptr)
-			return;
-
+		auto group_item = static_cast<GroupItem*>(&item);
 		menu.addAction(new AddNewResourceToGroupAction(&menu, group_item->getGroup()));
 		menu.addAction(new AddExistingResourceToGroupAction(&menu, group_item->getGroup()));
 
@@ -200,24 +195,18 @@ void napkin::ResourcePanel::createMenuCallbacks()
 	});
 
 	// Shader Resource
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<BaseShaderItem>([](auto& item, auto& menu)
 	{
-		auto object_item = qobject_cast<ObjectItem*>(&item);
-		if (object_item != nullptr &&
-			object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::BaseShader)))
-		{
-			menu.addAction(new LoadShaderAction(&menu, 
-				static_cast<nap::BaseShader&>(object_item->getObject())));
-		}
+		auto object_item = static_cast<BaseShaderItem*>(&item);
+		menu.addAction(new LoadShaderAction(&menu, static_cast<nap::BaseShader&>(object_item->getObject())));
 	});
 
 	// Regular object that isn't a group
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<ObjectItem>([](auto& item, auto& menu)
 	{
 		// Ensure it's an object and not a group
-		auto object_item = qobject_cast<ObjectItem*>(&item);
-		if (object_item == nullptr ||
-			object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+		auto object_item = static_cast<ObjectItem*>(&item);
+		if (object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 			return;
 
 		// Offer option to move if parented under resources
@@ -244,24 +233,18 @@ void napkin::ResourcePanel::createMenuCallbacks()
 	});
 
 	// Top Resource
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<RootResourcesItem>([](auto& item, auto& menu)
 	{
-		auto root_item = qobject_cast<RootResourcesItem*>(&item);
-		if (root_item != nullptr)
-		{
-			menu.addAction(new CreateResourceAction(&menu));
-			menu.addAction(new CreateGroupAction(&menu));
-		}
+		auto root_item = static_cast<RootResourcesItem*>(&item);
+		menu.addAction(new CreateResourceAction(&menu));
+		menu.addAction(new CreateGroupAction(&menu));
 	});
 
 	// Top Entity
-	mMenuController.addOption([](auto& item, auto& menu)
+	mMenuController.addOption<EntityResourcesItem>([](auto& item, auto& menu)
 	{
-		auto root_item = qobject_cast<EntityResourcesItem*>(&item);
-		if (root_item != nullptr)
-		{
-			menu.addAction(new CreateEntityAction(&menu));
-		}
+		auto root_item = static_cast<EntityResourcesItem*>(&item);
+		menu.addAction(new CreateEntityAction(&menu));
 	});
 }
 
