@@ -3,15 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "menuitemcontroller.h"
+#include "menuoptioncontroller.h"
 
 namespace napkin
-{
-	void MenuItemController::populate(RTTIItem& item, QMenu& menu)
-	{
-		for (const auto& action : mOptions)
-		{
-			action.mCallback(item, menu);
-		}
-	}
-}
+{ }

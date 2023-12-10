@@ -227,19 +227,18 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
 		// Check if parent is an array property
-		auto path_item = qobject_cast<PropertyPathItem*>(&item);
-		auto parent_array = qobject_cast<ArrayPropertyItem*>(path_item->parentItem());
+		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
 		if (parent_array == nullptr)
 			return;
 
 		// Create label based on type
-		QString label = QString("Remove %1").arg(path_item->getPath().getPointee() != nullptr ?
-			path_item->getPath().getPointee()->mID.c_str() :
+		QString label = QString("Remove %1").arg(item.getPath().getPointee() != nullptr ?
+			item.getPath().getPointee()->mID.c_str() :
 			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
 		);
 
 		// Add action
-		long element_index = path_item->row();
+		long element_index = item.row();
 		const auto& parent_property = parent_array->getPath();
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [parent_property, element_index]()
 			{
@@ -250,7 +249,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	// String & file link -> show file options
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
-		const auto& path = qobject_cast<PropertyPathItem*>(&item)->getPath();
+		const auto& path = item.getPath();
 		const auto& type = path.getType();
 		if (!type.is_derived_from<std::string>())
 			return;
@@ -276,7 +275,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	// Instance property
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
-		const auto& path = qobject_cast<PropertyPathItem*>(&item)->getPath();
+		const auto& path = item.getPath();
 		if (!path.isInstanceProperty() || !path.isOverridden())
 			return;
 

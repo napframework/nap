@@ -11,7 +11,6 @@
 #include <QVBoxLayout>
 #include <rtti/object.h>
 #include <rtti/path.h>
-#include <panels/inspectorpanel.h>
 #include <rtti/rtti.h>
 
 namespace napkin

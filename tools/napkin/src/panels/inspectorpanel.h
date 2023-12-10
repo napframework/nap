@@ -4,9 +4,9 @@
 
 #pragma once
 
-#include "propertypath.h"
+#include "standarditemsproperty.h"
 #include "widgetdelegate.h"
-#include "menuitemcontroller.h"
+#include "menuoptioncontroller.h"
 
 #include <QStandardItemModel>
 #include <QMenu>
@@ -205,6 +205,6 @@ namespace napkin
 		QLabel mPathLabel;							// label before path
 		QLineEdit mPathField;						// Display path to object
 		PropertyPath mPath;							// Path to display
-		MenuItemController mMenuController;			// Menu option controller
+		MenuOptionController<napkin::PropertyPathItem> mMenuController;	// Menu option controller
 	};
 };

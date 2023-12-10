@@ -6,7 +6,7 @@
 
 // Local includes
 #include "actions.h"
-#include "menuitemcontroller.h"
+#include "menuoptioncontroller.h"
 
 // External includes
 #include <standarditemsobject.h>
@@ -158,9 +158,9 @@ namespace napkin
 		void emitSelectionChanged();
 		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
-		QVBoxLayout mLayout;					// Layout
-		ResourceModel mModel;					// Model
-		nap::qt::FilterTreeView mTreeView;		// Treeview
-		MenuItemController mMenuController;		// Menu option controller
+		QVBoxLayout mLayout;							// Layout
+		ResourceModel mModel;							// Model
+		nap::qt::FilterTreeView mTreeView;				// Treeview
+		MenuOptionController<RTTIItem> mMenuController;	// Menu option controller
 	};
 }
