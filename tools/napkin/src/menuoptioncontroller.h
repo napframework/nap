@@ -80,12 +80,13 @@ namespace napkin
 		 */
 		struct Binding
 		{
-			Binding(const nap::rtti::TypeInfo& itemType) : mItemType(itemType) { }
+			Binding(const nap::rtti::TypeInfo& itemType) : mItemType(itemType)		{ }
+
 			nap::rtti::TypeInfo mItemType;			///< Node type
 			std::vector<MenuOption<T>> mOptions;	///< All available options
 		};
 
-		std::vector<Binding> mBindings;	///< All node to callable option bindings
+		std::vector<Binding> mBindings;	///< All node to callable menu actions
 	};
 
 
