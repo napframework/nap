@@ -14,7 +14,7 @@ namespace napkin
 	class MenuOptionController;
 
 	/**
-	 * Individual callable menu option for item type of T
+	 * Individual callable menu option for item of type T
 	 */
 	template<typename T>
 	class MenuOption final
@@ -36,7 +36,7 @@ namespace napkin
 
 
 	/**
-	 * Collects and assigns menu options for item type of T
+	 * Collects and assigns menu options for items of type T
 	 */
 	template<typename T>
 	class MenuOptionController final

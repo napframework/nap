@@ -238,13 +238,67 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		);
 
 		// Add action
-		long element_index = item.row();
+		int element_index = item.row();
 		const auto& parent_property = parent_array->getPath();
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [parent_property, element_index]()
 			{
 				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
 			});
 	});
+
+	// In array -> add option to move up
+	mMenuController.addOption([](auto& item, auto& menu)
+		{
+			// Check if parent is an array property
+			auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
+			if (parent_array == nullptr)
+				return;
+
+			// Ensure item can be moved up
+			auto idx = static_cast<size_t>(item.row());
+			if (idx == 0)
+				return;
+
+			// Create label based on type
+			QString label = QString("Move %1 up").arg(item.getPath().getPointee() != nullptr ?
+				item.getPath().getPointee()->mID.c_str() :
+				parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
+			);
+
+			// Add action
+			const auto& parent_property = parent_array->getPath();
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP), label, [parent_property, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(parent_property, idx, idx - 1));
+				});
+		});
+
+	// In array -> add option to move down
+	mMenuController.addOption([](auto& item, auto& menu)
+		{
+			// Check if parent is an array property
+			auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
+			if (parent_array == nullptr)
+				return;
+
+			// Ensure item can be moved down
+			auto idx = static_cast<size_t>(item.row());
+			if (idx == parent_array->getPath().getArrayLength() - 1)
+				return;
+
+			// Create label based on type
+			QString label = QString("Move %1 down").arg(item.getPath().getPointee() != nullptr ?
+				item.getPath().getPointee()->mID.c_str() :
+				parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
+			);
+
+			// Add action
+			const auto& parent_property = parent_array->getPath();
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN), label, [parent_property, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(parent_property, idx, idx + 1));
+				});
+		});
 
 	// String & file link -> show file options
 	mMenuController.addOption([](auto& item, auto& menu)
