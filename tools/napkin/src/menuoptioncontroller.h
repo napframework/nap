@@ -29,7 +29,7 @@ namespace napkin
 		 * Construct option with possible action
 		 * @action action callback
 		 */
-		MenuOption(const Callback& action) : mCallback(action) { }
+		MenuOption(Callback&& action) : mCallback(std::move(action)) { }
 
 	private:
 		Callback mCallback;
@@ -51,13 +51,13 @@ namespace napkin
 		 * @param itemType item type associated with given callback
 		 * @param action the callback to assign to the menu option
 		 */
-		void addOption(const nap::rtti::TypeInfo& itemType, const typename MenuOption<T>::Callback& action);
+		void addOption(const nap::rtti::TypeInfo& itemType, typename MenuOption<T>::Callback&& action);
 
 		/**
 		 * Assigns the given callback to a new menu option
 		 * @param action the callback to assign to the menu option
 		 */
-		void addOption(const typename MenuOption<T>::Callback& action)				{ addOption(RTTI_OF(T), action); }
+		void addOption(typename MenuOption<T>::Callback&& action)					{ addOption(RTTI_OF(T), std::move(action)); }
 
 		/**
 		 * Assigns the given callback associated with item D to a new menu option.
@@ -65,7 +65,7 @@ namespace napkin
 		 * @param action the callback to assign to the menu option
 		 */
 		template<typename D>
-		void addOption(const typename MenuOption<T>::Callback& action)				{ addOption(RTTI_OF(D), action); }
+		void addOption(typename MenuOption<T>::Callback&& action)					{ addOption(RTTI_OF(D), std::move(action)); }
 
 		/**
 		 * Populates a menu with options for the given item
@@ -75,8 +75,9 @@ namespace napkin
 		void populate(T& item, QMenu& menu);
 
 	private:
-
-		// Binds an item of type D to a set of possible menu actions
+		/**
+		 * Binds an item of type D (itemType) to a set of possible menu actions
+		 */
 		struct Binding
 		{
 			Binding(const nap::rtti::TypeInfo& itemType) : mItemType(itemType) { }
@@ -93,7 +94,7 @@ namespace napkin
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void napkin::MenuOptionController<T>::addOption(const nap::rtti::TypeInfo& itemType, const typename MenuOption<T>::Callback& action)
+	void napkin::MenuOptionController<T>::addOption(const nap::rtti::TypeInfo& itemType, typename MenuOption<T>::Callback&& action)
 	{
 		// Find binding
 		auto raw_type = itemType.get_raw_type();
@@ -109,8 +110,7 @@ namespace napkin
 			current_binding = &(mBindings.emplace_back(Binding(itemType.get_raw_type())));
 
 		// Add action
-		current_binding->mOptions.emplace_back(action);
-		int next = current_binding->mOptions.size();
+		current_binding->mOptions.emplace_back(std::move(action));
 	}
 
 
