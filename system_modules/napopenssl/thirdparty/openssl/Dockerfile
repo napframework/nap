@@ -18,12 +18,13 @@ RUN \
 # rename lib64 to lib and remove .a files from lib dir
 RUN \
   /bin/bash -c "if [ -d ${inst_dir}/lib64 ]; then mv ${inst_dir}/lib64 ${inst_dir}/lib; fi" && \
-  rm ${inst_dir}/lib/*a
+  /bin/bash -c "if [ -d ${inst_dir}/lib ]; then mv ${inst_dir}/lib ${inst_dir}/libs; fi" && \
+  rm ${inst_dir}/libs/*a
 
 # delete unneccessary dirs and files
 RUN \
   rm -rf ${inst_dir}/bin ${inst_dir}/include ${inst_dir}/include ${inst_dir}/ssl ${inst_dir}/share && \
-  rm -rf ${inst_dir}/lib/engines-3 ${inst_dir}/lib/ossl-modules ${inst_dir}/lib/pkgconfig && \
+  rm -rf ${inst_dir}/libs/engines-3 ${inst_dir}/libs/ossl-modules ${inst_dir}/libs/pkgconfig && \
   rm ${inst_dir}/README.md
 
 
