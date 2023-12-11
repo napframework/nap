@@ -3,7 +3,7 @@ if(NOT TARGET openssl)
     find_package(openssl REQUIRED)
 endif()
 
-set(openssl_dest_dir system_modules/napopenssl/thirdparty/openssl/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
+set(openssl_dest_dir system_modules/napopenssl/thirdparty/openssl/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/libs)
 if(NAP_BUILD_CONTEXT MATCHES "source")
     target_include_directories(${PROJECT_NAME} PUBLIC ${OPENSSL_INCLUDE_DIR})
 
