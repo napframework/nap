@@ -10,32 +10,6 @@
 
 namespace napkin
 {
-	// Forward declares
-	template<typename T>
-	class MenuOptionController;
-
-	/**
-	 * Individual callable menu option for item of base type T
-	 */
-	template<typename T>
-	class MenuOption final
-	{
-		template<typename T> friend class MenuOptionController;
-	public:
-		// Menu option callback
-		using Callback = std::function<void(T&, QMenu&)>;
-
-		/**
-		 * Construct option with possible action
-		 * @action action callback
-		 */
-		MenuOption(Callback&& action) : mCallback(std::move(action)) { }
-
-	private:
-		Callback mCallback;
-	};
-
-
 	/**
 	 * Collects and assigns menu options for items of type T - grouped by optional type D.
 	 */
@@ -45,19 +19,22 @@ namespace napkin
 	public:
 		MenuOptionController() = default;
 
+		// Menu option callback
+		using Callback = std::function<void(T&, QMenu&)>;
+
 		/**
 		 * Assigns the given callback associated with 'itemType' to a new menu option.
 		 * Note that itemType must be derived from base type T.
 		 * @param itemType item type associated with given callback
 		 * @param action the callback to assign to the menu option
 		 */
-		void addOption(const nap::rtti::TypeInfo& itemType, typename MenuOption<T>::Callback&& action);
+		void addOption(const nap::rtti::TypeInfo& itemType, Callback&& action);
 
 		/**
 		 * Assigns the given callback to a new menu option
 		 * @param action the callback to assign to the menu option
 		 */
-		void addOption(typename MenuOption<T>::Callback&& action)					{ addOption(RTTI_OF(T), std::move(action)); }
+		void addOption(typename Callback&& action)					{ addOption(RTTI_OF(T), std::move(action)); }
 
 		/**
 		 * Assigns the given callback associated with item D to a new menu option.
@@ -65,7 +42,7 @@ namespace napkin
 		 * @param action the callback to assign to the menu option
 		 */
 		template<typename D>
-		void addOption(typename MenuOption<T>::Callback&& action)					{ addOption(RTTI_OF(D), std::move(action)); }
+		void addOption(typename Callback&& action)					{ addOption(RTTI_OF(D), std::move(action)); }
 
 		/**
 		 * Populates a menu with options for the given item
@@ -83,7 +60,7 @@ namespace napkin
 			Binding(const nap::rtti::TypeInfo& itemType) : mItemType(itemType)		{ }
 
 			nap::rtti::TypeInfo mItemType;			///< Node type
-			std::vector<MenuOption<T>> mOptions;	///< All available options
+			std::vector<Callback> mOptions;			///< All available options
 		};
 
 		std::vector<Binding> mBindings;	///< All node to callable menu actions
@@ -95,7 +72,7 @@ namespace napkin
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	void napkin::MenuOptionController<T>::addOption(const nap::rtti::TypeInfo& itemType, typename MenuOption<T>::Callback&& action)
+	void napkin::MenuOptionController<T>::addOption(const nap::rtti::TypeInfo& itemType, MenuOptionController<T>::Callback&& action)
 	{
 		// Find binding
 		auto raw_type = itemType.get_raw_type();
@@ -124,8 +101,8 @@ namespace napkin
 		{
 			if (item.get_type().get_raw_type().is_derived_from(binding.mItemType))
 			{
-				for (const auto& option : binding.mOptions)
-					option.mCallback(item, menu);
+				for (const auto& callback : binding.mOptions)
+					callback(item, menu);
 			}
 		}
 	}

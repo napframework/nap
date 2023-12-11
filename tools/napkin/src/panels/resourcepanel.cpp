@@ -146,7 +146,6 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 	auto selected_item = qitem_cast<RTTIItem*>(mTreeView.getSelectedItem());
 	if (selected_item != nullptr)
 	{
-		// Populate controller with possible actions
 		mMenuController.populate(*selected_item, menu);
 	}
 }
