@@ -4,8 +4,9 @@
 
 #pragma once
 
-#include "propertypath.h"
+#include "standarditemsproperty.h"
 #include "widgetdelegate.h"
+#include "menuoptioncontroller.h"
 
 #include <QStandardItemModel>
 #include <QMenu>
@@ -186,6 +187,11 @@ namespace napkin
 		 */
 		void onObjectRenamed(nap::rtti::Object& object, const std::string& oldName, const std::string& newName);
 
+		/**
+		 * Creates possible actions for menu hook
+		 */
+		void createMenuCallbacks();
+
 	private:
 		InspectorModel mModel;						// The model for the view
 		nap::qt::FilterTreeView mTreeView;			// A tree view
@@ -199,5 +205,6 @@ namespace napkin
 		QLabel mPathLabel;							// label before path
 		QLineEdit mPathField;						// Display path to object
 		PropertyPath mPath;							// Path to display
+		MenuOptionController<PropertyPathItem> mMenuController;	// Menu option controller
 	};
 };

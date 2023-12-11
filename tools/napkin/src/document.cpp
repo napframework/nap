@@ -1019,28 +1019,21 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
+	// Resolve property path
 	ResolvedPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
 	VariantArray array = array_value.create_array_view();
+
+	// Swap & Set
 	assert(fromIndex <= array.get_size());
+	Variant fr_value = array.get_value(fromIndex);
+	array.set_value(fromIndex, array.get_value(toIndex));
 	assert(toIndex <= array.get_size());
-
-	if (fromIndex < toIndex)
-		toIndex--;
-
-	Variant taken_value = array.get_value(fromIndex);
-	bool ok = array.remove_value(fromIndex);
-	assert(ok);
-	propertyChildRemoved(path, fromIndex);
-	ok = array.insert_value(toIndex, taken_value);
-	assert(ok);
-	ok = resolved_path.setValue(array_value);
-	assert(ok);
-	propertyValueChanged(path);
-	propertyChildInserted(path, toIndex);
-
+	array.set_value(toIndex, fr_value);
+	bool ok = resolved_path.setValue(array_value); assert(ok);
 	return toIndex;
 }
+
 
 nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, size_t index) const
 {
