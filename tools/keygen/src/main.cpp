@@ -12,7 +12,7 @@
  * Generates a unique public / private RSA key. 
  * Input arguments: 
  * -o	output directory, required and must exist
- * -s	key seed, for example the name of the app
+ * -b   number of bits, defaults to 4096
  * -n	key name, defaults to 'key'
  * Returns 0 on success, -1 on failure
  *
@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	// Generate
     std::string private_key;
     std::string public_key;
-	if (!nap::opensslapi::generateRSAKey(4096, private_key, public_key))
+	if (!nap::opensslapi::generateRSAKey(commandLine.mBits, private_key, public_key))
     {
         std::cout << "Failed to generate keys" << std::endl;
         return -1;

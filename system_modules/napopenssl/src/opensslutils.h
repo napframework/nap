@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local Includes
@@ -42,6 +46,24 @@ namespace nap
          * @return True if the key pair was generated successfully
          */
         bool NAPAPI generateRSAKey(unsigned int bits, std::string& outPrivKey, std::string& outPubKey);
+
+        /**
+         * @brief Encrypt a message with a private key
+         * @param message the message to encrypt
+         * @param privateKey the private key to use
+         * @param outEncryptedMessage the encrypted message
+         * @return true if the message was encrypted successfully
+         */
+        bool NAPAPI encryptMessage(const std::string& message, const std::string& privateKey, std::string& outEncryptedMessage);
+
+        /**
+         * @brief Decrypt a message with a public key
+         * @param encryptedMessage the encrypted message
+         * @param publicKey the public key to use
+         * @param outMessage the decrypted message
+         * @return true if the message was decrypted successfully
+         */
+        bool NAPAPI decryptMessage(const std::string& encryptedMessage, const std::string& publicKey, std::string& outMessage);
 
         /**
          * @brief Generate a SHA256 hash of a string

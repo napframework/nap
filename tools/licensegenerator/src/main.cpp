@@ -67,6 +67,33 @@ static bool isNumber(const std::string& s)
                                       s.end(), [](unsigned char c) { return !std::isdigit(c); }) == s.end();
 }
 
+
+/**
+ * Ensures the given signing scheme as string is valid
+ * @param signingScheme signing scheme as string
+ * @return if the signing scheme is correct
+ */
+static bool validateSigningScheme(const std::string& signingScheme)
+{
+    // Validate the signing scheme is supported
+    for (int i = 0; supportedSigningSchemes[i][0] != '\0'; ++i)
+    {
+        if (signingScheme == supportedSigningSchemes[i])
+        {
+            return true;
+        }
+    }
+
+    std::cout << "Invalid signing scheme: " << signingScheme << std::endl;
+    std::cout << "Supported signing schemes: " << std::endl;
+    for (int i = 0; supportedSigningSchemes[i][0] != '\0'; ++i)
+    {
+        std::cout << "  " << supportedSigningSchemes[i] << std::endl;
+    }
+    return false;
+}
+
+
 /**
  * Ensures the given date as string is valid
  * @param date date as string
@@ -136,7 +163,7 @@ static bool validateDate(const std::string& date)
  *
  * Example:
  * ~~~~~
- * licensegenerator -k c:/keys/key.private -s RSASS_PKCS1v15_SHA1 -f ben -l davis -a myapp -m ben@davis.com -d 30/12/2025 -t educational -o c:/license
+ * licensegenerator -k c:/keys/key.private -s SHA256 -f ben -l davis -a myapp -m ben@davis.com -d 30/12/2025 -t educational -o c:/license
  * ~~~~~
  */
 int main(int argc, char *argv[])
@@ -151,8 +178,8 @@ int main(int argc, char *argv[])
     if (!commandLine.mSignScheme.empty())
     {
         signingScheme = commandLine.mSignScheme;
-        //if (!validateSigningScheme(signingScheme))
-        //    return -1;
+        if (!validateSigningScheme(signingScheme))
+            return -1;
     }
 
     // Create license content
@@ -221,7 +248,6 @@ int main(int argc, char *argv[])
     std::ofstream key_file(key_loc.str());
     key_file << signature;
     key_file.close();
-
 
     std::cout << "Successfully created and signed license" << std::endl;
     std::cout << "Key location:         " << key_loc.str() << std::endl;
