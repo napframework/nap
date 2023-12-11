@@ -37,7 +37,7 @@ namespace napkin
 		/**
 		 * Clears all items from the model
 		 */
-		void clear();
+		void clearItems();
 
 		/**
 		 * @return Root resources item
@@ -83,6 +83,12 @@ namespace napkin
 		nap::qt::FilterTreeView& treeView() { return mTreeView; }
 
 	protected:
+        /**
+         * Filters out and handles certain events prior to child widget
+         * @param obj the object that generated the event
+         * @param ev the event itself
+         * @return if the filter handled the event
+         */
 		bool eventFilter(QObject* obj, QEvent* ev) override;
 
 	Q_SIGNALS:

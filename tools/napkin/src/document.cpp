@@ -203,6 +203,71 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 }
 
 
+void napkin::Document::patchLinks(const std::string& oldID, const std::string& newID)
+{
+	auto components = getObjects<nap::Component>();
+	for (auto& comp : components)
+	{
+		auto props = comp->get_type().get_properties();
+		for (auto& ptr_prop : props)
+		{
+			// Skip if not entity or component ptr
+			if (!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+				!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
+				continue;
+
+			// Get to string (path) method
+			rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
+			assert(string_method.is_valid());
+
+			// Get path and check for ID inclusion - exclude partial names
+			auto path = string_method.invoke(ptr_prop.get_value(comp)).to_string();
+			auto index = path.find(oldID);
+			while (index != std::string::npos)
+			{
+				auto end_index = index + oldID.size();
+				if (end_index >= path.size() ||
+					path[end_index] == '/'   ||
+					path[end_index] == ':')
+					break;
+
+				index = path.find(oldID, index + 1);
+			}
+
+			// No match
+			if (index == std::string::npos)
+				continue;
+
+			// Update path and find target object
+			path.replace(index, oldID.size(), newID);
+			size_t obj_pos = path.find_last_of('/'); assert(obj_pos != std::string::npos);
+			nap::rtti::Object* target = getObject(path.substr(obj_pos + 1));
+
+			// Target doesn't exist
+			if (target == nullptr)
+			{
+				assert(false);
+				continue;
+			}
+
+			// Create and assign new path
+			rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
+			assert(assign_method.is_valid());
+			auto ptr_variant = ptr_prop.get_value(comp);
+			assign_method.invoke(ptr_variant, path, *target);
+
+			// Set as new property value
+			if (!ptr_prop.set_value(comp, ptr_variant))
+			{
+				std::string msg = nap::utility::stringFormat("Unable to update: %s",
+					PropertyPath(*comp, ptr_prop, *this).toString().c_str());
+				NAP_ASSERT_MSG(false, msg.c_str());
+			}
+		}
+	}
+}
+
+
 const std::string& Document::setObjectName(nap::rtti::Object& object, const std::string& name, bool appenUUID)
 {
 	if (name.empty())
@@ -225,6 +290,14 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	// Erase old entry, add new entry
 	mObjects.erase(it);
 	mObjects.emplace(std::make_pair(new_name, std::unique_ptr<nap::rtti::Object>(released_obj)));
+
+	// Patch entity and component ptr links.
+	// This occurs when the name of an entity or a component changes, which invalidates existing links to those objects.
+	if (object.get_type().is_derived_from(RTTI_OF(nap::Entity)) ||
+		object.get_type().is_derived_from(RTTI_OF(nap::Component)))
+	{
+		patchLinks(old_name, new_name);
+	}
 
 	// Notify listeners
 	PropertyPath path(object, Path::fromString(nap::rtti::sIDPropertyName), *this);

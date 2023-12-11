@@ -104,7 +104,7 @@ class ModuleInitialiser():
             if self.__deploy_demo:
                 demo_dir = os.path.join(demo_wrapper_dir, demo_app_id)
                 success = self.__install_demo(demo_app_id, demo_dir)
-            return success
+        return success
 
     def __install_demo(self, demo_app_id, demo_dir):
         demo_dest_dir = os.path.join(self.__nap_root, self.DEMO_DEST_DIR, demo_app_id)

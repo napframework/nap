@@ -21,6 +21,12 @@ namespace napkin
 		 */
 		QString getOpenFilename(QWidget *parent = nullptr, const QString& caption = {}, const QString& dir = {}, const QString& filter = {});
 
+        /**
+         * Brings up a file selector
+         * @return path to file to save
+         */
+         QString getSaveFilename(QWidget* parent = nullptr, const QString& caption = {}, const QString& dir = {}, const QString& filter = {});
+
 		/**
 		 * NAP context and project root.
 		 */
