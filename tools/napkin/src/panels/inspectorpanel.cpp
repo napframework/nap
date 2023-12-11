@@ -305,7 +305,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		const auto& path = item.getPath();
 		const auto& type = path.getType();
-		if (!type.is_derived_from<std::string>())
+		if (!type.is_derived_from(RTTI_OF(std::string)))
 			return;
 
 		const auto& prop = path.getProperty();

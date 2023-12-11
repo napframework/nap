@@ -34,7 +34,7 @@ namespace napkin
 		 * Assigns the given callback to a new menu option
 		 * @param action the callback to assign to the menu option
 		 */
-		void addOption(typename Callback&& action)					{ addOption(RTTI_OF(T), std::move(action)); }
+		void addOption(Callback&& action)					{ addOption(RTTI_OF(T), std::move(action)); }
 
 		/**
 		 * Assigns the given callback associated with item D to a new menu option.
@@ -42,7 +42,7 @@ namespace napkin
 		 * @param action the callback to assign to the menu option
 		 */
 		template<typename D>
-		void addOption(typename Callback&& action)					{ addOption(RTTI_OF(D), std::move(action)); }
+		void addOption(Callback&& action)					{ addOption(RTTI_OF(D), std::move(action)); }
 
 		/**
 		 * Populates a menu with options for the given item
@@ -77,7 +77,7 @@ namespace napkin
 		// Find binding
 		auto raw_type = itemType.get_raw_type();
 		assert(raw_type.get_raw_type().is_derived_from(RTTI_OF(T)));
-		auto& found_binding = std::find_if(mBindings.begin(), mBindings.end(), [&raw_type](const auto& binding) {
+		auto found_binding = std::find_if(mBindings.begin(), mBindings.end(), [&raw_type](const auto& binding) {
 				return binding.mItemType == raw_type;
 			}
 		);
