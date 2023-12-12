@@ -494,6 +494,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
+	connect(&ctx, &AppContext::propertyIndexChanged, this, &EntityItem::onIndexChanged);
 }
 
 
@@ -532,11 +533,42 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 }
 
 
+void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	// Ensure path matches
+	if (path != mCompPropertyPath)
+		return;
+
+	// Map component indices to child items
+	assert(path.getObject() == &getEntity());
+	const auto& components = getEntity().getComponents();
+	size_t a_idx = -1; size_t b_idx = -1;
+	for (auto row = 0; row < rowCount(); row++)
+	{
+		auto* it = qitem_cast<ComponentItem*>(child(row));
+		if (it != nullptr)
+		{
+			a_idx = &(it->getObject()) == components[oldIndex].get() ? row : a_idx;
+			b_idx = &(it->getObject()) == components[newIndex].get() ? row : b_idx;
+		}
+	}
+	assert(a_idx >=0 && b_idx >= 0);
+
+	// Swap
+	auto child_a = this->takeChild(a_idx);
+	auto child_b = this->takeChild(b_idx);
+	this->setChild(a_idx, child_b);
+	this->setChild(b_idx, child_a);
+}
+
+
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	// Check if the children property was edited
-	if (path == mChildPropertyPath || path == mCompPropertyPath)
+	if (path == mChildPropertyPath)
+	{
 		populate();
+	}
 }
 
 
