@@ -11,7 +11,6 @@
 #include <QVBoxLayout>
 #include <rtti/object.h>
 #include <rtti/path.h>
-#include <panels/inspectorpanel.h>
 #include <rtti/rtti.h>
 
 namespace napkin
@@ -29,6 +28,7 @@ namespace napkin
 	 */
 	class PropertyPathItem : public RTTIItem
 	{
+		RTTI_ENABLE(RTTIItem)
 		Q_OBJECT
 	public:
 		/**
@@ -95,6 +95,7 @@ namespace napkin
 	 */
 	class PropertyItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -111,6 +112,7 @@ namespace napkin
 	 */
 	class CompoundPropertyItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -133,6 +135,7 @@ namespace napkin
 	 */
 	class ArrayPropertyItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -172,6 +175,7 @@ namespace napkin
 	 */
 	class PointerItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -188,6 +192,7 @@ namespace napkin
      */
 	class PointerValueItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -214,6 +219,7 @@ namespace napkin
 	 */
 	class ColorValueItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -238,6 +244,7 @@ namespace napkin
 	 */
 	class EmbeddedPointerItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**
@@ -261,6 +268,8 @@ namespace napkin
 	 */
 	class EmbeddedPointerValueItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
+		Q_OBJECT
 	public:
 		/**
 		 * @param path The path to the embedded pointer property
@@ -278,6 +287,7 @@ namespace napkin
 	 */
 	class PropertyValueItem : public PropertyPathItem
 	{
+		RTTI_ENABLE(PropertyPathItem)
 		Q_OBJECT
 	public:
 		/**

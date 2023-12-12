@@ -89,8 +89,6 @@ napkin::ResourcePanel::ResourcePanel()
 	mTreeView.enableSorting(&ResourceSorter);
 
 	connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &ResourcePanel::onSelectionChanged);
-	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
-
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
@@ -104,6 +102,8 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
 	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
 
+	createMenuCallbacks();
+	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
 	mTreeView.installEventFilter(this);
 }
 
@@ -144,44 +144,43 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 {
 	// Get selection
 	auto selected_item = qitem_cast<RTTIItem*>(mTreeView.getSelectedItem());
-	if (selected_item == nullptr)
-		return;
-
-	// Cast to rtti item
-	if (qobject_cast<EntityItem*>(selected_item) != nullptr)
+	if (selected_item != nullptr)
 	{
-		// If it's a child of another entity
-		auto entity_item = static_cast<EntityItem*>(selected_item);
+		mMenuController.populate(*selected_item, menu);
+	}
+}
+
+
+void napkin::ResourcePanel::createMenuCallbacks()
+{
+	// Child Entity
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
+	{
+		auto entity_item = static_cast<EntityItem*>(&item);
+		if (!entity_item->isPointer())
+			return;
+
+		auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
+		assert(parent_item != nullptr);
+		menu.addAction(new RemovePathAction(&menu, entity_item->propertyPath()));
+	});
+
+	// Resource Entity
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
+	{
+		auto entity_item = static_cast<EntityItem*>(&item);
 		if (entity_item->isPointer())
-		{
-			auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
-			if (parent_item)
-			{
-				menu.addAction(new RemovePathAction(&menu, entity_item->propertyPath()));
-			}
-		}
-		// Otherwise it's the main resource
-		else
-		{
-			menu.addAction(new AddChildEntityAction(&menu, entity_item->getEntity()));
-			menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
-			menu.addAction(new DeleteObjectAction(&menu, entity_item->getObject()));
-		}
-	}
-	// Component
-	else if (qobject_cast<ComponentItem*>(selected_item) != nullptr)
-	{
-		auto component_item = static_cast<ComponentItem*>(selected_item);
-		menu.addAction(new DeleteObjectAction(&menu, component_item->getObject()));
-	}
-	// Group
-	else if (qobject_cast<GroupItem*>(selected_item) != nullptr)
-	{
-		// Create and add new resource
-		GroupItem* group_item = static_cast<GroupItem*>(selected_item);
-		menu.addAction(new AddNewResourceToGroupAction(&menu, group_item->getGroup()));
+			return;
 
-		// Add existing resource
+		menu.addAction(new AddChildEntityAction(&menu, entity_item->getEntity()));
+		menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
+	});
+
+	// Group
+	mMenuController.addOption<GroupItem>([](auto& item, auto& menu)
+	{
+		auto group_item = static_cast<GroupItem*>(&item);
+		menu.addAction(new AddNewResourceToGroupAction(&menu, group_item->getGroup()));
 		menu.addAction(new AddExistingResourceToGroupAction(&menu, group_item->getGroup()));
 
 		// If the item is parented under a group, offer the option to remove it
@@ -189,53 +188,63 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 		if (item_group != nullptr)
 			menu.addAction(new RemoveGroupFromGroupAction(&menu, *item_group, group_item->getGroup()));
 
-		// Create and add new sub group
 		menu.addAction(new AddChildGroupAction(&menu, group_item->getGroup()));
-
-		// Add action to move group to another group
 		menu.addAction(new MoveGroupAction(&menu, group_item->getGroup(), item_group));
-
-		// Delete group action
 		menu.addAction(new DeleteGroupAction(&menu, group_item->getGroup()));
-	}
-	// General Object
-	else if (qobject_cast<ObjectItem*>(selected_item) != nullptr)
+	});
+
+	// Shader Resource
+	mMenuController.addOption<BaseShaderItem>([](auto& item, auto& menu)
 	{
-		// Get resource
-		auto object_item = static_cast<ObjectItem*>(selected_item);
+		auto object_item = static_cast<BaseShaderItem*>(&item);
+		menu.addAction(new LoadShaderAction(&menu, static_cast<nap::BaseShader&>(object_item->getObject())));
+	});
 
-		// If the item is parented under a group, offer the option to remove it
-		auto* item_group = getItemGroup(*object_item);
-		if (item_group != nullptr)
-			menu.addAction(new RemoveResourceFromGroupAction(&menu, *item_group, object_item->getObject()));
+	// Regular object that isn't a group
+	mMenuController.addOption<ObjectItem>([](auto& item, auto& menu)
+	{
+		// Ensure it's an object and not a group
+		auto object_item = static_cast<ObjectItem*>(&item);
+		if (object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+			return;
 
-		// Move resource to another group
-		menu.addAction(new MoveResourceToGroupAction(&menu, object_item->getObject(), item_group));
-
-		// Delete resource action
-		menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
-
-		// If the item is a shader, allow if to be loaded (compiled)
-		// TODO: Create for more generic insertion method for object specific actions
-		if (object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::BaseShader)))
+		// Offer option to move if parented under resources
+		auto obj_parent = object_item->parentItem();
+		while (obj_parent != nullptr)
 		{
-			menu.addAction(new LoadShaderAction(&menu, static_cast<nap::BaseShader&>(object_item->getObject())));
-		}
-	}
-	// Top Resource
-	else if (qobject_cast<RootResourcesItem*>(selected_item) != nullptr)
-	{
-		// Add Resource selection
-		menu.addAction(new CreateResourceAction(&menu));
+			if (qobject_cast<RootResourcesItem*>(obj_parent) != nullptr)
+			{
+				// If the item is parented under a group, offer the option to remove it
+				auto* item_group = getItemGroup(*object_item);
+				if (item_group != nullptr)
+					menu.addAction(new RemoveResourceFromGroupAction(&menu, *item_group, object_item->getObject()));
 
-		// Add groups
-		menu.addAction(new CreateGroupAction(&menu));
-	}
-	// Top Entity
-	else if (qobject_cast<EntityResourcesItem*>(selected_item) != nullptr)
+				// Add option to move resource to a new group 
+				menu.addAction(new MoveResourceToGroupAction(&menu, object_item->getObject(), item_group));
+				break;
+			}
+			obj_parent = obj_parent->parentItem();
+		}
+
+		// Allow object to be deleted if it's not a reference
+		if(!object_item->isPointer())
+			menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
+	});
+
+	// Top Resource
+	mMenuController.addOption<RootResourcesItem>([](auto& item, auto& menu)
 	{
+		auto root_item = static_cast<RootResourcesItem*>(&item);
+		menu.addAction(new CreateResourceAction(&menu));
+		menu.addAction(new CreateGroupAction(&menu));
+	});
+
+	// Top Entity
+	mMenuController.addOption<EntityResourcesItem>([](auto& item, auto& menu)
+	{
+		auto root_item = static_cast<EntityResourcesItem*>(&item);
 		menu.addAction(new CreateEntityAction(&menu));
-	}
+	});
 }
 
 

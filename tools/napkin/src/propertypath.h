@@ -117,15 +117,10 @@ namespace napkin
 
 		/**
 		 * If this path refers to a pointer, get the Object it's pointing to.
-		 * @return The object this property is pointing to or nullptr if this path does not represent a pointer.
+		 * Return nullptr if the object doesn't exist or is not a pointer.
+		 * @return The object this property is pointing to, nullptr if the object doesn't exist or isn't a pointer
 		 */
 		nap::rtti::Object* getPointee() const;
-
-		/**
-		 * If this path refers to a pointer, set the Object it's pointing to
-		 * @param pointee The Object this property will be pointing to.
-		 */
-		void setPointee(nap::rtti::Object* pointee);
 
 		/**
 		 * Get the parent of this path
@@ -196,7 +191,7 @@ namespace napkin
 		std::string toString() const;
 
 		/**
-		 * @return True if this path represents an instance
+		 * @return True if this path edits an instance property
 		 */
 		bool isInstanceProperty() const;
 
@@ -289,6 +284,10 @@ namespace napkin
 		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
 		std::vector<PropertyPath> getProperties(int flags = 0) const;
 		std::string getComponentInstancePath() const;
+
+		/**
+		 * @return entity as root in the scene, along with it's instance properties
+		 */
 		nap::RootEntity* getRootEntity() const;
 
 		/**
@@ -339,6 +338,7 @@ namespace napkin
 
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
+		rttr::variant patchValue(const rttr::variant& value) const;
 
 		Document* mDocument = nullptr;
 		PPath mObjectPath;
