@@ -41,7 +41,7 @@ namespace napkin
 	public:
 		explicit InstancePropsItem(nap::ComponentInstanceProperties& props);
 		QVariant data(int role) const override;
-		nap::ComponentInstanceProperties& props() const { return mProps; }
+		const nap::ComponentInstanceProperties& getProperties() const { return mProps; }
 
 	private:
 		nap::ComponentInstanceProperties& mProps;

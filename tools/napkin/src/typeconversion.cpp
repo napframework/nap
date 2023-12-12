@@ -231,6 +231,10 @@ namespace napkin
 				{
 					instance_property_type = RTTI_OF(nap::PointerInstancePropertyValue);
 				}
+				else if (type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)))
+				{
+					instance_property_type = RTTI_OF(nap::ComponentPtrInstancePropertyValue);
+				}
 			}
 		}
 
@@ -250,10 +254,33 @@ namespace napkin
 
 	bool setInstancePropertyValue(rttr::variant& instanceProperty, const rttr::variant& value)
 	{
+		// Get instance property value
 		auto instance_property = instanceProperty.get_value<nap::InstancePropertyValue*>();
 		assert(instance_property != nullptr);
 		nap::rtti::Property value_property = instance_property->get_type().get_property(nap::rtti::instanceproperty::value);
-		return value_property.set_value(instance_property, value);
+
+		// Directly set it for regular and object pointer overrides
+		if (!instance_property->get_type().is_derived_from(RTTI_OF(nap::ComponentPtrInstancePropertyValue)))
+			return value_property.set_value(instance_property, value);
+
+		// Handle component ptr overrides, which can't be copied - only assigned!
+		// TODO: Properly implement copy assignment and comparison of nap::ComponentPtr<> to avoid explicit assignment.
+		// Look into explicit registration of comparison operators for templated types in RTTR using 'rttr::type::register_comparators()'.
+		rttr::method string_method = nap::rtti::findMethodRecursive(value.get_type().get_raw_type(), nap::rtti::method::toString);
+		assert(string_method.is_valid());
+		auto path = string_method.invoke(value).to_string();
+
+		// Get to object (path) method
+		rttr::method obj_method = nap::rtti::findMethodRecursive(value.get_type().get_raw_type(), nap::rtti::method::toObject);
+		assert(obj_method.is_valid());
+		auto obj = obj_method.invoke(value).get_value<nap::rtti::Object*>();
+
+		// Create and assign new path
+		rttr::method assign_method = nap::rtti::findMethodRecursive(value.get_type().get_raw_type(), nap::rtti::method::assign);
+		assert(assign_method.is_valid()); 
+		auto ptr_variant = value_property.get_value(instance_property);
+		assign_method.invoke(ptr_variant, path, *obj);
+		return value_property.set_value(instance_property, ptr_variant);
 	}
 
 

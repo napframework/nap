@@ -205,10 +205,12 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 
 void napkin::Document::patchLinks(const std::string& oldID, const std::string& newID)
 {
-	auto components = getObjects<nap::Component>();
-	for (auto& comp : components)
+	// Iterate over the properties of a component or component ptr override.
+	// Find component and entity pointers that reference the old object and patch accordingly.
+	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue) } );
+	for (auto& object : objects)
 	{
-		auto props = comp->get_type().get_properties();
+		auto props = object->get_type().get_properties();
 		for (auto& ptr_prop : props)
 		{
 			// Skip if not entity or component ptr
@@ -221,7 +223,7 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 			assert(string_method.is_valid());
 
 			// Get path and check for ID inclusion - exclude partial names
-			auto path = string_method.invoke(ptr_prop.get_value(comp)).to_string();
+			auto path = string_method.invoke(ptr_prop.get_value(object)).to_string();
 			auto index = path.find(oldID);
 			while (index != std::string::npos)
 			{
@@ -253,14 +255,14 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 			// Create and assign new path
 			rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
 			assert(assign_method.is_valid());
-			auto ptr_variant = ptr_prop.get_value(comp);
+			auto ptr_variant = ptr_prop.get_value(object);
 			assign_method.invoke(ptr_variant, path, *target);
 
 			// Set as new property value
-			if (!ptr_prop.set_value(comp, ptr_variant))
+			if (!ptr_prop.set_value(object, ptr_variant))
 			{
 				std::string msg = nap::utility::stringFormat("Unable to update: %s",
-					PropertyPath(*comp, ptr_prop, *this).toString().c_str());
+					PropertyPath(*object, ptr_prop, *this).toString().c_str());
 				NAP_ASSERT_MSG(false, msg.c_str());
 			}
 		}
@@ -1017,28 +1019,21 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 
 size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
+	// Resolve property path
 	ResolvedPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
 	VariantArray array = array_value.create_array_view();
+
+	// Swap & Set
 	assert(fromIndex <= array.get_size());
+	Variant fr_value = array.get_value(fromIndex);
+	array.set_value(fromIndex, array.get_value(toIndex));
 	assert(toIndex <= array.get_size());
-
-	if (fromIndex < toIndex)
-		toIndex--;
-
-	Variant taken_value = array.get_value(fromIndex);
-	bool ok = array.remove_value(fromIndex);
-	assert(ok);
-	propertyChildRemoved(path, fromIndex);
-	ok = array.insert_value(toIndex, taken_value);
-	assert(ok);
-	ok = resolved_path.setValue(array_value);
-	assert(ok);
-	propertyValueChanged(path);
-	propertyChildInserted(path, toIndex);
-
+	array.set_value(toIndex, fr_value);
+	bool ok = resolved_path.setValue(array_value); assert(ok);
 	return toIndex;
 }
+
 
 nap::rtti::Variant Document::arrayGetElement(const PropertyPath& path, size_t index) const
 {
@@ -1158,6 +1153,25 @@ std::vector<nap::rtti::Object*> Document::getObjects(const nap::rtti::TypeInfo& 
 	for (auto& object : mObjects)
 	{
 		if (object.second->get_type().is_derived_from(type))
+		{
+			result.emplace_back(object.second.get());
+		}
+	}
+	return result;
+}
+
+
+std::vector<nap::rtti::Object*> napkin::Document::getObjects(const std::vector<nap::rtti::TypeInfo>& types)
+{
+	std::vector<nap::rtti::Object*> result;
+	for (auto& object : mObjects)
+	{
+		const auto& found_it = std::find_if(types.begin(), types.end(), [&object](const auto& type)
+		{
+			return object.second->get_type().is_derived_from(type);
+		});
+
+		if (found_it != types.end())
 		{
 			result.emplace_back(object.second.get());
 		}

@@ -43,5 +43,7 @@
 		<file>icons/warning.png</file>
 		<file>icons/error.png</file>
 		<file>icons/check.png</file>
+		<file>icons/move_down.png</file>
+		<file>icons/move_up.png</file>
 	</qresource>
 </RCC>
