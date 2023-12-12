@@ -479,6 +479,14 @@ void napkin::ObjectItem::onObjectReparenting(nap::rtti::Object& object, Property
 
 EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity, isPointer)
 {
+	mChildPropertyPath = PropertyPath(getEntity(),
+		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
+	assert(mChildPropertyPath.isValid());
+
+	mCompPropertyPath = PropertyPath(getEntity(),
+		nap::rtti::Path::fromString(nap::Entity::componentsPropertyName()), *AppContext::get().getDocument());
+	assert(mCompPropertyPath.isValid());
+
 	// Populate item
 	populate();
 
@@ -486,6 +494,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
+	connect(&ctx, &AppContext::propertyIndexChanged, this, &EntityItem::onIndexChanged);
 }
 
 
@@ -526,16 +535,9 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(getEntity(),
-		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
-
-	// Check if this property was edited
-	assert(childrenPath.isValid());
-	if (path == childrenPath)
-	{
-		// Re-populate
+	// Check if the children property was edited
+	if (path == mChildPropertyPath || path == mCompPropertyPath)
 		populate();
-	}
 }
 
 
@@ -546,6 +548,21 @@ const std::string EntityItem::unambiguousName() const
 		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
 	}
 	return ObjectItem::unambiguousName();
+}
+
+
+void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	/*
+	if (path == mCompPropertyPath)
+	{
+		// Swap
+		auto* it_a = this->takeChild(oldIndex);
+		auto* it_b = this->takeChild(newIndex);
+		this->setChild(oldIndex, it_b);
+		this->setChild(newIndex, it_a);
+	}
+	*/
 }
 
 

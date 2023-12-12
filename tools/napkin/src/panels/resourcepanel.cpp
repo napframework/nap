@@ -184,8 +184,20 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		auto entity_item = qobject_cast<EntityItem*>(component_item->parentItem());
 		assert(entity_item != nullptr);
 
-		// Ensure item can be moved up
-		auto idx = static_cast<size_t>(item.row());
+		// Get component index -> can't be the row because of other possible child items
+		size_t idx = 0; bool found = false;
+		for (const auto& comp : entity_item->getEntity().getComponents())
+		{
+			if (comp.get() == &component_item->getComponent())
+			{
+				found = true;
+				break;
+			}
+			idx++;
+		}
+		assert(found);
+
+		// Ensure item can be moved down
 		if (idx == 0) 
 			return;
 
@@ -210,9 +222,21 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		auto entity_item = qobject_cast<EntityItem*>(component_item->parentItem());
 		assert(entity_item != nullptr);
 
+		// Get component index -> can't be the row because of other possible child items
+		size_t idx = 0; bool found = false;
+		for (const auto& comp : entity_item->getEntity().getComponents())
+		{
+			if (comp.get() == &component_item->getComponent())
+			{
+				found = true;
+				break;
+			}
+			idx++;
+		}
+		assert(found);
+
 		// Ensure item can be moved up
-		auto idx = static_cast<size_t>(item.row());
-		if (idx == entity_item->rowCount() - 1)
+		if (idx == entity_item->getEntity().getComponents().size() - 1)
 			return;
 
 		// Create path to component array property

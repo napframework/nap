@@ -1025,10 +1025,10 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	VariantArray array = array_value.create_array_view();
 
 	// Swap & Set
-	assert(fromIndex <= array.get_size());
+	assert(fromIndex < array.get_size());
 	Variant fr_value = array.get_value(fromIndex);
 	array.set_value(fromIndex, array.get_value(toIndex));
-	assert(toIndex <= array.get_size());
+	assert(toIndex < array.get_size());
 	array.set_value(toIndex, fr_value);
 	bool ok = resolved_path.setValue(array_value); assert(ok);
 	propertyValueChanged(path);
