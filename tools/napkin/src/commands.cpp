@@ -449,7 +449,7 @@ ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop,
 void ArrayMoveElementCommand::redo()
 {
 	// Also store indexes that may have shifted due to the operation so we can undo
-	mOldIndex = (mFromIndex > mToIndex) ? mFromIndex + 1 : mFromIndex;
+	mOldIndex = mFromIndex;
 	mNewIndex = AppContext::get().getDocument()->arrayMoveElement(mPath, mFromIndex, mToIndex);
 }
 

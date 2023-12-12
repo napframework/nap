@@ -436,6 +436,15 @@ namespace napkin
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
 
 		/**
+		 * Qt Signal
+		 * Invoked when the index of a child changes
+		 * @param parentPath the path to the parent of the index that has changed
+		 * @param fromIndex the original index
+		 * @param toIndex the new index
+		 */
+		void propertyIndexChanged(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
+
+		/**
 		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
 		 * @param msg The log message being handled
 		 */

@@ -165,6 +165,11 @@ namespace napkin
 		void onPropertySelectionChanged(const PropertyPath& prop);
 
 		/**
+		 * Called when the property index changes
+		 */
+		void onPropertyIndexChanged(const PropertyPath& prop, size_t fromIndex, size_t toIndex);
+
+		/**
 		 * Called when an object has been removed
 		 */
 	 	void onObjectRemoved(nap::rtti::Object* obj);

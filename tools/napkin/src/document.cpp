@@ -1031,6 +1031,8 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	assert(toIndex <= array.get_size());
 	array.set_value(toIndex, fr_value);
 	bool ok = resolved_path.setValue(array_value); assert(ok);
+	propertyValueChanged(path);
+	propertyIndexChanged(path, fromIndex, toIndex);
 	return toIndex;
 }
 

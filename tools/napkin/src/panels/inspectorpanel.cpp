@@ -89,6 +89,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &InspectorPanel::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
 	connect(&mModel, &InspectorModel::childAdded, this, &InspectorPanel::onChildAdded);
+	connect(&AppContext::get(), &AppContext::propertyIndexChanged, this, &InspectorPanel::onPropertyIndexChanged);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -187,6 +188,28 @@ void napkin::InspectorPanel::expandTree(const QModelIndex& parent)
 
 		// Repeat
 		expandTree(child_index);
+	}
+}
+
+
+void napkin::InspectorPanel::onPropertyIndexChanged(const PropertyPath& prop, size_t fromIndex, size_t toIndex)
+{
+	// Check property
+	if (prop.getObject() != mPath.getObject())
+		return;
+
+	// Get item for property
+	auto path_item = nap::qt::findItemInModel(mModel, [&prop](QStandardItem* item)
+		{
+			auto pitem = qitem_cast<PropertyPathItem*>(item);
+			return pitem != nullptr ? pitem->getPath() == prop : false;
+		});
+
+	// Select new index 
+	if (path_item != nullptr)
+	{
+		assert(toIndex < path_item->rowCount());
+		mTreeView.select(path_item->child(toIndex), false);
 	}
 }
 
@@ -537,7 +560,7 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
 	QList<nap::rtti::Object*> objects = {prop.getObject()};
 	AppContext::get().selectionChanged(objects);
-	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
+	auto pathItem = nap::qt::findItemInModel(mModel, [&prop](QStandardItem* item)
 	{
 		auto pitem = qitem_cast<PropertyPathItem*>(item);
 		return pitem != nullptr ? pitem->getPath() == prop : false;

@@ -176,6 +176,58 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
 	});
 
+	// Component move up
+	mMenuController.addOption<ComponentItem>([](auto& item, auto& menu)
+	{
+		// Get parent
+		auto component_item = static_cast<ComponentItem*>(&item);
+		auto entity_item = qobject_cast<EntityItem*>(component_item->parentItem());
+		assert(entity_item != nullptr);
+
+		// Ensure item can be moved up
+		auto idx = static_cast<size_t>(item.row());
+		if (idx == 0) 
+			return;
+
+		// Create path to component array property
+		PropertyPath component_array(entity_item->getObject(),
+			RTTI_OF(nap::Entity).get_property(nap::Entity::componentsPropertyName()),
+			*AppContext::get().getDocument());
+
+		// Create label based on type and action
+		QString label = QString("Move %1 up").arg(component_item->getObject().mID.c_str());
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP), label, [component_array, idx]()
+			{
+				AppContext::get().executeCommand(new ArrayMoveElementCommand(component_array, idx, idx - 1));
+			});
+	});
+
+	// Component move down
+	mMenuController.addOption<ComponentItem>([](auto& item, auto& menu)
+	{
+		// Get parent
+		auto component_item = static_cast<ComponentItem*>(&item);
+		auto entity_item = qobject_cast<EntityItem*>(component_item->parentItem());
+		assert(entity_item != nullptr);
+
+		// Ensure item can be moved up
+		auto idx = static_cast<size_t>(item.row());
+		if (idx == entity_item->rowCount() - 1)
+			return;
+
+		// Create path to component array property
+		PropertyPath component_array(entity_item->getObject(),
+			RTTI_OF(nap::Entity).get_property(nap::Entity::componentsPropertyName()),
+			*AppContext::get().getDocument());
+
+		// Create label based on type and action
+		QString label = QString("Move %1 down").arg(component_item->getObject().mID.c_str());
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN), label, [component_array, idx]()
+			{
+				AppContext::get().executeCommand(new ArrayMoveElementCommand(component_array, idx, idx + 1));
+			});
+	});
+
 	// Group
 	mMenuController.addOption<GroupItem>([](auto& item, auto& menu)
 	{

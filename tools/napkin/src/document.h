@@ -578,10 +578,19 @@ namespace napkin
 		/**
 		 * Qt Signal
 		 * Invoked just after a property child has been removed
-		 * @param path The path to the parent of the newly added child
+		 * @param parentPath The path to the parent of the newly added child
 		 * @param childIndex The index of the child that was removed
 		 */
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked when the index of a child in an array changes 
+		 * @param parentPath Path of the parent array 
+		 * @param fromIndex the original index
+		 * @param toIndex the new index
+		 */
+		void propertyIndexChanged(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 
 	private:
 		nap::Core& mCore;							// nap's core
