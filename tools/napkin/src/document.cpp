@@ -714,7 +714,7 @@ void Document::remove(const PropertyPath& path)
 		assert(childEntity);
 
 		// Remove all instance properties that refer to this Entity:0 under ParentEntity
-		auto realIndex = path.getRealChildEntityIndex();
+		auto realIndex = path.getEntityIndex();
 		removeInstanceProperties(path);
 		removeChildEntity(*parentEntity, realIndex);
 		return;

@@ -722,24 +722,27 @@ int PropertyPath::getInstanceChildEntityIndex() const
 }
 
 
-int PropertyPath::getRealChildEntityIndex() const
+int PropertyPath::getEntityIndex() const
 {
 	auto parent = getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
-	assert(parentEntity);
+	auto parent_entity = rtti_cast<nap::Entity>(parent.getObject());
+	assert(parent_entity);
 
-	int foundIDs = 0;
-	int instanceIndex = getInstanceChildEntityIndex();
-	for (int i = 0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
+	int found_id = 0;
+	int instance_idx = getInstanceChildEntityIndex();
+	for (int i = 0, len = static_cast<int>(parent_entity->mChildren.size()); i < len; i++)
 	{
-		auto currChild = parentEntity->mChildren[i];
-		if (getObject()->mID == currChild->mID)
+		auto current_child = parent_entity->mChildren[i];
+		if (getObject()->mID == current_child->mID)
 		{
-			if (foundIDs == instanceIndex)
-				return i;
-			foundIDs++;
+			if (found_id != instance_idx)
+			{
+				found_id++;
+				continue;
+			}
+			return i;
 		}
 	}
 	assert(false);

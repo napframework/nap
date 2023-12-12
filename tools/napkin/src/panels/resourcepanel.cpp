@@ -233,17 +233,8 @@ void napkin::ResourcePanel::createMenuCallbacks()
 			return;
 
 		// Get component index -> can't be the row because of other possible child items
-		size_t idx = 0; bool found = false;
-		for (const auto& child : parent_item->getEntity().mChildren)
-		{
-			if (child.get() == &entity_item->getEntity())
-			{
-				found = true;
-				break;
-			}
-			idx++;
-		}
-		assert(found);
+		auto entity_path = entity_item->propertyPath();
+		size_t idx = entity_path.getEntityIndex();
 
 		// Create path to component array property
 		PropertyPath children_array(parent_item->getObject(),
