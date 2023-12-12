@@ -153,6 +153,45 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 
 void napkin::ResourcePanel::createMenuCallbacks()
 {
+	// Move child entity up or down
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
+	{
+		// Get potential parent
+		auto entity_item = static_cast<EntityItem*>(&item);
+		auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
+		if (parent_item == nullptr)
+			return;
+
+		// Get component index -> can't be the row because of other possible child items
+		auto entity_path = entity_item->propertyPath();
+		size_t idx = entity_path.getEntityIndex();
+
+		// Create path to component array property
+		PropertyPath children_array(parent_item->getObject(),
+			RTTI_OF(nap::Entity).get_property(nap::Entity::childrenPropertyName()),
+			*AppContext::get().getDocument());
+
+		// Move item up
+		if (idx > 0)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP),
+				QString("Move %1 up").arg(entity_item->getObject().mID.c_str()), [children_array, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(children_array, idx, idx - 1));
+				});
+		}
+
+		// Move item down
+		if (idx < parent_item->getEntity().mChildren.size() - 1)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
+				QString("Move %1 down").arg(entity_item->getObject().mID.c_str()), [children_array, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(children_array, idx, idx + 1));
+				});
+		}
+	});
+
 	// Child Entity
 	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
@@ -219,45 +258,6 @@ void napkin::ResourcePanel::createMenuCallbacks()
 				QString("Move %1 down").arg(component_item->getObject().mID.c_str()), [component_array, idx]()
 				{
 					AppContext::get().executeCommand(new ArrayMoveElementCommand(component_array, idx, idx + 1));
-				});
-		}
-	});
-
-	// Move child entity up or down
-	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
-	{
-		// Get potential parent
-		auto entity_item = static_cast<EntityItem*>(&item);
-		auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem()); 
-		if (parent_item == nullptr)
-			return;
-
-		// Get component index -> can't be the row because of other possible child items
-		auto entity_path = entity_item->propertyPath();
-		size_t idx = entity_path.getEntityIndex();
-
-		// Create path to component array property
-		PropertyPath children_array(parent_item->getObject(),
-			RTTI_OF(nap::Entity).get_property(nap::Entity::childrenPropertyName()),
-			*AppContext::get().getDocument());
-
-		// Move item up
-		if (idx > 0)
-		{
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP),
-				QString("Move %1 up").arg(entity_item->getObject().mID.c_str()), [children_array, idx]()
-				{
-					AppContext::get().executeCommand(new ArrayMoveElementCommand(children_array, idx, idx - 1));
-				});
-		}
-
-		// Move item down
-		if (idx < parent_item->getEntity().mChildren.size() - 1)
-		{
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
-				QString("Move %1 down").arg(entity_item->getObject().mID.c_str()), [children_array, idx]()
-				{
-					AppContext::get().executeCommand(new ArrayMoveElementCommand(children_array, idx, idx + 1));
 				});
 		}
 	});
