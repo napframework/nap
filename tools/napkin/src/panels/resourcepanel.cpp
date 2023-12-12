@@ -181,14 +181,12 @@ void napkin::ResourcePanel::createMenuCallbacks()
 	{
 		// Get parent
 		auto component_item = static_cast<ComponentItem*>(&item);
-		auto entity_item = qobject_cast<EntityItem*>(component_item->parentItem());
-		assert(entity_item != nullptr);
-		if (entity_item->isPointer())
-			return;
+		auto parent_item = qobject_cast<EntityItem*>(component_item->parentItem());
+		assert(parent_item != nullptr);
 
 		// Get component index -> can't be the row because of other possible child items
 		size_t idx = 0; bool found = false;
-		for (const auto& comp : entity_item->getEntity().getComponents())
+		for (const auto& comp : parent_item->getEntity().getComponents())
 		{
 			if (comp.get() == &component_item->getComponent())
 			{
@@ -200,7 +198,7 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		assert(found);
 
 		// Create path to component array property
-		PropertyPath component_array(entity_item->getObject(), 
+		PropertyPath component_array(parent_item->getObject(), 
 			RTTI_OF(nap::Entity).get_property(nap::Entity::componentsPropertyName()), 
 			*AppContext::get().getDocument());
 
@@ -215,12 +213,60 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		}
 
 		// Move item down
-		if (idx < entity_item->getEntity().getComponents().size() - 1)
+		if (idx < parent_item->getEntity().getComponents().size() - 1)
 		{
 			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
 				QString("Move %1 down").arg(component_item->getObject().mID.c_str()), [component_array, idx]()
 				{
 					AppContext::get().executeCommand(new ArrayMoveElementCommand(component_array, idx, idx + 1));
+				});
+		}
+	});
+
+	// Move child entity up or down
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
+	{
+		// Get potential parent
+		auto entity_item = static_cast<EntityItem*>(&item);
+		auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem()); 
+		if (parent_item == nullptr)
+			return;
+
+		// Get component index -> can't be the row because of other possible child items
+		size_t idx = 0; bool found = false;
+		for (const auto& child : parent_item->getEntity().mChildren)
+		{
+			if (child.get() == &entity_item->getEntity())
+			{
+				found = true;
+				break;
+			}
+			idx++;
+		}
+		assert(found);
+
+		// Create path to component array property
+		PropertyPath children_array(parent_item->getObject(),
+			RTTI_OF(nap::Entity).get_property(nap::Entity::childrenPropertyName()),
+			*AppContext::get().getDocument());
+
+		// Move item up
+		if (idx > 0)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP),
+				QString("Move %1 up").arg(entity_item->getObject().mID.c_str()), [children_array, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(children_array, idx, idx - 1));
+				});
+		}
+
+		// Move item down
+		if (idx < parent_item->getEntity().mChildren.size() - 1)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
+				QString("Move %1 down").arg(entity_item->getObject().mID.c_str()), [children_array, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(children_array, idx, idx + 1));
 				});
 		}
 	});

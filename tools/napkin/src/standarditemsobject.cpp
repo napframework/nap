@@ -494,7 +494,6 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
-	connect(&ctx, &AppContext::propertyIndexChanged, this, &EntityItem::onIndexChanged);
 }
 
 
@@ -548,21 +547,6 @@ const std::string EntityItem::unambiguousName() const
 		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
 	}
 	return ObjectItem::unambiguousName();
-}
-
-
-void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
-{
-	/*
-	if (path == mCompPropertyPath)
-	{
-		// Swap
-		auto* it_a = this->takeChild(oldIndex);
-		auto* it_b = this->takeChild(newIndex);
-		this->setChild(oldIndex, it_b);
-		this->setChild(newIndex, it_a);
-	}
-	*/
 }
 
 
