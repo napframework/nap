@@ -164,6 +164,11 @@ namespace nap
 
     using WebSocketClientEndPointNoTLS = WebSocketClientEndPoint<wspp::Config>;
 
+    /**
+     * WebSocketClientEndPointTLS implementation.
+     * Adds TLS support to the WebSocketClientEndPoint.
+     * Has some extra properties needed for TLS support.
+     */
     class WebSocketClientEndPointTLS : public WebSocketClientEndPoint<wspp::ConfigTLS>
     {
     RTTI_ENABLE(WebSocketClientEndPoint<wspp::ConfigTLS>)
