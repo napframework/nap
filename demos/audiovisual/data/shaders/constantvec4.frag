@@ -11,13 +11,17 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-in vec3	in_Position;
-in vec3 in_UV0;
-
-out vec3 passUVs;
-
-void main(void)
+uniform UBO
 {
-	passUVs = in_UV0;
-    gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position, 1.0);
+	vec3 color;
+	float alpha;
+} ubo;
+
+out vec4 out_Color;
+
+
+void main() 
+{
+	out_Color = vec4(ubo.color, ubo.alpha);
 }
+ 

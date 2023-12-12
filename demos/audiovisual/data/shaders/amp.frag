@@ -11,18 +11,11 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-uniform UBO
-{
-	vec2 resolution;
-	float amps[513];
-} ubo;
-
 // input vertex attributes
 in vec3 passUVs;
 
 // output
 out vec4 out_Color;
-
 
 const float EPSILON = 0.0001;
 const float PI = 3.141592;
@@ -52,6 +45,6 @@ void main()
 	float frag_radius = -0.1 + length(to_center) * 1.0;
 	float pct = smoothstep(frag_radius-SMOOTH, frag_radius+SMOOTH, amp); 
 
-	vec3 color = vec3(pct);
+	vec3 color = vec3(0.1);
 	out_Color = vec4(color, 1.0); 
 }

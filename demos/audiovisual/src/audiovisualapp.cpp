@@ -7,7 +7,8 @@
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
 #include <orthocameracomponent.h>
-#include <rendertotexturecomponent.h>
+#include <renderablemeshcomponent.h>
+#include <computecomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audiovisualApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -49,9 +50,9 @@ namespace nap
 		if (!error.check(mWorldEntity != nullptr, "unable to find entity with name: %s", "WorldEntity"))
 			return false;
 
-		mRenderEntity = mScene->findEntity("RenderEntity");
-		if (!error.check(mRenderEntity != nullptr, "unable to find entity with name: %s", "RenderEntity"))
-			return false;
+		//mRenderEntity = mScene->findEntity("RenderEntity");
+		//if (!error.check(mRenderEntity != nullptr, "unable to find entity with name: %s", "RenderEntity"))
+		//	return false;
 
 		// All done!
 		return true;
@@ -64,6 +65,13 @@ namespace nap
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+
+		// GUI
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+		ImGui::End();
 	}
 	
 	
@@ -75,12 +83,25 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		auto& render_texture_comp = mRenderEntity->getComponent<RenderToTextureComponentInstance>();
-		if (mRenderService->beginHeadlessRecording())
+		// Compute
+		std::vector<ComputeComponentInstance*> compute_comps;
+		mWorldEntity->getComponentsOfTypeRecursive<ComputeComponentInstance>(compute_comps);
+		if (mRenderService->beginComputeRecording())
 		{
-			render_texture_comp.draw();
-			mRenderService->endHeadlessRecording();
+			mRenderService->computeObjects(compute_comps);
+			mRenderService->endComputeRecording();
 		}
+
+		// Headless
+		//auto& render_texture_comp = mRenderEntity->getComponent<RenderToTextureComponentInstance>();
+		//if (mRenderService->beginHeadlessRecording())
+		//{
+		//	render_texture_comp.draw();
+		//	mRenderService->endHeadlessRecording();
+		//}
+
+		std::vector<RenderableComponentInstance*> render_comps;
+		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
@@ -89,8 +110,8 @@ namespace nap
 			mRenderWindow->beginRendering();
 
 			// Background
-			auto& ortho_cam = mRenderEntity->getComponent<OrthoCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &render_texture_comp });
+			//auto& ortho_cam = mRenderEntity->getComponent<OrthoCameraComponentInstance>();
+			//mRenderService->renderObjects(*mRenderWindow, ortho_cam, render_comps);
 
 			// World
 			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();

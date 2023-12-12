@@ -87,7 +87,7 @@ namespace nap
 		/**
 		 * @return compute program.
 		 */
-		ComputeMaterialInstance& getMaterialInstance() 			{ return mComputeMaterialInstance; }
+		ComputeMaterialInstance& getMaterialInstance() 					{ return mComputeMaterialInstance; }
 
 		/**
 		 * @return the local workgroup size

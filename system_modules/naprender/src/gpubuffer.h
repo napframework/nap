@@ -172,7 +172,7 @@ namespace nap
 		 */
 		void requestClear();
 
-		RenderService* mRenderService = nullptr;					///< Handle to the render service
+		RenderService*				mRenderService = nullptr;					///< Handle to the render service
 		std::vector<BufferData>		mRenderBuffers;								///< Render accessible buffers
 		std::vector<BufferData>		mStagingBuffers;							///< Staging buffers, used when uploading or downloading data
 		uint32						mSize = 0;									///< Current used buffer size in bytes

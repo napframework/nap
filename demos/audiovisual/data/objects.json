@@ -26,19 +26,6 @@
             }
         },
         {
-            "Type": "nap::ComputeMaterial",
-            "mID": "PopulateComputeMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Buffers": [],
-            "Shader": "PopulateMeshComputeShader"
-        },
-        {
-            "Type": "nap::ComputeShaderFromFile",
-            "mID": "PopulateMeshComputeShader",
-            "ComputeShader": "shaders/populate.comp"
-        },
-        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -131,7 +118,7 @@
                     "mID": "PerspectiveCamera",
                     "Properties": {
                         "FieldOfView": 50.0,
-                        "NearClippingPlane": 0.10000000149011612,
+                        "NearClippingPlane": 0.009999999776482582,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
                             "x": 1,
@@ -149,8 +136,8 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.0,
-                            "z": 4.0
+                            "y": 0.10000000149011612,
+                            "z": 2.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -176,7 +163,7 @@
                         "y": 0.0,
                         "z": 0.0
                     },
-                    "MinimumZoomDistance": 1.0,
+                    "MinimumZoomDistance": 0.10000000149011612,
                     "LimitZoomDistance": true
                 },
                 {
@@ -188,127 +175,20 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "PlaneEntity",
+            "mID": "FFTPlaneEntity",
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "TransformPlane",
+                    "mID": "TransformFFTPlane",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 90.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 100.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderPlane",
-                    "Visible": false,
-                    "Mesh": "PlaneMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "RenderEntity",
-            "Components": [
-                {
-                    "Type": "nap::RenderToTextureComponent",
-                    "mID": "RenderToTexture",
-                    "Visible": true,
-                    "OutputTexture": "AmplitudeTexture",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "AmplitudeMaterial",
-                        "BlendMode": "Opaque",
-                        "DepthMode": "NoReadWrite"
-                    },
-                    "Samples": "One",
-                    "ClearColor": {
-                        "Values": [
-                            255,
-                            255,
-                            255,
-                            255
-                        ]
-                    },
-                    "SampleShading": true,
-                    "PreserveAspect": false
-                },
-                {
-                    "Type": "nap::RenderFFTComponent",
-                    "mID": "RenderFFT",
-                    "FFT": "../AudioEntity/FFTAudioNode"
-                },
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "OrthoCamera",
-                    "Properties": {
-                        "Mode": "Custom",
-                        "LeftPlane": 0.0,
-                        "RightPlane": 1280.0,
-                        "TopPlane": 720.0,
-                        "BottomPlane": 0.0,
-                        "NearClippingPlane": -1.0,
-                        "FarClippingPlane": 1.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformRender",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
                         "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
+                            "x": -90.0,
+                            "y": 180.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -320,22 +200,212 @@
                     }
                 },
                 {
+                    "Type": "nap::RenderFFTMeshComponent",
+                    "mID": "RenderFFTMesh",
+                    "Visible": true,
+                    "Mesh": "PlaneMeshVec4",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UBO_b816a14c",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "alpha_39b3deaf",
+                                        "Name": "alpha",
+                                        "Value": 0.20000000298023225
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "highlight_5f42882e",
+                                        "Name": "highlight",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 1.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "color_770400a6",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 0.1599999964237213,
+                                            "y": 0.36000001430511477,
+                                            "z": 1.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "PhongVec4Material",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "ReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    },
+                    "FFTMeshComponent": "./FFTMesh"
+                },
+                {
                     "Type": "nap::ComputeComponent",
-                    "mID": "ComputeComponent",
+                    "mID": "ComputePopulate",
                     "ComputeMaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [
                             {
                                 "Type": "nap::BufferBindingVec4",
-                                "mID": "OutPositions_c729b6a4",
+                                "mID": "InPositions_2c26c4bb",
+                                "Name": "InPositions",
+                                "Buffer": "PositionBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "OutPositions_94e6febd",
                                 "Name": "OutPositions",
-                                "Buffer": "PlaneVertexBuffer"
+                                "Buffer": "PositionBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "InNormals_2817da11",
+                                "Name": "InNormals",
+                                "Buffer": "PositionBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "OutNormals_bb180dba",
+                                "Name": "OutNormals",
+                                "Buffer": "PositionBufferDummy"
                             }
                         ],
                         "ComputeMaterial": "PopulateComputeMaterial"
                     },
                     "Invocations": 1
+                },
+                {
+                    "Type": "nap::ComputeComponent",
+                    "mID": "ComputeNormals",
+                    "ComputeMaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UBO_c5255937",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformUInt",
+                                        "mID": "pitch_31feb255",
+                                        "Name": "pitch",
+                                        "Value": 257
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "Positions_07091c33",
+                                "Name": "Positions",
+                                "Buffer": "PositionBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingUInt",
+                                "mID": "Indices_bac2a2b9",
+                                "Name": "Indices",
+                                "Buffer": "IndexBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "OutNormals_57d4a5a7",
+                                "Name": "OutNormals",
+                                "Buffer": "PositionBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingUInt",
+                                "mID": "Triangles_ee9855e9",
+                                "Name": "Triangles",
+                                "Buffer": "TriangleBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingInt",
+                                "mID": "Adjacency_638d952e",
+                                "Name": "Adjacency",
+                                "Buffer": "AdjacencyBufferDummy"
+                            },
+                            {
+                                "Type": "nap::BufferBindingVec4",
+                                "mID": "InNormals_88aa8533",
+                                "Name": "InNormals",
+                                "Buffer": "PositionBufferDummy"
+                            }
+                        ],
+                        "ComputeMaterial": "NormalsComputeMaterial"
+                    },
+                    "Invocations": 1
+                },
+                {
+                    "Type": "nap::FFTMeshComponent",
+                    "mID": "FFTMesh",
+                    "ReferenceMesh": "PlaneMeshVec4",
+                    "FrameCount": 1024,
+                    "FFT": "../../AudioEntity/FFTAudioNode",
+                    "FluxMeasurement": "../../AudioEntity/FluxMeasurement",
+                    "ComputePopulate": "./ComputePopulate",
+                    "ComputeNormals": "./ComputeNormals"
+                },
+                {
+                    "Type": "nap::RenderFFTMeshComponent",
+                    "mID": "RenderFFTMeshWireframe",
+                    "Visible": true,
+                    "Mesh": "PlaneMeshVec4WireFrame",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UBO_3f0967a6",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "alpha_53883b87",
+                                        "Name": "alpha",
+                                        "Value": 0.20000000298023225
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantVec4Material",
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "ReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    },
+                    "FFTMeshComponent": "./FFTMesh"
                 }
             ],
             "Children": []
@@ -346,16 +416,30 @@
             "Components": [
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderMesh",
+                    "mID": "RenderTorus",
                     "Visible": true,
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
-                        "Uniforms": [],
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UBO_2281c53b",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "alpha_2fb4e88a",
+                                        "Name": "alpha",
+                                        "Value": 0.20000000298023225
+                                    }
+                                ]
+                            }
+                        ],
                         "Samplers": [],
                         "Buffers": [],
                         "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "ReadWrite"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -383,7 +467,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 0.0
+                            "z": -0.25
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -396,31 +480,6 @@
                             "z": 1.0
                         },
                         "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBox",
-                    "Visible": true,
-                    "Mesh": "BoxMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
                     }
                 }
             ],
@@ -455,31 +514,8 @@
             ],
             "Children": [
                 "TorusEntity",
-                "TorusEntity",
-                "TorusEntity",
-                "PlaneEntity"
+                "FFTPlaneEntity"
             ]
-        },
-        {
-            "Type": "nap::GnomonMesh",
-            "mID": "Gnomon",
-            "Size": 1.0,
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0
-            }
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "AmplitudeMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Buffers": [],
-            "Shader": "AmplitudeShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -513,81 +549,133 @@
             "Buffers": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
+            "BlendMode": "Additive",
+            "DepthMode": "NoReadWrite"
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ConstantVec4Material",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UBO_7cc4a590",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "color_224e1d0c",
+                            "Name": "color",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "alpha_9b05a04b",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "ConstantVec4Shader",
+            "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::ParameterFloat",
-            "mID": "HighMultiplyParameter",
-            "Name": "HighMultiply",
-            "Value": 8.0,
-            "Minimum": 0.0,
-            "Maximum": 10.0
+            "Type": "nap::Material",
+            "mID": "PhongVec4Material",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UBO_9b84d36f",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "color_659486c3",
+                            "Name": "color",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "alpha_6624b5ec",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "PhongVec4Shader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
-            "Type": "nap::ParameterFloat",
-            "mID": "HighScaleParameter",
-            "Name": "High",
-            "Value": 1.0,
-            "Minimum": 0.0,
-            "Maximum": 2.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "LowScaleParameter",
-            "Name": "Low",
-            "Value": 1.0,
-            "Minimum": 0.0,
-            "Maximum": 2.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "MidMultiplyParameter",
-            "Name": "MidMultiply",
-            "Value": 4.0,
-            "Minimum": 0.0,
-            "Maximum": 10.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "MidScaleParameter",
-            "Name": "Mid",
-            "Value": 1.0,
-            "Minimum": 0.0,
-            "Maximum": 2.0
-        },
-        {
-            "Type": "nap::ParameterFloat",
-            "mID": "OffsetParameter",
-            "Name": "Offset",
-            "Value": 0.5,
-            "Minimum": 0.0,
-            "Maximum": 1.0
-        },
-        {
-            "Type": "nap::PlaneMesh",
-            "mID": "PlaneMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Line",
-            "Size": {
-                "x": 1.0,
-                "y": 4.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0
-            },
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "Rows": 2048,
-            "Columns": 512
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "LowScaleParameter",
+                    "Name": "Low",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "HighMultiplyParameter",
+                    "Name": "HighMultiply",
+                    "Value": 8.0,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "HighScaleParameter",
+                    "Name": "High",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MidMultiplyParameter",
+                    "Name": "MidMultiply",
+                    "Value": 4.0,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "MidScaleParameter",
+                    "Name": "Mid",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "OffsetParameter",
+                    "Name": "Offset",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -631,6 +719,121 @@
             "RestorePosition": true
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "Compute",
+            "Members": [
+                {
+                    "Type": "nap::ComputeMaterial",
+                    "mID": "PopulateComputeMaterial",
+                    "Uniforms": [],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "Shader": "PopulateMeshComputeShader"
+                },
+                {
+                    "Type": "nap::ComputeShaderFromFile",
+                    "mID": "PopulateMeshComputeShader",
+                    "ComputeShader": "shaders/positions.comp"
+                },
+                {
+                    "Type": "nap::PlaneMeshVec4",
+                    "mID": "PlaneMeshVec4",
+                    "Usage": "Static",
+                    "CullMode": "Back",
+                    "PolygonMode": "Fill",
+                    "Size": {
+                        "x": 1.0,
+                        "y": 2.0
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rows": 1024,
+                    "Columns": 256
+                },
+                {
+                    "Type": "nap::VertexBufferVec4",
+                    "mID": "PositionBufferDummy",
+                    "Usage": "Static",
+                    "Count": 263425,
+                    "Clear": false,
+                    "FillPolicy": ""
+                },
+                {
+                    "Type": "nap::ComputeShaderFromFile",
+                    "mID": "NormalsComputeShader",
+                    "ComputeShader": "shaders/normals.comp"
+                },
+                {
+                    "Type": "nap::ComputeMaterial",
+                    "mID": "NormalsComputeMaterial",
+                    "Uniforms": [],
+                    "Samplers": [],
+                    "Buffers": [],
+                    "Shader": "NormalsComputeShader"
+                },
+                {
+                    "Type": "nap::IndexBuffer",
+                    "mID": "IndexBufferDummy",
+                    "Usage": "Static",
+                    "Count": 1572864,
+                    "Clear": false,
+                    "FillPolicy": ""
+                },
+                {
+                    "Type": "nap::VertexBufferUInt",
+                    "mID": "TriangleBufferDummy",
+                    "Usage": "Static",
+                    "Count": 1572864,
+                    "Clear": false,
+                    "FillPolicy": ""
+                },
+                {
+                    "Type": "nap::GPUBufferInt",
+                    "mID": "AdjacencyBufferDummy",
+                    "Usage": "Static",
+                    "Count": 1580550,
+                    "Clear": false,
+                    "FillPolicy": ""
+                },
+                {
+                    "Type": "nap::PlaneMeshVec4",
+                    "mID": "PlaneMeshVec4WireFrame",
+                    "Usage": "Static",
+                    "CullMode": "Back",
+                    "PolygonMode": "Line",
+                    "Size": {
+                        "x": 1.0,
+                        "y": 2.0
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0
+                    },
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Rows": 1024,
+                    "Columns": 256
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
@@ -657,72 +860,22 @@
                                     }
                                 }
                             ]
-                        },
-                        {
-                            "TargetComponent": "./TorusEntity:1/UpdateTransform",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "UniformScale",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "override_d92ca632",
-                                        "Value": "HighScaleParameter"
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./TorusEntity:0/TransformTorus",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Translate/x",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "override_b8c82a1a",
-                                        "Value": -2.0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./TorusEntity:1/TransformTorus",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "Properties/Translate/x",
-                                    "Value": {
-                                        "Type": "nap::FloatInstancePropertyValue",
-                                        "mID": "override_1f6d3c95",
-                                        "Value": 2.0
-                                    }
-                                }
-                            ]
-                        },
-                        {
-                            "TargetComponent": "./TorusEntity:2/UpdateTransform",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "UniformScale",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "override_49165e5e",
-                                        "Value": "MidScaleParameter"
-                                    }
-                                }
-                            ]
                         }
                     ]
-                },
-                {
-                    "Entity": "RenderEntity",
-                    "InstanceProperties": []
                 }
             ]
         },
         {
             "Type": "nap::ShaderFromFile",
-            "mID": "AmplitudeShader",
-            "VertShader": "shaders/amp.vert",
-            "FragShader": "shaders/amp.frag"
+            "mID": "ConstantVec4Shader",
+            "VertShader": "shaders/constantvec4.vert",
+            "FragShader": "shaders/constantvec4.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "PhongVec4Shader",
+            "VertShader": "shaders/phongvec4.vert",
+            "FragShader": "shaders/phongvec4.frag"
         },
         {
             "Type": "nap::TorusMesh",
@@ -743,14 +896,6 @@
                     1.0
                 ]
             }
-        },
-        {
-            "Type": "nap::VertexBufferVec4",
-            "mID": "PlaneVertexBuffer",
-            "Usage": "Static",
-            "Count": 5224288,
-            "Clear": true,
-            "FillPolicy": ""
         },
         {
             "Type": "nap::audio::AudioFileResource",

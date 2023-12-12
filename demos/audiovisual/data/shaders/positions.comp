@@ -1,0 +1,50 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#version 450
+
+// NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
+// size supported by the device on pipeline creation.
+layout(local_size_x_id = 0) in;
+
+layout(std430) readonly buffer InPositions
+{
+	vec4 inpositions[263425];
+};
+
+layout(std430) writeonly buffer OutPositions
+{
+	vec4 outpositions[263425];
+};
+
+uniform UBO
+{
+	float amps[257];
+	float flux;
+} ubo;
+
+float weighted_sample(float value, uint index)
+{
+	float w = min(index/float(ubo.amps.length()), 1.0);
+	return mix(value, value * w * 40.0, 0.5);
+}
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+	uint pitch = ubo.amps.length();
+
+	if (gid < pitch)
+	{
+		float prev = inpositions[gid].z;
+		float s = weighted_sample(ubo.amps[gid], gid);
+		outpositions[gid].z = mix(prev * 0.95, s, 0.5);
+		outpositions[gid].w = ubo.flux;
+	}
+
+	uint gid_off = gid+pitch;
+	if (gid_off >= inpositions.length())
+		return;
+
+	outpositions[gid_off].zw = inpositions[gid].zw;
+}

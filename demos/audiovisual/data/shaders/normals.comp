@@ -1,0 +1,102 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#version 450
+
+// NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
+// size supported by the device on pipeline creation.
+layout(local_size_x_id = 0) in;
+
+// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
+//layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
+//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
+
+// Derive attribute buffer sizes from plane dimensions
+const uint ROW_COUNT = 1024 + 1;
+const uint COLUMN_COUNT = 256 + 1;
+
+const uint MAX_ADJACENT_TRI_COUNT = 6;
+const uint VERTS_PER_TRI_COUNT = 3;
+const uint TRIS_PER_CELL_COUNT = 2;
+
+const uint TRIANGLE_COUNT = ROW_COUNT*COLUMN_COUNT*TRIS_PER_CELL_COUNT;
+const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
+const uint INDEX_COUNT = 1572864; //TRIANGLE_COUNT*VERTS_PER_TRI_COUNT;
+
+const float EPSILON = 0.0001;
+
+layout(std430) readonly buffer Positions
+{
+	vec4 positions[POSITION_COUNT];
+};
+
+layout(std430) readonly buffer Triangles
+{
+	uint triangles[INDEX_COUNT];
+};
+
+layout(std430) readonly buffer Adjacency
+{
+	int adjacency[POSITION_COUNT*MAX_ADJACENT_TRI_COUNT];
+};
+
+layout(std430) readonly buffer InNormals
+{
+	vec4 innormals[POSITION_COUNT];
+};
+
+layout(std430) writeonly buffer OutNormals
+{
+	vec4 outnormals[POSITION_COUNT];
+};
+
+struct triangle 
+{
+	vec3 v0;
+	vec3 v1;
+	vec3 v2;
+};
+
+uniform UBO
+{
+	uint pitch;
+} ubo;
+
+vec3 triangle_normal(triangle t)
+{
+	return cross(t.v0 - t.v1, t.v0 - t.v2);
+}
+
+void main()
+{
+	uint gid = gl_GlobalInvocationID.x;
+	uint pitch = ubo.pitch;
+	uint offset = pitch*2;
+
+	if (gid < offset)
+	{
+		vec3 normal = vec3(0.0, 0.0, EPSILON);
+
+		// Fetch adjacent triangles and sum up their normals
+		// TODO: Precompute face normals
+		for (uint i = 0; i<MAX_ADJACENT_TRI_COUNT; i++)
+		{	
+			const int tri_idx = adjacency[gid*MAX_ADJACENT_TRI_COUNT+i];
+			if (tri_idx < 0) continue;
+
+			const triangle t = {
+				positions[triangles[tri_idx*3+0]].xyz, 
+				positions[triangles[tri_idx*3+1]].xyz, 
+				positions[triangles[tri_idx*3+2]].xyz 
+			};
+			normal += triangle_normal(t);
+		}
+		outnormals[gid] = vec4(normalize(normal), 0.0);
+	}
+
+	// Shift
+	if (gid+offset >= innormals.length())
+		return;
+
+	outnormals[gid+offset] = innormals[gid+pitch];
+}

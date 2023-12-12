@@ -97,7 +97,8 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
-		uint group_count_x = (numInvocations / getWorkGroupSize().x) + 1;
+		auto work_group_size = getWorkGroupSize();
+		uint group_count_x = (numInvocations / work_group_size.x) + 1;
 		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
 
 		// Insert memory barriers if required
