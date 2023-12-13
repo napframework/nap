@@ -217,6 +217,7 @@ void napkin::EntityResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtt
 
 	// Listen to changes
 	entity_item->connect(entity_item, &EntityItem::childAdded, this, &EntityResourcesItem::childAddedToEntity);
+	entity_item->connect(entity_item, &EntityItem::indexChanged, this, &EntityResourcesItem::indexChanged);
 }
 
 
@@ -548,8 +549,8 @@ void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldInde
 		auto* it = qitem_cast<ComponentItem*>(child(row));
 		if (it != nullptr)
 		{
-			a_idx = &(it->getObject()) == components[oldIndex].get() ? row : a_idx;
-			b_idx = &(it->getObject()) == components[newIndex].get() ? row : b_idx;
+			a_idx = &(it->getObject()) == components[newIndex].get() ? row : a_idx;
+			b_idx = &(it->getObject()) == components[oldIndex].get() ? row : b_idx;
 		}
 	}
 	assert(a_idx >=0 && b_idx >= 0);
@@ -559,6 +560,9 @@ void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldInde
 	auto child_b = this->takeChild(b_idx);
 	this->setChild(a_idx, child_b);
 	this->setChild(b_idx, child_a);
+
+	// Notify
+	indexChanged(*this, *static_cast<ObjectItem*>(child_a), *static_cast<ObjectItem*>(child_b));
 }
 
 
@@ -586,10 +590,8 @@ void napkin::EntityItem::populate()
 {
 	removeChildren();
 
-	// Create and add new component
-	auto& entity = getEntity();
-
 	// Create and add entities
+	auto& entity = getEntity();
 	for (auto& child : entity.mChildren)
 	{
 		auto* child_entity = new EntityItem(*child, true);
@@ -598,6 +600,7 @@ void napkin::EntityItem::populate()
 		appendRow({ child_entity, new RTTITypeItem(child->get_type()) });
 	}
 
+	// Create and add component items
 	for (auto& comp : entity.mComponents)
 	{
 		appendRow({ new ComponentItem(*comp), new RTTITypeItem(comp->get_type()) });

@@ -118,6 +118,14 @@ namespace napkin
 		 */
 		void childAddedToEntity(EntityItem& entity, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (component or entity) changes
+		 * @param entity the parent entity
+		 * @param itemA child item A moved to new index B
+		 * @param itemB child item B moved to old index A
+		 */
+		void indexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB);
+
 	private:
 		/**
 		 * Called when an object has been added
@@ -275,9 +283,10 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (component or entity) changes
 		 * @param entity the parent entity
-		 * @param item the child item
+		 * @param itemA child item A moved to new index B
+		 * @param itemB child item B moved to old index A
 		 */
-		void indexChanged(EntityItem& entity, ObjectItem& item);
+		void indexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB);
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);

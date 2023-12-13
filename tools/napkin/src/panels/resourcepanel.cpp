@@ -92,6 +92,7 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
+	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
 
 	auto& resources_item = mModel.getRootResourcesItem();
 	resources_item.setEnabled(AppContext::get().getProjectLoaded());
@@ -100,7 +101,7 @@ napkin::ResourcePanel::ResourcePanel()
 	auto& entities_item = mModel.getEntityResourcesItem();
 	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
-	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
+	connect(&entities_item, &EntityResourcesItem::indexChanged, this, &ResourcePanel::onIndexChanged);
 
 	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
@@ -420,6 +421,12 @@ void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& it
 void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem& item)
 {
 	mTreeView.select(&item, true);
+}
+
+
+void napkin::ResourcePanel::onIndexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB)
+{
+	mTreeView.select(&itemA, false);
 }
 
 
