@@ -429,7 +429,7 @@ void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem&
 void napkin::ResourcePanel::onIndexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB)
 {
 	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
-	if (selected_it != nullptr && selected_it->parentItem() == &entity)
+	if (selected_it != nullptr && (selected_it == &entity || selected_it->parentItem() == &entity))
 		mTreeView.select(&itemA, false);
 }
 

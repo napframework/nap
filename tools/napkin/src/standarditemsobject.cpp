@@ -536,30 +536,44 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
 {
-	// Ensure path matches
-	if (path != mCompPropertyPath)
+	// Bail if property doesn't match
+	if (path != mChildPropertyPath && path != mCompPropertyPath)
 		return;
 
+	// Get modified objects
+	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
+	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
+	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
 	// Map component indices to child items
-	assert(path.getObject() == &getEntity());
-	const auto& components = getEntity().getComponents();
 	size_t a_idx = -1; size_t b_idx = -1;
 	for (auto row = 0; row < rowCount(); row++)
 	{
-		auto* it = qitem_cast<ComponentItem*>(child(row));
+		auto* it = qitem_cast<ObjectItem*>(child(row));
 		if (it != nullptr)
 		{
-			a_idx = &(it->getObject()) == components[newIndex].get() ? row : a_idx;
-			b_idx = &(it->getObject()) == components[oldIndex].get() ? row : b_idx;
+			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
+			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
 		}
 	}
-	assert(a_idx >=0 && b_idx >= 0);
+	assert(a_idx >= 0 && b_idx >= 0);
 
 	// Swap
-	auto child_a = this->takeChild(a_idx);
-	auto child_b = this->takeChild(b_idx);
-	this->setChild(a_idx, child_b);
-	this->setChild(b_idx, child_a);
+	QStandardItem* child_a; QStandardItem* child_b;
+	if (path == mCompPropertyPath)
+	{
+		child_a = this->takeChild(a_idx);
+		child_b = this->takeChild(b_idx);
+		this->setChild(a_idx, child_b);
+		this->setChild(b_idx, child_a);
+	}
+	else
+	{
+		child_a = this->child(a_idx);
+		child_b = this->child(b_idx);
+	}
 
 	// Notify
 	indexChanged(*this, *static_cast<ObjectItem*>(child_a), *static_cast<ObjectItem*>(child_b));
