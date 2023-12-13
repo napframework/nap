@@ -27,21 +27,30 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	if (l_item == nullptr || r_item == nullptr)
 		return false;
 
-	// Don't sort regular resource groups
+	// Don't sort root (top) items
 	if (qobject_cast<EntityResourcesItem*>(l_item) != nullptr &&
 		qobject_cast<RootResourcesItem*>(r_item) != nullptr)
 		return false;
 
-	// Don't sort items of same type of which parent is an entity -> they can be re-ordered
-	if (qobject_cast<EntityItem*>(l_item->parentItem()) != nullptr &&
-		qobject_cast<EntityItem*>(r_item->parentItem()) != nullptr &&
-		l_item->get_type() == r_item->get_type())
+	// Check if item is an entity
+	auto le_item = qobject_cast<EntityItem*>(l_item);
+	auto re_item = qobject_cast<EntityItem*>(r_item);
+
+	// Check if item is a component
+	auto lc_item = qobject_cast<ComponentItem*>(l_item);
+	auto rc_item = qobject_cast<ComponentItem*>(r_item);
+
+	// left is entity, right is component
+	if (le_item != nullptr && rc_item != nullptr)
+		return true;
+
+	// right is component, left is entity
+	if (lc_item != nullptr && re_item != nullptr)
 		return false;
 
-	// Don't sort items of the same type in a group -> they can be re-ordered
-	if (qobject_cast<GroupItem*>(l_item->parentItem()) != nullptr &&
-		qobject_cast<GroupItem*>(r_item->parentItem()) != nullptr &&
-		l_item->get_type() == r_item->get_type())
+	// Don't sort items of same type of which parent is an entity -> they can be re-ordered
+	if (qobject_cast<EntityItem*>(l_item->parentItem()) != nullptr &&
+		qobject_cast<EntityItem*>(r_item->parentItem()) != nullptr)
 		return false;
 
 	// Prioritize groups over other items
@@ -54,6 +63,11 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 
 	// Right is group, left is not
 	if (rg_item != nullptr && lg_item == nullptr)
+		return false;
+
+	// Don't sort items of the same type in a group -> they can be re-ordered
+	if (qobject_cast<GroupItem*>(l_item->parentItem()) != nullptr &&
+		qobject_cast<GroupItem*>(r_item->parentItem()) != nullptr)
 		return false;
 
 	// Otherwise sort default
