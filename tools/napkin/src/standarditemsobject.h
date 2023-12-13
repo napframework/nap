@@ -272,6 +272,13 @@ namespace napkin
 		 */
 		void childAdded(EntityItem& entity, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (component or entity) changes
+		 * @param entity the parent entity
+		 * @param item the child item
+		 */
+		void indexChanged(EntityItem& entity, ObjectItem& item);
+
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);

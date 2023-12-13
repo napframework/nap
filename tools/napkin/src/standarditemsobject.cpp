@@ -585,19 +585,22 @@ const std::string EntityItem::unambiguousName() const
 void napkin::EntityItem::populate()
 {
 	removeChildren();
+
+	// Create and add new component
 	auto& entity = getEntity();
+
+	// Create and add entities
 	for (auto& child : entity.mChildren)
 	{
 		auto* child_entity = new EntityItem(*child, true);
 		child_entity->connect(child_entity, &EntityItem::childAdded, this, &EntityItem::childAdded);
+		child_entity->connect(child_entity, &EntityItem::indexChanged, this, &EntityItem::indexChanged);
 		appendRow({ child_entity, new RTTITypeItem(child->get_type()) });
 	}
 
 	for (auto& comp : entity.mComponents)
 	{
-		// Create and add new component
-		auto comp_item = new ComponentItem(*comp);
-		appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+		appendRow({ new ComponentItem(*comp), new RTTITypeItem(comp->get_type()) });
 	}
 }
 

@@ -28,8 +28,6 @@ namespace napkin
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
 		QVariant data(int role) const override;
 	private:
-		void refresh();
-	private:
 		const nap::rtti::TypeInfo& mType;
 	};
 
