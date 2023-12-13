@@ -536,8 +536,9 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
 {
-	// Bail if property doesn't match
-	if (path != mChildPropertyPath && path != mCompPropertyPath)
+	// Only handle component index changes because sub-tree is rebuild when entity order changes
+	// TODO: properly handle child entity changes -> implementation below is optimized for it
+	if (path != mCompPropertyPath)
 		return;
 
 	// Get modified objects
@@ -560,20 +561,10 @@ void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldInde
 	}
 	assert(a_idx >= 0 && b_idx >= 0);
 
-	// Swap
-	QStandardItem* child_a; QStandardItem* child_b;
-	if (path == mCompPropertyPath)
-	{
-		child_a = this->takeChild(a_idx);
-		child_b = this->takeChild(b_idx);
-		this->setChild(a_idx, child_b);
-		this->setChild(b_idx, child_a);
-	}
-	else
-	{
-		child_a = this->child(a_idx);
-		child_b = this->child(b_idx);
-	}
+	auto child_a = this->takeChild(a_idx);
+	auto child_b = this->takeChild(b_idx);
+	this->setChild(a_idx, child_b);
+	this->setChild(b_idx, child_a);
 
 	// Notify
 	indexChanged(*this, *static_cast<ObjectItem*>(child_a), *static_cast<ObjectItem*>(child_b));
