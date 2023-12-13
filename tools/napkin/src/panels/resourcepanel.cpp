@@ -420,13 +420,17 @@ void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& it
 
 void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem& item)
 {
-	mTreeView.select(&item, true);
+	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
+	if (selected_it != nullptr && selected_it == &entity)
+		mTreeView.select(&item, true);
 }
 
 
 void napkin::ResourcePanel::onIndexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB)
 {
-	mTreeView.select(&itemA, false);
+	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
+	if (selected_it != nullptr && selected_it->parentItem() == &entity)
+		mTreeView.select(&itemA, false);
 }
 
 
