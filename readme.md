@@ -69,9 +69,9 @@ Currently, whether working with the packaged framework release or against the fr
 
 **x86**
 ```
-x86-64: Windows (10 & 11), Visual Studio 2019 (v142)
-x86-64: Ubuntu Linux LTS (v20.04 & v22.04)
-x86-64: macOS Catalina (v10.15)
+x86-64: Windows (10 & 11), Visual Studio 2019 - MSVC
+x86-64: Ubuntu Linux LTS (v20.04 & v22.04) - GCC
+x86-64: macOS Catalina (v10.15) - Clang
 ```
 **ARM**
 ```
