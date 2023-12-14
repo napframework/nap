@@ -350,11 +350,24 @@ namespace napkin
 		 */
 		void childAdded(GroupItem& group, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (resource or group) changes
+		 * @param entity the parent entity
+		 * @param itemA child item A moved to new index B
+		 * @param itemB child item B moved to old index A
+		 */
+		void indexChanged(GroupItem& entity, ObjectItem& itemA, ObjectItem& itemB);
+
 	private:
 		/**
 		 * Called when a new item is inserted into an array
 		 */
 		void onPropertyChildInserted(const PropertyPath& path, int index);
+
+		/**
+		 * Called when the index of a child in an array changes
+		 */
+		void onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 	};
 
 	//////////////////////////////////////////////////////////////////////////

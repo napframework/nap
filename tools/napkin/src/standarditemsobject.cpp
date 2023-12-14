@@ -648,6 +648,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(group, false)
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
+	connect(&AppContext::get(), &AppContext::propertyIndexChanged, this, &GroupItem::onIndexChanged);
 }
 
 
@@ -705,6 +706,42 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
 		childAdded(*this, *new_group);
 	}
+}
+
+
+void napkin::GroupItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	// Check if this group has changed
+	nap::IGroup& group = getGroup();
+	if (!(path.getObject() == &group))
+		return;
+
+	// Get modified objects
+	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
+	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
+	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	// Map component indices to child items
+	size_t a_idx = -1; size_t b_idx = -1;
+	for (auto row = 0; row < rowCount(); row++)
+	{
+		auto* it = qitem_cast<ObjectItem*>(child(row));
+		if (it != nullptr)
+		{
+			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
+			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
+		}
+	}
+	assert(a_idx >= 0 && b_idx >= 0);
+
+	auto child_a = this->takeChild(a_idx);
+	auto child_b = this->takeChild(b_idx);
+	this->setChild(a_idx, child_b);
+	this->setChild(b_idx, child_a);
+
+	// Notify
+	indexChanged(*this, *static_cast<ObjectItem*>(child_a), *static_cast<ObjectItem*>(child_b));
 }
 
 
