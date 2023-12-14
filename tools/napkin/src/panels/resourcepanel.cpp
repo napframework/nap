@@ -20,8 +20,8 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	ResourceModel* resource_model = static_cast<ResourceModel*>(model);
 
 	// Get and cast to RTTI Item
-	auto l_item = qitem_cast<RTTIItem*>(resource_model->itemFromIndex(left));
-	auto r_item = qitem_cast<RTTIItem*>(resource_model->itemFromIndex(right));
+	auto l_item = dynamic_cast<RTTIItem*>(resource_model->itemFromIndex(left));
+	auto r_item = dynamic_cast<RTTIItem*>(resource_model->itemFromIndex(right));
 
 	// Bail if we're not an rtti item
 	if (l_item == nullptr || r_item == nullptr)
