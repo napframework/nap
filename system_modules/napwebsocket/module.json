@@ -7,6 +7,7 @@
         "napopenssl"
     ],
     "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/napopenssl/thirdparty/openssl/msvc/{BUILD_ARCH}/libs"
     ],
     "LibrarySearchPaths": {
         "Linux": [
