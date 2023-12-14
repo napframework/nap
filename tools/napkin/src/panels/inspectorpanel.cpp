@@ -260,7 +260,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			return;
 
 		// Create label based on type
-		QString label = QString("Move %1 up").arg(item.getPath().getPointee() != nullptr ?
+		QString label = QString("Move '%1' up").arg(item.getPath().getPointee() != nullptr ?
 			item.getPath().getPointee()->mID.c_str() :
 			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
 		);
@@ -287,7 +287,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			return;
 
 		// Create label based on type
-		QString label = QString("Move %1 down").arg(item.getPath().getPointee() != nullptr ?
+		QString label = QString("Move '%1' down").arg(item.getPath().getPointee() != nullptr ?
 			item.getPath().getPointee()->mID.c_str() :
 			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
 		);
@@ -309,7 +309,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			return;
 
 		// Create label based on type
-		QString label = QString("Remove %1").arg(item.getPath().getPointee() != nullptr ?
+		QString label = QString("Remove '%1'").arg(item.getPath().getPointee() != nullptr ?
 			item.getPath().getPointee()->mID.c_str() :
 			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
 		);
@@ -412,7 +412,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		const auto& path = pointer_item->getPath();
 		auto type = path.getWrappedType();
 
-		QString label = QString("Replace %1").arg(pointee->mID.c_str());
+		QString label = QString("Replace '%1'").arg(pointee->mID.c_str());
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE), label, [this, path, type]
 			{
 				TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
@@ -437,7 +437,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			return;
 
 		auto pointee = pointer_item->getPath().getPointee();
-		QString label = QString("Delete %1").arg(pointee->mID.c_str());
+		QString label = QString("Delete '%1'").arg(pointee->mID.c_str());
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [pointer_item, pointee]
 			{
 				// TODO: Make this a command
@@ -459,11 +459,11 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		if (!array_item->getPath().getArrayEditable())
 			return;
 
+		// Check if we can map it to a material
 		PropertyPath array_path = array_item->getPath();
 		auto array_type = array_path.getArrayElementType();
-		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 
-		// Check if we can map it to a material
+		// Add material mapping action
 		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
 		if (material_mapper != nullptr)
 		{

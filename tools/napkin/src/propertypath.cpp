@@ -476,12 +476,9 @@ bool napkin::PropertyPath::getArrayEditable() const
 	assert(isArray());
 	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
-
 	Variant array = resolved_path.getValue();
 	assert(array.is_valid());
-
-	VariantArray array_view = array.create_array_view();
-	return array_view.is_dynamic();
+	return array.create_array_view().is_dynamic(); 
 }
 
 
