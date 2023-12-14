@@ -105,8 +105,7 @@ static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex
 			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
 			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
 		}
-	}
-	assert(a_idx >= 0 && b_idx >= 0);
+	} assert(a_idx >= 0 && b_idx >= 0);
 
 	auto child_a = parent.takeChild(a_idx);
 	auto child_b = parent.takeChild(b_idx);
