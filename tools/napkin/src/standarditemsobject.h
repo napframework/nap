@@ -62,8 +62,8 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child in a group changes
 		 * @param group the parent group
-		 * @param itemA child item A moved to new index B
-		 * @param itemB child item B moved to old index A
+		 * @param itemA old index item
+		 * @param itemB new index item
 		 */
 		void indexChanged(GroupItem& group, ObjectItem& itemA, ObjectItem& itemB);
 
@@ -129,8 +129,8 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (component or entity) changes
 		 * @param entity the parent entity
-		 * @param itemA child item A moved to new index B
-		 * @param itemB child item B moved to old index A
+		 * @param itemA old index item
+		 * @param itemB new index item
 		 */
 		void indexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB);
 
@@ -291,8 +291,8 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (component or entity) changes
 		 * @param entity the parent entity
-		 * @param itemA child item A moved to new index B
-		 * @param itemB child item B moved to old index A
+		 * @param itemA old index item
+		 * @param itemB new index item
 		 */
 		void indexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB);
 
@@ -361,8 +361,8 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (resource or group) changes
 		 * @param entity the parent entity
-		 * @param itemA child item A moved to new index B
-		 * @param itemB child item B moved to old index A
+		 * @param itemA old index item
+		 * @param itemB new index item
 		 */
 		void indexChanged(GroupItem& entity, ObjectItem& itemA, ObjectItem& itemB);
 
