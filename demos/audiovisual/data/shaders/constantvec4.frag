@@ -17,11 +17,13 @@ uniform UBO
 	float alpha;
 } ubo;
 
-out vec4 out_Color;
+in vec2 passUV0;
 
+out vec4 out_Color;
 
 void main() 
 {
-	out_Color = vec4(ubo.color, ubo.alpha);
+	float d = (1.0-passUV0.y);
+	out_Color = vec4(ubo.color, ubo.alpha * d);
 }
  

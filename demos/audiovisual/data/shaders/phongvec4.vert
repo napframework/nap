@@ -23,7 +23,7 @@ out vec2 passUV0;
 out float passFresnel;
 out float passFlux;
 
-const vec2 fresnel = { 0.75, 6.0 };
+const vec2 fresnel = { 0.75, 4.0 };
 
 void main(void)
 {

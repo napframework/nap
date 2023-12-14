@@ -50,10 +50,6 @@ namespace nap
 		if (!error.check(mWorldEntity != nullptr, "unable to find entity with name: %s", "WorldEntity"))
 			return false;
 
-		//mRenderEntity = mScene->findEntity("RenderEntity");
-		//if (!error.check(mRenderEntity != nullptr, "unable to find entity with name: %s", "RenderEntity"))
-		//	return false;
-
 		// All done!
 		return true;
 	}
@@ -100,25 +96,29 @@ namespace nap
 		//	mRenderService->endHeadlessRecording();
 		//}
 
-		std::vector<RenderableComponentInstance*> render_comps;
-		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
-
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			// Background
-			//auto& ortho_cam = mRenderEntity->getComponent<OrthoCameraComponentInstance>();
-			//mRenderService->renderObjects(*mRenderWindow, ortho_cam, render_comps);
-
-			// World
 			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+
 			std::vector<RenderableComponentInstance*> render_comps;
 			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps);
 
+			// Render the RenderStars component first and take it out of the list
+			for (auto it = render_comps.begin(); it != render_comps.end(); it++)
+			{
+				if ((*it)->mID == "RenderStars")
+				{
+					mRenderService->renderObjects(*mRenderWindow, perp_cam, { (*it) });
+					render_comps.erase(it);
+				}
+			}
+
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps);
+		
 			// GUI
 			mGuiService->draw();
 

@@ -10,6 +10,7 @@
 #include <fluxmeasurementcomponent.h>
 #include <computecomponent.h>
 #include <planemeshvec4.h>
+#include <perspcameracomponent.h>
 
 namespace nap
 {
@@ -37,6 +38,10 @@ namespace nap
 		ComponentPtr<FluxMeasurementComponent>				mFluxMeasurement;
 		ComponentPtr<ComputeComponent>						mComputePopulate;
 		ComponentPtr<ComputeComponent>						mComputeNormals;
+		ComponentPtr<PerspCameraComponent>					mCamera;
+
+		float												mCameraFloatHeight = 0.5f;
+		float												mCameraFollowDistance = 1.0f;
 	};
 
 
@@ -78,12 +83,18 @@ namespace nap
 		ComponentInstancePtr<FluxMeasurementComponent> mFluxMeasurement = { this, &FFTMeshComponent::mFluxMeasurement };
 		ComponentInstancePtr<ComputeComponent> mComputePopulateInstance = { this, &FFTMeshComponent::mComputePopulate };
 		ComponentInstancePtr<ComputeComponent> mComputeNormalsInstance = { this, &FFTMeshComponent::mComputeNormals };
+		ComponentInstancePtr<PerspCameraComponent> mCamera = { this, &FFTMeshComponent::mCamera };
 
 	private:
 		FFTMeshComponent* mResource = nullptr;
 
 		UniformFloatArrayInstance* mAmpsUniform = nullptr;
+		UniformFloatArrayInstance* mPrevAmpsUniform = nullptr;
 		UniformFloatInstance* mFluxUniform = nullptr;
+
+		UniformVec3Instance* mOriginUniform = nullptr;
+		UniformVec3Instance* mDirectionUniform = nullptr;
+		UniformVec3Instance* mTangentUniform = nullptr;
 
 		std::unique_ptr<IMesh> mWireFrameCopyMesh;
 
@@ -99,6 +110,31 @@ namespace nap
 		VertexBufferVec4* mCurrentNormalBuffer = nullptr;
 		VertexBufferVec4* mPrevNormalBuffer = nullptr;
 
+		std::array<FFTBuffer::AmplitudeSpectrum, 2> mSpectra;
+
+		math::SmoothOperator<glm::vec3> mCameraTranslationSmoother = { { 0.0f, 0.0f, 0.0f }, 1.0f };
+		math::SmoothOperator<float> mCameraPitchSmoother = { 0.0f, 1.0f };
+		math::SmoothOperator<float> mCameraRollSmoother = { 0.0f, 1.0f };
+
+		float mElapsedTime = 0.0f;
+		float mFluxAccumulator = 0.0f;
+
 		uint mFrameIndex = 0;
+
+		// Plane space axes
+		static constexpr glm::vec3 sPlaneForward	= { 0.0f, -1.0f, 0.0f };
+		static constexpr glm::vec3 sPlaneRight		= { 1.0f, 0.0f, 0.0f };
+		static constexpr glm::vec3 sPlaneUp			= { 0.0f, 0.0f, 1.0f };
+
+		// World space axes
+		static constexpr glm::vec3 sWorldForward = { 0.0f, 0.0f, 1.0f };
+		static constexpr glm::vec3 sWorldRight = { 1.0f, 0.0f, 0.0f };
+		static constexpr glm::vec3 sWorldUp = { 0.0f, 1.0f, 0.0f };
+
+		glm::vec3 mOrigin = { 0.0f, 0.0f, 0.0f };
+		glm::vec3 mDirection = sPlaneForward;
+		glm::vec3 mTangent = sPlaneRight;
+
+		glm::quat mCameraToMeshReferenceFrame = glm::identity<glm::quat>();
 	};
 }

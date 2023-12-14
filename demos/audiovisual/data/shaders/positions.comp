@@ -7,21 +7,33 @@
 // size supported by the device on pipeline creation.
 layout(local_size_x_id = 0) in;
 
+// Derive attribute buffer sizes from plane dimensions
+const uint ROW_COUNT = 1024 + 1;
+const uint COLUMN_COUNT = 256 + 1;
+const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
+
 layout(std430) readonly buffer InPositions
 {
-	vec4 inpositions[263425];
+	vec4 inpositions[POSITION_COUNT];
 };
 
 layout(std430) writeonly buffer OutPositions
 {
-	vec4 outpositions[263425];
+	vec4 outpositions[POSITION_COUNT];
 };
 
 uniform UBO
 {
+	vec3 origin;
+	vec3 direction;
+	vec3 tangent;
 	float amps[257];
+	float prevAmps[257];
 	float flux;
 } ubo;
+
+const float TWO_PI = 6.283185;
+const float EXTENT = 0.5;
 
 float weighted_sample(float value, uint index)
 {
@@ -29,22 +41,35 @@ float weighted_sample(float value, uint index)
 	return mix(value, value * w * 40.0, 0.5);
 }
 
+
 void main()
 {
 	uint gid = gl_GlobalInvocationID.x;
 	uint pitch = ubo.amps.length();
+	vec2 cell_size = { 1.0/float(ubo.amps.length()-1), 1.0/float(1024) };
 
 	if (gid < pitch)
 	{
-		float prev = inpositions[gid].z;
-		float s = weighted_sample(ubo.amps[gid], gid);
-		outpositions[gid].z = mix(prev * 0.95, s, 0.5);
-		outpositions[gid].w = ubo.flux;
+		float prev = ubo.prevAmps[gid];
+		float height = weighted_sample(ubo.amps[gid], gid);
+		height = mix(prev * 0.95, height, 0.5);
+
+		vec3 forward = ubo.direction;
+		vec3 right = ubo.tangent;
+		vec3 up = cross(ubo.direction, right);
+
+		float uvx = gid%ubo.amps.length()/float(ubo.amps.length()-1);
+		vec3 p = ubo.origin + (uvx * right - right * 0.5) + height * up + forward * cell_size.y;
+		outpositions[gid] = vec4(p, ubo.flux);
+
+		// Polar
+		// float theta = uvx * TWO_PI;
+		// vec2 coord = { cos(theta), sin(theta) };
 	}
 
 	uint gid_off = gid+pitch;
 	if (gid_off >= inpositions.length())
 		return;
 
-	outpositions[gid_off].zw = inpositions[gid].zw;
+	outpositions[gid_off] = inpositions[gid];
 }

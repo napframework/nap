@@ -62,8 +62,8 @@
                     "mID": "AudioOutput",
                     "Input": "./AudioPlayback",
                     "Routing": [
-                        -1,
-                        -1
+                        0,
+                        1
                     ]
                 },
                 {
@@ -117,7 +117,7 @@
                     "Type": "nap::PerspCameraComponent",
                     "mID": "PerspectiveCamera",
                     "Properties": {
-                        "FieldOfView": 50.0,
+                        "FieldOfView": 60.0,
                         "NearClippingPlane": 0.009999999776482582,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
@@ -136,8 +136,8 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 0.10000000149011612,
-                            "z": 2.0
+                            "y": 0.0,
+                            "z": 0.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -153,22 +153,12 @@
                     }
                 },
                 {
-                    "Type": "nap::OrbitController",
-                    "mID": "OrbitController",
-                    "MovementSpeed": 0.009999999776482582,
-                    "RotateSpeed": 0.0024999999441206457,
-                    "PerspCameraComponent": "./PerspectiveCamera",
-                    "LookAtPosition": {
-                        "x": 0.0,
-                        "y": 0.0,
-                        "z": 0.0
-                    },
-                    "MinimumZoomDistance": 0.10000000149011612,
-                    "LimitZoomDistance": true
-                },
-                {
                     "Type": "nap::PointerInputComponent",
                     "mID": "CameraPointerInput"
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "KeyInput"
                 }
             ],
             "Children": []
@@ -184,11 +174,11 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 1.0
+                            "z": 0.0
                         },
                         "Rotate": {
-                            "x": -90.0,
-                            "y": 180.0,
+                            "x": 0.0,
+                            "y": 0.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -215,15 +205,15 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "alpha_39b3deaf",
                                         "Name": "alpha",
-                                        "Value": 0.20000000298023225
+                                        "Value": 1.0
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
                                         "mID": "highlight_5f42882e",
                                         "Name": "highlight",
                                         "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
+                                            "x": 0.4000000059604645,
+                                            "y": 0.20000000298023225,
                                             "z": 1.0
                                         }
                                     },
@@ -235,6 +225,36 @@
                                             "x": 0.1599999964237213,
                                             "y": 0.36000001430511477,
                                             "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "specular_fc138815",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 0.20000000298023225,
+                                            "z": 0.8999999761581421
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "fresnel_4553a528",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 0.10000000149011612,
+                                            "z": 0.699999988079071
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "ambient_1bd037c0",
+                                        "Name": "ambient",
+                                        "Value": {
+                                            "x": 0.07500000298023224,
+                                            "y": 0.0,
+                                            "z": 0.05000000074505806
                                         }
                                     }
                                 ]
@@ -365,12 +385,15 @@
                     "FFT": "../../AudioEntity/FFTAudioNode",
                     "FluxMeasurement": "../../AudioEntity/FluxMeasurement",
                     "ComputePopulate": "./ComputePopulate",
-                    "ComputeNormals": "./ComputeNormals"
+                    "ComputeNormals": "./ComputeNormals",
+                    "Camera": "../../CameraEntity/PerspectiveCamera",
+                    "CameraFloatHeight": 0.5,
+                    "CameraFollowDistance": 1.0
                 },
                 {
                     "Type": "nap::RenderFFTMeshComponent",
                     "mID": "RenderFFTMeshWireframe",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "PlaneMeshVec4WireFrame",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -383,7 +406,17 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "alpha_53883b87",
                                         "Name": "alpha",
-                                        "Value": 0.20000000298023225
+                                        "Value": 0.15000000596046449
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "color_6ad2d405",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 0.1599999964237213,
+                                            "y": 0.36000001430511477,
+                                            "z": 1.0
+                                        }
                                     }
                                 ]
                             }
@@ -406,6 +439,85 @@
                         }
                     },
                     "FFTMeshComponent": "./FFTMesh"
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderDebugPlane",
+                    "Visible": false,
+                    "Mesh": "DebugPlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "StarsEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformStars",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderStars",
+                    "Visible": true,
+                    "Mesh": "ScatterStars",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Material": "SkyMaterial",
+                        "BlendMode": "Opaque",
+                        "DepthMode": "NoReadWrite"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -417,7 +529,7 @@
                 {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderTorus",
-                    "Visible": true,
+                    "Visible": false,
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -513,6 +625,7 @@
                 }
             ],
             "Children": [
+                "StarsEntity",
                 "TorusEntity",
                 "FFTPlaneEntity"
             ]
@@ -623,6 +736,41 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::Material",
+            "mID": "SkyMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UBO_beea41bc",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "color_e74c6910",
+                            "Name": "color",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "alpha_c8cd11ed",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "Shader": "SkyShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
             "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [
@@ -676,6 +824,31 @@
                 }
             ],
             "Groups": []
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "DebugPlaneMesh",
+            "Usage": "Static",
+            "CullMode": "Back",
+            "PolygonMode": "Line",
+            "Size": {
+                "x": 1.0,
+                "y": 1.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Rows": 4,
+            "Columns": 4
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -743,7 +916,7 @@
                     "PolygonMode": "Fill",
                     "Size": {
                         "x": 1.0,
-                        "y": 2.0
+                        "y": 1.0
                     },
                     "Position": {
                         "x": 0.0,
@@ -809,7 +982,7 @@
                     "Type": "nap::PlaneMeshVec4",
                     "mID": "PlaneMeshVec4WireFrame",
                     "Usage": "Static",
-                    "CullMode": "Back",
+                    "CullMode": "None",
                     "PolygonMode": "Line",
                     "Size": {
                         "x": 1.0,
@@ -832,6 +1005,13 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::ScatterPointsMesh",
+            "mID": "ScatterStars",
+            "Usage": "Static",
+            "ReferenceMesh": "SkySphereMesh",
+            "PointCount": 20000
         },
         {
             "Type": "nap::Scene",
@@ -876,6 +1056,35 @@
             "mID": "PhongVec4Shader",
             "VertShader": "shaders/phongvec4.vert",
             "FragShader": "shaders/phongvec4.frag"
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "SkyShader",
+            "VertShader": "shaders/sky.vert",
+            "FragShader": "shaders/sky.frag"
+        },
+        {
+            "Type": "nap::SphereMesh",
+            "mID": "SkySphereMesh",
+            "Usage": "Static",
+            "CullMode": "None",
+            "PolygonMode": "Point",
+            "Radius": 10.0,
+            "Rings": 50,
+            "Sectors": 50,
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0,
+                "z": 0.0
+            }
         },
         {
             "Type": "nap::TorusMesh",

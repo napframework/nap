@@ -12,8 +12,12 @@ uniform nap
 } mvp;
 
 in vec4	in_Position;
+in vec4 in_UV0;
+
+out vec2 passUV0;
 
 void main(void)
 {
+	passUV0 = in_UV0.xy;
 	gl_Position = mvp.projectionMatrix * mvp.viewMatrix * mvp.modelMatrix * vec4(in_Position.xyz, 1.0);
 }

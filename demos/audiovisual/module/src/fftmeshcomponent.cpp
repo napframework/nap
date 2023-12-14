@@ -6,15 +6,21 @@
 #include <renderglobals.h>
 #include <planemeshvec4.h>
 #include <mesh.h>
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtc/noise.hpp>
+#include <glm/gtx/vec_swizzle.hpp>
 
 // nap::FFTMeshComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::FFTMeshComponent)
-	RTTI_PROPERTY("ReferenceMesh",		&nap::FFTMeshComponent::mReferenceMesh,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FrameCount",			&nap::FFTMeshComponent::mFrameCount,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FFT",				&nap::FFTMeshComponent::mFFT,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FluxMeasurement",	&nap::FFTMeshComponent::mFluxMeasurement,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ComputePopulate",	&nap::FFTMeshComponent::mComputePopulate,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ComputeNormals",		&nap::FFTMeshComponent::mComputeNormals,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ReferenceMesh",			&nap::FFTMeshComponent::mReferenceMesh,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FrameCount",				&nap::FFTMeshComponent::mFrameCount,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FFT",					&nap::FFTMeshComponent::mFFT,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FluxMeasurement",		&nap::FFTMeshComponent::mFluxMeasurement,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputePopulate",		&nap::FFTMeshComponent::mComputePopulate,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputeNormals",			&nap::FFTMeshComponent::mComputeNormals,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Camera",					&nap::FFTMeshComponent::mCamera,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CameraFloatHeight",		&nap::FFTMeshComponent::mCameraFloatHeight,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CameraFollowDistance",	&nap::FFTMeshComponent::mCameraFollowDistance,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::FFTMeshComponentInstance run time class definition 
@@ -84,9 +90,17 @@ namespace nap
 			if (!errorState.check(mAmpsUniform != nullptr, "Missing uniform member with name `amps`"))
 				return false;
 
+			mPrevAmpsUniform = populate_ubo->getOrCreateUniform<UniformFloatArrayInstance>("prevAmps");
+			if (!errorState.check(mPrevAmpsUniform != nullptr, "Missing uniform member with name `prevAmps`"))
+				return false;
+
 			mFluxUniform = populate_ubo->getOrCreateUniform<UniformFloatInstance>("flux");
 			if (!errorState.check(mFluxUniform != nullptr, "Missing uniform member with name `flux`"))
-				return false;
+				return false;	
+
+			mOriginUniform = populate_ubo->getOrCreateUniform<UniformVec3Instance>("origin");
+			mDirectionUniform = populate_ubo->getOrCreateUniform<UniformVec3Instance>("direction");
+			mTangentUniform = populate_ubo->getOrCreateUniform<UniformVec3Instance>("tangent");
 
 			for (auto& buf : mPositionBuffers)
 				if (!errorState.check(buf != nullptr, "Missing position buffer"))
@@ -147,41 +161,110 @@ namespace nap
 				return false;
 		}
 
+		// Camera
+		if (mCamera != nullptr)
+		{
+			const auto& transform = mCamera->getEntityInstance()->getComponent<TransformComponentInstance>();
+			mCameraTranslationSmoother = { math::extractPosition(transform.getGlobalTransform()), 1.0f };
+			mCameraPitchSmoother = { 0.0f, 1.0f };
+			mCameraRollSmoother = { 0.0f, 1.0f };
+
+			// Create a quaternion such that the camera is aligned with the initial travel direction of the plane mesh
+			// Plane object space = { x:right, y:forward, z:up }
+			// World space = { x:right, y:up, z:forward }
+
+			// Rotate 90 degrees over x
+			mCameraToMeshReferenceFrame = glm::rotate(glm::identity<glm::quat>(), glm::half_pi<float>(), sWorldRight);
+
+			// Rotate 180 degrees over y
+			mCameraToMeshReferenceFrame *= glm::rotate(glm::identity<glm::quat>(), glm::pi<float>(), sWorldUp);
+		}
+
 		return true;
 	}
 
 
 	void FFTMeshComponentInstance::update(double deltaTime)
 	{
-		const auto& amps = mFFT->getFFTBuffer().getAmplitudeSpectrum();
+		float delta_time = static_cast<float>(deltaTime);
+		mElapsedTime += delta_time;
+
+		uint cur_idx = mFrameIndex % static_cast<uint>(mPositionBuffers.size());
+		uint prev_idx = (mFrameIndex + 1) % static_cast<uint>(mPositionBuffers.size());
+
+		auto& cur_spectrum = mSpectra[cur_idx];
+		cur_spectrum = mFFT->getFFTBuffer().getAmplitudeSpectrum();
 		assert(mAmpsUniform->getNumElements() <= amps.size());
 
-		auto amps_cut = std::vector(amps.begin(), amps.begin() + mAmpsUniform->getNumElements());
+		auto amps_cut = std::vector(cur_spectrum.begin(), cur_spectrum.begin() + mAmpsUniform->getNumElements());
+		mPrevAmpsUniform->setValues(mAmpsUniform->getValues());
 		mAmpsUniform->setValues(amps_cut);
 
 		const auto& flux_params = mFluxMeasurement->getParameterItems();
 		if (!flux_params.empty())
 		{
 			float offset = (flux_params.front()->mOffset != nullptr) ? flux_params.front()->mOffset->mValue : 0.0f;
-			mFluxUniform->setValue(flux_params.front()->mParameter->mValue - offset);
+			float value = flux_params.front()->mParameter->mValue - offset;
+			mFluxUniform->setValue(value);
+			mFluxAccumulator += value * delta_time;
+		}
+		float flux_time = mElapsedTime * 0.1f + mFluxAccumulator * 2.0f;
+
+		// Test
+		flux_time = mElapsedTime * 0.5f;
+
+		float roll_noise = glm::simplex<float>(glm::vec3(flux_time, 0.0f, 0.0f));
+		float roll_theta = 0.5f * glm::quarter_pi<float>() * roll_noise;
+		auto roll = glm::rotate(glm::identity<glm::quat>(), roll_theta, sPlaneForward);
+
+		float pitch_noise = glm::simplex<float>(glm::vec3(0.0f, flux_time, 0.0f));
+		float pitch_theta = glm::quarter_pi<float>() * pitch_noise;
+		auto pitch = glm::rotate(glm::identity<glm::quat>(), pitch_theta, sPlaneRight);
+
+		auto composite = pitch * roll;
+		auto new_direction = mDirection * composite;
+		mOrigin += new_direction * delta_time;
+
+		mOriginUniform->setValue(mOrigin);
+		mDirectionUniform->setValue(new_direction);
+
+		auto new_tangent = mTangent * composite;
+		mTangentUniform->setValue(new_tangent);
+
+		if (mResource->mCamera != nullptr)
+		{
+			glm::vec3 camera_up = glm::normalize(glm::cross(new_direction, new_tangent));
+			glm::vec3 follow_origin = mOrigin + camera_up * mResource->mCameraFloatHeight - new_direction * mResource->mCameraFollowDistance;
+			const glm::mat4& mesh_world = getEntityInstance()->getComponent<TransformComponentInstance>().getGlobalTransform();
+			glm::vec3 follow_origin_world = glm::xyz(mesh_world * glm::vec4(follow_origin, 1.0f));
+			const glm::vec3& new_translate = mCameraTranslationSmoother.update(follow_origin_world, delta_time);
+
+			auto& camera_transform = mCamera->getEntityInstance()->getComponent<TransformComponentInstance>();
+			camera_transform.setTranslate(new_translate);
+
+			float focus_theta = glm::tan(mResource->mCameraFloatHeight/mResource->mCameraFollowDistance);
+			float cam_pitch_theta = pitch_theta - focus_theta;
+			cam_pitch_theta = mCameraPitchSmoother.update(cam_pitch_theta, delta_time);
+			glm::quat cam_pitch = glm::rotate(glm::identity<glm::quat>(), cam_pitch_theta, sWorldRight);
+
+			float cam_roll_theta = mCameraRollSmoother.update(roll_theta, delta_time);
+			glm::quat cam_roll = glm::rotate(glm::identity<glm::quat>(), cam_roll_theta, sWorldForward);
+			camera_transform.setRotate(mCameraToMeshReferenceFrame * cam_pitch * cam_roll);
 		}
 
 		// Positions
 		auto& populate_mtl = mComputePopulateInstance->getMaterialInstance();
 
-		uint cur = mFrameIndex % static_cast<uint>(mPositionBuffers.size());
-		uint prev = (mFrameIndex + 1) % static_cast<uint>(mPositionBuffers.size());
-
-		mCurrentPositionBuffer = mPositionBuffers[cur].get();
-		mPrevPositionBuffer = mPositionBuffers[prev].get();
+		mCurrentPositionBuffer = mPositionBuffers[cur_idx].get();
+		mPrevPositionBuffer = mPositionBuffers[prev_idx].get();
 		static_cast<BufferBindingVec4Instance*>(&populate_mtl.getBinding("InPositions"))->setBuffer(*mPrevPositionBuffer);
 		static_cast<BufferBindingVec4Instance*>(&populate_mtl.getBinding("OutPositions"))->setBuffer(*mCurrentPositionBuffer);
 
 		// Normals
 		auto& normals_mtl = mComputeNormalsInstance->getMaterialInstance();
 
-		mCurrentNormalBuffer = mNormalBuffers[cur].get();
-		mPrevNormalBuffer = mNormalBuffers[prev].get();
+		mCurrentNormalBuffer = mNormalBuffers[cur_idx].get();
+		mPrevNormalBuffer = mNormalBuffers[prev_idx].get();
 		static_cast<BufferBindingVec4Instance*>(&normals_mtl.getBinding("InNormals"))->setBuffer(*mPrevNormalBuffer);
 		static_cast<BufferBindingVec4Instance*>(&normals_mtl .getBinding("OutNormals"))->setBuffer(*mCurrentNormalBuffer);
 
