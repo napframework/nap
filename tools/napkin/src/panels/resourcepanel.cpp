@@ -268,6 +268,57 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		}
 	});
 
+	// Move resource or child in group up or down
+	mMenuController.addOption<ObjectItem>([](auto& item, auto& menu)
+	{
+		// Bail if we're not in a group
+		auto object_item = static_cast<ObjectItem*>(&item);
+		auto parent_item = qitem_cast<GroupItem*>(object_item->parentItem());
+		if (parent_item == nullptr)
+			return;
+
+		// Get container property -> child groups or members
+		nap::IGroup& group = parent_item->getGroup();
+		auto container_property = object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
+			group.getChildrenProperty() : group.getMembersProperty();
+
+		// Get index in container
+		PropertyPath container_path(parent_item->getObject(), container_property, *AppContext::get().getDocument());
+		auto container_value = container_path.getValue(); assert(container_value.is_valid());
+		auto container_view = container_value.create_array_view();
+		int idx = -1;
+		for (auto i = 0; i < container_view.get_size(); i++)
+		{
+			auto val = container_view.get_value(i); assert(val.get_type().is_wrapper());
+			auto obj = val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+			if (obj == &object_item->getObject())
+			{
+				idx = i;
+				break;
+			}
+		} assert(idx >= 0);
+
+		// Move item up
+		if (idx > 0)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP),
+				QString("Move %1 up").arg(object_item->getObject().mID.c_str()), [container_path, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(container_path, idx, idx - 1));
+				});
+		}
+
+		// Move item down
+		if (idx < container_view.get_size() - 1)
+		{
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
+				QString("Move %1 down").arg(object_item->getObject().mID.c_str()), [container_path, idx]()
+				{
+					AppContext::get().executeCommand(new ArrayMoveElementCommand(container_path, idx, idx + 1));
+				});
+		}
+	});
+
 	// Group
 	mMenuController.addOption<GroupItem>([](auto& item, auto& menu)
 	{
