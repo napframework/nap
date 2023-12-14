@@ -78,6 +78,44 @@ static ObjectItem* createObjectItem(nap::rtti::Object& object)
 };
 
 
+/**
+ * Helper function that finds and swaps items based on the given property index change.
+ * @param path the array property that holds the items that were swapped
+ * @param oldIndex original index
+ * @param newIndex the new index
+ * @param parent parent item
+ * @return swapped child indices (previous, new)
+ */
+static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex, size_t newIndex, ObjectItem& parent)
+{
+	// Get modified objects
+	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
+	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
+	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	// Map component indices to child items
+	size_t a_idx = -1; size_t b_idx = -1;
+	for (auto row = 0; row < parent.rowCount(); row++)
+	{
+		auto* it = qitem_cast<ObjectItem*>(parent.child(row));
+		if (it != nullptr)
+		{
+			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
+			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
+		}
+	}
+	assert(a_idx >= 0 && b_idx >= 0);
+
+	auto child_a = parent.takeChild(a_idx);
+	auto child_b = parent.takeChild(b_idx);
+	parent.setChild(a_idx, child_b);
+	parent.setChild(b_idx, child_a);
+	return { a_idx, b_idx };
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 // RegularResourcesItem 
 //////////////////////////////////////////////////////////////////////////
@@ -542,33 +580,9 @@ void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldInde
 	if (path != mCompPropertyPath)
 		return;
 
-	// Get modified objects
-	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
-	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
-
-	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
-	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
-
-	// Map component indices to child items
-	size_t a_idx = -1; size_t b_idx = -1;
-	for (auto row = 0; row < rowCount(); row++)
-	{
-		auto* it = qitem_cast<ObjectItem*>(child(row));
-		if (it != nullptr)
-		{
-			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
-			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
-		}
-	}
-	assert(a_idx >= 0 && b_idx >= 0);
-
-	auto child_a = this->takeChild(a_idx);
-	auto child_b = this->takeChild(b_idx);
-	this->setChild(a_idx, child_b);
-	this->setChild(b_idx, child_a);
-
-	// Notify
-	indexChanged(*this, *static_cast<ObjectItem*>(child_a), *static_cast<ObjectItem*>(child_b));
+	// Swap child items and notify
+	auto idx = swapItems(path, oldIndex, newIndex, *this);
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[0])), *qitem_cast<ObjectItem*>(child(idx[1])));
 }
 
 
@@ -718,32 +732,9 @@ void napkin::GroupItem::onIndexChanged(const PropertyPath& path, size_t oldIndex
 	if (!(path.getObject() == &group))
 		return;
 
-	// Get modified objects
-	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
-	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
-	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
-	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
-
-	// Map component indices to child items
-	size_t a_idx = -1; size_t b_idx = -1;
-	for (auto row = 0; row < rowCount(); row++)
-	{
-		auto* it = qitem_cast<ObjectItem*>(child(row));
-		if (it != nullptr)
-		{
-			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
-			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
-		}
-	}
-	assert(a_idx >= 0 && b_idx >= 0);
-
-	auto child_a = this->takeChild(a_idx);
-	auto child_b = this->takeChild(b_idx);
-	this->setChild(a_idx, child_b);
-	this->setChild(b_idx, child_a);
-
-	// Notify
-	indexChanged(*this, *static_cast<ObjectItem*>(child_a), *static_cast<ObjectItem*>(child_b));
+	// Swap child indices and notify
+	auto idx = swapItems(path, oldIndex, newIndex, *this);
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[0])), *qitem_cast<ObjectItem*>(child(idx[1])));
 }
 
 

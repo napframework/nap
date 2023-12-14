@@ -463,7 +463,7 @@ void napkin::ResourcePanel::onIndexChanged(ObjectItem& parent, ObjectItem& itemA
 {
 	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
 	if (selected_it != nullptr && selected_it->parentItem() == &parent)
-		mTreeView.select(&itemA, false);
+		mTreeView.select(&itemB, false);
 }
 
 
