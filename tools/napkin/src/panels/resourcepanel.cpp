@@ -102,11 +102,18 @@ napkin::ResourcePanel::ResourcePanel()
 	auto& resources_item = mModel.getRootResourcesItem();
 	resources_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
+	connect(&resources_item, &RootResourcesItem::indexChanged, this, [this](GroupItem& parent, ObjectItem& itemA, ObjectItem& itemB)
+		{
+			this->onIndexChanged(parent, itemA, itemB);
+		});
 
 	auto& entities_item = mModel.getEntityResourcesItem();
 	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
-	connect(&entities_item, &EntityResourcesItem::indexChanged, this, &ResourcePanel::onIndexChanged);
+	connect(&entities_item, &EntityResourcesItem::indexChanged, this, [this](EntityItem& parent, ObjectItem& itemA, ObjectItem& itemB)
+		{ 
+			this->onIndexChanged(parent, itemA, itemB);
+		});
 
 	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
@@ -482,10 +489,10 @@ void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem&
 }
 
 
-void napkin::ResourcePanel::onIndexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB)
+void napkin::ResourcePanel::onIndexChanged(ObjectItem& parent, ObjectItem& itemA, ObjectItem& itemB)
 {
 	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
-	if (selected_it != nullptr && selected_it->parentItem() == &entity)
+	if (selected_it != nullptr && selected_it->parentItem() == &parent)
 		mTreeView.select(&itemA, false);
 }
 

@@ -59,6 +59,14 @@ namespace napkin
 		 */
 		void childAddedToGroup(GroupItem& group, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child in a group changes
+		 * @param group the parent group
+		 * @param itemA child item A moved to new index B
+		 * @param itemB child item B moved to old index A
+		 */
+		void indexChanged(GroupItem& group, ObjectItem& itemA, ObjectItem& itemB);
+
 	private:
 		/**
 		 * Called when an object has been added

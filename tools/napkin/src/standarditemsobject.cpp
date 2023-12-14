@@ -138,6 +138,7 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 		auto group_item = new GroupItem(static_cast<nap::IGroup&>(*obj));
 		this->appendRow({ group_item, new RTTITypeItem(obj->get_type()) });
 		connect(group_item, &GroupItem::childAdded, this, &RootResourcesItem::childAddedToGroup);
+		connect(group_item, &GroupItem::indexChanged, this, &RootResourcesItem::indexChanged);
 	}
 	else
 	{
@@ -642,6 +643,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(group, false)
 			assert(path.getPointee()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
 			GroupItem* group_item = new GroupItem(*rtti_cast<nap::IGroup>(path.getPointee()));
 			this->connect(group_item, &GroupItem::childAdded, this, &GroupItem::childAdded);
+			this->connect(group_item, &GroupItem::indexChanged, this, &GroupItem::indexChanged);
 			this->appendRow( { group_item, new RTTITypeItem(path.getPointee()->get_type()) });
 			return true;
 		}, 0);
