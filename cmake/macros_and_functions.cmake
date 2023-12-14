@@ -48,7 +48,7 @@ macro(bootstrap_environment)
     # proprietary APIs, etc. It's simply not in line with our policies and what we stand for.
     # Feel free to continue support for macOS on your end.
     if(APPLE)
-        message(DEPRECATION "macOS (as a target) is no longer in active development or supported")
+        message(FATAL_ERROR "macOS is no longer supported as a target operating system. Our development focus has shifted to ensure compatibility with other open platforms.")
         set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
     endif()
 
