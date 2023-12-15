@@ -89,7 +89,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &InspectorPanel::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
 	connect(&mModel, &InspectorModel::childAdded, this, &InspectorPanel::onChildAdded);
-	connect(&AppContext::get(), &AppContext::propertyIndexChanged, this, &InspectorPanel::onPropertyIndexChanged);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &InspectorPanel::onIndexSwapped);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -192,7 +192,7 @@ void napkin::InspectorPanel::expandTree(const QModelIndex& parent)
 }
 
 
-void napkin::InspectorPanel::onPropertyIndexChanged(const PropertyPath& prop, size_t fromIndex, size_t toIndex)
+void napkin::InspectorPanel::onIndexSwapped(const PropertyPath& prop, size_t fromIndex, size_t toIndex)
 {
 	// Check property
 	if (prop.getObject() != mPath.getObject())
@@ -269,7 +269,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		const auto& parent_property = parent_array->getPath();
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP), label, [parent_property, idx]()
 			{
-				AppContext::get().executeCommand(new ArrayMoveElementCommand(parent_property, idx, idx - 1));
+				AppContext::get().executeCommand(new ArraySwapElement(parent_property, idx, idx - 1));
 			});
 	});
 
@@ -296,7 +296,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		const auto& parent_property = parent_array->getPath();
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN), label, [parent_property, idx]()
 			{
-				AppContext::get().executeCommand(new ArrayMoveElementCommand(parent_property, idx, idx + 1));
+				AppContext::get().executeCommand(new ArraySwapElement(parent_property, idx, idx + 1));
 			});
 	});
 

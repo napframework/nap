@@ -342,16 +342,16 @@ namespace napkin
 		PropertyPath mNewPath = {};
 	};
 
-	class ArrayMoveElementCommand : public QUndoCommand
+	class ArraySwapElement : public QUndoCommand
 	{
 	public:
 		/**
-		 * Reorder an element within an array
+		 * Swap element within an array
 		 * @param array_prop The array that contains the element
 		 * @param fromIndex The index of the element to move
 		 * @param toIndex The index at which the element must be after the move
 		 */
-		ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex);
+		ArraySwapElement(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex);
 
 		void redo() override;
 		void undo() override;
@@ -359,8 +359,6 @@ namespace napkin
 		const PropertyPath& mPath; ///< The path representing the array
 		size_t mFromIndex; ///< The element index to move
 		size_t mToIndex; ///< The element index to move to
-		size_t mOldIndex; ///< The actual old index (may have been shifted)
-		size_t mNewIndex; ///< The actual new index (may have been shifted)
 	};
 
 	class ReplaceEmbeddedPointerCommand : public QUndoCommand

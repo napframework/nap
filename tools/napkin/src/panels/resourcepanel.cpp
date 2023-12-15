@@ -102,17 +102,17 @@ napkin::ResourcePanel::ResourcePanel()
 	auto& resources_item = mModel.getRootResourcesItem();
 	resources_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
-	connect(&resources_item, &RootResourcesItem::indexChanged, this, [this](GroupItem& parent, ObjectItem& itemA, ObjectItem& itemB)
+	connect(&resources_item, &RootResourcesItem::indexChanged, this, [this](GroupItem& parent, ObjectItem& item)
 		{
-			this->onIndexChanged(parent, itemA, itemB);
+			this->onIndexChanged(parent, item);
 		});
 
 	auto& entities_item = mModel.getEntityResourcesItem();
 	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
-	connect(&entities_item, &EntityResourcesItem::indexChanged, this, [this](EntityItem& parent, ObjectItem& itemA, ObjectItem& itemB)
+	connect(&entities_item, &EntityResourcesItem::indexChanged, this, [this](EntityItem& parent, ObjectItem& item)
 		{ 
-			this->onIndexChanged(parent, itemA, itemB);
+			this->onIndexChanged(parent, item);
 		});
 
 	createMenuCallbacks();
@@ -172,7 +172,7 @@ static void addMoveAction(const PropertyPath& container, nap::rtti::Object& obje
 		outMenu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP),
 			QString("Move '%1' up").arg(object.mID.c_str()), [container, index]()
 			{
-				AppContext::get().executeCommand(new ArrayMoveElementCommand(container, index, index-1));
+				AppContext::get().executeCommand(new ArraySwapElement(container, index, index-1));
 			});
 	}
 
@@ -182,7 +182,7 @@ static void addMoveAction(const PropertyPath& container, nap::rtti::Object& obje
 		outMenu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
 			QString("Move '%1' down").arg(object.mID.c_str()), [container, index]()
 			{
-				AppContext::get().executeCommand(new ArrayMoveElementCommand(container, index, index+1));
+				AppContext::get().executeCommand(new ArraySwapElement(container, index, index+1));
 			});
 	}
 }
@@ -459,11 +459,11 @@ void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem&
 }
 
 
-void napkin::ResourcePanel::onIndexChanged(ObjectItem& parent, ObjectItem& itemA, ObjectItem& itemB)
+void napkin::ResourcePanel::onIndexChanged(ObjectItem& parent, ObjectItem& item)
 {
 	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
 	if (selected_it != nullptr && selected_it->parentItem() == &parent)
-		mTreeView.select(&itemB, false);
+		mTreeView.select(&item, false);
 }
 
 

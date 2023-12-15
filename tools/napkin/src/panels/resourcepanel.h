@@ -151,7 +151,7 @@ namespace napkin
 		/**
 		 * Called when a child index changes
 		 */
-		void onIndexChanged(ObjectItem& parent, ObjectItem& itemA, ObjectItem& itemB);
+		void onIndexChanged(ObjectItem& parent, ObjectItem& item);
 
 		/**
 		 * Used to provide this view with custom menu items

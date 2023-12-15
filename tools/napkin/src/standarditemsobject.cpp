@@ -533,7 +533,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
-	connect(&ctx, &AppContext::propertyIndexChanged, this, &EntityItem::onIndexChanged);
+	connect(&ctx, &AppContext::arrayIndexSwapped, this, &EntityItem::onIndexSwapped);
 }
 
 
@@ -572,7 +572,7 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 }
 
 
-void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+void napkin::EntityItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
 {
 	// Only handle component index changes because sub-tree is rebuild when entity order changes
 	// TODO: properly handle child entity changes -> implementation below is optimized for it
@@ -581,7 +581,7 @@ void napkin::EntityItem::onIndexChanged(const PropertyPath& path, size_t oldInde
 
 	// Swap child items and notify
 	auto idx = swapItems(path, oldIndex, newIndex, *this);
-	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[0])), *qitem_cast<ObjectItem*>(child(idx[1])));
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[1])));
 }
 
 
@@ -597,9 +597,9 @@ void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 
 const std::string EntityItem::unambiguousName() const
 {
-	if (auto entityItem = qobject_cast<EntityItem*>(parentItem()))
+	if (auto parent_entity = qobject_cast<EntityItem*>(parentItem()))
 	{
-		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
+		return ObjectItem::unambiguousName() + ":" + std::to_string(parent_entity->nameIndex(*this));
 	}
 	return ObjectItem::unambiguousName();
 }
@@ -663,7 +663,7 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(group, false)
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
-	connect(&AppContext::get(), &AppContext::propertyIndexChanged, this, &GroupItem::onIndexChanged);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &GroupItem::onIndexSwapped);
 }
 
 
@@ -724,7 +724,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 }
 
 
-void napkin::GroupItem::onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+void napkin::GroupItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
 {
 	// Check if this group has changed
 	nap::IGroup& group = getGroup();
@@ -733,7 +733,7 @@ void napkin::GroupItem::onIndexChanged(const PropertyPath& path, size_t oldIndex
 
 	// Swap child indices and notify
 	auto idx = swapItems(path, oldIndex, newIndex, *this);
-	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[0])), *qitem_cast<ObjectItem*>(child(idx[1])));
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[1])));
 }
 
 

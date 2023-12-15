@@ -167,7 +167,7 @@ namespace napkin
 		/**
 		 * Called when the property index changes
 		 */
-		void onPropertyIndexChanged(const PropertyPath& prop, size_t fromIndex, size_t toIndex);
+		void onIndexSwapped(const PropertyPath& prop, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Called when an object has been removed

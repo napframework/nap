@@ -72,7 +72,7 @@ namespace napkin
 		/**
 		 * Called when indices swap
 		 */
-		void onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex);
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 
 		/**
 		 * Called when a new file was created.

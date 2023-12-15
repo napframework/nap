@@ -1017,7 +1017,7 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
+void Document::arraySwapElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
 	// Resolve property path
 	ResolvedPath resolved_path = path.resolve();
@@ -1032,8 +1032,7 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	array.set_value(toIndex, fr_value);
 	bool ok = resolved_path.setValue(array_value); assert(ok);
 	propertyValueChanged(path);
-	propertyIndexChanged(path, fromIndex, toIndex);
-	return toIndex;
+	arrayIndexSwapped(path, fromIndex, toIndex);
 }
 
 

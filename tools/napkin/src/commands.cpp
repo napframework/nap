@@ -439,23 +439,21 @@ void napkin::GroupReparentCommand::undo()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
+ArraySwapElement::ArraySwapElement(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
 		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex), QUndoCommand()
 {
 	setText(QString("Reorder '%1' from %2 to %3").arg(QString::fromStdString(array_prop.toString()),
 													  QString::number(fromIndex), QString::number(toIndex)));
 }
 
-void ArrayMoveElementCommand::redo()
+void ArraySwapElement::redo()
 {
-	// Also store indexes that may have shifted due to the operation so we can undo
-	mOldIndex = mFromIndex;
-	mNewIndex = AppContext::get().getDocument()->arrayMoveElement(mPath, mFromIndex, mToIndex);
+	AppContext::get().getDocument()->arraySwapElement(mPath, mFromIndex, mToIndex);
 }
 
-void ArrayMoveElementCommand::undo()
+void ArraySwapElement::undo()
 {
-	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
+	AppContext::get().getDocument()->arraySwapElement(mPath, mToIndex, mFromIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

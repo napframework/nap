@@ -442,7 +442,7 @@ namespace napkin
 		 * @param fromIndex the original index
 		 * @param toIndex the new index
 		 */
-		void propertyIndexChanged(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
+		void arrayIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread

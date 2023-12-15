@@ -62,10 +62,9 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child in a group changes
 		 * @param group the parent group
-		 * @param itemA old index item
-		 * @param itemB new index item
+		 * @param item child item
 		 */
-		void indexChanged(GroupItem& group, ObjectItem& itemA, ObjectItem& itemB);
+		void indexChanged(GroupItem& group, ObjectItem& item);
 
 	private:
 		/**
@@ -129,10 +128,9 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (component or entity) changes
 		 * @param entity the parent entity
-		 * @param itemA old index item
-		 * @param itemB new index item
+		 * @param item child item
 		 */
-		void indexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB);
+		void indexChanged(EntityItem& entity, ObjectItem& item);
 
 	private:
 		/**
@@ -291,16 +289,15 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (component or entity) changes
 		 * @param entity the parent entity
-		 * @param itemA old index item
-		 * @param itemB new index item
+		 * @param item child item
 		 */
-		void indexChanged(EntityItem& entity, ObjectItem& itemA, ObjectItem& itemB);
+		void indexChanged(EntityItem& entity, ObjectItem& item);
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 		void onPropertyValueChanged(const PropertyPath& path);
-		void onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex);
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 		void populate();
 
 		PropertyPath mCompPropertyPath;
@@ -361,10 +358,9 @@ namespace napkin
 		/**
 		 * Signal that is emitted when the index of a child (resource or group) changes
 		 * @param entity the parent entity
-		 * @param itemA old index item
-		 * @param itemB new index item
+		 * @param item child item
 		 */
-		void indexChanged(GroupItem& entity, ObjectItem& itemA, ObjectItem& itemB);
+		void indexChanged(GroupItem& entity, ObjectItem& item);
 
 	private:
 		/**
@@ -375,7 +371,7 @@ namespace napkin
 		/**
 		 * Called when the index of a child in an array changes
 		 */
-		void onIndexChanged(const PropertyPath& path, size_t oldIndex, size_t newIndex);
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 	};
 
 	//////////////////////////////////////////////////////////////////////////
