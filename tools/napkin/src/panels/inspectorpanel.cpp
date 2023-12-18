@@ -15,6 +15,7 @@
 #include <QApplication>
 #include <QMimeData>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include <utility/fileutils.h>
 #include <napqt/filterpopup.h>
@@ -391,7 +392,22 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			QString label = QString("Remove '%1'").arg(pointee->mID.c_str());
 			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [path]()
 				{
-					AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
+					bool clear = true;
+					if (nap::rtti::hasFlag(path.getProperty(), EPropertyMetaData::Required))
+					{
+						QMessageBox msg(AppContext::get().getMainWindow());
+						msg.setWindowTitle("Required property");
+						msg.setText("You are clearing a required property, proceed?");
+						msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+						msg.setDefaultButton(QMessageBox::Cancel);
+						msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
+						clear = msg.exec() == QMessageBox::Yes;
+					}
+
+					if (clear)
+					{
+						AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
+					}
 				});
 		}
 	});
