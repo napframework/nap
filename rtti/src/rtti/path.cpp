@@ -213,31 +213,44 @@ namespace nap
 			if (isEmpty())
 				return false;
 
+			rtti::TypeInfo value_type = getType();
+			value_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+
 			// We keep track of the value we want to set on the current element of the path.
-			// We start with the value the user provided.
-
-			const rtti::TypeInfo value_type = getType();
+			// We start with the value the user provided and backtrack from there.
+			// We explicitly check and set a nullptr -> nullptr variant conversion not working or available(?).
 			rtti::Variant value_to_set = value;
-
-			if (value_type != value_to_set.get_type() &&
-			    !value_to_set.convert(value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type))
-				return false;
-
 			for (int index = mLength - 1; index >= 0; --index)
 			{
-				const ResolvedRTTIPathElement& element = mElements[index];
-
 				// If this is the root element, directly set the value on the object
+				const ResolvedRTTIPathElement& element = mElements[index];
 				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
 				{
-					if (!element.Root.Property.set_value(element.Root.Instance, value_to_set))
-						return false;
+					if (value_type.is_pointer() && value_to_set == nullptr)
+					{
+						if (!element.Root.Property.set_value(element.Root.Instance, nullptr))
+							return false;
+					}
+					else
+					{
+						if (!element.Root.Property.set_value(element.Root.Instance, value_to_set))
+							return false;
+					}
 				}
+				// Attribute element: set the value on the *copy* of the object (the variant)
 				else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 				{
-					// Attribute element: set the value on the *copy* of the object (the variant)
-					if (!element.Attribute.Property.set_value(element.Attribute.Variant, value_to_set))
-						return false;
+					if (value_type.is_pointer() && value_to_set == nullptr)
+					{
+						if (!element.Attribute.Property.set_value(element.Attribute.Variant, nullptr))
+							return false;
+					}
+					else
+					{
+						// Attribute element: set the value on the *copy* of the object (the variant)
+						if (!element.Attribute.Property.set_value(element.Attribute.Variant, value_to_set))
+							return false;
+					}
 
 					// Now that we've updated our copy, we need to copy our copy to the original object.
 					// So we update value_to_set for the next iteration

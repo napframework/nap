@@ -32,8 +32,7 @@ QVariant InstPropAttribItem::data(int role) const
 		if (override_variant.get_type().is_wrapper())
 		{
 			auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
-			assert(obj != nullptr);
-			value = QString::fromStdString(obj->mID);
+			value = obj != nullptr ? QString::fromStdString(obj->mID) : "NULL";
 		}
 		else
 		{

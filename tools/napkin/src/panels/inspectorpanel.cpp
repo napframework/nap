@@ -364,7 +364,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			});
 	});
 
-	// Pointer
+	// Pointer -> select resource
 	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<PointerItem*>(&item);
@@ -376,6 +376,22 @@ void napkin::InspectorPanel::createMenuCallbacks()
 				{
 					QList<nap::rtti::Object*> objects = { pointee };
 					AppContext::get().selectionChanged(objects);
+				});
+		}
+	});
+
+	// Pointer -> clear link
+	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
+	{
+		auto pointer_item = static_cast<PointerItem*>(&item);
+		const auto& path = pointer_item->getPath();
+		auto* pointee = path.getPointee();
+		if (pointee != nullptr)
+		{
+			QString label = QString("Remove '%1'").arg(pointee->mID.c_str());
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [path]()
+				{
+					AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
 				});
 		}
 	});
