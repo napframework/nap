@@ -40,6 +40,7 @@ namespace nap
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
 		std::vector<ResourcePtr<BufferBinding>>		mBuffers;										///< Property: "Buffers" buffer bindings to override
+		std::vector<ResourcePtr<ShaderConstant>>	mConstants;										///< Property: "Constants" shader constants to override
 
 		/**
 		 * @return material property
@@ -69,9 +70,9 @@ namespace nap
 		MaterialInstanceResource() :
 			BaseMaterialInstanceResource(materialinstanceresource::materialr)	{}
 
-		ResourcePtr<Material>							mMaterial;										///< Property: "Material" source material
-		EBlendMode										mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
-		EDepthMode										mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
+		ResourcePtr<Material>						mMaterial;											///< Property: "Material" Source material
+		EBlendMode									mBlendMode = EBlendMode::NotSet;					///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
+		EDepthMode									mDepthMode = EDepthMode::NotSet;					///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
 	};
 
 	/**
@@ -159,6 +160,15 @@ namespace nap
 		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name); }
 
 		/**
+		 * Creates a nap::SamplerInstance for this material instance from a resource.
+		 * The sampler returned is only applicable to this instance.
+		 *
+		 * @param name: the name of the sampler declared in the shader.
+		 * @return nap::SamplerInstance, nullptr if not available.
+		 */
+		SamplerInstance* getOrCreateSamplerFromResource(const Sampler& resource, utility::ErrorState& errorState);
+
+		/**
 		 * @return base material that this instance is overriding
 		 */
 		BaseMaterial* getMaterial()											{ assert(mMaterial != nullptr); return mMaterial; }
@@ -167,6 +177,19 @@ namespace nap
 		 * @return base material that this instance is overriding
 		 */
 		const BaseMaterial* getMaterial() const								{ assert(mMaterial != nullptr); return mMaterial; }
+
+		/**
+		 * Creates specialization constant info structure for pipeline creation.
+		 * @param stage the shader stage to retrieve specialization constant info for.
+		 * @param outInfo the specialization constant info structure, set if this function returns true.
+		 * @return whether any specialization constant overrides are defined in this material.
+		 */
+		bool getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const;
+
+		/**
+		 * @return constant hash
+		 */
+		ShaderConstantHash getConstantHash() const							{ return mConstantHash; }
 
 		/**
 		 * This must be called before each draw. It will push the current uniform and sampler data into memory
@@ -189,7 +212,7 @@ namespace nap
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
 		void onUniformCreated();
-		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
+		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance, int imageArrayIndex);
 		void onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
 
 		void updateBuffers(const DescriptorSet& descriptorSet);
@@ -197,7 +220,9 @@ namespace nap
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
-		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
+		void addImageInfo(const Texture& texture, VkSampler sampler);
+
+		bool initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
@@ -216,6 +241,10 @@ namespace nap
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerDescriptors;					// List of sampler images, used to update Descriptor Sets.
+
+		using ShaderStageConstantMap = std::map<VkShaderStageFlagBits, ShaderConstantMap>;
+		ShaderStageConstantMap					mShaderStageConstantMap;				// Reference of all shader constants per shader stage, generated on materialinstance init
+		ShaderConstantHash						mConstantHash;							// Shader constant hash used to create a pipeline key
 
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
 	};
@@ -331,8 +360,14 @@ namespace nap
 		 */
 		const ComputeMaterial& getMaterial() const										{ return static_cast<const ComputeMaterial&>(*BaseMaterialInstance::getMaterial()); }
 
+		/**
+		 * @return the workgroup size
+		 */
+		const glm::uvec3& getWorkGroupSize() const										{ return mWorkGroupSize; }
+
 	private:
 		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
+		glm::uvec3								mWorkGroupSize = { 1, 1, 1 };
 	};
 
 

@@ -9,6 +9,7 @@
 #include "renderservice.h"
 #include "vk_mem_alloc.h"
 #include "renderutils.h"
+#include "imagedata.h"
 
 // External includes
 #include <nap/logger.h>
@@ -18,6 +19,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
 	RTTI_PROPERTY(nap::material::uniforms,		&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::samplers,		&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::buffers,		&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::constants,		&nap::MaterialInstanceResource::mConstants,					nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
@@ -68,6 +70,17 @@ namespace nap
 		for (auto& sampler : samplers)
 			if (sampler->mName == declaration.mName)
 				return sampler.get();
+
+		return nullptr;
+	}
+
+
+	template<class T>
+	const ShaderConstant* findConstantResource(const std::vector<T>& constants, const ShaderConstantDeclaration& declaration)
+	{
+		for (auto& constant : constants)
+			if (constant->mName == declaration.mName)
+				return constant.get();
 
 		return nullptr;
 	}
@@ -244,13 +257,39 @@ namespace nap
 		{
 			if (declaration.mName == name)
 			{
-				bool is_array = declaration.mNumArrayElements > 1;
-
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+				if (declaration.mIsArray)
+				{
+					switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					case SamplerDeclaration::EType::Type_Cube:
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					default:
+						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
+					}
+				}
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1));
+				{
+					switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					case SamplerDeclaration::EType::Type_Cube:
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, nullptr,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					default:
+						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
+					}
+				}
 
 				utility::ErrorState error_state;
 				bool initialized = sampler_instance_override->init(error_state);
@@ -259,8 +298,89 @@ namespace nap
 				result = &addSamplerInstance(std::move(sampler_instance_override));
 				break;
 			}
-			image_start_index += declaration.mNumArrayElements;
+			image_start_index += declaration.mNumElements;
 		}
+		return result;
+	}
+
+
+	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerFromResource(const Sampler& resource, utility::ErrorState& errorState)
+	{
+		// See if we have an override in MaterialInstance. If so, we can return it
+		SamplerInstance* existing_sampler = findSampler(resource.mName);
+		if (existing_sampler != nullptr)
+			return existing_sampler;
+
+		SamplerInstance* result = nullptr;
+
+		const BaseShader& shader = getMaterial()->getShader();
+		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
+		int image_start_index = 0;
+		for (const SamplerDeclaration& declaration : sampler_declarations)
+		{
+			if (declaration.mName == resource.mName)
+			{
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (declaration.mIsArray)
+				{
+                    switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+					{
+						const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(&resource);
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler_2d_array,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					case SamplerDeclaration::EType::Type_Cube:
+					{
+						const auto* sampler_cube_array = static_cast<const SamplerCubeArray*>(&resource);
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, sampler_cube_array,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					default:
+						errorState.fail("Unsupported sampler declaration type");
+						return nullptr;
+					}
+				}
+				else
+				{
+					switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+					{
+						const auto* sampler_2d = static_cast<const Sampler2D*>(&resource);
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, sampler_2d,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					case SamplerDeclaration::EType::Type_Cube:
+					{
+						const auto* sampler_cube = static_cast<const SamplerCube*>(&resource);
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, sampler_cube,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					default:
+						errorState.fail("Unsupported sampler declaration type");
+						return nullptr;
+					}
+				}
+
+				utility::ErrorState error_state;
+				bool initialized = sampler_instance_override->init(error_state);
+				assert(initialized);
+
+				result = &addSamplerInstance(std::move(sampler_instance_override));
+				break;
+			}
+			image_start_index += declaration.mNumElements;
+		}
+
+		if (result == nullptr)
+			errorState.fail("Sampler declaration with name '%s' not found in material '%s'", resource.mName.c_str(), getMaterial()->mID.c_str());
+
 		return result;
 	}
 
@@ -278,31 +398,62 @@ namespace nap
 	// remains static after init, no matter what textures we use, because it is pointing to indices into the mSamplerImages array.
 	// What we need to do here is update the contents of the mSamplerImages array so that it points to correct information
 	// for the texture change. This way, when update() is called, VkUpdateDescriptorSets will use the correct image info.
-	void BaseMaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance)
+	void BaseMaterialInstance::onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance, int imageArrayIndex)
 	{
 		VkSampler vk_sampler = samplerInstance.getVulkanSampler();
-		if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
+
+		if (samplerInstance.get_type().is_derived_from(RTTI_OF(SamplerArrayInstance)))
 		{
-			Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
+			int sampler_descriptor_index = imageStartIndex + imageArrayIndex;
+			if (mSamplerDescriptors.size() < sampler_descriptor_index)
+				mSamplerDescriptors.emplace_back();
 
-			for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
+			VkDescriptorImageInfo& image_info = mSamplerDescriptors[sampler_descriptor_index];
+			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			image_info.sampler = vk_sampler;
+
+			if (samplerInstance.get_type() == RTTI_OF(Sampler2DArrayInstance))
 			{
-				const Texture2D& texture = sampler_2d_array->getTexture(index);
+				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(&samplerInstance);
+				assert(imageArrayIndex < sampler_2d_array->getNumElements());
 
-				VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex + index];
-				imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-				imageInfo.imageView = texture.getHandle().getView();
-				imageInfo.sampler = vk_sampler;
+				const Texture2D& texture = sampler_2d_array->getTexture(imageArrayIndex);
+				image_info.imageView = texture.getHandle().getView();
+
+			}
+			else if (samplerInstance.get_type() == RTTI_OF(SamplerCubeArrayInstance))
+			{
+				SamplerCubeArrayInstance* sampler_cube_array = (SamplerCubeArrayInstance*)(&samplerInstance);
+				assert(imageArrayIndex < sampler_cube_array->getNumElements());
+
+				const TextureCube& texture = sampler_cube_array->getTexture(imageArrayIndex);
+				image_info.imageView = texture.getHandle().getView();
+			}
+			else
+			{
+				NAP_ASSERT_MSG(false, "Unsupported sampler type");
 			}
 		}
 		else
 		{
-			Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
+			VkDescriptorImageInfo& image_info = mSamplerDescriptors[imageStartIndex];
+			image_info.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+			image_info.sampler = vk_sampler;
 
-			VkDescriptorImageInfo& imageInfo = mSamplerDescriptors[imageStartIndex];
-			imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-			imageInfo.imageView = sampler_2d->getTexture().getHandle().getView();
-			imageInfo.sampler = vk_sampler;
+			if (samplerInstance.get_type() == RTTI_OF(Sampler2DInstance))
+			{
+				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(&samplerInstance);
+				image_info.imageView = sampler_2d->getTexture().getHandle().getView();
+			}
+			else if (samplerInstance.get_type() == RTTI_OF(SamplerCubeInstance))
+			{
+				SamplerCubeInstance* sampler_cube = (SamplerCubeInstance*)(&samplerInstance);
+				image_info.imageView = sampler_cube->getTexture().getHandle().getView();
+			}
+			else
+			{
+				NAP_ASSERT_MSG(false, "Unsupported sampler type");
+			}
 		}
 	}
 
@@ -382,11 +533,11 @@ namespace nap
 	}
 
 
-	void BaseMaterialInstance::addImageInfo(const Texture2D& texture2D, VkSampler sampler)
+	void BaseMaterialInstance::addImageInfo(const Texture& texture, VkSampler sampler)
 	{
 		VkDescriptorImageInfo imageInfo = {};
 		imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-		imageInfo.imageView = texture2D.getHandle().getView();
+		imageInfo.imageView = texture.getHandle().getView();
 		imageInfo.sampler = sampler;
 
 		mSamplerDescriptors.push_back(imageInfo);
@@ -460,12 +611,10 @@ namespace nap
 
 		int num_sampler_images = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
-			num_sampler_images += declaration.mNumArrayElements;
+			num_sampler_images += declaration.mNumElements;
 
 		mSamplerWriteDescriptorSets.resize(sampler_declarations.size());
 		mSamplerDescriptors.reserve(num_sampler_images);	// We reserve to ensure that pointers remain consistent during the iteration
-
-		Texture2D& emptyTexture = mRenderService->getEmptyTexture();
 
 		// Samplers are initialized in two steps (somewhat similar to how uniforms are setup):
 		// 1) We create sampler instances based on sampler declarations for all properties in MaterialInstance (so, the ones that are overridden).
@@ -489,7 +638,6 @@ namespace nap
 		for (int sampler_index = 0; sampler_index < sampler_declarations.size(); ++sampler_index)
 		{
 			const SamplerDeclaration& declaration = sampler_declarations[sampler_index];
-			bool is_array = declaration.mNumArrayElements > 1;
 
 			// Check if the sampler is set as override in the MaterialInstance
 			const Sampler* sampler = findSamplerResource(instanceResource.mSamplers, declaration);
@@ -498,10 +646,48 @@ namespace nap
 			{
 				// Sampler is overridden, make an SamplerInstance object
 				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (is_array)
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
+				if (declaration.mIsArray)
+				{
+                    switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+					{
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, static_cast<const Sampler2DArray*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					case SamplerDeclaration::EType::Type_Cube:
+					{
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, static_cast<const SamplerCubeArray*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					default:
+						errorState.fail("Unsupported sampler declaration type");
+						return false;
+					}
+				}
 				else
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler, std::bind(&MaterialInstance::onSamplerChanged, this, (int)mSamplerDescriptors.size(), std::placeholders::_1));
+				{
+					switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+					{
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, static_cast<const Sampler2D*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					case SamplerDeclaration::EType::Type_Cube:
+					{
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, static_cast<const SamplerCube*>(sampler),
+							std::bind(&MaterialInstance::onSamplerChanged, this, static_cast<int>(mSamplerDescriptors.size()), std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					default:
+						errorState.fail("Unsupported sampler declaration type");
+						return false;
+					}
+				}
 
 				if (!sampler_instance_override->init(errorState))
 					return false;
@@ -518,28 +704,59 @@ namespace nap
 			// Store the offset into the mSamplerImages array. This can either be the first index of an array, or just the element itself if it's not
 			size_t sampler_descriptor_start_index = mSamplerDescriptors.size();
 			VkSampler vk_sampler = sampler_instance->getVulkanSampler();
-			if (is_array)
+			if (declaration.mIsArray)
 			{
 				// Create all VkDescriptorImageInfo for all elements in the array
-				Sampler2DArrayInstance* sampler_2d_array = (Sampler2DArrayInstance*)(sampler_instance);
-
-				for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
+				switch(declaration.mType)
 				{
-					if (sampler_2d_array->hasTexture(index))
-						addImageInfo(sampler_2d_array->getTexture(index), vk_sampler);
-					else
-						addImageInfo(emptyTexture, vk_sampler);
+				case SamplerDeclaration::EType::Type_2D:
+				{
+					Sampler2DArrayInstance* sampler_2d_array = static_cast<Sampler2DArrayInstance*>(sampler_instance);
+					for (int index = 0; index < sampler_2d_array->getNumElements(); ++index)
+					{
+						const auto& tex = sampler_2d_array->hasTexture(index) ? sampler_2d_array->getTexture(index) : mRenderService->getEmptyTexture2D();
+						addImageInfo(tex, vk_sampler);
+					}
+					break;
+				}
+				case SamplerDeclaration::EType::Type_Cube:
+				{
+					SamplerCubeArrayInstance* sampler_cube_array = static_cast<SamplerCubeArrayInstance*>(sampler_instance);
+					for (int index = 0; index < sampler_cube_array->getNumElements(); ++index)
+					{
+						const auto& tex = sampler_cube_array->hasTexture(index) ? sampler_cube_array->getTexture(index) : mRenderService->getEmptyTextureCube();
+						addImageInfo(tex, vk_sampler);
+					}
+					break;
+				}
+				default:
+					errorState.fail("Unsupported sampler declaration type");
+					return false;
 				}
 			}
 			else
 			{
 				// Create a single VkDescriptorImageInfo for just this element
-				Sampler2DInstance* sampler_2d = (Sampler2DInstance*)(sampler_instance);
-
-				if (sampler_2d->hasTexture())
-					addImageInfo(sampler_2d->getTexture(), vk_sampler);
-				else
-					addImageInfo(emptyTexture, vk_sampler);
+				switch (declaration.mType)
+				{
+				case SamplerDeclaration::EType::Type_2D:
+				{
+					Sampler2DInstance* sampler_2d = static_cast<Sampler2DInstance*>(sampler_instance);
+					const auto& tex = sampler_2d->hasTexture() ? sampler_2d->getTexture() : mRenderService->getEmptyTexture2D();
+					addImageInfo(tex, vk_sampler);
+					break;
+				}
+				case SamplerDeclaration::EType::Type_Cube:
+				{
+					SamplerCubeInstance* sampler_cube = static_cast<SamplerCubeInstance*>(sampler_instance);
+					const auto& tex = sampler_cube->hasTexture() ? sampler_cube->getTexture() : mRenderService->getEmptyTextureCube();
+					addImageInfo(tex, vk_sampler);
+					break;
+				}
+				default:
+					errorState.fail("Unsupported sampler type");
+					return false;
+				}
 			}
 
 			// Create the write descriptor set. This set points to either a single element for non-arrays, or a list of contiguous elements for arrays.
@@ -551,6 +768,92 @@ namespace nap
 			write_descriptor_set.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			write_descriptor_set.descriptorCount = mSamplerDescriptors.size() - sampler_descriptor_start_index;
 			write_descriptor_set.pImageInfo = mSamplerDescriptors.data() + sampler_descriptor_start_index;
+		}
+
+		return true;
+	}
+
+
+	bool BaseMaterialInstance::initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState)
+	{
+		BaseMaterial* material = getMaterial();
+		const auto& declarations = material->getShader().getConstantDeclarations();
+
+		for (const auto& declaration : declarations)
+		{
+			// Check if the constant is set as override in the MaterialInstanceResource
+			const ShaderConstant* constant = findConstantResource(resource.mConstants, declaration);
+			ShaderConstantInstance* constant_instance = nullptr;
+			if (constant != nullptr)
+			{
+				// Shader Constant is overridden, create a new ShaderConstantInstance object
+				auto constant_instance_override = std::make_unique<ShaderConstantInstance>(declaration, constant);
+				constant_instance = &addConstantInstance(std::move(constant_instance_override));
+			}
+			else
+			{
+				constant_instance = material->findConstant(declaration.mName);
+			}
+
+			// If a constant is overriden
+			if (constant_instance != nullptr)
+			{		
+				auto it = mShaderStageConstantMap.find(constant_instance->mDeclaration.mStage);
+				if (it != mShaderStageConstantMap.end())
+				{
+					// Insert entry in the constant map associated with the specified stage
+					it->second.insert({ constant_instance->mDeclaration.mConstantID, constant_instance->mValue });
+				}
+				else
+				{
+					// Create new map for the specified stage and insert entry
+					ShaderConstantMap const_map = { { constant_instance->mDeclaration.mConstantID, constant_instance->mValue } };
+					mShaderStageConstantMap.insert({ constant_instance->mDeclaration.mStage, std::move(const_map) });
+				}
+			}
+		}
+
+		// Recompute the shader constant hash used to create a pipeline key
+		mConstantHash = 0;
+		for (const auto& entry : mShaderStageConstantMap)
+		{
+			auto stage = entry.first;
+			const auto& constant_map = entry.second;
+			for (const auto& constant : constant_map)
+			{
+				const auto& value = constant.second;
+				mConstantHash ^= std::hash<uint>{}(value);
+			}
+		}
+		
+		return true;
+	}
+
+
+	bool BaseMaterialInstance::getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const
+	{
+		const auto it = mShaderStageConstantMap.find(stage);
+		if (it == mShaderStageConstantMap.end())
+			return false;
+
+		const auto& constant_map = it->second;
+		for (uint i = 0; i < constant_map.size(); i++)
+		{
+			const auto it = constant_map.find(i);
+			if (it == constant_map.end())
+			{
+				nap::Logger::error("%s: Specialization Constant IDs are not in a sequence starting from 0", getMaterial()->getShader().mID.c_str());
+				return false;
+			}
+
+			{
+				VkSpecializationMapEntry entry = {};
+				entry.constantID = (*it).first;
+				entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
+				entry.size = sizeof(uint);
+				outInfo.mEntries.emplace_back(std::move(entry));
+			}
+			outInfo.mData.emplace_back((*it).second);
 		}
 
 		return true;
@@ -633,6 +936,9 @@ namespace nap
 			return false;
 
 		if (!initSamplers(instanceResource, errorState))
+			return false;
+
+		if (!initConstants(instanceResource, errorState))
 			return false;
 
 		// We get/create an allocator that is compatible with the layout of the shader that this material is bound to. Practically this
@@ -738,6 +1044,23 @@ namespace nap
 		mResource = &resource;
 		if (!initInternal(renderService,*resource.mComputeMaterial, resource, errorState))
 			return false;
+
+		// Set work group size
+		mWorkGroupSize = getMaterial().getWorkGroupSize();
+
+		// Set any work group size overrides
+		const auto& override_map = getMaterial().getShader().getWorkGroupSizeOverrides();
+		for (const auto& entry : override_map)
+		{
+			assert(entry.first <= mWorkGroupSize.length());
+			auto* constant = findConstant(entry.second);
+			if (constant == nullptr)
+				constant = getMaterial().findConstant(entry.second);
+
+			if (constant != nullptr)
+				mWorkGroupSize[entry.first] = constant->mValue;
+		}
+
 		return true;
 	}
 }

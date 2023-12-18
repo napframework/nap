@@ -40,6 +40,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial)
 	RTTI_PROPERTY(nap::material::uniforms,		&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::samplers,		&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::material::buffers,		&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY(nap::material::constants,		&nap::BaseMaterial::mConstants,				nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
@@ -97,10 +98,10 @@ namespace nap
 		mShader = &shader;
 
 		// Uniforms
-		const std::vector<BufferObjectDeclaration>& ubo_declarations = shader.getUBODeclarations();
+		const auto& ubo_declarations = shader.getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
-			const UniformStruct* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
+			const auto* struct_resource = rtti_cast<const UniformStruct>(findUniformStructMember(mUniforms, ubo_declaration));
 
 			UniformStructInstance& root_struct = createUniformRootStruct(ubo_declaration, UniformCreatedCallback());
 			if (!root_struct.addUniformRecursive(ubo_declaration, struct_resource, UniformCreatedCallback(), true, errorState))
@@ -108,8 +109,8 @@ namespace nap
 		}
 
 		// Bindings
-		const std::vector<BufferObjectDeclaration>& ssbo_declarations = shader.getSSBODeclarations();
-		for (const BufferObjectDeclaration& declaration : ssbo_declarations)
+		const auto& ssbo_declarations = shader.getSSBODeclarations();
+		for (const auto& declaration : ssbo_declarations)
 		{
 			std::unique_ptr<BufferBindingInstance> binding_instance;
 			for (auto& binding : mBuffers)
@@ -129,13 +130,12 @@ namespace nap
 		}
 
 		// Samplers
-		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
-		for (const SamplerDeclaration& declaration : sampler_declarations)
+		const auto& sampler_declarations = shader.getSamplerDeclarations();
+		for (const auto& declaration : sampler_declarations)
 		{
-			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D, "Non-2D samplers are not supported"))
+			if (!errorState.check(declaration.mType == SamplerDeclaration::EType::Type_2D || declaration.mType == SamplerDeclaration::EType::Type_Cube, "Only 2D or Cube samplers are currently supported"))
 				return false;
 
-			bool is_array = declaration.mNumArrayElements > 1;
 			std::unique_ptr<SamplerInstance> sampler_instance;
 			for (auto& sampler : mSamplers)
 			{
@@ -143,11 +143,11 @@ namespace nap
 				{
 					bool target_is_array = sampler->get_type().is_derived_from<SamplerArray>();
 
-					if (!errorState.check(is_array == target_is_array, "Sampler '%s' does not match array type of sampler in shader", sampler->mName.c_str()))
+					if (!errorState.check(declaration.mIsArray == target_is_array, "Sampler '%s' does not match array type of sampler in shader", sampler->mName.c_str()))
 						return false;
 
-					if (is_array)
-						sampler_instance = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler.get(), SamplerChangedCallback());
+					if (declaration.mIsArray)
+                        sampler_instance = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, (Sampler2DArray*)sampler.get(), SamplerChangedCallback());
 					else
 						sampler_instance = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, (Sampler2D*)sampler.get(), SamplerChangedCallback());
 				}
@@ -155,9 +155,9 @@ namespace nap
 
 			if (sampler_instance == nullptr)
 			{
-				if (is_array)
-					sampler_instance = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, SamplerChangedCallback());
-				else
+				if (declaration.mIsArray)
+                    sampler_instance = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr, SamplerChangedCallback());
+                else
 					sampler_instance = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr, SamplerChangedCallback());
 			}
 
@@ -167,8 +167,28 @@ namespace nap
 			addSamplerInstance(std::move(sampler_instance));
 		}
 
+		// Constants
+		const auto& constant_declarations = shader.getConstantDeclarations();
+		for (const auto& declaration : constant_declarations)
+		{
+			std::unique_ptr<ShaderConstantInstance> constant_instance;
+			for (const auto& constant : mConstants)
+			{
+				if (constant->mName == declaration.mName)
+				{
+					constant_instance = std::make_unique<ShaderConstantInstance>(declaration, constant.get());
+					break;
+				}
+			}
+			if (constant_instance == nullptr)
+				constant_instance = std::make_unique<ShaderConstantInstance>(declaration, nullptr);
+
+			addConstantInstance(std::move(constant_instance));
+		}
+
 		return true;
 	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Material
@@ -240,11 +260,28 @@ namespace nap
 	{
 	}
 
+
 	bool ComputeMaterial::init(utility::ErrorState& errorState)
 	{
 		if (!errorState.check(mShader != nullptr, "Shader not set in material %s", mID.c_str()))
 			return false;
 
-		return rebuild(*mShader, errorState);
+		if (!rebuild(*mShader, errorState))
+			return false;
+
+		// Set work group size
+		mWorkGroupSize = getShader().getWorkGroupSize();
+
+		// Set any work group size overrides
+		const auto& override_map = getShader().getWorkGroupSizeOverrides();
+		for (const auto& entry : override_map)
+		{
+			assert(entry.first <= mWorkGroupSize.length());
+			auto* constant = findConstant(entry.second);
+			if (constant != nullptr)
+				mWorkGroupSize[entry.first] = constant->mValue;
+		}
+
+		return true;
 	}
 }

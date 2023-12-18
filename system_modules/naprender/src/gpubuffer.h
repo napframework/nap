@@ -8,6 +8,7 @@
 #include "fillpolicy.h"
 #include "formatutils.h"
 #include "renderutils.h"
+#include "bufferdata.h"
 
 // External Includes
 #include <nap/resourceptr.h>
@@ -118,14 +119,14 @@ namespace nap
 		/**
 		 * @return the buffer usage flags.
 		 */
-		virtual VkBufferUsageFlags getBufferUsageFlags() const { return mUsageFlags; }
+		virtual VkBufferUsageFlags getBufferUsageFlags() const		{ return mUsageFlags; }
 
 		/**
 		 * Ensures the given buffer usage flags are applied when allocating and creating the buffer,
 		 * next to the flags derived from the 'Usage' property. Call this function before allocation.
 		 * @param usage buffer usage flags required on allocation
 		 */
-		void ensureUsage(VkBufferUsageFlags usage) { mUsageFlags |= usage; }
+		void ensureUsage(VkBufferUsageFlags usage)					{ mUsageFlags |= usage; }
 
 		/**
 		 * Implemented by derived classes
@@ -188,7 +189,7 @@ namespace nap
 		bool setDataInternalStatic(const void* data, size_t size, utility::ErrorState& errorState);
 
 		// Called when usage = dynamic write
-		bool setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState);
+		bool setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState);
 
 		// Uploads data from the staging buffer into GPU buffer. Automatically called by the render service at the appropriate time.
 		// Only occurs when 'usage' = 'static'. Dynamic data shares GPU / CPU memory and is updated immediately.
@@ -207,7 +208,7 @@ namespace nap
 		void clearDownloads();
 
 		std::vector<BufferReadCallback>	mReadCallbacks;			///< Number of callbacks based on number of frames in flight
-		VkBufferUsageFlags mUsageFlags = 0;						///< Buffer usage flags that are shared over host (staging) and device (gpu) buffers
+		VkBufferUsageFlags mUsageFlags = 0;						///< Buffer usage flags for device (gpu) buffers
 	};
 
 
@@ -385,7 +386,7 @@ namespace nap
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
-	class VertexBuffer final : public TypedGPUBufferNumeric<T>
+	class VertexBuffer : public TypedGPUBufferNumeric<T>
 	{
 		RTTI_ENABLE(TypedGPUBufferNumeric<T>)
 	public:
@@ -439,7 +440,7 @@ namespace nap
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
-	class NAPAPI IndexBuffer final : public TypedGPUBufferNumeric<uint>
+	class NAPAPI IndexBuffer : public TypedGPUBufferNumeric<uint>
 	{
 		RTTI_ENABLE(TypedGPUBufferNumeric<uint>)
 	public:

@@ -28,6 +28,7 @@ namespace nap
 		constexpr const char* uniforms	= "Uniforms";
 		constexpr const char* samplers	= "Samplers";
 		constexpr const char* buffers	= "Buffers";
+		constexpr const char* constants = "Constants";
 		constexpr const char* vbindings	= "VertexAttributeBindings";
 	}
 
@@ -50,11 +51,12 @@ namespace nap
 		/**
 		 * @return The shader
 		 */
-		const BaseShader& getShader()					{ assert(mShader != nullptr); return *mShader; }
+		const BaseShader& getShader() const					{ assert(mShader != nullptr); return *mShader; }
 
 		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<Sampler>>				mSamplers;												///< Property: 'Samplers' Static samplers (as read from file, or as set in code before calling init())
+		std::vector<ResourcePtr<ShaderConstant>>		mConstants;												///< Property: 'Constants' Static constants (as read from file, or as set in code before calling init())
 
 	protected:
 		bool rebuild(const BaseShader& shader, utility::ErrorState& errorState);
@@ -200,6 +202,14 @@ namespace nap
 		 */
 		const ComputeShader& getShader() const						{ assert(ComputeMaterial::mShader != nullptr); return *ComputeMaterial::mShader; }
 
+		/**
+		 * @return the workgroup size
+		 */
+		const glm::uvec3& getWorkGroupSize() const					{ return mWorkGroupSize; }
+
 		ResourcePtr<ComputeShader> mShader = nullptr;				///< Property: 'Shader' The compute shader that this material is using
+
+	protected:
+		glm::uvec3 mWorkGroupSize = { 1, 1, 1 };
 	};
 }

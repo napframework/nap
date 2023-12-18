@@ -332,9 +332,14 @@ namespace nap
 //////////////////////////////////////////////////////////////////////////
 
 /**
- *	@return the rtti type of @Type
+ * @return the rtti type of @Type
  */
 #define RTTI_OF(Type) nap::rtti::TypeInfo::get<Type>()
+
+ /**
+  *	@return the rtti type name of @Type as a string
+  */
+#define RTTI_STR(Type) nap::rtti::TypeInfo::get<Type>().get_name().to_string()
 
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)

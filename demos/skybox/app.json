@@ -1,0 +1,16 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "SkyBox",
+    "Version": "1.0.0",
+    "Data": "data/skybox.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napimgui",
+        "napparametergui",
+        "naprenderadvanced"
+    ]
+}

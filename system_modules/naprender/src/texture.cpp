@@ -3,25 +3,33 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "texture2d.h"
+#include "texture.h"
 #include "bitmap.h"
 #include "renderservice.h"
 #include "copyimagedata.h"
+#include "textureutils.h"
 
 // External Includes
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <glm/gtc/type_ptr.hpp>
 
-RTTI_BEGIN_ENUM(nap::ETextureUsage)
-	RTTI_ENUM_VALUE(nap::ETextureUsage::Static,			"Static"),
-	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicRead,	"DynamicRead"),
-	RTTI_ENUM_VALUE(nap::ETextureUsage::DynamicWrite,	"DynamicWrite")
+RTTI_BEGIN_ENUM(nap::Texture::EUsage)
+	RTTI_ENUM_VALUE(nap::Texture::EUsage::Static,		"Static"),
+	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicRead,	"DynamicRead"),
+	RTTI_ENUM_VALUE(nap::Texture::EUsage::DynamicWrite,	"DynamicWrite")
 RTTI_END_ENUM
+
+// Define Texture base
+RTTI_DEFINE_BASE(nap::Texture)
 
 // Texture2D class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
 	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+// TextureCube class definition
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TextureCube)
 RTTI_END_CLASS
 
 
@@ -31,13 +39,13 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, uint32_t width, uint32_t height)
+	static void copyBufferToImage(VkCommandBuffer commandBuffer, VkBuffer buffer, VkImage image, VkImageAspectFlags aspect, uint32_t width, uint32_t height)
 	{
 		VkBufferImageCopy region = {};
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.aspectMask = aspect;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
 		region.imageSubresource.layerCount = 1;
@@ -52,13 +60,13 @@ namespace nap
 	}
 
 
-	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, uint32_t width, uint32_t height)
+	static void copyImageToBuffer(VkCommandBuffer commandBuffer, VkImage image, VkBuffer buffer, VkImageAspectFlags aspect, uint32_t width, uint32_t height)
 	{
 		VkBufferImageCopy region = {};
 		region.bufferOffset = 0;
 		region.bufferRowLength = 0;
 		region.bufferImageHeight = 0;
-		region.imageSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		region.imageSubresource.aspectMask = aspect;
 		region.imageSubresource.mipLevel = 0;
 		region.imageSubresource.baseArrayLayer = 0;
 		region.imageSubresource.layerCount = 1;
@@ -73,67 +81,15 @@ namespace nap
 	}
 
 
-	static VkFormat getTextureFormat(RenderService& renderService, const SurfaceDescriptor& descriptor)
-	{
-		ESurfaceDataType dataType = descriptor.getDataType();
-		EColorSpace colorSpace = descriptor.getColorSpace();
-
-		switch (descriptor.getChannels())
-		{
-			case ESurfaceChannels::R:
-			{
-				switch (dataType)
-				{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8_UNORM : VK_FORMAT_R8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16_UNORM;
-				}
-				break;
-			}
-			case ESurfaceChannels::RGBA:
-			{
-				switch (dataType)
-				{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_R8G8B8A8_UNORM : VK_FORMAT_R8G8B8A8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_R32G32B32A32_SFLOAT;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_R16G16B16A16_UNORM;
-				}
-				break;
-			}
-			case ESurfaceChannels::BGRA:
-			{
-				switch (dataType)
-				{
-					case nap::ESurfaceDataType::BYTE:
-						return colorSpace == EColorSpace::Linear ? VK_FORMAT_B8G8R8A8_UNORM : VK_FORMAT_B8G8R8A8_SRGB;
-					case nap::ESurfaceDataType::FLOAT:
-						return VK_FORMAT_UNDEFINED;
-					case nap::ESurfaceDataType::USHORT:
-						return VK_FORMAT_UNDEFINED;
-				}
-				break;
-			}
-			assert(false);
-		}
-		return VK_FORMAT_UNDEFINED;
-	}
-
-
-	static int getNumStagingBuffers(int maxFramesInFlight, ETextureUsage textureUsage)
+	static int getNumStagingBuffers(int maxFramesInFlight, Texture::EUsage textureUsage)
 	{
 		switch (textureUsage)
 		{
-			case ETextureUsage::DynamicWrite:
+		case Texture::EUsage::DynamicWrite:
 				return maxFramesInFlight + 1;
-			case ETextureUsage::Static:
+			case Texture::EUsage::Static:
 				return 1;
-			case ETextureUsage::DynamicRead:
+			case Texture::EUsage::DynamicRead:
 				return maxFramesInFlight;
 			default:
 				assert(false);
@@ -142,105 +98,74 @@ namespace nap
 	}
 
 
-	/**
-	 * Transition image to a new layout using an existing image barrier.
-	 */
-	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
-		VkImageLayout oldLayout,		VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask,	VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage,	VkPipelineStageFlags dstStage,
-		uint32 mipLevel,				uint32 mipLevelCount)
+	//////////////////////////////////////////////////////////////////////////
+	// Texture
+	//////////////////////////////////////////////////////////////////////////
+
+	Texture::Texture(Core& core) :
+		mRenderService(*core.getService<RenderService>())
+	{ }
+
+
+	void Texture::clear(VkCommandBuffer commandBuffer)
 	{
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = mipLevel;
-		barrier.subresourceRange.levelCount = mipLevelCount;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstAccessMask = dstAccessMask;
-		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	}
+		// Do not clear if this is an attachment
+		// Attachments use vkCmdClearAttachments for clear operations
+		// But should really be cleared in a renderpass with VK_ATTACHMENT_LOAD_OP_CLEAR
+		if (getTargetLayout() == VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL || getTargetLayout() == VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL || getTargetLayout() > VK_IMAGE_LAYOUT_PREINITIALIZED)
+			return;
 
+		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
+		// Therefore, the initial layout transition waits for nothing
+		VkAccessFlags srcMask = 0;
+		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
+		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
 
-	/**
-	 * Transition image to a new layout using an image barrier.
-	 */
-	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount)
-	{
-		VkImageMemoryBarrier barrier = {};
-		transitionImageLayout(commandBuffer, image, barrier,
-			oldLayout,		newLayout,
-			srcAccessMask,	dstAccessMask,
-			srcStage,		dstStage,
-			mipLevel,		mipLevelCount);
-	}
-
-
-	static void createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, uint32 texWidth, uint32 texHeight, uint32 mipLevels)
-	{
-
-		int32 mipWidth  = static_cast<int32>(texWidth);
-		int32 mipHeight = static_cast<int32>(texHeight);
-
-		VkImageMemoryBarrier barrier {};
-		for (uint32_t i = 1; i < mipLevels; i++)
+		if (getHandle().mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
 		{
-			// Prepare LOD for blit operation
-			transitionImageLayout(buffer, image, barrier,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_TRANSFER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_TRANSFER_BIT,
-				i - 1,									1);
-
-			// Create blit structure
-			VkImageBlit blit{};
-			blit.srcOffsets[0] = { 0, 0, 0 };
-			blit.srcOffsets[1] = { mipWidth, mipHeight, 1 };
-			blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.srcSubresource.mipLevel = i - 1;
-			blit.srcSubresource.baseArrayLayer = 0;
-			blit.srcSubresource.layerCount = 1;
-			blit.dstOffsets[0] = { 0, 0, 0 };
-			blit.dstOffsets[1] = { mipWidth > 1 ? mipWidth / 2 : 1, mipHeight > 1 ? mipHeight / 2 : 1, 1 };
-			blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-			blit.dstSubresource.mipLevel = i;
-			blit.dstSubresource.baseArrayLayer = 0;
-			blit.dstSubresource.layerCount = 1;
-
-			// Blit
-			vkCmdBlitImage(buffer,
-				image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				1, &blit,
-				VK_FILTER_LINEAR);
-
-			// Prepare LOD for shader read
-			transitionImageLayout(buffer, image, barrier,
-				VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_TRANSFER_READ_BIT,			VK_ACCESS_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				i - 1,									1);
-
-			if (mipWidth  > 1) mipWidth  /= 2;
-			if (mipHeight > 1) mipHeight /= 2;
+			srcMask = VK_ACCESS_SHADER_READ_BIT;
+			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
 		}
 
-		// Prepare final LOD for shader read
-		transitionImageLayout(buffer, image, barrier,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		// Get image ready for clear, applied to all mipmap layers
+		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
+			getHandle().mCurrentLayout,		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			srcMask,						dstMask,
+			srcStage,						dstStage,
+			0,								getMipLevels(),
+			aspect);
+
+		VkImageSubresourceRange image_subresource_range = { aspect, 0, getMipLevels(), 0, getLayerCount() };
+
+		// Clear color or depth/stencil
+		if (mDescriptor.getChannels() != ESurfaceChannels::D)
+		{
+			vkCmdClearColorImage(commandBuffer, getHandle().mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
+		}
+		else
+		{
+			VkClearDepthStencilValue clear_depthstencil = { 1.0f, 0 };
+			vkCmdClearDepthStencilImage(commandBuffer, getHandle().mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &clear_depthstencil, 1, &image_subresource_range);
+		}
+
+		// Transition image layout
+		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
+			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			mipLevels - 1,							1);
+			0,										getMipLevels(),
+			aspect);
+
+		// We store the last image layout, which is used as input for a subsequent upload
+		getHandle().mCurrentLayout = getTargetLayout();
+	}
+
+
+	void Texture::requestClear()
+	{
+		mRenderService.requestTextureClear(*this);
 	}
 
 
@@ -249,9 +174,8 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	Texture2D::Texture2D(Core& core) :
-		mRenderService(core.getService<RenderService>())
-	{
-	}
+		Texture(core)
+	{ }
 
 
 	Texture2D::~Texture2D()
@@ -259,13 +183,13 @@ namespace nap
 		// Remove all previously made requests and queue buffers for destruction.
 		// If the service is not running, all objects are destroyed immediately.
 		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
-		mRenderService->removeTextureRequests(*this);
-		mRenderService->queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService) mutable
+		mRenderService.removeTextureRequests(*this);
+		mRenderService.queueVulkanObjectDestructor([imageData = mImageData, stagingBuffers = mStagingBuffers](RenderService& renderService) mutable
 		{
-			destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+			utility::destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
 			for (BufferData& buffer : stagingBuffers)
 			{
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 			}
 		});
 	}
@@ -274,14 +198,13 @@ namespace nap
 	bool Texture2D::initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
 	{
 		// Get the format, when unsupported bail.
-		mFormat = getTextureFormat(*mRenderService, descriptor);
-		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED,
-			"%s, Unsupported texture format", mID.c_str()))
+		mFormat = utility::getTextureFormat(descriptor);
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
 			return false;
 
 		// Ensure our GPU image can be used as a transfer destination during uploads
 		VkFormatProperties format_properties;
-		mRenderService->getFormatProperties(mFormat, format_properties);
+		mRenderService.getFormatProperties(mFormat, format_properties);
 		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
 		{
 			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
@@ -301,10 +224,10 @@ namespace nap
 
 		// Ensure there are enough read callbacks based on max number of frames in flight
 		mImageSizeInBytes = descriptor.getSizeInBytes();
-		if (mUsage == ETextureUsage::DynamicRead)
+		if (mUsage == EUsage::DynamicRead)
 		{
-			mReadCallbacks.resize(mRenderService->getMaxFramesInFlight());
-			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
+			mReadCallbacks.resize(mRenderService.getMaxFramesInFlight());
+			mDownloadStagingBufferIndices.resize(mRenderService.getMaxFramesInFlight());
 		}
 
 		// Here we create staging buffers. Client data is copied into staging buffers. The staging buffers are then used as a source to update
@@ -324,19 +247,19 @@ namespace nap
 		// A final note: this system is built to be able to handle changing the texture every frame. But if the texture is changed less frequently,
 		// or never, that works as well. When update is called, the RenderService is notified of the change, and during rendering, the upload is
 		// called, which moves the index one place ahead.
-		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
 
 		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-		VkBufferUsageFlags buffer_usage = mUsage == ETextureUsage::DynamicRead ?
+		VkBufferUsageFlags buffer_usage = mUsage == EUsage::DynamicRead ?
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT :
 			VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
 		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-		VmaMemoryUsage memory_usage = mUsage == ETextureUsage::DynamicRead ?
+		VmaMemoryUsage memory_usage = mUsage == EUsage::DynamicRead ?
 			VMA_MEMORY_USAGE_GPU_TO_CPU :
 			VMA_MEMORY_USAGE_CPU_TO_GPU;
 
-		mStagingBuffers.resize(getNumStagingBuffers(mRenderService->getMaxFramesInFlight(), mUsage));
+		mStagingBuffers.resize(getNumStagingBuffers(mRenderService.getMaxFramesInFlight(), mUsage));
 		for (int index = 0; index < mStagingBuffers.size(); ++index)
 		{
 			BufferData& staging_buffer = mStagingBuffers[index];
@@ -350,18 +273,19 @@ namespace nap
 		}
 
 		// Set image usage flags: can be written to, read and sampled
-		VkImageUsageFlags usage = requiredFlags;
-		usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT |
-			VK_IMAGE_USAGE_SAMPLED_BIT |
-			VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+		VkImageUsageFlags usage = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
 
 		// Create GPU image
 		if (!create2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels,
 			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, usage, VMA_MEMORY_USAGE_GPU_ONLY, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
 			return false;
 
+		// Check whether the texture is flagged as depth
+		bool is_depth = descriptor.getChannels() == ESurfaceChannels::D;
+
 		// Create GPU image view
-		if (!create2DImageView(mRenderService->getDevice(), mImageData.getImage(), mFormat, mMipLevels, VK_IMAGE_ASPECT_COLOR_BIT, mImageData.mView, errorState))
+		VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (!create2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, mMipLevels, aspect, mImageData.getView(), errorState))
 			return false;
 
 		// Initialize buffer indexing
@@ -379,7 +303,7 @@ namespace nap
 			return false;
 
 		// Clear the texture and perform a layout transition to shader read
-		mRenderService->requestTextureClear(*this);
+		requestClear();
 		return true;
 	}
 
@@ -393,7 +317,7 @@ namespace nap
 		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
 
 		// Clear the texture and perform a layout transition to shader read
-		mRenderService->requestTextureClear(*this);
+		requestClear();
 		return true;
 	}
 
@@ -406,73 +330,6 @@ namespace nap
 		// Upload initial data and perform a layout transition to shader read
 		update(initialData, descriptor);
 		return true;
-	}
-
-
-	const glm::vec2 Texture2D::getSize() const
-	{
-		return glm::vec2(getWidth(), getHeight());
-	}
-
-
-	int Texture2D::getWidth() const
-	{
-		return mDescriptor.mWidth;
-	}
-
-
-	int Texture2D::getHeight() const
-	{
-		return mDescriptor.mHeight;
-	}
-
-
-	const nap::SurfaceDescriptor& Texture2D::getDescriptor() const
-	{
-		return mDescriptor;
-	}
-
-
-	void Texture2D::clear(VkCommandBuffer commandBuffer)
-	{
-		// Texture clear commands are the first subset of commands to be pushed to the upload command buffer at the beginning of a frame
-		// Therefore, the initial layout transition waits for nothing
-		VkAccessFlags srcMask = 0;
-		VkAccessFlags dstMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-		VkPipelineStageFlags srcStage = VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT;
-		VkPipelineStageFlags dstStage = VK_PIPELINE_STAGE_TRANSFER_BIT;
-
-		if (mImageData.mCurrentLayout != VK_IMAGE_LAYOUT_UNDEFINED)
-		{
-			srcMask = VK_ACCESS_SHADER_READ_BIT;
-			srcStage = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
-		}
-
-		// Get image ready for clear, applied to all mipmap layers
-		transitionImageLayout(commandBuffer, mImageData.mImage,
-			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			srcMask, dstMask,
-			srcStage, dstStage,
-			0, mMipLevels);
-
-		VkImageSubresourceRange image_subresource_range = {};
-		image_subresource_range.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		image_subresource_range.baseMipLevel = 0;
-		image_subresource_range.levelCount = mMipLevels;
-		image_subresource_range.baseArrayLayer = 0;
-		image_subresource_range.layerCount = 1;
-
-		vkCmdClearColorImage(commandBuffer, mImageData.mImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, &mClearColor, 1, &image_subresource_range);
-
-		// Transition image layout
-		transitionImageLayout(commandBuffer, mImageData.mImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-				VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
-				VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				0, 1);
-
-		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 	}
 
 
@@ -497,41 +354,44 @@ namespace nap
 		}
 
 		// Get image ready for copy, applied to all mipmap layers
-		transitionImageLayout(commandBuffer, mImageData.mImage, 
+		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
-			srcMask,	dstMask,
-			srcStage,	dstStage,
-			0,			mMipLevels);
+			srcMask,			dstMask,
+			srcStage,			dstStage,
+			0,					mMipLevels,
+			aspect);
 		
 		// Copy staging buffer to image
-		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mImage, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyBufferToImage(commandBuffer, buffer.mBuffer, mImageData.mImage, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			createMipmaps(commandBuffer, mImageData.mImage, mFormat, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			utility::createMipmaps(commandBuffer, mImageData.mImage, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
-			transitionImageLayout(commandBuffer, mImageData.mImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+			utility::transitionImageLayout(commandBuffer, mImageData.mImage,
+				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-				0,										1);
+				0,										1,
+				aspect);
 		}
 
 		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+		mImageData.mCurrentLayout = getTargetLayout();
 
 		// Destroy staging buffer when usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
 		// Explicitly release the handle, so it's not deleted twice.
-		if (mUsage == ETextureUsage::Static)
+		if (mUsage == EUsage::Static)
 		{
 			assert(mStagingBuffers.size() == 1);
-			mRenderService->queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService) mutable
+			mRenderService.queueVulkanObjectDestructor([del_buffer = buffer](RenderService& renderService) mutable
 			{
-				destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), del_buffer);
 			});
 			buffer.release();
 		}
@@ -544,25 +404,28 @@ namespace nap
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 
 		// Store the staging buffer index associated with the download in the current frame for lookup later
-		mDownloadStagingBufferIndices[mRenderService->getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
+		mDownloadStagingBufferIndices[mRenderService.getCurrentFrameIndex()] = mCurrentStagingBufferIndex;
 		mCurrentStagingBufferIndex = (mCurrentStagingBufferIndex + 1) % mStagingBuffers.size();
 
 		// Transition for copy
-		transitionImageLayout(commandBuffer, mImageData.mImage, 
+		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
-			0,											1);
+			0,											1,
+			aspect);
 		
 		// Copy to buffer
-		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, mDescriptor.mWidth, mDescriptor.mHeight);
+		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
-		transitionImageLayout(commandBuffer, mImageData.mImage, 
+		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
 			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0,											1);
+			0,											1,
+			aspect);
 	}
 
 
@@ -575,7 +438,7 @@ namespace nap
 	void Texture2D::update(const void* data, int width, int height, int pitch, ESurfaceChannels channels)
 	{
 		// We can only upload when the texture usage is dynamic, OR this is the first upload for a static texture
-		assert(mUsage == ETextureUsage::DynamicWrite || mImageData.mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
+		assert(mUsage == EUsage::DynamicWrite || mImageData.mCurrentLayout == VK_IMAGE_LAYOUT_UNDEFINED);
 		assert(mDescriptor.mWidth == width && mDescriptor.mHeight == height);
 
 		// We use a staging buffer that is guaranteed to be free
@@ -583,7 +446,7 @@ namespace nap
 		BufferData& buffer = mStagingBuffers[mCurrentStagingBufferIndex];
 
 		// Update the staging buffer using the Bitmap contents
-		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
 
 		// Map memory and copy contents, note for this to work on OSX the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required!
 		void* mapped_memory = nullptr;
@@ -593,14 +456,14 @@ namespace nap
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
 
 		// Notify the RenderService that it should upload the texture contents during rendering
-		mRenderService->requestTextureUpload(*this);
+		mRenderService.requestTextureUpload(*this);
 	}
 
 
 	void Texture2D::asyncGetData(Bitmap& bitmap)
 	{
- 		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
- 		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
+ 		assert(!mReadCallbacks[mRenderService.getCurrentFrameIndex()]);
+ 		mReadCallbacks[mRenderService.getCurrentFrameIndex()] = [this, &bitmap](const void* data, size_t sizeInBytes)
 		{
 			// Check if initialization is necessary
 			if (bitmap.empty() || bitmap.mSurfaceDescriptor != mDescriptor) {
@@ -609,15 +472,15 @@ namespace nap
 			memcpy(bitmap.getData(), data, sizeInBytes);
 			bitmap.mBitmapUpdated();
  		};
-		mRenderService->requestTextureDownload(*this);
+		mRenderService.requestTextureDownload(*this);
 	}
 
 
 	void Texture2D::asyncGetData(std::function<void(const void*, size_t)> copyFunction)
 	{
-		assert(!mReadCallbacks[mRenderService->getCurrentFrameIndex()]);
-		mReadCallbacks[mRenderService->getCurrentFrameIndex()] = copyFunction;
-		mRenderService->requestTextureDownload(*this);
+		assert(!mReadCallbacks[mRenderService.getCurrentFrameIndex()]);
+		mReadCallbacks[mRenderService.getCurrentFrameIndex()] = copyFunction;
+		mRenderService.requestTextureDownload(*this);
 	}
 
 
@@ -631,7 +494,7 @@ namespace nap
 	void Texture2D::notifyDownloadReady(int frameIndex)
 	{
 		// Update the staging buffer using the Bitmap contents
-		VmaAllocator vulkan_allocator = mRenderService->getVulkanAllocator();
+		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
 
 		// Copy data, not for this to work the VK_MEMORY_PROPERTY_HOST_COHERENT_BIT is required on OSX!
 		int downloaded_staging_buffer_index = mDownloadStagingBufferIndices[frameIndex];
@@ -644,5 +507,88 @@ namespace nap
 		mReadCallbacks[frameIndex](mapped_memory, mImageSizeInBytes);
 		vmaUnmapMemory(vulkan_allocator, buffer.mAllocation);
 		mReadCallbacks[frameIndex] = TextureReadCallback();
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// TextureCube
+	//////////////////////////////////////////////////////////////////////////
+
+	TextureCube::TextureCube(Core& core) :
+		Texture(core)
+	{ }
+
+
+	TextureCube::~TextureCube()
+	{
+		// If the service is not running, all objects are destroyed immediately.
+		// Otherwise they are destroyed when they are guaranteed not to be in use by the GPU.
+		mRenderService.queueVulkanObjectDestructor([imageData = mImageData](RenderService& renderService) mutable
+		{
+			utility::destroyImageAndView(imageData, renderService.getDevice(), renderService.getVulkanAllocator());
+		});
+	}
+
+
+	bool TextureCube::init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState)
+	{
+		// Get the format, when unsupported bail.
+		mFormat = utility::getTextureFormat(descriptor);
+		if (!errorState.check(mFormat != VK_FORMAT_UNDEFINED, "%s, Unsupported texture format", mID.c_str()))
+			return false;
+
+		// Ensure our GPU image can be used as a transfer destination during uploads
+		VkFormatProperties format_properties;
+		mRenderService.getFormatProperties(mFormat, format_properties);
+		if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_TRANSFER_DST_BIT))
+		{
+			errorState.fail("%s: image format does not support being used as a transfer destination", mID.c_str());
+			return false;
+		}
+
+		// If mip mapping is enabled, ensure it is supported
+		if (generateMipMaps)
+		{
+			if (!(format_properties.optimalTilingFeatures & VK_FORMAT_FEATURE_SAMPLED_IMAGE_FILTER_LINEAR_BIT))
+			{
+				errorState.fail("%s: image format does not support linear blitting, consider disabling mipmap generation", mID.c_str());
+				return false;
+			}
+			mMipLevels = static_cast<uint32>(std::floor(std::log2(std::max(descriptor.getWidth(), descriptor.getHeight())))) + 1;
+		}
+
+		// Set image usage flags: can be written to, read and sampled
+		mImageUsageFlags = requiredFlags | VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT | VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+
+		// Create GPU image
+		VmaAllocator vulkan_allocator = mRenderService.getVulkanAllocator();
+		if (!createLayered2DImage(vulkan_allocator, descriptor.mWidth, descriptor.mHeight, mFormat, mMipLevels, getLayerCount(),
+			VK_SAMPLE_COUNT_1_BIT, VK_IMAGE_TILING_OPTIMAL, mImageUsageFlags, VMA_MEMORY_USAGE_GPU_ONLY, VK_IMAGE_CREATE_CUBE_COMPATIBLE_BIT, mImageData.mImage, mImageData.mAllocation, mImageData.mAllocationInfo, errorState))
+			return false;
+
+		// Check whether the texture is flagged as depth
+		bool is_depth = descriptor.getChannels() == ESurfaceChannels::D;
+
+		// Create GPU image view
+		VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
+		if (!createCubeImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, mMipLevels, aspect, getLayerCount(), mImageData.mView, errorState))
+			return false;
+
+		for (uint i = 0; i < mImageData.getSubViewCount(); i++)
+		{
+			// Set mipLevels to 1 as we typically only render to the first mip level of each layer individually
+			// After the render operation we can update the mip maps using a blit operation if desired
+			if (!createLayered2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, 1, aspect, i, 1, mImageData.getSubView(i), errorState))
+				return false;
+		}
+
+		mDescriptor = descriptor;
+
+		// Set clear color
+		std::memcpy(&mClearColor, glm::value_ptr(clearColor), sizeof(VkClearColorValue));
+
+		// Clear the texture and perform a layout transition to shader read
+		requestClear();
+		return true;
 	}
 }

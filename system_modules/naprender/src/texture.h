@@ -24,13 +24,92 @@ namespace nap
 	class Core;
 
 	/**
-	 * Flag that determines how the texture is used at runtime.
+	 * Texture base class
 	 */
-	enum class ETextureUsage
+	class NAPAPI Texture : public Resource
 	{
-		Static,				///< Texture does not change, uploaded to once
-		DynamicRead,		///< Texture is frequently read from GPU to CPU
-		DynamicWrite		///< Texture is frequently updated from CPU to GPU
+		friend class RenderService;
+		RTTI_ENABLE(Resource)
+	public:
+		/**
+		 * Flag that determines how the texture is used at runtime.
+		 */
+		enum class EUsage
+		{
+			Static,				///< Texture does not change, uploaded to once
+			DynamicRead,		///< Texture is frequently read from GPU to CPU
+			DynamicWrite		///< Texture is frequently updated from CPU to GPU
+		};
+
+		// Constructor
+		Texture(Core& core);
+
+		// Destructor
+		virtual ~Texture() { };
+
+		/**
+		 * @return the number of texture layers.
+		 */
+		virtual uint getLayerCount() const = 0;
+
+		/**
+		 * @return the number of texture mip-map levels.
+		 */
+		virtual uint getMipLevels() const = 0;
+
+		/**
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual const ImageData& getHandle() const = 0;
+
+		/**
+		 * @return Vulkan image layout that this texture is intended for.
+		 */
+		virtual VkImageLayout getTargetLayout() const			{ return VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL; };
+
+		/**
+		 * @return Vulkan texture format
+		 */
+		VkFormat getFormat() const								{ return mFormat; }
+
+		/**
+		 * @return the texture description
+		 */
+		const SurfaceDescriptor& getDescriptor() const			{ return mDescriptor; }
+
+		/**
+		 * @return render service
+		 */
+		const RenderService& getRenderService()					{ return mRenderService; }
+
+		/**
+		 * @return render service
+		 */
+		const RenderService& getRenderService() const			{ return mRenderService; }
+
+	protected:
+		/**
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual ImageData& getHandle() = 0;
+
+		// Hide default resource init. Use specialized initialization functions instead.
+		using Resource::init;
+
+		/**
+		 * Clears the texture to the specified clear colors.
+		 */
+		virtual void clear(VkCommandBuffer commandBuffer);
+
+		/**
+		 * Queues a clear command in the render service.
+		 */
+		void requestClear();
+
+		RenderService&						mRenderService;								///< Reference to the render service
+		SurfaceDescriptor					mDescriptor;								///< Texture description
+		VkFormat							mFormat = VK_FORMAT_UNDEFINED;				///< Vulkan texture format
+		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Color used for clearing the texture
 	};
 
 
@@ -40,13 +119,13 @@ namespace nap
 	 * When usage is set to 'Static' (default) or 'DynamicRead' data can be uploaded only once.
 	 * When usage is set to 'DynamicWrite' the texture be updated frequently from CPU to GPU.
 	 */
-	class NAPAPI Texture2D : public Resource
+	class NAPAPI Texture2D : public Texture
 	{
 		friend class RenderService;
-		RTTI_ENABLE(Resource)
+		RTTI_ENABLE(Texture)
 	public:
 		Texture2D(Core& core);
-		~Texture2D() override;
+		virtual ~Texture2D() override;
 
 		/**
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
@@ -87,22 +166,17 @@ namespace nap
 		/**
 		 * @return size of the texture in texels.
 		 */
-		const glm::vec2 getSize() const; 
+		const glm::vec2 getSize() const							{ return { getWidth(), getHeight() }; }
 
 		/**
 		 *	@return width of the texture in texels
 		 */
-		int getWidth() const;
+		int getWidth() const									{ return mDescriptor.mWidth; }
 
 		/**
 		 *	@return height of the texture in texels
 		 */
-		int getHeight() const;
-
-		/**
-		 * @return the texture description
-		 */
-		const SurfaceDescriptor& getDescriptor() const;
+		int getHeight() const									{ return mDescriptor.mHeight; }
 
 		/**
 		 * Uploads CPU data to the texture on the GPU. 
@@ -124,29 +198,24 @@ namespace nap
 		void update(const void* data, const SurfaceDescriptor& surfaceDescriptor);
 
 		/**
-		 * @return Vulkan texture format
+		 * @return the number of texture layers
 		 */
-		VkFormat getFormat() const							{ return mFormat; }
+		virtual uint getLayerCount() const override				{ return 1; }
+
+		/**
+		 * @return the number of texture mip-map levels
+		 */
+		virtual uint getMipLevels() const override				{ return mMipLevels; }
 
 		/**
 		 * @return Vulkan GPU data handle, including image and view.
 		 */
-		const ImageData& getHandle() const					{ return mImageData; }
+		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
-		 * @return number of mip-map levels
+		 * 
 		 */
-		int getMipmapCount()								{ return static_cast<int>(mMipLevels); }
-
-		/**
-		 * @return render service
-		 */
-		RenderService& getRenderService()					{ return *mRenderService; }
-
-		/**
-		 * @return render service
-		 */
-		const RenderService& getRenderService() const		{ return *mRenderService; }
+		virtual void onDestroy() override						{ textureDestroyed(); }
 
 		/**
 		 * Starts a transfer of texture data from GPU to CPU. 
@@ -162,17 +231,16 @@ namespace nap
 		 */
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
-		/**
-		 * @return Handle to Vulkan image view
-		 */
-		VkImageView getImageView() const					{ return mImageData.mView; }
+		EUsage mUsage = EUsage::Static;							///< Property: 'Usage' If this texture is updated frequently or considered static.
 
-		ETextureUsage mUsage = ETextureUsage::Static;		///< Property: 'Usage' If this texture is updated frequently or considered static.
+		nap::Signal<> textureDestroyed;
 
 	protected:
-		RenderService* mRenderService = nullptr;
+		/**
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual ImageData& getHandle() override					{ return mImageData; }
 
-	private:
 		/**
 		 * Creates the texture on the GPU using the provided settings.
 		 * The Vulkan image usage flags are derived from texture usage.
@@ -185,12 +253,7 @@ namespace nap
 		bool initInternal(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
 
 		/**
-		* Clears the texture to the specified clear colors
-		*/
-		void clear(VkCommandBuffer commandBuffer);
-
-		/**
-		 * Called by the render service when data can be uploaded.
+		 * Called by the render service when data can be uploaded
 		 */
 		void upload(VkCommandBuffer commandBuffer);
 
@@ -209,20 +272,98 @@ namespace nap
 		 */
 		void clearDownloads();
 
-        // Hide default resource init. Use specialized initialization functions instead.
-        using Resource::init;
-
 		using TextureReadCallback = std::function<void(void* data, size_t sizeInBytes)>;
 
 		ImageData							mImageData;									///< 2D Texture vulkan image buffers
 		std::vector<BufferData>				mStagingBuffers;							///< All vulkan staging buffers, 1 when static or using dynamic read, no. of frames in flight when dynamic write.
 		int									mCurrentStagingBufferIndex = -1;			///< Currently used staging buffer
 		size_t								mImageSizeInBytes = -1;						///< Size in bytes of texture
-		SurfaceDescriptor					mDescriptor;								///< Texture description
-		VkFormat							mFormat = VK_FORMAT_UNDEFINED;				///< Vulkan texture format
 		std::vector<TextureReadCallback>	mReadCallbacks;								///< Number of callbacks based on number of frames in flight
 		std::vector<int>					mDownloadStagingBufferIndices;				///< Staging buffer indices associated with a frameindex
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
-		VkClearColorValue					mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };	///< Color used for clearing the texture
+	};
+
+
+	/**
+	 * Texture base class
+	 */
+	class NAPAPI TextureCube : public Texture
+	{
+		friend class RenderService;
+		friend class CubeRenderTarget; // TODO: Move CubeRenderTarget to naprender ??
+		RTTI_ENABLE(Texture)
+	public:
+		// The image layer count is equal to the number of sides of a cube
+		static constexpr const uint LAYER_COUNT = 6;
+
+		TextureCube(Core& core);
+		virtual ~TextureCube() override;
+
+		/**
+		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
+		 * The Vulkan image usage flags are derived from texture usage.
+		 * @param descriptor texture description.
+		 * @param clearColor the color to clear the texture with.
+		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
+		 * @param errorState contains the error if the texture can't be initialized.
+		 * @return if the texture initialized successfully.
+		 */
+		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
+
+		/**
+		 * @return size of the texture in texels.
+		 */
+		const glm::vec2 getSize() const							{ return { getWidth(), getHeight() }; }
+
+		/**
+		 *	@return width of the texture in texels
+		 */
+		int getWidth() const									{ return mDescriptor.mWidth; }
+
+		/**
+		 *	@return height of the texture in texels
+		 */
+		int getHeight() const									{ return mDescriptor.mHeight; }
+
+		/**
+		 *	@return the vulkan image usage flags
+		 */
+		VkImageUsageFlags getImageUsageFlags() const			{ return mImageUsageFlags; }
+
+		/**
+		 * @return the number of texture layers
+		 */
+		virtual uint getLayerCount() const override				{ return LAYER_COUNT; }
+
+		/**
+		 * @return the number of texture mip-map levels
+		 */
+		virtual uint getMipLevels() const override				{ return mMipLevels; }
+
+		/**
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual const ImageData& getHandle() const override		{ return mImageData; }
+
+		/**
+		 *
+		 */
+		virtual void onDestroy() override						{ textureDestroyed(); }
+
+		const EUsage						mUsage = EUsage::Static;					///< Texture usage (cube maps are currently always static)
+
+		nap::Signal<> textureDestroyed;
+
+	protected:
+		/**
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual ImageData& getHandle() override					{ return mImageData; }
+
+		ImageData							mImageData = { TextureCube::LAYER_COUNT };	///< Cube Texture vulkan image buffers
+		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
+
+	private:
+		VkImageUsageFlags					mImageUsageFlags = 0;
 	};
 }

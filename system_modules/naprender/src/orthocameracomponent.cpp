@@ -139,18 +139,19 @@ namespace nap
 				case EOrthoCameraMode::PixelSpace:
 				{
 					// In this mode we use the render target size to set the planes.
-					glm::vec2 render_target_size = getRenderTargetSize();
+					const glm::vec2& rt_size = getRenderTargetSize();
 					rect =
 					{
-						{ prop.mClipRect.getMin().x * render_target_size.x, prop.mClipRect.getMin().y * render_target_size.y },
-						{ prop.mClipRect.getMax().x * render_target_size.x, prop.mClipRect.getMax().y * render_target_size.y }
+						{ prop.mClipRect.getMin().x * rt_size.x, prop.mClipRect.getMin().y * rt_size.y },
+						{ prop.mClipRect.getMax().x * rt_size.x, prop.mClipRect.getMax().y * rt_size.y }
 					};
 					break;
 				}
 				case EOrthoCameraMode::CorrectAspectRatio:
 				{
 					// In this mode, we scale the top and bottom planes based on the aspect ratio
-					float aspect_ratio = getRenderTargetSize().y / getRenderTargetSize().x;
+					const glm::vec2& rt_size = getRenderTargetSize();
+					float aspect_ratio = rt_size.y / rt_size.x;
 					rect =
 					{
 						{ prop.mClipRect.getMin().x * prop.mLeftPlane, prop.mClipRect.getMin().y * prop.mBottomPlane * aspect_ratio },
@@ -197,9 +198,14 @@ namespace nap
 	}
 
 
-	void OrthoCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	float OrthoCameraComponentInstance::getNearClippingPlane() const
 	{
-		components.emplace_back(RTTI_OF(TransformComponent));
+		return mProperties.mNearClippingPlane;
 	}
 
+
+	float OrthoCameraComponentInstance::getFarClippingPlane() const
+	{
+		return mProperties.mFarClippingPlane;
+	}
 }

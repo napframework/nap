@@ -42,6 +42,9 @@ namespace nap
 	 */
 	static void createTorus(MeshInstance& meshInstance, uint segmentCount, uint tubeSegmentCount, float radius, float tubeRadius, float angleOffset, const RGBAColorFloat& color)
 	{
+		assert(segmentCount > 0);
+		assert(tubeSegmentCount > 0);
+
 		// Add an additional segment to generate seamless UVs around the torus
 		uint vertex_count = segmentCount * tubeSegmentCount;
 		meshInstance.setNumVertices(vertex_count);

@@ -1,0 +1,34 @@
+const uint CUBEMAP_POSITIVE_X = 0;
+const uint CUBEMAP_NEGATIVE_X = 1;
+const uint CUBEMAP_POSITIVE_Y = 2;
+const uint CUBEMAP_NEGATIVE_Y = 3;
+const uint CUBEMAP_POSITIVE_Z = 4;
+const uint CUBEMAP_NEGATIVE_Z = 5;
+
+
+vec3 uvToXYZ(uint face, vec2 uv)
+{
+	switch (face) 
+	{
+		case CUBEMAP_POSITIVE_X:
+			return vec3(1.0, uv.y, -uv.x);
+		case CUBEMAP_NEGATIVE_X:
+			return vec3(-1.0, uv.y, uv.x);
+		case CUBEMAP_POSITIVE_Y:
+			return vec3(uv.x, 1.0, -uv.y);
+		case CUBEMAP_NEGATIVE_Y:
+			return vec3(uv.x, -1.0, uv.y);
+		case CUBEMAP_POSITIVE_Z:
+			return vec3(uv.x, uv.y, 1.0);
+		case CUBEMAP_NEGATIVE_Z:
+			return vec3(-uv.x, uv.y, -1.0);
+		default:
+			return vec3(uv.x, uv.y, 1.0);
+	}
+}
+
+
+vec2 dirToUV(vec3 dir)
+{
+	return vec2(0.5 + 0.5 * atan(dir.z, dir.x) / PI, 1.0 - acos(dir.y) / PI);
+}

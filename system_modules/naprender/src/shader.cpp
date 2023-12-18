@@ -10,16 +10,18 @@
 #include "formatutils.h"
 
 // External Includes
-#include <utility/fileutils.h>
-#include <nap/logger.h>
 #include <fstream>
 #include <assert.h>
-#include <utility/stringutils.h>
+#include <glm/gtc/type_ptr.hpp>
 #include <spirv_cross/spirv_cross.hpp>
 #include <spirv_cross/spirv_parser.hpp>
 #include <glslang/Public/ShaderLang.h>
 #include <glslang/SPIRV/GlslangToSpv.h>
 #include <glslang/MachineIndependent/iomapper.h>
+
+#include <utility/stringutils.h>
+#include <utility/fileutils.h>
+#include <nap/logger.h>
 #include <nap/core.h>
 #include <nap/numeric.h>
 
@@ -31,11 +33,13 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("VertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
 	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
@@ -237,6 +241,57 @@ struct BindingResolver : public glslang::TDefaultGlslIoResolver
 };
 
 
+// Allow all Includer searches
+class AllowIncluder : public glslang::TShader::Includer
+{
+public:
+	AllowIncluder(const std::vector<std::string>& searchPaths) :
+		mSearchPaths(searchPaths) {}
+
+	// For the "local"-only aspect of a "" include. Should not search in the
+	// "system" paths, because on returning a failure, the parser will
+	// call includeSystem() to look in the "system" locations.
+	virtual IncludeResult* includeLocal(const char* headerName, const char* includerName, size_t inclusionDepth)
+	{
+		if (mSearchPaths.empty())
+			return nullptr;
+
+		std::vector<std::string> shader_search_paths;
+		for (const auto& path : mSearchPaths)
+		{
+			shader_search_paths.emplace_back(path);
+			shader_search_paths.emplace_back(nap::utility::joinPath({ path, "shaders" }));
+		}
+
+		auto absolute_path = nap::utility::findFileInDirectories(headerName, { shader_search_paths });
+		if (absolute_path.empty())
+			return nullptr;
+
+		nap::utility::ErrorState error_state;
+		auto& header_source = mHeaderSources.emplace();
+		if (!error_state.check(nap::utility::readFileToString(absolute_path, header_source, error_state), "Unable to read shader file %s", absolute_path.c_str()))
+			return nullptr;
+
+		return &mResults.emplace(absolute_path, header_source.c_str(), header_source.size(), this);
+	}
+
+	// Signals that the parser will no longer use the contents of the
+	// specified IncludeResult.
+	virtual void releaseInclude(glslang::TShader::Includer::IncludeResult* includer) override
+	{
+		assert(includer == &mResults.top());
+		mResults.pop();
+		mHeaderSources.pop();
+	}
+
+private:
+	std::vector<std::string> mSearchPaths;
+
+	std::stack<std::string> mHeaderSources;
+	std::stack<IncludeResult> mResults;
+};
+
+
 static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, VkDevice device)
 {
 	VkShaderModuleCreateInfo createInfo = {};
@@ -251,7 +306,7 @@ static VkShaderModule createShaderModule(const std::vector<nap::uint32>& code, V
 }
 
 
-static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, nap::utility::ErrorState& errorState)
+static std::unique_ptr<glslang::TShader> parseShader(VkDevice device, nap::uint32 vulkanVersion, const char* shaderCode, int shaderSize, const std::string& shaderName, EShLanguage stage, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
 	const char* sources[] = { shaderCode };
 	int source_sizes[] = { shaderSize };
@@ -288,10 +343,13 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 
 	// Version number taken from shaderc sources. 110 means "Desktop OpenGL", 100 means "OpenGL ES"
 	int default_version = 110;
-	bool result = shader->parse(&defaultResource, default_version, false, messages);
+
+	// Allow include directives
+	AllowIncluder includer(searchPaths);
+	bool result = shader->parse(&defaultResource, default_version, false, messages, includer);
 	if (!result)
 	{
-		errorState.fail("Failed to compile shader: %s", shader->getInfoLog());
+		errorState.fail("Failed to parse shader: %s", shader->getInfoLog());
 		return nullptr;
 	}
 
@@ -299,14 +357,15 @@ static std::unique_ptr<glslang::TShader> compileShader(VkDevice device, nap::uin
 }
 
 
-static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName, std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, nap::utility::ErrorState& errorState)
+static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const char* vertSource, int vertSize, const char* fragSource, int fragSize, const std::string& shaderName,
+	std::vector<nap::uint32>& vertexSPIRV, std::vector<unsigned int>& fragmentSPIRV, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> vertex_shader = compileShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, errorState);
-	if (!errorState.check(vertex_shader != nullptr, "Unable to compile vertex shader"))
+	std::unique_ptr<glslang::TShader> vertex_shader = parseShader(device, vulkanVersion, vertSource, vertSize, shaderName, EShLangVertex, searchPaths, errorState);
+	if (!errorState.check(vertex_shader != nullptr, "Unable to parse vertex shader"))
 		return false;
 
-	std::unique_ptr<glslang::TShader> fragment_shader = compileShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, errorState);
-	if (!errorState.check(fragment_shader != nullptr, "Unable to compile fragment shader"))
+	std::unique_ptr<glslang::TShader> fragment_shader = parseShader(device, vulkanVersion, fragSource, fragSize, shaderName, EShLangFragment, searchPaths, errorState);
+	if (!errorState.check(fragment_shader != nullptr, "Unable to parse fragment shader"))
 		return false;
 
 	EShMessages messages = EShMsgDefault;
@@ -350,7 +409,7 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 		spv::SpvBuildLogger logger;
 		glslang::GlslangToSpv(*program.getIntermediate(EShLangVertex), vertexSPIRV, &logger, &spv_options);
 
-		if (!errorState.check(!vertexSPIRV.empty(), "Failed to compile vertex shader: %s", logger.getAllMessages().c_str()))
+		if (!errorState.check(!vertexSPIRV.empty(), "Failed to compile vertex shader to SPIR-V: %s", logger.getAllMessages().c_str()))
 			return false;
 	}
 
@@ -359,7 +418,7 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 		spv::SpvBuildLogger logger;
 		glslang::GlslangToSpv(*program.getIntermediate(EShLangFragment), fragmentSPIRV, &logger, &spv_options);
 
-		if (!errorState.check(!fragmentSPIRV.empty(), "Failed to compile fragment shader: %s", logger.getAllMessages().c_str()))
+		if (!errorState.check(!fragmentSPIRV.empty(), "Failed to compile fragment shader to SPIR-V: %s", logger.getAllMessages().c_str()))
 			return false;
 	}
 
@@ -367,10 +426,10 @@ static bool compileProgram(VkDevice device, nap::uint32 vulkanVersion, const cha
 }
 
 
-static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, nap::utility::ErrorState& errorState)
+static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, const char* compSource, int compSize, const std::string& shaderName, std::vector<nap::uint32>& computeSPIRV, const std::vector<std::string>& searchPaths, nap::utility::ErrorState& errorState)
 {
-	std::unique_ptr<glslang::TShader> compute_shader = compileShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, errorState);
-	if (!errorState.check(compute_shader != nullptr, "Unable to compile compute shader"))
+	std::unique_ptr<glslang::TShader> compute_shader = parseShader(device, vulkanVersion, compSource, compSize, shaderName, EShLangCompute, searchPaths, errorState);
+	if (!errorState.check(compute_shader != nullptr, "Unable to parse compute shader"))
 		return false;
 
 	EShMessages messages = EShMsgDefault;
@@ -413,7 +472,7 @@ static bool compileComputeProgram(VkDevice device, nap::uint32 vulkanVersion, co
 		spv::SpvBuildLogger logger;
 		glslang::GlslangToSpv(*program.getIntermediate(EShLangCompute), computeSPIRV, &logger, &spv_options);
 
-		if (!errorState.check(!computeSPIRV.empty(), "Failed to compile compute shader: %s", logger.getAllMessages().c_str()))
+		if (!errorState.check(!computeSPIRV.empty(), "Failed to compile compute shader to SPIR-V: %s", logger.getAllMessages().c_str()))
 			return false;
 	}
 
@@ -516,8 +575,8 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 		if (!errorState.check(member_type.array.size() <= 1, "Multidimensional arrays are not supported"))
 			return false;
 
-		bool isArray = !member_type.array.empty();
-		if (isArray)
+		bool is_array = !member_type.array.empty();
+		if (is_array)
 		{
 			int num_elements = member_type.array[0];
 
@@ -658,7 +717,7 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 	for (const spirv_cross::Resource& sampled_image : shader_resources.sampled_images)
 	{
 		spirv_cross::SPIRType sampler_type = compiler.get_type(sampled_image.type_id);
-
+		
 		if (!errorState.check(sampler_type.array.size() <= 1, "Multidimensional arrays are not supported"))
 			return false;
 
@@ -681,16 +740,38 @@ static bool parseShaderVariables(spirv_cross::Compiler& compiler, VkShaderStageF
 			case spv::Dim3D:
 				type = nap::SamplerDeclaration::EType::Type_3D;
 				break;
+			case spv::DimCube:
+				type = nap::SamplerDeclaration::EType::Type_Cube;
+				break;
 			default:
 				errorState.fail("Unsupported sampler type encountered");
 				return false;
 		}
 
 		nap::uint32 binding = compiler.get_decoration(sampled_image.id, spv::DecorationBinding);
-		samplerDeclarations.emplace_back(nap::SamplerDeclaration(sampled_image.name, binding, inStage, type, num_elements));
-	}
+
+        if (is_array)
+            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type, true, num_elements);
+        else
+            samplerDeclarations.emplace_back(sampled_image.name, binding, inStage, type);
+    }
 
 	return true;
+}
+
+
+static void parseConstants(spirv_cross::Compiler& compiler, VkShaderStageFlagBits inStage, nap::ShaderConstantDeclarations& outDeclarations)
+{
+	for (auto& spec_const : compiler.get_specialization_constants())
+	{
+		const std::string& constant_name = compiler.get_name(spec_const.id);
+		if (constant_name.empty())
+			continue;
+
+		const auto& spir_const = compiler.get_constant(spec_const.id);
+		nap::uint value = spir_const.m.c[0].r[0].u32;
+		outDeclarations.emplace_back(constant_name, value, spec_const.constant_id, inStage);
+	}
 }
 
 
@@ -741,7 +822,7 @@ namespace nap
 		{
 			VkDescriptorSetLayoutBinding samplerLayoutBinding = {};
 			samplerLayoutBinding.binding = declaration.mBinding;
-			samplerLayoutBinding.descriptorCount = declaration.mNumArrayElements;
+			samplerLayoutBinding.descriptorCount = declaration.mNumElements;
 			samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
 			samplerLayoutBinding.pImmutableSamplers = nullptr;
 			samplerLayoutBinding.stageFlags = declaration.mStage;
@@ -792,6 +873,7 @@ namespace nap
 		mUBODeclarations.clear();
 		mSSBODeclarations.clear();
 		mSamplerDeclarations.clear();
+		mConstantDeclarations.clear();
 	}
 
 	//////////////////////////////////////////////////////////////////////////
@@ -825,7 +907,7 @@ namespace nap
 	}
 
 
-	bool Shader::load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
+	bool Shader::load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		mDisplayName = displayName;
@@ -838,7 +920,7 @@ namespace nap
 		std::vector<nap::uint32> fragment_shader_spirv;
 
 		// Compile both vert and frag into single shader pipeline program
-		if (!compileProgram(device, vulkan_version, vertShader, vertSize, fragShader, fragSize, mDisplayName, vertex_shader_spirv, fragment_shader_spirv, errorState))
+		if (!compileProgram(device, vulkan_version, vertShader, vertSize, fragShader, fragSize, mDisplayName, vertex_shader_spirv, fragment_shader_spirv, searchPaths, errorState))
 			return false;
 
 		// Create vertex shader module
@@ -877,6 +959,10 @@ namespace nap
 		if (!verifyShaderVariableDeclarations(errorState))
 			return false;
 
+		// Parse specialization constants
+		parseConstants(vertex_shader_compiler, VK_SHADER_STAGE_VERTEX_BIT, mConstantDeclarations);
+		parseConstants(fragment_shader_compiler, VK_SHADER_STAGE_FRAGMENT_BIT, mConstantDeclarations);
+
 		return initLayout(device, errorState);
 	}
 
@@ -903,8 +989,11 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(fragment_shader_path, frag_source, errorState), "Unable to read %s fragment shader file", displayName.c_str()))
 			return false;
 
+		// Copy data search paths
+		const auto search_paths = mRenderService->getModule().getInformation().mDataSearchPaths;
+
 		// Compile shader
-		return this->load(displayName, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		return this->load(displayName, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
 	}
 
 
@@ -931,7 +1020,7 @@ namespace nap
 	}
 
 
-	bool ComputeShader::load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState)
+	bool ComputeShader::load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState)
 	{
 		// Set display name
 		assert(mRenderService->isInitialized());
@@ -944,7 +1033,7 @@ namespace nap
 		std::vector<uint32> comp_shader_spirv;
 
 		// Compile both vert and frag into single shader pipeline program
-		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, errorState))
+		if (!compileComputeProgram(device, vulkan_version, compShader, compSize, mDisplayName, comp_shader_spirv, searchPaths, errorState))
 			return false;
 
 		// Create compute shader module
@@ -957,28 +1046,50 @@ namespace nap
 		if (!parseShaderVariables(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mUBODeclarations, mSSBODeclarations, mSamplerDeclarations, errorState))
 			return false;
 
-		// Cache workgroup size specialization constants
-		std::array<spirv_cross::SpecializationConstant, 3> spec_constants;
-		comp_shader_compiler.get_work_group_size_specialization_constants(spec_constants[0], spec_constants[1], spec_constants[2]);
+		// Parse specialization constants
+		parseConstants(comp_shader_compiler, VK_SHADER_STAGE_COMPUTE_BIT, mConstantDeclarations);
 
-		// Set to invalid (-1) by default
-		mWorkGroupSizeConstantIds.resize(3, -1);
+		// Get workgroup size specialization constants specified in shader
+		std::array<spirv_cross::SpecializationConstant, 3> work_group_spec_constants;
+		comp_shader_compiler.get_work_group_size_specialization_constants(work_group_spec_constants[0], work_group_spec_constants[1], work_group_spec_constants[2]);
 
 		// Search for workgroup specialization constants
-		for (uint i = 0; i < spec_constants.size(); i++)
+		const glm::uvec3& max_work_group_size = glm::make_vec3(&mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
+		for (uint i = 0; i < work_group_spec_constants.size(); i++)
 		{
-			if (spec_constants[i].id != spirv_cross::ID(0))
+			// Check if the workgroup size is specified explicitly in the shader
+			if (work_group_spec_constants[i].id != spirv_cross::ID(0))
 			{
-				// Overwrite workgroup size with quaried maximum supported workgroup size
-				mWorkGroupSizeConstantIds[i] = spec_constants[i].constant_id;
-				mWorkGroupSize[i] = mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[i];
+				// Workgroup size of current dimension is a specialization constant
+				// Overwrite workgroup size with queried maximum supported workgroup size
+				mWorkGroupSize[i] = max_work_group_size[i]; // Set max as default
+				for (auto& constant_declaration : mConstantDeclarations)
+				{
+					if (constant_declaration.mConstantID == work_group_spec_constants[i].constant_id)
+					{
+						mWorkGroupSize[i] = constant_declaration.mValue;
+						mWorkGroupSizeOverrides.insert({ i, constant_declaration.mName });
+						break;
+					}
+				}
 			}
 			else
 			{
+				// Workgroup size of current dimension is explicitly specified
 				// Use reflection to store constant defined in shader source
 				mWorkGroupSize[i] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, i);
 			}
 		}
+		assert(glm::all(glm::greaterThan(mWorkGroupSize, { 0, 0, 0 })));
+
+#ifdef __APPLE__
+		// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
+		// which doesn't necessarily match physical device limits, especially on older devices.
+		// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
+		// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
+		for (uint i = 0; i< mWorkGroupSize.length(); i++)
+			mWorkGroupSize[i] = math::min<uint32>(mWorkGroupSize[i], 512);
+#endif // __APPLE__
 
 		return initLayout(device, errorState);
 	}
@@ -1015,10 +1126,28 @@ namespace nap
 		std::string frag_source;
 		if (!errorState.check(utility::readFileToString(mFragPath, frag_source, errorState), "Unable to read shader file %s", mFragPath.c_str()))
 			return false;
-		
-		// Compile shader
+
+		// Search paths
+		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mVertPath), utility::getFileDir(mFragPath) };
+		if (!mRestrictModuleIncludes)
+		{
+			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			{
+				for (const auto& path : mod->getInformation().mDataSearchPaths)
+				{
+					auto shader_path = utility::joinPath({ path, "shaders" });
+					if (utility::dirExists(shader_path))
+						search_paths.emplace_back(shader_path);
+				}
+			}
+		}
+
+		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mVertPath);
-		return this->load(shader_name, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState);
+		if (!load(shader_name, search_paths, vert_source.data(), vert_source.size(), frag_source.data(), frag_source.size(), errorState))
+			return false;
+
+		return true;
 	}
 
 
@@ -1044,8 +1173,26 @@ namespace nap
 		if (!errorState.check(utility::readFileToString(mComputePath, comp_source, errorState), "Unable to read shader file %s", mComputePath.c_str()))
 			return false;
 
-		// Compile shader
+		// Search paths
+		std::vector<std::string> search_paths = { "shaders", utility::getFileDir(mComputePath) };
+		if (!mRestrictModuleIncludes)
+		{
+			for (auto* mod : mRenderService->getCore().getModuleManager().getModules())
+			{
+				for (const auto& path : mod->getInformation().mDataSearchPaths)
+				{
+					auto shader_path = utility::joinPath({ path, "shaders" });
+					if (utility::dirExists(shader_path))
+						search_paths.emplace_back(shader_path);
+				}
+			}
+		}
+
+		// Parse shader
 		std::string shader_name = utility::getFileNameWithoutExtension(mComputePath);
-		return this->load(shader_name, comp_source.data(), comp_source.size(), errorState);
+		if (!this->load(shader_name, search_paths, comp_source.data(), comp_source.size(), errorState))
+			return false;
+
+		return true;
 	}
 }

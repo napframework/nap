@@ -49,8 +49,8 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		/**
-		* @return the mesh resource to render.
-		*/
+		 * @return the mesh resource to render.
+		 */
 		IMesh& getMeshResource()			{ return *mMesh; }
 
 	public:
@@ -143,16 +143,22 @@ namespace nap
 		MeshInstance& getMeshInstance()							{ return getMesh().getMeshInstance(); }
 
 		/**
+		 * Returns the renderable mesh which can be used to extract low-level vertex buffer information 
+		 * @return the renderable mesh
+		 */
+		const RenderableMesh& getRenderableMesh() const			{ return mRenderableMesh; }
+
+		/**
 		 * Sets clipping rectangle on this instance.
 		 * @param rect Rectangle in pixel coordinates.
 		 */
 		void setClipRect(const math::Rect& rect)				{ mClipRect = rect; }
 
 		/**
-		* Sets line width
-		* @param lineWidth New line width
-		*/
-		void setLineWidth(float lineWidth) { mLineWidth = lineWidth; }
+		 * Sets line width
+		 * @param lineWidth New line width
+		 */
+		void setLineWidth(float lineWidth)						{ mLineWidth = lineWidth; }
 
 		/**
 		 * @return the clipping rectangle in pixel coordinates
@@ -174,7 +180,6 @@ namespace nap
 		MaterialInstance						mMaterialInstance;					///< The MaterialInstance as created from the resource. 
 		math::Rect								mClipRect;							///< Clipping rectangle for this instance, in pixel coordinates
 		RenderableMesh							mRenderableMesh;					///< The currently active renderable mesh, either set during init() or set by setMesh.
-		RenderService*							mRenderService = nullptr;			///< Pointer to the renderer
 
 		UniformMat4Instance*					mModelMatUniform = nullptr;			///< Pointer to the model matrix uniform
 		UniformMat4Instance*					mViewMatUniform = nullptr;			///< Pointer to the view matrix uniform

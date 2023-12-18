@@ -10,10 +10,15 @@
 #include <utility/dllexport.h>
 #include <cameracomponent.h>
 
+// Local includes
+#include "rendermask.h"
+#include "renderlayer.h"
+
 namespace nap
 {
 	// Forward declares
 	class RenderableComponentInstance;
+	class RenderService;
 
 	/**
 	 * Resource part of the render-able component. 
@@ -27,7 +32,10 @@ namespace nap
 		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
 
 	public:
-		bool mVisible = true;	///< Property: 'Visible' if this object is rendered to target by the render service 
+		bool mVisible = true;								///< Property: 'Visible' if this object is rendered to target by the render service.
+		ResourcePtr<RenderLayerRegistry> mLayerRegistry;	///< Property: 'LayerRegistry' the render layer registry this component depends on
+		ResourcePtr<RenderLayer> mLayer;					///< Property: 'Layer' the render layer assigned to this component 
+		std::vector<ResourcePtr<RenderTag>> mTags;			///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
 
 
@@ -41,9 +49,7 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		RenderableComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)
-		{}
+		RenderableComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
 		 * Make sure to this in derived classes
@@ -72,6 +78,21 @@ namespace nap
 		bool isVisible() const														{ return mVisible; }
 
 		/**
+		 * @return the list of tags
+		 */
+		const std::vector<ResourcePtr<RenderTag>>& getTags() const					{ return getComponent<RenderableComponent>()->mTags; }
+
+		/**
+		 * @return the render mask
+		 */
+		RenderMask getRenderMask() const											{ return mRenderMask; }
+
+		/**
+		 * @return the render mask
+		 */
+		LayerIndex getRenderLayer() const											{ return mRenderLayer; }
+
+		/**
 		 * Called by the Render Service. By default every camera type is supported
 		 * If your renderable component doesn't support a specific camera return false
 		 * In that case the object won't be rendered.
@@ -91,7 +112,11 @@ namespace nap
 		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
 
+		RenderService* mRenderService = nullptr;
+
 	private:
-		bool mVisible = true;			///< If this object should be drawn or not
+		bool mVisible = true;							///< If this object should be drawn or not
+		LayerIndex mRenderLayer = 0U;					///< The layer index
+		RenderMask mRenderMask = 0U;					///< The render mask
 	};
 }

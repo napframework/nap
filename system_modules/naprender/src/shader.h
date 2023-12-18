@@ -9,6 +9,8 @@
 #include "vertexattributedeclaration.h"
 #include "samplerdeclaration.h"
 #include "shadervariabledeclarations.h"
+#include "shaderconstant.h"
+#include "shaderconstantdeclaration.h"
 #include "uniform.h"
 
 // External Includes
@@ -35,27 +37,32 @@ namespace nap
 		/**
 		 * @return all uniform shader attributes
 		 */
-		const SamplerDeclarations& getSamplerDeclarations() const { return mSamplerDeclarations; }
+		const SamplerDeclarations& getSamplerDeclarations() const					{ return mSamplerDeclarations; }
 
 		/**
 		 * @return all UniformBufferObject declarations.
 		 */
-		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const { return mUBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getUBODeclarations() const		{ return mUBODeclarations; }
 
 		/**
 		 * @return all Shader Storage Buffer Object declarations.
 		 */
-		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const { return mSSBODeclarations; }
+		const std::vector<BufferObjectDeclaration>& getSSBODeclarations() const		{ return mSSBODeclarations; }
+
+		/**
+		 * @return all Shader Constant declarations.
+		 */
+		const ShaderConstantDeclarations& getConstantDeclarations() const			{ return mConstantDeclarations; }
 
 		/**
 		 * @return shader display name
 		 */
-		const std::string& getDisplayName() const { return mDisplayName; }
+		const std::string& getDisplayName() const									{ return mDisplayName; }
 
 		/**
 		* @return Vulkan descriptorSetLayout.
 		*/
-		VkDescriptorSetLayout getDescriptorSetLayout() const { return mDescriptorSetLayout; }
+		VkDescriptorSetLayout getDescriptorSetLayout() const						{ return mDescriptorSetLayout; }
 
 		/**
 		 * Clears shader declarations and layout information.
@@ -68,6 +75,7 @@ namespace nap
 		BufferObjectDeclarationList						mUBODeclarations;						///< All uniform buffer object declarations
 		BufferObjectDeclarationList						mSSBODeclarations;						///< All storage buffer object declarations
 		SamplerDeclarations								mSamplerDeclarations;					///< All sampler declarations
+		ShaderConstantDeclarations						mConstantDeclarations;					///< All shader constant declarations
 		VkDescriptorSetLayout							mDescriptorSetLayout = VK_NULL_HANDLE;	///< Descriptor set layout
 
 		/**
@@ -98,29 +106,40 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseShader)
 	public:
+		/**
+		 * Shader type flag bits
+		 */
+		enum EShaderType : uint
+		{
+			Vertex		= 0x01,
+			Fragment	= 0x02
+		};
+		using ShaderTypeFlags = uint;
+
 		Shader(Core& core);
 		~Shader();
 
 		/**
 		* @return all vertex shader attribute declarations.
 		*/
-		const VertexAttributeDeclarations& getAttributes() const { return mShaderAttributes; }
+		const VertexAttributeDeclarations& getAttributes() const					{ return mShaderAttributes; }
 
 		/**
 		 * @return Vulkan vertex module.
 		 */
-		VkShaderModule getVertexModule() const { return mVertexModule; }
+		VkShaderModule getVertexModule() const										{ return mVertexModule; }
 
 		/**
 		 * @return Vulkan fragment module.
 		 */
-		VkShaderModule getFragmentModule() const { return mFragmentModule; }
+		VkShaderModule getFragmentModule() const									{ return mFragmentModule; }
 
 	protected:
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
 		 * Call this in a derived class on initialization.
 		 * @param displayName the name of the shader.
+		 * @param searchPaths the search paths of the shader.
 		 * @param vertShader the vertex shader GLSL code.
 		 * @param vertSize total number of characters in vertShader.
 		 * @param fragShader the fragment shader GLSL code.
@@ -128,7 +147,7 @@ namespace nap
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
-		 bool load(const std::string& displayName, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState);
+		 bool load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* vertShader, int vertSize, const char* fragShader, int fragSize, utility::ErrorState& errorState);
 		 
 		 /**
 		  * Loads a NAP default shader from disk.
@@ -164,38 +183,37 @@ namespace nap
 		/**
 		 * @return Vulkan vertex module.
 		 */
-		VkShaderModule getComputeModule() const { return mComputeModule; }
+		VkShaderModule getComputeModule() const											{ return mComputeModule; }
 
 		/**
 		 * @return local work group size
 		 */
-		glm::u32vec3 getWorkGroupSize() const { return mWorkGroupSize; }
+		glm::uvec3 getWorkGroupSize() const												{ return mWorkGroupSize; }
 
 		/**
-		 * Workgroup specialization constant IDs. 
-		 * When a workgroup size specialization constant is detected, NAP automatically overwrites it with the
-		 * maximum group size of the device on pipeline creation. Entries with the value -1 have no associated
-		 * specialization constant defined in the compute shader.
-		 * @return a vector of work group size specialization constant IDs
+		 * Map of specialization constant names that are available to override a workgroup dimension size.
+		 * Key : dimension[0, 1, 2], Value: constant_name
+		 * @return workgroup dimension to override specialization constant name
 		 */
-		const std::vector<int>& getWorkGroupSizeConstantIds() const { return mWorkGroupSizeConstantIds; }
+		const std::unordered_map<uint, std::string>& getWorkGroupSizeOverrides() const	{ return mWorkGroupSizeOverrides; }
 
 	protected:
 		/**
 		 * Compiles the GLSL shader code, creates the shader module and parses all the uniforms and samplers.
 		 * Call this in a derived class on initialization.
 		 * @param displayName the name of the shader
+		 * @param searchPaths the search paths of the shader.
 		 * @param compShader the fragment shader GLSL code.
 		 * @param compSize total number of characters in compShader.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
 		 */
-		virtual bool load(const std::string& displayName, const char* compShader, int compSize, utility::ErrorState& errorState);
+		virtual bool load(const std::string& displayName, const std::vector<std::string>& searchPaths, const char* compShader, int compSize, utility::ErrorState& errorState);
 
 	private:
-		glm::u32vec3									mWorkGroupSize;
-		VkShaderModule									mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
-		std::vector<int>								mWorkGroupSizeConstantIds;				///< Workgroup size specialization constant IDs
+		glm::uvec3											mWorkGroupSize;							///< Workgroup size dimensions (x, y, z)
+		std::unordered_map<uint, std::string>				mWorkGroupSizeOverrides;				///< Map of constant IDs that override a workgroup dimension size <dimension[0, 1, 2], constant_name>
+		VkShaderModule										mComputeModule = VK_NULL_HANDLE;		///< Loaded compute module
 	};
 
 
@@ -219,6 +237,7 @@ namespace nap
 
 		std::string mVertPath;							///< Property: 'mVertShader' path to the vertex shader on disk
 		std::string	mFragPath;							///< Property: 'mFragShader' path to the fragment shader on disk
+		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
 	};
 
 
@@ -240,7 +259,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& error) override;
 
-		std::string mComputePath;							///< Property: 'ComputeShader' path to the vertex shader on disk
+		std::string mComputePath;						///< Property: 'ComputeShader' path to the vertex shader on disk
+		bool mRestrictModuleIncludes = false;			///< Property: 'RestrictModuleIncludes' excludes shader include file search paths in module data folders
 	};
 }
 

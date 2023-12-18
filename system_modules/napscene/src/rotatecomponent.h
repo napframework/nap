@@ -53,6 +53,7 @@ namespace nap
 
 	public:
 		RotateProperties mProperties;
+		bool mEnabled = true;
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -88,6 +89,16 @@ namespace nap
 		*/
 		void reset();
 
+		/**
+		 * Enable or disable the rotation
+		 */
+		void enable(bool enable)									{ mEnabled = enable; }
+
+		/**
+		 * @return whether the component is enabled
+		 */
+		bool isEnabled() const										{ return mEnabled; }
+
 		// Rotation properties
 		RotateProperties mProperties;
 
@@ -97,6 +108,9 @@ namespace nap
 
 		// Local elapsed time
 		double mElapsedTime = 0.0;
+
+		// Enable flag
+		bool mEnabled = true;
 
 		// Initial Rotation value
 		glm::quat mInitialRotate = glm::quat();

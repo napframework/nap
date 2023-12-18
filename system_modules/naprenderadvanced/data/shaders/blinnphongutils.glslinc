@@ -1,0 +1,126 @@
+// NAP Shader include file
+
+// Includes
+#include "light.glslinc"
+#include "blinnphongmaterial.glslinc"
+
+
+// Shades a fragment based on a light, incoming normal and position should be in object space
+bool getLightDirection(Light light, vec3 fragPosition, out vec3 outDirection)
+{
+	switch(getLightType(light.flags))
+	{
+		case LIGHT_CUSTOM:
+			// TODO: Support custom light computation functions in some way
+			return false;
+
+		case LIGHT_DIRECTIONAL:
+			outDirection = light.direction;
+			return true;
+
+		case LIGHT_POINT:
+		case LIGHT_SPOT:
+			outDirection = normalize(fragPosition - light.origin);
+			return true;
+
+		default:
+			return false;
+	}
+}
+
+
+// Shades a fragment based on a light, incoming normal and position should be in object space
+vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, float strength, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+{
+	// inverse light direction
+	vec3 inv_dir = normalize(-lightDirection);
+
+	// calculate vector that defines the distance from camera to the surface
+	vec3 surface_to_cam = normalize(camPosition - fragPosition);
+
+	// lighting components
+	float diffuse = max(0.0, dot(surfNormal, inv_dir));
+	float specular = 0.0;
+
+	// compute specular value if diffuse coefficient is > 0.0
+	if (diffuse > 0.0)
+	{
+		vec3 halfway = normalize(inv_dir + surface_to_cam);  
+		specular = pow(max(dot(surfNormal, halfway), 0.0), mtl.shininess);
+	}
+
+	vec3 ambient_color = lightIntensity * mtl.ambient.rgb + mtl.diffuse * mtl.ambient.a;
+	vec3 diffuse_color = diffuse * lightColor * lightIntensity * mtl.diffuse;
+	vec3 specular_color = specular * lightIntensity * mtl.specular;
+
+	// linear color (color before gamma correction)
+	vec3 comp_color = (diffuse_color + specular_color + ambient_color) * strength;
+
+	// clamp
+	return clamp(comp_color, 0.0, 1.0);
+}
+
+
+// Shades a fragment based on a light, incoming normal and position should be in object space
+vec3 computeLight(Light li, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+{
+	vec3 color = { 0.0, 0.0, 0.0 };
+	switch(getLightType(li.flags))
+	{
+		case LIGHT_CUSTOM:
+		{
+			// TODO: Support custom light computation functions in some way
+			color += vec3(1.0, 0.0, 1.0);
+			break;
+		}
+		case LIGHT_DIRECTIONAL:
+		{	
+			color += computeLight(li.direction, li.color, li.intensity, 1.0, mtl, camPosition, surfNormal, fragPosition);
+			break;
+		}
+		case LIGHT_POINT:
+		{
+			vec3 delta = fragPosition - li.origin;
+			float dist_squared = dot(delta, delta);
+			float atten = min(1.0/(dist_squared * max(li.attenuation, 0.000001)), 1.0);
+			color += computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
+			break;
+		}
+		case LIGHT_SPOT:
+		{
+			vec3 delta = fragPosition - li.origin;
+			float dist_squared = dot(delta, delta);
+			float atten = min(1.0/(dist_squared * max(li.attenuation, 0.000001)), 1.0);
+			vec3 dir = normalize(delta);
+			float phi = 1.0 - (dot(dir, normalize(li.direction)) * 0.5 + 0.5);
+			float cone = clamp(li.angle, 0.0, 360.0)/360.0;
+			float spot = pow(1.0-min(phi/cone, 1.0), li.falloff);
+			if (spot > 0.0)
+			{
+				color += spot * computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
+			}
+			break;
+		}
+		default:
+		{
+			// Error
+			color += vec3(1.0, 0.0, 1.0);
+			break;
+		}
+	}
+	return color;
+}
+
+
+// Shades a fragment based on a light, incoming normal and position should be in object space
+vec3 computeLights(Light lights[8], uint count, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfNormal, vec3 fragPosition)
+{
+	vec3 color = { 0.0, 0.0, 0.0 };
+	for (uint i = 0; i < count; i++)
+	{
+		Light li = lights[i];
+		color += computeLight(li, mtl, camPosition, surfNormal, fragPosition);
+	}
+	return color;
+}
+

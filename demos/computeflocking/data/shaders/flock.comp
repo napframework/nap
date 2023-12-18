@@ -8,15 +8,15 @@
 // For an introduction to computational flocking systems, please refer to the seminal work by Reynolds:
 // `Reynolds, C. W. (1987, August). Flocks, herds and schools: A distributed behavioral model.`
 
-// This compute shader updates: (1) all boid transformations; position, velocity and orientation and 
-// (2) `mateRate`; the ratio of boids in the flock within one's view radius. In order to do this, we must 
-// first calculate the distances between all boids in the storage buffer (O^2). Then, based on the boids 
-// in close proximity (mates), calculate three individual forces that dictate the flocking behavior;
-// (1) alignment, (2) cohesion and (3) separation. The sum of these forces gives us the acceleration
-// vector of a boid that we can use to update the velocity. We use the direction of the velocity vector
-// to generate a quaternion describing the boid's orientation. The position is updated and clamped to the 
-// sphere bounds. Boids that come near the bounds are directed to the reflection between the view direction
-// and surface direction with an additional force.
+// This compute shader updates all boid transformations; position, velocity and orientation.
+// In order to do this, we must first calculate the distances between all boids in the storage 
+// buffer (O^2). Then, based on the boids in close proximity (mates), calculate three individual 
+// forces that dictate the flocking behavior; (1) alignment, (2) cohesion and (3) separation. 
+// The sum of these forces gives us the acceleration vector of a boid that we can use to update 
+// the velocity. We use the direction of the velocity vector to generate a quaternion describing 
+// the boid's orientation. The position is updated and clamped to the sphere bounds. Boids that 
+// come near the bounds are directed to the reflection between the view direction and surface 
+// direction with an additional force.
 
 // For simplicity's sake, this algorithm takes a brute force approach to evaluating the distances between 
 // boids. Lots of interesting optimizations exist for this kind of GPU problem, however. Feel free to 
@@ -32,21 +32,22 @@
 layout(local_size_x_id = 0) in;
 
 // When declaring the workgroup size specialization constant to be higher than 0, NAP will not 
-// override the workgroup size when creating the compute pipeline. Uncommenting this bit and commenting out 
-// the above will let the shader define the workgroup size.
+// override the workgroup size when creating the compute pipeline. Uncommenting this line and commenting 
+// the line above will let the shader define the workgroup size.
 //layout(local_size_x = 512) in;
+
+// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
+layout(constant_id = 1) const uint BOID_COUNT = 10000;
+layout(constant_id = 2) const uint FORCE_TARGETS = 0;
+layout(constant_id = 3) const uint SHARED_MEMORY_PATH = 0;
+//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 struct Boid
 {
 	vec4 position;
 	vec4 velocity;
 	vec4 orientation;
-
-	uint padding_0;
-	uint padding_1;
-	uint padding_2;
-
-	float mateRate;
 };
 
 // STORAGE
@@ -64,8 +65,8 @@ layout(std430) writeonly buffer BoidBuffer_Out
 // UNIFORM
 uniform UBO
 {
-	vec3 target;
-	uint numBoids;
+	vec3 targets[8];
+	uint targetCount;
 	float deltaTime;
 	float elapsedTime;
 	float viewRadius;
@@ -91,10 +92,6 @@ const vec3 UP 				= vec3(0.0, 1.0, 0.0);
 const vec3 RIGHT 			= vec3(1.0, 0.0, 0.0);
 
 const float avoidBoundWeightConst = 4.0;
-
-// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
-layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
-//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 // Allocate a block of shared data in which we can store positions and velocities (2*sizeof(vec4)) 
 // of a boid for each local thread in the group/warp.
@@ -206,6 +203,36 @@ float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float 
 }
 
 
+// Compute weighted average of vectors based on distance
+vec3 weightedDistAvg(vec3 pos, in vec3 positions[8], uint count)
+{
+	// [xyz = offset][w = l1]
+	vec4 data[8]; 
+
+	// Follow weighted average of all targets
+	float total_l1 = 0.0;
+	for (uint i=0; i<count; i++)
+	{
+		data[i].xyz = positions[i] - pos;
+		data[i].w = dot(data[i].xyz, data[i].xyz);
+		total_l1 += data[i].w;
+	}
+
+	// Prevent division by zero
+	if (total_l1 < EPSILON) 
+		return vec3(0.0);
+
+	const float weight_bias_pow = 4.0;
+	vec3 avg_offset = { 0.0, 0.0, 0.0 };
+	for (uint i=0; i<count; i++)
+	{
+		float weight = data[i].w/total_l1;
+		avg_offset += data[i].xyz * pow(weight, weight_bias_pow);
+	}
+	return avg_offset;
+}
+
+
 // Compute the cumulative forces of the flock on a single boid. This guides its behavior.
 // For each boid in the storage buffer, we calculate the distance between them and the 
 // current boid. We also take the dot product of the current boid's view direction and the
@@ -241,10 +268,10 @@ void computeForces(
 
 	vec3 dir = safeNormalize(velocity);
 
-	for (uint i = 1; i < ubo.numBoids; i++) 
+	for (uint i = 1; i < BOID_COUNT; i++) 
 	{
 		// Evaluate all indices, except gid
-		uint idx = (gid + i) % ubo.numBoids;
+		uint idx = (gid + i) % BOID_COUNT;
 
 		// Fetch other position and velocity
 		vec4 other_pos = ssbo_in.boids[idx].position;
@@ -267,12 +294,12 @@ void computeForces(
 			numFlockMates++;
 			flockHeading += other_dir;
 			flockCenter += other_pos;
+		}
 
-			if (l1 < ubo.avoidRadius * ubo.avoidRadius)
-			{
-				// Note that this can be a zero vector
-				avoidanceHeading -= vec4(offset, 1.0) / l1;
-			}
+		if (l1 < ubo.avoidRadius * ubo.avoidRadius)
+		{
+			// Note that this can be a zero vector
+			avoidanceHeading -= vec4(offset, 1.0) / l1;
 		}
 	}
 }
@@ -298,7 +325,7 @@ void computeForces(
 // @param avoidanceHeading: outputs the cumulative avoidance vector
 // @param flockHeading: outputs the cumulative flock heading
 // @param flockCenter: outputs the cumulative flock center
-// @param numFlockMates: outputs the number of boids in view radius of the current boid
+// @param flockWeight: outputs the weight of boids in view radius of the current boid
 void computeForcesShared(
 	const uint gid, 
 	const vec3 position, 
@@ -306,25 +333,25 @@ void computeForcesShared(
 	out vec4 avoidanceHeading, 
 	out vec4 flockHeading, 
 	out vec4 flockCenter, 
-	out uint numFlockMates)
+	out float flockWeight)
 {
 	avoidanceHeading = vec4(0.0);
 	flockHeading = vec4(0.0);
 	flockCenter = vec4(0.0);
-	numFlockMates = 0U;
+	flockWeight = 0.0;
 
 	const vec3 dir = safeNormalize(velocity);
 	const float max_view_dot = 0.1;
 
 	// Copy to fast shared data and process in chunks of MAX_GROUP_SIZE_X
 	uint local_id = gl_LocalInvocationID.x;
-	for (uint chunk_id = 0; chunk_id*MAX_GROUP_SIZE_X < ubo.numBoids; chunk_id++)
+	for (uint chunk_id = 0; chunk_id*MAX_GROUP_SIZE_X < BOID_COUNT; chunk_id++)
 	{
 		// Total boids processed by this workgroup
 		uint proc = chunk_id*MAX_GROUP_SIZE_X;
 
 		// Number of boids to process in the current chunk
-		uint chunk_size = (proc+MAX_GROUP_SIZE_X > ubo.numBoids) ? ubo.numBoids - proc : MAX_GROUP_SIZE_X;
+		const uint chunk_size = (proc+MAX_GROUP_SIZE_X > BOID_COUNT) ? BOID_COUNT - proc : MAX_GROUP_SIZE_X;
 
 		uint id = clamp(proc+local_id, 0, proc+chunk_size-1);
 
@@ -357,15 +384,19 @@ void computeForcesShared(
 			{
 				other_dir = vec4(safeNormalize(other_dir.xyz), 0.0);
 
-				numFlockMates++;
-				flockHeading += other_dir;
-				flockCenter += other_pos;
+				// Higher distance equals stronger [0.0 - 1.0] 
+				float weight = min(l1/(ubo.viewRadius * ubo.viewRadius), 1.0);
 
-				if (l1 < ubo.avoidRadius * ubo.avoidRadius)
-				{
-					// Note that this can be a zero vector
-					avoidanceHeading -= vec4(offset, 1.0) / l1;
-				}
+				flockWeight += weight;
+				flockHeading += other_dir * (1.0 - weight);
+				flockCenter += other_pos * weight;
+			}
+
+			if (l1 < ubo.avoidRadius * ubo.avoidRadius)
+			{
+				// Note that this can be a zero vector
+				float weight = pow(1.0 - (l1/(ubo.avoidRadius * ubo.avoidRadius)), 2.0);
+				avoidanceHeading -= vec4(offset, 1.0) * weight;
 			}
 		}
 
@@ -389,34 +420,39 @@ void main()
 	vec4 avoidance_heading;
 	vec4 flock_heading;
 	vec4 flock_center;
-	uint num_flock_mates;
+	float flock_weight;
 
-	// Comment/uncomment to compare the performance difference between computeForcesShared() and computeForces()
-	computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
-	//computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, num_flock_mates);
+	// Use specialization constant SHARED_MEMORY_PATH to compare the
+	// performance difference between computeForcesShared() and computeForces()
+	if (SHARED_MEMORY_PATH > 0)
+		computeForcesShared(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
+	else
+		computeForces(global_id, b.position.xyz, b.velocity.xyz, avoidance_heading, flock_heading, flock_center, flock_weight);
 
-	// Calculate base acceleration determined by a moving global target position
-	vec4 offset = vec4(ubo.target, 0.0) - b.position;
-	vec3 acceleration = blendForce(offset.xyz, b.velocity.xyz) * ubo.targetWeight;
+	flock_weight = max(flock_weight, EPSILON);
+	vec3 acceleration = vec3(0.0);
 
 	// Calculate individual forces (direction and magnitude)
 	// 'alignment' indicates a force pushing towards the average heading of the flock
 	// 'cohesion' indicates a force pushing towards the center of the flock
 	// 'separation' indicates a force steering away from flock mates within an avoidance radius
-	if (num_flock_mates > 0)
+	vec4 mean_flock_center = flock_center / flock_weight;
+	vec4 mean_flock_heading = flock_heading / flock_weight;
+	vec4 mean_avoidance_heading = avoidance_heading / flock_weight;
+
+	vec3 alignment = blendForce(mean_flock_heading.xyz, b.velocity.xyz) * ubo.alignmentWeight;
+	vec3 cohesion = blendForce(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz) * ubo.cohesionWeight;
+	vec3 seperation = blendForce(mean_avoidance_heading.xyz, b.velocity.xyz) * ubo.separationWeight;
+
+	acceleration += alignment;
+	acceleration += cohesion;
+	acceleration += seperation;
+
+	// Calculate target weight
+	if (FORCE_TARGETS > 0 || ubo.targetCount > 0)
 	{
-		float fcount = float(num_flock_mates);
-		vec4 mean_flock_center = flock_center / fcount;
-		vec4 mean_flock_heading = flock_heading / fcount;
-		vec4 mean_avoidance_heading = avoidance_heading / fcount;
-
-		vec3 alignment = blendForce(mean_flock_heading.xyz, b.velocity.xyz) * ubo.alignmentWeight;
-		vec3 cohesion = blendForce(mean_flock_center.xyz - b.position.xyz, b.velocity.xyz) * ubo.cohesionWeight;
-		vec3 seperation = blendForce(mean_avoidance_heading.xyz, b.velocity.xyz) * ubo.separationWeight;
-
-		acceleration += alignment;
-		acceleration += cohesion;
-		acceleration += seperation;
+		vec3 target_offset = weightedDistAvg(b.position.xyz, ubo.targets, ubo.targetCount);
+		acceleration += blendForce(target_offset.xyz, b.velocity.xyz) * ubo.targetWeight;
 	}
 
 	// Steer away from sphere bounds
@@ -450,10 +486,6 @@ void main()
 
 	// Compose a new orientation from last frame's quat and the delta
 	b.orientation = mulQuat(q_delta, b.orientation);
-
-	// Write mate rate
-	b.mateRate = max(pow(num_flock_mates/float(ubo.numBoids), 0.55), b.mateRate);
-	b.mateRate = clamp(b.mateRate, 0.0, 1.0) * 0.97;
 
 	// Write boid to output buffer
 	ssbo_out.boids[global_id] = b;

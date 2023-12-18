@@ -29,7 +29,7 @@ RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("File",				&nap::LineFromFile::mFile,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY_FILELINK("File",		&nap::LineFromFile::mFile,		nap::rtti::EPropertyMetaData::Required,		nap::rtti::EPropertyFileType::Any)
 	RTTI_PROPERTY("Units",				&nap::LineFromFile::mUnits,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DPI",				&nap::LineFromFile::mDPI,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Tolerance",			&nap::LineFromFile::mTolerance, nap::rtti::EPropertyMetaData::Default)

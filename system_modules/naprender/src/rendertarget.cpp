@@ -14,6 +14,7 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("DepthTexture",			&nap::RenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default)
@@ -31,7 +32,7 @@ namespace nap
 		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, colorFormat, 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_TRANSIENT_ATTACHMENT_BIT | VK_IMAGE_USAGE_COLOR_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outData.mImage, outData.mAllocation, outData.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.mView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outData.getImage(), colorFormat, 1, VK_IMAGE_ASPECT_COLOR_BIT, outData.getView(), errorState))
 			return false;
 
 		return true;
@@ -44,7 +45,7 @@ namespace nap
 		if (!create2DImage(renderer.getVulkanAllocator(), targetSize.width, targetSize.height, renderer.getDepthFormat(), 1, sampleCount, VK_IMAGE_TILING_OPTIMAL, VK_IMAGE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT, VMA_MEMORY_USAGE_GPU_ONLY, outImage.mImage, outImage.mAllocation, outImage.mAllocationInfo, errorState))
 			return false;
 
-		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.mView, errorState))
+		if (!create2DImageView(renderer.getDevice(), outImage.getImage(), renderer.getDepthFormat(), 1, VK_IMAGE_ASPECT_DEPTH_BIT, outImage.getView(), errorState))
 			return false;
 
 		return true;
@@ -68,8 +69,8 @@ namespace nap
 		if (mRenderPass != VK_NULL_HANDLE)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
 
-		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
-		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		utility::destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		utility::destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 	}
 
 
@@ -86,6 +87,9 @@ namespace nap
 			mSampleShading = false;
 		}
 
+		// Store whether a depth texture resource is set
+		mHasDepthTexture = mDepthTexture != nullptr;
+
 		// Set framebuffer size
 		glm::ivec2 size = mColorTexture->getSize();
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
@@ -93,10 +97,25 @@ namespace nap
 		// Store as attachments
 		std::array<VkImageView, 3> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
 
+		// Ensure the sample count is 1 when a depth texture resource is used
+		if (hasDepthTexture())
+		{
+			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
+				return false;
+		}
+
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
-		if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
-			return false;
+		if (hasDepthTexture())
+		{
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, true, mRenderPass, errorState))
+				return false;
+		}
+		else
+		{
+			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mRenderService->getDepthFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, mRenderPass, errorState))
+				return false;
+		}
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
@@ -106,7 +125,7 @@ namespace nap
 
 			// Bind textures as attachments
 			attachments[0] = mColorTexture->getHandle().getView();
-			attachments[1] = mDepthImage.getView();
+			attachments[1] = hasDepthTexture() ? mDepthTexture->getHandle().getView() : mDepthImage.getView();
 			attachments[2] = VK_NULL_HANDLE;
 		}
 		else
@@ -154,7 +173,7 @@ namespace nap
 		renderPassInfo.renderPass = mRenderPass;
 		renderPassInfo.framebuffer = mFramebuffer;
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { (uint32_t)size.x, (uint32_t)size.y };
+		renderPassInfo.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };;
 		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
 		renderPassInfo.pClearValues = clearValues.data();
 
@@ -195,6 +214,14 @@ namespace nap
 	RenderTexture2D& RenderTarget::getColorTexture()
 	{
 		return *mColorTexture;
+	}
+
+
+	DepthRenderTexture2D& RenderTarget::getDepthTexture()
+	{
+		assert(mHasDepthTexture);
+		assert(mDepthTexture != nullptr);
+		return *mDepthTexture;
 	}
 
 

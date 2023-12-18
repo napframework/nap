@@ -9,7 +9,7 @@
 #include "imguiicon.h"
 
 // External Includes
-#include <texture2d.h>
+#include <texture.h>
 #include <utility/dllexport.h>
 #include <rtti/typeinfo.h>
 
