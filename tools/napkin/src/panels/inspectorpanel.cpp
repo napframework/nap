@@ -397,7 +397,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 					{
 						QMessageBox msg(AppContext::get().getMainWindow());
 						msg.setWindowTitle("Required property");
-						msg.setText("You are clearing a required property, proceed?");
+						msg.setText("This is a required property, are you sure you want to remove it?");
 						msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 						msg.setDefaultButton(QMessageBox::Cancel);
 						msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
