@@ -21,27 +21,25 @@ namespace nap
 				const PathElement& element = mElements[index];
 				switch (element.mType)
 				{
-				case PathElement::Type::ATTRIBUTE:
-				{
-					if (result.empty())
-						result += element.Attribute.Name;
-					else
-						result += utility::stringFormat("/%s", element.Attribute.Name);
-
-					break;
-				}
-
-				case PathElement::Type::ARRAY_ELEMENT:
-				{
-					if (result.empty())
-						result += utility::stringFormat("%d", element.ArrayElement.Index);
-					else
-						result += utility::stringFormat("/%d", element.ArrayElement.Index);
-					break;
-				}
-				default:
-					assert(false);
-					break;
+					case PathElement::Type::ATTRIBUTE:
+					{
+						result += result.empty() ?
+							element.Attribute.Name :
+							utility::stringFormat("/%s", element.Attribute.Name);
+						break;
+					}
+					case PathElement::Type::ARRAY_ELEMENT:
+					{
+						result += result.empty() ?
+							utility::stringFormat("%d", element.ArrayElement.Index) :
+							utility::stringFormat("/%d", element.ArrayElement.Index);
+						break;
+					}
+					default:
+					{
+						assert(false);
+						break;
+					}
 				}
 			}
 
@@ -51,12 +49,11 @@ namespace nap
 
 		const Path Path::fromString(const std::string& path)
 		{
-			Path result;
-
-			// Split string on path seperator
+			// Split string on path separator
 			std::list<std::string> parts;
 			utility::tokenize(path, parts, "/", true);
 
+			Path result;
 			for (const std::string& part : parts)
 			{
 				// Try to extract array index
@@ -71,7 +68,6 @@ namespace nap
 					result.pushAttribute(part);
 				}
 			}
-
 			return result;
 		}
 
