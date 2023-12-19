@@ -110,6 +110,11 @@ QVariant napkin::PropertyPathItem::data(int role) const
 		{
 			return QVariant::fromValue(mPath);
 		}
+		case Qt::ForegroundRole:
+		{
+			return mPath.isInstanceProperty() ? AppContext::get().getThemeManager().getColor(napkin::theme::color::dimmedItem) :
+				QStandardItem::data(role);
+		}
 		default:
 		{
 			return QStandardItem::data(role);
@@ -433,7 +438,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 	// First resolve the pointee, after that behave like compound
 	// If the embedded object isn't present, do nothing
 	nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
-	if (pointee == nullptr)
+	if (pointee == nullptr || mPath.isInstanceProperty())
 		return;
 
 	auto object = pointee;

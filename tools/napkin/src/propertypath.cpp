@@ -106,21 +106,21 @@ nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
 	if (!isInstanceProperty())
 		return nullptr;
 
-	auto pathstr = propPathStr();
-
-	// find instanceproperties
-	auto rootEntity = getRootEntity();
-	if (rootEntity->mInstanceProperties.empty())
+	// find instance properties
+	auto root_entitiy = getRootEntity();
+	if (root_entitiy->mInstanceProperties.empty())
 		return nullptr;
 
-	auto compInstPath = getComponentInstancePath();
-	for (nap::ComponentInstanceProperties& instProp : rootEntity->mInstanceProperties)
+	auto comp_instance_path = getComponentInstancePath();
+	for (nap::ComponentInstanceProperties& instProp : root_entitiy->mInstanceProperties)
 	{
-		if (isComponentInstancePathEqual(*rootEntity,
-										 *instProp.mTargetComponent.get(),
-										 instProp.mTargetComponent.getInstancePath(),
-										 compInstPath))
+		if (isComponentInstancePathEqual(*root_entitiy,
+			*instProp.mTargetComponent.get(),
+			instProp.mTargetComponent.getInstancePath(),
+			comp_instance_path))
+		{
 			return &instProp;
+		}
 	}
 	return nullptr;
 }
@@ -175,15 +175,17 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 	if (mObjectPath.size() < 2)
 		return nullptr;
 
+	// First object must be scene
 	assert(mDocument != nullptr);
 	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
 	if (scene == nullptr)
 		return nullptr;
 
+	// Second an entity
 	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
-	if (entity == nullptr)
-		return nullptr;
+	assert(entity != nullptr);
 
+	// Find entity matching index in scene
 	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
 	for (auto& scene_entity : scene->mEntities)
 	{
@@ -378,7 +380,7 @@ Object* PropertyPath::getPointee() const
 	auto value = getValue();
 	auto type = value.get_type();
 	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
-	return wrapped_type != type ?
+	return wrapped_type != type ? 
 		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
 		value.get_value<nap::rtti::Object*>();
 }
@@ -812,15 +814,11 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		PPath op;
-		op.emplace_back(pointee->mID);
-
-		PPath p;
-		p.emplace_back(name);
-
 		// This path points to the pointee
+		PPath op = { pointee->mID };
+		PPath pp = { name };
 		assert(mDocument != nullptr);
-		PropertyPath childPath(op, p, *mDocument);
+		PropertyPath childPath(op, pp, *mDocument);
 
 		if (!visitor(childPath))
 			return;
