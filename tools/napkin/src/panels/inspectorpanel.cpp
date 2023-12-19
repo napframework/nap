@@ -389,8 +389,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		auto* pointee = path.getPointee();
 		if (pointee != nullptr)
 		{
-			QString label = QString("Remove '%1'").arg(pointee->mID.c_str());
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE), label, [path]()
+			QString label = QString("Clear '%1'").arg(pointee->mID.c_str());
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CLEAR), label, [path]()
 				{
 					bool clear = true;
 					if (nap::rtti::hasFlag(path.getProperty(), EPropertyMetaData::Required))
