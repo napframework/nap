@@ -384,7 +384,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	// Pointer -> clear link
 	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
 	{
-		auto pointer_item = static_cast<PointerItem*>(&item);
+		auto* pointer_item = static_cast<PointerItem*>(&item);
 		const auto& path = pointer_item->getPath();
 		auto* pointee = path.getPointee();
 		if (pointee != nullptr)
