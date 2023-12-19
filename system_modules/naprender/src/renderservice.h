@@ -783,6 +783,12 @@ namespace nap
 		VkSampleCountFlagBits getMaxRasterizationSamples() const;
 
 		/**
+		 * Returns the max compute shader workgroup size.
+		 * @return the max compute shader workgroup size.
+		 */
+		glm::uvec3 getMaxComputeWorkGroupSize() const;
+
+		/**
 		 * Returns max supported rasterization samples based on the requested number of samples.
 		 * The output is automatically clamped if the requested number of samples exceeds the hardware limit.
 		 * @return if requested number of samples is supported by hardware.

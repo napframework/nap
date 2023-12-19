@@ -39,6 +39,7 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
+	RTTI_PROPERTY("EnableMaxGroupSizeDefault", &nap::ComputeShaderFromFile::mEnableMaxGroupSizeDefault, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -1054,21 +1055,25 @@ namespace nap
 		comp_shader_compiler.get_work_group_size_specialization_constants(work_group_spec_constants[0], work_group_spec_constants[1], work_group_spec_constants[2]);
 
 		// Search for workgroup specialization constants
-		const glm::uvec3& max_work_group_size = glm::make_vec3(&mRenderService->getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
+		const glm::uvec3 max_work_group_size = mRenderService->getMaxComputeWorkGroupSize();
 		for (uint i = 0; i < work_group_spec_constants.size(); i++)
 		{
 			// Check if the workgroup size is specified explicitly in the shader
 			if (work_group_spec_constants[i].id != spirv_cross::ID(0))
 			{
 				// Workgroup size of current dimension is a specialization constant
-				// Overwrite workgroup size with queried maximum supported workgroup size
-				mWorkGroupSize[i] = max_work_group_size[i]; // Set max as default
 				for (auto& constant_declaration : mConstantDeclarations)
 				{
 					if (constant_declaration.mConstantID == work_group_spec_constants[i].constant_id)
 					{
-						mWorkGroupSize[i] = constant_declaration.mValue;
+						// Register override
 						mWorkGroupSizeOverrides.insert({ i, constant_declaration.mName });
+
+						// Overwrite workgroup size with queried maximum supported workgroup size
+						if (mEnableMaxGroupSizeDefault)
+							constant_declaration.mValue = max_work_group_size[i];
+						
+						mWorkGroupSize[i] = constant_declaration.mValue;
 						break;
 					}
 				}

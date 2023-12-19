@@ -1045,22 +1045,22 @@ namespace nap
 		if (!initInternal(renderService,*resource.mComputeMaterial, resource, errorState))
 			return false;
 
-		// Set work group size
-		mWorkGroupSize = getMaterial().getWorkGroupSize();
+		return true;
+	}
 
-		// Set any work group size overrides
+
+	glm::uvec3 ComputeMaterialInstance::getWorkGroupSize() const
+	{
+		// Fetch work group size overrides
 		const auto& override_map = getMaterial().getShader().getWorkGroupSizeOverrides();
+		glm::uvec3 workgroup_size = getMaterial().getWorkGroupSize();
 		for (const auto& entry : override_map)
 		{
-			assert(entry.first <= mWorkGroupSize.length());
+			assert(entry.first <= workgroup_size.length());
 			auto* constant = findConstant(entry.second);
-			if (constant == nullptr)
-				constant = getMaterial().findConstant(entry.second);
-
 			if (constant != nullptr)
-				mWorkGroupSize[entry.first] = constant->mValue;
+				workgroup_size[entry.first] = constant->mValue;
 		}
-
-		return true;
+		return workgroup_size;
 	}
 }
