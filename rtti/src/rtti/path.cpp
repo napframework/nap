@@ -212,20 +212,20 @@ namespace nap
 			// We keep track of the value we want to set on the current element of the path and backtrack from there.
 			rtti::Variant value_to_set = value;
 
-			// Convert values and wrapped types (pointers)
+			// Try to convert when types are different, skip when new value is nullptr.
+			// The result is a value that can is compatible with the property value to set.
 			const rttr::type prop_type = getType();
-			if (prop_type != value_to_set.get_type())
+			if (prop_type != value_to_set.get_type() && value_to_set != nullptr)
 			{
+				// convert to wrapped type (objectptr etc.)
 				if (prop_type.is_wrapper())
 				{
-					if (value_to_set != nullptr)
-					{
-						if (!value_to_set.convert(prop_type.get_wrapped_type()))
-							return false;
-					}
+					if (!value_to_set.convert(prop_type.get_wrapped_type()))
+						return false;
 				}
 				else
 				{
+					// convert to value or raw pointer type
 					if (!value_to_set.convert(prop_type))
 						return false;
 				}
@@ -238,8 +238,13 @@ namespace nap
 				const ResolvedRTTIPathElement& element = mElements[index];
 				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
 				{
+					// Check if what we're attempting to set is a pointer property
+					auto root_type = element.Root.Property.get_type();
+					bool is_ptr = root_type.is_wrapper() ? root_type.get_wrapped_type().is_pointer() :
+						root_type.is_pointer();
+
 					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
-					if (element.Root.Property.get_type().is_wrapper() && value_to_set == nullptr)
+					if (is_ptr && value_to_set == nullptr)
 					{
 						if (!element.Root.Property.set_value(element.Root.Instance, nullptr))
 							return false;
@@ -253,8 +258,13 @@ namespace nap
 				// Attribute element: set the value on the *copy* of the object (the variant)
 				else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 				{
+					// Check if what we're attempting to set is a pointer property
+					auto attr_type = element.Attribute.Property.get_type();
+					bool is_ptr = attr_type.is_wrapper() ? attr_type.get_wrapped_type().is_pointer() :
+						attr_type.is_pointer();
+
 					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
-					if (element.Attribute.Property.get_type().is_wrapper() && value_to_set == nullptr)
+					if (is_ptr && value_to_set == nullptr)
 					{
 						if (!element.Attribute.Property.set_value(element.Attribute.Variant, nullptr))
 							return false;
@@ -273,17 +283,22 @@ namespace nap
 				// Array element: set the array index value on a *copy* of the array
 				else if (element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 				{
-					rtti::VariantArray array = element.ArrayElement.Array.create_array_view();
+					rtti::VariantArray view = element.ArrayElement.Array.create_array_view();
+
+					// Check if what we're attempting to set is a pointer property
+					auto arr_type = view.get_rank_type(view.get_rank());
+					bool is_ptr = arr_type.is_wrapper() ? arr_type.get_wrapped_type().is_pointer() :
+						arr_type.is_pointer();
 
 					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
-					if (array.get_rank_type(array.get_rank()).is_wrapper() && value_to_set == nullptr)
+					if (is_ptr && value_to_set == nullptr)
 					{
-						if (!array.set_value(element.ArrayElement.Index, nullptr))
+						if (!view.set_value(element.ArrayElement.Index, nullptr))
 							return false;
 					}
 					else
 					{
-						if (!array.set_value(element.ArrayElement.Index, value_to_set))
+						if (!view.set_value(element.ArrayElement.Index, value_to_set))
 							return false;
 					}
 
