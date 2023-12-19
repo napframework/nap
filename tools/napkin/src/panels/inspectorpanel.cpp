@@ -252,7 +252,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr)
+		if (parent_array == nullptr || item.getPath().isInstanceProperty())
 			return;
 
 		// Ensure item can be moved up
@@ -279,7 +279,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr)
+		if (parent_array == nullptr || item.getPath().isInstanceProperty())
 			return;
 
 		// Ensure item can be moved down
@@ -306,7 +306,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr)
+		if (parent_array == nullptr || item.getPath().isInstanceProperty())
 			return;
 
 		// Create label based on type
@@ -350,7 +350,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			});
 	});
 
-	// Instance property
+	// Instance property -> remove override
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
 		const auto& path = item.getPath();
@@ -416,7 +416,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if(pointer_item->getPath().getPointee() != nullptr)
+		if( pointer_item->getPath().getPointee() != nullptr ||
+			pointer_item->getPath().isInstanceProperty())
 			return;
 
 		const auto& path = pointer_item->getPath();
@@ -437,7 +438,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item->getPath().getPointee() == nullptr)
+		if (pointer_item->getPath().getPointee() == nullptr ||
+			pointer_item->getPath().isInstanceProperty())
 			return;
 
 		auto pointee = pointer_item->getPath().getPointee();
@@ -460,7 +462,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item->getPath().getPointee() == nullptr)
+		if (pointer_item->getPath().getPointee() == nullptr ||
+			pointer_item->getPath().isInstanceProperty())
 			return;
 
 		// Only add option to delete if not in array.
@@ -488,7 +491,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() ||
+ 			 array_item->getPath().isInstanceProperty())
 			return;
 
 		// Check if we can map it to a material
@@ -511,7 +515,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() ||
+			 array_item->getPath().isInstanceProperty())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -538,7 +543,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() ||
+			 array_item->getPath().isInstanceProperty())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -565,7 +571,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() ||
+			 array_item->getPath().isInstanceProperty())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
