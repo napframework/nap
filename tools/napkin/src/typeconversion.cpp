@@ -279,7 +279,7 @@ namespace napkin
 		rttr::method assign_method = nap::rtti::findMethodRecursive(value.get_type().get_raw_type(), nap::rtti::method::assign);
 		assert(assign_method.is_valid()); 
 		auto ptr_variant = value_property.get_value(instance_property);
-		assign_method.invoke(ptr_variant, path, *obj);
+		assign_method.invoke(ptr_variant, path, obj);
 		return value_property.set_value(instance_property, ptr_variant);
 	}
 
