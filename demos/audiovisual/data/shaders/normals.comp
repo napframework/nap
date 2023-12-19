@@ -7,21 +7,22 @@
 // size supported by the device on pipeline creation.
 layout(local_size_x_id = 0) in;
 
-// The MAX_GROUP_SIZE_X value is overwritten on pipeline creation
-//layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 512;	
-//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
+// Ensure we register a constant to set
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
 
 // Derive attribute buffer sizes from plane dimensions
-const uint ROW_COUNT = 1024 + 1;
-const uint COLUMN_COUNT = 256 + 1;
+const uint ROW_COUNT = 1024;
+const uint COLUMN_COUNT = 256;
+const uint CELL_COUNT = (ROW_COUNT-1)*(COLUMN_COUNT-1);
 
 const uint MAX_ADJACENT_TRI_COUNT = 6;
 const uint VERTS_PER_TRI_COUNT = 3;
 const uint TRIS_PER_CELL_COUNT = 2;
+const uint INDS_PER_TRI_COUNT = 3;
 
-const uint TRIANGLE_COUNT = ROW_COUNT*COLUMN_COUNT*TRIS_PER_CELL_COUNT;
 const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
-const uint INDEX_COUNT = 1572864; //TRIANGLE_COUNT*VERTS_PER_TRI_COUNT;
+const uint TRIANGLE_COUNT = CELL_COUNT*TRIS_PER_CELL_COUNT;
+const uint TRIANGLE_INDEX_COUNT = TRIANGLE_COUNT*INDS_PER_TRI_COUNT;
 
 const float EPSILON = 0.0001;
 
@@ -32,7 +33,7 @@ layout(std430) readonly buffer Positions
 
 layout(std430) readonly buffer Triangles
 {
-	uint triangles[INDEX_COUNT];
+	uint triangles[TRIANGLE_INDEX_COUNT];
 };
 
 layout(std430) readonly buffer Adjacency
@@ -69,16 +70,16 @@ vec3 triangle_normal(triangle t)
 
 void main()
 {
-	uint gid = gl_GlobalInvocationID.x;
-	uint pitch = ubo.pitch;
-	uint offset = pitch*2;
+	const uint gid = gl_GlobalInvocationID.x;
+	const uint offset = COLUMN_COUNT*2;
 
 	if (gid < offset)
 	{
 		vec3 normal = vec3(0.0, 0.0, EPSILON);
 
 		// Fetch adjacent triangles and sum up their normals
-		// TODO: Precompute face normals
+		// Additional optimization: Precompute face normals to ensure each normal is computed once
+		// and reduce the number of storage buffer reads.
 		for (uint i = 0; i<MAX_ADJACENT_TRI_COUNT; i++)
 		{	
 			const int tri_idx = adjacency[gid*MAX_ADJACENT_TRI_COUNT+i];
@@ -95,8 +96,8 @@ void main()
 	}
 
 	// Shift
-	if (gid+offset >= innormals.length())
+	if (gid+offset >= ROW_COUNT*COLUMN_COUNT)
 		return;
 
-	outnormals[gid+offset] = innormals[gid+pitch];
+	outnormals[gid+offset] = innormals[gid+COLUMN_COUNT];
 }

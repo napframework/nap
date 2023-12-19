@@ -23,7 +23,8 @@
                     1.0,
                     1.0
                 ]
-            }
+            },
+            "FlipNormals": false
         },
         {
             "Type": "nap::ConstantShader",
@@ -193,6 +194,9 @@
                     "Type": "nap::RenderFFTMeshComponent",
                     "mID": "RenderFFTMesh",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Default",
                     "Mesh": "PlaneMeshVec4",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -262,6 +266,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "PhongVec4Material",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
@@ -282,6 +287,7 @@
                 {
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputePopulate",
+                    "Enabled": true,
                     "ComputeMaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -311,6 +317,14 @@
                                 "Buffer": "PositionBufferDummy"
                             }
                         ],
+                        "Constants": [
+                            {
+                                "Type": "nap::ShaderConstant",
+                                "mID": "MAX_GROUP_SIZE_X_6222dfd7",
+                                "Name": "MAX_GROUP_SIZE_X",
+                                "Value": 256
+                            }
+                        ],
                         "ComputeMaterial": "PopulateComputeMaterial"
                     },
                     "Invocations": 1
@@ -318,6 +332,7 @@
                 {
                     "Type": "nap::ComputeComponent",
                     "mID": "ComputeNormals",
+                    "Enabled": true,
                     "ComputeMaterialInstance": {
                         "Uniforms": [
                             {
@@ -373,6 +388,14 @@
                                 "Buffer": "PositionBufferDummy"
                             }
                         ],
+                        "Constants": [
+                            {
+                                "Type": "nap::ShaderConstant",
+                                "mID": "MAX_GROUP_SIZE_X_c4e16309",
+                                "Name": "MAX_GROUP_SIZE_X",
+                                "Value": 256
+                            }
+                        ],
                         "ComputeMaterial": "NormalsComputeMaterial"
                     },
                     "Invocations": 1
@@ -382,18 +405,24 @@
                     "mID": "FFTMesh",
                     "ReferenceMesh": "PlaneMeshVec4",
                     "FrameCount": 1024,
+                    "BumpAmount": "BumpAmountParameter",
+                    "SwerveSpeed": "SwerveSpeedParam",
+                    "SwerveIntensity": "SwerveIntensityParameter",
                     "FFT": "../../AudioEntity/FFTAudioNode",
                     "FluxMeasurement": "../../AudioEntity/FluxMeasurement",
                     "ComputePopulate": "./ComputePopulate",
                     "ComputeNormals": "./ComputeNormals",
                     "Camera": "../../CameraEntity/PerspectiveCamera",
-                    "CameraFloatHeight": 0.5,
-                    "CameraFollowDistance": 1.0
+                    "CameraFloatHeight": "CameraFloatHeightParameter",
+                    "CameraFollowDistance": "CameraFollowDistanceParameter"
                 },
                 {
                     "Type": "nap::RenderFFTMeshComponent",
                     "mID": "RenderFFTMeshWireframe",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Wireframe",
                     "Mesh": "PlaneMeshVec4WireFrame",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -406,7 +435,7 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "alpha_53883b87",
                                         "Name": "alpha",
-                                        "Value": 0.15000000596046449
+                                        "Value": 0.20000000298023225
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
@@ -423,9 +452,10 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantVec4Material",
                         "BlendMode": "AlphaBlend",
-                        "DepthMode": "ReadWrite"
+                        "DepthMode": "ReadOnly"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -444,11 +474,15 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderDebugPlane",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "DebugPlaneMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -498,11 +532,15 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderStars",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Background",
                     "Mesh": "ScatterStars",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "SkyMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "NoReadWrite"
@@ -530,6 +568,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderTorus",
                     "Visible": false,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -549,6 +590,7 @@
                         ],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "ConstantMaterial",
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadWrite"
@@ -660,6 +702,7 @@
             ],
             "Samplers": [],
             "Buffers": [],
+            "Constants": [],
             "Shader": "ConstantShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Additive",
@@ -695,6 +738,7 @@
             ],
             "Samplers": [],
             "Buffers": [],
+            "Constants": [],
             "Shader": "ConstantVec4Shader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -730,6 +774,7 @@
             ],
             "Samplers": [],
             "Buffers": [],
+            "Constants": [],
             "Shader": "PhongVec4Shader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
@@ -765,35 +810,26 @@
             ],
             "Samplers": [],
             "Buffers": [],
+            "Constants": [],
             "Shader": "SkyShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "Parameters"
+        },
+        {
             "Type": "nap::ParameterGroup",
-            "mID": "Parameters",
+            "mID": "FFTParameters",
             "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "LowScaleParameter",
-                    "Name": "Low",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "HighMultiplyParameter",
-                    "Name": "HighMultiply",
-                    "Value": 8.0,
-                    "Minimum": 0.0,
-                    "Maximum": 10.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "HighScaleParameter",
-                    "Name": "High",
+                    "mID": "MidScaleParameter",
+                    "Name": "Mid",
                     "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 2.0
@@ -808,11 +844,27 @@
                 },
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "MidScaleParameter",
-                    "Name": "Mid",
+                    "mID": "LowScaleParameter",
+                    "Name": "Low",
                     "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "HighScaleParameter",
+                    "Name": "High",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "HighMultiplyParameter",
+                    "Name": "HighMultiply",
+                    "Value": 8.0,
+                    "Minimum": 0.0,
+                    "Maximum": 10.0
                 },
                 {
                     "Type": "nap::ParameterFloat",
@@ -821,6 +873,53 @@
                     "Value": 0.5,
                     "Minimum": 0.0,
                     "Maximum": 1.0
+                }
+            ],
+            "Groups": []
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "CameraFloatHeightParameter",
+                    "Name": "CameraFloatHeight",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "CameraFollowDistanceParameter",
+                    "Name": "CameraFollowDistance",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "BumpAmountParameter",
+                    "Name": "BumpAmount",
+                    "Value": 1.0,
+                    "Minimum": 0.0,
+                    "Maximum": 5.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SwerveIntensityParameter",
+                    "Name": "SwerveIntensity",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "SwerveSpeedParam",
+                    "Name": "",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
                 }
             ],
             "Groups": []
@@ -849,6 +948,27 @@
             },
             "Rows": 4,
             "Columns": 4
+        },
+        {
+            "Type": "nap::RenderLayerRegistry",
+            "mID": "RenderLayerRegistry",
+            "Layers": [
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Wireframe",
+                    "Name": "Wireframe"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Default",
+                    "Name": "Default"
+                },
+                {
+                    "Type": "nap::RenderLayer",
+                    "mID": "RenderLayer_Background",
+                    "Name": "Background"
+                }
+            ]
         },
         {
             "Type": "nap::RenderTexture2D",
@@ -901,12 +1021,15 @@
                     "Uniforms": [],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "PopulateMeshComputeShader"
                 },
                 {
                     "Type": "nap::ComputeShaderFromFile",
                     "mID": "PopulateMeshComputeShader",
-                    "ComputeShader": "shaders/positions.comp"
+                    "ComputeShader": "shaders/positions.comp",
+                    "EnableMaxGroupSizeDefault": true,
+                    "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::PlaneMeshVec4",
@@ -930,21 +1053,23 @@
                             1.0
                         ]
                     },
-                    "Rows": 1024,
-                    "Columns": 256
+                    "Rows": 1023,
+                    "Columns": 255
                 },
                 {
                     "Type": "nap::VertexBufferVec4",
                     "mID": "PositionBufferDummy",
                     "Usage": "Static",
-                    "Count": 263425,
+                    "Count": 262144,
                     "Clear": false,
                     "FillPolicy": ""
                 },
                 {
                     "Type": "nap::ComputeShaderFromFile",
                     "mID": "NormalsComputeShader",
-                    "ComputeShader": "shaders/normals.comp"
+                    "ComputeShader": "shaders/normals.comp",
+                    "EnableMaxGroupSizeDefault": true,
+                    "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::ComputeMaterial",
@@ -952,13 +1077,14 @@
                     "Uniforms": [],
                     "Samplers": [],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "NormalsComputeShader"
                 },
                 {
                     "Type": "nap::IndexBuffer",
                     "mID": "IndexBufferDummy",
                     "Usage": "Static",
-                    "Count": 1572864,
+                    "Count": 1565190,
                     "Clear": false,
                     "FillPolicy": ""
                 },
@@ -966,7 +1092,7 @@
                     "Type": "nap::VertexBufferUInt",
                     "mID": "TriangleBufferDummy",
                     "Usage": "Static",
-                    "Count": 1572864,
+                    "Count": 1565190,
                     "Clear": false,
                     "FillPolicy": ""
                 },
@@ -974,7 +1100,7 @@
                     "Type": "nap::GPUBufferInt",
                     "mID": "AdjacencyBufferDummy",
                     "Usage": "Static",
-                    "Count": 1580550,
+                    "Count": 1572864,
                     "Clear": false,
                     "FillPolicy": ""
                 },
@@ -982,7 +1108,7 @@
                     "Type": "nap::PlaneMeshVec4",
                     "mID": "PlaneMeshVec4WireFrame",
                     "Usage": "Static",
-                    "CullMode": "None",
+                    "CullMode": "Back",
                     "PolygonMode": "Line",
                     "Size": {
                         "x": 1.0,
@@ -1000,8 +1126,8 @@
                             1.0
                         ]
                     },
-                    "Rows": 1024,
-                    "Columns": 256
+                    "Rows": 1023,
+                    "Columns": 255
                 }
             ],
             "Children": []
@@ -1049,19 +1175,22 @@
             "Type": "nap::ShaderFromFile",
             "mID": "ConstantVec4Shader",
             "VertShader": "shaders/constantvec4.vert",
-            "FragShader": "shaders/constantvec4.frag"
+            "FragShader": "shaders/constantvec4.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "PhongVec4Shader",
             "VertShader": "shaders/phongvec4.vert",
-            "FragShader": "shaders/phongvec4.frag"
+            "FragShader": "shaders/phongvec4.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::ShaderFromFile",
             "mID": "SkyShader",
             "VertShader": "shaders/sky.vert",
-            "FragShader": "shaders/sky.frag"
+            "FragShader": "shaders/sky.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::SphereMesh",

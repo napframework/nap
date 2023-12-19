@@ -9,6 +9,7 @@
 #include <orthocameracomponent.h>
 #include <renderablemeshcomponent.h>
 #include <computecomponent.h>
+#include <parametergui.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audiovisualApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -67,6 +68,10 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+
+		for (const auto& gui : mResourceManager->getObjects<ParameterGUI>())
+			gui->show(false);
+
 		ImGui::End();
 	}
 	
@@ -106,17 +111,6 @@ namespace nap
 
 			std::vector<RenderableComponentInstance*> render_comps;
 			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
-
-			// Render the RenderStars component first and take it out of the list
-			for (auto it = render_comps.begin(); it != render_comps.end(); it++)
-			{
-				if ((*it)->mID == "RenderStars")
-				{
-					mRenderService->renderObjects(*mRenderWindow, perp_cam, { (*it) });
-					render_comps.erase(it);
-				}
-			}
-
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps);
 		
 			// GUI

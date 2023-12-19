@@ -13,6 +13,7 @@ uniform nap
 
 in vec4	in_Position;
 in vec4 in_UV0;
+in vec4	in_Normals;
 
 out vec2 passUV0;
 

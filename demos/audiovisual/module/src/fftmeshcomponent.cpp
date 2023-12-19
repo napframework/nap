@@ -14,6 +14,9 @@
 RTTI_BEGIN_CLASS(nap::FFTMeshComponent)
 	RTTI_PROPERTY("ReferenceMesh",			&nap::FFTMeshComponent::mReferenceMesh,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FrameCount",				&nap::FFTMeshComponent::mFrameCount,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BumpAmount",				&nap::FFTMeshComponent::mBumpAmount,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SwerveSpeed",			&nap::FFTMeshComponent::mSwerveSpeed,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SwerveIntensity",		&nap::FFTMeshComponent::mSwerveIntensity,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FFT",					&nap::FFTMeshComponent::mFFT,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FluxMeasurement",		&nap::FFTMeshComponent::mFluxMeasurement,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("ComputePopulate",		&nap::FFTMeshComponent::mComputePopulate,		nap::rtti::EPropertyMetaData::Required)
@@ -82,25 +85,30 @@ namespace nap
 		// Compute Populate
 		{
 			// Validate material
-			auto* populate_ubo = mComputePopulateInstance->getMaterialInstance().getOrCreateUniform("UBO");
-			if (!errorState.check(populate_ubo != nullptr, "Missing uniform struct with name `UBO`"))
+			auto* positions_ubo = mComputePopulateInstance->getMaterialInstance().getOrCreateUniform("UBO");
+			if (!errorState.check(positions_ubo != nullptr, "Missing uniform struct with name `UBO`"))
 				return false;
 
-			mAmpsUniform = populate_ubo->getOrCreateUniform<UniformFloatArrayInstance>("amps");
+			mAmpsUniform = positions_ubo->getOrCreateUniform<UniformFloatArrayInstance>("amps");
 			if (!errorState.check(mAmpsUniform != nullptr, "Missing uniform member with name `amps`"))
 				return false;
 
-			mPrevAmpsUniform = populate_ubo->getOrCreateUniform<UniformFloatArrayInstance>("prevAmps");
+			mPrevAmpsUniform = positions_ubo->getOrCreateUniform<UniformFloatArrayInstance>("prevAmps");
 			if (!errorState.check(mPrevAmpsUniform != nullptr, "Missing uniform member with name `prevAmps`"))
 				return false;
 
-			mFluxUniform = populate_ubo->getOrCreateUniform<UniformFloatInstance>("flux");
+			mFluxUniform = positions_ubo->getOrCreateUniform<UniformFloatInstance>("flux");
 			if (!errorState.check(mFluxUniform != nullptr, "Missing uniform member with name `flux`"))
-				return false;	
+				return false;
 
-			mOriginUniform = populate_ubo->getOrCreateUniform<UniformVec3Instance>("origin");
-			mDirectionUniform = populate_ubo->getOrCreateUniform<UniformVec3Instance>("direction");
-			mTangentUniform = populate_ubo->getOrCreateUniform<UniformVec3Instance>("tangent");
+			mBumpUniform = positions_ubo->getOrCreateUniform<UniformFloatInstance>("bump");
+			if (!errorState.check(mBumpUniform != nullptr, "Missing uniform member with name `bump`"))
+				return false;
+
+			mOriginUniform = positions_ubo->getOrCreateUniform<UniformVec3Instance>("origin");
+			mDirectionUniform = positions_ubo->getOrCreateUniform<UniformVec3Instance>("direction");
+			mTangentUniform = positions_ubo->getOrCreateUniform<UniformVec3Instance>("tangent");
+			mUpUniform = positions_ubo->getOrCreateUniform<UniformVec3Instance>("up");
 
 			for (auto& buf : mPositionBuffers)
 				if (!errorState.check(buf != nullptr, "Missing position buffer"))
@@ -115,9 +123,9 @@ namespace nap
 		{
 			mTriangleBuffer = std::make_unique<GPUBufferUInt>(*getEntityInstance()->getCore(), EMemoryUsage::Static, true);
 
-			assert(getMeshInstance().getNumShapes() > 0);
+			assert(mesh_instance.getNumShapes() > 0);
 			static const uint sVertsPerTriangle = 3;
-			mTriangleBuffer->mCount = (mesh_instance.getShape(0).getNumIndices() / sVertsPerTriangle) * sVertsPerTriangle;
+			mTriangleBuffer->mCount = mesh_instance.getShape(0).getNumIndices();
 			if (!mTriangleBuffer->init(errorState))
 				return false;
 
@@ -168,6 +176,7 @@ namespace nap
 			mCameraTranslationSmoother = { math::extractPosition(transform.getGlobalTransform()), 1.0f };
 			mCameraPitchSmoother = { 0.0f, 1.0f };
 			mCameraRollSmoother = { 0.0f, 1.0f };
+			mCameraYawSmoother = { 0.0f, 1.0f };
 
 			// Create a quaternion such that the camera is aligned with the initial travel direction of the plane mesh
 			// Plane object space = { x:right, y:forward, z:up }
@@ -194,11 +203,12 @@ namespace nap
 
 		auto& cur_spectrum = mSpectra[cur_idx];
 		cur_spectrum = mFFT->getFFTBuffer().getAmplitudeSpectrum();
-		assert(mAmpsUniform->getNumElements() <= amps.size());
+		assert(mAmpsUniform->getNumElements() <= cur_spectrum.size());
 
 		auto amps_cut = std::vector(cur_spectrum.begin(), cur_spectrum.begin() + mAmpsUniform->getNumElements());
 		mPrevAmpsUniform->setValues(mAmpsUniform->getValues());
 		mAmpsUniform->setValues(amps_cut);
+		mBumpUniform->setValue(mResource->mBumpAmount->mValue);
 
 		const auto& flux_params = mFluxMeasurement->getParameterItems();
 		if (!flux_params.empty())
@@ -206,50 +216,56 @@ namespace nap
 			float offset = (flux_params.front()->mOffset != nullptr) ? flux_params.front()->mOffset->mValue : 0.0f;
 			float value = flux_params.front()->mParameter->mValue - offset;
 			mFluxUniform->setValue(value);
-			mFluxAccumulator += value * delta_time;
 		}
-		float flux_time = mElapsedTime * 0.1f + mFluxAccumulator * 2.0f;
+		mFluxAccumulator += delta_time * mResource->mSwerveSpeed->mValue;
 
-		// Test
-		flux_time = mElapsedTime * 0.5f;
-
-		float roll_noise = glm::simplex<float>(glm::vec3(flux_time, 0.0f, 0.0f));
-		float roll_theta = 0.5f * glm::quarter_pi<float>() * roll_noise;
+		float max_angle = glm::half_pi<float>() * mResource->mSwerveIntensity->mValue;
+		float roll_noise = glm::simplex<float>(glm::vec3(mFluxAccumulator, 0.0f, 0.0f));
+		float roll_theta = max_angle * roll_noise;
 		auto roll = glm::rotate(glm::identity<glm::quat>(), roll_theta, sPlaneForward);
 
-		float pitch_noise = glm::simplex<float>(glm::vec3(0.0f, flux_time, 0.0f));
-		float pitch_theta = glm::quarter_pi<float>() * pitch_noise;
+		float pitch_noise = glm::simplex<float>(glm::vec3(0.0f, mFluxAccumulator, 0.0f));
+		float pitch_theta = max_angle * pitch_noise;
 		auto pitch = glm::rotate(glm::identity<glm::quat>(), pitch_theta, sPlaneRight);
 
-		auto composite = pitch * roll;
-		auto new_direction = mDirection * composite;
-		mOrigin += new_direction * delta_time;
+		float yaw_noise = glm::simplex<float>(glm::vec3(0.0f, 0.0f, mFluxAccumulator));
+		float yaw_theta = max_angle * yaw_noise;
+		auto yaw = glm::rotate(glm::identity<glm::quat>(), yaw_theta, -sPlaneUp);
 
+		auto composite = roll * pitch * yaw;
+
+		mUp = sPlaneUp * composite;
+		mUpUniform->setValue(mUp);
+
+		mDirection = sPlaneForward * composite;
+		mDirectionUniform->setValue(mDirection);
+
+		mTangent = sPlaneRight * composite;
+		mTangentUniform->setValue(mTangent);
+
+		mOrigin += mDirection * delta_time;
 		mOriginUniform->setValue(mOrigin);
-		mDirectionUniform->setValue(new_direction);
-
-		auto new_tangent = mTangent * composite;
-		mTangentUniform->setValue(new_tangent);
 
 		if (mResource->mCamera != nullptr)
 		{
-			glm::vec3 camera_up = glm::normalize(glm::cross(new_direction, new_tangent));
-			glm::vec3 follow_origin = mOrigin + camera_up * mResource->mCameraFloatHeight - new_direction * mResource->mCameraFollowDistance;
-			const glm::mat4& mesh_world = getEntityInstance()->getComponent<TransformComponentInstance>().getGlobalTransform();
-			glm::vec3 follow_origin_world = glm::xyz(mesh_world * glm::vec4(follow_origin, 1.0f));
-			const glm::vec3& new_translate = mCameraTranslationSmoother.update(follow_origin_world, delta_time);
+			glm::vec3 follow_origin = mOrigin + mUp * mResource->mCameraFloatHeight->mValue - mDirection * mResource->mCameraFollowDistance->mValue;
+			const glm::vec3& new_translate = mCameraTranslationSmoother.update(follow_origin, delta_time);
 
 			auto& camera_transform = mCamera->getEntityInstance()->getComponent<TransformComponentInstance>();
 			camera_transform.setTranslate(new_translate);
 
-			float focus_theta = glm::tan(mResource->mCameraFloatHeight/mResource->mCameraFollowDistance);
+			float focus_theta = glm::atan(mResource->mCameraFloatHeight->mValue/mResource->mCameraFollowDistance->mValue);
 			float cam_pitch_theta = pitch_theta - focus_theta;
 			cam_pitch_theta = mCameraPitchSmoother.update(cam_pitch_theta, delta_time);
 			glm::quat cam_pitch = glm::rotate(glm::identity<glm::quat>(), cam_pitch_theta, sWorldRight);
 
 			float cam_roll_theta = mCameraRollSmoother.update(roll_theta, delta_time);
 			glm::quat cam_roll = glm::rotate(glm::identity<glm::quat>(), cam_roll_theta, sWorldForward);
-			camera_transform.setRotate(mCameraToMeshReferenceFrame * cam_pitch * cam_roll);
+
+			float cam_yaw_theta = mCameraYawSmoother.update(yaw_theta, delta_time);
+			glm::quat cam_yaw = glm::rotate(glm::identity<glm::quat>(), cam_yaw_theta, sWorldUp);
+
+			camera_transform.setRotate(mCameraToMeshReferenceFrame * cam_roll * cam_pitch * cam_yaw);
 		}
 
 		// Positions

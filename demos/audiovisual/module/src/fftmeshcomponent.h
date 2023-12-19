@@ -34,14 +34,18 @@ namespace nap
 
 		ResourcePtr<PlaneMeshVec4>							mReferenceMesh;
 		uint												mFrameCount = 1024;
+
+		ResourcePtr<ParameterFloat>							mBumpAmount;
+		ResourcePtr<ParameterFloat>							mSwerveSpeed;
+		ResourcePtr<ParameterFloat>							mSwerveIntensity;
+		ResourcePtr<ParameterFloat>							mCameraFloatHeight;
+		ResourcePtr<ParameterFloat>							mCameraFollowDistance;
+
 		ComponentPtr<FFTAudioNodeComponent>					mFFT;
 		ComponentPtr<FluxMeasurementComponent>				mFluxMeasurement;
 		ComponentPtr<ComputeComponent>						mComputePopulate;
 		ComponentPtr<ComputeComponent>						mComputeNormals;
 		ComponentPtr<PerspCameraComponent>					mCamera;
-
-		float												mCameraFloatHeight = 0.5f;
-		float												mCameraFollowDistance = 1.0f;
 	};
 
 
@@ -91,10 +95,12 @@ namespace nap
 		UniformFloatArrayInstance* mAmpsUniform = nullptr;
 		UniformFloatArrayInstance* mPrevAmpsUniform = nullptr;
 		UniformFloatInstance* mFluxUniform = nullptr;
+		UniformFloatInstance* mBumpUniform = nullptr;
 
 		UniformVec3Instance* mOriginUniform = nullptr;
 		UniformVec3Instance* mDirectionUniform = nullptr;
 		UniformVec3Instance* mTangentUniform = nullptr;
+		UniformVec3Instance* mUpUniform = nullptr;
 
 		std::unique_ptr<IMesh> mWireFrameCopyMesh;
 
@@ -115,6 +121,7 @@ namespace nap
 		math::SmoothOperator<glm::vec3> mCameraTranslationSmoother = { { 0.0f, 0.0f, 0.0f }, 1.0f };
 		math::SmoothOperator<float> mCameraPitchSmoother = { 0.0f, 1.0f };
 		math::SmoothOperator<float> mCameraRollSmoother = { 0.0f, 1.0f };
+		math::SmoothOperator<float> mCameraYawSmoother = { 0.0f, 1.0f };
 
 		float mElapsedTime = 0.0f;
 		float mFluxAccumulator = 0.0f;
@@ -134,6 +141,7 @@ namespace nap
 		glm::vec3 mOrigin = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 mDirection = sPlaneForward;
 		glm::vec3 mTangent = sPlaneRight;
+		glm::vec3 mUp = sPlaneUp;
 
 		glm::quat mCameraToMeshReferenceFrame = glm::identity<glm::quat>();
 	};

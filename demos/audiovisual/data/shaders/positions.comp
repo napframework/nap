@@ -7,9 +7,12 @@
 // size supported by the device on pipeline creation.
 layout(local_size_x_id = 0) in;
 
+// Ensure we register a constant to set
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
+
 // Derive attribute buffer sizes from plane dimensions
-const uint ROW_COUNT = 1024 + 1;
-const uint COLUMN_COUNT = 256 + 1;
+const uint ROW_COUNT = 1024;
+const uint COLUMN_COUNT = 256;
 const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
 
 layout(std430) readonly buffer InPositions
@@ -27,38 +30,40 @@ uniform UBO
 	vec3 origin;
 	vec3 direction;
 	vec3 tangent;
-	float amps[257];
-	float prevAmps[257];
+	vec3 up;
+	float amps[COLUMN_COUNT];
+	float prevAmps[COLUMN_COUNT];
 	float flux;
+	float bump;
 } ubo;
 
 const float TWO_PI = 6.283185;
 const float EXTENT = 0.5;
 
+
 float weighted_sample(float value, uint index)
 {
-	float w = min(index/float(ubo.amps.length()), 1.0);
+	float w = min(index/float(COLUMN_COUNT), 1.0);
 	return mix(value, value * w * 40.0, 0.5);
 }
 
 
 void main()
 {
-	uint gid = gl_GlobalInvocationID.x;
-	uint pitch = ubo.amps.length();
-	vec2 cell_size = { 1.0/float(ubo.amps.length()-1), 1.0/float(1024) };
+	const uint gid = gl_GlobalInvocationID.x;
+	const vec2 cell_size = { 1.0/float(COLUMN_COUNT), 1.0/float(ROW_COUNT) };
 
-	if (gid < pitch)
+	if (gid < COLUMN_COUNT)
 	{
 		float prev = ubo.prevAmps[gid];
 		float height = weighted_sample(ubo.amps[gid], gid);
-		height = mix(prev * 0.95, height, 0.5);
+		height = mix(prev * 0.95, height, 0.5) * ubo.bump;
 
 		vec3 forward = ubo.direction;
 		vec3 right = ubo.tangent;
-		vec3 up = cross(ubo.direction, right);
+		vec3 up = ubo.up;
 
-		float uvx = gid%ubo.amps.length()/float(ubo.amps.length()-1);
+		float uvx = (gid%COLUMN_COUNT)/float(COLUMN_COUNT);
 		vec3 p = ubo.origin + (uvx * right - right * 0.5) + height * up + forward * cell_size.y;
 		outpositions[gid] = vec4(p, ubo.flux);
 
@@ -67,7 +72,7 @@ void main()
 		// vec2 coord = { cos(theta), sin(theta) };
 	}
 
-	uint gid_off = gid+pitch;
+	uint gid_off = gid+COLUMN_COUNT;
 	if (gid_off >= inpositions.length())
 		return;
 

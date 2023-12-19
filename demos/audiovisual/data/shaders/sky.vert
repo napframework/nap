@@ -19,4 +19,5 @@ void main()
 
 	// Model matrix may only have scaling
 	gl_Position = mvp.projectionMatrix * view_matrix * mvp.modelMatrix * vec4(in_Position.xyz, 1.0);
+	gl_PointSize = 1.0;
 }
