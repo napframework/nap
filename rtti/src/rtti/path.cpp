@@ -214,7 +214,6 @@ namespace nap
 
 			// We keep track of the value we want to set on the current element of the path.
 			// We start with the value the user provided and backtrack from there.
-			// We explicitly check and set a nullptr -> nullptr variant conversion not working or available(?).
 			rtti::Variant value_to_set = value;
 			for (int index = mLength - 1; index >= 0; --index)
 			{
@@ -222,6 +221,7 @@ namespace nap
 				const ResolvedRTTIPathElement& element = mElements[index];
 				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
 				{
+					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
 					if (value_type.is_pointer() && value_to_set == nullptr)
 					{
 						if (!element.Root.Property.set_value(element.Root.Instance, nullptr))
@@ -236,6 +236,7 @@ namespace nap
 				// Attribute element: set the value on the *copy* of the object (the variant)
 				else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 				{
+					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
 					if (value_type.is_pointer() && value_to_set == nullptr)
 					{
 						if (!element.Attribute.Property.set_value(element.Attribute.Variant, nullptr))
@@ -265,7 +266,6 @@ namespace nap
 					value_to_set = element.ArrayElement.Array;
 				}
 			}
-
 			return true;
 		}
 
