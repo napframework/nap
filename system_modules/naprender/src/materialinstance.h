@@ -363,11 +363,10 @@ namespace nap
 		/**
 		 * @return the workgroup size
 		 */
-		const glm::uvec3& getWorkGroupSize() const										{ return mWorkGroupSize; }
+		glm::uvec3 getWorkGroupSize() const;
 
 	private:
 		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
-		glm::uvec3								mWorkGroupSize = { 1, 1, 1 };
 	};
 
 

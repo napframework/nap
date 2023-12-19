@@ -269,19 +269,22 @@ namespace nap
 		if (!rebuild(*mShader, errorState))
 			return false;
 
-		// Set work group size
-		mWorkGroupSize = getShader().getWorkGroupSize();
+		return true;
+	}
 
-		// Set any work group size overrides
+
+	glm::uvec3 ComputeMaterial::getWorkGroupSize() const
+	{
+		// Override default values of workgroup constants
 		const auto& override_map = getShader().getWorkGroupSizeOverrides();
+		glm::uvec3 workgroup_size = getShader().getWorkGroupSize();
 		for (const auto& entry : override_map)
 		{
-			assert(entry.first <= mWorkGroupSize.length());
+			assert(entry.first <= workgroup_size.length());
 			auto* constant = findConstant(entry.second);
 			if (constant != nullptr)
-				mWorkGroupSize[entry.first] = constant->mValue;
+				constant->mValue = workgroup_size[entry.first];
 		}
-
-		return true;
+		return workgroup_size;
 	}
 }

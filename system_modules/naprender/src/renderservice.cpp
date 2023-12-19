@@ -36,6 +36,7 @@
 #include <rtti/jsonwriter.h>
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
+#include <glm/gtc/type_ptr.hpp>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
@@ -2151,6 +2152,12 @@ namespace nap
 		// Initialization succeeded, valid entry
 		auto inserted = mMaterials.emplace(shaderType, std::make_unique<UniqueMaterial>(std::move(shader), std::move(material)));
 		return inserted.first->second->mMaterial.get();
+	}
+
+
+	glm::uvec3 RenderService::getMaxComputeWorkGroupSize() const
+	{
+		return glm::make_vec3<uint>(&getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
 	}
 
 

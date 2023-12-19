@@ -188,7 +188,7 @@ namespace nap
 		/**
 		 * @return local work group size
 		 */
-		glm::uvec3 getWorkGroupSize() const												{ return mWorkGroupSize; }
+		const glm::uvec3& getWorkGroupSize() const										{ return mWorkGroupSize; }
 
 		/**
 		 * Map of specialization constant names that are available to override a workgroup dimension size.
@@ -196,6 +196,8 @@ namespace nap
 		 * @return workgroup dimension to override specialization constant name
 		 */
 		const std::unordered_map<uint, std::string>& getWorkGroupSizeOverrides() const	{ return mWorkGroupSizeOverrides; }
+
+		bool mEnableMaxGroupSizeDefault = false;
 
 	protected:
 		/**
