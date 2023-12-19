@@ -19,7 +19,7 @@ namespace nap
 	/**
 	 * Orthographic camera space operation mode
 	 */
-	enum EOrthoCameraMode
+	enum class EOrthoCameraMode : nap::uint8
 	{
 		PixelSpace = 0,			///< Planes are scaled automatically to pixel coordinates. Near/Far is retrieved from properties.
 		CorrectAspectRatio,		///< User provides all planes, but height is recalculated for correct aspect ratio
@@ -32,14 +32,14 @@ namespace nap
 	 */
 	struct NAPAPI OrthoCameraProperties
 	{
-		EOrthoCameraMode mMode = PixelSpace;			///< Property: 'Mode' defaults to pixel space
-		float mNearClippingPlane = 1.0f;				///< Property: 'NearClippingPlane' camera near clipping plane
-		float mFarClippingPlane = 1000.0f;				///< Property: 'FarClippingPlane' camera far clipping plane
-		float mLeftPlane = 0.0f;						///< Property: 'LeftPlane' used when mode is CorrectAspectRatio or Custom
-		float mRightPlane = 100.0f;						///< Property: 'RightPlane' used when mode is CorrectAspectRatio or Custom
-		float mTopPlane = 100.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom 
-		float mBottomPlane = 0.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom
-		math::Rect mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };	///< Property: 'ClipRect' normalized rectangle used to clip/crop the camera view
+		EOrthoCameraMode mMode = EOrthoCameraMode::PixelSpace;		///< Property: 'Mode' defaults to pixel space
+		float mNearClippingPlane = 1.0f;							///< Property: 'NearClippingPlane' camera near clipping plane
+		float mFarClippingPlane = 1000.0f;							///< Property: 'FarClippingPlane' camera far clipping plane
+		float mLeftPlane = 0.0f;									///< Property: 'LeftPlane' used when mode is CorrectAspectRatio or Custom
+		float mRightPlane = 100.0f;									///< Property: 'RightPlane' used when mode is CorrectAspectRatio or Custom
+		float mTopPlane = 100.0f;									///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom 
+		float mBottomPlane = 0.0f;									///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom
+		math::Rect mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };		///< Property: 'ClipRect' normalized rectangle used to clip/crop the camera view
 	};
 	
 	/**
