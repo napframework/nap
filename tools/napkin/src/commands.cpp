@@ -6,6 +6,7 @@
 #include "naputils.h"
 #include "commands.h"
 #include "appcontext.h"
+#include "napkinglobals.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -75,8 +76,9 @@ SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rt
 		: mPath(path), mNewObject(newValue), QUndoCommand()
 {
 	setText(QString("Set pointer value at '%1' to '%2'").arg(
-		QString::fromStdString(mPath.toString()),
-		QString::fromStdString(mNewObject != nullptr ? mNewObject->mID : "NULL")));
+		mPath.toString().c_str(),
+		mNewObject != nullptr ? mNewObject->mID.c_str() : napkin::TXT_NULL)
+	);
 
 	auto pointee = path.getPointee();
 	mOldValue = pointee != nullptr ? pointee->mID : mOldValue;

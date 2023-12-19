@@ -274,7 +274,7 @@ QVariant napkin::PointerValueItem::data(int role) const
 		case Qt::EditRole:
 		{
 			auto pointee = mPath.getPointee();
-			return pointee != nullptr ? QString::fromStdString(pointee->mID) : "NULL";
+			return pointee != nullptr ? pointee->mID.c_str() : napkin::TXT_NULL;
 		}
 		case Qt::ForegroundRole:
 		{
@@ -479,7 +479,7 @@ QVariant napkin::EmbeddedPointerValueItem::data(int role) const
 		case Qt::EditRole:
 		{
 			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
-			return pointee != nullptr ? pointee->mID.c_str() : "NULL";
+			return pointee != nullptr ? pointee->mID.c_str() : napkin::TXT_NULL;
 		}
 		default:
 		{
