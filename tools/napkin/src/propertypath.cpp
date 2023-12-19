@@ -504,7 +504,7 @@ std::string PropertyPath::toString() const
 
 bool PropertyPath::isInstanceProperty() const
 {
-	return this->getRootEntity();
+	return this->getRootEntity() != nullptr;
 }
 
 

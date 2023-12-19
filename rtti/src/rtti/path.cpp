@@ -209,14 +209,14 @@ namespace nap
 			if (isEmpty())
 				return false;
 
-			rtti::TypeInfo value_type = getType();
-			value_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-
-			// We keep track of the value we want to set on the current element of the path.
-			// We start with the value the user provided and backtrack from there.
+			// We keep track of the value we want to set on the current element of the path and backtrack from there.
 			rtti::Variant value_to_set = value;
 			for (int index = mLength - 1; index >= 0; --index)
 			{
+				// Get type of value to set
+				rtti::TypeInfo value_type = value_to_set.get_type();
+				value_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
+
 				// If this is the root element, directly set the value on the object
 				const ResolvedRTTIPathElement& element = mElements[index];
 				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
@@ -253,12 +253,22 @@ namespace nap
 					// So we update value_to_set for the next iteration
 					value_to_set = element.Attribute.Variant;
 				}
+				// Array element: set the array index value on a *copy* of the array
 				else if (element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 				{
-					// Array element: set the array index value on a *copy* of the array
 					rtti::VariantArray array = element.ArrayElement.Array.create_array_view();
-					if (!array.set_value(element.ArrayElement.Index, value_to_set))
-						return false;
+
+					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
+					if (value_type.is_pointer() && value_to_set == nullptr)
+					{
+						if (!array.set_value(element.ArrayElement.Index, nullptr))
+							return false;
+					}
+					else
+					{
+						if (!array.set_value(element.ArrayElement.Index, value_to_set))
+							return false;
+					}
 
 					// Now that we've updated our copy of the array,
 					// we need to copy our array copy to the original object.
