@@ -211,18 +211,35 @@ namespace nap
 
 			// We keep track of the value we want to set on the current element of the path and backtrack from there.
 			rtti::Variant value_to_set = value;
+
+			// Convert values and wrapped types (pointers)
+			const rttr::type prop_type = getType();
+			if (prop_type != value_to_set.get_type())
+			{
+				if (prop_type.is_wrapper())
+				{
+					if (value_to_set != nullptr)
+					{
+						if (!value_to_set.convert(prop_type.get_wrapped_type()))
+							return false;
+					}
+				}
+				else
+				{
+					if (!value_to_set.convert(prop_type))
+						return false;
+				}
+			}
+
+			// Recursively set the value, starting from the last element and working our way back
 			for (int index = mLength - 1; index >= 0; --index)
 			{
-				// Get type of value to set
-				rtti::TypeInfo value_type = value_to_set.get_type();
-				value_type = value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type;
-
 				// If this is the root element, directly set the value on the object
 				const ResolvedRTTIPathElement& element = mElements[index];
 				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
 				{
 					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
-					if (value_type.is_pointer() && value_to_set == nullptr)
+					if (element.Root.Property.get_type().is_wrapper() && value_to_set == nullptr)
 					{
 						if (!element.Root.Property.set_value(element.Root.Instance, nullptr))
 							return false;
@@ -237,7 +254,7 @@ namespace nap
 				else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 				{
 					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
-					if (value_type.is_pointer() && value_to_set == nullptr)
+					if (element.Attribute.Property.get_type().is_wrapper() && value_to_set == nullptr)
 					{
 						if (!element.Attribute.Property.set_value(element.Attribute.Variant, nullptr))
 							return false;
@@ -259,7 +276,7 @@ namespace nap
 					rtti::VariantArray array = element.ArrayElement.Array.create_array_view();
 
 					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
-					if (value_type.is_pointer() && value_to_set == nullptr)
+					if (array.get_rank_type(array.get_rank()).is_wrapper() && value_to_set == nullptr)
 					{
 						if (!array.set_value(element.ArrayElement.Index, nullptr))
 							return false;
