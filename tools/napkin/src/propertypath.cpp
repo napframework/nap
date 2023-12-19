@@ -140,7 +140,7 @@ nap::ComponentInstanceProperties& PropertyPath::getOrCreateInstanceProps()
 
 	std::string targetID = getComponentInstancePath();
 
-	rootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *component());
+	rootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, component());
 	return rootEntity->mInstanceProperties.at(idx);
 }
 
@@ -268,18 +268,20 @@ rttr::variant napkin::PropertyPath::patchValue(const rttr::variant& value) const
 		return value;
 	}
 
-	// Get pointer from value
+	// Extract pointer from value
 	auto* target_object = value.get_type().is_wrapper() ?
 		value.get_wrapped_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
-	assert(target_object != nullptr);
 
-	// Assign the new value to the pointer (note that we're modifying a copy)
+	// Construct path to new pointer
+	// Note that it's allowed to invalidate the link by assigning it nothing (nullptr & empty path)
+	std::string path = target_object != nullptr ?
+		mDocument->relativeObjectPath(*getObject(), *target_object) : "";
+
+	// Assign the new value to the entity or component pointer (note that we're modifying a copy)
 	auto patched_ptr = getValue();
-	nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
-	auto path = mDocument->relativeObjectPath(*getObject(), *target_object);
 	rttr::method assign_method = nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
 	assert(assign_method.is_valid());
-	assign_method.invoke(patched_ptr, path, *target_object);
+	assign_method.invoke(patched_ptr, path, target_object);
 
 	// Return it
 	return patched_ptr;
