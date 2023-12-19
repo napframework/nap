@@ -252,7 +252,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr || item.getPath().isInstanceProperty())
+		if (parent_array == nullptr)
 			return;
 
 		// Ensure item can be moved up
@@ -279,7 +279,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr || item.getPath().isInstanceProperty())
+		if (parent_array == nullptr)
 			return;
 
 		// Ensure item can be moved down
@@ -306,7 +306,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr || item.getPath().isInstanceProperty())
+		if (parent_array == nullptr)
 			return;
 
 		// Create label based on type
@@ -350,7 +350,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			});
 	});
 
-	// Instance property -> remove override
+	// Instance property
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
 		const auto& path = item.getPath();
@@ -384,7 +384,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	// Pointer -> clear link
 	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
 	{
-		auto pointer_item = static_cast<PointerItem*>(&item);
+		auto* pointer_item = static_cast<PointerItem*>(&item);
 		const auto& path = pointer_item->getPath();
 		auto* pointee = path.getPointee();
 		if (pointee != nullptr)
@@ -392,7 +392,6 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			QString label = QString("Clear '%1'").arg(pointee->mID.c_str());
 			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CLEAR), label, [path]()
 				{
-					bool clear = true;
 					if (nap::rtti::hasFlag(path.getProperty(), EPropertyMetaData::Required))
 					{
 						QMessageBox msg(AppContext::get().getMainWindow());
@@ -401,13 +400,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 						msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
 						msg.setDefaultButton(QMessageBox::Cancel);
 						msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
-						clear = msg.exec() == QMessageBox::Yes;
+						if (msg.exec() == QMessageBox::No)
+							return;
 					}
-
-					if (clear)
-					{
-						AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
-					}
+					AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
 				});
 		}
 	});
@@ -416,8 +412,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if( pointer_item->getPath().getPointee() != nullptr ||
-			pointer_item->getPath().isInstanceProperty())
+		if(pointer_item->getPath().getPointee() != nullptr)
 			return;
 
 		const auto& path = pointer_item->getPath();
@@ -438,8 +433,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item->getPath().getPointee() == nullptr ||
-			pointer_item->getPath().isInstanceProperty())
+		if (pointer_item->getPath().getPointee() == nullptr)
 			return;
 
 		auto pointee = pointer_item->getPath().getPointee();
@@ -462,8 +456,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item->getPath().getPointee() == nullptr ||
-			pointer_item->getPath().isInstanceProperty())
+		if (pointer_item->getPath().getPointee() == nullptr)
 			return;
 
 		// Only add option to delete if not in array.
@@ -491,8 +484,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable() ||
- 			 array_item->getPath().isInstanceProperty())
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		// Check if we can map it to a material
@@ -515,8 +507,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable() ||
-			 array_item->getPath().isInstanceProperty())
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -543,8 +534,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable() ||
-			 array_item->getPath().isInstanceProperty())
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -571,8 +561,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable() ||
-			 array_item->getPath().isInstanceProperty())
+		if (!array_item->getPath().getArrayEditable())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
