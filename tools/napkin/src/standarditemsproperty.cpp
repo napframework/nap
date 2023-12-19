@@ -15,6 +15,7 @@
 #include <color.h>
 #include <mathutils.h>
 #include <nap/assert.h>
+#include <rtti/typeinfo.h>
 
 RTTI_DEFINE_BASE(napkin::PropertyPathItem)
 RTTI_DEFINE_BASE(napkin::PropertyItem)
@@ -275,6 +276,13 @@ QVariant napkin::PointerValueItem::data(int role) const
 			auto pointee = mPath.getPointee();
 			return pointee != nullptr ? QString::fromStdString(pointee->mID) : "NULL";
 		}
+		case Qt::ForegroundRole:
+		{
+			auto pointee = mPath.getPointee();
+			return pointee == nullptr && nap::rtti::hasFlag(mPath.getProperty(), nap::rtti::EPropertyMetaData::Required) ?
+				AppContext::get().getThemeManager().getLogColor(nap::Logger::errorLevel()) :
+				PropertyPathItem::data(role);
+		}
 		default:
 		{
 			return PropertyPathItem::data(role);
@@ -285,15 +293,19 @@ QVariant napkin::PointerValueItem::data(int role) const
 
 void napkin::PointerValueItem::setData(const QVariant& value, int role)
 {
-	if (role == Qt::EditRole) 
+	switch (role)
 	{
-		nap::rtti::Object* new_target = AppContext::get().getDocument()->getObject(value.toString().toStdString());
-		assert(new_target != nullptr);
-		napkin::AppContext::get().executeCommand(new SetPointerValueCommand(mPath, new_target));
-	} 
-	else 
-	{
-		QStandardItem::setData(value, role);
+		case Qt::EditRole:
+		{
+			nap::rtti::Object* new_target = AppContext::get().getDocument()->getObject(value.toString().toStdString());
+			assert(new_target != nullptr);
+			napkin::AppContext::get().executeCommand(new SetPointerValueCommand(mPath, new_target));
+			break;
+		}
+		default:
+		{
+			QStandardItem::setData(value, role);
+		}
 	}
 }
 
