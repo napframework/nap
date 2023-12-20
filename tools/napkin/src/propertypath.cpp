@@ -470,8 +470,7 @@ bool napkin::PropertyPath::referencesObject(const std::string& name)
 
 std::string PropertyPath::toString() const
 {
-	return hasProperty() ? propPathStr() + "@" + objectPathStr() :
-		objectPathStr();
+	return hasProperty() ? propPathStr() + "@" + objectPathStr() : objectPathStr();
 }
 
 
@@ -514,32 +513,16 @@ rttr::type PropertyPath::getWrappedType() const
 
 bool PropertyPath::isOverridden() const
 {
-    if (hasProperty())
-        return getTargetAttribute() != nullptr;
-    return false;
+	return hasProperty() ? getTargetAttribute() != nullptr : false;
 }
 
 
 void PropertyPath::removeOverride()
 {
-	auto at = getTargetAttribute();
-	if (!at) 
-		return;
-	rttr::variant val = at->mValue.get();
-	removeInstanceValue(at, val);
-}
-
-
-bool PropertyPath::hasOverriddenChildren() const
-{
-	if (isOverridden())
-		return true;
-
-	for (auto child : getChildren(IterFlag::Resursive))
-		if (child.isOverridden())
-			return true;
-
-	return false;
+	auto target_attr = getTargetAttribute();
+	assert(target_attr != nullptr);
+	rttr::variant val = target_attr->mValue.get();
+	removeInstanceValue(target_attr, val);
 }
 
 
@@ -571,27 +554,19 @@ bool PropertyPath::isArray() const
 
 bool PropertyPath::isPointer() const
 {
-	if (isArray())
-		return getArrayElementType().is_pointer();
-	return getWrappedType().is_pointer();
+	return isArray() ? getArrayElementType().is_pointer() : getWrappedType().is_pointer();
 }
 
 
 bool PropertyPath::isEmbeddedPointer() const
 {
-	if (!isPointer())
-		return false;
-
-	return nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+	return isPointer() ? nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded) : false;
 }
 
 
 bool PropertyPath::isNonEmbeddedPointer() const
 {
-	if (!isPointer())
-		return false;
-
-	return !nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+	return isPointer() ? !nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded) : false;
 }
 
 
