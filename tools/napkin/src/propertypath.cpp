@@ -352,12 +352,8 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 	assert(mDocument != nullptr);
 
 	// Notify listeners
-	auto component = instProps->mTargetComponent.get();
-	mDocument->objectChanged(component);
 	for (auto scene : mDocument->getObjects<nap::Scene>())
-	{
 		mDocument->objectChanged(scene);
-	}
 }
 
 
