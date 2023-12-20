@@ -103,11 +103,12 @@ const std::string PropertyPath::getName() const
 
 nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
 {
-	if (!isInstanceProperty())
+	// check if we have a root and are part of the scene
+	auto root_entitiy = getRootEntity();
+	if (root_entitiy == nullptr)
 		return nullptr;
 
 	// find instance properties
-	auto root_entitiy = getRootEntity();
 	if (root_entitiy->mInstanceProperties.empty())
 		return nullptr;
 
@@ -125,77 +126,69 @@ nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
 	return nullptr;
 }
 
+
 nap::ComponentInstanceProperties& PropertyPath::getOrCreateInstanceProps()
 {
 	assert(isInstanceProperty());
 
-	auto props_ = instanceProps();
-	if (props_)
-		return *props_;
+	auto props = instanceProps();
+	if (props)
+		return *props;
 
 	// No instance properties, create a new set
-	auto rootEntity = getRootEntity();
-	auto idx = rootEntity->mInstanceProperties.size();
-	rootEntity->mInstanceProperties.emplace_back();
+	auto root_entity = getRootEntity();
+	auto idx = root_entity->mInstanceProperties.size();
+	root_entity->mInstanceProperties.emplace_back();
 
-	std::string targetID = getComponentInstancePath();
-
-	rootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, component());
-	return rootEntity->mInstanceProperties.at(idx);
+	std::string target_path = getComponentInstancePath();
+	root_entity->mInstanceProperties.at(idx).mTargetComponent.assign(target_path, component());
+	return root_entity->mInstanceProperties.at(idx);
 }
+
 
 std::string PropertyPath::getComponentInstancePath() const
 {
-	if (mObjectPath.size() < 3)
+	// Check if we're a component
+	assert(getRootEntity() != nullptr);
+	auto* comp_object = rtti_cast<nap::Component>(getObject());
+	if (comp_object == nullptr)
 		return {};
 
-	// First object must be Scene
-	assert(mDocument != nullptr);
-	auto leadObject = mDocument->getObject(mObjectPath[0].mID);
-	if (!leadObject || !leadObject->get_type().is_derived_from<nap::Scene>())
-		return {};
-
-	// Second Object must be RootEntity
-	auto secondObject = mDocument->getObject(mObjectPath[1].mID);
-	if (!secondObject || !secondObject->get_type().is_derived_from<nap::Entity>())
-		return {};
-
-	// Last object must be Component
-	auto trailObject = getObject();
-	if (!trailObject || !trailObject->get_type().is_derived_from<nap::Component>())
-		return {};
-
-	std::vector<std::string> newPath(mObjectPath.begin() + 2, mObjectPath.begin() + mObjectPath.size());
-	return "./" + nap::utility::joinString(newPath, "/");
+	// Create path to component from root entity
+	assert(mObjectPath.size() > 2);
+	std::vector<std::string> component_path(mObjectPath.begin() + 2, mObjectPath.begin() + mObjectPath.size());
+	return "./" + nap::utility::joinString(component_path, "/");
 }
 
 
 nap::RootEntity* PropertyPath::getRootEntity() const
 {
-	if (mObjectPath.size() < 2)
-		return nullptr;
-
-	// First object must be scene
-	assert(mDocument != nullptr);
-	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
-	if (scene == nullptr)
-		return nullptr;
-
-	// Second an entity
-	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
-	assert(entity != nullptr);
-
-	// Find entity matching index in scene
-	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
-	for (auto& scene_entity : scene->mEntities)
+	// Find root if not queried before, note that a path doesn't have to have a root entity.
+	// This is the case when editing a path of a regular resource, not an entity instance.
+	if (mObjectPath.size() > 1 && !mRootQueried)
 	{
-		if (idx == nameIdx && scene_entity.mEntity.get() == entity)
-			return &scene_entity;
+		// Must have 2 objects, of which first the scene
+		assert(mDocument != nullptr);
+		if (rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID)) != nullptr)
+		{
+			auto* scene = static_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
+			auto* entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
+			assert(entity != nullptr);
 
-		if (scene_entity.mEntity.get() == entity)
-			++idx;
+			// Find entity matching index in scene
+			auto entity_idx = mObjectPath[1].mIndex; int idx = 0;
+			for (auto& scene_entity : scene->mEntities)
+			{
+				if (scene_entity.mEntity.get() == entity && entity_idx == idx++)
+				{
+					mRootEntity = &scene_entity;
+					break;
+				}
+			}
+		}
+		mRootQueried = true;
 	}
-	return nullptr;
+	return mRootEntity;
 }
 
 

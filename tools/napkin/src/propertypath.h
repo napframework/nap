@@ -341,9 +341,11 @@ namespace napkin
 		rttr::variant patchValue(const rttr::variant& value) const;
 
 		Document* mDocument = nullptr;
-		PPath mObjectPath;
-		PPath mPropertyPath;
-		mutable nap::rtti::Object* mObject = nullptr;	
+		PPath mObjectPath;									//< Objects pointing to the property
+		PPath mPropertyPath;								//< Path to property
+		mutable nap::rtti::Object* mObject = nullptr;		//< Resolved object that holds the property
+		mutable nap::RootEntity* mRootEntity = nullptr;		//< Root entity in the scene, can be null
+		mutable bool mRootQueried = false;					//< If the root has been queried
 	};
 }
 
