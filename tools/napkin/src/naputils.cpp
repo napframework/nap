@@ -357,46 +357,34 @@ std::string napkin::friendlyTypeName(rttr::type type)
 }
 
 
-bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
-								  const std::string& a, const std::string& b)
+bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp, const std::string& a, const std::string& b)
 {
 	{
-		auto partsA = nap::utility::splitString(a, '/');
-		auto partsB = nap::utility::splitString(b, '/');
+		auto parts_a = nap::utility::splitString(a, '/'); assert(parts_a[0] == ".");
+		auto parts_b = nap::utility::splitString(b, '/'); assert(parts_a[0] == ".");
 
-		assert(partsA[0] == ".");
-		assert(partsB[0] == ".");
-
-		std::string nameA;
-		std::string nameB;
-		int indexA;
-		int indexB;
-
-		for (size_t i = 1, len = partsA.size(); i < len; i++)
+		std::string name_a; int index_a;
+		std::string name_b; int index_b;
+		for (size_t i = 1, len = parts_a.size(); i < len; i++)
 		{
-			const auto& partA = partsA[i];
-			const auto& partB = partsB[i];
+			// continue finding child entities, no index = 0
+			if (!nameAndIndex(parts_a[i], name_a, index_a))
+				index_a = 0;
 
-			// continue finding child entities
-			bool hasIndexA = nameAndIndex(partA, nameA, indexA);
-			bool hasIndexB = nameAndIndex(partB, nameB, indexB);
+			if (!nameAndIndex(parts_b[i], name_b, index_b))
+				index_b = 0;
 
-			// consider no index to be index 0
-			if (!hasIndexA)
-				indexA = 0;
-			if (!hasIndexB)
-				indexB = 0;
-
-			if (nameA != nameB)
+			if (name_a != name_b)
 				return false;
 
-			if (indexA != indexB)
+			if (index_a != index_b)
 				return false;
 
 		}
 		return true;
 	}
 }
+
 
 bool napkin::nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
 {

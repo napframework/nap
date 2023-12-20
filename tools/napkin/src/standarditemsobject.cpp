@@ -1004,8 +1004,8 @@ nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() co
 	{
 		if (instprops.mTargetComponent.get() != &component())
 			continue;
-		if (!isComponentInstancePathEqual(mRootEntity, *instprops.mTargetComponent.get(),
-										  instprops.mTargetComponent.toString(), componentPath()))
+
+		if (!isComponentInstancePathEqual(mRootEntity, *instprops.mTargetComponent.get(), instprops.mTargetComponent.toString(), componentPath()))
 			continue;
 
 		mInstanceProperties = instprops;

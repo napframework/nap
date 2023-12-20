@@ -325,7 +325,7 @@ namespace napkin
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
 
-		nap::ComponentInstanceProperties* getInstanceProps() const;
+		nap::ComponentInstanceProperties* getInstanceProperties() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
 		nap::TargetAttribute* getTargetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();

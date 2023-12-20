@@ -101,24 +101,19 @@ const std::string PropertyPath::getName() const
 }
 
 
-nap::ComponentInstanceProperties* PropertyPath::getInstanceProps() const
+nap::ComponentInstanceProperties* PropertyPath::getInstanceProperties() const
 {
 	// check if we have a root and are part of the scene
 	auto root_entitiy = getRootEntity();
-	if (root_entitiy == nullptr)
+	if (root_entitiy == nullptr || root_entitiy->mInstanceProperties.empty())
 		return nullptr;
 
-	// find instance properties
-	if (root_entitiy->mInstanceProperties.empty())
-		return nullptr;
-
+	// Check if we have a match
 	auto comp_instance_path = getComponentInstancePath();
 	for (nap::ComponentInstanceProperties& instProp : root_entitiy->mInstanceProperties)
 	{
 		if (isComponentInstancePathEqual(*root_entitiy, *instProp.mTargetComponent.get(), instProp.mTargetComponent.getInstancePath(), comp_instance_path))
-		{
 			return &instProp;
-		}
 	}
 	return nullptr;
 }
@@ -126,22 +121,22 @@ nap::ComponentInstanceProperties* PropertyPath::getInstanceProps() const
 
 nap::ComponentInstanceProperties& PropertyPath::getOrCreateInstanceProps()
 {
+	// Get existing instance property overrides
 	assert(isInstanceProperty());
-	auto props = getInstanceProps();
-	if (props)
-	{
-		return *props;
-	}
+	auto overrides = getInstanceProperties();
 
 	// No instance properties, create a new set
-	auto root_entity = getRootEntity();
-	auto& comp_instance_props = root_entity->mInstanceProperties.emplace_back();
+	if (overrides == nullptr)
+	{
+		auto root_entity = getRootEntity();
+		overrides = &root_entity->mInstanceProperties.emplace_back();
 
-	std::string target_path = getComponentInstancePath();
-	auto* component = rtti_cast<nap::Component>(getObject());
-	assert(!target_path.empty() && component != nullptr);
-	comp_instance_props.mTargetComponent.assign(target_path, component);
-	return comp_instance_props;
+		std::string target_path = getComponentInstancePath();
+		auto* component = rtti_cast<nap::Component>(getObject());
+		assert(!target_path.empty() && component != nullptr);
+		overrides->mTargetComponent.assign(target_path, component);
+	}
+	return *overrides;
 }
 
 
@@ -193,17 +188,18 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 
 nap::TargetAttribute* PropertyPath::getTargetAttribute() const
 {
-	auto instance_properties = getInstanceProps();
-	if (!instance_properties)
-		return nullptr;
-
-	auto pathstr = propPathStr();
-	for (auto& attr : instance_properties->mTargetAttributes)
+	nap::TargetAttribute* target = nullptr;
+	auto overrides = getInstanceProperties();
+	if (overrides != nullptr)
 	{
-		if (attr.mPath == pathstr)
-			return &attr;
+		auto prop_path = propPathStr();
+		auto it = std::find_if(overrides->mTargetAttributes.begin(), overrides->mTargetAttributes.end(), [&prop_path](const auto& attr)
+			{
+				return attr.mPath == prop_path;
+			});
+		target = it != overrides->mTargetAttributes.end() ? &(*it) : nullptr;
 	}
-	return nullptr;
+	return target;
 }
 
 
@@ -216,12 +212,10 @@ nap::TargetAttribute& PropertyPath::getOrCreateTargetAttribute()
 	// Create if it doesn't exist
 	if (target_attr == nullptr)
 	{
-		auto& instance_properties = getOrCreateInstanceProps();
-		auto path_str = propPathStr();
-
 		// Create target attribute
+		auto& instance_properties = getOrCreateInstanceProps();
 		target_attr = &instance_properties.mTargetAttributes.emplace_back();
-		target_attr->mPath = path_str;
+		target_attr->mPath = propPathStr();
 	}
 	return *target_attr;
 }
@@ -326,7 +320,7 @@ bool PropertyPath::setValue(rttr::variant new_value)
 void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const
 {
 	// remove from target attributes list
-	auto instProps = this->getInstanceProps();
+	auto instProps = getInstanceProperties();
 	auto& attrs = instProps->mTargetAttributes;
 	auto filter = [&](const nap::TargetAttribute& attr) { return &attr == targetAttr; };
 	attrs.erase(std::remove_if(attrs.begin(), attrs.end(), filter), attrs.end());
