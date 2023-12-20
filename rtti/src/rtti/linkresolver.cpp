@@ -58,7 +58,7 @@ namespace nap
 				if (assign_method.is_valid())
 				{
 					target_value = resolved_path.getValue();
-					assign_method.invoke(target_value, unresolved_pointer.mTargetID, *target_object);
+					assign_method.invoke(target_value, unresolved_pointer.mTargetID, target_object);
 				}
 
 				bool succeeded = resolved_path.setValue(target_value);

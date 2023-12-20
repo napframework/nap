@@ -123,9 +123,8 @@ namespace napkin
 	{
 	public:
 		/**
-		 * @param ptr The pointer to the object
-		 * @param path The path to the property
-		 * @param newValue The new value of the property
+		 * @param path The property path
+		 * @param newValue The new object, nullptr to clear
 		 */
 		SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue);
 
@@ -140,9 +139,9 @@ namespace napkin
 		void redo() override;
 
 	private:
-		PropertyPath		mPath;			// The path to the property
-		std::string			mNewValue;		// The new value
-		std::string			mOldValue;		// The old value
+		PropertyPath		mPath;					// The path to the property
+		nap::rtti::Object*	mNewObject = nullptr;	// The new object
+		std::string			mOldValue;				// The old object name
 	};
 
 

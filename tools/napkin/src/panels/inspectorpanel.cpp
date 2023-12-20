@@ -15,6 +15,7 @@
 #include <QApplication>
 #include <QMimeData>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include <utility/fileutils.h>
 #include <napqt/filterpopup.h>
@@ -364,7 +365,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			});
 	});
 
-	// Pointer
+	// Pointer -> select resource
 	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<PointerItem*>(&item);
@@ -376,6 +377,33 @@ void napkin::InspectorPanel::createMenuCallbacks()
 				{
 					QList<nap::rtti::Object*> objects = { pointee };
 					AppContext::get().selectionChanged(objects);
+				});
+		}
+	});
+
+	// Pointer -> clear link
+	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
+	{
+		auto* pointer_item = static_cast<PointerItem*>(&item);
+		const auto& path = pointer_item->getPath();
+		auto* pointee = path.getPointee();
+		if (pointee != nullptr)
+		{
+			QString label = QString("Clear '%1'").arg(pointee->mID.c_str());
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CLEAR), label, [path]()
+				{
+					if (nap::rtti::hasFlag(path.getProperty(), EPropertyMetaData::Required))
+					{
+						QMessageBox msg(AppContext::get().getMainWindow());
+						msg.setWindowTitle("Required property");
+						msg.setText("This is a required property, are you sure you want to remove it?");
+						msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+						msg.setDefaultButton(QMessageBox::Cancel);
+						msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
+						if (msg.exec() == QMessageBox::No)
+							return;
+					}
+					AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
 				});
 		}
 	});

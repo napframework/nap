@@ -608,7 +608,7 @@ void Document::removeInstanceProperties(PropertyPath path)
 						auto newIndex = _instIndex - 1;
 						auto newPath = nap::utility::stringFormat("%s/%s:%d/%s",
 								parentPath.c_str(), _entityID.c_str(), newIndex, compID.c_str());
-						prop.mTargetComponent.assign(newPath, *prop.mTargetComponent.get());
+						prop.mTargetComponent.assign(newPath, prop.mTargetComponent.get());
 
 						if (!changedScenes.contains(scene))
 							changedScenes.append(scene);

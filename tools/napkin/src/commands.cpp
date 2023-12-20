@@ -6,6 +6,7 @@
 #include "naputils.h"
 #include "commands.h"
 #include "appcontext.h"
+#include "napkinglobals.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -72,45 +73,31 @@ void SetValueCommand::redo()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue)
-		: mPath(path), QUndoCommand()
+		: mPath(path), mNewObject(newValue), QUndoCommand()
 {
-	mNewValue = newValue ? newValue->mID : "";
-	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
-															 QString::fromStdString(mNewValue)));
+	setText(QString("Set pointer value at '%1' to '%2'").arg(
+		mPath.toString().c_str(),
+		mNewObject != nullptr ? mNewObject->mID.c_str() : napkin::TXT_NULL)
+	);
+
 	auto pointee = path.getPointee();
-	if (pointee != nullptr)
-		mOldValue = pointee->mID;
-	else
-		mOldValue.clear();
+	mOldValue = pointee != nullptr ? pointee->mID : mOldValue;
 }
+
 
 void SetPointerValueCommand::undo()
 {
-	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-	assert(resolvedPath.isValid());
-
-
-	auto old_object = AppContext::get().getDocument()->getObject(mOldValue);
-	if (old_object == nullptr)
-	{
-		bool value_set = resolvedPath.setValue(nullptr);
-		nap::Logger::fatal("Sorry, can't clear pointer properties");
-	}
-	else
-	{
-		bool value_set = resolvedPath.setValue(old_object);
-		assert(value_set);
-	}
-
+	nap::rtti::ResolvedPath resolvedPath = mPath.resolve(); assert(resolvedPath.isValid());
+	nap::rtti::Object* old_v = mOldValue.empty() ? nullptr : AppContext::get().getDocument()->getObject(mOldValue);
+	resolvedPath.setValue(old_v);
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
+
 void SetPointerValueCommand::redo()
 {
-	nap::rtti::ResolvedPath resolved_path = mPath.resolve();
-	assert(resolved_path.isValid());
-	nap::rtti::Object* new_object = AppContext::get().getDocument()->getObject(mNewValue);
-	mPath.setValue(new_object);
+	nap::rtti::ResolvedPath resolved_path = mPath.resolve(); assert(resolved_path.isValid());
+	mPath.setValue(mNewObject);
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 

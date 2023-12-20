@@ -219,6 +219,8 @@ namespace nap
 			template<typename OTHER>
 			bool operator==(const OTHER* ptr) const					{ return mPtr == ptr; }
 
+			bool operator==(std::nullptr_t) const					{ return mPtr == nullptr; }
+
 			bool operator!=(const ObjectPtr<T>& other) const		{ return mPtr != other.mPtr; }
 
 			template<typename OTHER>
@@ -226,6 +228,8 @@ namespace nap
 
 			template<typename OTHER>
 			bool operator!=(const OTHER* ptr) const					{ return mPtr != ptr; }
+
+			bool operator!=(std::nullptr_t) const					{ return mPtr != nullptr; }
 
 			bool operator<(const ObjectPtr<T>& other) const			{ return mPtr < other.mPtr; }
 
