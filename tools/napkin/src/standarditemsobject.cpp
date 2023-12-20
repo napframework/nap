@@ -96,7 +96,7 @@ static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex
 	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
 
 	// Map component indices to child items
-	size_t a_idx = -1; size_t b_idx = -1;
+	int a_idx = -1; int b_idx = -1;
 	for (auto row = 0; row < parent.rowCount(); row++)
 	{
 		auto* it = qitem_cast<ObjectItem*>(parent.child(row));
@@ -111,7 +111,7 @@ static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex
 	auto child_b = parent.takeChild(b_idx);
 	parent.setChild(a_idx, child_b);
 	parent.setChild(b_idx, child_a);
-	return { a_idx, b_idx };
+	return { static_cast<size_t>(a_idx), static_cast<size_t>(b_idx) };
 }
 
 
