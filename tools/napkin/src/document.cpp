@@ -608,7 +608,7 @@ void Document::removeInstanceProperties(PropertyPath path)
 						auto newIndex = _instIndex - 1;
 						auto newPath = nap::utility::stringFormat("%s/%s:%d/%s",
 								parentPath.c_str(), _entityID.c_str(), newIndex, compID.c_str());
-						prop.mTargetComponent.assign(newPath, *prop.mTargetComponent.get());
+						prop.mTargetComponent.assign(newPath, prop.mTargetComponent.get());
 
 						if (!changedScenes.contains(scene))
 							changedScenes.append(scene);
@@ -714,7 +714,7 @@ void Document::remove(const PropertyPath& path)
 		assert(childEntity);
 
 		// Remove all instance properties that refer to this Entity:0 under ParentEntity
-		auto realIndex = path.getRealChildEntityIndex();
+		auto realIndex = path.getEntityIndex();
 		removeInstanceProperties(path);
 		removeChildEntity(*parentEntity, realIndex);
 		return;
@@ -1017,7 +1017,7 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
+void Document::arraySwapElement(const PropertyPath& path, size_t fromIndex, size_t toIndex)
 {
 	// Resolve property path
 	ResolvedPath resolved_path = path.resolve();
@@ -1025,13 +1025,14 @@ size_t Document::arrayMoveElement(const PropertyPath& path, size_t fromIndex, si
 	VariantArray array = array_value.create_array_view();
 
 	// Swap & Set
-	assert(fromIndex <= array.get_size());
+	assert(fromIndex < array.get_size());
 	Variant fr_value = array.get_value(fromIndex);
 	array.set_value(fromIndex, array.get_value(toIndex));
-	assert(toIndex <= array.get_size());
+	assert(toIndex < array.get_size());
 	array.set_value(toIndex, fr_value);
 	bool ok = resolved_path.setValue(array_value); assert(ok);
-	return toIndex;
+	propertyValueChanged(path);
+	arrayIndexSwapped(path, fromIndex, toIndex);
 }
 
 

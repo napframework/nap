@@ -374,6 +374,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		connect(doc, &Document::arrayIndexSwapped, this, &AppContext::arrayIndexSwapped);
 		connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 	}
 	else
@@ -390,6 +391,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		disconnect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		disconnect(doc, &Document::arrayIndexSwapped, this, &AppContext::arrayIndexSwapped);
 		disconnect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 	}
 }

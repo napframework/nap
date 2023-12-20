@@ -375,15 +375,13 @@ namespace napkin
 		void groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index);
 
 		/**
-		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
-		 * \p toIndex is considered to be the destination index <b>before</b> the move happens.
-		 * The propertyValueChanged signal will be emitted.
+		 * Swaps the element at 'fromIndex' with the element at 'toIndex' in an array.
+		 * The propertyValueChanged and propertyIndexChanged signal will be emitted.
 		 * @param path The path to the array property
-		 * @param fromIndex The index of the element to move
-		 * @param toIndex The destination index of the element
-		 * @return The resulting index of the element
+		 * @param fromIndex the source index
+		 * @param toIndex the target index
 		 */
-		size_t arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
+		void arraySwapElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Get an element from an array
@@ -578,10 +576,19 @@ namespace napkin
 		/**
 		 * Qt Signal
 		 * Invoked just after a property child has been removed
-		 * @param path The path to the parent of the newly added child
+		 * @param parentPath The path to the parent of the newly added child
 		 * @param childIndex The index of the child that was removed
 		 */
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked when an element in an array is swapped
+		 * @param parentPath Path of the parent array 
+		 * @param fromIndex the original index
+		 * @param toIndex the new index
+		 */
+		void arrayIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 
 	private:
 		nap::Core& mCore;							// nap's core
