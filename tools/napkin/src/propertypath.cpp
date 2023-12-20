@@ -112,6 +112,8 @@ nap::ComponentInstanceProperties* PropertyPath::getInstanceProperties() const
 	auto comp_instance_path = getComponentInstancePath();
 	for (nap::ComponentInstanceProperties& instProp : root_entitiy->mInstanceProperties)
 	{
+		// TODO: This means the component ptr wasn't resolved, probably because of a name change
+		// TODO: Make sure to patch ComponentInstanceProperties
 		if(instProp.mTargetComponent.get() == nullptr)
 			continue;
 
