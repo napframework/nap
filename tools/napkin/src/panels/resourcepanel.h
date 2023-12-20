@@ -144,6 +144,16 @@ namespace napkin
 		void onChildAddedToEntity(EntityItem& entity, ObjectItem& item);
 
 		/**
+		 * Called when the index of a child under a parent changes
+		 */
+		void onEntityIndexChanged(EntityItem& parent, ObjectItem& itemA, ObjectItem& itemB);
+
+		/**
+		 * Called when a child index changes
+		 */
+		void onIndexChanged(ObjectItem& parent, ObjectItem& item);
+
+		/**
 		 * Used to provide this view with custom menu items
 		 * @param menu The menu to append items to.
 		 */

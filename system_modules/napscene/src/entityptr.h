@@ -41,10 +41,10 @@ namespace nap
 		 * Assign the path to the entity (including ID) and object to this pointer.
 		 * Used for pointer resolving by the ResourceManager.
 		 * Should not be called manually (is only public so that we can register it in RTTI)
-		 * @param targetPath The path including ID to the target entity
-		 * @param targetObject The pointer to be assigned
+		 * @param targetPath The path including ID to the target entity, empty to clear
+		 * @param targetObject The entity to assign, nullptr to clear
 		 */
-		void assign(const std::string& targetPath, rtti::Object& targetObject)	{ mPath = targetPath; mResource = rtti_cast<Entity>(&targetObject); }
+		void assign(const std::string& targetPath, rtti::Object* targetObject)	{ mPath = targetPath; mResource = rtti_cast<Entity>(targetObject); }
 
 		/**
 		 * @return the (raw) pointer to the target entity

@@ -301,7 +301,7 @@ namespace napkin
 		 * Get the actual index of this child Entity under its parent Entity
 		 * @return the actual index or -1 if not found
 		 */
-		int getRealChildEntityIndex() const;
+		int getEntityIndex() const;
 
 		/**
 		 * Replaces every occurrence of oldName with newName

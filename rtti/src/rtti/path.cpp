@@ -21,27 +21,25 @@ namespace nap
 				const PathElement& element = mElements[index];
 				switch (element.mType)
 				{
-				case PathElement::Type::ATTRIBUTE:
-				{
-					if (result.empty())
-						result += element.Attribute.Name;
-					else
-						result += utility::stringFormat("/%s", element.Attribute.Name);
-
-					break;
-				}
-
-				case PathElement::Type::ARRAY_ELEMENT:
-				{
-					if (result.empty())
-						result += utility::stringFormat("%d", element.ArrayElement.Index);
-					else
-						result += utility::stringFormat("/%d", element.ArrayElement.Index);
-					break;
-				}
-				default:
-					assert(false);
-					break;
+					case PathElement::Type::ATTRIBUTE:
+					{
+						result += result.empty() ?
+							element.Attribute.Name :
+							utility::stringFormat("/%s", element.Attribute.Name);
+						break;
+					}
+					case PathElement::Type::ARRAY_ELEMENT:
+					{
+						result += result.empty() ?
+							utility::stringFormat("%d", element.ArrayElement.Index) :
+							utility::stringFormat("/%d", element.ArrayElement.Index);
+						break;
+					}
+					default:
+					{
+						assert(false);
+						break;
+					}
 				}
 			}
 
@@ -51,12 +49,11 @@ namespace nap
 
 		const Path Path::fromString(const std::string& path)
 		{
-			Path result;
-
-			// Split string on path seperator
+			// Split string on path separator
 			std::list<std::string> parts;
 			utility::tokenize(path, parts, "/", true);
 
+			Path result;
 			for (const std::string& part : parts)
 			{
 				// Try to extract array index
@@ -71,7 +68,6 @@ namespace nap
 					result.pushAttribute(part);
 				}
 			}
-
 			return result;
 		}
 
@@ -213,42 +209,98 @@ namespace nap
 			if (isEmpty())
 				return false;
 
-			// We keep track of the value we want to set on the current element of the path.
-			// We start with the value the user provided.
-
-			const rtti::TypeInfo value_type = getType();
+			// We keep track of the value we want to set on the current element of the path and backtrack from there.
 			rtti::Variant value_to_set = value;
 
-			if (value_type != value_to_set.get_type() &&
-			    !value_to_set.convert(value_type.is_wrapper() ? value_type.get_wrapped_type() : value_type))
-				return false;
-
-			for (int index = mLength - 1; index >= 0; --index)
+			// Try to convert when types are different, skip when new value is nullptr.
+			// The result is a value that can is compatible with the property value to set.
+			const rttr::type prop_type = getType();
+			if (prop_type != value_to_set.get_type() && value_to_set != nullptr)
 			{
-				const ResolvedRTTIPathElement& element = mElements[index];
-
-				// If this is the root element, directly set the value on the object
-				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
+				// convert to wrapped type (objectptr etc.)
+				if (prop_type.is_wrapper())
 				{
-					if (!element.Root.Property.set_value(element.Root.Instance, value_to_set))
+					if (!value_to_set.convert(prop_type.get_wrapped_type()))
 						return false;
 				}
+				else
+				{
+					// convert to value or raw pointer type
+					if (!value_to_set.convert(prop_type))
+						return false;
+				}
+			}
+
+			// Recursively set the value, starting from the last element and working our way back
+			for (int index = mLength - 1; index >= 0; --index)
+			{
+				// If this is the root element, directly set the value on the object
+				const ResolvedRTTIPathElement& element = mElements[index];
+				if (element.mType == ResolvedRTTIPathElement::Type::ROOT)
+				{
+					// Check if what we're attempting to set is a pointer property
+					auto root_type = element.Root.Property.get_type();
+					bool is_ptr = root_type.is_wrapper() ? root_type.get_wrapped_type().is_pointer() :
+						root_type.is_pointer();
+
+					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
+					if (is_ptr && value_to_set == nullptr)
+					{
+						if (!element.Root.Property.set_value(element.Root.Instance, nullptr))
+							return false;
+					}
+					else
+					{
+						if (!element.Root.Property.set_value(element.Root.Instance, value_to_set))
+							return false;
+					}
+				}
+				// Attribute element: set the value on the *copy* of the object (the variant)
 				else if (element.mType == ResolvedRTTIPathElement::Type::ATTRIBUTE)
 				{
-					// Attribute element: set the value on the *copy* of the object (the variant)
-					if (!element.Attribute.Property.set_value(element.Attribute.Variant, value_to_set))
-						return false;
+					// Check if what we're attempting to set is a pointer property
+					auto attr_type = element.Attribute.Property.get_type();
+					bool is_ptr = attr_type.is_wrapper() ? attr_type.get_wrapped_type().is_pointer() :
+						attr_type.is_pointer();
+
+					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
+					if (is_ptr && value_to_set == nullptr)
+					{
+						if (!element.Attribute.Property.set_value(element.Attribute.Variant, nullptr))
+							return false;
+					}
+					else
+					{
+						// Attribute element: set the value on the *copy* of the object (the variant)
+						if (!element.Attribute.Property.set_value(element.Attribute.Variant, value_to_set))
+							return false;
+					}
 
 					// Now that we've updated our copy, we need to copy our copy to the original object.
 					// So we update value_to_set for the next iteration
 					value_to_set = element.Attribute.Variant;
 				}
+				// Array element: set the array index value on a *copy* of the array
 				else if (element.mType == ResolvedRTTIPathElement::Type::ARRAY_ELEMENT)
 				{
-					// Array element: set the array index value on a *copy* of the array
-					rtti::VariantArray array = element.ArrayElement.Array.create_array_view();
-					if (!array.set_value(element.ArrayElement.Index, value_to_set))
-						return false;
+					rtti::VariantArray view = element.ArrayElement.Array.create_array_view();
+
+					// Check if what we're attempting to set is a pointer property
+					auto arr_type = view.get_rank_type(view.get_rank());
+					bool is_ptr = arr_type.is_wrapper() ? arr_type.get_wrapped_type().is_pointer() :
+						arr_type.is_pointer();
+
+					// We explicitly check for and set a nullptr -> nullptr variant conversion not available
+					if (is_ptr && value_to_set == nullptr)
+					{
+						if (!view.set_value(element.ArrayElement.Index, nullptr))
+							return false;
+					}
+					else
+					{
+						if (!view.set_value(element.ArrayElement.Index, value_to_set))
+							return false;
+					}
 
 					// Now that we've updated our copy of the array,
 					// we need to copy our array copy to the original object.
@@ -256,7 +308,6 @@ namespace nap
 					value_to_set = element.ArrayElement.Array;
 				}
 			}
-
 			return true;
 		}
 

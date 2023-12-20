@@ -59,6 +59,13 @@ namespace napkin
 		 */
 		void childAddedToGroup(GroupItem& group, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child in a group changes
+		 * @param group the parent group
+		 * @param item child item
+		 */
+		void indexChanged(GroupItem& group, ObjectItem& item);
+
 	private:
 		/**
 		 * Called when an object has been added
@@ -117,6 +124,13 @@ namespace napkin
 		 * @param item the item that is added, either a EntityItem or ComponentItem
 		 */
 		void childAddedToEntity(EntityItem& entity, ObjectItem& item);
+
+		/**
+		 * Signal that is emitted when the index of a child (component or entity) changes
+		 * @param entity the parent entity
+		 * @param item child item
+		 */
+		void indexChanged(EntityItem& entity, ObjectItem& item);
 
 	private:
 		/**
@@ -272,11 +286,22 @@ namespace napkin
 		 */
 		void childAdded(EntityItem& entity, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (component or entity) changes
+		 * @param entity the parent entity
+		 * @param item child item
+		 */
+		void indexChanged(EntityItem& entity, ObjectItem& item);
+
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 		void onPropertyValueChanged(const PropertyPath& path);
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 		void populate();
+
+		PropertyPath mCompPropertyPath;
+		PropertyPath mChildPropertyPath;
 	};
 
 
@@ -330,11 +355,23 @@ namespace napkin
 		 */
 		void childAdded(GroupItem& group, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (resource or group) changes
+		 * @param entity the parent entity
+		 * @param item child item
+		 */
+		void indexChanged(GroupItem& entity, ObjectItem& item);
+
 	private:
 		/**
 		 * Called when a new item is inserted into an array
 		 */
 		void onPropertyChildInserted(const PropertyPath& path, int index);
+
+		/**
+		 * Called when the index of a child in an array changes
+		 */
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 	};
 
 	//////////////////////////////////////////////////////////////////////////

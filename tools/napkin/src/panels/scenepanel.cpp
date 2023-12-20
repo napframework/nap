@@ -22,6 +22,7 @@ napkin::SceneModel::SceneModel() : QStandardItemModel()
 	connect(&AppContext::get(), &AppContext::objectAdded, this, &SceneModel::onObjectAdded);
 	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &SceneModel::onObjectRemoved);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &SceneModel::onIndexSwapped);
 }
 
 
@@ -100,6 +101,15 @@ void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
 void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
 	if (refresh(obj))
+	{
+		populate();
+	}
+}
+
+
+void napkin::SceneModel::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	if (refresh(path.getObject()))
 	{
 		populate();
 	}

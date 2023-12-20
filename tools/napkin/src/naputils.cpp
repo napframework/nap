@@ -63,9 +63,11 @@ void napkin::dumpTypes(rttr::type type, const std::string& indent)
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
 {
-	setText(type.get_name().data());
+	QString type_name(type.get_name().data());
+	auto parts = type_name.split(','); assert(parts.size() > 0);
+	parts.first().remove("class ");
+	setText(parts.first());
 	setEditable(false);
-	refresh();
 }
 
 
@@ -86,16 +88,6 @@ napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 		auto item = new ObjectItem(*object);
 		item->setEditable(false);
 		appendRow(item);
-	}
-}
-
-
-void napkin::RTTITypeItem::refresh()
-{
-
-	for (const auto& derived : getImmediateDerivedTypes(mType))
-	{
-		appendRow(new RTTITypeItem(derived));
 	}
 }
 

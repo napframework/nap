@@ -78,6 +78,43 @@ static ObjectItem* createObjectItem(nap::rtti::Object& object)
 };
 
 
+/**
+ * Helper function that finds and swaps items based on the given property index change.
+ * @param path the array property that holds the items that were swapped
+ * @param oldIndex original index
+ * @param newIndex the new index
+ * @param parent parent item
+ * @return swapped child indices (previous, new)
+ */
+static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex, size_t newIndex, ObjectItem& parent)
+{
+	// Get modified objects
+	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
+	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
+	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	// Map component indices to child items
+	int a_idx = -1; int b_idx = -1;
+	for (auto row = 0; row < parent.rowCount(); row++)
+	{
+		auto* it = qitem_cast<ObjectItem*>(parent.child(row));
+		if (it != nullptr)
+		{
+			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
+			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
+		}
+	} assert(a_idx >= 0 && b_idx >= 0);
+
+	auto child_a = parent.takeChild(a_idx);
+	auto child_b = parent.takeChild(b_idx);
+	parent.setChild(a_idx, child_b);
+	parent.setChild(b_idx, child_a);
+	return { static_cast<size_t>(a_idx), static_cast<size_t>(b_idx) };
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 // RegularResourcesItem 
 //////////////////////////////////////////////////////////////////////////
@@ -138,6 +175,7 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 		auto group_item = new GroupItem(static_cast<nap::IGroup&>(*obj));
 		this->appendRow({ group_item, new RTTITypeItem(obj->get_type()) });
 		connect(group_item, &GroupItem::childAdded, this, &RootResourcesItem::childAddedToGroup);
+		connect(group_item, &GroupItem::indexChanged, this, &RootResourcesItem::indexChanged);
 	}
 	else
 	{
@@ -217,6 +255,7 @@ void napkin::EntityResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtt
 
 	// Listen to changes
 	entity_item->connect(entity_item, &EntityItem::childAdded, this, &EntityResourcesItem::childAddedToEntity);
+	entity_item->connect(entity_item, &EntityItem::indexChanged, this, &EntityResourcesItem::indexChanged);
 }
 
 
@@ -479,6 +518,14 @@ void napkin::ObjectItem::onObjectReparenting(nap::rtti::Object& object, Property
 
 EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity, isPointer)
 {
+	mChildPropertyPath = PropertyPath(getEntity(),
+		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
+	assert(mChildPropertyPath.isValid());
+
+	mCompPropertyPath = PropertyPath(getEntity(),
+		nap::rtti::Path::fromString(nap::Entity::componentsPropertyName()), *AppContext::get().getDocument());
+	assert(mCompPropertyPath.isValid());
+
 	// Populate item
 	populate();
 
@@ -486,6 +533,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
+	connect(&ctx, &AppContext::arrayIndexSwapped, this, &EntityItem::onIndexSwapped);
 }
 
 
@@ -524,16 +572,24 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 }
 
 
+void napkin::EntityItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	// Only handle component index changes because sub-tree is rebuild when entity order changes
+	// TODO: properly handle child entity changes -> implementation below is optimized for it
+	if (path != mCompPropertyPath)
+		return;
+
+	// Swap child items and notify
+	auto idx = swapItems(path, oldIndex, newIndex, *this);
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[1])));
+}
+
+
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(getEntity(),
-		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
-
-	// Check if this property was edited
-	assert(childrenPath.isValid());
-	if (path == childrenPath)
+	// Check if the children property was edited
+	if (path == mChildPropertyPath)
 	{
-		// Re-populate
 		populate();
 	}
 }
@@ -541,9 +597,9 @@ void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 
 const std::string EntityItem::unambiguousName() const
 {
-	if (auto entityItem = qobject_cast<EntityItem*>(parentItem()))
+	if (auto parent_entity = qobject_cast<EntityItem*>(parentItem()))
 	{
-		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
+		return ObjectItem::unambiguousName() + ":" + std::to_string(parent_entity->nameIndex(*this));
 	}
 	return ObjectItem::unambiguousName();
 }
@@ -552,19 +608,21 @@ const std::string EntityItem::unambiguousName() const
 void napkin::EntityItem::populate()
 {
 	removeChildren();
+
+	// Create and add entities
 	auto& entity = getEntity();
 	for (auto& child : entity.mChildren)
 	{
 		auto* child_entity = new EntityItem(*child, true);
 		child_entity->connect(child_entity, &EntityItem::childAdded, this, &EntityItem::childAdded);
+		child_entity->connect(child_entity, &EntityItem::indexChanged, this, &EntityItem::indexChanged);
 		appendRow({ child_entity, new RTTITypeItem(child->get_type()) });
 	}
 
+	// Create and add component items
 	for (auto& comp : entity.mComponents)
 	{
-		// Create and add new component
-		auto comp_item = new ComponentItem(*comp);
-		appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+		appendRow({ new ComponentItem(*comp), new RTTITypeItem(comp->get_type()) });
 	}
 }
 
@@ -598,12 +656,14 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(group, false)
 			assert(path.getPointee()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
 			GroupItem* group_item = new GroupItem(*rtti_cast<nap::IGroup>(path.getPointee()));
 			this->connect(group_item, &GroupItem::childAdded, this, &GroupItem::childAdded);
+			this->connect(group_item, &GroupItem::indexChanged, this, &GroupItem::indexChanged);
 			this->appendRow( { group_item, new RTTITypeItem(path.getPointee()->get_type()) });
 			return true;
 		}, 0);
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &GroupItem::onIndexSwapped);
 }
 
 
@@ -661,6 +721,19 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
 		childAdded(*this, *new_group);
 	}
+}
+
+
+void napkin::GroupItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	// Check if this group has changed
+	nap::IGroup& group = getGroup();
+	if (!(path.getObject() == &group))
+		return;
+
+	// Swap child indices and notify
+	auto idx = swapItems(path, oldIndex, newIndex, *this);
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[1])));
 }
 
 
