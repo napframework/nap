@@ -964,60 +964,45 @@ SceneItem* RootEntityItem::sceneItem()
 
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity)
 		: ObjectItem(comp, false), mRootEntity(rootEntity)
-{
-	assert(&mRootEntity);
-}
+{ }
+
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
 {
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 }
 
+
 nap::Component& ComponentInstanceItem::component() const
 {
 	return *rtti_cast<nap::Component>(mObject);
 }
+
 
 nap::RootEntity& ComponentInstanceItem::rootEntity() const
 {
 	return mRootEntity;
 }
 
+
 QVariant ComponentInstanceItem::data(int role) const
 {
 	if (role == Qt::TextColorRole)
 	{
-		if (instanceProperties())
+		for (const auto& overrides : mRootEntity.mInstanceProperties)
 		{
+			// See if component matches
+			if (overrides.mTargetComponent.get() != &component())
+				continue;
+
+			// Ensure instance path is the same
+			if (!isComponentInstancePathEqual(overrides.mTargetComponent.toString(), componentPath()))
+				continue;
+
+			// Match
 			return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
 		}
 	}
 	return ObjectItem::data(role);
-}
-
-nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() const
-{
-	if (mInstancePropertiesResolved)
-		return hasInstanceProperties() ? &mInstanceProperties : nullptr;
-
-	for (const auto& instprops : mRootEntity.mInstanceProperties)
-	{
-		if (instprops.mTargetComponent.get() != &component())
-			continue;
-
-		if (!isComponentInstancePathEqual(mRootEntity, *instprops.mTargetComponent.get(), instprops.mTargetComponent.toString(), componentPath()))
-			continue;
-
-		mInstanceProperties = instprops;
-		break;
-	}
-
-	mInstancePropertiesResolved = true;
-	return &mInstanceProperties;
-}
-
-bool ComponentInstanceItem::hasInstanceProperties() const
-{
-	return mInstanceProperties.mTargetComponent.get();
 }
 

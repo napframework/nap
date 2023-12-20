@@ -357,32 +357,29 @@ std::string napkin::friendlyTypeName(rttr::type type)
 }
 
 
-bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp, const std::string& a, const std::string& b)
+bool napkin::isComponentInstancePathEqual(const std::string& a, const std::string& b)
 {
+	auto parts_a = nap::utility::splitString(a, '/'); assert(parts_a[0] == ".");
+	auto parts_b = nap::utility::splitString(b, '/'); assert(parts_a[0] == ".");
+
+	std::string name_a; int index_a;
+	std::string name_b; int index_b;
+	for (size_t i = 1, len = parts_a.size(); i < len; i++)
 	{
-		auto parts_a = nap::utility::splitString(a, '/'); assert(parts_a[0] == ".");
-		auto parts_b = nap::utility::splitString(b, '/'); assert(parts_a[0] == ".");
+		// continue finding child entities, no index = 0
+		if (!nameAndIndex(parts_a[i], name_a, index_a))
+			index_a = 0;
 
-		std::string name_a; int index_a;
-		std::string name_b; int index_b;
-		for (size_t i = 1, len = parts_a.size(); i < len; i++)
-		{
-			// continue finding child entities, no index = 0
-			if (!nameAndIndex(parts_a[i], name_a, index_a))
-				index_a = 0;
+		if (!nameAndIndex(parts_b[i], name_b, index_b))
+			index_b = 0;
 
-			if (!nameAndIndex(parts_b[i], name_b, index_b))
-				index_b = 0;
+		if (name_a != name_b)
+			return false;
 
-			if (name_a != name_b)
-				return false;
-
-			if (index_a != index_b)
-				return false;
-
-		}
-		return true;
+		if (index_a != index_b)
+			return false;
 	}
+	return true;
 }
 
 

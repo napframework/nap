@@ -100,11 +100,8 @@ QVariant napkin::PropertyPathItem::data(int role) const
 		{
 			// If the parent is an array, display the index of this item
 			auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
-			if (parent_path != nullptr && parent_path->getPath().isArray())
-			{
-				return row();
-			}
-			return QStandardItem::data(role);
+			return parent_path != nullptr && parent_path->getPath().isArray() ? row() :
+				QStandardItem::data(role);
 		}
 		case Qt::UserRole:
 		{
@@ -112,8 +109,15 @@ QVariant napkin::PropertyPathItem::data(int role) const
 		}
 		case Qt::ForegroundRole:
 		{
-			return mPath.isInstanceProperty() ? AppContext::get().getThemeManager().getColor(napkin::theme::color::dimmedItem) :
-				QStandardItem::data(role);
+			// Dim instance properties
+			if (mPath.isInstanceProperty())
+			{
+				// Return special colour when instance property is overridden
+				return mPath.isOverridden() ?
+					AppContext::get().getThemeManager().getColor(napkin::theme::color::highlight3) :
+					AppContext::get().getThemeManager().getColor(napkin::theme::color::dimmedItem);
+			}
+			return QStandardItem::data(role);
 		}
 		default:
 		{

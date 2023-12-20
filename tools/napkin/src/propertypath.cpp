@@ -112,7 +112,10 @@ nap::ComponentInstanceProperties* PropertyPath::getInstanceProperties() const
 	auto comp_instance_path = getComponentInstancePath();
 	for (nap::ComponentInstanceProperties& instProp : root_entitiy->mInstanceProperties)
 	{
-		if (isComponentInstancePathEqual(*root_entitiy, *instProp.mTargetComponent.get(), instProp.mTargetComponent.getInstancePath(), comp_instance_path))
+		if(instProp.mTargetComponent.get() == nullptr)
+			continue;
+
+		if (isComponentInstancePathEqual(instProp.mTargetComponent.getInstancePath(), comp_instance_path))
 			return &instProp;
 	}
 	return nullptr;

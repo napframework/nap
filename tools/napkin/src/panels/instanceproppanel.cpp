@@ -72,7 +72,8 @@ nap::RootEntity* InstPropAttribItem::rootEntity() const
 InstancePropsItem::InstancePropsItem(nap::ComponentInstanceProperties& props) : mProps(props)
 {
 	setEditable(false);
-	setText(QString::fromStdString(props.mTargetComponent.getInstancePath()));
+	setText(QString::fromStdString(props.mTargetComponent == nullptr ? "INVALID" :
+		props.mTargetComponent.getInstancePath()));
 	for (auto& a : props.mTargetAttributes)
 	{
 		appendRow(new InstPropAttribItem(a));

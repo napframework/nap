@@ -671,38 +671,19 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 {
 	switch (role)
 	{
-	case Qt::UserRole:
-	{
-		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
-		if (value_item != nullptr)
+		case Qt::UserRole:
 		{
-			return QVariant::fromValue(value_item->getPath());
-		}
-		break;
-	}
-	case Qt::ForegroundRole:
-	{
-		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
-		if (value_item != nullptr)
-		{
-			bool correct_item = qobject_cast<PointerValueItem*>(value_item) != nullptr ||
-				qobject_cast<PropertyValueItem*>(value_item) != nullptr;
-
-			if (value_item->getPath().isInstanceProperty() && correct_item)
+			auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
+			if (value_item != nullptr)
 			{
-				auto& themeManager = AppContext::get().getThemeManager();
-				if (value_item->getPath().isOverridden())
-				{
-					return QVariant::fromValue<QColor>(themeManager.getColor(theme::color::instancePropertyOverride));
-				}
+				return QVariant::fromValue(value_item->getPath());
 			}
 		}
-		break;
+		default:
+		{
+			return QStandardItemModel::data(index, role);
+		}
 	}
-	default:
-		break;
-	}
-	return QStandardItemModel::data(index, role);
 }
 
 

@@ -551,14 +551,6 @@ namespace napkin
 		nap::RootEntity& rootEntity() const;
 		QVariant data(int role) const override;
 	private:
-		nap::ComponentInstanceProperties* instanceProperties() const;
-		bool hasInstanceProperties() const;
-
 		nap::RootEntity& mRootEntity;
-
-		mutable bool mInstancePropertiesResolved = false;
-
-		// This is a copy of the instanceproperties on the root entity
-		mutable nap::ComponentInstanceProperties mInstanceProperties;
 	};
 } // namespace napkin
