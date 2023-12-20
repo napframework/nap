@@ -101,7 +101,7 @@ const std::string PropertyPath::getName() const
 }
 
 
-nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
+nap::ComponentInstanceProperties* PropertyPath::getInstanceProps() const
 {
 	// check if we have a root and are part of the scene
 	auto root_entitiy = getRootEntity();
@@ -130,19 +130,21 @@ nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
 nap::ComponentInstanceProperties& PropertyPath::getOrCreateInstanceProps()
 {
 	assert(isInstanceProperty());
-
-	auto props = instanceProps();
+	auto props = getInstanceProps();
 	if (props)
+	{
 		return *props;
+	}
 
 	// No instance properties, create a new set
 	auto root_entity = getRootEntity();
-	auto idx = root_entity->mInstanceProperties.size();
-	root_entity->mInstanceProperties.emplace_back();
+	auto& comp_instance_props = root_entity->mInstanceProperties.emplace_back();
 
 	std::string target_path = getComponentInstancePath();
-	root_entity->mInstanceProperties.at(idx).mTargetComponent.assign(target_path, component());
-	return root_entity->mInstanceProperties.at(idx);
+	auto* component = rtti_cast<nap::Component>(getObject());
+	assert(!target_path.empty() && component != nullptr);
+	comp_instance_props.mTargetComponent.assign(target_path, component);
+	return comp_instance_props;
 }
 
 
@@ -192,15 +194,9 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 }
 
 
-nap::Component* PropertyPath::component() const
-{
-	return rtti_cast<nap::Component>(getObject());
-}
-
-
 nap::TargetAttribute* PropertyPath::targetAttribute() const
 {
-	auto instProps = instanceProps();
+	auto instProps = getInstanceProps();
 	if (!instProps)
 		return nullptr;
 
@@ -338,7 +334,7 @@ bool PropertyPath::setValue(rttr::variant new_value)
 void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const
 {
 	// remove from target attributes list
-	auto instProps = this->instanceProps();
+	auto instProps = this->getInstanceProps();
 	auto& attrs = instProps->mTargetAttributes;
 	auto filter = [&](const nap::TargetAttribute& attr) { return &attr == targetAttr; };
 	attrs.erase(std::remove_if(attrs.begin(), attrs.end(), filter), attrs.end());

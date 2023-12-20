@@ -325,14 +325,9 @@ namespace napkin
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
 
-		nap::ComponentInstanceProperties* instanceProps() const;
+		nap::ComponentInstanceProperties* getInstanceProps() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
 		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
-		/**
-		 * This PropertyPath is most likely pointing to a Component, retrieve it here.
-		 * @return The component this PropertyPath is pointing to.
-		 */
-		nap::Component* component() const;
 		nap::TargetAttribute* targetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
 
