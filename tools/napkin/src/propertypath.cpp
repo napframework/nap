@@ -115,10 +115,7 @@ nap::ComponentInstanceProperties* PropertyPath::getInstanceProps() const
 	auto comp_instance_path = getComponentInstancePath();
 	for (nap::ComponentInstanceProperties& instProp : root_entitiy->mInstanceProperties)
 	{
-		if (isComponentInstancePathEqual(*root_entitiy,
-			*instProp.mTargetComponent.get(),
-			instProp.mTargetComponent.getInstancePath(),
-			comp_instance_path))
+		if (isComponentInstancePathEqual(*root_entitiy, *instProp.mTargetComponent.get(), instProp.mTargetComponent.getInstancePath(), comp_instance_path))
 		{
 			return &instProp;
 		}
@@ -194,14 +191,14 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 }
 
 
-nap::TargetAttribute* PropertyPath::targetAttribute() const
+nap::TargetAttribute* PropertyPath::getTargetAttribute() const
 {
-	auto instProps = getInstanceProps();
-	if (!instProps)
+	auto instance_properties = getInstanceProps();
+	if (!instance_properties)
 		return nullptr;
 
 	auto pathstr = propPathStr();
-	for (auto& attr : instProps->mTargetAttributes)
+	for (auto& attr : instance_properties->mTargetAttributes)
 	{
 		if (attr.mPath == pathstr)
 			return &attr;
@@ -212,26 +209,21 @@ nap::TargetAttribute* PropertyPath::targetAttribute() const
 
 nap::TargetAttribute& PropertyPath::getOrCreateTargetAttribute()
 {
+	// Find in existing instance properties
 	assert(isInstanceProperty());
+	auto target_attr = getTargetAttribute();
 
-	auto targetAttr = targetAttribute();
-	if (targetAttr)
-		return *targetAttr;
-
-	// didn't exist, create
-	auto& instProps = getOrCreateInstanceProps();
-
-	auto pathstr = propPathStr();
-	for (auto& attr : instProps.mTargetAttributes)
+	// Create if it doesn't exist
+	if (target_attr == nullptr)
 	{
-		if (attr.mPath == pathstr)
-			return attr;
-	}
+		auto& instance_properties = getOrCreateInstanceProps();
+		auto path_str = propPathStr();
 
-	auto idx = instProps.mTargetAttributes.size();
-	instProps.mTargetAttributes.emplace_back();
-	instProps.mTargetAttributes.at(idx).mPath = pathstr;
-	return instProps.mTargetAttributes.at(idx);
+		// Create target attribute
+		target_attr = &instance_properties.mTargetAttributes.emplace_back();
+		target_attr->mPath = path_str;
+	}
+	return *target_attr;
 }
 
 
@@ -239,7 +231,7 @@ rttr::variant PropertyPath::getValue() const
 {
 	if (isInstanceProperty() && isOverridden())
 	{
-		auto target_attr = targetAttribute();
+		auto target_attr = getTargetAttribute();
 		if (target_attr)
 		{
 			return getInstancePropertyValue(*target_attr->mValue.get());
@@ -289,7 +281,7 @@ bool PropertyPath::setValue(rttr::variant new_value)
 	if (resource_value == new_value)
 	{
 		// Delete instance override when currently set
-		auto target_attr = targetAttribute();
+		auto target_attr = getTargetAttribute();
 		if (target_attr != nullptr)
 		{
 			rttr::variant val = target_attr->mValue.get();
@@ -314,7 +306,7 @@ bool PropertyPath::setValue(rttr::variant new_value)
 
 	// Get instance property (as target). Create one if it doesn't exist.
 	// If it does exist: discard instance property value if the provided value is the same as the original
-	auto target_attr = targetAttribute();
+	auto target_attr = getTargetAttribute();
 	if (target_attr == nullptr)
 	{
 		nap::InstancePropertyValue* new_value = createInstanceProperty(getType(), *getDocument());
@@ -529,14 +521,14 @@ rttr::type PropertyPath::getWrappedType() const
 bool PropertyPath::isOverridden() const
 {
     if (hasProperty())
-        return targetAttribute() != nullptr;
+        return getTargetAttribute() != nullptr;
     return false;
 }
 
 
 void PropertyPath::removeOverride()
 {
-	auto at = targetAttribute();
+	auto at = getTargetAttribute();
 	if (!at) 
 		return;
 	rttr::variant val = at->mValue.get();

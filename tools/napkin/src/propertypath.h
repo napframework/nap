@@ -327,9 +327,9 @@ namespace napkin
 
 		nap::ComponentInstanceProperties* getInstanceProps() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
-		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
-		nap::TargetAttribute* targetAttribute() const;
+		nap::TargetAttribute* getTargetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
+		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
 
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
