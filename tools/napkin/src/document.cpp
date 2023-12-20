@@ -1022,19 +1022,15 @@ void Document::arraySwapElement(const PropertyPath& path, size_t fromIndex, size
 	// Resolve property path
 	ResolvedPath resolved_path = path.resolve();
 	Variant array_value = resolved_path.getValue();
+	VariantArray array = array_value.create_array_view();
 
-	// Get paths and values from path
-	assert(path.isArray());
-	auto a_p = path.getArrayElement(fromIndex); 
-	auto b_p = path.getArrayElement(toIndex);
-	auto a_v = a_p.getValue();
-	auto b_v = b_p.getValue();
-
-	// Swap values
-	a_p.setValue(b_v);
-	b_p.setValue(a_v);
-
-	// Notify
+	// Swap & Set
+	assert(fromIndex < array.get_size());
+	Variant fr_value = array.get_value(fromIndex);
+	array.set_value(fromIndex, array.get_value(toIndex));
+	assert(toIndex < array.get_size());
+	array.set_value(toIndex, fr_value);
+	bool ok = resolved_path.setValue(array_value); assert(ok);
 	propertyValueChanged(path);
 	arrayIndexSwapped(path, fromIndex, toIndex);
 }
