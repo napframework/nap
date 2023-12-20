@@ -32,9 +32,10 @@ else()
     target_link_libraries(${PROJECT_NAME} debug ${LIBSSL_LIB} optimized ${LIBSSL_LIB})
 
     if(WIN32)
+        install(FILES ${RTMIDI_LIBRARIES_RELEASE} DESTINATION lib)
         copy_openssl_dll()
     elseif(UNIX)
-        file(GLOB libsopenssl ${NAP_ROOT}/${libcrypto_dest_dir}/libcrypto*${CMAKE_SHARED_LIBRARY_SUFFIX}* ${NAP_ROOT}/${libssl_dest_dir}/libssl*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+        file(GLOB libsopenssl ${NAP_ROOT}/${openssl_dest_dir}/*)
         install(FILES ${libsopenssl} DESTINATION lib)
     endif()
 
