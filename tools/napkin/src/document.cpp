@@ -207,65 +207,78 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 {
 	// Iterate over the properties of a component or component ptr override.
 	// Find component and entity pointers that reference the old object and patch accordingly.
-	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue) } );
+	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::RootEntity) } );
 	for (auto& object : objects)
 	{
+		// Recursively iterate over properties and patch paths
 		auto props = object->get_type().get_properties();
 		for (auto& ptr_prop : props)
 		{
-			// Skip if not entity or component ptr
-			if (!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
-				!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
-				continue;
-
-			// Get to string (path) method
-			rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
-			assert(string_method.is_valid());
-
-			// Get path and check for ID inclusion - exclude partial names
-			auto path = string_method.invoke(ptr_prop.get_value(object)).to_string();
-			auto index = path.find(oldID);
-			while (index != std::string::npos)
-			{
-				auto end_index = index + oldID.size();
-				if (end_index >= path.size() ||
-					path[end_index] == '/'   ||
-					path[end_index] == ':')
-					break;
-
-				index = path.find(oldID, index + 1);
-			}
-
-			// No match
-			if (index == std::string::npos)
-				continue;
-
-			// Update path and find target object
-			path.replace(index, oldID.size(), newID);
-			size_t obj_pos = path.find_last_of('/'); assert(obj_pos != std::string::npos);
-			nap::rtti::Object* target = getObject(path.substr(obj_pos + 1));
-
-			// Target doesn't exist
-			if (target == nullptr)
-			{
-				assert(false);
-				continue;
-			}
-
-			// Create and assign new path
-			rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
-			assert(assign_method.is_valid());
-			auto ptr_variant = ptr_prop.get_value(object);
-			assign_method.invoke(ptr_variant, path, *target);
-
-			// Set as new property value
-			if (!ptr_prop.set_value(object, ptr_variant))
-			{
-				std::string msg = nap::utility::stringFormat("Unable to update: %s",
-					PropertyPath(*object, ptr_prop, *this).toString().c_str());
-				NAP_ASSERT_MSG(false, msg.c_str());
-			}
+			nap::rtti::Path prop_path;
+			prop_path.pushAttribute(ptr_prop.get_name().data());
+			patchLinks(object, oldID, newID, prop_path);
 		}
+	}
+}
+
+
+void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& rttiPath)
+{
+	// Resolve path
+	nap::rtti::ResolvedPath resolved_path;
+	rttiPath.resolve(object, resolved_path);
+	auto ptr_prop = resolved_path.getProperty();
+
+	// Skip if not entity or component ptr
+	if (!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+		!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
+		return;
+
+	// Get to string (path) method
+	rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
+	assert(string_method.is_valid());
+
+	// Get path and check for ID inclusion - exclude partial names
+	auto path = string_method.invoke(ptr_prop.get_value(object)).to_string();
+	auto index = path.find(oldID);
+	while (index != std::string::npos)
+	{
+		auto end_index = index + oldID.size();
+		if (end_index >= path.size() ||
+			path[end_index] == '/' ||
+			path[end_index] == ':')
+			break;
+
+		index = path.find(oldID, index + 1);
+	}
+
+	// No match
+	if (index == std::string::npos)
+		return;
+
+	// Update path and find target object
+	path.replace(index, oldID.size(), newID);
+	size_t obj_pos = path.find_last_of('/'); assert(obj_pos != std::string::npos);
+	nap::rtti::Object* target = getObject(path.substr(obj_pos + 1));
+
+	// Target doesn't exist
+	if (target == nullptr)
+	{
+		assert(false);
+		return;
+	}
+
+	// Create and assign new path
+	rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
+	assert(assign_method.is_valid());
+	auto ptr_variant = ptr_prop.get_value(object);
+	assign_method.invoke(ptr_variant, path, target);
+
+	// Set as new property value
+	if (!ptr_prop.set_value(object, ptr_variant))
+	{
+		std::string msg = nap::utility::stringFormat("Unable to update: %s", rttiPath.toString().c_str());
+		NAP_ASSERT_MSG(false, msg.c_str());
 	}
 }
 

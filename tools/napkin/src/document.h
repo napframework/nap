@@ -611,6 +611,17 @@ namespace napkin
 		 * @param newID new entity or component ID
 		 */
 		void patchLinks(const std::string& oldID, const std::string& newID);
+
+		/**
+		 * Patches entity and component ptr links. This occurs when
+		 * the name of an entity or a component changes, which invalidates existing links to those objects.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
+		 * Note that entity and component links are string based and handled separately from regular resources,
+		 * hence the manual patching here.
+		 * @param oldID old entity or component ID
+		 * @param newID new entity or component ID
+		 */
+		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
 	};
 
 
