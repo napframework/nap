@@ -256,7 +256,7 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 			rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
 			assert(assign_method.is_valid());
 			auto ptr_variant = ptr_prop.get_value(object);
-			assign_method.invoke(ptr_variant, path, *target);
+			assign_method.invoke(ptr_variant, path, target);
 
 			// Set as new property value
 			if (!ptr_prop.set_value(object, ptr_variant))
@@ -852,8 +852,8 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object
 
 		// Assign
 		array_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ?
-			assign_method.invoke(new_ptr.get_wrapped_value<nap::ComponentPtrBase>(), obj_path, *object) :
-			assign_method.invoke(new_ptr.get_wrapped_value<nap::EntityPtr>(), obj_path, *object);
+			assign_method.invoke(new_ptr.get_wrapped_value<nap::ComponentPtrBase>(), obj_path, object) :
+			assign_method.invoke(new_ptr.get_wrapped_value<nap::EntityPtr>(), obj_path, object);
 	}
 
 	// Set updated array
