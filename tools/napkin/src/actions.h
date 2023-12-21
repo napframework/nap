@@ -399,19 +399,6 @@ namespace napkin
 
 
 	/**
-	 * Remove a child Entity from its parent
-	 */
-	class RemoveChildEntityAction : public Action
-	{
-	public:
-		explicit RemoveChildEntityAction(QObject* parent, EntityItem& entityItem);
-	private:
-		void perform() override;
-		EntityItem* mEntityItem;
-	};
-
-
-	/**
 	 * Remove something defined by the propertypath
 	 */
 	class RemovePathAction : public Action

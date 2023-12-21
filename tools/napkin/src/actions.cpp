@@ -800,38 +800,6 @@ void LoadShaderAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemoveChildEntityAction::RemoveChildEntityAction(QObject* parent, EntityItem& entityItem) :
-	Action(parent, nap::utility::stringFormat("Remove '%s'", entityItem.getEntity().mID.c_str()).c_str(), QRC_ICONS_REMOVE),
-	mEntityItem(&entityItem)
-{ }
-
-
-void RemoveChildEntityAction::perform()
-{
-	// TODO: Move into Command
-	auto parentItem = qobject_cast<EntityItem*>(mEntityItem->parentItem());
-	auto doc = AppContext::get().getDocument();
-	auto index = parentItem->childIndex(*mEntityItem);
-	assert(index >= 0);
-
-	// Grab all component paths for later instance property removal
-	QStringList componentPaths;
-	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
-	{
-		auto compItem = qobject_cast<ComponentItem*>(static_cast<RTTIItem*>(item));
-		if (compItem)
-		{
-			componentPaths << QString::fromStdString(compItem->componentPath());
-		}
-		return true;
-	}, mEntityItem->index());
-
-	doc->removeChildEntity(parentItem->getEntity(), index);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 RemovePathAction::RemovePathAction(QObject* parent, const PropertyPath& path) :
 	Action(parent, nap::utility::stringFormat("Remove '%s'", path.getName().c_str()).c_str(), QRC_ICONS_REMOVE), mPath(path)
 { }

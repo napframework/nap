@@ -381,6 +381,7 @@ void ObjectItem::removeChildren()
 	removeRows(0, rowCount());
 }
 
+
 QString ObjectItem::instanceName() const
 {
 	auto parent = parentItem();
@@ -407,50 +408,9 @@ QString ObjectItem::instanceName() const
 	}
 
 	assert(false);
-	return "FAULTY";
+	return "";
 }
 
-std::string ObjectItem::componentPath() const
-{
-	{
-		auto ownerItem = qobject_cast<EntityInstanceItem*>(parentItem());
-		if (ownerItem)
-		{
-			std::vector<std::string> namePath = {mObject->mID};
-			auto parent = ownerItem;
-			while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
-			{
-				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = qobject_cast<EntityInstanceItem*>(parent->parentItem());
-			}
-
-			return "./" + nap::utility::joinString(namePath, "/");
-		}
-	}
-	// TODO: Merge this with the above code....
-	{
-		auto ownerItem = qobject_cast<EntityItem*>(parentItem());
-		if (ownerItem)
-		{
-			std::vector<std::string> namePath = {mObject->mID};
-
-			auto parent = ownerItem;
-			while (parent)
-			{
-				auto parent_entity = qobject_cast<EntityItem*>(parent->parentItem());
-				if (parent_entity == nullptr)
-					break;
-
-				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = parent_entity;
-			}
-
-			return "./" + nap::utility::joinString(namePath, "/");
-		}
-	}
-	assert(false);
-	return {"INVALID"};
-}
 
 int ObjectItem::childIndex(const ObjectItem& childItem) const
 {
@@ -464,6 +424,7 @@ int ObjectItem::childIndex(const ObjectItem& childItem) const
 	}
 	return -1;
 }
+
 
 int ObjectItem::nameIndex(const ObjectItem& childItem) const
 {
@@ -991,12 +952,23 @@ QVariant ComponentInstanceItem::data(int role) const
 			if (overrides.mTargetComponent.get() != &component())
 				continue;
 
-			// Ensure instance path is the same
-			if (!isComponentInstancePathEqual(overrides.mTargetComponent.toString(), componentPath()))
-				continue;
+			// Create relative component path for current instance.
+			// We do this so we can compare if the override of this component targets the correct instance.
+			// TODO: Remove from gui code and move to path utilities.
+			auto* parent = qitem_cast<EntityInstanceItem*>(parentItem());
+			std::vector<std::string> target_path = { mObject->mID };
+			while (qitem_cast<RootEntityItem*>(parent) == nullptr)
+			{
+				target_path.insert(target_path.begin(), parent->instanceName().toStdString());
+				parent = qitem_cast<EntityInstanceItem*>(parent->parentItem());
+			} 
 
-			// Match
-			return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+			// If instance path matches return override colour
+			std::string instance_path = "./" + nap::utility::joinString(target_path, "/");
+			if (overrides.mTargetComponent.toString() == instance_path)
+			{
+				return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+			}
 		}
 	}
 	return ObjectItem::data(role);
