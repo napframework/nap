@@ -165,24 +165,29 @@ void InstancePropModel::populate()
 }
 
 
+static bool refresh(nap::rtti::Object* obj)
+{
+	// TODO: Move signal handling logic to individual scene items instead of model.
+	// Ensures the view keeps state and improves performance.
+	// Similar to regular object items managed by the resource model
+	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene))		||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Component))	||
+		obj->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue));
+}
+
+
 void napkin::InstancePropModel::onObjectRemoved(nap::rtti::Object* object)
 {
-	if (object->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue)))
-	{
+	if (refresh(object))
 		populate();
-	}
 }
 
 
 void napkin::InstancePropModel::onPropertyValueChanged(const PropertyPath& path)
 {
-	// TODO: Move signal handling logic to individual scene items instead of model.
-	// Ensures the view keeps state and improves performance.
-	// Similar to regular object items managed by the resource model
-	if (path.isInstanceProperty() ||
-		path.getObject()->get_type() == RTTI_OF(nap::Scene)			||
-		path.getObject()->get_type() == RTTI_OF(nap::Entity)		||
-		path.getObject()->get_type() == RTTI_OF(nap::Component))
+	// Underlying system change
+	if (refresh(path.getObject()))
 		populate();
 }
 

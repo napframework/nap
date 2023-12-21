@@ -75,8 +75,7 @@ static bool refresh(nap::rtti::Object* obj)
 	// Similar to regular object items managed by the resource model
 	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene))		||
 		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
-		obj->get_type().is_derived_from(RTTI_OF(nap::Component))	||
-		obj->get_type().is_derived_from(RTTI_OF(nap::RootEntity));
+		obj->get_type().is_derived_from(RTTI_OF(nap::Component));
 }
 
 
@@ -84,19 +83,19 @@ void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
 	// TODO: Move refresh logic to individual scene items.
 	if (refresh(obj))
-	{
 		populate();
-	}
 }
 
 
 void napkin::SceneModel::onPropertyValueChanged(const PropertyPath& path)
 {
-	// TODO: Move refresh logic to individual scene items.
+	// Regular value change
+	if (path.isInstanceProperty())
+		return;
+
+	// Underlying system change -> check if it affects the model
 	if (refresh(path.getObject()))
-	{
 		populate();
-	}
 }
 
 
