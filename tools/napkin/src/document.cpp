@@ -656,9 +656,6 @@ void Document::removeInstanceProperties(PropertyPath path)
 			}
 		}
 	}
-
-	for (auto scene : changedScenes)
-		objectChanged(scene);
 }
 
 
@@ -713,7 +710,7 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 	rootEntity.mEntity = &entity;
 	size_t index = scene.mEntities.size();
 	scene.mEntities.emplace_back(rootEntity);
-	objectChanged(&scene);
+	propertyValueChanged(PropertyPath(scene, nap::rtti::Path::fromString("Entities"), *this));
 	return index;
 }
 
@@ -729,9 +726,9 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 {
 	// WARNING: This will NOT take care of removing and patching up instance properties
+	// TODO: Remove associated instance properties
 	auto obj = parent.mChildren[childIndex];
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
-	objectChanged(&parent);
 
 	PropertyPath childrenProp(parent, nap::rtti::Path::fromString("Children"), *this);
 	assert(childrenProp.isValid());
@@ -741,8 +738,8 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 
 void Document::remove(const PropertyPath& path)
 {
+	// TODO: Nuke this from orbit -> use regular array object removal
 	auto parent = path.getParent();
-
 	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		// Removing child Entity from parent Entity
@@ -758,9 +755,7 @@ void Document::remove(const PropertyPath& path)
 		return;
 	}
 
-	auto _p1 = parent.toString();
-	auto _p2 = path.toString();
-
+	// TODO: Nuke this from orbit -> use regular array object removal
 	if (parent.getType().is_derived_from<nap::Scene>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		auto entity = rtti_cast<nap::Entity>(path.getObject());
@@ -774,12 +769,11 @@ void Document::remove(const PropertyPath& path)
 				if (idx == pathidx)
 				{
 					scene->mEntities.erase(scene->mEntities.begin() + i);
-					objectChanged(scene);
+					propertyValueChanged(PropertyPath(*scene, nap::rtti::Path::fromString("Entities"), *this));
 					return;
 				}
 				++idx;
 			}
-
 		}
 	}
 }
@@ -802,11 +796,6 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 		}
 		it++;
 	}
-
-	if (changed)
-	{
-		objectChanged(&scene);
-	}
 }
 
 
@@ -814,7 +803,6 @@ void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
 	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
 	scene.mEntities.erase(scene.mEntities.begin() + index);
-	objectChanged(&scene);
 }
 
 

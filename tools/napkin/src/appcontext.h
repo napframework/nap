@@ -366,12 +366,6 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after an object has changed drastically
-		 */
-		void objectChanged(nap::rtti::Object* obj);
-
-		/**
-		 * Qt Signal
 		 * Invoked just before resource is removed, including entities, components and regular resources
 		 * @param object The object about to be removed
 		 */

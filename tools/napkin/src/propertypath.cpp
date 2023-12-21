@@ -341,10 +341,6 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 	// Remove from object list
 	removeInstanceProperty(val, *getDocument());
 	assert(mDocument != nullptr);
-
-	// Notify listeners
-	for (auto scene : mDocument->getObjects<nap::Scene>())
-		mDocument->objectChanged(scene);
 }
 
 

@@ -147,23 +147,14 @@ QVariant InstPropSceneItem::data(int role) const
 InstancePropModel::InstancePropModel()
 {
 	auto ctx = &AppContext::get();
-	connect(ctx, &AppContext::documentChanged, this, &InstancePropModel::onDocumentChanged);
+	connect(&AppContext::get(), &AppContext::objectRemoved, this, &InstancePropModel::onObjectRemoved);
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &InstancePropModel::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &InstancePropModel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &InstancePropModel::onFileClosing);
 }
 
 
-void InstancePropModel::onDocumentChanged()
-{
-	auto doc = AppContext::get().getDocument();
-	connect(doc, &Document::objectChanged, [this](nap::rtti::Object* object)
-	{
-		if (object->get_type().is_derived_from<nap::Scene>())
-			onSceneChanged();
-	});
-	onSceneChanged();
-}
-
-
-void InstancePropModel::onSceneChanged()
+void InstancePropModel::populate()
 {
 	removeRows(0, rowCount());
 	for (auto scene : AppContext::get().getDocument()->getObjects<nap::Scene>())
@@ -171,6 +162,40 @@ void InstancePropModel::onSceneChanged()
 		appendRow(new InstPropSceneItem(*scene));
 	}
 	sceneChanged();
+}
+
+
+void napkin::InstancePropModel::onObjectRemoved(nap::rtti::Object* object)
+{
+	if (object->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue)))
+	{
+		populate();
+	}
+}
+
+
+void napkin::InstancePropModel::onPropertyValueChanged(const PropertyPath& path)
+{
+	// TODO: Move signal handling logic to individual scene items instead of model.
+	// Ensures the view keeps state and improves performance.
+	// Similar to regular object items managed by the resource model
+	if (path.isInstanceProperty() ||
+		path.getObject()->get_type() == RTTI_OF(nap::Scene)			||
+		path.getObject()->get_type() == RTTI_OF(nap::Entity)		||
+		path.getObject()->get_type() == RTTI_OF(nap::Component))
+		populate();
+}
+
+
+void napkin::InstancePropModel::onFileOpened(const QString& filename)
+{
+	populate();
+}
+
+
+void napkin::InstancePropModel::onFileClosing(const QString& filename)
+{
+	removeRows(0, rowCount());
 }
 
 

@@ -838,11 +838,11 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEnti
 		: mRootEntity(rootEntity), ObjectItem(e, false)
 {
 	assert(&mRootEntity);
-	for (auto comp : e.mComponents)
-		onComponentAdded(comp.get(), &entity());
-	for (auto childEntity : e.mChildren)
-		if (childEntity.get())
-			onEntityAdded(childEntity.get(), &entity());
+	for (auto& childEntity : e.mChildren)
+		appendRow(new EntityInstanceItem(*childEntity, mRootEntity));
+
+	for (auto& comp : e.mComponents)
+		appendRow(new ComponentInstanceItem(*comp, mRootEntity));
 
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
@@ -864,7 +864,7 @@ void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	if (parent != &entity())
 		return;
 
-	appendRow(new EntityInstanceItem(*e, mRootEntity));
+	insertRow(nap::math::max<int>(parent->mChildren.size()-1, 0), new EntityInstanceItem(*e, mRootEntity));
 }
 
 void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
@@ -881,7 +881,6 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 	if (ownerItem)
 	{
 		std::vector<std::string> namePath = {mObject->mID};
-
 		auto parent = ownerItem;
 		while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
 		{
@@ -890,7 +889,6 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 		}
 
 		std::string path = "./" + nap::utility::joinString(namePath, "/");
-
 		return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 	}
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
@@ -917,9 +915,7 @@ nap::Entity& napkin::EntityInstanceItem::entity() const
 
 RootEntityItem::RootEntityItem(nap::RootEntity& e)
 		: mRootEntity(e), EntityInstanceItem(*e.mEntity.get(), e)
-{
-	assert(&mRootEntity);
-}
+{ }
 
 
 const PropertyPath RootEntityItem::propertyPath() const
