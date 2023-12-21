@@ -12,7 +12,7 @@ if(UNIX)
     set(LIBCRYPTO_LIB "${OPENSSL_ROOT_DIR}/linux/${ARCH}/libs/libcrypto.so")
     set(LIBSSL_LIB "${OPENSSL_ROOT_DIR}/linux/${ARCH}/libs/libssl.so")
     file(GLOB OPENSSL_LIBS "${OPENSSL_ROOT_DIR}/linux/${ARCH}/libs/libcrypto*${CMAKE_SHARED_LIBRARY_SUFFIX}*"
-            "${OPENSSL_ROOT_DIR}/linux/x86_64/libs/libssl*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
+            "${OPENSSL_ROOT_DIR}/linux/${ARCH}/libs/libssl*${CMAKE_SHARED_LIBRARY_SUFFIX}*")
     add_library(libcrypto SHARED IMPORTED)
     set_target_properties(libcrypto PROPERTIES
             IMPORTED_CONFIGURATIONS "Debug;Release"

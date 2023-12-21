@@ -7,10 +7,9 @@ ENV src_dir="/input"
 COPY source ${src_dir}
 
 # Configure and make openssl
-# In case of arm6vl, we need to add -latomic to the configure command and explicitly set linux-generic32 as target
 RUN \
   cd ${src_dir} && \
-  if [ "$(uname -m)" = "armv6l" ]; then ./Configure --prefix=${inst_dir} linux-generic32 -latomic; else ./Configure --prefix=${inst_dir}; fi && \
+  ./Configure --prefix=${inst_dir} && \
   make -j `nproc` && \
   make -j `nproc` install && \
   cp README.md ${inst_dir} && \
@@ -28,7 +27,7 @@ RUN \
   rm -rf ${inst_dir}/libs/engines-3 ${inst_dir}/libs/ossl-modules ${inst_dir}/libs/pkgconfig && \
   rm ${inst_dir}/README.md
 
-
+# Copy the libs dir from builder to current working dir
 FROM scratch
 ARG inst_dir
 COPY --from=builder ${inst_dir} /

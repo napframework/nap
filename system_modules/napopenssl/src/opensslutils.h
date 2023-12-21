@@ -48,24 +48,6 @@ namespace nap
         bool NAPAPI generateRSAKey(unsigned int bits, std::string& outPrivKey, std::string& outPubKey);
 
         /**
-         * @brief Encrypt a message with a private key
-         * @param message the message to encrypt
-         * @param privateKey the private key to use
-         * @param outEncryptedMessage the encrypted message
-         * @return true if the message was encrypted successfully
-         */
-        bool NAPAPI encryptMessage(const std::string& message, const std::string& privateKey, std::string& outEncryptedMessage);
-
-        /**
-         * @brief Decrypt a message with a public key
-         * @param encryptedMessage the encrypted message
-         * @param publicKey the public key to use
-         * @param outMessage the decrypted message
-         * @return true if the message was decrypted successfully
-         */
-        bool NAPAPI decryptMessage(const std::string& encryptedMessage, const std::string& publicKey, std::string& outMessage);
-
-        /**
          * @brief Generate a SHA256 hash of a string
          * @param str The string to hash
          * @return The hash

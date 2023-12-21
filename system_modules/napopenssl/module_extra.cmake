@@ -32,7 +32,7 @@ else()
     target_link_libraries(${PROJECT_NAME} debug ${LIBSSL_LIB} optimized ${LIBSSL_LIB})
 
     if(WIN32)
-        install(FILES ${RTMIDI_LIBRARIES_RELEASE} DESTINATION lib)
+        install(FILES ${OPENSSL_LIBS} DESTINATION lib)
         copy_openssl_dll()
     elseif(UNIX)
         file(GLOB libsopenssl ${NAP_ROOT}/${openssl_dest_dir}/*)
