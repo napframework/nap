@@ -258,8 +258,9 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 
 	// Update path and find target object
 	path.replace(index, oldID.size(), newID);
-	size_t obj_pos = path.find_last_of('/'); assert(obj_pos != std::string::npos);
-	nap::rtti::Object* target = getObject(path.substr(obj_pos + 1));
+	size_t obj_pos = path.find_last_of('/');
+	nap::rtti::Object* target = getObject(obj_pos != std::string::npos ?
+		path.substr(obj_pos + 1) : path);
 
 	// Target doesn't exist
 	if (target == nullptr)
@@ -275,7 +276,7 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	assign_method.invoke(ptr_variant, path, target);
 
 	// Set as new property value
-	if (!ptr_prop.set_value(object, ptr_variant))
+	if (!resolved_path.setValue(ptr_variant))
 	{
 		std::string msg = nap::utility::stringFormat("Unable to update: %s", rttiPath.toString().c_str());
 		NAP_ASSERT_MSG(false, msg.c_str());
@@ -865,8 +866,8 @@ size_t Document::arrayAddExistingObject(const PropertyPath& path, Object* object
 
 		// Assign
 		array_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ?
-			assign_method.invoke(new_ptr.get_wrapped_value<nap::ComponentPtrBase>(), obj_path, *object) :
-			assign_method.invoke(new_ptr.get_wrapped_value<nap::EntityPtr>(), obj_path, *object);
+			assign_method.invoke(new_ptr.get_wrapped_value<nap::ComponentPtrBase>(), obj_path, object) :
+			assign_method.invoke(new_ptr.get_wrapped_value<nap::EntityPtr>(), obj_path, object);
 	}
 
 	// Set updated array
