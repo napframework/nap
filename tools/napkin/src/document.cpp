@@ -212,66 +212,69 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 	{
 		// Recursively iterate over properties and patch paths
 		auto props = object->get_type().get_properties();
+		nap::rtti::Path prop_path;
 		for (auto& ptr_prop : props)
 		{
-			nap::rtti::Path prop_path;
 			prop_path.pushAttribute(ptr_prop.get_name().data());
 			patchLinks(object, oldID, newID, prop_path);
+			prop_path.popBack();
 		}
 	}
 }
 
 
-void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& rttiPath)
+void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& propPath)
 {
 	// Resolve path
 	nap::rtti::ResolvedPath resolved_path;
-	rttiPath.resolve(object, resolved_path);
+	propPath.resolve(object, resolved_path);
 
-	// Handle array element
-	if (resolved_path.getType().is_array())
+	// Continue searching if property not of type component or entity ptr
+	auto prop_type = resolved_path.getType();
+	if (!prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+		!prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
 	{
-		auto array_value = resolved_path.getValue();
-		auto array_view = array_value.create_array_view();
-		for (auto i = 0; i < array_view.get_size(); i++)
+		// Recursively iterate over array elements
+		if (resolved_path.getType().is_array())
 		{
-			nap::rtti::Path el_path(rttiPath);
-			rttiPath.pushArrayElement(i);
-			patchLinks(object, oldID, newID, el_path);
+			auto array_value = resolved_path.getValue();
+			auto array_view = array_value.create_array_view();
+			for (auto i = 0; i < array_view.get_size(); i++)
+			{
+				propPath.pushArrayElement(i);
+				patchLinks(object, oldID, newID, propPath);
+				propPath.popBack();
+			}
 		}
-	}
 
-	// Handle nested compounds
-	auto nested_properties = resolved_path.getType().get_properties();
-	for (const auto& nested_prop : nested_properties)
-	{
-		nap::rtti::Path el_path(rttiPath);
-		el_path.pushAttribute(nested_prop.get_name().data());
-		patchLinks(object, oldID, newID, el_path);
-	}
-
-	// Skip if not entity or component ptr
-	auto ptr_prop = resolved_path.getProperty();
-	if (!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
-		!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
+		// Recursively iterate over nested components
+		auto nested_properties = resolved_path.getType().get_properties();
+		for (const auto& nested_prop : nested_properties)
+		{
+			propPath.pushAttribute(nested_prop.get_name().data());
+			patchLinks(object, oldID, newID, propPath);
+			propPath.popBack();
+		}
 		return;
+	}
 
 	// Get to string (path) method
-	rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
+	auto pointer_object = resolved_path.getValue();
+	rttr::method string_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::toString);
 	assert(string_method.is_valid());
 
 	// Get path and check for ID inclusion - exclude partial names
-	auto path = string_method.invoke(resolved_path.getValue()).to_string();
-	auto index = path.find(oldID);
+	auto object_path = string_method.invoke(pointer_object).to_string();
+	auto index = object_path.find(oldID);
 	while (index != std::string::npos)
 	{
 		auto end_index = index + oldID.size();
-		if (end_index >= path.size() ||
-			path[end_index] == '/' ||
-			path[end_index] == ':')
+		if (end_index >= object_path.size() ||
+			object_path[end_index] == '/' ||
+			object_path[end_index] == ':')
 			break;
 
-		index = path.find(oldID, index + 1);
+		index = object_path.find(oldID, index + 1);
 	}
 
 	// No match
@@ -279,10 +282,10 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 		return;
 
 	// Update path and find target object
-	path.replace(index, oldID.size(), newID);
-	size_t obj_pos = path.find_last_of('/');
+	object_path.replace(index, oldID.size(), newID);
+	size_t obj_pos = object_path.find_last_of('/');
 	nap::rtti::Object* target = getObject(obj_pos != std::string::npos ?
-		path.substr(obj_pos + 1) : path);
+		object_path.substr(obj_pos + 1) : object_path);
 
 	// Target doesn't exist
 	if (target == nullptr)
@@ -292,15 +295,14 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	}
 
 	// Create and assign new path
-	rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
+	rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
 	assert(assign_method.is_valid());
-	auto ptr_variant = resolved_path.getValue();
-	assign_method.invoke(ptr_variant, path, target);
+	assign_method.invoke(pointer_object, object_path, target);
 
 	// Set as new property value
-	if (!resolved_path.setValue(ptr_variant))
+	if (!resolved_path.setValue(pointer_object))
 	{
-		std::string msg = nap::utility::stringFormat("Unable to update: %s", rttiPath.toString().c_str());
+		std::string msg = nap::utility::stringFormat("Unable to update: %s", propPath.toString().c_str());
 		NAP_ASSERT_MSG(false, msg.c_str());
 	}
 }
