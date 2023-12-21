@@ -5,7 +5,7 @@
 #include <nap/resourceptr.h>
 
 // Module includes
-#include <renderservice.h>
+#include <renderadvancedservice.h>
 #include <imguiservice.h>
 #include <sceneservice.h>
 #include <inputservice.h>
@@ -13,6 +13,7 @@
 #include <renderwindow.h>
 #include <entity.h>
 #include <app.h>
+#include <rendermask.h>
 
 namespace nap
 {
@@ -68,15 +69,18 @@ namespace nap
 		virtual int shutdown() override;
 
 	private:
-		ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
-		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
-		SceneService*				mSceneService = nullptr;		///< Manages all the objects in the scene
-		InputService*				mInputService = nullptr;		///< Input service for processing input
-		IMGuiService*				mGuiService = nullptr;			///< Manages GUI related update / draw calls
-		ObjectPtr<RenderWindow>		mRenderWindow;					///< Pointer to the render window	
-		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
-		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		///< Pointer to the entity that holds the perspective camera
-		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;			///< Holds components to render
-		ObjectPtr<EntityInstance>	mRenderEntity = nullptr;		///< Holds components for additional rendering operations
+		ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
+		RenderService*				mRenderService = nullptr;			///< Render Service that handles render calls
+		RenderAdvancedService*		mRenderAdvancedService = nullptr;	///< Render Advanced Service
+		SceneService*				mSceneService = nullptr;			///< Manages all the objects in the scene
+		InputService*				mInputService = nullptr;			///< Input service for processing input
+		IMGuiService*				mGuiService = nullptr;				///< Manages GUI related update / draw calls
+		ObjectPtr<RenderWindow>		mRenderWindow;						///< Pointer to the render window	
+		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
+		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;			///< Pointer to the entity that holds the perspective camera
+		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				///< Holds components to render
+		ObjectPtr<EntityInstance>	mRenderEntity = nullptr;			///< Holds components for additional rendering operations
+
+		RenderMask					mLitRenderMask = 0;
 	};
 }

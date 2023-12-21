@@ -24,10 +24,11 @@ namespace nap
 	bool audiovisualApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
-		mInputService	= getCore().getService<nap::InputService>();
-		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mRenderService			= getCore().getService<nap::RenderService>();
+		mRenderAdvancedService	= getCore().getService<nap::RenderAdvancedService>();
+		mSceneService			= getCore().getService<nap::SceneService>();
+		mInputService			= getCore().getService<nap::InputService>();
+		mGuiService				= getCore().getService<nap::IMGuiService>();
 
 		// Fetch the resource manager
 		mResourceManager = getCore().getResourceManager();
@@ -50,6 +51,8 @@ namespace nap
 		mWorldEntity = mScene->findEntity("WorldEntity");
 		if (!error.check(mWorldEntity != nullptr, "unable to find entity with name: %s", "WorldEntity"))
 			return false;
+
+		mLitRenderMask = mRenderService->findRenderMask("Lit");
 
 		// All done!
 		return true;
@@ -93,13 +96,17 @@ namespace nap
 			mRenderService->endComputeRecording();
 		}
 
+		std::vector<RenderableComponentInstance*> render_comps;
+		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
+
 		// Headless
 		//auto& render_texture_comp = mRenderEntity->getComponent<RenderToTextureComponentInstance>();
-		//if (mRenderService->beginHeadlessRecording())
-		//{
-		//	render_texture_comp.draw();
-		//	mRenderService->endHeadlessRecording();
-		//}
+		if (mRenderService->beginHeadlessRecording())
+		{
+			//render_texture_comp.draw();
+			//mRenderAdvancedService->renderShadows(render_comps, true);
+			mRenderService->endHeadlessRecording();
+		}
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
@@ -107,10 +114,12 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			utility::ErrorState error_state;
+			auto lit_comps = mRenderService->filterObjects(render_comps, mLitRenderMask);
+			if (!mRenderAdvancedService->pushLights(lit_comps, error_state))
+				nap::Logger::error(error_state.toString().c_str());
 
-			std::vector<RenderableComponentInstance*> render_comps;
-			mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
+			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps);
 		
 			// GUI

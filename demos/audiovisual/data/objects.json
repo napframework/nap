@@ -194,7 +194,9 @@
                     "Type": "nap::RenderFFTMeshComponent",
                     "mID": "RenderFFTMesh",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Lit"
+                    ],
                     "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "PlaneMeshVec4",
@@ -223,8 +225,8 @@
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "color_770400a6",
-                                        "Name": "color",
+                                        "mID": "diffuse_770400a6",
+                                        "Name": "diffuse",
                                         "Value": {
                                             "x": 0.1599999964237213,
                                             "y": 0.36000001430511477,
@@ -243,8 +245,8 @@
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "fresnel_4553a528",
-                                        "Name": "fresnel",
+                                        "mID": "fresnelColor_12cc54f9",
+                                        "Name": "fresnelColor",
                                         "Value": {
                                             "x": 0.5,
                                             "y": 0.10000000149011612,
@@ -252,21 +254,44 @@
                                         }
                                     },
                                     {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "ambient_1bd037c0",
+                                        "Type": "nap::UniformVec4",
+                                        "mID": "ambient_53a743bf",
                                         "Name": "ambient",
                                         "Value": {
                                             "x": 0.07500000298023224,
                                             "y": 0.0,
-                                            "z": 0.05000000074505806
+                                            "z": 0.05000000074505806,
+                                            "w": 0.0
                                         }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "fresnel_6706e3ad",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 4.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "shininess_bf8dfe86",
+                                        "Name": "shininess",
+                                        "Value": 48.0
                                     }
                                 ]
                             }
                         ],
                         "Samplers": [],
                         "Buffers": [],
-                        "Constants": [],
+                        "Constants": [
+                            {
+                                "Type": "nap::ShaderConstant",
+                                "mID": "ENABLE_ENVIRONMENT_MAPPING_86d06988",
+                                "Name": "ENABLE_ENVIRONMENT_MAPPING",
+                                "Value": 0
+                            }
+                        ],
                         "Material": "PhongVec4Material",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
@@ -420,7 +445,9 @@
                     "Type": "nap::RenderFFTMeshComponent",
                     "mID": "RenderFFTMeshWireframe",
                     "Visible": false,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Unlit"
+                    ],
                     "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Wireframe",
                     "Mesh": "PlaneMeshVec4WireFrame",
@@ -474,7 +501,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderDebugPlane",
                     "Visible": false,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Unlit"
+                    ],
                     "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "DebugPlaneMesh",
@@ -497,6 +526,68 @@
                             "x": 0.0,
                             "y": 0.0
                         }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "LightEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformLight",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 5.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointLightComponent",
+                    "mID": "PointLight",
+                    "Enabled": true,
+                    "Color": {
+                        "Type": "nap::ParameterEntryRGBColorFloat",
+                        "mID": "ParameterEntryRGBColorFloat_1aef2937",
+                        "Parameter": "",
+                        "Default": {
+                            "Values": [
+                                0.8823529481887817,
+                                0.8509804010391235,
+                                1.0
+                            ]
+                        }
+                    },
+                    "Intensity": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_76f53848",
+                        "Parameter": "",
+                        "Default": 1.0
+                    },
+                    "ShadowStrength": 1.0,
+                    "Enable Shadows": false,
+                    "ShadowCamera": "",
+                    "ShadowMapSize": 512,
+                    "Attenuation": {
+                        "Type": "nap::ParameterEntryFloat",
+                        "mID": "ParameterEntryFloat_7ef486e7",
+                        "Parameter": "",
+                        "Default": 0.0
                     }
                 }
             ],
@@ -532,7 +623,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderStars",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Unlit"
+                    ],
                     "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Background",
                     "Mesh": "ScatterStars",
@@ -568,7 +661,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderTorus",
                     "Visible": false,
-                    "Tags": [],
+                    "Tags": [
+                        "RenderTag_Unlit"
+                    ],
                     "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "TorusMesh",
@@ -669,7 +764,8 @@
             "Children": [
                 "StarsEntity",
                 "TorusEntity",
-                "FFTPlaneEntity"
+                "FFTPlaneEntity",
+                "LightEntity"
             ]
         },
         {
@@ -747,31 +843,7 @@
         {
             "Type": "nap::Material",
             "mID": "PhongVec4Material",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UBO_9b84d36f",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "color_659486c3",
-                            "Name": "color",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 1.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformFloat",
-                            "mID": "alpha_6624b5ec",
-                            "Name": "alpha",
-                            "Value": 1.0
-                        }
-                    ]
-                }
-            ],
+            "Uniforms": [],
             "Samplers": [],
             "Buffers": [],
             "Constants": [],
@@ -969,6 +1041,23 @@
                     "Name": "Background"
                 }
             ]
+        },
+        {
+            "Type": "nap::RenderTagGroup",
+            "mID": "RenderTags",
+            "Members": [
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Lit",
+                    "Name": "Lit"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Unlit",
+                    "Name": "Unlit"
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::RenderTexture2D",
