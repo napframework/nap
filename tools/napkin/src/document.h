@@ -621,7 +621,7 @@ namespace napkin
 		 * @param oldID old entity or component ID
 		 * @param newID new entity or component ID
 		 */
-		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
+		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, const nap::rtti::Path& path);
 	};
 
 

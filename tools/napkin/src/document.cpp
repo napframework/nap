@@ -207,7 +207,7 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 {
 	// Iterate over the properties of a component or component ptr override.
 	// Find component and entity pointers that reference the old object and patch accordingly.
-	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::RootEntity) } );
+	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::Scene) });
 	for (auto& object : objects)
 	{
 		// Recursively iterate over properties and patch paths
@@ -227,9 +227,31 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	// Resolve path
 	nap::rtti::ResolvedPath resolved_path;
 	rttiPath.resolve(object, resolved_path);
-	auto ptr_prop = resolved_path.getProperty();
+
+	// Handle array element
+	if (resolved_path.getType().is_array())
+	{
+		auto array_value = resolved_path.getValue();
+		auto array_view = array_value.create_array_view();
+		for (auto i = 0; i < array_view.get_size(); i++)
+		{
+			nap::rtti::Path el_path(rttiPath);
+			rttiPath.pushArrayElement(i);
+			patchLinks(object, oldID, newID, el_path);
+		}
+	}
+
+	// Handle nested compounds
+	auto nested_properties = resolved_path.getType().get_properties();
+	for (const auto& nested_prop : nested_properties)
+	{
+		nap::rtti::Path el_path(rttiPath);
+		el_path.pushAttribute(nested_prop.get_name().data());
+		patchLinks(object, oldID, newID, el_path);
+	}
 
 	// Skip if not entity or component ptr
+	auto ptr_prop = resolved_path.getProperty();
 	if (!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
 		!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
 		return;
@@ -239,7 +261,7 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	assert(string_method.is_valid());
 
 	// Get path and check for ID inclusion - exclude partial names
-	auto path = string_method.invoke(ptr_prop.get_value(object)).to_string();
+	auto path = string_method.invoke(resolved_path.getValue()).to_string();
 	auto index = path.find(oldID);
 	while (index != std::string::npos)
 	{
@@ -272,7 +294,7 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	// Create and assign new path
 	rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
 	assert(assign_method.is_valid());
-	auto ptr_variant = ptr_prop.get_value(object);
+	auto ptr_variant = resolved_path.getValue();
 	assign_method.invoke(ptr_variant, path, target);
 
 	// Set as new property value
