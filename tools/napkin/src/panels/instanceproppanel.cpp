@@ -24,6 +24,10 @@ QVariant InstPropAttribItem::data(int role) const
 	{
 	case Qt::DisplayRole:
 	{
+		// Check if it's a pointer and not null
+		if (mAttrib.mValue == nullptr)
+			return napkin::TXT_NULL;
+
 		// Get value as rtti variant
 		auto override_variant = mAttrib.mValue->get_type().get_property_value(
 			nap::rtti::instanceproperty::value, mAttrib.mValue);
@@ -172,7 +176,6 @@ static bool refresh(nap::rtti::Object* obj)
 	// Similar to regular object items managed by the resource model
 	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene))		||
 		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
-		obj->get_type().is_derived_from(RTTI_OF(nap::Component))	||
 		obj->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue));
 }
 
@@ -187,7 +190,7 @@ void napkin::InstancePropModel::onObjectRemoved(nap::rtti::Object* object)
 void napkin::InstancePropModel::onPropertyValueChanged(const PropertyPath& path)
 {
 	// Underlying system change
-	if (refresh(path.getObject()))
+	if (path.isInstanceProperty() || refresh(path.getObject()))
 		populate();
 }
 

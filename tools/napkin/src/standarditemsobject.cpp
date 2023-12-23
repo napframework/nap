@@ -798,7 +798,7 @@ nap::Scene& napkin::SceneItem::getScene()
 EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
 		: mRootEntity(rootEntity), ObjectItem(e, false)
 {
-	assert(&mRootEntity);
+	setEditable(false);
 	for (auto& childEntity : e.mChildren)
 		appendRow(new EntityInstanceItem(*childEntity, mRootEntity));
 
@@ -921,7 +921,9 @@ SceneItem* RootEntityItem::sceneItem()
 
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity)
 		: ObjectItem(comp, false), mRootEntity(rootEntity)
-{ }
+{
+	setEditable(false);
+}
 
 
 const PropertyPath ComponentInstanceItem::propertyPath() const

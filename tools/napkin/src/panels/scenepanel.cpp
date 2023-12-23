@@ -73,9 +73,8 @@ static bool refresh(nap::rtti::Object* obj)
 	// TODO: Move signal handling logic to individual scene items instead of model.
 	// Ensures the view keeps state and improves performance.
 	// Similar to regular object items managed by the resource model
-	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene))		||
-		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
-		obj->get_type().is_derived_from(RTTI_OF(nap::Component));
+	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene)) ||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Entity));
 }
 
 
@@ -89,10 +88,6 @@ void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 
 void napkin::SceneModel::onPropertyValueChanged(const PropertyPath& path)
 {
-	// Regular value change
-	if (path.isInstanceProperty())
-		return;
-
 	// Underlying system change -> check if it affects the model
 	if (refresh(path.getObject()))
 		populate();
