@@ -324,6 +324,9 @@ bool PropertyPath::setValue(rttr::variant new_value)
 
 void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const
 {
+	// TODO: Move this logic to napkin::Document and implement valueChanged signal for various properties.
+	// This allows the various models to respond appropriately -> only document should emit signals.
+
 	// remove from target attributes list
 	auto instProps = getInstanceProperties();
 	auto& attrs = instProps->mTargetAttributes;

@@ -24,27 +24,26 @@ QVariant InstPropAttribItem::data(int role) const
 	{
 	case Qt::DisplayRole:
 	{
-		// Check if it's a pointer and not null
-		if (mAttrib.mValue == nullptr)
-			return napkin::TXT_NULL;
+		// Get override value of target attribute
+		QString override_value = napkin::TXT_NULL;
 
 		// Get value as rtti variant
+		assert(mAttrib.mValue != nullptr);
 		auto override_variant = mAttrib.mValue->get_type().get_property_value(
 			nap::rtti::instanceproperty::value, mAttrib.mValue);
 
 		// Extract value as string using rtti
-		QString value;
 		if (override_variant.get_type().is_wrapper())
 		{
 			auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
-			value = obj != nullptr ? obj->mID.c_str() : napkin::TXT_NULL;
+			override_value = obj != nullptr ? obj->mID.c_str() : override_value;
 		}
 		else
 		{
-			value = QString::fromStdString(override_variant.to_string());
+			override_value = QString::fromStdString(override_variant.to_string());
 		}
-		assert(!value.isEmpty());
-		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), value);
+		assert(!override_value.isEmpty());
+		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), override_value);
 	}
 	case Qt::ForegroundRole:
 	{
@@ -76,11 +75,13 @@ nap::RootEntity* InstPropAttribItem::rootEntity() const
 InstancePropsItem::InstancePropsItem(nap::ComponentInstanceProperties& props) : mProps(props)
 {
 	setEditable(false);
-	setText(QString::fromStdString(props.mTargetComponent == nullptr ? "INVALID" :
-		props.mTargetComponent.getInstancePath()));
+	setText(QString::fromStdString(props.mTargetComponent == nullptr ? "INVALID" : props.mTargetComponent.getInstancePath()));
 	for (auto& a : props.mTargetAttributes)
 	{
-		appendRow(new InstPropAttribItem(a));
+		if (a.mValue != nullptr)
+		{
+			appendRow(new InstPropAttribItem(a));
+		}
 	}
 }
 
@@ -183,7 +184,10 @@ static bool refresh(nap::rtti::Object* obj)
 void napkin::InstancePropModel::onObjectRemoved(nap::rtti::Object* object)
 {
 	if (refresh(object))
+	{
+		nap::Logger::info("Object removed: %s", object->mID.c_str());
 		populate();
+	}
 }
 
 
