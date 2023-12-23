@@ -24,23 +24,24 @@ QVariant InstPropAttribItem::data(int role) const
 	{
 	case Qt::DisplayRole:
 	{
-		// Get override value of target attribute
+		// Get the string representation of the override value, can be null (not set / set to null)
 		QString override_value = napkin::TXT_NULL;
-
-		// Get value as rtti variant
-		assert(mAttrib.mValue != nullptr);
-		auto override_variant = mAttrib.mValue->get_type().get_property_value(
-			nap::rtti::instanceproperty::value, mAttrib.mValue);
-
-		// Extract value as string using rtti
-		if (override_variant.get_type().is_wrapper())
+		if (mAttrib.mValue != nullptr)
 		{
-			auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
-			override_value = obj != nullptr ? obj->mID.c_str() : override_value;
-		}
-		else
-		{
-			override_value = QString::fromStdString(override_variant.to_string());
+			// Extract value as variant
+			auto override_variant = mAttrib.mValue->get_type().get_property_value(
+				nap::rtti::instanceproperty::value, mAttrib.mValue);
+
+			// Extract value as string using rtti
+			if (override_variant.get_type().is_wrapper())
+			{
+				auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
+				override_value = obj != nullptr ? obj->mID.c_str() : override_value;
+			}
+			else
+			{
+				override_value = QString::fromStdString(override_variant.to_string());
+			}
 		}
 		assert(!override_value.isEmpty());
 		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), override_value);
@@ -78,10 +79,7 @@ InstancePropsItem::InstancePropsItem(nap::ComponentInstanceProperties& props) : 
 	setText(QString::fromStdString(props.mTargetComponent == nullptr ? "INVALID" : props.mTargetComponent.getInstancePath()));
 	for (auto& a : props.mTargetAttributes)
 	{
-		if (a.mValue != nullptr)
-		{
-			appendRow(new InstPropAttribItem(a));
-		}
+		appendRow(new InstPropAttribItem(a));
 	}
 }
 
@@ -183,11 +181,12 @@ static bool refresh(nap::rtti::Object* obj)
 
 void napkin::InstancePropModel::onObjectRemoved(nap::rtti::Object* object)
 {
+	// TODO: The model should only update itself with the removal of a scene or entity.
+	// All other changes (including removal) should be handled by targeted
+	// 'propertyValueChanged' callbacks. This is possible for most objects because they have a parent,
+	// including instance property values.
 	if (refresh(object))
-	{
-		nap::Logger::info("Object removed: %s", object->mID.c_str());
 		populate();
-	}
 }
 
 
