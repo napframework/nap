@@ -16,6 +16,7 @@ uniform nap
 
 uniform UBO
 {
+	vec3	color;							//< RGB Tint
 	vec2	fresnel;						//< Fresnel [scale, power]
 } ubo;
 
@@ -36,6 +37,9 @@ void main()
 	vec3 I = normalize(passPosition - mvp.cameraPosition);
 	vec3 R = reflect(I, normalize(passNormal));
 	vec4 color = texture(environmentMap, R);
+
+	// Add Tint
+	color.rgb *= ubo.color;
 
 	// Add fresnel
 	color.rgb = mix(color.rgb, vec3(1.0), passFresnel);

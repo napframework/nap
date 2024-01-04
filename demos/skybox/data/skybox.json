@@ -149,7 +149,18 @@
                         }
                     },
                     "CubeTexture": "UffiziCubeMap",
-                    "Color": ""
+                    "Color": {
+                        "Type": "nap::ParameterEntryRGBColorFloat",
+                        "mID": "ParameterEntryRGBColorFloat_655ecd86",
+                        "Parameter": "SkyBoxColor",
+                        "Default": {
+                            "Values": [
+                                0.0,
+                                0.0,
+                                0.0
+                            ]
+                        }
+                    }
                 }
             ],
             "Children": []
@@ -258,6 +269,12 @@
                         "Offset": 0.0
                     },
                     "Enabled": true
+                },
+                {
+                    "Type": "nap::UpdateMaterialComponent",
+                    "mID": "UpdateTorusMaterial",
+                    "Color": "TorusColor",
+                    "Fresnel": "TorusFresnel"
                 }
             ],
             "Children": []
@@ -325,6 +342,16 @@
                                 "x": 0.5,
                                 "y": 4.0
                             }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "color_22fd2aa3",
+                            "Name": "color",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 0.0
+                            }
                         }
                     ]
                 }
@@ -348,6 +375,55 @@
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::ParameterGUI",
+            "mID": "ParameterGUI",
+            "Serializable": true,
+            "Group": "Parameters"
+        },
+        {
+            "Type": "nap::ParameterGroup",
+            "mID": "Parameters",
+            "Parameters": [
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "SkyBoxColor",
+                    "Name": "SkyBoxColor",
+                    "Value": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterRGBColorFloat",
+                    "mID": "TorusColor",
+                    "Name": "TorusColor",
+                    "Value": {
+                        "Values": [
+                            0.16078431904315949,
+                            0.3450980484485626,
+                            1.0
+                        ]
+                    }
+                },
+                {
+                    "Type": "nap::ParameterVec2",
+                    "mID": "TorusFresnel",
+                    "Name": "TorusFresnel",
+                    "Value": {
+                        "x": 0.75,
+                        "y": 4.0
+                    },
+                    "Clamp": true,
+                    "Minimum": 0.009999999776482582,
+                    "Maximum": 8.0
+                }
+            ],
+            "Groups": []
         },
         {
             "Type": "nap::RenderLayerRegistry",
