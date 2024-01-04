@@ -28,8 +28,6 @@ namespace napkin
 		RTTITypeItem(const nap::rtti::TypeInfo& type);
 		QVariant data(int role) const override;
 	private:
-		void refresh();
-	private:
 		const nap::rtti::TypeInfo& mType;
 	};
 
@@ -214,15 +212,11 @@ namespace napkin
 	 * Compare two ComponentInstance paths and see if they represent the same component instance
 	 * WARNING: This only works with absolute paths, paths that start from the root entity
 	 *
-	 * @param rootEntity The root entity to start from
-	 * @param comp The component to compare
 	 * @param a First path to compare
 	 * @param b Second path to compare
 	 * @return true if the paths represent the same instance, false otherwise
 	 */
-	bool isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
-									  const std::string& a, const std::string& b);
-
+	bool isComponentInstancePathEqual(const std::string& a, const std::string& b);
 
 	/**
 	 * Check if every character in this string is a number
