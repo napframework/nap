@@ -508,12 +508,6 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after an object has changed drastically
-		 */
-		void objectChanged(nap::rtti::Object* obj);
-
-		/**
-		 * Qt Signal
 		 * Invoked just before an object is removed. This includes entities, components and regular resources.
 		 * The item, including all of it's embedded children, are still part of the document. 
 		 * @param object The object about to be removed
@@ -611,6 +605,19 @@ namespace napkin
 		 * @param newID new entity or component ID
 		 */
 		void patchLinks(const std::string& oldID, const std::string& newID);
+
+		/**
+		 * Recursively patches resource entity and component ptr links. This occurs when
+		 * the name of an entity or a component changes, which invalidates existing links to those objects.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
+		 * Note that entity and component links are string based and handled separately from regular resources,
+		 * hence the manual patching here.
+		 * @param object the object to patch links for
+		 * @param oldID old entity or component ID
+		 * @param newID new entity or component ID
+		 * @param current property path
+		 */
+		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
 	};
 
 

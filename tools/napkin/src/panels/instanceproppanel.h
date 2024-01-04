@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "rttiitem.h"
+#include "document.h"
 
 // External Includes
 #include <QWidget>
@@ -91,8 +92,11 @@ namespace napkin
 		void sceneChanged();
 
 	private:
-		void onDocumentChanged();
-		void onSceneChanged();
+		void populate();
+		void onObjectRemoved(nap::rtti::Object* object);
+		void onPropertyValueChanged(const PropertyPath& path);
+		void onFileOpened(const QString& filename);
+		void onFileClosing(const QString& filename);
 	};
 
 

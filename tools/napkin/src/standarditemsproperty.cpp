@@ -100,15 +100,24 @@ QVariant napkin::PropertyPathItem::data(int role) const
 		{
 			// If the parent is an array, display the index of this item
 			auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
-			if (parent_path != nullptr && parent_path->getPath().isArray())
-			{
-				return row();
-			}
-			return QStandardItem::data(role);
+			return parent_path != nullptr && parent_path->getPath().isArray() ? row() :
+				QStandardItem::data(role);
 		}
 		case Qt::UserRole:
 		{
 			return QVariant::fromValue(mPath);
+		}
+		case Qt::ForegroundRole:
+		{
+			// Dim instance properties
+			if (mPath.isInstanceProperty())
+			{
+				// Return special colour when instance property is overridden
+				return mPath.isOverridden() ?
+					AppContext::get().getThemeManager().getColor(napkin::theme::color::highlight3) :
+					AppContext::get().getThemeManager().getColor(napkin::theme::color::dimmedItem);
+			}
+			return QStandardItem::data(role);
 		}
 		default:
 		{
@@ -433,7 +442,7 @@ void napkin::EmbeddedPointerItem::populateChildren()
 	// First resolve the pointee, after that behave like compound
 	// If the embedded object isn't present, do nothing
 	nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
-	if (pointee == nullptr)
+	if (pointee == nullptr || mPath.isInstanceProperty())
 		return;
 
 	auto object = pointee;

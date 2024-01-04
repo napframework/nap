@@ -381,6 +381,7 @@ void ObjectItem::removeChildren()
 	removeRows(0, rowCount());
 }
 
+
 QString ObjectItem::instanceName() const
 {
 	auto parent = parentItem();
@@ -407,50 +408,9 @@ QString ObjectItem::instanceName() const
 	}
 
 	assert(false);
-	return "FAULTY";
+	return "";
 }
 
-std::string ObjectItem::componentPath() const
-{
-	{
-		auto ownerItem = qobject_cast<EntityInstanceItem*>(parentItem());
-		if (ownerItem)
-		{
-			std::vector<std::string> namePath = {mObject->mID};
-			auto parent = ownerItem;
-			while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
-			{
-				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = qobject_cast<EntityInstanceItem*>(parent->parentItem());
-			}
-
-			return "./" + nap::utility::joinString(namePath, "/");
-		}
-	}
-	// TODO: Merge this with the above code....
-	{
-		auto ownerItem = qobject_cast<EntityItem*>(parentItem());
-		if (ownerItem)
-		{
-			std::vector<std::string> namePath = {mObject->mID};
-
-			auto parent = ownerItem;
-			while (parent)
-			{
-				auto parent_entity = qobject_cast<EntityItem*>(parent->parentItem());
-				if (parent_entity == nullptr)
-					break;
-
-				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = parent_entity;
-			}
-
-			return "./" + nap::utility::joinString(namePath, "/");
-		}
-	}
-	assert(false);
-	return {"INVALID"};
-}
 
 int ObjectItem::childIndex(const ObjectItem& childItem) const
 {
@@ -464,6 +424,7 @@ int ObjectItem::childIndex(const ObjectItem& childItem) const
 	}
 	return -1;
 }
+
 
 int ObjectItem::nameIndex(const ObjectItem& childItem) const
 {
@@ -837,12 +798,12 @@ nap::Scene& napkin::SceneItem::getScene()
 EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
 		: mRootEntity(rootEntity), ObjectItem(e, false)
 {
-	assert(&mRootEntity);
-	for (auto comp : e.mComponents)
-		onComponentAdded(comp.get(), &entity());
-	for (auto childEntity : e.mChildren)
-		if (childEntity.get())
-			onEntityAdded(childEntity.get(), &entity());
+	setEditable(false);
+	for (auto& childEntity : e.mChildren)
+		appendRow(new EntityInstanceItem(*childEntity, mRootEntity));
+
+	for (auto& comp : e.mComponents)
+		appendRow(new ComponentInstanceItem(*comp, mRootEntity));
 
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
@@ -864,7 +825,7 @@ void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	if (parent != &entity())
 		return;
 
-	appendRow(new EntityInstanceItem(*e, mRootEntity));
+	insertRow(nap::math::max<int>(parent->mChildren.size()-1, 0), new EntityInstanceItem(*e, mRootEntity));
 }
 
 void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
@@ -881,7 +842,6 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 	if (ownerItem)
 	{
 		std::vector<std::string> namePath = {mObject->mID};
-
 		auto parent = ownerItem;
 		while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
 		{
@@ -890,7 +850,6 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 		}
 
 		std::string path = "./" + nap::utility::joinString(namePath, "/");
-
 		return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 	}
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
@@ -917,9 +876,7 @@ nap::Entity& napkin::EntityInstanceItem::entity() const
 
 RootEntityItem::RootEntityItem(nap::RootEntity& e)
 		: mRootEntity(e), EntityInstanceItem(*e.mEntity.get(), e)
-{
-	assert(&mRootEntity);
-}
+{ }
 
 
 const PropertyPath RootEntityItem::propertyPath() const
@@ -965,59 +922,57 @@ SceneItem* RootEntityItem::sceneItem()
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity)
 		: ObjectItem(comp, false), mRootEntity(rootEntity)
 {
-	assert(&mRootEntity);
+	setEditable(false);
 }
+
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
 {
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 }
 
+
 nap::Component& ComponentInstanceItem::component() const
 {
 	return *rtti_cast<nap::Component>(mObject);
 }
+
 
 nap::RootEntity& ComponentInstanceItem::rootEntity() const
 {
 	return mRootEntity;
 }
 
+
 QVariant ComponentInstanceItem::data(int role) const
 {
 	if (role == Qt::TextColorRole)
 	{
-		if (instanceProperties())
+		for (const auto& overrides : mRootEntity.mInstanceProperties)
 		{
-			return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+			// See if component matches
+			if (overrides.mTargetComponent.get() != &component())
+				continue;
+
+			// Create relative component path for current instance.
+			// We do this so we can compare if the override of this component targets the correct instance.
+			// TODO: Remove from gui code and move to path utilities.
+			auto* parent = qitem_cast<EntityInstanceItem*>(parentItem());
+			std::vector<std::string> target_path = { mObject->mID };
+			while (qitem_cast<RootEntityItem*>(parent) == nullptr)
+			{
+				target_path.insert(target_path.begin(), parent->instanceName().toStdString());
+				parent = qitem_cast<EntityInstanceItem*>(parent->parentItem());
+			} 
+
+			// If instance path matches return override colour
+			std::string instance_path = "./" + nap::utility::joinString(target_path, "/");
+			if (overrides.mTargetComponent.toString() == instance_path)
+			{
+				return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+			}
 		}
 	}
 	return ObjectItem::data(role);
-}
-
-nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() const
-{
-	if (mInstancePropertiesResolved)
-		return hasInstanceProperties() ? &mInstanceProperties : nullptr;
-
-	for (const auto& instprops : mRootEntity.mInstanceProperties)
-	{
-		if (instprops.mTargetComponent.get() != &component())
-			continue;
-		if (!isComponentInstancePathEqual(mRootEntity, *instprops.mTargetComponent.get(),
-										  instprops.mTargetComponent.toString(), componentPath()))
-			continue;
-
-		mInstanceProperties = instprops;
-		break;
-	}
-
-	mInstancePropertiesResolved = true;
-	return &mInstanceProperties;
-}
-
-bool ComponentInstanceItem::hasInstanceProperties() const
-{
-	return mInstanceProperties.mTargetComponent.get();
 }
 
