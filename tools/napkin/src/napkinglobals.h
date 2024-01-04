@@ -22,6 +22,7 @@ namespace napkin
 	inline constexpr const char* TXT_LABEL_ENTITIES		= "Entities";
 	inline constexpr const char* TXT_UNTITLED_DOCUMENT	= "Untitled Document";
 	inline constexpr const char* TXT_THEME_DEFAULT		= "Dark";
+	inline constexpr const char* TXT_NULL				= "NULL";
 
 	// The file filter used by file dialogs
 	inline constexpr const char* JSON_FILE_EXT			= "json";
@@ -44,9 +45,9 @@ namespace napkin
 	inline constexpr const char* NAP_URI_PREFIX			= "nap";
 
 	// Directory name constants
-	inline constexpr const char* DIR_TOOLS			= "tools";
-	inline constexpr const char* DIR_BIN			= "bin";
-	inline constexpr const char* DIR_APPS			= "apps";
+	inline constexpr const char* DIR_TOOLS				= "tools";
+	inline constexpr const char* DIR_BIN				= "bin";
+	inline constexpr const char* DIR_APPS				= "apps";
 
     // Testing success exit code. Avoids some common Unix error codes
 	inline constexpr int EXIT_ON_SUCCESS_EXIT_CODE = 180;

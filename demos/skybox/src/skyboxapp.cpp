@@ -79,7 +79,7 @@ namespace nap
 		}
 
 		// Update GUI
-		ImGui::Begin("Performance");
+		ImGui::Begin("Menu");
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
@@ -118,6 +118,15 @@ namespace nap
 					}
 				}
 			}
+		}
+		ImGui::Dummy(ImVec2(0.0f, 5.0f * mGuiService->getScale()));
+
+		// Display parameter GUI(s)
+		const auto param_guis = mResourceManager->getObjects<ParameterGUI>();
+		for (const auto& gui : param_guis)
+		{
+			if (ImGui::CollapsingHeader(gui->mID.c_str()))
+				gui->show(false);
 		}
 		ImGui::End();
 	}

@@ -258,6 +258,7 @@ namespace nap
 		namespace method
 		{
 			constexpr const char* assign = "assign";
+			constexpr const char* toObject = "toObject";
 			constexpr const char* toString	= "toString";
 			constexpr const char* translateTargetID = "translateTargetID";
 		}

@@ -59,6 +59,13 @@ namespace napkin
 		 */
 		void childAddedToGroup(GroupItem& group, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child in a group changes
+		 * @param group the parent group
+		 * @param item child item
+		 */
+		void indexChanged(GroupItem& group, ObjectItem& item);
+
 	private:
 		/**
 		 * Called when an object has been added
@@ -117,6 +124,13 @@ namespace napkin
 		 * @param item the item that is added, either a EntityItem or ComponentItem
 		 */
 		void childAddedToEntity(EntityItem& entity, ObjectItem& item);
+
+		/**
+		 * Signal that is emitted when the index of a child (component or entity) changes
+		 * @param entity the parent entity
+		 * @param item child item
+		 */
+		void indexChanged(EntityItem& entity, ObjectItem& item);
 
 	private:
 		/**
@@ -200,22 +214,13 @@ namespace napkin
 		void removeChildren();
 
 		/**
-		 * The disambiguating name for this [component].
-		 * eg.
+		 * The disambiguating name for this entity or component
+		 * 
 		 * 		MyComponent:4
 		 *
 		 * TODO: this should not reside in the GUI code
 		 */
 		QString instanceName() const;
-
-		/**
-		 * The instance path from the scene's RootEntity to the component
-		 * eg.
-		 * 		./MyEntityA:2/MyEntityC:0/MyComponent:3
-		 *
-		 * TODO: this should not reside in the GUI code
-		 */
-		std::string componentPath() const;
 
 		/**
 		 * Index of the given child item under this item
@@ -272,11 +277,22 @@ namespace napkin
 		 */
 		void childAdded(EntityItem& entity, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (component or entity) changes
+		 * @param entity the parent entity
+		 * @param item child item
+		 */
+		void indexChanged(EntityItem& entity, ObjectItem& item);
+
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
 		void onComponentAdded(nap::Component* c, nap::Entity* owner);
 		void onPropertyValueChanged(const PropertyPath& path);
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 		void populate();
+
+		PropertyPath mCompPropertyPath;
+		PropertyPath mChildPropertyPath;
 	};
 
 
@@ -330,11 +346,23 @@ namespace napkin
 		 */
 		void childAdded(GroupItem& group, ObjectItem& item);
 
+		/**
+		 * Signal that is emitted when the index of a child (resource or group) changes
+		 * @param entity the parent entity
+		 * @param item child item
+		 */
+		void indexChanged(GroupItem& entity, ObjectItem& item);
+
 	private:
 		/**
 		 * Called when a new item is inserted into an array
 		 */
 		void onPropertyChildInserted(const PropertyPath& path, int index);
+
+		/**
+		 * Called when the index of a child in an array changes
+		 */
+		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -514,14 +542,6 @@ namespace napkin
 		nap::RootEntity& rootEntity() const;
 		QVariant data(int role) const override;
 	private:
-		nap::ComponentInstanceProperties* instanceProperties() const;
-		bool hasInstanceProperties() const;
-
 		nap::RootEntity& mRootEntity;
-
-		mutable bool mInstancePropertiesResolved = false;
-
-		// This is a copy of the instanceproperties on the root entity
-		mutable nap::ComponentInstanceProperties mInstanceProperties;
 	};
 } // namespace napkin

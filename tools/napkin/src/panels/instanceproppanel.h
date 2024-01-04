@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "rttiitem.h"
+#include "document.h"
 
 // External Includes
 #include <QWidget>
@@ -41,7 +42,7 @@ namespace napkin
 	public:
 		explicit InstancePropsItem(nap::ComponentInstanceProperties& props);
 		QVariant data(int role) const override;
-		nap::ComponentInstanceProperties& props() const { return mProps; }
+		const nap::ComponentInstanceProperties& getProperties() const { return mProps; }
 
 	private:
 		nap::ComponentInstanceProperties& mProps;
@@ -91,8 +92,11 @@ namespace napkin
 		void sceneChanged();
 
 	private:
-		void onDocumentChanged();
-		void onSceneChanged();
+		void populate();
+		void onObjectRemoved(nap::rtti::Object* object);
+		void onPropertyValueChanged(const PropertyPath& path);
+		void onFileOpened(const QString& filename);
+		void onFileClosing(const QString& filename);
 	};
 
 

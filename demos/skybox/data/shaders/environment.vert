@@ -16,6 +16,7 @@ uniform nap
 
 uniform UBO
 {
+	vec3	color;							//< RGB Tint
 	vec2	fresnel;						//< Fresnel [scale, power]
 } ubo;
 

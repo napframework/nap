@@ -50,6 +50,8 @@ namespace nap
 			return false;
 
 		mShadowMask = mRenderService->findRenderMask("Shadow");
+		if (!errorState.check(mShadowMask != 0, "Missing render tag with name `Shadow`"))
+			return false;
 
 		return true;
 	}

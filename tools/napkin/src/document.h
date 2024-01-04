@@ -73,6 +73,13 @@ namespace napkin
 		std::vector<nap::rtti::Object*> getObjects(const nap::rtti::TypeInfo& type);
 
 		/**
+		 * Get all objects from this document, derived from the specified types.
+		 * @param types List of types the object has to be derived from
+		 * @return All the objects in this document, derived from the provided types
+		 */
+		std::vector<nap::rtti::Object*> getObjects(const std::vector<nap::rtti::TypeInfo>& types);
+
+		/**
 		 * Get all objects from this document, derived from the specified type.
 		 * @tparam T The type each object has to be derived from
 		 * @return All the objects in this document, derived from the provided type
@@ -368,15 +375,13 @@ namespace napkin
 		void groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index);
 
 		/**
-		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
-		 * \p toIndex is considered to be the destination index <b>before</b> the move happens.
-		 * The propertyValueChanged signal will be emitted.
+		 * Swaps the element at 'fromIndex' with the element at 'toIndex' in an array.
+		 * The propertyValueChanged and propertyIndexChanged signal will be emitted.
 		 * @param path The path to the array property
-		 * @param fromIndex The index of the element to move
-		 * @param toIndex The destination index of the element
-		 * @return The resulting index of the element
+		 * @param fromIndex the source index
+		 * @param toIndex the target index
 		 */
-		size_t arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
+		void arraySwapElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Get an element from an array
@@ -503,12 +508,6 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after an object has changed drastically
-		 */
-		void objectChanged(nap::rtti::Object* obj);
-
-		/**
-		 * Qt Signal
 		 * Invoked just before an object is removed. This includes entities, components and regular resources.
 		 * The item, including all of it's embedded children, are still part of the document. 
 		 * @param object The object about to be removed
@@ -571,10 +570,19 @@ namespace napkin
 		/**
 		 * Qt Signal
 		 * Invoked just after a property child has been removed
-		 * @param path The path to the parent of the newly added child
+		 * @param parentPath The path to the parent of the newly added child
 		 * @param childIndex The index of the child that was removed
 		 */
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked when an element in an array is swapped
+		 * @param parentPath Path of the parent array 
+		 * @param fromIndex the original index
+		 * @param toIndex the new index
+		 */
+		void arrayIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 
 	private:
 		nap::Core& mCore;							// nap's core
@@ -590,13 +598,26 @@ namespace napkin
 		/**
 		 * Patches entity and component ptr links. This occurs when
 		 * the name of an entity or a component changes, which invalidates existing links to those objects.
-		 * All components that reference the component or entity are re-assigned the updated path.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
 		 * Note that entity and component links are string based and handled separately from regular resources,
 		 * hence the manual patching here.
 		 * @param oldID old entity or component ID
 		 * @param newID new entity or component ID
 		 */
 		void patchLinks(const std::string& oldID, const std::string& newID);
+
+		/**
+		 * Recursively patches resource entity and component ptr links. This occurs when
+		 * the name of an entity or a component changes, which invalidates existing links to those objects.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
+		 * Note that entity and component links are string based and handled separately from regular resources,
+		 * hence the manual patching here.
+		 * @param object the object to patch links for
+		 * @param oldID old entity or component ID
+		 * @param newID new entity or component ID
+		 * @param current property path
+		 */
+		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
 	};
 
 
