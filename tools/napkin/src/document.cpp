@@ -207,65 +207,103 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 {
 	// Iterate over the properties of a component or component ptr override.
 	// Find component and entity pointers that reference the old object and patch accordingly.
-	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue) } );
+	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::Scene) });
 	for (auto& object : objects)
 	{
+		// Recursively iterate over properties and patch paths
 		auto props = object->get_type().get_properties();
+		nap::rtti::Path prop_path;
 		for (auto& ptr_prop : props)
 		{
-			// Skip if not entity or component ptr
-			if (!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
-				!ptr_prop.get_type().is_derived_from(RTTI_OF(nap::EntityPtr)))
-				continue;
+			prop_path.pushAttribute(ptr_prop.get_name().data());
+			patchLinks(object, oldID, newID, prop_path);
+			prop_path.popBack();
+		}
+	}
+}
 
-			// Get to string (path) method
-			rttr::method string_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::toString);
-			assert(string_method.is_valid());
 
-			// Get path and check for ID inclusion - exclude partial names
-			auto path = string_method.invoke(ptr_prop.get_value(object)).to_string();
-			auto index = path.find(oldID);
-			while (index != std::string::npos)
+void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& propPath)
+{
+	// Resolve path
+	nap::rtti::ResolvedPath resolved_path;
+	propPath.resolve(object, resolved_path);
+
+	// Continue searching if property not of type component or entity ptr
+	auto prop_type = resolved_path.getType();
+	if (!prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+		!prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
+	{
+		// Recursively iterate over array elements
+		if (resolved_path.getType().is_array())
+		{
+			auto array_value = resolved_path.getValue();
+			auto array_view = array_value.create_array_view();
+			for (auto i = 0; i < array_view.get_size(); i++)
 			{
-				auto end_index = index + oldID.size();
-				if (end_index >= path.size() ||
-					path[end_index] == '/'   ||
-					path[end_index] == ':')
-					break;
-
-				index = path.find(oldID, index + 1);
-			}
-
-			// No match
-			if (index == std::string::npos)
-				continue;
-
-			// Update path and find target object
-			path.replace(index, oldID.size(), newID);
-			size_t obj_pos = path.find_last_of('/'); assert(obj_pos != std::string::npos);
-			nap::rtti::Object* target = getObject(path.substr(obj_pos + 1));
-
-			// Target doesn't exist
-			if (target == nullptr)
-			{
-				assert(false);
-				continue;
-			}
-
-			// Create and assign new path
-			rttr::method assign_method = nap::rtti::findMethodRecursive(ptr_prop.get_type(), nap::rtti::method::assign);
-			assert(assign_method.is_valid());
-			auto ptr_variant = ptr_prop.get_value(object);
-			assign_method.invoke(ptr_variant, path, target);
-
-			// Set as new property value
-			if (!ptr_prop.set_value(object, ptr_variant))
-			{
-				std::string msg = nap::utility::stringFormat("Unable to update: %s",
-					PropertyPath(*object, ptr_prop, *this).toString().c_str());
-				NAP_ASSERT_MSG(false, msg.c_str());
+				propPath.pushArrayElement(i);
+				patchLinks(object, oldID, newID, propPath);
+				propPath.popBack();
 			}
 		}
+
+		// Recursively iterate over nested components
+		auto nested_properties = resolved_path.getType().get_properties();
+		for (const auto& nested_prop : nested_properties)
+		{
+			propPath.pushAttribute(nested_prop.get_name().data());
+			patchLinks(object, oldID, newID, propPath);
+			propPath.popBack();
+		}
+		return;
+	}
+
+	// Get to string (path) method
+	auto pointer_object = resolved_path.getValue();
+	rttr::method string_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::toString);
+	assert(string_method.is_valid());
+
+	// Get path and check for ID inclusion - exclude partial names
+	auto object_path = string_method.invoke(pointer_object).to_string();
+	auto index = object_path.find(oldID);
+	while (index != std::string::npos)
+	{
+		auto end_index = index + oldID.size();
+		if (end_index >= object_path.size() ||
+			object_path[end_index] == '/' ||
+			object_path[end_index] == ':')
+			break;
+
+		index = object_path.find(oldID, index + 1);
+	}
+
+	// No match
+	if (index == std::string::npos)
+		return;
+
+	// Update path and find target object
+	object_path.replace(index, oldID.size(), newID);
+	size_t obj_pos = object_path.find_last_of('/');
+	nap::rtti::Object* target = getObject(obj_pos != std::string::npos ?
+		object_path.substr(obj_pos + 1) : object_path);
+
+	// Target doesn't exist
+	if (target == nullptr)
+	{
+		assert(false);
+		return;
+	}
+
+	// Create and assign new path
+	rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
+	assert(assign_method.is_valid());
+	assign_method.invoke(pointer_object, object_path, target);
+
+	// Set as new property value
+	if (!resolved_path.setValue(pointer_object))
+	{
+		std::string msg = nap::utility::stringFormat("Unable to update: %s", propPath.toString().c_str());
+		NAP_ASSERT_MSG(false, msg.c_str());
 	}
 }
 
@@ -618,9 +656,6 @@ void Document::removeInstanceProperties(PropertyPath path)
 			}
 		}
 	}
-
-	for (auto scene : changedScenes)
-		objectChanged(scene);
 }
 
 
@@ -675,7 +710,7 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 	rootEntity.mEntity = &entity;
 	size_t index = scene.mEntities.size();
 	scene.mEntities.emplace_back(rootEntity);
-	objectChanged(&scene);
+	propertyValueChanged(PropertyPath(scene, nap::rtti::Path::fromString("Entities"), *this));
 	return index;
 }
 
@@ -691,9 +726,9 @@ size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 {
 	// WARNING: This will NOT take care of removing and patching up instance properties
+	// TODO: Remove associated instance properties
 	auto obj = parent.mChildren[childIndex];
 	parent.mChildren.erase(parent.mChildren.begin() + childIndex);
-	objectChanged(&parent);
 
 	PropertyPath childrenProp(parent, nap::rtti::Path::fromString("Children"), *this);
 	assert(childrenProp.isValid());
@@ -703,8 +738,8 @@ void Document::removeChildEntity(nap::Entity& parent, size_t childIndex)
 
 void Document::remove(const PropertyPath& path)
 {
+	// TODO: Nuke this from orbit -> use regular array object removal
 	auto parent = path.getParent();
-
 	if (parent.getType().is_derived_from<nap::Entity>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		// Removing child Entity from parent Entity
@@ -720,9 +755,7 @@ void Document::remove(const PropertyPath& path)
 		return;
 	}
 
-	auto _p1 = parent.toString();
-	auto _p2 = path.toString();
-
+	// TODO: Nuke this from orbit -> use regular array object removal
 	if (parent.getType().is_derived_from<nap::Scene>() && path.getType().is_derived_from<nap::Entity>())
 	{
 		auto entity = rtti_cast<nap::Entity>(path.getObject());
@@ -736,12 +769,11 @@ void Document::remove(const PropertyPath& path)
 				if (idx == pathidx)
 				{
 					scene->mEntities.erase(scene->mEntities.begin() + i);
-					objectChanged(scene);
+					propertyValueChanged(PropertyPath(*scene, nap::rtti::Path::fromString("Entities"), *this));
 					return;
 				}
 				++idx;
 			}
-
 		}
 	}
 }
@@ -764,11 +796,6 @@ void Document::removeEntityFromScene(nap::Scene& scene, nap::Entity& entity)
 		}
 		it++;
 	}
-
-	if (changed)
-	{
-		objectChanged(&scene);
-	}
 }
 
 
@@ -776,7 +803,6 @@ void Document::removeEntityFromScene(nap::Scene& scene, size_t index)
 {
 	removeInstanceProperties(scene, *scene.mEntities[index].mEntity);
 	scene.mEntities.erase(scene.mEntities.begin() + index);
-	objectChanged(&scene);
 }
 
 

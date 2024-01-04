@@ -399,19 +399,6 @@ namespace napkin
 
 
 	/**
-	 * Remove a child Entity from its parent
-	 */
-	class RemoveChildEntityAction : public Action
-	{
-	public:
-		explicit RemoveChildEntityAction(QObject* parent, EntityItem& entityItem);
-	private:
-		void perform() override;
-		EntityItem* mEntityItem;
-	};
-
-
-	/**
 	 * Remove something defined by the propertypath
 	 */
 	class RemovePathAction : public Action
@@ -444,19 +431,6 @@ namespace napkin
 	{
 	public:
         explicit OpenURLAction(QObject* parent, const char* text, const QUrl& address);
-	private:
-		void perform() override;
-		QUrl mAddress;
-	};
-
-
-	/**
-	 * Open NAP Documentation in browser
-	 */
-	class OpenDocsAction : public Action
-	{
-	public:
-        explicit OpenDocsAction(QObject* parent);
 	private:
 		void perform() override;
 		QUrl mAddress;

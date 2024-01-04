@@ -206,11 +206,6 @@ namespace napkin
 		void removeOverride();
 
 		/**
-		 * @return True if this path has any children with an override
-		 */
-		bool hasOverriddenChildren() const;
-
-		/**
 		 * @return true when the path points to a property, false when it points to an Object
 		 */
 		bool hasProperty() const;
@@ -325,25 +320,22 @@ namespace napkin
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
 
-		nap::ComponentInstanceProperties* instanceProps() const;
+		nap::ComponentInstanceProperties* getInstanceProperties() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
-		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
-		/**
-		 * This PropertyPath is most likely pointing to a Component, retrieve it here.
-		 * @return The component this PropertyPath is pointing to.
-		 */
-		nap::Component* component() const;
-		nap::TargetAttribute* targetAttribute() const;
+		nap::TargetAttribute* getTargetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
+		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
 
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
 		rttr::variant patchValue(const rttr::variant& value) const;
 
 		Document* mDocument = nullptr;
-		PPath mObjectPath;
-		PPath mPropertyPath;
-		mutable nap::rtti::Object* mObject = nullptr;	
+		PPath mObjectPath;									//< Objects pointing to the property
+		PPath mPropertyPath;								//< Path to property
+		mutable nap::rtti::Object* mObject = nullptr;		//< Resolved object that holds the property
+		mutable nap::RootEntity* mRootEntity = nullptr;		//< Root entity in the scene, can be null
+		mutable bool mRootQueried = false;					//< If the root has been queried
 	};
 }
 

@@ -19,10 +19,8 @@ napkin::SceneModel::SceneModel() : QStandardItemModel()
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &SceneModel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &SceneModel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &SceneModel::onNewFile);
-	connect(&AppContext::get(), &AppContext::objectAdded, this, &SceneModel::onObjectAdded);
-	connect(&AppContext::get(), &AppContext::objectChanged, this, &SceneModel::onObjectChanged);
 	connect(&AppContext::get(), &AppContext::objectRemoved, this, &SceneModel::onObjectRemoved);
-	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &SceneModel::onIndexSwapped);
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &SceneModel::onPropertyValueChanged);
 }
 
 
@@ -51,13 +49,12 @@ void napkin::SceneModel::clear()
 
 void napkin::SceneModel::populate()
 {
+	// Clear
 	this->clear();
 	mSceneItems.clear();
 
-	auto doc = napkin::AppContext::get().getDocument();
-	assert(doc != nullptr);
-
 	// Create items for scene & children in scene
+	auto doc = napkin::AppContext::get().getDocument(); assert(doc != nullptr);
 	auto scenes = doc->getObjects<nap::Scene>();
 	for (const auto& scene : scenes)
 	{
@@ -73,46 +70,27 @@ void napkin::SceneModel::populate()
 
 static bool refresh(nap::rtti::Object* obj)
 {
-	// TODO: Check if the component or entity is part of the scene.
-	return	obj->get_type().is_derived_from(RTTI_OF(nap::Scene))	||
-		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
-		obj->get_type().is_derived_from(RTTI_OF(nap::Component));
-}
-
-
-void napkin::SceneModel::onObjectAdded(nap::rtti::Object* obj)
-{
-	if (refresh(obj))
-	{
-		populate();
-	}
-}
-
-
-void napkin::SceneModel::onObjectChanged(nap::rtti::Object* obj)
-{
-	if (refresh(obj))
-	{
-		populate();
-	}
+	// TODO: Move signal handling logic to individual scene items instead of model.
+	// Ensures the view keeps state and improves performance.
+	// Similar to regular object items managed by the resource model
+	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene)) ||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Entity));
 }
 
 
 void napkin::SceneModel::onObjectRemoved(nap::rtti::Object* obj)
 {
+	// TODO: Move refresh logic to individual scene items.
 	if (refresh(obj))
-	{
 		populate();
-	}
 }
 
 
-void napkin::SceneModel::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+void napkin::SceneModel::onPropertyValueChanged(const PropertyPath& path)
 {
+	// Underlying system change -> check if it affects the model
 	if (refresh(path.getObject()))
-	{
 		populate();
-	}
 }
 
 
