@@ -1065,7 +1065,7 @@ namespace nap
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ static_cast<uint>(shader_vertex_attribute->mLocation), shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
+			attributeDescriptions.push_back({ static_cast<uint>(shader_vertex_attribute->mLocation), shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
 
 			shader_attribute_binding++;
 		}
@@ -1824,7 +1824,7 @@ namespace nap
 				return false;
 
 			// Clear the queue submit operation flags
-			frame.mQueueSubmitOps = 0U;
+			frame.mQueueSubmitOps = 0;
 		}
 
 		// Try to load .ini file and extract saved settings, allowed to fail
@@ -2048,16 +2048,16 @@ namespace nap
 	RenderMask RenderService::findRenderMask(const std::string& tagName)
 	{
 		if (mRenderTagRegistry.empty())
-			return 0U;
+			return 0;
 
-		uint count = 0U;
+		uint count = 0;
 		for (auto& tag : mRenderTagRegistry)
 		{
 			if (tag->mName == tagName)
-				return 1U << count;
+				return 1 << count;
 			++count;
 		}
-		return 0U;
+		return 0;
 	}
 
 
@@ -2076,16 +2076,16 @@ namespace nap
 		}
 
 		if (mRenderLayerRegistry == nullptr)
-			return 0U;
+			return 0;
 
-		uint count = 0U;
+		uint count = 0;
 		for (auto& tag : mRenderLayerRegistry->mLayers)
 		{
 			if (tag->mName == layerName)
 				return count;
 			++count;
 		}
-		return 0U;
+		return 0;
 	}
 
 
@@ -2429,7 +2429,7 @@ namespace nap
 		mIsRenderingFrame = true;
 
 		// Clear the queue submit operation flags for the current frame
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0U;
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0;
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
 		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
@@ -2575,8 +2575,8 @@ namespace nap
 		// on any of the command buffers (rendering, headless rendering, compute), the corresponding EQueueSubmitOp bit is
 		// set in mQueueSubmitOps of the current frame. This way, we keep track of what queue submissions have occurred.
 		const Frame& frame = mFramesInFlight[mCurrentFrameIndex];
-		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
-		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0, "Recording compute commands after rendering within a single frame is not allowed");
 
 		// Reset command buffer for current frame
 		VkCommandBuffer compute_command_buffer = frame.mComputeCommandBuffer;
