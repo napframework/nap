@@ -217,7 +217,7 @@ More options for packaging can be queried by adding the flag `--help` when runni
 
 We welcome contributions and potential bug fixes. But before you submit any code for review make sure to read and follow our [C++ styleguide](styleguide/styleguide.md). Also take into consideration that reviewing code takes time: Be as thorough and explicit as possible. 
 
-Do not use the github `issues` page to ask questions. We already have a perfectly well functioning [forum](https://community.napframework.com/) for that. Only use the github `issues` page for bug reports and well defined feature requests. 
+Use the github [issues](https://github.com/napframework/nap/issues) page for bug reports and well defined feature requests. Use the Github [discussions](https://github.com/orgs/napframework/discussions) page for general questions and help.
 
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://community.napframework.com/) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
