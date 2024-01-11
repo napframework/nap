@@ -49,5 +49,22 @@ namespace nap
 		 * @return if the UpdateMaterialComponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
+
+	private:
+		Slot<RGBColorFloat>	mColorChangedSlot;
+		Slot<glm::vec2>	mFresnelChangedSlot;
+
+		template<typename T>
+		void onUniformValueUpdate(T value, TypedUniformValueInstance<T>* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
+
+		void onUniformRGBColorUpdate(RGBColorFloat value, UniformVec3Instance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value.toVec3());
+		}
 	};
 }

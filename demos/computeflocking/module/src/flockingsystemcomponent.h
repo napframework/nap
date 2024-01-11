@@ -187,7 +187,6 @@ namespace nap
 		StructBuffer*								mBoidBufferOutput = nullptr;
 
 		BufferBindingStructInstance*				mRenderStorageBinding = nullptr;
-		UniformStructInstance*						mComputeUBOStruct = nullptr;
 
 		UniformVec3ArrayInstance*					mTargetsUniform = nullptr;
 		UniformUIntInstance*						mTargetCountUniform = nullptr;
@@ -196,5 +195,54 @@ namespace nap
 		std::unique_ptr<ParameterFloat>				mDeltaTimeParam;
 
 		std::vector<ComponentInstancePtr<TransformComponent>> mTargetTransforms = initComponentInstancePtr(this, &FlockingSystemComponent::mTargetTransforms);
+
+		// Parameters
+		Slot<float>	mElapsedTimeChangedSlot;
+		Slot<float>	mDeltaTimeChangedSlot;
+		Slot<bool> mRandomColorChangedSlot;
+		Slot<float>	mBoidSizeChangedSlot;
+		Slot<float>	mFresnelScaleChangedSlot;
+		Slot<float>	mFresnelPowerChangedSlot;
+		Slot<float>	mViewRadiusChangedSlot;
+		Slot<float>	mAvoidRadiusChangedSlot;
+		Slot<float>	mMinSpeedChangedSlot;
+		Slot<float>	mMaxSpeedChangedSlot;
+		Slot<float>	mTargetWeightChangedSlot;
+		Slot<float>	mAlignmentWeightChangedSlot;
+		Slot<float>	mCohesionWeightChangedSlot;
+		Slot<float>	mSeparationWeightChangedSlot;
+		Slot<float>	mBoundsRadiusChangedSlot;
+
+		Slot<glm::vec3> mLightPositionChangedSlot;
+		Slot<float> mLightIntensityChangedSlot;
+		Slot<RGBColorFloat> mDiffuseColorChangedSlot;
+		Slot<RGBColorFloat> mDiffuseColorExChangedSlot;
+		Slot<RGBColorFloat> mLightColorChangedSlot;
+		Slot<RGBColorFloat> mHaloColorChangedSlot;
+		Slot<RGBColorFloat> mSpecularColorChangedSlot;
+		Slot<float> mShininessChangedSlot;
+		Slot<float> mAmbientIntensityChangedSlot;
+		Slot<float> mDiffuseIntensityChangedSlot;
+		Slot<float> mSpecularIntensityChangedSlot;
+		Slot<float> mMateColorRateChangedSlot;
+
+		template<typename T>
+		void onUniformValueUpdate(T value, TypedUniformValueInstance<T>* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
+
+		void onUniformRGBColorUpdate(RGBColorFloat value, UniformVec3Instance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value.toVec3());
+		}
+
+		void onUniformBoolUpdate(bool value, UniformUIntInstance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
 	};
 }

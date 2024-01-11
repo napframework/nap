@@ -72,6 +72,13 @@ namespace nap
 		RenderSkyBoxComponent& getResource();
 
 	private:
+		Slot<RGBColorFloat>	mColorChangedSlot;
+		void onUniformRGBColorUpdate(RGBColorFloat value, UniformVec3Instance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value.toVec3());
+		}
+
 		RenderSkyBoxComponent* mResource = nullptr;
 		RenderService& mRenderService;
 
