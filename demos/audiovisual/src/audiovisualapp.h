@@ -82,5 +82,6 @@ namespace nap
 		ObjectPtr<EntityInstance>	mRenderEntity = nullptr;			///< Holds components for additional rendering operations
 
 		RenderMask					mLitRenderMask = 0;
+		bool						mFirstFrame = true;
 	};
 }

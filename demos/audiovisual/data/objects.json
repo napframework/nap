@@ -31,6 +31,21 @@
             "mID": "ConstantShader"
         },
         {
+            "Type": "nap::CubeRenderTarget",
+            "mID": "CubeRenderTarget",
+            "CubeTexture": "StarsCubeTexture",
+            "SampleShading": true,
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "UpdateLODs": true
+        },
+        {
             "Type": "nap::Entity",
             "mID": "AudioEntity",
             "Components": [
@@ -211,7 +226,7 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "alpha_39b3deaf",
                                         "Name": "alpha",
-                                        "Value": 1.0
+                                        "Value": 0.75
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
@@ -261,7 +276,7 @@
                                             "x": 0.07500000298023224,
                                             "y": 0.0,
                                             "z": 0.05000000074505806,
-                                            "w": 0.0
+                                            "w": 1.0
                                         }
                                     },
                                     {
@@ -278,22 +293,46 @@
                                         "mID": "shininess_bf8dfe86",
                                         "Name": "shininess",
                                         "Value": 48.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformUInt",
+                                        "mID": "environment_d492281c",
+                                        "Name": "environment",
+                                        "Value": 1
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "reflection_dcb9e297",
+                                        "Name": "reflection",
+                                        "Value": 0.6499999761581421
                                     }
                                 ]
                             }
                         ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [
+                        "Samplers": [
                             {
-                                "Type": "nap::ShaderConstant",
-                                "mID": "ENABLE_ENVIRONMENT_MAPPING_86d06988",
-                                "Name": "ENABLE_ENVIRONMENT_MAPPING",
-                                "Value": 0
+                                "Type": "nap::SamplerCube",
+                                "mID": "environmentMap_5b5dfa99",
+                                "Name": "environmentMap",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 2,
+                                "MaxLodLevel": 1000,
+                                "LodBias": 2.0,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "StarsCubeTexture"
                             }
                         ],
+                        "Buffers": [],
+                        "Constants": [],
                         "Material": "PhongVec4Material",
-                        "BlendMode": "Opaque",
+                        "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadWrite"
                     },
                     "LineWidth": 1.0,
@@ -1077,6 +1116,22 @@
             }
         },
         {
+            "Type": "nap::RenderTextureCube",
+            "mID": "StarsCubeTexture",
+            "Width": 512,
+            "Height": 512,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        {
             "Type": "nap::RenderWindow",
             "mID": "Window",
             "Borderless": false,
@@ -1124,7 +1179,7 @@
                     "Type": "nap::PlaneMeshVec4",
                     "mID": "PlaneMeshVec4",
                     "Usage": "Static",
-                    "CullMode": "Back",
+                    "CullMode": "None",
                     "PolygonMode": "Fill",
                     "Size": {
                         "x": 1.0,

@@ -10,6 +10,7 @@
 #include <renderablemeshcomponent.h>
 #include <computecomponent.h>
 #include <parametergui.h>
+#include <depthsorter.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audiovisualApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -100,12 +101,35 @@ namespace nap
 		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
 		// Headless
-		//auto& render_texture_comp = mRenderEntity->getComponent<RenderToTextureComponentInstance>();
-		if (mRenderService->beginHeadlessRecording())
+		if (mFirstFrame)
 		{
-			//render_texture_comp.draw();
-			//mRenderAdvancedService->renderShadows(render_comps, true);
-			mRenderService->endHeadlessRecording();
+			auto cube_targets = mResourceManager->getObjects<CubeRenderTarget>();
+			if (!cube_targets.empty())
+			{
+				assert(cube_targets.front() != nullptr);
+				auto& target = *cube_targets.front();
+				if (mRenderService->beginHeadlessRecording())
+				{
+					for (auto* comp : render_comps)
+					{
+						if (comp->get_type() != RTTI_OF(RenderableMeshComponentInstance))
+							continue;
+
+						auto* resource = comp->getComponent<RenderableMeshComponent>();
+						if (resource == nullptr)
+							continue;
+
+						if (resource->mID == "RenderStars")
+						{
+							auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+							target.render([rs = mRenderService, stars = comp](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view) {
+								rs->renderObjects(target, projection, view, { stars }, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+							});
+						}
+					}
+					mRenderService->endHeadlessRecording();
+				}
+			}
 		}
 
 		// Begin recording the render commands for the main render window
@@ -134,6 +158,7 @@ namespace nap
 
 		// Proceed to next frame
 		mRenderService->endFrame();
+		mFirstFrame = false;
 	}
 	
 
