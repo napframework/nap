@@ -16,7 +16,6 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
-#include <uniformupdate.h>
 
 RTTI_BEGIN_CLASS(nap::RenderSkyBoxComponent)
 	RTTI_PROPERTY("CubeTexture", &nap::RenderSkyBoxComponent::mCubeTexture, nap::rtti::EPropertyMetaData::Required)
@@ -84,7 +83,12 @@ namespace nap
 		if (mResource->mColor != nullptr)
 		{
 			if (mResource->mColor->hasParameter())
-				registerUniformUpdate(*color, *mResource->mColor->mParameter);
+			{
+				auto param = mResource->mColor->mParameter;
+				color->setValue(param->mValue.toVec3());
+				mColorChangedSlot.setFunction(std::bind(&RenderSkyBoxComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, color));
+				param->valueChanged.connect(mColorChangedSlot);
+			}
 			else
 				color->setValue(mResource->mColor->getValue().toVec3());
 		}

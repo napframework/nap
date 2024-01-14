@@ -283,7 +283,7 @@ namespace nap
 			assert(entry.first <= workgroup_size.length());
 			auto* constant = findConstant(entry.second);
 			if (constant != nullptr)
-				constant->mValue = workgroup_size[entry.first];
+				workgroup_size[entry.first] = constant->mValue;
 		}
 		return workgroup_size;
 	}

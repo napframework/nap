@@ -4,7 +4,6 @@
 #include <entity.h>
 #include <renderablemeshcomponent.h>
 #include <blinnphongcolorshader.h>
-#include <uniformupdate.h>
 
 // nap::UpdateMaterialComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::UpdateMaterialComponent)
@@ -43,12 +42,18 @@ namespace nap
 		auto* color = uni->getOrCreateUniform<UniformVec3Instance>("color");
 		if (!errorState.check(color != nullptr, "Missing uniform vec3 member with name `color`"))
 			return false;
-		registerUniformUpdate(*color, *resource->mColor);
+
+		color->setValue(resource->mColor->mValue.toVec3());
+		mColorChangedSlot.setFunction(std::bind(&UpdateMaterialComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, color));
+		resource->mColor->valueChanged.connect(mColorChangedSlot);
 
 		auto* fresnel = uni->getOrCreateUniform<UniformVec2Instance>("fresnel");
 		if (!errorState.check(fresnel != nullptr, "Missing uniform vec2 member with name `fresnel`"))
 			return false;
-		registerUniformUpdate(*fresnel, *resource->mFresnel);
+
+		fresnel->setValue(resource->mColor->mValue.toVec3());
+		mFresnelChangedSlot.setFunction(std::bind(&UpdateMaterialComponentInstance::onUniformValueUpdate<glm::vec2>, this, std::placeholders::_1, fresnel));
+		resource->mFresnel->valueChanged.connect(mFresnelChangedSlot);
 
 		return true;
 	}

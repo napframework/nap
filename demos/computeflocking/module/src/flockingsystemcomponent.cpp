@@ -15,7 +15,6 @@
 #include <renderglobals.h>
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
-#include <uniformupdate.h>
 
 RTTI_BEGIN_CLASS(nap::FlockingSystemComponent)
 	RTTI_PROPERTY("NumBoids",					&nap::FlockingSystemComponent::mNumBoids,					nap::rtti::EPropertyMetaData::Default)
@@ -144,15 +143,15 @@ namespace nap
 		mBoidBufferOutput = &mBindingOut->getBuffer();
 
 		mComputeInstance->setInvocations(mNumBoids);
-		mComputeUBOStruct = mComputeInstance->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
-		if (mComputeUBOStruct == nullptr)
+		auto* comp_ubo_struct = mComputeInstance->getMaterialInstance().getOrCreateUniform(computeuniform::uboStruct);
+		if (comp_ubo_struct == nullptr)
 			return false;
 
-		mTargetsUniform = mComputeUBOStruct->getOrCreateUniform<UniformVec3ArrayInstance>(computeuniform::targets);
+		mTargetsUniform = comp_ubo_struct->getOrCreateUniform<UniformVec3ArrayInstance>(computeuniform::targets);
 		if (mTargetsUniform == nullptr)
 			return false;
 
-		mTargetCountUniform = mComputeUBOStruct->getOrCreateUniform<UniformUIntInstance>(computeuniform::targetCount);
+		mTargetCountUniform = comp_ubo_struct->getOrCreateUniform<UniformUIntInstance>(computeuniform::targetCount);
 		if (mTargetCountUniform == nullptr)
 			return false;
 
@@ -160,21 +159,64 @@ namespace nap
 		if (mRenderStorageBinding == nullptr)
 			return false;
 
+		// Compute shader uniforms
 		mElapsedTimeParam = std::make_unique<ParameterFloat>();
 		mDeltaTimeParam = std::make_unique<ParameterFloat>();
 
-		// Compute shader uniforms
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime),		*mElapsedTimeParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime),			*mDeltaTimeParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius),			*mResource->mViewRadiusParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius),		*mResource->mAvoidRadiusParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed),			*mResource->mMinSpeedParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed),			*mResource->mMaxSpeedParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight),		*mResource->mTargetWeightParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight),	*mResource->mAlignmentWeightParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight),		*mResource->mCohesionWeightParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight),	*mResource->mSeparationWeightParam);
-		registerUniformUpdate(*mComputeUBOStruct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius),		*mResource->mBoundsRadiusParam);
+		auto uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::elapsedTime);
+		uni->setValue(mElapsedTimeParam->mValue);
+		mElapsedTimeChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mElapsedTimeParam->valueChanged.connect(mElapsedTimeChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::deltaTime);
+		uni->setValue(mDeltaTimeParam->mValue);
+		mDeltaTimeChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mDeltaTimeParam->valueChanged.connect(mDeltaTimeChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::viewRadius);
+		uni->setValue(mResource->mViewRadiusParam->mValue);
+		mViewRadiusChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mViewRadiusParam->valueChanged.connect(mViewRadiusChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::avoidRadius);
+		uni->setValue(mResource->mAvoidRadiusParam->mValue);
+		mAvoidRadiusChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mAvoidRadiusParam->valueChanged.connect(mAvoidRadiusChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::minSpeed);
+		uni->setValue(mResource->mMinSpeedParam->mValue);
+		mMinSpeedChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mMinSpeedParam->valueChanged.connect(mMinSpeedChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::maxSpeed);
+		uni->setValue(mResource->mMaxSpeedParam->mValue);
+		mMaxSpeedChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mMaxSpeedParam->valueChanged.connect(mMaxSpeedChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::targetWeight);
+		uni->setValue(mResource->mTargetWeightParam->mValue);
+		mTargetWeightChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mTargetWeightParam->valueChanged.connect(mTargetWeightChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::alignmentWeight);
+		uni->setValue(mResource->mAlignmentWeightParam->mValue);
+		mAlignmentWeightChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mAlignmentWeightParam->valueChanged.connect(mAlignmentWeightChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::cohesionWeight);
+		uni->setValue(mResource->mCohesionWeightParam->mValue);
+		mCohesionWeightChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mCohesionWeightParam->valueChanged.connect(mCohesionWeightChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::separationWeight);
+		uni->setValue(mResource->mSeparationWeightParam->mValue);
+		mSeparationWeightChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mSeparationWeightParam->valueChanged.connect(mSeparationWeightChangedSlot);
+
+		uni = comp_ubo_struct->getOrCreateUniform<UniformFloatInstance>(computeuniform::boundsRadius);
+		uni->setValue(mResource->mBoundsRadiusParam->mValue);
+		mBoundsRadiusChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mBoundsRadiusParam->valueChanged.connect(mBoundsRadiusChangedSlot);
 
 
 		// Vertex shader uniforms
@@ -182,9 +224,20 @@ namespace nap
 		if (vert_ubo_struct == nullptr)
 			return false;
 
-		registerUniformUpdate(*vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize),			*mResource->mBoidSizeParam);
-		registerUniformUpdate(*vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale),		*mResource->mFresnelScaleParam);
-		registerUniformUpdate(*vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower),		*mResource->mFresnelPowerParam);
+		uni = vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::boidSize);
+		uni->setValue(mResource->mBoidSizeParam->mValue);
+		mBoidSizeChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mBoidSizeParam->valueChanged.connect(mBoidSizeChangedSlot);
+
+		uni = vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelScale);
+		uni->setValue(mResource->mFresnelScaleParam->mValue);
+		mFresnelScaleChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mFresnelScaleParam->valueChanged.connect(mFresnelScaleChangedSlot);
+
+		uni = vert_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fresnelPower);
+		uni->setValue(mResource->mFresnelPowerParam->mValue);
+		mFresnelPowerChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mFresnelPowerParam->valueChanged.connect(mFresnelPowerChangedSlot);
 
 
 		// Fragment shader uniforms
@@ -192,16 +245,55 @@ namespace nap
 		if (frag_ubo_struct == nullptr)
 			return false;
 
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor),			*mResource->mRandomColorParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition),		*mResource->mLightPositionParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity),		*mResource->mLightIntensityParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor),			*mResource->mDiffuseColorParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor),			*mResource->mLightColorParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::haloColor),			*mResource->mHaloColorParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::specularColor),		*mResource->mSpecularColorParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::shininess),			*mResource->mShininessParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity),	*mResource->mDiffuseIntensityParam);
-		registerUniformUpdate(*frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity),	*mResource->mSpecularIntensityParam);
+		auto bool_uni = frag_ubo_struct->getOrCreateUniform<UniformUIntInstance>(uniform::randomColor);
+		bool_uni->setValue(mResource->mRandomColorParam->mValue);
+		mRandomColorChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformBoolUpdate, this, std::placeholders::_1, bool_uni));
+		mResource->mRandomColorParam->valueChanged.connect(mRandomColorChangedSlot);
+
+		auto vec3_uni = frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightPosition);
+		vec3_uni->setValue(mResource->mLightPositionParam->mValue);
+		mLightPositionChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<glm::vec3>, this, std::placeholders::_1, vec3_uni));
+		mResource->mLightPositionParam->valueChanged.connect(mLightPositionChangedSlot);
+
+		uni = frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::lightIntensity);
+		uni->setValue(mResource->mLightIntensityParam->mValue);
+		mLightIntensityChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mLightIntensityParam->valueChanged.connect(mLightIntensityChangedSlot);
+
+		vec3_uni = frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::diffuseColor);
+		vec3_uni->setValue(mResource->mDiffuseColorParam->mValue);
+		mDiffuseColorChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, vec3_uni));
+		mResource->mDiffuseColorParam->valueChanged.connect(mDiffuseColorChangedSlot);
+
+		vec3_uni = frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::lightColor);
+		vec3_uni->setValue(mResource->mLightColorParam->mValue);
+		mLightColorChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, vec3_uni));
+		mResource->mLightColorParam->valueChanged.connect(mLightColorChangedSlot);
+
+		vec3_uni = frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::haloColor);
+		vec3_uni->setValue(mResource->mHaloColorParam->mValue);
+		mHaloColorChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, vec3_uni));
+		mResource->mHaloColorParam->valueChanged.connect(mHaloColorChangedSlot);
+
+		vec3_uni = frag_ubo_struct->getOrCreateUniform<UniformVec3Instance>(uniform::specularColor);
+		vec3_uni->setValue(mResource->mSpecularColorParam->mValue);
+		mSpecularColorChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, vec3_uni));
+		mResource->mSpecularColorParam->valueChanged.connect(mSpecularColorChangedSlot);
+
+		uni = frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::shininess);
+		uni->setValue(mResource->mShininessParam->mValue);
+		mShininessChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mShininessParam->valueChanged.connect(mShininessChangedSlot);
+
+		uni = frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::diffuseIntensity);
+		uni->setValue(mResource->mDiffuseIntensityParam->mValue);
+		mDiffuseIntensityChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mDiffuseIntensityParam->valueChanged.connect(mDiffuseIntensityChangedSlot);
+
+		uni = frag_ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::specularIntensity);
+		uni->setValue(mResource->mSpecularIntensityParam->mValue);
+		mSpecularIntensityChangedSlot.setFunction(std::bind(&FlockingSystemComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, uni));
+		mResource->mSpecularIntensityParam->valueChanged.connect(mSpecularIntensityChangedSlot);
 
 		return true;
 	}

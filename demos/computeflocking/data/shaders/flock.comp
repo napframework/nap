@@ -41,7 +41,6 @@ layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
 layout(constant_id = 1) const uint BOID_COUNT = 10000;
 layout(constant_id = 2) const uint FORCE_TARGETS = 0;
 layout(constant_id = 3) const uint SHARED_MEMORY_PATH = 0;
-//const uint MAX_GROUP_SIZE_X = gl_WorkGroupSize.x;
 
 struct Boid
 {

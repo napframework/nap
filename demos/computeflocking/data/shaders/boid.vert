@@ -23,7 +23,6 @@ uniform nap
 
 uniform VERTUBO
 {
-	vec3 cameraLocation;
 	float boidSize;
 	float fresnelScale;
 	float fresnelPower;
