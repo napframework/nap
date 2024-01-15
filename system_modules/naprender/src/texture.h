@@ -290,7 +290,6 @@ namespace nap
 	class NAPAPI TextureCube : public Texture
 	{
 		friend class RenderService;
-		friend class CubeRenderTarget; // TODO: Move CubeRenderTarget to naprender ??
 		RTTI_ENABLE(Texture)
 	public:
 		// The image layer count is equal to the number of sides of a cube
@@ -346,6 +345,13 @@ namespace nap
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
+		 * Note: This function should actually be protected but is required by `nap::CubeRenderTarget`
+		 * in the naprenderadvanced module.
+		 * @return Vulkan GPU data handle, including image and view.
+		 */
+		virtual ImageData& getHandle() override					{ return mImageData; }
+
+		/**
 		 *
 		 */
 		virtual void onDestroy() override						{ textureDestroyed(); }
@@ -355,11 +361,6 @@ namespace nap
 		nap::Signal<> textureDestroyed;
 
 	protected:
-		/**
-		 * @return Vulkan GPU data handle, including image and view.
-		 */
-		virtual ImageData& getHandle() override					{ return mImageData; }
-
 		ImageData							mImageData = { TextureCube::LAYER_COUNT };	///< Cube Texture vulkan image buffers
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
 

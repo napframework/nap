@@ -213,7 +213,7 @@ namespace nap
 		ImageData								mDepthImage{ TextureCube::LAYER_COUNT };
 		ImageData								mColorImage{ TextureCube::LAYER_COUNT };
 
-		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers;
+		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers = { VK_NULL_HANDLE };
 
 		glm::ivec2								mSize;
 		uint									mLayerIndex = 0U;
