@@ -44,20 +44,20 @@ namespace nap
 			 * Constructor
 			 * @param nodeManager the node manager this process runs on.
 			 */
-			Process(NodeManager& nodeManager) : mNodeManager(&nodeManager) { }
+			Process(NodeManager& nodeManager);
 			
 			/**
 			 * Constructor that takes a parent process.
 			 */
 			Process(ParentProcess& parent);
-			
+
 			/*
 			 * We need to delete these so that the compiler doesn't try to use them. Otherwise we get compile errors on vector<unique_ptr>.
 			 */
 			Process(const Process&) = delete;
 			Process& operator=(const Process&) = delete;
 			
-			virtual ~Process() { }
+			virtual ~Process();
 			
 			/*
 			 * Invoked by OutputPin::pull() methods and by parent processes.
@@ -102,15 +102,35 @@ namespace nap
 			 * @param bufferSize: the new buffersize
 			 */
 			virtual void bufferSizeChanged(int bufferSize) { }
-		
+
+			/**
+			 * @return true if the node is currently registered with a currently existing node manager.
+			 */
+			bool isRegisteredWithNodeManager() const { return mRegisteredWithNodeManager.load(); }
+
 		private:
 			/**
 			 * Has to be overwritted by descendants to specify the actual process.
 			 */
 			virtual void process() = 0;
-			
+
+			/*
+			 * Used by the node manager to notify the node that the buffer size has changed.
+			 * @param bufferSize the new value
+			 */
+			virtual void setBufferSize(int bufferSize) { bufferSizeChanged(bufferSize); }
+
+			/*
+			 * Used by the node manager to notify the node that the sample rate has changed.
+			 * @param sampleRate: the new value
+			 */
+			void setSampleRate(float sampleRate) { sampleRateChanged(sampleRate); }
+
 			NodeManager* mNodeManager = nullptr; // The node manager that this process is processed on
 			DiscreteTimeValue mLastCalculatedSample = 0; // The time stamp of the latest calculated sample by this node
+
+			// Set to true when the node has made itself known with the node manager. This registration is deferred to the audio thread so it has to be tracked by this boolean.
+			std::atomic<bool> mRegisteredWithNodeManager = { false };
 		};
 		
 		

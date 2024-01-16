@@ -6,6 +6,7 @@
 
 // Nap includes
 #include <nap/resource.h>
+#include <nap/core.h>
 #include <audio/utility/safeptr.h>
 #include <rtti/object.h>
 #include <rtti/factory.h>
@@ -29,7 +30,7 @@ namespace nap
 			RTTI_ENABLE(Resource)
 		public:
 			
-			AudioBufferResource(AudioService& service);
+			AudioBufferResource(Core&);
 			
 			/**
 			 * @return: sample rate at which the audio material in the buffer was sampled.
@@ -71,8 +72,6 @@ namespace nap
 			float mSampleRate = 0;
 			SafeOwner<MultiSampleBuffer> mBuffer = nullptr;
 		};
-		
-		using AudioBufferResourceObjectCreator = rtti::ObjectCreator<AudioBufferResource, AudioService>;
-		
+
 	}
 }

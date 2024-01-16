@@ -144,32 +144,32 @@ namespace nap
 				case EMode::LowPass:
 				{
 					ControllerValue c, d, cSqr, q;
-					c	 = 1 / tan(M_PI * mFrequency / getSampleRate());
+					c	 = 1 / tan(math::PI * mFrequency / getSampleRate());
 					cSqr = c * c;
-					a0Dest = mGain / (1 + M_SQRT2 * c + cSqr);
+					a0Dest = mGain / (1 + math::SQRT2 * c + cSqr);
 					a1Dest = 2 * a0Dest;
 					a2Dest = a0Dest;
 					b1Dest = 2 * a0Dest * (1 - cSqr);
-					b2Dest =a0Dest * (1 - M_SQRT2 * c + cSqr);
+					b2Dest =a0Dest * (1 - math::SQRT2 * c + cSqr);
 					break;
 				}
 				case EMode::HighPass:
 				{
 					ControllerValue c, d, cSqr, q;
-					c = tan(M_PI * mFrequency / getSampleRate());
+					c = tan(math::PI * mFrequency / getSampleRate());
 					cSqr = c * c;
-					a0Dest = mGain / (1 + M_SQRT2 * c + cSqr);
+					a0Dest = mGain / (1 + math::SQRT2 * c + cSqr);
 					a1Dest = -2 * a0Dest;
 					a2Dest = a0Dest;
 					b1Dest = 2 * a0Dest * (cSqr - 1);
-					b2Dest = a0Dest * (1 - M_SQRT2 * c + cSqr);
+					b2Dest = a0Dest * (1 - math::SQRT2 * c + cSqr);
 					break;
 				}
 				case EMode::BandPass:
 				{
 					ControllerValue c, d, cSqr, q;
-					c = 1 / tan(M_PI * mBand / getSampleRate());
-					d = 2 * cos(2 * M_PI * mFrequency / getSampleRate());
+					c = 1 / tan(math::PI * mBand / getSampleRate());
+					d = 2 * cos(2 * math::PI * mFrequency / getSampleRate());
 					a0Dest = mGain / (1 + c);
 					a1Dest = 0;
 					a2Dest = -a0Dest;
@@ -180,9 +180,9 @@ namespace nap
 				case EMode::LowRes:
 				{
 					ControllerValue c, d, cSqr, q;
-					c = 1 / tan(M_PI * mFrequency / getSampleRate());
+					c = 1 / tan(math::PI * mFrequency / getSampleRate());
 					cSqr = c * c;
-					q = M_SQRT2 * mResonance;
+					q = math::SQRT2 * mResonance;
 					a0Dest = mGain / (1 + q * c + cSqr);
 					a1Dest = 2 * a0Dest;
 					a2Dest = a0Dest;
@@ -193,9 +193,9 @@ namespace nap
 				case EMode::HighRes:
 				{
 					ControllerValue c, d, cSqr, q;
-					c = tan(M_PI * mFrequency / getSampleRate());
+					c = tan(math::PI * mFrequency / getSampleRate());
 					cSqr = c * c;
-					q = M_SQRT2 * mResonance;
+					q = math::SQRT2 * mResonance;
 					a0Dest = mGain / (1 + q * c + cSqr);
 					a1Dest = -2 * a0Dest;
 					a2Dest = a0Dest;

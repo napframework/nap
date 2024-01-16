@@ -6,15 +6,13 @@
 
 // Local Includes
 #include "midiservice.h"
+#include "midiportinfo.h"
 
-// External Includes
-#include <utility/dllexport.h>
+// Nap includes
 #include <nap/device.h>
+#include <utility/dllexport.h>
 
-// Forward Declares
-class RtMidiOut;
-
-namespace nap 
+namespace nap
 {
     
     /**
