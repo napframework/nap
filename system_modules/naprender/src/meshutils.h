@@ -62,7 +62,7 @@ namespace nap
 		* @param outBox the computed bounding box
 		*/
 		template <typename T>
-		void NAPAPI computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
+		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
 
 		/**
 		* Computes the bounding box of a single shape within a mesh using its associated position data.
@@ -73,7 +73,7 @@ namespace nap
 		* @param outBox the computed bounding box
 		*/
 		template <typename T>
-		void NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
+		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
 
 		/**
 		* Automatically re-computes all the normals of a mesh
@@ -156,7 +156,7 @@ namespace nap
 		* @return the interpolated vertex attribute value
 		*/
 		template<typename T>
-		T NAPAPI interpolateVertexAttr(const TriangleData<T>& vertexValues, const glm::vec3& barycentricCoordinates);
+		T interpolateVertexAttr(const TriangleData<T>& vertexValues, const glm::vec3& barycentricCoordinates);
 
 
 		//////////////////////////////////////////////////////////////////////////
