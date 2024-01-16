@@ -16,6 +16,7 @@
 RTTI_BEGIN_CLASS(nap::audio::AudioInputComponent)
 	RTTI_PROPERTY("Channels", &nap::audio::AudioInputComponent::mChannels, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Gain", &nap::audio::AudioInputComponent::mGain, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("AllowOutOfBoundChannels", &nap::audio::AudioInputComponent::mAllowOutOfBoundChannels, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioInputComponentInstance)
@@ -32,6 +33,7 @@ namespace nap
 			auto resource = getComponent<AudioInputComponent>();
 			auto nodeManager = &getNodeManager();
 			auto audioService = &getAudioService();
+
 			
 			mGain = resource->mGain;
 			
@@ -43,7 +45,7 @@ namespace nap
 				if (resource->mChannels[channel] >= nodeManager->getInputChannelCount())
 				{
 					// The input channel is out of bounds, in case we allow out of bounds channels we create a zero node instead
-					if (audioService->getAllowChannelCountFailure())
+					if (resource->mAllowOutOfBoundChannels)
 					{
 						auto zeroNode = nodeManager->makeSafe<ControlNode>(*nodeManager);
 						zeroNode->setValue(0);

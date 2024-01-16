@@ -10,7 +10,7 @@ namespace nap
 {
 	namespace audio
 	{
-		
+
 		/**
 		 * Wraps index value within the range of a buffer size.
 		 * @param index value to be wrapped
@@ -21,8 +21,8 @@ namespace nap
 			unsigned int bitMask = bufferSize - 1;
 			return index & bitMask;
 		}
-		
-		
+
+
 		/**
 		 * Linear interpolation between two values.
 		 * @param v0 start value of the interpolation which is returned when t = 0
@@ -35,7 +35,7 @@ namespace nap
 		{
 			return v0 + t * (v1 - v0);
 		}
-		
+
 		/**
 		 * Stereo equal power panning function.
 		 * @param panning: value between 0 and 1.0, 0 meaning far left, 0.5 center and 1.0 far right.
@@ -45,11 +45,11 @@ namespace nap
 		template<typename T>
 		inline void equalPowerPan(const T& panning, T& left, T& right)
 		{
-			left = cos(panning * 0.5 * M_PI);
-			right = sin(panning * 0.5 * M_PI);
+			left = cos(panning * 0.5 * math::PI);
+			right = sin(panning * 0.5 * math::PI);
 		}
-		
-		
+
+
 		/**
 		 * Convert a midi notenumber format pitch (floating point for microtonal precision) to a frequency in Herz.
 		 * @param pitch in semitones. A pitch of 57 equals 220Hz.
@@ -63,8 +63,8 @@ namespace nap
 			res *= 220.0;
 			return res;
 		}
-		
-		
+
+
 		/**
 		 * Convert amplitude to decibel value.
 		 * @param amplitude Amplitude scaling factor. A value of 1.0 results in 0dB.
@@ -74,8 +74,8 @@ namespace nap
 		{
 			return 20 * log10(amplitude);
 		}
-		
-		
+
+
 		/**
 		 * Convert decibel value to amplitude.
 		 * @param db in dB.
@@ -86,19 +86,8 @@ namespace nap
 		{
 			if (db <= zero)
 				return 0;
-			
+
 			return powf(10, db / 20.0);
-		}
-
-
-		/**
-		 * Flush denormal float value to zero
-		 * @param sample float value to be flushed to zero if denormal
-		 */
-		inline void undenormalize(float& sample)
-		{
-			if (((*(unsigned int*)&sample)&0x7f800000) == 0)
-				sample = 0;
 		}
 
 	}
