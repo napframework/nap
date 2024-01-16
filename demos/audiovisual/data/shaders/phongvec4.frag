@@ -73,6 +73,8 @@ uniform sampler2DShadow shadowMaps[MAX_LIGHTS];
 uniform samplerCubeShadow cubeShadowMaps[MAX_LIGHTS];
 uniform samplerCube environmentMap;
 
+const float highlightLength = 0.015;
+
 void main() 
 {
 	// Diffuse-only early exit for debugging purposes
@@ -166,7 +168,7 @@ void main()
 	}
 
 	color_result = mix(color_result, ubo.fresnelColor, passFresnel);
-	color_result = mix(color_result, ubo.highlight, smoothstep(0.975, 1.0, 1.0-passUV0.y));
+	color_result = mix(color_result, ubo.highlight, smoothstep(1.0-highlightLength, 1.0, passUV0.y));
 	out_Color = vec4(color_result, ubo.alpha);
 }
  

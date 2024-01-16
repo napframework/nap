@@ -46,6 +46,17 @@
             "UpdateLODs": true
         },
         {
+            "Type": "nap::DepthRenderTexture2D",
+            "mID": "DepthTexture",
+            "Usage": "Static",
+            "Fill": false,
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "D16",
+            "ColorSpace": "Linear",
+            "ClearValue": 1.0
+        },
+        {
             "Type": "nap::Entity",
             "mID": "AudioEntity",
             "Components": [
@@ -67,7 +78,7 @@
                     "Gain": 1.0,
                     "StereoPanning": 0.5,
                     "AutoPlay": true,
-                    "StartPosition": 0.0,
+                    "StartPosition": 17000.0,
                     "Duration": 0.0,
                     "FadeInTime": 0.0,
                     "FadeOutTime": 0.0,
@@ -127,28 +138,11 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "CameraEntity",
+            "mID": "AudioRoadEntity",
             "Components": [
                 {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "PerspectiveCamera",
-                    "Properties": {
-                        "FieldOfView": 60.0,
-                        "NearClippingPlane": 0.009999999776482582,
-                        "FarClippingPlane": 1000.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
                     "Type": "nap::TransformComponent",
-                    "mID": "TransformCamera",
+                    "mID": "TransformAudioRoad",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -169,45 +163,8 @@
                     }
                 },
                 {
-                    "Type": "nap::PointerInputComponent",
-                    "mID": "CameraPointerInput"
-                },
-                {
-                    "Type": "nap::KeyInputComponent",
-                    "mID": "KeyInput"
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "FFTPlaneEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformFFTPlane",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderFFTMeshComponent",
-                    "mID": "RenderFFTMesh",
+                    "Type": "nap::RenderAudioRoadComponent",
+                    "mID": "RenderAudioRoad",
                     "Visible": true,
                     "Tags": [
                         "RenderTag_Lit"
@@ -233,8 +190,8 @@
                                         "mID": "highlight_5f42882e",
                                         "Name": "highlight",
                                         "Value": {
-                                            "x": 0.4000000059604645,
-                                            "y": 0.20000000298023225,
+                                            "x": 1.0,
+                                            "y": 1.0,
                                             "z": 1.0
                                         }
                                     },
@@ -332,7 +289,7 @@
                         "Buffers": [],
                         "Constants": [],
                         "Material": "PhongVec4Material",
-                        "BlendMode": "AlphaBlend",
+                        "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
                     },
                     "LineWidth": 1.0,
@@ -346,7 +303,7 @@
                             "y": 0.0
                         }
                     },
-                    "FFTMeshComponent": "./FFTMesh"
+                    "AudioRoadComponent": "./AudioRoad"
                 },
                 {
                     "Type": "nap::ComputeComponent",
@@ -465,13 +422,16 @@
                     "Invocations": 1
                 },
                 {
-                    "Type": "nap::FFTMeshComponent",
-                    "mID": "FFTMesh",
+                    "Type": "nap::AudioRoadComponent",
+                    "mID": "AudioRoad",
                     "ReferenceMesh": "PlaneMeshVec4",
                     "FrameCount": 1024,
                     "BumpAmount": "BumpAmountParameter",
                     "SwerveSpeed": "SwerveSpeedParam",
                     "SwerveIntensity": "SwerveIntensityParameter",
+                    "NoiseStrength": "NoiseStrengthParam",
+                    "NoiseScale": "NoiseScaleParam",
+                    "NoiseSpeed": "NoiseSpeedParam",
                     "FFT": "../../AudioEntity/FFTAudioNode",
                     "FluxMeasurement": "../../AudioEntity/FluxMeasurement",
                     "ComputePopulate": "./ComputePopulate",
@@ -481,8 +441,8 @@
                     "CameraFollowDistance": "CameraFollowDistanceParameter"
                 },
                 {
-                    "Type": "nap::RenderFFTMeshComponent",
-                    "mID": "RenderFFTMeshWireframe",
+                    "Type": "nap::RenderAudioRoadComponent",
+                    "mID": "RenderAudioRoadWireframe",
                     "Visible": false,
                     "Tags": [
                         "RenderTag_Unlit"
@@ -501,7 +461,7 @@
                                         "Type": "nap::UniformFloat",
                                         "mID": "alpha_53883b87",
                                         "Name": "alpha",
-                                        "Value": 0.20000000298023225
+                                        "Value": 0.10000000149011612
                                     },
                                     {
                                         "Type": "nap::UniformVec3",
@@ -534,7 +494,7 @@
                             "y": 0.0
                         }
                     },
-                    "FFTMeshComponent": "./FFTMesh"
+                    "AudioRoadComponent": "./AudioRoad"
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -566,6 +526,69 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "nap::SelectRenderComponent",
+                    "mID": "SelectRenderComp",
+                    "RenderComponents": [
+                        "./RenderAudioRoad",
+                        "./RenderAudioRoadWireframe"
+                    ],
+                    "Index": "RenderIndexParam"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PerspectiveCamera",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.009999999776482582,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformCamera",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "CameraPointerInput"
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "KeyInput"
                 }
             ],
             "Children": []
@@ -634,6 +657,159 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "RenderCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformRenderCamera",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "RenderCamera",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 1.0,
+                        "TopPlane": 1.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.0,
+                        "FarClippingPlane": 100.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderDOFComponent",
+                    "mID": "RenderDOF",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Unlit"
+                    ],
+                    "LayerRegistry": "",
+                    "Layer": "",
+                    "Camera": "../CameraEntity/PerspectiveCamera",
+                    "PassCount": 1,
+                    "InputTarget": "RenderTarget",
+                    "OutputTexture": "ColorTextureDOF",
+                    "Aperture": "ApertureParam",
+                    "FocusPower": "FocusPowerParam",
+                    "FocusDistance": "FocusDistanceParam"
+                },
+                {
+                    "Type": "nap::RenderToTextureComponent",
+                    "mID": "BlendTogether",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Unlit"
+                    ],
+                    "LayerRegistry": "",
+                    "Layer": "",
+                    "OutputTexture": "DummyTexture",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "FRAGUBO_c347b4d6",
+                                "Name": "FRAGUBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "blend_0c2dee37",
+                                        "Name": "blend",
+                                        "Value": 0.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "abberation_8ff627ff",
+                                        "Name": "abberation",
+                                        "Value": 0.004999999888241291
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "colorTexture_f71602ed",
+                                "Name": "colorTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
+                                "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "ColorTextureDOF"
+                            }
+                        ],
+                        "Buffers": [],
+                        "Constants": [
+                            {
+                                "Type": "nap::ShaderConstant",
+                                "mID": "CHROMATIC_ABBERATION_bacc55ea",
+                                "Name": "CHROMATIC_ABBERATION",
+                                "Value": 1
+                            }
+                        ],
+                        "Material": "CompositeMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "Samples": "One",
+                    "ClearColor": {
+                        "Values": [
+                            255,
+                            255,
+                            255,
+                            255
+                        ]
+                    },
+                    "SampleShading": true,
+                    "PreserveAspect": true
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "StarsEntity",
             "Components": [
                 {
@@ -694,87 +870,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "TorusEntity",
-            "Components": [
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderTorus",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Unlit"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Mesh": "TorusMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UBO_2281c53b",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "alpha_2fb4e88a",
-                                        "Name": "alpha",
-                                        "Value": 0.20000000298023225
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "AlphaBlend",
-                        "DepthMode": "ReadWrite"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::UpdateTransformComponent",
-                    "mID": "UpdateTransform",
-                    "Position": "",
-                    "Orientation": "",
-                    "UniformScale": "LowScaleParameter"
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformTorus",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": -0.25
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "WorldEntity",
             "Components": [
                 {
@@ -802,10 +897,21 @@
             ],
             "Children": [
                 "StarsEntity",
-                "TorusEntity",
-                "FFTPlaneEntity",
+                "AudioRoadEntity",
                 "LightEntity"
             ]
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "CompositeMaterial",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "Constants": [],
+            "Shader": "CompositeShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -1031,6 +1137,62 @@
                     "Value": 0.5,
                     "Minimum": 0.0,
                     "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterInt",
+                    "mID": "RenderIndexParam",
+                    "Name": "RenderIndex",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 1
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "NoiseStrengthParam",
+                    "Name": "NoiseStrength",
+                    "Value": 0.25,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "NoiseScaleParam",
+                    "Name": "NoiseScale",
+                    "Value": 0.30000001192092898,
+                    "Minimum": 0.0,
+                    "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "NoiseSpeedParam",
+                    "Name": "NoiseSpeed",
+                    "Value": 0.5,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "ApertureParam",
+                    "Name": "Aperture",
+                    "Value": 1.5,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "FocusDistanceParam",
+                    "Name": "FocusDistance",
+                    "Value": 0.800000011920929,
+                    "Minimum": 0.0,
+                    "Maximum": 4.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "FocusPowerParam",
+                    "Name": "FocusPower",
+                    "Value": 2.0,
+                    "Minimum": 1.0,
+                    "Maximum": 4.0
                 }
             ],
             "Groups": []
@@ -1099,11 +1261,61 @@
             "Children": []
         },
         {
+            "Type": "nap::RenderTarget",
+            "mID": "RenderTarget",
+            "ColorTexture": "ColorTexture",
+            "DepthTexture": "DepthTexture",
+            "SampleShading": true,
+            "Samples": "One",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        {
             "Type": "nap::RenderTexture2D",
-            "mID": "AmplitudeTexture",
+            "mID": "ColorTexture",
             "Usage": "Static",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "ColorTextureDOF",
+            "Usage": "Static",
+            "Width": 1920,
+            "Height": 1080,
+            "Format": "RGBA8",
+            "ColorSpace": "Linear",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    0.0
+                ]
+            }
+        },
+        {
+            "Type": "nap::RenderTexture2D",
+            "mID": "DummyTexture",
+            "Usage": "Static",
+            "Width": 240,
+            "Height": 135,
             "Format": "RGBA8",
             "ColorSpace": "Linear",
             "ClearColor": {
@@ -1139,8 +1351,8 @@
             "Visible": true,
             "SampleShading": true,
             "Title": "audiovisual",
-            "Width": 1280,
-            "Height": 720,
+            "Width": 1920,
+            "Height": 1080,
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
@@ -1179,7 +1391,7 @@
                     "Type": "nap::PlaneMeshVec4",
                     "mID": "PlaneMeshVec4",
                     "Usage": "Static",
-                    "CullMode": "None",
+                    "CullMode": "Back",
                     "PolygonMode": "Fill",
                     "Size": {
                         "x": 1.0,
@@ -1198,7 +1410,8 @@
                         ]
                     },
                     "Rows": 1023,
-                    "Columns": 255
+                    "Columns": 255,
+                    "ZBackward": true
                 },
                 {
                     "Type": "nap::VertexBufferVec4",
@@ -1271,7 +1484,8 @@
                         ]
                     },
                     "Rows": 1023,
-                    "Columns": 255
+                    "Columns": 255,
+                    "ZBackward": true
                 }
             ],
             "Children": []
@@ -1297,23 +1511,24 @@
                 },
                 {
                     "Entity": "WorldEntity",
-                    "InstanceProperties": [
-                        {
-                            "TargetComponent": "./TorusEntity:0/UpdateTransform",
-                            "TargetAttributes": [
-                                {
-                                    "Path": "UniformScale",
-                                    "Value": {
-                                        "Type": "nap::PointerInstancePropertyValue",
-                                        "mID": "override_76217faa",
-                                        "Value": "LowScaleParameter"
-                                    }
-                                }
-                            ]
-                        }
-                    ]
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "RenderCameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "RenderEntity",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::ShaderFromFile",
+            "mID": "CompositeShader",
+            "VertShader": "shaders/composite.vert",
+            "FragShader": "shaders/composite.frag",
+            "RestrictModuleIncludes": false
         },
         {
             "Type": "nap::ShaderFromFile",
@@ -1342,7 +1557,7 @@
             "Usage": "Static",
             "CullMode": "None",
             "PolygonMode": "Point",
-            "Radius": 10.0,
+            "Radius": 1.0,
             "Rings": 50,
             "Sectors": 50,
             "Color": {

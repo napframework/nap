@@ -24,6 +24,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMeshVec4)
 	RTTI_PROPERTY("Color",			&nap::PlaneMeshVec4::mColor,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Rows",			&nap::PlaneMeshVec4::mRows,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Columns",		&nap::PlaneMeshVec4::mColumns,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ZBackward",		&nap::PlaneMeshVec4::mZBackward,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
  
 namespace nap
@@ -95,9 +96,12 @@ namespace nap
 		// Fill vertex uv and position vertex buffers 
 		for (uint row = 0; row < row_vert_count; row++)
 		{
+			// Invert row index if ZBackward is enabled
+			uint r = (mZBackward) ? row_vert_count - row : row;
+
 			// Calculate y values
-			float ve_y = min_y + (row * inc_row_v);
-			float uv_y = row * inc_row_uv;
+			float ve_y = min_y + (r * inc_row_v);
+			float uv_y = r * inc_row_uv;
 
 			for (int col = 0; col < col_vert_count; col++)
 			{

@@ -14,16 +14,16 @@
 
 namespace nap
 {
-	class FFTMeshComponentInstance;
+	class AudioRoadComponentInstance;
 	class ComputeComponentInstance;
 
 	/**
-	 *	FFTMeshComponent
+	 *	AudioRoadComponent
 	 */
-	class NAPAPI FFTMeshComponent : public Component
+	class NAPAPI AudioRoadComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(FFTMeshComponent, FFTMeshComponentInstance)
+		DECLARE_COMPONENT(AudioRoadComponent, AudioRoadComponentInstance)
 	public:
 
 		/**
@@ -38,6 +38,9 @@ namespace nap
 		ResourcePtr<ParameterFloat>							mBumpAmount;
 		ResourcePtr<ParameterFloat>							mSwerveSpeed;
 		ResourcePtr<ParameterFloat>							mSwerveIntensity;
+		ResourcePtr<ParameterFloat>							mNoiseStrength;
+		ResourcePtr<ParameterFloat>							mNoiseScale;
+		ResourcePtr<ParameterFloat>							mNoiseSpeed;
 		ResourcePtr<ParameterFloat>							mCameraFloatHeight;
 		ResourcePtr<ParameterFloat>							mCameraFollowDistance;
 
@@ -50,25 +53,25 @@ namespace nap
 
 
 	/**
-	 * FFTMeshComponentInstance	
+	 * AudioRoadComponentInstance	
 	 */
-	class NAPAPI FFTMeshComponentInstance : public ComponentInstance
+	class NAPAPI AudioRoadComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		FFTMeshComponentInstance(EntityInstance& entity, Component& resource) :
+		AudioRoadComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource) { }
 
 		/**
-		 * Initialize FFTMeshComponentInstance based on the FFTMeshComponent resource
+		 * Initialize AudioRoadComponentInstance based on the AudioRoadComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 		 * @param errorState should hold the error message when initialization fails
-		 * @return if the FFTMeshComponentInstance is initialized successfully
+		 * @return if the AudioRoadComponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * update FFTMeshComponentInstance. This is called by NAP core automatically
+		 * update AudioRoadComponentInstance. This is called by NAP core automatically
 		 * @param deltaTime time in between frames in seconds
 		 */
 		virtual void update(double deltaTime) override;
@@ -83,19 +86,23 @@ namespace nap
 		 */
 		const VertexBufferVec4& getNormalBuffer() const					{ return *mCurrentNormalBuffer; }
 
-		ComponentInstancePtr<FFTAudioNodeComponent> mFFT = { this, &FFTMeshComponent::mFFT };
-		ComponentInstancePtr<FluxMeasurementComponent> mFluxMeasurement = { this, &FFTMeshComponent::mFluxMeasurement };
-		ComponentInstancePtr<ComputeComponent> mComputePopulateInstance = { this, &FFTMeshComponent::mComputePopulate };
-		ComponentInstancePtr<ComputeComponent> mComputeNormalsInstance = { this, &FFTMeshComponent::mComputeNormals };
-		ComponentInstancePtr<PerspCameraComponent> mCamera = { this, &FFTMeshComponent::mCamera };
+		ComponentInstancePtr<FFTAudioNodeComponent> mFFT = { this, &AudioRoadComponent::mFFT };
+		ComponentInstancePtr<FluxMeasurementComponent> mFluxMeasurement = { this, &AudioRoadComponent::mFluxMeasurement };
+		ComponentInstancePtr<ComputeComponent> mComputePopulateInstance = { this, &AudioRoadComponent::mComputePopulate };
+		ComponentInstancePtr<ComputeComponent> mComputeNormalsInstance = { this, &AudioRoadComponent::mComputeNormals };
+		ComponentInstancePtr<PerspCameraComponent> mCamera = { this, &AudioRoadComponent::mCamera };
 
 	private:
-		FFTMeshComponent* mResource = nullptr;
+		AudioRoadComponent* mResource = nullptr;
 
 		UniformFloatArrayInstance* mAmpsUniform = nullptr;
 		UniformFloatArrayInstance* mPrevAmpsUniform = nullptr;
 		UniformFloatInstance* mFluxUniform = nullptr;
 		UniformFloatInstance* mBumpUniform = nullptr;
+		UniformFloatInstance* mNoiseStrengthUniform = nullptr;
+		UniformFloatInstance* mNoiseScaleUniform = nullptr;
+		UniformFloatInstance* mNoiseSpeedUniform = nullptr;
+		UniformFloatInstance* mElapsedTimeUniform = nullptr;
 
 		UniformVec3Instance* mOriginUniform = nullptr;
 		UniformVec3Instance* mDirectionUniform = nullptr;

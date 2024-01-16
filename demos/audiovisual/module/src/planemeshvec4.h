@@ -75,6 +75,7 @@ namespace nap
 		EMemoryUsage	mUsage			= EMemoryUsage::Static;				///< Property: 'Usage' If the plane is uploaded once or frequently updated.
 		ECullMode		mCullMode		= ECullMode::None;					///< Property: 'CullMode' Plane cull mode, defaults to no culling
 		EPolygonMode	mPolygonMode	= EPolygonMode::Fill;				///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
+		bool			mZBackward		= false;							///< Property: 'ZBackward' Reverses the order in which the rows are placed
 
 	private:
 		RenderService* mRenderService;

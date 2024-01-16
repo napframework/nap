@@ -1,4 +1,4 @@
-#include "fftmeshcomponent.h"
+#include "audioroadcomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -10,24 +10,27 @@
 #include <glm/gtc/noise.hpp>
 #include <glm/gtx/vec_swizzle.hpp>
 
-// nap::FFTMeshComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::FFTMeshComponent)
-	RTTI_PROPERTY("ReferenceMesh",			&nap::FFTMeshComponent::mReferenceMesh,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FrameCount",				&nap::FFTMeshComponent::mFrameCount,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BumpAmount",				&nap::FFTMeshComponent::mBumpAmount,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SwerveSpeed",			&nap::FFTMeshComponent::mSwerveSpeed,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SwerveIntensity",		&nap::FFTMeshComponent::mSwerveIntensity,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FFT",					&nap::FFTMeshComponent::mFFT,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FluxMeasurement",		&nap::FFTMeshComponent::mFluxMeasurement,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ComputePopulate",		&nap::FFTMeshComponent::mComputePopulate,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ComputeNormals",			&nap::FFTMeshComponent::mComputeNormals,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Camera",					&nap::FFTMeshComponent::mCamera,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CameraFloatHeight",		&nap::FFTMeshComponent::mCameraFloatHeight,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CameraFollowDistance",	&nap::FFTMeshComponent::mCameraFollowDistance,	nap::rtti::EPropertyMetaData::Default)
+// nap::AudioRoadComponent run time class definition 
+RTTI_BEGIN_CLASS(nap::AudioRoadComponent)
+	RTTI_PROPERTY("ReferenceMesh",			&nap::AudioRoadComponent::mReferenceMesh,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FrameCount",				&nap::AudioRoadComponent::mFrameCount,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BumpAmount",				&nap::AudioRoadComponent::mBumpAmount,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SwerveSpeed",			&nap::AudioRoadComponent::mSwerveSpeed,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SwerveIntensity",		&nap::AudioRoadComponent::mSwerveIntensity,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("NoiseStrength",			&nap::AudioRoadComponent::mNoiseStrength,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("NoiseScale",				&nap::AudioRoadComponent::mNoiseScale,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("NoiseSpeed",				&nap::AudioRoadComponent::mNoiseSpeed,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FFT",					&nap::AudioRoadComponent::mFFT,						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FluxMeasurement",		&nap::AudioRoadComponent::mFluxMeasurement,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputePopulate",		&nap::AudioRoadComponent::mComputePopulate,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("ComputeNormals",			&nap::AudioRoadComponent::mComputeNormals,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Camera",					&nap::AudioRoadComponent::mCamera,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CameraFloatHeight",		&nap::AudioRoadComponent::mCameraFloatHeight,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CameraFollowDistance",	&nap::AudioRoadComponent::mCameraFollowDistance,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::FFTMeshComponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FFTMeshComponentInstance)
+// nap::AudioRoadComponentInstance run time class definition 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioRoadComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -36,16 +39,16 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	void FFTMeshComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void AudioRoadComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(ComputeComponent));
 	}
 
 
-	bool FFTMeshComponentInstance::init(utility::ErrorState& errorState)
+	bool AudioRoadComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Fetch resource
-		mResource = getComponent<FFTMeshComponent>();
+		mResource = getComponent<AudioRoadComponent>();
 
 		auto& mesh_instance = mResource->mReferenceMesh->getMeshInstance();
 		GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
@@ -103,6 +106,18 @@ namespace nap
 
 			mBumpUniform = positions_ubo->getOrCreateUniform<UniformFloatInstance>("bump");
 			if (!errorState.check(mBumpUniform != nullptr, "Missing uniform member with name `bump`"))
+				return false;
+
+			mNoiseStrengthUniform = positions_ubo->getOrCreateUniform<UniformFloatInstance>("noiseStrength");
+			if (!errorState.check(mNoiseStrengthUniform != nullptr, "Missing uniform member with name `noiseStrength`"))
+				return false;
+
+			mNoiseScaleUniform = positions_ubo->getOrCreateUniform<UniformFloatInstance>("noiseScale");
+			if (!errorState.check(mNoiseScaleUniform != nullptr, "Missing uniform member with name `noiseScale`"))
+				return false;
+
+			mElapsedTimeUniform = positions_ubo->getOrCreateUniform<UniformFloatInstance>("elapsedTime");
+			if (!errorState.check(mElapsedTimeUniform != nullptr, "Missing uniform member with name `elapsedTime`"))
 				return false;
 
 			mOriginUniform = positions_ubo->getOrCreateUniform<UniformVec3Instance>("origin");
@@ -193,10 +208,11 @@ namespace nap
 	}
 
 
-	void FFTMeshComponentInstance::update(double deltaTime)
+	void AudioRoadComponentInstance::update(double deltaTime)
 	{
 		float delta_time = static_cast<float>(deltaTime);
-		mElapsedTime += delta_time;
+		mElapsedTime += delta_time * mResource->mNoiseSpeed->mValue;
+		mElapsedTimeUniform->setValue(mElapsedTime);
 
 		uint cur_idx = mFrameIndex % static_cast<uint>(mPositionBuffers.size());
 		uint prev_idx = (mFrameIndex + 1) % static_cast<uint>(mPositionBuffers.size());
@@ -209,6 +225,8 @@ namespace nap
 		mPrevAmpsUniform->setValues(mAmpsUniform->getValues());
 		mAmpsUniform->setValues(amps_cut);
 		mBumpUniform->setValue(mResource->mBumpAmount->mValue);
+		mNoiseStrengthUniform->setValue(mResource->mNoiseStrength->mValue);
+		mNoiseScaleUniform->setValue(mResource->mNoiseScale->mValue);
 
 		const auto& flux_params = mFluxMeasurement->getParameterItems();
 		if (!flux_params.empty())

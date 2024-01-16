@@ -11,6 +11,8 @@
 #include <computecomponent.h>
 #include <parametergui.h>
 #include <depthsorter.h>
+#include <renderdofcomponent.h>
+#include <rendertotexturecomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audiovisualApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -39,6 +41,11 @@ namespace nap
 		if (!error.check(mRenderWindow != nullptr, "unable to find render window with name: %s", "Window"))
 			return false;
 
+		// Get the render target
+		mRenderTarget = mResourceManager->findObject<nap::RenderTarget>("RenderTarget");
+		if (!error.check(mRenderTarget != nullptr, "unable to find render target with name: %s", "RenderTarget"))
+			return false;
+
 		// Get the scene that contains our entities and components
 		mScene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
@@ -47,6 +54,15 @@ namespace nap
 		// Get the camera entity
 		mCameraEntity = mScene->findEntity("CameraEntity");
 		if (!error.check(mCameraEntity != nullptr, "unable to find entity with name: %s", "CameraEntity"))
+			return false;
+
+		mRenderCameraEntity = mScene->findEntity("RenderCameraEntity");
+		if (!error.check(mRenderCameraEntity != nullptr, "unable to find entity with name: %s", "RenderCameraEntity"))
+			return false;
+
+
+		mRenderEntity = mScene->findEntity("RenderEntity");
+		if (!error.check(mRenderEntity != nullptr, "unable to find entity with name: %s", "RenderEntity"))
 			return false;
 
 		mWorldEntity = mScene->findEntity("WorldEntity");
@@ -101,15 +117,16 @@ namespace nap
 		mWorldEntity->getComponentsOfTypeRecursive<RenderableComponentInstance>(render_comps);
 
 		// Headless
-		if (mFirstFrame)
+		if (mRenderService->beginHeadlessRecording())
 		{
-			auto cube_targets = mResourceManager->getObjects<CubeRenderTarget>();
-			if (!cube_targets.empty())
+			if (mFirstFrame)
 			{
-				assert(cube_targets.front() != nullptr);
-				auto& target = *cube_targets.front();
-				if (mRenderService->beginHeadlessRecording())
+				auto cube_targets = mResourceManager->getObjects<CubeRenderTarget>();
+				if (!cube_targets.empty())
 				{
+					assert(cube_targets.front() != nullptr);
+					auto target = cube_targets.front();
+
 					for (auto* comp : render_comps)
 					{
 						if (comp->get_type() != RTTI_OF(RenderableMeshComponentInstance))
@@ -122,15 +139,29 @@ namespace nap
 						if (resource->mID == "RenderStars")
 						{
 							auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-							target.render([rs = mRenderService, stars = comp](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view) {
+							target->render([rs = mRenderService, stars = comp](CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view) {
 								rs->renderObjects(target, projection, view, { stars }, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
 							});
 						}
 					}
-					mRenderService->endHeadlessRecording();
 				}
 			}
+
+			// Offscreen color pass -> Render all available geometry to the color texture bound to the render target.
+			mRenderTarget->beginRendering();
+			utility::ErrorState error_state;
+			auto lit_comps = mRenderService->filterObjects(render_comps, mLitRenderMask);
+			if (!mRenderAdvancedService->pushLights(lit_comps, error_state))
+				nap::Logger::error(error_state.toString().c_str());
+
+			auto& cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderTarget, cam, render_comps);
+			mRenderTarget->endRendering();
+
+			// DOF
+			mRenderEntity->getComponent<RenderDOFComponentInstance>().draw();
 		}
+		mRenderService->endHeadlessRecording();
 
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
@@ -138,16 +169,19 @@ namespace nap
 			// Begin render pass
 			mRenderWindow->beginRendering();
 
-			utility::ErrorState error_state;
-			auto lit_comps = mRenderService->filterObjects(render_comps, mLitRenderMask);
-			if (!mRenderAdvancedService->pushLights(lit_comps, error_state))
-				nap::Logger::error(error_state.toString().c_str());
+			// Get camera to render with
+			auto& cam = mRenderCameraEntity->getComponent<CameraComponentInstance>();
 
-			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps);
+			// Get composite component responsible for rendering final texturedddddd
+			auto* composite_comp = mRenderEntity->findComponentByID<RenderToTextureComponentInstance>("BlendTogether");
+
+			// Render composite component
+			// The nap::RenderToTextureComponentInstance transforms a plane to match the window dimensions and applies the texture to it.
+			mRenderService->renderObjects(*mRenderWindow, cam, { composite_comp });
 		
 			// GUI
-			mGuiService->draw();
+			if (!mHideGUI)
+				mGuiService->draw();
 
 			// Stop render pass
 			mRenderWindow->endRendering();
@@ -180,6 +214,10 @@ namespace nap
 			// f is pressed, toggle full-screen
 			if (press_event->mKey == nap::EKeyCode::KEY_f)
 				mRenderWindow->toggleFullscreen();
+
+			// h is pressed, toggle GUI
+			if (press_event->mKey == nap::EKeyCode::KEY_h)
+				mHideGUI = !mHideGUI;
 		}
 		// Add event, so it can be forwarded on update
 		mInputService->addEvent(std::move(inputEvent));

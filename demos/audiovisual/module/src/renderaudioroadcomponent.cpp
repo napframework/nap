@@ -1,4 +1,4 @@
-#include "renderfftmeshcomponent.h"
+#include "renderaudioroadcomponent.h"
 
 // External Includes
 #include <entity.h>
@@ -7,13 +7,13 @@
 #include <planemeshvec4.h>
 #include <mesh.h>
 
-// nap::RenderFFTMeshComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderFFTMeshComponent)
-	RTTI_PROPERTY("FFTMeshComponent",			&nap::RenderFFTMeshComponent::mFFTMeshComponent,			nap::rtti::EPropertyMetaData::Required)
+// nap::RenderAudioRoadComponent run time class definition 
+RTTI_BEGIN_CLASS(nap::RenderAudioRoadComponent)
+	RTTI_PROPERTY("AudioRoadComponent",			&nap::RenderAudioRoadComponent::mAudioRoadComponent,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
-// nap::RenderFFTMeshComponentInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFFTMeshComponentInstance)
+// nap::RenderAudioRoadComponentInstance run time class definition 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAudioRoadComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
@@ -22,10 +22,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	bool RenderFFTMeshComponentInstance::init(utility::ErrorState& errorState)
+	bool RenderAudioRoadComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Fetch resource
-		mResource = getComponent<RenderFFTMeshComponent>();
+		mResource = getComponent<RenderAudioRoadComponent>();
 
 		// Force vec4 plane mesh
 		if (!errorState.check(mResource->mMesh.get()->get_type() == RTTI_OF(PlaneMeshVec4), "Mesh must be of type `nap::PlaneMeshVec4`"))
@@ -38,7 +38,7 @@ namespace nap
 	}
 
 
-	void RenderFFTMeshComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	void RenderAudioRoadComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		// Get material to work with
 		if (!mRenderableMesh.isValid())
@@ -86,13 +86,13 @@ namespace nap
 			if (position_attr_binding_idx >= 0)
 			{
 				// Overwrite the VkBuffer under the previously fetched position vertex attribute index.
-				vertex_buffers[position_attr_binding_idx] = mFFTMeshComponent->getPositionBuffer().getBuffer();
+				vertex_buffers[position_attr_binding_idx] = mAudioRoadComponent->getPositionBuffer().getBuffer();
 			}
 
 			// Repeat for the normal attribute
 			int normal_attr_binding_idx = mRenderableMesh.getVertexBufferBindingIndex(vertexid::normal);
 			if (normal_attr_binding_idx >= 0)
-				vertex_buffers[normal_attr_binding_idx] = mFFTMeshComponent->getNormalBuffer().getBuffer();
+				vertex_buffers[normal_attr_binding_idx] = mAudioRoadComponent->getNormalBuffer().getBuffer();
 
 			// Get offsets
 			const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();

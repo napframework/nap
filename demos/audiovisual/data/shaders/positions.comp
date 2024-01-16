@@ -1,7 +1,13 @@
 // This Source Code Form is subject to the terms of the Mozilla Public
 // License, v. 2.0. If a copy of the MPL was not distributed with this
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
-#version 450
+#version 450 core
+
+// Extensions
+#extension GL_GOOGLE_include_directive : enable
+
+// Includes
+#include "noise.glslinc"
 
 // NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
 // size supported by the device on pipeline creation.
@@ -35,6 +41,9 @@ uniform UBO
 	float prevAmps[COLUMN_COUNT];
 	float flux;
 	float bump;
+	float elapsedTime;
+	float noiseStrength;
+	float noiseScale;
 } ubo;
 
 const float TWO_PI = 6.283185;
@@ -59,11 +68,14 @@ void main()
 		float height = weighted_sample(ubo.amps[gid], gid);
 		height = mix(prev * 0.95, height, 0.5) * ubo.bump;
 
+		float uvx = (gid%COLUMN_COUNT)/float(COLUMN_COUNT);
+		vec4 n = simplexd(vec3((uvx*2.0-1.0)*ubo.noiseScale, ubo.elapsedTime, 0.0));
+		height += n.w * ubo.noiseStrength;
+
 		vec3 forward = ubo.direction;
 		vec3 right = ubo.tangent;
 		vec3 up = ubo.up;
 
-		float uvx = (gid%COLUMN_COUNT)/float(COLUMN_COUNT);
 		vec3 p = ubo.origin + (uvx * right - right * 0.5) + height * up + forward * cell_size.y;
 		outpositions[gid] = vec4(p, ubo.flux);
 
