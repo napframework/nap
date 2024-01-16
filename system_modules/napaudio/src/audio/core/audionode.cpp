@@ -14,16 +14,9 @@ namespace nap
 {
 	namespace audio
 	{
+
 		Node::Node(NodeManager& manager) : Process(manager)
 		{
-			manager.registerNode(*this);
-		}
-		
-		
-		Node::~Node()
-		{
-			if (mRegisteredWithNodeManager.load())
-				getNodeManager().unregisterNode(*this);
 		}
 		
 		
@@ -40,9 +33,7 @@ namespace nap
 			
 			bufferSizeChanged(bufferSize);
 		}
-		
-		
+
 	}
-	
 }
 

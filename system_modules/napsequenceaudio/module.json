@@ -3,6 +3,6 @@
     "mID": "ModuleInfo",
     "RequiredModules": [
         "napsequence",
-        "napaudio"
+        "napportaudio"
     ]
 }

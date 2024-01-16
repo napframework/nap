@@ -5,7 +5,7 @@
     "Version": "1.0.0",
     "RequiredModules": [
         "napapp",
-        "napaudio",
+        "napportaudio",
         "napimgui"
     ],
     "Data": "data/audioanalysis.json",

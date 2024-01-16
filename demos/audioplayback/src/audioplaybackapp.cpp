@@ -37,7 +37,7 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
-        mAudioService	= getCore().getService<nap::audio::AudioService>();
+        mAudioService	= getCore().getService<nap::audio::PortAudioService>();
 
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
@@ -57,7 +57,7 @@ namespace nap
         mPitch = playbackComponent->getPitch();
         mPanning = playbackComponent->getStereoPanning();
 
-        mAudioDeviceSettingsGui = std::make_unique<audio::AudioDeviceSettingsGui>(*getCore().getService<audio::AudioService>(), false);
+        mAudioDeviceSettingsGui = std::make_unique<audio::AudioDeviceSettingsGui>(*getCore().getService<audio::PortAudioService>(), false);
 
 		return true;
 	}

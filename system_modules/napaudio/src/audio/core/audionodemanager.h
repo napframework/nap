@@ -32,7 +32,7 @@ namespace nap
 		 */
 		class NAPAPI NodeManager final
 		{
-			friend class Node;
+			friend class Process;
 			friend class OutputNode;
 			friend class InputNode;
 		
@@ -190,11 +190,11 @@ namespace nap
 		
 		
 		private:
-			// Used by the nodes to register themselves on construction
-			void registerNode(Node& node);
+			// Used by the nodes and audio processes to register themselves on construction
+			void registerProcess(Process& process);
 			
-			// Used by the nodes to unregister themselves on destrction
-			void unregisterNode(Node& node);
+			// Used by the nodes and audio processes to unregister themselves on destruction
+			void unregisterProcess(Process& process);
 		
 		private:
 			/*
@@ -230,10 +230,10 @@ namespace nap
 			
 			std::vector<float*> mInputBuffer; //  Pointing to the audio input that this node manager has to process. The format is a non-interleaved array containing a float array for each channel.
 			
-			std::set<Node*> mNodes; // all the audio nodes managed by this node manager
+			std::set<Process*> mProcesses; // all the audio processes managed by this node manager
 			std::set<Process*> mRootProcesses; // the nodes that will be processed directly by the manager on every audio callback
 			
-			nap::TaskQueue mTaskQueue = { 256 }; // Queue with lambda functions to be executed before processing the next itnernal buffer.
+			nap::TaskQueue mTaskQueue = { 256 }; // Queue with lambda functions to be executed before processing the next internal buffer.
 			DeletionQueue& mDeletionQueue; // Deletion queue used to safely create and destruct nodes in a threadsafe manner.
 		};
 		

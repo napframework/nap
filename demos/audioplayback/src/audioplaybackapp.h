@@ -70,7 +70,7 @@ namespace nap
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-        audio::AudioService* mAudioService = nullptr;                   //< Manages audio devices and processing
+        audio::PortAudioService* mAudioService = nullptr;               //< Manages audio devices and processing
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window
         ObjectPtr<audio::AudioBufferResource> mBuffer = nullptr;        //< Pointer to the audio file in memory
         ObjectPtr<nap::EntityInstance> mAudioEntity = nullptr;
