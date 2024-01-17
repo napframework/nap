@@ -107,28 +107,6 @@
                             "MinHertz": 0.0,
                             "MaxHertz": 2000.0,
                             "SmoothTime": 0.0333000011742115
-                        },
-                        {
-                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
-                            "mID": "FilterParameterItem_785b0a01",
-                            "Parameter": "MidScaleParameter",
-                            "Multiplier": "MidMultiplyParameter",
-                            "Offset": "OffsetParameter",
-                            "Decay": "",
-                            "MinHertz": 4000.0,
-                            "MaxHertz": 10000.0,
-                            "SmoothTime": 0.05000000074505806
-                        },
-                        {
-                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
-                            "mID": "FilterParameterItem_5ba51e75",
-                            "Parameter": "HighScaleParameter",
-                            "Multiplier": "HighMultiplyParameter",
-                            "Offset": "OffsetParameter",
-                            "Decay": "",
-                            "MinHertz": 20000.0,
-                            "MaxHertz": 24000.0,
-                            "SmoothTime": 0.0333000011742115
                         }
                     ],
                     "Enable": true
@@ -303,7 +281,18 @@
                             "y": 0.0
                         }
                     },
-                    "AudioRoadComponent": "./AudioRoad"
+                    "AudioRoadComponent": "./AudioRoad",
+                    "Ambient": "Ambient",
+                    "Diffuse": "Diffuse",
+                    "Specular": "Specular",
+                    "FresnelColor": "FresnelColor",
+                    "Fresnel": "Fresnel",
+                    "Shininess": "Shininess",
+                    "Alpha": "Alpha",
+                    "Highlight": "Highlight",
+                    "HighlightLength": "LowScaleParameter",
+                    "Reflection": "Reflection",
+                    "Environment": "Environment"
                 },
                 {
                     "Type": "nap::ComputeComponent",
@@ -494,7 +483,18 @@
                             "y": 0.0
                         }
                     },
-                    "AudioRoadComponent": "./AudioRoad"
+                    "AudioRoadComponent": "./AudioRoad",
+                    "Ambient": "",
+                    "Diffuse": "",
+                    "Specular": "",
+                    "FresnelColor": "",
+                    "Fresnel": "",
+                    "Shininess": "",
+                    "Alpha": "",
+                    "Highlight": "",
+                    "HighlightLength": "",
+                    "Reflection": "",
+                    "Environment": ""
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
@@ -745,12 +745,6 @@
                                 "mID": "FRAGUBO_c347b4d6",
                                 "Name": "FRAGUBO",
                                 "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "blend_0c2dee37",
-                                        "Name": "blend",
-                                        "Value": 0.0
-                                    },
                                     {
                                         "Type": "nap::UniformFloat",
                                         "mID": "abberation_8ff627ff",
@@ -1034,6 +1028,38 @@
             "DepthMode": "InheritFromBlendMode"
         },
         {
+            "Type": "nap::ParameterFloat",
+            "mID": "HighMultiplyParameter",
+            "Name": "HighMultiply",
+            "Value": 8.0,
+            "Minimum": 0.0,
+            "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "HighScaleParameter",
+            "Name": "High",
+            "Value": 1.0,
+            "Minimum": 0.0,
+            "Maximum": 2.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "MidMultiplyParameter",
+            "Name": "MidMultiply",
+            "Value": 4.0,
+            "Minimum": 0.0,
+            "Maximum": 10.0
+        },
+        {
+            "Type": "nap::ParameterFloat",
+            "mID": "MidScaleParameter",
+            "Name": "Mid",
+            "Value": 1.0,
+            "Minimum": 0.0,
+            "Maximum": 2.0
+        },
+        {
             "Type": "nap::ParameterGUI",
             "mID": "ParameterGUI",
             "Serializable": true,
@@ -1045,49 +1071,17 @@
             "Parameters": [
                 {
                     "Type": "nap::ParameterFloat",
-                    "mID": "MidScaleParameter",
-                    "Name": "Mid",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "MidMultiplyParameter",
-                    "Name": "MidMultiply",
-                    "Value": 4.0,
-                    "Minimum": 0.0,
-                    "Maximum": 10.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
                     "mID": "LowScaleParameter",
                     "Name": "Low",
-                    "Value": 1.0,
+                    "Value": 0.0,
                     "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "HighScaleParameter",
-                    "Name": "High",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "HighMultiplyParameter",
-                    "Name": "HighMultiply",
-                    "Value": 8.0,
-                    "Minimum": 0.0,
-                    "Maximum": 10.0
+                    "Maximum": 0.5
                 },
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "OffsetParameter",
                     "Name": "Offset",
-                    "Value": 0.5,
+                    "Value": 0.10000000149011612,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 }
@@ -1113,65 +1107,182 @@
                     "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "BumpAmountParameter",
-                    "Name": "BumpAmount",
-                    "Value": 1.0,
-                    "Minimum": 0.0,
-                    "Maximum": 5.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SwerveIntensityParameter",
-                    "Name": "SwerveIntensity",
-                    "Value": 0.5,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "SwerveSpeedParam",
-                    "Name": "",
-                    "Value": 0.5,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "NoiseStrengthParam",
-                    "Name": "NoiseStrength",
-                    "Value": 0.25,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "NoiseScaleParam",
-                    "Name": "NoiseScale",
-                    "Value": 0.30000001192092898,
-                    "Minimum": 0.0,
-                    "Maximum": 2.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "NoiseSpeedParam",
-                    "Name": "NoiseSpeed",
-                    "Value": 0.5,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                },
-                {
-                    "Type": "nap::ParameterInt",
-                    "mID": "RenderIndexParam",
-                    "Name": "RenderIndex",
-                    "Value": 0,
-                    "Minimum": 0,
-                    "Maximum": 1
                 }
             ],
             "Groups": [
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "MeshParameters",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterInt",
+                            "mID": "RenderIndexParam",
+                            "Name": "RenderIndex",
+                            "Value": 0,
+                            "Minimum": 0,
+                            "Maximum": 1
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "NoiseSpeedParam",
+                            "Name": "NoiseSpeed",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "NoiseScaleParam",
+                            "Name": "NoiseScale",
+                            "Value": 0.30000001192092898,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "NoiseStrengthParam",
+                            "Name": "NoiseStrength",
+                            "Value": 0.25,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SwerveSpeedParam",
+                            "Name": "",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 2.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "SwerveIntensityParameter",
+                            "Name": "SwerveIntensity",
+                            "Value": 0.5,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "BumpAmountParameter",
+                            "Name": "BumpAmount",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 5.0
+                        }
+                    ],
+                    "Groups": []
+                },
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "MaterialParameters",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterRGBAColorFloat",
+                            "mID": "Ambient",
+                            "Name": "Ambient",
+                            "Value": {
+                                "Values": [
+                                    0.07058823853731156,
+                                    0.0,
+                                    0.05098039284348488,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "Diffuse",
+                            "Name": "Diffuse",
+                            "Value": {
+                                "Values": [
+                                    0.14901961386203767,
+                                    0.3607843220233917,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "Specular",
+                            "Name": "Specular",
+                            "Value": {
+                                "Values": [
+                                    0.501960813999176,
+                                    0.20000000298023225,
+                                    0.9019607901573181
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Shininess",
+                            "Name": "Shininess",
+                            "Value": 48.0,
+                            "Minimum": 1.0,
+                            "Maximum": 128.0
+                        },
+                        {
+                            "Type": "nap::ParameterBool",
+                            "mID": "Environment",
+                            "Name": "Environment",
+                            "Value": true
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Reflection",
+                            "Name": "Reflection",
+                            "Value": 0.6499999761581421,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "Highlight",
+                            "Name": "Highlight",
+                            "Value": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterRGBColorFloat",
+                            "mID": "FresnelColor",
+                            "Name": "FresnelColor",
+                            "Value": {
+                                "Values": [
+                                    0.501960813999176,
+                                    0.10196078568696976,
+                                    0.7019608020782471
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "Alpha",
+                            "Name": "Alpha",
+                            "Value": 1.0,
+                            "Minimum": 0.0,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterVec2",
+                            "mID": "Fresnel",
+                            "Name": "Fresnel",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 4.0
+                            },
+                            "Clamp": true,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        }
+                    ],
+                    "Groups": []
+                },
                 {
                     "Type": "nap::ParameterGroup",
                     "mID": "DOFParameters",

@@ -65,5 +65,6 @@ void main()
 	float coc_bias = (ubo.aperture * focal * (near - focus)) / ((focus * focal) * near);
 	float coc = abs(frag_depth * coc_scale + coc_bias);
 
-	out_Color = blur(colorTexture, frag_col, min(pow(coc, ubo.focusPower), 4.0));
+	out_Color = blur(colorTexture, frag_col, min(pow(coc, max(ubo.focusPower, 1.0)), 4.0));
+	//out_Color = vec4(passUV0.x, passUV0.y, 0.0, 0.0);
 }

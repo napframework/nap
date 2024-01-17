@@ -20,9 +20,14 @@ namespace nap
 	class RenderService;
 
 	/**
+	 * Like `nap::PlaneMesh` but with `vec4` vertex attributes instead of `vec3` for positions, normals and UVs.
+	 * `vec4` vertex attributes ensure 16-byte data alignment when the buffers are bound to a compute shader
+	 * material.
+	 * 
 	 * Predefined rectangular mesh with a specific size centered at the origin on the xy axis. 
 	 * When there is no size given the mesh is a uniform 1m2. The UV coordinates are always 0-1.
 	 * By default the plane has 1 row and 1 column.
+	 *
 	 */
 	class NAPAPI PlaneMeshVec4 : public IMesh
 	{

@@ -2,14 +2,15 @@
 
 #include <renderablemeshcomponent.h>
 #include <uniforminstance.h>
-#include <AudioRoadcomponent.h>
+#include <audioroadcomponent.h>
 
 namespace nap
 {
 	class RenderAudioRoadComponentInstance;
 
 	/**
-	 *	RenderAudioRoadComponent
+	 * Renders a `nap::AudioRoadComponent` with the specified Mesh. Offers handy parameter mappings for material properties.
+	 * The position and normal vertex buffers are pulled from the audio road component.
 	 */
 	class NAPAPI RenderAudioRoadComponent : public RenderableMeshComponent
 	{
@@ -17,11 +18,24 @@ namespace nap
 		DECLARE_COMPONENT(RenderAudioRoadComponent, RenderAudioRoadComponentInstance)
 	public:
 		ComponentPtr<AudioRoadComponent> mAudioRoadComponent;
+
+		ResourcePtr<ParameterRGBAColorFloat>	mAmbient;
+		ResourcePtr<ParameterRGBColorFloat>		mDiffuse;
+		ResourcePtr<ParameterRGBColorFloat>		mSpecular;
+		ResourcePtr<ParameterRGBColorFloat>		mHighlight;
+		ResourcePtr<ParameterRGBColorFloat>		mFresnelColor;
+		ResourcePtr<ParameterVec2>				mFresnel;
+		ResourcePtr<ParameterFloat>				mShininess;
+		ResourcePtr<ParameterFloat>				mReflection;
+		ResourcePtr<ParameterFloat>				mHighlightLength;
+		ResourcePtr<ParameterFloat>				mAlpha;
+		ResourcePtr<ParameterBool>				mEnvironment;
 	};
 
 
 	/**
-	 * RenderAudioRoadComponentInstance	
+	 * Renders a `nap::AudioRoadComponent` with the specified Mesh. Offers handy parameter mappings for material properties.
+	 * The position and normal vertex buffers are pulled from the audio road component.
 	 */
 	class NAPAPI RenderAudioRoadComponentInstance : public RenderableMeshComponentInstance
 	{
@@ -47,5 +61,44 @@ namespace nap
 
 	private:
 		RenderAudioRoadComponent* mResource = nullptr;
+
+		// Update handlers
+		template<typename T>
+		void onUniformValueUpdate(T value, TypedUniformValueInstance<T>* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
+
+		void onUniformRGBColorUpdate(RGBColorFloat value, UniformVec3Instance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value.toVec3());
+		}
+
+		void onUniformRGBAColorUpdate(RGBAColorFloat value, UniformVec4Instance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value.toVec4());
+		}
+
+		void onUniformBoolUpdate(bool value, UniformUIntInstance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
+
+		// Slots
+		Slot<RGBAColorFloat>	mAmbientChangedSlot;
+		Slot<RGBColorFloat>		mDiffuseChangedSlot;
+		Slot<RGBColorFloat>		mSpecularChangedSlot;
+		Slot<RGBColorFloat>		mHighlightChangedSlot;
+		Slot<RGBColorFloat>		mFresnelColorChangedSlot;
+		Slot<glm::vec2>			mFresnelChangedSlot;
+		Slot<float>				mShininessChangedSlot;
+		Slot<float>				mReflectionChangedSlot;
+		Slot<float>				mHighlightLengthChangedSlot;
+		Slot<float>				mAlphaChangedSlot;
+		Slot<bool>				mEnvironmentChangedSlot;
 	};
 }

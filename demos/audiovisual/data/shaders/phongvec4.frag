@@ -56,6 +56,7 @@ uniform UBO
 	float	shininess;						//< Shininess
 	float	alpha;							//< Alpha
 	float	reflection;						//< Reflection
+	float	highlightLength;				//< Highlight Length
 	uint	environment;					//< Whether to sample an environment map
 } ubo;
 
@@ -72,8 +73,6 @@ out vec4 out_Color;
 uniform sampler2DShadow shadowMaps[MAX_LIGHTS];
 uniform samplerCubeShadow cubeShadowMaps[MAX_LIGHTS];
 uniform samplerCube environmentMap;
-
-const float highlightLength = 0.015;
 
 void main() 
 {
@@ -168,7 +167,7 @@ void main()
 	}
 
 	color_result = mix(color_result, ubo.fresnelColor, passFresnel);
-	color_result = mix(color_result, ubo.highlight, smoothstep(1.0-highlightLength, 1.0, passUV0.y));
+	color_result = mix(color_result, ubo.highlight, smoothstep(1.0-clamp(ubo.highlightLength*0.1, 0.0, 1.0), 1.0, passUV0.y));
 	out_Color = vec4(color_result, ubo.alpha);
 }
  

@@ -99,7 +99,9 @@ namespace nap
 		MaterialInstanceResource	mMaterialInstanceResource;			///< Instance of the material, used to override uniforms for this instance
 		MaterialInstance			mMaterialInstance;					///< The MaterialInstance as created from the resource.
 
-		RenderTarget				mDOFRenderTarget;					///< Internally managed render target
+		RenderTexture2D				mIntermediateTexture;				///< Internally managed render texture
+		RenderTarget				mRenderTargetA;						///< Internally managed render target
+		RenderTarget				mRenderTargetB;						///< Internally managed render target
 		RenderableMesh				mRenderableMesh;					///< Mesh / Material combination
 		std::unique_ptr<NoMesh>		mNoMesh;							///< Empty mesh
 
@@ -107,6 +109,7 @@ namespace nap
 		Sampler2DInstance*			mDepthTextureSampler = nullptr;		///< Sampler instance for depth textures in the blur material
 		UniformVec2Instance*		mTextureSizeUniform = nullptr;		///< Texture size uniform of the blur material
 		UniformVec2Instance*		mNearFarUniform = nullptr;			///< Near and far clipping plane values of camera
+		UniformVec2Instance*		mDirectionUniform = nullptr;		///< Blur direction
 		UniformFloatInstance*		mApertureUniform = nullptr;			///< Aperture
 		UniformFloatInstance*		mFocalLengthUniform = nullptr;		///< Focal Length
 		UniformFloatInstance*		mFocusDistanceUniform = nullptr;	///< Focus Distance

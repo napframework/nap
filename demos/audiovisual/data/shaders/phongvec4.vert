@@ -44,6 +44,7 @@ uniform UBO
 	float	shininess;						//< Shininess
 	float	alpha;							//< Alpha
 	float	reflection;						//< Reflection
+	float	highlightLength;				//< Highlight Length
 	uint	environment;					//< Whether to sample an environment map
 } ubo;
 

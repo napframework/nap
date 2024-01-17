@@ -9,7 +9,18 @@
 
 // nap::RenderAudioRoadComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderAudioRoadComponent)
-	RTTI_PROPERTY("AudioRoadComponent",			&nap::RenderAudioRoadComponent::mAudioRoadComponent,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AudioRoadComponent",		&nap::RenderAudioRoadComponent::mAudioRoadComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Ambient",				&nap::RenderAudioRoadComponent::mAmbient,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Diffuse",				&nap::RenderAudioRoadComponent::mDiffuse,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Specular",				&nap::RenderAudioRoadComponent::mSpecular,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FresnelColor",			&nap::RenderAudioRoadComponent::mFresnelColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Fresnel",				&nap::RenderAudioRoadComponent::mFresnel,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shininess",				&nap::RenderAudioRoadComponent::mShininess,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Alpha",					&nap::RenderAudioRoadComponent::mAlpha,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Highlight",				&nap::RenderAudioRoadComponent::mHighlight,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightLength",		&nap::RenderAudioRoadComponent::mHighlightLength,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Reflection",				&nap::RenderAudioRoadComponent::mReflection,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Environment",			&nap::RenderAudioRoadComponent::mEnvironment,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::RenderAudioRoadComponentInstance run time class definition 
@@ -33,6 +44,101 @@ namespace nap
 
 		if (!RenderableMeshComponentInstance::init(errorState))
 			return false;
+
+		/**
+		 * Assume BlinnPhongShader material interface
+		 */
+		auto* uni = getMaterialInstance().getOrCreateUniform("UBO");
+		if (!errorState.check(uni != nullptr, "Missing uniform struct with name `UBO`"))
+			return false;
+
+		auto* ambient = uni->getOrCreateUniform<UniformVec4Instance>("ambient");
+		if (ambient != nullptr && mResource->mAmbient != nullptr)
+		{
+			ambient->setValue(mResource->mAmbient->mValue);
+			mAmbientChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBAColorUpdate, this, std::placeholders::_1, ambient));
+			mResource->mAmbient->valueChanged.connect(mAmbientChangedSlot);
+		}
+
+		auto* diffuse = uni->getOrCreateUniform<UniformVec3Instance>("diffuse");
+		if (diffuse != nullptr && mResource->mDiffuse != nullptr)
+		{
+			diffuse->setValue(mResource->mDiffuse->mValue);
+			mDiffuseChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, diffuse));
+			mResource->mDiffuse->valueChanged.connect(mDiffuseChangedSlot);
+		}
+
+		auto* specular = uni->getOrCreateUniform<UniformVec3Instance>("specular");
+		if (specular != nullptr && mResource->mSpecular != nullptr)
+		{
+			specular->setValue(mResource->mSpecular->mValue);
+			mSpecularChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, specular));
+			mResource->mSpecular->valueChanged.connect(mSpecularChangedSlot);
+		}
+
+		auto* highlight = uni->getOrCreateUniform<UniformVec3Instance>("highlight");
+		if (highlight != nullptr && mResource->mHighlight != nullptr)
+		{
+			highlight->setValue(mResource->mHighlight->mValue);
+			mHighlightChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, highlight));
+			mResource->mHighlight->valueChanged.connect(mHighlightChangedSlot);
+		}
+
+		auto* fresnel_color = uni->getOrCreateUniform<UniformVec3Instance>("fresnelColor");
+		if (fresnel_color != nullptr && mResource->mFresnelColor != nullptr)
+		{
+			fresnel_color->setValue(mResource->mFresnelColor->mValue);
+			mFresnelColorChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, fresnel_color));
+			mResource->mFresnelColor->valueChanged.connect(mFresnelColorChangedSlot);
+		}
+
+		auto* fresnel = uni->getOrCreateUniform<UniformVec2Instance>("fresnel");
+		if (fresnel != nullptr && mResource->mFresnel != nullptr)
+		{
+			fresnel->setValue(mResource->mFresnel->mValue);
+			mFresnelChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformValueUpdate<glm::vec2>, this, std::placeholders::_1, fresnel));
+			mResource->mFresnel->valueChanged.connect(mFresnelChangedSlot);
+		}
+
+		auto* shininess = uni->getOrCreateUniform<UniformFloatInstance>("shininess");
+		if (shininess != nullptr && mResource->mShininess != nullptr)
+		{
+			shininess->setValue(mResource->mShininess->mValue);
+			mShininessChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, shininess));
+			mResource->mShininess->valueChanged.connect(mShininessChangedSlot);
+		}
+
+		auto* reflection = uni->getOrCreateUniform<UniformFloatInstance>("reflection");
+		if (reflection != nullptr && mResource->mReflection != nullptr)
+		{
+			reflection->setValue(mResource->mReflection->mValue);
+			mReflectionChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, reflection));
+			mResource->mReflection->valueChanged.connect(mReflectionChangedSlot);
+		}
+
+		auto* highlight_length = uni->getOrCreateUniform<UniformFloatInstance>("highlightLength");
+		if (highlight_length != nullptr && mResource->mHighlightLength != nullptr)
+		{
+			highlight_length->setValue(mResource->mHighlightLength->mValue);
+			mHighlightLengthChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, highlight_length));
+			mResource->mHighlightLength->valueChanged.connect(mHighlightLengthChangedSlot);
+		}
+
+		auto* alpha = uni->getOrCreateUniform<UniformFloatInstance>("alpha");
+		if (alpha != nullptr && mResource->mAlpha != nullptr)
+		{
+			alpha->setValue(mResource->mAlpha->mValue);
+			mAlphaChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformValueUpdate<float>, this, std::placeholders::_1, alpha));
+			mResource->mAlpha->valueChanged.connect(mAlphaChangedSlot);
+		}
+
+		auto* environment = uni->getOrCreateUniform<UniformUIntInstance>("environment");
+		if (environment != nullptr && mResource->mEnvironment != nullptr)
+		{
+			environment->setValue(mResource->mEnvironment->mValue);
+			mEnvironmentChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformBoolUpdate, this, std::placeholders::_1, environment));
+			mResource->mEnvironment->valueChanged.connect(mEnvironmentChangedSlot);
+		}
 
 		return true;
 	}

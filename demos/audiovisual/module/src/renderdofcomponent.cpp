@@ -43,7 +43,9 @@ namespace nap
 {
 	RenderDOFComponentInstance::RenderDOFComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
-		mDOFRenderTarget(*entity.getCore()),
+		mRenderTargetA(*entity.getCore()),
+		mRenderTargetB(*entity.getCore()),
+		mIntermediateTexture(*entity.getCore()),
 		mNoMesh(std::make_unique<NoMesh>(*entity.getCore()))
 	{ }
 
@@ -86,7 +88,11 @@ namespace nap
 
 		// Get texture size uniform
 		mTextureSizeUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::dof::textureSize);
-		if (!errorState.check(mTextureSizeUniform != nullptr, "Missing uniform vec2 'direction' in uniform UBO"))
+		if (!errorState.check(mTextureSizeUniform != nullptr, "Missing uniform vec2 'textureSize' in uniform UBO"))
+			return false;
+
+		mDirectionUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::dof::direction);
+		if (!errorState.check(mDirectionUniform != nullptr, "Missing uniform vec2 'direction' in uniform UBO"))
 			return false;
 
 		mNearFarUniform = ubo_struct->getOrCreateUniform<UniformVec2Instance>(uniform::dof::nearFar);
@@ -127,16 +133,34 @@ namespace nap
 		if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 			return false;
 
-		// Create render target
-		mDOFRenderTarget.mID = utility::stringFormat("%s_DOF_%s", RTTI_OF(RenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
-		mDOFRenderTarget.mColorTexture = mResource->mOutputTexture;
-		mDOFRenderTarget.mClearColor = mResource->mInputTarget->getClearColor();
-		mDOFRenderTarget.mSampleShading = false;
-		mDOFRenderTarget.mRequestedSamples = ERasterizationSamples::One;
-		if (!mDOFRenderTarget.init(errorState))
+		// Create intermediate texture
+		mIntermediateTexture.mID = utility::stringFormat("%s_DOF_%s", RTTI_OF(RenderTexture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mIntermediateTexture.mWidth = mResource->mInputTarget->getBufferSize().x;
+		mIntermediateTexture.mHeight = mResource->mInputTarget->getBufferSize().y;
+		mIntermediateTexture.mColorFormat = mResource->mInputTarget->getColorTexture().mColorFormat;
+		mIntermediateTexture.mUsage = Texture::EUsage::Static;
+		if (!mIntermediateTexture.init(errorState))
 		{
-			errorState.fail("%s: Failed to initialize internal render target", mDOFRenderTarget.mID.c_str());
+			errorState.fail("%s: Failed to initialize internal render target", mIntermediateTexture.mID.c_str());
 			return false;
+		}
+
+		// Create render targets
+		mRenderTargetA.mColorTexture = &mIntermediateTexture;
+		mRenderTargetB.mColorTexture = mResource->mOutputTexture;
+		std::vector<RenderTarget*> targets = { &mRenderTargetA, &mRenderTargetB };
+		for (uint i = 0; i< targets.size(); i++)
+		{
+			auto* rt = targets[i];
+			rt->mID = utility::stringFormat("%s_DOF_%s", RTTI_OF(RenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());	
+			rt->mClearColor = mResource->mInputTarget->getClearColor();
+			rt->mSampleShading = false;
+			rt->mRequestedSamples = ERasterizationSamples::One;
+			if (!rt->init(errorState))
+			{
+				errorState.fail("%s: Failed to initialize internal render target", rt->mID.c_str());
+				return false;
+			}
 		}
 
 		return true;
@@ -144,14 +168,6 @@ namespace nap
 
 
 	void RenderDOFComponentInstance::draw()
-	{
-		mDOFRenderTarget.beginRendering();
-		onDraw(mDOFRenderTarget, mRenderService->getCurrentCommandBuffer(), {}, {});
-		mDOFRenderTarget.endRendering();
-	}
-
-
-	void RenderDOFComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
 		mColorTextureSampler->setTexture(mResource->mInputTarget->getColorTexture());
 		mDepthTextureSampler->setTexture(mResource->mInputTarget->getDepthTexture());
@@ -161,7 +177,25 @@ namespace nap
 		mFocalLengthUniform->setValue(mResource->mFocalLength->mValue);
 		mFocusPowerUniform->setValue(mResource->mFocusPower->mValue);
 		mFocusDistanceUniform->setValue(mResource->mFocusDistance->mValue);
+		mDirectionUniform->setValue({1.0f, 0.0f});
 
+		// Horizontal pass
+		mRenderTargetA.beginRendering();
+		onDraw(mRenderTargetA, mRenderService->getCurrentCommandBuffer(), {}, {});
+		mRenderTargetA.endRendering();
+
+		// Vertical pass
+		mColorTextureSampler->setTexture(mIntermediateTexture);
+		mDirectionUniform->setValue({ 0.0f, 1.0f });
+
+		mRenderTargetB.beginRendering();
+		onDraw(mRenderTargetB, mRenderService->getCurrentCommandBuffer(), {}, {});
+		mRenderTargetB.endRendering();
+	}
+
+
+	void RenderDOFComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
+	{
 		utility::ErrorState error_state;
 		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
