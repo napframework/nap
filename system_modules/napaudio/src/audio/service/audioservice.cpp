@@ -17,7 +17,7 @@
 #endif
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
-		RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
+	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
 
@@ -28,8 +28,7 @@ namespace nap
 		
 		AudioService::AudioService(ServiceConfiguration* configuration) :
 				Service(configuration), mNodeManager(mDeletionQueue)
-		{
-		}
+		{ }
 		
 		
 		bool AudioService::init(nap::utility::ErrorState& errorState)
@@ -96,8 +95,5 @@ namespace nap
             if (!enumVar.is_lock_free())
                 Logger::warn("%s is not lockfree on current platform", "atomic enum");
 		}
-
-		
 	}
-	
 }
