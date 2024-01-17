@@ -54,7 +54,7 @@ namespace nap
 		if (!mNoMesh->init(errorState))
 			return false;
 
-		mRenderableMesh = createRenderableMesh(*mNoMesh, mMaterialInstance, errorState);
+		mRenderableMesh = mRenderService->createRenderableMesh(*mNoMesh, mMaterialInstance, errorState);
 		if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 			return false;
 
@@ -117,19 +117,6 @@ namespace nap
 	{
 		mFadeState = EFadeState::In;
 		mFadeStartTime = mElapsedTime;
-	}
-
-
-	RenderableMesh RenderFaderComponentInstance::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
-	{
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		return render_service->createRenderableMesh(mesh, materialInstance, errorState);
-	}
-
-
-	RenderableMesh RenderFaderComponentInstance::createRenderableMesh(IMesh& mesh, utility::ErrorState& errorState)
-	{
-		return createRenderableMesh(mesh, mMaterialInstance, errorState);
 	}
 
 

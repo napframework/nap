@@ -5,7 +5,7 @@
 #version 450 core
 
 // Ensure we register a constant to set
-layout(constant_id = 0) const uint CHROMATIC_ABBERATION = 0;
+layout(constant_id = 0) const uint CHROMATIC_ABBERATION = 1;
 
 uniform FRAGUBO
 {

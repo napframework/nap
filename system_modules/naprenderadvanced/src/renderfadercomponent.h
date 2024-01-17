@@ -102,26 +102,6 @@ namespace nap
 		MaterialInstance& getMaterialInstance()					{ return mRenderableMesh.getMaterialInstance(); }
 
 		/**
-		 * Creates a renderable mesh that can be used to switch to another mesh and/or material at runtime. This function should be called from
-		 * init() functions on other components, and the result should be validated.
-		 * @param mesh The mesh that is used in the mesh-material combination.
-		 * @param materialInstance The material instance that is used in the mesh-material combination.
-		 * @param errorState If this function returns an invalid renderable mesh, the error state contains error information.
-		 * @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
-		 */
-		RenderableMesh createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState);
-
-		/**
-		 * Creates a renderable mesh that can be used to switch to another mesh at runtime. The material remains the same material as the one that
-		 * was already set on the RenderFaderComponent.. This function should be called from init() functions on other components, and the result
-		 * should be validated.
-		 * @param mesh The mesh that is used in the mesh-material combination.
-		 * @param errorState If this function returns an invalid renderable mesh, the error state contains error information.
-		 * @return A RenderableMesh object that can be used in setMesh calls. Check isValid on the object to see if creation succeeded or failed.
-		 */
-		RenderableMesh createRenderableMesh(IMesh& mesh, utility::ErrorState& errorState);
-
-		/**
 		 * Switches the mesh and/or the material that is rendered. The renderable mesh should be created through createRenderableMesh, and must
 		 * be created from an init() function.
 		 * @param mesh The mesh that was retrieved through createRenderableMesh.

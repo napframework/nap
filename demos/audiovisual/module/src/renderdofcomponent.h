@@ -10,7 +10,7 @@
 #include <perspcameracomponent.h>
 #include <materialinstance.h>
 #include <renderablemesh.h>
-#include <planemesh.h>
+#include <nomesh.h>
 #include <parameternumeric.h>
 
 namespace nap
@@ -19,8 +19,9 @@ namespace nap
 	class RenderDOFComponentInstance;
 
 	/**
-	 * Pre- or post-processing effect that blurs the input texture at a downsampled resolution into internally managed
-	 * rendertargets.
+	 * Pre- or post-processing effect that applies a depth-of-field effect to the input texture and renders it to the
+	 * specified output render texture. This component manages a custom material based on nap::DOFShader, nap::NoMesh
+	 * and nap::RenderTarget internally.
 	 *
 	 * Resource-part of RenderDOFComponentInstance.
 	 */
@@ -32,7 +33,6 @@ namespace nap
 		ComponentPtr<PerspCameraComponent>	mCamera;						///< Property: 'Camera'
 		ResourcePtr<RenderTarget>			mInputTarget;					///< Property: 'InputTarget' the input color target, must be copyable
 		ResourcePtr<RenderTexture2D>		mOutputTexture;					///< Property: 'OutputTexture' the output color texture
-		uint								mPassCount = 1;					///< Property: 'PassCount' the number of combined horizontal/vertical passes
 
 		ResourcePtr<ParameterFloat>			mAperture;
 		ResourcePtr<ParameterFloat>			mFocalLength;
@@ -42,25 +42,12 @@ namespace nap
 
 
 	/**
-	 * Pre- or post-processing effect that blurs the input texture at a downsampled resolution into internally managed
-	 * rendertargets.
-	 *
-	 * This component manages its own render target and plane to render to.
-	 * The plane is automatically scaled to fit the bounds of the render target.
-	 *
-	 * `InputTexture` is blitted to an internally managed render target, and then blurred based on the specified pass
-	 * count. Each blur 'pass' then comprises two passes; horizontal and vertical. The gaussian sampling kernel size can
-	 * be specified with the 'Kernel' property. Each subsequent pass performs a horizontal and vertical blur at half the
-	 * resolution of the former pass, with the first being at half the resolution of `InputTexture`.
-	 * 
-	 * When the bloom passes have been completed, the result is blitted to `OutputTexture`. `InputTexture` and
-	 * `OutputTexture` are allowed to refer to the same `nap::RenderTexture`.
+	 * Pre- or post-processing effect that applies a depth-of-field effect to the input texture and renders it to the
+	 * specified output render texture. This component manages a custom material based on nap::DOFShader, nap::NoMesh
+	 * and nap::RenderTarget internally.
 	 *
 	 * Simply declare the component in json and call RenderDOFComponentInstance::draw() in the render part of your
 	 * application, in between nap::RenderService::beginHeadlessRecording() and nap::RenderService::endHeadlessRecording().
-	 *
-	 * This component uses the default naprender blur shader and automatically sets its shader variables based on this
-	 * component's properties configuration. 
 	 */
 	class NAPAPI RenderDOFComponentInstance : public  RenderableComponentInstance
 	{
@@ -80,72 +67,49 @@ namespace nap
 		 * Call this in your application render() call inbetween nap::RenderService::beginHeadlessRecording()
 		 * and nap::RenderService::endHeadlessRecording().
 		 * Do not call this function outside of a headless recording pass i.e. when rendering to a window.
-		 * The result is rendered into a dynamically created output texture, which is accessible through
-		 * RenderDOFComponentInstance::getOutputTexture().
 		 * Alternatively, you can use the render service to render this component, see onDraw().
 		 */
 		void draw();
 
 		/**
-		 * Returns the output texture with the bloom effect applied.
-		 * The size of this texture equals { input_width/2^PassCount, input_height/2^PassCount }
-		 * @return the bloom texture created from the specified input texture
+		 * Returns the output texture that includes the dof effect.
+		 * @return the output texture
 		 */
-		Texture2D& getOutputTexture() { return *mOutputTexture; }
+		Texture2D& getOutputTexture() { return *mResource->mOutputTexture; }
 
 	protected:
 		/**
-		 * Draws the effect full screen to the currently active render target,
-		 * when the view matrix = identity.
+		 * Draws the effect full screen to the currently active render target
 		 * @param renderTarget the target to render to.
 		 * @param commandBuffer the currently active command buffer.
-		 * @param viewMatrix often the camera world space location
-		 * @param projectionMatrix often the camera projection matrix
+		 * @param viewMatrix ignored
+		 * @param projectionMatrix ignored
 		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		using DoubleBufferedRenderTarget = std::array<rtti::ObjectPtr<RenderTarget>, 2>;
-
 		/**
-		 * Link to camera, can be used to make the copied meshes look at the camera
+		 * Link to camera, used to get near and far clipping plane values
 		 */
 		ComponentInstancePtr<PerspCameraComponent> mCamera = { this, &RenderDOFComponent::mCamera };
 
 		RenderDOFComponent*			mResource = nullptr;
 		RenderService*				mRenderService = nullptr;			///< Render service
-		RenderTarget*				mInputTarget = nullptr;				///< Reference to the input target
-		RenderTexture2D*			mOutputTexture = nullptr;			///< Reference to the output texture
-		
-		std::vector<DoubleBufferedRenderTarget> mBloomRTs;				///< Internally managed render targets
 
 		MaterialInstanceResource	mMaterialInstanceResource;			///< Instance of the material, used to override uniforms for this instance
 		MaterialInstance			mMaterialInstance;					///< The MaterialInstance as created from the resource.
 
-		RenderableMesh				mRenderableMesh;					///< Valid Plane / Material combination
-		nap::PlaneMesh				mPlane;								///< Plane used for rendering the effect onto
-
-		glm::mat4x4					mModelMatrix;						///< Plane model matrix
-
-		UniformMat4Instance*		mModelMatrixUniform = nullptr;		///< Name of the model matrix uniform in the shader
-		UniformMat4Instance*		mProjectMatrixUniform = nullptr;	///< Name of the projection matrix uniform in the shader
-		UniformMat4Instance*		mViewMatrixUniform = nullptr;		///< View matrix uniform
-		UniformStructInstance*		mMVPStruct = nullptr;				///< Model View Projection struct
+		RenderTarget				mDOFRenderTarget;					///< Internally managed render target
+		RenderableMesh				mRenderableMesh;					///< Mesh / Material combination
+		std::unique_ptr<NoMesh>		mNoMesh;							///< Empty mesh
 
 		Sampler2DInstance*			mColorTextureSampler = nullptr;		///< Sampler instance for color textures in the blur material
 		Sampler2DInstance*			mDepthTextureSampler = nullptr;		///< Sampler instance for depth textures in the blur material
-		UniformVec2Instance*		mDirectionUniform = nullptr;		///< Direction uniform of the blur material
 		UniformVec2Instance*		mTextureSizeUniform = nullptr;		///< Texture size uniform of the blur material
-		UniformVec2Instance*		mNearFarUniform = nullptr;			///< 
-		UniformFloatInstance*		mApertureUniform = nullptr;			///< 
-		UniformFloatInstance*		mFocalLengthUniform = nullptr;		///<
-		UniformFloatInstance*		mFocusDistanceUniform = nullptr;	///<
-		UniformFloatInstance*		mFocusPowerUniform = nullptr;		///< 
-
-		/**
-		 * Checks if the uniform is available on the source material and creates it if so
-		 * @return the uniform, nullptr if not available.
-		 */
-		UniformMat4Instance* ensureUniform(const std::string& uniformName, nap::UniformStructInstance& mvpStruct, utility::ErrorState& error);
+		UniformVec2Instance*		mNearFarUniform = nullptr;			///< Near and far clipping plane values of camera
+		UniformFloatInstance*		mApertureUniform = nullptr;			///< Aperture
+		UniformFloatInstance*		mFocalLengthUniform = nullptr;		///< Focal Length
+		UniformFloatInstance*		mFocusDistanceUniform = nullptr;	///< Focus Distance
+		UniformFloatInstance*		mFocusPowerUniform = nullptr;		///< Pocus Power
 	};
 }

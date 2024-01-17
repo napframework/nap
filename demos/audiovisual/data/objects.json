@@ -721,7 +721,6 @@
                     "LayerRegistry": "",
                     "Layer": "",
                     "Camera": "../CameraEntity/PerspectiveCamera",
-                    "PassCount": 1,
                     "InputTarget": "RenderTarget",
                     "OutputTexture": "ColorTextureDOF",
                     "Aperture": "ApertureParam",
@@ -731,7 +730,7 @@
                 },
                 {
                     "Type": "nap::RenderToTextureComponent",
-                    "mID": "BlendTogether",
+                    "mID": "RenderChroma",
                     "Visible": true,
                     "Tags": [
                         "RenderTag_Unlit"
@@ -790,7 +789,7 @@
                                 "Value": 1
                             }
                         ],
-                        "Material": "CompositeMaterial",
+                        "Material": "ChromaMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -803,7 +802,7 @@
                             255
                         ]
                     },
-                    "SampleShading": true,
+                    "SampleShading": false,
                     "PreserveAspect": true
                 }
             ],
@@ -904,12 +903,12 @@
         },
         {
             "Type": "nap::Material",
-            "mID": "CompositeMaterial",
+            "mID": "ChromaMaterial",
             "Uniforms": [],
             "Samplers": [],
             "Buffers": [],
             "Constants": [],
-            "Shader": "CompositeShader",
+            "Shader": "ChromaShader",
             "VertexAttributeBindings": [],
             "BlendMode": "Opaque",
             "DepthMode": "InheritFromBlendMode"
@@ -1542,9 +1541,9 @@
         },
         {
             "Type": "nap::ShaderFromFile",
-            "mID": "CompositeShader",
-            "VertShader": "shaders/composite.vert",
-            "FragShader": "shaders/composite.frag",
+            "mID": "ChromaShader",
+            "VertShader": "shaders/chromaticabberration.vert",
+            "FragShader": "shaders/chromaticabberration.frag",
             "RestrictModuleIncludes": false
         },
         {

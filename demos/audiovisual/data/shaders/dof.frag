@@ -20,7 +20,7 @@ uniform UBO
 uniform sampler2D colorTexture;		// The input color texture to sample from
 uniform sampler2D depthTexture;		// The input color texture to sample from
 
-in vec2 pass_UV;
+in vec2 passUV0;
 out vec4 out_Color;
 
 const float weight[] = { 0.2270270270, 0.1945945946, 0.1216216216, 0.0540540541, 0.0162162162 };
@@ -40,8 +40,8 @@ vec4 blur(sampler2D tx, vec4 col, float s)
 	col = col * weight[0];
 	for (uint i = 1; i < offset.length(); i++)
 	{
-		col += texture(tx, pass_UV + offset[i] * s) * weight[i];
-		col += texture(tx, pass_UV - offset[i] * s) * weight[i];
+		col += texture(tx, passUV0 + offset[i] * s) * weight[i];
+		col += texture(tx, passUV0 - offset[i] * s) * weight[i];
 	}	
 	return col;
 }
@@ -53,8 +53,8 @@ void main()
 	float near = min(ubo.nearFar.x + 0.001, ubo.nearFar.y);
 	float far = ubo.nearFar.y;
 
-	vec4 frag_col = texture(colorTexture, pass_UV);
-	float frag_depth = texture(depthTexture, pass_UV).x;
+	vec4 frag_col = texture(colorTexture, passUV0);
+	float frag_depth = texture(depthTexture, passUV0).x;
 	frag_depth = clamp(frag_depth, near, far);
 	
 	// https://developer.nvidia.com/gpugems/gpugems/part-iv-image-processing/chapter-23-depth-field-survey-techniques
@@ -67,4 +67,3 @@ void main()
 
 	out_Color = blur(colorTexture, frag_col, min(pow(coc, ubo.focusPower), 4.0));
 }
- 
