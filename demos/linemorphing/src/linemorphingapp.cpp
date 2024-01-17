@@ -16,7 +16,6 @@
 #include <imgui/imgui.h>
 #include <mathutils.h>
 #include <linecolorcomponent.h>
-#include <laseroutputcomponent.h>
 #include <meshutils.h>
 #include <linenoisecomponent.h>
 #include <imguiutils.h>
