@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_MODULE("naplineblending", "0.2.0")
+NAP_MODULE("naplinemorphing", "1.0.0")
