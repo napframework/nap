@@ -517,7 +517,6 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		auto array_type = array_path.getArrayElementType();
 
 		// Check if it's a regular resource pointer
-		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
 		if (!array_path.isNonEmbeddedPointer() ||
 			MaterialPropertyMapper::mappable(array_path))
 			return;
@@ -567,17 +566,13 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		if (!array_item->getPath().getArrayEditable() || array_item->getPath().isInstanceProperty())
 			return;
 
+		// Bail if it's a pointer or the property is mappable
 		PropertyPath array_path = array_item->getPath();
-		auto array_type = array_path.getArrayElementType();
-
-		// Check if it's a regular resource pointer
-		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
-		if (!array_path.isEmbeddedPointer()		||
-			!array_path.isNonEmbeddedPointer()	||
-			MaterialPropertyMapper::mappable(array_path))
+		if (array_path.isPointer() || MaterialPropertyMapper::mappable(array_path))
 			return;
 
 		// Regular array entry handling
+		auto array_type = array_path.getArrayElementType();
 		QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
 			{
