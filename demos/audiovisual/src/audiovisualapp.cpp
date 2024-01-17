@@ -69,7 +69,11 @@ namespace nap
 		if (!error.check(mWorldEntity != nullptr, "unable to find entity with name: %s", "WorldEntity"))
 			return false;
 
+		// Cache mask
 		mLitRenderMask = mRenderService->findRenderMask("Lit");
+
+		// Reset first frame flag on resource reload
+		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSlot);
 
 		// All done!
 		return true;

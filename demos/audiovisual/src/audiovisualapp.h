@@ -89,5 +89,7 @@ namespace nap
 		RenderMask					mLitRenderMask = 0;
 		bool						mFirstFrame = true;
 		bool						mHideGUI = false;
+
+		Slot<> mReloadSlot = { [this]() -> void { mFirstFrame = true; } };
 	};
 }
