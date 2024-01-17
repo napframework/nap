@@ -4,11 +4,10 @@
 
 // Local Includes
 #include "midiinputport.h"
-#include "midievent.h"
+#include <midievent.h>
 
 // External Includes
 #include <nap/logger.h>
-#include <RtMidi.h>
 
 RTTI_BEGIN_CLASS(nap::MidiInputPort)
     RTTI_PROPERTY("Ports", &nap::MidiInputPort::mPortNames, nap::rtti::EPropertyMetaData::Default)
@@ -20,10 +19,10 @@ namespace nap
     void midiCallback(double deltatime, std::vector<unsigned char> *message, void *userData)
     {
         auto inputPort = static_cast<MidiInputPort*>(userData);
-        auto portNames = inputPort->getPortNames();
         auto event = std::make_unique<MidiEvent>(*message, inputPort->mID);
 		if (inputPort->mDebugOutput)
 		{
+            auto portNames = inputPort->getPortNames();
 			nap::Logger::info("midi input on " + portNames + ": " + event->toString());
 		}
         inputPort->receiveEvent(std::move(event));
@@ -39,20 +38,24 @@ namespace nap
 
 	bool MidiInputPort::start(utility::ErrorState& errorState)
     {
+        MidiPortInfo portInfo;
+        if (!portInfo.init(errorState))
+            return false;
+
 		// No port specified, open all ports, Otherwise find specific port
 		if (mPortNames.empty())
 		{
-			for (auto portNumber = 0; portNumber < mService->getInputPortCount(); ++portNumber)
+			for (auto portNumber = 0; portNumber < portInfo.getInputPortCount(); ++portNumber)
 			{
 				mPortNumbers.emplace_back(portNumber);
-				mPortNames.emplace_back(mService->getInputPortName(portNumber));
+				mPortNames.emplace_back(portInfo.getInputPortName(portNumber));
 			}
 		}
 		else
 		{
 			for (auto& portName : mPortNames)
 			{
-				auto portNumber = mService->getInputPortNumber(portName);
+				auto portNumber = portInfo.getInputPortNumber(portName);
 				if (portNumber < 0)
 				{
 					errorState.fail("%s: Midi input port not found: %s", mID.c_str(), portName.c_str());
@@ -79,8 +82,6 @@ namespace nap
 			}
 		}
 
-		// Register
-		mService->registerInputPort(*this);
 		return true;
     }
     
@@ -90,7 +91,6 @@ namespace nap
 		mMidiIns.clear();
 		mPortNumbers.clear();
 		mPortNames.clear();
-		mService->unregisterInputPort(*this);
 	}
     
 
