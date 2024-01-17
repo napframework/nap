@@ -78,15 +78,37 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Rotates the component every tick based on the speed and exis
-		 * @param deltaTime time it took to complete last cook (seconds)
+		 * Rotates the component based on the current speed and axis
+		 * @param deltaTime frame time in seconds
 		 */
 		virtual void update(double deltaTime) override;
 
 		/**
-		* Resets rotation to be 0
-		*/
+		 * Resets rotation to be 0
+		 */
 		void reset();
+
+		/**
+		 * Sets the rotation speed
+		 * @param speed rotation speed in seconds
+		 */
+		void setSpeed(float speed)								{ mProperties.mSpeed = speed; }
+
+		/**
+		 * @return the rotation speed in seconds
+		 */
+		float getSpeed() const									{ return mProperties.mSpeed; }
+
+		/**
+		 * Sets the rotation axis
+		 * @param axis rotation axis
+		 */
+		void setAxis(const glm::vec3& axis)						{ mProperties.mAxis = axis; }
+
+		/**
+		 * @return the rotation axis
+		 */
+		glm::vec3 getAxis() const								{ return mProperties.mAxis; }
 
 		// Rotation properties
 		RotateProperties mProperties;

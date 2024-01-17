@@ -69,6 +69,7 @@ add_subdirectory(demos/webportal)
 add_subdirectory(demos/python)
 add_subdirectory(demos/udpsend)
 add_subdirectory(demos/udpreceive)
+add_subdirectory(demos/linemorphing)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)
