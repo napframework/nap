@@ -27,8 +27,9 @@ RTTI_BEGIN_CLASS(nap::RenderDOFComponent)
 	RTTI_PROPERTY("InputTarget",				&nap::RenderDOFComponent::mInputTarget,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OutputTexture",				&nap::RenderDOFComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Aperture",					&nap::RenderDOFComponent::mAperture,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FocusPower",					&nap::RenderDOFComponent::mFocusPower,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FocalLength",				&nap::RenderDOFComponent::mFocalLength,					nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FocusDistance",				&nap::RenderDOFComponent::mFocusDistance,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FocusPower",					&nap::RenderDOFComponent::mFocusPower,					nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::RenderDOFComponentInstance run time class definition 
@@ -192,12 +193,16 @@ namespace nap
 		if (!errorState.check(mApertureUniform != nullptr, "Missing uniform float 'aperture' in uniform UBO"))
 			return false;
 
-		mFocusPowerUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::dof::focusPower);
-		if (!errorState.check(mFocusPowerUniform != nullptr, "Missing uniform float 'focusPower' in uniform UBO"))
+		mFocalLengthUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::dof::focalLength);
+		if (!errorState.check(mFocalLengthUniform != nullptr, "Missing uniform float 'focalLength' in uniform UBO"))
 			return false;
 
 		mFocusDistanceUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::dof::focusDistance);
 		if (!errorState.check(mFocusDistanceUniform != nullptr, "Missing uniform float 'focusDistance' in uniform UBO"))
+			return false;
+
+		mFocusPowerUniform = ubo_struct->getOrCreateUniform<UniformFloatInstance>(uniform::dof::focusPower);
+		if (!errorState.check(mFocusPowerUniform != nullptr, "Missing uniform float 'focusPower' in uniform UBO"))
 			return false;
 
 		// Get color texture sampler
@@ -245,6 +250,7 @@ namespace nap
 			mTextureSizeUniform->setValue(bloom_target[TARGET_A]->mColorTexture->getSize());
 			mNearFarUniform->setValue({ mCamera->getNearClippingPlane(), mCamera->getFarClippingPlane() });
 			mApertureUniform->setValue(mResource->mAperture->mValue);
+			mFocalLengthUniform->setValue(mResource->mFocalLength->mValue);
 			mFocusPowerUniform->setValue(mResource->mFocusPower->mValue);
 			mFocusDistanceUniform->setValue(mResource->mFocusDistance->mValue);
 

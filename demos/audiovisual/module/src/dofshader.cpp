@@ -34,9 +34,9 @@ namespace nap
 		if (!Shader::init(errorState))
 			return false;
 
-		const std::string displayName = shader::dof;
-		const std::string vertex_shader_path = utility::joinPath({ "shaders", utility::appendFileExtension(displayName, "vert") });
-		const std::string fragment_shader_path = utility::joinPath({ "shaders", utility::appendFileExtension(displayName, "frag") });
+		const std::string display_name = shader::dof;
+		const std::string vertex_shader_path = utility::joinPath({ "shaders", utility::appendFileExtension(display_name, "vert") });
+		const std::string fragment_shader_path = utility::joinPath({ "shaders", utility::appendFileExtension(display_name, "frag") });
 
 		// Read vert shader file
 		std::string vert_source;

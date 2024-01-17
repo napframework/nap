@@ -134,6 +134,10 @@ namespace nap
 			mComputeNormalsInstance->setInvocations(invocation_count);
 		}
 
+		// Check amplitude buffer
+		if (!errorState.check(mAmpsUniform->getNumElements() <= mFFT->getFFTBuffer().getBinCount(), "The FFT bin count (%d) must be equal to or higher than the element count of the `amps` array uniform (%d)", mFFT->getFFTBuffer().getBinCount(), mAmpsUniform->getNumElements()))
+			return false;
+
 		// Triangles
 		{
 			mTriangleBuffer = std::make_unique<GPUBufferUInt>(*getEntityInstance()->getCore(), EMemoryUsage::Static, true);

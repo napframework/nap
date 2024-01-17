@@ -29,15 +29,15 @@ namespace nap
 		RTTI_ENABLE(RenderableComponent)
 		DECLARE_COMPONENT(RenderDOFComponent, RenderDOFComponentInstance)
 	public:
-		ComponentPtr<PerspCameraComponent>	mCamera;										///< Property: 'Camera'
-		ResourcePtr<RenderTarget>			mInputTarget;									///< Property: 'InputTarget' the input color target, must be copyable
-		ResourcePtr<RenderTexture2D>		mOutputTexture;									///< Property: 'OutputTexture' the output color texture
-		uint								mPassCount = 1;									///< Property: 'PassCount' the number of combined horizontal/vertical passes
+		ComponentPtr<PerspCameraComponent>	mCamera;						///< Property: 'Camera'
+		ResourcePtr<RenderTarget>			mInputTarget;					///< Property: 'InputTarget' the input color target, must be copyable
+		ResourcePtr<RenderTexture2D>		mOutputTexture;					///< Property: 'OutputTexture' the output color texture
+		uint								mPassCount = 1;					///< Property: 'PassCount' the number of combined horizontal/vertical passes
 
-		ResourcePtr<ParameterFloat> mAperture;
-		ResourcePtr<ParameterFloat> mFocusPower;
-		ResourcePtr<ParameterFloat> mFocusDistance;
-
+		ResourcePtr<ParameterFloat>			mAperture;
+		ResourcePtr<ParameterFloat>			mFocalLength;
+		ResourcePtr<ParameterFloat>			mFocusDistance;
+		ResourcePtr<ParameterFloat>			mFocusPower;
 	};
 
 
@@ -138,8 +138,9 @@ namespace nap
 		UniformVec2Instance*		mTextureSizeUniform = nullptr;		///< Texture size uniform of the blur material
 		UniformVec2Instance*		mNearFarUniform = nullptr;			///< 
 		UniformFloatInstance*		mApertureUniform = nullptr;			///< 
+		UniformFloatInstance*		mFocalLengthUniform = nullptr;		///<
+		UniformFloatInstance*		mFocusDistanceUniform = nullptr;	///<
 		UniformFloatInstance*		mFocusPowerUniform = nullptr;		///< 
-		UniformFloatInstance*		mFocusDistanceUniform = nullptr;	///< 
 
 		/**
 		 * Checks if the uniform is available on the source material and creates it if so

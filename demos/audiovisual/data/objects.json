@@ -549,7 +549,7 @@
                     "Properties": {
                         "FieldOfView": 60.0,
                         "NearClippingPlane": 0.009999999776482582,
-                        "FarClippingPlane": 1000.0,
+                        "FarClippingPlane": 10.0,
                         "GridDimensions": {
                             "x": 1,
                             "y": 1
@@ -691,7 +691,7 @@
                         "TopPlane": 1.0,
                         "BottomPlane": 0.0,
                         "NearClippingPlane": 0.0,
-                        "FarClippingPlane": 100.0,
+                        "FarClippingPlane": 1.0,
                         "ClipRect": {
                             "Min": {
                                 "x": 0.0,
@@ -725,8 +725,9 @@
                     "InputTarget": "RenderTarget",
                     "OutputTexture": "ColorTextureDOF",
                     "Aperture": "ApertureParam",
-                    "FocusPower": "FocusPowerParam",
-                    "FocusDistance": "FocusDistanceParam"
+                    "FocalLength": "FocalLengthParam",
+                    "FocusDistance": "FocusDistanceParam",
+                    "FocusPower": "FocusPowerParam"
                 },
                 {
                     "Type": "nap::RenderToTextureComponent",
@@ -1139,14 +1140,6 @@
                     "Maximum": 2.0
                 },
                 {
-                    "Type": "nap::ParameterInt",
-                    "mID": "RenderIndexParam",
-                    "Name": "RenderIndex",
-                    "Value": 0,
-                    "Minimum": 0,
-                    "Maximum": 1
-                },
-                {
                     "Type": "nap::ParameterFloat",
                     "mID": "NoiseStrengthParam",
                     "Name": "NoiseStrength",
@@ -1171,31 +1164,55 @@
                     "Maximum": 1.0
                 },
                 {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "ApertureParam",
-                    "Name": "Aperture",
-                    "Value": 1.5,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "FocusDistanceParam",
-                    "Name": "FocusDistance",
-                    "Value": 0.800000011920929,
-                    "Minimum": 0.0,
-                    "Maximum": 4.0
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "FocusPowerParam",
-                    "Name": "FocusPower",
-                    "Value": 2.0,
-                    "Minimum": 1.0,
-                    "Maximum": 4.0
+                    "Type": "nap::ParameterInt",
+                    "mID": "RenderIndexParam",
+                    "Name": "RenderIndex",
+                    "Value": 0,
+                    "Minimum": 0,
+                    "Maximum": 1
                 }
             ],
-            "Groups": []
+            "Groups": [
+                {
+                    "Type": "nap::ParameterGroup",
+                    "mID": "DOFParameters",
+                    "Parameters": [
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FocalLengthParam",
+                            "Name": "FocalLength",
+                            "Value": 0.5,
+                            "Minimum": 0.5,
+                            "Maximum": 1.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FocusPowerParam",
+                            "Name": "FocusPower",
+                            "Value": 2.0,
+                            "Minimum": 1.0,
+                            "Maximum": 4.0
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "FocusDistanceParam",
+                            "Name": "FocusDistance",
+                            "Value": 1.0099999904632569,
+                            "Minimum": 0.5,
+                            "Maximum": 1.25
+                        },
+                        {
+                            "Type": "nap::ParameterFloat",
+                            "mID": "ApertureParam",
+                            "Name": "Aperture",
+                            "Value": 1.5,
+                            "Minimum": 0.0,
+                            "Maximum": 4.0
+                        }
+                    ],
+                    "Groups": []
+                }
+            ]
         },
         {
             "Type": "nap::PlaneMesh",
@@ -1557,7 +1574,7 @@
             "Usage": "Static",
             "CullMode": "None",
             "PolygonMode": "Point",
-            "Radius": 1.0,
+            "Radius": 1.2000000476837159,
             "Rings": 50,
             "Sectors": 50,
             "Color": {
