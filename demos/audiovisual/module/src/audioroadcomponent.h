@@ -18,7 +18,20 @@ namespace nap
 	class ComputeComponentInstance;
 
 	/**
-	 *	AudioRoadComponent
+	 * This is a visual effect component that renders a long mesh strip and moves it around in the space randomly. The FFT
+	 * audio node is used to apply distortions to the mesh in reaction to peaks and changes in the sound.
+	 *
+	 * The component manages double-buffered copies of the position and vertex attributes of the reference mesh. This lets
+	 * the compute shaders read and write from separate locations, preventing synchronization artifacts. Then, triangle
+	 * index and adjacency buffers are generated to facilitate the parallel recalculation of the mesh normals in the
+	 * `ComputeNormals` shader. This component fetches the latest FFT analysis and updates the compute instances
+	 * appropriately. Additionally when a camera is specified, its transform will be updated to follow the trajectory of
+	 * the audio road.
+	 *
+	 * Due to the constant nature of NAP resources you will find that the storage buffers defined in the data file have
+	 * strict element counts that are difficult to infer by eye. In the default setup they are based on a grid size of
+	 * 1024 x 256 vertices (and therefore 1023 x 255 cells). Please be aware that changing the resolution of this grid
+	 * currently requires the element counts of several resources to be recomputed.
 	 */
 	class NAPAPI AudioRoadComponent : public Component
 	{
@@ -53,7 +66,15 @@ namespace nap
 
 
 	/**
-	 * AudioRoadComponentInstance	
+	 * This is a visual effect component that renders a long mesh strip and moves it around in the space randomly. The FFT
+	 * audio node is used to apply distortions to the mesh in reaction to peaks and changes in the sound.
+	 *
+	 * The component manages double-buffered copies of the position and vertex attributes of the reference mesh. This lets
+	 * the compute shaders read and write from separate locations, preventing synchronization artifacts. Then, triangle
+	 * index and adjacency buffers are generated to facilitate the parallel recalculation of the meshn normals in the
+	 * `ComputeNormals` shader. This component fetches the latest FFT analysis and updates the compute instances
+	 * appropriately. Additionally when a camera is specified, its transform will be updated to follow the trajectory of
+	 * the audio road.
 	 */
 	class NAPAPI AudioRoadComponentInstance : public ComponentInstance
 	{

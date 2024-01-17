@@ -21,7 +21,18 @@ namespace nap
 	using namespace rtti;
 
 	/**
-	 * Main application that is called from within the main loop
+	 * This demo renders a long mesh strip and moves it around in the space randomly. Distortions are applied to the mesh
+	 * in reaction to peaks and changes in an audio signal. The central component of this app is the
+	 * `nap::AudioRoadComponent`, which updates essential compute shader materials and camera movement.
+	 * 
+	 * A cube map for environmental star reflections is rendered in the first frame, and sampled by the
+	 * `nap::RenderAudioRoadComponent`. This demo also includes a depth-of-field and chromatic abberation post-processing
+	 * effect.
+	 *
+	 * Due to the constant nature of NAP resources you will find that the storage buffers defined in the data file have
+	 * strict element counts that are difficult to infer by eye. In the default setup they are based on a grid size of
+	 * 1024 x 256 vertices (and therefore 1023 x 255 cells). Please be aware that changing the resolution of this grid
+	 * currently requires the element counts of several resources to be recomputed.
 	 */
 	class audiovisualApp : public App
 	{
