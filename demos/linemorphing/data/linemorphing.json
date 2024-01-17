@@ -228,7 +228,7 @@
                 },
                 {
                     "Type": "nap::UpdateNormalsComponent",
-                    "mID": "UpdateLaserNormalsComponent",
+                    "mID": "UpdateNormalsComponent",
                     "NormalMesh": "NormalsMesh"
                 }
             ],
@@ -604,100 +604,6 @@
                     "Usage": "DynamicWrite",
                     "ReferenceMesh": "DisplayLine",
                     "Length": 0.05000000074505806
-                },
-                {
-                    "Type": "nap::PlaneMesh",
-                    "mID": "CanvasMesh",
-                    "Usage": "Static",
-                    "CullMode": "None",
-                    "PolygonMode": "Fill",
-                    "Size": {
-                        "x": 1.0,
-                        "y": 1.0
-                    },
-                    "Position": {
-                        "x": 0.0,
-                        "y": 0.0
-                    },
-                    "Color": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    },
-                    "Rows": 1,
-                    "Columns": 1
-                },
-                {
-                    "Type": "nap::ShaderFromFile",
-                    "mID": "CanvasShader",
-                    "VertShader": "shaders/canvas.vert",
-                    "FragShader": "shaders/canvas.frag"
-                },
-                {
-                    "Type": "nap::Material",
-                    "mID": "CanvasMaterial",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformStruct",
-                            "mID": "nap::UniformStruct",
-                            "Name": "UBO",
-                            "Uniforms": [
-                                {
-                                    "Type": "nap::UniformVec3",
-                                    "mID": "nap::UniformVec3",
-                                    "Name": "mColor",
-                                    "Value": {
-                                        "x": 1.0,
-                                        "y": 1.0,
-                                        "z": 1.0
-                                    }
-                                }
-                            ]
-                        }
-                    ],
-                    "Samplers": [
-                        {
-                            "Type": "nap::Sampler2D",
-                            "mID": "canvas_sampler_2D",
-                            "Name": "mCanvas",
-                            "MinFilter": "Linear",
-                            "MaxFilter": "Linear",
-                            "MipMapMode": "Linear",
-                            "AddressModeVertical": "ClampToEdge",
-                            "AddressModeHorizontal": "ClampToEdge",
-                            "MaxLodLevel": 1000,
-                            "AnisotropicSamples": "Default",
-                            "Texture": "CanvasImage"
-                        }
-                    ],
-                    "Buffers": [],
-                    "Shader": "CanvasShader",
-                    "VertexAttributeBindings": [
-                        {
-                            "MeshAttributeID": "Position",
-                            "ShaderAttributeID": "in_Position"
-                        },
-                        {
-                            "MeshAttributeID": "UV0",
-                            "ShaderAttributeID": "in_UV0"
-                        },
-                        {
-                            "MeshAttributeID": "Color0",
-                            "ShaderAttributeID": "in_Color0"
-                        }
-                    ],
-                    "BlendMode": "Opaque",
-                    "DepthMode": "InheritFromBlendMode"
-                },
-                {
-                    "Type": "nap::ImageFromFile",
-                    "mID": "CanvasImage",
-                    "Usage": "Static",
-                    "ImagePath": "laser_canvas.png",
-                    "GenerateLods": true
                 }
             ],
             "Children": []
