@@ -5,7 +5,7 @@
         "napmath",
         "napscene",
         "napparameter",
-        "napaudio"
+        "napportaudio"
     ],
     "WindowsDllSearchPaths": [
         "{ROOT}/bin/{BUILD_ARCH}",

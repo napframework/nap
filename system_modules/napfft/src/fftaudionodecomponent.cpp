@@ -20,7 +20,7 @@ RTTI_BEGIN_CLASS(nap::FFTAudioNodeComponent)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FFTAudioNodeComponentInstance)
-		RTTI_CONSTRUCTOR(nap::EntityInstance &, nap::Component &)
+		RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 namespace nap
@@ -29,12 +29,13 @@ namespace nap
 	{
 		mResource = getComponent<FFTAudioNodeComponent>();
 		mAudioService = getEntityInstance()->getCore()->getService<audio::AudioService>();
-		auto& nodeManager = mAudioService->getNodeManager();
-			
+		assert(mAudioService != nullptr);
+		
 		if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "%s: Channel exceeds number of input channels", mResource->mID.c_str()))
 			return false;
 
-		mFFTNode = nodeManager.makeSafe<FFTNode>(nodeManager);
+		auto& node_manager = mAudioService->getNodeManager();
+		mFFTNode = node_manager.makeSafe<FFTNode>(node_manager);
 		mFFTNode->mInput.connect(*mInput->getOutputForChannel(mResource->mChannel));
 		mFFTBuffer = &mFFTNode->getFFTBuffer();
 

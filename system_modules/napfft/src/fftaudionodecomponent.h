@@ -70,7 +70,7 @@ namespace nap
 		ComponentInstancePtr<audio::AudioComponentBase> mInput = { this, &FFTAudioNodeComponent::mInput };	// Pointer to component that outputs this components audio input
 
 		FFTAudioNodeComponent* mResource = nullptr;
-		audio::SafeOwner<FFTNode> mFFTNode = nullptr;														// Node doing the actual analysis
+		audio::SafeOwner<FFTNode> mFFTNode = nullptr;														// Node that computes the FFT
 		
 		audio::AudioService* mAudioService = nullptr;
 		FFTBuffer* mFFTBuffer = nullptr;
