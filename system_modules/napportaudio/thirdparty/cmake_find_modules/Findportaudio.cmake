@@ -15,7 +15,7 @@ find_path(PORTAUDIO_DIR
           macos/x86_64/include/portaudio.h
           linux/${ARCH}/include/portaudio.h
           HINTS
-          ${NAP_ROOT}/system_modules/napaudio/thirdparty/portaudio
+          ${NAP_ROOT}/system_modules/napportaudio/thirdparty/portaudio
           )
 
 if(WIN32)

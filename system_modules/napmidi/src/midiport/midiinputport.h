@@ -5,13 +5,12 @@
 #pragma once
 
 #include "midiservice.h"
+#include "midiportinfo.h"
 
+// Nap includes
 #include <rtti/object.h>
 #include <utility/dllexport.h>
 #include <nap/device.h>
-
-// Forward Declares
-class RtMidiIn;
 
 namespace nap
 {

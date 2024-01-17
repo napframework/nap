@@ -4,11 +4,10 @@
 
 // Local Includes
 #include "midioutputport.h"
-#include "midievent.h"
+#include <midievent.h>
 
 // External Includes
 #include <nap/logger.h>
-#include <RtMidi.h>
 
 RTTI_BEGIN_CLASS(nap::MidiOutputPort)
 	RTTI_PROPERTY("AllowFailure",	&nap::MidiOutputPort::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
@@ -33,8 +32,12 @@ namespace nap
 
 	bool MidiOutputPort::start(utility::ErrorState& errorState)
     {
-		// Find and try to open port
-		mPortNumber = mService->getOutputPortNumber(mPortName);
+        MidiPortInfo portInfo;
+        if (!portInfo.init(errorState))
+            return false;
+
+        // Find and try to open port
+		mPortNumber = portInfo.getOutputPortNumber(mPortName);
 		if (mPortNumber >= 0)
 		{
 			try
