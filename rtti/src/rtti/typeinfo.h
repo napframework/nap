@@ -359,12 +359,12 @@ namespace nap
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
- /**
-  * Defines the beginning of an RTTI enabled class of @Type
-  * This macro will register the class of @Type with the RTTI system
-  * It also enables the class to be available to python
-  * @param Type the type to register
-  */
+/**
+ * Defines the beginning of an RTTI enabled class of @Type
+ * This macro will register the class of @Type with the RTTI system
+ * It also enables the class to be available to python
+ * @param Type the type to register
+ */
 #ifdef NAP_ENABLE_PYTHON
 	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
@@ -389,13 +389,13 @@ namespace nap
 #endif // NAP_ENABLE_PYTHON
 
 
-  /**
-   * Registers a property of @name that is readable and writable in C++ and Python
-   * Call this after starting your class definition
-   * @param Name RTTI name of the property
-   * @param Member reference to the member variable
-   * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
-   */
+/**
+ * Registers a property that is readable and writable in C++ and Python
+ * Call this after starting your class definition
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
+ */
 #ifdef NAP_ENABLE_PYTHON
 	#define RTTI_PROPERTY_STANDARD(Name, Member, Flags)															\
 			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
@@ -411,14 +411,14 @@ namespace nap
 	        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
 #endif // NAP_ENABLE_PYTHON
 
-   /**
-	* Registers a property of @name that is readable and writable in C++ and Python
-	* Call this after starting your class definition
-	* @param Name RTTI name of the property
-	* @param Member reference to the member variable
-	* @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd\
-	* @param Description property description
-	*/
+/**
+ * Registers a property that is readable and writable in C++ and Python
+ * Call this after starting your class definition
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd\
+ * @param Description property description
+ */
 #ifdef NAP_ENABLE_PYTHON
 	#define RTTI_PROPERTY_DESCRIPTION(Name, Member, Flags, Description)											\
 				rtti_class_type.property(Name, Member)( 														\
@@ -441,7 +441,7 @@ namespace nap
 #define GET_PROPERTY_MACRO(_1,_2,_3,_4,NAME,...) NAME
 
 /**
- * Registers a property of @name that is readable and writable in C++ and Python, with or without description.
+ * Registers a property of that is readable and writable in C++ and Python, with or without description.
  * Call this after starting your class definition
  * @param Name RTTI name of the property
  * @param Member reference to the member variable
@@ -451,18 +451,16 @@ namespace nap
  */
 #define RTTI_PROPERTY(...) GET_PROPERTY_MACRO(__VA_ARGS__, RTTI_PROPERTY_DESCRIPTION, RTTI_PROPERTY_STANDARD)(__VA_ARGS__)
 
- /**
-  * Registers a property of @name that will refer to a filename
-  * Call this after starting your class definition
-  *
-  * @param Name RTTI name of the property
-  * @param Member reference to the member variable
-  * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd.
-  * 		  Note that EPropertyMetaData is added by default.
-  * @param FileType Specify the type of file we're going to refer to (EPropertyFileType)
-  */
+/**
+ * Registers a property that will point to a file on disk
+ * Call this after starting your class definition
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
+ * @param FileType the type of file we're going to refer to (EPropertyFileType)
+ */
 #ifdef NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)													\
+#define RTTI_PROPERTY_FILELINK_STANDARD(Name, Member, Flags, FileType)													\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));										\
@@ -471,11 +469,51 @@ namespace nap
 				cls.def_readwrite(Name, Member);																\
 			});
 #else // NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)													\
+#define RTTI_PROPERTY_FILELINK_STANDARD(Name, Member, Flags, FileType)											\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));
 #endif // NAP_ENABLE_PYTHON
+
+/**
+ * Registers a property that will point to a file on disk
+ * Call this after starting your class definition
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
+ * @param FileType the type of file we're going to refer to (EPropertyFileType)
+ * @param Description property description 
+ */
+#ifdef NAP_ENABLE_PYTHON
+#define RTTI_PROPERTY_FILELINK_DESCRIPTION(Name, Member, Flags, FileType, Description)							\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
+								metadata("filetype", (uint8_t)(FileType)),										\
+								metadata("description", (const char*)(Description)));							\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
+			{																									\
+				cls.def_readwrite(Name, Member);																\
+			});
+#else // NAP_ENABLE_PYTHON
+#define RTTI_PROPERTY_FILELINK_DESCRIPTION(Name, Member, Flags, FileType, Description)							\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
+								metadata("filetype", (uint8_t)(FileType)),										\
+								metadata("description", (const char*)(Description)));							
+#endif // NAP_ENABLE_PYTHON
+
+#define GET_PROPERTY_FILELINK_MACRO(_1,_2,_3,_4,_5,NAME,...) NAME
+
+/**
+ * Registers a property that will point to a file on disk with or without a description
+ * Call this after starting your class definition
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
+ * @param FileType the type of file we're going to refer to (EPropertyFileType)
+ * @param Description optional property description
+ */
+#define RTTI_PROPERTY_FILELINK(...) GET_PROPERTY_FILELINK_MACRO(__VA_ARGS__, RTTI_PROPERTY_FILELINK_DESCRIPTION, RTTI_PROPERTY_FILELINK_STANDARD)(__VA_ARGS__)
 
 /**
  * Registers a function of @name
@@ -565,7 +603,7 @@ namespace nap
 													 });														\
 		}																										\
 	}
-#else // NAP_ENABLE_PYTHON
+#else
 #define RTTI_END_CLASS																							\
 		}																										\
 	}
