@@ -206,6 +206,25 @@ namespace nap
 		}
 
 		/**
+		 * Checks if a description is defined (provided) for the given property.
+		 * @return if a description is defined for the given property.
+		 */
+		inline bool hasDescription(const rtti::Property& property)
+		{
+			return property.get_metadata("description").is_valid();
+		}
+
+		/**
+		 * Returns the description of a property.
+		 * @return property description, nullptr when not defined.
+		 */
+		inline const char* getDescription(const rtti::Property& property)
+		{
+			const rtti::Variant& meta_data = property.get_metadata("description");
+			return meta_data.is_valid() ? meta_data.convert<const char*>() : nullptr;
+		}
+
+		/**
 		 * Helper function to check whether a property is associated with a specific type of file
 		 */
 		inline bool isFileType(const rtti::Property &property, EPropertyFileType filetype)
@@ -377,20 +396,24 @@ namespace nap
    * @param Member reference to the member variable
    * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
    */
-#ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY(Name, Member, Flags)																\
-		rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
-		python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-		{																									\
-			if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)					\
-				cls.def_readonly(Name, Member);																\
-			else																							\
-				cls.def_readwrite(Name, Member);															\
-		});
-#else // NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY(Name, Member, Flags)																\
+	#define RTTI_PROPERTY_STANDARD(Name, Member, Flags)															\
         rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
-#endif // NAP_ENABLE_PYTHON
+
+   /**
+	* Registers a property of @name that is readable and writable in C++ and Python
+	* Call this after starting your class definition
+	* @param Name RTTI name of the property
+	* @param Member reference to the member variable
+	* @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
+	* @param Description property description
+	*/
+#define RTTI_PROPERTY_DESCRIPTION(Name, Member, Flags, Description)												\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(Flags)),											\
+								metadata("description", (const char*)(Description)));
+
+#define GET_PROPERTY_MACRO(_1,_2,_3,_4,NAME,...) NAME
+#define RTTI_PROPERTY(...) GET_PROPERTY_MACRO(__VA_ARGS__, RTTI_PROPERTY_DESCRIPTION, RTTI_PROPERTY_STANDARD)(__VA_ARGS__)
 
 /**
  * Registers a property of @name that will refer to a filename
@@ -402,21 +425,21 @@ namespace nap
  * 		  Note that EPropertyMetaData is added by default.
  * @param FileType Specify the type of file we're going to refer to (EPropertyFileType)
  */
-#ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)												\
-			rtti_class_type.property(Name, Member)( 															\
-								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
-								metadata("filetype", (uint8_t)(FileType)));										\
-			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-			{																									\
-				cls.def_readwrite(Name, Member);																\
-			});
-#else // NAP_ENABLE_PYTHON
 	#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)												\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));
-#endif // NAP_ENABLE_PYTHON
+
+ /**
+  * Registers a property of @name that will refer to a filename
+  * Call this after starting your class definition
+  *
+  * @param Name RTTI name of the property
+  * @param Member reference to the member variable
+  * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd.
+  * 		  Note that EPropertyMetaData is added by default.
+  * @param FileType Specify the type of file we're going to refer to (EPropertyFileType)
+  */
 
 
 /**
