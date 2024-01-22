@@ -253,13 +253,14 @@ namespace napkin
 		EmbeddedPointerItem(const PropertyPath& path);
 
 	private:
-		/**
-		 * Populate child items
-		 */
+		// Populate child items
 		void populateChildren();
 
 		// Called when this property value changes
 		void onValueChanged();
+
+		// Called when indices in array swapped
+		void onIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 	};
 
 

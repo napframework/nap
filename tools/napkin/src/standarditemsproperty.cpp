@@ -265,7 +265,6 @@ void napkin::ArrayPropertyItem::onChildRemoved(const PropertyPath& parentPath, s
 	}
 }
 
-
 //////////////////////////////////////////////////////////////////////////
 // PointerItem
 //////////////////////////////////////////////////////////////////////////
@@ -434,6 +433,7 @@ napkin::EmbeddedPointerItem::EmbeddedPointerItem(const PropertyPath& path)
 {
 	populateChildren();
 	connect(this, &PropertyPathItem::valueChanged, this, &EmbeddedPointerItem::onValueChanged);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &EmbeddedPointerItem::onIndexSwapped);
 }
 
 
@@ -462,10 +462,23 @@ void napkin::EmbeddedPointerItem::populateChildren()
 
 void napkin::EmbeddedPointerItem::onValueChanged()
 {
-	// Remove embedded child (all children) and re-populate
-	auto* parent_item = QStandardItem::parent();
+	// Remove embedded properties (all children) and re-populate
 	removeRows(0, this->rowCount());
 	populateChildren();
+}
+
+
+void napkin::EmbeddedPointerItem::onIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex)
+{
+	// Refresh if index changed -> this is only required for embedded pointer items because the underlying object moved.
+	auto* parent_item = qitem_cast<ArrayPropertyItem*>(parentItem());
+	if (parent_item != nullptr && parent_item->getPath() == parentPath)
+	{
+		if( this->row() == fromIndex || this->row() == toIndex)
+		{
+			onValueChanged();
+		}
+	}
 }
 
 
