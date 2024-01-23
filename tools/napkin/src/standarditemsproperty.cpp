@@ -100,12 +100,27 @@ QVariant napkin::PropertyPathItem::data(int role) const
 		{
 			// If the parent is an array, display the index of this item
 			auto parent_path = qobject_cast<PropertyPathItem*>(parentItem());
-			return parent_path != nullptr && parent_path->getPath().isArray() ? row() :
+			return parent_path != nullptr && parent_path->getPath().isArray() ? row() : 
 				QStandardItem::data(role);
 		}
 		case Qt::UserRole:
 		{
 			return QVariant::fromValue(mPath);
+		}
+		case Qt::ToolTipRole:
+		{
+			auto prop_path = getPath();
+			while (prop_path.hasProperty())
+			{
+				auto item_prop = prop_path.resolve().getProperty(); assert(item_prop.is_valid());
+				const auto* item_desc = nap::rtti::getDescription(item_prop);
+				if (item_desc != nullptr)
+				{
+					return nap::rtti::getDescription(item_prop);
+				}
+				prop_path = prop_path.getParent();
+			}
+			return QStandardItem::data(role);
 		}
 		case Qt::ForegroundRole:
 		{
