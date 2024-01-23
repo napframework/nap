@@ -87,6 +87,9 @@ namespace napkin
 
 		// Called just before an object is removed
 		void onRemovingObject(const nap::rtti::Object* object);
+
+		// Invalid tooltip
+		QString mDescription;
 	};
 
 

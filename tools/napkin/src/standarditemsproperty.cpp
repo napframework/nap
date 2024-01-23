@@ -88,6 +88,21 @@ napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(pat
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &PropertyPathItem::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::removingObject, this, &PropertyPathItem::onRemovingObject);
+
+	// Fetch optional property description.
+	// If no description is available find and use parent property description.
+	auto prop_path = mPath;
+	while (prop_path.hasProperty())
+	{
+		auto item_prop = prop_path.getProperty(); assert(item_prop.is_valid());
+		const auto* item_desc = nap::rtti::getDescription(item_prop);
+		if (item_desc != nullptr)
+		{
+			mDescription = item_desc;
+			break;
+		}
+		prop_path = prop_path.getParent();
+	}
 	setEditable(false);
 }
 
@@ -108,19 +123,8 @@ QVariant napkin::PropertyPathItem::data(int role) const
 			return QVariant::fromValue(mPath);
 		}
 		case Qt::ToolTipRole:
-		{
-			auto prop_path = getPath();
-			while (prop_path.hasProperty())
-			{
-				auto item_prop = prop_path.resolve().getProperty(); assert(item_prop.is_valid());
-				const auto* item_desc = nap::rtti::getDescription(item_prop);
-				if (item_desc != nullptr)
-				{
-					return nap::rtti::getDescription(item_prop);
-				}
-				prop_path = prop_path.getParent();
-			}
-			return QStandardItem::data(role);
+		{	
+			return mDescription.isNull() ? QStandardItem::data(role) : mDescription;
 		}
 		case Qt::ForegroundRole:
 		{
