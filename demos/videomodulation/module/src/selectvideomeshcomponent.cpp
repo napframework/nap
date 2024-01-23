@@ -11,8 +11,8 @@
 
 // nap::selectvideomeshcomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SelectVideoMeshComponent)
-	RTTI_PROPERTY("Meshes",	&nap::SelectVideoMeshComponent::mMeshes,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",	&nap::SelectVideoMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Meshes",	&nap::SelectVideoMeshComponent::mMeshes,	nap::rtti::EPropertyMetaData::Required,	"Link to video mesh files")
+	RTTI_PROPERTY("Index",	&nap::SelectVideoMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default,	"Initial video index")
 RTTI_END_CLASS
 
 // nap::selectvideomeshcomponentInstance run time class definition 
