@@ -10,6 +10,7 @@
 	#include "pythonmodule.h"
 #endif
 #include <utility/dllexport.h>
+#include <string.h>
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
@@ -145,15 +146,34 @@ namespace nap
 		using VariantMap = rttr::variant_associative_view;
 
 		/**
+		 * Common shared rtti properties
+		 */
+		namespace prop
+		{
+			constexpr const char* description = "description";
+		}
+
+		/**
+		 * Common shared rtti defined methods
+		 */
+		namespace method
+		{
+			constexpr const char* assign = "assign";
+			constexpr const char* toObject = "toObject";
+			constexpr const char* toString	= "toString";
+			constexpr const char* translateTargetID = "translateTargetID";
+		}
+
+		/**
 		 * Controls how an RTTI property is interpreted
 		 */
 		enum class EPropertyMetaData : uint8_t
 		{
-			Default  	= 0,				///< Uses the (class) default if the property isn't set
-			Required 	= 1,				///< Load will fail if the property isn't set
-			FileLink 	= 2,				///< Defines a relationship with an external file
-			Embedded 	= 4,				///< An embedded pointer
-			ReadOnly	= 8					///< A read only property in Python
+			Default  	= 0,		///< Uses the (class) default if the property isn't set
+			Required 	= 1,		///< Load will fail if the property isn't set
+			FileLink 	= 2,		///< Defines a relationship with an external file
+			Embedded 	= 4,		///< An embedded pointer
+			ReadOnly	= 8			///< A read only property in Python
 		};
 
 		/**
@@ -206,8 +226,8 @@ namespace nap
 		}
 
 		/**
-		 * Checks if a description is defined (provided) for the given property.
-		 * @return if a description is defined for the given property.
+		 * Checks if a description is provided for the given property.
+		 * @return if a description is provided for the given property.
 		 */
 		inline bool hasDescription(const rtti::Property& property)
 		{
@@ -225,7 +245,18 @@ namespace nap
 		}
 
 		/**
+		 * Checks if a description is provided for the given type.
+		 * @return if a description is provided for the given type.
+		 */
+		inline bool hasDescription(const rtti::TypeInfo& type)
+		{
+			auto description_prop = type.get_property(rtti::prop::description);
+			return description_prop.is_valid();
+		}
+
+		/**
 		 * Helper function to check whether a property is associated with a specific type of file
+		 * @return if the property is a specific type of file
 		 */
 		inline bool isFileType(const rtti::Property &property, EPropertyFileType filetype)
 		{
@@ -269,17 +300,6 @@ namespace nap
 		inline bool isTypeMatch(const rtti::TypeInfo& typeA, const rtti::TypeInfo& typeB, ETypeCheck typeCheck)
 		{
 			return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
-		}
-
-		/**
-		 * Common shared rtti defined methods
-		 */
-		namespace method
-		{
-			constexpr const char* assign = "assign";
-			constexpr const char* toObject = "toObject";
-			constexpr const char* toString	= "toString";
-			constexpr const char* translateTargetID = "translateTargetID";
 		}
 	}
 
@@ -385,7 +405,40 @@ namespace nap
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
-			registration::class_<Type> rtti_class_type(#Type);
+			registration::class_<Type> rtti_class_type(#Type);													
+#endif // NAP_ENABLE_PYTHON
+
+
+ /**
+  * Defines the beginning of an RTTI enabled class of @Type
+  * This macro will register the class of @Type with the RTTI system
+  * It also enables the class to be available to python
+  * @param Type the type to register
+  */
+
+#ifdef NAP_ENABLE_PYTHON
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_DESCRIPTION(Type)												\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			namespace py = pybind11;																			\
+			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
+			std::string rtti_class_type_name = #Type;															\
+			registration::class_<Type> rtti_class_type(#Type);													\
+			PythonClassType python_class(#Type);
+#else // NAP_ENABLE_PYTHON
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_DESCRIPTION(Type, Description)									\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		static const char* getTypeDescription()	{ return Description; }											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			std::string rtti_class_type_name = #Type;															\
+			registration::class_<Type> rtti_class_type(#Type);													\
+			rtti_class_type.property_readonly("description", &getTypeDescription);
 #endif // NAP_ENABLE_PYTHON
 
 
