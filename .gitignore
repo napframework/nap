@@ -98,6 +98,7 @@ thirdparty/rapidjson/thirdparty/
 *.o
 thirdparty/rttr/macos/*
 !thirdparty/rttr/macos/x86_64
+!thirdparty/rttr/macos/universal
 thirdparty/rttr/msvc/*
 !thirdparty/rttr/msvc/x86_64
 thirdparty/rttr/linux/*
