@@ -384,14 +384,18 @@ namespace nap
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
+//////////////////////////////////////////////////////////////////////////
+// RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR
+//////////////////////////////////////////////////////////////////////////
+
 /**
- * Defines the beginning of an RTTI enabled class of @Type
- * This macro will register the class of @Type with the RTTI system
- * It also enables the class to be available to python
+ * Defines the beginning of an RTTI enabled class.
+ * This macro will register the class with the RTTI system.
+ * It also enables the class to be available to python.
  * @param Type the type to register
  */
 #ifdef NAP_ENABLE_PYTHON
-	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
+	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		RTTR_REGISTRATION																						\
@@ -403,7 +407,7 @@ namespace nap
 			registration::class_<Type> rtti_class_type(#Type);													\
 			PythonClassType python_class(#Type);
 #else // NAP_ENABLE_PYTHON
-	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
+	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		RTTR_REGISTRATION																						\
@@ -415,16 +419,17 @@ namespace nap
 
 
  /**
-  * Defines the beginning of an RTTI enabled class of @Type
-  * This macro will register the class of @Type with the RTTI system
-  * It also enables the class to be available to python
+  * Defines the beginning of an RTTI enabled class with a description.
+  * This macro will register the class of with the RTTI system.
+  * It also enables the class to be available to python.
   * @param Type the type to register
+  * @param Description type description
   */
-
 #ifdef NAP_ENABLE_PYTHON
-#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_DESCRIPTION(Type)												\
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)									\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
+		static const char* getTypeDescription() { return Description; }											\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
@@ -432,9 +437,10 @@ namespace nap
 			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
+			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);						\
 			PythonClassType python_class(#Type);
 #else // NAP_ENABLE_PYTHON
-#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_DESCRIPTION(Type, Description)									\
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)									\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		static const char* getTypeDescription()	{ return Description; }											\
@@ -446,6 +452,19 @@ namespace nap
 			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);
 #endif // NAP_ENABLE_PYTHON
 
+// Selector
+#define GET_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_MACRO(_1,_2,NAME,...) NAME
+
+  /**
+   * Defines the beginning of an RTTI enabled class with an optional description
+   * This macro will register the class with the RTTI system.
+   * It also enables the class to be available to python.
+   * @param Type the type to register
+   * @param Description optional type description
+   */
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(...) GET_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_MACRO(__VA_ARGS__, RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2, RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1)(__VA_ARGS__)
+
+//////////////////////////////////////////////////////////////////////////
 
 /**
  * Registers a property that is readable and writable in C++ and Python
@@ -455,7 +474,7 @@ namespace nap
  * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
  */
 #ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_STANDARD(Name, Member, Flags)															\
+	#define RTTI_PROPERTY_3(Name, Member, Flags)															\
 			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
@@ -465,7 +484,7 @@ namespace nap
 					cls.def_readwrite(Name, Member);															\
 			});
 #else
-	#define RTTI_PROPERTY_STANDARD(Name, Member, Flags)															\
+	#define RTTI_PROPERTY_3(Name, Member, Flags)															\
 	        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
 #endif // NAP_ENABLE_PYTHON
 
@@ -478,7 +497,7 @@ namespace nap
  * @param Description property description
  */
 #ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_DESCRIPTION(Name, Member, Flags, Description)											\
+	#define RTTI_PROPERTY_4(Name, Member, Flags, Description)											\
 				rtti_class_type.property(Name, Member)( 														\
 									metadata("flags", (uint8_t)(Flags)),										\
 									metadata("description", (const char*)(Description)));						\
@@ -490,7 +509,7 @@ namespace nap
 						cls.def_readwrite(Name, Member);														\
 				});
 #else
-	#define RTTI_PROPERTY_DESCRIPTION(Name, Member, Flags, Description)											\
+	#define RTTI_PROPERTY_4(Name, Member, Flags, Description)											\
 				rtti_class_type.property(Name, Member)( 														\
 									metadata("flags", (uint8_t)(Flags)),										\
 									metadata("description", (const char*)(Description)));
@@ -507,7 +526,7 @@ namespace nap
  * @param Description optional 
  * @param Description property optional property description
  */
-#define RTTI_PROPERTY(...) GET_PROPERTY_MACRO(__VA_ARGS__, RTTI_PROPERTY_DESCRIPTION, RTTI_PROPERTY_STANDARD)(__VA_ARGS__)
+#define RTTI_PROPERTY(...) GET_PROPERTY_MACRO(__VA_ARGS__, RTTI_PROPERTY_4, RTTI_PROPERTY_3)(__VA_ARGS__)
 
 /**
  * Registers a property that will point to a file on disk
@@ -518,7 +537,7 @@ namespace nap
  * @param FileType the type of file we're going to refer to (EPropertyFileType)
  */
 #ifdef NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK_STANDARD(Name, Member, Flags, FileType)													\
+#define RTTI_PROPERTY_FILELINK_4(Name, Member, Flags, FileType)													\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));										\
@@ -527,7 +546,7 @@ namespace nap
 				cls.def_readwrite(Name, Member);																\
 			});
 #else // NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK_STANDARD(Name, Member, Flags, FileType)											\
+#define RTTI_PROPERTY_FILELINK_4(Name, Member, Flags, FileType)											\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));
@@ -543,7 +562,7 @@ namespace nap
  * @param Description property description 
  */
 #ifdef NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK_DESCRIPTION(Name, Member, Flags, FileType, Description)							\
+#define RTTI_PROPERTY_FILELINK_5(Name, Member, Flags, FileType, Description)							\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)),										\
@@ -553,7 +572,7 @@ namespace nap
 				cls.def_readwrite(Name, Member);																\
 			});
 #else // NAP_ENABLE_PYTHON
-#define RTTI_PROPERTY_FILELINK_DESCRIPTION(Name, Member, Flags, FileType, Description)							\
+#define RTTI_PROPERTY_FILELINK_5(Name, Member, Flags, FileType, Description)							\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)),										\
@@ -571,7 +590,7 @@ namespace nap
  * @param FileType the type of file we're going to refer to (EPropertyFileType)
  * @param Description optional property description
  */
-#define RTTI_PROPERTY_FILELINK(...) GET_PROPERTY_FILELINK_MACRO(__VA_ARGS__, RTTI_PROPERTY_FILELINK_DESCRIPTION, RTTI_PROPERTY_FILELINK_STANDARD)(__VA_ARGS__)
+#define RTTI_PROPERTY_FILELINK(...) GET_PROPERTY_FILELINK_MACRO(__VA_ARGS__, RTTI_PROPERTY_FILELINK_5, RTTI_PROPERTY_FILELINK_4)(__VA_ARGS__)
 
 /**
  * Registers a function of @name
