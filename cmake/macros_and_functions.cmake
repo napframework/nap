@@ -303,12 +303,12 @@ macro(find_rttr)
         if(WIN32)
             set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/msvc/x86_64/cmake")
         elseif(APPLE)
-            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake")
+            set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/macos/${ARCH}/cmake")
             find_path(
                     RTTR_DIR
                     NAMES rttr-config.cmake
                     HINTS
-                    ${THIRDPARTY_DIR}/rttr/macos/x86_64/cmake
+                    ${THIRDPARTY_DIR}/rttr/macos/${ARCH}/cmake
             )
         else()
             set(RTTR_DIR "${THIRDPARTY_DIR}/rttr/linux/${ARCH}/cmake")
