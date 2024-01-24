@@ -146,22 +146,15 @@ namespace nap
 		using VariantMap = rttr::variant_associative_view;
 
 		/**
-		 * Common shared rtti properties
-		 */
-		namespace prop
-		{
-			constexpr const char* description = "description";
-		}
-
-		/**
 		 * Common shared rtti defined methods
 		 */
 		namespace method
 		{
-			constexpr const char* assign = "assign";
-			constexpr const char* toObject = "toObject";
-			constexpr const char* toString	= "toString";
-			constexpr const char* translateTargetID = "translateTargetID";
+			constexpr const char* description = "description";					///< rtti type description
+			constexpr const char* assign = "assign";							///< assignment
+			constexpr const char* toObject = "toObject";						///< to object pointer
+			constexpr const char* toString	= "toString";						///< to object path
+			constexpr const char* translateTargetID = "translateTargetID";		///< transform id
 		}
 
 		/**
@@ -250,8 +243,20 @@ namespace nap
 		 */
 		inline bool hasDescription(const rtti::TypeInfo& type)
 		{
-			auto description_prop = type.get_property(rtti::prop::description);
-			return description_prop.is_valid();
+			auto description_method = type.get_method(rtti::method::description);
+			return description_method.is_valid();
+		}
+
+		/**
+		 * Returns the description of a type.
+		 * @return type description, nullptr when not defined.
+		 */
+		inline const char* getDescription(const rtti::TypeInfo& type)
+		{
+			auto description_method = type.get_method(rtti::method::description);
+			return description_method.is_valid() ?
+				description_method.invoke(rttr::instance()).convert<const char*>() :
+				nullptr;
 		}
 
 		/**
@@ -438,7 +443,7 @@ namespace nap
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
-			rtti_class_type.property_readonly("description", &getTypeDescription);
+			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);
 #endif // NAP_ENABLE_PYTHON
 
 
