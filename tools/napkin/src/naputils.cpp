@@ -73,11 +73,22 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type
 
 QVariant napkin::RTTITypeItem::data(int role) const
 {
-	if (role == Qt::ForegroundRole)
+	switch (role)
 	{
-		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(theme::color::dimmedItem));
+	case Qt::ForegroundRole:
+		{
+			return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(theme::color::dimmedItem));
+		}
+	case Qt::ToolTipRole:
+		{
+			const char* obj_desc = nap::rtti::getDescription(mType);
+			return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
+		}
+	default:
+		{
+			return QStandardItem::data(role);
+		}
 	}
-	return QStandardItem::data(role);
 }
 
 
