@@ -25,16 +25,27 @@ namespace nap
 			/**
 			 * Single text model item entry
 			 */
-			struct StringItem final : public QStandardItem
+			struct StringEntry final
 			{
-				StringItem() = default;
-				StringItem(const QString& text) : mText(text) {}
-				StringItem(const QString& text, const QString& tooltip) : mText(text), mTooltip(tooltip) {}
+				StringEntry() = default;
+				StringEntry(const QString& text) : mText(text) {}
+				StringEntry(const QString& text, const QString& tooltip) : mText(text), mTooltip(tooltip) {}
 
 				QString mText = "";		///< The text to display
 				QString mTooltip;		///< The tooltip to display
 			};
-			using Items = QList<StringItem>;
+			using Entries = QList<StringEntry>;
+
+			/**
+			 * Single text model item, wraps an entry
+			 */
+			class StringItem final : public QStandardItem
+			{
+			public:
+				StringItem(StringEntry&& entry) : QStandardItem(entry.mText), mEntry(std::move(entry)) { }
+				StringItem(const StringEntry& entry) : QStandardItem(entry.mText), mEntry(entry) { }
+				StringEntry mEntry;
+			};
 
 			/**
 			 * Returns text or tooltip data
@@ -45,10 +56,13 @@ namespace nap
 			 * Constructor
 			 * @param items item data
 			 */
-			StringModel(const Items& items) : mItems(items) { }
+			StringModel(const Entries& items);
 
-		private:
-			StringModel::Items mItems;
+			/**
+			 * Move Constructor
+			 * @param items movable item data
+			 */
+			StringModel(Entries&& items);
 		};
 
 

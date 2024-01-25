@@ -176,16 +176,34 @@ QVariant StringModel::data(const QModelIndex& index, int role) const
 		{
 			auto* string_item = static_cast<StringModel::StringItem*>(itemFromIndex(index));
 			assert(string_item != nullptr);
-			return string_item->mText;
+			return string_item->mEntry.mText;
 		}
 	case Qt::ToolTipRole:
 		{
 			auto* string_item = static_cast<StringModel::StringItem*>(itemFromIndex(index));
 			assert(string_item != nullptr);
-			return string_item->mTooltip.isNull() ? QStandardItemModel::data(index, role) :
-				string_item->mTooltip;
+			return string_item->mEntry.mTooltip.isNull() ? QStandardItemModel::data(index, role) :
+				string_item->mEntry.mTooltip;
 		}
 	default:
 		return QStandardItemModel::data(index, role);
+	}
+}
+
+
+StringModel::StringModel(const Entries& items)
+{
+	for (const auto& item : items)
+	{
+		appendRow(new StringItem(item));
+	}
+}
+
+
+nap::qt::StringModel::StringModel(Entries&& items)
+{
+	for (auto& item : items)
+	{
+		appendRow(new StringItem(std::move(item)));
 	}
 }
