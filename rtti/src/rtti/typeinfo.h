@@ -928,9 +928,9 @@ namespace nap
 #define GET_RTTI_DEFINE_BASE_MACRO(_1,_2,NAME,...) NAME
 
   /**
-   * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
-   * The rtti constructor creates the object with a new-expression and it's lifetime lasts until destroyed.
-   * In order to invoke the delete expression use the corresponding rtti destructor.
+   * Defines an abstract (not create-able) class of Type.
+   * This class can't be constructed using the RTTI system.
+   * Use this macro for defining abstract or base classes.
    * @param Type the type to register
    * @param Description optional type description
    */

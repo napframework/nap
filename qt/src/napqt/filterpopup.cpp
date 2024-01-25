@@ -166,3 +166,26 @@ void FilterPopup::computeSize()
 	setFixedSize(300, qMin(height, 500));
 	adjustSize();
 }
+
+
+QVariant StringModel::data(const QModelIndex& index, int role) const
+{
+	switch (role)
+	{
+	case Qt::DisplayRole:
+		{
+			auto* string_item = static_cast<StringModel::StringItem*>(itemFromIndex(index));
+			assert(string_item != nullptr);
+			return string_item->mText;
+		}
+	case Qt::ToolTipRole:
+		{
+			auto* string_item = static_cast<StringModel::StringItem*>(itemFromIndex(index));
+			assert(string_item != nullptr);
+			return string_item->mTooltip.isNull() ? QStandardItemModel::data(index, role) :
+				string_item->mTooltip;
+		}
+	default:
+		return QStandardItemModel::data(index, role);
+	}
+}

@@ -15,7 +15,45 @@ namespace nap
 	namespace qt
 	{
 		/**
-		 * A popup list of strings that can be filtered
+		 * Simple text model with tooltip.
+		 * Replacement for QStringListModel, which doesn't support tooltips
+		 */
+		class StringModel final : public QStandardItemModel
+		{
+			Q_OBJECT
+		public:
+			/**
+			 * Single text model item entry
+			 */
+			struct StringItem final : public QStandardItem
+			{
+				StringItem() = default;
+				StringItem(const QString& text) : mText(text) {}
+				StringItem(const QString& text, const QString& tooltip) : mText(text), mTooltip(tooltip) {}
+
+				QString mText = "";		///< The text to display
+				QString mTooltip;		///< The tooltip to display
+			};
+			using Items = QList<StringItem>;
+
+			/**
+			 * Returns text or tooltip data
+			 */
+			virtual QVariant data(const QModelIndex& index, int role) const override;
+
+			/**
+			 * Constructor
+			 * @param items item data
+			 */
+			StringModel(const Items& items) : mItems(items) { }
+
+		private:
+			StringModel::Items mItems;
+		};
+
+
+		/**
+		 * A popup list of String items that can be filtered
 		 */
 		class FilterPopup : public QMenu
 		{

@@ -22,7 +22,7 @@ RTTI_BEGIN_CLASS(nap::TransformProperties)
 	RTTI_PROPERTY("UniformScale",	&nap::TransformProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default, "Uniform scaling factor")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::TransformComponent)
+RTTI_BEGIN_CLASS(nap::TransformComponent, "Controls the position, rotation and scale of an entity")
 	RTTI_PROPERTY("Properties", &nap::TransformComponent::mProperties, nap::rtti::EPropertyMetaData::Default, "Translation, Rotation and Scale")
 RTTI_END_CLASS
 
