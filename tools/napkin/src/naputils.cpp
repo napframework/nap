@@ -131,11 +131,20 @@ nap::rtti::ObjectSet napkin::topLevelObjects()
 
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
-	QStringList ids;
+	using namespace nap::qt;
+	StringModel::Entries entries;
 	for (auto& obj : objects)
-		ids << QString::fromStdString(obj->mID);
+	{
+		const char* obj_desc = nap::rtti::getDescription(obj->get_type());
+		if (obj_desc != nullptr)
+		{
+			entries << StringModel::Entry(QString::fromStdString(obj->mID), QString(obj_desc));
+			continue;
+		}
+		entries << QString::fromStdString(obj->mID);
+	}
 
-	auto selectedID = nap::qt::FilterPopup::show(parent, ids).toStdString();
+	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(entries)).toStdString();
 	if (selectedID.empty())
 		return nullptr;
 
@@ -149,30 +158,38 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 
 nap::rtti::TypeInfo napkin::showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName)
 {
+	using namespace nap::qt;
 	auto* material = rtti_cast<nap::Material>(prop.getObject());
 	assert(material != nullptr);
 	if (material->mShader == nullptr)
 		return nap::rtti::TypeInfo::empty();
 
-	QStringList names;
+	StringModel::Entries names;
 	const auto& ubo_decs = material->mShader->getUBODeclarations();
 	for (const auto& dec : ubo_decs)
-	{
-		names << QString::fromStdString(dec.mName);
-	}
+		names << StringModel::Entry(QString::fromStdString(dec.mName));
 
-	auto selectedID = nap::qt::FilterPopup::show(parent, names).toStdString();
+	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
 	return nap::rtti::TypeInfo::empty();
 }
 
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
-	QStringList names;
+	using namespace nap::qt;
+	StringModel::Entries names;
 	for (const auto& t : getTypes(predicate))
-		names << QString::fromStdString(std::string(t.get_name().data()));
+	{
+		const char* type_desc = nap::rtti::getDescription(t);
+		if (type_desc != nullptr)
+		{
+			names << StringModel::Entry(QString(t.get_name().data()), QString(type_desc));
+			continue;
+		}
+		names << QString(t.get_name().data());
+	}
 
-	auto selectedName = nap::qt::FilterPopup::show(parent, names).toStdString();
+	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
 	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
