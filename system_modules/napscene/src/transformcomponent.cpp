@@ -17,7 +17,7 @@
 
 RTTI_BEGIN_CLASS(nap::TransformProperties)
 	RTTI_PROPERTY("Translate",		&nap::TransformProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default, "Position (x, y, z)")
-	RTTI_PROPERTY("Rotate",			&nap::TransformProperties::mRotate,			nap::rtti::EPropertyMetaData::Default, "Amount of rotation in degrees (yaw, pitch, roll)")
+	RTTI_PROPERTY("Rotate",			&nap::TransformProperties::mRotate,			nap::rtti::EPropertyMetaData::Default, "Rotation in degrees (yaw, pitch, roll)")
 	RTTI_PROPERTY("Scale",			&nap::TransformProperties::mScale,			nap::rtti::EPropertyMetaData::Default, "Axis scaling factor (x, y, z)")
 	RTTI_PROPERTY("UniformScale",	&nap::TransformProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default, "Uniform scaling factor")
 RTTI_END_CLASS

@@ -20,7 +20,6 @@ namespace nap
 		 */
 		class StringModel final : public QStandardItemModel
 		{
-			Q_OBJECT
 		public:
 			/**
 			 * Single text model item entry with optional tooltip
