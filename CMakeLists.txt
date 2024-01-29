@@ -72,6 +72,7 @@ add_subdirectory(demos/skybox)
 add_subdirectory(demos/udpsend)
 add_subdirectory(demos/udpreceive)
 add_subdirectory(demos/linemorphing)
+add_subdirectory(demos/spotlight)
 
 if(APPLE)
     set(GENERATE_XCODE_PROJECT_TARGET generateXcodeProject)

@@ -1,0 +1,14 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "Spotlight",
+    "Version": "1.0.0",
+    "RequiredModules": [
+        "napspotlight",
+        "napapp",
+        "napparametergui"
+    ],
+    "Data": "data/default.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}
