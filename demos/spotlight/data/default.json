@@ -1,6 +1,10 @@
 {
     "Objects": [
         {
+            "Type": "nap::ConstantShader",
+            "mID": "ConstantShader"
+        },
+        {
             "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
@@ -46,14 +50,16 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
-                    "MovementSpeed": 0.5,
-                    "RotateSpeed": 0.004999999888241291,
+                    "MovementSpeed": 0.10000000149011612,
+                    "RotateSpeed": 0.003000000026077032,
                     "PerspCameraComponent": "./PerspectiveCamera",
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    }
+                    },
+                    "MinimumZoomDistance": 0.5,
+                    "LimitZoomDistance": false
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -70,6 +76,9 @@
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomon",
                     "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
                     "Gnomon": "Gnomon",
                     "LineWidth": 1.0,
                     "DepthMode": "ReadWrite"
@@ -100,6 +109,158 @@
             "Children": []
         },
         {
+            "Type": "nap::Entity",
+            "mID": "PlaneEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PlaneTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderPlaneComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
+                    "Mesh": "PlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UBO_17d9d1f4",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "color_f3814ad3",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 0.0,
+                                            "y": 1.0,
+                                            "z": 0.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TorusEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TorusTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderTorusComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "LayerRegistry": "",
+                    "Layer": "",
+                    "Mesh": "TorusMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UBO_c6542790",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "color_7bccacee",
+                                        "Name": "color",
+                                        "Value": {
+                                            "x": 1.0,
+                                            "y": 0.0,
+                                            "z": 0.0
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "ConstantMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::GnomonMesh",
             "mID": "Gnomon",
             "Size": 1.0,
@@ -108,6 +269,57 @@
                 "y": 0.0,
                 "z": 0.0
             }
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "ConstantMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UBO_58e18454",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "alpha_94de0757",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "Constants": [],
+            "Shader": "ConstantShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
+        },
+        {
+            "Type": "nap::PlaneMesh",
+            "mID": "PlaneMesh",
+            "Usage": "Static",
+            "CullMode": "None",
+            "PolygonMode": "Fill",
+            "Size": {
+                "x": 20.0,
+                "y": 20.0
+            },
+            "Position": {
+                "x": 0.0,
+                "y": 0.0
+            },
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            },
+            "Rows": 1,
+            "Columns": 1
         },
         {
             "Type": "nap::RenderWindow",
@@ -121,13 +333,17 @@
             "Height": 720,
             "Mode": "Immediate",
             "ClearColor": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": 0.0,
-                "w": 1.0
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",
@@ -140,8 +356,36 @@
                 {
                     "Entity": "CameraEntity",
                     "InstanceProperties": []
+                },
+                {
+                    "Entity": "TorusEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PlaneEntity",
+                    "InstanceProperties": []
                 }
             ]
+        },
+        {
+            "Type": "nap::TorusMesh",
+            "mID": "TorusMesh",
+            "Radius": 0.75,
+            "TubeRadius": 0.25,
+            "Segments": 64,
+            "TubeSegments": 64,
+            "AngleOffset": 0.0,
+            "Usage": "Static",
+            "PolygonMode": "Fill",
+            "CullMode": "Back",
+            "Color": {
+                "Values": [
+                    1.0,
+                    1.0,
+                    1.0,
+                    1.0
+                ]
+            }
         }
     ]
 }

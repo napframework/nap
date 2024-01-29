@@ -6,6 +6,7 @@
 #include <nap/logger.h>
 #include <inputrouter.h>
 #include <rendergnomoncomponent.h>
+#include <renderablemeshcomponent.h>
 #include <perspcameracomponent.h>
 
 namespace nap 
@@ -34,6 +35,8 @@ namespace nap
 		// Get the camera and origin Gnomon entity
 		mCameraEntity = mScene->findEntity("CameraEntity");
 		mGnomonEntity = mScene->findEntity("GnomonEntity");
+		mTorusEntity = mScene->findEntity("TorusEntity");
+		mPlaneEntity = mScene->findEntity("PlaneEntity");
 
 		// All done!
         return true;
@@ -60,7 +63,9 @@ namespace nap
 			// Add Gnomon
 			std::vector<nap::RenderableComponentInstance*> components_to_render
 			{
-				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
+				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>(),
+				&mPlaneEntity->getComponent<RenderableMeshComponentInstance>(),
+				&mTorusEntity->getComponent<RenderableMeshComponentInstance>()
 			};
 
 			// Render Gnomon
