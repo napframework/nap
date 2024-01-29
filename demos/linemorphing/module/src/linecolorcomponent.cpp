@@ -11,13 +11,13 @@
 #include <nap/numeric.h>
 
 RTTI_BEGIN_CLASS(nap::LineColorComponent)
-	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("FirstColor",				&nap::LineColorComponent::mColorOne,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SecondColor",			&nap::LineColorComponent::mColorTwo,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Intensity",				&nap::LineColorComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default)	
-	RTTI_PROPERTY("Wrap",					&nap::LineColorComponent::mWrap,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WrapPower",				&nap::LineColorComponent::mWrapPower,			nap::rtti::EPropertyMetaData::Default)		
-	RTTI_PROPERTY("Link",					&nap::LineColorComponent::mLink,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,		nap::rtti::EPropertyMetaData::Required, "Link to the line blender")
+	RTTI_PROPERTY("FirstColor",				&nap::LineColorComponent::mColorOne,			nap::rtti::EPropertyMetaData::Required, "Start color")
+	RTTI_PROPERTY("SecondColor",			&nap::LineColorComponent::mColorTwo,			nap::rtti::EPropertyMetaData::Required, "End color")
+	RTTI_PROPERTY("Intensity",				&nap::LineColorComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default,	"Spline intensity")
+	RTTI_PROPERTY("Wrap",					&nap::LineColorComponent::mWrap,				nap::rtti::EPropertyMetaData::Default,	"If the color values should be wrapped")
+	RTTI_PROPERTY("WrapPower",				&nap::LineColorComponent::mWrapPower,			nap::rtti::EPropertyMetaData::Default,	"Wrap intensity")
+	RTTI_PROPERTY("Link",					&nap::LineColorComponent::mLink,				nap::rtti::EPropertyMetaData::Default,	"Only use the first color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineColorComponentInstance)

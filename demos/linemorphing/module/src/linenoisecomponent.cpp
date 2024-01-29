@@ -11,14 +11,14 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_STRUCT(nap::NoiseProperties)
-	RTTI_PROPERTY("Frequency",				&nap::NoiseProperties::mFrequency,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FrequencySmoothTime",	&nap::NoiseProperties::mFrequencySmoothTime,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",					&nap::NoiseProperties::mSpeed,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SpeedSmoothTime",		&nap::NoiseProperties::mSpeedSmoothTime,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Offset",					&nap::NoiseProperties::mOffset,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OffsetSmoothTime",		&nap::NoiseProperties::mOffsetSmoothTime,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Amplitude",				&nap::NoiseProperties::mAmplitude,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AmplitudeSmoothTime",	&nap::NoiseProperties::mAmplitudeSmoothTime,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Frequency",				&nap::NoiseProperties::mFrequency,				nap::rtti::EPropertyMetaData::Default,	"Noise frequency")
+	RTTI_PROPERTY("FrequencySmoothTime",	&nap::NoiseProperties::mFrequencySmoothTime,	nap::rtti::EPropertyMetaData::Default,	"Noise frequency smooth time (seconds)")
+	RTTI_PROPERTY("Speed",					&nap::NoiseProperties::mSpeed,					nap::rtti::EPropertyMetaData::Default,	"Noise speed")
+	RTTI_PROPERTY("SpeedSmoothTime",		&nap::NoiseProperties::mSpeedSmoothTime,		nap::rtti::EPropertyMetaData::Default,	"Noise speed smooth time (seconds)")
+	RTTI_PROPERTY("Offset",					&nap::NoiseProperties::mOffset,					nap::rtti::EPropertyMetaData::Default,	"Noise offset")
+	RTTI_PROPERTY("OffsetSmoothTime",		&nap::NoiseProperties::mOffsetSmoothTime,		nap::rtti::EPropertyMetaData::Default,	"Noise offset smooth time (seconds)")
+	RTTI_PROPERTY("Amplitude",				&nap::NoiseProperties::mAmplitude,				nap::rtti::EPropertyMetaData::Default,	"Noise amplitude")
+	RTTI_PROPERTY("AmplitudeSmoothTime",	&nap::NoiseProperties::mAmplitudeSmoothTime,	nap::rtti::EPropertyMetaData::Default,	"Noise ampliture smooth time (seconds)")
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS(nap::LineNoiseComponent)

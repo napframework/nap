@@ -11,8 +11,8 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::LineSelectionComponent)
-	RTTI_PROPERTY("Lines", &nap::LineSelectionComponent::mLines, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index", &nap::LineSelectionComponent::mIndex, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Lines", &nap::LineSelectionComponent::mLines, nap::rtti::EPropertyMetaData::Required, "List of available poly lines")
+	RTTI_PROPERTY("Index", &nap::LineSelectionComponent::mIndex, nap::rtti::EPropertyMetaData::Required, "Initial line selection index")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineSelectionComponentInstance)

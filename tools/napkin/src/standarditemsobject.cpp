@@ -371,6 +371,11 @@ QVariant ObjectItem::data(int role) const
 			AppContext::get().getThemeManager().getColor(theme::color::dimmedItem) :
 			QStandardItem::data(role);
 	}
+	case Qt::ToolTipRole:
+	{
+		const char* obj_desc = nap::rtti::getDescription(getObject().get_type());
+		return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
+	}
 	default:
 		return QStandardItem::data(role);
 	}
@@ -635,7 +640,7 @@ QVariant napkin::GroupItem::data(int role) const
 	case Qt::DecorationRole:
 		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_GROUP);
 	default:
-		return QStandardItem::data(role);
+		return ObjectItem::data(role);
 	}
 }
 
