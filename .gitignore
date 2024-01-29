@@ -21,7 +21,6 @@ system_modules/napinput/Debug/
 system_modules/napetherservice/Debug/
 core/Release/
 system_modules/napinput/Release/
-lib/
 test/unittest/Release/unittest.vcxprojResolveAssemblyReference.cache
 *.user
 system_modules/napawesomium/Release/napawesomium.vcxprojResolveAssemblyReference.cache
