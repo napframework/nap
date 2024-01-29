@@ -22,9 +22,9 @@ namespace nap
 	 */
 	struct NAPAPI RotateProperties
 	{
-		glm::vec3	mAxis	= {0.0f, 1.0f, 0.0f};	///< Property: 'Axis' Rotation axis
-		float		mSpeed	= 1.0f;					///< Property: 'Speed' Rotation speed (seconds)
-		float		mOffset	= 0.0f;					///< Property: 'Offset' Rotation offset in seconds
+		glm::vec3	mAxis	= {0.0f, 1.0f, 0.0f};	///< Property: 'Axis' Rotation axis (x, y, z)
+		float		mSpeed	= 1.0f;					///< Property: 'Speed' Rotation speed in seconds, where 1 second = 360*
+		float		mOffset	= 0.0f;					///< Property: 'Offset' Rotation offset in seconds, where 1 second = 360*
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -44,16 +44,16 @@ namespace nap
 		DECLARE_COMPONENT(RotateComponent, RotateComponentInstance)
 	public:
 		/**
-		* Uses transform to rotate itself in the world.
-		*/
+		 * Uses transform to rotate itself in the world.
+		 */
 		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
 
 	public:
-		RotateProperties mProperties;
-		bool mEnabled = true;
+		RotateProperties mProperties;			///< Property: 'Properties' Rotation settings
+		bool mEnabled = true;					///< Property: 'Enabled' If rotation is enabled
 	};
 
 	//////////////////////////////////////////////////////////////////////////
