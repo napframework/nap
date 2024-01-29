@@ -2067,7 +2067,7 @@ namespace nap
 		{
 			auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
 			if (layer_registries.size() > 1)
-				nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_STR(RenderService).c_str(), RTTI_STR(RenderLayerRegistry).c_str());
+				nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_OF(RenderService).get_name().data(), RTTI_OF(RenderLayerRegistry).get_name().data());
 
 			if (!layer_registries.empty())
 				mRenderLayerRegistry = layer_registries.front();

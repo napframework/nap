@@ -13,10 +13,10 @@
 #include <numeric>
 
 RTTI_BEGIN_CLASS(nap::LineAutoSwitchComponent)
-	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineAutoSwitchComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineAutoSwitchComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendComponent",			&nap::LineAutoSwitchComponent::mBlendComponent,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Random",					&nap::LineAutoSwitchComponent::mRandom,					nap::rtti::EPropertyMetaData::Default)					
+	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineAutoSwitchComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required, "Link to the first line selector")
+	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineAutoSwitchComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required, "Link to the second line selector")
+	RTTI_PROPERTY("BlendComponent",			&nap::LineAutoSwitchComponent::mBlendComponent,			nap::rtti::EPropertyMetaData::Required, "Link to the component that blends between the first and second line selector")
+	RTTI_PROPERTY("Random",					&nap::LineAutoSwitchComponent::mRandom,					nap::rtti::EPropertyMetaData::Default,	"Selects a random line when completed instead of the next")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineAutoSwitchComponentInstance)

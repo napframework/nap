@@ -11,11 +11,11 @@
 #include <nap/logger.h>
 
 RTTI_BEGIN_CLASS(nap::LineBlendComponent)
-	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineBlendComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineBlendComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Target",					&nap::LineBlendComponent::mTarget,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendValue",				&nap::LineBlendComponent::mBlendValue,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendSpeed",				&nap::LineBlendComponent::mBlendSpeed,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineBlendComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required, "Link to the first line selector")
+	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineBlendComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required, "Link to the second line selector")
+	RTTI_PROPERTY("Target",					&nap::LineBlendComponent::mTarget,					nap::rtti::EPropertyMetaData::Required, "Target poly line on which blend operation is performed")
+	RTTI_PROPERTY("BlendValue",				&nap::LineBlendComponent::mBlendValue,				nap::rtti::EPropertyMetaData::Required, "Initial blend value")
+	RTTI_PROPERTY("BlendSpeed",				&nap::LineBlendComponent::mBlendSpeed,				nap::rtti::EPropertyMetaData::Required, "Blend speed")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineBlendComponentInstance)

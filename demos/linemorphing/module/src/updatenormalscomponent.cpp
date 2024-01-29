@@ -10,7 +10,7 @@
 
 // nap::updatenormalscomponent run time class definition 
 RTTI_BEGIN_CLASS(nap::UpdateNormalsComponent)
-	RTTI_PROPERTY("NormalMesh", &nap::UpdateNormalsComponent::mNormalMesh, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("NormalMesh", &nap::UpdateNormalsComponent::mNormalMesh, nap::rtti::EPropertyMetaData::Required, "The mesh to visualize the normals of")
 RTTI_END_CLASS
 
 // nap::updatenormalscomponentInstance run time class definition 
