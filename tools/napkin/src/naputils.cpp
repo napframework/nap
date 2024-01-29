@@ -63,9 +63,11 @@ void napkin::dumpTypes(rttr::type type, const std::string& indent)
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
 {
-	QString type_name(type.get_name().data());
+	assert(mType.is_valid());
+	QString type_name(type.get_name().data()); 
 	auto parts = type_name.split(','); assert(parts.size() > 0);
-	parts.first().remove("class ");
+	parts.first().remove("class"); 
+	parts.first().remove(' ');
 	setText(parts.first());
 	setEditable(false);
 }
