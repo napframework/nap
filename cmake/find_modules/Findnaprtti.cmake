@@ -83,6 +83,7 @@ if(NOT WIN32)
         add_custom_command(TARGET ${PROJECT_NAME}
                            POST_BUILD
                            COMMAND sh -c \"${CMAKE_INSTALL_NAME_TOOL} -add_rpath ${THIRDPARTY_DIR}/rttr/macos/${ARCH}/bin $<TARGET_FILE:${PROJECT_NAME}> 2>/dev/null\;exit 0\"
+                           COMMAND codesign -f -s -  $<TARGET_FILE:${PROJECT_NAME}>
                            )
     endif()
 
