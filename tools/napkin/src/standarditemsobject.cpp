@@ -484,17 +484,10 @@ void napkin::ObjectItem::onObjectReparenting(nap::rtti::Object& object, Property
 
 EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity, isPointer)
 {
-	mChildPropertyPath = PropertyPath(getEntity(),
-		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
-	assert(mChildPropertyPath.isValid());
-
-	mCompPropertyPath = PropertyPath(getEntity(),
-		nap::rtti::Path::fromString(nap::Entity::componentsPropertyName()), *AppContext::get().getDocument());
-	assert(mCompPropertyPath.isValid());
-
 	// Populate item
 	populate();
 
+	// Handle data model changes
 	auto& ctx = AppContext::get();
 	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
@@ -511,6 +504,7 @@ nap::Entity& EntityItem::getEntity()
 
 void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
+	// Bail if we're not handling this object
 	if (parent != mObject)
 		return;
 
@@ -526,6 +520,7 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 
 void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 {
+	// Bail if we're not handling this object
 	if (owner != mObject)
 		return;
 
@@ -540,9 +535,14 @@ void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
 
 void napkin::EntityItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
 {
+	// Bail if we're not handling this object
+	if (path.getObject() != mObject)
+		return;
+
 	// Only handle component index changes because sub-tree is rebuild when entity order changes
 	// TODO: properly handle child entity changes -> implementation below is optimized for it
-	if (path != mCompPropertyPath)
+	auto comp_path = PropertyPath(mObject->mID, nap::Entity::componentsPropertyName(), *AppContext::get().getDocument());
+	if (path != comp_path)
 		return;
 
 	// Swap child items and notify
@@ -553,8 +553,13 @@ void napkin::EntityItem::onIndexSwapped(const PropertyPath& path, size_t oldInde
 
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
+	// Bail if we're not handling this object
+	if (mObject != path.getObject())
+		return;
+
 	// Check if the children property was edited
-	if (path == mChildPropertyPath)
+	auto child_path = PropertyPath(mObject->mID, nap::Entity::childrenPropertyName(), *AppContext::get().getDocument());
+	if (path == child_path)
 	{
 		populate();
 	}

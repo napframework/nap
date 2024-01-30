@@ -290,9 +290,6 @@ namespace napkin
 		void onPropertyValueChanged(const PropertyPath& path);
 		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 		void populate();
-
-		PropertyPath mCompPropertyPath;
-		PropertyPath mChildPropertyPath;
 	};
 
 
