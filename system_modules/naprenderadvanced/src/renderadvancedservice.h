@@ -16,7 +16,7 @@
 #include "cubedepthrendertarget.h"
 #include "lightcomponent.h"
 #include "lightflags.h"
-#include "rendermask.h"
+#include "rendertag.h"
 #include "nomesh.h"
 #include "rendercommand.h"
 

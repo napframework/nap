@@ -18,7 +18,6 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
-#include "rendermask.h"
 #include "shaderconstant.h"
 
 // External Includes
@@ -2119,11 +2118,11 @@ namespace nap
 	}
 
 
-	uint RenderService::getTagIndex(const RenderTag& renderTag) const
+	RenderMask RenderService::getRenderMask(const RenderTag& renderTag) const
 	{
 		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
 		assert(it != mRenderTagRegistry.end());
-		return static_cast<uint>(it - mRenderTagRegistry.begin());
+		return static_cast<RenderMask>(1) << static_cast<uint>(it - mRenderTagRegistry.begin());
 	}
 
 

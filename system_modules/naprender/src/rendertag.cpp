@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "rendermask.h"
+#include "rendertag.h"
 #include "renderservice.h"
 
 // External includes
@@ -37,6 +37,6 @@ namespace nap
 
 	nap::RenderMask RenderTag::getMask() const
 	{
-		return 1 << mRenderService.getTagIndex(*this);
+		return mRenderService.getRenderMask(*this);
 	}
 }

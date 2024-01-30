@@ -4,15 +4,12 @@
 
 #pragma once
 
-// Local includes
-#include "vulkan/vulkan_core.h"
-#include "rtti/typeinfo.h"
-
 // External Includes
 #include <nap/device.h>
 #include <nap/resourceptr.h>
 #include <nap/numeric.h>
 #include <nap/group.h>
+#include <rtti/typeinfo.h>
 #include <string>
 #include <vector>
 

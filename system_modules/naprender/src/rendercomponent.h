@@ -11,7 +11,7 @@
 #include <cameracomponent.h>
 
 // Local includes
-#include "rendermask.h"
+#include "rendertag.h"
 #include "renderlayer.h"
 
 namespace nap

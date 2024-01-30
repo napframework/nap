@@ -5,7 +5,7 @@
 // Local Includes
 #include "rendercomponent.h"
 #include "renderservice.h"
-#include "rendermask.h"
+#include "rendertag.h"
 
 // NAP Includes
 #include <entity.h>
