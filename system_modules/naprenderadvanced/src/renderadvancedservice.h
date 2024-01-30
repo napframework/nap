@@ -153,7 +153,7 @@ namespace nap
 		 * @param updateMaterials whether to update uniform and sampler data with a call to `pushLights`
 		 * @param renderMask render mask specifying what components to include in the shadow map 
 		 */
-		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true, RenderMask renderMask = 0U);
+		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true, RenderMask renderMask = 0);
 
 		/**
 		 * Push light data In order for shaders to be compatible with the light system they must include an uniform struct with 

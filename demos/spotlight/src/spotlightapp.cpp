@@ -35,11 +35,11 @@ namespace nap
 
 		// Get the camera and origin Gnomon entity
 		mCameraEntity = mScene->findEntity("CameraEntity");
-		mObjectsEntity = mScene->findEntity("ObjectsEntity");
+		mSceneEntity = mScene->findEntity("SceneEntity");
 
 		// Tags used to group and mask render objects
-		mDefaultTag = mResourceManager->findObject("Default");
-		mDebugTag = mResourceManager->findObject("Debug");
+		mSceneTag = mResourceManager->findObject("SceneTag");
+		mDebugTag = mResourceManager->findObject("DebugTag");
 
 		// All done!
         return true;
@@ -54,6 +54,17 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		// Get all the possible objects to render
+		std::vector<RenderableComponentInstance*> render_comps;
+		mSceneEntity->getComponentsOfTypeRecursive<nap::RenderableComponentInstance>(render_comps);
+
+		// Bake shadow maps
+		if (mRenderService->beginHeadlessRecording())
+		{
+			mRenderAdvancedService->renderShadows(render_comps, true, *mSceneTag);
+			mRenderService->endHeadlessRecording();
+		}
+
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
@@ -63,16 +74,8 @@ namespace nap
 			// Get Perspective camera to render with
 			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
-			// Get all the possible objects to render
-			std::vector<RenderableComponentInstance*> render_comps;
-			mObjectsEntity->getComponentsOfTypeRecursive<nap::RenderableComponentInstance>(render_comps);
-
-			auto scene_objects = mRenderService->filterObjects(render_comps, *mDefaultTag);
-			utility::ErrorState error;
-			if (!mRenderAdvancedService->pushLights(scene_objects, error))
-				nap::Logger::error(error.toString());
-
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDefaultTag);
+			// Render all the objects
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mSceneTag);
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDebugTag);
 
 			// Draw GUI elements

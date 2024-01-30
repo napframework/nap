@@ -81,10 +81,10 @@ namespace nap
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			///< Pointer to the render window	
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
 		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;			///< Pointer to the entity that holds the perspective camera
-		ObjectPtr<EntityInstance>	mObjectsEntity = nullptr;			///< Pointer to the entity that holds the objects to render
+		ObjectPtr<EntityInstance>	mSceneEntity = nullptr;				///< Pointer to the entity that holds the objects to render
 
 		// Render masks
-		ObjectPtr<RenderTag>		mDefaultTag = nullptr;				///< Pointer to the render object tag 
+		ObjectPtr<RenderTag>		mSceneTag = nullptr;				///< Pointer to the render object tag 
 		ObjectPtr<RenderTag>		mDebugTag = nullptr;				///< Pointer to the render debug tag
 	};
 }
