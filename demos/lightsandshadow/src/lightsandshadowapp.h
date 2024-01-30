@@ -85,6 +85,6 @@ namespace nap
 		std::unordered_map<std::string, glm::vec3> mLightEuler;			//< Light euler rotations
 		std::unordered_map<std::string, glm::vec3> mLightXform;			//< Light transformations
 
-		RenderMask mShadowMask = 0;										//< Shadow mask cache
+		rtti::ObjectPtr<RenderTag> mShadowTag = 0;						//< Shadow tag
 	};
 }

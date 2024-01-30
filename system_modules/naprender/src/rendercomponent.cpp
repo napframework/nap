@@ -48,11 +48,13 @@ namespace nap
 		// Ensure there are no tag entries that are nullptrs
 		for (const auto& tag : resource->mTags)
 		{
+			// Ensure tag is present
 			if (!errorState.check(tag != nullptr, "%s: Empty tag entry encountered", resource->mID.c_str()))
 				return false;
-		}
-		mRenderMask = createRenderMask(resource->mTags);
 
+			// Add to render mask
+			mRenderMask |= tag->getMask();
+		}
 		return true;
 	}
 

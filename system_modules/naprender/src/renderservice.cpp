@@ -1518,7 +1518,7 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && compareRenderMask(comp->getRenderMask(), renderMask))
+			if (comp->isSupported(camera) && comp->includesMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1568,7 +1568,7 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (compareRenderMask(comp->getRenderMask(), renderMask))
+			if (comp->includesMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 		return render_comps;
@@ -2045,17 +2045,17 @@ namespace nap
 	}
 
 
-	RenderMask RenderService::findRenderMask(const std::string& tagName)
+	RenderMask RenderService::getRenderMask(const std::string& tagName)
 	{
 		if (mRenderTagRegistry.empty())
 			return 0;
 
-		uint count = 0;
+		uint shift = 0;
 		for (auto& tag : mRenderTagRegistry)
 		{
 			if (tag->mName == tagName)
-				return 1 << count;
-			++count;
+				return 1 << shift;
+			++shift;
 		}
 		return 0;
 	}
@@ -2089,11 +2089,24 @@ namespace nap
 	}
 
 
-	void RenderService::addTag(const RenderTag& renderTag)
+	bool RenderService::addTag(const RenderTag& renderTag, nap::utility::ErrorState& error)
 	{
-		// Ensure the tag is not yet registered
-		assert(std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag) == mRenderTagRegistry.end());
+		// Name missing
+		if(!error.check(!renderTag.mName.empty(), "RenderTag doesn't have a name"))
+			return false;
+
+		// Duplicate
+		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
+		if (!error.check(it == mRenderTagRegistry.end(), "RenderTag with duplicate name already exists"))
+			return false;
+
+		// Out of bounds
+		static constexpr int tagLimit = sizeof(nap::uint64) * 8;
+		if (!error.check(mRenderTagRegistry.size() < tagLimit, "RenderTag limit of %d exceeded", tagLimit))
+			return false;
+
 		mRenderTagRegistry.emplace_back(&renderTag);
+		return true;
 	}
 
 

@@ -25,8 +25,7 @@ namespace nap
 
 	bool RenderTag::start(utility::ErrorState& errorState)
 	{
-		mRenderService.addTag(*this);
-		return true;
+		return mRenderService.addTag(*this, errorState);
 	}
 
 
@@ -36,8 +35,8 @@ namespace nap
 	}
 
 
-	uint RenderTag::getIndex() const
+	nap::RenderMask RenderTag::getMask() const
 	{
-		return mRenderService.getTagIndex(*this);
+		return 1 << mRenderService.getTagIndex(*this);
 	}
 }

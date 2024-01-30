@@ -576,21 +576,17 @@ namespace nap
 
 		/**
 		 * Registers a new render tag to the render service. Called by RenderTag::start.
-		 * @param the render tag to register. Asserts if already registered.
+		 * @param the render tag to register.
+		 * @param error the error message if adding the mask fails
+		 * @return if the tag was added
 		 */
-		void addTag(const RenderTag& renderTag);
+		bool addTag(const RenderTag& renderTag, nap::utility::ErrorState& error);
 
 		/**
 		 * Removes a render tag from the render service. Called by RenderTag::stop.
 		 * @param the render tag to remove. Asserts if not found.
 		 */
 		void removeTag(const RenderTag& renderTag);
-
-		/**
-		 * Returns the render tag index in the render tag registry. Asserts if unavailable.
-		 * @return the render tag index in the render tag registry.
-		 */
-		uint getTagIndex(const RenderTag& renderTag) const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -913,7 +909,7 @@ namespace nap
 		 * Returns the render mask denoting the render tag with the name of the tagName argument or 0 if no match is found.
 		 * @return a render mask of the tag to be found or 0 if there is no match.
 		 */
-		RenderMask findRenderMask(const std::string& tagName);
+		RenderMask getRenderMask(const std::string& tagName);
 
 		/**
 		 * Returns the layer index of the layer with the name of the layerName argument or 0 if no match or registry is found.
@@ -1205,6 +1201,12 @@ namespace nap
 		 * @param window window to restore
 		 */
 		void restoreWindow(nap::RenderWindow& window);
+
+		/**
+		 * Returns the render tag index in the render tag registry. Asserts if unavailable.
+		 * @return the render tag index in the render tag registry.
+		 */
+		uint getTagIndex(const RenderTag& renderTag) const;
 
 	private:
 		struct UniqueMaterial;

@@ -88,6 +88,11 @@ namespace nap
 		RenderMask getRenderMask() const											{ return mRenderMask; }
 
 		/**
+		 * @return if this component is compatible with (includes) the given mask
+		 */
+		bool includesMask(RenderMask otherMask)										{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
+
+		/**
 		 * @return the render mask
 		 */
 		LayerIndex getRenderLayer() const											{ return mRenderLayer; }

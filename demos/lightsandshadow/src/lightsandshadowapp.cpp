@@ -49,8 +49,8 @@ namespace nap
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
 
-		mShadowMask = mRenderService->findRenderMask("Shadow");
-		if (!errorState.check(mShadowMask != 0, "Missing render tag with name `Shadow`"))
+		mShadowTag = mResourceManager->findObject("RenderTag_Shadow");
+		if (!errorState.check(mShadowTag != nullptr, "Missing shadow render tag"))
 			return false;
 
 		return true;
@@ -151,7 +151,7 @@ namespace nap
 		// lights that have shadows enabled. When the `updateMaterials` argument is set to true, light uniform and sampler data is also updated.
 		if (mRenderService->beginHeadlessRecording())
 		{
-			mRenderAdvancedService->renderShadows(render_comps, true, mShadowMask);
+			mRenderAdvancedService->renderShadows(render_comps, true, mShadowTag->getMask());
 			mRenderService->endHeadlessRecording();
 		}
 

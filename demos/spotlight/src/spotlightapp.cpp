@@ -38,6 +38,10 @@ namespace nap
 		mTorusEntity = mScene->findEntity("TorusEntity");
 		mPlaneEntity = mScene->findEntity("PlaneEntity");
 
+		// Tags used to group and mask render objects
+		mObjectTag = mResourceManager->findObject("ObjectTag");
+		mDebugTag = mResourceManager->findObject("DebugTag");
+
 		// All done!
         return true;
     }
@@ -68,8 +72,8 @@ namespace nap
 				&mTorusEntity->getComponent<RenderableMeshComponentInstance>()
 			};
 
-			// Render Gnomon
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render);
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mObjectTag);
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mDebugTag);
 
 			// Draw GUI elements
 			mGuiService->draw();

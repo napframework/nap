@@ -76,7 +76,9 @@
                     "Type": "nap::RenderGnomonComponent",
                     "mID": "RenderGnomon",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "DebugTag"
+                    ],
                     "LayerRegistry": "",
                     "Layer": "",
                     "Gnomon": "Gnomon",
@@ -138,7 +140,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderPlaneComponent",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "ObjectTag"
+                    ],
                     "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "PlaneMesh",
@@ -214,7 +218,9 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "RenderTorusComponent",
                     "Visible": true,
-                    "Tags": [],
+                    "Tags": [
+                        "ObjectTag"
+                    ],
                     "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "TorusMesh",
@@ -320,6 +326,23 @@
             },
             "Rows": 1,
             "Columns": 1
+        },
+        {
+            "Type": "nap::RenderTagGroup",
+            "mID": "RenderTags",
+            "Members": [
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "ObjectTag",
+                    "Name": "Object"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "DebugTag",
+                    "Name": "Debug"
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::RenderWindow",

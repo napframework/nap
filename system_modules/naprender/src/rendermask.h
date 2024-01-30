@@ -18,6 +18,7 @@
 
 namespace nap
 {
+	// Forward declares
 	class RenderService;
 	class Core;
 
@@ -36,8 +37,9 @@ namespace nap
 	 * 
 	 * `````{.cpp}
 	 * // Consider caching the render mask
-	 * RenderMask mask = mRenderService->findRenderMask("Default") | mRenderService->findRenderMask("Debug");
-	 * mRenderService->renderObjects(renderTarget, camera, render_comps, mask);
+	 * auto debug_mask = mResourceManager->findObject("DebugTag").getMask();
+	 * auto scene_mask = mResourceManager->findObject("SceneTag").getMask();
+	 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_mask | scene_mask);
 	 * `````
 	 */
 	class NAPAPI RenderTag : public Device
@@ -59,42 +61,50 @@ namespace nap
 		virtual void stop() override;
 
 		/**
-		 * @return the index of the tag in the registry.
+		 * Returns the mask assigned by the renderer to this tag.
+		 * The mask can be composited together with masks of other tags to create a unique bit mask:
+		 *
+		 * `````{.cpp}
+		 * auto debug_mask = mResourceManager->findObject("DebugTag").getMask();
+		 * auto scene_mask = mResourceManager->findObject("SceneTag").getMask();
+		 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_mask | scene_mask);
+		 * `````
+		 *
+		 * @return the mask assigned to this tag
 		 */
-		uint getIndex() const;
+		RenderMask getMask() const;
 
-		std::string mName;									///< Property: 'Name' The tag name
+		/**
+		 * Mask inclusion operator: Combines this tag with the given tag.
+		 *
+		 * `````{.cpp}
+		 * const auto& debug_tag = *mResourceManager->findObject("DebugTag");
+		 * const auto& scene_tag = *mResourceManager->findObject("SceneTag");
+		 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_tag | scene_tag);
+		 * `````
+		 *
+		 * @param other the tag to composite
+		 * @return the composited mask
+		 */
+		RenderMask operator|(const RenderTag& other) const		{ return this->getMask() | other.getMask(); }
+
+		/**
+		 * Mask inclusion operator: Combines this tag with the given mask.
+		 * @param other the mask to composite
+		 * @retirm the composited mask
+		 */
+		RenderMask operator|(RenderMask other) const			{ return other | this->getMask(); }
+
+		/**
+		 * @return The mask assigned to this tag
+		 */
+		operator RenderMask() const								{ return this->getMask(); }
+
+		std::string mName;										///< Property: 'Name' The tag name
 
 	private:
 		RenderService& mRenderService;
 	};
-
-	// RenderTagList definition
-	using RenderTagList = std::vector<rtti::ObjectPtr<RenderTag>>;
-
-	/**
-	 * Creates a render mask from a list of tags
-	 * @param tags a list of tags to create a mask from
-	 * @return the render mask
-	 */
-	static RenderMask createRenderMask(const RenderTagList& tags)
-	{
-		RenderMask mask = 0U;
-		for (const auto& tag : tags)
-			mask |= 0x01 << tag->getIndex();
-		return mask;
-	}
-
-	/**
-	 * Compares component and inclusion masks, returns true if any of the tags overlap using bitwise AND
-	 * @param componentMask the render mask of a component
-	 * @param inclusionMask the render mask to compare with
-	 * @return true if the componentMask is included in the inclusionMask
-	 */
-	static bool compareRenderMask(RenderMask componentMask, RenderMask inclusionMask)
-	{
-		return (componentMask == 0U) || ((componentMask & inclusionMask) > 0U);
-	}
 
 	// RenderTagGroup definition
 	using RenderTagGroup = Group<RenderTag>;
