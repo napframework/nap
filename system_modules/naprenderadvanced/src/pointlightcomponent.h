@@ -23,9 +23,9 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(PointLightComponent, PointLightComponentInstance)
 	public:
-		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
+		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
 		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 512U;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
+		uint mShadowMapSize = 512;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
 

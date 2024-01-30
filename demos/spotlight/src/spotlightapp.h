@@ -14,6 +14,7 @@
 #include <entity.h>
 #include <app.h>
 #include <rendertag.h>
+#include <renderadvancedservice.h>
 
 namespace nap 
 {
@@ -71,20 +72,19 @@ namespace nap
         int shutdown() override;
 
     private:
-        ResourceManager*			mResourceManager = nullptr;		///< Manages all the loaded data
-		RenderService*				mRenderService = nullptr;		///< Render Service that handles render calls
-		SceneService*				mSceneService = nullptr;		///< Manages all the objects in the scene
-		InputService*				mInputService = nullptr;		///< Input service for processing input
-		IMGuiService*				mGuiService = nullptr;			///< Manages GUI related update / draw calls
-		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;		///< Pointer to the render window	
-		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
-		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;		///< Pointer to the entity that holds the perspective camera
-		ObjectPtr<EntityInstance>	mGnomonEntity = nullptr;		///< Pointer to the entity that can render the gnomon
-		ObjectPtr<EntityInstance>	mTorusEntity = nullptr;			///< Pointer to the torus entity
-		ObjectPtr<EntityInstance>	mPlaneEntity = nullptr;			///< Pointer to the plane entity
+        ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
+		RenderService*				mRenderService = nullptr;			///< Render Service that handles render calls
+		RenderAdvancedService*		mRenderAdvancedService = nullptr;	///< Advanced Render Service that handles lights and shadows
+		SceneService*				mSceneService = nullptr;			///< Manages all the objects in the scene
+		InputService*				mInputService = nullptr;			///< Input service for processing input
+		IMGuiService*				mGuiService = nullptr;				///< Manages GUI related update / draw calls
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			///< Pointer to the render window	
+		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
+		ObjectPtr<EntityInstance>	mCameraEntity = nullptr;			///< Pointer to the entity that holds the perspective camera
+		ObjectPtr<EntityInstance>	mObjectsEntity = nullptr;			///< Pointer to the entity that holds the objects to render
 
 		// Render masks
-		ObjectPtr<RenderTag>		mDefaultTag = nullptr;			///< Pointer to the render object tag 
-		ObjectPtr<RenderTag>		mDebugTag = nullptr;			///< Pointer to the render debug tag
+		ObjectPtr<RenderTag>		mDefaultTag = nullptr;				///< Pointer to the render object tag 
+		ObjectPtr<RenderTag>		mDebugTag = nullptr;				///< Pointer to the render debug tag
 	};
 }

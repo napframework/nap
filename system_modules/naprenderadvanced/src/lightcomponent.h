@@ -112,7 +112,7 @@ namespace nap
 	 * Rendering with lights requires an additional call to the render advanced service. You can either use `pushLights` on
 	 * the render components you wish to render or `renderShadows` with the `updateMaterials` argument set to `true` if you
 	 * wish to use shadows too.
-	 * 
+	 * l
 	 * Update light uniforms of lit components when shadows are disabled.
 	 * ~~~~~{.cpp}
 	 *	mRenderAdvancedService->pushLights(components_to_render, error_state);
@@ -140,11 +140,10 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		bool mEnabled = true;									///< Property: 'Enabled' Whether the light is enabled
-		ResourcePtr<ParameterEntryRGBColorFloat> mColor;		///< Property: 'Color' The light color
-		ResourcePtr<ParameterEntryFloat> mIntensity;			///< Property: 'Intensity' The light intensity
-
+		RGBColorFloat mColor = {1.0f, 1.0f, 1.0f};				///< Property: 'Color' The light color
+		float mIntensity = 1.0f;								///< Property: 'Intensity' The light intensity
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
-		bool mEnableShadows = false;							///< Property: 'Enable Shadows' Enables shadows and creates shadow map resources for this light.
+		bool mComputeShadows = false;							///< Property: 'Compute Shadows' Enables shadows and creates shadow map resources for this light.
 	};
 
 
@@ -277,7 +276,7 @@ namespace nap
 		/**
 		 * @return the light intensity
 		 */
-		virtual float getIntensity() const									{ return mResource->mIntensity->getValue(); }
+		virtual float getIntensity() const									{ return mResource->mIntensity; }
 
 		/**
 		 * @return the shadow strength
@@ -292,7 +291,7 @@ namespace nap
 		/**
 		 * @return the light color
 		 */
-		virtual const RGBColorFloat& getColor() const						{ return mResource->mColor->getValue(); }
+		virtual const RGBColorFloat& getColor() const						{ return mResource->mColor; }
 
 		/**
 		 * @return the position of the light in world space

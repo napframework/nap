@@ -23,7 +23,7 @@ namespace nap
 		DECLARE_COMPONENT(DirectionalLightComponent, DirectionalLightComponentInstance)
 	public:
 		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize'
+		uint mShadowMapSize = 1024;								///< Property: 'ShadowMapSize'
 	};
 
 

@@ -18,6 +18,7 @@ namespace nap
 		mSceneService	= getCore().getService<nap::SceneService>();
 		mInputService	= getCore().getService<nap::InputService>();
 		mGuiService		= getCore().getService<nap::IMGuiService>();
+		mRenderAdvancedService = getCore().getService<nap::RenderAdvancedService>();
 
 		// Fetch the resource manager
         mResourceManager = getCore().getResourceManager();
@@ -34,9 +35,7 @@ namespace nap
 
 		// Get the camera and origin Gnomon entity
 		mCameraEntity = mScene->findEntity("CameraEntity");
-		mGnomonEntity = mScene->findEntity("GnomonEntity");
-		mTorusEntity = mScene->findEntity("TorusEntity");
-		mPlaneEntity = mScene->findEntity("PlaneEntity");
+		mObjectsEntity = mScene->findEntity("ObjectsEntity");
 
 		// Tags used to group and mask render objects
 		mDefaultTag = mResourceManager->findObject("Default");
@@ -64,16 +63,17 @@ namespace nap
 			// Get Perspective camera to render with
 			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
-			// Add Gnomon
-			std::vector<nap::RenderableComponentInstance*> components_to_render
-			{
-				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>(),
-				&mPlaneEntity->getComponent<RenderableMeshComponentInstance>(),
-				&mTorusEntity->getComponent<RenderableMeshComponentInstance>()
-			};
+			// Get all the possible objects to render
+			std::vector<RenderableComponentInstance*> render_comps;
+			mObjectsEntity->getComponentsOfTypeRecursive<nap::RenderableComponentInstance>(render_comps);
 
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mDefaultTag);
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mDebugTag);
+			auto scene_objects = mRenderService->filterObjects(render_comps, *mDefaultTag);
+			utility::ErrorState error;
+			if (!mRenderAdvancedService->pushLights(scene_objects, error))
+				nap::Logger::error(error.toString());
+
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDefaultTag);
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDebugTag);
 
 			// Draw GUI elements
 			mGuiService->draw();

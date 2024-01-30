@@ -1,6 +1,10 @@
 {
     "Objects": [
         {
+            "Type": "nap::BlinnPhongColorShader",
+            "mID": "BlinnPhongShader"
+        },
+        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -70,53 +74,12 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "GnomonEntity",
-            "Components": [
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon",
-                    "Visible": true,
-                    "Tags": [
-                        "Debug"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "Gnomon",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "PositionGnomon",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "ObjectsEntity",
             "Components": [],
             "Children": [
                 "PlaneEntity",
-                "TorusEntity"
+                "TorusEntity",
+                "SpotlightEntity"
             ]
         },
         {
@@ -133,7 +96,7 @@
                             "z": 0.0
                         },
                         "Rotate": {
-                            "x": 90.0,
+                            "x": -90.0,
                             "y": 0.0,
                             "z": 0.0
                         },
@@ -159,17 +122,42 @@
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UBO_17d9d1f4",
+                                "mID": "UBO_36be9130",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "color_f3814ad3",
-                                        "Name": "color",
+                                        "mID": "diffuse_a2abb5d8",
+                                        "Name": "diffuse",
                                         "Value": {
                                             "x": 0.0,
-                                            "y": 1.0,
-                                            "z": 0.0
+                                            "y": 0.0,
+                                            "z": 1.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "fresnel_48ec54f8",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 0.0,
+                                            "y": 0.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "shininess_fbbb5020",
+                                        "Name": "shininess",
+                                        "Value": 64.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "specular_16d25d07",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.5,
+                                            "y": 0.5,
+                                            "z": 0.5
                                         }
                                     }
                                 ]
@@ -178,7 +166,7 @@
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "ConstantMaterial",
+                        "Material": "BlinnPhongMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -199,8 +187,124 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "PointlightEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PointlightTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 3.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointLightComponent",
+                    "mID": "PointlightComponent",
+                    "Enabled": true,
+                    "Compute Shadows": false,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Intensity": 1.0,
+                    "ShadowStrength": 1.0,
+                    "ShadowCamera": "",
+                    "ShadowMapSize": 512,
+                    "Attenuation": 0.10000000149011612
+                },
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "PointlightGnomon",
+                    "Visible": true,
+                    "Tags": [
+                        "Debug"
+                    ],
+                    "LayerRegistry": "",
+                    "Layer": "",
+                    "Gnomon": "Gnomon",
+                    "LineWidth": 1.0,
+                    "DepthMode": "NoReadWrite"
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "SpotlightEntity",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "SpotlightTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 7.5,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": -90.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::SpotLightComponent",
+                    "mID": "SpotlightComponent",
+                    "Enabled": true,
+                    "Compute Shadows": false,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Intensity": 1.0,
+                    "ShadowStrength": 1.0,
+                    "ShadowCamera": "",
+                    "ShadowMapSize": 1024,
+                    "Attenuation": 0.009999999776482582,
+                    "Angle": 45.0,
+                    "FallOff": 1.0
+                },
+                {
+                    "Type": "nap::RenderGnomonComponent",
+                    "mID": "SpotlightGnomon",
+                    "Visible": true,
+                    "Tags": [
+                        "Debug"
+                    ],
+                    "LayerRegistry": "",
+                    "Layer": "",
+                    "Gnomon": "Gnomon",
+                    "LineWidth": 1.0,
+                    "DepthMode": "NoReadWrite"
+                }
+            ],
             "Children": []
         },
         {
@@ -243,13 +347,13 @@
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UBO_c6542790",
+                                "mID": "UBO_e83816c7",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "color_7bccacee",
-                                        "Name": "color",
+                                        "mID": "diffuse_df8b08e8",
+                                        "Name": "diffuse",
                                         "Value": {
                                             "x": 1.0,
                                             "y": 0.0,
@@ -262,7 +366,7 @@
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "ConstantMaterial",
+                        "Material": "BlinnPhongMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -304,6 +408,91 @@
                 "y": 0.0,
                 "z": 0.0
             }
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "BlinnPhongMaterial",
+            "Uniforms": [
+                {
+                    "Type": "nap::UniformStruct",
+                    "mID": "UBO_d1a31f9e",
+                    "Name": "UBO",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformVec4",
+                            "mID": "ambient_9ac8e7ae",
+                            "Name": "ambient",
+                            "Value": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0,
+                                "w": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "diffuse_1fe3a19b",
+                            "Name": "diffuse",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 0.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec3",
+                            "mID": "specular_3e8d5c80",
+                            "Name": "specular",
+                            "Value": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformVec2",
+                            "mID": "fresnel_779d5356",
+                            "Name": "fresnel",
+                            "Value": {
+                                "x": 0.5,
+                                "y": 4.0
+                            }
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "shininess_8e977907",
+                            "Name": "shininess",
+                            "Value": 12.0
+                        },
+                        {
+                            "Type": "nap::UniformFloat",
+                            "mID": "alpha_a0f59c50",
+                            "Name": "alpha",
+                            "Value": 1.0
+                        }
+                    ]
+                }
+            ],
+            "Samplers": [],
+            "Buffers": [],
+            "Constants": [
+                {
+                    "Type": "nap::ShaderConstant",
+                    "mID": "QUAD_SAMPLE_COUNT_07fd4eae",
+                    "Name": "QUAD_SAMPLE_COUNT",
+                    "Value": 4
+                },
+                {
+                    "Type": "nap::ShaderConstant",
+                    "mID": "ENABLE_ENVIRONMENT_MAPPING_1cc9d53d",
+                    "Name": "ENABLE_ENVIRONMENT_MAPPING",
+                    "Value": 0
+                }
+            ],
+            "Shader": "BlinnPhongShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::Material",
@@ -402,19 +591,11 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "GnomonEntity",
-                    "InstanceProperties": []
-                },
-                {
                     "Entity": "CameraEntity",
                     "InstanceProperties": []
                 },
                 {
                     "Entity": "ObjectsEntity",
-                    "InstanceProperties": []
-                },
-                {
-                    "Entity": "SpotlightEntity",
                     "InstanceProperties": []
                 }
             ]
