@@ -84,7 +84,7 @@ namespace nap
 		ObjectPtr<EntityInstance>	mPlaneEntity = nullptr;			///< Pointer to the plane entity
 
 		// Render masks
-		ObjectPtr<RenderTag>		mObjectTag = nullptr;			///< Pointer to the render object tag 
+		ObjectPtr<RenderTag>		mDefaultTag = nullptr;			///< Pointer to the render object tag 
 		ObjectPtr<RenderTag>		mDebugTag = nullptr;			///< Pointer to the render debug tag
 	};
 }

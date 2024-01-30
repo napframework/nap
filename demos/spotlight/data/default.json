@@ -77,7 +77,7 @@
                     "mID": "RenderGnomon",
                     "Visible": true,
                     "Tags": [
-                        "DebugTag"
+                        "Debug"
                     ],
                     "LayerRegistry": "",
                     "Layer": "",
@@ -112,6 +112,15 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "ObjectsEntity",
+            "Components": [],
+            "Children": [
+                "PlaneEntity",
+                "TorusEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "PlaneEntity",
             "Components": [
                 {
@@ -141,7 +150,7 @@
                     "mID": "RenderPlaneComponent",
                     "Visible": true,
                     "Tags": [
-                        "ObjectTag"
+                        "Default"
                     ],
                     "LayerRegistry": "",
                     "Layer": "",
@@ -190,6 +199,12 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "SpotlightEntity",
+            "Components": [],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "TorusEntity",
             "Components": [
                 {
@@ -198,7 +213,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 1.0,
+                            "y": 2.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -219,7 +234,7 @@
                     "mID": "RenderTorusComponent",
                     "Visible": true,
                     "Tags": [
-                        "ObjectTag"
+                        "Default"
                     ],
                     "LayerRegistry": "",
                     "Layer": "",
@@ -261,6 +276,20 @@
                             "x": 0.0,
                             "y": 0.0
                         }
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "RotateTorusComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "Speed": 0.25,
+                        "Offset": 0.0
                     }
                 }
             ],
@@ -333,12 +362,12 @@
             "Members": [
                 {
                     "Type": "nap::RenderTag",
-                    "mID": "ObjectTag",
+                    "mID": "Default",
                     "Name": "Object"
                 },
                 {
                     "Type": "nap::RenderTag",
-                    "mID": "DebugTag",
+                    "mID": "Debug",
                     "Name": "Debug"
                 }
             ],
@@ -381,11 +410,11 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "TorusEntity",
+                    "Entity": "ObjectsEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "PlaneEntity",
+                    "Entity": "SpotlightEntity",
                     "InstanceProperties": []
                 }
             ]

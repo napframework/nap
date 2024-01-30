@@ -39,8 +39,8 @@ namespace nap
 		mPlaneEntity = mScene->findEntity("PlaneEntity");
 
 		// Tags used to group and mask render objects
-		mObjectTag = mResourceManager->findObject("ObjectTag");
-		mDebugTag = mResourceManager->findObject("DebugTag");
+		mDefaultTag = mResourceManager->findObject("Default");
+		mDebugTag = mResourceManager->findObject("Debug");
 
 		// All done!
         return true;
@@ -72,7 +72,7 @@ namespace nap
 				&mTorusEntity->getComponent<RenderableMeshComponentInstance>()
 			};
 
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mObjectTag);
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mDefaultTag);
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render, *mDebugTag);
 
 			// Draw GUI elements
