@@ -529,7 +529,7 @@
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
                     "Enabled": true,
-                    "ComputeShadows": true,
+                    "CastShadows": true,
                     "Color": {
                         "Values": [
                             1.0,
@@ -661,7 +661,7 @@
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
                     "Enabled": true,
-                    "ComputeShadows": true,
+                    "CastShadows": true,
                     "Color": {
                         "Values": [
                             1.0,
@@ -675,7 +675,7 @@
                     "ShadowMapSize": 2048,
                     "Attenuation": 0.10000000149011612,
                     "Angle": 90.0,
-                    "FallOff": 0.5
+                    "Falloff": 0.5
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
@@ -795,7 +795,7 @@
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "SunLight",
                     "Enabled": true,
-                    "ComputeShadows": true,
+                    "CastShadows": true,
                     "Color": {
                         "Values": [
                             1.0,

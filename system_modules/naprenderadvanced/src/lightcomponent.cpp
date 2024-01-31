@@ -36,6 +36,8 @@ RTTI_END_CLASS
 
 // nap::LightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponentInstance)
+	RTTI_PROPERTY(nap::uniform::light::color,		&nap::LightComponentInstance::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY(nap::uniform::light::intensity,	&nap::LightComponentInstance::mIntensity,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -63,6 +65,8 @@ namespace nap
 		mIsEnabled = mResource->mEnabled;
 		mIsShadowEnabled = mResource->mCastShadows;
 		mShadowStrength = mResource->mShadowStrength;
+		mColor = mResource->mColor;
+		mIntensity = mResource->mIntensity;
 
 		// Fetch transform
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();

@@ -329,7 +329,9 @@ namespace nap
 		{
 			// Shader interface for lights
 			auto* light_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::lightStruct);
+			assert(light_struct != nullptr);
 			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
+			assert(light_count != nullptr);
 
 			// Set light count to zero and exit early
 			if (disableLighting)
@@ -337,8 +339,8 @@ namespace nap
 				light_count->setValue(0);
 				continue;
 			}
-            light_count->setValue(mLightComponents.size());
 
+            light_count->setValue(mLightComponents.size());
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
 
 			uint light_index = 0;
@@ -361,7 +363,7 @@ namespace nap
 				// Light uniform custom
 				for (const auto& entry : light->mUniformDataMap)
 				{
-					const auto name = entry.first;
+					const auto& name = entry.first;
 
 					// Filter default uniforms
 					bool skip = false;
@@ -373,42 +375,46 @@ namespace nap
 							break;
 						}
 					}
-					if (skip)                                                           
+					if (skip)                                                     
 						break;
 
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
                     assert(struct_decl != nullptr);
 
                     auto* member = struct_decl->findMember(name);
-					if (!errorState.check(member != nullptr, "Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
+					if (!errorState.check(member != nullptr,
+						"Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
 						return false;
 
-					if (member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)))
+					if (!errorState.check(member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)),
+						"Unsupported member data type"))
+						return false;
+
+					auto* param = light->getLightUniform(name);
+					if (!errorState.check(param != nullptr, "Unsupported member data type"))
+						return false;
+
+					auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member); 
+					assert(value_member != nullptr);
+
+					switch (value_member->mType)
 					{
-						auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
-                        assert(value_member != nullptr);
-
-						if (value_member->mType == EShaderVariableValueType::Float)
+						case EShaderVariableValueType::Float:
 						{
-							auto* param = light->getLightUniform(name);
-							if (!errorState.check(param != nullptr, "Unsupported member data type"))
-								return false;
-
 							light_element.getOrCreateUniform<UniformFloatInstance>(name)->setValue(static_cast<ParameterFloat*>(param)->mValue);
+							break;
 						}
-						else if (value_member->mType == EShaderVariableValueType::Vec3)
+						case EShaderVariableValueType::Vec3:
 						{
-							auto* param = light->getLightUniform(name);
-							if (!errorState.check(param != nullptr, "Unsupported member data type"))
-								return false;
-
 							if (param->get_type().is_derived_from(RTTI_OF(ParameterRGBColorFloat)))
 							{
 								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterRGBColorFloat*>(param)->mValue.toVec3());
+								break;
 							}
 							else if (param->get_type().is_derived_from(RTTI_OF(ParameterVec3)))
 							{
 								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterVec3*>(param)->mValue);
+								break;
 							}
 							else
 							{
@@ -416,24 +422,11 @@ namespace nap
 								return false;
 							}
 						}
-						else if (value_member->mType == EShaderVariableValueType::Mat4)
-						{
-							auto* param = light->getLightUniform(name);
-							if (!errorState.check(param != nullptr, "Unsupported member data type"))
-								return false;
-
-							light_element.getOrCreateUniform<UniformMat4Instance>(name)->setValue(static_cast<ParameterMat4*>(param)->mValue);
-						}
-						else
+						default:
 						{
 							errorState.fail("Unsupported member data type");
 							return false;
 						}
-					}
-					else
-					{
-						errorState.fail("Unsupported member data type");
-						return false;
 					}
 				}
                 ++light_index;
@@ -508,7 +501,8 @@ namespace nap
                             }
                             break;
                         }
-                        case EShadowMapType::Cube: {
+                        case EShadowMapType::Cube:
+						{
                             auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
                             if (shadow_sampler_array != nullptr) {
                                 auto *instance = static_cast<SamplerCubeArrayInstance *>(shadow_sampler_array);

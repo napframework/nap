@@ -23,6 +23,7 @@ RTTI_END_CLASS
 // nap::PointLightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointLightComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+	RTTI_PROPERTY(nap::uniform::light::attenuation, &nap::PointLightComponentInstance::mAttenuation, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -40,6 +41,7 @@ namespace nap
 			return false;
 
 		auto* resource = getComponent<PointLightComponent>();
+		mAttenuation = resource->mAttenuation;
 		registerLightUniformMember<ParameterFloat, float>(uniform::light::attenuation, nullptr, resource->mAttenuation);
 		mShadowMapSize = resource->mShadowMapSize;
 

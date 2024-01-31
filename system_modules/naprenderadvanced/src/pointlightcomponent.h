@@ -74,6 +74,19 @@ namespace nap
 		 */
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Cube; }
 
+		/**
+		 * @return light attenuation
+		 */
+		float getAttenuation() const										{ return mAttenuation; }
+
+		/**
+		 * Set the light attenuation
+		 * @param attenuation light attenuation
+		 */
+		void setAttenuation(float attenuation)								{ mAttenuation = attenuation; }
+
+		float mAttenuation = 0.1f;
+
 	private:
 		// Shadow camera
 		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &PointLightComponent::mShadowCamera };

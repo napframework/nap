@@ -276,7 +276,12 @@ namespace nap
 		/**
 		 * @return the light intensity
 		 */
-		virtual float getIntensity() const									{ return mResource->mIntensity; }
+		virtual float getIntensity() const									{ return mIntensity; }
+
+		/**
+		 * Set the light intensity
+		 */
+		void setIntensity(float intensity)									{ mIntensity = intensity; }
 
 		/**
 		 * @return the shadow strength
@@ -291,7 +296,12 @@ namespace nap
 		/**
 		 * @return the light color
 		 */
-		virtual const RGBColorFloat& getColor() const						{ return mResource->mColor; }
+		virtual const RGBColorFloat& getColor() const						{ return mColor; }
+
+		/**
+		 * Set the light color
+		 */
+		void setColor(const RGBColorFloat& color)							{ mColor = color; }
 
 		/**
 		 * @return the position of the light in world space
@@ -302,6 +312,9 @@ namespace nap
 		 * @return the direction of the light in world space
 		 */
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
+
+		float mIntensity = 1.0f;						
+		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
 
 	protected:
 		/**
@@ -323,7 +336,7 @@ namespace nap
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
 		float mShadowStrength							= 1.0f;
-		uint mShadowMapSize								= 512U;
+		uint mShadowMapSize								= 512;
 
 		LightParameterList mParameterList;				// List of parameters that are owned by light component instead of the the resource manager
 
