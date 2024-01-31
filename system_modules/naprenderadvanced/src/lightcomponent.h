@@ -313,7 +313,7 @@ namespace nap
 		 */
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
 
-		float mIntensity = 1.0f;						
+		float mIntensity = 1.0f;												
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
 
 	protected:
@@ -330,8 +330,11 @@ namespace nap
 		template <typename ParameterType, typename DataType>
 		void registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value);
 
+		void registerLightUniformMember(std::string&& memberName);
+
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
+		RenderAdvancedService* mService					= nullptr;
 
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
@@ -344,6 +347,7 @@ namespace nap
 		Parameter* getLightUniform(const std::string& memberName);
 
 		LightUniformDataMap mUniformDataMap;			// Maps uniform names to parameters
+		std::vector<nap::rtti::Property> mUniformList;
 		bool mIsRegistered = false;
 	};
 }

@@ -47,8 +47,11 @@ namespace nap
 		mFalloff = resource->mFalloff;
 
 		registerLightUniformMember<ParameterFloat, float>(uniform::light::attenuation, nullptr, resource->mAttenuation);
+		registerLightUniformMember(uniform::light::attenuation);
 		registerLightUniformMember<ParameterFloat, float>(uniform::light::angle, nullptr, resource->mAngle);
+		registerLightUniformMember(uniform::light::angle);
         registerLightUniformMember<ParameterFloat, float>(uniform::light::falloff, nullptr, resource->mFalloff);
+		registerLightUniformMember(uniform::light::falloff);
 		mShadowMapSize = resource->mShadowMapSize;
 
 		return true;

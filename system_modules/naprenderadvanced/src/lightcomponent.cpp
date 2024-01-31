@@ -70,6 +70,12 @@ namespace nap
 
 		// Fetch transform
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
+		if(!errorState.check(mTransform != nullptr, "Missing %s", RTTI_OF(nap::TransformComponent).get_name().data()))
+			return false;
+
+		// Fetch render advanced service
+		mService = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
+		assert(mService != nullptr);
 
 		// Reserve memory for light parameter list
 		// It may never be reallocated outside of init()
@@ -78,7 +84,9 @@ namespace nap
 
 		// Create default parameters
 		registerLightUniformMember<ParameterRGBColorFloat, RGBColorFloat>(uniform::light::color, nullptr, mResource->mColor);
+		registerLightUniformMember(nap::uniform::light::color);
 		registerLightUniformMember<ParameterFloat, float>(uniform::light::intensity, nullptr, mResource->mIntensity);
+		registerLightUniformMember(nap::uniform::light::intensity);
 
 		if (mIsShadowEnabled)
 		{
@@ -89,10 +97,7 @@ namespace nap
         // Register with service
         if (mIsEnabled)
         {
-            auto *service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
-            assert(service != nullptr);
-            service->registerLightComponent(*this);
-
+            mService->registerLightComponent(*this);
             mIsRegistered = true;
         }
 		return true;
@@ -114,11 +119,17 @@ namespace nap
 	{
         if (mIsRegistered)
         {
-            auto *service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
-            assert(service != nullptr);
-            service->removeLightComponent(*this);
-
+            mService->removeLightComponent(*this);
             mIsRegistered = false;
         }
+	}
+
+
+	void LightComponentInstance::registerLightUniformMember(std::string&& memberName)
+	{
+		auto uniform_prop = this->get_type().get_property(memberName);
+		assert(uniform_prop.is_valid());
+		assert(std::find(mUniformList.begin(), mUniformList.end(), uniform_prop) == mUniformList.end());
+		mUniformList.emplace_back(std::move(uniform_prop));
 	}
 }
