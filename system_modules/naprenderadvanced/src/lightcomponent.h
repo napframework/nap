@@ -143,7 +143,7 @@ namespace nap
 		RGBColorFloat mColor = {1.0f, 1.0f, 1.0f};				///< Property: 'Color' The light color
 		float mIntensity = 1.0f;								///< Property: 'Intensity' The light intensity
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
-		bool mComputeShadows = false;							///< Property: 'Compute Shadows' Enables shadows and creates shadow map resources for this light.
+		bool mCastShadows = false;								///< Property: 'CastShadows' Enables shadows and creates shadow map resources for this light.
 	};
 
 

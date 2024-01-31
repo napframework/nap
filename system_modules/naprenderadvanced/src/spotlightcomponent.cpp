@@ -16,7 +16,7 @@ RTTI_BEGIN_CLASS(nap::SpotLightComponent)
 	RTTI_PROPERTY("ShadowMapSize",	&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Attenuation",	&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Angle",			&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FallOff",		&nap::SpotLightComponent::mFallOff,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Falloff",		&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::SpotLightComponentInstance run time class definition
@@ -41,7 +41,7 @@ namespace nap
 		auto* resource = getComponent<SpotLightComponent>();
 		registerLightUniformMember<ParameterFloat, float>(uniform::light::attenuation, nullptr, resource->mAttenuation);
 		registerLightUniformMember<ParameterFloat, float>(uniform::light::angle, nullptr, resource->mAngle);
-        registerLightUniformMember<ParameterFloat, float>(uniform::light::falloff, nullptr, resource->mFallOff);
+        registerLightUniformMember<ParameterFloat, float>(uniform::light::falloff, nullptr, resource->mFalloff);
 		mShadowMapSize = resource->mShadowMapSize;
 
 		return true;

@@ -28,7 +28,7 @@ RTTI_END_ENUM
 // nap::LightComponent run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Compute Shadows",	&nap::LightComponent::mComputeShadows, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CastShadows",		&nap::LightComponent::mCastShadows,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default)
@@ -61,7 +61,7 @@ namespace nap
 	{
 		mResource = getComponent<LightComponent>();
 		mIsEnabled = mResource->mEnabled;
-		mIsShadowEnabled = mResource->mComputeShadows;
+		mIsShadowEnabled = mResource->mCastShadows;
 		mShadowStrength = mResource->mShadowStrength;
 
 		// Fetch transform

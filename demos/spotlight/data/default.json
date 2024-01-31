@@ -197,7 +197,7 @@
                     "Type": "nap::PointLightComponent",
                     "mID": "PointlightComponent",
                     "Enabled": true,
-                    "Compute Shadows": false,
+                    "CastShadows": true,
                     "Color": {
                         "Values": [
                             1.0,
@@ -267,7 +267,7 @@
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotlightComponent",
                     "Enabled": true,
-                    "Compute Shadows": true,
+                    "CastShadows": true,
                     "Color": {
                         "Values": [
                             1.0,
@@ -281,7 +281,7 @@
                     "ShadowMapSize": 1024,
                     "Attenuation": 0.009999999776482582,
                     "Angle": 45.0,
-                    "FallOff": 1.0
+                    "Falloff": 1.0
                 },
                 {
                     "Type": "nap::RenderGnomonComponent",

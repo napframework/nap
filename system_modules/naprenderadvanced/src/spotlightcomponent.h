@@ -26,8 +26,8 @@ namespace nap
 	public:
 		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
 		float mAngle = 90.0f;									///< Property: 'Angle' The light's angle of view (focus)
-		float mFallOff = 0.5f;									///< Property: 'FallOff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
-		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+		float mFalloff = 0.5f;									///< Property: 'Falloff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
+		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Link to camera that produces the depth texture for a directional light
 		uint mShadowMapSize = 1024;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
