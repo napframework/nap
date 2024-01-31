@@ -5,8 +5,6 @@
 #include <componentptr.h>
 #include <cameracomponent.h>
 #include <transformcomponent.h>
-
-#include <parameterentrynumeric.h>
 #include <parameterentrycolor.h>
 
 namespace nap
@@ -78,9 +76,6 @@ namespace nap
 			inline constexpr const char* cubeShadowMaps = "cubeShadowMaps";
 		}
 	}
-
-	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
-	using LightParameterList = std::vector<std::unique_ptr<Parameter>>;
 
 	/**
 	 * Base class of light components for NAP RenderAdvanced's light system.
@@ -323,14 +318,11 @@ namespace nap
 		void removeLightComponent();
 
 		/**
-		 * Registers a light uniform member for updating the shader interface.
-		 * @param memberName the uniform member name of the light variable
-		 * @param parameter pointer to the parameter to register. If nullptr, creates and registers a default parameter at runtime
+		 * Registers a light property as a uniform light member, which is automatically pushed by the render advanced service.
+		 * Note that the property must be must be defined for this or derived classes using the RTTI_PROPERTY macro.
+		 * @param memberName light property member name, must be registered using the RTTI_PROPERTY macro.
 		 */
-		template <typename ParameterType, typename DataType>
-		void registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value);
-
-		void registerLightUniformMember(std::string&& memberName);
+		void registerUniformLightProperty(const std::string& memberName);
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
@@ -341,39 +333,8 @@ namespace nap
 		float mShadowStrength							= 1.0f;
 		uint mShadowMapSize								= 512;
 
-		LightParameterList mParameterList;				// List of parameters that are owned by light component instead of the the resource manager
-
 	private:
-		Parameter* getLightUniform(const std::string& memberName);
-
-		LightUniformDataMap mUniformDataMap;			// Maps uniform names to parameters
 		std::vector<nap::rtti::Property> mUniformList;
 		bool mIsRegistered = false;
 	};
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// Template definitions
-//////////////////////////////////////////////////////////////////////////
-
-template <typename ParameterType, typename DataType>
-void nap::LightComponentInstance::registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value)
-{
-	auto* param = parameter;
-	if (param == nullptr)
-	{
-		param = mParameterList.emplace_back(std::make_unique<ParameterType>()).get();
-		auto* typed_param = static_cast<ParameterType*>(param);
-		typed_param->mName = memberName;
-		typed_param->mValue = value;
-
-		utility::ErrorState error_state;
-		if (!param->init(error_state))
-			assert(false);
-	}
-	assert(param != nullptr);
-
-	const auto it = mUniformDataMap.insert({ memberName, param });
-	assert(it.second);
 }

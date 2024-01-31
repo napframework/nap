@@ -77,16 +77,12 @@ namespace nap
 		mService = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
 		assert(mService != nullptr);
 
-		// Reserve memory for light parameter list
-		// It may never be reallocated outside of init()
-		if (mParameterList.capacity() == 0)
-			mParameterList.reserve(uniform::light::defaultMemberCount);
+		// Reserve memory for light uniform property list
+		mUniformList.reserve(uniform::light::defaultMemberCount);
 
 		// Create default parameters
-		registerLightUniformMember<ParameterRGBColorFloat, RGBColorFloat>(uniform::light::color, nullptr, mResource->mColor);
-		registerLightUniformMember(nap::uniform::light::color);
-		registerLightUniformMember<ParameterFloat, float>(uniform::light::intensity, nullptr, mResource->mIntensity);
-		registerLightUniformMember(nap::uniform::light::intensity);
+		registerUniformLightProperty(nap::uniform::light::color);
+		registerUniformLightProperty(nap::uniform::light::intensity);
 
 		if (mIsShadowEnabled)
 		{
@@ -104,17 +100,6 @@ namespace nap
 	}
 
 
-	Parameter* LightComponentInstance::getLightUniform(const std::string& memberName)
-	{
-		const auto it = mUniformDataMap.find(memberName);
-		if (it != mUniformDataMap.end())
-			return it->second;
-
-		assert(false);
-		return nullptr;
-	}
-
-
 	void LightComponentInstance::removeLightComponent()
 	{
         if (mIsRegistered)
@@ -125,7 +110,7 @@ namespace nap
 	}
 
 
-	void LightComponentInstance::registerLightUniformMember(std::string&& memberName)
+	void LightComponentInstance::registerUniformLightProperty(const std::string& memberName)
 	{
 		auto uniform_prop = this->get_type().get_property(memberName);
 		assert(uniform_prop.is_valid());

@@ -42,10 +42,8 @@ namespace nap
 
 		auto* resource = getComponent<PointLightComponent>();
 		mAttenuation = resource->mAttenuation;
-		registerLightUniformMember<ParameterFloat, float>(uniform::light::attenuation, nullptr, resource->mAttenuation);
-		registerLightUniformMember(uniform::light::attenuation);
 		mShadowMapSize = resource->mShadowMapSize;
-
+		registerUniformLightProperty(uniform::light::attenuation);
 		return true;
 	}
 }

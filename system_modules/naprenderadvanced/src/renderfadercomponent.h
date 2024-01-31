@@ -12,7 +12,6 @@
 #include <nap/signalslot.h>
 #include <transformcomponent.h>
 #include <perspcameracomponent.h>
-#include <parameterentrynumeric.h>
 #include <rect.h>
 #include <componentptr.h>
 #include <nomesh.h>
@@ -37,7 +36,7 @@ namespace nap
 		RTTI_ENABLE(RenderableComponent)
 			DECLARE_COMPONENT(RenderFaderComponent, RenderFaderComponentInstance)
 	public:
-		ResourcePtr<ParameterEntryFloat>	mFadeDuration;						///< Property: 'Fade' Duration of the fade transition in seconds.
+		float								mFadeDuration = 2.0f;				///< Property: 'Fade' Duration of the fade transition in seconds.
 		ComponentPtr<PerspCameraComponent>	mCamera;							///< Property: 'Camera' Reference camera.
 		MaterialInstanceResource			mMaterialInstanceResource;			///< Property: 'MaterialInstance' instance of the material, used to override uniforms for this instance
 		bool								mStartBlack = true;					///< Property: 'StartBlack' Whether to fade out of black on startup

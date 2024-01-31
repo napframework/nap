@@ -17,7 +17,7 @@
 #include <transformcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::RenderFaderComponent)
-	RTTI_PROPERTY("FadeDuration",		&nap::RenderFaderComponent::mFadeDuration,					nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FadeDuration",		&nap::RenderFaderComponent::mFadeDuration,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Camera",				&nap::RenderFaderComponent::mCamera,						nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MaterialInstance",	&nap::RenderFaderComponent::mMaterialInstanceResource,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("StartBlack",			&nap::RenderFaderComponent::mStartBlack,					nap::rtti::EPropertyMetaData::Default)
@@ -73,7 +73,7 @@ namespace nap
 		auto* ubo = getMaterialInstance().getOrCreateUniform("UBO");
 		if (ubo != nullptr)
 		{
-			float transition_value = std::max(mElapsedTime - mFadeStartTime, 0.0f) / mResource->mFadeDuration->getValue();
+			float transition_value = std::max(mElapsedTime - mFadeStartTime, 0.0f) / mResource->mFadeDuration;
 
 			switch (mFadeState)
 			{

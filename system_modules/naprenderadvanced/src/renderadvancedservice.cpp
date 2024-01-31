@@ -40,7 +40,7 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	static const std::vector<const char*> sDefaultUniforms =
+	static const std::vector<std::string> sDefaultUniforms =
 	{
 		uniform::light::origin,
 		uniform::light::direction,
@@ -361,9 +361,9 @@ namespace nap
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
 
 				// Light uniform custom
-				for (const auto& entry : light->mUniformDataMap)
+				for (const auto& entry : light->mUniformList)
 				{
-					const auto& name = entry.first;
+					const auto& name = entry.get_name().to_string();
 
 					// Filter default uniforms
 					bool skip = false;
@@ -378,42 +378,46 @@ namespace nap
 					if (skip)                                                     
 						break;
 
+					// Get light declaration
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
                     assert(struct_decl != nullptr);
 
+					// Uniform not available
                     auto* member = struct_decl->findMember(name);
 					if (!errorState.check(member != nullptr,
 						"Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
 						return false;
 
+					// Make sure it's a shader value declaration
 					if (!errorState.check(member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)),
 						"Unsupported member data type"))
 						return false;
 
-					auto* param = light->getLightUniform(name);
-					if (!errorState.check(param != nullptr, "Unsupported member data type"))
-						return false;
-
-					auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member); 
-					assert(value_member != nullptr);
-
+					// Set uniform based on shader declaration type.
+					// TODO: Allow for more elaborate assignment -> Only limited set is supported
+					auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member); assert(value_member != nullptr);
 					switch (value_member->mType)
 					{
 						case EShaderVariableValueType::Float:
 						{
-							light_element.getOrCreateUniform<UniformFloatInstance>(name)->setValue(static_cast<ParameterFloat*>(param)->mValue);
+							auto variant = entry.get_value(*light);
+							assert(variant.is_valid() && variant.can_convert<float>());
+							light_element.getOrCreateUniform<UniformFloatInstance>(name)->setValue(variant.to_float());
 							break;
 						}
 						case EShaderVariableValueType::Vec3:
 						{
-							if (param->get_type().is_derived_from(RTTI_OF(ParameterRGBColorFloat)))
+							auto variant = entry.get_value(*light); assert(variant.is_valid());
+							if (entry.get_type().is_derived_from(RTTI_OF(RGBColorFloat)))
 							{
-								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterRGBColorFloat*>(param)->mValue.toVec3());
+								glm::vec3 uvalue = variant.get_value<RGBColorFloat>().toVec3();
+								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
 								break;
 							}
-							else if (param->get_type().is_derived_from(RTTI_OF(ParameterVec3)))
+							else if (entry.get_type().is_derived_from(RTTI_OF(glm::vec3)))
 							{
-								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterVec3*>(param)->mValue);
+								glm::vec3 uvalue = variant.get_value<glm::vec3>();
+								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
 								break;
 							}
 							else
