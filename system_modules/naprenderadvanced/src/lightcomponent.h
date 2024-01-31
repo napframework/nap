@@ -241,12 +241,12 @@ namespace nap
 		/**
 		 * @return the light transform
 		 */
-		const TransformComponentInstance& getTransform() const				{ return *mTransform; }
+		const TransformComponentInstance& getTransform() const				{ assert(mTransform != nullptr); return *mTransform; }
 
 		/**
 		 * @return the light transform
 		 */
-		TransformComponentInstance& getTransform()							{ return *mTransform; }
+		TransformComponentInstance& getTransform()							{ assert(mTransform != nullptr); return *mTransform; }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
