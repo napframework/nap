@@ -84,7 +84,13 @@ QList<QStandardItem*> napkin::createPropertyItemRow(const PropertyPath& path)
 
 napkin::PropertyPathItem::PropertyPathItem(const PropertyPath& path) : mPath(path)
 {
-	setText(QString::fromStdString(path.getName()));
+	// Format property name - add a space where an uppercase characters follows lower case character for readability
+	// A lot of core properties are 'CamelCaseDefined', we want to turn that into 'Camel Case Defined'
+	auto item_text = QString::fromStdString(path.getName());
+	static const QRegularExpression camel_case("([a-z])([A-Z])");
+	item_text.replace(camel_case, "\\1 \\2");
+
+	setText(item_text);
 	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &PropertyPathItem::onPropertyValueChanged);
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &PropertyPathItem::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::removingObject, this, &PropertyPathItem::onRemovingObject);
