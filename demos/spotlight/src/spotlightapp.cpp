@@ -8,6 +8,7 @@
 #include <rendergnomoncomponent.h>
 #include <renderablemeshcomponent.h>
 #include <perspcameracomponent.h>
+#include <imgui/imgui.h>
 
 namespace nap 
 {    
@@ -128,5 +129,13 @@ namespace nap
 		// This is explicit because we don't know what entity should handle the events from a specific window.
 		nap::DefaultInputRouter input_router(true);
 		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+
+		// GUI
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+		ImGui::End();
     }
 }
