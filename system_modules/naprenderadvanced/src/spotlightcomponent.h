@@ -14,7 +14,7 @@ namespace nap
 	/**
 	 * Spot light component for NAP RenderAdvanced's light system.
 	 *
-	 * Omnidirectional light that emits from its origin to a specified direction with an angle of view (i.e. cone light).
+	 * Source that emits light from its origin to a specified direction with an angle of view (i.e. cone light).
 	 * The shadow map for this light is a 2D depth texture; therefore, the reach of the light can exceed the extent beyond
 	 * that of the depth map. The Render Advanced service creates and manages a `nap::DepthRenderTarget` and
 	 * `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
@@ -35,7 +35,7 @@ namespace nap
 	/**
 	 * Spot light component instance for NAP RenderAdvanced's light system.
 	 *
-	 * Omnidirectional light that emits from its origin to a specified direction with an angle of view (i.e. cone light).
+	 * Source that emits light from its origin to a specified direction with an angle of view (i.e. cone light).
 	 * The shadow map for this light is a 2D depth texture; therefore, the reach of the light can exceed the extent beyond
 	 * that of the depth map. The Render Advanced service creates and manages a `nap::DepthRenderTarget` and
 	 * `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
@@ -79,28 +79,31 @@ namespace nap
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
 
 		/**
+		 * The rate at which light intensity is lost over distance from the origin 
 		 * @return light attenuation
 		 */
 		float getAttenuation() const										{ return mAttenuation; }
 
 		/**
-		 * Set the light attenuation
+		 * Set the rate at which light intensity is lost over distance from the origin
 		 * @param attenuation light attenuation
 		 */
 		void setAttenuation(float attenuation)								{ mAttenuation = attenuation; }
 
 		/**
-		 * @return lamp angle
+		 * Light angle of view in degrees
+		 * @return lamp angle of view in degrees
 		 */	
 		float getAngle() const												{ return mAngle; }
 
 		/**
-		 * Set the spotlight angle
-		 * @param angle spotlight angle
+		 * Set light angle of view in degrees
+		 * @param angle angle of view in degrees
 		 */
 		void setAngle(float angle)											{ mAngle = angle; }
 
 		/**
+		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient. 
 		 * @return lamp falloff
 		 */	
 		float getFalloff() const											{ return mFalloff; }

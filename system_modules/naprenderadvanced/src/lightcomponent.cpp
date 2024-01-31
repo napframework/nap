@@ -80,7 +80,7 @@ namespace nap
 		// Reserve memory for light uniform property list
 		mUniformList.reserve(uniform::light::defaultMemberCount);
 
-		// Create default parameters
+		// Register uniform light properties
 		registerUniformLightProperty(nap::uniform::light::color);
 		registerUniformLightProperty(nap::uniform::light::intensity);
 

@@ -75,12 +75,13 @@ namespace nap
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Cube; }
 
 		/**
+		 * The rate at which light intensity is lost over distance from the origin
 		 * @return light attenuation
 		 */
 		float getAttenuation() const										{ return mAttenuation; }
 
 		/**
-		 * Set the light attenuation
+		 * Set the rate at which light intensity is lost over distance from the origin
 		 * @param attenuation light attenuation
 		 */
 		void setAttenuation(float attenuation)								{ mAttenuation = attenuation; }
