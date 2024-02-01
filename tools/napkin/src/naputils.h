@@ -30,7 +30,7 @@ namespace napkin
 	private:
 		void refresh();
 	private:
-		const nap::rtti::TypeInfo& mType;
+		nap::rtti::TypeInfo mType;
 	};
 
 
