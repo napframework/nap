@@ -81,9 +81,7 @@ arm64: Ubuntu Linux LTS (v22.04) *experimental*
 
 ## Binary Packages
 
-Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. For most developers this is the best place to start. Our developer experience is tuned to work with the packaged version of NAP, where the process of managing projects and modules is more streamlined. Certain functionality, eg. packaging a project for distribution, is only available through a NAP package, which is [created from source](#build-your-own-nap-distribution-package).
-
-When working against a binary package, follow the official [installation](https://docs.nap-framework.tech) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
+Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. Follow the [framework installation instructions](https://docs.nap-framework.tech/pages.html) to get started. Continue reading below to compile, package and work with NAP from source.
 
 ## Raspberry Pi
 
@@ -142,7 +140,7 @@ Open the generated solution in `XCode` or `Visual Studio`, select a build config
 
 ## Work Against Source
 
-Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a pre-compiled NAP package instead.
+Allows you to step into the NAP Framework source code and make changes if required.
 
 ### Create Application
 
@@ -219,7 +217,7 @@ We welcome contributions and potential bug fixes. But before you submit any code
 
 Use the github [issues](https://github.com/napframework/nap/issues) page for bug reports and well defined feature requests. Use the Github [discussions](https://github.com/orgs/napframework/discussions) page for general questions and help.
 
-New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://community.napframework.com/) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
+New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://github.com/orgs/napframework/discussions) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
 MSVC, Platform Toolset v142 on Windows 10
 Clang targeting Catalina/10.15 on macOS
