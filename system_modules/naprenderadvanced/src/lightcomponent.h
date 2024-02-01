@@ -11,6 +11,7 @@ namespace nap
 {
 	// Forward declares
 	class LightComponentInstance;
+    class RenderAdvancedService;
 
 	/**
 	 * Light Type Flag
