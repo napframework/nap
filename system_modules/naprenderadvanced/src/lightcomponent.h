@@ -227,7 +227,7 @@ namespace nap
 		 * light component to enable shadow support.
 		 * @return whether this light component supports shadows
 		 */
-		virtual bool isShadowSupported() const								{ return false; }
+		virtual bool supportsShadows() const								{ return false; }
 
 		/**
 		 * @return whether this light component currently produces shadows

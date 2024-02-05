@@ -277,11 +277,14 @@
                     },
                     "Intensity": 1.0,
                     "ShadowStrength": 1.0,
-                    "ShadowCamera": "./SpotlightShadowCam",
-                    "ShadowMapSize": 1024,
                     "Attenuation": 0.009999999776482582,
                     "Angle": 45.0,
-                    "Falloff": 1.0
+                    "Falloff": 1.0,
+                    "ClippingPlanes": {
+                        "x": 1.0,
+                        "y": 1000.0
+                    },
+                    "ShadowMapSize": 1024
                 },
                 {
                     "Type": "nap::RenderGnomonComponent",
@@ -295,23 +298,6 @@
                     "Gnomon": "Gnomon",
                     "LineWidth": 1.0,
                     "DepthMode": "NoReadWrite"
-                },
-                {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "SpotlightShadowCam",
-                    "Properties": {
-                        "FieldOfView": 50.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
                 }
             ],
             "Children": []

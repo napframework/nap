@@ -54,7 +54,7 @@ namespace nap
 		/**
 		 * @return whether this light component supports shadows
 		 */
-		virtual bool isShadowSupported() const override						{ return true; }
+		virtual bool supportsShadows() const override						{ return true; }
 
 		/**
 		 * @return the shadow camera if available, else nullptr

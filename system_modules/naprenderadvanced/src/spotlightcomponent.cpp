@@ -14,11 +14,11 @@
 
 // nap::SpotLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SpotLightComponent)
-	RTTI_PROPERTY("ShadowCamera",	&nap::SpotLightComponent::mShadowCamera,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowMapSize",	&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Attenuation",	&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Angle",			&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Falloff",		&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::SpotLightComponentInstance run time class definition
@@ -59,14 +59,18 @@ namespace nap
 		// Create shadow camera resource
 		auto* scene_resource = *scenes.begin();
 		nap::Entity shadow_camera_entity;
-		shadow_camera_entity.mID = utility::stringFormat("ShadowEntity_%s", math::generateUUID().c_str());
+		shadow_camera_entity.mID = utility::stringFormat("SpotShadowEntity_%s", math::generateUUID().c_str());
 
 		mShadowCamComponent = std::make_unique<PerspCameraComponent>();
-		mShadowCamComponent->mID = utility::stringFormat("ShadowCamera_%s", math::generateUUID().c_str());
+		mShadowCamComponent->mID = utility::stringFormat("SpotShadowCamera_%s", math::generateUUID().c_str());
+		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
+		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
+		mShadowCamComponent->mProperties.mFieldOfView = mAngle;
 		shadow_camera_entity.mComponents.emplace_back(mShadowCamComponent.get());
 
+		// Create transform
 		mShadowCamXformComponent = std::make_unique<TransformComponent>();
-		mShadowCamXformComponent->mID = utility::stringFormat("ShadowXForm_%s", math::generateUUID().c_str());
+		mShadowCamXformComponent->mID = utility::stringFormat("SpotShadowTransform_%s", math::generateUUID().c_str());
 		shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
 
 		// Spawn it
@@ -96,5 +100,4 @@ namespace nap
 		return &comp;
 		//return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr;
 	}
-
 }

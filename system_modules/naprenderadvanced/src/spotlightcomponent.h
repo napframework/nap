@@ -29,7 +29,7 @@ namespace nap
 		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
 		float mAngle = 90.0f;									///< Property: 'Angle' The light's angle of view (focus)
 		float mFalloff = 0.5f;									///< Property: 'Falloff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
-		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Link to camera that produces the depth texture for a directional light
+		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };			///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
 		uint mShadowMapSize = 1024;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
@@ -65,7 +65,7 @@ namespace nap
 		/**
 		 * @return whether this light component supports shadows
 		 */
-		virtual bool isShadowSupported() const override						{ return true; }
+		virtual bool supportsShadows() const override						{ return true; }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
@@ -124,7 +124,6 @@ namespace nap
 
 	private:
 		// Shadow camera
-		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &SpotLightComponent::mShadowCamera };
 		std::unique_ptr<PerspCameraComponent> mShadowCamComponent = nullptr;
 		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
 		SpawnedEntityInstance mSpawnedCameraEntity;
