@@ -369,12 +369,7 @@
                     ],
                     "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Fader",
-                    "FadeDuration": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_332fb58b",
-                        "Parameter": "",
-                        "Default": 2.0
-                    },
+                    "FadeDuration": 2.0,
                     "Camera": "../../CameraEntity/PerspCamera",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -671,11 +666,14 @@
                     },
                     "Intensity": 1.0,
                     "ShadowStrength": 1.0,
-                    "ShadowCamera": "./SpotShadowCam",
-                    "ShadowMapSize": 2048,
                     "Attenuation": 0.10000000149011612,
                     "Angle": 90.0,
-                    "Falloff": 0.5
+                    "Falloff": 0.5,
+                    "ClippingPlanes": {
+                        "x": 1.0,
+                        "y": 1000.0
+                    },
+                    "ShadowMapSize": 2048
                 },
                 {
                     "Type": "nap::PerspCameraComponent",
