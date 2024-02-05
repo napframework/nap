@@ -5,11 +5,13 @@
 
 // External includes
 #include <perspcameracomponent.h>
+#include <entity.h>
 
 namespace nap
 {
 	// Forward declares
 	class SpotLightComponentInstance;
+	class SceneService;
 
 	/**
 	 * Spot light component for NAP RenderAdvanced's light system.
@@ -58,6 +60,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		virtual void update(double deltaTime) override;
+
 		/**
 		 * @return whether this light component supports shadows
 		 */
@@ -66,7 +70,7 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
+		virtual CameraComponentInstance* getShadowCamera();
 
 		/**
 		 * @return the light type
@@ -121,5 +125,9 @@ namespace nap
 	private:
 		// Shadow camera
 		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &SpotLightComponent::mShadowCamera };
+		std::unique_ptr<PerspCameraComponent> mShadowCamComponent = nullptr;
+		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
+		SpawnedEntityInstance mSpawnedCameraEntity;
+		SceneService* mSceneService = nullptr;
 	};
 }

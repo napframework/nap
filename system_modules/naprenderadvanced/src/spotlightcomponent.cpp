@@ -9,6 +9,8 @@
 #include <transformcomponent.h>
 #include <materialinstance.h>
 #include <renderablemeshcomponent.h>
+#include <sceneservice.h>
+#include <scene.h>
 
 // nap::SpotLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SpotLightComponent)
@@ -47,9 +49,52 @@ namespace nap
 		mFalloff = resource->mFalloff;
 		mShadowMapSize = resource->mShadowMapSize;
 
+		// Create and add shadow entity
+		mSceneService = getEntityInstance()->getCore()->getService<SceneService>();
+		assert(mSceneService != nullptr);
+		const auto& scenes = mSceneService->getScenes();
+		if (!errorState.check(!scenes.empty(), "Unable to create shadow camera entity, no scene available"))
+			return false;
+
+		// Create shadow camera resource
+		auto* scene_resource = *scenes.begin();
+		nap::Entity shadow_camera_entity;
+		shadow_camera_entity.mID = utility::stringFormat("ShadowEntity_%s", math::generateUUID().c_str());
+
+		mShadowCamComponent = std::make_unique<PerspCameraComponent>();
+		mShadowCamComponent->mID = utility::stringFormat("ShadowCamera_%s", math::generateUUID().c_str());
+		shadow_camera_entity.mComponents.emplace_back(mShadowCamComponent.get());
+
+		mShadowCamXformComponent = std::make_unique<TransformComponent>();
+		mShadowCamXformComponent->mID = utility::stringFormat("ShadowXForm_%s", math::generateUUID().c_str());
+		shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
+
+		// Spawn it
+		mSpawnedCameraEntity = scene_resource->spawn(shadow_camera_entity, errorState);
+		if (!errorState.check(mSpawnedCameraEntity != nullptr, "Unable to create shadow camera entity, spawning process failed"))
+			return false;
+
 		registerUniformLightProperty(uniform::light::attenuation);
 		registerUniformLightProperty(uniform::light::angle);
 		registerUniformLightProperty(uniform::light::falloff);
 		return true;
 	}
+
+	
+	void SpotLightComponentInstance::update(double deltaTime)
+	{
+		// Set light position
+		LightComponentInstance::update(deltaTime);
+		auto& lamp_xform = mSpawnedCameraEntity->getComponent<nap::TransformComponentInstance>();
+		lamp_xform.setLocalTransform(getTransform().getGlobalTransform());
+	}
+
+
+	nap::CameraComponentInstance* SpotLightComponentInstance::getShadowCamera()
+	{
+		auto& comp = mSpawnedCameraEntity->getComponent<PerspCameraComponentInstance>();
+		return &comp;
+		//return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr;
+	}
+
 }

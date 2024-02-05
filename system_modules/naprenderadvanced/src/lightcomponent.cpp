@@ -84,11 +84,13 @@ namespace nap
 		registerUniformLightProperty(nap::uniform::light::color);
 		registerUniformLightProperty(nap::uniform::light::intensity);
 
+		/*
 		if (mIsShadowEnabled)
 		{
 			if (!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled while no shadow camera is set", mID.c_str()))
 				return false;
 		}
+		*/
 
         // Register with service
         if (mIsEnabled)
