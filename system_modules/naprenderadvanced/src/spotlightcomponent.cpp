@@ -91,29 +91,48 @@ namespace nap
 		if (!errorState.check(mSpawnedCameraEntity != nullptr, "Unable to spawn spotlight shadow entity"))
 			return false;
 
-		mShadowCamInstance = &mSpawnedCameraEntity->getComponent<nap::PerspCameraComponentInstance>();
-		mShadowCamXformInstance = &mSpawnedCameraEntity->getComponent<nap::TransformComponentInstance>();
 		return true;
 	}
 
 
 	void SpotLightComponentInstance::onDestroy()
 	{
-		LightComponentInstance::onDestroy();
 		if (mSpawnedCameraEntity != nullptr)
 		{
 			assert(mScene != nullptr);
 			mScene->destroy(mSpawnedCameraEntity);
 		}
+		LightComponentInstance::onDestroy();
 	}
 
 
 	void SpotLightComponentInstance::update(double deltaTime)
 	{
 		LightComponentInstance::update(deltaTime);
-		if (mShadowCamXformInstance != nullptr)
+		if (mSpawnedCameraEntity != nullptr)
 		{
-			mShadowCamXformInstance->setLocalTransform(getTransform().getGlobalTransform());
+			mSpawnedCameraEntity->getComponent<TransformComponentInstance>().setLocalTransform(getTransform().getGlobalTransform());
 		}
 	}
+
+
+	nap::CameraComponentInstance* SpotLightComponentInstance::getShadowCamera() const
+	{
+		if (mSpawnedCameraEntity != nullptr)
+		{
+			return &mSpawnedCameraEntity->getComponent<CameraComponentInstance>();
+		}
+		return nullptr;
+	}
+
+
+	nap::CameraComponentInstance* SpotLightComponentInstance::getShadowCamera()
+	{
+		if (mSpawnedCameraEntity != nullptr)
+		{
+			return &mSpawnedCameraEntity->getComponent<CameraComponentInstance>();
+		}
+		return nullptr;
+	}
+
 }

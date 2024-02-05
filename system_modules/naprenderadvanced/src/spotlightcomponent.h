@@ -70,12 +70,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() const override	{ return mShadowCamInstance; }
+		virtual CameraComponentInstance* getShadowCamera() const override;
 
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() override			{ return mShadowCamInstance; }
+		virtual CameraComponentInstance* getShadowCamera() override;
 
 		/**
 		 * @return the light type
@@ -134,8 +134,6 @@ namespace nap
 
 		// Shadow camera entity instance
 		SpawnedEntityInstance mSpawnedCameraEntity;
-		nap::PerspCameraComponentInstance* mShadowCamInstance = nullptr;
-		nap::TransformComponentInstance* mShadowCamXformInstance = nullptr;
 		nap::Scene* mScene = nullptr;
 	};
 }
