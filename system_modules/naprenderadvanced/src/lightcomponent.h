@@ -212,6 +212,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		virtual void onDestroy() override;
+		
 		/**
 		 * Enables the light
 		 */
@@ -223,21 +225,15 @@ namespace nap
 		virtual bool isEnabled() const										{ return mIsEnabled; };
 
 		/**
-		 * Returns whether this light component supports shadows. Override this call on a derived
-		 * light component to enable shadow support.
-		 * @return whether this light component supports shadows
+		 * Returns whether this light component can cast shadows
+		 * @return whether this light component can cast shadows
 		 */
-		virtual bool supportsShadows() const								{ return false; }
+		bool supportsShadows() const										{ return getShadowCamera() != nullptr; }
 
 		/**
 		 * @return whether this light component currently produces shadows
 		 */
-		virtual bool isShadowEnabled() const								{ return mIsShadowEnabled; }
-
-		/**
-		 * @return whether this light was registered with the render advanced service
-		 */
-		bool isRegistered() const											{ return mIsRegistered; }
+		virtual bool isShadowEnabled() const								{ return getShadowCamera() != nullptr && mIsShadowEnabled; }
 
 		/**
 		 * @return the light transform
@@ -252,7 +248,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() = 0;
+		virtual CameraComponentInstance* getShadowCamera() const			{ return nullptr; }
+
+		/**
+		 * @return the shadow camera if available, else nullptr
+		 */
+		virtual CameraComponentInstance* getShadowCamera()					{ return nullptr; }
 
 		/**
 		 * @return the light type
@@ -314,11 +315,6 @@ namespace nap
 
 	protected:
 		/**
-		 * Removes the current light from the render service.
-		 */
-		void removeLightComponent();
-
-		/**
 		 * Registers a light property as a uniform light member, which is automatically pushed by the render advanced service.
 		 * Note that the property must be must be defined for this or derived classes using the RTTI_PROPERTY macro.
 		 * @param memberName light property member name, must be registered using the RTTI_PROPERTY macro.
@@ -336,6 +332,5 @@ namespace nap
 
 	private:
 		std::vector<nap::rtti::Property> mUniformList;
-		bool mIsRegistered = false;
 	};
 }

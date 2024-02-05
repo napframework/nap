@@ -84,31 +84,9 @@ namespace nap
 		registerUniformLightProperty(nap::uniform::light::color);
 		registerUniformLightProperty(nap::uniform::light::intensity);
 
-		/*
-		if (mIsShadowEnabled)
-		{
-			if (!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled while no shadow camera is set", mID.c_str()))
-				return false;
-		}
-		*/
-
         // Register with service
-        if (mIsEnabled)
-        {
-            mService->registerLightComponent(*this);
-            mIsRegistered = true;
-        }
+        mService->registerLightComponent(*this);
 		return true;
-	}
-
-
-	void LightComponentInstance::removeLightComponent()
-	{
-        if (mIsRegistered)
-        {
-            mService->removeLightComponent(*this);
-            mIsRegistered = false;
-        }
 	}
 
 
@@ -118,5 +96,11 @@ namespace nap
 		assert(uniform_prop.is_valid());
 		assert(std::find(mUniformList.begin(), mUniformList.end(), uniform_prop) == mUniformList.end());
 		mUniformList.emplace_back(std::move(uniform_prop));
+	}
+
+
+	void LightComponentInstance::onDestroy()
+	{
+		mService->removeLightComponent(*this);
 	}
 }

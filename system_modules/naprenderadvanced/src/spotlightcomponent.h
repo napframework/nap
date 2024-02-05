@@ -49,9 +49,6 @@ namespace nap
 		SpotLightComponentInstance(EntityInstance& entity, Component& resource) :
 			LightComponentInstance(entity, resource) { }
 
-		// Destructor
-		virtual ~SpotLightComponentInstance() override { LightComponentInstance::removeLightComponent(); }
-
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -60,17 +57,25 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		virtual void update(double deltaTime) override;
+		/**
+		 * 
+		 */
+		virtual void onDestroy() override;
 
 		/**
-		 * @return whether this light component supports shadows
+		 * Synchronize shadow camera position
 		 */
-		virtual bool supportsShadows() const override						{ return true; }
+		virtual void update(double deltaTime) override;
 
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera();
+		virtual CameraComponentInstance* getShadowCamera() const override	{ return mShadowCamInstance; }
+
+		/**
+		 * @return the shadow camera if available, else nullptr
+		 */
+		virtual CameraComponentInstance* getShadowCamera() override			{ return mShadowCamInstance; }
 
 		/**
 		 * @return the light type
@@ -123,10 +128,14 @@ namespace nap
 		float mFalloff = 0.5f;
 
 	private:
-		// Shadow camera
+		// Shadow camera entity resource
 		std::unique_ptr<PerspCameraComponent> mShadowCamComponent = nullptr;
 		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
+
+		// Shadow camera entity instance
 		SpawnedEntityInstance mSpawnedCameraEntity;
-		SceneService* mSceneService = nullptr;
+		nap::PerspCameraComponentInstance* mShadowCamInstance = nullptr;
+		nap::TransformComponentInstance* mShadowCamXformInstance = nullptr;
+		nap::Scene* mScene = nullptr;
 	};
 }

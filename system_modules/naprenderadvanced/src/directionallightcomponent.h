@@ -40,9 +40,6 @@ namespace nap
 		DirectionalLightComponentInstance(EntityInstance& entity, Component& resource) :
 			LightComponentInstance(entity, resource) { }
 
-		// Destructor
-		virtual ~DirectionalLightComponentInstance() override { LightComponentInstance::removeLightComponent(); }
-
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -52,9 +49,9 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return whether this light component supports shadows
+		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual bool supportsShadows() const override						{ return true; }
+		virtual CameraComponentInstance* getShadowCamera() const override	{ return mShadowCamera.get(); }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
