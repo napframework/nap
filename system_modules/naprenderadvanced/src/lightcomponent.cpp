@@ -84,31 +84,15 @@ namespace nap
 		registerUniformLightProperty(nap::uniform::light::color);
 		registerUniformLightProperty(nap::uniform::light::intensity);
 
-		/*
-		if (mIsShadowEnabled)
-		{
-			if (!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled while no shadow camera is set", mID.c_str()))
-				return false;
-		}
-		*/
+		// Create scene for dynamically spawned light entities
+		mScene = std::make_unique<nap::Scene>(*getEntityInstance()->getCore());
+		mScene->mID = scene::light::id;
+		if (!mScene->init(errorState))
+			return false;
 
         // Register with service
-        if (mIsEnabled)
-        {
-            mService->registerLightComponent(*this);
-            mIsRegistered = true;
-        }
+        mService->registerLightComponent(*this);
 		return true;
-	}
-
-
-	void LightComponentInstance::removeLightComponent()
-	{
-        if (mIsRegistered)
-        {
-            mService->removeLightComponent(*this);
-            mIsRegistered = false;
-        }
 	}
 
 
@@ -118,5 +102,19 @@ namespace nap
 		assert(uniform_prop.is_valid());
 		assert(std::find(mUniformList.begin(), mUniformList.end(), uniform_prop) == mUniformList.end());
 		mUniformList.emplace_back(std::move(uniform_prop));
+	}
+
+
+	void LightComponentInstance::onDestroy()
+	{
+		mService->removeLightComponent(*this);
+		mScene->onDestroy();
+		mScene.reset(nullptr);
+	}
+
+
+	nap::SpawnedEntityInstance LightComponentInstance::spawn(const nap::Entity& entity, nap::utility::ErrorState& error)
+	{
+		return getScene().spawn(entity, error);
 	}
 }

@@ -479,7 +479,7 @@ namespace nap
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
 
-                    // Fetch flags
+                    // Fetch flags|
                     auto it_flags = mLightFlagsMap.find(light);
                     assert(it_flags != mLightFlagsMap.end());
 
@@ -796,9 +796,6 @@ namespace nap
 	 
 	void RenderAdvancedService::removeLightComponent(LightComponentInstance& light)
 	{
-		if (!light.isRegistered())
-			return;
-
 		if (mShadowResourcesCreated)
 		{
 			switch (light.getShadowMapType())

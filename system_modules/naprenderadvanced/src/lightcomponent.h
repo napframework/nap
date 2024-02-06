@@ -6,12 +6,14 @@
 #include <cameracomponent.h>
 #include <transformcomponent.h>
 #include <parameterentrycolor.h>
+#include <entity.h>
+#include <scene.h>
 
 namespace nap
 {
 	// Forward declares
 	class LightComponentInstance;
-    class RenderAdvancedService;
+	class RenderAdvancedService;
 
 	/**
 	 * Light Type Flag
@@ -75,6 +77,17 @@ namespace nap
 		{
 			inline constexpr const char* shadowMaps = "shadowMaps";
 			inline constexpr const char* cubeShadowMaps = "cubeShadowMaps";
+		}
+	}
+
+	/**
+	 * Light component scene
+	 */
+	namespace scene
+	{
+		namespace light
+		{
+			inline constexpr const char* id = "lightscene";
 		}
 	}
 
@@ -212,6 +225,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		virtual void onDestroy() override;
+		
 		/**
 		 * Enables the light
 		 */
@@ -223,21 +238,15 @@ namespace nap
 		virtual bool isEnabled() const										{ return mIsEnabled; };
 
 		/**
-		 * Returns whether this light component supports shadows. Override this call on a derived
-		 * light component to enable shadow support.
-		 * @return whether this light component supports shadows
+		 * Returns whether this light component can cast shadows
+		 * @return whether this light component can cast shadows
 		 */
-		virtual bool supportsShadows() const								{ return false; }
+		bool supportsShadows() const										{ return getShadowCamera() != nullptr; }
 
 		/**
 		 * @return whether this light component currently produces shadows
 		 */
-		virtual bool isShadowEnabled() const								{ return mIsShadowEnabled; }
-
-		/**
-		 * @return whether this light was registered with the render advanced service
-		 */
-		bool isRegistered() const											{ return mIsRegistered; }
+		virtual bool isShadowEnabled() const								{ return getShadowCamera() != nullptr && mIsShadowEnabled; }
 
 		/**
 		 * @return the light transform
@@ -252,7 +261,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() = 0;
+		virtual CameraComponentInstance* getShadowCamera() const			{ return nullptr; }
+
+		/**
+		 * @return the shadow camera if available, else nullptr
+		 */
+		virtual CameraComponentInstance* getShadowCamera()					{ return nullptr; }
 
 		/**
 		 * @return the light type
@@ -314,16 +328,25 @@ namespace nap
 
 	protected:
 		/**
-		 * Removes the current light from the render service.
-		 */
-		void removeLightComponent();
-
-		/**
 		 * Registers a light property as a uniform light member, which is automatically pushed by the render advanced service.
 		 * Note that the property must be must be defined for this or derived classes using the RTTI_PROPERTY macro.
 		 * @param memberName light property member name, must be registered using the RTTI_PROPERTY macro.
 		 */
 		void registerUniformLightProperty(const std::string& memberName);
+
+		/**
+		 * Spawns a light entity.
+		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
+		 * @param entity the entity resource to spawn
+		 * @param error contains the error if spawning fails
+		 * @return the spawned light entity instance.
+		 */
+		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
+
+		/**
+		 * @return the scene to spawn light specific entities into
+		 */
+		nap::Scene& getScene()												{ assert(mScene != nullptr); return *mScene; }
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
@@ -336,6 +359,6 @@ namespace nap
 
 	private:
 		std::vector<nap::rtti::Property> mUniformList;
-		bool mIsRegistered = false;
+		std::unique_ptr<nap::Scene> mScene = nullptr;
 	};
 }
