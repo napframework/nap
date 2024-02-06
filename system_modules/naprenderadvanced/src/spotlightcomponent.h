@@ -134,6 +134,6 @@ namespace nap
 
 		// Shadow camera entity instance
 		SpawnedEntityInstance mSpawnedCameraEntity;
-		nap::Scene* mScene = nullptr;
+		std::unique_ptr<nap::Scene> mScene = nullptr;
 	};
 }

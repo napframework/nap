@@ -84,7 +84,7 @@ namespace nap
 		shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
 
 		// Spawn it
-		mScene = *scene_service->getScenes().begin();
+		mScene = std::make_unique<nap::Scene>(*getEntityInstance()->getCore());
 		mSpawnedCameraEntity = mScene->spawn(shadow_camera_entity, errorState);
 
 		// Check if it was created
