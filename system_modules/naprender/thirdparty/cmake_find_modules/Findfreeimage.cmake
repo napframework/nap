@@ -15,14 +15,15 @@ if(WIN32)
     set(FREEIMAGE_LIBS_RELEASE_DLL ${FREEIMAGE_LIBS_DIR}/FreeImage.dll)
     file(GLOB FREEIMAGE_LICENSE_FILES ${FREEIMAGE_DIR}/license*.txt)
 elseif(APPLE)
-    find_path(
-            FREEIMAGE_DIR
-            NAMES include/FreeImage.h
-            HINTS ${freeimage_search_dir}/macos/x86_64
-    )
+    set(FREEIMAGE_DIR ${NAP_ROOT}/system_modules/naprender/thirdparty/FreeImage/macos/${ARCH})
     set(FREEIMAGE_INCLUDE_DIR ${FREEIMAGE_DIR}/include)
     set(FREEIMAGE_LIBS_DIR ${FREEIMAGE_DIR}/lib)
-    set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/libfreeimage-3.18.0.dylib)
+    if(${ARCH}=="x86_64")
+        set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/libfreeimage-3.18.0.dylib)
+    else()
+        set(FREEIMAGE_LIBRARIES ${FREEIMAGE_LIBS_DIR}/libfreeimage.a)
+        message(STATUS "freeimage static universal " ${FREEIMAGE_LIBS_DIR}/libfreeimage.a)
+    endif()
     file(GLOB FREEIMAGE_LICENSE_FILES ${FREEIMAGE_DIR}/license/license*.txt)
 elseif(UNIX)
     find_path(
