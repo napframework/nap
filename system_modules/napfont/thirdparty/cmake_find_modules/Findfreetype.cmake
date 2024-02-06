@@ -1,7 +1,7 @@
 find_path(FREETYPE_DIR
           NAMES
           msvc/x86_64/include/freetype2/ft2build.h
-          macos/x86_64/include/freetype2/ft2build.h
+          macos/${ARCH}/include/freetype2/ft2build.h
           linux/${ARCH}/include/freetype2/ft2build.h
           HINTS
           ${NAP_ROOT}/system_modules/napfont/thirdparty/freetype
