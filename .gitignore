@@ -1,5 +1,6 @@
 __pycache__
 bin/
+lib/
 build/
 .idea/
 .idea/workspace.xml
