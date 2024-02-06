@@ -9,8 +9,6 @@
 #include <transformcomponent.h>
 #include <materialinstance.h>
 #include <renderablemeshcomponent.h>
-#include <sceneservice.h>
-#include <scene.h>
 
 // nap::SpotLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SpotLightComponent)
@@ -59,13 +57,6 @@ namespace nap
 		if (!mResource->mCastShadows)
 			return true;
 
-		// Create and add spotlight shadow map entity
-		auto* scene_service = getEntityInstance()->getCore()->getService<SceneService>(); 
-		assert(scene_service != nullptr);
-		if (!errorState.check(!scene_service->getScenes().empty(),
-			"Unable to create spotlight shadow entity, no scene available"))
-			return false;
-
 		// Create shadow camera resource
 		nap::Entity shadow_camera_entity;
 		shadow_camera_entity.mID = utility::stringFormat("SpotShadowEntity_%s", math::generateUUID().c_str());
@@ -84,25 +75,13 @@ namespace nap
 		shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
 
 		// Spawn it
-		mScene = std::make_unique<nap::Scene>(*getEntityInstance()->getCore());
-		mSpawnedCameraEntity = mScene->spawn(shadow_camera_entity, errorState);
+		mSpawnedCameraEntity = spawn(shadow_camera_entity, errorState);
 
 		// Check if it was created
 		if (!errorState.check(mSpawnedCameraEntity != nullptr, "Unable to spawn spotlight shadow entity"))
 			return false;
 
 		return true;
-	}
-
-
-	void SpotLightComponentInstance::onDestroy()
-	{
-		if (mSpawnedCameraEntity != nullptr)
-		{
-			assert(mScene != nullptr);
-			mScene->destroy(mSpawnedCameraEntity);
-		}
-		LightComponentInstance::onDestroy();
 	}
 
 
@@ -134,5 +113,4 @@ namespace nap
 		}
 		return nullptr;
 	}
-
 }

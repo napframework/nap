@@ -58,11 +58,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * 
-		 */
-		virtual void onDestroy() override;
-
-		/**
 		 * Synchronize shadow camera position
 		 */
 		virtual void update(double deltaTime) override;

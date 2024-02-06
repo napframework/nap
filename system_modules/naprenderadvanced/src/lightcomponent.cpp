@@ -84,6 +84,12 @@ namespace nap
 		registerUniformLightProperty(nap::uniform::light::color);
 		registerUniformLightProperty(nap::uniform::light::intensity);
 
+		// Create scene for dynamically spawned light entities
+		mScene = std::make_unique<nap::Scene>(*getEntityInstance()->getCore());
+		mScene->mID = scene::light::id;
+		if (!mScene->init(errorState))
+			return false;
+
         // Register with service
         mService->registerLightComponent(*this);
 		return true;
@@ -102,5 +108,13 @@ namespace nap
 	void LightComponentInstance::onDestroy()
 	{
 		mService->removeLightComponent(*this);
+		mScene->onDestroy();
+		mScene.reset(nullptr);
+	}
+
+
+	nap::SpawnedEntityInstance LightComponentInstance::spawn(const nap::Entity& entity, nap::utility::ErrorState& error)
+	{
+		return getScene().spawn(entity, error);
 	}
 }

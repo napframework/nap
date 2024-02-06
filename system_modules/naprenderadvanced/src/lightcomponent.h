@@ -6,12 +6,14 @@
 #include <cameracomponent.h>
 #include <transformcomponent.h>
 #include <parameterentrycolor.h>
+#include <entity.h>
+#include <scene.h>
 
 namespace nap
 {
 	// Forward declares
 	class LightComponentInstance;
-    class RenderAdvancedService;
+	class RenderAdvancedService;
 
 	/**
 	 * Light Type Flag
@@ -75,6 +77,17 @@ namespace nap
 		{
 			inline constexpr const char* shadowMaps = "shadowMaps";
 			inline constexpr const char* cubeShadowMaps = "cubeShadowMaps";
+		}
+	}
+
+	/**
+	 * Light component scene
+	 */
+	namespace scene
+	{
+		namespace light
+		{
+			inline constexpr const char* id = "lightscene";
 		}
 	}
 
@@ -321,6 +334,20 @@ namespace nap
 		 */
 		void registerUniformLightProperty(const std::string& memberName);
 
+		/**
+		 * Spawns a light entity.
+		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
+		 * @param entity the entity resource to spawn
+		 * @param error contains the error if spawning fails
+		 * @return the spawned light entity instance.
+		 */
+		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
+
+		/**
+		 * @return the scene to spawn light specific entities into
+		 */
+		nap::Scene& getScene()												{ assert(mScene != nullptr); return *mScene; }
+
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
 		RenderAdvancedService* mService					= nullptr;
@@ -332,5 +359,6 @@ namespace nap
 
 	private:
 		std::vector<nap::rtti::Property> mUniformList;
+		std::unique_ptr<nap::Scene> mScene = nullptr;
 	};
 }
