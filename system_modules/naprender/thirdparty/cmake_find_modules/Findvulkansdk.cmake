@@ -16,7 +16,7 @@ elseif(APPLE)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${VULKANSDK_ROOT_DIR}/macos/x86_64
+        HINTS ${VULKANSDK_ROOT_DIR}/macos/universal
         )
 elseif(UNIX)
     find_path(VULKANSDK_DIR
