@@ -803,8 +803,21 @@
                     },
                     "Intensity": 1.0,
                     "ShadowStrength": 1.0,
-                    "ShadowCamera": "./SunShadowCam",
-                    "ShadowMapSize": 2048
+                    "ShadowMapSize": 2048,
+                    "ProjectionRect": {
+                        "Min": {
+                            "x": -8.0,
+                            "y": -8.0
+                        },
+                        "Max": {
+                            "x": 8.0,
+                            "y": 8.0
+                        }
+                    },
+                    "ClippingPlanes": {
+                        "x": 1.0,
+                        "y": 1000.0
+                    }
                 },
                 {
                     "Type": "nap::OrthoCameraComponent",

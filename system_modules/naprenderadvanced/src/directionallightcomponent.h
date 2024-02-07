@@ -22,8 +22,10 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(DirectionalLightComponent, DirectionalLightComponentInstance)
 	public:
-		ComponentPtr<OrthoCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 1024;								///< Property: 'ShadowMapSize'
+		ComponentPtr<OrthoCameraComponent> mShadowCamera;					///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
+		math::Rect mProjectionRect = { {-10.0f, -10.0f}, {10.0f, 10.0f} };	///< Property: 'ProjectionRect' The shadow projection rectangle
+		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };						///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
+		uint mShadowMapSize = 1024;											///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
 
@@ -49,16 +51,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getCamera() const override	{ return mShadowCamera.get(); }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getCamera() override			{ return mShadowCamera.get(); }
-
-		/**
 		 * @return the light type
 		 */
 		virtual ELightType getLightType() const	override					{ return ELightType::Directional; }
@@ -69,7 +61,10 @@ namespace nap
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
 
 	private:
-		// Shadow camera
-		ComponentInstancePtr<OrthoCameraComponent> mShadowCamera = { this, &DirectionalLightComponent::mShadowCamera };
+
+		// Shadow camera entity resource
+		std::unique_ptr<Entity> mShadowCamEntity = nullptr;
+		std::unique_ptr<OrthoCameraComponent> mShadowCamComponent = nullptr;
+		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
 	};
 }
