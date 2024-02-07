@@ -54,43 +54,32 @@ namespace nap
 		registerUniformLightProperty(uniform::light::falloff);
 
 		// Bail if we're not using shadows
-		if (!mResource->mCastShadows)
-			return true;
-
-		// Create shadow camera resource
-		nap::Entity shadow_camera_entity;
-		shadow_camera_entity.mID = utility::stringFormat("SpotShadowEntity_%s", math::generateUUID().c_str());
-
-		// Perspective camera component
-		mShadowCamComponent = std::make_unique<PerspCameraComponent>();
-		mShadowCamComponent->mID = utility::stringFormat("SpotShadowCamera_%s", math::generateUUID().c_str());
-		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
-		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
-		mShadowCamComponent->mProperties.mFieldOfView = mAngle;
-		shadow_camera_entity.mComponents.emplace_back(mShadowCamComponent.get());
-
-		// Transform component
-		mShadowCamXformComponent = std::make_unique<TransformComponent>();
-		mShadowCamXformComponent->mID = utility::stringFormat("SpotShadowTransform_%s", math::generateUUID().c_str());
-		shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
-
-		// Spawn it
-		mSpawnedCameraEntity = spawnCamera(shadow_camera_entity, errorState);
-
-		// Check if it was created
-		if (!errorState.check(mSpawnedCameraEntity != nullptr, "Unable to spawn spotlight shadow entity"))
-			return false;
-
-		return true;
-	}
-
-
-	void SpotLightComponentInstance::update(double deltaTime)
-	{
-		LightComponentInstance::update(deltaTime);
-		if (mSpawnedCameraEntity != nullptr)
+		if (mResource->mCastShadows)
 		{
-			mSpawnedCameraEntity->getComponent<TransformComponentInstance>().setLocalTransform(getTransform().getGlobalTransform());
+			// Create shadow camera resource
+			nap::Entity shadow_camera_entity;
+			shadow_camera_entity.mID = utility::stringFormat("SpotShadowEntity_%s", math::generateUUID().c_str());
+
+			// Perspective camera component
+			mShadowCamComponent = std::make_unique<PerspCameraComponent>();
+			mShadowCamComponent->mID = utility::stringFormat("SpotShadowCamera_%s", math::generateUUID().c_str());
+			mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
+			mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
+			mShadowCamComponent->mProperties.mFieldOfView = mAngle;
+			shadow_camera_entity.mComponents.emplace_back(mShadowCamComponent.get());
+
+			// Transform component
+			mShadowCamXformComponent = std::make_unique<TransformComponent>();
+			mShadowCamXformComponent->mID = utility::stringFormat("SpotShadowTransform_%s", math::generateUUID().c_str());
+			shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
+
+			// Spawn it
+			if (spawnCamera(shadow_camera_entity, errorState) == nullptr)
+			{
+				errorState.fail("Unable to spawn spotlight shadow entity");
+				return false;
+			}
 		}
+		return true;
 	}
 }

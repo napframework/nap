@@ -198,13 +198,13 @@ namespace nap
 
 	protected:
 		/**
-		 * Spawns an entity hierarchy at runtime.
+		 * Spawns an entity camera hierarchy at runtime.
 		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
 		 * @param entity the entity resource to spawning fails
 		 * @return the spawned light entity instance, nullptr when invalid
 		 * @param error contains the error if spawning fails.
 		 */
-		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
+		SpawnedEntityInstance spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
 
 		/**
 		 * Destroys an entity hierarchy at runtime.
@@ -212,6 +212,13 @@ namespace nap
 		 * @param entityInstance the spawned entity instance
 		 */
 		void destroy(SpawnedEntityInstance& entityInstance);
+
+		/**
+		 * Invoked by core in the app loop. Update order depends on service dependency
+		 * This call is invoked after the application update call
+		 * @param deltaTime: the time in seconds between calls
+		 */
+		virtual void postUpdate(double deltaTime);
 
 	private:
 		bool pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);

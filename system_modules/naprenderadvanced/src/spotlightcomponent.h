@@ -58,11 +58,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Synchronize shadow camera position
-		 */
-		virtual void update(double deltaTime) override;
-
-		/**
 		 * @return the light type
 		 */
 		virtual ELightType getLightType() const	override					{ return ELightType::Spot; }

@@ -102,6 +102,12 @@ namespace nap
 		void setLocalTransform(const glm::mat4x4& matrix);
 
 		/**
+		 * Copies the local transform information from the given component.
+		 * @param xform the component to copy.
+		 */
+		void setLocalTransform(const TransformComponentInstance& xform);
+
+		/**
 		 * Returns the global transform of this node.
 		 * Note that the global transform can be out of sync as it's recomputed on update.
 		 * point on resolve downwards

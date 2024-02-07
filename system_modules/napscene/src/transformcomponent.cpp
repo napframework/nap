@@ -96,6 +96,16 @@ namespace nap
 	}
 
 
+	void TransformComponentInstance::setLocalTransform(const TransformComponentInstance& xform)
+	{
+		mTranslate = xform.mTranslate;
+		mRotate = xform.mRotate;
+		mScale = xform.mScale;
+		mUniformScale = xform.mUniformScale;
+		setDirty();
+	}
+
+
 	// Sets local flag dirty
 	void TransformComponentInstance::setDirty()
 	{

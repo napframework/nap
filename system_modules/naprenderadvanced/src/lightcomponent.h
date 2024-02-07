@@ -336,9 +336,9 @@ namespace nap
 		SpawnedEntityInstance spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
 
 		/**
-		 * @return the spawned camera, nullptr otherwise.
+		 * @return the spawned shadow camera, nullptr when not spawned.
 		 */
-		SpawnedEntityInstance getSpawnedCamera()							{ return mSpawnedCamera; }
+		SpawnedEntityInstance& getSpawnedCamera()							{ return mSpawnedCamera; }
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
