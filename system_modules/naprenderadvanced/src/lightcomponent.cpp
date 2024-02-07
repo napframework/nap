@@ -109,7 +109,7 @@ namespace nap
 	}
 
 
-	nap::SpawnedEntityInstance LightComponentInstance::spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error)
+	nap::SpawnedEntityInstance LightComponentInstance::spawnShadowCamera(const nap::Entity& entity, nap::utility::ErrorState& error)
 	{
 		assert(mSpawnedCamera == nullptr);
 		mSpawnedCamera = mService->spawnCamera(entity, error);

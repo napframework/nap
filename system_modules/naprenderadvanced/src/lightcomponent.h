@@ -232,12 +232,12 @@ namespace nap
 		 * Returns whether this light component can cast shadows
 		 * @return whether this light component can cast shadows
 		 */
-		bool supportsShadows() const										{ return getShadowCamera() != nullptr; }
+		virtual bool canCastShadows() const									{ return getCamera() != nullptr; }
 
 		/**
-		 * @return whether this light component currently produces shadows
+		 * @return whether this light component currently casts shadows
 		 */
-		virtual bool isShadowEnabled() const								{ return getShadowCamera() != nullptr && mIsShadowEnabled; }
+		virtual bool getCastShadows() const									{ return getCamera() != nullptr && mIsShadowEnabled; }
 
 		/**
 		 * @return the light transform
@@ -252,12 +252,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() const			{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+		virtual CameraComponentInstance* getCamera() const					{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+		virtual CameraComponentInstance* getCamera()						{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the light type
@@ -333,7 +333,7 @@ namespace nap
 		 * @param error contains the error if spawning fails
 		 * @return the spawned light entity instance.
 		 */
-		SpawnedEntityInstance spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
+		SpawnedEntityInstance spawnShadowCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
 
 		/**
 		 * @return the spawned shadow camera, nullptr when not spawned.

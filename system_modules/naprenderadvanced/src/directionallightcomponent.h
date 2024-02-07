@@ -51,12 +51,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() const override	{ return mShadowCamera.get(); }
+		virtual CameraComponentInstance* getCamera() const override	{ return mShadowCamera.get(); }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() override			{ return mShadowCamera.get(); }
+		virtual CameraComponentInstance* getCamera() override			{ return mShadowCamera.get(); }
 
 		/**
 		 * @return the light type

@@ -253,7 +253,7 @@ namespace nap
 			if (!light->isEnabled() || light->getIntensity() <= math::epsilon<float>())
 				continue;
 
-			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
+			auto* shadow_camera = light->getCastShadows() ? light->getCamera() : nullptr;
 			if (shadow_camera != nullptr)
 			{
 				switch (light->getShadowMapType())
@@ -513,14 +513,14 @@ namespace nap
                 if (light_index >= getMaximumLightCount())
                     break;
 
-                if (light->isShadowEnabled())
+                if (light->getCastShadows())
                 {
                     // Set light view projection matrix in shadow struct
-                    const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
+                    const auto light_view_projection = light->getCamera()->getRenderProjectionMatrix() * light->getCamera()->getViewMatrix();
                     view_matrix_array->setValue(light_view_projection, light_index);
 
                     // Set near/far plane and strength in shadow struct
-                    glm::vec2 near_far = { light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() };
+                    glm::vec2 near_far = { light->getCamera()->getNearClippingPlane(), light->getCamera()->getFarClippingPlane() };
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
 
