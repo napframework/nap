@@ -102,9 +102,7 @@ namespace nap
 	void LightComponentInstance::onDestroy()
 	{
 		if (mSpawnedCamera != nullptr)
-		{
 			mService->destroy(mSpawnedCamera);
-		}
 		mService->removeLightComponent(*this);
 	}
 

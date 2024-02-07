@@ -80,7 +80,7 @@ namespace nap
 	void SpotLightComponentInstance::setAngle(float angle)
 	{
 		mAngle = angle;
-		auto& cam_comp = getSpawnedCamera()->getComponent<nap::PerspCameraComponentInstance>();
+		auto& cam_comp = mSpawnedCamera->getComponent<nap::PerspCameraComponentInstance>();
 		cam_comp.setFieldOfView(angle);
 	}
 }

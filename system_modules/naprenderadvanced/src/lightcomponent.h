@@ -226,18 +226,18 @@ namespace nap
 		/**
 		 * @return whether this light is active
 		 */
-		virtual bool isEnabled() const										{ return mIsEnabled; };
+		 bool isEnabled() const												{ return mIsEnabled; };
 
-		/**
+		 /**
 		 * Returns whether this light component can cast shadows
 		 * @return whether this light component can cast shadows
 		 */
-		virtual bool canCastShadows() const									{ return getCamera() != nullptr; }
+		bool canCastShadows() const											{ return getCamera() != nullptr; }
 
 		/**
 		 * @return whether this light component currently casts shadows
 		 */
-		virtual bool getCastShadows() const									{ return getCamera() != nullptr && mIsShadowEnabled; }
+		bool getCastShadows() const											{ return canCastShadows() && mIsShadowEnabled; }
 
 		/**
 		 * @return the light transform
@@ -334,11 +334,6 @@ namespace nap
 		 * @return the spawned light entity instance.
 		 */
 		SpawnedEntityInstance spawnShadowCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
-
-		/**
-		 * @return the spawned shadow camera, nullptr when not spawned.
-		 */
-		SpawnedEntityInstance& getSpawnedCamera()							{ return mSpawnedCamera; }
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
