@@ -75,7 +75,7 @@ namespace nap
 		shadow_camera_entity.mComponents.emplace_back(mShadowCamXformComponent.get());
 
 		// Spawn it
-		mSpawnedCameraEntity = spawn(shadow_camera_entity, errorState);
+		mSpawnedCameraEntity = spawnCamera(shadow_camera_entity, errorState);
 
 		// Check if it was created
 		if (!errorState.check(mSpawnedCameraEntity != nullptr, "Unable to spawn spotlight shadow entity"))
@@ -92,25 +92,5 @@ namespace nap
 		{
 			mSpawnedCameraEntity->getComponent<TransformComponentInstance>().setLocalTransform(getTransform().getGlobalTransform());
 		}
-	}
-
-
-	nap::CameraComponentInstance* SpotLightComponentInstance::getShadowCamera() const
-	{
-		if (mSpawnedCameraEntity != nullptr)
-		{
-			return &mSpawnedCameraEntity->getComponent<CameraComponentInstance>();
-		}
-		return nullptr;
-	}
-
-
-	nap::CameraComponentInstance* SpotLightComponentInstance::getShadowCamera()
-	{
-		if (mSpawnedCameraEntity != nullptr)
-		{
-			return &mSpawnedCameraEntity->getComponent<CameraComponentInstance>();
-		}
-		return nullptr;
 	}
 }

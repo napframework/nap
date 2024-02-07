@@ -18,6 +18,7 @@
 #include <vulkan/vulkan_core.h>
 #include <material.h>
 #include <renderglobals.h>
+#include <sceneservice.h>
 
 #include <parametervec.h>
 #include <parameternumeric.h>
@@ -86,6 +87,7 @@ namespace nap
 	void RenderAdvancedService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(RenderService));
+		dependencies.emplace_back(RTTI_OF(SceneService));
 	}
 
 
@@ -107,6 +109,12 @@ namespace nap
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
+			return false;
+
+		// Light scene that can be used for dynamically spawned instances
+		mLightScene = std::make_unique<nap::Scene>(getCore());
+		mLightScene->mID = scene::light::id;
+		if (!mLightScene->init(errorState))
 			return false;
 
         // Enable shadow mapping
@@ -302,6 +310,20 @@ namespace nap
 	}
 
 
+	nap::SpawnedEntityInstance RenderAdvancedService::spawn(const nap::Entity& entity, nap::utility::ErrorState& error)
+	{
+		assert(mLightScene != nullptr);
+		return mLightScene->spawn(entity, error);
+	}
+
+
+	void RenderAdvancedService::destroy(SpawnedEntityInstance& entityInstance)
+	{
+		assert(mLightScene != nullptr);
+		mLightScene->destroy(entityInstance);
+	}
+
+	
 	bool RenderAdvancedService::pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState)
 	{
 		// TODO: Cache light uniforms
@@ -627,6 +649,14 @@ namespace nap
 	}
 
 
+	void RenderAdvancedService::shutdown()
+	{
+		// Destroy all remaining dynamically spawned entities and clear
+		mLightScene->onDestroy();
+		mLightScene.reset();
+	}
+
+
 	void RenderAdvancedService::preResourcesLoaded()
 	{
 		mShadowResourcesCreated = false;
@@ -800,29 +830,31 @@ namespace nap
 		{
 			switch (light.getShadowMapType())
 			{
-			case EShadowMapType::Quad:
-			{
-				// Shadow resources
-				auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
-					{
-						return it.first == input;
-					});
-				assert(found_it != mLightDepthMap.end());
-				mLightDepthMap.erase(found_it);
-				break;
-			}
-			case EShadowMapType::Cube:
-			{
-				auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
-					{
-						return it.first == input;
-					});
-				assert(found_it != mLightCubeMap.end());
-				mLightCubeMap.erase(found_it);
-				break;
-			}
-			default:
-				NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+				case EShadowMapType::Quad:
+				{
+					// Shadow resources
+					auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
+						{
+							return it.first == input;
+						});
+					assert(found_it != mLightDepthMap.end());
+					mLightDepthMap.erase(found_it);
+					break;
+				}
+				case EShadowMapType::Cube:
+				{
+					auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
+						{
+							return it.first == input;
+						});
+					assert(found_it != mLightCubeMap.end());
+					mLightCubeMap.erase(found_it);
+					break;
+				}
+				default:
+				{
+					NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+				}
 			}
 
 			// Flags

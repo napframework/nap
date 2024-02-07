@@ -63,16 +63,6 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getShadowCamera() const override;
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getShadowCamera() override;
-
-		/**
 		 * @return the light type
 		 */
 		virtual ELightType getLightType() const	override					{ return ELightType::Spot; }

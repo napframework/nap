@@ -10,6 +10,7 @@
 #include <rendertexturecube.h>
 #include <materialinstance.h>
 #include <renderablemesh.h>
+#include <scene.h>
 
 // Local includes
 #include "cuberendertarget.h"
@@ -26,6 +27,16 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
+
+	// Light scene identifier
+	namespace scene
+	{
+		namespace light
+		{
+			inline constexpr const char* id = "lightscene";
+		}
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service
@@ -110,10 +121,17 @@ namespace nap
 
 		/**
 		 * Invoked when exiting the main loop, after app shutdown is called
-		 * Use this function to close service specific handles, drivers or devices
+		 * Use this function if your service needs to reset its state before resources are destroyed
 		 * When service B depends on A, Service B is shutdown before A
 		 */
 		virtual void preShutdown() override;
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function to close service specific handles, drivers or devices
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void shutdown() override;
 
 		/**
 		 * Invoked when the resource manager is about to load resources. This is when essential RenderAdvanced resources are
@@ -177,6 +195,23 @@ namespace nap
 		 * @return the maximum number of lights supported by the RenderAdvanced light system.
 		 */
 		static uint getMaximumLightCount()													{ return mMaxLightCount; }
+
+	protected:
+		/**
+		 * Spawns an entity hierarchy at runtime.
+		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
+		 * @param entity the entity resource to spawning fails
+		 * @return the spawned light entity instance, nullptr when invalid
+		 * @param error contains the error if spawning fails.
+		 */
+		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
+
+		/**
+		 * Destroys an entity hierarchy at runtime.
+		 * The entity to destroy must have been created using the spawn method above
+		 * @param entityInstance the spawned entity instance
+		 */
+		void destroy(SpawnedEntityInstance& entityInstance);
 
 	private:
 		bool pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
@@ -247,6 +282,7 @@ namespace nap
 		std::unique_ptr<Sampler2DArray> mSampler2DResource;								///< Base sampler 2D resource with a reference to a depth texture dummy
 		std::unique_ptr<SamplerCubeArray> mSamplerCubeResource;							///< Base cube sampler resource with a reference to a cube depth texture dummy
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;						///< Shadow depth texture dummy
+		std::unique_ptr<nap::Scene> mLightScene = nullptr;								///< Light scene
 
 		bool mShadowMappingEnabled = true;												///< Whether shadow mapping is disabled
 		bool mShadowResourcesCreated = false;											///< Whether shadow resources are created, enabled after `initServiceResources` completed successfully

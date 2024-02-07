@@ -7,7 +7,6 @@
 #include <transformcomponent.h>
 #include <parameterentrycolor.h>
 #include <entity.h>
-#include <scene.h>
 
 namespace nap
 {
@@ -77,17 +76,6 @@ namespace nap
 		{
 			inline constexpr const char* shadowMaps = "shadowMaps";
 			inline constexpr const char* cubeShadowMaps = "cubeShadowMaps";
-		}
-	}
-
-	/**
-	 * Light component scene
-	 */
-	namespace scene
-	{
-		namespace light
-		{
-			inline constexpr const char* id = "lightscene";
 		}
 	}
 
@@ -225,6 +213,9 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
+		/**
+		 * Unregisters itself from the advanced render service
+		 */
 		virtual void onDestroy() override;
 		
 		/**
@@ -261,12 +252,12 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera() const			{ return nullptr; }
+		virtual CameraComponentInstance* getShadowCamera() const			{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ return nullptr; }
+		virtual CameraComponentInstance* getShadowCamera()					{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the light type
@@ -335,22 +326,24 @@ namespace nap
 		void registerUniformLightProperty(const std::string& memberName);
 
 		/**
-		 * Spawns a light entity.
+		 * Spawns a light camera entity. The lifetime of that entity is managed by this component.
 		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
+		 * Call this function on init of your derived light component, only once!
 		 * @param entity the entity resource to spawn
 		 * @param error contains the error if spawning fails
 		 * @return the spawned light entity instance.
 		 */
-		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
+		SpawnedEntityInstance spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
 
 		/**
-		 * @return the scene to spawn light specific entities into
+		 * @return the spawned camera, nullptr otherwise.
 		 */
-		nap::Scene& getScene()												{ assert(mScene != nullptr); return *mScene; }
+		SpawnedEntityInstance getSpawnedCamera()							{ return mSpawnedCamera; }
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
 		RenderAdvancedService* mService					= nullptr;
+		SpawnedEntityInstance mSpawnedCamera;
 
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
@@ -359,6 +352,5 @@ namespace nap
 
 	private:
 		std::vector<nap::rtti::Property> mUniformList;
-		std::unique_ptr<nap::Scene> mScene = nullptr;
 	};
 }
