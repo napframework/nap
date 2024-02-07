@@ -45,12 +45,13 @@ namespace nap
 		registerUniformLightProperty(uniform::light::attenuation);
 
 		// Create shadow camera resource
+		std::string uuid = math::generateUUID();
 		mShadowCamEntity = std::make_unique<Entity>();
-		mShadowCamEntity->mID = utility::stringFormat("%sShadowEntity", math::generateUUID().c_str());
+		mShadowCamEntity->mID = utility::stringFormat("%s_shadow_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 
 		// Perspective camera component
 		mShadowCamComponent = std::make_unique<PerspCameraComponent>();
-		mShadowCamComponent->mID = utility::stringFormat("PointShadowCamera_%s", math::generateUUID().c_str());
+		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s",getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
 		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
 		mShadowCamComponent->mProperties.mFieldOfView = resource->mFieldOfView;
@@ -58,7 +59,7 @@ namespace nap
 
 		// Transform component
 		mShadowCamXformComponent = std::make_unique<TransformComponent>();
-		mShadowCamXformComponent->mID = utility::stringFormat("PointShadowTransform_%s", math::generateUUID().c_str());
+		mShadowCamXformComponent->mID = utility::stringFormat("%s_shadow_xform_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamXformComponent.get());
 
 		// Spawn it

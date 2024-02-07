@@ -207,9 +207,13 @@
                     },
                     "Intensity": 1.0,
                     "ShadowStrength": 1.0,
-                    "ShadowCamera": "",
-                    "ShadowMapSize": 512,
-                    "Attenuation": 0.10000000149011612
+                    "Attenuation": 0.10000000149011612,
+                    "FieldOfView": 30.0,
+                    "ClippingPlanes": {
+                        "x": 1.0,
+                        "y": 1000.0
+                    },
+                    "ShadowMapSize": 512
                 },
                 {
                     "Type": "nap::RenderGnomonComponent",
