@@ -534,81 +534,13 @@
                     },
                     "Intensity": 1.0,
                     "ShadowStrength": 0.6000000238418579,
-                    "ShadowCamera": "./PointShadowCam",
-                    "ShadowMapSize": 1024,
-                    "Attenuation": 0.10000000149011612
-                },
-                {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "PointShadowCam",
-                    "Properties": {
-                        "FieldOfView": 30.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 20.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderPointLight",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_47494a6e",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_f112040c",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_a0b68b4d",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                    "Attenuation": 0.10000000149011612,
+                    "FieldOfView": 30.0,
+                    "ClippingPlanes": {
+                        "x": 0.10000000149011612,
+                        "y": 30.0
                     },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
+                    "ShadowMapSize": 1024
                 },
                 {
                     "Type": "nap::RenderGnomonComponent",
@@ -674,78 +606,6 @@
                         "y": 1000.0
                     },
                     "ShadowMapSize": 2048
-                },
-                {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "SpotShadowCam",
-                    "Properties": {
-                        "FieldOfView": 60.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 20.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderSpotLight",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_440e0c94",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_e0ad67d5",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_bcdccf34",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
                 },
                 {
                     "Type": "nap::RenderGnomonComponent",
@@ -815,86 +675,8 @@
                         }
                     },
                     "ClippingPlanes": {
-                        "x": 1.0,
-                        "y": 1000.0
-                    }
-                },
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "SunShadowCam",
-                    "Properties": {
-                        "Mode": "Custom",
-                        "LeftPlane": -10.0,
-                        "RightPlane": 10.0,
-                        "TopPlane": 10.0,
-                        "BottomPlane": -10.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 30.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderDirectionalLight",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_dda1e55d",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_335ebe47",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_af3f07b4",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
+                        "x": 0.10000000149011612,
+                        "y": 30.0
                     }
                 },
                 {
@@ -1292,7 +1074,7 @@
             "Title": "Light & Shadow Demo",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Immediate",
+            "Mode": "Mailbox",
             "ClearColor": {
                 "Values": [
                     0.0,

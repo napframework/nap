@@ -96,13 +96,11 @@ namespace nap
 	}
 
 
-	void TransformComponentInstance::setLocalTransform(const TransformComponentInstance& xform)
+	void TransformComponentInstance::overrideLocalTransform(const glm::mat4x4& matrix)
 	{
-		mTranslate = xform.mTranslate;
-		mRotate = xform.mRotate;
-		mScale = xform.mScale;
-		mUniformScale = xform.mUniformScale;
-		setDirty();
+		mLocalMatrix = matrix;
+		mLocalDirty = false;
+		mWorldDirty = true;
 	}
 
 

@@ -335,12 +335,12 @@ namespace nap
 		// Synchronize shadow cameras
 		for (auto& light : mLightComponents)
 		{
-			if (light->getCastShadows() && light->getSpawnedCamera() != nullptr)
+			if (light->getSpawnedCamera() != nullptr && light->getCastShadows())
 			{
-				auto* spawm_xform = light->getSpawnedCamera()->findComponent<nap::TransformComponentInstance>();
-				if (spawm_xform != nullptr)
+				auto* spawn_xform = light->getSpawnedCamera()->findComponent<nap::TransformComponentInstance>();
+				if (spawn_xform != nullptr)
 				{
-					spawm_xform->setLocalTransform(light->getTransform());
+					spawn_xform->setLocalTransform(light->getTransform().getGlobalTransform());
 				}
 			}
 		}

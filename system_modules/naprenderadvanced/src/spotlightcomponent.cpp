@@ -32,10 +32,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// SpotLightComponent
-	//////////////////////////////////////////////////////////////////////////
-
 	bool SpotLightComponentInstance::init(utility::ErrorState& errorState)
 	{
 		if (!LightComponentInstance::init(errorState))
@@ -77,5 +73,13 @@ namespace nap
 			return false;
 		}
 		return true;
+	}
+
+
+	void SpotLightComponentInstance::setAngle(float angle)
+	{
+		mAngle = angle;
+		auto& cam_comp = getSpawnedCamera()->getComponent<nap::PerspCameraComponentInstance>();
+		cam_comp.setFieldOfView(angle);
 	}
 }

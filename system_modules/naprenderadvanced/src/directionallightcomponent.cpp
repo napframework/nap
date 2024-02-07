@@ -30,10 +30,6 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// DirectionalLightComponent
-	//////////////////////////////////////////////////////////////////////////
-
 	bool DirectionalLightComponentInstance::init(utility::ErrorState& errorState)
 	{
 		if (!LightComponentInstance::init(errorState))

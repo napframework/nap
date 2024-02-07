@@ -88,7 +88,7 @@ namespace nap
 		 * Set light angle of view in degrees
 		 * @param angle angle of view in degrees
 		 */
-		void setAngle(float angle)											{ mAngle = angle; }
+		void setAngle(float angle);
 
 		/**
 		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient. 

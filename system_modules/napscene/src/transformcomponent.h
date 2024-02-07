@@ -76,8 +76,7 @@ namespace nap
 	public:
 		TransformComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
-		{
-		}
+		{ }
         
         using ComponentInstance::update;
 
@@ -102,10 +101,11 @@ namespace nap
 		void setLocalTransform(const glm::mat4x4& matrix);
 
 		/**
-		 * Copies the local transform information from the given component.
-		 * @param xform the component to copy.
+		 * Overrides the local transform without decomposing the matrix into individual elements.
+		 * Transform, rotation and scale properties are not updated and will be out of sync.
+		 * @param matrix new local transformation matrix. 
 		 */
-		void setLocalTransform(const TransformComponentInstance& xform);
+		void overrideLocalTransform(const glm::mat4x4& matrix);
 
 		/**
 		 * Returns the global transform of this node.
