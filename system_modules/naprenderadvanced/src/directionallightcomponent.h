@@ -23,7 +23,7 @@ namespace nap
 		DECLARE_COMPONENT(DirectionalLightComponent, DirectionalLightComponentInstance)
 	public:
 		ComponentPtr<OrthoCameraComponent> mShadowCamera;					///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		math::Rect mProjectionRect = { {-10.0f, -10.0f}, {10.0f, 10.0f} };	///< Property: 'ProjectionRect' The shadow projection rectangle
+		float mProjectionSize  = 20.0f;										///< Property: 'ProjectionSize' The shadow camera scene projection size
 		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };						///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
 		uint mShadowMapSize = 1024;											///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};

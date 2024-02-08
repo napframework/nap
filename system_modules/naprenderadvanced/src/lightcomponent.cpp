@@ -110,7 +110,11 @@ namespace nap
 	nap::SpawnedEntityInstance LightComponentInstance::spawnShadowCamera(const nap::Entity& entity, nap::utility::ErrorState& error)
 	{
 		assert(mSpawnedCamera == nullptr);
-		mSpawnedCamera = mService->spawnCamera(entity, error);
+		if (error.check(entity.findComponent(RTTI_OF(nap::CameraComponent)) != nullptr,
+			"Missing %s", RTTI_OF(nap::CameraComponent).get_name().data()))
+		{
+			mSpawnedCamera = mService->spawn(entity, error);
+		}
 		return mSpawnedCamera;
 	}
 }

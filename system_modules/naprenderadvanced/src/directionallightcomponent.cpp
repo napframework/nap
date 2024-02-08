@@ -15,8 +15,8 @@
 
 // nap::DirectionalLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::DirectionalLightComponent)
+	RTTI_PROPERTY("ProjectionSize",		&nap::DirectionalLightComponent::mProjectionSize,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowMapSize",		&nap::DirectionalLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ProjectionRect",		&nap::DirectionalLightComponent::mProjectionRect,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClippingPlanes",		&nap::DirectionalLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -45,15 +45,16 @@ namespace nap
 		mShadowCamEntity->mID = utility::stringFormat("%s_shadow_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 
 		// Perspective camera component
+		float projection = resource->mProjectionSize / 2.0f;
 		mShadowCamComponent = std::make_unique<OrthoCameraComponent>();
 		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
 		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
 		mShadowCamComponent->mProperties.mMode = EOrthoCameraMode::Custom;
-		mShadowCamComponent->mProperties.mLeftPlane = resource->mProjectionRect.mMinPosition.x;
-		mShadowCamComponent->mProperties.mRightPlane = resource->mProjectionRect.mMaxPosition.x;
-		mShadowCamComponent->mProperties.mBottomPlane = resource->mProjectionRect.mMinPosition.y;
-		mShadowCamComponent->mProperties.mTopPlane = resource->mProjectionRect.mMaxPosition.y;
+		mShadowCamComponent->mProperties.mLeftPlane = -projection;
+		mShadowCamComponent->mProperties.mRightPlane = projection;
+		mShadowCamComponent->mProperties.mBottomPlane = -projection;
+		mShadowCamComponent->mProperties.mTopPlane = projection;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
 		// Transform component

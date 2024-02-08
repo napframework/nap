@@ -204,7 +204,7 @@ namespace nap
 		 * @return the spawned light entity instance, nullptr when invalid
 		 * @param error contains the error if spawning fails.
 		 */
-		SpawnedEntityInstance spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
+		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
 
 		/**
 		 * Destroys an entity hierarchy at runtime.

@@ -310,14 +310,8 @@ namespace nap
 	}
 
 
-	nap::SpawnedEntityInstance RenderAdvancedService::spawnCamera(const nap::Entity& entity, nap::utility::ErrorState& error)
+	nap::SpawnedEntityInstance RenderAdvancedService::spawn(const nap::Entity& entity, nap::utility::ErrorState& error)
 	{
-		// Ensure it has a camera
-		if (!error.check(entity.findComponent(RTTI_OF(nap::CameraComponent)) != nullptr,
-			"Entity doesn't have a %s", RTTI_OF(nap::CameraComponent).get_name().data()))
-		{
-			return SpawnedEntityInstance();
-		}
 		assert(mLightScene != nullptr);
 		return mLightScene->spawn(entity, error);
 	}
