@@ -212,7 +212,7 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		addMoveAction(children_array, entity_item->getObject(), idx, menu);
 	});
 
-	// Child Entity
+	// Remove entity action
 	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
 		auto entity_item = static_cast<EntityItem*>(&item);
@@ -345,6 +345,9 @@ void napkin::ResourcePanel::createMenuCallbacks()
 			}
 			obj_parent = obj_parent->parentItem();
 		}
+
+		// Allow object to be duplicated
+		menu.addAction(new DuplicateResourceAction(&menu, object_item->getObject()));
 
 		// Allow object to be deleted if it's not a reference
 		if(!object_item->isPointer())

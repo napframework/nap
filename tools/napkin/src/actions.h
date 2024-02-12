@@ -208,6 +208,19 @@ namespace napkin
 
 
 	/**
+	 * Duplicate a Resource
+	 */
+	class DuplicateResourceAction : public Action
+	{
+	public:
+		DuplicateResourceAction(QObject* parent, const nap::rtti::Object& object);
+	private:
+		void perform() override;
+		const nap::rtti::Object* mObject = nullptr;
+	};
+
+
+	/**
 	 * Create a Resource Group 
 	 */
 	class CreateGroupAction : public Action

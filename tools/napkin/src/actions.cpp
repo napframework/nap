@@ -355,6 +355,19 @@ void CreateResourceAction::perform()
 }
 
 
+//////////////////////////////////////////////////////////////////////////
+
+DuplicateResourceAction::DuplicateResourceAction(QObject* parent, const nap::rtti::Object& object) :
+	Action(parent, "Duplicate", QRC_ICONS_RELOAD), mObject(&object)
+{ }
+
+
+void napkin::DuplicateResourceAction::perform()
+{
+	AppContext::get().executeCommand(new DuplicateObjectCommand(*mObject));
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 napkin::CreateGroupAction::CreateGroupAction(QObject* parent) :
@@ -987,4 +1000,3 @@ void napkin::OpenURLAction::perform()
 {
 	QDesktopServices::openUrl(mAddress);
 }
-
