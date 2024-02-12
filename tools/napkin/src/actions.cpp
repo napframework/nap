@@ -626,7 +626,7 @@ CreateEntityAction::CreateEntityAction(QObject* parent) :
 
 void CreateEntityAction::perform()
 {
-	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity)));
 }
 
 

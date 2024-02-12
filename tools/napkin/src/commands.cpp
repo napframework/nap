@@ -104,40 +104,58 @@ void SetPointerValueCommand::redo()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent) : mType(type), QUndoCommand()
+AddObjectCommand::AddObjectCommand(const rttr::type& type) : mType(type), QUndoCommand()
 {
-	auto type_name = QString::fromUtf8(type.get_name().data());
-
-	if (parent != nullptr)
-	{
-		setText(QString("Add new %1 to %2").arg(type_name, QString::fromStdString(parent->mID)));
-		mParentName = parent->mID;
-	}
-	else
-	{
-		setText(QString("Add new %1").arg(type_name));
-	}
-
+	setText(QString("Add new %1").arg(mType.get_name().data()));
 }
 
 
 void AddObjectCommand::redo()
 {
-	auto& ctx = AppContext::get();
-
 	// Create object
-	auto parent = ctx.getDocument()->getObject(mParentName);
-	auto object = ctx.getDocument()->addObject(mType, parent);
+	auto& ctx = AppContext::get();
+	auto object = ctx.getDocument()->addObject(mType);
 
 	// Remember for undo
-	mObjectName = object->mID;
+	mObjectID = object->mID;
 	ctx.selectionChanged({object});
 }
 
 
 void AddObjectCommand::undo()
 {
-	AppContext::get().getDocument()->removeObject(mObjectName);
+	AppContext::get().getDocument()->removeObject(mObjectID);
+}
+
+//////////////////////////////////////////////////////////////////////////
+
+DuplicateObjectCommand::DuplicateObjectCommand(const nap::rtti::Object& object, nap::rtti::Object* parent) :
+	mObjectID(object.mID)
+{
+	mParentID = parent != nullptr ? parent->mID : "";
+	setText(QString("Duplicate %1").arg(mParentID.c_str()));
+}
+
+
+void DuplicateObjectCommand::redo()
+{
+	auto& ctx = AppContext::get();
+
+	// Duplicate object
+	auto parent = ctx.getDocument()->getObject(mParentID);
+	auto object = ctx.getDocument()->getObject(mObjectID);
+	if (object != nullptr)
+	{
+		auto* copied_object = ctx.getDocument()->duplicateObject(*object, parent);
+		assert(copied_object != nullptr);
+		mCopiedID = copied_object->mID;
+	}
+}
+
+
+void DuplicateObjectCommand::undo()
+{
+	AppContext::get().getDocument()->removeObject(mCopiedID);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////

@@ -714,6 +714,7 @@ size_t Document::addEntityToScene(nap::Scene& scene, nap::Entity& entity)
 	return index;
 }
 
+
 size_t Document::addChildEntity(nap::Entity& parent, nap::Entity& child)
 {
 	auto index = parent.mChildren.size();
@@ -1040,6 +1041,12 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 
 	// Notify users the re-parent operation succeeded
 	objectReparented(object, currentPath, newPath);
+}
+
+
+nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& object, nap::rtti::Object* parent /*= nullptr*/)
+{
+	return addObject(object.get_type(), parent);
 }
 
 
