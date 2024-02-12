@@ -53,7 +53,7 @@ set(LIBS
     napcore
     napqt
     ${NAP_MODULES_DEPENDENCIES}
-    Qt5::Widgets Qt5::Core Qt5::Gui
+    Qt6::Widgets Qt6::Core Qt6::Gui
     )
 
 

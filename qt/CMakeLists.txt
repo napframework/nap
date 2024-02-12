@@ -14,7 +14,7 @@ file(GLOB_RECURSE RESOURCES resources/*.qrc)
 add_library(${PROJECT_NAME} STATIC ${SOURCES} ${UI_HEADERS} ${HEADERS})
 target_include_directories(${PROJECT_NAME} PUBLIC src)
 
-set(QT_LIBS Qt5::Core Qt5::Gui Qt5::Widgets Qt5::OpenGL)
+set(QT_LIBS Qt6::Core Qt6::Gui Qt6::Widgets Qt6::OpenGL)
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 target_link_libraries(${PROJECT_NAME} ${QT_LIBS} ${OPENGL_LIBRARIES})
 

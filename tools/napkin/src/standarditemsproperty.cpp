@@ -371,7 +371,7 @@ void napkin::ColorValueItem::setData(const QVariant& value, int role)
 	bool valid = false;
 	for (int i = 0; i < channel_count; i++)
 	{
-		nap_color[i] = static_cast<nap::uint8>(color_str.midRef(i * 2, 2).toUInt(&valid, 16));
+		nap_color[i] = static_cast<nap::uint8>(color_str.mid(i * 2, 2).toUInt(&valid, 16));
 		if (!valid)
 		{
 			return;

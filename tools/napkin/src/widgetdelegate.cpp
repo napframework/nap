@@ -151,7 +151,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		QColor frame_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::dark1);
 		QColor icon_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::front4);
-		button_style.palette.setBrush(QPalette::Background, frame_color);
+		button_style.palette.setBrush(QPalette::AlternateBase, frame_color);
 		button_style.palette.setBrush(QPalette::Base, frame_color);
 		button_style.palette.setBrush(QPalette::Highlight, frame_color);
 		button_style.palette.setBrush(QPalette::Text, icon_color);

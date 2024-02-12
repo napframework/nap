@@ -151,7 +151,7 @@ def get_cmake_path():
     if sys.platform.startswith('linux'):
         cmake = os.path.join(cmake_root, 'linux', get_build_arch(), 'bin', 'cmake')
     elif sys.platform == 'darwin':
-        cmake = os.path.join(cmake_root, 'macos', 'x86_64', 'bin', 'cmake')
+        cmake = os.path.join(cmake_root, 'macos', 'universal', 'bin', 'cmake')
     else:
         cmake = os.path.join(cmake_root, 'msvc', 'x86_64', 'bin', 'cmake.exe')
     return cmake
