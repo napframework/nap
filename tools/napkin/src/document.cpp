@@ -1044,7 +1044,7 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent /*= nullptr*/)
+nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent)
 {
 	// Make sure we can create the object
 	Factory& factory = mCore.getResourceManager()->getFactory();
@@ -1066,10 +1066,49 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 	auto properties = src.get_type().get_properties();
 	for (const auto& property : properties)
 	{
+		// Skip ID
 		if(property.get_name() == nap::rtti::sIDPropertyName)
 			continue;
 
+		// Get value
 		nap::rtti::Variant src_value = property.get_value(src);
+		 
+		// Check if it's an embedded pointer or embedded pointer array ->
+		// In that case we need to duplicate the embedded object and set that
+		if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
+		{
+			// Regular embedded pointer -> duplicate and set
+			if (!property.is_array())
+			{
+				assert(src_value.get_type().is_wrapper() && src_value.get_type().get_wrapped_type().is_pointer());
+				auto variant = src_value.extract_wrapped_value();
+				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
+				auto src_obj = variant.get_value<nap::rtti::Object*>();
+				src_value = src_obj != nullptr ? duplicateObject(*src_obj, target) : nullptr;
+			}
+			else
+			{
+				// Iterate over array, duplicate entries and set
+				auto array_view  = src_value.create_array_view();
+				auto array_type =  array_view.get_rank_type(array_view.get_rank());
+				assert(array_type.is_wrapper() && array_type.get_wrapped_type().is_pointer());
+				for (auto i = 0; i < array_view.get_size(); i++)
+				{
+					// Fetch src object
+					auto src_array_value = array_view.get_value(i);
+					auto variant = src_array_value.extract_wrapped_value();
+					assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
+					auto src_array_obj = variant.get_value<nap::rtti::Object*>();
+
+					// Duplicate & set
+					nap::rtti::Object* obj_handle = src_array_obj != nullptr ?
+						duplicateObject(*src_array_obj, target) : nullptr;
+					array_view.set_value(i, obj_handle);
+				}
+			}
+		}
+
+		// Copy value to target
 		if (!property.set_value(target, src_value))
 		{
 			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
