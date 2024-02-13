@@ -429,7 +429,7 @@ std::string Document::getUniqueName(const std::string& suggestedName, const nap:
 	{
 		newName = useUUID ?
 			nap::utility::stringFormat("%s_%s", suggestedName.c_str(), createSimpleUUID().c_str()) :
-			nap::utility::stringFormat("%s%d", suggestedName.c_str(), i++);
+			nap::utility::stringFormat("%s_%d", suggestedName.c_str(), i++);
 		ex_obj = getObject(newName);
 	}
 	return newName;
@@ -1044,9 +1044,41 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& object, nap::rtti::Object* parent /*= nullptr*/)
+nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent /*= nullptr*/)
 {
-	return addObject(object.get_type(), parent);
+	// Make sure we can create the object
+	Factory& factory = mCore.getResourceManager()->getFactory();
+	if (!factory.canCreate(src.get_type()))
+	{
+		nap::Logger::error("Cannot create object of type: %s", src.get_type().get_name().data());
+		return nullptr;
+	}
+
+	// Create the object and give it a new name
+	nap::rtti::Object* target = factory.create(src.get_type());
+	assert(target != nullptr && !src.mID.empty());
+	target->mID = getUniqueName(src.mID, *target, true);
+
+	// Add to managed object list
+	mObjects.emplace(std::make_pair(target->mID, target));
+	
+	// Copy properties
+	auto properties = src.get_type().get_properties();
+	for (const auto& property : properties)
+	{
+		if(property.get_name() == nap::rtti::sIDPropertyName)
+			continue;
+
+		nap::rtti::Variant src_value = property.get_value(src);
+		if (!property.set_value(target, src_value))
+		{
+			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
+				property.get_name().data()).c_str());
+		}
+	}
+
+	objectAdded(target, parent);
+	return target;
 }
 
 

@@ -227,10 +227,10 @@ namespace napkin
 
 		/**
 		 * Duplicate the object, including all child properties, links and embedded pointers.
-		 * @param object the object to duplicate
+		 * @param src the object to duplicate
 		 * @param parent the parent of the object
 		 */
-		nap::rtti::Object* duplicateObject(const nap::rtti::Object& object, nap::rtti::Object* parent = nullptr);
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent = nullptr);
 
 		/**
 		 * Add and entity to the document
