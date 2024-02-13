@@ -174,6 +174,21 @@ namespace nap
 	}
 
 
+	void RenderToTextureComponentInstance::draw(IRenderTarget& renderTarget)
+	{
+		VkCommandBuffer command_buffer = mService->getCurrentCommandBuffer();
+
+		// Create orthographic projection matrix
+		glm::ivec2 size = renderTarget.getBufferSize();
+
+		// Create projection matrix
+		glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)size.x, 0.0f, (float)size.y);
+
+		// Call on draw
+		onDraw(renderTarget, command_buffer, glm::mat4(), proj_matrix);
+	}
+
+
 	bool RenderToTextureComponentInstance::isSupported(nap::CameraComponentInstance& camera) const
 	{
 		return camera.get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance));

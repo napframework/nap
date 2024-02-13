@@ -125,6 +125,11 @@ namespace nap
 		void draw();
 
 		/**
+		 * Spits-specific
+		 */
+		void draw(IRenderTarget& renderTarget);
+
+		/**
 		 * Called by the Render Service. Only orthographic cameras are supported.
 		 * @return true if camera is orthographic
 		 */
