@@ -1070,7 +1070,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 		if(property.get_name() == nap::rtti::sIDPropertyName)
 			continue;
 
-		// Get value
+		// Get value (by copy)
 		nap::rtti::Variant src_value = property.get_value(src);
 		 
 		// Check if it's an embedded pointer or embedded pointer array ->
@@ -1101,7 +1101,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 					auto src_array_obj = variant.get_value<nap::rtti::Object*>();
 
 					// Duplicate & set
-					nap::rtti::Object* obj_handle = src_array_obj != nullptr ?
+					nap::rtti::Object* obj_handle = src_array_obj != nullptr ? 
 						duplicateObject(*src_array_obj, target) : nullptr;
 					array_view.set_value(i, obj_handle);
 				}
