@@ -203,7 +203,7 @@ def get_python_path():
     if sys.platform.startswith('linux'):
         python = os.path.join(python_dir, 'linux', get_build_arch(), 'bin', 'python3')
     elif sys.platform == 'darwin':
-        python = os.path.join(python_dir, 'macos', 'x86_64', 'bin', 'python3')
+        python = os.path.join(python_dir, 'macos', 'universal', 'bin', 'python3')
     else:
         python = os.path.join(python_dir, 'msvc', 'x86_64', 'python')
     return python

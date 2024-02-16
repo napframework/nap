@@ -93,7 +93,8 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
                                              '-B%s' % build_dir_name,
                                              '-G', 'Xcode',
                                              '-DNAP_PACKAGED_APP_BUILD=1',
-                                             '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+                                             '-DPACKAGE_NAPKIN=%s' % int(include_napkin),
+						'-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'])
 
         # Build & install to packaging dir
         call_except_on_failure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
@@ -204,9 +205,9 @@ def create_macos_bundle(bin_dir, app_full_name, app_name_lower, app_version, cod
     shutil.copytree(os.path.join(bin_dir, "licenses"), os.path.join(app_resources_dir, "licenses")) # copy licenses
     shutil.copy(os.path.join(bin_dir, "NAP.txt"), os.path.join(app_resources_dir, "NAP.txt")) # copy NAP.txt
     shutil.copytree(os.path.join(bin_dir, "system_modules"), os.path.join(app_resources_dir, "system_modules")) # copy module data
-    python_src_path = os.path.join(app_macos_dir, "lib/python3.6")
+    python_src_path = os.path.join(app_macos_dir, "lib/python3.11")
     if os.path.isdir(python_src_path):
-        shutil.move(python_src_path, os.path.join(app_resources_lib_dir, "python3.6")) # copy python modules
+        shutil.move(python_src_path, os.path.join(app_resources_lib_dir, "python3.11")) # copy python modules
 
     # Change the path to the data json file in app.json
     appJson["Data"] = os.path.join("../Resources", dataFilePath)

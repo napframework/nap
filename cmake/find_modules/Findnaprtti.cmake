@@ -116,7 +116,11 @@ install(FILES ${THIRDPARTY_DIR}/rttr/source/LICENSE.txt DESTINATION licenses/RTT
 # Package Python & pybind11 license into packaged app
 if(pybind11_FOUND)
     if(UNIX)
-        install(FILES ${PYTHON_LIB_DIR}/python3.6/LICENSE.txt DESTINATION licenses/python/)
+        if (APPLE)
+            install(FILES ${PYTHON_LIB_DIR}/python3.11/LICENSE.txt DESTINATION licenses/python/)
+        else ()
+            install(FILES ${PYTHON_LIB_DIR}/python3.6/LICENSE.txt DESTINATION licenses/python/)
+        endif()
     else()
         install(FILES ${PYTHON_PREFIX}/../LICENSE.txt DESTINATION licenses/python/)
     endif()

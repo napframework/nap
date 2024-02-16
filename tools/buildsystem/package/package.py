@@ -262,7 +262,8 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        '-DBUILD_LABEL=%s' % build_label,
                        '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
                        '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
-                       '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
+                       '-DNAP_ENABLE_PYTHON=%s' % int(enable_python),
+                       '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'
                        ])
 
     # Build & install to packaging dir
