@@ -213,10 +213,11 @@ namespace napkin
 	class DuplicateResourceAction : public Action
 	{
 	public:
-		DuplicateResourceAction(QObject* parent, const nap::rtti::Object& object);
+		DuplicateResourceAction(QObject* parent, const nap::rtti::Object& object, nap::rtti::Object* parentObject);
 	private:
 		void perform() override;
 		const nap::rtti::Object* mObject = nullptr;
+		nap::rtti::Object* mParent = nullptr;
 	};
 
 

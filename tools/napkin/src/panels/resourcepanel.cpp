@@ -346,10 +346,15 @@ void napkin::ResourcePanel::createMenuCallbacks()
 			obj_parent = obj_parent->parentItem();
 		}
 
-		// Allow object to be deleted if it's not a reference
+		// Actual object, not a link
 		if (!object_item->isPointer())
 		{
-			menu.addAction(new DuplicateResourceAction(&menu, object_item->getObject()));
+			// Allow object to be duplicated
+			auto parent_item = qitem_cast<ObjectItem*>(object_item->parentItem());
+			nap::rtti::Object* parent_obj = parent_item != nullptr ? &parent_item->getObject() : nullptr;
+			menu.addAction(new DuplicateResourceAction(&menu, object_item->getObject(), parent_obj));
+
+			// Allow object to be deleted
 			menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
 		}
 	});

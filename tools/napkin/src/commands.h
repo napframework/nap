@@ -46,7 +46,7 @@ namespace napkin
 	class DuplicateObjectCommand : public QUndoCommand
 	{
 	public:
-		DuplicateObjectCommand(const nap::rtti::Object& object, nap::rtti::Object* parent = nullptr);
+		DuplicateObjectCommand(const nap::rtti::Object& object, nap::rtti::Object* parent);
 
 		/**
 		 * Apply duplication
