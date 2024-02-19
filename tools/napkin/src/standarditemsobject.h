@@ -485,8 +485,8 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
-		virtual nap::RootEntity& rootEntity() const;
+		explicit EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity);
+		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const;
 		const PropertyPath propertyPath() const override;
 		const std::string unambiguousName() const override;
@@ -507,16 +507,8 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(EntityInstanceItem)
 	public:
-		explicit RootEntityItem(nap::RootEntity& e);
-		const PropertyPath propertyPath() const override;
-
+		explicit RootEntityItem(nap::RootEntity& rootEntity);
 		SceneItem* sceneItem();
-		nap::RootEntity& rootEntity() const override;
-	private:
-		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
-		void onComponentAdded(nap::Component* c, nap::Entity* owner);
-
-		nap::RootEntity& mRootEntity;
 	};
 
 

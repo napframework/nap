@@ -805,14 +805,14 @@ nap::Scene& napkin::SceneItem::getScene()
 // EntityInstanceItem
 //////////////////////////////////////////////////////////////////////////
 
-EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
-		: mRootEntity(rootEntity), ObjectItem(e, false)
+EntityInstanceItem::EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity)
+		: mRootEntity(rootEntity), ObjectItem(entity, false)
 {
 	setEditable(false);
-	for (auto& childEntity : e.mChildren)
+	for (auto& childEntity : entity.mChildren)
 		appendRow(new EntityInstanceItem(*childEntity, mRootEntity));
 
-	for (auto& comp : e.mComponents)
+	for (auto& comp : entity.mComponents)
 		appendRow(new ComponentInstanceItem(*comp, mRootEntity));
 
 	auto ctx = &AppContext::get();
@@ -820,15 +820,12 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEnti
 	connect(ctx, &AppContext::childEntityAdded, this, &EntityInstanceItem::onEntityAdded);
 }
 
+
 nap::RootEntity& EntityInstanceItem::rootEntity() const
 {
 	return mRootEntity;
 }
 
-
-//////////////////////////////////////////////////////////////////////////
-// EntityInstanceItem
-//////////////////////////////////////////////////////////////////////////
 
 void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
@@ -884,46 +881,15 @@ nap::Entity& napkin::EntityInstanceItem::entity() const
 // RootEntityItem
 //////////////////////////////////////////////////////////////////////////
 
-RootEntityItem::RootEntityItem(nap::RootEntity& e)
-		: mRootEntity(e), EntityInstanceItem(*e.mEntity.get(), e)
+RootEntityItem::RootEntityItem(nap::RootEntity& rootEntity) : EntityInstanceItem(*rootEntity.mEntity.get(), rootEntity)
 { }
-
-
-const PropertyPath RootEntityItem::propertyPath() const
-{
-	return EntityInstanceItem::propertyPath();
-}
-
-
-nap::RootEntity& RootEntityItem::rootEntity() const
-{
-	assert(&mRootEntity);
-	return mRootEntity;
-}
-
-
-void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
-{
-	if (parent != mRootEntity.mEntity.get())
-		return;
-
-	appendRow(new EntityInstanceItem(*e, mRootEntity));
-}
-
-
-void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
-{
-	if (owner != mRootEntity.mEntity.get())
-		return;
-
-	appendRow(new ComponentInstanceItem(*c, mRootEntity));
-}
 
 
 SceneItem* RootEntityItem::sceneItem()
 {
 	return qobject_cast<SceneItem*>(parentItem());
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInstanceItem
