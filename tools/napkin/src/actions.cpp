@@ -358,7 +358,7 @@ void CreateResourceAction::perform()
 //////////////////////////////////////////////////////////////////////////
 
 DuplicateResourceAction::DuplicateResourceAction(QObject* parent, const nap::rtti::Object& object) :
-	Action(parent, "Duplicate", QRC_ICONS_DUPLICATE), mObject(&object)
+	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object)
 { }
 
 
