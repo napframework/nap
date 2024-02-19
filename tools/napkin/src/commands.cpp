@@ -146,17 +146,15 @@ void DuplicateObjectCommand::redo()
 	if (object == nullptr)
 		return;
 
-	// Duplicate entire object structure
+	// Duplicate entire object structure, including embedded objects
 	auto parent = ctx.getDocument()->getObject(mParentID);
 	auto* doc = ctx.getDocument(); assert(doc != nullptr);
-	auto* copied = doc->duplicateObject(*object, parent);
-	assert(copied != nullptr);
-	mCopiedID = copied->mID;
+	auto* copied = doc->duplicateObject(*object, parent); assert(copied != nullptr);
 
-	// Re-parent
+	// Re-parent -> TODO: Might be a better way to handle this, but code fragmentation isn't wanted atm.
 	if (parent != nullptr)
 	{
-		// In group
+		// Move to group
 		if (parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
 		{
 			auto* grp = static_cast<nap::IGroup*>(parent);
@@ -164,15 +162,15 @@ void DuplicateObjectCommand::redo()
 			doc->reparentObject(*copied, {}, tar_path);
 		}
 
-		// Component of entity
-		if (parent->get_type().is_derived_from(RTTI_OF(nap::Entity)) &&
-			object->get_type().is_derived_from(RTTI_OF(nap::Component)))
+		// Add component
+		else if (parent->get_type().is_derived_from(RTTI_OF(nap::Entity)))
 		{
-			auto* entity = rtti_cast<nap::Entity>(parent); assert(entity != nullptr);
+			assert(object->get_type().is_derived_from(RTTI_OF(nap::Component)));
 			PropertyPath tar_path(parent->mID, nap::Entity::componentsPropertyName(), *doc);
 			doc->arrayAddExistingObject(tar_path, copied, tar_path.getArrayLength());
 		}
 	}
+	mCopiedID = copied->mID;
 }
 
 
@@ -185,9 +183,8 @@ void DuplicateObjectCommand::undo()
 
 AddComponentCommand::AddComponentCommand(nap::Entity& entity, nap::rtti::TypeInfo type)
 : mEntityName(entity.mID), mType(type)
-{
+{ }
 
-}
 
 void AddComponentCommand::redo()
 {
@@ -198,10 +195,12 @@ void AddComponentCommand::redo()
 	mComponentName = comp->mID;
 }
 
+
 void AddComponentCommand::undo()
 {
 	nap::Logger::fatal("Undo is not available...");
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

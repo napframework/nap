@@ -1120,6 +1120,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 		}
 	}
 
+	// Notify listeners object has been added and return
 	objectAdded(target, parent);
 	return target;
 }
