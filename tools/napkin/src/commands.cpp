@@ -142,31 +142,36 @@ void DuplicateObjectCommand::redo()
 	auto& ctx = AppContext::get();
 
 	// Get resources
-	auto parent = ctx.getDocument()->getObject(mParentID);
 	auto object = ctx.getDocument()->getObject(mObjectID);
-
 	if (object == nullptr)
 		return;
 
-	// Duplicate
+	// Duplicate entire object structure
+	auto parent = ctx.getDocument()->getObject(mParentID);
 	auto* doc = ctx.getDocument(); assert(doc != nullptr);
 	auto* copied = doc->duplicateObject(*object, parent);
 	assert(copied != nullptr);
 	mCopiedID = copied->mID;
 
 	// Re-parent
-	if (parent != nullptr && parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+	if (parent != nullptr)
 	{
-		auto* grp = static_cast<nap::IGroup*>(parent);
-		PropertyPath tar_path(*parent, grp->getMembersProperty(), *doc);
-		doc->reparentObject(*copied, {}, tar_path);
-	}
+		// In group
+		if (parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+		{
+			auto* grp = static_cast<nap::IGroup*>(parent);
+			PropertyPath tar_path(*parent, grp->getMembersProperty(), *doc);
+			doc->reparentObject(*copied, {}, tar_path);
+		}
 
-	if (parent != nullptr && object->get_type().is_derived_from(RTTI_OF(nap::Component)))
-	{
-		auto* entity = rtti_cast<nap::Entity>(parent); assert(entity != nullptr);
-		PropertyPath tar_path(parent->mID, nap::Entity::componentsPropertyName(), *doc);
-		doc->reparentObject(*copied, {}, tar_path);
+		// Component of entity
+		if (parent->get_type().is_derived_from(RTTI_OF(nap::Entity)) &&
+			object->get_type().is_derived_from(RTTI_OF(nap::Component)))
+		{
+			auto* entity = rtti_cast<nap::Entity>(parent); assert(entity != nullptr);
+			PropertyPath tar_path(parent->mID, nap::Entity::componentsPropertyName(), *doc);
+			doc->arrayAddExistingObject(tar_path, copied, tar_path.getArrayLength());
+		}
 	}
 }
 

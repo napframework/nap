@@ -197,8 +197,8 @@ namespace napkin
 
 		/**
 		 * Add an object of the specified type.
-		 * @param type The type of the desired object.
-		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
+		 * @param type The type of the the object to add
+		 * @param parent Optional parent of the object, nullptr if object has no parent
 		 * In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
@@ -214,21 +214,18 @@ namespace napkin
 		void reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath);
 
 		/**
-		 * Add an object of the specified type
-		 * @tparam T
-		 * @param parent
-		 * @return
+		 * Add an object of the specified type T
+		 * @param parent Optional parent of the object, nullptr if object has no parent
+		 * @param name optional object name
+		 * @return the added object of type T
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
-		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, name));
-		}
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string()) 		{ return static_cast<T*>(addObject(RTTI_OF(T), parent, name)); }
 
 		/**
 		 * Duplicate the object, including all child properties, links and embedded pointers.
-		 * @param src the object to duplicate
-		 * @param parent the parent of the object
+		 * @param src Object to duplicate
+		 * @param parent Optional parent of the object, nullptr if object has no parent
 		 */
 		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent = nullptr);
 
