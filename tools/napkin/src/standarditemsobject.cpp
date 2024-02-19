@@ -489,7 +489,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 
 	// Handle data model changes
 	auto& ctx = AppContext::get();
-	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
+	connect(&ctx, &AppContext::propertyChildInserted, this, &EntityItem::onChildInserted);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::arrayIndexSwapped, this, &EntityItem::onIndexSwapped);
@@ -518,18 +518,29 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 }
 
 
-void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
+void napkin::EntityItem::onChildInserted(const PropertyPath& path, size_t childIndex)
 {
-	// Bail if we're not handling this object
-	if (owner != mObject)
+	// Bail if action not related to object
+	if (path.getObject() != mObject)
 		return;
 
-	// Create and add new component
-	auto comp_item = new ComponentItem(*comp);
-	appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+	// Check if it's the component property and add
+	auto comp_path = PropertyPath(mObject->mID, nap::Entity::componentsPropertyName(), *AppContext::get().getDocument());
+	if (path == comp_path)
+	{
+		// Create and add new component
+		auto array_elm = comp_path.getArrayElement(childIndex);
+		auto array_val = array_elm.getValue();
+		assert(array_val.get_type().is_wrapper() && array_val.get_type().get_wrapped_type().is_derived_from((RTTI_OF(nap::Component))));
+		auto component = array_val.extract_wrapped_value().get_value<nap::Component*>();
 
-	// Notify listeners
-	childAdded(*this, *comp_item);
+		// Create and add new component
+		auto comp_item = new ComponentItem(*component);
+		insertRow(childIndex, { comp_item, new RTTITypeItem(component->get_type()) });
+
+		// Notify listeners
+		childAdded(*this, *comp_item);
+	}
 }
 
 

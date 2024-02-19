@@ -499,14 +499,6 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked when a Component has been added to the system
-		 * @param comp
-		 * @param owner
-		 */
-		void componentAdded(nap::Component* comp, nap::Entity* owner);
-
-		/**
-		 * Qt Signal
 		 * Invoked after any object has been added (this includes Entities and Groups)
 		 * @param obj The newly added object
 		 * @param parent The parent item of the newly added object, can be nullptr

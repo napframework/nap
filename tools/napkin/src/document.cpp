@@ -363,14 +363,18 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	assert(canCreate);
 	assert(type.is_derived_from<nap::Component>());
 
+	// Create and add component
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
 	comp->mID = getUniqueName(type.get_name().data(), *comp, true);
 	auto it = mObjects.emplace(std::make_pair(comp->mID, comp));
 	assert(it.second);
-
 	entity.mComponents.emplace_back(comp);
-	componentAdded(comp, &entity);
+
+	// Notify others
+	auto comp_path = PropertyPath(entity.mID, nap::Entity::componentsPropertyName(), *this);
+	propertyValueChanged(comp_path);
+	propertyChildInserted(comp_path, entity.mComponents.size()-1);
 	return comp;
 }
 

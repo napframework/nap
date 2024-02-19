@@ -286,7 +286,7 @@ namespace napkin
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
-		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+		void onChildInserted(const PropertyPath& parentPath, size_t childIndex);
 		void onPropertyValueChanged(const PropertyPath& path);
 		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 		void populate();
