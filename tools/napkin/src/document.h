@@ -223,18 +223,13 @@ namespace napkin
 		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string()) 		{ return static_cast<T*>(addObject(RTTI_OF(T), parent, name)); }
 
 		/**
-		 * Duplicate the object, including all child properties, links and embedded pointers.
-		 * @param src Object to duplicate
-		 * @param parent Optional parent of the object, nullptr if object has no parent
+		 * Duplicate the object, including all child properties, links and embedded objects.
+		 * The duplicated object is added to the parent (property) if valid.
+		 * @param src the object to duplicate
+		 * @param parent optional parent to which the src and duplicate belong
+		 * @return the duplicated object, nullptr if duplication failed
 		 */
-		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src);
-
-		/**
-		 * Duplicate the component, including all child properties, links and embedded pointers.
-		 * @param component component to duplicate
-		 * @param entity parent entity
-		 */
-		nap::rtti::Object* duplicateComponent(const nap::Component& component, nap::Entity& entity);
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, const PropertyPath& parent);
 
 		/**
 		 * Add and entity to the document
@@ -624,8 +619,9 @@ namespace napkin
 
 		/**
 		 * Duplicate the object, including all child properties, links and embedded pointers.
-		 * @param src Object to duplicate
-		 * @param parent Optional parent of the object, nullptr if object has no parent
+		 * @param src object to duplicate
+		 * @param parent optional parent of the object, nullptr if object has no parent
+		 * @return src duplicate, nullptr if duplication failed because object can't be created
 		 */
 		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent);
 	};

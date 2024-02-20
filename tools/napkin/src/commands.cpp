@@ -150,7 +150,24 @@ void DuplicateObjectCommand::redo()
 	// Duplicate entire object structure, including embedded objects
 	auto parent = ctx.getDocument()->getObject(mParentID);
 	auto* doc = ctx.getDocument(); assert(doc != nullptr);
-	auto* copied = doc->duplicateObject(*object); assert(copied != nullptr);
+
+	PropertyPath parent_path;
+	if (parent != nullptr)
+	{
+		if (parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
+		{
+			auto* parent_group = static_cast<nap::IGroup*>(parent);
+			parent_path = PropertyPath(*parent_group, parent_group->getMembersProperty(), *doc);
+		}
+
+		if(parent->get_type().is_derived_from(RTTI_OF(nap::Entity)))
+		{
+			assert(object->get_type().is_derived_from(RTTI_OF(nap::Component)));
+			parent_path = PropertyPath(parent->mID, nap::Entity::componentsPropertyName(), *doc);
+		}
+	}
+
+	auto* copied = doc->duplicateObject(*object, parent_path); assert(copied != nullptr);
 	mCopiedID = copied->mID;
 }
 

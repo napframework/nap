@@ -455,7 +455,7 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 
 void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& item)
 {
-	mTreeView.select(&item, true);
+	mTreeView.select(&item, false);
 }
 
 
@@ -463,7 +463,7 @@ void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem&
 {
 	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
 	if (selected_it != nullptr && selected_it == &entity)
-		mTreeView.select(&item, true);
+		mTreeView.select(&item, false);
 }
 
 

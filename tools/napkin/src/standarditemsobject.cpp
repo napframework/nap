@@ -538,7 +538,10 @@ void napkin::EntityItem::onChildInserted(const PropertyPath& path, size_t childI
 
 	// Create and add new component
 	auto comp_item = new ComponentItem(*component);
-	insertRow(childIndex, { comp_item, new RTTITypeItem(component->get_type()) });
+	int row_idx = getEntity().mChildren.size() + childIndex;
+	this->model()->insertRow(row_idx, this->index());
+	this->setChild(row_idx, 0, comp_item);
+	this->setChild(row_idx, 1, new RTTITypeItem(component->get_type()));
 
 	// Notify listeners
 	childAdded(*this, *comp_item);

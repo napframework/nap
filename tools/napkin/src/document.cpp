@@ -223,6 +223,39 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 }
 
 
+nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& src, const PropertyPath& parent)
+{
+	// Duplicate and add object
+	auto* parent_obj = parent.getObject();
+	auto* duplicate = duplicateObject(src, parent_obj); assert(duplicate != nullptr);
+
+	// Add duplicate to parent
+	if (duplicate != nullptr && parent_obj != nullptr)
+	{
+		// Resolve and get array
+		auto resolved = parent.resolve(); assert(resolved.isValid());
+		auto value = resolved.getValue(); assert(value.is_array());
+		auto array_view = value.create_array_view();
+
+		// Find source index
+		int index = -1;
+		for (auto i = 0; i < array_view.get_size(); i++)
+		{
+			if (array_view.get_value_as_ref(i) == &src)
+			{
+				index = arrayAddExistingObject(parent, duplicate, i+1); 
+				break;
+			}
+		}
+
+		// Assert when source missing from parent property (mismatch)
+		NAP_ASSERT_MSG(index >= 0, nap::utility::stringFormat("Source '%s' not found in parent '%s'",
+			src.mID.c_str(), parent.toString().c_str()).c_str());
+	}
+	return duplicate;
+}
+
+
 void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& propPath)
 {
 	// Resolve path
@@ -1045,28 +1078,6 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 
 	// Notify users the re-parent operation succeeded
 	objectReparented(object, currentPath, newPath);
-}
-
-
-nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& src)
-{
-	int index; auto* group = getGroup(src, index);
-	auto* copy = duplicateObject(src, group); assert(copy != nullptr);
-	if (group != nullptr)
-	{
-		PropertyPath child_path(*group, group->getMembersProperty(), *this);
-		arrayAddExistingObject(child_path, copy, index);
-	}
-	return copy;
-}
-
-
-nap::rtti::Object* napkin::Document::duplicateComponent(const nap::Component& component, nap::Entity& entity)
-{
-	auto* copy = duplicateObject(component, &entity);
-	PropertyPath tar_path(entity.mID, nap::Entity::componentsPropertyName(), *this);
-	arrayAddExistingObject(tar_path, copy, tar_path.getArrayLength());
-	return copy;
 }
 
 
