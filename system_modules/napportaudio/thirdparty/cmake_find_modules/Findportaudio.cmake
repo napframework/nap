@@ -6,13 +6,10 @@
 # PORTAUDIO_DEFINITIONS - Compiler switches required for using PORTAUDIO
 # PORTAUDIO_LICENSE_FILES - Files required when distributing (installing) portaudio
 
-include(${NAP_ROOT}/cmake/targetarch.cmake)
-target_architecture(ARCH)
-
 find_path(PORTAUDIO_DIR
           NAMES
           msvc/x86_64/include/portaudio.h
-          macos/x86_64/include/portaudio.h
+          macos/${ARCH}/include/portaudio.h
           linux/${ARCH}/include/portaudio.h
           HINTS
           ${NAP_ROOT}/system_modules/napportaudio/thirdparty/portaudio
@@ -25,11 +22,11 @@ if(WIN32)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/portaudio_x64.dll)
     set(PORTAUDIO_LICENSE_FILES ${PORTAUDIO_DIR}/msvc/x86_64/LICENSE.txt)
 elseif(APPLE)
-    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/macos/x86_64/include)
-    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/macos/x86_64/lib)
+    set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/macos/${ARCH}/include)
+    set(PORTAUDIO_LIB_DIR /${PORTAUDIO_DIR}/macos/${ARCH}/lib)
     set(PORTAUDIO_LIBS_RELEASE_DLL ${PORTAUDIO_LIB_DIR}/libportaudio.2.dylib)
     set(PORTAUDIO_LIBRARIES ${PORTAUDIO_LIBS_RELEASE_DLL})
-    set(PORTAUDIO_LICENSE_FILES ${PORTAUDIO_DIR}/macos/x86_64/LICENSE.txt)
+    set(PORTAUDIO_LICENSE_FILES ${PORTAUDIO_DIR}/macos/${ARCH}/LICENSE.txt)
 else()
     set(PORTAUDIO_INCLUDE_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/include)
     set(PORTAUDIO_LIB_DIR ${PORTAUDIO_DIR}/linux/${ARCH}/lib)
