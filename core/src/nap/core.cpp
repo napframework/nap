@@ -372,10 +372,13 @@ namespace nap
 	{
 #ifdef _WIN32
 		const std::string platformPrefix = "msvc";
+        const std::string version = "3.6";
 #elif defined(__APPLE__)
 		const std::string platformPrefix = "macos";
+        const std::string version = "3.11";
 #else // __unix__
 		const std::string platformPrefix = "linux";
+        const std::string version = "3.6";
 #endif
 
 #ifdef NAP_PACKAGED_BUILD
@@ -403,7 +406,7 @@ namespace nap
 		if (packagedBuild)
 		{
 			// Check for packaged app modules dir
-			std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
+			std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python" + version});
 			if (utility::dirExists(packagedAppPythonPath)) {
 				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
 			}
@@ -411,7 +414,7 @@ namespace nap
 #ifdef __APPLE__
                 // Check for app bundle directory structure
 			    std::string appBundleResourcesPath = utility::joinPath({mProjectInfo->getProjectDir(), "..", "Resources"});
-                packagedAppPythonPath = utility::joinPath({appBundleResourcesPath, "lib", "python3.6"});
+                packagedAppPythonPath = utility::joinPath({appBundleResourcesPath, "lib", "python" + version});
 			    if (utility::dirExists(packagedAppPythonPath))
 			    {
                     Logger::info("Python home: %s", appBundleResourcesPath.c_str());
