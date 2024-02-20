@@ -12,12 +12,6 @@ endif()
 
 # Add sources to target
 if(NAP_BUILD_CONTEXT MATCHES "source")
-    # Add compile definition if we are building for raspberry pi
-    check_raspbian_os(RASPBERRY)
-    if (RASPBERRY)
-        target_compile_definitions(${PROJECT_NAME} PRIVATE RASPBERRY)
-    endif()
-
     if (NAP_AUDIOFILE_SUPPORT)
         # Add compile definition to enable audio file support
         target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_AUDIOFILE_SUPPORT)
