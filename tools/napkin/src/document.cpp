@@ -1048,6 +1048,28 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
+nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& src)
+{
+	int index; auto* group = getGroup(src, index);
+	auto* copy = duplicateObject(src, group); assert(copy != nullptr);
+	if (group != nullptr)
+	{
+		PropertyPath child_path(*group, group->getMembersProperty(), *this);
+		arrayAddExistingObject(child_path, copy, index);
+	}
+	return copy;
+}
+
+
+nap::rtti::Object* napkin::Document::duplicateComponent(const nap::Component& component, nap::Entity& entity)
+{
+	auto* copy = duplicateObject(component, &entity);
+	PropertyPath tar_path(entity.mID, nap::Entity::componentsPropertyName(), *this);
+	arrayAddExistingObject(tar_path, copy, tar_path.getArrayLength());
+	return copy;
+}
+
+
 nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent)
 {
 	// Make sure we can create the object

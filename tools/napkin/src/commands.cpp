@@ -127,6 +127,7 @@ void AddObjectCommand::undo()
 	AppContext::get().getDocument()->removeObject(mObjectID);
 }
 
+
 //////////////////////////////////////////////////////////////////////////
 
 DuplicateObjectCommand::DuplicateObjectCommand(const nap::rtti::Object& object, nap::rtti::Object* parent) :
@@ -149,27 +150,7 @@ void DuplicateObjectCommand::redo()
 	// Duplicate entire object structure, including embedded objects
 	auto parent = ctx.getDocument()->getObject(mParentID);
 	auto* doc = ctx.getDocument(); assert(doc != nullptr);
-	auto* copied = doc->duplicateObject(*object, parent); assert(copied != nullptr);
-
-	// Re-parent -> TODO: Might be a better way to handle this, but code fragmentation isn't wanted atm.
-	if (parent != nullptr)
-	{
-		// Move to group
-		if (parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-		{
-			auto* grp = static_cast<nap::IGroup*>(parent);
-			PropertyPath tar_path(*parent, grp->getMembersProperty(), *doc);
-			doc->reparentObject(*copied, {}, tar_path);
-		}
-
-		// Add component
-		else if (parent->get_type().is_derived_from(RTTI_OF(nap::Entity)))
-		{
-			assert(object->get_type().is_derived_from(RTTI_OF(nap::Component)));
-			PropertyPath tar_path(parent->mID, nap::Entity::componentsPropertyName(), *doc);
-			doc->arrayAddExistingObject(tar_path, copied, tar_path.getArrayLength());
-		}
-	}
+	auto* copied = doc->duplicateObject(*object); assert(copied != nullptr);
 	mCopiedID = copied->mID;
 }
 
@@ -178,6 +159,7 @@ void DuplicateObjectCommand::undo()
 {
 	AppContext::get().getDocument()->removeObject(mCopiedID);
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 

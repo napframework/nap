@@ -227,7 +227,14 @@ namespace napkin
 		 * @param src Object to duplicate
 		 * @param parent Optional parent of the object, nullptr if object has no parent
 		 */
-		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent = nullptr);
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src);
+
+		/**
+		 * Duplicate the component, including all child properties, links and embedded pointers.
+		 * @param component component to duplicate
+		 * @param entity parent entity
+		 */
+		nap::rtti::Object* duplicateComponent(const nap::Component& component, nap::Entity& entity);
 
 		/**
 		 * Add and entity to the document
@@ -614,6 +621,13 @@ namespace napkin
 		 * @param current property path
 		 */
 		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
+
+		/**
+		 * Duplicate the object, including all child properties, links and embedded pointers.
+		 * @param src Object to duplicate
+		 * @param parent Optional parent of the object, nullptr if object has no parent
+		 */
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent);
 	};
 
 
