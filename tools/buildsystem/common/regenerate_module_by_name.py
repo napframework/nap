@@ -34,7 +34,7 @@ def update_module_framework_release(module_name, build_type):
     if sys.platform.startswith('linux'):
         exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=module_path)
     elif sys.platform == 'darwin':
-        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=module_path)
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode', '-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64'], cwd=module_path)
     else:
         # Create dir if it doesn't exist
         full_build_dir = os.path.join(module_path, BUILD_DIR)

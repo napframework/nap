@@ -36,7 +36,7 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
         #     call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
 
     elif sys.platform == 'darwin':
-        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=app_path)
+        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode', '-DCMAKE_OSX_ARCHITECTURES=x86_64;arm64'], cwd=app_path)
 
         # Show in Finder
         if exit_code == 0 and show_solution:
