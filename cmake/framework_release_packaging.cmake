@@ -165,6 +165,12 @@ macro(package_python)
                 DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}
                 CONFIGURATIONS Release)
     elseif(UNIX)
+        if (APPLE)
+            set(PYTHON_VERSION 3.11)
+        else()
+            set(PYTHON_VERSION 3.6)
+        endif()
+
         set(PYTHON_PREFIX ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH})
 
         # Install dylib
@@ -175,7 +181,7 @@ macro(package_python)
                 )
 
         # Install main framework
-        install(DIRECTORY ${PYTHON_PREFIX}/lib/python3.6
+        install(DIRECTORY ${PYTHON_PREFIX}/lib/python${PYTHON_VERSION}
                 DESTINATION thirdparty/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/
                 CONFIGURATIONS Release
                 PATTERN *.pyc EXCLUDE
@@ -547,16 +553,16 @@ macro(macos_replace_qt_framework_links FRAMEWORKS SKIP_FRAMEWORK_NAME LIB_SRC_LO
                 string(STRIP ${REPLACE_INSTALL_NAME} REPLACE_INSTALL_NAME)
 
                 # Change link to dylib
-                install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
-                                                      -change
-                                                      ${REPLACE_INSTALL_NAME}
-                                                      ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
-                                                      ${LIB_INSTALL_LOCATION}
-                                              ERROR_QUIET
-                                              RESULT_VARIABLE EXIT_CODE)
-                              if(NOT \${EXIT_CODE} EQUAL 0)
-                                  message(FATAL_ERROR \"Failed to replace install name in ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}\")
-                              endif()")
+#                message(STATUS "install_name_tool -change ${REPLACE_INSTALL_NAME} ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK} ${LIB_INSTALL_LOCATION}")
+#                install(CODE "execute_process(COMMAND ${CMAKE_INSTALL_NAME_TOOL}
+#                                                      -change
+#                                                      ${REPLACE_INSTALL_NAME}
+#                                                      ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}
+#                                                      ${LIB_INSTALL_LOCATION}
+#                                              RESULT_VARIABLE EXIT_CODE)
+#                              if(NOT \${EXIT_CODE} EQUAL 0)
+#                                  message(FATAL_ERROR \"Failed to replace install name in ${PATH_PREFIX}/Qt${QT_LINK_FRAMEWORK}\")
+#                              endif()")
             endif()
         endif()
     endforeach()
