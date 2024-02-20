@@ -80,7 +80,7 @@ namespace nap
 		// and will assign the value directly, without losing information.
 		rtti::Variant new_value = resolvedTargetPath.getValue();
 		ComponentPtrBase& new_component_ptr = const_cast<ComponentPtrBase&>(new_value.get_value<ComponentPtrBase>());
-		new_component_ptr.assign(mValue.getInstancePath(), *mValue.get());
+		new_component_ptr.assign(mValue.getInstancePath(), mValue.get());
 
 		return errorState.check(resolvedTargetPath.setValue(new_value), "Failed to set pointer to target %s", mValue->mID.c_str());
 	}

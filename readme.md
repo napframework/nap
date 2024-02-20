@@ -1,6 +1,6 @@
 <br>
 <p align="center">
-  <img width=384 src="https://download.nap.tech/identity/svg/logos/nap_logo_blue.svg">
+  <img width=384 src="https://download.nap-labs.tech/identity/svg/logos/nap_logo_blue.svg">
 </p>
 
 *	[Description](#description)
@@ -33,7 +33,7 @@ NAP also has built in support for many common protocols and standards, including
 
 <br>
 <p align="center">
-  <img width=256 img src="https://docs.nap.tech/content/vulkan-logo.svg" >
+  <img width=256 img src="https://docs.nap-framework.tech/content/vulkan-logo.svg" >
 </p>
 
 ## Philosophy

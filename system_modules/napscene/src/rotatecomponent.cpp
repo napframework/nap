@@ -11,13 +11,13 @@
 //////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS(nap::RotateProperties)
-	RTTI_PROPERTY("Axis",	&nap::RotateProperties::mAxis,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",	&nap::RotateProperties::mSpeed,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Offset",	&nap::RotateProperties::mOffset,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Axis",	&nap::RotateProperties::mAxis,		nap::rtti::EPropertyMetaData::Default, "Rotation axis (x, y, z)")
+	RTTI_PROPERTY("Speed",	&nap::RotateProperties::mSpeed,		nap::rtti::EPropertyMetaData::Default, "Rotation speed in seconds, where 1 second = 360*")
+	RTTI_PROPERTY("Offset",	&nap::RotateProperties::mOffset,	nap::rtti::EPropertyMetaData::Default, "Rotation offset in seconds, where 1 second = 360*")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RotateComponent)
-	RTTI_PROPERTY("Properties", &nap::RotateComponent::mProperties, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Properties", &nap::RotateComponent::mProperties, nap::rtti::EPropertyMetaData::Required, "Rotation properties")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotateComponentInstance)

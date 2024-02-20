@@ -27,18 +27,18 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	if (l_item == nullptr || r_item == nullptr)
 		return false;
 
-	// Don't sort regular resource groups
-	if (qobject_cast<EntityResourcesItem*>(l_item) != nullptr &&
-		qobject_cast<RootResourcesItem*>(r_item) != nullptr)
+	// Don't sort root (top) items
+	if (qitem_cast<EntityResourcesItem*>(l_item) != nullptr &&
+		qitem_cast<RootResourcesItem*>(r_item) != nullptr)
 		return false;
 
 	// Check if item is an entity
-	auto le_item = qobject_cast<EntityItem*>(l_item);
-	auto re_item = qobject_cast<EntityItem*>(r_item);
+	auto le_item = qitem_cast<EntityItem*>(l_item);
+	auto re_item = qitem_cast<EntityItem*>(r_item);
 
 	// Check if item is a component
-	auto lc_item = qobject_cast<ComponentItem*>(l_item);
-	auto rc_item = qobject_cast<ComponentItem*>(r_item);
+	auto lc_item = qitem_cast<ComponentItem*>(l_item);
+	auto rc_item = qitem_cast<ComponentItem*>(r_item);
 
 	// left is entity, right is component
 	if (le_item != nullptr && rc_item != nullptr)
@@ -48,14 +48,14 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 	if (lc_item != nullptr && re_item != nullptr)
 		return false;
 
-	// Don't sort items of which parent is an entity
-	if (qobject_cast<EntityItem*>(l_item->parentItem()) != nullptr &&
-		qobject_cast<EntityItem*>(r_item->parentItem()) != nullptr)
+	// Don't sort items of same type of which parent is an entity -> they can be re-ordered
+	if (qitem_cast<EntityItem*>(l_item->parentItem()) != nullptr &&
+		qitem_cast<EntityItem*>(r_item->parentItem()) != nullptr)
 		return false;
 
 	// Prioritize groups over other items
-	GroupItem* lg_item = qobject_cast<GroupItem*>(l_item);
-	GroupItem* rg_item = qobject_cast<GroupItem*>(r_item);
+	GroupItem* lg_item = qitem_cast<GroupItem*>(l_item);
+	GroupItem* rg_item = qitem_cast<GroupItem*>(r_item);
 
 	// Left is group, right is not
 	if (lg_item != nullptr && rg_item == nullptr)
@@ -63,6 +63,11 @@ static bool ResourceSorter(const QModelIndex& left, const QModelIndex& right, QA
 
 	// Right is group, left is not
 	if (rg_item != nullptr && lg_item == nullptr)
+		return false;
+
+	// Don't sort items of the same type in a group -> they can be re-ordered
+	if (qitem_cast<GroupItem*>(l_item->parentItem()) != nullptr &&
+		qitem_cast<GroupItem*>(r_item->parentItem()) != nullptr)
 		return false;
 
 	// Otherwise sort default
@@ -92,15 +97,23 @@ napkin::ResourcePanel::ResourcePanel()
 	connect(&AppContext::get(), &AppContext::documentOpened, this, &ResourcePanel::onFileOpened);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &ResourcePanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::newDocumentCreated, this, &ResourcePanel::onNewFile);
+	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
 
 	auto& resources_item = mModel.getRootResourcesItem();
 	resources_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
+	connect(&resources_item, &RootResourcesItem::indexChanged, this, [this](GroupItem& parent, ObjectItem& item)
+		{
+			this->onIndexChanged(parent, item);
+		});
 
 	auto& entities_item = mModel.getEntityResourcesItem();
 	entities_item.setEnabled(AppContext::get().getProjectLoaded());
 	connect(&entities_item, &EntityResourcesItem::childAddedToEntity, this, &ResourcePanel::onChildAddedToEntity);
-	connect(&AppContext::get(), &AppContext::projectLoaded, this, &ResourcePanel::onProjectLoaded);
+	connect(&entities_item, &EntityResourcesItem::indexChanged, this, [this](EntityItem& parent, ObjectItem& item)
+		{ 
+			this->onIndexChanged(parent, item);
+		});
 
 	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
@@ -151,8 +164,54 @@ void napkin::ResourcePanel::menuHook(QMenu& menu)
 }
 
 
+static void addMoveAction(const PropertyPath& container, nap::rtti::Object& object, size_t index, QMenu& outMenu)
+{
+	// Move item up
+	if (index > 0)
+	{
+		outMenu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP),
+			QString("Move '%1' up").arg(object.mID.c_str()), [container, index]()
+			{
+				AppContext::get().executeCommand(new ArraySwapElement(container, index, index-1));
+			});
+	}
+
+	// Move item down
+	if (index < container.getArrayLength() - 1)
+	{
+		outMenu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN),
+			QString("Move '%1' down").arg(object.mID.c_str()), [container, index]()
+			{
+				AppContext::get().executeCommand(new ArraySwapElement(container, index, index+1));
+			});
+	}
+}
+
+
 void napkin::ResourcePanel::createMenuCallbacks()
 {
+	// Move child entity up or down
+	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
+	{
+		// Get potential parent
+		auto entity_item = static_cast<EntityItem*>(&item);
+		auto parent_item = qobject_cast<EntityItem*>(entity_item->parentItem());
+		if (parent_item == nullptr)
+			return;
+
+		// Get component index -> can't be the row because of other possible child items
+		auto entity_path = entity_item->propertyPath();
+		size_t idx = entity_path.getEntityIndex();
+
+		// Create path to component array property
+		PropertyPath children_array(parent_item->getObject(),
+			RTTI_OF(nap::Entity).get_property(nap::Entity::childrenPropertyName()),
+			*AppContext::get().getDocument());
+
+		// Add move up / down
+		addMoveAction(children_array, entity_item->getObject(), idx, menu);
+	});
+
 	// Child Entity
 	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
@@ -174,6 +233,67 @@ void napkin::ResourcePanel::createMenuCallbacks()
 
 		menu.addAction(new AddChildEntityAction(&menu, entity_item->getEntity()));
 		menu.addAction(new AddComponentAction(&menu, entity_item->getEntity()));
+	});
+
+	// Component move up or down
+	mMenuController.addOption<ComponentItem>([](auto& item, auto& menu)
+	{
+		// Get parent
+		auto component_item = static_cast<ComponentItem*>(&item);
+		auto parent_item = qobject_cast<EntityItem*>(component_item->parentItem());
+		assert(parent_item != nullptr);
+
+		// Get component index -> can't be the row because of other possible child items
+		size_t idx = 0; bool found = false;
+		const auto& components = parent_item->getEntity().getComponents();
+		for (const auto& comp : components)
+		{
+			if (comp.get() == &component_item->getComponent())
+				break;
+			idx++;
+		} assert(components[idx].get() == &component_item->getComponent());
+
+		// Create path to component array property
+		PropertyPath component_array(parent_item->getObject(), 
+			RTTI_OF(nap::Entity).get_property(nap::Entity::componentsPropertyName()),  
+			*AppContext::get().getDocument());
+
+		// Add move up / down
+		addMoveAction(component_array, component_item->getObject(), idx, menu);
+	});
+
+	// Move resource or child in group up or down
+	mMenuController.addOption<ObjectItem>([](auto& item, auto& menu)
+	{
+		// Bail if we're not in a group
+		auto object_item = static_cast<ObjectItem*>(&item);
+		auto parent_item = qitem_cast<GroupItem*>(object_item->parentItem());
+		if (parent_item == nullptr)
+			return;
+
+		// Get container property -> child groups or members
+		nap::IGroup& group = parent_item->getGroup();
+		auto container_property = object_item->getObject().get_type().is_derived_from(RTTI_OF(nap::IGroup)) ?
+			group.getChildrenProperty() : group.getMembersProperty();
+
+		// Get index in container
+		PropertyPath container_path(parent_item->getObject(), container_property, *AppContext::get().getDocument());
+		auto container_value = container_path.getValue(); assert(container_value.is_valid());
+		auto container_view = container_value.create_array_view();
+		int idx = -1;
+		for (auto i = 0; i < container_view.get_size(); i++)
+		{
+			auto val = container_view.get_value(i); assert(val.get_type().is_wrapper());
+			auto obj = val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+			if (obj == &object_item->getObject())
+			{
+				idx = i;
+				break;
+			}
+		} assert(idx >= 0);
+
+		// Add move up / down
+		addMoveAction(container_path, object_item->getObject(), idx, menu);
 	});
 
 	// Group
@@ -333,7 +453,17 @@ void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& it
 
 void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem& item)
 {
-	mTreeView.select(&item, true);
+	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
+	if (selected_it != nullptr && selected_it == &entity)
+		mTreeView.select(&item, true);
+}
+
+
+void napkin::ResourcePanel::onIndexChanged(ObjectItem& parent, ObjectItem& item)
+{
+	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
+	if (selected_it != nullptr && selected_it->parentItem() == &parent)
+		mTreeView.select(&item, false);
 }
 
 

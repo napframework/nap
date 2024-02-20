@@ -22,10 +22,10 @@ namespace nap
 	 */
 	struct TransformProperties
 	{
-		glm::vec3		mTranslate		= glm::vec3(0.0f, 0.0f, 0.0f);		// The translation of this component in units
-		glm::vec3		mRotate 		= glm::vec3(0.0f, 0.0f, 0.0f);		// The amount of rotation in degrees (yaw, pitch, roll)											
-		glm::vec3		mScale			= glm::vec3(1.0f, 1.0f, 1.0f);		// The scale of this component
-		float			mUniformScale	= 1.0f;								// The uniform scale of this component
+		glm::vec3		mTranslate		= glm::vec3(0.0f, 0.0f, 0.0f);		///< Property: 'Translate' Position (x, y, z)
+		glm::vec3		mRotate 		= glm::vec3(0.0f, 0.0f, 0.0f);		///< Property: 'Rotation' Amount of rotation in degrees (yaw, pitch, roll)											
+		glm::vec3		mScale			= glm::vec3(1.0f, 1.0f, 1.0f);		///< Property: 'Scale' Axis scaling factor (x, y, z)
+		float			mUniformScale	= 1.0f;								///< Property: 'UniformScale' Uniform scaling factor
 	};
 
 

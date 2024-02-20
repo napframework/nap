@@ -4,6 +4,7 @@
 
 #include "instanceproppanel.h"
 #include "naputils.h"
+#include "napkinglobals.h"
 
 #include <appcontext.h>
 #include <rtti/object.h>
@@ -23,24 +24,27 @@ QVariant InstPropAttribItem::data(int role) const
 	{
 	case Qt::DisplayRole:
 	{
-		// Get value as rtti variant
-		auto override_variant = mAttrib.mValue->get_type().get_property_value(
-			nap::rtti::instanceproperty::value, mAttrib.mValue);
+		// Get the string representation of the override value, can be null (not set / set to null)
+		QString override_value = napkin::TXT_NULL;
+		if (mAttrib.mValue != nullptr)
+		{
+			// Extract value as variant
+			auto override_variant = mAttrib.mValue->get_type().get_property_value(
+				nap::rtti::instanceproperty::value, mAttrib.mValue);
 
-		// Extract value as string using rtti
-		QString value;
-		if (override_variant.get_type().is_wrapper())
-		{
-			auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
-			assert(obj != nullptr);
-			value = QString::fromStdString(obj->mID);
+			// Extract value as string using rtti
+			if (override_variant.get_type().is_wrapper())
+			{
+				auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
+				override_value = obj != nullptr ? obj->mID.c_str() : override_value;
+			}
+			else
+			{
+				override_value = QString::fromStdString(override_variant.to_string());
+			}
 		}
-		else
-		{
-			value = QString::fromStdString(override_variant.to_string());
-		}
-		assert(!value.isEmpty());
-		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), value);
+		assert(!override_value.isEmpty());
+		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), override_value);
 	}
 	case Qt::ForegroundRole:
 	{
@@ -72,7 +76,7 @@ nap::RootEntity* InstPropAttribItem::rootEntity() const
 InstancePropsItem::InstancePropsItem(nap::ComponentInstanceProperties& props) : mProps(props)
 {
 	setEditable(false);
-	setText(QString::fromStdString(props.mTargetComponent.getInstancePath()));
+	setText(QString::fromStdString(props.mTargetComponent == nullptr ? "INVALID" : props.mTargetComponent.getInstancePath()));
 	for (auto& a : props.mTargetAttributes)
 	{
 		appendRow(new InstPropAttribItem(a));
@@ -146,23 +150,14 @@ QVariant InstPropSceneItem::data(int role) const
 InstancePropModel::InstancePropModel()
 {
 	auto ctx = &AppContext::get();
-	connect(ctx, &AppContext::documentChanged, this, &InstancePropModel::onDocumentChanged);
+	connect(&AppContext::get(), &AppContext::objectRemoved, this, &InstancePropModel::onObjectRemoved);
+	connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &InstancePropModel::onPropertyValueChanged);
+	connect(&AppContext::get(), &AppContext::documentOpened, this, &InstancePropModel::onFileOpened);
+	connect(&AppContext::get(), &AppContext::documentClosing, this, &InstancePropModel::onFileClosing);
 }
 
 
-void InstancePropModel::onDocumentChanged()
-{
-	auto doc = AppContext::get().getDocument();
-	connect(doc, &Document::objectChanged, [this](nap::rtti::Object* object)
-	{
-		if (object->get_type().is_derived_from<nap::Scene>())
-			onSceneChanged();
-	});
-	onSceneChanged();
-}
-
-
-void InstancePropModel::onSceneChanged()
+void InstancePropModel::populate()
 {
 	removeRows(0, rowCount());
 	for (auto scene : AppContext::get().getDocument()->getObjects<nap::Scene>())
@@ -170,6 +165,48 @@ void InstancePropModel::onSceneChanged()
 		appendRow(new InstPropSceneItem(*scene));
 	}
 	sceneChanged();
+}
+
+
+static bool refresh(nap::rtti::Object* obj)
+{
+	// TODO: Move signal handling logic to individual scene items instead of model.
+	// Ensures the view keeps state and improves performance.
+	// Similar to regular object items managed by the resource model
+	return obj->get_type().is_derived_from(RTTI_OF(nap::Scene))		||
+		obj->get_type().is_derived_from(RTTI_OF(nap::Entity))		||
+		obj->get_type().is_derived_from(RTTI_OF(nap::InstancePropertyValue));
+}
+
+
+void napkin::InstancePropModel::onObjectRemoved(nap::rtti::Object* object)
+{
+	// TODO: The model should only update itself with the removal of a scene or entity.
+	// All other changes (including removal) should be handled by targeted
+	// 'propertyValueChanged' callbacks. This is possible for most objects because they have a parent,
+	// including instance property values.
+	if (refresh(object))
+		populate();
+}
+
+
+void napkin::InstancePropModel::onPropertyValueChanged(const PropertyPath& path)
+{
+	// Underlying system change
+	if (path.isInstanceProperty() || refresh(path.getObject()))
+		populate();
+}
+
+
+void napkin::InstancePropModel::onFileOpened(const QString& filename)
+{
+	populate();
+}
+
+
+void napkin::InstancePropModel::onFileClosing(const QString& filename)
+{
+	removeRows(0, rowCount());
 }
 
 

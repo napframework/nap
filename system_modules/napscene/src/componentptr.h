@@ -48,7 +48,7 @@ namespace nap
 		 * @param targetPath path to the target component including ID
 		 * @param targetObject The pointer to be assigned
 		 */
-		virtual void assign(const std::string& targetPath, rtti::Object& targetObject) = 0;
+		virtual void assign(const std::string& targetPath, rtti::Object* targetObject) = 0;
 	};
 
 	/**
@@ -121,10 +121,10 @@ namespace nap
 		 * Assign the path to the component (including ID) and object to this pointer.
 		 * Used for pointer resolving by the ResourceManager.
 		 * Should not be called manually (is only public so that we can register it in RTTI)
-		 * @param targetPath path to the target component including ID
-		 * @param targetObject The pointer to be assigned
+		 * @param targetPath path to the target component including ID, empty to clear
+		 * @param targetObject The component to assign, nullptr to clear
 		 */
-		virtual void assign(const std::string& targetID, rtti::Object& targetObject) override;
+		virtual void assign(const std::string& targetID, rtti::Object* targetObject) override;
 
 		/**
 		 * @return the raw pointer of the target component
@@ -178,10 +178,10 @@ namespace nap
 	};
 
 	template<class ComponentType>
-	void nap::ComponentPtr<ComponentType>::assign(const std::string& targetID, rtti::Object& targetObject)
+	void nap::ComponentPtr<ComponentType>::assign(const std::string& targetID, rtti::Object* targetObject)
 	{
 		mPath = targetID;
-		mResource = rtti_cast<ComponentType>(&targetObject);
+		mResource = rtti_cast<ComponentType>(targetObject);
 	}
 
 

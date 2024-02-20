@@ -63,19 +63,34 @@ void napkin::dumpTypes(rttr::type type, const std::string& indent)
 
 napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type)
 {
-	setText(type.get_name().data());
+	assert(mType.is_valid());
+	QString type_name(type.get_name().data()); 
+	auto parts = type_name.split(','); assert(parts.size() > 0);
+	parts.first().remove("class"); 
+	parts.first().remove(' ');
+	setText(parts.first());
 	setEditable(false);
-	refresh();
 }
 
 
 QVariant napkin::RTTITypeItem::data(int role) const
 {
-	if (role == Qt::ForegroundRole)
+	switch (role)
 	{
-		return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(theme::color::dimmedItem));
+	case Qt::ForegroundRole:
+		{
+			return QVariant::fromValue<QColor>(AppContext::get().getThemeManager().getColor(theme::color::dimmedItem));
+		}
+	case Qt::ToolTipRole:
+		{
+			const char* obj_desc = nap::rtti::getDescription(mType);
+			return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
+		}
+	default:
+		{
+			return QStandardItem::data(role);
+		}
 	}
-	return QStandardItem::data(role);
 }
 
 
@@ -86,16 +101,6 @@ napkin::FlatObjectModel::FlatObjectModel(const std::vector<Object*> objects)
 		auto item = new ObjectItem(*object);
 		item->setEditable(false);
 		appendRow(item);
-	}
-}
-
-
-void napkin::RTTITypeItem::refresh()
-{
-
-	for (const auto& derived : getImmediateDerivedTypes(mType))
-	{
-		appendRow(new RTTITypeItem(derived));
 	}
 }
 
@@ -139,11 +144,20 @@ nap::rtti::ObjectSet napkin::topLevelObjects()
 
 nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects)
 {
-	QStringList ids;
+	using namespace nap::qt;
+	StringModel::Entries entries;
 	for (auto& obj : objects)
-		ids << QString::fromStdString(obj->mID);
+	{
+		const char* obj_desc = nap::rtti::getDescription(obj->get_type());
+		if (obj_desc != nullptr)
+		{
+			entries << StringModel::Entry(QString::fromStdString(obj->mID), QString(obj_desc));
+			continue;
+		}
+		entries << QString::fromStdString(obj->mID);
+	}
 
-	auto selectedID = nap::qt::FilterPopup::show(parent, ids).toStdString();
+	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(entries)).toStdString();
 	if (selectedID.empty())
 		return nullptr;
 
@@ -157,30 +171,38 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 
 nap::rtti::TypeInfo napkin::showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName)
 {
+	using namespace nap::qt;
 	auto* material = rtti_cast<nap::Material>(prop.getObject());
 	assert(material != nullptr);
 	if (material->mShader == nullptr)
 		return nap::rtti::TypeInfo::empty();
 
-	QStringList names;
+	StringModel::Entries names;
 	const auto& ubo_decs = material->mShader->getUBODeclarations();
 	for (const auto& dec : ubo_decs)
-	{
-		names << QString::fromStdString(dec.mName);
-	}
+		names << StringModel::Entry(QString::fromStdString(dec.mName));
 
-	auto selectedID = nap::qt::FilterPopup::show(parent, names).toStdString();
+	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
 	return nap::rtti::TypeInfo::empty();
 }
 
 
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
-	QStringList names;
+	using namespace nap::qt;
+	StringModel::Entries names;
 	for (const auto& t : getTypes(predicate))
-		names << QString::fromStdString(std::string(t.get_name().data()));
+	{
+		const char* type_desc = nap::rtti::getDescription(t);
+		if (type_desc != nullptr)
+		{
+			names << StringModel::Entry(QString(t.get_name().data()), QString(type_desc));
+			continue;
+		}
+		names << QString(t.get_name().data());
+	}
 
-	auto selectedName = nap::qt::FilterPopup::show(parent, names).toStdString();
+	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
 	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
@@ -365,46 +387,11 @@ std::string napkin::friendlyTypeName(rttr::type type)
 }
 
 
-bool napkin::isComponentInstancePathEqual(const nap::RootEntity& rootEntity, const nap::Component& comp,
-								  const std::string& a, const std::string& b)
+bool napkin::isComponentInstancePathEqual(const std::string& a, const std::string& b)
 {
-	{
-		auto partsA = nap::utility::splitString(a, '/');
-		auto partsB = nap::utility::splitString(b, '/');
-
-		assert(partsA[0] == ".");
-		assert(partsB[0] == ".");
-
-		std::string nameA;
-		std::string nameB;
-		int indexA;
-		int indexB;
-
-		for (size_t i = 1, len = partsA.size(); i < len; i++)
-		{
-			const auto& partA = partsA[i];
-			const auto& partB = partsB[i];
-
-			// continue finding child entities
-			bool hasIndexA = nameAndIndex(partA, nameA, indexA);
-			bool hasIndexB = nameAndIndex(partB, nameB, indexB);
-
-			// consider no index to be index 0
-			if (!hasIndexA)
-				indexA = 0;
-			if (!hasIndexB)
-				indexB = 0;
-
-			if (nameA != nameB)
-				return false;
-
-			if (indexA != indexB)
-				return false;
-
-		}
-		return true;
-	}
+	return a == b;
 }
+
 
 bool napkin::nameAndIndex(const std::string& nameIndex, std::string& name, int& index)
 {

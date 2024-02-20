@@ -11,7 +11,7 @@
 using namespace nap::qt;
 
 
-FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
+FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMenu(parent)
 {
 	setLayout(&mLayout);
 	mLayout.setContentsMargins(0, 0, 0, 0);
@@ -30,20 +30,23 @@ FilterPopup::FilterPopup(QWidget* parent) : QMenu(parent)
 	connect(&model, &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
 	connect(&model, &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
 	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this] (auto index) { accept(); });
+
+	mModel = std::make_unique<StringModel>(std::move(entries));
+	mFilterTree.setModel(mModel.get());
+	computeSize();
 }
 
 
-QString FilterPopup::show(QWidget* parent, const QStringList& items)
+QString FilterPopup::show(QWidget* parent, StringModel::Entries&& items)
 {
-	return show(parent, items, QCursor::pos());
+	return show(parent, std::move(items), QCursor::pos());
 }
 
 
-QString FilterPopup::show(QWidget* parent, const QStringList& items, QPoint pos)
+QString FilterPopup::show(QWidget* parent, StringModel::Entries&& entries, QPoint pos)
 {
 	// Create popup
-	FilterPopup popup(parent);
-	popup.setItems(items);
+	FilterPopup popup(std::move(entries), parent);
 
 	// Ensure popup is within display bounds
 	QRect geo = QGuiApplication::screenAt(pos)->geometry();
@@ -105,17 +108,6 @@ void FilterPopup::showEvent(QShowEvent* event)
 }
 
 
-void FilterPopup::setItems(const QStringList& items)
-{
-	if (mModel != nullptr)
-		mFilterTree.setModel(nullptr);
-
-	mModel = std::make_unique<QStringListModel>(items);
-	mFilterTree.setModel(mModel.get());
-	computeSize();
-}
-
-
 void FilterPopup::moveSelection(int d)
 {
 	auto& tree = mFilterTree.getTreeView();
@@ -165,4 +157,36 @@ void FilterPopup::computeSize()
 
 	setFixedSize(300, qMin(height, 500));
 	adjustSize();
+}
+
+
+QVariant StringModel::data(const QModelIndex& index, int role) const
+{
+	switch (role)
+	{
+	case Qt::DisplayRole:
+		{
+			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
+			assert(string_item != nullptr);
+			return string_item->mEntry.mText;
+		}
+	case Qt::ToolTipRole:
+		{
+			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
+			assert(string_item != nullptr);
+			return string_item->mEntry.mTooltip.isNull() ? QStandardItemModel::data(index, role) :
+				string_item->mEntry.mTooltip;
+		}
+	default:
+		return QStandardItemModel::data(index, role);
+	}
+}
+
+
+nap::qt::StringModel::StringModel(Entries&& items)
+{
+	for (auto& item : items)
+	{
+		appendRow(new Item(std::move(item)));
+	}
 }

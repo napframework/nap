@@ -87,6 +87,11 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		uint val = index.model()->data(index, Qt::DisplayRole).toUInt();
 		QStyleOptionViewItem op(option);
 		op.text = enumIndexToQString(type.get_enumeration(), val);
+		if (path.isInstanceProperty())
+		{
+			op.palette.setColor(QPalette::Text,
+				AppContext::get().getThemeManager().getColor(napkin::theme::color::dimmedItem));
+		}
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 	}
 	else if (path.isNonEmbeddedPointer())

@@ -15,6 +15,7 @@
 #include <QApplication>
 #include <QMimeData>
 #include <QScrollBar>
+#include <QMessageBox>
 
 #include <utility/fileutils.h>
 #include <napqt/filterpopup.h>
@@ -89,6 +90,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &InspectorPanel::onObjectRenamed);
 	connect(&AppContext::get(), &AppContext::serviceConfigurationClosing, this, &InspectorPanel::onFileClosing);
 	connect(&mModel, &InspectorModel::childAdded, this, &InspectorPanel::onChildAdded);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &InspectorPanel::onIndexSwapped);
 
 	mPathLabel.setText("Path:");
 	mSubHeaderLayout.addWidget(&mPathLabel);
@@ -191,6 +193,28 @@ void napkin::InspectorPanel::expandTree(const QModelIndex& parent)
 }
 
 
+void napkin::InspectorPanel::onIndexSwapped(const PropertyPath& prop, size_t fromIndex, size_t toIndex)
+{
+	// Check property
+	if (prop.getObject() != mPath.getObject())
+		return;
+
+	// Get item for property
+	auto path_item = nap::qt::findItemInModel(mModel, [&prop](QStandardItem* item)
+		{
+			auto pitem = qitem_cast<PropertyPathItem*>(item);
+			return pitem != nullptr ? pitem->getPath() == prop : false;
+		});
+
+	// Select new index 
+	if (path_item != nullptr)
+	{
+		assert(toIndex < path_item->rowCount());
+		mTreeView.select(path_item->child(toIndex), false);
+	}
+}
+
+
 void napkin::InspectorPanel::onChildAdded(QList<QStandardItem*> items)
 {
 	assert(items.size() > 0);
@@ -223,16 +247,70 @@ void napkin::InspectorPanel::onObjectRenamed(nap::rtti::Object& object, const st
 
 void napkin::InspectorPanel::createMenuCallbacks()
 {
+	// In array -> add option to move up
+	mMenuController.addOption([](auto& item, auto& menu)
+	{
+		// Check if parent is an array property
+		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
+		if (parent_array == nullptr || item.getPath().isInstanceProperty())
+			return;
+
+		// Ensure item can be moved up
+		auto idx = static_cast<size_t>(item.row());
+		if (idx == 0)
+			return;
+
+		// Create label based on type
+		QString label = QString("Move '%1' up").arg(item.getPath().getPointee() != nullptr ?
+			item.getPath().getPointee()->mID.c_str() :
+			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
+		);
+
+		// Add action
+		const auto& parent_property = parent_array->getPath();
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP), label, [parent_property, idx]()
+			{
+				AppContext::get().executeCommand(new ArraySwapElement(parent_property, idx, idx - 1));
+			});
+	});
+
+	// In array -> add option to move down
+	mMenuController.addOption([](auto& item, auto& menu)
+	{
+		// Check if parent is an array property
+		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
+		if (parent_array == nullptr || item.getPath().isInstanceProperty())
+			return;
+
+		// Ensure item can be moved down
+		auto idx = static_cast<size_t>(item.row());
+		if (idx == parent_array->getPath().getArrayLength() - 1)
+			return;
+
+		// Create label based on type
+		QString label = QString("Move '%1' down").arg(item.getPath().getPointee() != nullptr ?
+			item.getPath().getPointee()->mID.c_str() :
+			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
+		);
+
+		// Add action
+		const auto& parent_property = parent_array->getPath();
+		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN), label, [parent_property, idx]()
+			{
+				AppContext::get().executeCommand(new ArraySwapElement(parent_property, idx, idx + 1));
+			});
+	});
+
 	// In array -> add option to remove
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
 		// Check if parent is an array property
 		auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-		if (parent_array == nullptr)
+		if (parent_array == nullptr || item.getPath().isInstanceProperty())
 			return;
 
 		// Create label based on type
-		QString label = QString("Remove %1").arg(item.getPath().getPointee() != nullptr ?
+		QString label = QString("Remove '%1'").arg(item.getPath().getPointee() != nullptr ?
 			item.getPath().getPointee()->mID.c_str() :
 			parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
 		);
@@ -245,60 +323,6 @@ void napkin::InspectorPanel::createMenuCallbacks()
 				AppContext::get().executeCommand(new ArrayRemoveElementCommand(parent_property, element_index));
 			});
 	});
-
-	// In array -> add option to move up
-	mMenuController.addOption([](auto& item, auto& menu)
-		{
-			// Check if parent is an array property
-			auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-			if (parent_array == nullptr)
-				return;
-
-			// Ensure item can be moved up
-			auto idx = static_cast<size_t>(item.row());
-			if (idx == 0)
-				return;
-
-			// Create label based on type
-			QString label = QString("Move %1 up").arg(item.getPath().getPointee() != nullptr ?
-				item.getPath().getPointee()->mID.c_str() :
-				parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
-			);
-
-			// Add action
-			const auto& parent_property = parent_array->getPath();
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_UP), label, [parent_property, idx]()
-				{
-					AppContext::get().executeCommand(new ArrayMoveElementCommand(parent_property, idx, idx - 1));
-				});
-		});
-
-	// In array -> add option to move down
-	mMenuController.addOption([](auto& item, auto& menu)
-		{
-			// Check if parent is an array property
-			auto parent_array = qobject_cast<ArrayPropertyItem*>(item.parentItem());
-			if (parent_array == nullptr)
-				return;
-
-			// Ensure item can be moved down
-			auto idx = static_cast<size_t>(item.row());
-			if (idx == parent_array->getPath().getArrayLength() - 1)
-				return;
-
-			// Create label based on type
-			QString label = QString("Move %1 down").arg(item.getPath().getPointee() != nullptr ?
-				item.getPath().getPointee()->mID.c_str() :
-				parent_array->getPath().getArrayElementType().get_name().to_string().c_str()
-			);
-
-			// Add action
-			const auto& parent_property = parent_array->getPath();
-			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MOVE_DOWN), label, [parent_property, idx]()
-				{
-					AppContext::get().executeCommand(new ArrayMoveElementCommand(parent_property, idx, idx + 1));
-				});
-		});
 
 	// String & file link -> show file options
 	mMenuController.addOption([](auto& item, auto& menu)
@@ -326,7 +350,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			});
 	});
 
-	// Instance property
+	// Instance property -> remove override
 	mMenuController.addOption([](auto& item, auto& menu)
 	{
 		const auto& path = item.getPath();
@@ -334,14 +358,14 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			return;
 
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_REMOVE),
-			"Remove override", [path]()
+			"Remove Override", [path]()
 			{
 				PropertyPath p = path;
 				p.removeOverride();
 			});
 	});
 
-	// Pointer
+	// Pointer -> select resource
 	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<PointerItem*>(&item);
@@ -357,11 +381,39 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		}
 	});
 
+	// Pointer -> clear link
+	mMenuController.addOption<PointerItem>([](auto& item, auto& menu)
+	{
+		auto* pointer_item = static_cast<PointerItem*>(&item);
+		const auto& path = pointer_item->getPath();
+		auto* pointee = path.getPointee();
+		if (pointee != nullptr)
+		{
+			QString label = QString("Clear '%1'").arg(pointee->mID.c_str());
+			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CLEAR), label, [path]()
+				{
+					if (nap::rtti::hasFlag(path.getProperty(), EPropertyMetaData::Required))
+					{
+						QMessageBox msg(AppContext::get().getMainWindow());
+						msg.setWindowTitle("Required property");
+						msg.setText("This is a required property, are you sure you want to remove it?");
+						msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+						msg.setDefaultButton(QMessageBox::Cancel);
+						msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
+						if (msg.exec() == QMessageBox::No)
+							return;
+					}
+					AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
+				});
+		}
+	});
+
 	// Embedded pointer -> create
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if(pointer_item->getPath().getPointee() != nullptr)
+		if( pointer_item->getPath().getPointee() != nullptr ||
+			pointer_item->getPath().isInstanceProperty())
 			return;
 
 		const auto& path = pointer_item->getPath();
@@ -382,14 +434,15 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item->getPath().getPointee() == nullptr)
+		if (pointer_item->getPath().getPointee() == nullptr ||
+			pointer_item->getPath().isInstanceProperty())
 			return;
 
 		auto pointee = pointer_item->getPath().getPointee();
 		const auto& path = pointer_item->getPath();
 		auto type = path.getWrappedType();
 
-		QString label = QString("Replace %1").arg(pointee->mID.c_str());
+		QString label = QString("Replace '%1'").arg(pointee->mID.c_str());
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CHANGE), label, [this, path, type]
 			{
 				TypePredicate predicate = [&type](auto t) { return t.is_derived_from(type); };
@@ -405,7 +458,8 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<EmbeddedPointerItem>([this](auto& item, auto& menu)
 	{
 		auto pointer_item = static_cast<EmbeddedPointerItem*>(&item);
-		if (pointer_item->getPath().getPointee() == nullptr)
+		if (pointer_item->getPath().getPointee() == nullptr ||
+			pointer_item->getPath().isInstanceProperty())
 			return;
 
 		// Only add option to delete if not in array.
@@ -414,7 +468,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			return;
 
 		auto pointee = pointer_item->getPath().getPointee();
-		QString label = QString("Delete %1").arg(pointee->mID.c_str());
+		QString label = QString("Delete '%1'").arg(pointee->mID.c_str());
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [pointer_item, pointee]
 			{
 				// TODO: Make this a command
@@ -433,14 +487,14 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() || array_item->getPath().isInstanceProperty())
 			return;
 
+		// Check if we can map it to a material
 		PropertyPath array_path = array_item->getPath();
 		auto array_type = array_path.getArrayElementType();
-		QString label = QString("Add %1...").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 
-		// Check if we can map it to a material
+		// Add material mapping action
 		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
 		if (material_mapper != nullptr)
 		{
@@ -456,14 +510,13 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() || array_item->getPath().isInstanceProperty())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
 		auto array_type = array_path.getArrayElementType();
 
 		// Check if it's a regular resource pointer
-		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
 		if (!array_path.isNonEmbeddedPointer() ||
 			MaterialPropertyMapper::mappable(array_path))
 			return;
@@ -483,7 +536,7 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() || array_item->getPath().isInstanceProperty())
 			return;
 
 		PropertyPath array_path = array_item->getPath();
@@ -510,20 +563,16 @@ void napkin::InspectorPanel::createMenuCallbacks()
 	mMenuController.addOption<ArrayPropertyItem>([this](auto& item, auto& menu)
 	{
 		auto* array_item = static_cast<ArrayPropertyItem*>(&item);
-		if (!array_item->getPath().getArrayEditable())
+		if (!array_item->getPath().getArrayEditable() || array_item->getPath().isInstanceProperty())
 			return;
 
+		// Bail if it's a pointer or the property is mappable
 		PropertyPath array_path = array_item->getPath();
-		auto array_type = array_path.getArrayElementType();
-
-		// Check if it's a regular resource pointer
-		auto material_mapper = MaterialPropertyMapper::mappable(array_path);
-		if (!array_path.isEmbeddedPointer()		||
-			!array_path.isNonEmbeddedPointer()	||
-			MaterialPropertyMapper::mappable(array_path))
+		if (array_path.isPointer() || MaterialPropertyMapper::mappable(array_path))
 			return;
 
 		// Regular array entry handling
+		auto array_type = array_path.getArrayElementType();
 		QString label = QString("Add %1").arg(QString::fromUtf8(array_type.get_raw_type().get_name().data()));
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_ADD), label, [array_path]()
 			{
@@ -537,7 +586,7 @@ void InspectorPanel::onPropertySelectionChanged(const PropertyPath& prop)
 {
 	QList<nap::rtti::Object*> objects = {prop.getObject()};
 	AppContext::get().selectionChanged(objects);
-	auto pathItem = nap::qt::findItemInModel(mModel, [prop](QStandardItem* item)
+	auto pathItem = nap::qt::findItemInModel(mModel, [&prop](QStandardItem* item)
 	{
 		auto pitem = qitem_cast<PropertyPathItem*>(item);
 		return pitem != nullptr ? pitem->getPath() == prop : false;
@@ -617,38 +666,19 @@ QVariant InspectorModel::data(const QModelIndex& index, int role) const
 {
 	switch (role)
 	{
-	case Qt::UserRole:
-	{
-		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
-		if (value_item != nullptr)
+		case Qt::UserRole:
 		{
-			return QVariant::fromValue(value_item->getPath());
-		}
-		break;
-	}
-	case Qt::ForegroundRole:
-	{
-		auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
-		if (value_item != nullptr)
-		{
-			bool correct_item = qobject_cast<PointerValueItem*>(value_item) != nullptr ||
-				qobject_cast<PropertyValueItem*>(value_item) != nullptr;
-
-			if (value_item->getPath().isInstanceProperty() && correct_item)
+			auto value_item = qitem_cast<PropertyPathItem*>(itemFromIndex(index));
+			if (value_item != nullptr)
 			{
-				auto& themeManager = AppContext::get().getThemeManager();
-				if (value_item->getPath().isOverridden())
-				{
-					return QVariant::fromValue<QColor>(themeManager.getColor(theme::color::instancePropertyOverride));
-				}
+				return QVariant::fromValue(value_item->getPath());
 			}
 		}
-		break;
+		default:
+		{
+			return QStandardItemModel::data(index, role);
+		}
 	}
-	default:
-		break;
-	}
-	return QStandardItemModel::data(index, role);
 }
 
 

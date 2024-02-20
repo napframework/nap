@@ -19,10 +19,11 @@ macro(bootstrap_environment)
 
     if(WIN32)
         if(MSVC)
-            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj")
+            set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /wd4244 /wd4305 /wd4996 /wd4267 /wd4018 /wd4251 /MP /bigobj /Zc:preprocessor /wd5105")
             set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} /Zi")
             set(CMAKE_SHARED_LINKER_FLAGS_RELEASE "${CMAKE_SHARED_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
             set(CMAKE_EXE_LINKER_FLAGS_RELEASE "${CMAKE_EXE_LINKER_FLAGS_RELEASE} /DEBUG /OPT:REF /OPT:ICF")
+
             if(DEFINED INCLUDE_DEBUG_SYMBOLS AND INCLUDE_DEBUG_SYMBOLS)
                 set(PACKAGE_PDBS ON)
             endif()
@@ -170,6 +171,27 @@ macro(check_raspbian_os RASPBERRY)
         endif()
     endif()
 endmacro()
+
+# Add a source directory to an already defined target
+# NAME of the source group in the IDE
+# DIR directory of the source files relative to the project directory
+# ARGN additional optional arguments are regex expressions to filter from the file list
+#
+function(add_source_dir NAME DIR)
+    # Collect source files in directory
+    file(GLOB SOURCES ${DIR}/*.cpp ${DIR}/*.h ${DIR}/*.hpp)
+
+    # Loop through optional arguments and exclude them from the sources list
+    foreach(element ${ARGN})
+        list(FILTER SOURCES EXCLUDE REGEX ${element})
+    endforeach()
+
+    # Create source group for IDE
+    source_group(${NAME} FILES ${SOURCES})
+
+    # Add sources to target
+    target_sources(${PROJECT_NAME} PRIVATE ${SOURCES})
+endfunction()
 
 # Initialise our Python environment
 # _LIB AND _EXECUTABLE are used to help find_package(pybind11)

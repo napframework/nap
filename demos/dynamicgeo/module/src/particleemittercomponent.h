@@ -48,22 +48,22 @@ namespace nap
 		DECLARE_COMPONENT(ParticleEmitterComponent, ParticleEmitterComponentInstance)
 
 	public:
-		float				mSpawnRate = 3.0f;				///< Amount of particles to spawn every second
-		float				mLifeTime = 1.5f;				///< How many seconds a particle lives
-		float				mLifeTimeVariation = 0.5f;		///< Variation on life in seconds
-		glm::vec3			mPosition;						///< Particle spawn position
-		glm::vec3			mPositionVariation;				///< Deviation from position
-		float				mRotation = 0.0f;				///< Start rotation
-		float				mRotationVariation = 0.0f;		///< Amount of deviation from initial rotation
-		float				mRotationSpeed = 0.0f;			///< How fast the particle rotates around it's axis
-		float				mRotationSpeedVariation = 0.0f;	///< Amount of deviation from particle rotation speed
-		float				mSize = 0.5f;					///< Default size of a particle
-		float				mSizeVariation = 0.2f;			///< Allowed deviation from the default size
-		float				mSpread;						///< Amount of velocity spread in x / z axis
-		glm::vec3			mVelocity;						///< Initial velocity
-		float				mVelocityVariation;				///< Deviation from initial velocity
-		glm::vec4			mStartColor;					///< Particle start of life color
-		glm::vec4			mEndColor;						///< Particle end of life color
+		float				mSpawnRate = 3.0f;				///< Property: 'SpawnRate' Amount of particles to spawn every second
+		float				mLifeTime = 1.5f;				///< Property: 'LifeTime' How many seconds a particle lives
+		float				mLifeTimeVariation = 0.5f;		///< Property: 'LifeTimeVariation' Variation on life in seconds
+		glm::vec3			mPosition;						///< Property: 'Position' Particle spawn position
+		glm::vec3			mPositionVariation;				///< Property: 'PositionVariation' Deviation from position
+		float				mRotation = 0.0f;				///< Property: 'Rotation' Start rotation
+		float				mRotationVariation = 0.0f;		///< Property: 'RotationVariation' Amount of deviation from initial rotation
+		float				mRotationSpeed = 0.0f;			///< Property: 'RotationSpeed' How fast the particle rotates around it's axis
+		float				mRotationSpeedVariation = 0.0f;	///< Property: 'RotationSpeedVariation' Amount of deviation from particle rotation speed
+		float				mSize = 0.5f;					///< Property: 'Size' Default size of a particle
+		float				mSizeVariation = 0.2f;			///< Property: 'SizeVariation' Allowed deviation from the default size
+		float				mSpread;						///< Property: 'Spread' Amount of velocity spread in x / z axis
+		glm::vec3			mVelocity;						///< Property: 'Velocity' Initial velocity
+		float				mVelocityVariation;				///< Property: 'VelocityVariation' Deviation from initial velocity
+		glm::vec4			mStartColor;					///< Property: 'StartColor' Particle start of life color
+		glm::vec4			mEndColor;						///< Property: 'EndColor' Particle end of life color
 	};
 
 

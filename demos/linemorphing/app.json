@@ -1,0 +1,16 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "LineMorphing",
+    "Version": "1.0.0",
+    "Data": "data/linemorphing.json",
+    "PathMapping": "cache/path_mapping.json",
+    "ServiceConfig": "",
+    "RequiredModules": [
+        "naplinemorphing",
+        "napapp",
+        "napimgui",
+        "napcameracontrol",
+        "napparametergui"
+    ]
+}
