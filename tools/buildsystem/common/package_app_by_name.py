@@ -94,7 +94,7 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
                                              '-G', 'Xcode',
                                              '-DNAP_PACKAGED_APP_BUILD=1',
                                              '-DPACKAGE_NAPKIN=%s' % int(include_napkin),
-						'-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'])
+                                             '-DCMAKE_OSX_ARCHITECTURES=arm64;x86_64'])
 
         # Build & install to packaging dir
         call_except_on_failure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
@@ -176,12 +176,12 @@ def create_macos_bundle(bin_dir, app_full_name, app_name_lower, app_version, cod
     # Populate build info into the app
     app_dir = os.path.abspath(os.path.join(bin_dir, os.pardir))
 
-    appJsonPath = os.path.join(app_dir, "app.json")
+    appJsonFileName = "app.json"
+    appJsonPath = os.path.join(app_dir, appJsonFileName)
     appJsonFile = open(appJsonPath)
     appJson = json.load(appJsonFile)
     dataFilePath = appJson["Data"]
     dataDirectory = os.path.dirname(dataFilePath)
-    dataFileName = os.path.basename(dataFilePath)
     appJsonFile.close()
 
     # Create app bundle
@@ -201,7 +201,7 @@ def create_macos_bundle(bin_dir, app_full_name, app_name_lower, app_version, cod
     shutil.copytree(os.path.join(bin_dir, "cache"), os.path.join(app_macos_dir, "cache")) # copy cache
     shutil.copytree(os.path.join(bin_dir, "lib"), os.path.join(app_macos_dir, "lib")) # copy libraries
     shutil.copytree(os.path.join(bin_dir, dataDirectory), os.path.join(app_resources_dir, dataDirectory)) # copy data folder
-    shutil.copy(os.path.join(bin_dir, "app.json"), os.path.join(app_macos_dir, "app.json")) # copy project.json
+    shutil.copy(os.path.join(bin_dir, appJsonFileName), os.path.join(app_macos_dir, appJsonFileName)) # copy project.json
     shutil.copytree(os.path.join(bin_dir, "licenses"), os.path.join(app_resources_dir, "licenses")) # copy licenses
     shutil.copy(os.path.join(bin_dir, "NAP.txt"), os.path.join(app_resources_dir, "NAP.txt")) # copy NAP.txt
     shutil.copytree(os.path.join(bin_dir, "system_modules"), os.path.join(app_resources_dir, "system_modules")) # copy module data
@@ -211,7 +211,7 @@ def create_macos_bundle(bin_dir, app_full_name, app_name_lower, app_version, cod
 
     # Change the path to the data json file in app.json
     appJson["Data"] = os.path.join("../Resources", dataFilePath)
-    appJsonFile = open(os.path.join(app_macos_dir, "project.json"), "w")
+    appJsonFile = open(os.path.join(app_macos_dir, appJsonFileName), "w")
     json.dump(appJson, appJsonFile, indent = 4)
     appJsonFile.close()
 
