@@ -2,16 +2,8 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "objectptr.h"
+// Local Includes
+#include "menuoptioncontroller.h"
 
-namespace nap
-{
-	namespace rtti
-	{
-		ObjectPtrManager& ObjectPtrManager::get()
-		{
-			static ObjectPtrManager manager;
-			return manager;
-		}
-	}
-}
+namespace napkin
+{ }

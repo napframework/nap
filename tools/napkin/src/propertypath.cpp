@@ -169,6 +169,7 @@ std::string PropertyPath::getComponentInstancePath() const
 	return "./" + nap::utility::joinString(newPath, "/");
 }
 
+
 nap::RootEntity* PropertyPath::getRootEntity() const
 {
 	if (mObjectPath.size() < 2)
@@ -176,20 +177,20 @@ nap::RootEntity* PropertyPath::getRootEntity() const
 
 	assert(mDocument != nullptr);
 	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
-	if (!scene)
+	if (scene == nullptr)
 		return nullptr;
 
 	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
-	if (!entity)
+	if (entity == nullptr)
 		return nullptr;
 
 	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
-	for (auto& rootEntity : scene->mEntities)
+	for (auto& scene_entity : scene->mEntities)
 	{
-		if (idx == nameIdx && rootEntity.mEntity.get() == entity)
-			return &rootEntity;
+		if (idx == nameIdx && scene_entity.mEntity.get() == entity)
+			return &scene_entity;
 
-		if (rootEntity.mEntity.get() == entity)
+		if (scene_entity.mEntity.get() == entity)
 			++idx;
 	}
 	return nullptr;
@@ -257,26 +258,44 @@ rttr::variant PropertyPath::getValue() const
 }
 
 
-bool PropertyPath::setValue(rttr::variant value)
+rttr::variant napkin::PropertyPath::patchValue(const rttr::variant& value) const
 {
-	// Regular property
-	auto resolved_path = resolve();
-	if (!isInstanceProperty())
+	// Only patch component and entity ptr paths
+	auto prop_type = getType();
+	if (!prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+		!prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
 	{
-		return resolved_path.setValue(value);
+		return value;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// TODO: Drastically improve handling of instance properties!!!
-	// The current implementation is shaky at best. It works, but that's about it. What to do?
-	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
-	// Properly implement callbacks, they're too scattered and hard to trace!
-	// Strengthen and simplify the entire model!
-	//////////////////////////////////////////////////////////////////////////
+	// Get pointer from value
+	auto* target_object = value.get_type().is_wrapper() ?
+		value.get_wrapped_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
+	assert(target_object != nullptr);
 
-	// Instance property: If the value is the same, remove property or bail
-	if (resolved_path.getValue() == value)
+	// Assign the new value to the pointer (note that we're modifying a copy)
+	auto patched_ptr = getValue();
+	nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
+	auto path = mDocument->relativeObjectPath(*getObject(), *target_object);
+	rttr::method assign_method = nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
+	assert(assign_method.is_valid());
+	assign_method.invoke(patched_ptr, path, *target_object);
+
+	// Return it
+	return patched_ptr;
+}
+
+
+bool PropertyPath::setValue(rttr::variant new_value)
+{
+	// Resolve path to property
+	auto resolved_path = resolve();
+	auto resource_value = resolved_path.getValue();
+
+	// New value doesn't override resource value
+	if (resource_value == new_value)
 	{
+		// Delete instance override when currently set
 		auto target_attr = targetAttribute();
 		if (target_attr != nullptr)
 		{
@@ -285,6 +304,20 @@ bool PropertyPath::setValue(rttr::variant value)
 		}
 		return true;
 	}
+
+	// Set value directly when we're not dealing with an instance override
+	// We patch the value to ensure component and entity ptr paths are also updated
+	auto patched_value = patchValue(new_value);
+	if (!isInstanceProperty())
+		return resolved_path.setValue(patched_value);
+
+	//////////////////////////////////////////////////////////////////////////
+	// TODO: Improve handling of instance properties!!!
+	// The current implementation is shaky at best. It works, but that's about it. What to do?
+	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
+	// Properly implement callbacks, they're too scattered and hard to trace!
+	// Strengthen and simplify the entire model!
+	//////////////////////////////////////////////////////////////////////////
 
 	// Get instance property (as target). Create one if it doesn't exist.
 	// If it does exist: discard instance property value if the provided value is the same as the original
@@ -301,7 +334,7 @@ bool PropertyPath::setValue(rttr::variant value)
 
 	// Set instance property value
 	rttr::variant val = target_attr->mValue.get();
-	return setInstancePropertyValue(val, value);
+	return setInstancePropertyValue(val, patched_value);
 }
 
 
@@ -342,34 +375,10 @@ Object* PropertyPath::getPointee() const
 
 	auto value = getValue();
 	auto type = value.get_type();
-	auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : type;
-	return wrappedType != type ?
+	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	return wrapped_type != type ?
 		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
 		value.get_value<nap::rtti::Object*>();
-}
-
-
-void PropertyPath::setPointee(Object* pointee)
-{
-	// Handle assignment for component and entity ptr
-	auto prop_type = getType();
-	if (prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
-		prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
-	{
-		// Assign the new value to the pointer (note that we're modifying a copy)
-		rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
-		auto target_val = getValue();
-		assert(mDocument != nullptr);
-		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-		assign_method.invoke(target_val, path, *pointee);
-
-		// Apply the modified value back to the source property
-		setValue(target_val);
-		return;
-	}
-
-	// Regular object
-	setValue(pointee);
 }
 
 
@@ -496,7 +505,7 @@ std::string PropertyPath::toString() const
 
 bool PropertyPath::isInstanceProperty() const
 {
-	return hasProperty() && getRootEntity();
+	return this->getRootEntity();
 }
 
 
@@ -790,10 +799,9 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 			return;
 	}
 
-	auto pointee = getPointee();
-
 	// prune here if there is no pointer value
-	if (!pointee)
+	auto pointee = getPointee();
+	if (pointee == nullptr)
 		return;
 
 	for (auto childprop : pointee->get_type().get_properties())

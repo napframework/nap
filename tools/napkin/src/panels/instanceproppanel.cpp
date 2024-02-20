@@ -23,24 +23,24 @@ QVariant InstPropAttribItem::data(int role) const
 	{
 	case Qt::DisplayRole:
 	{
-		QString path = QString::fromStdString(mAttrib.mPath);
-		auto instPropsItem = qobject_cast<InstancePropsItem*>(parentItem());
-		assert(instPropsItem);
-		auto compPath = instPropsItem->props().mTargetComponent.getInstancePath();
+		// Get value as rtti variant
+		auto override_variant = mAttrib.mValue->get_type().get_property_value(
+			nap::rtti::instanceproperty::value, mAttrib.mValue);
 
-		PropertyPath propPath(compPath, mAttrib.mPath, *AppContext::get().getDocument());
-		QString val;
-		if (propPath.isPointer())
+		// Extract value as string using rtti
+		QString value;
+		if (override_variant.get_type().is_wrapper())
 		{
-			auto pointee = propPath.getPointee();
-			val = pointee ? QString::fromStdString(pointee->mID) : "NULL";
+			auto* obj = override_variant.extract_wrapped_value().get_value<nap::rtti::Object*>();
+			assert(obj != nullptr);
+			value = QString::fromStdString(obj->mID);
 		}
 		else
 		{
-			bool ok;
-			val = QString::fromStdString(propPath.getValue().to_string(&ok));
+			value = QString::fromStdString(override_variant.to_string());
 		}
-		return QString("%1 = %2").arg(path, val);
+		assert(!value.isEmpty());
+		return QString("%1 = %2").arg(mAttrib.mPath.c_str(), value);
 	}
 	case Qt::ForegroundRole:
 	{
@@ -197,7 +197,7 @@ void InstancePropPanel::menuHook(QMenu& menu)
 			{
 				auto root_entity_prop_item = qobject_cast<RootEntityPropItem*>(item->parentItem());
 				assert(root_entity_prop_item);
-				const nap::ComponentInstanceProperties& props = item->props();
+				const nap::ComponentInstanceProperties& props = item->getProperties();
 
 				auto rootEntity = &root_entity_prop_item->rootEntity();
 				auto path = QString::fromStdString(props.mTargetComponent.toString());

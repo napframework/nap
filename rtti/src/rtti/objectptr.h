@@ -27,17 +27,13 @@ namespace nap
 		class NAPAPI ObjectPtrBase
 		{
 			RTTI_ENABLE()
-
 		public:
             virtual ~ObjectPtrBase() = default;
             
 		    /**
 		     * @return the type of the object pointed to
 		     */
-			rttr::type getWrappedType() const
-			{
-				return mPtr->get_type();
-			}
+			rttr::type getWrappedType() const				{ return mPtr->get_type();	 }
 
 		private:
 			ObjectPtrBase() = default;
@@ -46,31 +42,23 @@ namespace nap
 			 * ctor taking direct pointer.
 			 */
 			ObjectPtrBase(rtti::Object* ptr) :
-			mPtr(ptr)
-			{
-			}
+				mPtr(ptr)									{ }
 
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			rtti::Object* get()
-			{
-				return mPtr;
-			}
+			rtti::Object* get()								{ return mPtr; }
 
 			/**
 			 * @return RTTIObject pointer.
 			 */
-			const rtti::Object* get() const
-			{
-				return mPtr;
-			}
+			const rtti::Object* get() const					{ return mPtr; }
 
 		private:
 			/**
 			 * @param ptr new pointer to set.
 			 */
-			void set(rtti::Object* ptr)
+			void set(rtti::Object* ptr)								
 			{
 				if (mPtr != nullptr)
 					mPtr->decrementObjectPtrRefCount();
@@ -83,10 +71,10 @@ namespace nap
 		private:
 			template<class T> friend class ObjectPtr;
 			friend class ObjectPtrManager;
-        
 			rtti::Object* mPtr = nullptr;
 		};
-    
+
+
 		/**
 		 * Holds a set of all ObjectPtrs in the application. The purpose of the manager is to be able to
 		 * retarget ObjectPtrs if objects get replaced by another object in the real-time updating system.
@@ -118,20 +106,7 @@ namespace nap
 			 * @param newTargetObjects Map from string ID to RTTIObject pointer (either raw or smart pointer, as long as it can be dereferenced).
 			 */
 			template<class OBJECTSBYIDMAP>
-			void patchPointers(OBJECTSBYIDMAP& newTargetObjects)
-			{
-				for (ObjectPtrBase* ptr : mObjectPointers)
-				{
-					rtti::Object* target = ptr->get();
-					if (target == nullptr)
-						continue;
-
-					std::string& target_id = target->mID;
-					typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
-					if (new_target != newTargetObjects.end())
-						ptr->set(&*(new_target->second));
-				}
-			}
+			void patchPointers(OBJECTSBYIDMAP& newTargetObjects);
 		
 			/**
  			 * Resets all ObjectPtrs to the specified object to nullptr
@@ -140,8 +115,10 @@ namespace nap
 			void resetPointers(const rtti::Object& targetObject)
 			{
 				for (ObjectPtrBase* ptr : mObjectPointers)
+				{
 					if (ptr->get() == &targetObject)
 						ptr->set(nullptr);
+				}
 			}
 
 		private:
@@ -150,21 +127,14 @@ namespace nap
 			/**
 			 * Adds a pointer to the manager.
 			 */
-			void add(ObjectPtrBase& ptr)
-			{
-				mObjectPointers.insert(&ptr);
-			}
+			void add(ObjectPtrBase& ptr)						{ mObjectPointers.insert(&ptr); }
 
 			/**
  			 * Removes a pointer from the manager.
  			 */
-			void remove(ObjectPtrBase& ptr)
-			{
-				mObjectPointers.erase(&ptr);
-			}
+			void remove(ObjectPtrBase& ptr)						{ mObjectPointers.erase(&ptr); }
 
-			ObjectPtrSet mObjectPointers;		///< Set of all pointers in the manager
-			
+			ObjectPtrSet mObjectPointers;					///< Set of all pointers in the manager
 		};
 
 		/**
@@ -186,217 +156,178 @@ namespace nap
 			RTTI_ENABLE(ObjectPtrBase)
 
 		public:
+			// Default constructor
 			ObjectPtr() = default;
 
             // Dtor
-            virtual ~ObjectPtr() override
-            {
-				if (mPtr != nullptr)
-					mPtr->decrementObjectPtrRefCount();
-
-                ObjectPtrManager::get().remove(*this);
-            }
+            virtual ~ObjectPtr() override;
             
 			// Regular ptr Ctor
-			ObjectPtr(T* ptr) :
-				ObjectPtrBase(ptr)
-			{
-				if (mPtr != nullptr)
-				{
-					ObjectPtrManager::get().add(*this);
-					mPtr->incrementObjectPtrRefCount();
-				}
-			}
+			ObjectPtr(T* ptr);
 
 			// Copy ctor
-			ObjectPtr(const ObjectPtr<T>& other)
-			{
-				assign(other);
-			}
+			ObjectPtr(const ObjectPtr<T>& other)					{ assign(other); }
 
 			// Move ctor
-			ObjectPtr(ObjectPtr<T>&& other)
-			{
-				move(other);
-			}
+			ObjectPtr(ObjectPtr<T>&& other)							{ move(other); }
 
 			// Assignment operator
-			ObjectPtr<T>& operator=(const ObjectPtr<T>& other)
-			{
-				assign(other);
-				return *this;
-			}
+			ObjectPtr<T>& operator=(const ObjectPtr<T>& other)		{ assign(other); return *this; }
 
 			// Move assignment operator
-			ObjectPtr<T>& operator=(ObjectPtr<T>&& other)
-			{
-				move(other);
-				return *this;
-			}
+			ObjectPtr<T>& operator=(ObjectPtr<T>&& other)			{ move(other); return *this; }
+
+			// Raw object pointer
+			T* get() const											{ return static_cast<T*>(mPtr); }
+
+			// Raw object pointer
+			T* get()												{ return static_cast<T*>(mPtr); }
 
 			//////////////////////////////////////////////////////////////////////////
 
 			// Regular ctor taking different type
 			template<typename OTHER>
-			ObjectPtr(const ObjectPtr<OTHER>& other)
-			{
-				assign(other);
-			}
+			ObjectPtr(const ObjectPtr<OTHER>& other)				{ assign(other); }
 
 			// Regular move ctor taking different type
 			template<typename OTHER>
-			ObjectPtr(ObjectPtr<OTHER>&& other)
-			{
-				move(other);
-			}
+			ObjectPtr(ObjectPtr<OTHER>&& other)						{ move(other); }
 
 			// Assignment operator taking different type
 			template<typename OTHER>
-			ObjectPtr<T>& operator=(const ObjectPtr<OTHER>& other)
-			{
-				assign(other);
-				return *this;
-			}
+			ObjectPtr<T>& operator=(const ObjectPtr<OTHER>& other)	{ assign(other); return *this; }
 
 			// Move assignment operator taking different type
 			template<typename OTHER>
-			ObjectPtr<T>& operator=(ObjectPtr<OTHER>&& other)
-			{
-				move(other);
-				return *this;
-			}
+			ObjectPtr<T>& operator=(ObjectPtr<OTHER>&& other)		{ move(other); return *this; }
 
 			//////////////////////////////////////////////////////////////////////////
 
-			const T& operator*() const
-			{
-				assert(mPtr != nullptr);
-				return *static_cast<T*>(mPtr);
-			}
+			const T& operator*() const								{ assert(mPtr != nullptr); return *static_cast<T*>(mPtr); }
 
-			T& operator*()
-			{
-				assert(mPtr != nullptr);
-				return *static_cast<T*>(mPtr);
-			}
+			T& operator*()											{ assert(mPtr != nullptr); return *static_cast<T*>(mPtr); }
 
-			T* operator->() const
-			{
-				assert(mPtr != nullptr);
-				return static_cast<T*>(mPtr);
-			}
+			T* operator->() const									{ assert(mPtr != nullptr); return static_cast<T*>(mPtr); }
 
-			T* operator->()
-			{
-				assert(mPtr != nullptr);
-				return static_cast<T*>(mPtr);
-			}
+			T* operator->()											{ assert(mPtr != nullptr); return static_cast<T*>(mPtr); }
 
-			bool operator==(const ObjectPtr<T>& other) const
-			{
-				return mPtr == other.mPtr;
-			}
+			bool operator==(const ObjectPtr<T>& other) const		{ return mPtr == other.mPtr; }
 
 			template<typename OTHER>
-			bool operator==(const ObjectPtr<OTHER>& other) const
-			{
-				return mPtr == other.mPtr;
-			}
+			bool operator==(const ObjectPtr<OTHER>& other) const	{ return mPtr == other.mPtr; }
 
 			template<typename OTHER>
-			bool operator==(const OTHER* ptr) const
-			{
-				return mPtr == ptr;
-			}
+			bool operator==(const OTHER* ptr) const					{ return mPtr == ptr; }
 
-			bool operator!=(const ObjectPtr<T>& other) const
-			{
-				return mPtr != other.mPtr;
-			}
+			bool operator!=(const ObjectPtr<T>& other) const		{ return mPtr != other.mPtr; }
 
 			template<typename OTHER>
-			bool operator!=(const ObjectPtr<OTHER>& other) const
-			{
-				return mPtr != other.mPtr;
-			}
+			bool operator!=(const ObjectPtr<OTHER>& other) const	{ return mPtr != other.mPtr; }
 
 			template<typename OTHER>
-			bool operator!=(const OTHER* ptr) const
-			{
-				return mPtr != ptr;
-			}
+			bool operator!=(const OTHER* ptr) const					{ return mPtr != ptr; }
 
-			bool operator<(const ObjectPtr<T>& other) const
-			{
-				return mPtr < other.mPtr;
-			}
+			bool operator<(const ObjectPtr<T>& other) const			{ return mPtr < other.mPtr; }
 
-			bool operator>(const ObjectPtr<T>& other) const
-			{
-				return mPtr > other.mPtr;
-			}
+			bool operator>(const ObjectPtr<T>& other) const			{ return mPtr > other.mPtr; }
 
-			bool operator<=(const ObjectPtr<T>& other) const
-			{
-				return mPtr <= other.mPtr;
-			}
+			bool operator<=(const ObjectPtr<T>& other) const		{ return mPtr <= other.mPtr; }
 
-			bool operator>=(const ObjectPtr<T>& other) const
-			{
-				return mPtr >= other.mPtr;
-			}
-
-			T* get() const
-			{
-				return static_cast<T*>(mPtr);
-			}
-
-			T* get()
-			{
-				return static_cast<T*>(mPtr);
-			}
+			bool operator>=(const ObjectPtr<T>& other) const		{ return mPtr >= other.mPtr; }
 
 		private:
 			/**
 			 * Moves the specified pointer 
 			 */
 			template<typename OTHER>
-			void move(ObjectPtr<OTHER>& other)
-			{
-				assign(other);
-				if (other.mPtr != nullptr)
-				{
-					other.mPtr->decrementObjectPtrRefCount();
-					other.mPtr = nullptr;
-				}
-			}
+			void move(ObjectPtr<OTHER>& other);
 
 			/**
 			 * Removes/adds itself from the manager and assigns mPtr.
 			 */
 			template<typename OTHER>
-			void assign(const ObjectPtr<OTHER>& other)
-			{
-				if (mPtr == nullptr && other.mPtr != nullptr)
-					ObjectPtrManager::get().add(*this);
-
-				if (other.mPtr != mPtr)
-				{
-					if (mPtr != nullptr)
-						mPtr->decrementObjectPtrRefCount();
-
-					mPtr = static_cast<T*>(other.get());
-
-					if (mPtr != nullptr)
-						mPtr->incrementObjectPtrRefCount();
-				}
-
-				if (mPtr == nullptr)
-					ObjectPtrManager::get().remove(*this);
-			}
+			void assign(const ObjectPtr<OTHER>& other);
 		};
+
+
+		//////////////////////////////////////////////////////////////////////////
+		// Template Definitions
+		//////////////////////////////////////////////////////////////////////////
+
+		template<class OBJECTSBYIDMAP>
+		void ObjectPtrManager::patchPointers(OBJECTSBYIDMAP& newTargetObjects)
+		{
+			for (ObjectPtrBase* ptr : mObjectPointers)
+			{
+				rtti::Object* target = ptr->get();
+				if (target == nullptr)
+					continue;
+
+				std::string& target_id = target->mID;
+				typename OBJECTSBYIDMAP::iterator new_target = newTargetObjects.find(target_id);
+				if (new_target != newTargetObjects.end())
+					ptr->set(&*(new_target->second));
+			}
+		}
+
+
+		template<typename T>
+		ObjectPtr<T>::~ObjectPtr()
+		{
+			if (mPtr != nullptr)
+			{
+				mPtr->decrementObjectPtrRefCount();
+			}
+			ObjectPtrManager::get().remove(*this);
+		}
+
+		template<typename T>
+		nap::rtti::ObjectPtr<T>::ObjectPtr(T* ptr) : ObjectPtrBase(ptr)
+		{
+			if (mPtr != nullptr)
+			{
+				ObjectPtrManager::get().add(*this);
+				mPtr->incrementObjectPtrRefCount();
+			}
+		}
+
+		template<typename T>
+		template<typename OTHER>
+		void nap::rtti::ObjectPtr<T>::move(ObjectPtr<OTHER>& other)
+		{
+			assign(other);
+			if (other.mPtr != nullptr)
+			{
+				other.mPtr->decrementObjectPtrRefCount();
+				other.mPtr = nullptr;
+			}
+		}
+
+		template<typename T>
+		template<typename OTHER>
+		void nap::rtti::ObjectPtr<T>::assign(const ObjectPtr<OTHER>& other)
+		{
+			if (mPtr == nullptr && other.mPtr != nullptr)
+				ObjectPtrManager::get().add(*this);
+
+			if (other.mPtr != mPtr)
+			{
+				if (mPtr != nullptr)
+					mPtr->decrementObjectPtrRefCount();
+
+				mPtr = static_cast<T*>(other.get());
+
+				if (mPtr != nullptr)
+					mPtr->incrementObjectPtrRefCount();
+			}
+
+			if (mPtr == nullptr)
+				ObjectPtrManager::get().remove(*this);
+		}
+
 	}
 }
+
 
 /**
 * The following construct is required to support ObjectPtr in RTTR as a regular pointer.
@@ -408,19 +339,12 @@ namespace rttr
 	{
 		using wrapped_type = T*;
 		using type = nap::rtti::ObjectPtr<T>;
-		
-		inline static wrapped_type get(const type& obj)
-		{
-			return obj.get();
-		}
-
-		inline static type create(const wrapped_type& value)
-		{
-			return nap::rtti::ObjectPtr<T>(value);
-		}		
+		inline static wrapped_type get(const type& obj)			{ return obj.get(); }
+		inline static type create(const wrapped_type& value)	{ return nap::rtti::ObjectPtr<T>(value); }		
 	};
 }
 
+ 
 /**
 * There is a problem in pybind11 where ownership of smart pointers is always treated like 'owned by pybind11'.
 * The following code works around this problem. First, some explanation on the problem:
