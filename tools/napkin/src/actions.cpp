@@ -20,6 +20,24 @@
 
 using namespace napkin;
 
+/**
+ * Show a dialog that asks the user if the given file should be set as project default
+ * @param parent parent widget
+ * @param filename file to set as project default
+ * @return if file should be set as project default
+ */
+static bool setAsProjectDefault(QWidget* parent, const QString& fileName)
+{
+	QMessageBox msg(parent);
+	msg.setWindowTitle("Set as Project Default?");
+	msg.setText(QString("Set '%1' as project default?").arg(QFileInfo(fileName).fileName()));
+	msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	msg.setDefaultButton(QMessageBox::No);
+	return msg.exec() == QMessageBox::Yes;
+}
+
+
 Action::Action(QObject* parent, const char* text, const char* iconName) :
 	QAction(parent), mIconName(iconName)
 {
@@ -264,14 +282,9 @@ void SaveFileAsAction::perform()
 	if (ctx.saveDocumentAs(filename))
 	{
 		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault())
+		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?",
-				QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction(nullptr).trigger();
+			UpdateDefaultFileAction(nullptr).trigger();
 		}
 	}
 	else
@@ -320,13 +333,9 @@ void napkin::OpenFileAction::perform()
 	if (ctx.loadDocument(filename) != nullptr)
 	{
 		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault())
+		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction(nullptr).trigger();
+			UpdateDefaultFileAction(nullptr).trigger();
 		}
 	}
 }
@@ -919,14 +928,9 @@ void napkin::SaveServiceConfigurationAs::perform()
 	}
 
 	// Set as project default if saved config is different from project default
-	if(!ctx.getServiceConfig()->isProjectDefault())
+	if(!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 	{
-		auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-			"Set as Project Default?",
-			QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
-
-		if (result == QMessageBox::StandardButton::Yes)
-			SetAsDefaultServiceConfigAction(nullptr).trigger();
+		SetAsDefaultServiceConfigAction(nullptr).trigger();
 	}
 }
 
@@ -957,13 +961,9 @@ void napkin::OpenServiceConfigAction::perform()
 	if (ctx.getServiceConfig()->load(filename))
 	{
 		// Set as project default if new config is different from project default
-		if (!ctx.getServiceConfig()->isProjectDefault())
+		if (!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				SetAsDefaultServiceConfigAction(nullptr).trigger();
+			SetAsDefaultServiceConfigAction(nullptr).trigger();
 		}
 	}
 }
