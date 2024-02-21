@@ -17,6 +17,7 @@ namespace napkin
 			constexpr const char* file		= "File";
 			constexpr const char* config	= "Configuration";
 			constexpr const char* help		= "Help";
+			constexpr const char* resources = "Resources";
 			constexpr const char* object	= "Object";
 		}
 	}

@@ -128,11 +128,16 @@ void MainWindow::configureMenu()
 	// Theme
 	menuBar()->addMenu(&mThemeMenu);
 
-	// Help
+	// Help & Additional Web Resources
 	mHelpMenu.setTitle(action::groups::help);
 	const auto& h_actions = mActionModel.getGroup(action::groups::help);
 	for (auto* action : h_actions)
 		mHelpMenu.addAction(action);
+
+	const auto& r_actions = mActionModel.getGroup(action::groups::resources);
+	for (auto* action : r_actions)
+		mHelpMenu.addAction(action);
+
 	menuBar()->addMenu(&mHelpMenu);
 
 	// Panels
