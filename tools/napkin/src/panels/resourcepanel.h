@@ -136,7 +136,7 @@ namespace napkin
 		/**
 		 * Called when a new item is inserted into an array
 		 */
-		void onChildAddedToGroup(GroupItem& group, ObjectItem& item);
+		void onChildAdded(ObjectItem& item, GroupItem* group);
 
 		/**
 		 * Called when a new item is added to an entity

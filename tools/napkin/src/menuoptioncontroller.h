@@ -11,7 +11,7 @@
 namespace napkin
 {
 	/**
-	 * Collects and assigns menu options for items of type T - grouped by optional type D.
+	 * Collects and assigns menu options for items of type T - grouped by optional derived type D.
 	 */
 	template<typename T>
 	class MenuOptionController final
