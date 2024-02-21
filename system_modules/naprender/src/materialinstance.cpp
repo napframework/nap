@@ -556,7 +556,6 @@ namespace nap
 		{
 			// Check if the binding is set as override in the MaterialInstance
 			const BufferBinding* override_resource = findBindingResource(instanceResource.mBuffers, declaration);
-			const auto& buffer_declaration = declaration.getBufferDeclaration();
 
 			BufferBindingInstance* binding = nullptr;
 			if (override_resource != nullptr)

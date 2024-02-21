@@ -54,10 +54,10 @@ namespace napkin
 	Q_SIGNALS:
 		/**
 		 * Triggered when a new child item is added to this or a child group
-		 * @param group the item the new item is added to
-		 * @param item the item that is added to the group
+		 * @param item the item that was added
+		 * @param group optional parent group
 		 */
-		void childAddedToGroup(GroupItem& group, ObjectItem& item);
+		void childAdded(ObjectItem& item, GroupItem* group);
 
 		/**
 		 * Signal that is emitted when the index of a child in a group changes
@@ -260,7 +260,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit EntityItem(nap::Entity& entity, bool isPointer = false);
+		EntityItem(nap::Entity& entity, bool isPointer = false);
 
 		/**
 		 * @return The entity held by this item
@@ -286,7 +286,7 @@ namespace napkin
 
 	private:
 		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
-		void onComponentAdded(nap::Component* c, nap::Entity* owner);
+		void onChildInserted(const PropertyPath& parentPath, size_t childIndex);
 		void onPropertyValueChanged(const PropertyPath& path);
 		void onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex);
 		void populate();
@@ -302,7 +302,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit ComponentItem(nap::Component& comp);
+		ComponentItem(nap::Component& comp);
 
 		/**
 		 * @return The component held by this item.
@@ -323,7 +323,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit GroupItem(nap::IGroup& group);
+		GroupItem(nap::IGroup& group);
 
 		/**
 		 * Returns item data based on given role
@@ -485,8 +485,8 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity);
-		virtual nap::RootEntity& rootEntity() const;
+		EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity);
+		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const;
 		const PropertyPath propertyPath() const override;
 		const std::string unambiguousName() const override;
@@ -507,16 +507,8 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(EntityInstanceItem)
 	public:
-		explicit RootEntityItem(nap::RootEntity& e);
-		const PropertyPath propertyPath() const override;
-
+		RootEntityItem(nap::RootEntity& rootEntity);
 		SceneItem* sceneItem();
-		nap::RootEntity& rootEntity() const override;
-	private:
-		void onEntityAdded(nap::Entity* e, nap::Entity* parent);
-		void onComponentAdded(nap::Component* c, nap::Entity* owner);
-
-		nap::RootEntity& mRootEntity;
 	};
 
 
@@ -533,7 +525,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
+		ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
 		const PropertyPath propertyPath() const override;
 		nap::Component& component() const;
 		nap::RootEntity& rootEntity() const;

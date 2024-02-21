@@ -26,7 +26,7 @@ namespace napkin
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
-		AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent = nullptr);
+		AddObjectCommand(const rttr::type& type);
 
 		/**
 		 * Redo
@@ -39,9 +39,30 @@ namespace napkin
 		void undo() override;
 	private:
 		const rttr::type mType;
-		std::string mObjectName;
-		std::string mParentName = "";
+		std::string mObjectID;
 	};
+
+
+	class DuplicateObjectCommand : public QUndoCommand
+	{
+	public:
+		DuplicateObjectCommand(const nap::rtti::Object& object, const PropertyPath& parent);
+
+		/**
+		 * Apply duplication
+		 */
+		void redo() override;
+
+		/**
+		 * Remove duplication
+		 */
+		void undo() override;
+	private:
+		std::string mObjectID;
+		std::string mDuplicateID;
+		PropertyPath mParent;
+	};
+
 
 	class AddComponentCommand : public QUndoCommand
 	{
@@ -56,6 +77,7 @@ namespace napkin
 		std::string mComponentName;
 	};
 
+
 	class RemoveComponentCommand : public QUndoCommand
 	{
 	public:
@@ -66,6 +88,7 @@ namespace napkin
 		std::string mEntityName;
 		std::string mComponentName;
 	};
+
 
     /**
      * TODO: To be implemented
@@ -88,6 +111,7 @@ namespace napkin
 		const std::string mObjectName;
 
 	};
+
 
 	/**
 	 * This command sets the value of a property
@@ -118,6 +142,7 @@ namespace napkin
 		QVariant mNewValue; // The new value
 		QVariant mOldValue; // The old value
 	};
+
 
 	class SetPointerValueCommand : public QUndoCommand
 	{
@@ -161,6 +186,7 @@ namespace napkin
 		size_t mIndex;
 	};
 
+
 	/**
 	 * Add an Entity as a child to another entity
 	 */
@@ -176,6 +202,7 @@ namespace napkin
 		size_t mIndex;
 	};
 
+
 	class RemoveChildEntityCommand : public QUndoCommand
 	{
 	public:
@@ -187,6 +214,7 @@ namespace napkin
 		size_t mIndex;
 	};
 
+
 	class RemoveCommand : public QUndoCommand
 	{
 	public:
@@ -196,6 +224,7 @@ namespace napkin
 	private:
 		PropertyPath mPath;
 	};
+
 
 	/**
 	 * Add an element to an array
