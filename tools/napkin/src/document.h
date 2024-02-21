@@ -197,8 +197,8 @@ namespace napkin
 
 		/**
 		 * Add an object of the specified type.
-		 * @param type The type of the desired object.
-		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
+		 * @param type The type of the the object to add
+		 * @param parent Optional parent of the object, nullptr if object has no parent
 		 * In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
@@ -214,16 +214,22 @@ namespace napkin
 		void reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath);
 
 		/**
-		 * Add an object of the specified type
-		 * @tparam T
-		 * @param parent
-		 * @return
+		 * Add an object of the specified type T
+		 * @param parent Optional parent of the object, nullptr if object has no parent
+		 * @param name optional object name
+		 * @return the added object of type T
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
-		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, name));
-		}
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string()) 		{ return static_cast<T*>(addObject(RTTI_OF(T), parent, name)); }
+
+		/**
+		 * Duplicate the object, including all child properties, links and embedded objects.
+		 * The duplicated object is added to the parent (property) if valid.
+		 * @param src the object to duplicate
+		 * @param parent optional parent to which the src and duplicate belong
+		 * @return the duplicated object, nullptr if duplication failed
+		 */
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, const PropertyPath& parent);
 
 		/**
 		 * Add and entity to the document
@@ -492,14 +498,6 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked when a Component has been added to the system
-		 * @param comp
-		 * @param owner
-		 */
-		void componentAdded(nap::Component* comp, nap::Entity* owner);
-
-		/**
-		 * Qt Signal
 		 * Invoked after any object has been added (this includes Entities and Groups)
 		 * @param obj The newly added object
 		 * @param parent The parent item of the newly added object, can be nullptr
@@ -618,6 +616,14 @@ namespace napkin
 		 * @param current property path
 		 */
 		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
+
+		/**
+		 * Duplicate the object, including all child properties, links and embedded pointers.
+		 * @param src object to duplicate
+		 * @param parent optional parent of the object, nullptr if object has no parent
+		 * @return src duplicate, nullptr if duplication failed because object can't be created
+		 */
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent);
 	};
 
 

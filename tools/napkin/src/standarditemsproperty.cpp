@@ -528,6 +528,13 @@ QVariant napkin::EmbeddedPointerValueItem::data(int role) const
 			nap::rtti::Object* pointee = getEmbeddedObject(mPath.resolve());
 			return pointee != nullptr ? pointee->mID.c_str() : napkin::TXT_NULL;
 		}
+		case Qt::ForegroundRole:
+		{
+			auto pointee = mPath.getPointee();
+			return pointee == nullptr && nap::rtti::hasFlag(mPath.getProperty(), nap::rtti::EPropertyMetaData::Required) ?
+				AppContext::get().getThemeManager().getLogColor(nap::Logger::errorLevel()) :
+				PropertyPathItem::data(role);
+		}
 		default:
 		{
 			return PropertyPathItem::data(role);

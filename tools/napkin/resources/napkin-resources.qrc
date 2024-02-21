@@ -46,5 +46,6 @@
 		<file>icons/move_down.png</file>
 		<file>icons/move_up.png</file>
 		<file>icons/clear.png</file>
+		<file>icons/duplicate.png</file>
 	</qresource>
 </RCC>

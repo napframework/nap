@@ -101,7 +101,7 @@ napkin::ResourcePanel::ResourcePanel()
 
 	auto& resources_item = mModel.getRootResourcesItem();
 	resources_item.setEnabled(AppContext::get().getProjectLoaded());
-	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
+	connect(&resources_item, &RootResourcesItem::childAdded, this, &ResourcePanel::onChildAdded);
 	connect(&resources_item, &RootResourcesItem::indexChanged, this, [this](GroupItem& parent, ObjectItem& item)
 		{
 			this->onIndexChanged(parent, item);
@@ -212,7 +212,7 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		addMoveAction(children_array, entity_item->getObject(), idx, menu);
 	});
 
-	// Child Entity
+	// Remove entity action
 	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{
 		auto entity_item = static_cast<EntityItem*>(&item);
@@ -346,9 +346,36 @@ void napkin::ResourcePanel::createMenuCallbacks()
 			obj_parent = obj_parent->parentItem();
 		}
 
-		// Allow object to be deleted if it's not a reference
-		if(!object_item->isPointer())
+		// Actual object, not a link
+		if (!object_item->isPointer())
+		{
+			// Duplicate item, add to parent group or entity when available
+			PropertyPath parent_path;
+			auto* parent_item = object_item->parentItem();
+			if (parent_item != nullptr)
+			{
+				// Under group
+				if (qitem_cast<GroupItem*>(parent_item) != nullptr)
+				{
+					auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+					auto* group_item = static_cast<GroupItem*>(parent_item);
+					parent_path = PropertyPath(group_item->getGroup(), group_item->getGroup().getMembersProperty(), *doc);
+				}
+
+				// Under entity
+				if (qitem_cast<EntityItem*>(parent_item) != nullptr)
+				{
+					auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+					auto* entity_item = static_cast<EntityItem*>(parent_item);
+					parent_path = PropertyPath(entity_item->getEntity().mID, nap::Entity::componentsPropertyName(), *doc);
+				}
+			}
+			menu.addAction(new DuplicateObjectAction(&menu, object_item->getObject(), parent_path));
+
+
+			// Allow object to be deleted
 			menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));
+		}
 	});
 
 	// Top Resource
@@ -445,9 +472,9 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 }
 
 
-void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& item)
+void napkin::ResourcePanel::onChildAdded(ObjectItem& item, GroupItem* group)
 {
-	mTreeView.select(&item, true);
+	mTreeView.select(&item, false);
 }
 
 
@@ -455,7 +482,7 @@ void napkin::ResourcePanel::onChildAddedToEntity(EntityItem& entity, ObjectItem&
 {
 	auto selected_it = qitem_cast<ObjectItem*>(mTreeView.getSelectedItem());
 	if (selected_it != nullptr && selected_it == &entity)
-		mTreeView.select(&item, true);
+		mTreeView.select(&item, false);
 }
 
 
