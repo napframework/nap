@@ -260,7 +260,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit EntityItem(nap::Entity& entity, bool isPointer = false);
+		EntityItem(nap::Entity& entity, bool isPointer = false);
 
 		/**
 		 * @return The entity held by this item
@@ -302,7 +302,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit ComponentItem(nap::Component& comp);
+		ComponentItem(nap::Component& comp);
 
 		/**
 		 * @return The component held by this item.
@@ -323,7 +323,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit GroupItem(nap::IGroup& group);
+		GroupItem(nap::IGroup& group);
 
 		/**
 		 * Returns item data based on given role
@@ -485,7 +485,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity);
+		EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity);
 		nap::RootEntity& rootEntity() const;
 		nap::Entity& entity() const;
 		const PropertyPath propertyPath() const override;
@@ -507,7 +507,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(EntityInstanceItem)
 	public:
-		explicit RootEntityItem(nap::RootEntity& rootEntity);
+		RootEntityItem(nap::RootEntity& rootEntity);
 		SceneItem* sceneItem();
 	};
 
@@ -525,7 +525,7 @@ namespace napkin
 		Q_OBJECT
 		RTTI_ENABLE(ObjectItem)
 	public:
-		explicit ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
+		ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity);
 		const PropertyPath propertyPath() const override;
 		nap::Component& component() const;
 		nap::RootEntity& rootEntity() const;

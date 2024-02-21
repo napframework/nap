@@ -139,9 +139,8 @@ DuplicateObjectCommand::DuplicateObjectCommand(const nap::rtti::Object& object, 
 
 void DuplicateObjectCommand::redo()
 {
-	auto& ctx = AppContext::get();
-
 	// Get resources
+	auto& ctx = AppContext::get();
 	auto object = ctx.getDocument()->getObject(mObjectID);
 	if (object == nullptr)
 		return;

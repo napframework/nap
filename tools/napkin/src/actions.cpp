@@ -375,6 +375,7 @@ DuplicateObjectAction::DuplicateObjectAction(QObject* parent, const nap::rtti::O
 	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object), mParent({})
 { }
 
+
 void napkin::DuplicateObjectAction::perform()
 {
 	// Duplicate resource
