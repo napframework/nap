@@ -1121,7 +1121,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 				auto variant = src_value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
-				src_value = src_obj != nullptr ? duplicateObject(*src_obj, target) : nullptr;
+				src_value = src_obj != nullptr ? duplicateObject(*src_obj, target) : nap::rtti::Variant();
 			}
 			else
 			{
@@ -1145,8 +1145,8 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 			}
 		}
 
-		// Copy value to target
-		if (!property.set_value(target, src_value))
+		// Copy value if available
+		if (src_value.is_valid() && !property.set_value(target, src_value))
 		{
 			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
 				property.get_name().data()).c_str());
