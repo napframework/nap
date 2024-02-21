@@ -101,7 +101,7 @@ napkin::ResourcePanel::ResourcePanel()
 
 	auto& resources_item = mModel.getRootResourcesItem();
 	resources_item.setEnabled(AppContext::get().getProjectLoaded());
-	connect(&resources_item, &RootResourcesItem::childAddedToGroup, this, &ResourcePanel::onChildAddedToGroup);
+	connect(&resources_item, &RootResourcesItem::childAdded, this, &ResourcePanel::onChildAdded);
 	connect(&resources_item, &RootResourcesItem::indexChanged, this, [this](GroupItem& parent, ObjectItem& item)
 		{
 			this->onIndexChanged(parent, item);
@@ -472,7 +472,7 @@ void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 }
 
 
-void napkin::ResourcePanel::onChildAddedToGroup(GroupItem& group, ObjectItem& item)
+void napkin::ResourcePanel::onChildAdded(ObjectItem& item, GroupItem* group)
 {
 	mTreeView.select(&item, false);
 }

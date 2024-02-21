@@ -54,10 +54,10 @@ namespace napkin
 	Q_SIGNALS:
 		/**
 		 * Triggered when a new child item is added to this or a child group
-		 * @param group the item the new item is added to
-		 * @param item the item that is added to the group
+		 * @param item the item that was added
+		 * @param group optional parent group
 		 */
-		void childAddedToGroup(GroupItem& group, ObjectItem& item);
+		void childAdded(ObjectItem& item, GroupItem* group);
 
 		/**
 		 * Signal that is emitted when the index of a child in a group changes

@@ -170,18 +170,27 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 		return;
 
 	// If it's a group, add it as such
+	ObjectItem* new_item = nullptr;
 	if (obj->get_type().is_derived_from<nap::IGroup>())
 	{
 		auto group_item = new GroupItem(static_cast<nap::IGroup&>(*obj));
 		this->appendRow({ group_item, new RTTITypeItem(obj->get_type()) });
-		connect(group_item, &GroupItem::childAdded, this, &RootResourcesItem::childAddedToGroup);
+		connect(group_item, &GroupItem::childAdded, [this](GroupItem& group, ObjectItem& item)
+			{
+				this->childAdded(item, &group);
+			});
 		connect(group_item, &GroupItem::indexChanged, this, &RootResourcesItem::indexChanged);
+		new_item = group_item;
 	}
 	else
 	{
 		// Add as regular item
-		this->appendRow({ createObjectItem(*obj), new RTTITypeItem(obj->get_type()) });
+		new_item = createObjectItem(*obj);
+		this->appendRow({ new_item, new RTTITypeItem(obj->get_type()) });
 	}
+
+	// Notify listeners
+	childAdded(*new_item, nullptr);
 }
 
 
