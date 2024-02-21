@@ -511,7 +511,7 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	// Create and add new item
 	auto* new_item = new EntityItem(*e, true);
 	new_item->connect(new_item, &EntityItem::childAdded, this, &EntityItem::childAdded);
-	insertRow(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
+	insertChild(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
 
 	// Notify listeners
 	childAdded(*this, *new_item);
@@ -539,9 +539,7 @@ void napkin::EntityItem::onChildInserted(const PropertyPath& path, size_t childI
 	// Create and add new component
 	auto comp_item = new ComponentItem(*component);
 	int row_idx = getEntity().mChildren.size() + childIndex;
-	this->model()->insertRow(row_idx, this->index());
-	this->setChild(row_idx, 0, comp_item);
-	this->setChild(row_idx, 1, new RTTITypeItem(component->get_type()));
+	this->insertChild(row_idx, { comp_item, new RTTITypeItem(component->get_type()) });
 
 	// Notify listeners
 	childAdded(*this, *comp_item);
@@ -687,7 +685,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		PropertyPath array_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
 		auto member_el = path.getArrayElement(index);
 		ObjectItem* new_item = new ObjectItem(*member_el.getPointee());
-		this->insertRow(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+		this->insertChild(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
 		childAdded(*this, *new_item);
 	}
 	// Otherwise, insert it at the end
@@ -704,7 +702,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		int child_index = index + members_path.getArrayLength();
 
 		// Insert
-		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
+		this->insertChild(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
 		childAdded(*this, *new_group);
 	}
 }
@@ -847,7 +845,7 @@ void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	if (parent != &entity())
 		return;
 
-	insertRow(nap::math::max<int>(parent->mChildren.size()-1, 0), new EntityInstanceItem(*e, mRootEntity));
+	insertChild(nap::math::max<int>(parent->mChildren.size() - 1, 0), { new EntityInstanceItem(*e, mRootEntity) });
 }
 
 void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)

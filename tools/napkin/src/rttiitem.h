@@ -22,6 +22,15 @@ namespace napkin
 		 * @return parent item, nullptr if there is no parent, asserts if parent not of type RTTIItem
 		 */
 		RTTIItem* parentItem() const;
+
+		/**
+		 * Inserts a row with given items into the underlying model.
+		 * This call uses the underlying model to insert the row, instead of the QStandardItem::insertRow() method.
+		 * The QStandardItem::insertRow() method doesn't work with an installed proxy model & filter.
+		 * @param rowIndex the child row index
+		 * @param items the items, for every column, to insert
+		 */
+		void insertChild(int rowIndex, const QList<RTTIItem*>& items);
 	};
 
 	/**
