@@ -130,11 +130,10 @@ void AddObjectCommand::undo()
 
 //////////////////////////////////////////////////////////////////////////
 
-DuplicateObjectCommand::DuplicateObjectCommand(const nap::rtti::Object& object, nap::rtti::Object* parent) :
-	mObjectID(object.mID)
+DuplicateObjectCommand::DuplicateObjectCommand(const nap::rtti::Object& object, const PropertyPath& parent) :
+	mObjectID(object.mID), mParent(parent)
 {
-	mParentID = parent != nullptr ? parent->mID : "";
-	setText(QString("Duplicate %1").arg(mParentID.c_str()));
+	setText(QString("Duplicate %1").arg(mObjectID.c_str()));
 }
 
 
@@ -148,33 +147,15 @@ void DuplicateObjectCommand::redo()
 		return;
 
 	// Duplicate entire object structure, including embedded objects
-	auto parent = ctx.getDocument()->getObject(mParentID);
 	auto* doc = ctx.getDocument(); assert(doc != nullptr);
-
-	PropertyPath parent_path;
-	if (parent != nullptr)
-	{
-		if (parent->get_type().is_derived_from(RTTI_OF(nap::IGroup)))
-		{
-			auto* parent_group = static_cast<nap::IGroup*>(parent);
-			parent_path = PropertyPath(*parent_group, parent_group->getMembersProperty(), *doc);
-		}
-
-		if(parent->get_type().is_derived_from(RTTI_OF(nap::Entity)))
-		{
-			assert(object->get_type().is_derived_from(RTTI_OF(nap::Component)));
-			parent_path = PropertyPath(parent->mID, nap::Entity::componentsPropertyName(), *doc);
-		}
-	}
-
-	auto* copied = doc->duplicateObject(*object, parent_path); assert(copied != nullptr);
-	mCopiedID = copied->mID;
+	auto* dup = doc->duplicateObject(*object, mParent);
+	mDuplicateID = dup != nullptr ? dup->mID : "";
 }
 
 
 void DuplicateObjectCommand::undo()
 {
-	AppContext::get().getDocument()->removeObject(mCopiedID);
+	AppContext::get().getDocument()->removeObject(mDuplicateID);
 }
 
 

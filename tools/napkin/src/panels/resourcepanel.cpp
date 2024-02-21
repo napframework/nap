@@ -349,10 +349,29 @@ void napkin::ResourcePanel::createMenuCallbacks()
 		// Actual object, not a link
 		if (!object_item->isPointer())
 		{
-			// Allow object to be duplicated
-			auto parent_item = qitem_cast<ObjectItem*>(object_item->parentItem());
-			nap::rtti::Object* parent_obj = parent_item != nullptr ? &parent_item->getObject() : nullptr;
-			menu.addAction(new DuplicateResourceAction(&menu, object_item->getObject(), parent_obj));
+			// Duplicate item, add to parent group or entity when available
+			PropertyPath parent_path;
+			auto* parent_item = object_item->parentItem();
+			if (parent_item != nullptr)
+			{
+				// Under group
+				if (qitem_cast<GroupItem*>(parent_item) != nullptr)
+				{
+					auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+					auto* group_item = static_cast<GroupItem*>(parent_item);
+					parent_path = PropertyPath(group_item->getGroup(), group_item->getGroup().getMembersProperty(), *doc);
+				}
+
+				// Under entity
+				if (qitem_cast<EntityItem*>(parent_item) != nullptr)
+				{
+					auto* doc = AppContext::get().getDocument(); assert(doc != nullptr);
+					auto* entity_item = static_cast<EntityItem*>(parent_item);
+					parent_path = PropertyPath(entity_item->getEntity().mID, nap::Entity::componentsPropertyName(), *doc);
+				}
+			}
+			menu.addAction(new DuplicateObjectAction(&menu, object_item->getObject(), parent_path));
+
 
 			// Allow object to be deleted
 			menu.addAction(new DeleteObjectAction(&menu, object_item->getObject()));

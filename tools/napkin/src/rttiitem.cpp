@@ -18,6 +18,6 @@ namespace napkin
 	{
 		this->model()->insertRow(rowIndex, this->index());
 		for (auto i = 0; i < items.size(); i++)
-			this->setChild(rowIndex, items[i]);
+			this->setChild(rowIndex, i, items[i]);
 	}
 }

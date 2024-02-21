@@ -46,7 +46,7 @@ namespace napkin
 	class DuplicateObjectCommand : public QUndoCommand
 	{
 	public:
-		DuplicateObjectCommand(const nap::rtti::Object& object, nap::rtti::Object* parent);
+		DuplicateObjectCommand(const nap::rtti::Object& object, const PropertyPath& parent);
 
 		/**
 		 * Apply duplication
@@ -59,8 +59,8 @@ namespace napkin
 		void undo() override;
 	private:
 		std::string mObjectID;
-		std::string mCopiedID;
-		std::string mParentID;
+		std::string mDuplicateID;
+		PropertyPath mParent;
 	};
 
 

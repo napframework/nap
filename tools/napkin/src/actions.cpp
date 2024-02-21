@@ -357,12 +357,16 @@ void CreateResourceAction::perform()
 
 //////////////////////////////////////////////////////////////////////////
 
-DuplicateResourceAction::DuplicateResourceAction(QObject* parent, const nap::rtti::Object& object, nap::rtti::Object* parentObject) :
-	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object), mParent(parentObject)
+DuplicateObjectAction::DuplicateObjectAction(QObject* parent, const nap::rtti::Object& object, const PropertyPath& parentArray) :
+	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object), mParent(parentArray)
 { }
 
 
-void napkin::DuplicateResourceAction::perform()
+DuplicateObjectAction::DuplicateObjectAction(QObject* parent, const nap::rtti::Object& object) :
+	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object), mParent({})
+{ }
+
+void napkin::DuplicateObjectAction::perform()
 {
 	// Duplicate resource
 	AppContext::get().executeCommand(new DuplicateObjectCommand(*mObject, mParent));
