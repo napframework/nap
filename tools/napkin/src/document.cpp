@@ -405,7 +405,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	// Create and add component
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
-	comp->mID = getUniqueID(type.get_name().data(), *comp, true);
+	comp->mID = getUniqueID(friendlyTypeName(type), *comp, true);
 	auto it = mObjects.emplace(std::make_pair(comp->mID, comp));
 	assert(it.second);
 	entity.mComponents.emplace_back(comp);
@@ -461,21 +461,17 @@ nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 
 std::string Document::getUniqueID(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID)
 {
-	// Construct name
-	std::string new_id = useUUID ?
-		nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::separator, createUUID().c_str()) :
-		suggestedName;
-
 	// Ensure name is unique
-	auto existing_object = getObject(new_id); int i = 2;
-	while (existing_object != nullptr && existing_object != &object)
+	std::string object_id = suggestedName;
+	auto scene_object = getObject(object_id); int i = 2;
+	while (scene_object != nullptr && scene_object != &object)
 	{
-		new_id = useUUID ?
+		object_id = useUUID ?
 			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::separator, createUUID().c_str()) :
 			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::separator, i++);
-		existing_object = getObject(new_id);
+		scene_object = getObject(object_id);
 	}
-	return new_id;
+	return object_id;
 }
 
 
