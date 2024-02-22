@@ -34,7 +34,6 @@ static std::string createUUID()
 	auto uuid = QUuid::createUuid().toString();
 	assert(uuid.size() >= id::ssize);
 	auto uuid_str = uuid.mid(uuid.size() - id::ssize, id::count).toStdString();
-	nap::utility::toUpper(uuid_str);
 	return uuid_str;
 }
 
