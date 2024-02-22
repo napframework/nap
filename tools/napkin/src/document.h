@@ -589,9 +589,13 @@ namespace napkin
 		QUndoStack mUndoStack;						// This document's undostack
 
 		/**
+		 * Creates a unique object name based on the suggested name
+		 * @param suggestedName the suggested object name
+		 * @param object the object to get the name for
+		 * @param useUUID if a unique identifier is generated and appended
 		 * @return unique object name
 		 */
-		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
+		std::string getUniqueID(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
 
 		/**
 		 * Patches entity and component ptr links. This occurs when

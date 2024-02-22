@@ -76,6 +76,19 @@ namespace nap
 		std::string toLower(const std::string& string);
 
 		/**
+		 * Converts all lower case characters in ioString to upper case characters
+		 * @param ioString the input string that is converted to an upper case string
+		 */
+		void toUpper(std::string& ioString);
+
+		/**
+		 * Converts all lower case characters in ioString to upper case characters
+		 * @param string the input string that is converted
+		 * @return the upper case version of the given string
+		 */
+		std::string toUpper(const std::string& string);
+
+		/**
 		 * Strips all name space related identifiers from the given string.
 		 * @param str the string to remove the namespace from
 		 * @return the stripped string
