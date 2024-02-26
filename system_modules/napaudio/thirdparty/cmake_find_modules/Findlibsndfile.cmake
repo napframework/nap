@@ -7,7 +7,6 @@
 # LIBSNDFILE_LICENSE_FILES - Files required when package is distributed (Licenses etc.)
 
 include(${NAP_ROOT}/cmake/targetarch.cmake)
-target_architecture(ARCH)
 
 find_path(LIBSNDFILE_DIR
          NAMES

@@ -7,7 +7,6 @@
 # LIBMPG123_LICENSE_FILES - Files required when distributed (License etc.)
 
 include(${NAP_ROOT}/cmake/targetarch.cmake)
-target_architecture(ARCH)
 
 find_path(LIBMPG123_DIR
           NAMES
