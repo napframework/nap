@@ -12,7 +12,7 @@ target_architecture(ARCH)
 find_path(LIBSNDFILE_DIR
          NAMES
          msvc/x86_64/include/sndfile.h
-         macos/x86_64/include/sndfile.h
+         macos/${ARCH}/include/sndfile.h
          linux/${ARCH}/include/sndfile.h
          HINTS
           ${NAP_ROOT}/system_modules/napaudio/thirdparty/libsndfile
@@ -24,10 +24,10 @@ if (WIN32)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile-1.dll)
     set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/msvc/x86_64/include)
 elseif (APPLE)
-    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/macos/x86_64/lib)
+    set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/macos/${ARCH}/lib)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile.1.dylib)
     set(LIBSNDFILE_LIBRARIES ${LIBSNDFILE_LIB_DIR}/libsndfile.1.dylib)
-    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/macos/x86_64/include)
+    set(LIBSNDFILE_INCLUDE_DIR ${LIBSNDFILE_DIR}/macos/${ARCH}/include)
 else ()
     set(LIBSNDFILE_LIB_DIR ${LIBSNDFILE_DIR}/linux/${ARCH}/lib)
     set(LIBSNDFILE_LIBS_RELEASE_DLL ${LIBSNDFILE_LIB_DIR}/libsndfile.so)
