@@ -11,11 +11,6 @@
 // Nap includes
 #include <nap/logger.h>
 
-// Third party includes
-#ifdef NAP_AUDIOFILE_SUPPORT
-    #include <mpg123.h>
-#endif
-
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioService)
 		RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
@@ -34,11 +29,6 @@ namespace nap
 		
 		bool AudioService::init(nap::utility::ErrorState& errorState)
 		{
-#ifdef NAP_AUDIOFILE_SUPPORT
-            // Initialize mpg123 library
-			mpg123_init();
-			mMpg123Initialized = true;
-#endif
 			checkLockfreeTypes();
             return true;
 		}
@@ -46,11 +36,6 @@ namespace nap
 
 		void AudioService::shutdown()
 		{
-#ifdef NAP_AUDIOFILE_SUPPORT
-			// Close mpg123 library
-			if (mMpg123Initialized)
-				mpg123_exit();
-#endif
 		}
 
 
