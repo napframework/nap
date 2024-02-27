@@ -113,7 +113,7 @@ namespace nap
 
 		TransformComponentInstance*				mTransformComponent = nullptr;		// The transform component used to move the entity
 		bool									mEnabled = true;					// Set if enabled for input
-		float									mCameraScale = 1.0f;				// Current scale, selects the width of the space you can see
+		float									mCameraScale = 2.0f;				// Current scale, selects the width of the space you can see
 		float									mCameraScaleAtClick = 0.0f;			// Scale that was set when clicking with the mouse button
 		EMode									mMode = EMode::None;				// Pan/Zoom mode
 		glm::vec2								mMousePosAtClick;					// Mouse position that was set when clicking with the mouse button
