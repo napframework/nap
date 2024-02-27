@@ -21,14 +21,20 @@
 using namespace napkin;
 using namespace nap::rtti;
 
+namespace id
+{
+	static constexpr const char separator = '_';
+	static constexpr const int count = 6;
+	static constexpr const int ssize = count + 2;
+}
 
-static std::string createSimpleUUID()
+
+static std::string createUUID()
 {
 	auto uuid = QUuid::createUuid().toString();
-	// just take the last couple of characters
-	int charCount = 8;
-	auto shortuuid = uuid.mid(uuid.size() - 2 - charCount, charCount);
-	return shortuuid.toStdString();
+	assert(uuid.size() >= id::ssize);
+	auto uuid_str = uuid.mid(uuid.size() - id::ssize, id::count).toStdString();
+	return uuid_str;
 }
 
 
@@ -347,7 +353,7 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 		return object.mID;
 
 	// Get name
-	auto new_name = getUniqueName(name, object, appenUUID);
+	auto new_name = getUniqueID(name, object, appenUUID);
 	if (new_name == object.mID)
 		return object.mID;
 
@@ -399,7 +405,7 @@ nap::Component* Document::addComponent(nap::Entity& entity, rttr::type type)
 	// Create and add component
 	nap::rtti::Variant compVariant = factory.create(type);
 	auto comp = compVariant.get_value<nap::Component*>();
-	comp->mID = getUniqueName(type.get_name().data(), *comp, true);
+	comp->mID = getUniqueID(friendlyTypeName(type), *comp, true);
 	auto it = mObjects.emplace(std::make_pair(comp->mID, comp));
 	assert(it.second);
 	entity.mComponents.emplace_back(comp);
@@ -434,7 +440,7 @@ nap::rtti::Object* Document::addObject(rttr::type type, nap::rtti::Object* paren
 	std::string base_name = name.empty() ? friendlyTypeName(type) : name;
 	nap::rtti::Object* obj = factory.create(type);
 	assert(obj != nullptr);
-	obj->mID = getUniqueName(base_name, *obj, true);
+	obj->mID = getUniqueID(base_name, *obj, true);
 
 	// Add to managed object list
 	mObjects.emplace(std::make_pair(obj->mID, obj));
@@ -453,23 +459,19 @@ nap::Entity& Document::addEntity(nap::Entity* parent, const std::string& name)
 }
 
 
-std::string Document::getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID)
+std::string Document::getUniqueID(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID)
 {
-	// Construct name
-	std::string newName = useUUID ?
-		nap::utility::stringFormat("%s_%s", suggestedName.c_str(), createSimpleUUID().c_str()) :
-		suggestedName;
-
 	// Ensure name is unique
-	auto ex_obj = getObject(newName); int i = 2;
-	while (ex_obj != nullptr && ex_obj != &object)
+	std::string object_id = suggestedName;
+	auto scene_object = getObject(object_id); int i = 2;
+	while (scene_object != nullptr && scene_object != &object)
 	{
-		newName = useUUID ?
-			nap::utility::stringFormat("%s_%s", suggestedName.c_str(), createSimpleUUID().c_str()) :
-			nap::utility::stringFormat("%s_%d", suggestedName.c_str(), i++);
-		ex_obj = getObject(newName);
+		object_id = useUUID ?
+			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::separator, createUUID().c_str()) :
+			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::separator, i++);
+		scene_object = getObject(object_id);
 	}
-	return newName;
+	return object_id;
 }
 
 
@@ -1091,10 +1093,12 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 		return nullptr;
 	}
 
-	// Create the object and give it a new name
-	nap::rtti::Object* target = factory.create(src.get_type());
-	assert(target != nullptr && !src.mID.empty());
-	target->mID = getUniqueName(src.mID, *target, true);
+	// Create the object
+	nap::rtti::Object* target = factory.create(src.get_type()); assert(target != nullptr);
+
+	// Give it a new name
+	auto parts = nap::utility::splitString(src.mID, id::separator); assert(!parts.empty());
+	target->mID = getUniqueID(parts.front(), *target, true);
 
 	// Add to managed object list
 	mObjects.emplace(std::make_pair(target->mID, target));

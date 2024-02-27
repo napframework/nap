@@ -468,7 +468,7 @@ void napkin::ResourcePanel::populate()
 void ResourcePanel::selectObjects(const QList<nap::rtti::Object*>& obj)
 {
 	if (obj.size() > 0)
-		mTreeView.select(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]), true);
+		mTreeView.select(findItemInModel<napkin::ObjectItem>(mModel, *obj[0]), false);
 }
 
 
