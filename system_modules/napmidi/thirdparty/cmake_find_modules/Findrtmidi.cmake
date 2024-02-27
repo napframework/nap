@@ -9,7 +9,7 @@
 find_path(RTMIDI_DIR
           NAMES
           msvc/x86_64/include/rtmidi/RtMidi.h
-          macos/x86_64/include/rtmidi/RtMidi.h
+          macos/${ARCH}/include/rtmidi/RtMidi.h
           linux/${ARCH}/include/rtmidi/RtMidi.h
           HINTS
           ${NAP_ROOT}/system_modules/napmidi/thirdparty/rtmidi
@@ -21,10 +21,10 @@ if(WIN32)
     set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_LIBRARY_DIR}/rtmidi.lib winmm)
     set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_LIBRARY_DIR}/rtmidid.lib winmm)
 elseif(APPLE)
-    set(RTMIDI_INCLUDE_DIR ${RTMIDI_DIR}/macos/x86_64/include/rtmidi)
-    set(RTMIDI_LIBRARY_DIR ${RTMIDI_DIR}/macos/x86_64/lib)
-    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_LIBRARY_DIR}/librtmidi.4.dylib)
-    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_LIBRARY_DIR}/librtmidi.4.dylib)
+    set(RTMIDI_INCLUDE_DIR ${RTMIDI_DIR}/macos/${ARCH}/include/rtmidi)
+    set(RTMIDI_LIBRARY_DIR ${RTMIDI_DIR}/macos/${ARCH}/lib)
+    set(RTMIDI_LIBRARIES_RELEASE ${RTMIDI_LIBRARY_DIR}/librtmidi.dylib)
+    set(RTMIDI_LIBRARIES_DEBUG ${RTMIDI_LIBRARY_DIR}/librtmidi.dylib)
 else()
     set(RTMIDI_INCLUDE_DIR ${RTMIDI_DIR}/linux/${ARCH}/include/rtmidi)
     set(RTMIDI_LIBRARY_DIR ${RTMIDI_DIR}/linux/${ARCH}/lib)
