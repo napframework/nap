@@ -79,7 +79,7 @@ if (NOT MODULE_INTO_PARENT)
 endif()
 
 find_rttr()
-target_link_libraries(${PROJECT_NAME} napcore naprtti naputility RTTR::Core)
+target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core)
 if (NAP_ENABLE_PYTHON)
     target_link_libraries(${PROJECT_NAME} ${PYTHON_LIBRARIES})
     if (MODULE_INTO_PARENT)

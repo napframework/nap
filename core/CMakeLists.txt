@@ -68,7 +68,7 @@ if(MSVC)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(${PROJECT_NAME} naputility naprtti)
+target_link_libraries(${PROJECT_NAME} naprtti)
 
 if (UNIX AND NOT APPLE)
     include_directories(${PROJECT_NAME} src/nap/linux/FileWatcher)
