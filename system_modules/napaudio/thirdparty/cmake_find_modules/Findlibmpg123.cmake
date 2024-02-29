@@ -11,7 +11,7 @@ include(${NAP_ROOT}/cmake/targetarch.cmake)
 find_path(LIBMPG123_DIR
           NAMES
           msvc/x86_64/include/mpg123.h
-          macos/x86_64/include/mpg123.h
+          macos/${ARCH}/include/mpg123.h
           linux/${ARCH}/include/mpg123.h
           HINTS
           ${NAP_ROOT}/system_modules/napaudio/thirdparty/mpg123
@@ -23,10 +23,10 @@ if(WIN32)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dll)
     set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/msvc/x86_64/include)
 elseif(APPLE)
-    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/macos/x86_64/lib)
+    set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/macos/${ARCH}/lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.dylib)
     set(LIBMPG123_LIBRARIES ${LIBMPG123_LIBS_RELEASE_DLL})
-    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/macos/x86_64/include)
+    set(LIBMPG123_INCLUDE_DIR ${LIBMPG123_DIR}/macos/${ARCH}/include)
 else()
     set(LIBMPG123_LIB_DIR ${LIBMPG123_DIR}/linux/${ARCH}/lib)
     set(LIBMPG123_LIBS_RELEASE_DLL ${LIBMPG123_LIB_DIR}/libmpg123.so)

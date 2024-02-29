@@ -77,7 +77,7 @@ if (NAP_AUDIOFILE_SUPPORT)
             # Ensure our mpg123 install name id is set properly, this is really for intall into packaging
             add_custom_command(TARGET ${PROJECT_NAME}
                                PRE_BUILD
-                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libmpg123.dylib ${LIBMPG123_LIB_DIR}/libmpg123.0.dylib
+                               COMMAND ${CMAKE_INSTALL_NAME_TOOL} -id @rpath/libmpg123.dylib ${LIBMPG123_LIB_DIR}/libmpg123.dylib
                                )
 
             file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
