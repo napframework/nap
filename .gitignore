@@ -126,4 +126,9 @@ pyvenv.cfg
 system_modules/naprender/thirdparty/vulkansdk/linux/lib/libVkLayer_khronos_validation.so
 system_modules/naprender/thirdparty/vulkansdk/linux/lib/libVkLayer_api_dump.so
 system_modules/naplicense/thirdparty/cryptopp/linux/*/lib/libcryptopp.a
+!system_modules/napportaudio/thirdparty/portaudio/macos/universal/lib/
+!system_modules/napaudio/thirdparty/libsndfile/macos/universal/lib/
+!system_modules/napaudio/thirdparty/mpg123/macos/universal/lib/
+!system_modules/naposc/thirdparty/oscpack/macos/universal/lib/
+!system_modules/napmidi/thirdparty/rtmidi/macos/universal/lib/
 thirdparty/docker_images/cmake
