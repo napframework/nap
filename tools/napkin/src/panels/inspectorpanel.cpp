@@ -191,12 +191,12 @@ void napkin::InspectorPanel::expandTree(const QModelIndex& parent)
 		assert(child_item != nullptr);
 
 		// Don't expand when item in array
-		if(qitem_cast<ArrayPropertyItem*>(parent_item) != nullptr)
-			continue;
+		//if(qitem_cast<ArrayPropertyItem*>(parent_item) != nullptr)
+		//	continue;
 
 		// Don't expand embedded resources
-		if(qitem_cast<EmbeddedPointerItem*>(child_item) != nullptr)
-			continue;
+		//if(qitem_cast<EmbeddedPointerItem*>(child_item) != nullptr)
+		//	continue;
 
 		// Don't expand color
 		CompoundPropertyItem* compound = qitem_cast<CompoundPropertyItem*>(child_item);
