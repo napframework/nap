@@ -132,4 +132,5 @@ system_modules/naplicense/thirdparty/cryptopp/linux/*/lib/libcryptopp.a
 !system_modules/naposc/thirdparty/oscpack/macos/universal/lib/
 !system_modules/napmidi/thirdparty/rtmidi/macos/universal/lib/
 !thirdparty/rttr/macos/universal/bin/
+!thirdparty/python/macos/universal/bin/
 thirdparty/docker_images/cmake
