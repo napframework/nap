@@ -134,5 +134,4 @@ system_modules/naplicense/thirdparty/cryptopp/linux/*/lib/libcryptopp.a
 !thirdparty/rttr/macos/universal/bin/
 !thirdparty/python/macos/universal/bin/
 !thirdparty/python/macos/universal/lib/
-!thirdparty/cmake/macos/universal/bin/
 thirdparty/docker_images/cmake
