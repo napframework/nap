@@ -1,5 +1,5 @@
 # Based on the Qt 5 processor detection code, so should be very accurate
-# https://github.com/qt/qtbase/blob/dev/src/corelib/global/qprocessordetection.h 
+# https://github.com/qt/qtbase/blob/dev/src/corelib/global/qprocessordetection.h
 # Currently handles arm (v5, v6, v7, v8), x86 (32/64), ia64, and ppc (32/64)
 
 # Regarding POWER/PowerPC, just as is noted in the Qt source,
@@ -65,8 +65,8 @@ set(archdetect_c_code "
 
 function(linux_fetch_long_bits output_var)
     execute_process(COMMAND getconf LONG_BIT
-                    OUTPUT_VARIABLE BITS_OUTPUT
-                    RESULT_VARIABLE EXIT_CODE)
+            OUTPUT_VARIABLE BITS_OUTPUT
+            RESULT_VARIABLE EXIT_CODE)
     if(NOT ${EXIT_CODE} EQUAL 0)
         message(FATAL_ERROR "Failed to fetch number of bits for long type")
     endif()
@@ -117,14 +117,17 @@ function(target_architecture output_var)
             list(APPEND ARCH i386)
         endif()
 
-        if(macos_arch_arm64 AND macos_arch_x86_64)
-            list(APPEND ARCH universal)
-        elseif (macos_arch_x86_64)
+        if (macos_arch_x86_64)
             list(APPEND ARCH x86_64)
         endif()
 
         if(macos_arch_ppc64)
             list(APPEND ARCH ppc64)
+        endif()
+
+        # In case of arm64 we use the universal binary for Apple intel and silicon
+        if(macos_arch_arm64)
+            set(ARCH universal)
         endif()
 
     else()
@@ -164,18 +167,23 @@ function(target_architecture output_var)
 
         if(UNIX)
             if("${ARCH}" STREQUAL "armv6" OR
-               "${ARCH}" STREQUAL "armv7" OR
-               "${ARCH}" STREQUAL "armv8")
+                    "${ARCH}" STREQUAL "armv7" OR
+                    "${ARCH}" STREQUAL "armv8")
                 set(ARCH armhf)
             elseif("${ARCH}" STREQUAL "arm64")
-                # Handle 64bit ARM kernels running on 32bit ARM Linux instances. Common for Raspberry Pi v4 in 2023.
-                linux_fetch_long_bits(LONG_BITS)
-                if(LONG_BITS EQUAL 32)
-                    message(STATUS "Seeing ARM64 kernel with ARMhf libs, setting ARCH for 32bit libs")
-                    set(ARCH armhf)
+                if (APPLE)
+                    set(ARCH universal)
+                else ()
+                    # Handle 64bit ARM kernels running on 32bit ARM Linux instances. Common for Raspberry Pi v4 in 2023.
+                    linux_fetch_long_bits(LONG_BITS)
+                    if(LONG_BITS EQUAL 32)
+                        message(STATUS "Seeing ARM64 kernel with ARMhf libs, setting ARCH for 32bit libs")
+                        set(ARCH armhf)
+                    endif()
                 endif()
             endif()
         endif()
+
     endif()
 
     set(${output_var} "${ARCH}" PARENT_SCOPE)
