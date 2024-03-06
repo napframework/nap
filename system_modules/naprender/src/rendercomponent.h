@@ -85,7 +85,7 @@ namespace nap
 		/**
 		 * @return the render mask
 		 */
-		RenderMask getRenderMask() const											{ return mRenderMask; }
+		RenderMask getMask() const													{ return mRenderMask; }
 
 		/**
 		 * @return if this component is compatible with (includes) the given mask
@@ -95,7 +95,7 @@ namespace nap
 		/**
 		 * @return the render mask
 		 */
-		LayerIndex getRenderLayer() const											{ return mRenderLayer; }
+		LayerIndex getLayer() const													{ return mRenderLayer; }
 
 		/**
 		 * Called by the Render Service. By default every camera type is supported
