@@ -526,12 +526,9 @@ namespace nap
                     {
                         case EShadowMapType::Quad:
                         {
-                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
-                            if (shadow_sampler_array != nullptr)
+                            auto* instance = mesh_comp->getMaterialInstance().getOrCreateSampler<Sampler2DArrayInstance>(*mSampler2DResource);
+                            if (instance != nullptr)
                             {
-                                auto *instance = static_cast<Sampler2DArrayInstance *>(shadow_sampler_array);
-                                assert(instance != nullptr);
-
                                 if (light_index >= instance->getNumElements())
                                 {
                                     assert(false);
@@ -546,16 +543,14 @@ namespace nap
                         }
                         case EShadowMapType::Cube:
 						{
-                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
-                            if (shadow_sampler_array != nullptr) {
-                                auto *instance = static_cast<SamplerCubeArrayInstance *>(shadow_sampler_array);
-                                assert(instance != nullptr);
-
-                                if (light_index >= instance->getNumElements()) {
+                            auto* instance = mesh_comp->getMaterialInstance().getOrCreateSampler<SamplerCubeArrayInstance>(*mSamplerCubeResource);
+                            if (instance != nullptr)
+							{
+                                if (light_index >= instance->getNumElements())
+								{
                                     assert(false);
                                     continue;
                                 }
-
                                 const auto it = mLightCubeMap.find(light);
                                 assert(it != mLightCubeMap.end());
                                 instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);

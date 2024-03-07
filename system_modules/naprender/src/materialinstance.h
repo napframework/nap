@@ -19,7 +19,7 @@
 namespace nap
 {
 	class Material;
-	class Renderer;
+	class RenderService;
 	struct DescriptorSet;
 	class DescriptorSetCache;
 
@@ -94,6 +94,7 @@ namespace nap
 	 */
 	class NAPAPI BaseMaterialInstance : public UniformContainer
 	{
+		friend class RenderService;
 		RTTI_ENABLE(UniformContainer)
 	public:
 		/**
@@ -136,37 +137,51 @@ namespace nap
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
 		 * This means that the sampler returned is only applicable to this instance.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the sampler does not match the type that you are trying to create.
 		 *
 		 * ~~~~~{.cpp}
 		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
 		 * ~~~~~
 		 *
 		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 * @return nap::SamplerInstance of type T, nullptr when sampler declaration doesn't exist or of incorrect type
 		 */
 		template<class T>
 		T* getOrCreateSampler(const std::string& name);
 
 		/**
-		 * Gets or creates a nap::SamplerInstance for this material instance.
-		 * This means that the sampler returned is only applicable to this instance.
+		 * Gets or creates a nap::SamplerInstance for this material, which can be set at runtime.
+		 * The returned sampler is only applicable to this instance.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
-		 *
+		 * 
 		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 * @return the sampler instance, nullptr when sampler declaration doesn't exist
 		 */
-		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name); }
+		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name, nullptr); }
 
 		/**
-		 * Creates a nap::SamplerInstance for this material instance from a resource.
-		 * The sampler returned is only applicable to this instance.
+		 * Get or creates a nap::SamplerInstance of type T for this material, which can be set at runtime.
+		 * The instance is initialized against the provided resource and only applicable to this instance.
 		 *
-		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance, nullptr if not available.
+		 * Note that the resource type must match the instance type! The function asserts otherwise.
+		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
+		 *
+		 * @param resource: the resource to get the instance for
+		 * @return the sampler instance, nullptr when sampler declaration doesn't exist
 		 */
-		SamplerInstance* getOrCreateSamplerFromResource(const Sampler& resource, utility::ErrorState& errorState);
+		template<class T>
+		T* getOrCreateSampler(const Sampler& resource);
+
+		/**
+		 * Get or creates a nap::SamplerInstance for this material, which can be set at runtime.
+		 * The instance is initialized against the provided resource and only applicable to this instance.
+		 *
+		 * Note that the resource type must match the instance type! The function asserts otherwise.
+		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
+		 *
+		 * @param resource: the resource to get the instance for
+		 * @return the sampler instance of type T, nullptr when sampler declaration doesn't exist or of incorrect type
+		 */
+		SamplerInstance* getOrCreateSampler(const Sampler& resource)		{ return getOrCreateSamplerInternal(resource.mName, &resource); }
 
 		/**
 		 * @return base material that this instance is overriding
@@ -185,11 +200,6 @@ namespace nap
 		 * @return whether any specialization constant overrides are defined in this material.
 		 */
 		bool getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const;
-
-		/**
-		 * @return constant hash
-		 */
-		ShaderConstantHash getConstantHash() const							{ return mConstantHash; }
 
 		/**
 		 * This must be called before each draw. It will push the current uniform and sampler data into memory
@@ -225,7 +235,8 @@ namespace nap
 		bool initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
-		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
+		SamplerInstance* getOrCreateSamplerInternal(const std::string& name, const Sampler* resource);
+		ShaderConstantHash getConstantHash() const { return mConstantHash; }
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
@@ -383,6 +394,12 @@ namespace nap
 	template<class T>
 	T* BaseMaterialInstance::getOrCreateSampler(const std::string& name)
 	{
-		return rtti_cast<T>(getOrCreateSamplerInternal(name));
+		return rtti_cast<T>(getOrCreateSamplerInternal(name, nullptr));
+	}
+
+	template<class T>
+	T* BaseMaterialInstance::getOrCreateSampler(const Sampler& resource)
+	{
+		return rtti_cast<T>(getOrCreateSamplerInternal(resource.mName, &resource));
 	}
 }
