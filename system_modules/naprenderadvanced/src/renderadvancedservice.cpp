@@ -526,34 +526,33 @@ namespace nap
                     {
                         case EShadowMapType::Quad:
                         {
-                            auto* instance = mesh_comp->getMaterialInstance().getOrCreateSampler<Sampler2DArrayInstance>(*mSampler2DResource);
-                            if (instance != nullptr)
+                            auto* sampler_instance = mesh_comp->getMaterialInstance().getOrCreateSampler<Sampler2DArrayInstance>(*mSampler2DResource);
+                            if (sampler_instance != nullptr)
                             {
-                                if (light_index >= instance->getNumElements())
+                                if (light_index >= sampler_instance->getNumElements())
                                 {
                                     assert(false);
                                     continue;
                                 }
-
                                 const auto it = mLightDepthMap.find(light);
                                 assert(it != mLightDepthMap.end());
-                                instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
+								sampler_instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
                             }
                             break;
                         }
                         case EShadowMapType::Cube:
 						{
-                            auto* instance = mesh_comp->getMaterialInstance().getOrCreateSampler<SamplerCubeArrayInstance>(*mSamplerCubeResource);
-                            if (instance != nullptr)
+                            auto* sampler_instance = mesh_comp->getMaterialInstance().getOrCreateSampler<SamplerCubeArrayInstance>(*mSamplerCubeResource);
+                            if (sampler_instance != nullptr)
 							{
-                                if (light_index >= instance->getNumElements())
+                                if (light_index >= sampler_instance->getNumElements())
 								{
                                     assert(false);
                                     continue;
                                 }
                                 const auto it = mLightCubeMap.find(light);
                                 assert(it != mLightCubeMap.end());
-                                instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
+								sampler_instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
                             }
                             break;
                         }

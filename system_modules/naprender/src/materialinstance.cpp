@@ -190,7 +190,7 @@ namespace nap
 			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const ShaderVariableStructDeclaration* declaration = nullptr;
+		//const ShaderVariableStructDeclaration* declaration = nullptr;
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader().getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
@@ -247,74 +247,71 @@ namespace nap
 			return existing_sampler;
 
 		SamplerInstance* result = nullptr;
+
 		const BaseShader& shader = getMaterial()->getShader();
 		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
 		int image_start_index = 0;
 		for (const SamplerDeclaration& declaration : sampler_declarations)
 		{
-			// Skip name
-			if (declaration.mName != name) 
+			if (declaration.mName == name)
 			{
-				image_start_index++;
-				continue;
-			}
+				std::unique_ptr<SamplerInstance> sampler_instance_override;
+				if (declaration.mIsArray)
+				{
+					switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+					{
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(Sampler2DArray)));
+						const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(resource);
+						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler_2d_array,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
 
-			// Create override
-			std::unique_ptr<SamplerInstance> sampler_instance_override = nullptr;
-			if (declaration.mIsArray)
-			{
-				switch (declaration.mType)
-				{
-				case SamplerDeclaration::EType::Type_2D:
-				{
-					assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(Sampler2DArray)));
-					auto* sampler = static_cast<const Sampler2DArray*>(resource);
-					sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-					break;
+					case SamplerDeclaration::EType::Type_Cube:
+					{
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(SamplerCubeArray)));
+						const auto* sampler_cube_array = static_cast<const SamplerCubeArray*>(resource);
+						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, sampler_cube_array,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					default:
+						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
+					}
 				}
-				case SamplerDeclaration::EType::Type_Cube:
+				else
 				{
-					assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(SamplerCubeArray)));
-					auto* sampler = static_cast<const SamplerCubeArray*>(resource);
-					sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, sampler,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-					break;
+					switch (declaration.mType)
+					{
+					case SamplerDeclaration::EType::Type_2D:
+					{
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(Sampler2D)));
+						const auto* sampler_2d = static_cast<const Sampler2D*>(resource);
+						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, sampler_2d,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					case SamplerDeclaration::EType::Type_Cube:
+					{
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(SamplerCube)));
+						const auto* sampler_cube = static_cast<const SamplerCube*>(resource);
+						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, sampler_cube,
+							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
+						break;
+					}
+					default:
+						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
+					}
 				}
-				default:
-					NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
-				}
-			}
-			else
-			{
-				switch (declaration.mType)
-				{
-				case SamplerDeclaration::EType::Type_2D:
-				{
-					assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(Sampler2D)));
-					auto* sampler = static_cast<const Sampler2D*>(resource);
-					sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, sampler,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-					break;
-				}
-				case SamplerDeclaration::EType::Type_Cube:
-				{
-					assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(SamplerCube)));
-					auto* sampler = static_cast<const SamplerCube*>(resource);
-					sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, sampler,
-						std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-					break;
-				}
-				default:
-					NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
-				}
-			}
 
-			// Initialize & add
-			utility::ErrorState error_state;
-			bool initialized = sampler_instance_override->init(error_state); assert(initialized);
-			result = &addSamplerInstance(std::move(sampler_instance_override));
-			break;
+				utility::ErrorState error_state;
+				bool initialized = sampler_instance_override->init(error_state); assert(initialized);
+				result = &addSamplerInstance(std::move(sampler_instance_override));
+				break;
+			}
+			image_start_index += declaration.mNumElements;
 		}
 		return result;
 	}
@@ -789,6 +786,7 @@ namespace nap
 			}
 			outInfo.mData.emplace_back((*it).second);
 		}
+
 		return true;
 	}
 

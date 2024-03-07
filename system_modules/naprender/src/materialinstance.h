@@ -86,7 +86,7 @@ namespace nap
 		ComputeMaterialInstanceResource() :
 			BaseMaterialInstanceResource(materialinstanceresource::materialc)	{}
 
-		ResourcePtr<ComputeMaterial>				mComputeMaterial;								///< Property: "ComputeMaterial" source material
+		ResourcePtr<ComputeMaterial>				mComputeMaterial;									///< Property: "ComputeMaterial" source material
 	};
 
 	/**
@@ -94,8 +94,8 @@ namespace nap
 	 */
 	class NAPAPI BaseMaterialInstance : public UniformContainer
 	{
-		friend class RenderService;
 		RTTI_ENABLE(UniformContainer)
+		friend class RenderService;
 	public:
 		/**
 		 * Gets or creates a uniform struct (ubo) for this material instance.
@@ -152,7 +152,7 @@ namespace nap
 		 * Gets or creates a nap::SamplerInstance for this material, which can be set at runtime.
 		 * The returned sampler is only applicable to this instance.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * 
+		 *
 		 * @param name: the name of the sampler declared in the shader.
 		 * @return the sampler instance, nullptr when sampler declaration doesn't exist
 		 */
@@ -165,8 +165,12 @@ namespace nap
 		 * Note that the resource type must match the instance type! The function asserts otherwise.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
 		 *
+		 * ~~~~~{.cpp}
+		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>(samplerResource);
+		 * ~~~~~
+		 * 
 		 * @param resource: the resource to get the instance for
-		 * @return the sampler instance, nullptr when sampler declaration doesn't exist
+		 * @return the sampler instance of type T, nullptr when sampler declaration doesn't exist
 		 */
 		template<class T>
 		T* getOrCreateSampler(const Sampler& resource);
@@ -179,7 +183,7 @@ namespace nap
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
 		 *
 		 * @param resource: the resource to get the instance for
-		 * @return the sampler instance of type T, nullptr when sampler declaration doesn't exist or of incorrect type
+		 * @return the sampler instance, nullptr when sampler declaration doesn't exist or of incorrect type
 		 */
 		SamplerInstance* getOrCreateSampler(const Sampler& resource)		{ return getOrCreateSamplerInternal(resource.mName, &resource); }
 
@@ -235,7 +239,7 @@ namespace nap
 		bool initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
-		SamplerInstance* getOrCreateSamplerInternal(const std::string& name, const Sampler* resource);
+		SamplerInstance* getOrCreateSamplerInternal(const std::string& name, const Sampler* sampler);
 		ShaderConstantHash getConstantHash() const { return mConstantHash; }
 
 	protected:
