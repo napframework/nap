@@ -14,7 +14,7 @@
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": 0.05000000074505806,
+                        "Speed": -0.20000000298023225,
                         "Offset": 1.0
                     }
                 },
@@ -528,11 +528,11 @@
                     "Color": {
                         "Values": [
                             1.0,
-                            1.0,
-                            1.0
+                            0.20000000298023225,
+                            0.4901960790157318
                         ]
                     },
-                    "Intensity": 1.0,
+                    "Intensity": 0.6000000238418579,
                     "ShadowStrength": 0.6000000238418579,
                     "Attenuation": 0.10000000149011612,
                     "FieldOfView": 30.0,
@@ -569,7 +569,7 @@
                         "Translate": {
                             "x": 0.5,
                             "y": 0.25,
-                            "z": 8.0
+                            "z": 6.5
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -596,14 +596,14 @@
                             1.0
                         ]
                     },
-                    "Intensity": 1.0,
+                    "Intensity": 2.5,
                     "ShadowStrength": 1.0,
                     "Attenuation": 0.10000000149011612,
-                    "Angle": 90.0,
-                    "Falloff": 0.5,
+                    "Angle": 65.0,
+                    "Falloff": 0.8999999761581421,
                     "ClippingPlanes": {
                         "x": 1.0,
-                        "y": 1000.0
+                        "y": 100.0
                     },
                     "ShadowMapSize": 2048
                 },
@@ -657,23 +657,14 @@
                     "Color": {
                         "Values": [
                             1.0,
-                            1.0,
-                            1.0
+                            0.929411768913269,
+                            0.7490196228027344
                         ]
                     },
-                    "Intensity": 1.0,
+                    "Intensity": 0.699999988079071,
                     "ShadowStrength": 1.0,
+                    "ProjectionSize": 10.0,
                     "ShadowMapSize": 2048,
-                    "ProjectionRect": {
-                        "Min": {
-                            "x": -8.0,
-                            "y": -8.0
-                        },
-                        "Max": {
-                            "x": 8.0,
-                            "y": 8.0
-                        }
-                    },
                     "ClippingPlanes": {
                         "x": 0.10000000149011612,
                         "y": 30.0
