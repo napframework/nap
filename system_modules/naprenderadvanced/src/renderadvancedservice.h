@@ -104,53 +104,15 @@ namespace nap
 		// Default Constructor
 		RenderAdvancedService(ServiceConfiguration* configuration);
 
-		/**
-		 * Registers service dependencies
-		 * A service that depends on another service is initialized after all it's associated dependencies
-		 * This will ensure correct order of initialization, update calls and shutdown of all services
-		 * @param dependencies rtti information of the services this service depends on
-		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
-		 * Initializes the service
-		 * @param errorState contains the error message on failure
-		 * @return if the video service was initialized correctly
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
-
-		/**
-		 * Invoked when exiting the main loop, after app shutdown is called
-		 * Use this function if your service needs to reset its state before resources are destroyed
-		 * When service B depends on A, Service B is shutdown before A
-		 */
-		virtual void preShutdown() override;
-
-		/**
-		 * Invoked when exiting the main loop, after app shutdown is called
-		 * Use this function to close service specific handles, drivers or devices
-		 * When service B depends on A, Service B is shutdown before A
-		 */
-		virtual void shutdown() override;
-
-		/**
-		 * Invoked when the resource manager is about to load resources. This is when essential RenderAdvanced resources are
-		 * created as resources can now be accessed in the scene and light components have been registered.
-		 */
-		virtual void preResourcesLoaded() override;
-
-		/**
-		 * Invoked after the resource manager successfully loaded resources.
-		 */
-		virtual void postResourcesLoaded() override;
-
         /**
-         * @return whether shadow mapping is enabled.
+		 * Returns if global shadow mapping is enabled 
+         * @return whether global shadow mapping is enabled.
          */
         bool isShadowMappingEnabled() const													{ return mShadowMappingEnabled; }
 
         /**
-         * @return the registered light components.
+		 * Returns total number of registered lights 
+         * @return total number of registered light components.
          */
        const std::vector<LightComponentInstance*>& getLights()								{ return mLightComponents; }
 
@@ -198,6 +160,46 @@ namespace nap
 
 	protected:
 		/**
+		 * Registers service dependencies
+		 * A service that depends on another service is initialized after all it's associated dependencies
+		 * This will ensure correct order of initialization, update calls and shutdown of all services
+		 * @param dependencies rtti information of the services this service depends on
+		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		 * Initializes the service
+		 * @param errorState contains the error message on failure
+		 * @return if the video service was initialized correctly
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function if your service needs to reset its state before resources are destroyed
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void preShutdown() override;
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function to close service specific handles, drivers or devices
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void shutdown() override;
+
+		/**
+		 * Invoked when the resource manager is about to load resources. This is when essential RenderAdvanced resources are
+		 * created as resources can now be accessed in the scene and light components have been registered.
+		 */
+		virtual void preResourcesLoaded() override;
+
+		/**
+		 * Invoked after the resource manager successfully loaded resources.
+		 */
+		virtual void postResourcesLoaded() override;
+
+		/**
 		 * Spawns an entity camera hierarchy at runtime.
 		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
 		 * @param entity the entity resource to spawning fails
@@ -224,7 +226,6 @@ namespace nap
 		bool pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-
 		bool initServiceResources(utility::ErrorState& errorState);
 		bool initCubeMapTargets(utility::ErrorState& errorState);
 		void onPreRenderCubeMaps(RenderService& renderService);
