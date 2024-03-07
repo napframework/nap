@@ -532,8 +532,8 @@
                             0.4901960790157318
                         ]
                     },
-                    "Intensity": 0.6000000238418579,
-                    "ShadowStrength": 0.6000000238418579,
+                    "Intensity": 0.800000011920929,
+                    "ShadowStrength": 1.0,
                     "Attenuation": 0.10000000149011612,
                     "FieldOfView": 30.0,
                     "ClippingPlanes": {
