@@ -334,7 +334,7 @@ namespace nap
 				auto* spawn_xform = light->mSpawnedCamera->findComponent<nap::TransformComponentInstance>();
 				if (spawn_xform != nullptr)
 				{
-					spawn_xform->setLocalTransform(light->getTransform().getGlobalTransform());
+					spawn_xform->overrideLocalTransform(light->getTransform().getGlobalTransform());
 				}
 			}
 		}

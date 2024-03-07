@@ -15,6 +15,7 @@ RTTI_BEGIN_CLASS(nap::SpotLightComponent)
 	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FieldOfView",			&nap::SpotLightComponent::mFieldOfView,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -41,6 +42,7 @@ namespace nap
 		auto* resource = getComponent<SpotLightComponent>();
 		mAttenuation = resource->mAttenuation;
 		mAngle = resource->mAngle;
+		mFieldOfView = resource->mFieldOfView;
 		mFalloff = resource->mFalloff;
 		mShadowMapSize = resource->mShadowMapSize;
 
@@ -59,7 +61,7 @@ namespace nap
 		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
 		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
-		mShadowCamComponent->mProperties.mFieldOfView = mAngle;
+		mShadowCamComponent->mProperties.mFieldOfView = mFieldOfView;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
 		// Transform component
