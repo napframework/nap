@@ -23,13 +23,13 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
-	RTTI_PROPERTY(nap::materialinstanceresource::materialr,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::MaterialInstanceResource::matProperty,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendMode",	&nap::MaterialInstanceResource::mBlendMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",	&nap::MaterialInstanceResource::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
-	RTTI_PROPERTY(nap::materialinstanceresource::materialc, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::ComputeMaterialInstanceResource::matProperty, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)

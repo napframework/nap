@@ -23,11 +23,13 @@ namespace nap
 	struct DescriptorSet;
 	class DescriptorSetCache;
 
-	// Common property names
-	namespace materialinstanceresource
+	namespace material
 	{
-		constexpr const char* materialr	= "Material";
-		constexpr const char* materialc	= "ComputeMaterial";
+		namespace instance
+		{
+			// RTTI get or create material function
+			constexpr const char* getOrCreateMaterial = "getOrCreateMaterial";
+		}
 	}
 
 	/**
@@ -67,8 +69,10 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
+		static constexpr const char* matProperty = "Material";
+
 		MaterialInstanceResource() :
-			BaseMaterialInstanceResource(materialinstanceresource::materialr)	{}
+			BaseMaterialInstanceResource(matProperty)	{}
 
 		ResourcePtr<Material>						mMaterial;											///< Property: "Material" Source material
 		EBlendMode									mBlendMode = EBlendMode::NotSet;					///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
@@ -83,8 +87,10 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
+		static constexpr const char* matProperty = "ComputeMaterial";
+
 		ComputeMaterialInstanceResource() :
-			BaseMaterialInstanceResource(materialinstanceresource::materialc)	{}
+			BaseMaterialInstanceResource(matProperty)	{}
 
 		ResourcePtr<ComputeMaterial>				mComputeMaterial;									///< Property: "ComputeMaterial" source material
 	};
