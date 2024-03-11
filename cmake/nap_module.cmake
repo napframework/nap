@@ -79,7 +79,7 @@ if (NOT MODULE_INTO_PARENT)
 endif()
 
 find_rttr()
-target_link_libraries(${PROJECT_NAME} napcore naprtti RTTR::Core)
+target_link_libraries(${PROJECT_NAME} napcore naprtti naputility RTTR::Core)
 if (NAP_ENABLE_PYTHON)
     if (MODULE_INTO_PARENT)
         target_include_directories(${PROJECT_NAME} PUBLIC ${pybind11_INCLUDE_DIRS})
