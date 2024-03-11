@@ -223,7 +223,7 @@ namespace nap
 		virtual void postUpdate(double deltaTime);
 
 	private:
-		bool pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
+		bool pushLightsInternal(const std::vector<MaterialInstance*>& materials, utility::ErrorState& errorState);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
 		bool initServiceResources(utility::ErrorState& errorState);

@@ -342,42 +342,16 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState)
+	bool RenderAdvancedService::pushLightsInternal(const std::vector<MaterialInstance*>& materials, utility::ErrorState& errorState)
 	{
-		// TODO: Cache light uniforms
-		// Exit early if there are no lights in the scene
-		if (mLightComponents.empty())
-			return true;
-
-		// Filter render components
-		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
-		for (auto& comp : renderComps)
-		{
-			// Ensure the component is visible and has a material instance
-			if (comp->isVisible() && comp->get_type().is_derived_from(RTTI_OF(RenderableMeshComponentInstance)))
-			{
-				// Ensure the shader interface supports lights
-				auto* mesh_comp = static_cast<RenderableMeshComponentInstance*>(comp);
-				if (mesh_comp->getMaterialInstance().getMaterial().findUniform(uniform::lightStruct) != nullptr)
-					filtered_mesh_comps.emplace_back(mesh_comp);
-			}
-		}
-
 		// Update materials for color pass
-		for (auto& mesh_comp : filtered_mesh_comps)
+		for (auto& material : materials)
 		{
 			// Shader interface for lights
-			auto* light_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::lightStruct);
+			auto* light_struct = material->getOrCreateUniform(uniform::lightStruct);
 			assert(light_struct != nullptr);
 			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
 			assert(light_count != nullptr);
-
-			// Set light count to zero and exit early
-			if (disableLighting)
-			{
-				light_count->setValue(0);
-				continue;
-			}
 
             light_count->setValue(mLightComponents.size());
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
@@ -480,22 +454,17 @@ namespace nap
             return true;
 
         // Shadow data
-        for (auto& mesh_comp : filtered_mesh_comps)
+        for (auto& material : materials)
         {
 			// Ensure the shader interface is valid
-            auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
+            auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct);
             auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
             auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar);
             auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength);
             auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
             auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
 
-            // Set light count to zero and exit early
-            if (disableLighting)
-            {
-                light_count->setValue(0);
-                continue;
-            }
+			// Set number of lights
             light_count->setValue(mLightComponents.size());
 
 			// Set shadow flags
@@ -525,7 +494,7 @@ namespace nap
                     {
                         case EShadowMapType::Quad:
                         {
-                            auto* sampler_instance = mesh_comp->getMaterialInstance().getOrCreateSampler<Sampler2DArrayInstance>(*mSampler2DResource);
+                            auto* sampler_instance = material->getOrCreateSampler<Sampler2DArrayInstance>(*mSampler2DResource);
                             if (sampler_instance != nullptr)
                             {
 								const auto it = mLightDepthMap.find(light); assert(it != mLightDepthMap.end());
@@ -536,7 +505,7 @@ namespace nap
                         }
                         case EShadowMapType::Cube:
 						{
-                            auto* sampler_instance = mesh_comp->getMaterialInstance().getOrCreateSampler<SamplerCubeArrayInstance>(*mSamplerCubeResource);
+                            auto* sampler_instance = material->getOrCreateSampler<SamplerCubeArrayInstance>(*mSamplerCubeResource);
 							if (sampler_instance != nullptr)
 							{
 								const auto it = mLightCubeMap.find(light); assert(it != mLightCubeMap.end());
@@ -559,7 +528,44 @@ namespace nap
 
 	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState)
 	{
-		return pushLightsInternal(renderComps, false, errorState);
+		// TODO: Cache light uniforms
+		// Exit early if there are no lights in the scene
+		if (mLightComponents.empty())
+			return true;
+
+		// Filter viable materials
+		std::vector<MaterialInstance*> materials;
+		materials.reserve(renderComps.size());
+		for (auto& comp : renderComps)
+		{
+			// Skip when not visible
+			if(!comp->isVisible())
+				continue;
+
+			// Find get or create material instance method
+			auto mat_method = nap::rtti::findMethodRecursive(comp->get_type(), nap::material::instance::getOrCreateMaterial);
+			if(!mat_method.is_valid())
+				continue;
+
+			// Make sure return type is material instance
+			auto mat_return_type = mat_method.get_return_type();
+			if (!mat_return_type.is_pointer() && mat_return_type.is_derived_from(RTTI_OF(nap::MaterialInstance)))
+				continue;
+
+			// Get material instance
+			auto mat_result = mat_method.invoke(*comp);
+			assert(mat_result.is_valid() && mat_result.get_type().is_pointer() &&
+				mat_result.get_type().is_derived_from(RTTI_OF(nap::MaterialInstance)));
+			nap::MaterialInstance* mat_instance = mat_result.get_value<nap::MaterialInstance*>();
+
+			// Get light uniform struct
+			if (mat_instance->getMaterial().findUniform(uniform::lightStruct) != nullptr)
+			{
+				materials.emplace_back(std::move(mat_instance));
+			}
+		}
+
+		return pushLightsInternal(materials, errorState);
 	}
 
 
