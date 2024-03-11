@@ -5,6 +5,7 @@
 
 // External includes
 #include <perspcameracomponent.h>
+#include <renderfrustumcomponent.h>
 
 namespace nap
 {
@@ -112,6 +113,7 @@ namespace nap
 		// Shadow camera entity resource
 		std::unique_ptr<Entity> mShadowCamEntity = nullptr;
 		std::unique_ptr<PerspCameraComponent> mShadowCamComponent = nullptr;
+		std::unique_ptr<RenderFrustumComponent> mShadowFrustrumComponent = nullptr;
 		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
 	};
 }

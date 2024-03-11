@@ -219,11 +219,11 @@
                     "ShadowStrength": 1.0,
                     "Attenuation": 0.009999999776482582,
                     "Angle": 45.0,
-                    "FieldOfView": 30.0,
                     "Falloff": 1.0,
+                    "FieldOfView": 30.0,
                     "ClippingPlanes": {
                         "x": 1.0,
-                        "y": 1000.0
+                        "y": 10.0
                     },
                     "ShadowMapSize": 1024
                 },

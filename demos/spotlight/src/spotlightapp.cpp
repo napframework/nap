@@ -9,6 +9,7 @@
 #include <renderablemeshcomponent.h>
 #include <perspcameracomponent.h>
 #include <imgui/imgui.h>
+#include <spotlightcomponent.h>
 
 namespace nap 
 {    
@@ -37,6 +38,7 @@ namespace nap
 		// Get the camera and origin Gnomon entity
 		mCameraEntity = mScene->findEntity("CameraEntity");
 		mSceneEntity = mScene->findEntity("SceneEntity");
+		mSpotlightEntity = mScene->findEntity("SpotlightEntity");
 
 		// Tags used to group and mask render objects
 		mSceneTag = mResourceManager->findObject("SceneTag");
@@ -59,6 +61,12 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		mSceneEntity->getComponentsOfTypeRecursive<nap::RenderableComponentInstance>(render_comps);
 
+		// Get frustrum to display
+		auto& spotlight_comp = mSpotlightEntity->getComponent<SpotLightComponentInstance>();
+		std::vector<RenderableComponentInstance*> frustrum_comp = {
+			spotlight_comp.getFrustrum()
+		};
+
 		// Bake shadow maps
 		if (mRenderService->beginHeadlessRecording())
 		{
@@ -78,6 +86,7 @@ namespace nap
 			// Render all the objects
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mSceneTag);
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDebugTag);
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, frustrum_comp);
 
 			// Draw GUI elements
 			mGuiService->draw();

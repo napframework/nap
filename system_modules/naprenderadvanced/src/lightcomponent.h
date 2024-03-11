@@ -6,6 +6,7 @@
 #include <cameracomponent.h>
 #include <transformcomponent.h>
 #include <parameterentrycolor.h>
+#include <renderfrustumcomponent.h>
 #include <entity.h>
 
 namespace nap
@@ -258,6 +259,16 @@ namespace nap
 		 * @return the shadow camera if available, else nullptr
 		 */
 		virtual CameraComponentInstance* getCamera()						{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the shadow camera frustrum if available, else nullptr
+		 */
+		const RenderFrustumComponentInstance* getFrustrum() const			{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the shadow camera frustrum if available, else nullptr
+		 */
+		RenderFrustumComponentInstance* getFrustrum()						{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the light type

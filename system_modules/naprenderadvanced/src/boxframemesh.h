@@ -17,7 +17,7 @@ namespace nap
 
 	/**
 	 * Predefined box frame line mesh for objects to aid in visual debugging (e.g. `nap::RenderFrustumComponent`).
-	 * Consists of a position attribute only. Should only be rendered with polygon mode `EPolygonMode::Line`.
+	 * Consists of a single position vertex attribute and is rendered as a line only using EPolygonMode::Line.
 	 */
 	class NAPAPI BoxFrameMesh : public IMesh
 	{
@@ -59,7 +59,6 @@ namespace nap
 		 */
 		const std::vector<glm::vec3>& getNormalizedLineBox();
 
-		EPolygonMode mPolygonMode = EPolygonMode::Line;		///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points)
 		EMemoryUsage mUsage = EMemoryUsage::Static;			///< Property: 'Usage' If the mesh is uploaded once or frequently updated
 		bool mUnit = false;									///< Property: 'Extent' Extent of the box (0.5)
 
