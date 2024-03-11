@@ -44,6 +44,11 @@ namespace nap
 		mShadowCamEntity = std::make_unique<Entity>();
 		mShadowCamEntity->mID = utility::stringFormat("%s_shadow_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 
+		// Transform component
+		mShadowCamXformComponent = std::make_unique<TransformComponent>();
+		mShadowCamXformComponent->mID = utility::stringFormat("%s_shadow_xform_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowCamEntity->mComponents.emplace_back(mShadowCamXformComponent.get());
+
 		// Perspective camera component
 		float projection = resource->mProjectionSize / 2.0f;
 		mShadowCamComponent = std::make_unique<OrthoCameraComponent>();
@@ -57,10 +62,10 @@ namespace nap
 		mShadowCamComponent->mProperties.mTopPlane = projection;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
-		// Transform component
-		mShadowCamXformComponent = std::make_unique<TransformComponent>();
-		mShadowCamXformComponent->mID = utility::stringFormat("%s_shadow_xform_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
-		mShadowCamEntity->mComponents.emplace_back(mShadowCamXformComponent.get());
+		// Shadow Frustrum component
+		mShadowFrustrumComponent = std::make_unique<RenderFrustumComponent>();
+		mShadowFrustrumComponent->mID = utility::stringFormat("%s_shadow_frustrum_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowCamEntity->mComponents.emplace_back(mShadowFrustrumComponent.get());
 
 		// Spawn shadow camera
 		if (spawnShadowCamera(*mShadowCamEntity, errorState) == nullptr)

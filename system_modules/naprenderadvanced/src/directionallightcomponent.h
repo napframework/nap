@@ -65,6 +65,7 @@ namespace nap
 		// Shadow camera entity resource
 		std::unique_ptr<Entity> mShadowCamEntity = nullptr;
 		std::unique_ptr<OrthoCameraComponent> mShadowCamComponent = nullptr;
+		std::unique_ptr<RenderFrustumComponent> mShadowFrustrumComponent = nullptr;
 		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
 	};
 }
