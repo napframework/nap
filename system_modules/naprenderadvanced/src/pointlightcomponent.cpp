@@ -72,6 +72,7 @@ namespace nap
 		mShadowOriginComponent = std::make_unique<RenderGnomonComponent>();
 		mShadowOriginComponent->mID = utility::stringFormat("%s_shadow_origin_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowOriginComponent->mDepthMode = EDepthMode::ReadOnly;
+		mShadowOriginComponent->mMesh = mGnomonMesh.get();
 		mShadowOriginComponent->mLineWidth = mResource->mLocator.mLineWidth;
 		mShadowCamEntity->mComponents.emplace_back(mShadowOriginComponent.get());
 

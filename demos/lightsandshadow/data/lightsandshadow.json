@@ -534,6 +534,10 @@
                     },
                     "Intensity": 0.800000011920929,
                     "ShadowStrength": 1.0,
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
+                    },
                     "Attenuation": 0.10000000149011612,
                     "FieldOfView": 30.0,
                     "ClippingPlanes": {
@@ -541,19 +545,6 @@
                         "y": 30.0
                     },
                     "ShadowMapSize": 1024
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -598,6 +589,10 @@
                     },
                     "Intensity": 2.5,
                     "ShadowStrength": 1.0,
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
+                    },
                     "Attenuation": 0.10000000149011612,
                     "Angle": 60.0,
                     "Falloff": 0.8999999761581421,
@@ -607,19 +602,6 @@
                         "y": 100.0
                     },
                     "ShadowMapSize": 2048
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon3",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -664,25 +646,16 @@
                     },
                     "Intensity": 0.699999988079071,
                     "ShadowStrength": 1.0,
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
+                    },
                     "ProjectionSize": 14.0,
                     "ShadowMapSize": 2048,
                     "ClippingPlanes": {
                         "x": 0.10000000149011612,
                         "y": 30.0
                     }
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon2",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -1045,11 +1018,6 @@
                 },
                 {
                     "Type": "nap::RenderTag",
-                    "mID": "RenderTag_Gizmo",
-                    "Name": "Gizmo"
-                },
-                {
-                    "Type": "nap::RenderTag",
                     "mID": "RenderTag_Shadow",
                     "Name": "Shadow"
                 }
@@ -1079,19 +1047,6 @@
             "AdditionalSwapImages": 1,
             "RestoreSize": true,
             "RestorePosition": true
-        },
-        {
-            "Type": "nap::ResourceGroup",
-            "mID": "GUI",
-            "Members": [
-                {
-                    "Type": "nap::ParameterGUI",
-                    "mID": "ParameterGUI",
-                    "Serializable": true,
-                    "Group": "Parameters"
-                }
-            ],
-            "Children": []
         },
         {
             "Type": "nap::ResourceGroup",

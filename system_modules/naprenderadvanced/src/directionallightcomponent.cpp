@@ -79,6 +79,7 @@ namespace nap
 		// Shadow Frustrum component
 		mShadowFrustrumComponent = std::make_unique<RenderFrustumComponent>();
 		mShadowFrustrumComponent->mID = utility::stringFormat("%s_shadow_frustrum_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowFrustrumComponent->mLineWidth = resource->mLocator.mLineWidth;
 		mShadowCamEntity->mComponents.emplace_back(mShadowFrustrumComponent.get());
 
 		// Spawn shadow camera

@@ -42,7 +42,6 @@ namespace nap
 
 		// Tags used to group and mask render objects
 		mSceneTag = mResourceManager->findObject("SceneTag");
-		mDebugTag = mResourceManager->findObject("DebugTag");
 
 		// All done!
         return true;
@@ -87,8 +86,10 @@ namespace nap
 
 			// Render all the objects
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mSceneTag);
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDebugTag);
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, spotlight_locators);
+
+			// Render light locators
+			if (mShowLocators)
+				mRenderAdvancedService->renderLocators(*mRenderWindow, perp_cam, mShowFrustrum);
 
 			// Draw GUI elements
 			mGuiService->draw();
@@ -146,7 +147,9 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+		ImGui::Checkbox("Show Light Origin", &mShowLocators);
+		if(mShowLocators)
+			ImGui::Checkbox("Show Shadow Frustrum", &mShowFrustrum);
 		ImGui::End();
     }
 }

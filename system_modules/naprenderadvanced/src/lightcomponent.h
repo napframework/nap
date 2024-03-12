@@ -320,22 +320,22 @@ namespace nap
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getCamera() const					{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+		CameraComponentInstance* getCamera() const							{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the shadow camera if available, else nullptr
 		 */
-		virtual CameraComponentInstance* getCamera()						{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+		CameraComponentInstance* getCamera()								{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+
+		/** 
+		 * @return the origin gnomon if available, else nullptr
+		 */
+		const RenderGnomonComponentInstance* getGnomon() const				{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<RenderGnomonComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the origin gnomon if available, else nullptr
 		 */
-		const RenderGnomonComponentInstance* getGnomon() const				{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderGnomonComponentInstance>() : nullptr; }
-
-		/**
-		 * @return the origin gnomon if available, else nullptr
-		 */
-		RenderGnomonComponentInstance* getGnomon()							{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderGnomonComponentInstance>() : nullptr; }
+		RenderGnomonComponentInstance* getGnomon()							{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<RenderGnomonComponentInstance>() : nullptr; }
 
 		/**
 		 * @return the shadow camera frustrum if available, else nullptr
@@ -360,6 +360,7 @@ namespace nap
 
 		/**
 		 * Spawns a light camera entity. The lifetime of that entity is managed by this component.
+		 * The light camera entity is used to calculate the shadow maps
 		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
 		 * Call this function on init of your derived light component, only once!
 		 * @param entity the entity resource to spawn

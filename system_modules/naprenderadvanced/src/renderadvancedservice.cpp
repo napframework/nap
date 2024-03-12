@@ -310,6 +310,27 @@ namespace nap
 	}
 
 
+	void RenderAdvancedService::renderLocators(IRenderTarget& renderTarget, CameraComponentInstance& camera, bool drawFrustrum)
+	{
+		std::vector<RenderableComponentInstance*> locators;
+		locators.reserve(mLightComponents.size() * 2);
+		for (auto& light : mLightComponents)
+		{
+			if (light->isEnabled())
+			{
+				auto* origin = light->getGnomon();
+				if (origin != nullptr)
+					locators.emplace_back(origin);
+
+				auto* fustru = light->getFrustrum();
+				if (fustru != nullptr && drawFrustrum)
+					locators.emplace_back(fustru);
+			}
+		}
+		mRenderService->renderObjects(renderTarget, camera, locators);
+	}
+
+
 	nap::SpawnedEntityInstance RenderAdvancedService::spawn(const nap::Entity& entity, nap::utility::ErrorState& error)
 	{
 		assert(mLightScene != nullptr);

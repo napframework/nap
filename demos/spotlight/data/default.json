@@ -359,11 +359,6 @@
                     "Type": "nap::RenderTag",
                     "mID": "SceneTag",
                     "Name": "Object"
-                },
-                {
-                    "Type": "nap::RenderTag",
-                    "mID": "DebugTag",
-                    "Name": "Debug"
                 }
             ],
             "Children": []

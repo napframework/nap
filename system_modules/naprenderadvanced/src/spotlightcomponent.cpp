@@ -86,6 +86,7 @@ namespace nap
 		// Shadow Frustrum component
 		mShadowFrustrumComponent = std::make_unique<RenderFrustumComponent>();
 		mShadowFrustrumComponent->mID = utility::stringFormat("%s_shadow_frustrum_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowFrustrumComponent->mLineWidth = resource->mLocator.mLineWidth;
 		mShadowCamEntity->mComponents.emplace_back(mShadowFrustrumComponent.get());
 
 		// Spawn it
@@ -98,10 +99,14 @@ namespace nap
 	}
 
 
-	void SpotLightComponentInstance::setAngle(float angle)
+	float SpotLightComponentInstance::getFieldOfView() const
 	{
-		mAngle = angle;
-		auto& cam_comp = mSpawnedCamera->getComponent<nap::PerspCameraComponentInstance>();
-		cam_comp.setFieldOfView(angle);
+		return mSpawnedCamera->getComponent<PerspCameraComponentInstance>().getFieldOfView();
+	}
+
+
+	void SpotLightComponentInstance::setFieldOfView(float angle)
+	{
+		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(angle);
 	}
 }

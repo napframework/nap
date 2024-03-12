@@ -85,7 +85,10 @@ namespace nap
 		ObjectPtr<EntityInstance>	mSpotlightEntity = nullptr;			///< Pointer to the spotlight entity
 
 		// Render masks
-		ObjectPtr<RenderTag>		mSceneTag = nullptr;				///< Pointer to the render object tag 
-		ObjectPtr<RenderTag>		mDebugTag = nullptr;				///< Pointer to the render debug tag
+		ObjectPtr<RenderTag>		mSceneTag = nullptr;				///< Pointer to the render object tag
+
+		// GUI states
+		bool mShowLocators = false;										///< If light origin is shown
+		bool mShowFrustrum = true;										///< If light frustrum is shown
 	};
 }

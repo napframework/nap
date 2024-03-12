@@ -136,6 +136,13 @@ namespace nap
 		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true, RenderMask renderMask = 0);
 
 		/**
+		 * Renders the origin gnomon including optional frustrum of all enabled lights to the requested render target.
+		 * The objects to render are sorted using the default sort function (front-to-back).
+		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
+		 */
+		void renderLocators(IRenderTarget& renderTarget, CameraComponentInstance& camera, bool drawFrustrum);
+
+		/**
 		 * Push light data In order for shaders to be compatible with the light system they must include an uniform struct with 
 		 * the name `light`, and additionally `shadow` when shadows are supported.
 		 * Additional data related to the material surface is excluded from the system and must be set by the user.

@@ -18,9 +18,6 @@
 #include <app.h>
 #include <imguiservice.h>
 #include <renderservice.h>
-#include <parametergui.h>
-#include <parameternumeric.h>
-#include <parameterquat.h>
 #include <nap/signalslot.h>
 
 namespace nap
@@ -81,10 +78,13 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
 		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;
-		std::unordered_map<std::string, glm::vec3> mLightEuler;			//< Light euler rotations
-		std::unordered_map<std::string, glm::vec3> mLightXform;			//< Light transformations
+		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//< World entity
+		rtti::ObjectPtr<EntityInstance> mSpotLightEntity;				//< Spotlight entity
+		rtti::ObjectPtr<EntityInstance> mSunLightEntity;				//< Sunlight entity
+		rtti::ObjectPtr<EntityInstance> mPointLightEntity;				//< Pointlight entity
 
 		rtti::ObjectPtr<RenderTag> mShadowTag = 0;						//< Shadow tag
+		bool mShowLocators = false;										///< If light origin is shown
+		bool mShowFrustrum = true;										///< If light frustrum is shown
 	};
 }
