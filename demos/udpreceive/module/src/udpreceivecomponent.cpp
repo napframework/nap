@@ -11,12 +11,12 @@
 
 // nap::UDPReceiveComponent run time class definition
 RTTI_BEGIN_CLASS(nap::UDPReceiveComponent)
-        RTTI_PROPERTY("Server",	                &nap::UDPReceiveComponent::mServer,					nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("APIComponent",	        &nap::UDPReceiveComponent::mAPIComponent,			nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("TextMessageSignature",   &nap::UDPReceiveComponent::mTextMessageSignature,	nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("ColorMessageSignature",  &nap::UDPReceiveComponent::mColorMessageSignature,	nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("TextParameter",			&nap::UDPReceiveComponent::mTextParameter,			nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("ColorParameter",			&nap::UDPReceiveComponent::mColorParameter,			nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("Server",	                &nap::UDPReceiveComponent::mServer,					nap::rtti::EPropertyMetaData::Required, "Link to the UDP server that handles packet transport")
+        RTTI_PROPERTY("APIComponent",	        &nap::UDPReceiveComponent::mAPIComponent,			nap::rtti::EPropertyMetaData::Required, "Link to the API Component that deserializes and routes packet io")
+        RTTI_PROPERTY("TextMessageSignature",   &nap::UDPReceiveComponent::mTextMessageSignature,	nap::rtti::EPropertyMetaData::Required, "Link to the signature that describes the layout of the text message")
+        RTTI_PROPERTY("ColorMessageSignature",  &nap::UDPReceiveComponent::mColorMessageSignature,	nap::rtti::EPropertyMetaData::Required, "Link to the signature that describes the layout of the color message")
+        RTTI_PROPERTY("TextParameter",			&nap::UDPReceiveComponent::mTextParameter,			nap::rtti::EPropertyMetaData::Required, "Link to the string parameter that receives the text message")
+        RTTI_PROPERTY("ColorParameter",			&nap::UDPReceiveComponent::mColorParameter,			nap::rtti::EPropertyMetaData::Required, "Link to the color parameter that receives the color message")
 RTTI_END_CLASS
 
 // nap::UDPReceiveComponentInstance run time class definition

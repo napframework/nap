@@ -51,9 +51,9 @@ RTTI_END_CLASS
 namespace nap
 {
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
-	std::unique_ptr<INSTANCE_TYPE> BufferBindingInstance::createBufferBindingInstance(const DECLARATION_TYPE& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
+	std::unique_ptr<INSTANCE_TYPE> BufferBindingInstance::createBufferBindingInstance(const std::string& bindingName, const DECLARATION_TYPE& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
 	{
-		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(binding->mName, declaration, bufferChangedCallback);
+		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(bindingName, declaration, bufferChangedCallback);
 		if (binding != nullptr)
 		{
 			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(binding);
@@ -87,6 +87,9 @@ namespace nap
 
 	std::unique_ptr<BufferBindingInstance> BufferBindingInstance::createBufferBindingInstanceFromDeclaration(const BufferObjectDeclaration& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
 	{
+		// Fetch the binding name
+		const std::string& binding_name = declaration.mName;
+
 		// Ensure we retrieve the actual buffer declaration
 		const auto& buffer_declaration = getBufferDeclaration(declaration);
 		rtti::TypeInfo declaration_type = buffer_declaration.get_type();
@@ -119,7 +122,7 @@ namespace nap
 			}
 
 			return createBufferBindingInstance<BufferBindingStructInstance, BufferBindingStruct, ShaderVariableStructBufferDeclaration>(
-				struct_buffer_declaration, binding, bufferChangedCallback, errorState);
+				binding_name, struct_buffer_declaration, binding, bufferChangedCallback, errorState);
 		}
 
 		// Creates a BufferBindingNumericInstance
@@ -137,47 +140,47 @@ namespace nap
 			if (value_array_declaration->mElementType == EShaderVariableValueType::UInt)
 			{
 				return createBufferBindingInstance<BufferBindingUIntInstance, BufferBindingUInt, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Int)
 			{
 				return createBufferBindingInstance<BufferBindingIntInstance, BufferBindingInt, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Float)
 			{
 				return createBufferBindingInstance<BufferBindingFloatInstance, BufferBindingFloat, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec2)
 			{
 				return createBufferBindingInstance<BufferBindingVec2Instance, BufferBindingVec2, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec3)
 			{
 				return createBufferBindingInstance<BufferBindingVec3Instance, BufferBindingVec3, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Vec4)
 			{
 				return createBufferBindingInstance<BufferBindingVec4Instance, BufferBindingVec4, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::IVec4)
 			{
 				return createBufferBindingInstance<BufferBindingIVec4Instance, BufferBindingIVec4, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::UVec4)
 			{
 				return createBufferBindingInstance<BufferBindingUVec4Instance, BufferBindingUVec4, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 			else if (value_array_declaration->mElementType == EShaderVariableValueType::Mat4)
 			{
 				return createBufferBindingInstance<BufferBindingMat4Instance, BufferBindingMat4, ShaderVariableValueArrayDeclaration>(
-					*value_array_declaration, binding, bufferChangedCallback, errorState);
+					binding_name, *value_array_declaration, binding, bufferChangedCallback, errorState);
 			}
 		}
 

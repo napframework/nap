@@ -27,12 +27,29 @@
 using namespace nap::rtti;
 using namespace napkin;
 
+/**
+ * Shows a dialog that asks the user if the required property should be removed 
+ * @return if the required property should be removed
+ */
+static bool getRemoveRequiredProperty()
+{
+	QMessageBox msg(AppContext::get().getMainWindow());
+	msg.setWindowTitle("Required property");
+	msg.setText("This is a required property, are you sure you want to remove it?");
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	msg.setDefaultButton(QMessageBox::Cancel);
+	msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
+	return msg.exec() == QMessageBox::Yes;
+}
+
+
 void InspectorModel::setPath(const PropertyPath& path)
 {
 	mPath = path;
 	clearItems();
 	populateItems();
 }
+
 
 const PropertyPath& InspectorModel::path() const
 {
@@ -44,15 +61,18 @@ void InspectorModel::clearItems()
 	removeRows(0, rowCount());
 }
 
+
 InspectorModel::InspectorModel() : QStandardItemModel()
 {
 	setHorizontalHeaderLabels({TXT_LABEL_NAME, TXT_LABEL_VALUE, TXT_LABEL_TYPE});
 }
 
+
 Qt::DropActions InspectorModel::supportedDragActions() const
 {
 	return Qt::MoveAction;
 }
+
 
 Qt::DropActions InspectorModel::supportedDropActions() const
 {
@@ -392,15 +412,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 			QString label = QString("Clear '%1'").arg(pointee->mID.c_str());
 			menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CLEAR), label, [path]()
 				{
+					// Bail if the user doesn't want to clear the required property
 					if (nap::rtti::hasFlag(path.getProperty(), EPropertyMetaData::Required))
 					{
-						QMessageBox msg(AppContext::get().getMainWindow());
-						msg.setWindowTitle("Required property");
-						msg.setText("This is a required property, are you sure you want to remove it?");
-						msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-						msg.setDefaultButton(QMessageBox::Cancel);
-						msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
-						if (msg.exec() == QMessageBox::No)
+						if (!getRemoveRequiredProperty())
 							return;
 					}
 					AppContext::get().executeCommand(new SetPointerValueCommand(path, nullptr));
@@ -471,6 +486,13 @@ void napkin::InspectorPanel::createMenuCallbacks()
 		QString label = QString("Delete '%1'").arg(pointee->mID.c_str());
 		menu.addAction(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_DELETE), label, [pointer_item, pointee]
 			{
+				// Bail if the user doesn't want to delete the required property
+				if (nap::rtti::hasFlag(pointer_item->getPath().getProperty(), EPropertyMetaData::Required))
+				{
+					if (!getRemoveRequiredProperty())
+						return;
+				}
+
 				// TODO: Make this a command
 				auto doc = pointer_item->getPath().getDocument();
 				auto pointeePath = PropertyPath(*pointee, *doc);

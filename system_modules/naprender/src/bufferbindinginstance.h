@@ -131,6 +131,7 @@ namespace nap
 		/**
 		 * Helper function for BufferBindingInstance::createBufferBindingInstanceFromDeclaration.
 		 * Creates a buffer binding instance from a buffer declaration and returns a unique ptr to if successful. Returns nullptr otherwise.
+		 * @param bindingName the binding name, this is the name outside of the brackets of the declaration
 		 * @param declaration the shader variable declaration.
 		 * @param binding the binding resource to create the instance from. Is allowed to be nullptr, in which case the instance will have no buffer.
 		 * @param bindingChangedCallback callback function that is fired each time the binding instance is updated.
@@ -138,7 +139,7 @@ namespace nap
 		 * @return a unique ptr to the new buffer binding instance. nullptr if the operation has failed.
 		 */
 		template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
-		static std::unique_ptr<INSTANCE_TYPE> createBufferBindingInstance(const DECLARATION_TYPE& declaration, const BufferBinding* binding,  BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState);
+		static std::unique_ptr<INSTANCE_TYPE> createBufferBindingInstance(const std::string& bindingName, const DECLARATION_TYPE& declaration, const BufferBinding* binding,  BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState);
 	};
 
 

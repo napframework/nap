@@ -4,4 +4,4 @@
 
 #include <utility/module.h>
 
-NAP_SERVICE_MODULE("mod_naprenderadvanced", "0.1.0", "nap::RenderAdvancedService")
+NAP_SERVICE_MODULE("naprenderadvanced", "0.1.0", "nap::RenderAdvancedService")
