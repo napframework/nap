@@ -25,16 +25,20 @@ RTTI_BEGIN_ENUM(nap::EShadowMapType)
 	RTTI_ENUM_VALUE(nap::EShadowMapType::Cube,		"Cube")
 RTTI_END_ENUM
 
-// nap::LightComponent run time class definition 
+RTTI_BEGIN_STRUCT(nap::LightComponent::Locator)
+	RTTI_PROPERTY("LineWidth",	&nap::LightComponent::Locator::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GnomonSize", &nap::LightComponent::Locator::mGnomonSize, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("CastShadows",		&nap::LightComponent::mCastShadows,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Locator",			&nap::LightComponent::mLocator,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::LightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponentInstance)
 	RTTI_PROPERTY(nap::uniform::light::color,		&nap::LightComponentInstance::mColor,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY(nap::uniform::light::intensity,	&nap::LightComponentInstance::mIntensity,	nap::rtti::EPropertyMetaData::Default)

@@ -217,6 +217,10 @@
                     },
                     "Intensity": 1.0,
                     "ShadowStrength": 1.0,
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
+                    },
                     "Attenuation": 0.009999999776482582,
                     "Angle": 45.0,
                     "Falloff": 1.0,
@@ -226,19 +230,6 @@
                         "y": 10.0
                     },
                     "ShadowMapSize": 1024
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "SpotlightGnomon",
-                    "Visible": true,
-                    "Tags": [
-                        "DebugTag"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "Gnomon",
-                    "LineWidth": 1.0,
-                    "DepthMode": "NoReadWrite"
                 }
             ],
             "Children": []

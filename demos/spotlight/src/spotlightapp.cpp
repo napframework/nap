@@ -61,10 +61,12 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		mSceneEntity->getComponentsOfTypeRecursive<nap::RenderableComponentInstance>(render_comps);
 
-		// Get frustrum to display
+		// Get light locators
 		auto& spotlight_comp = mSpotlightEntity->getComponent<SpotLightComponentInstance>();
-		std::vector<RenderableComponentInstance*> frustrum_comp = {
-			spotlight_comp.getFrustrum()
+		std::vector<RenderableComponentInstance*> spotlight_locators =
+		{
+			spotlight_comp.getFrustrum(),
+			spotlight_comp.getGnomon()
 		};
 
 		// Bake shadow maps
@@ -86,7 +88,7 @@ namespace nap
 			// Render all the objects
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mSceneTag);
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mDebugTag);
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, frustrum_comp);
+			mRenderService->renderObjects(*mRenderWindow, perp_cam, spotlight_locators);
 
 			// Draw GUI elements
 			mGuiService->draw();

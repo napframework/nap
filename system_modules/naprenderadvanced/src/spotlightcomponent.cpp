@@ -69,6 +69,20 @@ namespace nap
 		mShadowCamComponent->mProperties.mFieldOfView = mFieldOfView;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
+		// Shadow Origin component
+		mGnomonMesh = std::make_unique<GnomonMesh>(*getEntityInstance()->getCore());
+		mGnomonMesh->mID = utility::stringFormat("%s_shadow_gnomon_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mGnomonMesh->mSize = mResource->mLocator.mGnomonSize;
+		if (!mGnomonMesh->init(errorState))
+			return false;
+
+		mShadowOriginComponent = std::make_unique<RenderGnomonComponent>();
+		mShadowOriginComponent->mID = utility::stringFormat("%s_shadow_origin_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowOriginComponent->mDepthMode = EDepthMode::ReadOnly;
+		mShadowOriginComponent->mMesh = mGnomonMesh.get();
+		mShadowOriginComponent->mLineWidth = mResource->mLocator.mLineWidth;
+		mShadowCamEntity->mComponents.emplace_back(mShadowOriginComponent.get());
+
 		// Shadow Frustrum component
 		mShadowFrustrumComponent = std::make_unique<RenderFrustumComponent>();
 		mShadowFrustrumComponent->mID = utility::stringFormat("%s_shadow_frustrum_%s", getEntityInstance()->mID.c_str(), uuid.c_str());

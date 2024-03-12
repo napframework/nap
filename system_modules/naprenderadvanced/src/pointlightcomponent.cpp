@@ -49,6 +49,11 @@ namespace nap
 		mShadowCamEntity = std::make_unique<Entity>();
 		mShadowCamEntity->mID = utility::stringFormat("%s_shadow_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 
+		// Transform component
+		mShadowCamXformComponent = std::make_unique<TransformComponent>();
+		mShadowCamXformComponent->mID = utility::stringFormat("%s_shadow_xform_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowCamEntity->mComponents.emplace_back(mShadowCamXformComponent.get());
+
 		// Perspective camera component
 		mShadowCamComponent = std::make_unique<PerspCameraComponent>();
 		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s",getEntityInstance()->mID.c_str(), uuid.c_str());
@@ -57,10 +62,18 @@ namespace nap
 		mShadowCamComponent->mProperties.mFieldOfView = resource->mFieldOfView;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
-		// Transform component
-		mShadowCamXformComponent = std::make_unique<TransformComponent>();
-		mShadowCamXformComponent->mID = utility::stringFormat("%s_shadow_xform_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
-		mShadowCamEntity->mComponents.emplace_back(mShadowCamXformComponent.get());
+		// Shadow Origin component
+		mGnomonMesh = std::make_unique<GnomonMesh>(*getEntityInstance()->getCore());
+		mGnomonMesh->mID = utility::stringFormat("%s_shadow_gnomon_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mGnomonMesh->mSize = mResource->mLocator.mGnomonSize;
+		if (!mGnomonMesh->init(errorState))
+			return false;
+
+		mShadowOriginComponent = std::make_unique<RenderGnomonComponent>();
+		mShadowOriginComponent->mID = utility::stringFormat("%s_shadow_origin_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowOriginComponent->mDepthMode = EDepthMode::ReadOnly;
+		mShadowOriginComponent->mLineWidth = mResource->mLocator.mLineWidth;
+		mShadowCamEntity->mComponents.emplace_back(mShadowOriginComponent.get());
 
 		// Spawn it
 		if (spawnShadowCamera(*mShadowCamEntity, errorState) == nullptr)

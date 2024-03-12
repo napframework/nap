@@ -7,6 +7,7 @@
 #include <transformcomponent.h>
 #include <parameterentrycolor.h>
 #include <renderfrustumcomponent.h>
+#include <rendergnomoncomponent.h>
 #include <entity.h>
 
 namespace nap
@@ -80,6 +81,7 @@ namespace nap
 		}
 	}
 
+
 	/**
 	 * Base class of light components for NAP RenderAdvanced's light system.
 	 *
@@ -132,16 +134,26 @@ namespace nap
 		DECLARE_COMPONENT(LightComponent, LightComponentInstance)
 	public:
 		/**
+		 * Common serializable light locator properties
+		 */
+		struct Locator
+		{
+			float mLineWidth  = 1.0f;	///< Property: 'LineWidth' The line width of the drawable locator objects (origin gnomon etc.)
+			float mGnomonSize = 1.0f;	///< Property: 'GnomonSize' The origin gnomon unit size.
+		};
+
+		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		bool mEnabled = true;									///< Property: 'Enabled' Whether the light is enabled
+		bool mCastShadows = false;								///< Property: 'CastShadows' Enables shadows and creates shadow map resources for this light.
 		RGBColorFloat mColor = {1.0f, 1.0f, 1.0f};				///< Property: 'Color' The light color
 		float mIntensity = 1.0f;								///< Property: 'Intensity' The light intensity
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
-		bool mCastShadows = false;								///< Property: 'CastShadows' Enables shadows and creates shadow map resources for this light.
+		Locator mLocator;										///< Property: 'Locator' Locator settings
 	};
 
 
@@ -241,36 +253,6 @@ namespace nap
 		bool getCastShadows() const											{ return canCastShadows() && mIsShadowEnabled; }
 
 		/**
-		 * @return the light transform
-		 */
-		const TransformComponentInstance& getTransform() const				{ assert(mTransform != nullptr); return *mTransform; }
-
-		/**
-		 * @return the light transform
-		 */
-		TransformComponentInstance& getTransform()							{ assert(mTransform != nullptr); return *mTransform; }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getCamera() const					{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getCamera()						{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
-
-		/**
-		 * @return the shadow camera frustrum if available, else nullptr
-		 */
-		const RenderFrustumComponentInstance* getFrustrum() const			{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
-
-		/**
-		 * @return the shadow camera frustrum if available, else nullptr
-		 */
-		RenderFrustumComponentInstance* getFrustrum()						{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
-
-		/**
 		 * @return the light type
 		 */
 		virtual ELightType getLightType() const = 0;
@@ -324,6 +306,46 @@ namespace nap
 		 * @return the direction of the light in world space
 		 */
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
+
+				/**
+		 * @return the light transform
+		 */
+		const TransformComponentInstance& getTransform() const				{ assert(mTransform != nullptr); return *mTransform; }
+
+		/**
+		 * @return the light transform
+		 */
+		TransformComponentInstance& getTransform()							{ assert(mTransform != nullptr); return *mTransform; }
+
+		/**
+		 * @return the shadow camera if available, else nullptr
+		 */
+		virtual CameraComponentInstance* getCamera() const					{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the shadow camera if available, else nullptr
+		 */
+		virtual CameraComponentInstance* getCamera()						{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the origin gnomon if available, else nullptr
+		 */
+		const RenderGnomonComponentInstance* getGnomon() const				{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderGnomonComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the origin gnomon if available, else nullptr
+		 */
+		RenderGnomonComponentInstance* getGnomon()							{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderGnomonComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the shadow camera frustrum if available, else nullptr
+		 */
+		const RenderFrustumComponentInstance* getFrustrum() const			{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
+
+		/**
+		 * @return the shadow camera frustrum if available, else nullptr
+		 */
+		RenderFrustumComponentInstance* getFrustrum()						{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
 
 		float mIntensity = 1.0f;												
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
