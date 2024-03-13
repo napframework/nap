@@ -23,13 +23,6 @@ namespace nap
     public:
 
         /**
-         * Subscribes to the parameter changed signal
-         * @param error contains the error message when initialization fails
-         * @return if initialization succeeded.
-         */
-        bool init(utility::ErrorState& errorState) override;
-
-        /**
          * Unsubscribes from the parameter changed signal
          */
         void onDestroy() override;
@@ -54,6 +47,13 @@ namespace nap
 
         // Properties
         ResourcePtr<ParameterDropDown> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+    protected:
+        /**
+         * Subscribes to the parameter changed signal
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
+         */
+        bool onInit(utility::ErrorState& errorState) override;
     private:
         /**
          * The slot and callback called when index of drop down changes

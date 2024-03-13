@@ -18,10 +18,11 @@ RTTI_END_CLASS
 namespace nap
 {
 
-    bool PortalItemDropDown::init(utility::ErrorState& errorState)
+    bool PortalItemDropDown::onInit(utility::ErrorState& errorState)
     {
         mParameter->itemsChanged.connect(mItemsChangedSlot);
         mParameter->indexChanged.connect(mIndexChangedSlot);
+        mDisplayName = mParameter->getDisplayName();
 
         return true;
     }
@@ -36,13 +37,13 @@ namespace nap
 
     void PortalItemDropDown::onIndexChanged(int newIndex)
     {
-        updateSignal(*this);
+        valueUpdate(*this);
     }
 
 
     void PortalItemDropDown::onItemsChanged(const std::vector<std::string> &newItems)
     {
-        updateSignal(*this);
+        valueUpdate(*this);
     }
 
 
@@ -68,7 +69,7 @@ namespace nap
         event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
         event->addArgument<APIValue<std::vector<std::string>>>(nap::portal::dropDownItemNames, mParameter->mItems);
         event->addArgument<APIValue<int>>(nap::portal::itemValueArgName, mParameter->mSelectedIndex);
-
+        addStateArguments(event);
         return event;
     }
 
@@ -78,7 +79,6 @@ namespace nap
         APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
         event->addArgument<APIStringArray>(nap::portal::dropDownItemNames, mParameter->mItems);
         event->addArgument<APIInt>(nap::portal::itemValueArgName, mParameter->mSelectedIndex);
-
         return event;
     }
 }

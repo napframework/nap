@@ -7,6 +7,8 @@
  // Local Includes
 #include "portalitem.h"
 #include "portalutils.h"
+#include "color.h"
+#include "portalitemlayout.h"
 
 // External Includes
 #include <apivalue.h>
@@ -20,18 +22,10 @@ namespace nap
 	 * Represents any simple item in a NAP portal.
 	 */
 	template<typename T>
-	class PortalItemSimple : public PortalItem
+	class NAPAPI PortalItemSimple : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
 	public:
-
-		/**
-		 * Subscribes to the parameter changed signal
-		 * @param error contains the error message when initialization fails
-		 * @return if initialization succeeded.
-		 */
-		virtual bool init(utility::ErrorState& error) override;
-
 		/**
 		 * Unsubscribes from the parameter changed signal
 		 */
@@ -67,6 +61,13 @@ namespace nap
 		Slot<T> mParameterUpdateSlot = { this, &PortalItemSimple::onParameterUpdate };
 
 		ResourcePtr<ParameterSimple<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+    protected:
+        /**
+         * Subscribes to the parameter changed signal
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
+         */
+        virtual bool onInit(utility::ErrorState& error) override;
 	};
 
 
@@ -76,10 +77,27 @@ namespace nap
 
 	using PortalItemToggle = PortalItemSimple<bool>;
 	using PortalItemTextField = PortalItemSimple<std::string>;
-	class PortalItemTextArea : public PortalItemSimple<std::string>
+	class NAPAPI PortalItemTextArea final : public PortalItemSimple<std::string>
 	{
 		RTTI_ENABLE(PortalItemSimple<std::string>)
 	};
+
+    class NAPAPI PortalItemLabel final : public PortalItemSimple<std::string>
+    {
+    RTTI_ENABLE(PortalItemSimple<std::string>)
+    public:
+        bool onInit(utility::ErrorState &error) override;
+
+        void setTextLayout(const PortalItemTextLayout& layout);
+
+        const PortalItemTextLayout& getTextLayout() const;
+
+        PortalItemTextLayout mStartTextLayout; ///< Property: "StartTextLayout" The layout of the text
+    protected:
+        void addStateArguments(nap::APIEventPtr &event) const override;
+    private:
+        PortalItemTextLayout mTextLayout;
+    };
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -87,9 +105,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool PortalItemSimple<T>::init(utility::ErrorState& error)
+	bool PortalItemSimple<T>::onInit(utility::ErrorState& error)
 	{
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
+        mDisplayName = mParameter->getDisplayName();
 		return true;
 	}
 
@@ -102,7 +121,7 @@ namespace nap
 	template<typename T>
 	void PortalItemSimple<T>::onParameterUpdate(T value)
 	{
-		updateSignal(*this);
+		valueUpdate(*this);
 	}
 
 	template<typename T>
@@ -132,7 +151,10 @@ namespace nap
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
-		return event;
+
+        addStateArguments(event);
+
+        return event;
 	}
 
 	template<typename T>
@@ -140,7 +162,7 @@ namespace nap
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
-		return event;
+        return event;
 	}
 }
 

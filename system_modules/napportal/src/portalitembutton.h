@@ -6,6 +6,7 @@
 
  // Local Includes
 #include "portalitem.h"
+#include "portalutils.h"
 
 // External Includes
 #include <apievent.h>
@@ -16,11 +17,12 @@ namespace nap
 	/**
 	 * Represents a button in a NAP portal.
 	 */
-	class PortalItemButton : public PortalItem
+	class NAPAPI PortalItemButton final : public PortalItem
 	{
 		RTTI_ENABLE(PortalItem)
 
 	public:
+        bool onInit(utility::ErrorState &error) override;
 
 		/**
 		 * Processes an update type API event.
@@ -40,6 +42,23 @@ namespace nap
 		 */
 		virtual APIEventPtr getValue() const override;
 
+        /**
+         * Sets the alignment of the portal item
+         * @param alignment the new alignment
+         */
+        void setAlignment(EPortalItemAlignment alignment);
+
+        /**
+         * Gets the alignment of the portal item
+         * @return the alignment
+         */
+        bool getAlignment() const;
+
 		ResourcePtr<ParameterButton> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+        EPortalItemAlignment mDefaultAlignment = EPortalItemAlignment::Left; ///< Property: 'Alignment' the alignment of the portal item
+    protected:
+        void addStateArguments(nap::APIEventPtr &event) const override;
+    private:
+        EPortalItemAlignment mAlignment = EPortalItemAlignment::Left;
 	};
 }

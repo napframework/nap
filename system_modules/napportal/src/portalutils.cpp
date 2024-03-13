@@ -11,7 +11,9 @@
 RTTI_BEGIN_ENUM(nap::EPortalEventType)
 	RTTI_ENUM_VALUE(nap::EPortalEventType::Request, "Request"),
 	RTTI_ENUM_VALUE(nap::EPortalEventType::Response, "Response"),
-	RTTI_ENUM_VALUE(nap::EPortalEventType::Update, "Update"),
+	RTTI_ENUM_VALUE(nap::EPortalEventType::ValueUpdate, "ValueUpdate"),
+    RTTI_ENUM_VALUE(nap::EPortalEventType::StateUpdate, "StateUpdate"),
+    RTTI_ENUM_VALUE(nap::EPortalEventType::Reload, "Reload"),
 	RTTI_ENUM_VALUE(nap::EPortalEventType::Invalid, "Invalid")
 RTTI_END_ENUM
 
@@ -52,6 +54,12 @@ namespace nap
 		rtti::Variant var = enum_type.get_enumeration().name_to_value(event.data());
 		return var.is_valid() ? var.get_value<EPortalItemButtonEvent>() : EPortalItemButtonEvent::Invalid;
 	}
+
+    std::string getPortalItemAlignmentTypeString(const EPortalItemAlignment& alignment)
+    {
+        rtti::TypeInfo enum_type = RTTI_OF(EPortalItemAlignment);
+        return enum_type.get_enumeration().value_to_name(alignment).to_string();
+    }
 
 
 	bool extractPortalID(const APIEventPtr& event, std::string& outID, utility::ErrorState& error)
@@ -107,4 +115,13 @@ namespace nap
 		event->addArgument<APIString>(nap::portal::eventTypeArgName, getPortalEventTypeString(header.mType));
 		return event;
 	}
+
+    void addLayoutArguments(nap::APIEventPtr &event, const PortalItemLayout& layout)
+    {
+        event->addArgument<APIValue<std::vector<float>>>(nap::portal::itemPaddingArgName, layout.mPadding.toVector());
+        event->addArgument<APIValue<bool>>(nap::portal::itemVisibleArgName, layout.mVisible);
+        event->addArgument<APIValue<bool>>(nap::portal::itemEnabledArgName, layout.mEnabled);
+        event->addArgument<APIValue<bool>>(nap::portal::itemSelectedArgName, layout.mSelected);
+        event->addArgument<APIValue<float>>(nap::portal::itemWidthArgName, layout.mWidth);
+    }
 }

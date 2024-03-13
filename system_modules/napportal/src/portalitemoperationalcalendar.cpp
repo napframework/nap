@@ -18,6 +18,12 @@ RTTI_END_CLASS
 
 namespace nap
 {
+    bool PortalItemOperationalCalendar::onInit(utility::ErrorState& error)
+    {
+        mDisplayName = mName;
+        return true;
+    }
+
 
 	bool PortalItemOperationalCalendar::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
@@ -44,7 +50,8 @@ namespace nap
 		APIEventPtr event = std::make_unique<APIEvent>(mName, mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
 		event->addArgument<APIStringArray>(nap::portal::itemValueArgName, getCalendarTimes());
-		return event;
+        addStateArguments(event);
+        return event;
 	}
 
 
@@ -52,7 +59,7 @@ namespace nap
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mName, mID);
 		event->addArgument<APIStringArray>(nap::portal::itemValueArgName, getCalendarTimes());
-		return event;
+        return event;
 	}
 
 

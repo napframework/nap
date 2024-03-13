@@ -11,12 +11,21 @@
 
 RTTI_BEGIN_CLASS(nap::PortalItemButton)
 	RTTI_PROPERTY("Parameter", &nap::PortalItemButton::mParameter, nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("Default Alignment", &nap::PortalItemButton::mDefaultAlignment, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
 namespace nap
 {
+    bool PortalItemButton::onInit(utility::ErrorState &error)
+    {
+        mAlignment = mDefaultAlignment;
+        mDisplayName = mParameter->getDisplayName();
+
+        return true;
+    }
+
 
 	bool PortalItemButton::processUpdate(const APIEvent& event, utility::ErrorState& error)
 	{
@@ -60,6 +69,7 @@ namespace nap
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
 		event->addArgument<APIString>(nap::portal::itemValueArgName, value);
+        addStateArguments(event);
 		return event;
 	}
 
@@ -72,4 +82,26 @@ namespace nap
 		event->addArgument<APIString>(nap::portal::itemValueArgName, value);
 		return event;
 	}
+
+
+    void PortalItemButton::addStateArguments(nap::APIEventPtr &event) const
+    {
+        PortalItem::addStateArguments(event);
+        event->addArgument<APIValue<std::string>>(nap::portal::itemAlignmentArgName, getPortalItemAlignmentTypeString(mAlignment));
+    }
+
+
+    void PortalItemButton::setAlignment(nap::EPortalItemAlignment alignment)
+    {
+        if(alignment==mAlignment)
+            return;
+
+        mAlignment = alignment;
+        stateUpdate.trigger(*this);
+    }
+
+    bool PortalItemButton::getAlignment() const
+    {
+        return mAlignment;
+    }
 }

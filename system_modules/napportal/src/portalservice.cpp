@@ -86,7 +86,7 @@ namespace nap
 			portal->processRequest(event, error);
 			break;
 
-		case EPortalEventType::Update:
+		case EPortalEventType::ValueUpdate:
 			portal->processUpdate(event, error);
 			break;
 
