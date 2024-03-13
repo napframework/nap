@@ -259,6 +259,7 @@
                 {
                     "Type": "nap::RotateComponent",
                     "mID": "RotateTorus",
+                    "Enabled": true,
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
@@ -267,8 +268,7 @@
                         },
                         "Speed": 0.05000000074505806,
                         "Offset": 0.0
-                    },
-                    "Enabled": true
+                    }
                 },
                 {
                     "Type": "nap::UpdateMaterialComponent",
@@ -404,8 +404,8 @@
                     "Name": "TorusColor",
                     "Value": {
                         "Values": [
-                            0.16078431904315949,
-                            0.3450980484485626,
+                            1.0,
+                            1.0,
                             1.0
                         ]
                     }
