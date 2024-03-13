@@ -250,14 +250,11 @@ namespace nap
 		for (const auto& light : mLightComponents)
 		{
 			// Skip rendering the shadow map when the light intensity is zero
-			if (!light->isEnabled() || light->getIntensity() <= math::epsilon<float>())
+			if (!light->isEnabled() || !light->getCastShadows() || light->getIntensity() <= math::epsilon<float>())
 				continue;
 
-			auto* shadow_camera = light->getCastShadows() ? light->getCamera() : nullptr;
-			if (shadow_camera != nullptr)
+			switch (light->getShadowMapType())
 			{
-				switch (light->getShadowMapType())
-				{
 				case EShadowMapType::Quad:
 				{
 					// One shadow render pass per light
@@ -268,7 +265,7 @@ namespace nap
 					assert(target != nullptr);
 
 					target->beginRendering();
-					mRenderService->renderObjects(*target, *shadow_camera, render_comps);
+					mRenderService->renderObjects(*target, light->getCamera(), render_comps);
 					target->endRendering();
 					break;
 				}
@@ -287,22 +284,23 @@ namespace nap
 						continue;
 					}
 
-					if (shadow_camera->get_type() != RTTI_OF(PerspCameraComponentInstance))
+					if (light->getCamera().get_type() != RTTI_OF(PerspCameraComponentInstance))
 					{
 						NAP_ASSERT_MSG(false, "Lights of type 'Point' must return a nap::PerspCameraComponentInstance");
 						continue;
 					}
 
 					auto* cube_target = static_cast<CubeDepthRenderTarget*>(target.get());
-					auto* persp_camera = static_cast<PerspCameraComponentInstance*>(shadow_camera);
-					cube_target->render(*persp_camera, [rs = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
-					{
-						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
-						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
-					});
+					auto& persp_camera = static_cast<PerspCameraComponentInstance&>(light->getCamera());
+					cube_target->render(persp_camera, [rs = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+						{
+							// NOTE: This overload of renderObjects does no filtering of non-ortho comps
+							rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+						});
 					break;
 				}
 				default:
+				{
 					NAP_ASSERT_MSG(false, "Unsupported shadow map type");
 				}
 			}
@@ -316,11 +314,10 @@ namespace nap
 		locators.reserve(mLightComponents.size() * 2);
 		for (auto& light : mLightComponents)
 		{
-			if (light->isEnabled())
+			if (light->isEnabled() && light->hasCamera())
 			{
-				auto* origin = light->getGnomon();
-				if (origin != nullptr)
-					locators.emplace_back(origin);
+				auto& origin = light->getGnomon();
+				locators.emplace_back(&origin);
 
 				auto* fustru = light->getFrustrum();
 				if (fustru != nullptr && drawFrustrum)
@@ -500,11 +497,11 @@ namespace nap
                 if (light->getCastShadows())
                 {
                     // Set light view projection matrix in shadow struct
-                    const auto light_view_projection = light->getCamera()->getRenderProjectionMatrix() * light->getCamera()->getViewMatrix();
+                    const auto light_view_projection = light->getCamera().getRenderProjectionMatrix() * light->getCamera().getViewMatrix();
                     view_matrix_array->setValue(light_view_projection, light_index);
 
                     // Set near/far plane and strength in shadow struct
-                    glm::vec2 near_far = { light->getCamera()->getNearClippingPlane(), light->getCamera()->getFarClippingPlane() };
+                    glm::vec2 near_far = { light->getCamera().getNearClippingPlane(), light->getCamera().getFarClippingPlane() };
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
 

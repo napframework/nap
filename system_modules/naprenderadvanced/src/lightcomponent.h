@@ -232,7 +232,8 @@ namespace nap
 		virtual void onDestroy() override;
 		
 		/**
-		 * Enables the light
+		 * Activates the light
+		 * @param enable if the light is activate or not
 		 */
 		virtual void enable(bool enable)									{ mIsEnabled = enable; }
 
@@ -242,10 +243,11 @@ namespace nap
 		 bool isEnabled() const												{ return mIsEnabled; };
 
 		 /**
-		 * Returns whether this light component can cast shadows
+		 * Returns whether this light component can cast shadows.
+		 * Override if your light doesn't support shadows.
 		 * @return whether this light component can cast shadows
 		 */
-		bool canCastShadows() const											{ return getCamera() != nullptr; }
+		bool canCastShadows() const											{ return mSpawnedCamera != nullptr; }
 
 		/**
 		 * @return whether this light component currently casts shadows
@@ -307,7 +309,7 @@ namespace nap
 		 */
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
 
-				/**
+		/**
 		 * @return the light transform
 		 */
 		const TransformComponentInstance& getTransform() const				{ assert(mTransform != nullptr); return *mTransform; }
@@ -318,34 +320,39 @@ namespace nap
 		TransformComponentInstance& getTransform()							{ assert(mTransform != nullptr); return *mTransform; }
 
 		/**
-		 * @return the shadow camera if available, else nullptr
+		 * @return if this light has a shadow camera
 		 */
-		CameraComponentInstance* getCamera() const							{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+		bool hasCamera() const												{ return mSpawnedCamera != nullptr; }
 
 		/**
-		 * @return the shadow camera if available, else nullptr
+		 * @return the shadow camera.
 		 */
-		CameraComponentInstance* getCamera()								{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<CameraComponentInstance>() : nullptr; }
+		CameraComponentInstance& getCamera() const							{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<CameraComponentInstance>(); }
+
+		/**
+		 * @return the shadow camera.
+		 */
+		CameraComponentInstance& getCamera()								{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<CameraComponentInstance>(); }
 
 		/** 
-		 * @return the origin gnomon if available, else nullptr
+		 * @return the origin gnomon.
 		 */
-		const RenderGnomonComponentInstance* getGnomon() const				{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<RenderGnomonComponentInstance>() : nullptr; }
+		const RenderGnomonComponentInstance& getGnomon() const				{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<RenderGnomonComponentInstance>(); }
 
 		/**
-		 * @return the origin gnomon if available, else nullptr
+		 * @return the origin gnomon.
 		 */
-		RenderGnomonComponentInstance* getGnomon()							{ return mSpawnedCamera != nullptr ? &mSpawnedCamera->getComponent<RenderGnomonComponentInstance>() : nullptr; }
+		RenderGnomonComponentInstance& getGnomon()							{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<RenderGnomonComponentInstance>(); }
 
 		/**
-		 * @return the shadow camera frustrum if available, else nullptr
+		 * @return the shadow camera frustrum.
 		 */
-		const RenderFrustumComponentInstance* getFrustrum() const			{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
+		const RenderFrustumComponentInstance* getFrustrum() const			{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->findComponent<RenderFrustumComponentInstance>(); }
 
 		/**
-		 * @return the shadow camera frustrum if available, else nullptr
+		 * @return the shadow camera frustrum.
 		 */
-		RenderFrustumComponentInstance* getFrustrum()						{ return mSpawnedCamera != nullptr ? mSpawnedCamera->findComponent<RenderFrustumComponentInstance>() : nullptr; }
+		RenderFrustumComponentInstance* getFrustrum()						{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->findComponent<RenderFrustumComponentInstance>(); }
 
 		float mIntensity = 1.0f;												
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
