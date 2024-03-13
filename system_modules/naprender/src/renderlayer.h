@@ -17,7 +17,7 @@
 
 namespace nap
 {
-	using LayerIndex = uint;
+	using LayerIndex = int;
 
 	// Forward declares
 	class RenderLayerRegistry;
@@ -43,19 +43,21 @@ namespace nap
 		virtual ~RenderLayer() = default;
 
 		/**
+		 * Returns the layer index, set by the registry on initialization.
+		 * Do not call this function on initialization of a resource! The index might not have been assigned yet.
 		 * @return the index of the layer in the registry.
 		 */
-		uint getIndex() const					{ return mIndex; }
+		uint getIndex() const					{ assert(mIndex >= 0); return mIndex; }
 
 		/**
 		 * @return the name of the layer in the registry
 		 */
 		const std::string& getName() const		{ return mName; }
 
-		std::string mName;								///< Property: 'Name' The render layer name
+		std::string mName;						///< Property: 'Name' The render layer name
 
 	private:
-		LayerIndex mIndex = 0U;			// The index is set on initialization of a registry
+		LayerIndex mIndex = -1;					///< The index is set on initialization of a registry
 	};
 	
 	using RenderLayerList = std::vector<rtti::ObjectPtr<RenderLayer>>;
@@ -79,6 +81,10 @@ namespace nap
 		RenderLayerRegistry() = default;
 		virtual ~RenderLayerRegistry() = default;
 
+		/**
+		 * Assigns layer indices and ensures entries are valid.
+		 * @param errorState contains the error if initialization fails
+		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		RenderLayerList mLayers;						///< Property: 'Layers' The render layer list in order

@@ -97,7 +97,6 @@
                     "Tags": [
                         "SceneTag"
                     ],
-                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "PlaneMesh",
                     "MaterialInstance": {
@@ -267,7 +266,6 @@
                     "Tags": [
                         "SceneTag"
                     ],
-                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {

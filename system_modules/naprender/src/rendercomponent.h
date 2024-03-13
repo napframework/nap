@@ -33,7 +33,6 @@ namespace nap
 
 	public:
 		bool mVisible = true;								///< Property: 'Visible' if this object is rendered to target by the render service.
-		ResourcePtr<RenderLayerRegistry> mLayerRegistry;	///< Property: 'LayerRegistry' the render layer registry this component depends on
 		ResourcePtr<RenderLayer> mLayer;					///< Property: 'Layer' the render layer assigned to this component 
 		std::vector<ResourcePtr<RenderTag>> mTags;			///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
@@ -93,9 +92,9 @@ namespace nap
 		bool includesMask(RenderMask otherMask)										{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
 
 		/**
-		 * @return the render mask
+		 * @return the render layer
 		 */
-		LayerIndex getLayer() const													{ return mRenderLayer; }
+		RenderLayer& getLayer() const												{ return *mRenderLayer; }
 
 		/**
 		 * Called by the Render Service. By default every camera type is supported
@@ -121,7 +120,7 @@ namespace nap
 
 	private:
 		bool mVisible = true;							///< If this object should be drawn or not
-		LayerIndex mRenderLayer = 0U;					///< The layer index
-		RenderMask mRenderMask = 0U;					///< The render mask
+		RenderLayer* mRenderLayer = nullptr;			///< The render layer
+		RenderMask mRenderMask = 0;						///< The render mask
 	};
 }

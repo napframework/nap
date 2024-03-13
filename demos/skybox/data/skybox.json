@@ -106,7 +106,6 @@
                     "mID": "RenderSkyBox",
                     "Visible": true,
                     "Tags": [],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_SkyBox",
                     "Mesh": "",
                     "MaterialInstance": {
@@ -196,7 +195,6 @@
                     "mID": "RenderTorus",
                     "Visible": true,
                     "Tags": [],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {

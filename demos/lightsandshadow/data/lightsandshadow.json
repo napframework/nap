@@ -79,7 +79,6 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
@@ -257,7 +256,6 @@
                     "Tags": [
                         "RenderTag_Default"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Fader",
                     "FadeDuration": 2.0,
                     "Camera": "../../CameraEntity/PerspCamera",
@@ -287,7 +285,6 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
@@ -473,7 +470,6 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Bounds",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
@@ -694,7 +690,6 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
@@ -773,7 +768,6 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {

@@ -198,7 +198,7 @@ namespace nap
 		// lights that have shadows enabled. When the `updateMaterials` argument is set to true, light uniform and sampler data is also updated.
 		if (mRenderService->beginHeadlessRecording())
 		{
-			mRenderAdvancedService->renderShadows(render_comps, true, mShadowTag->getMask());
+			mRenderAdvancedService->renderShadows(render_comps, true, *mShadowTag);
 			mRenderService->endHeadlessRecording();
 		}
 

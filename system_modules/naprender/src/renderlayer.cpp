@@ -17,7 +17,7 @@ namespace nap
 {
 	bool RenderLayerRegistry::init(utility::ErrorState& errorState)
 	{
-		uint count = 0U;
+		uint count = 0;
 		for (auto& layer : mLayers)
 		{
 			if (!errorState.check(layer != nullptr, "%s: Empty layer entry encountered", mID.c_str()))

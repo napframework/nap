@@ -10,7 +10,6 @@
 #include "renderutils.h"
 #include "imagedata.h"
 #include "rendertag.h"
-#include "renderlayer.h"
 #include "rendercommand.h"
 
 // External Includes
@@ -906,14 +905,6 @@ namespace nap
 		RenderMask getRenderMask(const std::string& tagName);
 
 		/**
-		 * Returns the layer index of the layer with the name of the layerName argument or 0 if no match or registry is found.
-		 * Queries the resource manager for `nap::RenderLayerRegistry` objects and selects the first occurrence.
-		 * Logs a warning when more than one layer registry is found.
-		 * @return the layer index of the layer to be found or 0 if no match or registry is found.
-		 */
-		LayerIndex findLayerIndex(const std::string& layerName);
-
-		/**
 		 * Returns an existing or new material for the given type of shader that can be shared.
 		 * This only works for hard coded shader types that can be initialized without input arguments.
 		 * If initialization or creation fails, the result is cached but invalid.
@@ -1329,11 +1320,7 @@ namespace nap
 		std::vector<const ComputeCommand*>		mComputeCommandQueue;
 
 		// The registered render tag and layer registries
-		std::vector<const RenderTag*>			mRenderTagRegistry;
-		bool									mTagsChecked = false;
-
-		rtti::ObjectPtr<RenderLayerRegistry>	mRenderLayerRegistry;
-		bool									mLayersChecked = false;
+		std::vector<const RenderTag*>			mRenderTags;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;

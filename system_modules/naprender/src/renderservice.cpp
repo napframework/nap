@@ -2046,43 +2046,15 @@ namespace nap
 
 	RenderMask RenderService::getRenderMask(const std::string& tagName)
 	{
-		if (mRenderTagRegistry.empty())
+		if (mRenderTags.empty())
 			return 0;
 
 		uint shift = 0;
-		for (auto& tag : mRenderTagRegistry)
+		for (auto& tag : mRenderTags)
 		{
 			if (tag->mName == tagName)
 				return 1 << shift;
 			++shift;
-		}
-		return 0;
-	}
-
-
-	LayerIndex RenderService::findLayerIndex(const std::string& layerName)
-	{
-		if (!mLayersChecked)
-		{
-			auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
-			if (layer_registries.size() > 1)
-				nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_OF(RenderService).get_name().data(), RTTI_OF(RenderLayerRegistry).get_name().data());
-
-			if (!layer_registries.empty())
-				mRenderLayerRegistry = layer_registries.front();
-
-			mLayersChecked = true;
-		}
-
-		if (mRenderLayerRegistry == nullptr)
-			return 0;
-
-		uint count = 0;
-		for (auto& tag : mRenderLayerRegistry->mLayers)
-		{
-			if (tag->mName == layerName)
-				return count;
-			++count;
 		}
 		return 0;
 	}
@@ -2095,16 +2067,16 @@ namespace nap
 			return false;
 
 		// Duplicate
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		if (!error.check(it == mRenderTagRegistry.end(), "RenderTag with duplicate name already exists"))
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		if (!error.check(it == mRenderTags.end(), "RenderTag with duplicate name already exists"))
 			return false;
 
 		// Out of bounds
 		static constexpr int tagLimit = sizeof(nap::uint64) * 8;
-		if (!error.check(mRenderTagRegistry.size() < tagLimit, "RenderTag limit of %d exceeded", tagLimit))
+		if (!error.check(mRenderTags.size() < tagLimit, "RenderTag limit of %d exceeded", tagLimit))
 			return false;
 
-		mRenderTagRegistry.emplace_back(&renderTag);
+		mRenderTags.emplace_back(&renderTag);
 		return true;
 	}
 
@@ -2112,17 +2084,17 @@ namespace nap
 	void RenderService::removeTag(const RenderTag& renderTag)
 	{
 		// Ensure the tag is not yet registered
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		assert(it != mRenderTagRegistry.end());
-		mRenderTagRegistry.erase(it);
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		mRenderTags.erase(it);
 	}
 
 
 	RenderMask RenderService::getRenderMask(const RenderTag& renderTag) const
 	{
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		assert(it != mRenderTagRegistry.end());
-		return static_cast<RenderMask>(1) << static_cast<uint>(it - mRenderTagRegistry.begin());
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		return static_cast<RenderMask>(1) << static_cast<uint>(it - mRenderTags.begin());
 	}
 
 

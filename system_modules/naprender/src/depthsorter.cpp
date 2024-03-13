@@ -153,7 +153,7 @@ namespace nap
 			// Count layer occurrences
 			std::map<LayerIndex, int> hist;
 			for (const auto& comp : comps)
-				++hist[comp->getLayer()];
+				++hist[comp->getLayer().getIndex()];
 
 			// If all objects are in the same layer, sort the full set by depth and return
 			if (hist.size() == 1)
@@ -172,7 +172,7 @@ namespace nap
 			}
 
 			for (const auto& comp : comps)
-				layer_map[comp->getLayer()].emplace_back(comp);
+				layer_map[comp->getLayer().getIndex()].emplace_back(comp);
 
 			comps.clear();
 			for (auto it = layer_map.rbegin(); it != layer_map.rend(); it++)
@@ -188,7 +188,7 @@ namespace nap
 			// Count layer occurrences
 			std::map<LayerIndex, int> hist;
 			for (const auto& comp : comps)
-				++hist[comp->getLayer()];
+				++hist[comp->getLayer().getIndex()];
 
 			// If all objects are in the same layer, sort the full set by depth and return
 			if (hist.size() == 1)
@@ -207,7 +207,7 @@ namespace nap
 			}
 
 			for (const auto& comp : comps)
-				layer_map[comp->getLayer()].emplace_back(comp);
+				layer_map[comp->getLayer().getIndex()].emplace_back(comp);
 
 			comps.clear();
 			for (auto it = layer_map.rbegin(); it != layer_map.rend(); it++)
