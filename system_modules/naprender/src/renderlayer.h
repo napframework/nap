@@ -20,11 +20,11 @@ namespace nap
 	using LayerIndex = int;
 
 	// Forward declares
-	class RenderLayerRegistry;
+	class RenderChain;
 
 	/**
 	 * Render layers can be used to group render components and configure the order in which they should be rendered.
-	 * `nap::RenderLayer` objects are ordered in a `nap::RenderLayerRegistry` under the property `Layers`. The index
+	 * `nap::RenderLayer` objects are ordered in a `nap::RenderChain` under the property `Layers`. The index
 	 * of the layer in this list determines the rank of the `nap::RenderLayer` where 0 is the front, and the last
 	 * index is the back. Render components without a layer assigned default to the front (index 0).
 	 *
@@ -36,16 +36,17 @@ namespace nap
 	 */
 	class NAPAPI RenderLayer : public Resource
 	{
-		friend class RenderLayerRegistry;
+		friend class RenderChain;
 		RTTI_ENABLE(Resource)
 	public:
 		RenderLayer() = default;
 		virtual ~RenderLayer() = default;
 
 		/**
-		 * Returns the layer index, set by the registry on initialization.
-		 * Do not call this function on initialization of a resource! The index might not have been assigned yet.
-		 * @return the index of the layer in the registry.
+		 * Returns the layer index, set by the `RenderChain` on initialization.
+		 * Do not call this function on initialization of your resource! The index might not have been assigned yet.
+		 * 
+		 * @return the priority index of the layer in the registry.
 		 */
 		LayerIndex getIndex() const				{ assert(mIndex >= 0); return mIndex; }
 
@@ -64,22 +65,20 @@ namespace nap
 
 	
 	/**
-	 * A Render layer registry defines a set of render layers and their order. Each render component that has a layer
-	 * assigned in the property `Layer` must also assign its parent registry in the property `LayerRegistry`. This is
-	 * to ensure the layer registry resource is always initialized before the layer resources. Including more than one
-	 * `nap::LayerRegistry` is not allowed and can cause undefined behavior.
+	 * Configures and controls the order in which components are rendered.
 	 * 
-	 * Render layers can be used to group render components and configure the order in which they should be rendered.
-	 * `nap::RenderLayer` objects are ordered in a `nap::RenderLayerRegistry` under the property `Layers`. The index
+	 * `nap::RenderLayer` objects are ordered in a `nap::RenderChain`, under the property `Layers`. The index
 	 * of the layer in this list determines the rank of the `nap::RenderLayer` where 0 is the front, and the last
 	 * index is the back. Render components without a layer assigned default to the front (index 0).
+	 *
+	 * Don't include more than one `nap::RenderChain` in your application, this could lead to undefined behavior.
 	 */
-	class NAPAPI RenderLayerRegistry : public Resource
+	class NAPAPI RenderChain : public Resource
 	{
 		RTTI_ENABLE(Resource)
 	public:
-		RenderLayerRegistry() = default;
-		virtual ~RenderLayerRegistry() = default;
+		RenderChain() = default;
+		virtual ~RenderChain() = default;
 
 		/**
 		 * Assigns layer indices and ensures entries are valid.

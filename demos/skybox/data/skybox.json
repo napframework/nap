@@ -424,8 +424,8 @@
             "Groups": []
         },
         {
-            "Type": "nap::RenderLayerRegistry",
-            "mID": "RenderLayerRegistry",
+            "Type": "nap::RenderChain",
+            "mID": "RenderChain",
             "Layers": [
                 {
                     "Type": "nap::RenderLayer",

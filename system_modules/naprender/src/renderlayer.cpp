@@ -9,13 +9,13 @@ RTTI_BEGIN_CLASS(nap::RenderLayer)
 	RTTI_PROPERTY("Name", &nap::RenderLayer::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS(nap::RenderLayerRegistry)
-	RTTI_PROPERTY("Layers", &nap::RenderLayerRegistry::mLayers, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::RenderChain)
+	RTTI_PROPERTY("Layers", &nap::RenderChain::mLayers, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
 {
-	bool RenderLayerRegistry::init(utility::ErrorState& errorState)
+	bool RenderChain::init(utility::ErrorState& errorState)
 	{
 		uint count = 0;
 		for (auto& layer : mLayers)
