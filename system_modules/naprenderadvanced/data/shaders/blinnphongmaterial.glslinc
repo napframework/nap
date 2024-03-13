@@ -3,7 +3,7 @@
 // Material structs
 struct BlinnPhongMaterial
 {
-	vec4	ambient;				//< Ambient
+	vec3	ambient;				//< Ambient
 	vec3	diffuse;				//< Diffuse
 	vec3	specular;				//< Specular
 	float	shininess;				//< Shininess

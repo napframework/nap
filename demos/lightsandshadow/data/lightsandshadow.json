@@ -1247,17 +1247,6 @@
                             "Name": "UBO",
                             "Uniforms": [
                                 {
-                                    "Type": "nap::UniformVec4",
-                                    "mID": "UniformVec4_3019e56a",
-                                    "Name": "ambient",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0,
-                                        "z": 0.0,
-                                        "w": 0.0
-                                    }
-                                },
-                                {
                                     "Type": "nap::UniformVec3",
                                     "mID": "UniformVec3_cdd76af7",
                                     "Name": "diffuse",
@@ -1297,6 +1286,16 @@
                                     "mID": "UniformFloat_49935e1d",
                                     "Name": "alpha",
                                     "Value": 1.0
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
                                 }
                             ]
                         }
@@ -1335,17 +1334,6 @@
                             "mID": "UniformStruct_60da175cx",
                             "Name": "UBO",
                             "Uniforms": [
-                                {
-                                    "Type": "nap::UniformVec4",
-                                    "mID": "UniformVec4_3019e56ax",
-                                    "Name": "ambient",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0,
-                                        "z": 0.0,
-                                        "w": 0.0
-                                    }
-                                },
                                 {
                                     "Type": "nap::UniformVec3",
                                     "mID": "UniformVec3_cdd76af7x",
@@ -1386,6 +1374,16 @@
                                     "mID": "UniformFloat_49935e1dx",
                                     "Name": "alpha",
                                     "Value": 1.0
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient_cd5b26",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
                                 }
                             ]
                         }

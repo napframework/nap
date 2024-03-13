@@ -401,14 +401,13 @@
                             "Name": "UBO",
                             "Uniforms": [
                                 {
-                                    "Type": "nap::UniformVec4",
-                                    "mID": "ambient_9ac8e7ae",
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient_1fed2a19c",
                                     "Name": "ambient",
                                     "Value": {
                                         "x": 0.0,
                                         "y": 0.0,
-                                        "z": 0.0,
-                                        "w": 0.0
+                                        "z": 0.0
                                     }
                                 },
                                 {
