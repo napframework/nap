@@ -47,116 +47,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "BoundsEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformBounds",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.75,
-                            "y": 1.0,
-                            "z": 1.75
-                        },
-                        "UniformScale": 8.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBounds",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Default",
-                        "RenderTag_Shadow"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Bounds",
-                    "Mesh": "BoundsMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_60da175cxx",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_cdd76af7xx",
-                                        "Name": "diffuse",
-                                        "Value": {
-                                            "x": 0.8999999761581421,
-                                            "y": 0.8999999761581421,
-                                            "z": 0.8999999761581421
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_11cc25f4xx",
-                                        "Name": "specular",
-                                        "Value": {
-                                            "x": 0.20000000298023225,
-                                            "y": 0.20000000298023225,
-                                            "z": 0.20000000298023225
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "UniformVec2_f66d0135xx",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 0.25,
-                                            "y": 4.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_5b6d8df2xx",
-                                        "Name": "shininess",
-                                        "Value": 8.0
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_49935e1dxx",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "BlinnPhongColorMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "WriteOnly"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "BoxEntity",
             "Components": [
                 {
@@ -551,6 +441,116 @@
         },
         {
             "Type": "nap::Entity",
+            "mID": "RoomEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformBounds",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.75,
+                            "y": 1.0,
+                            "z": 1.75
+                        },
+                        "UniformScale": 8.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderBounds",
+                    "Visible": true,
+                    "Tags": [
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
+                    ],
+                    "LayerRegistry": "RenderLayerRegistry",
+                    "Layer": "RenderLayer_Bounds",
+                    "Mesh": "BoundsMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [
+                            {
+                                "Type": "nap::UniformStruct",
+                                "mID": "UniformStruct_60da175cxx",
+                                "Name": "UBO",
+                                "Uniforms": [
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_cdd76af7xx",
+                                        "Name": "diffuse",
+                                        "Value": {
+                                            "x": 0.8999999761581421,
+                                            "y": 0.8999999761581421,
+                                            "z": 0.8999999761581421
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_11cc25f4xx",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.20000000298023225,
+                                            "y": 0.20000000298023225,
+                                            "z": 0.20000000298023225
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "UniformVec2_f66d0135xx",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 0.10000000149011612,
+                                            "y": 6.0
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_5b6d8df2xx",
+                                        "Name": "shininess",
+                                        "Value": 8.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_49935e1dxx",
+                                        "Name": "alpha",
+                                        "Value": 1.0
+                                    }
+                                ]
+                            }
+                        ],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "BlinnPhongColorMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "WriteOnly"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "SpotLightEntity",
             "Components": [
                 {
@@ -868,7 +868,7 @@
                 "BaseLightEntity",
                 "TorusEntity",
                 "TallBoxEntity",
-                "BoundsEntity",
+                "RoomEntity",
                 "BoxEntity",
                 "FaderEntity"
             ]
