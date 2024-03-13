@@ -92,9 +92,9 @@ namespace nap
 		bool includesMask(RenderMask otherMask)										{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
 
 		/**
-		 * @return the render layer
+		 * @return the render layer, nullptr if no layer is given
 		 */
-		RenderLayer& getLayer() const												{ return *mRenderLayer; }
+		const RenderLayer* getLayer() const											{ return mRenderLayer; }
 
 		/**
 		 * Called by the Render Service. By default every camera type is supported

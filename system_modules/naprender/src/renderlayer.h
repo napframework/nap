@@ -47,7 +47,7 @@ namespace nap
 		 * Do not call this function on initialization of a resource! The index might not have been assigned yet.
 		 * @return the index of the layer in the registry.
 		 */
-		uint getIndex() const					{ assert(mIndex >= 0); return mIndex; }
+		LayerIndex getIndex() const				{ assert(mIndex >= 0); return mIndex; }
 
 		/**
 		 * @return the name of the layer in the registry
