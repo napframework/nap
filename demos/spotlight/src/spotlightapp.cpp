@@ -147,9 +147,47 @@ namespace nap
 		ImGui::Text(getCurrentDateTime().toString().c_str());
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+
+		auto& light = mSpotlightEntity->getComponent<SpotLightComponentInstance>();
+		bool enabled = light.isEnabled();
+		if (ImGui::Checkbox("Enable", &enabled))
+			light.enable(enabled);
+
 		ImGui::Checkbox("Show Light Origin", &mShowLocators);
-		if(mShowLocators)
+		if (mShowLocators)
+		{
+			ImGui::SameLine();
 			ImGui::Checkbox("Show Shadow Frustrum", &mShowFrustrum);
+		}
+
+		auto color = light.getColor();
+		if (ImGui::ColorEdit3("Color", color.getData()))
+			light.setColor(color);
+
+		auto inten = light.getIntensity();
+		if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", 2.0f))
+			light.setIntensity(inten);
+
+		auto shadow = light.getShadowStrength();
+		if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f", 1.0f))
+			light.setShadowStrength(shadow);
+
+		auto attenuation = light.getAttenuation();
+		if (ImGui::SliderFloat("Attenuation", &attenuation, 0.0f, 1.0f))
+			light.setAttenuation(attenuation);
+
+		auto angle = light.getAngle();
+		if (ImGui::SliderFloat("Angle", &angle, 1.0f, 180.0f))
+			light.setAngle(angle);
+
+		auto falloff = light.getFalloff();
+		if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
+			light.setFalloff(falloff);
+
+		auto fov = light.getFieldOfView();
+		if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f))
+			light.setFieldOfView(fov);
+
 		ImGui::End();
     }
 }

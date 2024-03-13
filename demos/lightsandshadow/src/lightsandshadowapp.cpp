@@ -124,7 +124,10 @@ namespace nap
 
 		ImGui::Checkbox("Show Light Origin", &mShowLocators);
 		if (mShowLocators)
+		{
+			ImGui::SameLine();
 			ImGui::Checkbox("Show Shadow Frustrum", &mShowFrustrum);
+		}
 
 		if (ImGui::CollapsingHeader("Spotlight"))
 		{
