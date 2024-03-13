@@ -16,7 +16,7 @@ int main(int argc, char *argv[])
 
     // Create the application runner, based on the app to run
 	// and event handler that is used to forward information into the app.
-    nap::AppRunner<nap::CoreApp, nap::GUIAppEventHandler> app_runner(core);
+    nap::AppRunner<nap::SpotlightApp, nap::GUIAppEventHandler> app_runner(core);
 
     // Start running
     nap::utility::ErrorState error;

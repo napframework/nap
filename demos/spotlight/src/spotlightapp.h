@@ -20,20 +20,21 @@ namespace nap
 {
 	using namespace rtti;
 
-    /**
-     * Example application, called from within the main loop.
-	 * 
-	 * Use this app as a template for other apps that are created directly in 'source'.
-	 * This example links to and uses it's own custom module: 'napexample'.
-	 * More information and documentation can be found at: https://www.napframework.com/doxygen/
-     */
-    class CoreApp : public App 
+	/**
+	 * Demo application that shows how to setup and use a spotlight, including shadows, to light a minimal scene.
+	 *
+	 * The RenderAdvanced service call `renderShadows` is responsible for most of the
+	 * heavy lifting as it updates the shadow maps of all lights and updates the uniform and sampler information of all
+	 * compatible materials. When rendering our scene to the window using `RenderService::renderObjects`, all of the information is in
+	 * place for the system to resolve and execute the render passes appropriately.
+	 */
+    class SpotlightApp : public App 
 	{
     public:
 		/**
 		 * Constructor
 		 */
-        CoreApp(nap::Core& core) : App(core) {}
+		SpotlightApp(nap::Core& core) : App(core) {}
 
         /**
          * Initialize all the services and app specific data structures

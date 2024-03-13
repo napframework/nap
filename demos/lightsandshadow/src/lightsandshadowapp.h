@@ -33,7 +33,7 @@ namespace nap
 	 * that acts as a color overlay that can fade in to and out from black. Objects that are included in the shadow map are
 	 * distinguished using the `Shadow` tag. The RenderAdvanced service call `renderShadows` is responsible for most of the
 	 * heavy lifting as it updates the shadow maps of all lights and updates the uniform and sampler information of all
-	 * objects. When rendering our scene to the window using `RenderService::renderObjects`, all of the information is in
+	 * compatible materials. When rendering our scene to the window using `RenderService::renderObjects`, all of the information is in
 	 * place for the system to resolve and execute the render passes appropriately.
 	 */
 	class LightsAndShadowApp : public App

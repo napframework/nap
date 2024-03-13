@@ -13,7 +13,7 @@
 
 namespace nap 
 {    
-    bool CoreApp::init(utility::ErrorState& error)
+    bool SpotlightApp::init(utility::ErrorState& error)
     {
 		// Retrieve services
 		mRenderService	= getCore().getService<nap::RenderService>();
@@ -49,7 +49,7 @@ namespace nap
 
 
     // Render app
-    void CoreApp::render()
+    void SpotlightApp::render()
     {
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -59,14 +59,6 @@ namespace nap
 		// Get all the possible objects to render
 		std::vector<RenderableComponentInstance*> render_comps;
 		mSceneEntity->getComponentsOfTypeRecursive<nap::RenderableComponentInstance>(render_comps);
-
-		// Get light locators
-		auto& spotlight_comp = mSpotlightEntity->getComponent<SpotLightComponentInstance>();
-		std::vector<RenderableComponentInstance*> spotlight_locators =
-		{
-			spotlight_comp.getFrustrum(),
-			spotlight_comp.getGnomon()
-		};
 
 		// Bake shadow maps
 		if (mRenderService->beginHeadlessRecording())
@@ -84,10 +76,10 @@ namespace nap
 			// Get Perspective camera to render with
 			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 
-			// Render all the objects
+			// Render all the objects with the scene tag
 			mRenderService->renderObjects(*mRenderWindow, perp_cam, render_comps, *mSceneTag);
 
-			// Render light locators
+			// Render spotlight origin gnomon including shadow frustrum, if requested
 			if (mShowLocators)
 				mRenderAdvancedService->renderLocators(*mRenderWindow, perp_cam, mShowFrustrum);
 
@@ -106,13 +98,13 @@ namespace nap
     }
 
 
-    void CoreApp::windowMessageReceived(WindowEventPtr windowEvent)
+    void SpotlightApp::windowMessageReceived(WindowEventPtr windowEvent)
     {
 		mRenderService->addEvent(std::move(windowEvent));
     }
 
 
-    void CoreApp::inputMessageReceived(InputEventPtr inputEvent)
+    void SpotlightApp::inputMessageReceived(InputEventPtr inputEvent)
     {
 		// If we pressed escape, quit the loop
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
@@ -128,14 +120,14 @@ namespace nap
     }
 
 
-    int CoreApp::shutdown()
+    int SpotlightApp::shutdown()
     {
 		return 0;
     }
 
 
 	// Update app
-    void CoreApp::update(double deltaTime)
+    void SpotlightApp::update(double deltaTime)
     {
 		// Use a default input router to forward input events (recursively) to all input components in the scene
 		// This is explicit because we don't know what entity should handle the events from a specific window.
@@ -148,46 +140,51 @@ namespace nap
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
 		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 
+		// Enable - Disable spotlight
 		auto& light = mSpotlightEntity->getComponent<SpotLightComponentInstance>();
 		bool enabled = light.isEnabled();
-		if (ImGui::Checkbox("Enable", &enabled))
+		if (ImGui::Checkbox("Enable Spotlight", &enabled))
 			light.enable(enabled);
 
-		ImGui::Checkbox("Show Light Origin", &mShowLocators);
-		if (mShowLocators)
+		if (enabled)
 		{
-			ImGui::SameLine();
-			ImGui::Checkbox("Show Shadow Frustrum", &mShowFrustrum);
+			// Light controls
+			ImGui::Checkbox("Show Light Origin", &mShowLocators);
+			if (mShowLocators)
+			{
+				ImGui::SameLine();
+				ImGui::Checkbox("Show Shadow Frustrum", &mShowFrustrum);
+			}
+
+			auto color = light.getColor();
+			if (ImGui::ColorEdit3("Color", color.getData()))
+				light.setColor(color);
+
+			auto inten = light.getIntensity();
+			if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", 2.0f))
+				light.setIntensity(inten);
+
+			auto shadow = light.getShadowStrength();
+			if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f", 1.0f))
+				light.setShadowStrength(shadow);
+
+			// Spotlight specific controls
+			auto attenuation = light.getAttenuation();
+			if (ImGui::SliderFloat("Attenuation", &attenuation, 0.0f, 1.0f))
+				light.setAttenuation(attenuation);
+
+			auto angle = light.getAngle();
+			if (ImGui::SliderFloat("Angle", &angle, 1.0f, 180.0f))
+				light.setAngle(angle);
+
+			auto falloff = light.getFalloff();
+			if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
+				light.setFalloff(falloff);
+
+			auto fov = light.getFieldOfView();
+			if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f))
+				light.setFieldOfView(fov);
 		}
-
-		auto color = light.getColor();
-		if (ImGui::ColorEdit3("Color", color.getData()))
-			light.setColor(color);
-
-		auto inten = light.getIntensity();
-		if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", 2.0f))
-			light.setIntensity(inten);
-
-		auto shadow = light.getShadowStrength();
-		if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f", 1.0f))
-			light.setShadowStrength(shadow);
-
-		auto attenuation = light.getAttenuation();
-		if (ImGui::SliderFloat("Attenuation", &attenuation, 0.0f, 1.0f))
-			light.setAttenuation(attenuation);
-
-		auto angle = light.getAngle();
-		if (ImGui::SliderFloat("Angle", &angle, 1.0f, 180.0f))
-			light.setAngle(angle);
-
-		auto falloff = light.getFalloff();
-		if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
-			light.setFalloff(falloff);
-
-		auto fov = light.getFieldOfView();
-		if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f))
-			light.setFieldOfView(fov);
-
 		ImGui::End();
     }
 }
