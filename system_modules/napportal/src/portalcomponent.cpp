@@ -227,7 +227,13 @@ namespace nap
 
     void nap::PortalComponentInstance::onPostResourcesLoaded()
     {
-        // Create the portal event for the portal item update
+        requestReload();
+    }
+
+
+    void nap::PortalComponentInstance::requestReload()
+    {
+        // Create the portal event to request a reload
         const std::string& portal_id = getComponent()->mID;
         PortalEventHeader portal_header = { math::generateUUID(), portal_id, EPortalEventType::Reload };
         PortalEventPtr portal_event = std::make_unique<PortalEvent>(portal_header);

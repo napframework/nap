@@ -109,6 +109,8 @@ namespace nap
 
         bool processDialogClosed(PortalEvent& event, utility::ErrorState& error);
 
+        void requestReload();
+
 		/**
 		 * @return the client or server this component receives events from.
 		 */
