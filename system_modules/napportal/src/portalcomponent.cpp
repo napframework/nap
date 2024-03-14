@@ -131,6 +131,40 @@ namespace nap
 	}
 
 
+    bool PortalComponentInstance::processDialogClosed(nap::PortalEvent &event, utility::ErrorState &error)
+    {
+        // get uuid
+        const std::string& uuid = event.getID();
+
+        // find selection argument
+        bool found_arg = false;
+        for (const auto& api_event : event.getAPIEvents())
+        {
+            if(api_event->getName() == portal::dialogSelectionTypeArgName)
+            {
+                auto *selection_arg = api_event->getArgumentByName(portal::dialogSelectionArgName);
+                if (selection_arg != nullptr && selection_arg->isInt())
+                {
+                    int selection = selection_arg->asInt();
+                    auto it = mDialogSignals.find(uuid);
+                    if (it != mDialogSignals.end())
+                    {
+                        it->second->trigger(selection);
+                        mDialogSignals.erase(it);
+                    }
+                    found_arg = true;
+                }
+            }
+        }
+
+        if(!found_arg)
+            error.fail("Dialog closed event is missing the selection argument");
+
+        // Done, check if we had errors
+        return !error.hasErrors();
+    }
+
+
 	bool PortalComponentInstance::processUpdate(PortalEvent& event, utility::ErrorState& error)
 	{
 		// Create a new portal event to notify other clients of the update
@@ -197,6 +231,38 @@ namespace nap
         const std::string& portal_id = getComponent()->mID;
         PortalEventHeader portal_header = { math::generateUUID(), portal_id, EPortalEventType::Reload };
         PortalEventPtr portal_event = std::make_unique<PortalEvent>(portal_header);
+
+        // Broadcast update to connected clients
+        utility::ErrorState error;
+        if (!mServer->broadcast(std::move(portal_event), error))
+            nap::Logger::error("%s: failed to broadcast portal item update: %s", portal_id.c_str(), error.toString().c_str());
+    }
+
+
+    void nap::PortalComponentInstance::openDialog(const std::string& title, const std::string& text, const std::vector<std::string>& options, Slot<int>* callback)
+    {
+        // create uuid
+        std::string uuid = math::generateUUID();
+
+        // Create the portal event for the portal item update
+        const std::string& portal_id = getComponent()->mID;
+        PortalEventHeader portal_header = { uuid, portal_id, EPortalEventType::OpenDialog };
+        PortalEventPtr portal_event = std::make_unique<PortalEvent>(portal_header);
+
+        // Create the dialog event
+        APIEventPtr event = std::make_unique<APIEvent>(portal::openDialogEventName, uuid);
+        event->addArgument(std::make_unique<APIString>(portal::dialogTitleArgName, title));
+        event->addArgument(std::make_unique<APIString>(portal::dialogContentArgName, text));
+        event->addArgument(std::make_unique<APIStringArray>(portal::dialogOptionsArgName, options));
+        portal_event->addAPIEvent(std::move(event));
+
+        // connect callback to closed signal
+        if(callback!= nullptr)
+        {
+            auto signal = std::make_unique<Signal<int>>();
+            signal->connect(*callback);
+            mDialogSignals.emplace(uuid, std::move(signal));
+        }
 
         // Broadcast update to connected clients
         utility::ErrorState error;

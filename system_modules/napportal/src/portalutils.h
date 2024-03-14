@@ -33,6 +33,13 @@ namespace nap
         inline constexpr const char* itemFontSizeArgName = "portal_item_fontsize";      ///< Name of the argument containing the portal item font size in the portal item message
         inline constexpr const char* itemSelectedArgName = "portal_item_selected";      ///< Name of the argument containing the portal item highlight in the portal item message
         inline constexpr const char* itemWidthArgName = "portal_item_width";            ///< Name of the argument containing the portal item width in the portal item message
+        inline constexpr const char* openDialogEventName = "open_dialog";               ///< Name of the event to open a dialog
+        inline constexpr const char* dialogClosedEventName = "dialog_closed";           ///< Name of the event to close a dialog
+        inline constexpr const char* dialogTitleArgName = "dialog_title";               ///< Name of the argument containing the dialog title in the open dialog event
+        inline constexpr const char* dialogContentArgName = "dialog_content";           ///< Name of the argument containing the dialog content in the open dialog event
+        inline constexpr const char* dialogOptionsArgName = "dialog_options";           ///< Name of the argument containing the dialog buttons in the open dialog event
+        inline constexpr const char* dialogSelectionArgName = "dialog_selection_value";         ///< Name of the argument containing the selected dialog button in the dialog closed event
+        inline constexpr const char* dialogSelectionTypeArgName = "dialog_selection_type";     ///< Name of the argument containing the selected dialog button index in the dialog closed event
     }
 
 	/**
@@ -45,6 +52,8 @@ namespace nap
 		ValueUpdate		= 2,	///< Update current values of portal items in a portal (bi-directional between client and server)
 		StateUpdate     = 3,    ///< Update current state of portal items in a portal
 		Reload          = 4,
+        OpenDialog      = 5,
+        DialogClosed    = 6,
 		Invalid		    = -1	///< Not recognized as a valid portal event type
 	};
 

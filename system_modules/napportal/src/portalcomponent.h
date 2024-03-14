@@ -89,6 +89,8 @@ namespace nap
          */
         void removeItem(PortalItem* item);
 
+        void openDialog(const std::string& title, const std::string& text, const std::vector<std::string>& options, Slot<int>* callback = nullptr);
+
 		/**
 		 * Processes a request type portal event
 		 * @param event the portal event that is to be processed
@@ -104,6 +106,8 @@ namespace nap
 		 * @return if the event was processed successfully
 		 */
 		bool processUpdate(PortalEvent& event, utility::ErrorState& error);
+
+        bool processDialogClosed(PortalEvent& event, utility::ErrorState& error);
 
 		/**
 		 * @return the client or server this component receives events from.
@@ -144,5 +148,8 @@ namespace nap
         //Makes the portal page send out a request so page can be updated
         Slot<> mPostResourcesLoadedSlot;
         void onPostResourcesLoaded();
+
+        //
+        std::unordered_map<std::string, std::unique_ptr<Signal<int>>> mDialogSignals;
 	};
 }

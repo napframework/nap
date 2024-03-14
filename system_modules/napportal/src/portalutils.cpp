@@ -14,6 +14,8 @@ RTTI_BEGIN_ENUM(nap::EPortalEventType)
 	RTTI_ENUM_VALUE(nap::EPortalEventType::ValueUpdate, "ValueUpdate"),
     RTTI_ENUM_VALUE(nap::EPortalEventType::StateUpdate, "StateUpdate"),
     RTTI_ENUM_VALUE(nap::EPortalEventType::Reload, "Reload"),
+    RTTI_ENUM_VALUE(nap::EPortalEventType::OpenDialog, "OpenDialog"),
+    RTTI_ENUM_VALUE(nap::EPortalEventType::DialogClosed, "DialogClosed"),
 	RTTI_ENUM_VALUE(nap::EPortalEventType::Invalid, "Invalid")
 RTTI_END_ENUM
 
