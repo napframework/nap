@@ -89,12 +89,21 @@ namespace nap
 		/**
 		 * @return if this component is compatible with (includes) the given mask
 		 */
-		bool includesMask(RenderMask otherMask)										{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
+		bool hasMask(RenderMask otherMask)											{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
 
 		/**
+		 * Returns the rank of this component in the render chain, defaults to 0 (front) if no layer is assigned.
+		 * The rank controls the order in which components are rendered, where 0 is the front and the last index is the back.
+		 * @return the rank index in the render chain, 0 (front) if no layer is assigned
+		 */
+		int getRank() const;
+
+		/**
+		 * Returns the layer assigned to this component.
+		 * Every layer is assigned a rank which controls the order in which components are rendered, where 0 is the front and the last index is the back.
 		 * @return the render layer, nullptr if no layer is given
 		 */
-		const RenderLayer* getLayer() const											{ return mRenderLayer; }
+		const RenderLayer* getLayer() const { return mRenderLayer; }
 
 		/**
 		 * Called by the Render Service. By default every camera type is supported

@@ -79,7 +79,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -194,8 +194,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
-                    "MovementSpeed": 0.004999999888241291,
-                    "RotateSpeed": 0.0010000001639127732,
+                    "MovementSpeed": 0.014999999664723874,
+                    "RotateSpeed": 0.001500000013038516,
                     "PerspCameraComponent": "./PerspCamera",
                     "LookAtPosition": {
                         "x": 0.0,
@@ -256,7 +256,7 @@
                     "Tags": [
                         "RenderTag_Default"
                     ],
-                    "Layer": "RenderLayer_Fader",
+                    "Layer": "Layer_Fader",
                     "FadeDuration": 2.0,
                     "Camera": "../../CameraEntity/PerspCamera",
                     "MaterialInstance": {
@@ -285,7 +285,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -464,13 +464,13 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBounds",
+                    "mID": "RenderRoom",
                     "Visible": true,
                     "Tags": [
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Bounds",
+                    "Layer": "Layer_Room",
                     "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -595,7 +595,7 @@
                     "FieldOfView": 80.0,
                     "ClippingPlanes": {
                         "x": 1.0,
-                        "y": 100.0
+                        "y": 17.0
                     },
                     "ShadowMapSize": 2048
                 }
@@ -650,7 +650,7 @@
                     "ShadowMapSize": 2048,
                     "ClippingPlanes": {
                         "x": 0.10000000149011612,
-                        "y": 30.0
+                        "y": 17.0
                     }
                 }
             ],
@@ -690,7 +690,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -768,7 +768,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -986,17 +986,17 @@
             "Layers": [
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Fader",
+                    "mID": "Layer_Fader",
                     "Name": "Fader"
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Default",
+                    "mID": "Layer_Default",
                     "Name": "Default"
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Bounds",
+                    "mID": "Layer_Room",
                     "Name": "Bounds"
                 }
             ]

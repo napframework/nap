@@ -151,11 +151,10 @@ namespace nap
 		void sortObjectsByDepth(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix)
 		{
 			// Count layer occurrences
-			std::map<LayerIndex, int> hist;
+			std::map<int, int> hist;
 			for (const auto& comp : comps)
 			{
-				auto layer_idx = comp->getLayer() == nullptr ? 0 : comp->getLayer()->getIndex();
-				++hist[layer_idx];
+				++hist[comp->getRank()];
 			}
 
 			// If all objects are in the same layer, sort the full set by depth and return
@@ -167,7 +166,7 @@ namespace nap
 				return;
 			}
 
-			std::map<LayerIndex, std::vector<RenderableComponentInstance*>> layer_map;
+			std::map<int, std::vector<RenderableComponentInstance*>> layer_map;
 			for (const auto& item : hist)
 			{
 				auto& v = layer_map[item.first] = {};
@@ -176,8 +175,7 @@ namespace nap
 
 			for (const auto& comp : comps)
 			{
-				auto layer_idx = comp->getLayer() == nullptr ? 0 : comp->getLayer()->getIndex();
-				layer_map[layer_idx].emplace_back(comp);
+				layer_map[comp->getRank()].emplace_back(comp);
 			}
 
 			comps.clear();
@@ -192,11 +190,10 @@ namespace nap
 		void sortObjectsByZ(std::vector<RenderableComponentInstance*>& comps)
 		{
 			// Count layer occurrences
-			std::map<LayerIndex, int> hist;
+			std::map<int, int> hist;
 			for (const auto& comp : comps)
 			{
-				auto idx = comp->getLayer() == nullptr ? 0 : comp->getLayer()->getIndex();
-				++hist[idx];
+				++hist[comp->getRank()];
 			}
 
 			// If all objects are in the same layer, sort the full set by depth and return
@@ -208,7 +205,7 @@ namespace nap
 				return;
 			}
 
-			std::map<LayerIndex, std::vector<RenderableComponentInstance*>> layer_map;
+			std::map<int, std::vector<RenderableComponentInstance*>> layer_map;
 			for (const auto& item : hist)
 			{
 				auto& v = layer_map[item.first] = {};
@@ -217,8 +214,7 @@ namespace nap
 
 			for (const auto& comp : comps)
 			{
-				auto idx = comp->getLayer() == nullptr ? 0 : comp->getLayer()->getIndex();
-				layer_map[idx].emplace_back(comp);
+				layer_map[comp->getRank()].emplace_back(comp);
 			}
 
 			comps.clear();

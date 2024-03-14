@@ -54,4 +54,10 @@ namespace nap
 			return;
 		onDraw(renderTarget, commandBuffer, viewMatrix, projectionMatrix);
 	}
+
+
+	int RenderableComponentInstance::getRank() const
+	{
+		return mRenderLayer != nullptr ? mRenderService->getRank(*mRenderLayer) : 0;
+	}
 }

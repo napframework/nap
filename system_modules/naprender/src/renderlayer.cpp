@@ -4,28 +4,54 @@
 
 // Local Includes
 #include "renderlayer.h"
+#include "renderservice.h"
+
+// External Includes
+#include <nap/core.h>
 
 RTTI_BEGIN_CLASS(nap::RenderLayer)
 	RTTI_PROPERTY("Name", &nap::RenderLayer::mName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS(nap::RenderChain)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderChain)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Layers", &nap::RenderChain::mLayers, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 namespace nap
 {
+	RenderChain::RenderChain(nap::Core& core) :
+		mRenderService(core.getService<nap::RenderService>()) { }
+
+
 	bool RenderChain::init(utility::ErrorState& errorState)
 	{
-		uint count = 0;
-		for (auto& layer : mLayers)
+		int count = 0;
+		mRankMap.reserve(mLayers.size());
+		for (const auto& layer : mLayers)
 		{
 			if (!errorState.check(layer != nullptr, "%s: Empty layer entry encountered", mID.c_str()))
 				return false;
 
-			layer->mIndex = count;
+			mRankMap[layer.get()] = count;
 			++count;
 		}
+
+		// Register ourselves
+		mRenderService->addChain(*this);
 		return true;
+	}
+
+
+	void RenderChain::onDestroy()
+	{
+		mRenderService->removeChain(*this);
+	}
+
+
+	int RenderChain::getRank(const RenderLayer& layer) const
+	{
+		const auto it = mRankMap.find(&layer);
+		return it == mRankMap.end() ? invalidRank : it->second;
 	}
 }

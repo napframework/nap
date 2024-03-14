@@ -19,6 +19,8 @@
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
 #include "shaderconstant.h"
+#include "renderlayer.h"
+#include "rendertag.h"
 
 // External Includes
 #include <nap/core.h>
@@ -1517,7 +1519,7 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && comp->includesMask(renderMask))
+			if (comp->isSupported(camera) && comp->hasMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1567,7 +1569,7 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->includesMask(renderMask))
+			if (comp->hasMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 		return render_comps;
@@ -2038,6 +2040,24 @@ namespace nap
 	}
 
 
+	int RenderService::getRank(const nap::RenderLayer& layer) const
+	{
+		int layer_rank = RenderChain::invalidRank;
+		for (const auto& chain : mRenderChains)
+		{
+			auto rank_idx = chain->getRank(layer);
+			if (rank_idx != RenderChain::invalidRank)
+			{
+				layer_rank = rank_idx;
+				break;
+			}
+		}
+		NAP_ASSERT_MSG(layer_rank != RenderChain::invalidRank,
+			"Failed to fetch rank, layer not part of render chain");
+		return layer_rank;
+	}
+
+
 	bool RenderService::isComputeAvailable() const
 	{
 		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
@@ -2087,6 +2107,21 @@ namespace nap
 		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
 		assert(it != mRenderTags.end());
 		mRenderTags.erase(it);
+	}
+
+
+	void RenderService::addChain(const RenderChain& chain)
+	{
+		assert(std::find(mRenderChains.begin(), mRenderChains.end(), &chain) == mRenderChains.end());
+		mRenderChains.emplace_back(&chain);
+	}
+
+
+	void RenderService::removeChain(const RenderChain& chain)
+	{
+		auto it = std::find(mRenderChains.begin(), mRenderChains.end(), &chain);
+		assert(it != mRenderChains.end());
+		mRenderChains.erase(it);
 	}
 
 

@@ -9,8 +9,8 @@
 #include "pipelinekey.h"
 #include "renderutils.h"
 #include "imagedata.h"
-#include "rendertag.h"
 #include "rendercommand.h"
+#include "rendertag.h"
 
 // External Includes
 #include <nap/service.h>
@@ -37,7 +37,8 @@ namespace nap
 	class ComputeComponentInstance;
 	class Texture;
 	class Texture2D;
-	class RenderTag;
+	class RenderLayer;
+	class RenderChain;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -279,6 +280,8 @@ namespace nap
 		friend class GPUBuffer;
 		friend class RenderWindow;
 		friend class RenderTag;
+		friend class RenderChain;
+
 		RTTI_ENABLE(Service)
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
@@ -1030,6 +1033,16 @@ namespace nap
 		 */
 		void waitForFence(int frameIndex);
 
+		/**
+		 * Returns the rank of the given layer in the render chain.
+		 * Asserts and returns `RenderChain::invalidRank` if the rank is not registered.
+		 * The rank controls the order in which objects are rendered.
+		 * 
+		 * @param layer the layer to get the rank index for
+		 * @return the rank index of the given layer in the render chain, -1 if rank is not registered
+		 */
+		int getRank(const nap::RenderLayer& layer) const;
+
 	protected:
 		/**
 		 * Register dependencies, render module depends on scene
@@ -1201,6 +1214,18 @@ namespace nap
 		 */
 		void removeTag(const RenderTag& renderTag);
 
+		/**
+		 * Registers a new render chain with the render service
+		 * @param chain the chain to register
+		 */
+		void addChain(const RenderChain& chain);
+
+		/**
+		 * Removes a render chain from the render service
+		 * @param chain the chain to remove. Asserts if not found.
+		 */
+		void removeChain(const RenderChain& chain);
+
 	private:
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
@@ -1324,5 +1349,8 @@ namespace nap
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;
+
+		// Render chains
+		std::vector<const RenderChain*> mRenderChains;
 	};
 } // nap
