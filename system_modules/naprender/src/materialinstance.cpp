@@ -190,7 +190,6 @@ namespace nap
 			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		//const ShaderVariableStructDeclaration* declaration = nullptr;
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader().getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
