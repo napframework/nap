@@ -24,14 +24,6 @@ namespace nap
 	{
 		RTTI_ENABLE(PortalItem)
 	public:
-
-		/**
-		 * Subscribes to the parameter changed signal
-		 * @param error contains the error message when initialization fails
-		 * @return if initialization succeeded.
-		 */
-		virtual bool init(utility::ErrorState& error) override;
-
 		/**
 		 * Unsubscribes from the parameter changed signal
 		 */
@@ -67,7 +59,13 @@ namespace nap
 		Slot<T> mParameterUpdateSlot = { this, &PortalItemColor::onParameterUpdate };
 
 		ResourcePtr<ParameterSimple<T>> mParameter;		///< Property: 'Parameter' the parameter linked to this portal item
-
+    protected:
+        /**
+         * Subscribes to the parameter changed signal
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
+         */
+        virtual bool onInit(utility::ErrorState& error) override;
 	private:
 
 		/**
@@ -99,10 +97,11 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool PortalItemColor<T>::init(utility::ErrorState& error)
+	bool PortalItemColor<T>::onInit(utility::ErrorState& error)
 	{
 		mRetainedValue = mParameter->mValue;
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
+        mDisplayName = mParameter->getDisplayName();
 		return true;
 	}
 
@@ -121,7 +120,7 @@ namespace nap
 			return;
 
 		mRetainedValue = value;
-		updateSignal(*this);
+		valueUpdate(*this);
 	}
 
 	template<typename T>
@@ -150,7 +149,8 @@ namespace nap
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIString>(nap::portal::itemTypeArgName, get_type().get_name().data());
 		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getColorValues());
-		return event;
+        addStateArguments(event);
+        return event;
 	}
 
 	template<typename T>
@@ -158,7 +158,7 @@ namespace nap
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getColorValues());
-		return event;
+        return event;
 	}
 
 	template<typename T>

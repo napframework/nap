@@ -25,14 +25,6 @@ namespace nap
 		RTTI_ENABLE(PortalItem)
 
 	public:
-
-		/**
-		 * Subscribes to the parameter changed signal
-		 * @param error contains the error message when initialization fails
-		 * @return if initialization succeeded.
-		 */
-		virtual bool init(utility::ErrorState& error) override;
-
 		/**
 		 * Unsubscribes from the parameter changed signal
 		 */
@@ -68,7 +60,13 @@ namespace nap
 		Slot<T> mParameterUpdateSlot = { this, &PortalItemVec::onParameterUpdate };
 
 		ResourcePtr<ParameterVec<T>> mParameter;		///< Property: 'Parameter' the parameter linked to this portal item
-
+    protected:
+        /**
+         * Subscribes to the parameter changed signal
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
+         */
+        virtual bool onInit(utility::ErrorState& error) override;
 	private:
 
 		/**
@@ -98,8 +96,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool PortalItemVec<T>::init(utility::ErrorState& error)
+	bool PortalItemVec<T>::onInit(utility::ErrorState& error)
 	{
+        mDisplayName = mParameter->getDisplayName();
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
 		return true;
 	}
@@ -113,7 +112,7 @@ namespace nap
 	template<typename T>
 	void PortalItemVec<T>::onParameterUpdate(T value)
 	{
-		updateSignal(*this);
+		valueUpdate(*this);
 	}
 
 	template<typename T>
@@ -145,7 +144,10 @@ namespace nap
 		event->addArgument<APIValue<typename T::value_type>>(nap::portal::itemMinArgName, mParameter->mMinimum);
 		event->addArgument<APIValue<typename T::value_type>>(nap::portal::itemMaxArgName, mParameter->mMaximum);
 		event->addArgument<APIBool>(nap::portal::itemClampArgName, mParameter->mClamp);
-		return event;
+
+        addStateArguments(event);
+
+        return event;
 	}
 
 	template<typename T>
@@ -153,7 +155,7 @@ namespace nap
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIValue<std::vector<typename T::value_type>>>(nap::portal::itemValueArgName, getVectorValues());
-		return event;
+        return event;
 	}
 
 	template<typename T>

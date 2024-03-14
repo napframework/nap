@@ -86,11 +86,15 @@ namespace nap
 			portal->processRequest(event, error);
 			break;
 
-		case EPortalEventType::Update:
+		case EPortalEventType::ValueUpdate:
 			portal->processUpdate(event, error);
 			break;
 
+        case EPortalEventType::DialogClosed:
+            portal->processDialogClosed(event, error);
+            break;
 		default:
+
 			error.fail("Cannot process events with type %s", getPortalEventTypeString(event.getType()).c_str());
 			break;
 		}

@@ -4,6 +4,9 @@
 
 #pragma once
 
+// Local Includes
+#include "portalitemlayout.h"
+
 // External Includes
 #include <nap/core.h>
 #include <apievent.h>
@@ -20,7 +23,23 @@ namespace nap
 		inline constexpr const char* itemMinArgName = "portal_item_min";				///< Name of the argument containing the minimum portal item value in the portal item message
 		inline constexpr const char* itemMaxArgName = "portal_item_max";				///< Name of the argument containing the maximum portal item value in the portal item message
 		inline constexpr const char* itemClampArgName = "portal_item_clamp";			///< Name of the argument containing the clamp value in the portal item message
-	    inline constexpr const char* dropDownItemNames = "portal_dropdown_item_names";
+	    inline constexpr const char* dropDownItemNames = "portal_dropdown_item_names";  ///< Name of the argument containing the dropdown item names in a drop down item message
+        inline constexpr const char* itemVisibleArgName = "portal_item_visible";		///< Name of the argument containing the portal item visibility in the portal item message
+        inline constexpr const char* itemEnabledArgName = "portal_item_enabled";		///< Name of the argument containing the portal item enabled state in the portal item message
+        inline constexpr const char* itemPaddingArgName = "portal_item_padding";        ///< Name of the argument containing the portal item padding in the portal item message
+        inline constexpr const char* itemColorArgName = "portal_item_color";            ///< Name of the argument containing the portal item color in the portal item message
+        inline constexpr const char* itemFontWeightArgName = "portal_item_font_weight"; ///< Name of the argument containing the portal item font weight in the portal item message
+        inline constexpr const char* itemAlignmentArgName = "portal_item_alignment";    ///< Name of the argument containing the portal item alignment in the portal item message
+        inline constexpr const char* itemFontSizeArgName = "portal_item_fontsize";      ///< Name of the argument containing the portal item font size in the portal item message
+        inline constexpr const char* itemSelectedArgName = "portal_item_selected";      ///< Name of the argument containing the portal item highlight in the portal item message
+        inline constexpr const char* itemWidthArgName = "portal_item_width";            ///< Name of the argument containing the portal item width in the portal item message
+        inline constexpr const char* openDialogEventName = "open_dialog";               ///< Name of the event to open a dialog
+        inline constexpr const char* dialogClosedEventName = "dialog_closed";           ///< Name of the event to close a dialog
+        inline constexpr const char* dialogTitleArgName = "dialog_title";               ///< Name of the argument containing the dialog title in the open dialog event
+        inline constexpr const char* dialogContentArgName = "dialog_content";           ///< Name of the argument containing the dialog content in the open dialog event
+        inline constexpr const char* dialogOptionsArgName = "dialog_options";           ///< Name of the argument containing the dialog buttons in the open dialog event
+        inline constexpr const char* dialogSelectionArgName = "dialog_selection_value";         ///< Name of the argument containing the selected dialog button in the dialog closed event
+        inline constexpr const char* dialogSelectionTypeArgName = "dialog_selection_type";     ///< Name of the argument containing the selected dialog button index in the dialog closed event
     }
 
 	/**
@@ -28,10 +47,14 @@ namespace nap
 	 */
 	enum class EPortalEventType : int
 	{
-		Request		= 0,	///< Request a descriptor of all the portal items in a portal (from client to server)
-		Response	= 1,	///< Respond with a descriptor of all the portal items in a portal (from server to client)
-		Update		= 2,	///< Update current values of portal items in a portal (bi-directional between client and server)
-		Invalid		= -1	///< Not recognized as a valid portal event type
+		Request		    = 0,	///< Request a descriptor of all the portal items in a portal (from client to server)
+		Response	    = 1,	///< Respond with a descriptor of all the portal items in a portal (from server to client)
+		ValueUpdate		= 2,	///< Update current values of portal items in a portal (bi-directional between client and server)
+		StateUpdate     = 3,    ///< Update current state of portal items in a portal
+		Reload          = 4,
+        OpenDialog      = 5,
+        DialogClosed    = 6,
+		Invalid		    = -1	///< Not recognized as a valid portal event type
 	};
 
 	/**
@@ -82,6 +105,10 @@ namespace nap
 	 * @return The portal item button event derived from the string
 	 */
 	NAPAPI EPortalItemButtonEvent getPortalItemButtonEvent(const std::string& event);
+
+    NAPAPI std::string getPortalItemAlignmentTypeString(const EPortalItemAlignment& alignment);
+
+    NAPAPI void addLayoutArguments(nap::APIEventPtr &event, const PortalItemLayout& layout);
 
 	/**
 	 * Attempts to extract a portal event header from a portal event header API event

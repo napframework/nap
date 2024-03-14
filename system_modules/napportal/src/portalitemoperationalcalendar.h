@@ -41,7 +41,13 @@ namespace nap
 
 		std::string mName;							///< Property: 'Name' the name of the calendar in the portal
 		ResourcePtr<OperationalCalendar> mCalendar;	///< Property: 'Calendar' the calendar linked to this portal item
-
+    protected:
+        /**
+         * init
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
+         */
+        bool onInit(utility::ErrorState& errorState) override;
 	private:
 
 		/**

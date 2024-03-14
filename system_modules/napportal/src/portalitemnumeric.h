@@ -24,14 +24,6 @@ namespace nap
 	{
 		RTTI_ENABLE(PortalItem)
 	public:
-
-		/**
-		 * Subscribes to the parameter changed signal
-		 * @param error contains the error message when initialization fails
-		 * @return if initialization succeeded.
-		 */
-		virtual bool init(utility::ErrorState& error) override;
-
 		/**
 		 * Unsubscribes from the parameter changed signal
 		 */
@@ -67,6 +59,13 @@ namespace nap
 		Slot<T> mParameterUpdateSlot = { this, &PortalItemNumeric::onParameterUpdate };
 
 		ResourcePtr<ParameterNumeric<T>> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+    protected:
+        /**
+         * Subscribes to the parameter changed signal
+         * @param error contains the error message when initialization fails
+         * @return if initialization succeeded.
+         */
+        virtual bool onInit(utility::ErrorState& error) override;
 	};
 
 
@@ -86,9 +85,10 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	template<typename T>
-	bool PortalItemNumeric<T>::init(utility::ErrorState& error)
+	bool PortalItemNumeric<T>::onInit(utility::ErrorState& error)
 	{
 		mParameter->valueChanged.connect(mParameterUpdateSlot);
+        mDisplayName = mParameter->getDisplayName();
 		return true;
 	}
 
@@ -101,7 +101,7 @@ namespace nap
 	template<typename T>
 	void PortalItemNumeric<T>::onParameterUpdate(T value)
 	{
-		updateSignal(*this);
+		valueUpdate(*this);
 	}
 
 	template<typename T>
@@ -133,7 +133,10 @@ namespace nap
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
 		event->addArgument<APIValue<T>>(nap::portal::itemMinArgName, mParameter->mMinimum);
 		event->addArgument<APIValue<T>>(nap::portal::itemMaxArgName, mParameter->mMaximum);
-		return event;
+
+        addStateArguments(event);
+
+        return event;
 	}
 
 	template<typename T>
@@ -141,7 +144,7 @@ namespace nap
 	{
 		APIEventPtr event = std::make_unique<APIEvent>(mParameter->getDisplayName(), mID);
 		event->addArgument<APIValue<T>>(nap::portal::itemValueArgName, mParameter->mValue);
-		return event;
+        return event;
 	}
 }
 

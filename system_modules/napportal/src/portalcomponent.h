@@ -61,6 +61,36 @@ namespace nap
 		 */
 		virtual void onDestroy() override;
 
+        /**
+         * Adds a portal item to the portal component
+         * The portal item added using this method is not necessarily owned by the portal component
+         * When you call this method, make sure to retain the item yourself
+         * @param item the portal item to be added
+         * @param error contains any error information
+         * @return true on succes
+         */
+        bool addItem(PortalItem* item, utility::ErrorState& error);
+
+        /**
+         * Inserts a portal item to the portal component at a specific index
+         * index is clamped between 0 and the number of items in the portal component
+         * The portal item added using this method is not necessarily owned by the portal component
+         * When you call this method, make sure to retain the item yourself
+         * @param item the portal item to be added
+         * @param index the index at which the item is to be added
+         * @param error contains any error information
+         * @return true on succes
+         */
+        bool insertItem(PortalItem* item, int index, utility::ErrorState& error);
+
+        /**
+         * Removes a portal item from the portal component
+         * @param item the portal item to be removed
+         */
+        void removeItem(PortalItem* item);
+
+        void openDialog(const std::string& title, const std::string& text, const std::vector<std::string>& options, Slot<int>* callback = nullptr);
+
 		/**
 		 * Processes a request type portal event
 		 * @param event the portal event that is to be processed
@@ -77,6 +107,8 @@ namespace nap
 		 */
 		bool processUpdate(PortalEvent& event, utility::ErrorState& error);
 
+        bool processDialogClosed(PortalEvent& event, utility::ErrorState& error);
+
 		/**
 		 * @return the client or server this component receives events from.
 		 */
@@ -90,17 +122,34 @@ namespace nap
 	private:
 
 		/**
-		 * Called when a portal item sends an update event
-		 * @param event the update sent by the portal item
+		 * Called when a portal item sends a value update event
+		 * @param event the value update sent by the portal item
 		 */
-		virtual void onItemUpdate(const PortalItem& item);
+		virtual void onItemValueUpdate(const PortalItem& item);
+
+        /**
+         * Called when a portal item sends a state update event
+         * @param event the state update sent by the portal item
+         */
+        virtual void onItemStateUpdate(const PortalItem& item);
 
 		PortalService* mService = nullptr;						///< Handle to the portal service
 		PortalWebSocketServer* mServer = nullptr;				///< Handle to the portal WebSocket server
 		std::vector<PortalItem*> mItems;						///< The portal items contained by this portal component as vector
 		std::unordered_map<std::string, PortalItem*> mItemMap;	///< The portal items contained by this portal component as unordered map
 
-		//Slot which is called when a portal item sends an update event
-		Slot<const PortalItem&> mItemUpdateSlot = { this, &PortalComponentInstance::onItemUpdate };
+		//Slot which is called when a portal item sends a value update event
+		Slot<const PortalItem&> mItemValueUpdateSlot = {this, &PortalComponentInstance::onItemValueUpdate };
+
+        //Slot which is called when a portal item sends a state update event
+        Slot<const PortalItem&> mItemStateUpdateSlot = {this, &PortalComponentInstance::onItemStateUpdate };
+
+        //Slot which is called when the resource manager has finished loading resources
+        //Makes the portal page send out a request so page can be updated
+        Slot<> mPostResourcesLoadedSlot;
+        void onPostResourcesLoaded();
+
+        //
+        std::unordered_map<std::string, std::unique_ptr<Signal<int>>> mDialogSignals;
 	};
 }
