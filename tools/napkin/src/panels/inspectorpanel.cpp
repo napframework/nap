@@ -241,7 +241,7 @@ void napkin::InspectorPanel::onChildAdded(QList<QStandardItem*> items)
 	auto parent = items.first()->parent();
 	if (qitem_cast<const ArrayPropertyItem*>(parent) != nullptr)
 	{
-		mTreeView.select(items[0], false);
+		mTreeView.select(items[0], true);
 	}
 }
 
