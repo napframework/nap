@@ -47,11 +47,4 @@ namespace nap
 	{
 		mRenderService->removeChain(*this);
 	}
-
-
-	int RenderChain::getRank(const RenderLayer& layer) const
-	{
-		const auto it = mRankMap.find(&layer);
-		return it == mRankMap.end() ? invalidRank : it->second;
-	}
 }

@@ -2045,10 +2045,10 @@ namespace nap
 		int layer_rank = RenderChain::invalidRank;
 		for (const auto& chain : mRenderChains)
 		{
-			auto rank_idx = chain->getRank(layer);
-			if (rank_idx != RenderChain::invalidRank)
+			const auto it = chain->mRankMap.find(&layer);
+			if (it != chain->mRankMap.end())
 			{
-				layer_rank = rank_idx;
+				layer_rank = it->second;
 				break;
 			}
 		}

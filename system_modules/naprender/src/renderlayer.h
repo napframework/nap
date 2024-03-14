@@ -65,6 +65,7 @@ namespace nap
 	 */
 	class NAPAPI RenderChain : public Resource
 	{
+		friend class RenderService;
 		RTTI_ENABLE(Resource)
 	public:
 		RenderChain(nap::Core& core);
@@ -82,13 +83,6 @@ namespace nap
 		 * Unregisters the chain for subsequent render operations
 		 */
 		virtual void onDestroy() override;
-
-		/**
-		 * Returns the rank index of the given layer, 'invalidRank' if the layer is not managed by the chain.
-		 * @param layer the render layer to get the rank for
-		 * @return rank index for the given layer, 'invalidRank' if layer not managed by chain
-		 */
-		int getRank(const RenderLayer& layer) const;
 
 		std::vector<rtti::ObjectPtr<RenderLayer>> mLayers;			///< Property: 'Layers' The render layers in ranked order
 
