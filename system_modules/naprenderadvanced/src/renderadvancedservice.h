@@ -155,10 +155,8 @@ namespace nap
 		 *	}
 		 * ~~~~~
 		 * @param renderComps the render components whose uniforms and samplers must be updated
-		 * @param errorState contains the error message if the update of any uniforms/samplers failed
-		 * @return true is the light data was updated successfully
 		 */
-		bool pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState);
+		void pushLights(const std::vector<RenderableComponentInstance*>& renderComps);
 
 		/**
 		 * @return the maximum number of lights supported by the RenderAdvanced light system.
@@ -230,7 +228,7 @@ namespace nap
 		virtual void postUpdate(double deltaTime);
 
 	private:
-		bool pushLightsInternal(const std::vector<MaterialInstance*>& materials, utility::ErrorState& errorState);
+		void pushLightsInternal(const std::vector<MaterialInstance*>& materials);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
 		bool initServiceResources(utility::ErrorState& errorState);

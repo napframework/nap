@@ -231,16 +231,10 @@ namespace nap
 
 	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials, RenderMask renderMask)
 	{
+		// Push light uniforms
 		auto render_comps = mRenderService->filterObjects(renderComps, renderMask);
 		if (updateMaterials)
-		{
-			utility::ErrorState error_state;
-			if (!pushLights(render_comps, error_state))
-			{
-				nap::Logger::error(error_state.toString());
-				assert(false);
-			}
-		}
+			pushLights(render_comps);
 
         // Bail if shadow mapping is disabled
         if (!isShadowMappingEnabled())
@@ -360,7 +354,7 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::pushLightsInternal(const std::vector<MaterialInstance*>& materials, utility::ErrorState& errorState)
+	void RenderAdvancedService::pushLightsInternal(const std::vector<MaterialInstance*>& materials)
 	{
 		// Update materials for color pass
 		for (auto& material : materials)
@@ -415,18 +409,17 @@ namespace nap
 
 					// Uniform not available
                     auto* member = struct_decl->findMember(name);
-					if (!errorState.check(member != nullptr,
-						"Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
-						return false;
+					NAP_ASSERT_MSG(member != nullptr,
+						nap::utility::stringFormat("Missing uniform with name '%s' in light '%s'",
+							name.c_str(), light->mID.c_str()).c_str());
 
 					// Make sure it's a shader value declaration
-					if (!errorState.check(member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)),
-						"Unsupported member data type"))
-						return false;
+					NAP_ASSERT_MSG(member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)),
+						"Unsupported member data type");
+					auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
 
 					// Set uniform based on shader declaration type.
 					// TODO: Allow for more elaborate assignment -> Only limited set is supported
-					auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member); assert(value_member != nullptr);
 					switch (value_member->mType)
 					{
 						case EShaderVariableValueType::Float:
@@ -453,14 +446,12 @@ namespace nap
 							}
 							else
 							{
-								errorState.fail("Unsupported member data type");
-								return false;
+								NAP_ASSERT_MSG(false, "Unsupported member data type");
 							}
 						}
 						default:
 						{
-							errorState.fail("Unsupported member data type");
-							return false;
+							NAP_ASSERT_MSG(false, "Unsupported member data type");
 						}
 					}
 				}
@@ -468,19 +459,20 @@ namespace nap
 			}
         }
 
+		// Bail if shadow mapping is disabled
         if (!isShadowMappingEnabled())
-            return true;
+            return;
 
         // Shadow data
         for (auto& material : materials)
         {
 			// Ensure the shader interface is valid
-            auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct);
-            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
-            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar);
-            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength);
-            auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
-            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
+			auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct); assert(shadow_struct != nullptr);
+            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
+            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
+            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
+			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
+            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
 
 			// Set number of lights
             light_count->setValue(mLightComponents.size());
@@ -533,24 +525,19 @@ namespace nap
                             break;
                         }
                         default:
-                            NAP_ASSERT_MSG(false, "Unsupported shadow map type");
-                            return false;
+						{
+							NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+						}
                     }
                 }
                 ++light_index;
             }
         }
-		return true;
 	}
 
 
-	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState)
+	void RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps)
 	{
-		// TODO: Cache light uniforms
-		// Exit early if there are no lights in the scene
-		if (mLightComponents.empty())
-			return true;
-
 		// Filter viable materials
 		std::vector<MaterialInstance*> materials;
 		materials.reserve(renderComps.size());
@@ -583,7 +570,9 @@ namespace nap
 			}
 		}
 
-		return pushLightsInternal(materials, errorState);
+		// Push lights to materials that are compatible
+		if(!materials.empty())
+			pushLightsInternal(materials);
 	}
 
 
