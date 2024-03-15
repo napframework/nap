@@ -170,18 +170,27 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 		return;
 
 	// If it's a group, add it as such
+	ObjectItem* new_item = nullptr;
 	if (obj->get_type().is_derived_from<nap::IGroup>())
 	{
 		auto group_item = new GroupItem(static_cast<nap::IGroup&>(*obj));
 		this->appendRow({ group_item, new RTTITypeItem(obj->get_type()) });
-		connect(group_item, &GroupItem::childAdded, this, &RootResourcesItem::childAddedToGroup);
+		connect(group_item, &GroupItem::childAdded, [this](GroupItem& group, ObjectItem& item)
+			{
+				this->childAdded(item, &group);
+			});
 		connect(group_item, &GroupItem::indexChanged, this, &RootResourcesItem::indexChanged);
+		new_item = group_item;
 	}
 	else
 	{
 		// Add as regular item
-		this->appendRow({ createObjectItem(*obj), new RTTITypeItem(obj->get_type()) });
+		new_item = createObjectItem(*obj);
+		this->appendRow({ new_item, new RTTITypeItem(obj->get_type()) });
 	}
+
+	// Notify listeners
+	childAdded(*new_item, nullptr);
 }
 
 
@@ -489,7 +498,7 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 
 	// Handle data model changes
 	auto& ctx = AppContext::get();
-	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
+	connect(&ctx, &AppContext::propertyChildInserted, this, &EntityItem::onChildInserted);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
 	connect(&ctx, &AppContext::arrayIndexSwapped, this, &EntityItem::onIndexSwapped);
@@ -511,22 +520,35 @@ void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 	// Create and add new item
 	auto* new_item = new EntityItem(*e, true);
 	new_item->connect(new_item, &EntityItem::childAdded, this, &EntityItem::childAdded);
-	insertRow(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
+	insertChild(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
 
 	// Notify listeners
 	childAdded(*this, *new_item);
 }
 
 
-void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
+void napkin::EntityItem::onChildInserted(const PropertyPath& path, size_t childIndex)
 {
-	// Bail if we're not handling this object
-	if (owner != mObject)
+	// Bail if action not related to object
+	if (path.getObject() != mObject)
+		return;
+
+	// Check if it's the component property and add
+	auto comp_path = PropertyPath(mObject->mID, nap::Entity::componentsPropertyName(), *AppContext::get().getDocument());
+	if (path != comp_path)
 		return;
 
 	// Create and add new component
-	auto comp_item = new ComponentItem(*comp);
-	appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+	// TODO: Use this code path for child entities -> deprecating & removing the use of 'childEntityAdded'
+	auto array_elm = comp_path.getArrayElement(childIndex);
+	auto array_val = array_elm.getValue();
+	assert(array_val.get_type().is_wrapper() && array_val.get_type().get_wrapped_type().is_derived_from((RTTI_OF(nap::Component))));
+	auto component = array_val.extract_wrapped_value().get_value<nap::Component*>();
+
+	// Create and add new component
+	auto comp_item = new ComponentItem(*component);
+	int row_idx = getEntity().mChildren.size() + childIndex;
+	this->insertChild(row_idx, { comp_item, new RTTITypeItem(component->get_type()) });
 
 	// Notify listeners
 	childAdded(*this, *comp_item);
@@ -672,7 +694,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		PropertyPath array_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
 		auto member_el = path.getArrayElement(index);
 		ObjectItem* new_item = new ObjectItem(*member_el.getPointee());
-		this->insertRow(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+		this->insertChild(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
 		childAdded(*this, *new_item);
 	}
 	// Otherwise, insert it at the end
@@ -689,7 +711,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		int child_index = index + members_path.getArrayLength();
 
 		// Insert
-		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
+		this->insertChild(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
 		childAdded(*this, *new_group);
 	}
 }
@@ -805,14 +827,14 @@ nap::Scene& napkin::SceneItem::getScene()
 // EntityInstanceItem
 //////////////////////////////////////////////////////////////////////////
 
-EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
-		: mRootEntity(rootEntity), ObjectItem(e, false)
+EntityInstanceItem::EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity)
+		: mRootEntity(rootEntity), ObjectItem(entity, false)
 {
 	setEditable(false);
-	for (auto& childEntity : e.mChildren)
+	for (auto& childEntity : entity.mChildren)
 		appendRow(new EntityInstanceItem(*childEntity, mRootEntity));
 
-	for (auto& comp : e.mComponents)
+	for (auto& comp : entity.mComponents)
 		appendRow(new ComponentInstanceItem(*comp, mRootEntity));
 
 	auto ctx = &AppContext::get();
@@ -820,22 +842,19 @@ EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEnti
 	connect(ctx, &AppContext::childEntityAdded, this, &EntityInstanceItem::onEntityAdded);
 }
 
+
 nap::RootEntity& EntityInstanceItem::rootEntity() const
 {
 	return mRootEntity;
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-// EntityInstanceItem
-//////////////////////////////////////////////////////////////////////////
-
 void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
 	if (parent != &entity())
 		return;
 
-	insertRow(nap::math::max<int>(parent->mChildren.size()-1, 0), new EntityInstanceItem(*e, mRootEntity));
+	insertChild(nap::math::max<int>(parent->mChildren.size() - 1, 0), { new EntityInstanceItem(*e, mRootEntity) });
 }
 
 void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
@@ -884,46 +903,15 @@ nap::Entity& napkin::EntityInstanceItem::entity() const
 // RootEntityItem
 //////////////////////////////////////////////////////////////////////////
 
-RootEntityItem::RootEntityItem(nap::RootEntity& e)
-		: mRootEntity(e), EntityInstanceItem(*e.mEntity.get(), e)
+RootEntityItem::RootEntityItem(nap::RootEntity& rootEntity) : EntityInstanceItem(*rootEntity.mEntity.get(), rootEntity)
 { }
-
-
-const PropertyPath RootEntityItem::propertyPath() const
-{
-	return EntityInstanceItem::propertyPath();
-}
-
-
-nap::RootEntity& RootEntityItem::rootEntity() const
-{
-	assert(&mRootEntity);
-	return mRootEntity;
-}
-
-
-void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
-{
-	if (parent != mRootEntity.mEntity.get())
-		return;
-
-	appendRow(new EntityInstanceItem(*e, mRootEntity));
-}
-
-
-void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
-{
-	if (owner != mRootEntity.mEntity.get())
-		return;
-
-	appendRow(new ComponentInstanceItem(*c, mRootEntity));
-}
 
 
 SceneItem* RootEntityItem::sceneItem()
 {
 	return qobject_cast<SceneItem*>(parentItem());
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInstanceItem

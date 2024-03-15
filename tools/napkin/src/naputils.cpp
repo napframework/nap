@@ -66,7 +66,8 @@ napkin::RTTITypeItem::RTTITypeItem(const nap::rtti::TypeInfo& type) : mType(type
 	assert(mType.is_valid());
 	QString type_name(type.get_name().data()); 
 	auto parts = type_name.split(','); assert(parts.size() > 0);
-	parts.first().remove("class"); 
+	parts.first().remove("class");
+	parts.first().remove("struct");
 	parts.first().remove(' ');
 	setText(parts.first());
 	setEditable(false);

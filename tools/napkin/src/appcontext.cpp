@@ -363,7 +363,6 @@ void AppContext::connectDocumentSignals(bool enable)
     if (enable)
 	{
 		connect(doc, &Document::childEntityAdded, this, &AppContext::childEntityAdded);
-		connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
 		connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
 		connect(doc, &Document::removingObject, this, &AppContext::removingObject);
 		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
@@ -379,7 +378,6 @@ void AppContext::connectDocumentSignals(bool enable)
 	else
 	{
 		disconnect(doc, &Document::childEntityAdded, this, &AppContext::childEntityAdded);
-		disconnect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
 		disconnect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
 		disconnect(doc, &Document::removingObject, this, &AppContext::removingObject);
 		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
