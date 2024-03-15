@@ -191,8 +191,15 @@ namespace nap
 			 * @return reference to a record containing information about the given device
 			 */
 			const PaDeviceInfo& getDeviceInfo(unsigned int hostApiIndex, unsigned int localDeviceIndex);
-			
-			/**
+
+            /**
+             * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
+             * @param deviceIndex: the index of the device.
+             * @return reference to a record containing information about the given device
+             */
+            const PaDeviceInfo& getDeviceInfo(unsigned int deviceIndex);
+
+            /**
 			 * Returns information on all the available devices for a given host API
 			 * @param hostApiIndex: the number of the host api
 			 * @return vector with pointers to records containing information about each device.
