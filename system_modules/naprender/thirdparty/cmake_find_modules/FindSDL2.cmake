@@ -4,6 +4,9 @@
 # SDL2_FOUND, if false, do not try to link to SDL2
 # SDL2_INCLUDE_DIR, where to find SDL.h
 
+set(SDL2_DIR ${NAP_ROOT}/system_modules/naprender/thirdparty/SDL2)
+set(SDL2_LICENSE_FILES ${SDL2_DIR}/COPYING.txt)
+
 if (APPLE)
     set(SDL2_INCLUDE_DIR ${SDL2_DIR}/macos/${ARCH}/include/SDL2)
     set(SDL2_LIBRARY ${SDL2_DIR}/macos/${ARCH}/lib/libSDL2.dylib)

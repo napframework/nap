@@ -59,15 +59,3 @@ if(WIN32)
                           IMPORTED_IMPLIB_DEBUG ${FREETYPE_LIBS_DEBUG}
                           )
 endif()
-
-# Copy the freetype dynamic linked lib into the build directory
-macro(copy_freetype_dll)
-    add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND}
-                -E copy_if_different
-                $<TARGET_FILE:freetype>
-                $<TARGET_FILE_DIR:${PROJECT_NAME}>/$<TARGET_FILE_NAME:freetype>
-    )
-endmacro()

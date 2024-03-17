@@ -68,7 +68,7 @@ if(MSVC)
 endif()
 
 target_include_directories(${PROJECT_NAME} PUBLIC src ${CMAKE_CURRENT_BINARY_DIR})
-target_link_libraries(${PROJECT_NAME} naputility naprtti)
+target_link_libraries(${PROJECT_NAME} naprtti)
 
 if (UNIX AND NOT APPLE)
     include_directories(${PROJECT_NAME} src/nap/linux/FileWatcher)
@@ -79,40 +79,3 @@ if(APPLE)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
-
-# Package into release build
-if(WIN32)
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION lib/$<CONFIG>-${ARCH}
-                                    ARCHIVE DESTINATION lib/$<CONFIG>-${ARCH})
-    if(PACKAGE_PDBS)
-        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION lib/$<CONFIG>-${ARCH})
-    endif()
-elseif(APPLE)
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/$<CONFIG>-${ARCH})
-else()
-    install(TARGETS ${PROJECT_NAME} LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}-${ARCH})
-endif()
-
-if(WIN32)
-    # Install for fbxconverter on Win64
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
-            CONFIGURATIONS Release)
-elseif(APPLE)
-    set(BUILT_RPATH "@loader_path/../../thirdparty/rttr/bin/")
-    set(BUILT_RPATH "${BUILT_RPATH};@loader_path/../../thirdparty/python/")
-    set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "${BUILT_RPATH}")
-elseif(UNIX)
-    set_python_installed_rpath_on_linux_object(${PROJECT_NAME} "../..")
-endif()
-
-# Package headers
-install(DIRECTORY "src/nap/" DESTINATION "include/nap/"
-        FILES_MATCHING PATTERN "*.h"
-        PATTERN "linux" EXCLUDE
-        PATTERN "osx" EXCLUDE
-        PATTERN "win32" EXCLUDE
-        )
-
-# Package release version info
-install(FILES ${CMAKE_CURRENT_BINARY_DIR}/version.h
-        DESTINATION "include/nap/")
