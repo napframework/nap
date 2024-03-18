@@ -55,7 +55,7 @@ namespace nap
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Get video material
+		// Get gnomon material
 		Material* gnomon_material = mRenderService->getOrCreateMaterial<GnomonShader>(errorState);
 		if (!errorState.check(gnomon_material != nullptr, "%s: unable to get or create gnomon material", resource->mID.c_str()))
 			return false;

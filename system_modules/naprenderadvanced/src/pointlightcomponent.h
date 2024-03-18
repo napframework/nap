@@ -5,6 +5,7 @@
 
 // External includes
 #include <perspcameracomponent.h>
+#include <rendergnomoncomponent.h>
 
 namespace nap
 {
@@ -23,9 +24,10 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(PointLightComponent, PointLightComponentInstance)
 	public:
-		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
-		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 512U;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
+		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
+		float mFieldOfView = 30.0f;								///< Property: 'FieldOfView' Shadow camera field of view
+		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };			///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
+		uint mShadowMapSize = 512;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
 
@@ -43,9 +45,6 @@ namespace nap
 		PointLightComponentInstance(EntityInstance& entity, Component& resource) :
 			LightComponentInstance(entity, resource) { }
 
-		// Destructor
-		virtual ~PointLightComponentInstance() override { LightComponentInstance::removeLightComponent(); }
-
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -53,16 +52,6 @@ namespace nap
 		 * @return if the LightComponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * @return whether this light component supports shadows
-		 */
-		virtual bool isShadowSupported() const override						{ return true; }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getShadowCamera() override			{ return mShadowCamera.get(); }
 
 		/**
 		 * @return the light type
@@ -74,8 +63,26 @@ namespace nap
 		 */
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Cube; }
 
+		/**
+		 * The rate at which light intensity is lost over distance from the origin
+		 * @return light attenuation
+		 */
+		float getAttenuation() const										{ return mAttenuation; }
+
+		/**
+		 * Set the rate at which light intensity is lost over distance from the origin
+		 * @param attenuation light attenuation
+		 */
+		void setAttenuation(float attenuation)								{ mAttenuation = attenuation; }
+
+		float mAttenuation = 0.1f;
+
 	private:
-		// Shadow camera
-		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &PointLightComponent::mShadowCamera };
+		// Shadow camera entity resource
+		std::unique_ptr<Entity> mShadowCamEntity = nullptr;
+		std::unique_ptr<PerspCameraComponent> mShadowCamComponent = nullptr;
+		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
+		std::unique_ptr<RenderGnomonComponent> mShadowOriginComponent = nullptr;
+		std::unique_ptr<GnomonMesh> mGnomonMesh = nullptr;
 	};
 }

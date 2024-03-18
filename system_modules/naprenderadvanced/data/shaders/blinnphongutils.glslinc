@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 // NAP Shader include file
 
 // Includes
@@ -49,12 +53,11 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, fl
 		specular = pow(max(dot(surfNormal, halfway), 0.0), mtl.shininess);
 	}
 
-	vec3 ambient_color = lightIntensity * mtl.ambient.rgb + mtl.diffuse * mtl.ambient.a;
 	vec3 diffuse_color = diffuse * lightColor * lightIntensity * mtl.diffuse;
 	vec3 specular_color = specular * lightIntensity * mtl.specular;
 
 	// linear color (color before gamma correction)
-	vec3 comp_color = (diffuse_color + specular_color + ambient_color) * strength;
+	vec3 comp_color = (diffuse_color + specular_color) * strength;
 
 	// clamp
 	return clamp(comp_color, 0.0, 1.0);

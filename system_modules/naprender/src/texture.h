@@ -87,6 +87,13 @@ namespace nap
 		 */
 		const RenderService& getRenderService() const			{ return mRenderService; }
 
+		/**
+		 * Notify listeners when texture is destroyed
+		 */
+		virtual void onDestroy() override						{ textureDestroyed(); }
+
+		nap::Signal<> textureDestroyed;							///< Signal that is triggered before texture is destroyed
+
 	protected:
 		/**
 		 * @return Vulkan GPU data handle, including image and view.
@@ -213,11 +220,6 @@ namespace nap
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
-		 * 
-		 */
-		virtual void onDestroy() override						{ textureDestroyed(); }
-
-		/**
 		 * Starts a transfer of texture data from GPU to CPU. 
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
@@ -232,8 +234,6 @@ namespace nap
 		void asyncGetData(std::function<void(const void*, size_t)> copyFunction);
 
 		EUsage mUsage = EUsage::Static;							///< Property: 'Usage' If this texture is updated frequently or considered static.
-
-		nap::Signal<> textureDestroyed;
 
 	protected:
 		/**
@@ -293,7 +293,7 @@ namespace nap
 		RTTI_ENABLE(Texture)
 	public:
 		// The image layer count is equal to the number of sides of a cube
-		static constexpr const uint LAYER_COUNT = 6;
+		static constexpr const uint layerCount = 6;
 
 		TextureCube(Core& core);
 		virtual ~TextureCube() override;
@@ -332,7 +332,7 @@ namespace nap
 		/**
 		 * @return the number of texture layers
 		 */
-		virtual uint getLayerCount() const override				{ return LAYER_COUNT; }
+		virtual uint getLayerCount() const override				{ return layerCount; }
 
 		/**
 		 * @return the number of texture mip-map levels
@@ -345,23 +345,15 @@ namespace nap
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
-		 * Note: This function should actually be protected but is required by `nap::CubeRenderTarget`
-		 * in the naprenderadvanced module.
+		 * Note: This function should actually be protected but is required by `nap::CubeRenderTarget` in the naprenderadvanced module.
 		 * @return Vulkan GPU data handle, including image and view.
 		 */
 		virtual ImageData& getHandle() override					{ return mImageData; }
 
-		/**
-		 *
-		 */
-		virtual void onDestroy() override						{ textureDestroyed(); }
-
 		const EUsage						mUsage = EUsage::Static;					///< Texture usage (cube maps are currently always static)
 
-		nap::Signal<> textureDestroyed;
-
 	protected:
-		ImageData							mImageData = { TextureCube::LAYER_COUNT };	///< Cube Texture vulkan image buffers
+		ImageData							mImageData = { TextureCube::layerCount };	///< Cube Texture vulkan image buffers
 		uint32								mMipLevels = 1;								///< Total number of generated mip-maps
 
 	private:

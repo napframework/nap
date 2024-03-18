@@ -34,7 +34,6 @@ namespace nap
 			inline constexpr const char* alpha = "alpha";							///< Alpha [0, 1]
 			inline constexpr const char* reflection = "reflection";					///< Reflection [0, 1]
 			inline constexpr const char* environment = "environment";				///< Whether to sample an environment map [0, 1]
-
 			inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
 		}
 	}

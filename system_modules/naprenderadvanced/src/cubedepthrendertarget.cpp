@@ -169,7 +169,7 @@ namespace nap
 		 **/
 		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), -camPosition);
 
-		for (int layer_index = TextureCube::LAYER_COUNT - 1; layer_index >= 0; layer_index--)
+		for (int layer_index = TextureCube::layerCount - 1; layer_index >= 0; layer_index--)
 		{
 			setLayerIndex(layer_index);
 			beginRendering();
@@ -186,7 +186,7 @@ namespace nap
 
 	void CubeDepthRenderTarget::setLayerIndex(uint index)
 	{
-		assert(index < TextureCube::LAYER_COUNT);
-		mLayerIndex = std::clamp(index, 0U, TextureCube::LAYER_COUNT - 1);
+		assert(index < TextureCube::layerCount);
+		mLayerIndex = std::clamp(index, 0U, TextureCube::layerCount - 1);
 	}
 }

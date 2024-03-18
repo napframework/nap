@@ -18,8 +18,9 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
-#include "rendermask.h"
 #include "shaderconstant.h"
+#include "renderlayer.h"
+#include "rendertag.h"
 
 // External Includes
 #include <nap/core.h>
@@ -1518,7 +1519,7 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && compareRenderMask(comp->getRenderMask(), renderMask))
+			if (comp->isSupported(camera) && comp->hasMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1568,7 +1569,7 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (compareRenderMask(comp->getRenderMask(), renderMask))
+			if (comp->hasMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 		return render_comps;
@@ -2039,78 +2040,96 @@ namespace nap
 	}
 
 
+	int RenderService::getRank(const nap::RenderLayer& layer) const
+	{
+		int layer_rank = RenderChain::invalidRank;
+		for (const auto& chain : mRenderChains)
+		{
+			const auto it = chain->mRankMap.find(&layer);
+			if (it != chain->mRankMap.end())
+			{
+				layer_rank = it->second;
+				break;
+			}
+		}
+		NAP_ASSERT_MSG(layer_rank != RenderChain::invalidRank,
+			"Failed to fetch rank, layer not part of render chain");
+		return layer_rank;
+	}
+
+
 	bool RenderService::isComputeAvailable() const
 	{
 		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
 	}
 
 
-	RenderMask RenderService::findRenderMask(const std::string& tagName)
+	RenderMask RenderService::getRenderMask(const std::string& tagName)
 	{
-		if (mRenderTagRegistry.empty())
+		if (mRenderTags.empty())
 			return 0;
 
-		uint count = 0;
-		for (auto& tag : mRenderTagRegistry)
+		uint shift = 0;
+		for (auto& tag : mRenderTags)
 		{
 			if (tag->mName == tagName)
-				return 1 << count;
-			++count;
+				return 1 << shift;
+			++shift;
 		}
 		return 0;
 	}
 
 
-	LayerIndex RenderService::findLayerIndex(const std::string& layerName)
+	bool RenderService::addTag(const RenderTag& renderTag, nap::utility::ErrorState& error)
 	{
-		if (!mLayersChecked)
-		{
-			auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
-			if (layer_registries.size() > 1)
-				nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_OF(RenderService).get_name().data(), RTTI_OF(RenderLayerRegistry).get_name().data());
+		// Name missing
+		if(!error.check(!renderTag.mName.empty(), "RenderTag doesn't have a name"))
+			return false;
 
-			if (!layer_registries.empty())
-				mRenderLayerRegistry = layer_registries.front();
+		// Duplicate
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		if (!error.check(it == mRenderTags.end(), "RenderTag with duplicate name already exists"))
+			return false;
 
-			mLayersChecked = true;
-		}
+		// Out of bounds
+		static constexpr int tagLimit = sizeof(nap::uint64) * 8;
+		if (!error.check(mRenderTags.size() < tagLimit, "RenderTag limit of %d exceeded", tagLimit))
+			return false;
 
-		if (mRenderLayerRegistry == nullptr)
-			return 0;
-
-		uint count = 0;
-		for (auto& tag : mRenderLayerRegistry->mLayers)
-		{
-			if (tag->mName == layerName)
-				return count;
-			++count;
-		}
-		return 0;
-	}
-
-
-	void RenderService::addTag(const RenderTag& renderTag)
-	{
-		// Ensure the tag is not yet registered
-		assert(std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag) == mRenderTagRegistry.end());
-		mRenderTagRegistry.emplace_back(&renderTag);
+		mRenderTags.emplace_back(&renderTag);
+		return true;
 	}
 
 
 	void RenderService::removeTag(const RenderTag& renderTag)
 	{
 		// Ensure the tag is not yet registered
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		assert(it != mRenderTagRegistry.end());
-		mRenderTagRegistry.erase(it);
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		mRenderTags.erase(it);
 	}
 
 
-	uint RenderService::getTagIndex(const RenderTag& renderTag) const
+	void RenderService::addChain(const RenderChain& chain)
 	{
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		assert(it != mRenderTagRegistry.end());
-		return static_cast<uint>(it - mRenderTagRegistry.begin());
+		assert(std::find(mRenderChains.begin(), mRenderChains.end(), &chain) == mRenderChains.end());
+		mRenderChains.emplace_back(&chain);
+	}
+
+
+	void RenderService::removeChain(const RenderChain& chain)
+	{
+		auto it = std::find(mRenderChains.begin(), mRenderChains.end(), &chain);
+		assert(it != mRenderChains.end());
+		mRenderChains.erase(it);
+	}
+
+
+	RenderMask RenderService::getRenderMask(const RenderTag& renderTag) const
+	{
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		return static_cast<RenderMask>(1) << static_cast<uint>(it - mRenderTags.begin());
 	}
 
 
