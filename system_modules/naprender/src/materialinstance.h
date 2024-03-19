@@ -204,14 +204,6 @@ namespace nap
 		const BaseMaterial* getMaterial() const								{ assert(mMaterial != nullptr); return mMaterial; }
 
 		/**
-		 * Creates specialization constant info structure for pipeline creation.
-		 * @param stage the shader stage to retrieve specialization constant info for.
-		 * @param outInfo the specialization constant info structure, set if this function returns true.
-		 * @return whether any specialization constant overrides are defined in this material.
-		 */
-		bool getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const;
-
-		/**
 		 * This must be called before each draw. It will push the current uniform and sampler data into memory
 		 * that is accessible for the GPU. A descriptor set will be returned that must be used in VkCmdBindDescriptorSets
 		 * before the Vulkan draw call is issued.
@@ -246,7 +238,16 @@ namespace nap
 
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
 		SamplerInstance* getOrCreateSamplerInternal(const std::string& name, const Sampler* sampler);
-		ShaderConstantHash getConstantHash() const { return mConstantHash; }
+
+		/**
+		 * @return a map that groups shader constant ids by shader stage. Used for creating vulkan pipelines.
+		 */
+		const ShaderStageConstantMap& getShaderStageConstantMap() const		{ return mShaderStageConstantMap; }
+
+		/**
+		 * @return the shader constant hash for quick distinction of constant data in material instances
+		 */
+		ShaderConstantHash getConstantHash() const							{ return mConstantHash; }
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
@@ -263,7 +264,6 @@ namespace nap
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerDescriptors;					// List of sampler images, used to update Descriptor Sets.
 
-		using ShaderStageConstantMap = std::map<VkShaderStageFlagBits, ShaderConstantMap>;
 		ShaderStageConstantMap					mShaderStageConstantMap;				// Reference of all shader constants per shader stage, generated on materialinstance init
 		ShaderConstantHash						mConstantHash;							// Shader constant hash used to create a pipeline key
 

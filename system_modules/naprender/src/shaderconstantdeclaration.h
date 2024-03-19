@@ -17,6 +17,7 @@ namespace nap
 {
 	using ShaderConstantID = uint;
 	using ShaderConstantMap = std::map<ShaderConstantID, uint>;
+	using ShaderStageConstantMap = std::map<VkShaderStageFlagBits, ShaderConstantMap>;
 
 	class NAPAPI ShaderConstantDeclaration final
 	{

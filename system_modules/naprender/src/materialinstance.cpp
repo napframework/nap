@@ -760,36 +760,6 @@ namespace nap
 	}
 
 
-	bool BaseMaterialInstance::getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const
-	{
-		const auto it = mShaderStageConstantMap.find(stage);
-		if (it == mShaderStageConstantMap.end())
-			return false;
-
-		const auto& constant_map = it->second;
-		for (uint i = 0; i < constant_map.size(); i++)
-		{
-			const auto it = constant_map.find(i);
-			if (it == constant_map.end())
-			{
-				nap::Logger::error("%s: Specialization Constant IDs are not in a sequence starting from 0", getMaterial()->getShader().mID.c_str());
-				return false;
-			}
-
-			{
-				VkSpecializationMapEntry entry = {};
-				entry.constantID = (*it).first;
-				entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
-				entry.size = sizeof(uint);
-				outInfo.mEntries.emplace_back(std::move(entry));
-			}
-			outInfo.mData.emplace_back((*it).second);
-		}
-
-		return true;
-	}
-
-
 	void BaseMaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
 	{
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
