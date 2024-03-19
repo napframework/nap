@@ -15,10 +15,19 @@
 
 namespace nap
 {
-	using ShaderConstantID = uint;
-	using ShaderConstantMap = std::map<ShaderConstantID, uint>;
-	using ShaderStageConstantMap = std::map<VkShaderStageFlagBits, ShaderConstantMap>;
+	using ShaderConstantID = uint;														// Shader constant ID within a specific shader stage
+	using ShaderConstantMap = std::map<ShaderConstantID, uint>;							// Maps constant ID to a constant value
+	using ShaderStageConstantMap = std::map<VkShaderStageFlagBits, ShaderConstantMap>;	// Maps shader stage to a constant map
 
+	/**
+	 * Stores information of a shader constant declaration. These can be identified in shaders by their special constant ID.
+	 * NAP currently only supports unsigned integer constants.
+	 *
+	 * ~~~~~{.glsl}
+	 * layout (constant_id = 0) const uint QUAD_SAMPLE_COUNT = 8;
+	 * ~~~~~
+	 * ```
+	 */
 	class NAPAPI ShaderConstantDeclaration final
 	{
 		RTTI_ENABLE()

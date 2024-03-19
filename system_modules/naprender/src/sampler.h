@@ -63,16 +63,16 @@ namespace nap
 
 
 	/**
-	 * Supported sampler border colors
+	 * Supported predefined sampler border colors
 	 */
 	enum class EBorderColor : uint32
 	{
-		FloatTransparentBlack = 0,	///< 
-		IntTransparentBlack,
-		FloatOpaqueBlack,
-		IntOpaqueBlack,
-		FloatOpaqueWhite,
-		IntOpaqueWhite
+		FloatTransparentBlack = 0,	///< Float transparent black
+		IntTransparentBlack,		///< Integer transparent black
+		FloatOpaqueBlack,			///< Float opaque black
+		IntOpaqueBlack,				///< Integer opaque black, sampler default
+		FloatOpaqueWhite,			///< Float opaque white
+		IntOpaqueWhite				///< Integer opaque white
 	};
 
 
@@ -94,11 +94,11 @@ namespace nap
 		EFilterMode			mMaxFilter				= EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
 		EFilterMode			mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
 		EAddressMode		mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
-		EAddressMode		mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
+		EAddressMode		mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal' horizontal address mode
 		EAnisotropicSamples	mMaxAnisotropy			= EAnisotropicSamples::Default;			///< Property: 'AnisotropicSamples' max number of anisotropic filter samples
 		EBorderColor		mBorderColor			= EBorderColor::IntOpaqueBlack;			///< Property: 'BorderColor' border color used for texture lookups
-		EDepthCompareMode	mCompareMode			= EDepthCompareMode::LessOrEqual;		///< Property: 'DepthCompareMode' 
-		bool				mEnableCompare			= false;								///< Property: 'EnableCompare'
+		EDepthCompareMode	mCompareMode			= EDepthCompareMode::LessOrEqual;		///< Property: 'DepthCompareMode' specifies the comparison operator to apply to sampled data
+		bool				mEnableCompare			= false;								///< Property: 'EnableCompare' enables texture compare operations for this sampler
 		float				mLodBias				= 0.0f;									///< Property: 'LodBias' bias value that is added to the LOD level
 		uint32				mMinLodLevel			= 0;									///< Property: 'MinLodLevel' minimum considered LOD, > 0 = exclude highest lod
 		uint32				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
