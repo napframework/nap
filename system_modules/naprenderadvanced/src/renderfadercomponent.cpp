@@ -104,26 +104,26 @@ namespace nap
 		{
 			case EFadeState::FadingIn:
 			{
-				double elapsed = mTimer.getElapsedTime();
+				float elapsed = mTimer.getElapsedTimeFloat();
 				if (elapsed > mResource->mFadeDuration)
 				{
 					mFadeState = EFadeState::FadedIn;
 					mFadedIn();
 				}
 				mAlphaUniform->setValue(1.0 -
-					math::smoothStep(static_cast<float>(elapsed), 0.0f, mResource->mFadeDuration));
+					math::smoothStep<float>(elapsed, 0.0f, mResource->mFadeDuration));
 				break;
 			}
 			case EFadeState::FadingOut:
 			{
-				double elapsed = mTimer.getElapsedTime();
+				float elapsed = mTimer.getElapsedTimeFloat();
 				if (elapsed > mResource->mFadeDuration)
 				{
 					mFadeState = EFadeState::FadedOut;
 					mFadedOut();
 				}
 				mAlphaUniform->setValue(
-					math::smoothStep(static_cast<float>(elapsed), 0.0f, mResource->mFadeDuration));
+					math::smoothStep<float>(elapsed, 0.0f, mResource->mFadeDuration));
 				break;
 			}
 			default:
