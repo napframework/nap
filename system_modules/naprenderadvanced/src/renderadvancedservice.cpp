@@ -201,8 +201,8 @@ namespace nap
 		}
 
 		// Create nap::NoMesh
-		mNoMesh = std::make_unique<NoMesh>(getCore());
-		mNoMesh->mID = utility::stringFormat("%s_NoMesh_%s", RTTI_OF(NoMesh).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mNoMesh = std::make_unique<EmptyMesh>(getCore());
+		mNoMesh->mID = utility::stringFormat("%s_NoMesh_%s", RTTI_OF(EmptyMesh).get_name().to_string().c_str(), math::generateUUID().c_str());
 		if (!mNoMesh->init(errorState))
 		{
 			errorState.fail("%s: Failed to initialize cube sampler resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
@@ -244,7 +244,7 @@ namespace nap
 		for (const auto& light : mLightComponents)
 		{
 			// Skip rendering the shadow map when the light intensity is zero
-			if (!light->isEnabled() || !light->getCastShadows() || light->getIntensity() <= math::epsilon<float>())
+			if (!light->isEnabled() || !light->castsShadows() || light->getIntensity() <= math::epsilon<float>())
 				continue;
 
 			switch (light->getShadowMapType())
@@ -341,7 +341,7 @@ namespace nap
 		// Synchronize shadow cameras
 		for (auto& light : mLightComponents)
 		{
-			if (light->mSpawnedCamera != nullptr && light->getCastShadows())
+			if (light->mSpawnedCamera != nullptr && light->castsShadows())
 			{
 				auto* spawn_xform = light->mSpawnedCamera->findComponent<nap::TransformComponentInstance>();
 				if (spawn_xform != nullptr)
@@ -388,7 +388,8 @@ namespace nap
 				// Light uniform custom
 				for (const auto& entry : light->mUniformList)
 				{
-					const auto& name = entry.get_name().to_string();
+					// Uniform property name
+					auto name = entry.get_name().to_string();
 
 					// Filter default uniforms
 					bool skip = false;
@@ -404,7 +405,7 @@ namespace nap
 						break;
 
 					// Get light declaration
-					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
+					const auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
                     assert(struct_decl != nullptr);
 
 					// Uniform not available
@@ -486,7 +487,7 @@ namespace nap
                 if (light_index >= getMaximumLightCount())
                     break;
 
-                if (light->getCastShadows())
+                if (light->castsShadows())
                 {
                     // Set light view projection matrix in shadow struct
                     const auto light_view_projection = light->getCamera().getRenderProjectionMatrix() * light->getCamera().getViewMatrix();
@@ -497,7 +498,7 @@ namespace nap
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
 
-                    // Fetch flags|
+                    // Fetch flags
                     auto it_flags = mLightFlagsMap.find(light);
                     assert(it_flags != mLightFlagsMap.end());
                     switch (light->getShadowMapType())
@@ -610,12 +611,14 @@ namespace nap
 	{
 		// Prerender shadow maps here
 		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
-
-		uint count = 0U;
-		for (auto& cube_map : cube_maps)
+		for (uint i = 0; i < cube_maps.size(); i++)
 		{
-			auto& rt = mCubeMapFromFileTargets[count];
-			rt->render([rs = &renderService, cm = cube_map.get(), mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
+			auto* cube_map = cube_maps[i].get();
+			if (!cube_map->isDirty())
+				continue;
+
+			auto& rt = mCubeMapFromFileTargets[i];
+			rt->render([rs = &renderService, cm = cube_map, mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
 				(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 			{
 				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);
@@ -641,8 +644,12 @@ namespace nap
 
 				// Bufferless drawing with the cube map shader
 				vkCmdDraw(rs->getCurrentCommandBuffer(), 3, 1, 0, 0);
+
+				// Unset dirty flag
+				auto* cube_map_from_file = static_cast<CubeMapFromFile*>(&target.getColorTexture());
+				assert(cube_map_from_file != nullptr);
+				cube_map_from_file->mDirty = false;
 			});
-			++count;
 		}
 	}
 

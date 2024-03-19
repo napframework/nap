@@ -37,6 +37,8 @@ namespace nap
 	{
 		RTTI_ENABLE(RenderTextureCube)
 	public:
+		friend class RenderAdvancedService;
+
 		// Destructor
 		virtual ~CubeMapFromFile() {}
 
@@ -55,7 +57,14 @@ namespace nap
 		/**
 		 * @return the source texture
 		 */
-		Texture2D& getSourceTexture() { return *mSourceImage; }
+		Texture2D& getSourceTexture() const				{ return *mSourceImage; }
+
+		/**
+		 * Returns whether the cube map must be (re-)rendered by the render advanced service e.g. after a hot-reload.
+		 * Only this resource and the render advanced service can set the flag.
+		 * @return dirty flag
+		 */
+		bool isDirty() const							{ return mDirty; }
 
 	public:
 		std::string					mImagePath;								///< Property: 'ImagePath' Path to the image on disk to load
@@ -65,5 +74,6 @@ namespace nap
 
 	private:
 		std::unique_ptr<Image> mSourceImage;
+		bool mDirty = true;
 	};
 }

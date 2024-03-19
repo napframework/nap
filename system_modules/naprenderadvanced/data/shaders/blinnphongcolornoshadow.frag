@@ -1,6 +1,6 @@
-/* This Source Code Form is subject to the terms of the Mozilla Public
- * License, v. 2.0. If a copy of the MPL was not distributed with this
- * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #version 450 core
 
@@ -38,7 +38,7 @@ uniform light
 
 uniform UBO
 { 
-	vec4	ambient;						//< Ambient
+	vec3	ambient;						//< Ambient
 	vec3	diffuse;						//< Diffuse
 	vec3	specular;						//< Specular
 	vec2	fresnel;						//< Fresnel [scale, power]

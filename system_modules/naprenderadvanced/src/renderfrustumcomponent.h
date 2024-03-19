@@ -123,12 +123,5 @@ namespace nap
 		UniformVec3Instance* mColorUniform = nullptr;								///< Constant color uniform
 		UniformFloatInstance* mAlphaUniform = nullptr;								///< Alpha uniform
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template Definitions
-	//////////////////////////////////////////////////////////////////////////
-
-
 }
 

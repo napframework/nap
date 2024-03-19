@@ -1,10 +1,10 @@
-#include "nomesh.h"
+#include "emptymesh.h"
 
 // External Includes
 #include <renderservice.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::NoMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmptyMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -14,12 +14,12 @@ namespace nap
 	// NoMesh
 	//////////////////////////////////////////////////////////////////////////
 
-	NoMesh::NoMesh(Core& core) :
+	EmptyMesh::EmptyMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
 	{ }
 
 
-	bool NoMesh::init(utility::ErrorState& errorState)
+	bool EmptyMesh::init(utility::ErrorState& errorState)
 	{
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);

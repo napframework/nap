@@ -177,13 +177,13 @@ namespace nap
 			if (ImGui::SliderFloat("Angle", &angle, 1.0f, 180.0f))
 				light.setAngle(angle);
 
+			auto clip = light.getFOVClip();
+			if (ImGui::SliderFloat("FOVClip", &clip, 0.0f, 1.0f))
+				light.setFOVClip(clip);
+
 			auto falloff = light.getFalloff();
 			if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
 				light.setFalloff(falloff);
-
-			auto fov = light.getFieldOfView();
-			if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f))
-				light.setFieldOfView(fov);
 		}
 		ImGui::End();
     }

@@ -1038,6 +1038,35 @@ namespace nap
 
 
 	/**
+	 * Creates specialization constant info structure for pipeline creation. Asserts on fail.
+	 * @param stage the shader stage to retrieve specialization constant info for.
+	 * @param outInfo the specialization constant info structure. Empty if no specialization constants are set.
+	 */
+	static void getSpecializationConstantInfo(const ShaderStageConstantMap& constantMap, VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo)
+	{
+		// If there is no map entry for the given stage, no specialization constants are set for said entry
+		const auto it = constantMap.find(stage);
+		if (it == constantMap.end())
+			return;
+
+		const auto& constant_map = it->second;
+		for (uint i = 0; i < constant_map.size(); i++)
+		{
+			const auto it = constant_map.find(i);
+			NAP_ASSERT_MSG(it != constant_map.end(), "Specialization Constant IDs are not in a sequence starting from 0");
+
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			outInfo.mEntries.emplace_back(std::move(entry));
+
+			outInfo.mData.emplace_back((*it).second);
+		}
+	}
+
+
+	/**
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
@@ -1050,6 +1079,7 @@ namespace nap
 		bool depthOnly,
 		ECullMode cullMode,
 		EPolygonMode polygonMode,
+		const ShaderStageConstantMap& constants,
 		VkPipelineLayout& pipelineLayout, 
 		VkPipeline& graphicsPipeline, 
 		utility::ErrorState& errorState)
@@ -1081,15 +1111,15 @@ namespace nap
 		vert_shader_stage_info.pName = shader::main;
 
 		ShaderSpecializationConstantInfo vert_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_VERTEX_BIT, vert_const_info);
+
 		VkSpecializationInfo vert_spec_info = {};
-		if (materialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_VERTEX_BIT, vert_const_info))
-		{
-			vert_spec_info.pMapEntries = vert_const_info.mEntries.data();
-			vert_spec_info.mapEntryCount = vert_const_info.mEntries.size();
-			vert_spec_info.pData = vert_const_info.mData.data();
-			vert_spec_info.dataSize = vert_const_info.mData.size() * sizeof(uint);
-			vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
-		}
+		vert_spec_info.pMapEntries = vert_const_info.mEntries.data();
+		vert_spec_info.mapEntryCount = vert_const_info.mEntries.size();
+		vert_spec_info.pData = vert_const_info.mData.data();
+		vert_spec_info.dataSize = vert_const_info.mData.size() * sizeof(uint);
+		vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
+
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1098,15 +1128,15 @@ namespace nap
 		frag_shader_stage_info.pName = shader::main;
 
 		ShaderSpecializationConstantInfo frag_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_FRAGMENT_BIT, frag_const_info);
+
 		VkSpecializationInfo frag_spec_info = {};
-		if (materialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_FRAGMENT_BIT, frag_const_info))
-		{
-			frag_spec_info.pMapEntries = frag_const_info.mEntries.data();
-			frag_spec_info.mapEntryCount = frag_const_info.mEntries.size();
-			frag_spec_info.pData = frag_const_info.mData.data();
-			frag_spec_info.dataSize = frag_const_info.mData.size() * sizeof(uint);
-			frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
-		}
+		frag_spec_info.pMapEntries = frag_const_info.mEntries.data();
+		frag_spec_info.mapEntryCount = frag_const_info.mEntries.size();
+		frag_spec_info.pData = frag_const_info.mData.data();
+		frag_spec_info.dataSize = frag_const_info.mData.size() * sizeof(uint);
+		frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
+
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1212,7 +1242,12 @@ namespace nap
 	}
 
 
-	static bool createComputePipeline(VkDevice device, const ComputeMaterialInstance& computeMaterialInstance, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
+	static bool createComputePipeline(VkDevice device,
+		const ComputeMaterialInstance& computeMaterialInstance,
+		const ShaderStageConstantMap& constants,
+		VkPipelineLayout& pipelineLayout,
+		VkPipeline& outComputePipeline,
+		utility::ErrorState& errorState)
 	{
 		const ComputeMaterial& compute_material = computeMaterialInstance.getMaterial();
 		const ComputeShader& compute_shader = compute_material.getShader();
@@ -1226,15 +1261,14 @@ namespace nap
 		comp_shader_stage_info.pName = shader::main;
 
 		ShaderSpecializationConstantInfo comp_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_COMPUTE_BIT, comp_const_info);
+
 		VkSpecializationInfo comp_spec_info = {};
-		if (computeMaterialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_COMPUTE_BIT, comp_const_info))
-		{
-			comp_spec_info.pMapEntries = comp_const_info.mEntries.data();
-			comp_spec_info.mapEntryCount = comp_const_info.mEntries.size();
-			comp_spec_info.pData = comp_const_info.mData.data();
-			comp_spec_info.dataSize = comp_const_info.mData.size() * sizeof(uint);
-			comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
-		}
+		comp_spec_info.pMapEntries = comp_const_info.mEntries.data();
+		comp_spec_info.mapEntryCount = comp_const_info.mEntries.size();
+		comp_spec_info.pData = comp_const_info.mData.data();
+		comp_spec_info.dataSize = comp_const_info.mData.size() * sizeof(uint);
+		comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
 
 		auto layout = compute_shader.getDescriptorSetLayout();
 
@@ -1402,7 +1436,10 @@ namespace nap
 			depth_only,
 			cull_mode,
 			poly_mode,
-			pipeline.mLayout, pipeline.mPipeline, errorState))
+			materialInstance.getShaderStageConstantMap(),
+			pipeline.mLayout,
+			pipeline.mPipeline,
+			errorState))
 		{
 			mPipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
@@ -1436,7 +1473,11 @@ namespace nap
 
 		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (createComputePipeline(mDevice, computeMaterialInstance, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (createComputePipeline(mDevice, computeMaterialInstance,
+			computeMaterialInstance.getShaderStageConstantMap(),
+			pipeline.mLayout,
+			pipeline.mPipeline,
+			errorState))
 		{
 			mComputePipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;

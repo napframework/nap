@@ -29,7 +29,7 @@ namespace nap
 	public:
 		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
 		float mAngle = 90.0f;									///< Property: 'Angle' The light's angle of view (focus)
-		float mFieldOfView = 90.0f;								///< Property: 'FieldOfView' The light shadow camera angle of view
+		float mFOVClip = 1.0f;									///< Property: 'FOVClip' The light shadow camera view clip value, where 1.0 is equals the light angle of view.
 		float mFalloff = 0.5f;									///< Property: 'Falloff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
 		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };			///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
 		uint mShadowMapSize = 1024;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
@@ -88,22 +88,22 @@ namespace nap
 		float getAngle() const												{ return mAngle; }
 
 		/**
-		 * Set light angle of view in degrees
+		 * Set light and camera angle of view in degrees
 		 * @param angle angle of view in degrees
 		 */
-		void setAngle(float angle)											{ mAngle = angle; }
+		void setAngle(float angle);
 
 		/**
-		 * Returns the shadow camera field of view
-		 * @return The shadow camera fov angle in degrees
-		 */	
-		float getFieldOfView() const;
-
-		/**
-		 * Set the shadow camera field of view
-		 * @param angle shadow camera fov in degrees
+		 * Light shadow camera view clip value, where 1.0 is equals the light angle of view.
+		 * @return shadow camera view clip value
 		 */
-		void setFieldOfView(float angle);
+		float getFOVClip() const											{ return mFOVClip; }
+
+		/**
+		 * Set light shadow camera view clip value, where 1.0 is equals the light angle of view.
+		 * @param clip shadow camera view clip value in the range 0.0 - 1.0
+		 */
+		void setFOVClip(float clip);
 
 		/**
 		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient. 
@@ -119,8 +119,8 @@ namespace nap
 
 		float mAttenuation = 0.1f;
 		float mAngle = 90.0f;
+		float mFOVClip = 1.0f;
 		float mFalloff = 0.5f;
-		float mFieldOfView = 90.0f;
 
 	private:
 		// Shadow camera entity resource
