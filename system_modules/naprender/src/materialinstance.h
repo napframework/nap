@@ -114,9 +114,9 @@ namespace nap
 		virtual UniformStructInstance* getOrCreateUniform(const std::string& name);
 
 		/**
-		 * Gets or creates a nap::BufferBindingInstance of type T for this material instance.
-		 * This means that the buffer binding returned is only applicable to this instance.
-		 * In order to change a buffer binding so that its value is shared among MaterialInstances, use getMaterial().getBinding().
+		 * Gets or creates a nap::BufferBindingInstance of type T for this material.
+		 * The binding can be used to set the buffer of type T at runtime.
+		 * The returned binding is only applicable to this instance.
 		 * This function will assert if the name of the binding does not match the type that you are trying to create.
 		 *
 		 * ~~~~~{.cpp}
@@ -130,9 +130,9 @@ namespace nap
 		T* getOrCreateBuffer(const std::string& name);
 
 		/**
-		 * Gets or creates a buffer binding isntance for this material instance.
-		 * This means that the buffer binding returned is only applicable to this instance.
-		 * In order to change a buffer binding so that its value is shared among MaterialInstances, use getMaterial().getBinding().
+		 * Gets or creates a buffer binding instance for this material.
+		 * The binding can be used to set any buffer of type 'BufferBindingInstance' at runtime.
+		 * The returned buffer binding is only applicable to this instance.
 		 *
 		 * @param name: the name of the buffer binding as declared in the shader.
 		 * @return buffer binding that was found or created, nullptr if not available.
