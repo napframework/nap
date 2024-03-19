@@ -611,12 +611,14 @@ namespace nap
 	{
 		// Prerender shadow maps here
 		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
-
-		uint count = 0U;
-		for (auto& cube_map : cube_maps)
+		for (uint i = 0; i < cube_maps.size(); i++)
 		{
-			auto& rt = mCubeMapFromFileTargets[count];
-			rt->render([rs = &renderService, cm = cube_map.get(), mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
+			auto* cube_map = cube_maps[i].get();
+			if (!cube_map->isDirty())
+				continue;
+
+			auto& rt = mCubeMapFromFileTargets[i];
+			rt->render([rs = &renderService, cm = cube_map, mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
 				(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 			{
 				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);
@@ -642,8 +644,12 @@ namespace nap
 
 				// Bufferless drawing with the cube map shader
 				vkCmdDraw(rs->getCurrentCommandBuffer(), 3, 1, 0, 0);
+
+				// Unset dirty flag
+				auto* cube_map_from_file = static_cast<CubeMapFromFile*>(&target.getColorTexture());
+				assert(cube_map_from_file != nullptr);
+				cube_map_from_file->mDirty = false;
 			});
-			++count;
 		}
 	}
 

@@ -237,7 +237,7 @@ namespace nap
 
 		/**
 		 * This render command pre-renders all available `nap::CubeMapFromFile` objects in the scene. It is queued for the first
-		 * frame of rendering when headless rendering command are recorded: `mRenderService->beginHeadlessRecording()`.
+		 * frame of rendering when headless rendering commands are recorded: `mRenderService->beginHeadlessRecording()`.
 		 */
 		class PreRenderCubeMapsCommand : public HeadlessCommand
 		{
