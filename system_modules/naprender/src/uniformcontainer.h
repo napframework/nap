@@ -61,20 +61,6 @@ namespace nap
 		ShaderConstantInstance* findConstant(const std::string& name) const;
 
 		/**
-		 * Returns a uniform struct instance with the given name, the struct has to exist.
-		 * @param name name of the uniform struct as declared in the shader.
-		 * @return uniform struct instance with the given name, asserts if not present.
-		 */
-		UniformStructInstance& getUniform(const std::string& name) const;
-
-		/**
-		 * Returns a buffer binding instance with the given name. The binding must exist.
-		 * @param name name of the buffer binding as declared in the shader.
-		 * @return buffer binding instance with the given name, asserts if not present.
-		 */
-		BufferBindingInstance& getBinding(const std::string& name) const;
-
-		/**
 		 * @return all the uniforms sampler instances.
 		 */
 		const SamplerInstanceList& getSamplers() const								{ return mSamplerInstances; }

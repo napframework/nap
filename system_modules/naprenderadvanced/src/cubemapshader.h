@@ -52,7 +52,6 @@ namespace nap
 		CubeMapShader(Core& core);
 
 		/**
-		/**
 		 * Cross compiles the constant GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.
 		 * @param errorState contains the error if initialization fails.
 		 * @return if initialization succeeded.
