@@ -25,7 +25,6 @@ namespace nap
 		DECLARE_COMPONENT(PointLightComponent, PointLightComponentInstance)
 	public:
 		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
-		float mFieldOfView = 30.0f;								///< Property: 'FieldOfView' Shadow camera field of view
 		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };			///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
 		uint mShadowMapSize = 512;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
