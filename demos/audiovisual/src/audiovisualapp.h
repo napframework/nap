@@ -13,7 +13,7 @@
 #include <renderwindow.h>
 #include <entity.h>
 #include <app.h>
-#include <rendermask.h>
+#include <renderlayer.h>
 #include <rendertarget.h>
 
 namespace nap

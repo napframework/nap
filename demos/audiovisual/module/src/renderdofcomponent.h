@@ -10,7 +10,7 @@
 #include <perspcameracomponent.h>
 #include <materialinstance.h>
 #include <renderablemesh.h>
-#include <nomesh.h>
+#include <emptymesh.h>
 #include <parameternumeric.h>
 
 namespace nap
@@ -103,7 +103,7 @@ namespace nap
 		RenderTarget				mRenderTargetA;						///< Internally managed render target
 		RenderTarget				mRenderTargetB;						///< Internally managed render target
 		RenderableMesh				mRenderableMesh;					///< Mesh / Material combination
-		std::unique_ptr<NoMesh>		mNoMesh;							///< Empty mesh
+		std::unique_ptr<EmptyMesh>	mEmptyMesh;							///< Empty mesh
 
 		Sampler2DInstance*			mColorTextureSampler = nullptr;		///< Sampler instance for color textures in the blur material
 		Sampler2DInstance*			mDepthTextureSampler = nullptr;		///< Sampler instance for depth textures in the blur material

@@ -35,7 +35,7 @@ uniform shadow
 
 uniform UBO
 {
-	vec4	ambient;						//< Ambient
+	vec3	ambient;						//< Ambient
 	vec3	diffuse;						//< Diffuse
 	vec3	specular;						//< Specular
 	vec3	highlight;						//< Shader specific

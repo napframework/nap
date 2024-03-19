@@ -46,7 +46,7 @@ namespace nap
 		mRenderTargetA(*entity.getCore()),
 		mRenderTargetB(*entity.getCore()),
 		mIntermediateTexture(*entity.getCore()),
-		mNoMesh(std::make_unique<NoMesh>(*entity.getCore()))
+		mEmptyMesh(std::make_unique<EmptyMesh>(*entity.getCore()))
 	{ }
 
 
@@ -126,10 +126,10 @@ namespace nap
 			return false;
 
 		// Create no mesh
-		if (!mNoMesh->init(errorState))
+		if (!mEmptyMesh->init(errorState))
 			return false;
 
-		mRenderableMesh = mRenderService->createRenderableMesh(*mNoMesh, mMaterialInstance, errorState);
+		mRenderableMesh = mRenderService->createRenderableMesh(*mEmptyMesh, mMaterialInstance, errorState);
 		if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 			return false;
 

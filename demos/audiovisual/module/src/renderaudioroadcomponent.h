@@ -19,7 +19,7 @@ namespace nap
 	public:
 		ComponentPtr<AudioRoadComponent> mAudioRoadComponent;
 
-		ResourcePtr<ParameterRGBAColorFloat>	mAmbient;
+		ResourcePtr<ParameterRGBColorFloat>		mAmbient;
 		ResourcePtr<ParameterRGBColorFloat>		mDiffuse;
 		ResourcePtr<ParameterRGBColorFloat>		mSpecular;
 		ResourcePtr<ParameterRGBColorFloat>		mHighlight;
@@ -76,12 +76,6 @@ namespace nap
 			uniformInstance->setValue(value.toVec3());
 		}
 
-		void onUniformRGBAColorUpdate(RGBAColorFloat value, UniformVec4Instance* uniformInstance)
-		{
-			assert(uniformInstance != nullptr);
-			uniformInstance->setValue(value.toVec4());
-		}
-
 		void onUniformBoolUpdate(bool value, UniformUIntInstance* uniformInstance)
 		{
 			assert(uniformInstance != nullptr);
@@ -89,7 +83,7 @@ namespace nap
 		}
 
 		// Slots
-		Slot<RGBAColorFloat>	mAmbientChangedSlot;
+		Slot<RGBColorFloat>		mAmbientChangedSlot;
 		Slot<RGBColorFloat>		mDiffuseChangedSlot;
 		Slot<RGBColorFloat>		mSpecularChangedSlot;
 		Slot<RGBColorFloat>		mHighlightChangedSlot;

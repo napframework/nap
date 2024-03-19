@@ -204,15 +204,13 @@
                                         }
                                     },
                                     {
-                                        "Type": "nap::UniformVec4",
+                                        "Type": "nap::UniformVec3",
                                         "mID": "ambient_53a743bf",
                                         "Name": "ambient",
                                         "Value": {
                                             "x": 0.07500000298023224,
                                             "y": 0.0,
-                                            "z": 0.05000000074505806,
-                                            "w": 1.0
-                                        }
+                                            "z": 0.05000000074505806                                        }
                                     },
                                     {
                                         "Type": "nap::UniformVec2",
@@ -1178,15 +1176,14 @@
                     "mID": "MaterialParameters",
                     "Parameters": [
                         {
-                            "Type": "nap::ParameterRGBAColorFloat",
+                            "Type": "nap::ParameterRGBColorFloat",
                             "mID": "Ambient",
                             "Name": "Ambient",
                             "Value": {
                                 "Values": [
                                     0.07058823853731156,
                                     0.0,
-                                    0.05098039284348488,
-                                    1.0
+                                    0.05098039284348488
                                 ]
                             }
                         },
@@ -1350,7 +1347,7 @@
             "Columns": 4
         },
         {
-            "Type": "nap::RenderLayerRegistry",
+            "Type": "nap::RenderChain",
             "mID": "RenderLayerRegistry",
             "Layers": [
                 {

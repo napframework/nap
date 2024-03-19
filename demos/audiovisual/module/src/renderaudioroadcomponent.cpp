@@ -52,11 +52,11 @@ namespace nap
 		if (!errorState.check(uni != nullptr, "Missing uniform struct with name `UBO`"))
 			return false;
 
-		auto* ambient = uni->getOrCreateUniform<UniformVec4Instance>("ambient");
+		auto* ambient = uni->getOrCreateUniform<UniformVec3Instance>("ambient");
 		if (ambient != nullptr && mResource->mAmbient != nullptr)
 		{
 			ambient->setValue(mResource->mAmbient->mValue);
-			mAmbientChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBAColorUpdate, this, std::placeholders::_1, ambient));
+			mAmbientChangedSlot.setFunction(std::bind(&RenderAudioRoadComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, ambient));
 			mResource->mAmbient->valueChanged.connect(mAmbientChangedSlot);
 		}
 

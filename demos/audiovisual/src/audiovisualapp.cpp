@@ -70,7 +70,7 @@ namespace nap
 			return false;
 
 		// Cache mask
-		mLitRenderMask = mRenderService->findRenderMask("Lit");
+		mLitRenderMask = mRenderService->getRenderMask("Lit");
 
 		// Reset first frame flag on resource reload
 		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSlot);
@@ -155,8 +155,7 @@ namespace nap
 			mRenderTarget->beginRendering();
 			utility::ErrorState error_state;
 			auto lit_comps = mRenderService->filterObjects(render_comps, mLitRenderMask);
-			if (!mRenderAdvancedService->pushLights(lit_comps, error_state))
-				nap::Logger::error(error_state.toString().c_str());
+			mRenderAdvancedService->pushLights(lit_comps);
 
 			auto& cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 			mRenderService->renderObjects(*mRenderTarget, cam, render_comps);

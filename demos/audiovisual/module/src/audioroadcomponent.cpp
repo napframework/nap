@@ -297,20 +297,20 @@ namespace nap
 
 		mCurrentPositionBuffer = mPositionBuffers[cur_idx].get();
 		mPrevPositionBuffer = mPositionBuffers[prev_idx].get();
-		static_cast<BufferBindingVec4Instance*>(&populate_mtl.getBinding("InPositions"))->setBuffer(*mPrevPositionBuffer);
-		static_cast<BufferBindingVec4Instance*>(&populate_mtl.getBinding("OutPositions"))->setBuffer(*mCurrentPositionBuffer);
+		static_cast<BufferBindingVec4Instance*>(populate_mtl.getOrCreateBuffer("InPositions"))->setBuffer(*mPrevPositionBuffer);
+		static_cast<BufferBindingVec4Instance*>(populate_mtl.getOrCreateBuffer("OutPositions"))->setBuffer(*mCurrentPositionBuffer);
 
 		// Normals
 		auto& normals_mtl = mComputeNormalsInstance->getMaterialInstance();
 
 		mCurrentNormalBuffer = mNormalBuffers[cur_idx].get();
 		mPrevNormalBuffer = mNormalBuffers[prev_idx].get();
-		static_cast<BufferBindingVec4Instance*>(&normals_mtl.getBinding("InNormals"))->setBuffer(*mPrevNormalBuffer);
-		static_cast<BufferBindingVec4Instance*>(&normals_mtl .getBinding("OutNormals"))->setBuffer(*mCurrentNormalBuffer);
+		static_cast<BufferBindingVec4Instance*>(normals_mtl.getOrCreateBuffer("InNormals"))->setBuffer(*mPrevNormalBuffer);
+		static_cast<BufferBindingVec4Instance*>(normals_mtl .getOrCreateBuffer("OutNormals"))->setBuffer(*mCurrentNormalBuffer);
 
-		static_cast<BufferBindingVec4Instance*>(&normals_mtl.getBinding("Positions"))->setBuffer(*mCurrentPositionBuffer);
-		static_cast<BufferBindingUIntInstance*>(&normals_mtl.getBinding("Triangles"))->setBuffer(*mTriangleBuffer);
-		static_cast<BufferBindingIntInstance*>(&normals_mtl.getBinding("Adjacency"))->setBuffer(*mAdjacencyBuffer);
+		static_cast<BufferBindingVec4Instance*>(normals_mtl.getOrCreateBuffer("Positions"))->setBuffer(*mCurrentPositionBuffer);
+		static_cast<BufferBindingUIntInstance*>(normals_mtl.getOrCreateBuffer("Triangles"))->setBuffer(*mTriangleBuffer);
+		static_cast<BufferBindingIntInstance*>(normals_mtl.getOrCreateBuffer("Adjacency"))->setBuffer(*mAdjacencyBuffer);
 
 		// Update for subsequent frame
 		++mFrameIndex;
