@@ -180,10 +180,6 @@ namespace nap
 			auto falloff = light.getFalloff();
 			if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
 				light.setFalloff(falloff);
-
-			auto fov = light.getFieldOfView();
-			if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f))
-				light.setFieldOfView(fov);
 		}
 		ImGui::End();
     }

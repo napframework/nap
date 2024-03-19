@@ -42,7 +42,6 @@ namespace nap
 		auto* resource = getComponent<SpotLightComponent>();
 		mAttenuation = resource->mAttenuation;
 		mAngle = resource->mAngle;
-		mFieldOfView = resource->mFieldOfView;
 		mFalloff = resource->mFalloff;
 		mShadowMapSize = resource->mShadowMapSize;
 
@@ -66,7 +65,7 @@ namespace nap
 		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
 		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
-		mShadowCamComponent->mProperties.mFieldOfView = mFieldOfView;
+		mShadowCamComponent->mProperties.mFieldOfView = mAngle;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
 		// Shadow Origin component
@@ -99,14 +98,9 @@ namespace nap
 	}
 
 
-	float SpotLightComponentInstance::getFieldOfView() const
+	void SpotLightComponentInstance::setAngle(float angle)
 	{
-		return mSpawnedCamera->getComponent<PerspCameraComponentInstance>().getFieldOfView();
-	}
-
-
-	void SpotLightComponentInstance::setFieldOfView(float angle)
-	{
+		mAngle = angle;
 		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(angle);
 	}
 }

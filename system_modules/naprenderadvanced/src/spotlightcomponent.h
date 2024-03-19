@@ -88,22 +88,10 @@ namespace nap
 		float getAngle() const												{ return mAngle; }
 
 		/**
-		 * Set light angle of view in degrees
+		 * Set light and camera angle of view in degrees
 		 * @param angle angle of view in degrees
 		 */
-		void setAngle(float angle)											{ mAngle = angle; }
-
-		/**
-		 * Returns the shadow camera field of view
-		 * @return The shadow camera fov angle in degrees
-		 */	
-		float getFieldOfView() const;
-
-		/**
-		 * Set the shadow camera field of view
-		 * @param angle shadow camera fov in degrees
-		 */
-		void setFieldOfView(float angle);
+		void setAngle(float angle);
 
 		/**
 		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient. 
@@ -120,7 +108,6 @@ namespace nap
 		float mAttenuation = 0.1f;
 		float mAngle = 90.0f;
 		float mFalloff = 0.5f;
-		float mFieldOfView = 90.0f;
 
 	private:
 		// Shadow camera entity resource
