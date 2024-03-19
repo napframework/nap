@@ -79,3 +79,5 @@ if(APPLE)
 elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
+
+install(TARGETS ${PROJECT_NAME} LIBRARY OPTIONAL)

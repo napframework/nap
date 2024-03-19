@@ -54,3 +54,5 @@ add_custom_command(
         $<TARGET_FILE:RTTR::Core>
         ${LIB_DIR})
 
+install(TARGETS ${PROJECT_NAME} LIBRARY OPTIONAL)
+install(FILES $<TARGET_FILE:RTTR::Core> TYPE LIB OPTIONAL)

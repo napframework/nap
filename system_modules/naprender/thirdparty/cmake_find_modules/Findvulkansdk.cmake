@@ -45,7 +45,7 @@ if(WIN32)
                 PATHS ${VULKANSDK_LIBS_DIR}
                 )
 elseif(APPLE)
-    # Moltenvk -> libvulkan.so
+    # Moltenvk -> libvulkan.dylib
     find_library(VULKAN_LIB
             NO_DEFAULT_PATH
             NAMES vulkan
@@ -85,3 +85,9 @@ mark_as_advanced(VULKANSDK_ROOT_DIR)
 # Promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(vulkansdk REQUIRED_VARS VULKANSDK_DIR VULKANSDK_INCLUDE_DIRS VULKANSDK_LIBS)
+
+## Define VulkanSDK target
+#add_library(VulkanSDK SHARED IMPORTED)
+#set_property(TARGET VulkanSDK PROPERTY IMPORTED_LOCATION ${FREEIMAGE_LIBRARIES})
+#target_include_directories(FreeImage INTERFACE ${FREEIMAGE_INCLUDE_DIR})
+

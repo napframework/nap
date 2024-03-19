@@ -28,7 +28,7 @@ find_package(glslang REQUIRED)
 # Add includes
 set(INCLUDES
     ${SDL2_INCLUDE_DIR}
-    ${FREEIMAGE_INCLUDE_DIR}
+#    ${FREEIMAGE_INCLUDE_DIR}
     ${ASSIMP_INCLUDE_DIRS}
     ${VULKANSDK_INCLUDE_DIRS}
     ${SPIRVCROSS_INCLUDE_DIR}
@@ -46,7 +46,7 @@ endif()
 set(LIBRARIES
     ${VULKANSDK_LIBS}
     ${SDL2_LIBRARY}
-    ${FREEIMAGE_LIBRARIES}
+    FreeImage
     )
 
 # TODO Investigate why we're using a static lib for Win64 only
@@ -69,8 +69,11 @@ target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 target_link_libraries(${PROJECT_NAME} debug ${SPIRVCROSS_LIBS_DEBUG} optimized ${SPIRVCROSS_LIBS_RELEASE})
 target_link_libraries(${PROJECT_NAME} debug "${GLSLANG_LIBS_DEBUG}" optimized "${GLSLANG_LIBS_RELEASE}")
 
-if (WIN32)
-    # Install for fbxconverter
-    install(TARGETS ${PROJECT_NAME} RUNTIME DESTINATION tools/buildsystem
-            CONFIGURATIONS Release)
-endif()
+# Copy MoltenVK_icd.json to bin
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy
+        ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/vulkansdk/macos/universal/share/vulkan/icd.d/MoltenVK_icd.json
+        ${LIB_DIR}/MoltenVK_icd.json)
+
+install(FILES ${LIB_DIR}/MoltenVK_icd.json TYPE LIB OPTIONAL)

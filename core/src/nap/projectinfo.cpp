@@ -19,6 +19,7 @@ RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("NapkinExeToRoot",		&nap::PathMapping::mNapkinExeToRoot,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ModulePaths",			&nap::PathMapping::mModulePaths,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BuildPath",              &nap::PathMapping::mBuildPath,              nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("DataPath",               &nap::PathMapping::mDataPath,              nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ProjectInfo)
@@ -98,8 +99,16 @@ namespace nap
 		if (mDefaultData.empty()) return {};
         if (utility::isAbsolutePath(mDefaultData))
             return mDefaultData;
-        else
-    		return utility::joinPath({getProjectDir(), mDefaultData});
+        if (!mPathMapping->mDataPath.empty())
+        {
+            auto mappedDataPath = utility::joinPath({mPathMapping->mDataPath, mDefaultData});
+            if (utility::fileExists(mappedDataPath))
+                return mappedDataPath;
+        }
+        auto legacyDataPath = utility::joinPath({getProjectDir(), mDefaultData});
+            if (utility::fileExists(legacyDataPath))
+                return legacyDataPath;
+        return "";
 	}
 
 
@@ -206,6 +215,9 @@ namespace nap
 
 		// Resolve build output
 		patchPath(mPathMapping->mBuildPath);
+
+        // Resolve data path
+        patchPath(mPathMapping->mDataPath);
 
 		// Resolve service config
 		patchPath(mServiceConfigFilename);

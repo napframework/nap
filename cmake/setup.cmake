@@ -1,6 +1,13 @@
 macro(setup)
     bootstrap_environment()
 
+    if (NOT EXISTS ${BIN_DIR}/)
+        file(MAKE_DIRECTORY ${BIN_DIR}/)
+    endif()
+    if (NOT EXISTS ${LIB_DIR}/)
+        file(MAKE_DIRECTORY ${LIB_DIR}/)
+    endif()
+
     foreach(configuration ${CMAKE_CONFIGURATION_TYPES})
         string(TOUPPER ${configuration} configuration)
         set(CMAKE_RUNTIME_OUTPUT_DIRECTORY_${configuration} ${BIN_DIR})

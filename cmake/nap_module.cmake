@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.19)
 
 # Get the module name from the directory name
+get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
+get_filename_component(parent_name ${parent_dir} NAME)
 if(module_name MATCHES "^module$")
     # Handle app module
-    get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
-    get_filename_component(module_name ${parent_dir} NAME)
-    set(module_name "nap${module_name}")
+    set(module_name "nap${parent_name}")
 else()
     get_filename_component(module_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 endif()
@@ -62,7 +62,20 @@ add_custom_command(
         ${CMAKE_CURRENT_SOURCE_DIR}/module.json
         ${LIB_DIR}/${PROJECT_NAME}.json)
 
+# Copy module data folder
+get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
+if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
+    set(dest ${BIN_DIR}/${parent_name}/${PROJECT_NAME})
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/data
+        ${dest}/data)
+endif()
 
+# Install library and module json
+install(TARGETS ${PROJECT_NAME} LIBRARY OPTIONAL)
+install(FILES ${BIN_DIR}/${PROJECT_NAME}.json TYPE LIB OPTIONAL)
+install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME} OPTIONAL)
 
 
 

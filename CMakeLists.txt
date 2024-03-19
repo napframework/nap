@@ -5,8 +5,11 @@ project(NAP)
 # Set global directories
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 set(THIRDPARTY_DIR ${NAP_ROOT}/thirdparty)
-set(BIN_DIR ${NAP_ROOT}/bin)
-set(LIB_DIR ${NAP_ROOT}/bin)
+set(BIN_DIR ${CMAKE_BINARY_DIR}/bin)
+set(LIB_DIR ${BIN_DIR}/lib)
+set(CMAKE_INSTALL_BINDIR Contents/MacOS)
+set(CMAKE_INSTALL_LIBDIR Contents/MacOS/lib)
+set(CMAKE_INSTALL_DATADIR Contents/Resources)
 
 include(${NAP_ROOT}/cmake/setup.cmake)
 setup()
@@ -26,7 +29,7 @@ add_subdirectory(system_modules/napapp)
 add_subdirectory(system_modules/napimgui)
 add_subdirectory(system_modules/napparameter)
 add_subdirectory(system_modules/napcameracontrol)
-add_subdirectory(demos/helloworld)
 
+add_subdirectory(demos/helloworld)
 add_subdirectory(tools/fbxconverter)
 

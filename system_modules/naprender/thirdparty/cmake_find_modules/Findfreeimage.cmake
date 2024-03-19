@@ -32,15 +32,6 @@ elseif(UNIX)
     file(GLOB FREEIMAGE_LICENSE_FILES ${FREEIMAGE_DIR}/license*.txt)
 endif()
 
-add_library(FreeImage SHARED IMPORTED)
-set_target_properties(FreeImage PROPERTIES
-                      IMPORTED_CONFIGURATIONS "Debug;Release;MinSizeRel;RelWithDebInfo"
-                      IMPORTED_LOCATION_RELEASE ${FREEIMAGE_LIBS_RELEASE_DLL}
-                      IMPORTED_LOCATION_DEBUG ${FREEIMAGE_LIBS_RELEASE_DLL}
-                      IMPORTED_LOCATION_MINSIZEREL ${FREEIMAGE_LIBS_RELEASE_DLL}
-                      IMPORTED_LOCATION_RELWITHDEBINFO ${FREEIMAGE_LIBS_RELEASE_DLL}
-                      )
-
 mark_as_advanced(FREEIMAGE_INCLUDE_DIR)
 mark_as_advanced(freeimage_search_dir)
 
@@ -51,6 +42,10 @@ find_package_handle_standard_args(freeimage REQUIRED_VARS
     FREEIMAGE_INCLUDE_DIR
     FREEIMAGE_LIBS_DIR
     FREEIMAGE_LICENSE_FILES)
+
+add_library(FreeImage SHARED IMPORTED)
+set_property(TARGET FreeImage PROPERTY IMPORTED_LOCATION ${FREEIMAGE_LIBRARIES})
+target_include_directories(FreeImage INTERFACE ${FREEIMAGE_INCLUDE_DIR})
 
 # Copy the FreeImage dynamic linked lib into the build directory
 macro(copy_freeimage_dll)
