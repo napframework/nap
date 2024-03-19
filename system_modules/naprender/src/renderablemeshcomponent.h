@@ -170,6 +170,17 @@ namespace nap
 		 */
 		const TransformComponentInstance& getTransform()		{ return *mTransformComponent; }
 
+		/**
+		 * Returns the program used to render the mesh.
+		 * 
+		 * TODO: This should be private, but our current RTTI implementation 'mangles' class name-spaces,
+		 * causing the RTTR_REGISTRATION_FRIEND macro to fail -> needs to be fixed.
+		 * It is therefore not recommended to use this function at runtime, use 'getMaterialInstance' instead!
+		 * 
+		 * @return material handle
+		 */
+		MaterialInstance* getOrCreateMaterial() { return &mMaterialInstance; }
+
 	protected:
 		/**
 		 * Renders the model from the ModelResource, using the material on the ModelResource.

@@ -9,9 +9,8 @@
 #include "pipelinekey.h"
 #include "renderutils.h"
 #include "imagedata.h"
-#include "rendermask.h"
-#include "renderlayer.h"
 #include "rendercommand.h"
+#include "rendertag.h"
 
 // External Includes
 #include <nap/service.h>
@@ -38,6 +37,8 @@ namespace nap
 	class ComputeComponentInstance;
 	class Texture;
 	class Texture2D;
+	class RenderLayer;
+	class RenderChain;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -279,6 +280,8 @@ namespace nap
 		friend class GPUBuffer;
 		friend class RenderWindow;
 		friend class RenderTag;
+		friend class RenderChain;
+
 		RTTI_ENABLE(Service)
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
@@ -573,24 +576,6 @@ namespace nap
 		 * @return all available displays
 		 */
 		const DisplayList& getDisplays() const;
-
-		/**
-		 * Registers a new render tag to the render service. Called by RenderTag::start.
-		 * @param the render tag to register. Asserts if already registered.
-		 */
-		void addTag(const RenderTag& renderTag);
-
-		/**
-		 * Removes a render tag from the render service. Called by RenderTag::stop.
-		 * @param the render tag to remove. Asserts if not found.
-		 */
-		void removeTag(const RenderTag& renderTag);
-
-		/**
-		 * Returns the render tag index in the render tag registry. Asserts if unavailable.
-		 * @return the render tag index in the render tag registry.
-		 */
-		uint getTagIndex(const RenderTag& renderTag) const;
 
 		/**
 		 * Add a window event that is processed later, ownership is transferred here.
@@ -910,18 +895,17 @@ namespace nap
 		TextureCube& getErrorTextureCube() const									{ return *mErrorTextureCube; }
 
 		/**
-		 * Returns the render mask denoting the render tag with the name of the tagName argument or 0 if no match is found.
-		 * @return a render mask of the tag to be found or 0 if there is no match.
+		 * Returns the render mask for the given tag.
+		 * @return The render mask associated with the given tag.
 		 */
-		RenderMask findRenderMask(const std::string& tagName);
+		RenderMask getRenderMask(const RenderTag& renderTag) const;
 
 		/**
-		 * Returns the layer index of the layer with the name of the layerName argument or 0 if no match or registry is found.
-		 * Queries the resource manager for `nap::RenderLayerRegistry` objects and selects the first occurrence.
-		 * Logs a warning when more than one layer registry is found.
-		 * @return the layer index of the layer to be found or 0 if no match or registry is found.
+		 * Returns the render mask for the given render tag name, 0 if no match is found.
+		 * @param tagName name of the render tag
+		 * @return The render mask for the associated tag name, 0 if there is no match.
 		 */
-		LayerIndex findLayerIndex(const std::string& layerName);
+		RenderMask getRenderMask(const std::string& tagName);
 
 		/**
 		 * Returns an existing or new material for the given type of shader that can be shared.
@@ -1048,6 +1032,16 @@ namespace nap
 		 * @param frameIndex The index of the frame to wait for
 		 */
 		void waitForFence(int frameIndex);
+
+		/**
+		 * Returns the rank of the given layer in the render chain.
+		 * Asserts and returns `RenderChain::invalidRank` if the rank is not registered.
+		 * The rank controls the order in which objects are rendered.
+		 * 
+		 * @param layer the layer to get the rank index for
+		 * @return the rank index of the given layer in the render chain, -1 if rank is not registered
+		 */
+		int getRank(const nap::RenderLayer& layer) const;
 
 	protected:
 		/**
@@ -1206,6 +1200,32 @@ namespace nap
 		 */
 		void restoreWindow(nap::RenderWindow& window);
 
+		/**
+		 * Registers a new render tag to the render service. Called by RenderTag::start.
+		 * @param the render tag to register.
+		 * @param error the error message if adding the mask fails
+		 * @return if the tag was added
+		 */
+		bool addTag(const RenderTag& renderTag, nap::utility::ErrorState& error);
+
+		/**
+		 * Removes a render tag from the render service. Called by RenderTag::stop.
+		 * @param the render tag to remove. Asserts if not found.
+		 */
+		void removeTag(const RenderTag& renderTag);
+
+		/**
+		 * Registers a new render chain with the render service
+		 * @param chain the chain to register
+		 */
+		void addChain(const RenderChain& chain);
+
+		/**
+		 * Removes a render chain from the render service
+		 * @param chain the chain to remove. Asserts if not found.
+		 */
+		void removeChain(const RenderChain& chain);
+
 	private:
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
@@ -1325,13 +1345,12 @@ namespace nap
 		std::vector<const ComputeCommand*>		mComputeCommandQueue;
 
 		// The registered render tag and layer registries
-		std::vector<const RenderTag*>			mRenderTagRegistry;
-		bool									mTagsChecked = false;
-
-		rtti::ObjectPtr<RenderLayerRegistry>	mRenderLayerRegistry;
-		bool									mLayersChecked = false;
+		std::vector<const RenderTag*>			mRenderTags;
 
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;
+
+		// Render chains
+		std::vector<const RenderChain*> mRenderChains;
 	};
 } // nap

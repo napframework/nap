@@ -13,6 +13,10 @@
 #include <imgui/imgui.h>
 #include <glm/ext.hpp>
 #include <parameternumeric.h>
+#include <spotlightcomponent.h>
+#include <directionallightcomponent.h>
+#include <pointlightcomponent.h>
+#include <rotatecomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightsAndShadowApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -49,11 +53,46 @@ namespace nap
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
 
-		mShadowMask = mRenderService->findRenderMask("Shadow");
-		if (!errorState.check(mShadowMask != 0, "Missing render tag with name `Shadow`"))
+		mPointLightEntity = scene->findEntity("PointLightEntity");
+		if (!errorState.check(mCameraEntity != nullptr, "Missing PointLightEntity"))
+			return false;
+
+		mSpotLightEntity = scene->findEntity("SpotLightEntity");
+		if (!errorState.check(mCameraEntity != nullptr, "Missing SpotLightEntity"))
+			return false;
+
+		mSunLightEntity = scene->findEntity("SunLightEntity");
+		if (!errorState.check(mCameraEntity != nullptr, "Missing SunLightEntity"))
+			return false;
+
+		mShadowTag = mResourceManager->findObject("RenderTag_Shadow");
+		if (!errorState.check(mShadowTag != nullptr, "Missing shadow render tag"))
 			return false;
 
 		return true;
+	}
+
+
+	/**
+	 * Utility function that pushes shared light controls
+	 */
+	static void pushDefaultLightControls(LightComponentInstance& light)
+	{
+		bool enabled = light.isEnabled();
+		if (ImGui::Checkbox("Enable", &enabled))
+			light.enable(enabled);
+
+		auto color = light.getColor();
+		if (ImGui::ColorEdit3("Color", color.getData()))
+			light.setColor(color);
+
+		auto inten = light.getIntensity();
+		if (ImGui::SliderFloat("Intensity", &inten, 0.0f, 5.0f, "%.3f", 2.0f))
+			light.setIntensity(inten);
+
+		auto shadow = light.getShadowStrength();
+		if (ImGui::SliderFloat("Shadow Strength", &shadow, 0.0f, 1.0f, "%.3f", 1.0f))
+			light.setShadowStrength(shadow);
 	}
 
 
@@ -83,52 +122,56 @@ namespace nap
 		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "wasd keys to move, mouse + left mouse button to look");
 		ImGui::Text(utility::stringFormat("%.02f fps | %.02f ms", getCore().getFramerate(), deltaTime*1000.0).c_str());
 
-		const auto& lights = mRenderAdvancedService->getLights();
-		if (!lights.empty())
+		ImGui::Checkbox("Show Light Origin", &mShowLocators);
+		if (mShowLocators)
 		{
-			ImGui::BeginTabBar("Lights");
-			if (ImGui::BeginTabItem("Light Controls"))
-			{
-				std::vector<const char*> labels;
-				labels.reserve(lights.size());
-				std::for_each(lights.begin(), lights.end(), [&labels](const auto& light) {
-					labels.emplace_back(light->mID.c_str());
-					});
+			ImGui::SameLine();
+			ImGui::Checkbox("Show Shadow Frustrum", &mShowFrustrum);
+		}
 
-				static int item_index = 0;
-				LightComponentInstance* selected_light = lights[item_index];
-				if (ImGui::Combo("Selected Light", &item_index, labels.data(), lights.size()))
-					selected_light = lights[item_index];
+		if (ImGui::CollapsingHeader("Spotlight"))
+		{
+			auto& spot_comp = mSpotLightEntity->getComponent<SpotLightComponentInstance>();
+			ImGui::PushID(&spot_comp);
+			pushDefaultLightControls(spot_comp);
 
-				// Calculate position -> default (from initialization) + offset 
-				auto xform_it = mLightXform.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
-				if (ImGui::SliderFloat3("Translate", glm::value_ptr(xform_it.first->second), -10.0f, 10.0f))
-				{
-					auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
-					selected_light->getTransform().setTranslate(default_xform->mProperties.mTranslate + xform_it.first->second);
-				}
+			auto attenuation = spot_comp.getAttenuation();
+			if (ImGui::SliderFloat("Attenuation", &attenuation, 0.0f, 1.0f))
+				spot_comp.setAttenuation(attenuation);
 
-				// Calculate rotation -> default (from initialization) + offset
-				auto euler_it = mLightEuler.try_emplace(lights[item_index]->mID, glm::vec3(0.0f, 0.0f, 0.0f));
-				if (ImGui::SliderFloat3("Rotate", glm::value_ptr(euler_it.first->second), -180.0f, 180.0f))
-				{
-					auto* default_xform = rtti_cast<nap::TransformComponent>(selected_light->getTransform().getComponent());
-					glm::vec3 rot_euler = math::radians(default_xform->mProperties.mRotate + euler_it.first->second);
-					selected_light->getTransform().setRotate(rot_euler);
-				}
+			auto angle = spot_comp.getAngle();
+			if (ImGui::SliderFloat("Angle", &angle, 1.0f, 180.0f))
+				spot_comp.setAngle(angle);
 
-				bool enabled = selected_light->isEnabled();
-				if (ImGui::Checkbox("Enable", &enabled))
-					selected_light->enable(enabled);
+			auto falloff = spot_comp.getFalloff();
+			if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
+				spot_comp.setFalloff(falloff);
 
-				ImGui::EndTabItem();
-			}
-			if (ImGui::BeginTabItem("Light Properties"))
-			{
-				mResourceManager->findObject<ParameterGUI>("ParameterGUI")->show(false);
-				ImGui::EndTabItem();
-			}
-			ImGui::EndTabBar();
+			ImGui::PopID();
+		}
+		if (ImGui::CollapsingHeader("Sunlight"))
+		{
+			auto& sun_comp = mSunLightEntity->getComponent<DirectionalLightComponentInstance>();
+			ImGui::PushID(&sun_comp);
+			pushDefaultLightControls(sun_comp);
+			ImGui::PopID();
+		}
+		if(ImGui::CollapsingHeader("Pointlight"))
+		{
+			auto& point_comp = mPointLightEntity->getComponent<PointLightComponentInstance>();
+			ImGui::PushID(&point_comp);
+			pushDefaultLightControls(point_comp);
+
+			auto attenuation = point_comp.getAttenuation();
+			if (ImGui::SliderFloat("Attenuation", &attenuation, 0.0f, 1.0f))
+				point_comp.setAttenuation(attenuation);
+
+			auto& rotate_comp = mPointLightEntity->getParent()->getComponent<RotateComponentInstance>();
+			float rotate = rotate_comp.getSpeed();
+			if (ImGui::SliderFloat("Rotation Speed", &rotate, -0.5f, 0.5f))
+				rotate_comp.setSpeed(rotate);
+
+			ImGui::PopID();
 		}
 		ImGui::End();
 	}
@@ -151,7 +194,7 @@ namespace nap
 		// lights that have shadows enabled. When the `updateMaterials` argument is set to true, light uniform and sampler data is also updated.
 		if (mRenderService->beginHeadlessRecording())
 		{
-			mRenderAdvancedService->renderShadows(render_comps, true, mShadowMask);
+			mRenderAdvancedService->renderShadows(render_comps, true, *mShadowTag);
 			mRenderService->endHeadlessRecording();
 		}
 
@@ -165,6 +208,10 @@ namespace nap
 			// Render world
 			auto& perspective_camera = mCameraEntity->getComponent<PerspCameraComponentInstance>();
 			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
+
+			// Render light locators
+			if (mShowLocators)
+				mRenderAdvancedService->renderLocators(*mRenderWindow, perspective_camera, mShowFrustrum);
 
 			// Render GUI elements
 			mGuiService->draw();

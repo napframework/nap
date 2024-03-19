@@ -18,8 +18,9 @@
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
-#include "rendermask.h"
 #include "shaderconstant.h"
+#include "renderlayer.h"
+#include "rendertag.h"
 
 // External Includes
 #include <nap/core.h>
@@ -1037,6 +1038,35 @@ namespace nap
 
 
 	/**
+	 * Creates specialization constant info structure for pipeline creation. Asserts on fail.
+	 * @param stage the shader stage to retrieve specialization constant info for.
+	 * @param outInfo the specialization constant info structure. Empty if no specialization constants are set.
+	 */
+	static void getSpecializationConstantInfo(const ShaderStageConstantMap& constantMap, VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo)
+	{
+		// If there is no map entry for the given stage, no specialization constants are set for said entry
+		const auto it = constantMap.find(stage);
+		if (it == constantMap.end())
+			return;
+
+		const auto& constant_map = it->second;
+		for (uint i = 0; i < constant_map.size(); i++)
+		{
+			const auto it = constant_map.find(i);
+			NAP_ASSERT_MSG(it != constant_map.end(), "Specialization Constant IDs are not in a sequence starting from 0");
+
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			outInfo.mEntries.emplace_back(std::move(entry));
+
+			outInfo.mData.emplace_back((*it).second);
+		}
+	}
+
+
+	/**
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
@@ -1049,6 +1079,7 @@ namespace nap
 		bool depthOnly,
 		ECullMode cullMode,
 		EPolygonMode polygonMode,
+		const ShaderStageConstantMap& constants,
 		VkPipelineLayout& pipelineLayout, 
 		VkPipeline& graphicsPipeline, 
 		utility::ErrorState& errorState)
@@ -1080,15 +1111,15 @@ namespace nap
 		vert_shader_stage_info.pName = shader::main;
 
 		ShaderSpecializationConstantInfo vert_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_VERTEX_BIT, vert_const_info);
+
 		VkSpecializationInfo vert_spec_info = {};
-		if (materialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_VERTEX_BIT, vert_const_info))
-		{
-			vert_spec_info.pMapEntries = vert_const_info.mEntries.data();
-			vert_spec_info.mapEntryCount = vert_const_info.mEntries.size();
-			vert_spec_info.pData = vert_const_info.mData.data();
-			vert_spec_info.dataSize = vert_const_info.mData.size() * sizeof(uint);
-			vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
-		}
+		vert_spec_info.pMapEntries = vert_const_info.mEntries.data();
+		vert_spec_info.mapEntryCount = vert_const_info.mEntries.size();
+		vert_spec_info.pData = vert_const_info.mData.data();
+		vert_spec_info.dataSize = vert_const_info.mData.size() * sizeof(uint);
+		vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
+
 
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1097,15 +1128,15 @@ namespace nap
 		frag_shader_stage_info.pName = shader::main;
 
 		ShaderSpecializationConstantInfo frag_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_FRAGMENT_BIT, frag_const_info);
+
 		VkSpecializationInfo frag_spec_info = {};
-		if (materialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_FRAGMENT_BIT, frag_const_info))
-		{
-			frag_spec_info.pMapEntries = frag_const_info.mEntries.data();
-			frag_spec_info.mapEntryCount = frag_const_info.mEntries.size();
-			frag_spec_info.pData = frag_const_info.mData.data();
-			frag_spec_info.dataSize = frag_const_info.mData.size() * sizeof(uint);
-			frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
-		}
+		frag_spec_info.pMapEntries = frag_const_info.mEntries.data();
+		frag_spec_info.mapEntryCount = frag_const_info.mEntries.size();
+		frag_spec_info.pData = frag_const_info.mData.data();
+		frag_spec_info.dataSize = frag_const_info.mData.size() * sizeof(uint);
+		frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
+
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -1211,7 +1242,12 @@ namespace nap
 	}
 
 
-	static bool createComputePipeline(VkDevice device, const ComputeMaterialInstance& computeMaterialInstance, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
+	static bool createComputePipeline(VkDevice device,
+		const ComputeMaterialInstance& computeMaterialInstance,
+		const ShaderStageConstantMap& constants,
+		VkPipelineLayout& pipelineLayout,
+		VkPipeline& outComputePipeline,
+		utility::ErrorState& errorState)
 	{
 		const ComputeMaterial& compute_material = computeMaterialInstance.getMaterial();
 		const ComputeShader& compute_shader = compute_material.getShader();
@@ -1225,15 +1261,14 @@ namespace nap
 		comp_shader_stage_info.pName = shader::main;
 
 		ShaderSpecializationConstantInfo comp_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_COMPUTE_BIT, comp_const_info);
+
 		VkSpecializationInfo comp_spec_info = {};
-		if (computeMaterialInstance.getSpecializationConstantInfo(VK_SHADER_STAGE_COMPUTE_BIT, comp_const_info))
-		{
-			comp_spec_info.pMapEntries = comp_const_info.mEntries.data();
-			comp_spec_info.mapEntryCount = comp_const_info.mEntries.size();
-			comp_spec_info.pData = comp_const_info.mData.data();
-			comp_spec_info.dataSize = comp_const_info.mData.size() * sizeof(uint);
-			comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
-		}
+		comp_spec_info.pMapEntries = comp_const_info.mEntries.data();
+		comp_spec_info.mapEntryCount = comp_const_info.mEntries.size();
+		comp_spec_info.pData = comp_const_info.mData.data();
+		comp_spec_info.dataSize = comp_const_info.mData.size() * sizeof(uint);
+		comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
 
 		auto layout = compute_shader.getDescriptorSetLayout();
 
@@ -1401,7 +1436,10 @@ namespace nap
 			depth_only,
 			cull_mode,
 			poly_mode,
-			pipeline.mLayout, pipeline.mPipeline, errorState))
+			materialInstance.getShaderStageConstantMap(),
+			pipeline.mLayout,
+			pipeline.mPipeline,
+			errorState))
 		{
 			mPipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
@@ -1435,7 +1473,11 @@ namespace nap
 
 		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (createComputePipeline(mDevice, computeMaterialInstance, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (createComputePipeline(mDevice, computeMaterialInstance,
+			computeMaterialInstance.getShaderStageConstantMap(),
+			pipeline.mLayout,
+			pipeline.mPipeline,
+			errorState))
 		{
 			mComputePipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
@@ -1518,7 +1560,7 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && compareRenderMask(comp->getRenderMask(), renderMask))
+			if (comp->isSupported(camera) && comp->hasMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1568,7 +1610,7 @@ namespace nap
 		std::vector<RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (compareRenderMask(comp->getRenderMask(), renderMask))
+			if (comp->hasMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 		return render_comps;
@@ -2039,78 +2081,96 @@ namespace nap
 	}
 
 
+	int RenderService::getRank(const nap::RenderLayer& layer) const
+	{
+		int layer_rank = RenderChain::invalidRank;
+		for (const auto& chain : mRenderChains)
+		{
+			const auto it = chain->mRankMap.find(&layer);
+			if (it != chain->mRankMap.end())
+			{
+				layer_rank = it->second;
+				break;
+			}
+		}
+		NAP_ASSERT_MSG(layer_rank != RenderChain::invalidRank,
+			"Failed to fetch rank, layer not part of render chain");
+		return layer_rank;
+	}
+
+
 	bool RenderService::isComputeAvailable() const
 	{
 		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
 	}
 
 
-	RenderMask RenderService::findRenderMask(const std::string& tagName)
+	RenderMask RenderService::getRenderMask(const std::string& tagName)
 	{
-		if (mRenderTagRegistry.empty())
+		if (mRenderTags.empty())
 			return 0;
 
-		uint count = 0;
-		for (auto& tag : mRenderTagRegistry)
+		uint shift = 0;
+		for (auto& tag : mRenderTags)
 		{
 			if (tag->mName == tagName)
-				return 1 << count;
-			++count;
+				return 1 << shift;
+			++shift;
 		}
 		return 0;
 	}
 
 
-	LayerIndex RenderService::findLayerIndex(const std::string& layerName)
+	bool RenderService::addTag(const RenderTag& renderTag, nap::utility::ErrorState& error)
 	{
-		if (!mLayersChecked)
-		{
-			auto layer_registries = getCore().getResourceManager()->getObjects<RenderLayerRegistry>();
-			if (layer_registries.size() > 1)
-				nap::Logger::warn("%s: Mutliple '%s' resources found in scene", RTTI_OF(RenderService).get_name().data(), RTTI_OF(RenderLayerRegistry).get_name().data());
+		// Name missing
+		if(!error.check(!renderTag.mName.empty(), "RenderTag doesn't have a name"))
+			return false;
 
-			if (!layer_registries.empty())
-				mRenderLayerRegistry = layer_registries.front();
+		// Duplicate
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		if (!error.check(it == mRenderTags.end(), "RenderTag with duplicate name already exists"))
+			return false;
 
-			mLayersChecked = true;
-		}
+		// Out of bounds
+		static constexpr int tagLimit = sizeof(nap::uint64) * 8;
+		if (!error.check(mRenderTags.size() < tagLimit, "RenderTag limit of %d exceeded", tagLimit))
+			return false;
 
-		if (mRenderLayerRegistry == nullptr)
-			return 0;
-
-		uint count = 0;
-		for (auto& tag : mRenderLayerRegistry->mLayers)
-		{
-			if (tag->mName == layerName)
-				return count;
-			++count;
-		}
-		return 0;
-	}
-
-
-	void RenderService::addTag(const RenderTag& renderTag)
-	{
-		// Ensure the tag is not yet registered
-		assert(std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag) == mRenderTagRegistry.end());
-		mRenderTagRegistry.emplace_back(&renderTag);
+		mRenderTags.emplace_back(&renderTag);
+		return true;
 	}
 
 
 	void RenderService::removeTag(const RenderTag& renderTag)
 	{
 		// Ensure the tag is not yet registered
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		assert(it != mRenderTagRegistry.end());
-		mRenderTagRegistry.erase(it);
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		mRenderTags.erase(it);
 	}
 
 
-	uint RenderService::getTagIndex(const RenderTag& renderTag) const
+	void RenderService::addChain(const RenderChain& chain)
 	{
-		auto it = std::find(mRenderTagRegistry.begin(), mRenderTagRegistry.end(), &renderTag);
-		assert(it != mRenderTagRegistry.end());
-		return static_cast<uint>(it - mRenderTagRegistry.begin());
+		assert(std::find(mRenderChains.begin(), mRenderChains.end(), &chain) == mRenderChains.end());
+		mRenderChains.emplace_back(&chain);
+	}
+
+
+	void RenderService::removeChain(const RenderChain& chain)
+	{
+		auto it = std::find(mRenderChains.begin(), mRenderChains.end(), &chain);
+		assert(it != mRenderChains.end());
+		mRenderChains.erase(it);
+	}
+
+
+	RenderMask RenderService::getRenderMask(const RenderTag& renderTag) const
+	{
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		return static_cast<RenderMask>(1) << static_cast<uint>(it - mRenderTags.begin());
 	}
 
 

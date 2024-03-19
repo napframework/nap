@@ -181,7 +181,7 @@ namespace nap
 		VkRenderPass							mRenderPass = VK_NULL_HANDLE;
 		VkFormat								mVulkanDepthFormat = VK_FORMAT_UNDEFINED;
 
-		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers = { VK_NULL_HANDLE };
+		std::array<VkFramebuffer, TextureCube::layerCount>	mFramebuffers = { VK_NULL_HANDLE };
 
 		glm::ivec2								mSize;
 		RGBAColorFloat							mClearColor = { 1.0f, 1.0f, 1.0f, 1.0f };

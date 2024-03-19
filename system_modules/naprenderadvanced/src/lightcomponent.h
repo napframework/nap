@@ -5,14 +5,16 @@
 #include <componentptr.h>
 #include <cameracomponent.h>
 #include <transformcomponent.h>
-
-#include <parameterentrynumeric.h>
 #include <parameterentrycolor.h>
+#include <renderfrustumcomponent.h>
+#include <rendergnomoncomponent.h>
+#include <entity.h>
 
 namespace nap
 {
 	// Forward declares
 	class LightComponentInstance;
+	class RenderAdvancedService;
 
 	/**
 	 * Light Type Flag
@@ -79,8 +81,6 @@ namespace nap
 		}
 	}
 
-	using LightUniformDataMap = std::unordered_map<std::string, Parameter*>;
-	using LightParameterList = std::vector<std::unique_ptr<Parameter>>;
 
 	/**
 	 * Base class of light components for NAP RenderAdvanced's light system.
@@ -134,17 +134,26 @@ namespace nap
 		DECLARE_COMPONENT(LightComponent, LightComponentInstance)
 	public:
 		/**
+		 * Common serializable light locator properties
+		 */
+		struct Locator
+		{
+			float mLineWidth  = 1.0f;	///< Property: 'LineWidth' The line width of the drawable locator objects (origin gnomon etc.)
+			float mGnomonSize = 1.0f;	///< Property: 'GnomonSize' The origin gnomon unit size.
+		};
+
+		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
 		 */
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		bool mEnabled = true;									///< Property: 'Enabled' Whether the light is enabled
-		ResourcePtr<ParameterEntryRGBColorFloat> mColor;		///< Property: 'Color' The light color
-		ResourcePtr<ParameterEntryFloat> mIntensity;			///< Property: 'Intensity' The light intensity
-
+		bool mCastShadows = false;								///< Property: 'CastShadows' Enables shadows and creates shadow map resources for this light.
+		RGBColorFloat mColor = {1.0f, 1.0f, 1.0f};				///< Property: 'Color' The light color
+		float mIntensity = 1.0f;								///< Property: 'Intensity' The light intensity
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
-		bool mEnableShadows = false;							///< Property: 'Enable Shadows' Enables shadows and creates shadow map resources for this light.
+		Locator mLocator;										///< Property: 'Locator' Locator settings
 	};
 
 
@@ -218,46 +227,32 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Enables the light
+		 * Unregisters itself from the advanced render service
+		 */
+		virtual void onDestroy() override;
+		
+		/**
+		 * Activates the light
+		 * @param enable if the light is activate or not
 		 */
 		virtual void enable(bool enable)									{ mIsEnabled = enable; }
 
 		/**
 		 * @return whether this light is active
 		 */
-		virtual bool isEnabled() const										{ return mIsEnabled; };
+		 bool isEnabled() const												{ return mIsEnabled; };
+
+		 /**
+		 * Returns whether this light component can cast shadows.
+		 * Override if your light doesn't support shadows.
+		 * @return whether this light component can cast shadows
+		 */
+		bool canCastShadows() const											{ return mSpawnedCamera != nullptr; }
 
 		/**
-		 * Returns whether this light component supports shadows. Override this call on a derived
-		 * light component to enable shadow support.
-		 * @return whether this light component supports shadows
+		 * @return whether this light component currently casts shadows
 		 */
-		virtual bool isShadowSupported() const								{ return false; }
-
-		/**
-		 * @return whether this light component currently produces shadows
-		 */
-		virtual bool isShadowEnabled() const								{ return mIsShadowEnabled; }
-
-		/**
-		 * @return whether this light was registered with the render advanced service
-		 */
-		bool isRegistered() const											{ return mIsRegistered; }
-
-		/**
-		 * @return the light transform
-		 */
-		const TransformComponentInstance& getTransform() const				{ return *mTransform; }
-
-		/**
-		 * @return the light transform
-		 */
-		TransformComponentInstance& getTransform()							{ return *mTransform; }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getShadowCamera() = 0;
+		bool castsShadows() const											{ return canCastShadows() && mIsShadowEnabled; }
 
 		/**
 		 * @return the light type
@@ -277,7 +272,12 @@ namespace nap
 		/**
 		 * @return the light intensity
 		 */
-		virtual float getIntensity() const									{ return mResource->mIntensity->getValue(); }
+		virtual float getIntensity() const									{ return mIntensity; }
+
+		/**
+		 * Set the light intensity
+		 */
+		void setIntensity(float intensity)									{ mIntensity = intensity; }
 
 		/**
 		 * @return the shadow strength
@@ -292,7 +292,12 @@ namespace nap
 		/**
 		 * @return the light color
 		 */
-		virtual const RGBColorFloat& getColor() const						{ return mResource->mColor->getValue(); }
+		virtual const RGBColorFloat& getColor() const						{ return mColor; }
+
+		/**
+		 * Set the light color
+		 */
+		void setColor(const RGBColorFloat& color)							{ mColor = color; }
 
 		/**
 		 * @return the position of the light in world space
@@ -304,60 +309,84 @@ namespace nap
 		 */
 		const glm::vec3 getLightDirection() const							{ return -glm::normalize(getTransform().getGlobalTransform()[2]); }
 
-	protected:
 		/**
-		 * Removes the current light from the render service.
+		 * @return the light transform
 		 */
-		void removeLightComponent();
+		const TransformComponentInstance& getTransform() const				{ assert(mTransform != nullptr); return *mTransform; }
 
 		/**
-		 * Registers a light uniform member for updating the shader interface.
-		 * @param memberName the uniform member name of the light variable
-		 * @param parameter pointer to the parameter to register. If nullptr, creates and registers a default parameter at runtime
+		 * @return the light transform
 		 */
-		template <typename ParameterType, typename DataType>
-		void registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value);
+		TransformComponentInstance& getTransform()							{ assert(mTransform != nullptr); return *mTransform; }
+
+		/**
+		 * @return if this light has a shadow camera
+		 */
+		bool hasCamera() const												{ return mSpawnedCamera != nullptr; }
+
+		/**
+		 * @return the shadow camera.
+		 */
+		CameraComponentInstance& getCamera() const							{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<CameraComponentInstance>(); }
+
+		/**
+		 * @return the shadow camera.
+		 */
+		CameraComponentInstance& getCamera()								{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<CameraComponentInstance>(); }
+
+		/** 
+		 * @return the origin gnomon.
+		 */
+		const RenderGnomonComponentInstance& getGnomon() const				{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<RenderGnomonComponentInstance>(); }
+
+		/**
+		 * @return the origin gnomon.
+		 */
+		RenderGnomonComponentInstance& getGnomon()							{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<RenderGnomonComponentInstance>(); }
+
+		/**
+		 * @return the shadow camera frustrum.
+		 */
+		const RenderFrustumComponentInstance* getFrustrum() const			{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->findComponent<RenderFrustumComponentInstance>(); }
+
+		/**
+		 * @return the shadow camera frustrum.
+		 */
+		RenderFrustumComponentInstance* getFrustrum()						{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->findComponent<RenderFrustumComponentInstance>(); }
+
+		float mIntensity = 1.0f;												
+		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
+
+	protected:
+		/**
+		 * Registers a light property as a uniform light member, which is automatically pushed by the render advanced service.
+		 * Note that the property must be must be defined for this or derived classes using the RTTI_PROPERTY macro.
+		 * @param memberName light property member name, must be registered using the RTTI_PROPERTY macro.
+		 */
+		void registerUniformLightProperty(const std::string& memberName);
+
+		/**
+		 * Spawns a light camera entity. The lifetime of that entity is managed by this component.
+		 * The light camera entity is used to calculate the shadow maps
+		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
+		 * Call this function on init of your derived light component, only once!
+		 * @param entity the entity resource to spawn
+		 * @param error contains the error if spawning fails
+		 * @return the spawned light entity instance.
+		 */
+		SpawnedEntityInstance spawnShadowCamera(const nap::Entity& entity, nap::utility::ErrorState& error);
 
 		LightComponent* mResource						= nullptr;
 		TransformComponentInstance* mTransform			= nullptr;
+		RenderAdvancedService* mService					= nullptr;
+		SpawnedEntityInstance mSpawnedCamera;
 
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
 		float mShadowStrength							= 1.0f;
-		uint mShadowMapSize								= 512U;
-
-		LightParameterList mParameterList;				// List of parameters that are owned by light component instead of the the resource manager
+		uint mShadowMapSize								= 512;
 
 	private:
-		Parameter* getLightUniform(const std::string& memberName);
-
-		LightUniformDataMap mUniformDataMap;			// Maps uniform names to parameters
-		bool mIsRegistered = false;
+		std::vector<nap::rtti::Property> mUniformList;
 	};
-}
-
-
-//////////////////////////////////////////////////////////////////////////
-// Template definitions
-//////////////////////////////////////////////////////////////////////////
-
-template <typename ParameterType, typename DataType>
-void nap::LightComponentInstance::registerLightUniformMember(const std::string& memberName, Parameter* parameter, const DataType& value)
-{
-	auto* param = parameter;
-	if (param == nullptr)
-	{
-		param = mParameterList.emplace_back(std::make_unique<ParameterType>()).get();
-		auto* typed_param = static_cast<ParameterType*>(param);
-		typed_param->mName = memberName;
-		typed_param->mValue = value;
-
-		utility::ErrorState error_state;
-		if (!param->init(error_state))
-			assert(false);
-	}
-	assert(param != nullptr);
-
-	const auto it = mUniformDataMap.insert({ memberName, param });
-	assert(it.second);
 }

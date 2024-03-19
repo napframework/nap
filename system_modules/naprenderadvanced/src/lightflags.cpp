@@ -91,12 +91,10 @@ namespace nap
 
 	LightFlags getLightFlags(const LightComponentInstance& light, uint index)
 	{
-		bool shadow_enabled = light.isShadowSupported() ? light.isShadowEnabled() : false;
-
 		LightFlags flags = 0;
 		flags |= (static_cast<uint>(light.isEnabled()) & LIGHT_ENABLED_BITS)				<< LIGHT_ENABLED_SHIFT;
-		flags |= (static_cast<uint>(shadow_enabled) & SHADOW_ENABLED_BITS)					<< SHADOW_ENABLED_SHIFT;
-		flags |= (static_cast<uint>(light.isShadowSupported()) & SHADOW_SUPPORTED_BITS)		<< SHADOW_SUPPORTED_SHIFT;
+		flags |= (static_cast<uint>(light.castsShadows()) & SHADOW_ENABLED_BITS)			<< SHADOW_ENABLED_SHIFT;
+		flags |= (static_cast<uint>(light.canCastShadows()) & SHADOW_SUPPORTED_BITS)		<< SHADOW_SUPPORTED_SHIFT;
 		flags |= (static_cast<uint>(light.getLightType()) & LIGHT_TYPE_BITS)				<< LIGHT_TYPE_SHIFT;
 		flags |= (static_cast<uint>(light.getShadowMapType()) & SHADOW_MAP_TYPE_BITS)		<< SHADOW_MAP_TYPE_SHIFT;
 		flags |= (index & LIGHT_INDEX_BITS)													<< LIGHT_INDEX_SHIFT;
@@ -109,7 +107,7 @@ namespace nap
 	{
 		ShadowFlags flags = 0;
 		for (uint i = 0; i < lights.size(); i++)
-			setBit(flags, i, lights[i]->isShadowEnabled());
+			setBit(flags, i, lights[i]->castsShadows());
 
 		return flags;
 	}
@@ -121,8 +119,7 @@ namespace nap
 
 	void updateLightFlags(const LightComponentInstance& light, LightFlags& outFlags)
 	{
-		bool shadow_enabled = light.isShadowSupported() ? light.isShadowEnabled() : false;
 		setBit(outFlags, LIGHT_ENABLED_SHIFT, light.isEnabled());
-		setBit(outFlags, SHADOW_ENABLED_SHIFT, shadow_enabled);
+		setBit(outFlags, SHADOW_ENABLED_SHIFT, light.castsShadows());
 	}
 }

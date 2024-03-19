@@ -24,6 +24,9 @@ namespace nap
 
 	bool CubeMapFromFile::init(utility::ErrorState& errorState)
 	{
+		// Ensure the cube map is (re-)rendered by the render advanced service
+		mDirty = true;
+
 		mSourceImage->mUsage = EUsage::Static;
 		if (!mSourceImage->getBitmap().initFromFile(mImagePath, errorState))
 			return false;

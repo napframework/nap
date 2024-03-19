@@ -1,3 +1,7 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
 // NAP Shader include file
 
 // Includes
@@ -49,12 +53,11 @@ vec3 computeLight(vec3 lightDirection, vec3 lightColor, float lightIntensity, fl
 		specular = pow(max(dot(surfNormal, halfway), 0.0), mtl.shininess);
 	}
 
-	vec3 ambient_color = lightIntensity * mtl.ambient.rgb + mtl.diffuse * mtl.ambient.a;
 	vec3 diffuse_color = diffuse * lightColor * lightIntensity * mtl.diffuse;
 	vec3 specular_color = specular * lightIntensity * mtl.specular;
 
 	// linear color (color before gamma correction)
-	vec3 comp_color = (diffuse_color + specular_color + ambient_color) * strength;
+	vec3 comp_color = (diffuse_color + specular_color) * strength;
 
 	// clamp
 	return clamp(comp_color, 0.0, 1.0);
@@ -89,14 +92,25 @@ vec3 computeLight(Light li, BlinnPhongMaterial mtl, vec3 camPosition, vec3 surfN
 		case LIGHT_SPOT:
 		{
 			vec3 delta = fragPosition - li.origin;
-			float dist_squared = dot(delta, delta);
-			float atten = min(1.0/(dist_squared * max(li.attenuation, 0.000001)), 1.0);
-			vec3 dir = normalize(delta);
-			float phi = 1.0 - (dot(dir, normalize(li.direction)) * 0.5 + 0.5);
-			float cone = clamp(li.angle, 0.0, 360.0)/360.0;
-			float spot = pow(1.0-min(phi/cone, 1.0), li.falloff);
-			if (spot > 0.0)
+			float frag_dot = dot(normalize(delta), normalize(li.direction));
+
+			// Bail if the dot product is negative (> 180 deg)
+			if (frag_dot < 0.000001)
+				break;
+
+			// Compute angle difference from light direction at fragment
+			float frag_angle = acos(frag_dot);
+
+			// Convert light angle to radians, then half the result for comparison with frag angle
+			float half_cone = (clamp(li.angle, 0.0, 180.0) * 3.14159265359 / 180.0) * 0.5;
+
+			// Bail if the computed angle at the current fragment exceeds the cone half angle
+			if (frag_angle < half_cone)
 			{
+				float gradient = frag_angle/half_cone;
+				float spot = pow(1.0-min(frag_angle/half_cone, 1.0), li.falloff);
+				float dist_squared = dot(delta, delta);
+				float atten = min(1.0/(dist_squared * max(li.attenuation, 0.000001)), 1.0);
 				color += spot * computeLight(normalize(delta), li.color, li.intensity, atten, mtl, camPosition, surfNormal, fragPosition);
 			}
 			break;

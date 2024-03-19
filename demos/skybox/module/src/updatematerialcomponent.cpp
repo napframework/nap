@@ -51,7 +51,7 @@ namespace nap
 		if (!errorState.check(fresnel != nullptr, "Missing uniform vec2 member with name `fresnel`"))
 			return false;
 
-		fresnel->setValue(resource->mColor->mValue.toVec3());
+		fresnel->setValue(resource->mFresnel->mValue);
 		mFresnelChangedSlot.setFunction(std::bind(&UpdateMaterialComponentInstance::onUniformValueUpdate<glm::vec2>, this, std::placeholders::_1, fresnel));
 		resource->mFresnel->valueChanged.connect(mFresnelChangedSlot);
 

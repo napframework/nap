@@ -10,14 +10,15 @@
 #include <rendertexturecube.h>
 #include <materialinstance.h>
 #include <renderablemesh.h>
+#include <scene.h>
 
 // Local includes
 #include "cuberendertarget.h"
 #include "cubedepthrendertarget.h"
 #include "lightcomponent.h"
 #include "lightflags.h"
-#include "rendermask.h"
-#include "nomesh.h"
+#include "rendertag.h"
+#include "emptymesh.h"
 #include "rendercommand.h"
 
 namespace nap
@@ -26,6 +27,16 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
+
+	// Light scene identifier
+	namespace scene
+	{
+		namespace light
+		{
+			inline constexpr const char* id = "lightscene";
+		}
+	}
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Advanced Service
@@ -93,46 +104,15 @@ namespace nap
 		// Default Constructor
 		RenderAdvancedService(ServiceConfiguration* configuration);
 
-		/**
-		 * Registers service dependencies
-		 * A service that depends on another service is initialized after all it's associated dependencies
-		 * This will ensure correct order of initialization, update calls and shutdown of all services
-		 * @param dependencies rtti information of the services this service depends on
-		 */
-		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
-		 * Initializes the service
-		 * @param errorState contains the error message on failure
-		 * @return if the video service was initialized correctly
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
-
-		/**
-		 * Invoked when exiting the main loop, after app shutdown is called
-		 * Use this function to close service specific handles, drivers or devices
-		 * When service B depends on A, Service B is shutdown before A
-		 */
-		virtual void preShutdown() override;
-
-		/**
-		 * Invoked when the resource manager is about to load resources. This is when essential RenderAdvanced resources are
-		 * created as resources can now be accessed in the scene and light components have been registered.
-		 */
-		virtual void preResourcesLoaded() override;
-
-		/**
-		 * Invoked after the resource manager successfully loaded resources.
-		 */
-		virtual void postResourcesLoaded() override;
-
         /**
-         * @return whether shadow mapping is enabled.
+		 * Returns if global shadow mapping is enabled 
+         * @return whether global shadow mapping is enabled.
          */
         bool isShadowMappingEnabled() const													{ return mShadowMappingEnabled; }
 
         /**
-         * @return the registered light components.
+		 * Returns total number of registered lights 
+         * @return total number of registered light components.
          */
        const std::vector<LightComponentInstance*>& getLights()								{ return mLightComponents; }
 
@@ -153,7 +133,14 @@ namespace nap
 		 * @param updateMaterials whether to update uniform and sampler data with a call to `pushLights`
 		 * @param renderMask render mask specifying what components to include in the shadow map 
 		 */
-		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true, RenderMask renderMask = 0U);
+		void renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials = true, RenderMask renderMask = 0);
+
+		/**
+		 * Renders the origin gnomon including optional frustrum of all enabled lights to the requested render target.
+		 * The objects to render are sorted using the default sort function (front-to-back).
+		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
+		 */
+		void renderLocators(IRenderTarget& renderTarget, CameraComponentInstance& camera, bool drawFrustrum);
 
 		/**
 		 * Push light data In order for shaders to be compatible with the light system they must include an uniform struct with 
@@ -168,28 +155,89 @@ namespace nap
 		 *	}
 		 * ~~~~~
 		 * @param renderComps the render components whose uniforms and samplers must be updated
-		 * @param errorState contains the error message if the update of any uniforms/samplers failed
-		 * @return true is the light data was updated successfully
 		 */
-		bool pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState);
+		void pushLights(const std::vector<RenderableComponentInstance*>& renderComps);
 
 		/**
 		 * @return the maximum number of lights supported by the RenderAdvanced light system.
 		 */
 		static uint getMaximumLightCount()													{ return mMaxLightCount; }
 
+	protected:
+		/**
+		 * Registers service dependencies
+		 * A service that depends on another service is initialized after all it's associated dependencies
+		 * This will ensure correct order of initialization, update calls and shutdown of all services
+		 * @param dependencies rtti information of the services this service depends on
+		 */
+		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
+
+		/**
+		 * Initializes the service
+		 * @param errorState contains the error message on failure
+		 * @return if the video service was initialized correctly
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function if your service needs to reset its state before resources are destroyed
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void preShutdown() override;
+
+		/**
+		 * Invoked when exiting the main loop, after app shutdown is called
+		 * Use this function to close service specific handles, drivers or devices
+		 * When service B depends on A, Service B is shutdown before A
+		 */
+		virtual void shutdown() override;
+
+		/**
+		 * Invoked when the resource manager is about to load resources. This is when essential RenderAdvanced resources are
+		 * created as resources can now be accessed in the scene and light components have been registered.
+		 */
+		virtual void preResourcesLoaded() override;
+
+		/**
+		 * Invoked after the resource manager successfully loaded resources.
+		 */
+		virtual void postResourcesLoaded() override;
+
+		/**
+		 * Spawns an entity camera hierarchy at runtime.
+		 * This entity is spawned into a dedicated light scene, independent from the regular user scene.
+		 * @param entity the entity resource to spawning fails
+		 * @return the spawned light entity instance, nullptr when invalid
+		 * @param error contains the error if spawning fails.
+		 */
+		SpawnedEntityInstance spawn(const nap::Entity& entity, nap::utility::ErrorState& error);
+
+		/**
+		 * Destroys an entity hierarchy at runtime.
+		 * The entity to destroy must have been created using the spawn method above
+		 * @param entityInstance the spawned entity instance
+		 */
+		void destroy(SpawnedEntityInstance& entityInstance);
+
+		/**
+		 * Invoked by core in the app loop. Update order depends on service dependency
+		 * This call is invoked after the application update call
+		 * @param deltaTime: the time in seconds between calls
+		 */
+		virtual void postUpdate(double deltaTime);
+
 	private:
-		bool pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState);
+		void pushLightsInternal(const std::vector<MaterialInstance*>& materials);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
-
 		bool initServiceResources(utility::ErrorState& errorState);
 		bool initCubeMapTargets(utility::ErrorState& errorState);
 		void onPreRenderCubeMaps(RenderService& renderService);
 
 		/**
 		 * This render command pre-renders all available `nap::CubeMapFromFile` objects in the scene. It is queued for the first
-		 * frame of rendering when headless rendering command are recorded: `mRenderService->beginHeadlessRecording()`.
+		 * frame of rendering when headless rendering commands are recorded: `mRenderService->beginHeadlessRecording()`.
 		 */
 		class PreRenderCubeMapsCommand : public HeadlessCommand
 		{
@@ -247,6 +295,7 @@ namespace nap
 		std::unique_ptr<Sampler2DArray> mSampler2DResource;								///< Base sampler 2D resource with a reference to a depth texture dummy
 		std::unique_ptr<SamplerCubeArray> mSamplerCubeResource;							///< Base cube sampler resource with a reference to a cube depth texture dummy
 		std::unique_ptr<DepthRenderTexture2D> mShadowTextureDummy;						///< Shadow depth texture dummy
+		std::unique_ptr<nap::Scene> mLightScene = nullptr;								///< Light scene
 
 		bool mShadowMappingEnabled = true;												///< Whether shadow mapping is disabled
 		bool mShadowResourcesCreated = false;											///< Whether shadow resources are created, enabled after `initServiceResources` completed successfully
@@ -254,11 +303,10 @@ namespace nap
 		// Cube maps from file
 		std::vector<std::unique_ptr<CubeRenderTarget>> mCubeMapFromFileTargets;			///< Render targets created to render `nap::CubeMapFromFile` objects
 
-		std::unique_ptr<NoMesh>						mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
+		std::unique_ptr<EmptyMesh>						mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;			///< Run-time cube map material
-
 		std::unique_ptr<PreRenderCubeMapsCommand>	mPreRenderCubeMapsCommand;			///< Render command used to update `nap::CubeMapFromFile` objects
 
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;					///< Required Vulkan major version to support the render advanced service

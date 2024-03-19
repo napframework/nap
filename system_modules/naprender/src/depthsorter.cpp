@@ -151,9 +151,11 @@ namespace nap
 		void sortObjectsByDepth(std::vector<RenderableComponentInstance*>& comps, const glm::mat4& viewMatrix)
 		{
 			// Count layer occurrences
-			std::map<LayerIndex, int> hist;
+			std::map<int, int> hist;
 			for (const auto& comp : comps)
-				++hist[comp->getRenderLayer()];
+			{
+				++hist[comp->getRank()];
+			}
 
 			// If all objects are in the same layer, sort the full set by depth and return
 			if (hist.size() == 1)
@@ -164,7 +166,7 @@ namespace nap
 				return;
 			}
 
-			std::map<LayerIndex, std::vector<RenderableComponentInstance*>> layer_map;
+			std::map<int, std::vector<RenderableComponentInstance*>> layer_map;
 			for (const auto& item : hist)
 			{
 				auto& v = layer_map[item.first] = {};
@@ -172,7 +174,9 @@ namespace nap
 			}
 
 			for (const auto& comp : comps)
-				layer_map[comp->getRenderLayer()].emplace_back(comp);
+			{
+				layer_map[comp->getRank()].emplace_back(comp);
+			}
 
 			comps.clear();
 			for (auto it = layer_map.rbegin(); it != layer_map.rend(); it++)
@@ -186,9 +190,11 @@ namespace nap
 		void sortObjectsByZ(std::vector<RenderableComponentInstance*>& comps)
 		{
 			// Count layer occurrences
-			std::map<LayerIndex, int> hist;
+			std::map<int, int> hist;
 			for (const auto& comp : comps)
-				++hist[comp->getRenderLayer()];
+			{
+				++hist[comp->getRank()];
+			}
 
 			// If all objects are in the same layer, sort the full set by depth and return
 			if (hist.size() == 1)
@@ -199,7 +205,7 @@ namespace nap
 				return;
 			}
 
-			std::map<LayerIndex, std::vector<RenderableComponentInstance*>> layer_map;
+			std::map<int, std::vector<RenderableComponentInstance*>> layer_map;
 			for (const auto& item : hist)
 			{
 				auto& v = layer_map[item.first] = {};
@@ -207,7 +213,9 @@ namespace nap
 			}
 
 			for (const auto& comp : comps)
-				layer_map[comp->getRenderLayer()].emplace_back(comp);
+			{
+				layer_map[comp->getRank()].emplace_back(comp);
+			}
 
 			comps.clear();
 			for (auto it = layer_map.rbegin(); it != layer_map.rend(); it++)

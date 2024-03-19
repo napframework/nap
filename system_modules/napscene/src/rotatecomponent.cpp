@@ -17,8 +17,8 @@ RTTI_BEGIN_CLASS(nap::RotateProperties)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::RotateComponent, "Rotates an entity along the given axis at the designated speed")
+	RTTI_PROPERTY("Enabled",	&nap::RotateComponent::mEnabled,	nap::rtti::EPropertyMetaData::Default,  "If rotation is enabled")
 	RTTI_PROPERTY("Properties", &nap::RotateComponent::mProperties, nap::rtti::EPropertyMetaData::Required, "Rotation settings")
-	RTTI_PROPERTY("Enabled", &nap::RotateComponent::mEnabled, nap::rtti::EPropertyMetaData::Default, "If rotation is enabled")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RotateComponentInstance)

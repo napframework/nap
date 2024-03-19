@@ -243,7 +243,7 @@ namespace nap
 		 * https://registry.khronos.org/vulkan/specs/1.3-extensions/html/chap16.html#_cube_map_face_selection_and_transformations
 		 **/
 		const auto cam_translation = glm::translate(glm::identity<glm::mat4>(), camPosition);
-		for (int layer_index = TextureCube::LAYER_COUNT - 1; layer_index >= 0; layer_index--)
+		for (int layer_index = TextureCube::layerCount - 1; layer_index >= 0; layer_index--)
 		{
 			setLayerIndex(layer_index);
 			beginRendering();
@@ -267,11 +267,11 @@ namespace nap
 				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 				0, mCubeTexture->getMipLevels(),
-				0, TextureCube::LAYER_COUNT, VK_IMAGE_ASPECT_COLOR_BIT);
+				0, TextureCube::layerCount, VK_IMAGE_ASPECT_COLOR_BIT);
 
 			utility::createMipmaps(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle().getImage(),
 				mCubeTexture->getFormat(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, aspect,
-				mCubeTexture->getWidth(), mCubeTexture->getHeight(), mCubeTexture->getMipLevels(), 0, TextureCube::LAYER_COUNT
+				mCubeTexture->getWidth(), mCubeTexture->getHeight(), mCubeTexture->getMipLevels(), 0, TextureCube::layerCount
 			);
 		}
 
@@ -281,8 +281,8 @@ namespace nap
 
 	void CubeRenderTarget::setLayerIndex(uint index)
 	{
-		assert(index < TextureCube::LAYER_COUNT);
-		mLayerIndex = std::clamp(index, 0U, TextureCube::LAYER_COUNT - 1);
+		assert(index < TextureCube::layerCount);
+		mLayerIndex = std::clamp(index, 0U, TextureCube::layerCount - 1);
 	}
 
 

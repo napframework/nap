@@ -54,22 +54,6 @@ namespace nap
 	}
 
 
-	UniformStructInstance& UniformContainer::getUniform(const std::string& name) const
-	{
-		UniformStructInstance* instance = findUniform(name);
-		assert(instance != nullptr);
-		return *instance;
-	}
-
-
-	BufferBindingInstance& UniformContainer::getBinding(const std::string& name) const
-	{
-		BufferBindingInstance* instance = findBinding(name);
-		assert(instance != nullptr);
-		return *instance;
-	}
-
-
 	BufferBindingInstance& UniformContainer::addBindingInstance(std::unique_ptr<BufferBindingInstance> instance)
 	{
 		return *mBindingInstances.emplace_back(std::move(instance));

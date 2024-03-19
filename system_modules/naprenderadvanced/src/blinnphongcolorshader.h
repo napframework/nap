@@ -34,7 +34,6 @@ namespace nap
 			inline constexpr const char* alpha = "alpha";							///< Alpha [0, 1]
 			inline constexpr const char* reflection = "reflection";					///< Reflection [0, 1]
 			inline constexpr const char* environment = "environment";				///< Whether to sample an environment map [0, 1]
-
 			inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
 		}
 	}
@@ -51,7 +50,7 @@ namespace nap
 	 * ~~~~~{.vert}{.frag}
 	 * uniform UBO
 	 * {
-	 *		vec4	ambient;						//< Ambient
+	 *		vec3	ambient;						//< Ambient
 	 * 		vec3	diffuse;						//< Diffuse
 	 * 		vec3	specular;						//< Specular
 	 * 		vec2	fresnel;						//< Fresnel [scale, power]

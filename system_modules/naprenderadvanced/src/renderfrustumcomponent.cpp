@@ -17,8 +17,12 @@
 #include <descriptorsetcache.h>
 #include <orthocameracomponent.h>
 #include <perspcameracomponent.h>
+#include <constantshader.h>
 
 RTTI_BEGIN_CLASS(nap::RenderFrustumComponent)
+	RTTI_PROPERTY("Line Width",	&nap::RenderFrustumComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",		&nap::RenderFrustumComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Opacity",	&nap::RenderFrustumComponent::mOpacity,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFrustumComponentInstance)
@@ -27,13 +31,27 @@ RTTI_END_CLASS
 
 namespace nap
 {
+
+	/**
+	 * Creates the uniform with the given name, logs an error when not available.
+	 * @return the uniform, nullptr if not available.
+	 */
+	template<typename T>
+	T* getUniform(const std::string& uniformName, UniformStructInstance& uniformStruct, utility::ErrorState& error)
+	{
+		T* found_uniform = uniformStruct.getOrCreateUniform<T>(uniformName);
+		return error.check(found_uniform != nullptr, "unable to find uniform with name '%s'", uniformName.c_str()) ?
+			found_uniform : nullptr;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// RenderFrustumComponent
 	//////////////////////////////////////////////////////////////////////////
 
 	void RenderFrustumComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
-		components.push_back(RTTI_OF(CameraComponent));
+		components.emplace_back(RTTI_OF(CameraComponent));
 	}
 
 
@@ -42,9 +60,9 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	RenderFrustumComponentInstance::RenderFrustumComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableMeshComponentInstance(entity, resource),
+		RenderableComponentInstance(entity, resource),
 		mRenderService(entity.getCore()->getService<RenderService>()),
-		mFrustumMesh(std::make_unique<BoxFrameMesh>(*entity.getCore()))
+		mFrustumMesh((*entity.getCore()))
 	{ }
 
 
@@ -58,48 +76,90 @@ namespace nap
 		if (!errorState.check(mCamera != nullptr, "%s: missing camera component", mID.c_str()))
 			return false;
 
-		// Initialize base class
-		if (!RenderableMeshComponentInstance::init(errorState))
+		// Ensure there is a camera transform component
+		mCameraTransform = mCamera->getEntityInstance()->findComponent<TransformComponentInstance>();
+		if (!errorState.check(mCameraTransform != nullptr, "%s: missing camera transform component", mID.c_str()))
 			return false;
+
+		// Initialize base class
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
+		// Get Gnomon material
+		Material* constant_material = mRenderService->getOrCreateMaterial<ConstantShader>(errorState);
+		if (!errorState.check(constant_material != nullptr, "%s: unable to get or create constant material", mID.c_str()))
+			return false;
+
+		// Create resource for the constant material instance
+		mMaterialInstanceResource.mBlendMode = EBlendMode::Opaque;
+		mMaterialInstanceResource.mDepthMode = EDepthMode::ReadOnly;
+		mMaterialInstanceResource.mMaterial = constant_material;
+
+		// Create constant material instance
+		if (!mMaterialInstance.init(*mRenderService, mMaterialInstanceResource, errorState))
+			return false;
+
+		// Since the material can't be changed at run-time, cache the matrices to set on draw
+		// If the struct is found, we expect the matrices with those names to be there
+		// Ensure the mvp struct is available
+		mMVPStruct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform MVP struct: %s in shader: %s",
+			this->mID.c_str(), uniform::mvpStruct, RTTI_OF(ConstantShader).get_name().data()))
+			return false;
+
+		// Get all matrices
+		mModelMatUniform = getUniform<UniformMat4Instance>(uniform::modelMatrix, *mMVPStruct, errorState);
+		mProjectMatUniform = getUniform<UniformMat4Instance>(uniform::projectionMatrix, *mMVPStruct, errorState);
+		mViewMatUniform = getUniform<UniformMat4Instance>(uniform::viewMatrix, *mMVPStruct, errorState);
+		if (mModelMatUniform == nullptr || mProjectMatUniform == nullptr || mViewMatUniform == nullptr)
+			return false;
+
+		// Get all constant uniforms
+		mUBOStruct = mMaterialInstance.getOrCreateUniform(uniform::constant::uboStruct);
+		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform struct: %s in shader: %s",
+			this->mID.c_str(), uniform::constant::uboStruct, RTTI_OF(ConstantShader).get_name().data()))
+			return false;
+
+		mColorUniform = getUniform<UniformVec3Instance>(uniform::constant::color, *mUBOStruct, errorState);
+		mAlphaUniform = getUniform<UniformFloatInstance>(uniform::constant::alpha, *mUBOStruct, errorState);
+		if (mColorUniform == nullptr || mAlphaUniform == nullptr)
+			return false;
+
+		// Set color & opacity
+		mColorUniform->setValue(mResource->mColor.toVec3());
+		mAlphaUniform->setValue(mResource->mOpacity);
 
 		// Initialize frustum mesh
-		mFrustumMesh->mPolygonMode = EPolygonMode::Line;
-		mFrustumMesh->mUsage = EMemoryUsage::DynamicWrite;
-		if (!errorState.check(mFrustumMesh->init(errorState), "Unable to create particle mesh"))
+		mFrustumMesh.mUsage = EMemoryUsage::DynamicWrite;
+		if (!errorState.check(mFrustumMesh.init(errorState), "Unable to create frustrum mesh"))
 			return false;
 
-		// Create renderable mesh
-		RenderableMesh renderable_mesh = createRenderableMesh(*mFrustumMesh, errorState);
-		if (!renderable_mesh.isValid())
-			return false;
-
-		// Set the frustum mesh to be used when drawing
-		setMesh(renderable_mesh);
-
-		return true;
+		// Create mesh / material combo that can be rendered to target
+		mRenderableMesh = mRenderService->createRenderableMesh(mFrustumMesh, mMaterialInstance, errorState);
+		return mRenderableMesh.isValid();
 	}
 
 
 	bool RenderFrustumComponentInstance::updateFrustum(utility::ErrorState& errorState)
 	{
-		auto& positions = getMeshInstance().getOrCreateAttribute<glm::vec3>(vertexid::position).getData();
-		assert(mFrustumMesh->getNormalizedLineBox().size() == positions.size());
+		auto& positions = mFrustumMesh.getMeshInstance().getOrCreateAttribute<glm::vec3>(vertexid::position).getData();
+		assert(mFrustumMesh.getNormalizedLineBox().size() == positions.size());
 
 		if (mCamera->get_type().is_derived_from(RTTI_OF(OrthoCameraComponentInstance)))
 		{
 			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
-			for (uint i = 0; i < mFrustumMesh->getNormalizedLineBox().size(); i++)
+			for (uint i = 0; i < mFrustumMesh.getNormalizedLineBox().size(); i++)
 			{
-				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getNormalizedLineBox()[i], 1.0f);
+				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh.getNormalizedLineBox()[i], 1.0f);
 				positions[i] = view_edge;
 			}
 		}
 		else if (mCamera->get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance)))
 		{
 			auto inv_proj_matrix = glm::inverse(mCamera->getProjectionMatrix());
-			for (uint i = 0; i < mFrustumMesh->getNormalizedLineBox().size(); i++)
+			for (uint i = 0; i < mFrustumMesh.getNormalizedLineBox().size(); i++)
 			{
-				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh->getNormalizedLineBox()[i], 1.0f);
+				auto view_edge = inv_proj_matrix * glm::vec4(mFrustumMesh.getNormalizedLineBox()[i], 1.0f);
 				positions[i] = view_edge / view_edge.w; // Perspective divide
 			}
 		}
@@ -110,7 +170,7 @@ namespace nap
 		}
 
 		utility::ErrorState error_state;
-		if (!getMeshInstance().update(error_state))
+		if (!mFrustumMesh.getMeshInstance().update(error_state))
 			assert(false);
 
 		return true;
@@ -119,29 +179,6 @@ namespace nap
 
 	void RenderFrustumComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
-		// Get material to work with
-		if (!mRenderableMesh.isValid())
-		{
-			assert(false);
-			return;
-		}
-
-		// Set mvp matrices if present in material
-		if (mProjectMatUniform != nullptr)
-			mProjectMatUniform->setValue(projectionMatrix);
-
-		if (mViewMatUniform != nullptr)
-			mViewMatUniform->setValue(viewMatrix);
-
-		if (mModelMatUniform != nullptr)
-			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
-
-		if (mNormalMatrixUniform != nullptr)
-			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransformComponent->getGlobalTransform())));
-
-		if (mCameraWorldPosUniform != nullptr)
-			mCameraWorldPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
-
 		// Update frustum
 		{
 			utility::ErrorState error_state;
@@ -149,13 +186,21 @@ namespace nap
 				nap::Logger::warn(error_state.toString());
 		}
 
+		// Set mvp matrices
+		assert(mProjectMatUniform != nullptr);
+		mProjectMatUniform->setValue(projectionMatrix);
+		assert(mViewMatUniform != nullptr);
+		mViewMatUniform->setValue(viewMatrix);
+		assert(mModelMatUniform != nullptr);
+		mModelMatUniform->setValue(mCameraTransform->getGlobalTransform());
+
 		// Acquire new / unique descriptor set before rendering
-		MaterialInstance& mat_instance = getMaterialInstance();
-		const DescriptorSet& descriptor_set = mat_instance.update();
+		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Fetch and bind pipeline
+		assert(mRenderableMesh.isValid());
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		// Bind shader descriptors
@@ -166,47 +211,16 @@ namespace nap
 		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
-		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
-		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
-		if (has_clip_rect)
-		{
-			VkRect2D rect;
-			rect.offset.x = mClipRect.getMin().x;
-			rect.offset.y = mClipRect.getMin().y;
-			rect.extent.width = mClipRect.getWidth();
-			rect.extent.height = mClipRect.getHeight();
-			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
-		}
-
 		// Set line width
-		vkCmdSetLineWidth(commandBuffer, mLineWidth);
+		vkCmdSetLineWidth(commandBuffer, mResource->mLineWidth);
 
 		// Draw meshes
-		MeshInstance& mesh_instance = getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
-
-		const IndexBuffer& index_buffer = mesh.getIndexBuffer(0);
+		GPUMesh& gpu_mesh = mFrustumMesh.getMeshInstance().getGPUMesh();
+		const IndexBuffer& index_buffer = gpu_mesh.getIndexBuffer(0);
 		vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 		vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 
 		// Restore line width
 		vkCmdSetLineWidth(commandBuffer, 1.0f);
-
-		// Restore clipping
-		if (has_clip_rect)
-		{
-			VkRect2D rect;
-			rect.offset.x = 0;
-			rect.offset.y = 0;
-			rect.extent.width = renderTarget.getBufferSize().x;
-			rect.extent.height = renderTarget.getBufferSize().y;
-			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
-		}
-	}
-
-
-	RenderFrustumComponent& RenderFrustumComponentInstance::getResource()
-	{
-		return *mResource;
 	}
 }

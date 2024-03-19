@@ -5,7 +5,7 @@
 // Local Includes
 #include "rendercomponent.h"
 #include "renderservice.h"
-#include "rendermask.h"
+#include "rendertag.h"
 
 // NAP Includes
 #include <entity.h>
@@ -14,7 +14,6 @@
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableComponent)
 	RTTI_PROPERTY("Visible", &nap::RenderableComponent::mVisible, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Tags", &nap::RenderableComponent::mTags, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LayerRegistry", &nap::RenderableComponent::mLayerRegistry, nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Layer", &nap::RenderableComponent::mLayer, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -33,26 +32,18 @@ namespace nap
 	{
 		const auto& resource = getComponent<RenderableComponent>();
 		mVisible = resource->mVisible;
-
-		// Check if this component is assigned to a layer
-		if (resource->mLayer != nullptr)
-		{
-			// Bail early if there is no layer registry
-			if (!errorState.check(resource->mLayerRegistry != nullptr, "%s: Layer specified without registry. Please provide a registry to ensure it is initialized before the layer.", resource->mID.c_str()))
-				return false;
-
-			// Store the layer index
-			mRenderLayer = resource->mLayer->getIndex();
-		}
+		mRenderLayer = resource->mLayer.get();
 
 		// Ensure there are no tag entries that are nullptrs
 		for (const auto& tag : resource->mTags)
 		{
+			// Ensure tag is present
 			if (!errorState.check(tag != nullptr, "%s: Empty tag entry encountered", resource->mID.c_str()))
 				return false;
-		}
-		mRenderMask = createRenderMask(resource->mTags);
 
+			// Add to render mask
+			mRenderMask |= tag->getMask();
+		}
 		return true;
 	}
 
@@ -62,5 +53,11 @@ namespace nap
 		if (!isVisible())
 			return;
 		onDraw(renderTarget, commandBuffer, viewMatrix, projectionMatrix);
+	}
+
+
+	int RenderableComponentInstance::getRank() const
+	{
+		return mRenderLayer != nullptr ? mRenderService->getRank(*mRenderLayer) : 0;
 	}
 }

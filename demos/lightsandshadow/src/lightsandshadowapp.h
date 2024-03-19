@@ -18,9 +18,6 @@
 #include <app.h>
 #include <imguiservice.h>
 #include <renderservice.h>
-#include <parametergui.h>
-#include <parameternumeric.h>
-#include <parameterquat.h>
 #include <nap/signalslot.h>
 
 namespace nap
@@ -36,7 +33,7 @@ namespace nap
 	 * that acts as a color overlay that can fade in to and out from black. Objects that are included in the shadow map are
 	 * distinguished using the `Shadow` tag. The RenderAdvanced service call `renderShadows` is responsible for most of the
 	 * heavy lifting as it updates the shadow maps of all lights and updates the uniform and sampler information of all
-	 * objects. When rendering our scene to the window using `RenderService::renderObjects`, all of the information is in
+	 * compatible materials. When rendering our scene to the window using `RenderService::renderObjects`, all of the information is in
 	 * place for the system to resolve and execute the render passes appropriately.
 	 */
 	class LightsAndShadowApp : public App
@@ -81,10 +78,13 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
 		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;
-		std::unordered_map<std::string, glm::vec3> mLightEuler;			//< Light euler rotations
-		std::unordered_map<std::string, glm::vec3> mLightXform;			//< Light transformations
+		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//< World entity
+		rtti::ObjectPtr<EntityInstance> mSpotLightEntity;				//< Spotlight entity
+		rtti::ObjectPtr<EntityInstance> mSunLightEntity;				//< Sunlight entity
+		rtti::ObjectPtr<EntityInstance> mPointLightEntity;				//< Pointlight entity
 
-		RenderMask mShadowMask = 0;										//< Shadow mask cache
+		rtti::ObjectPtr<RenderTag> mShadowTag = 0;						//< Shadow tag
+		bool mShowLocators = false;										///< If light origin is shown
+		bool mShowFrustrum = true;										///< If light frustrum is shown
 	};
 }

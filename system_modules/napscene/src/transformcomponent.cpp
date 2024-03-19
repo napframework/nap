@@ -96,6 +96,14 @@ namespace nap
 	}
 
 
+	void TransformComponentInstance::overrideLocalTransform(const glm::mat4x4& matrix)
+	{
+		mLocalMatrix = matrix;
+		mLocalDirty = false;
+		mWorldDirty = true;
+	}
+
+
 	// Sets local flag dirty
 	void TransformComponentInstance::setDirty()
 	{

@@ -23,13 +23,13 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
-	RTTI_PROPERTY(nap::materialinstanceresource::materialr,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::MaterialInstanceResource::matProperty,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BlendMode",	&nap::MaterialInstanceResource::mBlendMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("DepthMode",	&nap::MaterialInstanceResource::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
-	RTTI_PROPERTY(nap::materialinstanceresource::materialc, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::ComputeMaterialInstanceResource::matProperty, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)
@@ -190,20 +190,17 @@ namespace nap
 			return existing;
 
 		// Find the declaration in the shader (if we can't find it, it's not a name that actually exists in the shader, which is an error).
-		const ShaderVariableStructDeclaration* declaration = nullptr;
 		const std::vector<BufferObjectDeclaration>& ubo_declarations = getMaterial()->getShader().getUBODeclarations();
 		for (const BufferObjectDeclaration& ubo_declaration : ubo_declarations)
 		{
 			if (ubo_declaration.mName == name)
 			{
-				declaration = &ubo_declaration;
-				break;
+				// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
+				return &createUniformRootStruct(ubo_declaration,
+					std::bind(&BaseMaterialInstance::onUniformCreated, this));
 			}
 		}
-		assert(declaration != nullptr);
-
-		// At the MaterialInstance level, we always have UBOs at the root, so we create a root struct
-		return &createUniformRootStruct(*declaration, std::bind(&BaseMaterialInstance::onUniformCreated, this));
+		return nullptr;
 	}
 
 
@@ -241,7 +238,7 @@ namespace nap
 	}
 
 
-	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerInternal(const std::string& name)
+	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerInternal(const std::string& name, const Sampler* resource)
 	{
 		// See if we have an override in MaterialInstance. If so, we can return it
 		SamplerInstance* existing_sampler = findSampler(name);
@@ -263,85 +260,24 @@ namespace nap
 					switch (declaration.mType)
 					{
 					case SamplerDeclaration::EType::Type_2D:
-						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, nullptr,
-							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-						break;
-					case SamplerDeclaration::EType::Type_Cube:
-						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, nullptr,
-							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-						break;
-					default:
-						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
-					}
-				}
-				else
-				{
-					switch (declaration.mType)
 					{
-					case SamplerDeclaration::EType::Type_2D:
-						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, nullptr,
-							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-						break;
-					case SamplerDeclaration::EType::Type_Cube:
-						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, nullptr,
-							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
-						break;
-					default:
-						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
-					}
-				}
-
-				utility::ErrorState error_state;
-				bool initialized = sampler_instance_override->init(error_state);
-				assert(initialized);
-
-				result = &addSamplerInstance(std::move(sampler_instance_override));
-				break;
-			}
-			image_start_index += declaration.mNumElements;
-		}
-		return result;
-	}
-
-
-	SamplerInstance* BaseMaterialInstance::getOrCreateSamplerFromResource(const Sampler& resource, utility::ErrorState& errorState)
-	{
-		// See if we have an override in MaterialInstance. If so, we can return it
-		SamplerInstance* existing_sampler = findSampler(resource.mName);
-		if (existing_sampler != nullptr)
-			return existing_sampler;
-
-		SamplerInstance* result = nullptr;
-
-		const BaseShader& shader = getMaterial()->getShader();
-		const SamplerDeclarations& sampler_declarations = shader.getSamplerDeclarations();
-		int image_start_index = 0;
-		for (const SamplerDeclaration& declaration : sampler_declarations)
-		{
-			if (declaration.mName == resource.mName)
-			{
-				std::unique_ptr<SamplerInstance> sampler_instance_override;
-				if (declaration.mIsArray)
-				{
-                    switch (declaration.mType)
-					{
-					case SamplerDeclaration::EType::Type_2D:
-					{
-						const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(&resource);
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(Sampler2DArray)));
+						const auto* sampler_2d_array = static_cast<const Sampler2DArray*>(resource);
 						sampler_instance_override = std::make_unique<Sampler2DArrayInstance>(*mRenderService, declaration, sampler_2d_array,
 							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
 						break;
 					}
+
 					case SamplerDeclaration::EType::Type_Cube:
 					{
-						const auto* sampler_cube_array = static_cast<const SamplerCubeArray*>(&resource);
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(SamplerCubeArray)));
+						const auto* sampler_cube_array = static_cast<const SamplerCubeArray*>(resource);
 						sampler_instance_override = std::make_unique<SamplerCubeArrayInstance>(*mRenderService, declaration, sampler_cube_array,
 							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
 						break;
 					}
 					default:
-						errorState.fail("Unsupported sampler declaration type");
-						return nullptr;
+						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
 					}
 				}
 				else
@@ -350,37 +286,32 @@ namespace nap
 					{
 					case SamplerDeclaration::EType::Type_2D:
 					{
-						const auto* sampler_2d = static_cast<const Sampler2D*>(&resource);
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(Sampler2D)));
+						const auto* sampler_2d = static_cast<const Sampler2D*>(resource);
 						sampler_instance_override = std::make_unique<Sampler2DInstance>(*mRenderService, declaration, sampler_2d,
 							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
 						break;
 					}
 					case SamplerDeclaration::EType::Type_Cube:
 					{
-						const auto* sampler_cube = static_cast<const SamplerCube*>(&resource);
+						assert(resource == nullptr || resource->get_type().is_derived_from(RTTI_OF(SamplerCube)));
+						const auto* sampler_cube = static_cast<const SamplerCube*>(resource);
 						sampler_instance_override = std::make_unique<SamplerCubeInstance>(*mRenderService, declaration, sampler_cube,
 							std::bind(&MaterialInstance::onSamplerChanged, this, image_start_index, std::placeholders::_1, std::placeholders::_2));
 						break;
 					}
 					default:
-						errorState.fail("Unsupported sampler declaration type");
-						return nullptr;
+						NAP_ASSERT_MSG(false, "Unsupported sampler declaration type");
 					}
 				}
 
 				utility::ErrorState error_state;
-				bool initialized = sampler_instance_override->init(error_state);
-				assert(initialized);
-
+				bool initialized = sampler_instance_override->init(error_state); assert(initialized);
 				result = &addSamplerInstance(std::move(sampler_instance_override));
 				break;
 			}
 			image_start_index += declaration.mNumElements;
 		}
-
-		if (result == nullptr)
-			errorState.fail("Sampler declaration with name '%s' not found in material '%s'", resource.mName.c_str(), getMaterial()->mID.c_str());
-
 		return result;
 	}
 
@@ -825,36 +756,6 @@ namespace nap
 			}
 		}
 		
-		return true;
-	}
-
-
-	bool BaseMaterialInstance::getSpecializationConstantInfo(VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo) const
-	{
-		const auto it = mShaderStageConstantMap.find(stage);
-		if (it == mShaderStageConstantMap.end())
-			return false;
-
-		const auto& constant_map = it->second;
-		for (uint i = 0; i < constant_map.size(); i++)
-		{
-			const auto it = constant_map.find(i);
-			if (it == constant_map.end())
-			{
-				nap::Logger::error("%s: Specialization Constant IDs are not in a sequence starting from 0", getMaterial()->getShader().mID.c_str());
-				return false;
-			}
-
-			{
-				VkSpecializationMapEntry entry = {};
-				entry.constantID = (*it).first;
-				entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
-				entry.size = sizeof(uint);
-				outInfo.mEntries.emplace_back(std::move(entry));
-			}
-			outInfo.mData.emplace_back((*it).second);
-		}
-
 		return true;
 	}
 
