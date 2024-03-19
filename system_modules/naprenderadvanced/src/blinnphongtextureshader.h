@@ -52,7 +52,7 @@ namespace nap
 	 * ~~~~~{.vert}{.frag}
 	 * uniform UBO
 	 * {
-	 *		vec4	ambient;						//< Ambient
+	 *		vec3	ambient;						//< Ambient
 	 * 		vec3	diffuse;						//< Diffuse
 	 * 		vec3	specular;						//< Specular
 	 * 		vec2	fresnel;						//< Fresnel [scale, power]

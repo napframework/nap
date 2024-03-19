@@ -11,7 +11,7 @@
 #include <cameracomponent.h>
 
 // Local includes
-#include "rendermask.h"
+#include "rendertag.h"
 #include "renderlayer.h"
 
 namespace nap
@@ -33,7 +33,6 @@ namespace nap
 
 	public:
 		bool mVisible = true;								///< Property: 'Visible' if this object is rendered to target by the render service.
-		ResourcePtr<RenderLayerRegistry> mLayerRegistry;	///< Property: 'LayerRegistry' the render layer registry this component depends on
 		ResourcePtr<RenderLayer> mLayer;					///< Property: 'Layer' the render layer assigned to this component 
 		std::vector<ResourcePtr<RenderTag>> mTags;			///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
@@ -85,12 +84,26 @@ namespace nap
 		/**
 		 * @return the render mask
 		 */
-		RenderMask getRenderMask() const											{ return mRenderMask; }
+		RenderMask getMask() const													{ return mRenderMask; }
 
 		/**
-		 * @return the render mask
+		 * @return if this component is compatible with (includes) the given mask
 		 */
-		LayerIndex getRenderLayer() const											{ return mRenderLayer; }
+		bool hasMask(RenderMask otherMask)											{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
+
+		/**
+		 * Returns the rank of this component in the render chain, defaults to 0 (front) if no layer is assigned.
+		 * The rank controls the order in which components are rendered, where 0 is the front and the last index is the back.
+		 * @return the rank index in the render chain, 0 (front) if no layer is assigned
+		 */
+		int getRank() const;
+
+		/**
+		 * Returns the layer assigned to this component.
+		 * Every layer is assigned a rank which controls the order in which components are rendered, where 0 is the front and the last index is the back.
+		 * @return the render layer, nullptr if no layer is given
+		 */
+		const RenderLayer* getLayer() const { return mRenderLayer; }
 
 		/**
 		 * Called by the Render Service. By default every camera type is supported
@@ -116,7 +129,7 @@ namespace nap
 
 	private:
 		bool mVisible = true;							///< If this object should be drawn or not
-		LayerIndex mRenderLayer = 0U;					///< The layer index
-		RenderMask mRenderMask = 0U;					///< The render mask
+		RenderLayer* mRenderLayer = nullptr;			///< The render layer
+		RenderMask mRenderMask = 0;						///< The render mask
 	};
 }

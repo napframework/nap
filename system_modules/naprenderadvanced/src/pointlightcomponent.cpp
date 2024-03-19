@@ -15,34 +15,73 @@
 
 // nap::PointLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::PointLightComponent)
-	RTTI_PROPERTY("ShadowCamera",	&nap::PointLightComponent::mShadowCamera,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Attenuation",	&nap::PointLightComponent::mAttenuation,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FieldOfView",	&nap::PointLightComponent::mFieldOfView,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClippingPlanes",	&nap::PointLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowMapSize",	&nap::PointLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Attenuation",	&nap::PointLightComponent::mAttenuation,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 // nap::PointLightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointLightComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+	RTTI_PROPERTY(nap::uniform::light::attenuation, &nap::PointLightComponentInstance::mAttenuation, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
-
 namespace nap
 {
-	//////////////////////////////////////////////////////////////////////////
-	// PointLightComponent
-	//////////////////////////////////////////////////////////////////////////
-
 	bool PointLightComponentInstance::init(utility::ErrorState& errorState)
 	{
 		if (!LightComponentInstance::init(errorState))
 			return false;
 
+		// Copy resources
 		auto* resource = getComponent<PointLightComponent>();
-		registerLightUniformMember<ParameterFloat, float>(uniform::light::attenuation, resource->mAttenuation->mParameter.get(), resource->mAttenuation->getValue());
+		mAttenuation = resource->mAttenuation;
 		mShadowMapSize = resource->mShadowMapSize;
 
+		// Register light properties
+		registerUniformLightProperty(uniform::light::attenuation);
+
+		// Create shadow camera resource
+		std::string uuid = math::generateUUID();
+		mShadowCamEntity = std::make_unique<Entity>();
+		mShadowCamEntity->mID = utility::stringFormat("%s_shadow_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+
+		// Transform component
+		mShadowCamXformComponent = std::make_unique<TransformComponent>();
+		mShadowCamXformComponent->mID = utility::stringFormat("%s_shadow_xform_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowCamEntity->mComponents.emplace_back(mShadowCamXformComponent.get());
+
+		// Perspective camera component
+		mShadowCamComponent = std::make_unique<PerspCameraComponent>();
+		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s",getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
+		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
+		mShadowCamComponent->mProperties.mFieldOfView = resource->mFieldOfView;
+		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
+
+		// Shadow Origin component
+		mGnomonMesh = std::make_unique<GnomonMesh>(*getEntityInstance()->getCore());
+		mGnomonMesh->mID = utility::stringFormat("%s_shadow_gnomon_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mGnomonMesh->mSize = mResource->mLocator.mGnomonSize;
+		if (!mGnomonMesh->init(errorState))
+			return false;
+
+		mShadowOriginComponent = std::make_unique<RenderGnomonComponent>();
+		mShadowOriginComponent->mID = utility::stringFormat("%s_shadow_origin_%s", getEntityInstance()->mID.c_str(), uuid.c_str());
+		mShadowOriginComponent->mDepthMode = EDepthMode::ReadOnly;
+		mShadowOriginComponent->mMesh = mGnomonMesh.get();
+		mShadowOriginComponent->mLineWidth = mResource->mLocator.mLineWidth;
+		mShadowCamEntity->mComponents.emplace_back(mShadowOriginComponent.get());
+
+		// Spawn it
+		if (spawnShadowCamera(*mShadowCamEntity, errorState) == nullptr)
+		{
+			errorState.fail("Unable to spawn directional spotlight shadow entity");
+			return false;
+		}
 		return true;
 	}
 }

@@ -18,6 +18,7 @@
 #include <vulkan/vulkan_core.h>
 #include <material.h>
 #include <renderglobals.h>
+#include <sceneservice.h>
 
 #include <parametervec.h>
 #include <parameternumeric.h>
@@ -40,7 +41,7 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
-	static const std::vector<const char*> sDefaultUniforms =
+	static const std::vector<std::string> sDefaultUniforms =
 	{
 		uniform::light::origin,
 		uniform::light::direction,
@@ -86,6 +87,7 @@ namespace nap
 	void RenderAdvancedService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
 	{
 		dependencies.emplace_back(RTTI_OF(RenderService));
+		dependencies.emplace_back(RTTI_OF(SceneService));
 	}
 
 
@@ -107,6 +109,12 @@ namespace nap
 		// Get configuration
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 		if (!errorState.check(configuration != nullptr, "Failed to get nap::RenderAdvancedServiceConfiguration"))
+			return false;
+
+		// Light scene that can be used for dynamically spawned instances
+		mLightScene = std::make_unique<nap::Scene>(getCore());
+		mLightScene->mID = scene::light::id;
+		if (!mLightScene->init(errorState))
 			return false;
 
         // Enable shadow mapping
@@ -223,16 +231,10 @@ namespace nap
 
 	void RenderAdvancedService::renderShadows(const std::vector<RenderableComponentInstance*>& renderComps, bool updateMaterials, RenderMask renderMask)
 	{
+		// Push light uniforms
 		auto render_comps = mRenderService->filterObjects(renderComps, renderMask);
 		if (updateMaterials)
-		{
-			utility::ErrorState error_state;
-			if (!pushLights(render_comps, error_state))
-			{
-				nap::Logger::error(error_state.toString());
-				assert(false);
-			}
-		}
+			pushLights(render_comps);
 
         // Bail if shadow mapping is disabled
         if (!isShadowMappingEnabled())
@@ -242,14 +244,11 @@ namespace nap
 		for (const auto& light : mLightComponents)
 		{
 			// Skip rendering the shadow map when the light intensity is zero
-			if (!light->isEnabled() || light->getIntensity() <= math::epsilon<float>())
+			if (!light->isEnabled() || !light->getCastShadows() || light->getIntensity() <= math::epsilon<float>())
 				continue;
 
-			auto* shadow_camera = light->isShadowEnabled() ? light->getShadowCamera() : nullptr;
-			if (shadow_camera != nullptr)
+			switch (light->getShadowMapType())
 			{
-				switch (light->getShadowMapType())
-				{
 				case EShadowMapType::Quad:
 				{
 					// One shadow render pass per light
@@ -260,7 +259,7 @@ namespace nap
 					assert(target != nullptr);
 
 					target->beginRendering();
-					mRenderService->renderObjects(*target, *shadow_camera, render_comps);
+					mRenderService->renderObjects(*target, light->getCamera(), render_comps);
 					target->endRendering();
 					break;
 				}
@@ -279,22 +278,23 @@ namespace nap
 						continue;
 					}
 
-					if (shadow_camera->get_type() != RTTI_OF(PerspCameraComponentInstance))
+					if (light->getCamera().get_type() != RTTI_OF(PerspCameraComponentInstance))
 					{
 						NAP_ASSERT_MSG(false, "Lights of type 'Point' must return a nap::PerspCameraComponentInstance");
 						continue;
 					}
 
 					auto* cube_target = static_cast<CubeDepthRenderTarget*>(target.get());
-					auto* persp_camera = static_cast<PerspCameraComponentInstance*>(shadow_camera);
-					cube_target->render(*persp_camera, [rs = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
-					{
-						// NOTE: This overload of renderObjects does no filtering of non-ortho comps
-						rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
-					});
+					auto& persp_camera = static_cast<PerspCameraComponentInstance&>(light->getCamera());
+					cube_target->render(persp_camera, [rs = mRenderService, comps = render_comps](CubeDepthRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+						{
+							// NOTE: This overload of renderObjects does no filtering of non-ortho comps
+							rs->renderObjects(target, projection, view, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+						});
 					break;
 				}
 				default:
+				{
 					NAP_ASSERT_MSG(false, "Unsupported shadow map type");
 				}
 			}
@@ -302,43 +302,70 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::pushLightsInternal(const std::vector<RenderableComponentInstance*>& renderComps, bool disableLighting, utility::ErrorState& errorState)
+	void RenderAdvancedService::renderLocators(IRenderTarget& renderTarget, CameraComponentInstance& camera, bool drawFrustrum)
 	{
-		// TODO: Cache light uniforms
-
-		// Exit early if there are no lights in the scene
-		if (mLightComponents.empty())
-			return true;
-
-		// Filter render components
-		std::vector<RenderableMeshComponentInstance*> filtered_mesh_comps;
-		for (auto& comp : renderComps)
+		std::vector<RenderableComponentInstance*> locators;
+		locators.reserve(mLightComponents.size() * 2);
+		for (auto& light : mLightComponents)
 		{
-			// Ensure the component is visible and has a material instance
-			if (comp->isVisible() && comp->get_type().is_derived_from(RTTI_OF(RenderableMeshComponentInstance)))
+			if (light->isEnabled() && light->hasCamera())
 			{
-				// Ensure the shader interface supports lights
-				auto* mesh_comp = static_cast<RenderableMeshComponentInstance*>(comp);
-				if (mesh_comp->getMaterialInstance().getMaterial().findUniform(uniform::lightStruct) != nullptr)
-					filtered_mesh_comps.emplace_back(mesh_comp);
+				auto& origin = light->getGnomon();
+				locators.emplace_back(&origin);
+
+				auto* fustru = light->getFrustrum();
+				if (fustru != nullptr && drawFrustrum)
+					locators.emplace_back(fustru);
 			}
 		}
+		mRenderService->renderObjects(renderTarget, camera, locators);
+	}
 
+
+	nap::SpawnedEntityInstance RenderAdvancedService::spawn(const nap::Entity& entity, nap::utility::ErrorState& error)
+	{
+		assert(mLightScene != nullptr);
+		return mLightScene->spawn(entity, error);
+	}
+
+
+	void RenderAdvancedService::destroy(SpawnedEntityInstance& entityInstance)
+	{
+		assert(mLightScene != nullptr);
+		mLightScene->destroy(entityInstance);
+	}
+
+	
+	void RenderAdvancedService::postUpdate(double deltaTime)
+	{
+		// Synchronize shadow cameras
+		for (auto& light : mLightComponents)
+		{
+			if (light->mSpawnedCamera != nullptr && light->getCastShadows())
+			{
+				auto* spawn_xform = light->mSpawnedCamera->findComponent<nap::TransformComponentInstance>();
+				if (spawn_xform != nullptr)
+				{
+					spawn_xform->overrideLocalTransform(light->getTransform().getGlobalTransform());
+				}
+			}
+		}
+		mLightScene->updateTransforms(deltaTime);
+	}
+
+
+	void RenderAdvancedService::pushLightsInternal(const std::vector<MaterialInstance*>& materials)
+	{
 		// Update materials for color pass
-		for (auto& mesh_comp : filtered_mesh_comps)
+		for (auto& material : materials)
 		{
 			// Shader interface for lights
-			auto* light_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::lightStruct);
+			auto* light_struct = material->getOrCreateUniform(uniform::lightStruct);
+			assert(light_struct != nullptr);
 			auto* light_count = light_struct->getOrCreateUniform<UniformUIntInstance>(uniform::light::count);
+			assert(light_count != nullptr);
 
-			// Set light count to zero and exit early
-			if (disableLighting)
-			{
-				light_count->setValue(0);
-				continue;
-			}
             light_count->setValue(mLightComponents.size());
-
 			auto* light_array = light_struct->getOrCreateUniform<UniformStructArrayInstance>(uniform::light::lights);
 
 			uint light_index = 0;
@@ -359,9 +386,9 @@ namespace nap
 				light_element.getOrCreateUniform<UniformVec3Instance>(uniform::light::direction)->setValue(light->getLightDirection());
 
 				// Light uniform custom
-				for (const auto& entry : light->mUniformDataMap)
+				for (const auto& entry : light->mUniformList)
 				{
-					const auto name = entry.first;
+					const auto& name = entry.get_name().to_string();
 
 					// Filter default uniforms
 					bool skip = false;
@@ -373,93 +400,81 @@ namespace nap
 							break;
 						}
 					}
-					if (skip)                                                           
+					if (skip)                                                     
 						break;
 
+					// Get light declaration
 					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
                     assert(struct_decl != nullptr);
 
+					// Uniform not available
                     auto* member = struct_decl->findMember(name);
-					if (!errorState.check(member != nullptr, "Missing uniform with name '%s' in light '%s'", name.c_str(), light->mID.c_str()))
-						return false;
+					NAP_ASSERT_MSG(member != nullptr,
+						nap::utility::stringFormat("Missing uniform with name '%s' in light '%s'",
+							name.c_str(), light->mID.c_str()).c_str());
 
-					if (member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)))
+					// Make sure it's a shader value declaration
+					NAP_ASSERT_MSG(member->get_type().is_derived_from(RTTI_OF(ShaderVariableValueDeclaration)),
+						"Unsupported member data type");
+					auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
+
+					// Set uniform based on shader declaration type.
+					// TODO: Allow for more elaborate assignment -> Only limited set is supported
+					switch (value_member->mType)
 					{
-						auto* value_member = static_cast<const ShaderVariableValueDeclaration*>(member);
-                        assert(value_member != nullptr);
-
-						if (value_member->mType == EShaderVariableValueType::Float)
+						case EShaderVariableValueType::Float:
 						{
-							auto* param = light->getLightUniform(name);
-							if (!errorState.check(param != nullptr, "Unsupported member data type"))
-								return false;
-
-							light_element.getOrCreateUniform<UniformFloatInstance>(name)->setValue(static_cast<ParameterFloat*>(param)->mValue);
+							auto variant = entry.get_value(*light);
+							assert(variant.is_valid() && variant.can_convert<float>());
+							light_element.getOrCreateUniform<UniformFloatInstance>(name)->setValue(variant.to_float());
+							break;
 						}
-						else if (value_member->mType == EShaderVariableValueType::Vec3)
+						case EShaderVariableValueType::Vec3:
 						{
-							auto* param = light->getLightUniform(name);
-							if (!errorState.check(param != nullptr, "Unsupported member data type"))
-								return false;
-
-							if (param->get_type().is_derived_from(RTTI_OF(ParameterRGBColorFloat)))
+							auto variant = entry.get_value(*light); assert(variant.is_valid());
+							if (entry.get_type().is_derived_from(RTTI_OF(RGBColorFloat)))
 							{
-								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterRGBColorFloat*>(param)->mValue.toVec3());
+								glm::vec3 uvalue = variant.get_value<RGBColorFloat>().toVec3();
+								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
+								break;
 							}
-							else if (param->get_type().is_derived_from(RTTI_OF(ParameterVec3)))
+							else if (entry.get_type().is_derived_from(RTTI_OF(glm::vec3)))
 							{
-								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(static_cast<ParameterVec3*>(param)->mValue);
+								glm::vec3 uvalue = variant.get_value<glm::vec3>();
+								light_element.getOrCreateUniform<UniformVec3Instance>(name)->setValue(uvalue);
+								break;
 							}
 							else
 							{
-								errorState.fail("Unsupported member data type");
-								return false;
+								NAP_ASSERT_MSG(false, "Unsupported member data type");
 							}
 						}
-						else if (value_member->mType == EShaderVariableValueType::Mat4)
+						default:
 						{
-							auto* param = light->getLightUniform(name);
-							if (!errorState.check(param != nullptr, "Unsupported member data type"))
-								return false;
-
-							light_element.getOrCreateUniform<UniformMat4Instance>(name)->setValue(static_cast<ParameterMat4*>(param)->mValue);
+							NAP_ASSERT_MSG(false, "Unsupported member data type");
 						}
-						else
-						{
-							errorState.fail("Unsupported member data type");
-							return false;
-						}
-					}
-					else
-					{
-						errorState.fail("Unsupported member data type");
-						return false;
 					}
 				}
                 ++light_index;
 			}
         }
 
+		// Bail if shadow mapping is disabled
         if (!isShadowMappingEnabled())
-            return true;
+            return;
 
         // Shadow data
-        for (auto& mesh_comp : filtered_mesh_comps)
+        for (auto& material : materials)
         {
 			// Ensure the shader interface is valid
-            auto* shadow_struct = mesh_comp->getMaterialInstance().getOrCreateUniform(uniform::shadowStruct);
-            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix);
-            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar);
-            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength);
-            auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags);
-            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count);
+			auto* shadow_struct = material->getOrCreateUniform(uniform::shadowStruct); assert(shadow_struct != nullptr);
+            auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
+            auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
+            auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
+			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
+            auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
 
-            // Set light count to zero and exit early
-            if (disableLighting)
-            {
-                light_count->setValue(0);
-                continue;
-            }
+			// Set number of lights
             light_count->setValue(mLightComponents.size());
 
 			// Set shadow flags
@@ -471,75 +486,93 @@ namespace nap
                 if (light_index >= getMaximumLightCount())
                     break;
 
-                if (light->isShadowEnabled())
+                if (light->getCastShadows())
                 {
                     // Set light view projection matrix in shadow struct
-                    const auto light_view_projection = light->getShadowCamera()->getRenderProjectionMatrix() * light->getShadowCamera()->getViewMatrix();
+                    const auto light_view_projection = light->getCamera().getRenderProjectionMatrix() * light->getCamera().getViewMatrix();
                     view_matrix_array->setValue(light_view_projection, light_index);
 
                     // Set near/far plane and strength in shadow struct
-                    glm::vec2 near_far = { light->getShadowCamera()->getNearClippingPlane(), light->getShadowCamera()->getFarClippingPlane() };
+                    glm::vec2 near_far = { light->getCamera().getNearClippingPlane(), light->getCamera().getFarClippingPlane() };
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
 
-                    // Fetch flags
+                    // Fetch flags|
                     auto it_flags = mLightFlagsMap.find(light);
                     assert(it_flags != mLightFlagsMap.end());
-
                     switch (light->getShadowMapType())
                     {
                         case EShadowMapType::Quad:
                         {
-                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSampler2DResource, errorState);
-                            if (shadow_sampler_array != nullptr)
+                            auto* sampler_instance = material->getOrCreateSampler<Sampler2DArrayInstance>(*mSampler2DResource);
+                            if (sampler_instance != nullptr)
                             {
-                                auto *instance = static_cast<Sampler2DArrayInstance *>(shadow_sampler_array);
-                                assert(instance != nullptr);
-
-                                if (light_index >= instance->getNumElements())
-                                {
-                                    assert(false);
-                                    continue;
-                                }
-
-                                const auto it = mLightDepthMap.find(light);
-                                assert(it != mLightDepthMap.end());
-                                instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
+								const auto it = mLightDepthMap.find(light); assert(it != mLightDepthMap.end());
+								assert(light_index < sampler_instance->getNumElements());
+								sampler_instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
                             }
                             break;
                         }
-                        case EShadowMapType::Cube: {
-                            auto shadow_sampler_array = mesh_comp->getMaterialInstance().getOrCreateSamplerFromResource(*mSamplerCubeResource, errorState);
-                            if (shadow_sampler_array != nullptr) {
-                                auto *instance = static_cast<SamplerCubeArrayInstance *>(shadow_sampler_array);
-                                assert(instance != nullptr);
-
-                                if (light_index >= instance->getNumElements()) {
-                                    assert(false);
-                                    continue;
-                                }
-
-                                const auto it = mLightCubeMap.find(light);
-                                assert(it != mLightCubeMap.end());
-                                instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
-                            }
+                        case EShadowMapType::Cube:
+						{
+                            auto* sampler_instance = material->getOrCreateSampler<SamplerCubeArrayInstance>(*mSamplerCubeResource);
+							if (sampler_instance != nullptr)
+							{
+								const auto it = mLightCubeMap.find(light); assert(it != mLightCubeMap.end());
+								assert(light_index < sampler_instance->getNumElements());
+								sampler_instance->setTexture(getLightIndex(it_flags->second), *it->second->mTexture);
+							}
                             break;
                         }
                         default:
-                            NAP_ASSERT_MSG(false, "Unsupported shadow map type");
-                            return false;
+						{
+							NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+						}
                     }
                 }
                 ++light_index;
             }
         }
-		return true;
 	}
 
 
-	bool RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps, utility::ErrorState& errorState)
+	void RenderAdvancedService::pushLights(const std::vector<RenderableComponentInstance*>& renderComps)
 	{
-		return pushLightsInternal(renderComps, false, errorState);
+		// Filter viable materials
+		std::vector<MaterialInstance*> materials;
+		materials.reserve(renderComps.size());
+		for (auto& comp : renderComps)
+		{
+			// Skip when not visible
+			if(!comp->isVisible())
+				continue;
+
+			// Find get or create material instance method
+			auto mat_method = nap::rtti::findMethodRecursive(comp->get_type(), nap::material::instance::getOrCreateMaterial);
+			if(!mat_method.is_valid())
+				continue;
+
+			// Make sure return type is material instance
+			auto mat_return_type = mat_method.get_return_type();
+			if (!mat_return_type.is_pointer() && mat_return_type.is_derived_from(RTTI_OF(nap::MaterialInstance)))
+				continue;
+
+			// Get material instance
+			auto mat_result = mat_method.invoke(*comp);
+			assert(mat_result.is_valid() && mat_result.get_type().is_pointer() &&
+				mat_result.get_type().is_derived_from(RTTI_OF(nap::MaterialInstance)));
+			nap::MaterialInstance* mat_instance = mat_result.get_value<nap::MaterialInstance*>();
+
+			// Get light uniform struct
+			if (mat_instance->getMaterial().findUniform(uniform::lightStruct) != nullptr)
+			{
+				materials.emplace_back(std::move(mat_instance));
+			}
+		}
+
+		// Push lights to materials that are compatible
+		if(!materials.empty())
+			pushLightsInternal(materials);
 	}
 
 
@@ -626,6 +659,14 @@ namespace nap
 		mCubeMapFromFileTargets.clear();
 
 		mPreRenderCubeMapsCommand.reset();
+	}
+
+
+	void RenderAdvancedService::shutdown()
+	{
+		// Destroy all remaining dynamically spawned entities and clear
+		mLightScene->onDestroy();
+		mLightScene.reset();
 	}
 
 
@@ -798,36 +839,35 @@ namespace nap
 	 
 	void RenderAdvancedService::removeLightComponent(LightComponentInstance& light)
 	{
-		if (!light.isRegistered())
-			return;
-
 		if (mShadowResourcesCreated)
 		{
 			switch (light.getShadowMapType())
 			{
-			case EShadowMapType::Quad:
-			{
-				// Shadow resources
-				auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
-					{
-						return it.first == input;
-					});
-				assert(found_it != mLightDepthMap.end());
-				mLightDepthMap.erase(found_it);
-				break;
-			}
-			case EShadowMapType::Cube:
-			{
-				auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
-					{
-						return it.first == input;
-					});
-				assert(found_it != mLightCubeMap.end());
-				mLightCubeMap.erase(found_it);
-				break;
-			}
-			default:
-				NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+				case EShadowMapType::Quad:
+				{
+					// Shadow resources
+					auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
+						{
+							return it.first == input;
+						});
+					assert(found_it != mLightDepthMap.end());
+					mLightDepthMap.erase(found_it);
+					break;
+				}
+				case EShadowMapType::Cube:
+				{
+					auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
+						{
+							return it.first == input;
+						});
+					assert(found_it != mLightCubeMap.end());
+					mLightCubeMap.erase(found_it);
+					break;
+				}
+				default:
+				{
+					NAP_ASSERT_MSG(false, "Unsupported shadow map type");
+				}
 			}
 
 			// Flags

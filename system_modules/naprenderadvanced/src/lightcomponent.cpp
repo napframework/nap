@@ -25,17 +25,23 @@ RTTI_BEGIN_ENUM(nap::EShadowMapType)
 	RTTI_ENUM_VALUE(nap::EShadowMapType::Cube,		"Cube")
 RTTI_END_ENUM
 
-// nap::LightComponent run time class definition 
+RTTI_BEGIN_STRUCT(nap::LightComponent::Locator)
+	RTTI_PROPERTY("LineWidth",	&nap::LightComponent::Locator::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GnomonSize", &nap::LightComponent::Locator::mGnomonSize, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
 	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("CastShadows",		&nap::LightComponent::mCastShadows,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Enable Shadows",		&nap::LightComponent::mEnableShadows,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Locator",			&nap::LightComponent::mLocator,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-// nap::LightComponentInstance run time class definition
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponentInstance)
+	RTTI_PROPERTY(nap::uniform::light::color,		&nap::LightComponentInstance::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY(nap::uniform::light::intensity,	&nap::LightComponentInstance::mIntensity,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -61,60 +67,66 @@ namespace nap
 	{
 		mResource = getComponent<LightComponent>();
 		mIsEnabled = mResource->mEnabled;
-		mIsShadowEnabled = mResource->mEnableShadows;
+		mIsShadowEnabled = mResource->mCastShadows;
 		mShadowStrength = mResource->mShadowStrength;
+		mColor = mResource->mColor;
+		mIntensity = mResource->mIntensity;
 
 		// Fetch transform
 		mTransform = &getEntityInstance()->getComponent<TransformComponentInstance>();
+		if(!errorState.check(mTransform != nullptr, "Missing %s", RTTI_OF(nap::TransformComponent).get_name().data()))
+			return false;
 
-		// Reserve memory for light parameter list
-		// It may never be reallocated outside of init()
-		if (mParameterList.capacity() == 0)
-			mParameterList.reserve(uniform::light::defaultMemberCount);
+		// Fetch render advanced service
+		mService = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
+		assert(mService != nullptr);
 
-		// Create default parameters
-		registerLightUniformMember<ParameterRGBColorFloat, RGBColorFloat>(uniform::light::color, mResource->mColor->mParameter.get(), mResource->mColor->getValue());
-		registerLightUniformMember<ParameterFloat, float>(uniform::light::intensity, mResource->mIntensity->mParameter.get(), mResource->mIntensity->getValue());
+		// Reserve memory for light uniform property list
+		mUniformList.reserve(uniform::light::defaultMemberCount);
 
-		if (mIsShadowEnabled)
-		{
-			if (!errorState.check(getShadowCamera() != nullptr, "%s: Shadows are enabled while no shadow camera is set", mID.c_str()))
-				return false;
-		}
+		// Register uniform light properties
+		registerUniformLightProperty(nap::uniform::light::color);
+		registerUniformLightProperty(nap::uniform::light::intensity);
 
         // Register with service
-        if (mIsEnabled)
-        {
-            auto *service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
-            assert(service != nullptr);
-            service->registerLightComponent(*this);
-
-            mIsRegistered = true;
-        }
+        mService->registerLightComponent(*this);
 		return true;
 	}
 
 
-	Parameter* LightComponentInstance::getLightUniform(const std::string& memberName)
+	void LightComponentInstance::registerUniformLightProperty(const std::string& memberName)
 	{
-		const auto it = mUniformDataMap.find(memberName);
-		if (it != mUniformDataMap.end())
-			return it->second;
-
-		assert(false);
-		return nullptr;
+		auto uniform_prop = this->get_type().get_property(memberName);
+		assert(uniform_prop.is_valid());
+		assert(std::find(mUniformList.begin(), mUniformList.end(), uniform_prop) == mUniformList.end());
+		mUniformList.emplace_back(std::move(uniform_prop));
 	}
 
 
-	void LightComponentInstance::removeLightComponent()
+	void LightComponentInstance::onDestroy()
 	{
-        if (mIsRegistered)
-        {
-            auto *service = getEntityInstance()->getCore()->getService<RenderAdvancedService>();
-            assert(service != nullptr);
-            service->removeLightComponent(*this);
+		if (mSpawnedCamera != nullptr)
+			mService->destroy(mSpawnedCamera);
+		mService->removeLightComponent(*this);
+	}
 
-            mIsRegistered = false;
-        }
+
+	nap::SpawnedEntityInstance LightComponentInstance::spawnShadowCamera(const nap::Entity& entity, nap::utility::ErrorState& error)
+	{
+		// Ensure there's a camera
+		assert(mSpawnedCamera == nullptr);
+		if (!error.check(entity.findComponent(RTTI_OF(nap::CameraComponent)) != nullptr,
+			"Missing %s", RTTI_OF(nap::CameraComponent).get_name().data()))
+			return mSpawnedCamera;
+
+		// Ensure the camera has an origin
+		auto origin_comp = entity.findComponent(RTTI_OF(nap::RenderGnomonComponent));
+		if (!error.check(origin_comp != nullptr,
+			"Missing %s", RTTI_OF(nap::RenderGnomonComponent).get_name().data()))
+			return mSpawnedCamera;
+
+		// Spawn it and return
+		mSpawnedCamera = mService->spawn(entity, error);
+		return mSpawnedCamera;
 	}
 }

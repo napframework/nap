@@ -5,16 +5,19 @@
 
 // External includes
 #include <perspcameracomponent.h>
+#include <renderfrustumcomponent.h>
+#include <rendergnomoncomponent.h>
 
 namespace nap
 {
 	// Forward declares
 	class SpotLightComponentInstance;
+	class SceneService;
 
 	/**
 	 * Spot light component for NAP RenderAdvanced's light system.
 	 *
-	 * Omnidirectional light that emits from its origin to a specified direction with an angle of view (i.e. cone light).
+	 * Source that emits light from its origin to a specified direction with an angle of view (i.e. cone light).
 	 * The shadow map for this light is a 2D depth texture; therefore, the reach of the light can exceed the extent beyond
 	 * that of the depth map. The Render Advanced service creates and manages a `nap::DepthRenderTarget` and
 	 * `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
@@ -24,18 +27,19 @@ namespace nap
 		RTTI_ENABLE(LightComponent)
 		DECLARE_COMPONENT(SpotLightComponent, SpotLightComponentInstance)
 	public:
-		ResourcePtr<ParameterEntryFloat> mAttenuation;			///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
-		ResourcePtr<ParameterEntryFloat> mAngle;				///< Property: 'Angle' The light's angle of view (focus)
-		ResourcePtr<ParameterEntryFloat> mFallOff;				///< Property: 'FallOff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
-		ComponentPtr<PerspCameraComponent> mShadowCamera;		///< Property: 'ShadowCamera' Camera that produces the depth texture for a directional light
-		uint mShadowMapSize = 1024U;							///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
+		float mAttenuation = 0.1f;								///< Property: 'Attenuation' The rate at which light intensity is lost over distance from the origin
+		float mAngle = 90.0f;									///< Property: 'Angle' The light's angle of view (focus)
+		float mFieldOfView = 90.0f;								///< Property: 'FieldOfView' The light shadow camera angle of view
+		float mFalloff = 0.5f;									///< Property: 'Falloff' The falloff, where 0.0 cuts off at the edge, and 1.0 results in a linear gradient.
+		glm::vec2 mClippingPlanes = { 1.0f, 1000.0f };			///< Property: 'ClippingPlanes' The near and far shadow clipping distance of this light
+		uint mShadowMapSize = 1024;								///< Property: 'ShadowMapSize' The horizontal and vertical dimension of the shadow map for this light
 	};
 
 
 	/**
 	 * Spot light component instance for NAP RenderAdvanced's light system.
 	 *
-	 * Omnidirectional light that emits from its origin to a specified direction with an angle of view (i.e. cone light).
+	 * Source that emits light from its origin to a specified direction with an angle of view (i.e. cone light).
 	 * The shadow map for this light is a 2D depth texture; therefore, the reach of the light can exceed the extent beyond
 	 * that of the depth map. The Render Advanced service creates and manages a `nap::DepthRenderTarget` and
 	 * `nap::DepthRenderTexture2D` for rendering this light's shadow maps.
@@ -47,9 +51,6 @@ namespace nap
 		SpotLightComponentInstance(EntityInstance& entity, Component& resource) :
 			LightComponentInstance(entity, resource) { }
 
-		// Destructor
-		virtual ~SpotLightComponentInstance() override { LightComponentInstance::removeLightComponent(); }
-
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
 		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
@@ -57,16 +58,6 @@ namespace nap
 		 * @return if the LightComponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * @return whether this light component supports shadows
-		 */
-		virtual bool isShadowSupported() const override						{ return true; }
-
-		/**
-		 * @return the shadow camera if available, else nullptr
-		 */
-		virtual CameraComponentInstance* getShadowCamera()					{ return (mShadowCamera != nullptr) ? &(*mShadowCamera) : nullptr; }
 
 		/**
 		 * @return the light type
@@ -78,8 +69,66 @@ namespace nap
 		 */
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
 
+		/**
+		 * The rate at which light intensity is lost over distance from the origin 
+		 * @return light attenuation
+		 */
+		float getAttenuation() const										{ return mAttenuation; }
+
+		/**
+		 * Set the rate at which light intensity is lost over distance from the origin
+		 * @param attenuation light attenuation
+		 */
+		void setAttenuation(float attenuation)								{ mAttenuation = attenuation; }
+
+		/**
+		 * Light angle of view in degrees
+		 * @return lamp angle of view in degrees
+		 */	
+		float getAngle() const												{ return mAngle; }
+
+		/**
+		 * Set light angle of view in degrees
+		 * @param angle angle of view in degrees
+		 */
+		void setAngle(float angle)											{ mAngle = angle; }
+
+		/**
+		 * Returns the shadow camera field of view
+		 * @return The shadow camera fov angle in degrees
+		 */	
+		float getFieldOfView() const;
+
+		/**
+		 * Set the shadow camera field of view
+		 * @param angle shadow camera fov in degrees
+		 */
+		void setFieldOfView(float angle);
+
+		/**
+		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient. 
+		 * @return lamp falloff
+		 */	
+		float getFalloff() const											{ return mFalloff; }
+
+		/**
+		 * Set the spotlight falloff
+		 * @param angle spotlight angle
+		 */
+		void setFalloff(float falloff)										{ mFalloff = falloff; }
+
+		float mAttenuation = 0.1f;
+		float mAngle = 90.0f;
+		float mFalloff = 0.5f;
+		float mFieldOfView = 90.0f;
+
 	private:
-		// Shadow camera
-		ComponentInstancePtr<PerspCameraComponent> mShadowCamera = { this, &SpotLightComponent::mShadowCamera };
+		// Shadow camera entity resource
+		std::unique_ptr<Entity> mShadowCamEntity = nullptr;
+		std::unique_ptr<PerspCameraComponent> mShadowCamComponent = nullptr;
+		std::unique_ptr<RenderFrustumComponent> mShadowFrustrumComponent = nullptr;
+		std::unique_ptr<RenderGnomonComponent> mShadowOriginComponent = nullptr;
+		std::unique_ptr<TransformComponent> mShadowCamXformComponent = nullptr;
+		std::unique_ptr<GnomonMesh> mGnomonMesh = nullptr;
 	};
 }

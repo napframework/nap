@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #version 450 core
 
 // Extensions
@@ -34,7 +38,7 @@ uniform light
 
 uniform UBO
 { 
-	vec4	ambient;						//< Ambient
+	vec3	ambient;						//< Ambient
 	vec3	diffuse;						//< Diffuse
 	vec3	specular;						//< Specular
 	vec2	fresnel;						//< Fresnel [scale, power]
@@ -90,7 +94,7 @@ void main()
 	}
 
 	// Add fresnel
-	color_result = mix(color_result, vec3(1.0), passFresnel);
+	color_result = mix(color_result, vec3(1.0), passFresnel) + mtl.ambient;
 
 	// Final color output
 	out_Color = vec4(color_result, ubo.alpha);

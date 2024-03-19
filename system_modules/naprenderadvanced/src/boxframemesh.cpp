@@ -17,7 +17,6 @@
 // nap::BoxFrameMesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxFrameMesh)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("PolygonMode",		&nap::BoxFrameMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Usage",				&nap::BoxFrameMesh::mUsage,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -35,14 +34,14 @@ namespace nap
 		return
 		{
 			{ box.getMax().x, box.getMin().y, box.getMin().z },
-			box.getMin(),
+			{ box.getMin().x, box.getMin().y, box.getMin().z },
 			{ box.getMin().x, box.getMax().y, box.getMin().z },
 			{ box.getMax().x, box.getMax().y, box.getMin().z },
 
 			{ box.getMax().x, box.getMin().y, box.getMax().z },
 			{ box.getMin().x, box.getMin().y, box.getMax().z },
 			{ box.getMin().x, box.getMax().y, box.getMax().z },
-			box.getMax()
+			{ box.getMax().x, box.getMax().y, box.getMax().z },
 		};
 	}
 
@@ -111,7 +110,7 @@ namespace nap
 		// Set numer of vertices this mesh contains
 		mMeshInstance->setNumVertices(unitLineBox.size());
 		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(mPolygonMode);
+		mMeshInstance->setPolygonMode(EPolygonMode::Line);
 		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 		mMeshInstance->setCullMode(ECullMode::None);
 
@@ -163,7 +162,7 @@ namespace nap
 		// Set numer of vertices this mesh contains
 		mMeshInstance->setNumVertices(unitLineBox.size());
 		mMeshInstance->setUsage(mUsage);
-		mMeshInstance->setPolygonMode(mPolygonMode);
+		mMeshInstance->setPolygonMode(EPolygonMode::Line);
 		mMeshInstance->setDrawMode(EDrawMode::LineStrip);
 		mMeshInstance->setCullMode(ECullMode::None);
 

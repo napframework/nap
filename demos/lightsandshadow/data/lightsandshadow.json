@@ -7,16 +7,16 @@
                 {
                     "Type": "nap::RotateComponent",
                     "mID": "RotateLightBase",
+                    "Enabled": true,
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
                             "y": 1.0,
                             "z": 0.0
                         },
-                        "Speed": 0.05000000074505806,
+                        "Speed": -0.20000000298023225,
                         "Offset": 1.0
-                    },
-                    "Enabled": true
+                    }
                 },
                 {
                     "Type": "nap::TransformComponent",
@@ -47,116 +47,6 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "BoundsEntity",
-            "Components": [
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TransformBounds",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.75,
-                            "y": 1.0,
-                            "z": 1.75
-                        },
-                        "UniformScale": 8.0
-                    }
-                },
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderBounds",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Default",
-                        "RenderTag_Shadow"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Bounds",
-                    "Mesh": "BoundsMesh",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_60da175cxx",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_cdd76af7xx",
-                                        "Name": "diffuse",
-                                        "Value": {
-                                            "x": 0.8999999761581421,
-                                            "y": 0.8999999761581421,
-                                            "z": 0.8999999761581421
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_11cc25f4xx",
-                                        "Name": "specular",
-                                        "Value": {
-                                            "x": 0.20000000298023225,
-                                            "y": 0.20000000298023225,
-                                            "z": 0.20000000298023225
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "UniformVec2_f66d0135xx",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 0.25,
-                                            "y": 4.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_5b6d8df2xx",
-                                        "Name": "shininess",
-                                        "Value": 8.0
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_49935e1dxx",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "BlinnPhongColorMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "WriteOnly"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
-            "Type": "nap::Entity",
             "mID": "BoxEntity",
             "Components": [
                 {
@@ -164,13 +54,13 @@
                     "mID": "TransformBox",
                     "Properties": {
                         "Translate": {
-                            "x": 4.0,
-                            "y": -3.0,
-                            "z": 2.0
+                            "x": 1.0,
+                            "y": -3.5,
+                            "z": 1.25
                         },
                         "Rotate": {
                             "x": 0.0,
-                            "y": 0.0,
+                            "y": -20.0,
                             "z": 0.0
                         },
                         "Scale": {
@@ -178,7 +68,7 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 2.0
+                        "UniformScale": 1.0
                     }
                 },
                 {
@@ -189,8 +79,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -305,8 +194,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "OrbitController",
-                    "MovementSpeed": 0.004999999888241291,
-                    "RotateSpeed": 0.0010000001639127732,
+                    "MovementSpeed": 0.014999999664723874,
+                    "RotateSpeed": 0.001500000013038516,
                     "PerspCameraComponent": "./PerspCamera",
                     "LookAtPosition": {
                         "x": 0.0,
@@ -367,14 +256,8 @@
                     "Tags": [
                         "RenderTag_Default"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Fader",
-                    "FadeDuration": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_332fb58b",
-                        "Parameter": "",
-                        "Default": 2.0
-                    },
+                    "Layer": "Layer_Fader",
+                    "FadeDuration": 2.0,
                     "Camera": "../../CameraEntity/PerspCamera",
                     "MaterialInstance": {
                         "Uniforms": [],
@@ -402,8 +285,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "NAPLogoMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -485,6 +367,7 @@
                 {
                     "Type": "nap::RotateComponent",
                     "mID": "RotateLogo",
+                    "Enabled": true,
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
@@ -493,8 +376,7 @@
                         },
                         "Speed": -0.10000000149011612,
                         "Offset": 0.0
-                    },
-                    "Enabled": true
+                    }
                 }
             ],
             "Children": []
@@ -529,82 +411,112 @@
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
                     "Enabled": true,
+                    "CastShadows": true,
                     "Color": {
-                        "Type": "nap::ParameterEntryRGBColorFloat",
-                        "mID": "ParameterEntryRGBColorFloat_7120af13",
-                        "Parameter": "PointColorParam",
-                        "Default": {
-                            "Values": [
-                                1.0,
-                                1.0,
-                                1.0
-                            ]
-                        }
+                        "Values": [
+                            1.0,
+                            0.20000000298023225,
+                            0.4901960790157318
+                        ]
                     },
-                    "Intensity": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_4e76ed97",
-                        "Parameter": "PointIntensityParam",
-                        "Default": 1.0
+                    "Intensity": 0.800000011920929,
+                    "ShadowStrength": 1.0,
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
                     },
-                    "ShadowStrength": 0.6000000238418579,
-                    "Enable Shadows": true,
-                    "ShadowCamera": "./PointShadowCam",
-                    "ShadowMapSize": 1024,
-                    "Attenuation": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_87b554bb",
-                        "Parameter": "LightAttenuationParam",
-                        "Default": 0.10000000149011612
-                    }
-                },
+                    "Attenuation": 0.10000000149011612,
+                    "FieldOfView": 30.0,
+                    "ClippingPlanes": {
+                        "x": 0.10000000149011612,
+                        "y": 30.0
+                    },
+                    "ShadowMapSize": 1024
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RoomEntity",
+            "Components": [
                 {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "PointShadowCam",
+                    "Type": "nap::TransformComponent",
+                    "mID": "TransformBounds",
                     "Properties": {
-                        "FieldOfView": 30.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 20.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
                         },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.75,
+                            "y": 1.0,
+                            "z": 1.75
+                        },
+                        "UniformScale": 8.0
                     }
                 },
                 {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderPointLight",
-                    "Visible": false,
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderRoom",
+                    "Visible": true,
                     "Tags": [
-                        "RenderTag_Gizmo"
+                        "RenderTag_Default",
+                        "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "",
+                    "Layer": "Layer_Room",
+                    "Mesh": "BoundsMesh",
                     "MaterialInstance": {
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_47494a6e",
+                                "mID": "UniformStruct_60da175cxx",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_f112040c",
-                                        "Name": "color",
+                                        "mID": "UniformVec3_cdd76af7xx",
+                                        "Name": "diffuse",
                                         "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
+                                            "x": 0.8999999761581421,
+                                            "y": 0.8999999761581421,
+                                            "z": 0.8999999761581421
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec3",
+                                        "mID": "UniformVec3_11cc25f4xx",
+                                        "Name": "specular",
+                                        "Value": {
+                                            "x": 0.20000000298023225,
+                                            "y": 0.20000000298023225,
+                                            "z": 0.20000000298023225
+                                        }
+                                    },
+                                    {
+                                        "Type": "nap::UniformVec2",
+                                        "mID": "UniformVec2_f66d0135xx",
+                                        "Name": "fresnel",
+                                        "Value": {
+                                            "x": 0.10000000149011612,
+                                            "y": 6.0
                                         }
                                     },
                                     {
                                         "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_a0b68b4d",
+                                        "mID": "UniformFloat_5b6d8df2xx",
+                                        "Name": "shininess",
+                                        "Value": 8.0
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "UniformFloat_49935e1dxx",
                                         "Name": "alpha",
                                         "Value": 1.0
                                     }
@@ -614,9 +526,9 @@
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "ConstantMaterial",
+                        "Material": "BlinnPhongColorMaterial",
                         "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                        "DepthMode": "WriteOnly"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -629,19 +541,6 @@
                             "y": 0.0
                         }
                     }
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -657,7 +556,7 @@
                         "Translate": {
                             "x": 0.5,
                             "y": 0.25,
-                            "z": 8.0
+                            "z": 6.5
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -676,131 +575,29 @@
                     "Type": "nap::SpotLightComponent",
                     "mID": "SpotLight",
                     "Enabled": true,
+                    "CastShadows": true,
                     "Color": {
-                        "Type": "nap::ParameterEntryRGBColorFloat",
-                        "mID": "ParameterEntryRGBColorFloat_6dd36537",
-                        "Parameter": "SpotColorParam",
-                        "Default": {
-                            "Values": [
-                                1.0,
-                                1.0,
-                                1.0
-                            ]
-                        }
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
                     },
-                    "Intensity": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_d310b0e2",
-                        "Parameter": "SpotIntensityParam",
-                        "Default": 1.0
-                    },
+                    "Intensity": 2.5,
                     "ShadowStrength": 1.0,
-                    "Enable Shadows": true,
-                    "ShadowCamera": "./SpotShadowCam",
-                    "ShadowMapSize": 2048,
-                    "Attenuation": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_7ee59e8f",
-                        "Parameter": "LightAttenuationParam",
-                        "Default": 0.10000000149011612
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
                     },
-                    "Angle": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_07425983",
-                        "Parameter": "SpotAngleParam",
-                        "Default": 90.0
+                    "Attenuation": 0.10000000149011612,
+                    "Angle": 60.0,
+                    "Falloff": 0.8999999761581421,
+                    "FieldOfView": 80.0,
+                    "ClippingPlanes": {
+                        "x": 1.0,
+                        "y": 17.0
                     },
-                    "FallOff": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_5cc1308f",
-                        "Parameter": "SpotFallOffParam",
-                        "Default": 0.5
-                    }
-                },
-                {
-                    "Type": "nap::PerspCameraComponent",
-                    "mID": "SpotShadowCam",
-                    "Properties": {
-                        "FieldOfView": 60.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 20.0,
-                        "GridDimensions": {
-                            "x": 1,
-                            "y": 1
-                        },
-                        "GridLocation": {
-                            "x": 0,
-                            "y": 0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderSpotLight",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_440e0c94",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_e0ad67d5",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_bcdccf34",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon3",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
+                    "ShadowMapSize": 2048
                 }
             ],
             "Children": []
@@ -835,119 +632,26 @@
                     "Type": "nap::DirectionalLightComponent",
                     "mID": "SunLight",
                     "Enabled": true,
+                    "CastShadows": true,
                     "Color": {
-                        "Type": "nap::ParameterEntryRGBColorFloat",
-                        "mID": "ParameterEntryRGBColorFloat_7fa4e4fd",
-                        "Parameter": "SunColor",
-                        "Default": {
-                            "Values": [
-                                1.0,
-                                1.0,
-                                1.0
-                            ]
-                        }
+                        "Values": [
+                            1.0,
+                            0.929411768913269,
+                            0.7490196228027344
+                        ]
                     },
-                    "Intensity": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_36cbb143",
-                        "Parameter": "SunIntensityParam",
-                        "Default": 1.0
-                    },
+                    "Intensity": 0.699999988079071,
                     "ShadowStrength": 1.0,
-                    "Enable Shadows": true,
-                    "ShadowCamera": "./SunShadowCam",
-                    "ShadowMapSize": 2048
-                },
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "SunShadowCam",
-                    "Properties": {
-                        "Mode": "Custom",
-                        "LeftPlane": -10.0,
-                        "RightPlane": 10.0,
-                        "TopPlane": 10.0,
-                        "BottomPlane": -10.0,
-                        "NearClippingPlane": 0.10000000149011612,
-                        "FarClippingPlane": 30.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::RenderFrustumComponent",
-                    "mID": "RenderDirectionalLight",
-                    "Visible": false,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_dda1e55d",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "UniformVec3_335ebe47",
-                                        "Name": "color",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "UniformFloat_af3f07b4",
-                                        "Name": "alpha",
-                                        "Value": 1.0
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "ConstantMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
                     },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
+                    "ProjectionSize": 14.0,
+                    "ShadowMapSize": 2048,
+                    "ClippingPlanes": {
+                        "x": 0.10000000149011612,
+                        "y": 17.0
                     }
-                },
-                {
-                    "Type": "nap::RenderGnomonComponent",
-                    "mID": "RenderGnomon2",
-                    "Visible": true,
-                    "Tags": [
-                        "RenderTag_Gizmo"
-                    ],
-                    "LayerRegistry": "",
-                    "Layer": "",
-                    "Gnomon": "GnomonMesh",
-                    "LineWidth": 1.0,
-                    "DepthMode": "ReadWrite"
                 }
             ],
             "Children": []
@@ -963,7 +667,7 @@
                         "Translate": {
                             "x": 4.0,
                             "y": -2.0,
-                            "z": -2.0
+                            "z": -4.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -986,8 +690,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "BoxMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1065,8 +768,7 @@
                         "RenderTag_Default",
                         "RenderTag_Shadow"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
-                    "Layer": "RenderLayer_Default",
+                    "Layer": "Layer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
                         "Uniforms": [
@@ -1160,7 +862,7 @@
                 "BaseLightEntity",
                 "TorusEntity",
                 "TallBoxEntity",
-                "BoundsEntity",
+                "RoomEntity",
                 "BoxEntity",
                 "FaderEntity"
             ]
@@ -1279,22 +981,22 @@
             ]
         },
         {
-            "Type": "nap::RenderLayerRegistry",
-            "mID": "RenderLayerRegistry",
+            "Type": "nap::RenderChain",
+            "mID": "RenderChain",
             "Layers": [
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Fader",
+                    "mID": "Layer_Fader",
                     "Name": "Fader"
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Default",
+                    "mID": "Layer_Default",
                     "Name": "Default"
                 },
                 {
                     "Type": "nap::RenderLayer",
-                    "mID": "RenderLayer_Bounds",
+                    "mID": "Layer_Room",
                     "Name": "Bounds"
                 }
             ]
@@ -1307,11 +1009,6 @@
                     "Type": "nap::RenderTag",
                     "mID": "RenderTag_Default",
                     "Name": "Default"
-                },
-                {
-                    "Type": "nap::RenderTag",
-                    "mID": "RenderTag_Gizmo",
-                    "Name": "Gizmo"
                 },
                 {
                     "Type": "nap::RenderTag",
@@ -1331,7 +1028,7 @@
             "Title": "Light & Shadow Demo",
             "Width": 1280,
             "Height": 720,
-            "Mode": "Immediate",
+            "Mode": "Mailbox",
             "ClearColor": {
                 "Values": [
                     0.0,
@@ -1344,19 +1041,6 @@
             "AdditionalSwapImages": 1,
             "RestoreSize": true,
             "RestorePosition": true
-        },
-        {
-            "Type": "nap::ResourceGroup",
-            "mID": "GUI",
-            "Members": [
-                {
-                    "Type": "nap::ParameterGUI",
-                    "mID": "ParameterGUI",
-                    "Serializable": true,
-                    "Group": "Parameters"
-                }
-            ],
-            "Children": []
         },
         {
             "Type": "nap::ResourceGroup",
@@ -1557,17 +1241,6 @@
                             "Name": "UBO",
                             "Uniforms": [
                                 {
-                                    "Type": "nap::UniformVec4",
-                                    "mID": "UniformVec4_3019e56a",
-                                    "Name": "ambient",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0,
-                                        "z": 0.0,
-                                        "w": 0.0
-                                    }
-                                },
-                                {
                                     "Type": "nap::UniformVec3",
                                     "mID": "UniformVec3_cdd76af7",
                                     "Name": "diffuse",
@@ -1607,6 +1280,16 @@
                                     "mID": "UniformFloat_49935e1d",
                                     "Name": "alpha",
                                     "Value": 1.0
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
                                 }
                             ]
                         }
@@ -1645,17 +1328,6 @@
                             "mID": "UniformStruct_60da175cx",
                             "Name": "UBO",
                             "Uniforms": [
-                                {
-                                    "Type": "nap::UniformVec4",
-                                    "mID": "UniformVec4_3019e56ax",
-                                    "Name": "ambient",
-                                    "Value": {
-                                        "x": 0.0,
-                                        "y": 0.0,
-                                        "z": 0.0,
-                                        "w": 0.0
-                                    }
-                                },
                                 {
                                     "Type": "nap::UniformVec3",
                                     "mID": "UniformVec3_cdd76af7x",
@@ -1696,6 +1368,16 @@
                                     "mID": "UniformFloat_49935e1dx",
                                     "Name": "alpha",
                                     "Value": 1.0
+                                },
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "ambient_cd5b26",
+                                    "Name": "ambient",
+                                    "Value": {
+                                        "x": 0.0,
+                                        "y": 0.0,
+                                        "z": 0.0
+                                    }
                                 }
                             ]
                         }

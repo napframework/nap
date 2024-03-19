@@ -4,9 +4,11 @@
 
 #pragma once
 
-// External Includes
+// Internal Includes
 #include "texture.h"
 #include "irendertarget.h"
+
+// External Includes
 #include <color.h>
 
 namespace nap

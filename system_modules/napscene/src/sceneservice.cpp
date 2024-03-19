@@ -20,13 +20,14 @@ namespace nap
 {
 	SceneService::SceneService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
+
 
 	void SceneService::registerObjectCreators(rtti::Factory& factory)
 	{
 		factory.addObjectCreator(std::make_unique<SceneCreator>(getCore()));
 	}
+
 
 	void SceneService::update(double deltaTime)
 	{
@@ -34,16 +35,19 @@ namespace nap
 			scene->update(deltaTime);
 	}
 
+
 	void SceneService::postUpdate(double deltaTime)
 	{
 		for (Scene* scene : mScenes)
 			scene->updateTransforms(deltaTime);
 	}
 
+
 	void SceneService::registerScene(Scene& scene)
 	{
 		mScenes.insert(&scene);
 	}
+
 
 	void SceneService::unregisterScene(Scene& scene)
 	{

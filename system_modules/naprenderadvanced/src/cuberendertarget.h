@@ -210,10 +210,10 @@ namespace nap
 		VkFormat								mVulkanColorFormat = VK_FORMAT_UNDEFINED;
 		VkFormat								mVulkanDepthFormat = VK_FORMAT_UNDEFINED;
 
-		ImageData								mDepthImage{ TextureCube::LAYER_COUNT };
-		ImageData								mColorImage{ TextureCube::LAYER_COUNT };
+		ImageData								mDepthImage{ TextureCube::layerCount };
+		ImageData								mColorImage{ TextureCube::layerCount };
 
-		std::array<VkFramebuffer, TextureCube::LAYER_COUNT>	mFramebuffers = { VK_NULL_HANDLE };
+		std::array<VkFramebuffer, TextureCube::layerCount>	mFramebuffers = { VK_NULL_HANDLE };
 
 		glm::ivec2								mSize;
 		uint									mLayerIndex = 0U;
