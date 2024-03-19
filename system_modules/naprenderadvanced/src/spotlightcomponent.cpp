@@ -14,8 +14,8 @@
 RTTI_BEGIN_CLASS(nap::SpotLightComponent)
 	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FieldOfViewClip",		&nap::SpotLightComponent::mFOVClip,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FieldOfView",			&nap::SpotLightComponent::mFieldOfView,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -101,6 +101,13 @@ namespace nap
 	void SpotLightComponentInstance::setAngle(float angle)
 	{
 		mAngle = angle;
-		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(angle);
+		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(mAngle * mFOVClip);
+	}
+
+
+	void SpotLightComponentInstance::setFOVClip(float clip)
+	{
+		mFOVClip = std::clamp(clip, 0.0f, 1.0f);
+		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(mAngle * mFOVClip);
 	}
 }

@@ -125,7 +125,7 @@ namespace nap
 			}
 			else
 			{
-				// Create depth attachment
+				// Create depth image data and hook up to depth attachment
 				if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
 					return false;
 
@@ -140,7 +140,7 @@ namespace nap
 			if (!createColorResource(*mRenderService, framebuffer_size, mColorTexture->getFormat(), mRasterizationSamples, mColorImage, errorState))
 				return false;
 
-			// Create multi sampled depth attachment
+			// Create multi-sampled depth attachment
 			if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
 				return false;
 
