@@ -244,7 +244,7 @@ namespace nap
 		for (const auto& light : mLightComponents)
 		{
 			// Skip rendering the shadow map when the light intensity is zero
-			if (!light->isEnabled() || !light->getCastShadows() || light->getIntensity() <= math::epsilon<float>())
+			if (!light->isEnabled() || !light->castsShadows() || light->getIntensity() <= math::epsilon<float>())
 				continue;
 
 			switch (light->getShadowMapType())
@@ -341,7 +341,7 @@ namespace nap
 		// Synchronize shadow cameras
 		for (auto& light : mLightComponents)
 		{
-			if (light->mSpawnedCamera != nullptr && light->getCastShadows())
+			if (light->mSpawnedCamera != nullptr && light->castsShadows())
 			{
 				auto* spawn_xform = light->mSpawnedCamera->findComponent<nap::TransformComponentInstance>();
 				if (spawn_xform != nullptr)
@@ -388,7 +388,8 @@ namespace nap
 				// Light uniform custom
 				for (const auto& entry : light->mUniformList)
 				{
-					const auto& name = entry.get_name().to_string();
+					// Uniform property name
+					auto name = entry.get_name().to_string();
 
 					// Filter default uniforms
 					bool skip = false;
@@ -404,7 +405,7 @@ namespace nap
 						break;
 
 					// Get light declaration
-					auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
+					const auto* struct_decl = static_cast<const ShaderVariableStructDeclaration*>(&light_element.getDeclaration());
                     assert(struct_decl != nullptr);
 
 					// Uniform not available
@@ -486,7 +487,7 @@ namespace nap
                 if (light_index >= getMaximumLightCount())
                     break;
 
-                if (light->getCastShadows())
+                if (light->castsShadows())
                 {
                     // Set light view projection matrix in shadow struct
                     const auto light_view_projection = light->getCamera().getRenderProjectionMatrix() * light->getCamera().getViewMatrix();
@@ -497,7 +498,7 @@ namespace nap
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
 
-                    // Fetch flags|
+                    // Fetch flags
                     auto it_flags = mLightFlagsMap.find(light);
                     assert(it_flags != mLightFlagsMap.end());
                     switch (light->getShadowMapType())

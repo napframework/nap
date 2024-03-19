@@ -112,7 +112,7 @@ namespace nap
 	 * Rendering with lights requires an additional call to the render advanced service. You can either use `pushLights` on
 	 * the render components you wish to render or `renderShadows` with the `updateMaterials` argument set to `true` if you
 	 * wish to use shadows too.
-	 * l
+	 * 
 	 * Update light uniforms of lit components when shadows are disabled.
 	 * ~~~~~{.cpp}
 	 *	mRenderAdvancedService->pushLights(components_to_render, error_state);
@@ -252,7 +252,7 @@ namespace nap
 		/**
 		 * @return whether this light component currently casts shadows
 		 */
-		bool getCastShadows() const											{ return canCastShadows() && mIsShadowEnabled; }
+		bool castsShadows() const											{ return canCastShadows() && mIsShadowEnabled; }
 
 		/**
 		 * @return the light type
