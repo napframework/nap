@@ -97,17 +97,14 @@ namespace nap
 		// Store as attachments
 		std::array<VkImageView, 3> attachments { VK_NULL_HANDLE, VK_NULL_HANDLE, VK_NULL_HANDLE };
 
-		// Ensure the sample count is 1 when a depth texture resource is used
-		if (hasDepthTexture())
-		{
-			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
-				return false;
-		}
-
 		// Create render pass based on number of multi samples
 		// When there's only 1 there's no need for a resolve step
 		if (hasDepthTexture())
 		{
+			// Ensure the sample count is 1 when a depth texture resource is used
+			if (!errorState.check(mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT, "Depth resolve attachments are not supported. Set the sample count to one if a depth texture resource is desired."))
+				return false;
+
 			if (!createRenderPass(mRenderService->getDevice(), mColorTexture->getFormat(), mDepthTexture->getFormat(), mRasterizationSamples, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, true, mRenderPass, errorState))
 				return false;
 		}
@@ -119,14 +116,23 @@ namespace nap
 
 		if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
 		{
-			// Create depth attachment
-			if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
-				return false;
-
 			// Bind textures as attachments
-			attachments[0] = mColorTexture->getHandle().getView();
-			attachments[1] = hasDepthTexture() ? mDepthTexture->getHandle().getView() : mDepthImage.getView();
-			attachments[2] = VK_NULL_HANDLE;
+			if (hasDepthTexture())
+			{
+				attachments[0] = mColorTexture->getHandle().getView();
+				attachments[1] = mDepthTexture->getHandle().getView();
+				attachments[2] = VK_NULL_HANDLE;
+			}
+			else
+			{
+				// Create depth attachment
+				if (!createDepthResource(*mRenderService, framebuffer_size, mRasterizationSamples, mDepthImage, errorState))
+					return false;
+
+				attachments[0] = mColorTexture->getHandle().getView();
+				attachments[1] = mDepthImage.getView();
+				attachments[2] = VK_NULL_HANDLE;
+			}
 		}
 		else
 		{
