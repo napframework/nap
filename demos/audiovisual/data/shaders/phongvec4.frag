@@ -47,17 +47,17 @@ uniform shadow
 
 uniform UBO
 {
-	vec3	ambient;						//< Ambient
-	vec3	diffuse;						//< Diffuse
-	vec3	specular;						//< Specular
-	vec3	highlight;						//< Shader specific
-	vec3	fresnelColor;					//< Shader specific
-	vec2	fresnel;						//< Fresnel [scale, power]
-	float	shininess;						//< Shininess
-	float	alpha;							//< Alpha
-	float	reflection;						//< Reflection
-	float	highlightLength;				//< Highlight Length
-	uint	environment;					//< Whether to sample an environment map
+	vec3	ambient;					//< Ambient
+	vec3	diffuse;					//< Diffuse
+	vec3	specular;					//< Specular
+	vec3	highlight;					//< Shader specific
+	vec3	fresnelColor;				//< Shader specific
+	vec2	fresnel;					//< Fresnel [scale, power]
+	float	shininess;					//< Shininess
+	float	alpha;						//< Alpha
+	float	reflection;					//< Reflection
+	float	highlightLength;			//< Highlight Length
+	uint	environment;				//< Whether to sample an environment map
 } ubo;
 
 in vec3 passPosition;
@@ -92,6 +92,7 @@ void main()
 		vec3 I = normalize(passPosition - mvp.cameraPosition);
 		vec3 R = reflect(I, normalize(passNormal));
 		mtl.diffuse *= mix(mtl.diffuse, texture(environmentMap, R).rgb, ubo.reflection);
+		mtl.ambient += mix(mtl.diffuse, texture(environmentMap, R).rgb, ubo.reflection);
 	}
 
 	// Compute light contribution
@@ -166,7 +167,7 @@ void main()
 		color_result += color * (1.0 - shadow * sdw.strength[i]);
 	}
 
-	color_result = mix(color_result, ubo.fresnelColor, passFresnel);
+	color_result = mix(color_result, ubo.fresnelColor, passFresnel) + mtl.ambient;
 	color_result = mix(color_result, ubo.highlight, smoothstep(1.0-clamp(ubo.highlightLength*0.1, 0.0, 1.0), 1.0, passUV0.y));
 	out_Color = vec4(color_result, ubo.alpha);
 }

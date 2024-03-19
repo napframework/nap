@@ -147,7 +147,6 @@
                     "Tags": [
                         "RenderTag_Lit"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Default",
                     "Mesh": "PlaneMeshVec4",
                     "MaterialInstance": {
@@ -210,7 +209,8 @@
                                         "Value": {
                                             "x": 0.07500000298023224,
                                             "y": 0.0,
-                                            "z": 0.05000000074505806                                        }
+                                            "z": 0.05000000074505806
+                                        }
                                     },
                                     {
                                         "Type": "nap::UniformVec2",
@@ -434,7 +434,6 @@
                     "Tags": [
                         "RenderTag_Unlit"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Wireframe",
                     "Mesh": "PlaneMeshVec4WireFrame",
                     "MaterialInstance": {
@@ -501,7 +500,6 @@
                     "Tags": [
                         "RenderTag_Unlit"
                     ],
-                    "LayerRegistry": "",
                     "Layer": "",
                     "Mesh": "DebugPlaneMesh",
                     "MaterialInstance": {
@@ -601,7 +599,7 @@
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
-                            "y": 5.0,
+                            "y": 4.0,
                             "z": 0.0
                         },
                         "Rotate": {
@@ -621,34 +619,26 @@
                     "Type": "nap::PointLightComponent",
                     "mID": "PointLight",
                     "Enabled": true,
+                    "CastShadows": false,
                     "Color": {
-                        "Type": "nap::ParameterEntryRGBColorFloat",
-                        "mID": "ParameterEntryRGBColorFloat_1aef2937",
-                        "Parameter": "",
-                        "Default": {
-                            "Values": [
-                                0.8823529481887817,
-                                0.8509804010391235,
-                                1.0
-                            ]
-                        }
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
                     },
-                    "Intensity": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_76f53848",
-                        "Parameter": "",
-                        "Default": 1.0
-                    },
+                    "Intensity": 1.0,
                     "ShadowStrength": 1.0,
-                    "Enable Shadows": false,
-                    "ShadowCamera": "",
-                    "ShadowMapSize": 512,
-                    "Attenuation": {
-                        "Type": "nap::ParameterEntryFloat",
-                        "mID": "ParameterEntryFloat_7ef486e7",
-                        "Parameter": "",
-                        "Default": 0.0
-                    }
+                    "Locator": {
+                        "LineWidth": 1.0,
+                        "GnomonSize": 1.0
+                    },
+                    "Attenuation": 0.0,
+                    "ClippingPlanes": {
+                        "x": 0.10000000149011612,
+                        "y": 1000.0
+                    },
+                    "ShadowMapSize": 512
                 }
             ],
             "Children": []
@@ -716,7 +706,6 @@
                     "Tags": [
                         "RenderTag_Unlit"
                     ],
-                    "LayerRegistry": "",
                     "Layer": "",
                     "Camera": "../CameraEntity/PerspectiveCamera",
                     "InputTarget": "RenderTarget",
@@ -733,7 +722,6 @@
                     "Tags": [
                         "RenderTag_Unlit"
                     ],
-                    "LayerRegistry": "",
                     "Layer": "",
                     "OutputTexture": "DummyTexture",
                     "MaterialInstance": {
@@ -833,7 +821,6 @@
                     "Tags": [
                         "RenderTag_Unlit"
                     ],
-                    "LayerRegistry": "RenderLayerRegistry",
                     "Layer": "RenderLayer_Background",
                     "Mesh": "ScatterStars",
                     "MaterialInstance": {
