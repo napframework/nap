@@ -257,18 +257,15 @@
                         "RenderTag_Default"
                     ],
                     "Layer": "Layer_Fader",
+                    "FadeIn": true,
                     "FadeDuration": 2.0,
-                    "Camera": "../../CameraEntity/PerspCamera",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "FadeMaterial",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "StartBlack": true
+                    "FadeColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
                 }
             ],
             "Children": []
@@ -591,8 +588,8 @@
                     },
                     "Attenuation": 0.10000000149011612,
                     "Angle": 60.0,
+                    "FieldOfViewClip": 1.0,
                     "Falloff": 0.8999999761581421,
-                    "FieldOfView": 80.0,
                     "ClippingPlanes": {
                         "x": 1.0,
                         "y": 17.0

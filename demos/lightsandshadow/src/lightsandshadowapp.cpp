@@ -147,10 +147,6 @@ namespace nap
 			if (ImGui::SliderFloat("Falloff", &falloff, 0.0f, 1.0f))
 				spot_comp.setFalloff(falloff);
 
-			auto fov = spot_comp.getFieldOfView();
-			if (ImGui::SliderFloat("FOV", &fov, 1.0f, 180.0f))
-				spot_comp.setFieldOfView(fov);
-
 			ImGui::PopID();
 		}
 		if (ImGui::CollapsingHeader("Sunlight"))
