@@ -17,7 +17,7 @@ namespace nap
 	 */
 	namespace index
 	{
-		inline constexpr const static uint primitiveRestartIndex = std::numeric_limits<uint>::max();
+		constexpr uint primitiveRestartIndex = std::numeric_limits<uint>::max();
 	}
 
 
@@ -26,7 +26,7 @@ namespace nap
 	 */
 	namespace shader
 	{
-		inline constexpr const char* main = "main";
+		constexpr const char* main = "main";
 	}
 
 
