@@ -18,7 +18,7 @@
 #include "lightcomponent.h"
 #include "lightflags.h"
 #include "rendertag.h"
-#include "nomesh.h"
+#include "emptymesh.h"
 #include "rendercommand.h"
 
 namespace nap
@@ -303,7 +303,7 @@ namespace nap
 		// Cube maps from file
 		std::vector<std::unique_ptr<CubeRenderTarget>> mCubeMapFromFileTargets;			///< Render targets created to render `nap::CubeMapFromFile` objects
 
-		std::unique_ptr<NoMesh>						mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
+		std::unique_ptr<EmptyMesh>						mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;			///< Run-time cube map material

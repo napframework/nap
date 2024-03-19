@@ -201,8 +201,8 @@ namespace nap
 		}
 
 		// Create nap::NoMesh
-		mNoMesh = std::make_unique<NoMesh>(getCore());
-		mNoMesh->mID = utility::stringFormat("%s_NoMesh_%s", RTTI_OF(NoMesh).get_name().to_string().c_str(), math::generateUUID().c_str());
+		mNoMesh = std::make_unique<EmptyMesh>(getCore());
+		mNoMesh->mID = utility::stringFormat("%s_NoMesh_%s", RTTI_OF(EmptyMesh).get_name().to_string().c_str(), math::generateUUID().c_str());
 		if (!mNoMesh->init(errorState))
 		{
 			errorState.fail("%s: Failed to initialize cube sampler resource", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());

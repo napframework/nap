@@ -7,7 +7,6 @@
 #include "fadeshader.h"
 
 // External Includes
-#include <mesh.h>
 #include <renderglobals.h>
 #include <material.h>
 #include <renderservice.h>
@@ -17,10 +16,9 @@
 #include <transformcomponent.h>
 
 RTTI_BEGIN_CLASS(nap::RenderFaderComponent)
-	RTTI_PROPERTY("FadeDuration",		&nap::RenderFaderComponent::mFadeDuration,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Camera",				&nap::RenderFaderComponent::mCamera,						nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",	&nap::RenderFaderComponent::mMaterialInstanceResource,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("StartBlack",			&nap::RenderFaderComponent::mStartBlack,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FadeIn",				&nap::RenderFaderComponent::mFadeIn,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FadeDuration",		&nap::RenderFaderComponent::mFadeDuration,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FadeColor",			&nap::RenderFaderComponent::mFadeColor,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFaderComponentInstance)
@@ -35,31 +33,66 @@ namespace nap
 		
 	RenderFaderComponentInstance::RenderFaderComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
-		mRenderService(entity.getCore()->getService<nap::RenderService>())
+		mRenderService(entity.getCore()->getService<nap::RenderService>()),
+		mEmptyMesh(*entity.getCore())
 	{ }
 
 
 	bool RenderFaderComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Initialize base
 		if (!RenderableComponentInstance::init(errorState))
 			return false;
 
 		// Initialize material based on resource
 		mResource = getComponent<RenderFaderComponent>();
-		if (!mMaterialInstance.init(*getEntityInstance()->getCore()->getService<RenderService>(), mResource->mMaterialInstanceResource, errorState))
+
+		// Create fade material
+		Material* fade_material = mRenderService->getOrCreateMaterial<FadeShader>(errorState);
+		if (!errorState.check(fade_material != nullptr, "%s: unable to get or create constant material", mID.c_str()))
 			return false;
 
-		// Create no mesh
-		mNoMesh = std::make_unique<NoMesh>(*getEntityInstance()->getCore());
-		if (!mNoMesh->init(errorState))
+		// Create resource for the fade material instance
+		mMaterialInstanceResource.mBlendMode = EBlendMode::AlphaBlend;
+		mMaterialInstanceResource.mDepthMode = EDepthMode::NoReadWrite;
+		mMaterialInstanceResource.mMaterial = fade_material;
+
+		// Create constant material instance
+		if (!mMaterialInstance.init(*mRenderService, mMaterialInstanceResource, errorState))
 			return false;
 
-		mRenderableMesh = createRenderableMesh(*mNoMesh, mMaterialInstance, errorState);
+		// Initialize empty mesh
+		if (!mEmptyMesh.init(errorState))
+			return false;
+
+		// Create mesh / material combo that we can render
+		mRenderableMesh = mRenderService->createRenderableMesh(mEmptyMesh, mMaterialInstance, errorState);
 		if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 			return false;
 
-		mElapsedTime = 0.0f;
-		mFadeState = mResource->mStartBlack ? EFadeState::Out : EFadeState::Off;
+		// Get uniforms
+		auto uniform_struct = mMaterialInstance.getOrCreateUniform(uniform::fade::uboStruct);
+		if (!errorState.check(uniform_struct != nullptr, "%s: Unable to find uniform struct: %s in shader: %s",
+			mID.c_str(), uniform::fade::uboStruct, RTTI_OF(FadeShader).get_name().data()))
+			return false;
+
+		// Store alpha (updated at runtime)
+		mAlphaUniform = uniform_struct->getOrCreateUniform<UniformFloatInstance>(uniform::fade::alpha);
+		if (!errorState.check(mAlphaUniform != nullptr, "%s: Unable to find uniform: %s in shader: %s",
+			mID.c_str(), uniform::fade::alpha, RTTI_OF(FadeShader).get_name().data()))
+			return false;
+
+		// Set color
+		auto* color_uniform = uniform_struct->getOrCreateUniform<UniformVec3Instance>(uniform::fade::color);
+		if (!errorState.check(color_uniform != nullptr, "%s: Unable to find uniform: %s in shader: %s",
+			mID.c_str(), uniform::fade::color, RTTI_OF(FadeShader).get_name().data()))
+			return false;
+		color_uniform->setValue(mResource->mFadeColor.toVec3());
+
+		// Setup fade state
+		mAlphaUniform->setValue(0.0f);
+		if (mResource->mFadeIn)
+			fadeIn();
 
 		return true;
 	}
@@ -67,115 +100,57 @@ namespace nap
 
 	void RenderFaderComponentInstance::update(double deltaTime)
 	{
-		mElapsedTime += static_cast<float>(deltaTime);
-
-		// Update uniforms
-		auto* ubo = getMaterialInstance().getOrCreateUniform("UBO");
-		if (ubo != nullptr)
+		switch (mFadeState)
 		{
-			float transition_value = std::max(mElapsedTime - mFadeStartTime, 0.0f) / mResource->mFadeDuration;
-
-			switch (mFadeState)
+			case EFadeState::FadingIn:
 			{
-				case EFadeState::In:
+				float elapsed = mTimer.getElapsedTimeFloat();
+				if (elapsed > mResource->mFadeDuration)
 				{
-					float opacity = std::clamp(transition_value, 0.0f, 1.0f);
-					ubo->getOrCreateUniform<UniformFloatInstance>(uniform::fade::alpha)->setValue(opacity);
-
-					// Trigger fade to black signal
-					if (transition_value >= 1.0f)
-					{
-						mFadeState = EFadeState::Out;
-						mFadeStartTime = mElapsedTime;
-						mFadedToBlackSignal();
-					}
-					break;
+					mFadeState = EFadeState::FadedIn;
+					mFadedIn();
 				}
-				case EFadeState::Out:
+				mAlphaUniform->setValue(1.0 -
+					math::smoothStep<float>(elapsed, 0.0f, mResource->mFadeDuration));
+				break;
+			}
+			case EFadeState::FadingOut:
+			{
+				float elapsed = mTimer.getElapsedTimeFloat();
+				if (elapsed > mResource->mFadeDuration)
 				{
-					float opacity = 1.0f - std::clamp(transition_value, 0.0f, 1.0f);
-					ubo->getOrCreateUniform<UniformFloatInstance>(uniform::fade::alpha)->setValue(opacity);
-
-					// Trigger fade to black signal
-					if (transition_value >= 1.0f)
-					{
-						mFadeState = EFadeState::Off;
-						mFadedOutSignal();
-					}
-					break;
+					mFadeState = EFadeState::FadedOut;
+					mFadedOut();
 				}
-				default:
-				{
-					ubo->getOrCreateUniform<UniformFloatInstance>(uniform::fade::alpha)->setValue(0.0f);
-				}
+				mAlphaUniform->setValue(
+					math::smoothStep<float>(elapsed, 0.0f, mResource->mFadeDuration));
+				break;
+			}
+			default:
+			{
+				break;
 			}
 		}
 	}
 
 
-	void RenderFaderComponentInstance::startFade()
-	{
-		mFadeState = EFadeState::In;
-		mFadeStartTime = mElapsedTime;
-	}
-
-
-	RenderableMesh RenderFaderComponentInstance::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
-	{
-		nap::RenderService* render_service = getEntityInstance()->getCore()->getService<nap::RenderService>();
-		return render_service->createRenderableMesh(mesh, materialInstance, errorState);
-	}
-
-
-	RenderableMesh RenderFaderComponentInstance::createRenderableMesh(IMesh& mesh, utility::ErrorState& errorState)
-	{
-		return createRenderableMesh(mesh, mMaterialInstance, errorState);
-	}
-
-
-	void RenderFaderComponentInstance::setMesh(const RenderableMesh& mesh)
-	{
-		assert(mesh.isValid());
-		mRenderableMesh = mesh;
-	}
-
-
 	// Draw Mesh
 	void RenderFaderComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
-	{	
-		// Get material to work with
-		if (!mRenderableMesh.isValid())
-		{
-			assert(false);
-			return;
-		}
-
-		// Do not render if no fade is active
-		if (!isFadeActive())
+	{
+		// Don't draw fade when fade has no effect
+		if (mFadeState == EFadeState::FadedIn)
 			return;
 
 		// Acquire descriptor set before rendering
-		const DescriptorSet& descriptor_set = getMaterialInstance().update();
+		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Get pipeline to to render with
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, *mNoMesh, mMaterialInstance, error_state);
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mEmptyMesh, mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bufferless drawing with the fade shader
 		vkCmdDraw(commandBuffer, 3, 1, 0, 0);
-	}
-
-
-	bool RenderFaderComponentInstance::isSupported(CameraComponentInstance& camera) const
-	{
-		return camera.get_type().is_derived_from(RTTI_OF(PerspCameraComponentInstance));
-	}
-
-
-	bool RenderFaderComponentInstance::isFadeActive() const
-	{
-		return mFadeState != EFadeState::Off;
-	}
+	}	
 } 

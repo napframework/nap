@@ -103,8 +103,8 @@ namespace nap
 		// If the struct is found, we expect the matrices with those names to be there
 		// Ensure the mvp struct is available
 		mMVPStruct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
-		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform MVP struct: %s in material: %s",
-			this->mID.c_str(), uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
+		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform MVP struct: %s in shader: %s",
+			this->mID.c_str(), uniform::mvpStruct, RTTI_OF(ConstantShader).get_name().data()))
 			return false;
 
 		// Get all matrices
@@ -116,8 +116,8 @@ namespace nap
 
 		// Get all constant uniforms
 		mUBOStruct = mMaterialInstance.getOrCreateUniform(uniform::constant::uboStruct);
-		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform struct: %s in material: %s",
-			this->mID.c_str(), uniform::constant::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
+		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform struct: %s in shader: %s",
+			this->mID.c_str(), uniform::constant::uboStruct, RTTI_OF(ConstantShader).get_name().data()))
 			return false;
 
 		mColorUniform = getUniform<UniformVec3Instance>(uniform::constant::color, *mUBOStruct, errorState);

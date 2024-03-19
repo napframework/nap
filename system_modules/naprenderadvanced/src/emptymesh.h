@@ -20,11 +20,11 @@ namespace nap
 	 * vkCmdDraw(commandBuffer, 3, 1, 0, 0);
 	 * ~~~~~
 	 */
-	class NAPAPI NoMesh : public IMesh
+	class NAPAPI EmptyMesh : public IMesh
 	{
 		RTTI_ENABLE(IMesh)
 	public:
-		NoMesh(Core& core);
+		EmptyMesh(Core& core);
 
 		/**
 		 * Initialize this dummy mesh
