@@ -16,7 +16,6 @@
 // nap::PointLightComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::PointLightComponent)
 	RTTI_PROPERTY("Attenuation",	&nap::PointLightComponent::mAttenuation,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FieldOfView",	&nap::PointLightComponent::mFieldOfView,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ClippingPlanes",	&nap::PointLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShadowMapSize",	&nap::PointLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -59,7 +58,7 @@ namespace nap
 		mShadowCamComponent->mID = utility::stringFormat("%s_shadow_camera_%s",getEntityInstance()->mID.c_str(), uuid.c_str());
 		mShadowCamComponent->mProperties.mNearClippingPlane = resource->mClippingPlanes[0];
 		mShadowCamComponent->mProperties.mFarClippingPlane = resource->mClippingPlanes[1];
-		mShadowCamComponent->mProperties.mFieldOfView = resource->mFieldOfView;
+		mShadowCamComponent->mProperties.mFieldOfView = 90.0f;
 		mShadowCamEntity->mComponents.emplace_back(mShadowCamComponent.get());
 
 		// Shadow Origin component
