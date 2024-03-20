@@ -2886,5 +2886,4 @@ namespace nap
 	{
 		return { glm::vec2(mMin), glm::vec2(mMax) };
 	}
-
 }

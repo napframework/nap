@@ -24,6 +24,9 @@ namespace nap
 
 	bool CubeMapFromFile::init(utility::ErrorState& errorState)
 	{
+		if (!RenderTextureCube::init(errorState))
+			return false;
+
 		// Ensure the cube map is (re-)rendered by the render advanced service
 		mDirty = true;
 
@@ -34,6 +37,6 @@ namespace nap
 		if (!mSourceImage->init(mSourceImage->getBitmap().mSurfaceDescriptor, false, mSourceImage->getBitmap().getData(), 0, errorState))
 			return false;
 
-		return RenderTextureCube::init(errorState);
+		return true;
 	}
 }

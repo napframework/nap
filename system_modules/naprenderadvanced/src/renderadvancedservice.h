@@ -27,6 +27,7 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
+	class CubeMapFromFile;
 
 	// Light scene identifier
 	namespace scene
@@ -233,6 +234,7 @@ namespace nap
 		void removeLightComponent(LightComponentInstance& light);
 		bool initServiceResources(utility::ErrorState& errorState);
 		bool initCubeMapTargets(utility::ErrorState& errorState);
+		void registerCubeMapFromFile(CubeMapFromFile& cubeMap);
 		void onPreRenderCubeMaps(RenderService& renderService);
 
 		/**
@@ -287,6 +289,9 @@ namespace nap
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;							///< List of all registered light components
 
+		// Registered cubemaps from file
+		std::vector<CubeMapFromFile*> mCubeMapsFromFile;								///< List of all registered and to be rendered cube maps from file
+
 		// Shadow mapping
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;	///< Links light components to 2d shadow resources
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<CubeMapEntry>> mLightCubeMap;		///< Links light components to cube shadow resources
@@ -303,7 +308,7 @@ namespace nap
 		// Cube maps from file
 		std::vector<std::unique_ptr<CubeRenderTarget>> mCubeMapFromFileTargets;			///< Render targets created to render `nap::CubeMapFromFile` objects
 
-		std::unique_ptr<EmptyMesh>						mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
+		std::unique_ptr<EmptyMesh>					mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;			///< Run-time cube map material

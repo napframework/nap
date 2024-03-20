@@ -10,7 +10,6 @@
 
 // External Includes
 #include <nap/resource.h>
-#include <utility/dllexport.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
 #include <rtti/factory.h>
@@ -80,7 +79,7 @@ namespace nap
 		/**
 		 * @return render service
 		 */
-		const RenderService& getRenderService()					{ return mRenderService; }
+		RenderService& getRenderService()						{ return mRenderService; }
 
 		/**
 		 * @return render service

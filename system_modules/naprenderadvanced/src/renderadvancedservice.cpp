@@ -24,6 +24,7 @@
 #include <parameternumeric.h>
 #include <parametermat.h>
 #include <parametercolor.h>
+#include <cubemapfromfile.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default)
@@ -580,6 +581,9 @@ namespace nap
 	bool RenderAdvancedService::initCubeMapTargets(utility::ErrorState& errorState)
 	{
 		// Cube maps from file
+		// TODO: Don't use the 'getObjects' method to get all available cube map from file resources.
+		// Use explicit registration (File -> Service and handling (Service -> Render) instead. It's faster and less error prone!
+		// This method won't handle cube maps from file created at run-time and can be slow when there are a lot of objects in the graph.
 		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
 		if (!cube_maps.empty())
 		{
@@ -604,6 +608,12 @@ namespace nap
 			}
 		}
 		return true;
+	}
+
+
+	void RenderAdvancedService::registerCubeMapFromFile(CubeMapFromFile& cubeMap)
+	{
+		mCubeMapsFromFile.emplace_back(&cubeMap);
 	}
 
 
