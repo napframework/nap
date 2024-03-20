@@ -104,7 +104,8 @@ namespace nap
 			// Update the sampler instance of the skybox
 			render_skybox.setTexture(*mCubeMaps[mCubeMapIndex]);
 
-			// Sync the sampler instances of all render components that display the reflection of the skybox
+			// Update the cube map in the torus -> Normally you would do this in a controlling component.
+			// That component would update the cube texture of all compatible materials on initialization and when changed.
 			auto& render_torus = mTorusEntity->getComponent<RenderableMeshComponentInstance>();
 			auto* sampler = render_torus.getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>(uniform::blinnphongcolor::sampler::environmentMap);
 			assert(sampler != nullptr);
@@ -118,14 +119,14 @@ namespace nap
 			// Set sky box color
 			render_skybox.setColor(skybox_color);
 
-			// Sync the torus color
+			// Sync the torus color -> Normally you would do this in a controlling component using parameters.
+			// Where the parameter value is pushed to all compatible materials on initialization and parameter change.
 			auto& render_torus = mTorusEntity->getComponent<RenderableMeshComponentInstance>();
 			auto* ubo_struct = render_torus.getMaterialInstance().getOrCreateUniform("UBO");
 			assert(ubo_struct != nullptr);
 			auto* co_uniform = ubo_struct->getOrCreateUniform<UniformVec3Instance>("color");
 			assert(co_uniform != nullptr);
 			co_uniform->setValue(skybox_color);
-
 		}
 
 		// Change sky box opacity -> reveals clear color of window
