@@ -100,11 +100,13 @@ string(JSON patched_data_app_json SET ${patched_path_mapping_app_json} "Data" \"
 file(WRITE ${BIN_DIR}/${PROJECT_NAME}.json ${patched_data_app_json})
 
 # Update executable rpath
-file(RELATIVE_PATH rpath ${BIN_DIR} ${LIB_DIR})
-add_custom_command(TARGET ${PROJECT_NAME}
-        POST_BUILD COMMAND
-        ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${rpath}/."
-        $<TARGET_FILE:${PROJECT_NAME}>)
+if(UNIX)
+    file(RELATIVE_PATH rpath ${BIN_DIR} ${LIB_DIR})
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD COMMAND
+            ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${rpath}/."
+            $<TARGET_FILE:${PROJECT_NAME}>)
+endif()
 
 # Run FBX converter post-build
 add_dependencies(${PROJECT_NAME} fbxconverter)
@@ -116,7 +118,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 )
 
 # Install to packaged app
-install(TARGETS ${PROJECT_NAME} RUNTIME OPTIONAL)
+install(TARGETS ${PROJECT_NAME} DESTINATION "" OPTIONAL)
 install(FILES ${app_install_data_dir}/${PROJECT_NAME}.json TYPE BIN OPTIONAL)
 install(FILES ${BIN_DIR}/${path_mapping_path} TYPE BIN OPTIONAL)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data TYPE DATA OPTIONAL)

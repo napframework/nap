@@ -97,17 +97,21 @@ namespace nap
 	std::string ProjectInfo::getDataFile() const
 	{
 		if (mDefaultData.empty()) return {};
-        if (utility::isAbsolutePath(mDefaultData))
-            return mDefaultData;
+
+        if (utility::fileExists(mDefaultData))
+            return utility::getAbsolutePath(mDefaultData);
+
+        auto dataPathNextToProject = utility::joinPath({getProjectDir(), mDefaultData});
+        if (utility::fileExists(dataPathNextToProject))
+            return dataPathNextToProject;
+
         if (!mPathMapping->mDataPath.empty())
         {
             auto mappedDataPath = utility::joinPath({mPathMapping->mDataPath, mDefaultData});
             if (utility::fileExists(mappedDataPath))
                 return mappedDataPath;
         }
-        auto legacyDataPath = utility::joinPath({getProjectDir(), mDefaultData});
-            if (utility::fileExists(legacyDataPath))
-                return legacyDataPath;
+
         return "";
 	}
 
