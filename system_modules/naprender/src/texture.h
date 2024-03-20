@@ -285,7 +285,16 @@ namespace nap
 
 
 	/**
-	 * Texture base class
+	 * Cube texture base class.
+	 * A cube texture is a six-layer image, where each layer represents one side
+	 *
+	 * Cube image layers are addressed and oriented as follows:
+	 * - Layer 0: right (+X)
+	 * - Layer 1: left (-X)
+	 * - Layer 2: up (+Y)
+	 * - Layer 3: down (-Y)
+	 * - Layer 4: back (+Z)
+	 * - Layer 5: forward (-Z)
 	 */
 	class NAPAPI TextureCube : public Texture
 	{

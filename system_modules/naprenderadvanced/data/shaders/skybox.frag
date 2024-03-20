@@ -8,6 +8,7 @@
 uniform UBO
 {
 	vec3 color;
+	float alpha;
 } ubo;
 
 // Fragment Input
@@ -22,5 +23,5 @@ uniform samplerCube cubeTexture;
 void main()
 {
 	vec4 cube = texture(cubeTexture, normalize(passPosition));
-	out_Color = vec4(cube.rgb * ubo.color, cube.a);
+	out_Color = vec4(cube.rgb * ubo.color, cube.a * ubo.alpha);
 }

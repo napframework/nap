@@ -19,10 +19,10 @@ namespace nap
 	{
 		namespace skybox
 		{
-			namespace sampler
-			{
-				inline constexpr const char* cubeTexture = "cubeTexture";		///< Name of the cube texture sampler
-			}
+			inline constexpr const char* cubeTexture = "cubeTexture";			///< Name of the cube texture sampler
+			inline constexpr const char* color = "color";						///< color value (0-1)
+			inline constexpr const char* alpha = "alpha";						///< alpha value (0-1)
+			inline constexpr const char* uboStruct = "UBO";						///< UBO that contains all the uniforms
 		}
 	}
 

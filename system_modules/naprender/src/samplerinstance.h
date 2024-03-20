@@ -217,7 +217,7 @@ namespace nap
 		/**
 		 * @return currently bound texture.
 		 */
-		const TextureCube& getTexture() const					{ return *mTextureCube; }
+		const TextureCube& getTexture() const					{ (mTextureCube != nullptr); return *mTextureCube; }
 
 	private:
 		/**

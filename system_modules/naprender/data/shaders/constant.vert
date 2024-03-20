@@ -11,12 +11,6 @@ uniform nap
 	mat4 modelMatrix;
 } mvp;
 
-uniform UBO
-{
-	vec3 color;
-	float alpha;
-} ubo;
-
 in vec3	in_Position;
 
 void main(void)
