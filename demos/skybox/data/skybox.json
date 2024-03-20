@@ -116,7 +116,7 @@
                             1.0
                         ]
                     },
-                    "Opacity": "AlphaBlend"
+                    "Opacity": 1.0
                 }
             ],
             "Children": []
