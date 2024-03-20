@@ -611,6 +611,8 @@ namespace nap
 	{
 		// Prerender shadow maps here
 		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
+		nap::Logger::info("Cube map file count: %d", cube_maps.size());
+
 		for (uint i = 0; i < cube_maps.size(); i++)
 		{
 			auto* cube_map = cube_maps[i].get();
@@ -622,15 +624,15 @@ namespace nap
 				(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
 			{
 				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);
-				if (ubo != nullptr)
-				{
-					ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face)->setValue(target.getLayerIndex());
-				}
+				assert(ubo != nullptr);
+				auto* face = ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face);
+				assert(face != nullptr);
+				face->setValue(target.getLayerIndex());
 
 				// Set equirectangular texture to convert
 				auto* sampler = mtl->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
-				if (sampler != nullptr)
-					sampler->setTexture(cm->getSourceTexture());
+				assert(sampler != nullptr);
+				sampler->setTexture(cm->getSourceTexture());
 
 				// Get valid descriptor set
 				const DescriptorSet& descriptor_set = mtl->update();
@@ -647,7 +649,6 @@ namespace nap
 
 				// Unset dirty flag
 				auto* cube_map_from_file = static_cast<CubeMapFromFile*>(&target.getColorTexture());
-				assert(cube_map_from_file != nullptr);
 				cube_map_from_file->mDirty = false;
 			});
 		}
