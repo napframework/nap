@@ -1,4 +1,4 @@
-macro(nap_qt_pre)
+macro(find_qt)
     # Search for hints about our Qt library location
     if(DEFINED ENV{QT_DIR})
         # TODO After changing to run this once only, using global scope with CMake 3.24+ (see TODO below), remove this
@@ -61,20 +61,20 @@ macro(nap_qt_pre)
     set(QT_LIBS Qt6::Widgets Qt6::Core Qt6::Gui Qt6::OpenGL)
 endmacro()
 
-macro(nap_qt_post PROJECTNAME)
-    if(WIN32)
-        add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-                $<TARGET_FILE:Qt6::Widgets>
-                $<TARGET_FILE:Qt6::Core>
-                $<TARGET_FILE:Qt6::Gui>
-                $<TARGET_FILE:Qt6::OpenGL>
-                $<TARGET_FILE_DIR:${PROJECTNAME}>
-                COMMENT "Copy Qt DLLs")
-    endif()
-
-    add_custom_command(TARGET ${PROJECTNAME} POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory
-                       ${CMAKE_CURRENT_LIST_DIR}/resources
-                       $<TARGET_FILE_DIR:${PROJECTNAME}>/resources
-                       COMMENT "Copy Resources")
-endmacro()
+#macro(nap_qt_post PROJECTNAME)
+#    if(WIN32)
+#        add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+#                $<TARGET_FILE:Qt6::Widgets>
+#                $<TARGET_FILE:Qt6::Core>
+#                $<TARGET_FILE:Qt6::Gui>
+#                $<TARGET_FILE:Qt6::OpenGL>
+#                $<TARGET_FILE_DIR:${PROJECTNAME}>
+#                COMMENT "Copy Qt DLLs")
+#    endif()
+#
+#    add_custom_command(TARGET ${PROJECTNAME} POST_BUILD
+#                       COMMAND ${CMAKE_COMMAND} -E copy_directory
+#                       ${CMAKE_CURRENT_LIST_DIR}/resources
+#                       $<TARGET_FILE_DIR:${PROJECTNAME}>/resources
+#                       COMMENT "Copy Resources")
+#endmacro()

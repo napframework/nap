@@ -1,5 +1,5 @@
 project(napkin)
-nap_qt_pre()
+find_qt()
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
 file(GLOB_RECURSE HEADERS src/*.h)
@@ -35,12 +35,11 @@ endif()
 set(LIBS
     napqt
     ${NAP_MODULES_DEPENDENCIES}
-    Qt6::Widgets Qt6::Core Qt6::Gui
     )
 
-target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})
+target_link_libraries(${PROJECT_NAME} ${LIBS})
 
-nap_qt_post(${PROJECT_NAME})
+#nap_qt_post(${PROJECT_NAME})
 
 # Add the runtime paths for RTTR
 if(UNIX)
@@ -57,20 +56,3 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    ${CMAKE_CURRENT_LIST_DIR}/resources
                    ${DATA_DIR}/resources
                    COMMENT "Copy Resources")
-
-# Copy Qt DLLs to bin
-add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        $<TARGET_FILE:Qt6::Widgets>
-        $<TARGET_FILE:Qt6::Core>
-        $<TARGET_FILE:Qt6::Gui>
-        $<TARGET_FILE:Qt6::OpenGL>
-        OUTPUT ${LIB_DIR}
-        COMMENT "Copy Qt DLLs")
-
-# Deploy Qt plugins from thirdparty on Win64. Unlike macOS, Windows won't find
-# the plugins under a plugins folder, the categories need to sit beside the binary.
-add_custom_command(
-        TARGET ${PROJECT_NAME}
-        POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory ${QTDIR}/plugins/platforms ${LIB_DIR}/platforms
-)
