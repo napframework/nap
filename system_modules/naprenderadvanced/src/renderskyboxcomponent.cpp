@@ -18,8 +18,10 @@
 #include <descriptorsetcache.h>
 
 RTTI_BEGIN_CLASS(nap::RenderSkyBoxComponent)
-	RTTI_PROPERTY("CubeTexture", &nap::RenderSkyBoxComponent::mCubeTexture, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Color", &nap::RenderSkyBoxComponent::mColor, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("BlendMode",		&nap::RenderSkyBoxComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default)		
+	RTTI_PROPERTY("CubeTexture",	&nap::RenderSkyBoxComponent::mCubeTexture,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Color",			&nap::RenderSkyBoxComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Opacity",		&nap::RenderSkyBoxComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderSkyBoxComponentInstance)
@@ -28,14 +30,41 @@ RTTI_END_CLASS
 
 namespace nap
 {
+	/**
+	 * Checks if the uniform of type T is available on the source material and creates it if so
+	 * @param uniformName name of the uniform to create
+	 * @param structBuffer the struct that holds the uniform
+	 * @param error contains the error if uniform isn't available
+	 */
+	template<typename T>
+	static T* getUniform(const std::string& uniformName, UniformStructInstance& structBuffer, utility::ErrorState& error)
+	{
+		auto* found_uniform = structBuffer.getOrCreateUniform<T>(uniformName);
+		return error.check(found_uniform != nullptr,
+			"Unable to get or create uniform with name: %s for struct: %s", uniformName.c_str(), structBuffer.getDeclaration().mName.c_str()) ?
+			found_uniform : nullptr;
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// RenderSkyBoxComponent
+	//////////////////////////////////////////////////////////////////////////
+
+	void RenderSkyBoxComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.emplace_back(RTTI_OF(nap::TransformComponent));
+	}
+
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// RenderSkyBoxComponentInstance
 	//////////////////////////////////////////////////////////////////////////
 
 	RenderSkyBoxComponentInstance::RenderSkyBoxComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableMeshComponentInstance(entity, resource),
+		RenderableComponentInstance(entity, resource),
 		mRenderService(*entity.getCore()->getService<RenderService>()),
-		mSkyBoxMesh(std::make_unique<BoxMesh>(*entity.getCore()))
+		mSkyBoxMesh(*entity.getCore())
 	{ }
 
 
@@ -45,86 +74,102 @@ namespace nap
 		mResource = getComponent<RenderSkyBoxComponent>();
 
 		// Initialize base renderable mesh component instance
-		if (!RenderableMeshComponentInstance::init(errorState))
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
+		// Get transform
+		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
+		if (!errorState.check(mTransformComponent != nullptr,
+			"%s: Missing transform component", mResource->mID.c_str()))
 			return false;
 
 		// Initialize skybox mesh
-		mSkyBoxMesh->mPolygonMode = EPolygonMode::Fill;
-		mSkyBoxMesh->mUsage = EMemoryUsage::Static;
-		mSkyBoxMesh->mCullMode = ECullMode::Front;
-		mSkyBoxMesh->mFlipNormals = false;
-		if (!mSkyBoxMesh->init(errorState))
+		mSkyBoxMesh.mPolygonMode = EPolygonMode::Fill;
+		mSkyBoxMesh.mUsage = EMemoryUsage::Static;
+		mSkyBoxMesh.mCullMode = ECullMode::Front;
+		mSkyBoxMesh.mFlipNormals = false;
+		if (!mSkyBoxMesh.init(errorState))
 			return false;
 
-		// Create renderable mesh
-		RenderableMesh renderable_mesh = createRenderableMesh(*mSkyBoxMesh, errorState);
-		if (!renderable_mesh.isValid())
+		// Get or create skybox material
+		auto* skybox_material = mRenderService.getOrCreateMaterial<SkyBoxShader>(errorState);
+		if (!errorState.check(skybox_material != nullptr,
+			"%s: unable to get or create skybox material", mResource->mID.c_str()))
 			return false;
 
-		// Set the skybox mesh to be used when drawing
-		setMesh(renderable_mesh);
+		// Setup and create skybox material instance
+		mMaterialInstanceResource.mBlendMode = mResource->mBlendMode;
+		mMaterialInstanceResource.mDepthMode = EDepthMode::NoReadWrite;
+		mMaterialInstanceResource.mMaterial = skybox_material;
 
-		// Set equirectangular texture to convert
-		auto* sampler = mMaterialInstance.getOrCreateSampler<SamplerCubeInstance>("cubeTexture");
-		if (!errorState.check(sampler != nullptr, utility::stringFormat("%s: Incompatible shader interface", mID.c_str()).c_str()))
+		if (!mMaterialInstance.init(mRenderService, mMaterialInstanceResource, errorState))
 			return false;
 
-		sampler->setTexture(*mResource->mCubeTexture);
-
-		// Color uniform
-		auto* uni = getMaterialInstance().getOrCreateUniform("UBO");
-		if (!errorState.check(uni != nullptr, "Missing uniform struct with name `UBO`"))
+		// Since the material can't be changed at run-time, cache the matrices to set on draw
+		// If the struct is found, we expect the matrices with those names to be there
+		// Ensure the mvp struct is available
+		auto* mvp_struct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (!errorState.check(mvp_struct != nullptr, "%s: Unable to find uniform struct: %s in shader: %s",
+			this->mID.c_str(), uniform::mvpStruct, RTTI_OF(SkyBoxShader).get_name().data()))
 			return false;
 
-		auto* color = uni->getOrCreateUniform<UniformVec3Instance>("color");
-		if (!errorState.check(color != nullptr, "Missing uniform vec3 member with name `color`"))
+		// Get all matrices
+		mModelMatUniform = getUniform<UniformMat4Instance>(uniform::modelMatrix, *mvp_struct, errorState);
+		mProjectMatUniform = getUniform<UniformMat4Instance>(uniform::projectionMatrix, *mvp_struct, errorState);
+		mViewMatUniform = getUniform<UniformMat4Instance>(uniform::viewMatrix, *mvp_struct, errorState);
+
+		if (mModelMatUniform == nullptr || mProjectMatUniform == nullptr || mViewMatUniform == nullptr)
 			return false;
 
-		if (mResource->mColor != nullptr)
-		{
-			if (mResource->mColor->hasParameter())
-			{
-				auto param = mResource->mColor->mParameter;
-				color->setValue(param->mValue.toVec3());
-				mColorChangedSlot.setFunction(std::bind(&RenderSkyBoxComponentInstance::onUniformRGBColorUpdate, this, std::placeholders::_1, color));
-				param->valueChanged.connect(mColorChangedSlot);
-			}
-			else
-				color->setValue(mResource->mColor->getValue().toVec3());
-		}
-		else
-			color->setValue({ 1.0f, 1.0f, 1.0f });
+		// Ensure ubo is available
+		auto* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::skybox::uboStruct);
+		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to find struct: %s in shader: %s",
+			this->mID.c_str(), uniform::skybox::uboStruct, RTTI_OF(SkyBoxShader).get_name().data()))
+			return false;
 
-		return true;
+		// Get ubo uniforms
+		mAlphaUniform = getUniform<UniformFloatInstance>(uniform::skybox::alpha, *ubo_struct, errorState);
+		mColorUniform = getUniform<UniformVec3Instance>(uniform::skybox::color, *ubo_struct, errorState);
+
+		if (mAlphaUniform == nullptr || mColorUniform == nullptr)
+			return false;
+
+		// Get cube sampler binding and set
+		mCubeSampler = mMaterialInstance.getOrCreateSampler<SamplerCubeInstance>(uniform::skybox::cubeTexture);
+		if (!errorState.check(mCubeSampler != nullptr,
+			"%s: Missing cube sampler input: %s", mID.c_str(), uniform::skybox::cubeTexture))
+			return false;
+
+		// Set uniforms
+		mAlphaUniform->setValue(mResource->mOpacity);
+		mColorUniform->setValue(mResource->mColor);
+		mCubeSampler->setTexture(*mResource->mCubeTexture);
+
+		// Create render-able mesh
+		mRenderableMesh = mRenderService.createRenderableMesh(mSkyBoxMesh, mMaterialInstance, errorState);
+		return mRenderableMesh.isValid();
+	}
+
+
+	void RenderSkyBoxComponentInstance::setTexture(const TextureCube& texture)
+	{
+		mCubeSampler->setTexture(const_cast<TextureCube&>(texture));
 	}
 
 
 	void RenderSkyBoxComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
-		// Get material to work with
-		if (!mRenderableMesh.isValid())
-		{
-			assert(false);
-			return;
-		}
-
-		// Set mvp matrices if present in material
-		if (mProjectMatUniform != nullptr)
-			mProjectMatUniform->setValue(projectionMatrix);
-
-		if (mViewMatUniform != nullptr)
-			mViewMatUniform->setValue(viewMatrix);
-
-		if (mModelMatUniform != nullptr)
-			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
+		assert(mRenderableMesh.isValid());
+		mProjectMatUniform->setValue(projectionMatrix);
+		mViewMatUniform->setValue(viewMatrix);
+		mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
 
 		// Acquire new / unique descriptor set before rendering
-		MaterialInstance& mat_instance = getMaterialInstance();
-		const DescriptorSet& descriptor_set = mat_instance.update();
+		const DescriptorSet& descriptor_set = mMaterialInstance.update();
 
 		// Fetch and bind pipeline
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mRenderService.getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
+		RenderService::Pipeline pipeline = mRenderService.getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		// Bind shader descriptors
@@ -135,23 +180,8 @@ namespace nap
 		const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertex_buffers.size(), vertex_buffers.data(), offsets.data());
 
-		// TODO: move to push/pop cliprect on RenderTarget once it has been ported
-		bool has_clip_rect = mClipRect.hasWidth() && mClipRect.hasHeight();
-		if (has_clip_rect)
-		{
-			VkRect2D rect;
-			rect.offset.x = mClipRect.getMin().x;
-			rect.offset.y = mClipRect.getMin().y;
-			rect.extent.width = mClipRect.getWidth();
-			rect.extent.height = mClipRect.getHeight();
-			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
-		}
-
-		// Set line width
-		vkCmdSetLineWidth(commandBuffer, mLineWidth);
-
 		// Draw meshes
-		MeshInstance& mesh_instance = getMeshInstance();
+		MeshInstance& mesh_instance = mSkyBoxMesh.getMeshInstance();
 		GPUMesh& mesh = mesh_instance.getGPUMesh();
 
 		const IndexBuffer& index_buffer = mesh.getIndexBuffer(0);
@@ -160,22 +190,5 @@ namespace nap
 
 		// Restore line width
 		vkCmdSetLineWidth(commandBuffer, 1.0f);
-
-		// Restore clipping
-		if (has_clip_rect)
-		{
-			VkRect2D rect;
-			rect.offset.x = 0;
-			rect.offset.y = 0;
-			rect.extent.width = renderTarget.getBufferSize().x;
-			rect.extent.height = renderTarget.getBufferSize().y;
-			vkCmdSetScissor(commandBuffer, 0, 1, &rect);
-		}
-	}
-
-
-	RenderSkyBoxComponent& RenderSkyBoxComponentInstance::getResource()
-	{
-		return *mResource;
 	}
 }

@@ -33,16 +33,14 @@ namespace nap
 	 * Demo application that renders a sky box and a reflective 3D object.
 	 *
 	 * This app uses `naprenderadvanced` object `nap::RenderSkyBoxComponent` with a `nap::SkyBoxShader` to render a skybox.
-	 * The `nap::TorusMesh` is rendered with a `nap::BlinnPhongColorShader` that samples the same cube map used for the
+	 * The `nap::TorusMesh` is rendered with a simple custom shader that samples the same cube map that is used for the
 	 * skybox to display a (fake) reflection. Additionally, we create a simple combobox GUI in the `SkyBoxApp::update` hook
 	 * that allows the user to switch between cube maps. Here we make sure to update the sampler instances of both the skybox
 	 * and the torus.
 	 *
 	 * We also demonstrate how to use render layers to your advantage `nap::RenderLayer`. A `nap::RenderLayerRegistry` defines
-	 * two layers `SkyBox` and `Default` where the skybox layer is the bottom layer, and therefore rendered first. As the
-	 * `nap::RenderSkyBoxComponent` is assigned the `SkyBox` layer, we can set its `DepthMode` to `NoReadWrite`. This is
-	 * becausehe skybox should be behind all other objects and we do not need to read depth fragments when rendering the inside
-	 * of a box. This mode makes the render pass more efficient.
+	 * two layers `SkyBox` and `Default` where the skybox layer is the bottom layer, and therefore rendered first. 
+	 * The skybox does not read or write any depth information, making it more efficient to render.
 	 */
 	class SkyBoxApp : public App
 	{
@@ -86,8 +84,10 @@ namespace nap
 		rtti::ObjectPtr<RenderWindow> mRenderWindow;					//< Pointers to the render window
 		rtti::ObjectPtr<EntityInstance> mDefaultInputRouter;			//< Routes input events to the input component
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
-		rtti::ObjectPtr<EntityInstance> mWorldEntity;					//< Entity that serves as the root of the render object tree
+		rtti::ObjectPtr<EntityInstance> mTorusEntity;					//< The torus entity
+		rtti::ObjectPtr<EntityInstance> mSkyboxEntity;					//< Sky box render entity
 
 		std::vector<rtti::ObjectPtr<CubeMapFromFile>> mCubeMaps;		//< Cube maps cache
+		int mCubeMapIndex = 0;
 	};
 }
