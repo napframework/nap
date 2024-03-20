@@ -39,8 +39,6 @@ set(LIBS
 
 target_link_libraries(${PROJECT_NAME} ${LIBS})
 
-#nap_qt_post(${PROJECT_NAME})
-
 # Add the runtime paths for RTTR
 if(UNIX)
     file(RELATIVE_PATH rpath ${BIN_DIR} ${LIB_DIR})
@@ -54,5 +52,5 @@ endif()
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_LIST_DIR}/resources
-                   ${DATA_DIR}/resources
+                   ${BIN_DIR}/resources
                    COMMENT "Copy Resources")

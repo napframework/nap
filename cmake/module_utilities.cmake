@@ -6,7 +6,8 @@ function(target_link_import_library target library)
     target_link_libraries(${target} ${library})
     get_target_property(library_type ${library} TYPE)
     if (${library_type} STREQUAL SHARED_LIBRARY)
-        get_target_property(library_path ${library} IMPORTED_LOCATION)
+#       get_target_property(library_path ${library} IMPORTED_LOCATION)
+        set(library_path $<TARGET_FILE:${library}>)
         add_custom_command(
                 TARGET ${target} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different

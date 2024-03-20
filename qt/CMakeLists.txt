@@ -34,3 +34,4 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${QTDIR}/plugins/platforms ${LIB_DIR}/platforms
 )
 
+
