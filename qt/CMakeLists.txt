@@ -4,6 +4,7 @@
 
 project(napqt)
 
+include(${NAP_ROOT}/cmake/qtconfig.cmake)
 nap_qt_pre()
 
 file(GLOB_RECURSE SOURCES src/*.cpp)
