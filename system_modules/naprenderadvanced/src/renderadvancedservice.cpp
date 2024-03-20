@@ -611,12 +611,6 @@ namespace nap
 	}
 
 
-	void RenderAdvancedService::registerCubeMapFromFile(CubeMapFromFile& cubeMap)
-	{
-		mCubeMapsFromFile.emplace_back(&cubeMap);
-	}
-
-
 	void RenderAdvancedService::onPreRenderCubeMaps(RenderService& renderService)
 	{
 		// Prerender shadow maps here

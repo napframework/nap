@@ -27,7 +27,6 @@ namespace nap
 	class RenderService;
 	class RenderableComponentInstance;
 	class Material;
-	class CubeMapFromFile;
 
 	// Light scene identifier
 	namespace scene
@@ -234,7 +233,6 @@ namespace nap
 		void removeLightComponent(LightComponentInstance& light);
 		bool initServiceResources(utility::ErrorState& errorState);
 		bool initCubeMapTargets(utility::ErrorState& errorState);
-		void registerCubeMapFromFile(CubeMapFromFile& cubeMap);
 		void onPreRenderCubeMaps(RenderService& renderService);
 
 		/**
@@ -288,9 +286,6 @@ namespace nap
 
 		// Registered light component instances
 		std::vector<LightComponentInstance*> mLightComponents;							///< List of all registered light components
-
-		// Registered cubemaps from file
-		std::vector<CubeMapFromFile*> mCubeMapsFromFile;								///< List of all registered and to be rendered cube maps from file
 
 		// Shadow mapping
 		std::unordered_map<LightComponentInstance*, std::unique_ptr<ShadowMapEntry>> mLightDepthMap;	///< Links light components to 2d shadow resources

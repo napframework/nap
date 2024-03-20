@@ -41,6 +41,7 @@ namespace nap
 		virtual void record(RenderService& renderService) const = 0;
 	};
 
+
 	/**
 	 * HeadlessCommand base class
 	 * 
@@ -78,6 +79,7 @@ namespace nap
 	protected:
 		virtual void record(RenderService& renderService) const override = 0;
 	};
+
 
 	/**
 	 * ComputeCommand base class
