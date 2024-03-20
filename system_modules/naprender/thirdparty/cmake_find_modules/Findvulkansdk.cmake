@@ -39,11 +39,14 @@ set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/lib)
 # Find Vulkan library
 if(WIN32)
     # Vulkan core lib -> vulkan-1.lib
-    find_library(VULKANSDK_LIBS
+    find_library(VULKAN_LIB
                 NO_DEFAULT_PATH
                 NAMES vulkan-1
                 PATHS ${VULKANSDK_LIBS_DIR}
                 )
+    # Resolve symlink
+    get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
+    set(VULKANSDK_LIBS ${VULKAN_LIB})
 elseif(APPLE)
     # Moltenvk -> libvulkan.dylib
     find_library(VULKAN_LIB
@@ -51,6 +54,8 @@ elseif(APPLE)
             NAMES vulkan
             PATHS ${VULKANSDK_LIBS_DIR}
             )
+    # Resolve symlink
+    get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
 
     # Additional library dependencies on apple
     find_library(METAL_LIB Metal)
@@ -66,11 +71,14 @@ elseif(APPLE)
 
 elseif(UNIX)
     # Vulkan core lib -> libvulkan.so
-    find_library(VULKANSDK_LIBS
+    find_library(VULKAN_LIB
             NO_DEFAULT_PATH
             NAMES vulkan
             PATHS ${VULKANSDK_LIBS_DIR}
             )
+    # Resolve symlink
+    get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
+    set(VULKANSDK_LIBS ${VULKAN_LIB})
 endif()
 
 # Files to copy along with distribution

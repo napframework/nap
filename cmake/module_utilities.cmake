@@ -1,5 +1,8 @@
 # Use this function to link import targets from module_extra.cmake and
 function(target_link_import_library target library)
+    if (NOT TARGET ${library})
+        message(FATAL_ERROR "Library dependency ${library} not found for building ${target}")
+    endif()
     target_link_libraries(${target} ${library})
     get_target_property(library_type ${library} TYPE)
     if (${library_type} STREQUAL SHARED_LIBRARY)

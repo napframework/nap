@@ -13,6 +13,13 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} naprender)
 
+# Update executable rpath
+file(RELATIVE_PATH rpath ${BIN_DIR} ${LIB_DIR})
+add_custom_command(TARGET ${PROJECT_NAME}
+        POST_BUILD COMMAND
+        ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${rpath}/."
+        $<TARGET_FILE:${PROJECT_NAME}>)
+
 
 # ======================= UNIT TESTS
 enable_testing()

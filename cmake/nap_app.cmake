@@ -117,7 +117,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 
 # Install to packaged app
 install(TARGETS ${PROJECT_NAME} RUNTIME OPTIONAL)
-install(FILES ${app_install_data_dir}/${PROJECT_NAME}.json TYPE LIB OPTIONAL)
+install(FILES ${app_install_data_dir}/${PROJECT_NAME}.json TYPE BIN OPTIONAL)
 install(FILES ${BIN_DIR}/${path_mapping_path} TYPE BIN OPTIONAL)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data TYPE DATA OPTIONAL)
 
