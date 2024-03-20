@@ -21,7 +21,7 @@ RTTI_BEGIN_CLASS(nap::RenderSkyBoxComponent)
 	RTTI_PROPERTY("BlendMode",		&nap::RenderSkyBoxComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default)		
 	RTTI_PROPERTY("CubeTexture",	&nap::RenderSkyBoxComponent::mCubeTexture,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Color",			&nap::RenderSkyBoxComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Opacity",		&nap::RenderSkyBoxComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Opacity",		&nap::RenderSkyBoxComponent::mOpacity,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderSkyBoxComponentInstance)
