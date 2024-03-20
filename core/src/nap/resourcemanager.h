@@ -234,6 +234,7 @@ namespace nap
 		Core&								mCore;							// Core
 	};
 
+
 	template<class T>
 	std::vector<rtti::ObjectPtr<T>> ResourceManager::getObjects() const
 	{

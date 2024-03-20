@@ -159,6 +159,7 @@ namespace nap
 
 	void RenderSkyBoxComponentInstance::onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix)
 	{
+		// Set matrices
 		assert(mRenderableMesh.isValid());
 		mProjectMatUniform->setValue(projectionMatrix);
 		mViewMatUniform->setValue(viewMatrix);
