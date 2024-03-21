@@ -177,7 +177,6 @@ endmacro()
 # NAME of the source group in the IDE
 # DIR directory of the source files relative to the project directory
 # ARGN additional optional arguments are regex expressions to filter from the file list
-#
 function(add_source_dir NAME DIR)
     # Collect source files in directory
     file(GLOB SOURCES ${DIR}/*.cpp ${DIR}/*.h ${DIR}/*.hpp)

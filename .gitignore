@@ -13,6 +13,7 @@ cmake-build-debug/*
 core/Debug/
 .vscode/
 vs/
+*/cache/*
 system_modules/napof/Debug/
 system_modules/napof/Release/
 system_modules/napgui/Debug/

@@ -1,0 +1,10 @@
+{
+  "Data" : "/Users/stijn/Documents/GitHub/nap/demos/audioanalysis/data/audioanalysis.json",
+  "PathMapping" : "default_path_mapping.json",
+  "RequiredModules" : [ "napapp", "napportaudio", "napimgui" ],
+  "ServiceConfig" : "",
+  "Title" : "AudioAnalysis",
+  "Type" : "nap::ProjectInfo",
+  "Version" : "1.0.0",
+  "mID" : "ProjectInfo"
+}

@@ -1,0 +1,10 @@
+{
+  "Data" : "/Users/stijn/Documents/GitHub/nap/demos/audioplayback/data/audioplayback.json",
+  "PathMapping" : "default_path_mapping.json",
+  "RequiredModules" : [ "napapp", "napportaudio", "napimgui" ],
+  "ServiceConfig" : "config.json",
+  "Title" : "AudioPlayback",
+  "Type" : "nap::ProjectInfo",
+  "Version" : "1.0.0",
+  "mID" : "ProjectInfo"
+}
