@@ -38,7 +38,7 @@ namespace nap
 		for (const auto& tag : resource->mTags)
 		{
 			// Ensure tag is present
-			if (!errorState.check(tag != nullptr, "%s: Empty tag entry encountered", resource->mID.c_str()))
+			if (!errorState.check(tag != nullptr, "%s: Empty (NULL) tag encountered", resource->mID.c_str()))
 				return false;
 
 			// Add to render mask
