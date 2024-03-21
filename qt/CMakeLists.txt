@@ -33,5 +33,6 @@ add_custom_command(
         POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_directory ${QTDIR}/plugins/platforms ${LIB_DIR}/platforms
 )
+install(DIRECTORY ${LIB_DIR}/platforms TYPE LIB OPTIONAL)
 
 

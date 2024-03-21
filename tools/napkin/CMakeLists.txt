@@ -48,9 +48,14 @@ if(UNIX)
             $<TARGET_FILE:${PROJECT_NAME}>)
 endif()
 
-# Copy resources
+# Copy resources to bin and install to packaged app
 add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD
                    COMMAND ${CMAKE_COMMAND} -E copy_directory
                    ${CMAKE_CURRENT_LIST_DIR}/resources
                    ${BIN_DIR}/resources
                    COMMENT "Copy Resources")
+install(DIRECTORY ${BIN_DIR}/resources TYPE BIN OPTIONAL)
+
+# Install executable to packaged app
+install(FILES $<TARGET_FILE:${PROJECT_NAME}> TYPE BIN OPTIONAL)
+

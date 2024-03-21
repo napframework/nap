@@ -28,17 +28,27 @@ namespace nap
 		// Locate the app.json file without using the path mapping system as it hasn't been initialized yet.
 
 		const std::string exeDir = utility::getExecutableDir();
-        const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
-        const std::string projectInfoFilename = projectName + ".json";
 
-		// Check for its projectInfo location, beside the binary
-		const std::string alongsideBinaryPath = utility::joinPath({exeDir, projectInfoFilename});
-		nap::Logger::debug("Looking for %s in '%s'...", projectInfoFilename.c_str(), exeDir.c_str());
-		if (utility::fileExists(alongsideBinaryPath))
+		// Check for location of app.json beside the binary
+		const std::string defaultProjectInfoPath = utility::joinPath({exeDir, PROJECT_INFO_FILENAME});
+		nap::Logger::debug("Looking for %s in '%s'...", PROJECT_INFO_FILENAME, exeDir.c_str());
+		if (utility::fileExists(defaultProjectInfoPath))
 		{
-			foundFilePath = alongsideBinaryPath;
+			foundFilePath = defaultProjectInfoPath;
 			return true;
 		}
+
+        // Check for location of {PROJECT_NAME}.json beside the binary. This filename is used in source context by the build system
+        const std::string projectName = utility::getFileNameWithoutExtension(utility::getExecutablePath());
+        const std::string projectInfoFilename = projectName + ".json";
+        const std::string projectNamePath = utility::joinPath({exeDir, projectInfoFilename});
+        nap::Logger::debug("Looking for %s in '%s'...", projectInfoFilename.c_str(), exeDir.c_str());
+        if (utility::fileExists(projectNamePath))
+        {
+            foundFilePath = projectNamePath;
+            return true;
+        }
+
         return false;
 	}
 

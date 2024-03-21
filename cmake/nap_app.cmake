@@ -23,20 +23,6 @@ file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert data/shaders/*
 # Declare target
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
-# Create apps and demos IDE folders
-cmake_path(GET CMAKE_CURRENT_SOURCE_DIR PARENT_PATH parent_path)
-cmake_path(GET parent_path STEM LAST_ONLY parent_dir)
-if(NAP_BUILD_CONTEXT MATCHES "source")
-    if(DEFINED APP_CUSTOM_IDE_FOLDER)
-        set(app_folder_name ${APP_CUSTOM_IDE_FOLDER})
-    elseif(parent_dir MATCHES "^apps$")
-        set(app_folder_name Apps)
-    else()
-        set(app_folder_name Demos)
-    endif()
-    set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER ${app_folder_name})
-endif()
-
 # Pull in a app module if it exists
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
     add_subdirectory(module)
@@ -80,9 +66,17 @@ else()
     set(patched_path_mapping_app_json ${app_json})
 endif()
 
+set(app_install_data_dir ${BIN_DIR}/app_install_data/${PROJECT_NAME})
+set(cache_dir ${CMAKE_CURRENT_SOURCE_DIR}/cache)
+file(MAKE_DIRECTORY ${cache_dir})
+
 # Write app json with patched path mapping to bin for installation
-set(app_install_data_dir ${BIN_DIR}/app_install_data)
-file(WRITE ${app_install_data_dir}/${PROJECT_NAME}.json ${patched_path_mapping_app_json})
+file(WRITE ${cache_dir}/patched_path_mapping_app.json ${patched_path_mapping_app_json})
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${cache_dir}/patched_path_mapping_app.json
+        ${app_install_data_dir}/app.json)
 
 # Copy path mapping to bin
 add_custom_command(
@@ -97,7 +91,12 @@ set(bin_app_json ${app_json})
 string(JSON patched_data_app_json SET ${patched_path_mapping_app_json} "Data" \"${absolute_data_file_path}\")
 
 # Write app json with patched data path to bin for running apps from source
-file(WRITE ${BIN_DIR}/${PROJECT_NAME}.json ${patched_data_app_json})
+file(WRITE ${cache_dir}/patched_data_app.json ${patched_data_app_json})
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${cache_dir}/patched_data_app.json
+        ${BIN_DIR}/${PROJECT_NAME}.json)
 
 # Update executable rpath
 if(UNIX)
@@ -108,18 +107,22 @@ if(UNIX)
             $<TARGET_FILE:${PROJECT_NAME}>)
 endif()
 
-# Run FBX converter post-build
+# Copy data directory to app specific bin
+set(bin_data_dir ${app_install_data_dir}/data)
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${CMAKE_CURRENT_SOURCE_DIR}/data ${bin_data_dir})
+
+# Run FBX converter post-build within bin data dir
 add_dependencies(${PROJECT_NAME} fbxconverter)
-set(data_dir ${CMAKE_CURRENT_SOURCE_DIR}/data/)
 add_custom_command(TARGET ${PROJECT_NAME}
         POST_BUILD
-        COMMAND ${BIN_DIR}/fbxconverter -o ${data_dir} ${data_dir}/*.fbx
-        COMMENT "Exporting FBX in '${data_dir}'"
-)
+        COMMAND ${BIN_DIR}/fbxconverter -o ${bin_data_dir} ${bin_data_dir}/*.fbx
+        COMMENT "Exporting FBX in '${bin_data_dir}'")
 
 # Install to packaged app
-install(TARGETS ${PROJECT_NAME} DESTINATION "" OPTIONAL)
-install(FILES ${app_install_data_dir}/${PROJECT_NAME}.json TYPE BIN OPTIONAL)
+install(FILES $<TARGET_FILE:${PROJECT_NAME}> TYPE BIN OPTIONAL)
+install(FILES ${app_install_data_dir}/app.json TYPE BIN OPTIONAL)
 install(FILES ${BIN_DIR}/${path_mapping_path} TYPE BIN OPTIONAL)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data TYPE DATA OPTIONAL)
-
+install(DIRECTORY ${bin_data_dir} TYPE DATA OPTIONAL)
