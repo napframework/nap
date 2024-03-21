@@ -43,9 +43,9 @@ namespace nap
 	 * 
 	 * `````{.cpp}
 	 * // Consider caching the render mask
-	 * auto debug_mask = mResourceManager->findObject("DebugTag").getMask();
-	 * auto scene_mask = mResourceManager->findObject("SceneTag").getMask();
-	 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_mask | scene_mask);
+	 * auto debug_tag = mResourceManager->findObject("DebugTag");
+	 * auto scene_tag = mResourceManager->findObject("SceneTag");
+	 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_tag | scene_tag);
 	 * `````
 	 */
 	class NAPAPI RenderTag : public Device
@@ -84,8 +84,8 @@ namespace nap
 		 * Mask inclusion operator: Combines this tag with the given tag.
 		 *
 		 * `````{.cpp}
-		 * const auto& debug_tag = *mResourceManager->findObject("DebugTag");
-		 * const auto& scene_tag = *mResourceManager->findObject("SceneTag");
+		 * auto debug_tag = *mResourceManager->findObject("DebugTag");
+		 * auto scene_tag = *mResourceManager->findObject("SceneTag");
 		 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_tag | scene_tag);
 		 * `````
 		 *

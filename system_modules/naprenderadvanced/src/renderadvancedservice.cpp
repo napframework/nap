@@ -19,7 +19,6 @@
 #include <material.h>
 #include <renderglobals.h>
 #include <sceneservice.h>
-
 #include <parametervec.h>
 #include <parameternumeric.h>
 #include <parametermat.h>
