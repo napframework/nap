@@ -307,7 +307,6 @@ namespace nap
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource
 		std::unique_ptr<MaterialInstance>			mCubeMaterialInstance;				///< The MaterialInstance as created from the resource. 
 		Material*									mCubeMapMaterial = nullptr;			///< Run-time cube map material
-		std::unique_ptr<PreRenderCubeMapsCommand>	mPreRenderCubeMapsCommand;			///< Render command used to update `nap::CubeMapFromFile` objects
 
 		static constexpr const uint mRequiredVulkanVersionMajor = 1;					///< Required Vulkan major version to support the render advanced service
 		static constexpr const uint mRequiredVulkanVersionMinor = 0;					///< Required Vulkan minor version to support the render advanced service

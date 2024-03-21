@@ -669,8 +669,6 @@ namespace nap
 		mCubeMaterialInstanceResource.reset();
 		mCubeMaterialInstance.reset();
 		mCubeMapFromFileTargets.clear();
-
-		mPreRenderCubeMapsCommand.reset();
 	}
 
 
@@ -710,8 +708,7 @@ namespace nap
 		// Queue cube maps pre-render command if they are present in the scene
 		if (!mCubeMapFromFileTargets.empty())
 		{
-			mPreRenderCubeMapsCommand = std::make_unique<PreRenderCubeMapsCommand>(*this);
-			mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
+			mRenderService->queueRenderCommand(std::make_unique<PreRenderCubeMapsCommand>(*this));
 		}
 	}
 

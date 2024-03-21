@@ -30,7 +30,7 @@ namespace nap
 	 * `RenderService::beginComputeRecording` in case of `nap::HeadlessCommand`.
 	 * 
 	 * ~~~~~{.cpp}
-	 * mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
+	 * mRenderService->queueRenderCommand(std::make_unique<PreRenderExampleCommand>(*this));
 	 * ~~~~~
 	 */
 	class NAPAPI RenderCommand
@@ -69,7 +69,7 @@ namespace nap
 	 * `RenderService::beginComputeRecording` in case of `nap::HeadlessCommand`.
 	 *
 	 * ~~~~~{.cpp}
-	 * mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
+	 * mRenderService->queueRenderCommand(std::make_unique<PreRenderExampleCommand>(*this));
 	 * ~~~~~
 	 */
 	class NAPAPI HeadlessCommand : public RenderCommand
@@ -108,7 +108,7 @@ namespace nap
 	 * `RenderService::beginComputeRecording` in case of `nap::HeadlessCommand`.
 	 *
 	 * ~~~~~{.cpp}
-	 * mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
+	 * mRenderService->queueRenderCommand(std::make_unique<PreRenderExampleCommand>(*this));
 	 * ~~~~~
 	 */
 	class NAPAPI ComputeCommand : public RenderCommand

@@ -286,7 +286,7 @@ namespace nap
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
-		
+
 		/**
 		 * Binds a pipeline and pipeline layout together.
 		 */
@@ -386,9 +386,10 @@ namespace nap
 		void endHeadlessRecording();
 
 		/**
-		 * Queue headless rendering commands.
+		 * Queue a headless or compute render command.
+		 * @param command the command to queue, ownership is transferred 
 		 */
-		void queueRenderCommand(const RenderCommand* command);
+		void queueRenderCommand(std::unique_ptr<RenderCommand> command);
 
 		/**
 		 * Starts a window render operation. Call this when you want to render geometry to a render window.
@@ -1341,8 +1342,8 @@ namespace nap
 		UniqueMaterialCache						mMaterials;
 
 		// Render command queues
-		std::vector<const HeadlessCommand*>		mHeadlessCommandQueue;
-		std::vector<const ComputeCommand*>		mComputeCommandQueue;
+		std::vector<std::unique_ptr<HeadlessCommand>>	mHeadlessCommandQueue;
+		std::vector<std::unique_ptr<ComputeCommand>>	mComputeCommandQueue;
 
 		// The registered render tag and layer registries
 		std::vector<const RenderTag*>			mRenderTags;

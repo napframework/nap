@@ -2583,16 +2583,18 @@ namespace nap
 	}
 
 
-	void RenderService::queueRenderCommand(const RenderCommand* command)
+	void RenderService::queueRenderCommand(std::unique_ptr<RenderCommand> command)
 	{
 		if (command->get_type().is_derived_from(RTTI_OF(HeadlessCommand)))
 		{
-			mHeadlessCommandQueue.emplace_back(static_cast<const HeadlessCommand*>(command));
+			auto* headless_cmd = static_cast<HeadlessCommand*>(command.release());
+			mHeadlessCommandQueue.emplace_back(std::unique_ptr<HeadlessCommand>(headless_cmd));
 			return;
 		}
 		else if (command->get_type().is_derived_from(RTTI_OF(ComputeCommand)))
 		{
-			mComputeCommandQueue.emplace_back(static_cast<const ComputeCommand*>(command));
+			auto* compute_cmd = static_cast<ComputeCommand*>(command.release());
+			mComputeCommandQueue.emplace_back(std::unique_ptr<ComputeCommand>(compute_cmd));
 			return;
 		}
 		NAP_ASSERT_MSG(false, "Unsupported nap::RenderCommand type");
