@@ -19,7 +19,7 @@
 #include "lightflags.h"
 #include "rendertag.h"
 #include "emptymesh.h"
-#include "rendercommand.h"
+#include "cubemapfromfile.h"
 
 namespace nap
 {
@@ -99,6 +99,7 @@ namespace nap
 	class NAPAPI RenderAdvancedService : public Service
 	{
 		friend class LightComponentInstance;
+		friend class CubeMapFromFile;
 		RTTI_ENABLE(Service)
 	public:
 		// Default Constructor
@@ -231,25 +232,9 @@ namespace nap
 		void pushLightsInternal(const std::vector<MaterialInstance*>& materials);
 		void registerLightComponent(LightComponentInstance& light);
 		void removeLightComponent(LightComponentInstance& light);
+		void registerCubeMap(CubeMapFromFile& cubemap);
+		void removeCubeMap(CubeMapFromFile& cubemap);
 		bool initServiceResources(utility::ErrorState& errorState);
-		bool initCubeMapTargets(utility::ErrorState& errorState);
-		void onPreRenderCubeMaps(RenderService& renderService);
-
-		/**
-		 * This render command pre-renders all available `nap::CubeMapFromFile` objects in the scene. It is queued for the first
-		 * frame of rendering when headless rendering commands are recorded: `mRenderService->beginHeadlessRecording()`.
-		 */
-		class PreRenderCubeMapsCommand : public HeadlessCommand
-		{
-			RTTI_ENABLE(HeadlessCommand)
-		public:
-			PreRenderCubeMapsCommand(RenderAdvancedService& renderAdvancedService) : HeadlessCommand(),
-				mRenderAdvancedService(renderAdvancedService) {}
-
-			RenderAdvancedService& mRenderAdvancedService;
-		private:
-			virtual void record(RenderService& renderService) const override				{ mRenderAdvancedService.onPreRenderCubeMaps(renderService); }
-		};
 
 		/**
 		 * A depth render target and texture pair used for shadow rendering.
@@ -301,7 +286,7 @@ namespace nap
 		bool mShadowResourcesCreated = false;											///< Whether shadow resources are created, enabled after `initServiceResources` completed successfully
 
 		// Cube maps from file
-		std::vector<std::unique_ptr<CubeRenderTarget>> mCubeMapFromFileTargets;			///< Render targets created to render `nap::CubeMapFromFile` objects
+		std::unordered_map<CubeMapFromFile*, std::unique_ptr<CubeRenderTarget>> mCubeMapTargets;		///< List of all registered cube map from file resources
 
 		std::unique_ptr<EmptyMesh>					mNoMesh;							///< No mesh is required for generating a cube map from an equirectangular texture
 		std::unique_ptr<MaterialInstanceResource>	mCubeMaterialInstanceResource;		///< Run-time cube map material instance resource

@@ -9,7 +9,6 @@
 #include "pipelinekey.h"
 #include "renderutils.h"
 #include "imagedata.h"
-#include "rendercommand.h"
 #include "rendertag.h"
 
 // External Includes
@@ -286,6 +285,7 @@ namespace nap
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
+		using RenderCommand = std::function<void(RenderService&)>;
 
 		/**
 		 * Binds a pipeline and pipeline layout together.
@@ -386,10 +386,28 @@ namespace nap
 		void endHeadlessRecording();
 
 		/**
-		 * Queue a headless or compute render command.
+		 * Queues a headless render command with priority in the subsequent frame. The queue is handled the next time
+		 * `RenderService::beginHeadlessRecording` is called.
+		 *
+		 * ~~~~~{.cpp}
+		 * mRenderService->queueHeadlessCommand([](RenderService&){});
+		 * ~~~~~
+		 *
 		 * @param command the command to queue, ownership is transferred 
 		 */
-		void queueRenderCommand(std::unique_ptr<RenderCommand> command);
+		void queueHeadlessCommand(const RenderCommand& command);
+
+		/**
+		 * Queues a compute render command with priority in the subsequent frame. The queue is handled the next time
+		 * `RenderService::beginComputeRecording` is called.
+		 *
+		 * ~~~~~{.cpp}
+		 * mRenderService->queueComputeCommand([](RenderService&){});
+		 * ~~~~~
+		 *
+		 * @param command the command to queue, ownership is transferred
+		 */
+		void queueComputeCommand(const RenderCommand& command);
 
 		/**
 		 * Starts a window render operation. Call this when you want to render geometry to a render window.
@@ -1342,8 +1360,8 @@ namespace nap
 		UniqueMaterialCache						mMaterials;
 
 		// Render command queues
-		std::vector<std::unique_ptr<HeadlessCommand>>	mHeadlessCommandQueue;
-		std::vector<std::unique_ptr<ComputeCommand>>	mComputeCommandQueue;
+		std::vector<RenderCommand>				mHeadlessCommandQueue;
+		std::vector<RenderCommand>				mComputeCommandQueue;
 
 		// The registered render tag and layer registries
 		std::vector<const RenderTag*>			mRenderTags;
