@@ -285,7 +285,7 @@ namespace nap
 
 		// Create GPU image view
 		VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		if (!create2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, mMipLevels, aspect, mImageData.getView(), errorState))
+		if (!create2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, mMipLevels, aspect, mImageData.mView, errorState))
 			return false;
 
 		// Initialize buffer indexing
@@ -578,7 +578,7 @@ namespace nap
 		{
 			// Set mipLevels to 1 as we typically only render to the first mip level of each layer individually
 			// After the render operation we can update the mip maps using a blit operation if desired
-			if (!createLayered2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, 1, aspect, i, 1, mImageData.getSubView(i), errorState))
+			if (!createLayered2DImageView(mRenderService.getDevice(), mImageData.getImage(), mFormat, 1, aspect, i, 1, mImageData.mSubViews[i], errorState))
 				return false;
 		}
 
