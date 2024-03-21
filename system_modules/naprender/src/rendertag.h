@@ -22,6 +22,15 @@ namespace nap
 	// RenderMask definition, supports up to 64 different tags
 	using RenderMask = uint64;
 
+	namespace mask
+	{
+		// Includes every tag
+		constexpr RenderMask all  = std::numeric_limits<RenderMask>::max();
+
+		// No tag provided
+		constexpr RenderMask none = 0;
+	}
+
 	/**
 	 * Render tags can be used to categorize render components. Unlike render layers, tags are unordered and multiple
 	 * of them can be assigned to a single render component. Each tag resource registers itself in the render service
