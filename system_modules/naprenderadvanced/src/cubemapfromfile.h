@@ -21,10 +21,10 @@ namespace nap
 	 * map from it in the `nap::RenderAdvancedService`. If `GenerateLODs` is enabled, GPU memory for mip-maps (LODs) are
 	 * allocated and will be updated using blit operations after the cube face render passes.
 	 *
-	 * This object must be pre-rendered at least once in a headless render pass in the first frame. The RenderAdvanced service
-	 * queues a `HeadlessRenderCommand` for each `nap::CubeMapFromFile` in the scene after resource initialization, and will
-	 * be handled when headless render commands are recorded. The code below only begins a headless recording operation only
-	 * when headless commands are queued in the render service.
+	 * This object must be pre-rendered at least once in a headless render pass in the first frame. The RenderAdvanced
+	 * service queues a headless `RenderService::RenderCommand` for each `nap::CubeMapFromFile` in the scene after resource
+	 * initialization, and will be handled when headless render commands are recorded. The code below only begins a
+	 * headless recording operation only when headless commands are queued in the render service.
 	 *
 	 * ~~~~~{.cpp}
 	 *	if (mRenderService->isHeadlessCommandQueued())

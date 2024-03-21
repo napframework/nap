@@ -2591,7 +2591,6 @@ namespace nap
 	}
 
 
-
 	void RenderService::queueComputeCommand(const RenderCommand& command)
 	{
 		mComputeCommandQueue.emplace_back(command);
