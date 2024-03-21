@@ -51,7 +51,9 @@ namespace nap
 		RenderableComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		 * Make sure to this in derived classes
+		 * Initializes this component for rendering.
+		 * Make sure to always call this in derived classes!
+		 * @param errorState the message when initialization fails
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -87,9 +89,12 @@ namespace nap
 		RenderMask getMask() const													{ return mRenderMask; }
 
 		/**
-		 * @return if this component is compatible with (includes) the given mask
+		 * Returns if this component can be rendered with (includes) the given mask.
+		 * The component can be rendered when included in the other mask or when no mask is provided.
+		 * @param otherMask the inclusion mask
+		 * @return if this component can be rendered with (includes) the given mask.
 		 */
-		bool hasMask(RenderMask otherMask)											{ return (mRenderMask == 0) || ((mRenderMask & otherMask) > 0); }
+		bool includesMask(RenderMask otherMask)										{ return (mRenderMask == mask::none) || ((mRenderMask & otherMask) > 0); }
 
 		/**
 		 * Returns the rank of this component in the render chain, defaults to 0 (front) if no layer is assigned.
@@ -130,6 +135,6 @@ namespace nap
 	private:
 		bool mVisible = true;							///< If this object should be drawn or not
 		RenderLayer* mRenderLayer = nullptr;			///< The render layer
-		RenderMask mRenderMask = 0;						///< The render mask
+		RenderMask mRenderMask = mask::none;			///< The render mask
 	};
 }

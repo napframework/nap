@@ -37,10 +37,11 @@ namespace nap
 	 * @return the uniform, nullptr if not available.
 	 */
 	template<typename T>
-	T* getUniform(const std::string& uniformName, UniformStructInstance& uniformStruct, utility::ErrorState& error)
+	static T* getUniform(const std::string& uniformName, UniformStructInstance& uniformStruct, utility::ErrorState& error)
 	{
 		T* found_uniform = uniformStruct.getOrCreateUniform<T>(uniformName);
-		return error.check(found_uniform != nullptr, "unable to find uniform with name '%s'", uniformName.c_str()) ?
+		return error.check(found_uniform != nullptr,
+			"Unable to get or create uniform with name: %s in struct: %s", uniformName.c_str(), uniformStruct.getDeclaration().mName.c_str()) ?
 			found_uniform : nullptr;
 	}
 

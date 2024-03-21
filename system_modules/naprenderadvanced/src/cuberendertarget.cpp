@@ -62,7 +62,7 @@ namespace nap
 
 		for (uint i = 0U; i < layerCount; i++)
 		{
-			if (!createLayered2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, 1, VK_IMAGE_ASPECT_DEPTH_BIT, i, 1, outImage.getSubView(i), errorState))
+			if (!createLayered2DImageView(renderer.getDevice(), outImage.getImage(), depthFormat, 1, VK_IMAGE_ASPECT_DEPTH_BIT, i, 1, outImage.mSubViews[i], errorState))
 				return false;
 		}
 

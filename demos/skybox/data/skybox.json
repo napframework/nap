@@ -1,6 +1,51 @@
 {
     "Objects": [
         {
+            "Type": "nap::CubeMapFromFileGroup",
+            "mID": "CubeMaps",
+            "Members": [
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "UffiziCubeMap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "ImagePath": "equi_uffizi.png",
+                    "SampleShading": false,
+                    "GenerateLODs": true
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "TestCubeMap",
+                    "Width": 256,
+                    "Height": 256,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "ImagePath": "equi_test.jpg",
+                    "SampleShading": false,
+                    "GenerateLODs": true
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
@@ -107,59 +152,16 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "RenderLayer_SkyBox",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [
-                            {
-                                "Type": "nap::SamplerCube",
-                                "mID": "SamplerCube_3b327077",
-                                "Name": "cubeTexture",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MinLodLevel": 0,
-                                "MaxLodLevel": 1000,
-                                "LodBias": 0.0,
-                                "AnisotropicSamples": "Default",
-                                "BorderColor": "IntOpaqueBlack",
-                                "CompareMode": "LessOrEqual",
-                                "EnableCompare": false,
-                                "Texture": "UffiziCubeMap"
-                            }
-                        ],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "SkyBoxMaterial",
-                        "BlendMode": "Opaque",
-                        "DepthMode": "NoReadWrite"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    },
+                    "BlendMode": "AlphaBlend",
                     "CubeTexture": "UffiziCubeMap",
                     "Color": {
-                        "Type": "nap::ParameterEntryRGBColorFloat",
-                        "mID": "ParameterEntryRGBColorFloat_655ecd86",
-                        "Parameter": "SkyBoxColor",
-                        "Default": {
-                            "Values": [
-                                0.0,
-                                0.0,
-                                0.0
-                            ]
-                        }
-                    }
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Opacity": 1.0
                 }
             ],
             "Children": []
@@ -198,47 +200,11 @@
                     "Layer": "RenderLayer_Default",
                     "Mesh": "TorusMesh",
                     "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UniformStruct_b1933c5b",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "fresnel_63ed4ccc",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 0.75,
-                                            "y": 4.0
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::SamplerCube",
-                                "mID": "SamplerCube_4161a12b",
-                                "Name": "environmentMap",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MinLodLevel": 0,
-                                "MaxLodLevel": 1000,
-                                "LodBias": 0.0,
-                                "AnisotropicSamples": "Default",
-                                "BorderColor": "IntOpaqueBlack",
-                                "CompareMode": "LessOrEqual",
-                                "EnableCompare": false,
-                                "Texture": "UffiziCubeMap"
-                            }
-                        ],
+                        "Uniforms": [],
+                        "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "EnvironmentMaterial",
+                        "Material": "TorusMaterial",
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
                     },
@@ -267,12 +233,6 @@
                         "Speed": 0.05000000074505806,
                         "Offset": 0.0
                     }
-                },
-                {
-                    "Type": "nap::UpdateMaterialComponent",
-                    "mID": "UpdateTorusMaterial",
-                    "Color": "TorusColor",
-                    "Fresnel": "TorusFresnel"
                 }
             ],
             "Children": []
@@ -324,106 +284,6 @@
             "mID": "GnomonShader"
         },
         {
-            "Type": "nap::Material",
-            "mID": "EnvironmentMaterial",
-            "Uniforms": [
-                {
-                    "Type": "nap::UniformStruct",
-                    "mID": "UniformStruct_60da175c",
-                    "Name": "UBO",
-                    "Uniforms": [
-                        {
-                            "Type": "nap::UniformVec2",
-                            "mID": "UniformVec2_f66d0135",
-                            "Name": "fresnel",
-                            "Value": {
-                                "x": 0.5,
-                                "y": 4.0
-                            }
-                        },
-                        {
-                            "Type": "nap::UniformVec3",
-                            "mID": "color_22fd2aa3",
-                            "Name": "color",
-                            "Value": {
-                                "x": 1.0,
-                                "y": 1.0,
-                                "z": 0.0
-                            }
-                        }
-                    ]
-                }
-            ],
-            "Samplers": [],
-            "Buffers": [],
-            "Constants": [],
-            "Shader": "EnvironmentShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "SkyBoxMaterial",
-            "Uniforms": [],
-            "Samplers": [],
-            "Buffers": [],
-            "Constants": [],
-            "Shader": "SkyBoxShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
-        },
-        {
-            "Type": "nap::ParameterGUI",
-            "mID": "ParameterGUI",
-            "Serializable": true,
-            "Group": "Parameters"
-        },
-        {
-            "Type": "nap::ParameterGroup",
-            "mID": "Parameters",
-            "Parameters": [
-                {
-                    "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "SkyBoxColor",
-                    "Name": "SkyBoxColor",
-                    "Value": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "Type": "nap::ParameterRGBColorFloat",
-                    "mID": "TorusColor",
-                    "Name": "TorusColor",
-                    "Value": {
-                        "Values": [
-                            1.0,
-                            1.0,
-                            1.0
-                        ]
-                    }
-                },
-                {
-                    "Type": "nap::ParameterVec2",
-                    "mID": "TorusFresnel",
-                    "Name": "TorusFresnel",
-                    "Value": {
-                        "x": 0.75,
-                        "y": 4.0
-                    },
-                    "Clamp": true,
-                    "Minimum": 0.009999999776482582,
-                    "Maximum": 8.0
-                }
-            ],
-            "Groups": []
-        },
-        {
             "Type": "nap::RenderChain",
             "mID": "RenderChain",
             "Layers": [
@@ -452,9 +312,9 @@
             "Mode": "Immediate",
             "ClearColor": {
                 "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
+                    0.16078431904315949,
+                    0.3450980484485626,
+                    1.0,
                     1.0
                 ]
             },
@@ -465,45 +325,92 @@
         },
         {
             "Type": "nap::ResourceGroup",
-            "mID": "CubeMaps",
+            "mID": "Torus",
             "Members": [
                 {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "UffiziCubeMap",
-                    "Width": 1024,
-                    "Height": 1024,
-                    "Format": "RGBA8",
-                    "ColorSpace": "Linear",
-                    "ClearColor": {
-                        "Values": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "ImagePath": "equi_uffizi.png",
-                    "SampleShading": false,
-                    "GenerateLODs": true
+                    "Type": "nap::ShaderFromFile",
+                    "mID": "TorusShader",
+                    "VertShader": "shaders/environment.vert",
+                    "FragShader": "shaders/environment.frag",
+                    "RestrictModuleIncludes": false
                 },
                 {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "TestCubeMap",
-                    "Width": 256,
-                    "Height": 256,
-                    "Format": "RGBA8",
-                    "ColorSpace": "Linear",
-                    "ClearColor": {
+                    "Type": "nap::TorusMesh",
+                    "mID": "TorusMesh",
+                    "Radius": 0.75,
+                    "TubeRadius": 0.25,
+                    "Segments": 64,
+                    "TubeSegments": 64,
+                    "AngleOffset": 0.0,
+                    "Usage": "Static",
+                    "PolygonMode": "Fill",
+                    "CullMode": "Back",
+                    "Color": {
                         "Values": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
                         ]
-                    },
-                    "ImagePath": "equi_test.jpg",
-                    "SampleShading": false,
-                    "GenerateLODs": true
+                    }
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "TorusMaterial",
+                    "Uniforms": [
+                        {
+                            "Type": "nap::UniformStruct",
+                            "mID": "UBO",
+                            "Name": "UBO",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformVec3",
+                                    "mID": "color",
+                                    "Name": "color",
+                                    "Value": {
+                                        "x": 1.0,
+                                        "y": 1.0,
+                                        "z": 1.0
+                                    }
+                                },
+                                {
+                                    "Type": "nap::UniformVec2",
+                                    "mID": "fresnel",
+                                    "Name": "fresnel",
+                                    "Value": {
+                                        "x": 0.75,
+                                        "y": 4.0
+                                    }
+                                }
+                            ]
+                        }
+                    ],
+                    "Samplers": [
+                        {
+                            "Type": "nap::SamplerCube",
+                            "mID": "environmentMap",
+                            "Name": "environmentMap",
+                            "MinFilter": "Linear",
+                            "MaxFilter": "Linear",
+                            "MipMapMode": "Linear",
+                            "AddressModeVertical": "ClampToEdge",
+                            "AddressModeHorizontal": "ClampToEdge",
+                            "MinLodLevel": 0,
+                            "MaxLodLevel": 1000,
+                            "LodBias": 0.0,
+                            "AnisotropicSamples": "Default",
+                            "BorderColor": "IntOpaqueBlack",
+                            "CompareMode": "LessOrEqual",
+                            "EnableCompare": false,
+                            "Texture": "UffiziCubeMap"
+                        }
+                    ],
+                    "Buffers": [],
+                    "Constants": [],
+                    "Shader": "TorusShader",
+                    "VertexAttributeBindings": [],
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
                 }
             ],
             "Children": []
@@ -525,37 +432,6 @@
                     "InstanceProperties": []
                 }
             ]
-        },
-        {
-            "Type": "nap::ShaderFromFile",
-            "mID": "EnvironmentShader",
-            "VertShader": "shaders/environment.vert",
-            "FragShader": "shaders/environment.frag",
-            "RestrictModuleIncludes": false
-        },
-        {
-            "Type": "nap::SkyBoxShader",
-            "mID": "SkyBoxShader"
-        },
-        {
-            "Type": "nap::TorusMesh",
-            "mID": "TorusMesh",
-            "Radius": 0.75,
-            "TubeRadius": 0.25,
-            "Segments": 64,
-            "TubeSegments": 64,
-            "AngleOffset": 0.0,
-            "Usage": "Static",
-            "PolygonMode": "Fill",
-            "CullMode": "Back",
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            }
         }
     ]
 }

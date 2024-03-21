@@ -4,7 +4,6 @@
 
 // Local Includes
 #include "renderadvancedservice.h"
-#include "cubemapfromfile.h"
 #include "cubemapshader.h"
 
 // External Includes
@@ -19,11 +18,11 @@
 #include <material.h>
 #include <renderglobals.h>
 #include <sceneservice.h>
-
 #include <parametervec.h>
 #include <parameternumeric.h>
 #include <parametermat.h>
 #include <parametercolor.h>
+#include <cubemapfromfile.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
 	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default)
@@ -577,83 +576,6 @@ namespace nap
 	}
 
 
-	bool RenderAdvancedService::initCubeMapTargets(utility::ErrorState& errorState)
-	{
-		// Cube maps from file
-		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
-		if (!cube_maps.empty())
-		{
-			// Prepare render targets
-			mCubeMapFromFileTargets.reserve(cube_maps.size());
-			for (auto& cm : cube_maps)
-			{
-				// Cube map from file render target
-				auto rt = std::make_unique<CubeRenderTarget>(getCore());
-				rt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
-				rt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
-				rt->mSampleShading = cm->mSampleShading;
-				rt->mUpdateLODs = cm->mGenerateLODs;
-				rt->mCubeTexture = cm;
-
-				if (!rt->init(errorState))
-				{
-					errorState.fail("%s: Failed to initialize cube map from file render target", RTTI_OF(RenderAdvancedService).get_name().to_string().c_str());
-					return false;
-				}
-				mCubeMapFromFileTargets.emplace_back(std::move(rt));
-			}
-		}
-		return true;
-	}
-
-
-	void RenderAdvancedService::onPreRenderCubeMaps(RenderService& renderService)
-	{
-		// Prerender shadow maps here
-		auto cube_maps = mRenderService->getCore().getResourceManager()->getObjects<CubeMapFromFile>();
-		for (uint i = 0; i < cube_maps.size(); i++)
-		{
-			auto* cube_map = cube_maps[i].get();
-			if (!cube_map->isDirty())
-				continue;
-
-			auto& rt = mCubeMapFromFileTargets[i];
-			rt->render([rs = &renderService, cm = cube_map, mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
-				(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
-			{
-				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);
-				if (ubo != nullptr)
-				{
-					ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face)->setValue(target.getLayerIndex());
-				}
-
-				// Set equirectangular texture to convert
-				auto* sampler = mtl->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
-				if (sampler != nullptr)
-					sampler->setTexture(cm->getSourceTexture());
-
-				// Get valid descriptor set
-				const DescriptorSet& descriptor_set = mtl->update();
-
-				// Get pipeline to to render with
-				utility::ErrorState error_state;
-				RenderService::Pipeline pipeline = rs->getOrCreatePipeline(target, *mesh, *mtl, error_state);
-						
-				vkCmdBindPipeline(rs->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
-				vkCmdBindDescriptorSets(rs->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
-
-				// Bufferless drawing with the cube map shader
-				vkCmdDraw(rs->getCurrentCommandBuffer(), 3, 1, 0, 0);
-
-				// Unset dirty flag
-				auto* cube_map_from_file = static_cast<CubeMapFromFile*>(&target.getColorTexture());
-				assert(cube_map_from_file != nullptr);
-				cube_map_from_file->mDirty = false;
-			});
-		}
-	}
-
-
 	void RenderAdvancedService::preShutdown()
 	{
 		mSampler2DResource.reset();
@@ -663,9 +585,6 @@ namespace nap
 		mNoMesh.reset();
 		mCubeMaterialInstanceResource.reset();
 		mCubeMaterialInstance.reset();
-		mCubeMapFromFileTargets.clear();
-
-		mPreRenderCubeMapsCommand.reset();
 	}
 
 
@@ -693,21 +612,6 @@ namespace nap
 			assert(false);
 			return;
 		}
-
-		// Gather initialized cube maps and perform a headless render pass to write the cube faces
-		if (!initCubeMapTargets(error_state))
-		{
-			nap::Logger::error(error_state.toString());
-			assert(false);
-			return;
-		}
-
-		// Queue cube maps pre-render command if they are present in the scene
-		if (!mCubeMapFromFileTargets.empty())
-		{
-			mPreRenderCubeMapsCommand = std::make_unique<PreRenderCubeMapsCommand>(*this);
-			mRenderService->queueRenderCommand(mPreRenderCubeMapsCommand.get());
-		}
 	}
 
 
@@ -725,8 +629,6 @@ namespace nap
 
 		mLightFlagsMap.clear();
 		mLightFlagsMap.reserve(mLightComponents.size());
-
-		mCubeMapFromFileTargets.clear();
 
 		auto* configuration = getConfiguration<RenderAdvancedServiceConfiguration>();
 
@@ -828,13 +730,8 @@ namespace nap
 
 	void RenderAdvancedService::registerLightComponent(LightComponentInstance& light)
 	{
-		auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
-		{
-			return it == input;
-		});
-
-		if (found_it != mLightComponents.end())
-			NAP_ASSERT_MSG(false, "Light component was already registered");
+		auto it = std::find(mLightComponents.begin(), mLightComponents.end(), &light);
+		NAP_ASSERT_MSG(it == mLightComponents.end(), "Light component was already registered");
 
 		mLightComponents.emplace_back(&light);
 
@@ -853,22 +750,16 @@ namespace nap
 				case EShadowMapType::Quad:
 				{
 					// Shadow resources
-					auto found_it = std::find_if(mLightDepthMap.begin(), mLightDepthMap.end(), [input = &light](const auto& it)
-						{
-							return it.first == input;
-						});
-					assert(found_it != mLightDepthMap.end());
-					mLightDepthMap.erase(found_it);
+					auto it = mLightDepthMap.find(&light);
+					assert(it != mLightDepthMap.end());
+					mLightDepthMap.erase(it);
 					break;
 				}
 				case EShadowMapType::Cube:
 				{
-					auto found_it = std::find_if(mLightCubeMap.begin(), mLightCubeMap.end(), [input = &light](const auto& it)
-						{
-							return it.first == input;
-						});
-					assert(found_it != mLightCubeMap.end());
-					mLightCubeMap.erase(found_it);
+					auto it = mLightCubeMap.find(&light);
+					assert(it != mLightCubeMap.end());
+					mLightCubeMap.erase(it);
 					break;
 				}
 				default:
@@ -878,22 +769,82 @@ namespace nap
 			}
 
 			// Flags
-			auto found_it = std::find_if(mLightFlagsMap.begin(), mLightFlagsMap.end(), [input = &light](const auto& it)
-				{
-					return it.first == input;
-				});
-			assert(found_it != mLightFlagsMap.end());
-			mLightFlagsMap.erase(found_it);
+			auto it = mLightFlagsMap.find(&light);
+			assert(it != mLightFlagsMap.end());
+			mLightFlagsMap.erase(it);
 		}
 
 		// Light components
 		{
-			auto found_it = std::find_if(mLightComponents.begin(), mLightComponents.end(), [input = &light](const auto& it)
-				{
-					return it == input;
-				});
-			assert(found_it != mLightComponents.end());
-			mLightComponents.erase(found_it);
+			auto it = std::find(mLightComponents.begin(), mLightComponents.end(), &light);
+			assert(it != mLightComponents.end());
+			mLightComponents.erase(it);
 		}
+	}
+
+
+	void RenderAdvancedService::registerCubeMap(CubeMapFromFile& cubemap)
+	{
+		NAP_ASSERT_MSG(mCubeMapTargets.find(&cubemap) == mCubeMapTargets.end(), "Cube map was already registered");		
+
+		// Cube map from file render target
+		auto crt = std::make_unique<CubeRenderTarget>(getCore());
+		crt->mID = utility::stringFormat("%s_%s", RTTI_OF(CubeRenderTarget).get_name().to_string().c_str(), math::generateUUID().c_str());
+		crt->mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };
+		crt->mSampleShading = cubemap.mSampleShading;
+		crt->mUpdateLODs = cubemap.mGenerateLODs;
+		crt->mCubeTexture = &cubemap;
+
+		utility::ErrorState error_state;
+		if (!crt->init(error_state))
+		{
+			NAP_ASSERT_MSG(false, utility::stringFormat("%s\n%s: Failed to initialize cube map from file render target", error_state.toString().c_str(), RTTI_OF(RenderAdvancedService).get_name().to_string().c_str()).c_str());
+			return;
+		}
+		auto& entry = mCubeMapTargets.insert({ &cubemap, std::move(crt) });
+		assert(entry.second);
+
+		// Queue a graphics command to pre-render the cube map
+		mRenderService->queueHeadlessCommand([this, cm = &cubemap](RenderService& renderService) {
+
+			auto it = mCubeMapTargets.find(cm);
+			assert(it != mCubeMapTargets.end());
+
+			(*it).second->render([rs = &renderService, cm = cm, mesh = mNoMesh.get(), mtl = mCubeMaterialInstance.get()]
+			(CubeRenderTarget& target, const glm::mat4& projection, const glm::mat4& view)
+			{
+				auto* ubo = mtl->getOrCreateUniform(uniform::cubemap::uboStruct);
+				assert(ubo != nullptr);
+				auto* face = ubo->getOrCreateUniform<UniformUIntInstance>(uniform::cubemap::face);
+				assert(face != nullptr);
+				face->setValue(target.getLayerIndex());
+
+				// Set equirectangular texture to convert
+				auto* sampler = mtl->getOrCreateSampler<Sampler2DInstance>(uniform::cubemap::sampler::equiTexture);
+				assert(sampler != nullptr);
+				sampler->setTexture(cm->getSourceTexture());
+
+				// Get valid descriptor set
+				const DescriptorSet& descriptor_set = mtl->update();
+
+				// Get pipeline to to render with
+				utility::ErrorState error_state;
+				RenderService::Pipeline pipeline = rs->getOrCreatePipeline(target, *mesh, *mtl, error_state);
+
+				vkCmdBindPipeline(rs->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
+				vkCmdBindDescriptorSets(rs->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
+
+				// Bufferless drawing with the cube map shader
+				vkCmdDraw(rs->getCurrentCommandBuffer(), 3, 1, 0, 0);
+			});
+		});
+	}
+
+
+	void RenderAdvancedService::removeCubeMap(CubeMapFromFile& cubemap)
+	{
+		auto found_it = mCubeMapTargets.find(&cubemap);
+		assert(found_it != mCubeMapTargets.end());
+		mCubeMapTargets.erase(found_it);
 	}
 }

@@ -9,7 +9,6 @@
 #include "pipelinekey.h"
 #include "renderutils.h"
 #include "imagedata.h"
-#include "rendercommand.h"
 #include "rendertag.h"
 
 // External Includes
@@ -286,7 +285,8 @@ namespace nap
 	public:
 		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
-		
+		using RenderCommand = std::function<void(RenderService&)>;
+
 		/**
 		 * Binds a pipeline and pipeline layout together.
 		 */
@@ -386,9 +386,28 @@ namespace nap
 		void endHeadlessRecording();
 
 		/**
-		 * Queue headless rendering commands.
+		 * Queues a headless render command with priority in the subsequent frame. The queue is handled the next time
+		 * `RenderService::beginHeadlessRecording` is called.
+		 *
+		 * ~~~~~{.cpp}
+		 * mRenderService->queueHeadlessCommand([](RenderService&){});
+		 * ~~~~~
+		 *
+		 * @param command the command to queue, ownership is transferred 
 		 */
-		void queueRenderCommand(const RenderCommand* command);
+		void queueHeadlessCommand(const RenderCommand& command);
+
+		/**
+		 * Queues a compute render command with priority in the subsequent frame. The queue is handled the next time
+		 * `RenderService::beginComputeRecording` is called.
+		 *
+		 * ~~~~~{.cpp}
+		 * mRenderService->queueComputeCommand([](RenderService&){});
+		 * ~~~~~
+		 *
+		 * @param command the command to queue, ownership is transferred
+		 */
+		void queueComputeCommand(const RenderCommand& command);
 
 		/**
 		 * Starts a window render operation. Call this when you want to render geometry to a render window.
@@ -468,47 +487,54 @@ namespace nap
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, RenderMask renderMask = mask::all);
 
 		/**
 		 * Renders all available nap::RenderableComponent(s) in the scene to a specific renderTarget.
+		 * The objects to render are sorted using the provided sort function.
 		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param sortFunction The function used to sort the components to render
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction, RenderMask = mask::all);
 
 		/**
-		 * Renders a specific set of objects to a specific renderTarget.
+		 * Renders a specific set of objects to a specific renderTarget using an optional mask
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects)
 		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
+		 * @param renderMask optional component filter mask
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask = std::numeric_limits<uint64>::max());
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask = mask::all);
 
 		/**
-		 * Renders a specific set of objects to a specific renderTarget.
-		 *
+		 * Renders a specific set of objects to a specific renderTarget using an optional mask
+		 * The objects to render are sorted using the provided sort function.
+		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
 		 * @param sortFunction The function used to sort the components to render
+		 * @param renderMask optional component filter mask
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = std::numeric_limits<uint64>::max());
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = mask::all);
 
 		/**
-		 * Renders a specific set of objects to a specific renderTarget.
-		 *
+		 * Renders a specific set of objects to a specific renderTarget using a 
+		 * specific projection and view matrix and optional mask.
+		 * The objects to render are sorted using the provided sort function.
+		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
-		 * @param projection the camera projection matrix for rendering all the available components
-		 * @param projection the camera view matrix for rendering all the available components
+		 * @param projection the camera projection matrix
+		 * @param view the camera view matrix
 		 * @param comps the components to render to renderTarget
 		 * @param sortFunction The function used to sort the components to render
+		 * @param renderMask optional component filter mask
 		 */
-		void renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = std::numeric_limits<uint64>::max());
+		void renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = mask::all);
 
 		/**
 		 * Calls onCompute() on a specific set of compute component instances, in the order specified.
@@ -1341,8 +1367,8 @@ namespace nap
 		UniqueMaterialCache						mMaterials;
 
 		// Render command queues
-		std::vector<const HeadlessCommand*>		mHeadlessCommandQueue;
-		std::vector<const ComputeCommand*>		mComputeCommandQueue;
+		std::vector<RenderCommand>				mHeadlessCommandQueue;
+		std::vector<RenderCommand>				mComputeCommandQueue;
 
 		// The registered render tag and layer registries
 		std::vector<const RenderTag*>			mRenderTags;

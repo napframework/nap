@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External includes
@@ -5,7 +9,6 @@
 #include <componentptr.h>
 #include <cameracomponent.h>
 #include <transformcomponent.h>
-#include <parameterentrycolor.h>
 #include <renderfrustumcomponent.h>
 #include <rendergnomoncomponent.h>
 #include <entity.h>

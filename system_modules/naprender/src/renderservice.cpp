@@ -1516,14 +1516,14 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, RenderMask renderMask)
 	{
-		renderObjects(renderTarget, camera, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), renderMask);
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction, RenderMask renderMask)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -1535,9 +1535,10 @@ namespace nap
 			{
 				entity_render_comps.clear();
 				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
+				render_comps.reserve(render_comps.size() + entity_render_comps.size());
 				for (const auto& comp : entity_render_comps) 
 				{
-					if (comp->isSupported(camera))
+					if (comp->isSupported(camera) && comp->includesMask(renderMask))
 						render_comps.emplace_back(comp);
 				}
 			}
@@ -1560,7 +1561,7 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && comp->hasMask(renderMask))
+			if (comp->isSupported(camera) && comp->includesMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1608,9 +1609,10 @@ namespace nap
 	{
 		// Only gather renderable components that can be rendered using the given mask
 		std::vector<RenderableComponentInstance*> render_comps;
+		render_comps.reserve(comps.size());
 		for (const auto& comp : comps)
 		{
-			if (comp->hasMask(renderMask))
+			if (comp->includesMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 		return render_comps;
@@ -2557,7 +2559,7 @@ namespace nap
 
 		// Record queued headless render commands
 		for (const auto& command : mHeadlessCommandQueue)
-			command->record(*this);
+			command(*this);
 
 		mHeadlessCommandQueue.clear();
 		return true;
@@ -2583,19 +2585,15 @@ namespace nap
 	}
 
 
-	void RenderService::queueRenderCommand(const RenderCommand* command)
+	void RenderService::queueHeadlessCommand(const RenderCommand& command)
 	{
-		if (command->get_type().is_derived_from(RTTI_OF(HeadlessCommand)))
-		{
-			mHeadlessCommandQueue.emplace_back(static_cast<const HeadlessCommand*>(command));
-			return;
-		}
-		else if (command->get_type().is_derived_from(RTTI_OF(ComputeCommand)))
-		{
-			mComputeCommandQueue.emplace_back(static_cast<const ComputeCommand*>(command));
-			return;
-		}
-		NAP_ASSERT_MSG(false, "Unsupported nap::RenderCommand type");
+		mHeadlessCommandQueue.emplace_back(command);
+	}
+
+
+	void RenderService::queueComputeCommand(const RenderCommand& command)
+	{
+		mComputeCommandQueue.emplace_back(command);
 	}
 
 
@@ -2658,7 +2656,7 @@ namespace nap
 
 		// Record queued headless render commands
 		for (const auto& command : mComputeCommandQueue)
-			command->record(*this);
+			command(*this);
 
 		mComputeCommandQueue.clear();
 
@@ -2886,5 +2884,4 @@ namespace nap
 	{
 		return { glm::vec2(mMin), glm::vec2(mMax) };
 	}
-
 }
