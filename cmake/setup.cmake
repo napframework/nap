@@ -37,13 +37,14 @@ macro(setup)
     else()
         if (APPLE)
             # Install in app bundle structure on MacOS
-            set(CMAKE_INSTALL_BINDIR ${APP_INSTALL_NAME}/Contents/MacOS)
-            set(CMAKE_INSTALL_LIBDIR ${APP_INSTALL_NAME}/Contents/MacOS/lib)
-            set(CMAKE_INSTALL_DATADIR ${APP_INSTALL_NAME}/Contents/Resources)
+            set(CMAKE_INSTALL_BINDIR Contents/MacOS)
+            set(CMAKE_INSTALL_LIBDIR Contents/MacOS/lib)
+            set(CMAKE_INSTALL_DATADIR Contents/Resources)
+            set(CMAKE_INSTALL_INFODIR Contents) # Used for Info.plist file
         else ()
             # Install libraries in lib, executable in app root on Linux
             set(CMAKE_INSTALL_BINDIR ${APP_INSTALL_NAME})
-            set(CMAKE_INSTALL_LIBDIR ${APP_INSTALL_NAME}/"lib")
+            set(CMAKE_INSTALL_LIBDIR ${APP_INSTALL_NAME}/lib)
             set(CMAKE_INSTALL_DATADIR ${APP_INSTALL_NAME})
         endif()
     endif()
