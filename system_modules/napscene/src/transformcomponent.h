@@ -22,10 +22,30 @@ namespace nap
 	 */
 	struct TransformProperties
 	{
-		glm::vec3		mTranslate		= glm::vec3(0.0f, 0.0f, 0.0f);		///< Property: 'Translate' Position (x, y, z)
-		glm::vec3		mRotate 		= glm::vec3(0.0f, 0.0f, 0.0f);		///< Property: 'Rotation' Amount of rotation in degrees (yaw, pitch, roll)											
-		glm::vec3		mScale			= glm::vec3(1.0f, 1.0f, 1.0f);		///< Property: 'Scale' Axis scaling factor (x, y, z)
+		glm::vec3		mTranslate		= { 0.0f, 0.0f, 0.0f };				///< Property: 'Translate' Position (x, y, z)
+		glm::vec3		mRotate 		= { 0.0f, 0.0f, 0.0f };				///< Property: 'Rotation' Amount of rotation in degrees (yaw, pitch, roll)
+		glm::vec3		mScale			= { 1.0f, 1.0f, 1.0f };				///< Property: 'Scale' Axis scaling factor (x, y, z)
 		float			mUniformScale	= 1.0f;								///< Property: 'UniformScale' Uniform scaling factor
+	};
+
+
+	/**
+	 * Struct to cache a transform instance
+	 * Note that the rotation is a quaternion unlike TransformProperties
+	 */
+	struct TransformInstanceProperties
+	{
+		// Default constructor
+		TransformInstanceProperties() = default;
+
+		// Constructor
+		TransformInstanceProperties(const glm::vec3& translate, const glm::quat& rotate, const glm::vec3& scale, float uniformScale) :
+			mTranslate(translate), mRotate(rotate), mScale(scale), mUniformScale(uniformScale) {}
+
+		glm::vec3		mTranslate		= { 0.0f, 0.0f, 0.0f };				// The translation of this component in units
+		glm::quat		mRotate			= { 0.0f, 0.0f, 0.0f, 1.0f };		// The amount of rotation in degrees (yaw, pitch, roll)											
+		glm::vec3		mScale			= { 1.0f, 1.0f, 1.0f };				// The scale of this component
+		float			mUniformScale	= 1.0f;								// The uniform scale of this component
 	};
 
 
@@ -56,8 +76,7 @@ namespace nap
 	public:
 		TransformComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
-		{
-		}
+		{ }
         
         using ComponentInstance::update;
 
@@ -80,6 +99,13 @@ namespace nap
 		 * @param matrix new local transformation matrix. 
 		 */
 		void setLocalTransform(const glm::mat4x4& matrix);
+
+		/**
+		 * Overrides the local transform without decomposing the matrix into individual elements.
+		 * Transform, rotation and scale properties are not updated and will be out of sync.
+		 * @param matrix new local transformation matrix. 
+		 */
+		void overrideLocalTransform(const glm::mat4x4& matrix);
 
 		/**
 		 * Returns the global transform of this node.
@@ -152,6 +178,17 @@ namespace nap
 		 * @return uniform component scale.
 		 */
 		const float getUniformScale() const				{ return mUniformScale; }
+
+		/**
+		 * @return the current transform instance properties for i.e. caching and restoring
+		 * the transform later.
+		 */
+		TransformInstanceProperties getInstanceProperties() const;
+
+		/**
+		 * Sets the instance properties of this camera
+		 */
+		void setInstanceProperties(const TransformInstanceProperties& props);
 
 	private:
 		/**

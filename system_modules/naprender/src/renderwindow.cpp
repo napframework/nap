@@ -5,6 +5,7 @@
 #include "renderwindow.h"
 #include "sdlhelpers.h"
 #include "renderutils.h"
+#include "imagedata.h"
 
 #include <windowevent.h>
 #include <renderservice.h>
@@ -939,8 +940,8 @@ namespace nap
 		mSwapChainImageViews.clear();
 
 		// Destroy depth and color image
-		destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
-		destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
+		utility::destroyImageAndView(mDepthImage, mDevice, mRenderService->getVulkanAllocator());
+		utility::destroyImageAndView(mColorImage, mDevice, mRenderService->getVulkanAllocator());
 
 		// finally, destroy swapchain
 		if (mSwapchain != VK_NULL_HANDLE)

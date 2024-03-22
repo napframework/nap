@@ -3,10 +3,11 @@
 // file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 #version 450 core
+
 uniform UBO
 {
-	uniform vec3 color;
-	uniform float alpha;
+	vec3 color;
+	float alpha;
 } ubo;
 
 out vec4 out_Color;

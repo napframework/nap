@@ -249,7 +249,7 @@ namespace nap
 		 * This constructor is deprecated and should not be used anymore; use initComponentInstancePtr instead. It is provided for backwards compatibility only.
 		 */
 		template<class SourceComponentType>
-		ComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::*componentMemberPointer))
+		ComponentInstancePtr(ComponentInstance* sourceComponentInstance, ComponentPtr<TargetComponentType>(SourceComponentType::* componentMemberPointer))
 		{
 			SourceComponentType* resource = sourceComponentInstance->getComponent<SourceComponentType>();
 			ComponentPtr<TargetComponentType>& target_component_resource = resource->*componentMemberPointer;

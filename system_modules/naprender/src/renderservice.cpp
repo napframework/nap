@@ -14,10 +14,12 @@
 #include "mesh.h"
 #include "depthsorter.h"
 #include "gpubuffer.h"
-#include "texture2d.h"
+#include "texture.h"
 #include "descriptorsetcache.h"
 #include "descriptorsetallocator.h"
 #include "sdlhelpers.h"
+#include "shaderconstant.h"
+#include "renderlayer.h"
 
 // External Includes
 #include <nap/core.h>
@@ -34,6 +36,7 @@
 #include <rtti/jsonwriter.h>
 #include <rtti/jsonreader.h>
 #include <rtti/defaultlinkresolver.h>
+#include <glm/gtc/type_ptr.hpp>
 
 // Required to enbale high dpi rendering on windows
 #ifdef _WIN32
@@ -102,6 +105,7 @@ RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
 	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
@@ -224,6 +228,32 @@ namespace nap
 
 
 	/**
+	 * Returns whether the specified NAP draw mode is a Vulkan list topology. This is used to determine whether to enable a
+	 * primitive restart index when creating a pipeline input assembly state.
+	 * @return whether the specified NAP draw mode is a Vulkan list topology.
+	 */
+	static bool isListTopology(EDrawMode drawMode)
+	{
+		switch (drawMode)
+		{
+			case EDrawMode::Points:
+			case EDrawMode::Lines:
+			case EDrawMode::Triangles:
+				return true;
+			case EDrawMode::LineStrip:
+			case EDrawMode::TriangleStrip:
+			case EDrawMode::TriangleFan:
+				return false;
+			default:
+			{
+				assert(false);
+				return false;
+			}
+		}
+	}
+
+
+	/**
 	 * @return Vulkan cull mode based on given NAP cull mode
 	 */
 	static VkCullModeFlagBits getCullMode(ECullMode mode)
@@ -293,29 +323,14 @@ namespace nap
 	/**
 	 * @return the set of required device extension names
 	 */
-	static const std::vector<std::string>& getRequiredDeviceExtensionNames()
+	static std::vector<std::string> getRequiredDeviceExtensionNames(uint32 apiVersion)
 	{
-		const static std::vector<std::string> layers = 
-		{ 
-			VK_KHR_MAINTENANCE1_EXTENSION_NAME
-		};
-		return layers;
-	}
+		// VK_KHR_maintenance1 has been promoted to VK_VERSION_1_1, require it under Vulkan 1.1
+		if (apiVersion < VK_API_VERSION_1_1)
+			return { VK_KHR_MAINTENANCE1_EXTENSION_NAME };
 
-
-	/**
-	 * Callback that receives a debug message from Vulkan
-	 */
-	static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
-		uint64_t obj,
-		size_t location,
-		int32_t code,
-		const char* layerPrefix,
-		const char* msg,
-		void* userData)
-	{
-		nap::Logger::warn("Vulkan Layer [%s]:\n%s", layerPrefix, msg);
-		return VK_FALSE;
+		// No required extensions from Vulkan 1.1
+		return {};
 	}
 
 
@@ -325,32 +340,99 @@ namespace nap
 	static VkResult createDebugReportCallbackEXT(VkInstance instance, const VkDebugReportCallbackCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugReportCallbackEXT* pCallback)
 	{
 		auto func = (PFN_vkCreateDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugReportCallbackEXT");
-		return func != VK_NULL_HANDLE ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
+		return (func != VK_NULL_HANDLE) ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
 	}
 
 
 	/**
 	 * Destroys a debug report callback object
 	 */
-	static void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback)
+	static void destroyDebugReportCallbackEXT(VkInstance instance, VkDebugReportCallbackEXT pCallback, const VkAllocationCallbacks* pAllocator)
+
 	{
 		auto func = (PFN_vkDestroyDebugReportCallbackEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugReportCallbackEXT");
 		if (func != VK_NULL_HANDLE)
-			func(instance, pCallback, nullptr);
+			func(instance, pCallback, pAllocator);
 	}
 
 
 	/**
-	 * Sets up the vulkan messaging callback specified above
+	 * Legacy callback that receives a debug message from Vulkan
+	 */
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugReportCallback(VkDebugReportFlagsEXT flags, VkDebugReportObjectTypeEXT objType,
+		uint64_t obj, size_t location, int32_t code, const char* layerPrefix, const char* msg, void* userData)
+	{
+		nap::Logger::warn("Vulkan Layer [%s]:\n%s", layerPrefix, msg);
+		return VK_FALSE;
+	}
+
+
+	/**
+	 * Sets up legacy Vulkan debug report callback specified above
 	 */
 	static bool setupDebugCallback(VkInstance instance, VkDebugReportCallbackEXT& callback, utility::ErrorState& errorState)
 	{
 		VkDebugReportCallbackCreateInfoEXT create_info = {};
 		create_info.sType = VK_STRUCTURE_TYPE_DEBUG_REPORT_CALLBACK_CREATE_INFO_EXT;
-		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT;
-		create_info.pfnCallback = debugCallback;
+		create_info.flags = VK_DEBUG_REPORT_ERROR_BIT_EXT | VK_DEBUG_REPORT_WARNING_BIT_EXT | VK_DEBUG_REPORT_INFORMATION_BIT_EXT;
+		create_info.pfnCallback = debugReportCallback;
 
 		return errorState.check(createDebugReportCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
+	}
+
+
+	/**
+	 * Creates a debug utils messenger callback object
+	 */
+	static VkResult createDebugUtilsMessengerCallbackEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT* pCreateInfo, const VkAllocationCallbacks* pAllocator, VkDebugUtilsMessengerEXT* pCallback)
+	{
+		auto func = (PFN_vkCreateDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkCreateDebugUtilsMessengerEXT");
+		return (func != VK_NULL_HANDLE) ? func(instance, pCreateInfo, pAllocator, pCallback) : VK_ERROR_EXTENSION_NOT_PRESENT;
+	}
+
+
+	/**
+	 * Destroys a debug utils messenger callback object
+	 */
+	static void destroyDebugUtilsMessengerCallbackEXT(VkInstance instance, VkDebugUtilsMessengerEXT pCallback, const VkAllocationCallbacks* pAllocator)
+	{
+		auto func = (PFN_vkDestroyDebugUtilsMessengerEXT)vkGetInstanceProcAddr(instance, "vkDestroyDebugUtilsMessengerEXT");
+		if (func != VK_NULL_HANDLE)
+			func(instance, pCallback, pAllocator);
+	}
+
+
+	/**
+	 * Callback that receives a debug message from Vulkan
+	 */
+	static VKAPI_ATTR VkBool32 VKAPI_CALL debugUtilsMessengerCallback(VkDebugUtilsMessageSeverityFlagBitsEXT severity, VkDebugUtilsMessageTypeFlagsEXT messageType,
+		const VkDebugUtilsMessengerCallbackDataEXT* callbackData, void* userData)
+	{
+		if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT)
+			nap::Logger::error("%s\n", callbackData->pMessage);
+		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT)
+			nap::Logger::warn("%s\n", callbackData->pMessage);
+		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT)
+			nap::Logger::info("%s\n", callbackData->pMessage);
+		else if (severity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT)
+			nap::Logger::debug("%s\n", callbackData->pMessage);
+
+		return VK_FALSE;
+	}
+
+
+	/**
+	 * Sets up the Vulkan messaging callback specified above
+	 */
+	static bool setupDebugUtilsMessengerCallback(VkInstance instance, VkDebugUtilsMessengerEXT& callback, utility::ErrorState& errorState)
+	{
+		VkDebugUtilsMessengerCreateInfoEXT create_info = {};
+		create_info.sType = VK_STRUCTURE_TYPE_DEBUG_UTILS_MESSENGER_CREATE_INFO_EXT;
+		create_info.messageSeverity = VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT | VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT;
+		create_info.messageType = VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT;
+		create_info.pfnUserCallback = debugUtilsMessengerCallback;
+
+		return errorState.check(createDebugUtilsMessengerCallbackEXT(instance, &create_info, nullptr, &callback) == VK_SUCCESS, "Unable to create debug report callback extension");
 	}
 
 
@@ -384,6 +466,45 @@ namespace nap
 				outLayers.emplace_back(layer.layerName);
 		}
 		return true;
+	}
+
+
+	/**
+	 * Returns debug instance extension
+	 */
+	static bool getDebugInstanceExtensions(bool& debugUtilsExtensionFound, std::vector<std::string>& outExtensions, utility::ErrorState& errorState)
+	{
+		// Add debug messenger extension, we need this to relay debug messages
+		// First gather the available instance extensions
+		uint instance_extension_count;
+		vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, nullptr);
+
+		std::vector<VkExtensionProperties> available_instance_extensions(instance_extension_count);
+		vkEnumerateInstanceExtensionProperties(nullptr, &instance_extension_count, available_instance_extensions.data());
+
+		// Check if VK_EXT_debug_utils is supported, which supersedes VK_EXT_debug_report
+		debugUtilsExtensionFound = false;
+		for (const auto& ext : available_instance_extensions)
+		{
+			if (std::strcmp(ext.extensionName, VK_EXT_DEBUG_UTILS_EXTENSION_NAME) == 0)
+			{
+				outExtensions.emplace_back(VK_EXT_DEBUG_UTILS_EXTENSION_NAME);
+				debugUtilsExtensionFound = true;
+				return true;
+			}
+		}
+
+		// Fallback to VK_EXT_debug_report
+		for (const auto& ext : available_instance_extensions)
+		{
+			if (std::strcmp(ext.extensionName, VK_EXT_DEBUG_REPORT_EXTENSION_NAME) == 0)
+			{
+				outExtensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+				return true;
+			}
+		}
+		errorState.fail("No available debug messenging extension found!");
+		return false;
 	}
 
 
@@ -452,13 +573,13 @@ namespace nap
 		}
 
 		// Log used SDK version
-		uint32 major_version = VK_VERSION_MAJOR(instance_version);
-		uint32 minor_version = VK_VERSION_MINOR(instance_version);
-		uint32 patch_version = VK_VERSION_PATCH(instance_version);
+		uint32 major_version = VK_API_VERSION_MAJOR(instance_version);
+		uint32 minor_version = VK_API_VERSION_MINOR(instance_version);
+		uint32 patch_version = VK_API_VERSION_PATCH(instance_version);
 		nap::Logger::info("Vulkan instance version: %d.%d.%d", major_version, minor_version, patch_version);
 
-		uint32 req_version_major = VK_VERSION_MAJOR(requestedVersion);
-		uint32 req_version_minor = VK_VERSION_MINOR(requestedVersion);
+		uint32 req_version_major = VK_API_VERSION_MAJOR(requestedVersion);
+		uint32 req_version_minor = VK_API_VERSION_MINOR(requestedVersion);
 		nap::Logger::info("Vulkan requested version: %d.%d.%d", req_version_major, req_version_minor, 0);
 		
 		// Ensure the found instance version is compatible
@@ -586,12 +707,12 @@ namespace nap
 			// Get properties associated with device
 			VkPhysicalDeviceProperties& properties = physical_device_properties[device_idx];
 			vkGetPhysicalDeviceProperties(physical_device, &properties);
-			Logger::info("%d: %s, type: %s, version: %d.%d", device_idx, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_VERSION_MAJOR(properties.apiVersion), VK_VERSION_MINOR(properties.apiVersion));
+			Logger::info("%d: %s, type: %s, version: %d.%d", device_idx, properties.deviceName, getDeviceTypeName(properties.deviceType).c_str(), VK_API_VERSION_MAJOR(properties.apiVersion), VK_API_VERSION_MINOR(properties.apiVersion));
 
 			// If the supported api version < required by currently used api, continue
 			if (properties.apiVersion < minAPIVersion)
 			{
-				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", device_idx, VK_VERSION_MAJOR(minAPIVersion), VK_VERSION_MINOR(minAPIVersion));
+				Logger::warn("%d: Incompatible driver, min required api version: %d.%d", device_idx, VK_API_VERSION_MAJOR(minAPIVersion), VK_API_VERSION_MINOR(minAPIVersion));
 				continue;
 			}
 
@@ -912,6 +1033,35 @@ namespace nap
 
 
 	/**
+	 * Creates specialization constant info structure for pipeline creation. Asserts on fail.
+	 * @param stage the shader stage to retrieve specialization constant info for.
+	 * @param outInfo the specialization constant info structure. Empty if no specialization constants are set.
+	 */
+	static void getSpecializationConstantInfo(const ShaderStageConstantMap& constantMap, VkShaderStageFlagBits stage, ShaderSpecializationConstantInfo& outInfo)
+	{
+		// If there is no map entry for the given stage, no specialization constants are set for said entry
+		const auto it = constantMap.find(stage);
+		if (it == constantMap.end())
+			return;
+
+		const auto& constant_map = it->second;
+		for (uint i = 0; i < constant_map.size(); i++)
+		{
+			const auto it = constant_map.find(i);
+			NAP_ASSERT_MSG(it != constant_map.end(), "Specialization Constant IDs are not in a sequence starting from 0");
+
+			VkSpecializationMapEntry entry = {};
+			entry.constantID = (*it).first;
+			entry.offset = static_cast<uint>(outInfo.mEntries.size() * sizeof(uint));
+			entry.size = sizeof(uint);
+			outInfo.mEntries.emplace_back(std::move(entry));
+
+			outInfo.mData.emplace_back((*it).second);
+		}
+	}
+
+
+	/**
 	 * Creates a new Vulkan pipeline based on the provided settings
 	 */
 	static bool createGraphicsPipeline(VkDevice device, 
@@ -921,8 +1071,10 @@ namespace nap
 		VkRenderPass renderPass, 
 		VkSampleCountFlagBits sampleCount, 
 		bool enableSampleShading,
+		bool depthOnly,
 		ECullMode cullMode,
 		EPolygonMode polygonMode,
+		const ShaderStageConstantMap& constants,
 		VkPipelineLayout& pipelineLayout, 
 		VkPipeline& graphicsPipeline, 
 		utility::ErrorState& errorState)
@@ -939,7 +1091,7 @@ namespace nap
 		{
 			const VertexAttributeDeclaration* shader_vertex_attribute = kvp.second.get();
 			bindingDescriptions.push_back({ shader_attribute_binding, static_cast<uint>(shader_vertex_attribute->mElementSize), VK_VERTEX_INPUT_RATE_VERTEX });
-			attributeDescriptions.push_back({ (uint32)shader_vertex_attribute->mLocation, shader_attribute_binding, shader_vertex_attribute->mFormat, 0U });
+			attributeDescriptions.push_back({ static_cast<uint>(shader_vertex_attribute->mLocation), shader_attribute_binding, shader_vertex_attribute->mFormat, 0 });
 
 			shader_attribute_binding++;
 		}
@@ -953,11 +1105,33 @@ namespace nap
 		vert_shader_stage_info.module = vert_shader_module;
 		vert_shader_stage_info.pName = shader::main;
 
+		ShaderSpecializationConstantInfo vert_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_VERTEX_BIT, vert_const_info);
+
+		VkSpecializationInfo vert_spec_info = {};
+		vert_spec_info.pMapEntries = vert_const_info.mEntries.data();
+		vert_spec_info.mapEntryCount = vert_const_info.mEntries.size();
+		vert_spec_info.pData = vert_const_info.mData.data();
+		vert_spec_info.dataSize = vert_const_info.mData.size() * sizeof(uint);
+		vert_shader_stage_info.pSpecializationInfo = (vert_spec_info.dataSize > 0) ? &vert_spec_info : NULL;
+
+
 		VkPipelineShaderStageCreateInfo frag_shader_stage_info = {};
 		frag_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
 		frag_shader_stage_info.stage = VK_SHADER_STAGE_FRAGMENT_BIT;
 		frag_shader_stage_info.module = frag_shader_module;
 		frag_shader_stage_info.pName = shader::main;
+
+		ShaderSpecializationConstantInfo frag_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_FRAGMENT_BIT, frag_const_info);
+
+		VkSpecializationInfo frag_spec_info = {};
+		frag_spec_info.pMapEntries = frag_const_info.mEntries.data();
+		frag_spec_info.mapEntryCount = frag_const_info.mEntries.size();
+		frag_spec_info.pData = frag_const_info.mData.data();
+		frag_spec_info.dataSize = frag_const_info.mData.size() * sizeof(uint);
+		frag_shader_stage_info.pSpecializationInfo = (frag_spec_info.dataSize > 0) ? &frag_spec_info : NULL;
+
 
 		VkPipelineShaderStageCreateInfo shader_stages[] = { vert_shader_stage_info, frag_shader_stage_info };
 
@@ -965,14 +1139,15 @@ namespace nap
 		vertex_input_info.sType = VK_STRUCTURE_TYPE_PIPELINE_VERTEX_INPUT_STATE_CREATE_INFO;
 
 		vertex_input_info.vertexBindingDescriptionCount = (int)bindingDescriptions.size();
-		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint32>(attributeDescriptions.size());
+		vertex_input_info.vertexAttributeDescriptionCount = static_cast<uint>(attributeDescriptions.size());
 		vertex_input_info.pVertexBindingDescriptions = bindingDescriptions.data();
 		vertex_input_info.pVertexAttributeDescriptions = attributeDescriptions.data();
 
 		VkPipelineInputAssemblyStateCreateInfo input_assembly = {};
 		input_assembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
 		input_assembly.topology = getTopology(drawMode);
-		input_assembly.primitiveRestartEnable = VK_FALSE;
+		input_assembly.flags = 0;
+		input_assembly.primitiveRestartEnable = isListTopology(drawMode) ? VK_FALSE : VK_TRUE;
 
 		VkDynamicState dynamic_states[3] = {
 			VK_DYNAMIC_STATE_VIEWPORT,
@@ -995,12 +1170,14 @@ namespace nap
 		VkPipelineRasterizationStateCreateInfo rasterizer = {};
 		rasterizer.sType = VK_STRUCTURE_TYPE_PIPELINE_RASTERIZATION_STATE_CREATE_INFO;
 		rasterizer.depthClampEnable = VK_FALSE;
+		rasterizer.depthBiasEnable = VK_TRUE;
+		rasterizer.depthBiasConstantFactor = 4.0f;
+		rasterizer.depthBiasSlopeFactor = 4.0f;
 		rasterizer.rasterizerDiscardEnable = VK_FALSE;
 		rasterizer.polygonMode = getPolygonMode(polygonMode);
 		rasterizer.lineWidth = 1.0f;
 		rasterizer.cullMode = getCullMode(cullMode);
 		rasterizer.frontFace = windingOrder == ECullWindingOrder::Clockwise ? VK_FRONT_FACE_CLOCKWISE : VK_FRONT_FACE_COUNTER_CLOCKWISE;
-		rasterizer.depthBiasEnable = VK_FALSE;
 
 		VkPipelineMultisampleStateCreateInfo multisampling = {};
 		multisampling.sType = VK_STRUCTURE_TYPE_PIPELINE_MULTISAMPLE_STATE_CREATE_INFO;
@@ -1010,19 +1187,20 @@ namespace nap
 		multisampling.flags = 0;
 		multisampling.minSampleShading = 1.0f;
 
-
 		VkPipelineColorBlendAttachmentState colorBlendAttachment = getColorBlendAttachmentState(materialInstance);
 
 		VkPipelineColorBlendStateCreateInfo colorBlending = {};
 		colorBlending.sType = VK_STRUCTURE_TYPE_PIPELINE_COLOR_BLEND_STATE_CREATE_INFO;
 		colorBlending.logicOpEnable = VK_FALSE;
 		colorBlending.logicOp = VK_LOGIC_OP_COPY;
-		colorBlending.attachmentCount = 1;
-		colorBlending.pAttachments = &colorBlendAttachment;
 		colorBlending.blendConstants[0] = 0.0f;
 		colorBlending.blendConstants[1] = 0.0f;
 		colorBlending.blendConstants[2] = 0.0f;
 		colorBlending.blendConstants[3] = 0.0f;
+
+		// Set color blend attachment count to zero if no color attachment is used
+		colorBlending.attachmentCount = depthOnly ? 0 : 1;
+		colorBlending.pAttachments = &colorBlendAttachment;
 
 		auto layout = shader.getDescriptorSetLayout();
 
@@ -1039,7 +1217,7 @@ namespace nap
 
 		VkGraphicsPipelineCreateInfo pipeline_info = {};
 		pipeline_info.sType = VK_STRUCTURE_TYPE_GRAPHICS_PIPELINE_CREATE_INFO;
-		pipeline_info.stageCount = 2;
+		pipeline_info.stageCount = depthOnly ? 1 : 2;
 		pipeline_info.pStages = shader_stages;
 		pipeline_info.pVertexInputState = &vertex_input_info;
 		pipeline_info.pInputAssemblyState = &input_assembly;
@@ -1059,9 +1237,17 @@ namespace nap
 	}
 
 
-	static bool createComputePipeline(VkDevice device, const ComputeShader& computeShader, VkPipelineLayout& pipelineLayout, VkPipeline& outComputePipeline, utility::ErrorState& errorState)
+	static bool createComputePipeline(VkDevice device,
+		const ComputeMaterialInstance& computeMaterialInstance,
+		const ShaderStageConstantMap& constants,
+		VkPipelineLayout& pipelineLayout,
+		VkPipeline& outComputePipeline,
+		utility::ErrorState& errorState)
 	{
-		VkShaderModule comp_shader_module = computeShader.getComputeModule();
+		const ComputeMaterial& compute_material = computeMaterialInstance.getMaterial();
+		const ComputeShader& compute_shader = compute_material.getShader();
+
+		VkShaderModule comp_shader_module = compute_shader.getComputeModule();
 
 		VkPipelineShaderStageCreateInfo comp_shader_stage_info = {};
 		comp_shader_stage_info.sType = VK_STRUCTURE_TYPE_PIPELINE_SHADER_STAGE_CREATE_INFO;
@@ -1069,42 +1255,17 @@ namespace nap
 		comp_shader_stage_info.module = comp_shader_module;
 		comp_shader_stage_info.pName = shader::main;
 
-		// Overwrite workgroup size with device maximum when specialization constants are defined.
-		// This is useful when you want to use a group size equal to the maximum supported group size of the current device,
-		// as opposed to using a hardcoded constant in the shader source that may or may not be supported by some devices.
-		const std::vector<int> const_ids = computeShader.getWorkGroupSizeConstantIds();
-		std::vector<VkSpecializationMapEntry> spec_entries;
-		std::vector<uint> spec_data;
+		ShaderSpecializationConstantInfo comp_const_info = {};
+		getSpecializationConstantInfo(constants, VK_SHADER_STAGE_COMPUTE_BIT, comp_const_info);
 
-		for (uint i = 0; i < const_ids.size(); i++)
-		{
-			if (const_ids[i] != -1)
-			{
-				VkSpecializationMapEntry entry = {};
-				entry.constantID = static_cast<uint>(const_ids[i]);
-				entry.offset = static_cast<uint>(spec_entries.size() * sizeof(uint));
-				entry.size = sizeof(uint);
-				spec_entries.emplace_back(std::move(entry));
-				uint32 work_group_size = computeShader.getWorkGroupSize()[i];
-#ifdef __APPLE__
-				// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,
-				// which doesn't necessarily match physical device limits, especially on older devices.
-				// See: https://developer.apple.com/documentation/metal/compute_passes/calculating_threadgroup_and_grid_sizes
-				// And: https://github.com/KhronosGroup/SPIRV-Cross/issues/837
-				work_group_size = math::min<uint32>(work_group_size, 512);
-#endif // __APPLE__
-				spec_data.emplace_back(work_group_size);
-			}
-		}
+		VkSpecializationInfo comp_spec_info = {};
+		comp_spec_info.pMapEntries = comp_const_info.mEntries.data();
+		comp_spec_info.mapEntryCount = comp_const_info.mEntries.size();
+		comp_spec_info.pData = comp_const_info.mData.data();
+		comp_spec_info.dataSize = comp_const_info.mData.size() * sizeof(uint);
+		comp_shader_stage_info.pSpecializationInfo = (comp_spec_info.dataSize > 0) ? &comp_spec_info : NULL;
 
-		VkSpecializationInfo spec_info = {};
-		spec_info.pMapEntries = spec_entries.data();
-		spec_info.mapEntryCount = spec_entries.size();
-		spec_info.pData = spec_data.data();
-		spec_info.dataSize = spec_data.size() * sizeof(uint);
-		comp_shader_stage_info.pSpecializationInfo = !spec_entries.empty() ? &spec_info : NULL;
-		
-		auto layout = computeShader.getDescriptorSetLayout();
+		auto layout = compute_shader.getDescriptorSetLayout();
 
 		VkPipelineLayoutCreateInfo pipeline_layout_info = {};
 		pipeline_layout_info.sType = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
@@ -1135,6 +1296,9 @@ namespace nap
 
 	RenderService::RenderService(ServiceConfiguration* configuration) :
 		Service(configuration) { }
+
+	// Shut down render service
+	RenderService::~RenderService() { }
 
 
 	void RenderService::getDependentServices(std::vector<rtti::TypeInfo>& dependencies)
@@ -1233,13 +1397,15 @@ namespace nap
 		EDrawMode draw_mode = mesh.getMeshInstance().getDrawMode();
 		ECullMode cull_mode = mesh.getMeshInstance().getCullMode();
 		EPolygonMode poly_mode = mesh.getMeshInstance().getPolygonMode();
+		bool depth_only = renderTarget.getColorFormat() == VK_FORMAT_UNDEFINED ? true : false;
 
 		// Create pipeline key based on draw properties
-		PipelineKey pipeline_key (
+		PipelineKey pipeline_key(
 			shader,
 			draw_mode, 
 			materialInstance.getDepthMode(), 
-			materialInstance.getBlendMode(), 
+			materialInstance.getBlendMode(),
+			materialInstance.getConstantHash(),
 			renderTarget.getWindingOrder(), 
 			renderTarget.getColorFormat(), 
 			renderTarget.getDepthFormat(), 
@@ -1262,11 +1428,15 @@ namespace nap
 			renderTarget.getRenderPass(),
 			renderTarget.getSampleCount(),
 			renderTarget.getSampleShadingEnabled(),
+			depth_only,
 			cull_mode,
 			poly_mode,
-			pipeline.mLayout, pipeline.mPipeline, errorState))
+			materialInstance.getShaderStageConstantMap(),
+			pipeline.mLayout,
+			pipeline.mPipeline,
+			errorState))
 		{
-			mPipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			mPipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
 		}
 
@@ -1280,13 +1450,16 @@ namespace nap
 		return getOrCreatePipeline(renderTarget, mesh.getMesh(), mesh.getMaterialInstance(), errorState);
 	}
 
-
 	RenderService::Pipeline RenderService::getOrCreateComputePipeline(const ComputeMaterialInstance& computeMaterialInstance, utility::ErrorState& errorState)
 	{
-		// Create pipeline key based on draw properties
-		const ComputeMaterial& material = computeMaterialInstance.getMaterial();
-		const ComputeShader& shader = material.getShader();
-		ComputePipelineKey pipeline_key(shader);
+		const ComputeMaterial& compute_material = computeMaterialInstance.getMaterial();
+		const ComputeShader& compute_shader = compute_material.getShader();
+
+		// Create pipeline key based on material properties
+		ComputePipelineKey pipeline_key(
+			compute_shader,
+			computeMaterialInstance.getConstantHash()
+		);
 
 		// Find key in cache and use previously created pipeline
 		ComputePipelineCache::iterator pos = mComputePipelineCache.find(pipeline_key);
@@ -1295,9 +1468,13 @@ namespace nap
 
 		// Otherwise create new pipeline
 		Pipeline pipeline;
-		if (createComputePipeline(mDevice, shader, pipeline.mLayout, pipeline.mPipeline, errorState))
+		if (createComputePipeline(mDevice, computeMaterialInstance,
+			computeMaterialInstance.getShaderStageConstantMap(),
+			pipeline.mLayout,
+			pipeline.mPipeline,
+			errorState))
 		{
-			mComputePipelineCache.emplace(std::make_pair(pipeline_key, pipeline));
+			mComputePipelineCache.emplace(pipeline_key, pipeline);
 			return pipeline;
 		}
 
@@ -1306,7 +1483,7 @@ namespace nap
 	}
 	
 
-	nap::RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
+	RenderableMesh RenderService::createRenderableMesh(IMesh& mesh, MaterialInstance& materialInstance, utility::ErrorState& errorState)
 	{
 		const Material& material = materialInstance.getMaterial();
 		const Shader& shader = material.getShader();
@@ -1326,29 +1503,22 @@ namespace nap
 
 			if (!errorState.check(shader_vertex_attribute->mFormat == vertex_buffer->getFormat(),
 				"Shader vertex attribute format does not match mesh attribute format for attribute %s in mesh %s", material_binding->mMeshAttributeID.c_str(), mesh.mID.c_str()))
-			return RenderableMesh();
+				return RenderableMesh();
 		}
 
 		return RenderableMesh(mesh, materialInstance);
 	}
 
 
-	// Shut down render service
-	RenderService::~RenderService()
+	// Render all objects in scene graph using specified camera
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, RenderMask renderMask)
 	{
-		mEmptyTexture.reset();
+		renderObjects(renderTarget, camera, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), renderMask);
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera)
-	{
-		renderObjects(renderTarget, camera, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
-	}
-
-
-	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction, RenderMask renderMask)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -1360,9 +1530,10 @@ namespace nap
 			{
 				entity_render_comps.clear();
 				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
+				render_comps.reserve(render_comps.size() + entity_render_comps.size());
 				for (const auto& comp : entity_render_comps) 
 				{
-					if (comp->isSupported(camera))
+					if (comp->isSupported(camera) && comp->includesMask(renderMask))
 						render_comps.emplace_back(comp);
 				}
 			}
@@ -1373,82 +1544,49 @@ namespace nap
 	}
 
 
-	void RenderService::sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask)
 	{
-		// Split into front to back and back to front meshes
-		std::vector<nap::RenderableComponentInstance*> front_to_back;
-		front_to_back.reserve(comps.size());
-		std::vector<nap::RenderableComponentInstance*> back_to_front;
-		back_to_front.reserve(comps.size());
+		renderObjects(renderTarget, camera, comps, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), renderMask);
+	}
 
-		for (nap::RenderableComponentInstance* component : comps)
+
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask)
+	{
+		// Only gather renderable components that can be rendered using the given camera and mask
+		std::vector<nap::RenderableComponentInstance*> render_comps;
+		for (const auto& comp : comps)
 		{
-			nap::RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-			if (renderable_mesh != nullptr)
-			{
-				nap::RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();	
-				if (blend_mode == EBlendMode::AlphaBlend)
-					back_to_front.emplace_back(component);
-				else
-					front_to_back.emplace_back(component);
-			}
-			else
-			{
-				front_to_back.emplace_back(component);
-			}
+			if (comp->isSupported(camera) && comp->includesMask(renderMask))
+				render_comps.emplace_back(comp);
 		}
-
-		// Sort front to back and render those first
-		DepthSorter front_to_back_sorter(DepthSorter::EMode::FrontToBack, camera.getViewMatrix());
-		std::sort(front_to_back.begin(), front_to_back.end(), front_to_back_sorter);
-
-		// Then sort back to front and render these
-		DepthSorter back_to_front_sorter(DepthSorter::EMode::BackToFront, camera.getViewMatrix());
-		std::sort(back_to_front.begin(), back_to_front.end(), back_to_front_sorter);
-
-		// concatinate both in to the output
-		comps.clear();
-		comps.insert(comps.end(), std::make_move_iterator(front_to_back.begin()), std::make_move_iterator(front_to_back.end()));
-		comps.insert(comps.end(), std::make_move_iterator(back_to_front.begin()), std::make_move_iterator(back_to_front.end()));
-	}
-
-
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps)
-	{
-		renderObjects(renderTarget, camera, comps, std::bind(&RenderService::sortObjects, this, std::placeholders::_1, std::placeholders::_2));
-	}
-
-
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction)
-	{
-		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired	
-
-		// Sort objects to render
-		std::vector<RenderableComponentInstance*> components_to_render = comps;
-		sortFunction(components_to_render, camera);
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getBufferSize());
 
 		// Extract camera projection matrix
-		const glm::mat4x4 projection_matrix = camera.getRenderProjectionMatrix();
+		const glm::mat4& projection_matrix = camera.getRenderProjectionMatrix();
 
 		// Extract view matrix
 		glm::mat4x4 view_matrix = camera.getViewMatrix();
 
-		// Draw components only when camera is supported
-		for (auto& comp : components_to_render)
-		{
-			if (!comp->isSupported(camera))
-			{
-				nap::Logger::warn("Unable to render component: %s, unsupported camera %s", 
-					comp->mID.c_str(), camera.get_type().get_name().to_string().c_str());
-				continue;
-			}
-			comp->draw(renderTarget, mCurrentCommandBuffer, view_matrix, projection_matrix);
-		}
+		renderObjects(renderTarget, projection_matrix, view_matrix, render_comps, sortFunction);
+	}
+
+
+	void RenderService::renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask)
+	{
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired
+
+		// Only gather renderable components that can be rendered using the given mask
+		auto render_comps = filterObjects(comps, renderMask);
+
+		// Sort objects to render
+		sortFunction(render_comps, view);
+
+		// Draw components
+		for (auto& comp : render_comps)
+			comp->draw(renderTarget, mCurrentCommandBuffer, view, projection);
 	}
 
 
@@ -1462,16 +1600,44 @@ namespace nap
 	}
 
 
-	bool RenderService::initEmptyTexture(nap::utility::ErrorState& errorState)
+	std::vector<RenderableComponentInstance*> RenderService::filterObjects(const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask)
 	{
-		SurfaceDescriptor settings;
-		settings.mWidth = 16;
-		settings.mHeight = 16;
-		settings.mChannels = ESurfaceChannels::RGBA;
-		settings.mDataType = ESurfaceDataType::BYTE;
-		
-		mEmptyTexture = std::make_unique<Texture2D>(getCore());
-		return mEmptyTexture->init(settings, false, 0, errorState);
+		// Only gather renderable components that can be rendered using the given mask
+		std::vector<RenderableComponentInstance*> render_comps;
+		render_comps.reserve(comps.size());
+		for (const auto& comp : comps)
+		{
+			if (comp->includesMask(renderMask))
+				render_comps.emplace_back(comp);
+		}
+		return render_comps;
+	}
+
+
+	bool RenderService::initEmptyTextures(nap::utility::ErrorState& errorState)
+	{
+		SurfaceDescriptor settings = { 1, 1, ESurfaceDataType::BYTE, ESurfaceChannels::RGBA };
+		mEmptyTexture2D = std::make_unique<Texture2D>(getCore());
+		mEmptyTexture2D->mID = utility::stringFormat("%s_EmptyTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mEmptyTexture2D->init(settings, false, 0, errorState))
+			return false;
+
+		mEmptyTextureCube = std::make_unique<TextureCube>(getCore());
+		mEmptyTextureCube->mID = utility::stringFormat("%s_EmptyTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mEmptyTextureCube->init(settings, false, glm::zero<glm::vec4>(), 0, errorState))
+			return false;
+
+		mErrorTexture2D = std::make_unique<Texture2D>(getCore());
+		mErrorTexture2D->mID = utility::stringFormat("%s_ErrorTexture2D_%s", RTTI_OF(Texture2D).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mErrorTexture2D->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+			return false;
+
+		mErrorTextureCube = std::make_unique<TextureCube>(getCore());
+		mErrorTextureCube->mID = utility::stringFormat("%s_ErrorTextureCube_%s", RTTI_OF(TextureCube).get_name().to_string().c_str(), math::generateUUID().c_str());
+		if (!mErrorTextureCube->init(settings, false, mErrorColor.toVec4(), 0, errorState))
+			return false;
+
+		return true;
 	}
 
 
@@ -1483,7 +1649,7 @@ namespace nap
 		assert(mSceneService != nullptr);
 
 		// Enable high dpi support if requested (windows)
-		nap::RenderServiceConfiguration* render_config = getConfiguration<RenderServiceConfiguration>();
+		auto* render_config = getConfiguration<RenderServiceConfiguration>();
 
 		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
 		mHeadless = render_config->mHeadless;
@@ -1505,6 +1671,11 @@ namespace nap
 			}
 		}
 #endif // _WIN32
+
+		// Metal limits sampler descriptors per shader to 16 by default. Here we explicitly unlock this limitation.
+#if defined(__APPLE__)
+		setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
+#endif // __APPLE__
 
 		// Initialize SDL video
 		mSDLInitialized = SDL::initVideo(errorState);
@@ -1550,7 +1721,13 @@ namespace nap
 		}
 
 		// Add debug display extension, we need this to relay debug messages
-		instance_extensions.emplace_back(VK_EXT_DEBUG_REPORT_EXTENSION_NAME);
+		bool is_debug_utils_found = false;
+		const bool is_debug_enabled = render_config->mEnableDebug;
+		if (is_debug_enabled)
+		{
+			if (!errorState.check(getDebugInstanceExtensions(is_debug_utils_found, instance_extensions, errorState), "Failed to find available debug extension while debug is enabled"))
+				return false;
+		}
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
@@ -1571,12 +1748,18 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_MAKE_VERSION(render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
+		mAPIVersion = VK_MAKE_API_VERSION(0, render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
 		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
 			return false;
 
-		// Vulkan messaging callback
-		setupDebugCallback(mInstance, mDebugCallback, errorState);
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_enabled)
+		{
+			if (is_debug_utils_found)
+				setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, errorState);
+			else 
+				setupDebugCallback(mInstance, mDebugCallback, errorState);
+		}
 
 		// Create presentation surface if not running headless. Can only do this after creation of instance.
 		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
@@ -1614,7 +1797,7 @@ namespace nap
 		nap::Logger::info("Non solid fill mode: %s", mNonSolidFillModeSupported ? "Supported" : "Not Supported");
 
 		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
 
 		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
 		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
@@ -1657,7 +1840,7 @@ namespace nap
 		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
 
 		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
-		if (!initEmptyTexture(errorState))
+		if (!initEmptyTextures(errorState))
 			return false;
 		
 		mFramesInFlight.resize(getMaxFramesInFlight());
@@ -1680,7 +1863,7 @@ namespace nap
 				return false;
 
 			// Clear the queue submit operation flags
-			frame.mQueueSubmitOps = 0U;
+			frame.mQueueSubmitOps = 0;
 		}
 
 		// Try to load .ini file and extract saved settings, allowed to fail
@@ -1703,14 +1886,17 @@ namespace nap
 		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
 			return false;
 
-		// Add debug display extension, we need this to relay debug messages
-		std::vector<std::string> instance_extensions = { VK_EXT_DEBUG_REPORT_EXTENSION_NAME };
+		// Get available debug instance extensions, notify when not all could be found
+		std::vector<std::string> required_instance_extensions;
+		bool is_debug_utils_found = false;
+		if (!error.check(getDebugInstanceExtensions(is_debug_utils_found, required_instance_extensions, error), "Failed to find available debug extension while debug is enabled"))
+			return false;
 
 		// Get available vulkan layer extensions, notify when not all could be found
 		std::vector<std::string> found_layers;
 #ifndef NDEBUG
 		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = {"VK_LAYER_KHRONOS_validation"};
+		const std::vector<std::string>& requested_layers = { "VK_LAYER_KHRONOS_validation" };
 		if (!getAvailableVulkanLayers(requested_layers, false, found_layers, error))
 			return false;
 
@@ -1724,12 +1910,15 @@ namespace nap
 #endif // NDEBUG
 
 		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_MAKE_VERSION(1, 0, 0);
-		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, error))
+		mAPIVersion = VK_API_VERSION_1_0;
+		if (!createVulkanInstance(found_layers, required_instance_extensions, mAPIVersion, mInstance, error))
 			return false;
 
-		// Vulkan messaging callback
-		setupDebugCallback(mInstance, mDebugCallback, error);
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_utils_found)
+			setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, error);
+		else
+			setupDebugCallback(mInstance, mDebugCallback, error);
 
 		// Get the preferred physical device to select
 		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(nap::RenderServiceConfiguration::EPhysicalDeviceType::Discrete);
@@ -1740,7 +1929,7 @@ namespace nap
 			return false;
 
 		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames();
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
 
 		// Create unique set
 		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
@@ -1889,9 +2078,96 @@ namespace nap
 	}
 
 
+	int RenderService::getRank(const nap::RenderLayer& layer) const
+	{
+		int layer_rank = RenderChain::invalidRank;
+		for (const auto& chain : mRenderChains)
+		{
+			const auto it = chain->mRankMap.find(&layer);
+			if (it != chain->mRankMap.end())
+			{
+				layer_rank = it->second;
+				break;
+			}
+		}
+		NAP_ASSERT_MSG(layer_rank != RenderChain::invalidRank,
+			"Failed to fetch rank, layer not part of render chain");
+		return layer_rank;
+	}
+
+
 	bool RenderService::isComputeAvailable() const
 	{
 		return (mPhysicalDevice.getQueueCapabilities() & VK_QUEUE_COMPUTE_BIT) == VK_QUEUE_COMPUTE_BIT;
+	}
+
+
+	RenderMask RenderService::getRenderMask(const std::string& tagName)
+	{
+		if (mRenderTags.empty())
+			return 0;
+
+		uint shift = 0;
+		for (auto& tag : mRenderTags)
+		{
+			if (tag->mName == tagName)
+				return 1 << shift;
+			++shift;
+		}
+		return 0;
+	}
+
+
+	bool RenderService::addTag(const RenderTag& renderTag, nap::utility::ErrorState& error)
+	{
+		// Name missing
+		if(!error.check(!renderTag.mName.empty(), "RenderTag doesn't have a name"))
+			return false;
+
+		// Duplicate
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		if (!error.check(it == mRenderTags.end(), "RenderTag with duplicate name already exists"))
+			return false;
+
+		// Out of bounds
+		static constexpr int tagLimit = sizeof(nap::uint64) * 8;
+		if (!error.check(mRenderTags.size() < tagLimit, "RenderTag limit of %d exceeded", tagLimit))
+			return false;
+
+		mRenderTags.emplace_back(&renderTag);
+		return true;
+	}
+
+
+	void RenderService::removeTag(const RenderTag& renderTag)
+	{
+		// Ensure the tag is not yet registered
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		mRenderTags.erase(it);
+	}
+
+
+	void RenderService::addChain(const RenderChain& chain)
+	{
+		assert(std::find(mRenderChains.begin(), mRenderChains.end(), &chain) == mRenderChains.end());
+		mRenderChains.emplace_back(&chain);
+	}
+
+
+	void RenderService::removeChain(const RenderChain& chain)
+	{
+		auto it = std::find(mRenderChains.begin(), mRenderChains.end(), &chain);
+		assert(it != mRenderChains.end());
+		mRenderChains.erase(it);
+	}
+
+
+	RenderMask RenderService::getRenderMask(const RenderTag& renderTag) const
+	{
+		auto it = std::find(mRenderTags.begin(), mRenderTags.end(), &renderTag);
+		assert(it != mRenderTags.end());
+		return static_cast<RenderMask>(1) << static_cast<uint>(it - mRenderTags.begin());
 	}
 
 
@@ -1926,17 +2202,23 @@ namespace nap
 		if (!shader->init(error) || !material->init(error))
 		{
 			// Add invalid combo
-			mMaterials.emplace(std::make_pair(shaderType, std::make_unique<UniqueMaterial>()));
+			mMaterials.emplace(shaderType, std::make_unique<UniqueMaterial>());
 			return nullptr;
 		}
 
 		// Initialization succeeded, valid entry
-		auto inserted = mMaterials.emplace(std::make_pair(shaderType, std::make_unique<UniqueMaterial>(std::move(shader), std::move(material))));
+		auto inserted = mMaterials.emplace(shaderType, std::make_unique<UniqueMaterial>(std::move(shader), std::move(material)));
 		return inserted.first->second->mMaterial.get();
 	}
 
 
-	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties)
+	glm::uvec3 RenderService::getMaxComputeWorkGroupSize() const
+	{
+		return glm::make_vec3<uint>(&getPhysicalDeviceProperties().limits.maxComputeWorkGroupSize[0]);
+	}
+
+
+	void RenderService::getFormatProperties(VkFormat format, VkFormatProperties& outProperties) const
 	{
 		vkGetPhysicalDeviceFormatProperties(mPhysicalDevice.getHandle(), format, &outProperties);
 	}
@@ -1944,13 +2226,13 @@ namespace nap
 
 	uint32 RenderService::getVulkanVersionMajor() const
 	{
-		return VK_VERSION_MAJOR(mAPIVersion);
+		return VK_API_VERSION_MAJOR(mAPIVersion);
 	}
 
 
 	uint32 RenderService::getVulkanVersionMinor() const
 	{
-		return VK_VERSION_MINOR(mAPIVersion);
+		return VK_API_VERSION_MINOR(mAPIVersion);
 	}
 
 
@@ -2022,7 +2304,10 @@ namespace nap
 		}
 
 		mFramesInFlight.clear();
-		mEmptyTexture.reset();
+		mEmptyTexture2D.reset();
+		mEmptyTextureCube.reset();
+		mErrorTexture2D.reset();
+		mErrorTextureCube.reset();
 		mDescriptorSetCaches.clear();
 		mDescriptorSetAllocator.reset();
 
@@ -2044,9 +2329,15 @@ namespace nap
 			mDevice = VK_NULL_HANDLE;
 		}
 
+		if (mDebugUtilsMessengerCallback != VK_NULL_HANDLE)
+		{
+			destroyDebugUtilsMessengerCallbackEXT(mInstance, mDebugUtilsMessengerCallback, nullptr);
+			mDebugUtilsMessengerCallback = VK_NULL_HANDLE;
+		}
+
 		if (mDebugCallback != VK_NULL_HANDLE)
 		{
-			destroyDebugReportCallbackEXT(mInstance, mDebugCallback);
+			destroyDebugReportCallbackEXT(mInstance, mDebugCallback, nullptr);
 			mDebugCallback = VK_NULL_HANDLE;
 		}
 
@@ -2095,7 +2386,7 @@ namespace nap
 		submit_info.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
 		submit_info.commandBufferCount = 1;
 		submit_info.pCommandBuffers = &commandBuffer;
-		result = vkQueueSubmit(mQueue, 1, &submit_info, NULL);
+		result = vkQueueSubmit(mQueue, 1, &submit_info, VK_NULL_HANDLE);
 	}
 
 
@@ -2107,7 +2398,7 @@ namespace nap
 		// Transfer data to the GPU, including texture data and general purpose render buffers.
 		transferData(commandBuffer, [commandBuffer, this]()
 		{
-			for (Texture2D* texture : mTexturesToClear)
+			for (Texture* texture : mTexturesToClear)
 				texture->clear(commandBuffer);
 			mTexturesToClear.clear();
 
@@ -2195,7 +2486,7 @@ namespace nap
 		mIsRenderingFrame = true;
 
 		// Clear the queue submit operation flags for the current frame
-		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0U;
+		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps = 0;
 
 		// We wait for the fence for the current frame. This ensures that, when the wait completes, the command buffer
 		// that the fence belongs to, and all resources referenced from it, are available for (re)use.
@@ -2225,7 +2516,7 @@ namespace nap
 	}
 
 
-	void RenderService::endFrame()
+	void RenderService::endFrame()	
 	{
 		// Acquire current frame
 		Frame& frame = mFramesInFlight[mCurrentFrameIndex];
@@ -2261,6 +2552,11 @@ namespace nap
 		VkResult result = vkBeginCommandBuffer(mCurrentCommandBuffer, &begin_info);
 		assert(result == VK_SUCCESS);
 
+		// Record queued headless render commands
+		for (const auto& command : mHeadlessCommandQueue)
+			command(*this);
+
+		mHeadlessCommandQueue.clear();
 		return true;
 	}
 
@@ -2281,6 +2577,18 @@ namespace nap
 		// Set the headless bit of queue submit ops of the current frame
 		mFramesInFlight[mCurrentFrameIndex].mQueueSubmitOps |= EQueueSubmitOp::HeadlessRendering;
 		mCurrentCommandBuffer = VK_NULL_HANDLE;
+	}
+
+
+	void RenderService::queueHeadlessCommand(const RenderCommand& command)
+	{
+		mHeadlessCommandQueue.emplace_back(command);
+	}
+
+
+	void RenderService::queueComputeCommand(const RenderCommand& command)
+	{
+		mComputeCommandQueue.emplace_back(command);
 	}
 
 
@@ -2320,8 +2628,8 @@ namespace nap
 		// on any of the command buffers (rendering, headless rendering, compute), the corresponding EQueueSubmitOp bit is
 		// set in mQueueSubmitOps of the current frame. This way, we keep track of what queue submissions have occurred.
 		const Frame& frame = mFramesInFlight[mCurrentFrameIndex];
-		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
-		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0U, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::Rendering) == 0, "Recording compute commands after rendering within a single frame is not allowed");
+		NAP_ASSERT_MSG((frame.mQueueSubmitOps & EQueueSubmitOp::HeadlessRendering) == 0, "Recording compute commands after rendering within a single frame is not allowed");
 
 		// Reset command buffer for current frame
 		VkCommandBuffer compute_command_buffer = frame.mComputeCommandBuffer;
@@ -2340,6 +2648,12 @@ namespace nap
 		mCurrentCommandBuffer = compute_command_buffer;
 		if (mCurrentCommandBuffer == VK_NULL_HANDLE)
 			return false;
+
+		// Record queued headless render commands
+		for (const auto& command : mComputeCommandQueue)
+			command(*this);
+
+		mComputeCommandQueue.clear();
 
 		return true;
 	}
@@ -2424,7 +2738,7 @@ namespace nap
 	}
 
 
-	void RenderService::requestTextureClear(Texture2D& texture)
+	void RenderService::requestTextureClear(Texture& texture)
 	{
 		// Push a texture clear for the beginning of the next frame
 		mTexturesToClear.insert(&texture);
@@ -2565,5 +2879,4 @@ namespace nap
 	{
 		return { glm::vec2(mMin), glm::vec2(mMax) };
 	}
-
 }

@@ -83,7 +83,7 @@ namespace nap
 	}
 
 
-	int RenderableMesh::getVertexBufferBindingIndex(std::string meshVertexAttributeID) const
+	int RenderableMesh::getVertexBufferBindingIndex(const std::string& meshVertexAttributeID) const
 	{
 		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();
 		const Material& material = mMaterialInstance->getMaterial();

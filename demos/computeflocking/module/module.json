@@ -5,7 +5,7 @@
         "naprender",
         "napscene",
         "napmath",
-        "napparameter"
+        "naprenderadvanced"
     ],
     "WindowsDllSearchPaths": []
 }

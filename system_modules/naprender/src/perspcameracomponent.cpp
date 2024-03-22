@@ -11,16 +11,16 @@
 #include "transformcomponent.h"
 #include "mathutils.h"
 
-RTTI_BEGIN_CLASS(nap::PerpCameraProperties)
-	RTTI_PROPERTY("FieldOfView",		&nap::PerpCameraProperties::mFieldOfView,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NearClippingPlane",	&nap::PerpCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FarClippingPlane",	&nap::PerpCameraProperties::mFarClippingPlane,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GridDimensions",		&nap::PerpCameraProperties::mGridDimensions,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GridLocation",		&nap::PerpCameraProperties::mGridLocation,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::PerspCameraProperties)
+	RTTI_PROPERTY("FieldOfView",		&nap::PerspCameraProperties::mFieldOfView,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("NearClippingPlane",	&nap::PerspCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FarClippingPlane",	&nap::PerspCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GridDimensions",		&nap::PerspCameraProperties::mGridDimensions,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("GridLocation",		&nap::PerspCameraProperties::mGridLocation,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::PerspCameraComponent)
-	RTTI_PROPERTY("Properties",			&nap::PerspCameraComponent::mProperties,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Properties",			&nap::PerspCameraComponent::mProperties,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PerspCameraComponentInstance)
@@ -323,9 +323,18 @@ namespace nap
 	}
 
 
-	void PerspCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	PerspCameraProperties PerspCameraComponentInstance::getProperties() const
 	{
-		components.push_back(RTTI_OF(TransformComponent));
+		return mProperties;
 	}
 
+
+	void PerspCameraComponentInstance::setProperties(const PerspCameraProperties& props)
+	{
+		setGridLocation(props.mGridLocation.x, props.mGridLocation.y);
+		setGridDimensions(props.mGridDimensions.x, props.mGridDimensions.y);
+		setFieldOfView(props.mFieldOfView);
+		mProperties.mNearClippingPlane = props.mNearClippingPlane;
+		mProperties.mFarClippingPlane = props.mFarClippingPlane;
+	}
 }

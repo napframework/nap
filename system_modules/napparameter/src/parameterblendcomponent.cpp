@@ -19,6 +19,7 @@ RTTI_BEGIN_CLASS(nap::ParameterBlendComponent)
 	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetIndex",		&nap::ParameterBlendComponent::mPresetIndex,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PresetBlendTime",	&nap::ParameterBlendComponent::mPresetBlendTime,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("BlendOnInit",		&nap::ParameterBlendComponent::mBlendOnInit,		nap::rtti::EPropertyMetaData::Default)
     RTTI_PROPERTY("IgnoreNonBlendable",	&nap::ParameterBlendComponent::mIgnoreNonBlendableParameters,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -67,7 +68,9 @@ namespace nap
 
 		// Called when the preset index changes
 		mPresetIndex->valueChanged.connect(mIndexChangedSlot);
-		changePreset(mPresetIndex->mValue);
+
+		if (resource->mBlendOnInit)
+			changePreset(mPresetIndex->mValue);
 
 		return true;
 	}

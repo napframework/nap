@@ -59,12 +59,6 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Selects a new mesh
-		 * @param index new mesh index, clamped to mesh range
-		 */
-		void selectMesh(int index);
-
-		/**
 		 * @return the number of selectable meshes
 		 */
 		int getCount() const											{ return mMeshes.size(); }
@@ -82,5 +76,12 @@ namespace nap
 		RenderableMeshComponentInstance* mRenderComponent = nullptr;	//< Renderable mesh component that receives the new selection
 
 		ParameterInt* mIndexParam = nullptr;
+
+		/**
+		 * Called when the mesh index has changed
+		 * @param index new mesh index, clamped to mesh range
+		 */
+		void onMeshSelected(int index);
+		nap::Slot<int> mMeshSelectedSlot = { this, &SelectMeshComponentInstance::onMeshSelected };
 	};
 }
