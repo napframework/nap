@@ -29,9 +29,11 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
     target_link_libraries(${PROJECT_NAME} nap${PROJECT_NAME})
 endif()
 
-# Read required modules from the app json file
+# Read app.json from file
 set(app_json_path ${CMAKE_CURRENT_SOURCE_DIR}/app.json)
 file(READ ${app_json_path} app_json)
+
+# Read required modules from the app json file
 string(JSON required_modules_json GET ${app_json} RequiredModules)
 string(JSON required_module_count LENGTH ${app_json} RequiredModules)
 set(module_index 0)
@@ -122,7 +124,22 @@ add_custom_command(TARGET ${PROJECT_NAME}
         COMMENT "Exporting FBX in '${bin_data_dir}'")
 
 # Install to packaged app
-install(FILES $<TARGET_FILE:${PROJECT_NAME}> TYPE BIN OPTIONAL)
+install(FILES $<TARGET_FILE:${PROJECT_NAME}> PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE TYPE BIN OPTIONAL)
 install(FILES ${app_install_data_dir}/app.json TYPE BIN OPTIONAL)
 install(FILES ${BIN_DIR}/${path_mapping_path} TYPE BIN OPTIONAL)
 install(DIRECTORY ${bin_data_dir} TYPE DATA OPTIONAL)
+
+# Copy Info.plist to bin and install to packaged app
+if (APPLE)
+    set(plist ${CMAKE_CURRENT_SOURCE_DIR}/cache/Info.plist)
+    if(NOT EXISTS ${plist})
+        string(JSON APP_TITLE GET ${app_json} Title)
+        configure_file(${NAP_ROOT}/cmake/Info.plist.in ${plist})
+    endif ()
+    add_custom_command(
+            TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${plist} ${BIN_DIR})
+    install(FILES ${BIN_DIR}/Info.plist TYPE INFO OPTIONAL)
+endif()
+
