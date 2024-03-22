@@ -27,7 +27,7 @@ add_subdirectory(demos/helloworld)
 add_subdirectory(demos/audioplayback)
 add_subdirectory(demos/audioanalysis)
 
-add_subdirectory(qt)
 add_subdirectory(tools/fbxconverter)
+add_subdirectory(qt)
 add_subdirectory(tools/napkin)
 
