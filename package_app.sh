@@ -32,12 +32,21 @@ cmake -S . -B $build_directory
 # Build the specified target
 cmake --build $build_directory --target $target --config Debug --parallel 8
 
-# Install to app bundle
-if [ "$(uname)" == "Darwin" ]; then
-  # Add app bundle file extension on MacOS
-  install_location=install/`jq -r '.Title' build/bin/$target.json`.app
+# Compose install location from app Title from project json
+if [ "$target" == "napkin" ]; then
+  if [ "$(uname)" == "Darwin" ]; then
+    # Add app bundle file extension on MacOS
+    install_location=install/Napkin.app
+  else
+    install_location=install/Napkin
+  fi
 else
-  install_location=install/`jq -r '.Title' build/bin/$target.json`
+  if [ "$(uname)" == "Darwin" ]; then
+    # Add app bundle file extension on MacOS
+    install_location=install/`jq -r '.Title' build/bin/$target.json`.app
+  else
+    install_location=install/`jq -r '.Title' build/bin/$target.json`
+  fi
 fi
 
 # Cleaning previous install, if any
