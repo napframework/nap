@@ -44,9 +44,9 @@ namespace nap
 		// Copy resource properties
 		auto* resource = getComponent<SpotLightComponent>();
 		mAttenuation = resource->mAttenuation;
-		mAngle = resource->mAngle;
 		mFalloff = resource->mFalloff;
 		mShadowMapSize = resource->mShadowMapSize;
+		mFOVClip = resource->mFOVClip;
 
 		// Register uniforms to auto push
 		registerUniformLightProperty(uniform::light::attenuation);
@@ -97,6 +97,9 @@ namespace nap
 			errorState.fail("Unable to spawn directional spotlight shadow entity");
 			return false;
 		}
+
+		// Push angle
+		setAngle(resource->mAngle);
 		return true;
 	}
 
@@ -110,7 +113,7 @@ namespace nap
 
 	void SpotLightComponentInstance::setFOVClip(float clip)
 	{
-		mFOVClip = std::clamp(clip, 0.0f, 1.0f);
+		mFOVClip = clip;
 		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(mAngle * mFOVClip);
 	}
 }
