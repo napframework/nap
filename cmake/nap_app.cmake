@@ -60,15 +60,24 @@ endif()
 # Check if path mapping exists, otherwise use default
 string(JSON path_mapping_path GET ${app_json} PathMapping)
 set(path_mapping_abs_path ${CMAKE_CURRENT_SOURCE_DIR}/${path_mapping_path})
-if(("${path_mapping_path}" STREQUAL "") OR (NOT EXISTS ${path_mapping_abs_path}))
-    set(path_mapping_path "default_path_mapping.json")
-    set(path_mapping_abs_path ${NAP_ROOT}/cmake/${path_mapping_path})
-    string(JSON patched_path_mapping_app_json SET ${app_json} "PathMapping" \"${path_mapping_path}\")
-else()
-    set(patched_path_mapping_app_json ${app_json})
+if ("${path_mapping_path}" STREQUAL "")
+    message(FATAL_ERROR "No path mapping found for App target ${PROJECT_NAME}. Set the path mapping in App.json")
 endif()
+if((NOT EXISTS ${path_mapping_abs_path}))
+    file(COPY_FILE ${NAP_ROOT}/cmake/default_path_mapping.json ${path_mapping_abs_path})
+endif()
+cmake_path(GET path_mapping_path FILENAME path_mapping_filename)
+string(JSON patched_path_mapping_app_json SET ${app_json} "PathMapping" \"${path_mapping_filename}\")
 
+# Copy path mapping to app specific install data directory in bin
 set(app_install_data_dir ${BIN_DIR}/app_install_data/${PROJECT_NAME})
+file(MAKE_DIRECTORY ${app_install_data_dir})
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_if_different
+        ${path_mapping_abs_path} ${app_install_data_dir}/${path_mapping_filename})
+
+# Create cache dir in source
 set(cache_dir ${CMAKE_CURRENT_SOURCE_DIR}/cache)
 file(MAKE_DIRECTORY ${cache_dir})
 
@@ -80,19 +89,13 @@ add_custom_command(
         ${cache_dir}/patched_path_mapping_app.json
         ${app_install_data_dir}/app.json)
 
-# Copy path mapping to bin
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_if_different
-        ${path_mapping_abs_path} ${BIN_DIR}/${path_mapping_path})
-
 # Patch data path in app json
 string(JSON data_file_path GET ${app_json} Data)
 set(absolute_data_file_path ${CMAKE_CURRENT_SOURCE_DIR}/${data_file_path})
-set(bin_app_json ${app_json})
-string(JSON patched_data_app_json SET ${patched_path_mapping_app_json} "Data" \"${absolute_data_file_path}\")
+string(JSON patched_data_app_json SET ${app_json} "Data" \"${absolute_data_file_path}\")
+string(JSON patched_data_app_json SET ${patched_data_app_json} "PathMapping" \"app_install_data/${PROJECT_NAME}/${path_mapping_filename}\")
 
-# Write app json with patched data path to bin for running apps from source
+# Write app json with patched data path and path mapping to bin for running apps from source
 file(WRITE ${cache_dir}/patched_data_app.json ${patched_data_app_json})
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
@@ -126,7 +129,7 @@ add_custom_command(TARGET ${PROJECT_NAME}
 # Install to packaged app
 install(FILES $<TARGET_FILE:${PROJECT_NAME}> PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE TYPE BIN OPTIONAL)
 install(FILES ${app_install_data_dir}/app.json TYPE BIN OPTIONAL)
-install(FILES ${BIN_DIR}/${path_mapping_path} TYPE BIN OPTIONAL)
+install(FILES ${app_install_data_dir}/${path_mapping_filename} TYPE BIN OPTIONAL)
 install(DIRECTORY ${bin_data_dir} TYPE DATA OPTIONAL)
 
 # Copy Info.plist to bin and install to packaged app
