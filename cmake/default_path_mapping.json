@@ -1,12 +1,12 @@
 {
   "Type": "nap::PathMapping",
   "mID": "UnixSourceMapping",
-  "ProjectExeToRoot": "../..",
-  "NapkinExeToRoot": "../../..",
+  "ProjectExeToRoot": ".",
+  "NapkinExeToRoot": ".",
   "ModulePaths":
   [
-    "{PROJECT_DIR}",
-    "{PROJECT_DIR}/lib"
+    "{ROOT}",
+    "{ROOT}/lib"
   ],
   "BuildPath": "{PROJECT_DIR}",
   "DataPath":  "{PROJECT_DIR}/../Resources/"
