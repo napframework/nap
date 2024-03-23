@@ -1,7 +1,7 @@
 #!bin/sh
 
 echo Package NAP app.
-echo Usage: package_macos_app [target] [build directory] [code signature]
+echo Usage: package_app [target] [build directory] [code signature]
 
 # Check if target is specified
 if [ "$#" -lt "1" ]; then
@@ -12,6 +12,11 @@ fi
 # Install jq utility to parse json
 if [ "$(uname)" == "Darwin" ]; then
   brew install jq
+elif [ "$(uname)" == "Linux" ]; then
+  echo install jq linux
+else
+  # Windows
+  curl -L -o jq.exe https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe
 fi
 
 target=$1
@@ -30,34 +35,40 @@ rm -rf $build_directory/bin
 cmake -S . -B $build_directory
 
 # Build the specified target
-cmake --build $build_directory --target $target --config Debug --parallel 8
+cmake --build $build_directory --target $target --config Release --parallel 8
 
-# Compose install location from app Title from project json
+# Run cmake install process
+cmake --install build --prefix install
+
+# Read app Title from project json
 if [ "$target" == "napkin" ]; then
   if [ "$(uname)" == "Darwin" ]; then
     # Add app bundle file extension on MacOS
-    install_location=install/Napkin.app
+    app_title=Napkin.app
   else
-    install_location=install/Napkin
+    app_title=Napkin
   fi
 else
   if [ "$(uname)" == "Darwin" ]; then
     # Add app bundle file extension on MacOS
-    install_location=install/`jq -r '.Title' build/bin/$target.json`.app
+    app_title=`jq -r '.Title' build/bin/$target.json`.app
+  elif [ "$(uname)" == "Linux" ]; then
+    app_title=`jq -r '.Title' build/bin/$target.json`
   else
-    install_location=install/`jq -r '.Title' build/bin/$target.json`
+    app_title=`./jq -r '.Title' build/bin/$target.json`
   fi
 fi
 
 # Cleaning previous install, if any
 echo Cleaning previous install output...
-rm -rf $install_location
+rm -rf install/$app_title
 
-# Run cmake install process
-cmake --install build --prefix $install_location
+# Rename output directory to app title
+mv install/MyApp install/$app_title
 
 # Codesign MacOS app bundle
 if [ "$(uname)" == "Darwin" ]; then
+  echo Codesigning MacOS bundle...
   if [ "$#" -lt "3" ]; then
     codesign --deep -s - -f $install_location
   else
@@ -69,4 +80,10 @@ fi
 if [ $# = "1" ]; then
   echo Removing build directory...
   rm -rf build
+fi
+
+# Remove local installation of jq.exe
+if [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "Linux" ]; then
+  echo Removing local installation of jq.exe...
+  rm jq.exe
 fi
