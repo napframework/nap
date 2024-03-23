@@ -23,11 +23,15 @@ file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert data/shaders/*
 # Declare target
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
-# Pull in a app module if it exists
+# Pull in the app module if it exists
 if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
     add_subdirectory(module)
     target_link_libraries(${PROJECT_NAME} nap${PROJECT_NAME})
 endif()
+
+# Create the cache directory in source
+set(cache_dir ${CMAKE_CURRENT_SOURCE_DIR}/cache)
+file(MAKE_DIRECTORY ${cache_dir})
 
 # Read app.json from file
 set(app_json_path ${CMAKE_CURRENT_SOURCE_DIR}/app.json)
@@ -57,15 +61,19 @@ if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
     include(${CMAKE_CURRENT_SOURCE_DIR}/app_extra.cmake)
 endif()
 
-# Check if path mapping exists, otherwise use default
+# Check if path mapping is set in app.json
 string(JSON path_mapping_path GET ${app_json} PathMapping)
 set(path_mapping_abs_path ${CMAKE_CURRENT_SOURCE_DIR}/${path_mapping_path})
 if ("${path_mapping_path}" STREQUAL "")
     message(FATAL_ERROR "No path mapping found for App target ${PROJECT_NAME}. Set the path mapping in App.json")
 endif()
+
+# Check if pathmapping file from app.json exists, otherwise copy from default
 if((NOT EXISTS ${path_mapping_abs_path}))
     file(COPY_FILE ${NAP_ROOT}/cmake/default_path_mapping.json ${path_mapping_abs_path})
 endif()
+
+# Set the path mapping variable in patched app.json to copy of path mapping in project root.
 cmake_path(GET path_mapping_path FILENAME path_mapping_filename)
 string(JSON patched_path_mapping_app_json SET ${app_json} "PathMapping" \"${path_mapping_filename}\")
 
@@ -77,12 +85,9 @@ add_custom_command(
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
         ${path_mapping_abs_path} ${app_install_data_dir}/${path_mapping_filename})
 
-# Create cache dir in source
-set(cache_dir ${CMAKE_CURRENT_SOURCE_DIR}/cache)
-file(MAKE_DIRECTORY ${cache_dir})
-
-# Write app json with patched path mapping to bin for installation
+# Write app json with patched path mapping to source cache
 file(WRITE ${cache_dir}/patched_path_mapping_app.json ${patched_path_mapping_app_json})
+# Write app json with patched path mapping to bin for installation
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy_if_different
