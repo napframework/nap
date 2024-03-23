@@ -1,6 +1,6 @@
 {
   "Type": "nap::PathMapping",
-  "mID": "UnixSourceMapping",
+  "mID": "DefaultPathMapping",
   "ProjectExeToRoot": ".",
   "NapkinExeToRoot": ".",
   "ModulePaths":
