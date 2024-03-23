@@ -1,3 +1,4 @@
+#!/bin/sh
+
 echo Generating MSVC solution in directory "vs"...
-@echo off
-cmake -S . -B vs
+cmake -S . -B vs -G"Visual Studio 16 2019"

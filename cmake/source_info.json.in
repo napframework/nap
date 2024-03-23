@@ -1,9 +1,0 @@
-{
-  "version": "@NAP_VERSION@",
-  "majorVersion": @NAP_MAJOR_VERSION@,
-  "minorVersion": @NAP_MINOR_VERSION@,
-  "patchVersion": @NAP_PATCH_VERSION@,
-  "timestamp": "@BUILD_TIMESTAMP@",
-  "gitRevision": "@BUILD_GIT_REVISION@",
-  "label": "@BUILD_LABEL@"
-}
