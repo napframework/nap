@@ -58,6 +58,17 @@ function(add_import_library target_name implib dll include_dir)
     set_property(TARGET ${target_name} PROPERTY IMPORTED_LOCATION ${dll})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_IMPLIB ${implib})
     set_property(TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES ${include_dir})
+
+    if (LINUX)
+        get_filename_component(library_name ${dll} NAME)
+        execute_process(COMMAND patchelf --set-soname
+                ${library_name}
+                ${dll}
+                RESULT_VARIABLE EXIT_CODE)
+        if(NOT ${EXIT_CODE} EQUAL 0)
+            message(FATAL_ERROR "Failed to set RPATH on ${library_name} using patchelf. Is patchelf installed?")
+        endif()
+    endif()
 endfunction()
 
 
