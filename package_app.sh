@@ -1,7 +1,7 @@
 #!bin/sh
 
 echo Package NAP app.
-echo Usage: package_app [target] [build directory] [code signature]
+echo Usage: sh package_app.sh [target] [optional: build directory] [optional: MacOS code signature]
 
 # Check if target is specified
 if [ "$#" -lt "1" ]; then
@@ -9,11 +9,23 @@ if [ "$#" -lt "1" ]; then
   exit 0
 fi
 
-# Install jq utility to parse json
-if [ "$(uname)" == "Darwin" ]; then
-  brew install jq
-elif [ "$(uname)" == "Linux" ]; then
-  echo install jq linux
+# Make sure cmake is installed
+if ! [ -x "$(command -v cmake)" ]; then
+  echo Cmake is not installed. Install it for your system.
+  return 0
+fi
+
+# Make sure jq is installed
+if [ "$(uname)" = "Darwin" ]; then
+  if ! [ -x "$(command -v jq)" ]; then
+    brew install jq
+  fi
+elif [ "$(uname)" = "Linux" ]; then
+  if ! [ -x "$(command -v jq)" ]; then
+    echo Jq json parser not found. To install from package manager run:
+    echo sudo apt install jq
+    return 0
+  fi
 else
   # Windows
   curl -L -o jq.exe https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe
@@ -41,18 +53,18 @@ cmake --build $build_directory --target $target --config Release --parallel 8
 cmake --install build --prefix install
 
 # Read app Title from project json
-if [ "$target" == "napkin" ]; then
-  if [ "$(uname)" == "Darwin" ]; then
+if [ "$target" = "napkin" ]; then
+  if [ "$(uname)" = "Darwin" ]; then
     # Add app bundle file extension on MacOS
     app_title=Napkin.app
   else
     app_title=Napkin
   fi
 else
-  if [ "$(uname)" == "Darwin" ]; then
+  if [ "$(uname)" = "Darwin" ]; then
     # Add app bundle file extension on MacOS
     app_title=`jq -r '.Title' build/bin/$target.json`.app
-  elif [ "$(uname)" == "Linux" ]; then
+  elif [ "$(uname)" = "Linux" ]; then
     app_title=`jq -r '.Title' build/bin/$target.json`
   else
     app_title=`./jq -r '.Title' build/bin/$target.json`
@@ -67,7 +79,7 @@ rm -rf install/$app_title
 mv install/MyApp install/$app_title
 
 # Codesign MacOS app bundle
-if [ "$(uname)" == "Darwin" ]; then
+if [ "$(uname)" = "Darwin" ]; then
   echo Codesigning MacOS bundle...
   if [ "$#" -lt "3" ]; then
     codesign --deep -s - -f $install_location
