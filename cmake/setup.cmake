@@ -21,6 +21,10 @@ macro(setup)
         file(MAKE_DIRECTORY ${LIB_DIR}/)
     endif()
 
+    # Rpath for searching dynamic libraries
+    file(RELATIVE_PATH LIB_RPATH ${BIN_DIR} ${LIB_DIR})
+    set(CMAKE_BUILD_RPATH_USE_ORIGIN TRUE)
+
     # Set the app installation directories
     if (NOT DEFINED APP_INSTALL_NAME)
         if (APPLE)
@@ -34,18 +38,21 @@ macro(setup)
         set(CMAKE_INSTALL_BINDIR ${APP_INSTALL_NAME})
         set(CMAKE_INSTALL_LIBDIR ${APP_INSTALL_NAME})
         set(CMAKE_INSTALL_DATADIR ${APP_INSTALL_NAME})
+        set(CMAKE_INSTALL_DOCDIR ${APP_INSTALL_NAME}/doc)
     else()
         if (APPLE)
             # Install in app bundle structure on MacOS
             set(CMAKE_INSTALL_BINDIR ${APP_INSTALL_NAME}/Contents/MacOS)
             set(CMAKE_INSTALL_LIBDIR ${APP_INSTALL_NAME}/Contents/MacOS/lib)
             set(CMAKE_INSTALL_DATADIR ${APP_INSTALL_NAME}/Contents/Resources)
+            set(CMAKE_INSTALL_DOCDIR ${APP_INSTALL_NAME}/Contents/Resources/doc)
             set(CMAKE_INSTALL_INFODIR ${APP_INSTALL_NAME}/Contents) # Used for Info.plist file
         else ()
             # Install libraries in lib, executable in app root on Linux
             set(CMAKE_INSTALL_BINDIR ${APP_INSTALL_NAME})
             set(CMAKE_INSTALL_LIBDIR ${APP_INSTALL_NAME}/lib)
             set(CMAKE_INSTALL_DATADIR ${APP_INSTALL_NAME})
+            set(CMAKE_INSTALL_DOCDIR ${APP_INSTALL_NAME}/doc)
         endif()
     endif()
 

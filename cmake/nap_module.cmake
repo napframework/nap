@@ -1,13 +1,12 @@
 cmake_minimum_required(VERSION 3.19)
 
 # Get the module name from the directory name
+get_filename_component(module_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR}/.. REALPATH)
 get_filename_component(parent_name ${parent_dir} NAME)
-if(module_name MATCHES "^module$")
-    # Handle app module
+if(${module_name} MATCHES "^module$")
+    # Handle app module name
     set(module_name "nap${parent_name}")
-else()
-    get_filename_component(module_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 endif()
 
 project(${module_name})
@@ -18,6 +17,8 @@ file(GLOB HEADERS src/*.h src/*.hpp)
 
 # Compile target as shared lib
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})
+
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
 
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
@@ -73,10 +74,6 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
 endif()
 
 # Install library and module json
-#install(TARGETS ${PROJECT_NAME} LIBRARY OPTIONAL)
 install(FILES $<TARGET_FILE:${PROJECT_NAME}> TYPE LIB OPTIONAL)
 install(FILES ${LIB_DIR}/${PROJECT_NAME}.json TYPE LIB OPTIONAL)
 install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME} OPTIONAL)
-
-
-

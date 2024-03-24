@@ -50,7 +50,7 @@ cmake -S . -B $build_directory
 cmake --build $build_directory --target $target --config Release --parallel 8
 
 # Run cmake install process
-cmake --install build --prefix install
+cmake --install $build_directory --prefix install
 
 # Read app Title from project json
 if [ "$target" = "napkin" ]; then
@@ -63,11 +63,11 @@ if [ "$target" = "napkin" ]; then
 else
   if [ "$(uname)" = "Darwin" ]; then
     # Add app bundle file extension on MacOS
-    app_title=`jq -r '.Title' build/bin/$target.json`.app
+    app_title=`jq -r '.Title' $build_directory/bin/$target.json`.app
   elif [ "$(uname)" = "Linux" ]; then
-    app_title=`jq -r '.Title' build/bin/$target.json`
+    app_title=`jq -r '.Title' $build_directory/bin/$target.json`
   else
-    app_title=`./jq -r '.Title' build/bin/$target.json`
+    app_title=`./jq -r '.Title' $build_directory/bin/$target.json`
   fi
 fi
 

@@ -4,6 +4,8 @@ project(NAP)
 
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 include(${NAP_ROOT}/cmake/setup.cmake)
+include(${NAP_ROOT}/cmake/module_utilities.cmake)
+
 setup()
 
 add_subdirectory(utility)
@@ -19,13 +21,21 @@ add_subdirectory(system_modules/napsdlinput)
 add_subdirectory(system_modules/napapp)
 add_subdirectory(system_modules/napimgui)
 add_subdirectory(system_modules/napparameter)
+add_subdirectory(system_modules/napparametergui)
 add_subdirectory(system_modules/napcameracontrol)
 add_subdirectory(system_modules/napaudio)
 add_subdirectory(system_modules/napportaudio)
+add_subdirectory(system_modules/napmidi)
+#add_subdirectory(system_modules/naposc)
+
+set(NAP_BUILD_CONTEXT source) # This is here just to guarantee backwards compatibility with 0.6 style NAP modules
+add_subdirectory_apps_and_modules(modules)
 
 add_subdirectory(demos/helloworld)
 add_subdirectory(demos/audioplayback)
 add_subdirectory(demos/audioanalysis)
+
+add_subdirectory(apps/test)
 
 add_subdirectory(tools/fbxconverter)
 add_subdirectory(qt)

@@ -6,14 +6,16 @@ get_filename_component(app_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 project(${app_name})
 
 # Bring in any additional app logic (pre-target definition)
-set(APP_EXTRA_PRE_TARGET_CMAKE_PATH ${CMAKE_CURRENT_SOURCE_DIR}/app_extra_pre_target.cmake)
-if(EXISTS ${APP_EXTRA_PRE_TARGET_CMAKE_PATH})
+set(app_extra_pre_target_cmake_path ${CMAKE_CURRENT_SOURCE_DIR}/app_extra_pre_target.cmake)
+if(EXISTS ${app_extra_pre_target_cmake_path})
     unset(SKIP_APP)
-    include(${APP_EXTRA_PRE_TARGET_CMAKE_PATH})
+    include(${app_extra_pre_target_cmake_path})
     if(SKIP_APP)
         return()
     endif()
 endif()
+
+#set(CMAKE_INSTALL_RPATH_USE_LINK_PATH TRUE)
 
 # Add all cpp files to SOURCES
 file(GLOB_RECURSE SOURCES src/*.cpp)
@@ -23,9 +25,10 @@ file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert data/shaders/*
 # Declare target
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib")
+
 # Pull in the app module if it exists
-if(EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/module/)
-    add_subdirectory(module)
+if (TARGET nap${PROJECT_NAME})
     target_link_libraries(${PROJECT_NAME} nap${PROJECT_NAME})
 endif()
 
@@ -109,16 +112,10 @@ add_custom_command(
         ${BIN_DIR}/${PROJECT_NAME}.json)
 
 # Update executable rpath
-if (UNIX)
-    file(RELATIVE_PATH rpath ${BIN_DIR} ${LIB_DIR})
-    if(APPLE)
-        add_custom_command(TARGET ${PROJECT_NAME}
-                POST_BUILD COMMAND
-                ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${rpath}/."
-                $<TARGET_FILE:${PROJECT_NAME}>)
-    else()
-        list(APPEND CMAKE_INSTALL_RPATH ${rpath})
-    endif()
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD COMMAND
+            ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${LIB_RPATH}/." $<TARGET_FILE:${PROJECT_NAME}>)
 endif()
 
 # Copy data directory to app specific bin
@@ -135,13 +132,21 @@ add_custom_command(TARGET ${PROJECT_NAME}
         COMMAND ${BIN_DIR}/fbxconverter -o ${bin_data_dir} ${bin_data_dir}/*.fbx
         COMMENT "Exporting FBX in '${bin_data_dir}'")
 
+# Copy NAP license files
+set(bin_license_dir ${BIN_DIR}/license)
+add_custom_command(
+        TARGET ${PROJECT_NAME} POST_BUILD
+        COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${NAP_ROOT}/docs/license ${bin_license_dir}/NAP)
+
 # Install to packaged app
 install(FILES $<TARGET_FILE:${PROJECT_NAME}> PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE TYPE BIN OPTIONAL)
 install(FILES ${app_install_data_dir}/app.json TYPE BIN OPTIONAL)
 install(FILES ${app_install_data_dir}/${path_mapping_filename} TYPE BIN OPTIONAL)
 install(DIRECTORY ${bin_data_dir} TYPE DATA OPTIONAL)
+install(DIRECTORY ${bin_license_dir} TYPE DOC OPTIONAL)
 
-# Copy Info.plist to bin and install to packaged app
+# Configure Info.plist, copy to bin and install to packaged app
 if (APPLE)
     set(plist ${CMAKE_CURRENT_SOURCE_DIR}/cache/Info.plist)
     if(NOT EXISTS ${plist})

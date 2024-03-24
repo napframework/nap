@@ -12,6 +12,8 @@ add_definitions(-DRAPIDJSON_HAS_STDSTRING=1)
 add_library(${PROJECT_NAME} SHARED ${SOURCES})
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
+
 # Remove lib prefix on Unix libraries
 set_target_properties(${PROJECT_NAME} PROPERTIES PREFIX "")
 

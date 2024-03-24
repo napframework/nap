@@ -51,6 +51,8 @@ elseif(UNIX)
                 )
 endif()
 
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN")
+
 set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Core)
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_SHARED_LIBRARY)
 
