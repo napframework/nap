@@ -109,12 +109,16 @@ add_custom_command(
         ${BIN_DIR}/${PROJECT_NAME}.json)
 
 # Update executable rpath
-if(UNIX)
+if (UNIX)
     file(RELATIVE_PATH rpath ${BIN_DIR} ${LIB_DIR})
-    add_custom_command(TARGET ${PROJECT_NAME}
-            POST_BUILD COMMAND
-            ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${rpath}/."
-            $<TARGET_FILE:${PROJECT_NAME}>)
+    if(APPLE)
+        add_custom_command(TARGET ${PROJECT_NAME}
+                POST_BUILD COMMAND
+                ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${rpath}/."
+                $<TARGET_FILE:${PROJECT_NAME}>)
+    else()
+        list(APPEND CMAKE_INSTALL_RPATH ${rpath})
+    endif()
 endif()
 
 # Copy data directory to app specific bin
