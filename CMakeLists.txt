@@ -30,6 +30,7 @@ add_subdirectory(system_modules/napmidi)
 
 set(NAP_BUILD_CONTEXT source) # This is here just to guarantee backwards compatibility with 0.6 style NAP modules
 add_subdirectory_apps_and_modules(modules)
+add_subdirectory_apps_and_modules(apps)
 
 add_subdirectory(demos/helloworld)
 add_subdirectory(demos/audioplayback)
