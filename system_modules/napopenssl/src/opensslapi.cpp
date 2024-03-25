@@ -21,9 +21,9 @@
 EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
 {
     // A property query used for selecting algorithm implementations.
-    const char *propq = NULL;
-    EVP_PKEY_CTX *genctx = NULL;
-    EVP_PKEY *pkey = NULL;
+    const char *propq = nullptr;
+    EVP_PKEY_CTX *genctx = nullptr;
+    EVP_PKEY *pkey = nullptr;
     unsigned int primes = 2;
 
     // Create context using RSA algorithm. "RSA-PSS" could also be used here.
