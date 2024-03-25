@@ -13,11 +13,11 @@
 #include <string>
 
 
-// Generates an RSA public-private key pair and returns it.
-// The number of bits is specified by the bits argument.
-//
-// This uses the long way of generating an RSA key.
-//
+/**
+ * Generates an RSA public-private key pair and returns it.
+ * The number of bits is specified by the bits argument.
+ * This uses the long way of generating an RSA key.
+ */
 EVP_PKEY *generate_rsa_key_long(OSSL_LIB_CTX *libctx, unsigned int bits)
 {
     // A property query used for selecting algorithm implementations.
@@ -166,13 +166,13 @@ const evp_md_st* getSigningScheme(const std::string& signingScheme)
 
 namespace nap
 {
-    namespace opensslapi
+    namespace openssl
     {
         bool generateRSAKey(unsigned int bits, std::string& outPrivKey, std::string& outPubKey)
         {
             int ret = EXIT_FAILURE;
-            OSSL_LIB_CTX *libctx = NULL;
-            EVP_PKEY *pkey = NULL;
+            OSSL_LIB_CTX* libctx = nullptr;
+            EVP_PKEY* pkey = nullptr;
             BIO* pub_bio = BIO_new(BIO_s_mem());
             BIO* priv_bio = BIO_new(BIO_s_mem());
             unsigned char *data;
@@ -193,7 +193,7 @@ namespace nap
             // Output a PEM encoding of the private key. Please note that this output is
             // not encrypted. You may wish to use the arguments to specify encryption of
             // the key if you are storing it on disk. See PEM_write_PrivateKey(3).
-            if (PEM_write_bio_PrivateKey(priv_bio, pkey, NULL, NULL, 0, NULL, NULL) == 0)
+            if (PEM_write_bio_PrivateKey(priv_bio, pkey, nullptr, nullptr, 0, nullptr, nullptr) == 0)
                 goto cleanup;
 
             len = BIO_get_mem_data(priv_bio, &data);
@@ -213,14 +213,14 @@ namespace nap
         bool createSignature(const std::string &privkey, const std::string &message, const std::string &signingScheme, std::string &outSignature)
         {
             int ret = EXIT_FAILURE;
-            EVP_MD_CTX *mdctx = NULL;
+            EVP_MD_CTX* mdctx = nullptr;
             size_t slen = 0;
-            unsigned char *sig = NULL;
-            const evp_md_st *scheme = NULL;
+            unsigned char* sig = nullptr;
+            const evp_md_st* scheme = nullptr;
 
             // Read the private key
             BIO *in = BIO_new_mem_buf((unsigned char *) privkey.c_str(), strlen(privkey.c_str()));
-            auto *key = PEM_read_bio_PrivateKey(in, NULL, 0, NULL);
+            auto *key = PEM_read_bio_PrivateKey(in, nullptr, 0, nullptr);
 
             if(!key)
                 goto cleanup;
@@ -233,18 +233,18 @@ namespace nap
             if(!(mdctx = EVP_MD_CTX_create()))
                 goto cleanup;
 
-            // Initialise the DigestSign operation
-            if(1 != EVP_DigestSignInit(mdctx, NULL, scheme, NULL, key))
+            // Initialize the DigestSign operation
+            if(1 != EVP_DigestSignInit(mdctx, nullptr, scheme, nullptr, key))
                 goto cleanup;
 
             // Call update with the message
             if(1 != EVP_DigestSignUpdate(mdctx, message.c_str(), strlen(message.c_str())))
                 goto cleanup;
 
-            // Finalise the DigestSign operation
+            // Finalize the DigestSign operation
             // First call EVP_DigestSignFinal with a NULL sig parameter to obtain the length of the
             // signature. Length is returned in slen
-            if(1 != EVP_DigestSignFinal(mdctx, NULL, &slen))
+            if(1 != EVP_DigestSignFinal(mdctx, nullptr, &slen))
                 goto cleanup;
 
             // Allocate memory for the signature based on size in slen
@@ -261,13 +261,11 @@ namespace nap
 
             // Success
             ret = EXIT_SUCCESS;
-            cleanup:
 
-            // Clean up
+		cleanup:
             OPENSSL_free(sig);
             EVP_MD_CTX_destroy(mdctx);
             BIO_free(in);
-
             return ret == EXIT_SUCCESS;
         }
 
@@ -275,10 +273,10 @@ namespace nap
         bool verifyMessage(const std::string &pubkey, const std::string &message, const std::string &signingScheme, const std::string &signature)
         {
             int ret = EXIT_FAILURE;
-            EVP_MD_CTX *mdctx = NULL;
+            EVP_MD_CTX* mdctx = nullptr;
             size_t slen = 0;
-            unsigned char *sig = NULL;
-            const evp_md_st *scheme = NULL;
+            unsigned char* sig = nullptr;
+            const evp_md_st* scheme = nullptr;
 
             // Decode signature
             std::string decodedSignature;
@@ -289,7 +287,7 @@ namespace nap
 
             // Read the public key
             BIO *in = BIO_new_mem_buf((unsigned char *) pubkey.c_str(), strlen(pubkey.c_str()));
-            auto *key = PEM_read_bio_PUBKEY(in, NULL, 0, NULL);
+            auto *key = PEM_read_bio_PUBKEY(in, nullptr, 0, nullptr);
 
             // Key failure
             if(!key)
@@ -304,7 +302,7 @@ namespace nap
                 goto cleanup;
 
             // Initialize `key` with a public key
-            if(EVP_DigestVerifyInit(mdctx, NULL, scheme, NULL, key) != 1)
+            if(EVP_DigestVerifyInit(mdctx, nullptr, scheme, nullptr, key) != 1)
                 goto cleanup;
 
             // Initialize `key` with a public key
@@ -316,12 +314,10 @@ namespace nap
 
             ret = EXIT_SUCCESS;
 
-            cleanup:
-
+		cleanup:
             EVP_MD_CTX_destroy(mdctx);
             BIO_free(in);
             OPENSSL_free(sig);
-
             return ret == EXIT_SUCCESS;
         }
 

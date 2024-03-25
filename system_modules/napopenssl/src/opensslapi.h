@@ -9,7 +9,7 @@
 
 namespace nap
 {
-    namespace opensslapi
+    namespace openssl
     {
         /**
          * @brief Creates signature for a given message using the given signing scheme and private key
@@ -19,7 +19,7 @@ namespace nap
          * @param outSignature the created signature
          * @return true if the signature was created successfully
          */
-        bool createSignature(const std::string &privkey, const std::string &message, const std::string &signingScheme, std::string &outSignature);
+        bool createSignature(const std::string& privkey, const std::string& message, const std::string& signingScheme, std::string& outSignature);
 
         /**
          * @brief Verifies a message against a signature using the given signing scheme and public key
@@ -29,9 +29,9 @@ namespace nap
          * @param signature the signature to verify against
          * @return true if the message was verified successfully
          */
-        bool verifyMessage(const std::string &pubkey, const std::string &message, const std::string &signingScheme, const std::string &signature);
+        bool verifyMessage(const std::string& pubkey, const std::string& message, const std::string& signingScheme, const std::string& signature);
 
-        /**
+         /**
          * @brief Generates a RSA key pair
          * @param bits number of bits
          * @param outPrivKey the private key generated

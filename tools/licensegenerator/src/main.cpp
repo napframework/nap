@@ -233,7 +233,7 @@ int main(int argc, char *argv[])
 
     // Create signature
     std::string signature;
-    if (!nap::opensslapi::createSignature(priv_key.str(), lic_content.str(), signingScheme, signature))
+    if (!nap::openssl::createSignature(priv_key.str(), lic_content.str(), signingScheme, signature))
     {
         std::cout << "Failed to create signature" << std::endl;
         return -1;
