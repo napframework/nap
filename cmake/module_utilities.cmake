@@ -15,7 +15,7 @@ function(target_link_import_library target library)
     endif ()
 
     if (${library_type} STREQUAL SHARED_LIBRARY)
-        if(UNIX)
+        if(LINUX)
             target_link_libraries(${target} ${library_path})
         else ()
             target_link_libraries(${target} ${library})
@@ -62,20 +62,31 @@ function(add_import_library target_name implib dll include_dir)
     endif()
 
     add_library(${target_name} SHARED IMPORTED GLOBAL)
-#    target_include_directories(${target_name} INTERFACE ${include_dir})
+    #    target_include_directories(${target_name} INTERFACE ${include_dir})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_LOCATION ${dll})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_IMPLIB ${implib})
     set_property(TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES ${include_dir})
 
-    if (LINUX)
+    if (UNIX)
         get_filename_component(library_name ${dll} NAME)
-        execute_process(COMMAND patchelf --set-soname
-                ${library_name}
-                ${dll}
-                RESULT_VARIABLE EXIT_CODE)
-        if(NOT ${EXIT_CODE} EQUAL 0)
-            message(FATAL_ERROR "Failed to set RPATH on ${library_name} using patchelf. Is patchelf installed?")
+        if (APPLE)
+            execute_process(COMMAND install_name_tool -id
+                    @rpath/${library_name}
+                    ${dll}
+                    RESULT_VARIABLE EXIT_CODE)
+            if(NOT ${EXIT_CODE} EQUAL 0)
+                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using install_name_tool -id.")
+            endif()
+        else ()
+            execute_process(COMMAND patchelf --set-soname
+                    ${library_name}
+                    ${dll}
+                    RESULT_VARIABLE EXIT_CODE)
+            if(NOT ${EXIT_CODE} EQUAL 0)
+                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using patchelf. Is patchelf installed?")
+            endif()
         endif()
+
     endif()
 endfunction()
 
