@@ -7,7 +7,7 @@
 // External includes
 #include <utility/fileutils.h>
 #include <rtti/typeinfo.h>
-#include <texture2d.h>
+#include <texture.h>
 
 #include "bitmapfilebuffer.h"
 #include "copyimagedata.h"

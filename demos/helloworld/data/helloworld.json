@@ -14,7 +14,17 @@
                         "TopPlane": 100.0,
                         "BottomPlane": 0.0,
                         "NearClippingPlane": 0.0,
-                        "FarClippingPlane": 2.0
+                        "FarClippingPlane": 2.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
                     }
                 },
                 {
@@ -256,7 +266,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::ResourceGroup",
@@ -275,8 +287,8 @@
                     "CullMode": "None",
                     "PolygonMode": "Fill",
                     "Radius": 1.0,
-                    "Rings": 50.0,
-                    "Sectors": 50.0,
+                    "Rings": 50,
+                    "Sectors": 50,
                     "Color": {
                         "Values": [
                             1.0,
@@ -284,6 +296,11 @@
                             1.0,
                             1.0
                         ]
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
                     }
                 },
                 {

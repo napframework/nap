@@ -16,7 +16,7 @@
 // nap::videomesh run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh)
+	RTTI_PROPERTY_FILELINK("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh, "Path to the .mesh file on disk")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

@@ -78,6 +78,43 @@ static ObjectItem* createObjectItem(nap::rtti::Object& object)
 };
 
 
+/**
+ * Helper function that finds and swaps items based on the given property index change.
+ * @param path the array property that holds the items that were swapped
+ * @param oldIndex original index
+ * @param newIndex the new index
+ * @param parent parent item
+ * @return swapped child indices (previous, new)
+ */
+static std::array<size_t, 2> swapItems(const PropertyPath& path, size_t oldIndex, size_t newIndex, ObjectItem& parent)
+{
+	// Get modified objects
+	auto old_val = path.getArrayElement(oldIndex).getValue(); assert(old_val.is_valid());
+	auto old_ptr = old_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	auto new_val = path.getArrayElement(newIndex).getValue(); assert(new_val.is_valid());
+	auto new_ptr = new_val.extract_wrapped_value().get_value<nap::rtti::Object*>();
+
+	// Map component indices to child items
+	int a_idx = -1; int b_idx = -1;
+	for (auto row = 0; row < parent.rowCount(); row++)
+	{
+		auto* it = qitem_cast<ObjectItem*>(parent.child(row));
+		if (it != nullptr)
+		{
+			a_idx = &(it->getObject()) == new_ptr ? row : a_idx;
+			b_idx = &(it->getObject()) == old_ptr ? row : b_idx;
+		}
+	} assert(a_idx >= 0 && b_idx >= 0);
+
+	auto child_a = parent.takeChild(a_idx);
+	auto child_b = parent.takeChild(b_idx);
+	parent.setChild(a_idx, child_b);
+	parent.setChild(b_idx, child_a);
+	return { static_cast<size_t>(a_idx), static_cast<size_t>(b_idx) };
+}
+
+
 //////////////////////////////////////////////////////////////////////////
 // RegularResourcesItem 
 //////////////////////////////////////////////////////////////////////////
@@ -133,17 +170,27 @@ void napkin::RootResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtti:
 		return;
 
 	// If it's a group, add it as such
+	ObjectItem* new_item = nullptr;
 	if (obj->get_type().is_derived_from<nap::IGroup>())
 	{
 		auto group_item = new GroupItem(static_cast<nap::IGroup&>(*obj));
 		this->appendRow({ group_item, new RTTITypeItem(obj->get_type()) });
-		connect(group_item, &GroupItem::childAdded, this, &RootResourcesItem::childAddedToGroup);
+		connect(group_item, &GroupItem::childAdded, [this](GroupItem& group, ObjectItem& item)
+			{
+				this->childAdded(item, &group);
+			});
+		connect(group_item, &GroupItem::indexChanged, this, &RootResourcesItem::indexChanged);
+		new_item = group_item;
 	}
 	else
 	{
 		// Add as regular item
-		this->appendRow({ createObjectItem(*obj), new RTTITypeItem(obj->get_type()) });
+		new_item = createObjectItem(*obj);
+		this->appendRow({ new_item, new RTTITypeItem(obj->get_type()) });
 	}
+
+	// Notify listeners
+	childAdded(*new_item, nullptr);
 }
 
 
@@ -217,6 +264,7 @@ void napkin::EntityResourcesItem::onObjectAdded(nap::rtti::Object* obj, nap::rtt
 
 	// Listen to changes
 	entity_item->connect(entity_item, &EntityItem::childAdded, this, &EntityResourcesItem::childAddedToEntity);
+	entity_item->connect(entity_item, &EntityItem::indexChanged, this, &EntityResourcesItem::indexChanged);
 }
 
 
@@ -332,6 +380,11 @@ QVariant ObjectItem::data(int role) const
 			AppContext::get().getThemeManager().getColor(theme::color::dimmedItem) :
 			QStandardItem::data(role);
 	}
+	case Qt::ToolTipRole:
+	{
+		const char* obj_desc = nap::rtti::getDescription(getObject().get_type());
+		return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
+	}
 	default:
 		return QStandardItem::data(role);
 	}
@@ -341,6 +394,7 @@ void ObjectItem::removeChildren()
 {
 	removeRows(0, rowCount());
 }
+
 
 QString ObjectItem::instanceName() const
 {
@@ -368,50 +422,9 @@ QString ObjectItem::instanceName() const
 	}
 
 	assert(false);
-	return "FAULTY";
+	return "";
 }
 
-std::string ObjectItem::componentPath() const
-{
-	{
-		auto ownerItem = qobject_cast<EntityInstanceItem*>(parentItem());
-		if (ownerItem)
-		{
-			std::vector<std::string> namePath = {mObject->mID};
-			auto parent = ownerItem;
-			while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
-			{
-				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = qobject_cast<EntityInstanceItem*>(parent->parentItem());
-			}
-
-			return "./" + nap::utility::joinString(namePath, "/");
-		}
-	}
-	// TODO: Merge this with the above code....
-	{
-		auto ownerItem = qobject_cast<EntityItem*>(parentItem());
-		if (ownerItem)
-		{
-			std::vector<std::string> namePath = {mObject->mID};
-
-			auto parent = ownerItem;
-			while (parent)
-			{
-				auto parent_entity = qobject_cast<EntityItem*>(parent->parentItem());
-				if (parent_entity == nullptr)
-					break;
-
-				namePath.insert(namePath.begin(), parent->instanceName().toStdString());
-				parent = parent_entity;
-			}
-
-			return "./" + nap::utility::joinString(namePath, "/");
-		}
-	}
-	assert(false);
-	return {"INVALID"};
-}
 
 int ObjectItem::childIndex(const ObjectItem& childItem) const
 {
@@ -425,6 +438,7 @@ int ObjectItem::childIndex(const ObjectItem& childItem) const
 	}
 	return -1;
 }
+
 
 int ObjectItem::nameIndex(const ObjectItem& childItem) const
 {
@@ -482,10 +496,12 @@ EntityItem::EntityItem(nap::Entity& entity, bool isPointer) : ObjectItem(entity,
 	// Populate item
 	populate();
 
+	// Handle data model changes
 	auto& ctx = AppContext::get();
-	connect(&ctx, &AppContext::componentAdded, this, &EntityItem::onComponentAdded);
+	connect(&ctx, &AppContext::propertyChildInserted, this, &EntityItem::onChildInserted);
 	connect(&ctx, &AppContext::childEntityAdded, this, &EntityItem::onEntityAdded);
 	connect(&ctx, &AppContext::propertyValueChanged, this, &EntityItem::onPropertyValueChanged);
+	connect(&ctx, &AppContext::arrayIndexSwapped, this, &EntityItem::onIndexSwapped);
 }
 
 
@@ -497,43 +513,76 @@ nap::Entity& EntityItem::getEntity()
 
 void EntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
+	// Bail if we're not handling this object
 	if (parent != mObject)
 		return;
 
 	// Create and add new item
 	auto* new_item = new EntityItem(*e, true);
 	new_item->connect(new_item, &EntityItem::childAdded, this, &EntityItem::childAdded);
-	insertRow(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
+	insertChild(parent->mChildren.size()-1, {new_item, new RTTITypeItem(e->get_type())});
 
 	// Notify listeners
 	childAdded(*this, *new_item);
 }
 
 
-void EntityItem::onComponentAdded(nap::Component* comp, nap::Entity* owner)
+void napkin::EntityItem::onChildInserted(const PropertyPath& path, size_t childIndex)
 {
-	if (owner != mObject)
+	// Bail if action not related to object
+	if (path.getObject() != mObject)
+		return;
+
+	// Check if it's the component property and add
+	auto comp_path = PropertyPath(mObject->mID, nap::Entity::componentsPropertyName(), *AppContext::get().getDocument());
+	if (path != comp_path)
 		return;
 
 	// Create and add new component
-	auto comp_item = new ComponentItem(*comp);
-	appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+	// TODO: Use this code path for child entities -> deprecating & removing the use of 'childEntityAdded'
+	auto array_elm = comp_path.getArrayElement(childIndex);
+	auto array_val = array_elm.getValue();
+	assert(array_val.get_type().is_wrapper() && array_val.get_type().get_wrapped_type().is_derived_from((RTTI_OF(nap::Component))));
+	auto component = array_val.extract_wrapped_value().get_value<nap::Component*>();
+
+	// Create and add new component
+	auto comp_item = new ComponentItem(*component);
+	int row_idx = getEntity().mChildren.size() + childIndex;
+	this->insertChild(row_idx, { comp_item, new RTTITypeItem(component->get_type()) });
 
 	// Notify listeners
 	childAdded(*this, *comp_item);
 }
 
 
+void napkin::EntityItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	// Bail if we're not handling this object
+	if (path.getObject() != mObject)
+		return;
+
+	// Only handle component index changes because sub-tree is rebuild when entity order changes
+	// TODO: properly handle child entity changes -> implementation below is optimized for it
+	auto comp_path = PropertyPath(mObject->mID, nap::Entity::componentsPropertyName(), *AppContext::get().getDocument());
+	if (path != comp_path)
+		return;
+
+	// Swap child items and notify
+	auto idx = swapItems(path, oldIndex, newIndex, *this);
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[1])));
+}
+
+
 void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 {
-	PropertyPath childrenPath(getEntity(),
-		nap::rtti::Path::fromString(nap::Entity::childrenPropertyName()), *AppContext::get().getDocument());
+	// Bail if we're not handling this object
+	if (mObject != path.getObject())
+		return;
 
-	// Check if this property was edited
-	assert(childrenPath.isValid());
-	if (path == childrenPath)
+	// Check if the children property was edited
+	auto child_path = PropertyPath(mObject->mID, nap::Entity::childrenPropertyName(), *AppContext::get().getDocument());
+	if (path == child_path)
 	{
-		// Re-populate
 		populate();
 	}
 }
@@ -541,9 +590,9 @@ void EntityItem::onPropertyValueChanged(const PropertyPath& path)
 
 const std::string EntityItem::unambiguousName() const
 {
-	if (auto entityItem = qobject_cast<EntityItem*>(parentItem()))
+	if (auto parent_entity = qobject_cast<EntityItem*>(parentItem()))
 	{
-		return ObjectItem::unambiguousName() + ":" + std::to_string(entityItem->nameIndex(*this));
+		return ObjectItem::unambiguousName() + ":" + std::to_string(parent_entity->nameIndex(*this));
 	}
 	return ObjectItem::unambiguousName();
 }
@@ -552,19 +601,21 @@ const std::string EntityItem::unambiguousName() const
 void napkin::EntityItem::populate()
 {
 	removeChildren();
+
+	// Create and add entities
 	auto& entity = getEntity();
 	for (auto& child : entity.mChildren)
 	{
 		auto* child_entity = new EntityItem(*child, true);
 		child_entity->connect(child_entity, &EntityItem::childAdded, this, &EntityItem::childAdded);
+		child_entity->connect(child_entity, &EntityItem::indexChanged, this, &EntityItem::indexChanged);
 		appendRow({ child_entity, new RTTITypeItem(child->get_type()) });
 	}
 
+	// Create and add component items
 	for (auto& comp : entity.mComponents)
 	{
-		// Create and add new component
-		auto comp_item = new ComponentItem(*comp);
-		appendRow({ comp_item, new RTTITypeItem(comp->get_type()) });
+		appendRow({ new ComponentItem(*comp), new RTTITypeItem(comp->get_type()) });
 	}
 }
 
@@ -598,12 +649,14 @@ napkin::GroupItem::GroupItem(nap::IGroup& group) : ObjectItem(group, false)
 			assert(path.getPointee()->get_type().is_derived_from(RTTI_OF(nap::IGroup)));
 			GroupItem* group_item = new GroupItem(*rtti_cast<nap::IGroup>(path.getPointee()));
 			this->connect(group_item, &GroupItem::childAdded, this, &GroupItem::childAdded);
+			this->connect(group_item, &GroupItem::indexChanged, this, &GroupItem::indexChanged);
 			this->appendRow( { group_item, new RTTITypeItem(path.getPointee()->get_type()) });
 			return true;
 		}, 0);
 
 	// Listen to data-model changes
 	connect(&AppContext::get(), &AppContext::propertyChildInserted, this, &GroupItem::onPropertyChildInserted);
+	connect(&AppContext::get(), &AppContext::arrayIndexSwapped, this, &GroupItem::onIndexSwapped);
 }
 
 
@@ -614,7 +667,7 @@ QVariant napkin::GroupItem::data(int role) const
 	case Qt::DecorationRole:
 		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_GROUP);
 	default:
-		return QStandardItem::data(role);
+		return ObjectItem::data(role);
 	}
 }
 
@@ -641,7 +694,7 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		PropertyPath array_path(group, group.getMembersProperty(), *AppContext::get().getDocument());
 		auto member_el = path.getArrayElement(index);
 		ObjectItem* new_item = new ObjectItem(*member_el.getPointee());
-		this->insertRow(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
+		this->insertChild(index, { new_item, new RTTITypeItem(member_el.getPointee()->get_type()) });
 		childAdded(*this, *new_item);
 	}
 	// Otherwise, insert it at the end
@@ -658,9 +711,22 @@ void napkin::GroupItem::onPropertyChildInserted(const PropertyPath& path, int in
 		int child_index = index + members_path.getArrayLength();
 
 		// Insert
-		this->insertRow(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
+		this->insertChild(child_index, { new_group, new RTTITypeItem(child_el.getPointee()->get_type()) });
 		childAdded(*this, *new_group);
 	}
+}
+
+
+void napkin::GroupItem::onIndexSwapped(const PropertyPath& path, size_t oldIndex, size_t newIndex)
+{
+	// Check if this group has changed
+	nap::IGroup& group = getGroup();
+	if (!(path.getObject() == &group))
+		return;
+
+	// Swap child indices and notify
+	auto idx = swapItems(path, oldIndex, newIndex, *this);
+	indexChanged(*this, *qitem_cast<ObjectItem*>(child(idx[1])));
 }
 
 
@@ -761,20 +827,21 @@ nap::Scene& napkin::SceneItem::getScene()
 // EntityInstanceItem
 //////////////////////////////////////////////////////////////////////////
 
-EntityInstanceItem::EntityInstanceItem(nap::Entity& e, nap::RootEntity& rootEntity)
-		: mRootEntity(rootEntity), ObjectItem(e, false)
+EntityInstanceItem::EntityInstanceItem(nap::Entity& entity, nap::RootEntity& rootEntity)
+		: mRootEntity(rootEntity), ObjectItem(entity, false)
 {
-	assert(&mRootEntity);
-	for (auto comp : e.mComponents)
-		onComponentAdded(comp.get(), &entity());
-	for (auto childEntity : e.mChildren)
-		if (childEntity.get())
-			onEntityAdded(childEntity.get(), &entity());
+	setEditable(false);
+	for (auto& childEntity : entity.mChildren)
+		appendRow(new EntityInstanceItem(*childEntity, mRootEntity));
+
+	for (auto& comp : entity.mComponents)
+		appendRow(new ComponentInstanceItem(*comp, mRootEntity));
 
 	auto ctx = &AppContext::get();
 	connect(ctx, &AppContext::componentAdded, this, &EntityInstanceItem::onComponentAdded);
 	connect(ctx, &AppContext::childEntityAdded, this, &EntityInstanceItem::onEntityAdded);
 }
+
 
 nap::RootEntity& EntityInstanceItem::rootEntity() const
 {
@@ -782,16 +849,12 @@ nap::RootEntity& EntityInstanceItem::rootEntity() const
 }
 
 
-//////////////////////////////////////////////////////////////////////////
-// EntityInstanceItem
-//////////////////////////////////////////////////////////////////////////
-
 void EntityInstanceItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
 {
 	if (parent != &entity())
 		return;
 
-	appendRow(new EntityInstanceItem(*e, mRootEntity));
+	insertChild(nap::math::max<int>(parent->mChildren.size() - 1, 0), { new EntityInstanceItem(*e, mRootEntity) });
 }
 
 void EntityInstanceItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
@@ -808,7 +871,6 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 	if (ownerItem)
 	{
 		std::vector<std::string> namePath = {mObject->mID};
-
 		auto parent = ownerItem;
 		while (parent != nullptr && !qobject_cast<RootEntityItem*>(parent))
 		{
@@ -817,7 +879,6 @@ const PropertyPath EntityInstanceItem::propertyPath() const
 		}
 
 		std::string path = "./" + nap::utility::joinString(namePath, "/");
-
 		return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 	}
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
@@ -842,48 +903,15 @@ nap::Entity& napkin::EntityInstanceItem::entity() const
 // RootEntityItem
 //////////////////////////////////////////////////////////////////////////
 
-RootEntityItem::RootEntityItem(nap::RootEntity& e)
-		: mRootEntity(e), EntityInstanceItem(*e.mEntity.get(), e)
-{
-	assert(&mRootEntity);
-}
-
-
-const PropertyPath RootEntityItem::propertyPath() const
-{
-	return EntityInstanceItem::propertyPath();
-}
-
-
-nap::RootEntity& RootEntityItem::rootEntity() const
-{
-	assert(&mRootEntity);
-	return mRootEntity;
-}
-
-
-void RootEntityItem::onEntityAdded(nap::Entity* e, nap::Entity* parent)
-{
-	if (parent != mRootEntity.mEntity.get())
-		return;
-
-	appendRow(new EntityInstanceItem(*e, mRootEntity));
-}
-
-
-void RootEntityItem::onComponentAdded(nap::Component* c, nap::Entity* owner)
-{
-	if (owner != mRootEntity.mEntity.get())
-		return;
-
-	appendRow(new ComponentInstanceItem(*c, mRootEntity));
-}
+RootEntityItem::RootEntityItem(nap::RootEntity& rootEntity) : EntityInstanceItem(*rootEntity.mEntity.get(), rootEntity)
+{ }
 
 
 SceneItem* RootEntityItem::sceneItem()
 {
 	return qobject_cast<SceneItem*>(parentItem());
 }
+
 
 //////////////////////////////////////////////////////////////////////////
 // ComponentInstanceItem
@@ -892,59 +920,57 @@ SceneItem* RootEntityItem::sceneItem()
 ComponentInstanceItem::ComponentInstanceItem(nap::Component& comp, nap::RootEntity& rootEntity)
 		: ObjectItem(comp, false), mRootEntity(rootEntity)
 {
-	assert(&mRootEntity);
+	setEditable(false);
 }
+
 
 const PropertyPath ComponentInstanceItem::propertyPath() const
 {
 	return PropertyPath(absolutePath(), *AppContext::get().getDocument());
 }
 
+
 nap::Component& ComponentInstanceItem::component() const
 {
 	return *rtti_cast<nap::Component>(mObject);
 }
+
 
 nap::RootEntity& ComponentInstanceItem::rootEntity() const
 {
 	return mRootEntity;
 }
 
+
 QVariant ComponentInstanceItem::data(int role) const
 {
 	if (role == Qt::TextColorRole)
 	{
-		if (instanceProperties())
+		for (const auto& overrides : mRootEntity.mInstanceProperties)
 		{
-			return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+			// See if component matches
+			if (overrides.mTargetComponent.get() != &component())
+				continue;
+
+			// Create relative component path for current instance.
+			// We do this so we can compare if the override of this component targets the correct instance.
+			// TODO: Remove from gui code and move to path utilities.
+			auto* parent = qitem_cast<EntityInstanceItem*>(parentItem());
+			std::vector<std::string> target_path = { mObject->mID };
+			while (qitem_cast<RootEntityItem*>(parent) == nullptr)
+			{
+				target_path.insert(target_path.begin(), parent->instanceName().toStdString());
+				parent = qitem_cast<EntityInstanceItem*>(parent->parentItem());
+			} 
+
+			// If instance path matches return override colour
+			std::string instance_path = "./" + nap::utility::joinString(target_path, "/");
+			if (overrides.mTargetComponent.toString() == instance_path)
+			{
+				return AppContext::get().getThemeManager().getColor(theme::color::instancePropertyOverride);
+			}
 		}
 	}
 	return ObjectItem::data(role);
-}
-
-nap::ComponentInstanceProperties* ComponentInstanceItem::instanceProperties() const
-{
-	if (mInstancePropertiesResolved)
-		return hasInstanceProperties() ? &mInstanceProperties : nullptr;
-
-	for (const auto& instprops : mRootEntity.mInstanceProperties)
-	{
-		if (instprops.mTargetComponent.get() != &component())
-			continue;
-		if (!isComponentInstancePathEqual(mRootEntity, *instprops.mTargetComponent.get(),
-										  instprops.mTargetComponent.toString(), componentPath()))
-			continue;
-
-		mInstanceProperties = instprops;
-		break;
-	}
-
-	mInstancePropertiesResolved = true;
-	return &mInstanceProperties;
-}
-
-bool ComponentInstanceItem::hasInstanceProperties() const
-{
-	return mInstanceProperties.mTargetComponent.get();
 }
 

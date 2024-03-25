@@ -1,6 +1,6 @@
 <br>
 <p align="center">
-  <img width=384 src="https://download.nap.tech/identity/svg/logos/nap_logo_blue.svg">
+  <img width=384 src="https://download.nap-labs.tech/identity/svg/logos/nap_logo_blue.svg">
 </p>
 
 *	[Description](#description)
@@ -29,11 +29,11 @@
 
 NAP Framework ships with many useful modules, including: a Vulkan 2D/3D render engine, a Vulkan Compute module, a multi-channel audio engine for music playback, recording and analysis, a sequencer to control parameters in real-time, an editor to author application content, a web-portal to control and monitor NAP applications in a browser, a system for creating and loading presets, a video player powered by FFmpeg and a Python programming interface.
 
-NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [nap.tech](https://nap.tech) website.
+NAP also has built in support for many common protocols and standards, including: WebSocket, MIDI, OSC, Artnet, Serial, EtherCAT, OpenCV and SQLite. NAP has been battle tested in production for years. For more information about NAP, how it is commonly used and what it can do for you, visit the [nap-framework.tech](https://nap-framework.tech) website.
 
 <br>
 <p align="center">
-  <img width=256 img src="https://docs.nap.tech/content/vulkan-logo.svg" >
+  <img width=256 img src="https://docs.nap-framework.tech/content/vulkan-logo.svg" >
 </p>
 
 ## Philosophy
@@ -44,21 +44,21 @@ NAP applications are lean and mean: only package and ship what you actually use.
 
 ## Documentation
 
-NAP documentation can be found online at [docs.nap.tech](https://docs.nap.tech/pages.html). Take note that the installation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
+NAP documentation can be found online at [docs.nap-framework.tech](https://docs.nap-framework.tech/pages.html). Take note that the installation instructions on that website apply to the binary (compiled) NAP package only. Follow the instructions in this document to build and work against NAP Framework from source.
 
 ## Gallery
 
 Visit [nap-labs.tech](https://nap-labs.tech) for more examples
 
-![Between Mind and Matter, Nick Verstand](https://download.nap.tech/shared/bmm_1280.jpg)
+![Between Mind and Matter, Nick Verstand](https://download.nap-labs.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
-![Habitat, Heleen Blanken](https://download.nap.tech/shared/habitat_1280.jpg)
+![Habitat, Heleen Blanken](https://download.nap-labs.tech/shared/habitat_1280.jpg)
 [Habitat](https://www.heleenblanken.com/habitatbyheleenblanken) by Heleen Blanken, Naivi and Stijn van Beek
-![Shylight, Studio Drift](https://download.nap.tech/shared/shylight_basel_1280.jpg)
+![Shylight, Studio Drift](https://download.nap-labs.tech/shared/shylight_basel_1280.jpg)
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
-![4DSound System](https://download.nap.tech/shared/4D_1280.jpg)
+![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap.tech/shared/napkin_1280.jpg)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_1280.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -69,21 +69,21 @@ Currently, whether working with the packaged framework release or against the fr
 
 **x86**
 ```
-x86-64: Windows (10 & 11), Visual Studio 2019 (v142)
-x86-64: Ubuntu Linux LTS (v20.04 & v22.04)
-x86-64: macOS Catalina (v10.15)
+x86-64: Windows (10 & 11), Visual Studio 2019 - MSVC
+x86-64: Ubuntu Linux LTS (v20.04 & v22.04) - GCC
+x86-64: macOS Catalina (v10.15) - Clang
 ```
 **ARM**
 ```
 armhf: Raspberry Pi OS (v11)
-arm64: Ubuntu Linux LTS (v20.04) *experimental*
+arm64: Ubuntu Linux LTS (v22.04) *experimental*
 ```
 
 ## Binary Packages
 
 Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. For most developers this is the best place to start. Our developer experience is tuned to work with the packaged version of NAP, where the process of managing projects and modules is more streamlined. Certain functionality, eg. packaging a project for distribution, is only available through a NAP package, which is [created from source](#build-your-own-nap-distribution-package).
 
-When working against a binary package, follow the official [installation](https://docs.nap.tech) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
+When working against a binary package, follow the official [installation](https://docs.nap-framework.tech) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
 
 ## Raspberry Pi
 
@@ -115,8 +115,8 @@ The editor (Napkin) depends on QT:
 		- During installation select **Custom installation** 
 		- Filter on the **LTS** category to download and install Qt 5.15 for your target platform
 	- ARM
-		- [Download](https://download.nap.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://download.nap.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
+		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
+		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
 Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.12.11\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
@@ -170,11 +170,11 @@ Note that when you make manual changes to the build system (by editing CMake or 
 
 ### Download Module
 
-A list of publicly available user modules can be found at [modules.nap.tech](https://modules.nap.tech). These modules are created, maintained and shared by NAP users, independent of NAP Framework.
+A list of publicly available user modules can be found at [modules.nap-framework.tech](https://modules.nap-framework.tech). These modules are created, maintained and shared by NAP users, independent of NAP Framework.
 
 ### Share Your Module
 
-You can share your module with other NAP users by making it available on [modules.nap.tech](https://modules.nap.tech). Follow the instructions [here](https://github.com/napframework/nap-modules#register-your-module) to register it.
+You can share your module with other NAP users by making it available on [modules.nap-framework.tech](https://modules.nap-framework.tech). Follow the instructions [here](https://github.com/napframework/nap-modules#register-your-module) to register it.
 
 ---
 

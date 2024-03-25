@@ -3,14 +3,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "pipelinekey.h"
+#include "materialinstance.h"
 
 namespace nap
 {
-	PipelineKey::PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading, ECullMode cullMode, EPolygonMode polygonMode) :
+	PipelineKey::PipelineKey(const Shader& shader, EDrawMode drawMode, EDepthMode depthMode, EBlendMode blendMode, ShaderConstantHash constantHash, ECullWindingOrder cullWindingOrder, VkFormat colorFormat, VkFormat depthFormat, VkSampleCountFlagBits sampleCount, bool sampleShading, ECullMode cullMode, EPolygonMode polygonMode) :
 		mShader(&shader),
 		mDrawMode(drawMode),
 		mDepthMode(depthMode),
 		mBlendMode(blendMode),
+		mConstantHash(constantHash),
 		mCullWindingOrder(cullWindingOrder),
 		mColorFormat(colorFormat),
 		mDepthFormat(depthFormat),
@@ -18,12 +20,12 @@ namespace nap
 		mSampleShading(sampleShading),
 		mCullMode(cullMode),
 		mPolygonMode(polygonMode)
-	{ }
+	{}
 
 
 	bool PipelineKey::operator==(const PipelineKey& rhs) const
 	{
-		return mShader == rhs.mShader && 
+		return mShader == rhs.mShader &&
 			mDrawMode == rhs.mDrawMode &&
 			mDepthMode == rhs.mDepthMode &&
 			mBlendMode == rhs.mBlendMode &&
@@ -33,16 +35,20 @@ namespace nap
 			mSampleCount == rhs.mSampleCount &&
 			mSampleShading == rhs.mSampleShading &&
 			mCullMode == rhs.mCullMode &&
-			mPolygonMode == rhs.mPolygonMode;
+			mPolygonMode == rhs.mPolygonMode &&
+			mConstantHash == rhs.mConstantHash;
 	}
 
 
-	ComputePipelineKey::ComputePipelineKey(const ComputeShader& shader) :
-		mShader(&shader) {}
+	ComputePipelineKey::ComputePipelineKey(const ComputeShader& computeShader, ShaderConstantHash constantHash) :
+		mShader(&computeShader),
+		mConstantHash(constantHash)
+	{}
 
 
 	bool ComputePipelineKey::operator==(const ComputePipelineKey& rhs) const
 	{
-		return mShader == rhs.mShader;
+		return mShader == rhs.mShader &&
+			mConstantHash == rhs.mConstantHash;
 	}
 }

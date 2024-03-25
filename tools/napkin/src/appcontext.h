@@ -366,12 +366,6 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked after an object has changed drastically
-		 */
-		void objectChanged(nap::rtti::Object* obj);
-
-		/**
-		 * Qt Signal
 		 * Invoked just before resource is removed, including entities, components and regular resources
 		 * @param object The object about to be removed
 		 */
@@ -434,6 +428,15 @@ namespace napkin
 		 * @param childIndex The index of the child that was removed
 		 */
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked when the index of a child changes
+		 * @param parentPath the path to the parent of the index that has changed
+		 * @param fromIndex the original index
+		 * @param toIndex the new index
+		 */
+		void arrayIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread

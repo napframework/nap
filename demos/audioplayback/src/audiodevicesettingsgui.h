@@ -6,7 +6,7 @@
 
 #include <map>
 
-#include <audio/service/audioservice.h>
+#include <audio/service/portaudioservice.h>
 
 namespace nap
 {
@@ -21,10 +21,10 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param audioService The audio service of which the configuration will be edited by this gui
+             * @param portAudioService The portaudio service of which the configuration will be edited by this gui
              * @param showInputs True if the input settings are also edited
              */
-            AudioDeviceSettingsGui(AudioService& audioService, bool showInputs = true);
+            AudioDeviceSettingsGui(PortAudioService& portAudioService, bool showInputs = true);
 
             /**
              * Draws the Gui for the audio service configuration settings.
@@ -48,7 +48,7 @@ namespace nap
             };
 
         private:
-	        AudioService& mAudioService;
+	        PortAudioService& mAudioService;
             int mDriverSelection = 0;
             int mInputDeviceSelection = 0;
             int mOutputDeviceSelection = 0;

@@ -117,15 +117,10 @@ namespace napkin
 
 		/**
 		 * If this path refers to a pointer, get the Object it's pointing to.
-		 * @return The object this property is pointing to or nullptr if this path does not represent a pointer.
+		 * Return nullptr if the object doesn't exist or is not a pointer.
+		 * @return The object this property is pointing to, nullptr if the object doesn't exist or isn't a pointer
 		 */
 		nap::rtti::Object* getPointee() const;
-
-		/**
-		 * If this path refers to a pointer, set the Object it's pointing to
-		 * @param pointee The Object this property will be pointing to.
-		 */
-		void setPointee(nap::rtti::Object* pointee);
 
 		/**
 		 * Get the parent of this path
@@ -196,7 +191,7 @@ namespace napkin
 		std::string toString() const;
 
 		/**
-		 * @return True if this path represents an instance
+		 * @return True if this path edits an instance property
 		 */
 		bool isInstanceProperty() const;
 
@@ -209,11 +204,6 @@ namespace napkin
 		 * Remove overridden value
 		 */
 		void removeOverride();
-
-		/**
-		 * @return True if this path has any children with an override
-		 */
-		bool hasOverriddenChildren() const;
 
 		/**
 		 * @return true when the path points to a property, false when it points to an Object
@@ -289,6 +279,10 @@ namespace napkin
 		void iterateProperties(PropertyVisitor visitor, int flags = 0) const;
 		std::vector<PropertyPath> getProperties(int flags = 0) const;
 		std::string getComponentInstancePath() const;
+
+		/**
+		 * @return entity as root in the scene, along with it's instance properties
+		 */
 		nap::RootEntity* getRootEntity() const;
 
 		/**
@@ -302,7 +296,7 @@ namespace napkin
 		 * Get the actual index of this child Entity under its parent Entity
 		 * @return the actual index or -1 if not found
 		 */
-		int getRealChildEntityIndex() const;
+		int getEntityIndex() const;
 
 		/**
 		 * Replaces every occurrence of oldName with newName
@@ -326,24 +320,22 @@ namespace napkin
 		void iterateChildrenProperties(PropertyVisitor visitor, int flags) const;
 		void iteratePointerProperties(PropertyVisitor visitor, int flags) const;
 
-		nap::ComponentInstanceProperties* instanceProps() const;
+		nap::ComponentInstanceProperties* getInstanceProperties() const;
 		nap::ComponentInstanceProperties& getOrCreateInstanceProps();
-		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
-		/**
-		 * This PropertyPath is most likely pointing to a Component, retrieve it here.
-		 * @return The component this PropertyPath is pointing to.
-		 */
-		nap::Component* component() const;
-		nap::TargetAttribute* targetAttribute() const;
+		nap::TargetAttribute* getTargetAttribute() const;
 		nap::TargetAttribute& getOrCreateTargetAttribute();
+		void removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const;
 
 		std::string objectPathStr() const;
 		std::string propPathStr() const;
+		rttr::variant patchValue(const rttr::variant& value) const;
 
 		Document* mDocument = nullptr;
-		PPath mObjectPath;
-		PPath mPropertyPath;
-		mutable nap::rtti::Object* mObject = nullptr;	
+		PPath mObjectPath;									//< Objects pointing to the property
+		PPath mPropertyPath;								//< Path to property
+		mutable nap::rtti::Object* mObject = nullptr;		//< Resolved object that holds the property
+		mutable nap::RootEntity* mRootEntity = nullptr;		//< Root entity in the scene, can be null
+		mutable bool mRootQueried = false;					//< If the root has been queried
 	};
 }
 

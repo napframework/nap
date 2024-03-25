@@ -13,6 +13,25 @@
 
 namespace nap
 {
+	// Forward declares
+	class CameraComponentInstance;
+
+
+	/**
+	 * Base class for perspective and orthographic camera resource.
+	 */
+	class NAPAPI CameraComponent : public Component
+	{
+		RTTI_ENABLE(Component)
+		DECLARE_COMPONENT(CameraComponent, CameraComponentInstance)
+	public:
+		/**
+		 * The perspective camera needs on a transform to calculate it's view matrix
+		 */
+		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
+	};
+
+
 	/**
 	 * Base class for perspective and orthographic cameras.
 	 */
@@ -77,6 +96,16 @@ namespace nap
 		const glm::ivec2& getRenderTargetSize() const					{ return mRenderTargetSize; }
 
 		/**
+		 * @return the near clipping plane of the camera
+		 */
+		virtual float getNearClippingPlane() const = 0;
+
+		/**
+		 * @return the far clipping plane of the camera
+		 */
+		virtual float getFarClippingPlane() const = 0;
+
+		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
 		 * This can be different from the default if the renderer uses a different coordinate system.
 		 * Use this matrix to transform a 3d scene in to a 2d projection.
@@ -85,7 +114,6 @@ namespace nap
 		virtual const glm::mat4& getRenderProjectionMatrix() const = 0;
 
 	private:
-		glm::ivec2	mRenderTargetSize;			// The size of the render target we're rendering to
-
+		glm::ivec2	mRenderTargetSize = { 1, 1 };						// The size of the render target we're rendering to
 	};
 }

@@ -13,12 +13,12 @@
 
 // RTTI
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource)
-	RTTI_CONSTRUCTOR(nap::audio::AudioService &)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Audio)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiAudioFileResource)
-	RTTI_CONSTRUCTOR(nap::audio::AudioService &)
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("AudioFilePaths", &nap::audio::MultiAudioFileResource::mAudioFilePaths, nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 

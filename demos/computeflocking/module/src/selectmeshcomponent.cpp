@@ -12,7 +12,7 @@
 // nap::SelectMeshComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::SelectMeshComponent)
 	RTTI_PROPERTY("Meshes",	&nap::SelectMeshComponent::mMeshes,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",	&nap::SelectMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Index",	&nap::SelectMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::SelectMeshComponentInstance run time class definition 
@@ -56,23 +56,18 @@ namespace nap
 		if (!errorState.check(mMeshes.size() > 0, "No mesh files to select"))
 			return false;
 
-		if (resource->mIndex != nullptr)
-		{
-			// Select the mesh to display based on resource index
-			mIndexParam = resource->mIndex.get();
-			mIndexParam->setRange(0, mMeshes.size()-1);
-			selectMesh(mIndexParam->mValue);
+		// Select the mesh to display based on resource index
+		mIndexParam = resource->mIndex.get();
+		mIndexParam->setRange(0, mMeshes.size()-1);
+		onMeshSelected(mIndexParam->mValue);
 
-			mIndexParam->valueChanged.connect([this](int newIndex)
-			{
-				selectMesh(newIndex);
-			});
-		}
+		mIndexParam->valueChanged.connect(mMeshSelectedSlot);
+
 		return true;
 	}
 
 
-	void SelectMeshComponentInstance::selectMesh(int index)
+	void SelectMeshComponentInstance::onMeshSelected(int index)
 	{
 		mCurrentIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mCurrentMesh = &mMeshes[mCurrentIndex];

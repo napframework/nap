@@ -19,7 +19,7 @@ namespace nap
 	/**
 	 * Orthographic camera space operation mode
 	 */
-	enum EOrthoCameraMode
+	enum class EOrthoCameraMode : nap::uint8
 	{
 		PixelSpace = 0,			///< Planes are scaled automatically to pixel coordinates. Near/Far is retrieved from properties.
 		CorrectAspectRatio,		///< User provides all planes, but height is recalculated for correct aspect ratio
@@ -32,29 +32,23 @@ namespace nap
 	 */
 	struct NAPAPI OrthoCameraProperties
 	{
-		EOrthoCameraMode mMode = PixelSpace;			///< Property: 'Mode' defaults to pixel space
-		float mNearClippingPlane = 1.0f;				///< Property: 'NearClippingPlane' camera near clipping plane
-		float mFarClippingPlane = 1000.0f;				///< Property: 'FarClippingPlane' camera far clipping plane
-		float mLeftPlane = 0.0f;						///< Property: 'LeftPlane' used when mode is CorrectAspectRatio or Custom
-		float mRightPlane = 100.0f;						///< Property: 'RightPlane' used when mode is CorrectAspectRatio or Custom
-		float mTopPlane = 100.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom 
-		float mBottomPlane = 0.0f;						///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom
-		math::Rect mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };	///< Property: 'ClipRect' normalized rectangle used to clip/crop the camera view
+		EOrthoCameraMode mMode = EOrthoCameraMode::PixelSpace;		///< Property: 'Mode' defaults to pixel space
+		float mNearClippingPlane = 1.0f;							///< Property: 'NearClippingPlane' camera near clipping plane
+		float mFarClippingPlane = 1000.0f;							///< Property: 'FarClippingPlane' camera far clipping plane
+		float mLeftPlane = 0.0f;									///< Property: 'LeftPlane' used when mode is CorrectAspectRatio or Custom
+		float mRightPlane = 100.0f;									///< Property: 'RightPlane' used when mode is CorrectAspectRatio or Custom
+		float mTopPlane = 100.0f;									///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom 
+		float mBottomPlane = 0.0f;									///< Property: 'TopPlane' used when mode is CorrectAspectRatio or Custom
+		math::Rect mClipRect = { {0.0f, 0.0f}, {1.0f, 1.0f} };		///< Property: 'ClipRect' normalized rectangle used to clip/crop the camera view
 	};
 	
 	/**
 	 * Orthographic camera resource.
 	 */
-	class NAPAPI OrthoCameraComponent : public Component
+	class NAPAPI OrthoCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(Component)
+		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(OrthoCameraComponent, OrthoCameraComponentInstance)
-
-		/**
-		 * This camera depends on a transform to calculate the view matrix.
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 	public:
 		OrthoCameraProperties mProperties;		///< Property:'Properties' the camera settings
 	};
@@ -106,7 +100,7 @@ namespace nap
 		/**
 		* @return The planes for this orthographic camera.
 		*/
-		const OrthoCameraProperties& getProperties() { return mProperties; }
+		const OrthoCameraProperties& getProperties() const { return mProperties; }
 
 		/**
 		* Sets the orthographic camera properties.
@@ -131,6 +125,16 @@ namespace nap
 		* Restores the clip rectangle to a unit rectangle, disabling clipping
 		*/
 		void restoreClipRect();
+
+		/**
+		 * @return camera near clipping plane
+		 */
+		virtual float getNearClippingPlane() const override;
+
+		/**
+		 * @return camera far clipping plane
+		 */
+		virtual float getFarClippingPlane() const override;
 
 		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
@@ -170,6 +174,7 @@ namespace nap
 		void updateProjectionMatrices() const;
 
 	private:
+		mutable glm::mat4x4				mViewMatrix;							// The composed view matrix
 		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
 		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
 		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated

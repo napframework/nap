@@ -15,7 +15,7 @@ namespace nap
 {
 	namespace rtti
 	{
-		static const char* sIDPropertyName = "mID";
+		constexpr const char* sIDPropertyName = "mID";
 
         /**
          * Base class of all top-level objects that support serialization / de-serialization.

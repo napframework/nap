@@ -119,8 +119,8 @@ namespace nap
 			cell = std::make_unique<RenderTexture2D>(mRenderService->getCore());
 			cell->mWidth = mCellWidth;
 			cell->mHeight = mCellHeight;
-			cell->mUsage = ETextureUsage::DynamicRead;
-			cell->mFormat = mTextureFormat;
+			cell->mUsage = Texture::EUsage::DynamicRead;
+			cell->mColorFormat = mTextureFormat;
 
 			if (!cell->init(errorState)) 
 			{
