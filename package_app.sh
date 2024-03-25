@@ -76,15 +76,19 @@ echo Cleaning previous install output...
 rm -rf install/$app_title
 
 # Rename output directory to app title
-mv install/MyApp install/$app_title
+if [ "$(uname)" = "Darwin" ]; then
+  mv install/MyApp.app install/$app_title
+else
+  mv install/MyApp install/$app_title
+fi
 
 # Codesign MacOS app bundle
 if [ "$(uname)" = "Darwin" ]; then
   echo Codesigning MacOS bundle...
   if [ "$#" -lt "3" ]; then
-    codesign --deep -s - -f $install_location
+    codesign --deep -s - -f install/$app_title
   else
-    codesign --deep -s "$3" -f -i "com.$target.napframework.www" -f $install_location
+    codesign --deep -s "$3" -f -i "com.$target.napframework.www" -f install/$app_title
   fi
 fi
 
