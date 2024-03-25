@@ -9,18 +9,26 @@ function(target_link_import_library target library)
     get_filename_component(library_file_name ${library_path} NAME)
     get_target_property(include_dir ${library} INCLUDE_DIRECTORIES)
     get_target_property(library_type ${library} TYPE)
-    target_link_libraries(${target} ${library_path})
+
     if (EXISTS ${include_dir})
         target_include_directories(${target} PUBLIC ${include_dir})
     endif ()
+
     if (${library_type} STREQUAL SHARED_LIBRARY)
-#        set(library_path $<TARGET_FILE:${library}>)
+        if(UNIX)
+            target_link_libraries(${target} ${library_path})
+        else ()
+            target_link_libraries(${target} ${library})
+        endif()
         add_custom_command(
                 TARGET ${target} POST_BUILD
                 COMMAND ${CMAKE_COMMAND} -E copy_if_different
                 ${library_path}
                 ${LIB_DIR})
         install(FILES ${LIB_DIR}/${library_file_name} TYPE LIB OPTIONAL)
+    else ()
+        # Static libs are linked with absolute path
+        target_link_libraries(${target} ${library_path})
     endif()
 endfunction()
 
@@ -54,7 +62,7 @@ function(add_import_library target_name implib dll include_dir)
     endif()
 
     add_library(${target_name} SHARED IMPORTED GLOBAL)
-    target_include_directories(${target_name} INTERFACE ${include_dir})
+#    target_include_directories(${target_name} INTERFACE ${include_dir})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_LOCATION ${dll})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_IMPLIB ${implib})
     set_property(TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES ${include_dir})
