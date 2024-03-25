@@ -8,7 +8,7 @@ set(lib_dir ${platform_dir}/lib)
 
 if(WIN32)
     set(staticlib ${lib_dir}/${PROJECT_NAME}.lib)
-    add_static_import_library(${PROJECT_NAME} ${implib} ${include_dir})
+    add_static_import_library(${PROJECT_NAME} ${staticlib} ${include_dir})
 else ()
     set(implib ${lib_dir}/${implib_prefix}${PROJECT_NAME}${implib_suffix})
     set(dll ${lib_dir}/${dll_prefix}${PROJECT_NAME}${dll_suffix})
