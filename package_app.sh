@@ -15,10 +15,12 @@ if ! [ -x "$(command -v cmake)" ]; then
   return 0
 fi
 
-# Make sure jq is installed
+# Make sure jq is installed on unix
 if [ "$(uname)" = "Darwin" ]; then
   if ! [ -x "$(command -v jq)" ]; then
-    brew install jq
+    echo Jq json parser not found. To install from hemobrew run:
+    echo brew install jq
+    return 0
   fi
 elif [ "$(uname)" = "Linux" ]; then
   if ! [ -x "$(command -v jq)" ]; then
@@ -26,9 +28,9 @@ elif [ "$(uname)" = "Linux" ]; then
     echo sudo apt install jq
     return 0
   fi
-else
+#else
   # Windows
-  curl -L -o jq.exe https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe
+  # curl -L -o jq.exe https://github.com/stedolan/jq/releases/latest/download/jq-win64.exe
 fi
 
 target=$1
@@ -67,9 +69,11 @@ else
   elif [ "$(uname)" = "Linux" ]; then
     app_title=`jq -r '.Title' $build_directory/bin/$target.json`
   else
-    app_title=`./jq -r '.Title' $build_directory/bin/$target.json`
+    # Use bundled jq.exe
+    app_title=`./thirdparty/jq/msvc/x86_64/jq.exe -r '.Title' $build_directory/bin/$target.json`
   fi
 fi
+echo App title is: $app_title
 
 # Cleaning previous install, if any
 echo Cleaning previous install output...
@@ -98,8 +102,8 @@ if [ $# = "1" ]; then
   rm -rf build
 fi
 
-# Remove local installation of jq.exe
-if [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "Linux" ]; then
-  echo Removing local installation of jq.exe...
-  rm jq.exe
-fi
+## Remove local installation of jq.exe
+#if [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "Linux" ]; then
+#  echo Removing local installation of jq.exe...
+#  rm jq.exe
+#fi
