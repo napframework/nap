@@ -44,8 +44,6 @@ function(add_import_library target_name implib dll include_dir)
     get_filename_component(dll ${dll} REALPATH)
     get_filename_component(include_dir ${include_dir} REALPATH)
 
-    message(STATUS ${dll})
-
     if (NOT EXISTS ${dll})
         message(WARNING "Dynamic library for ${target_name} not found for this platform. Tried: ${dll}")
         return()
@@ -62,7 +60,6 @@ function(add_import_library target_name implib dll include_dir)
     endif()
 
     add_library(${target_name} SHARED IMPORTED GLOBAL)
-    #    target_include_directories(${target_name} INTERFACE ${include_dir})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_LOCATION ${dll})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_IMPLIB ${implib})
     set_property(TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES ${include_dir})
