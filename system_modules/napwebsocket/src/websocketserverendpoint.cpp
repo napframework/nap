@@ -23,32 +23,33 @@ RTTI_BEGIN_ENUM(nap::WebSocketServerEndPointBase::EAccessMode)
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServerEndPointBase)
-        RTTI_PROPERTY("AllowPortReuse", &nap::WebSocketServerEndPointBase::mAllowPortReuse, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("LogConnectionUpdates", &nap::WebSocketServerEndPointBase::mLogConnectionUpdates, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Port", &nap::WebSocketServerEndPointBase::mPort, nap::rtti::EPropertyMetaData::Required)
-        RTTI_PROPERTY("IPAddress", &nap::WebSocketServerEndPointBase::mIPAddress, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("AccessMode", &nap::WebSocketServerEndPointBase::mMode, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("ConnectionLimit", &nap::WebSocketServerEndPointBase::mConnectionLimit, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("LibraryLogLevel", &nap::WebSocketServerEndPointBase::mLibraryLogLevel, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("AllowControlOrigin", &nap::WebSocketServerEndPointBase::mAccessAllowControlOrigin, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Clients", &nap::WebSocketServerEndPointBase::mClients, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+        RTTI_PROPERTY("AllowPortReuse",			&nap::WebSocketServerEndPointBase::mAllowPortReuse,				nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("LogConnectionUpdates",	&nap::WebSocketServerEndPointBase::mLogConnectionUpdates,		nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("Port",					&nap::WebSocketServerEndPointBase::mPort,						nap::rtti::EPropertyMetaData::Required)
+        RTTI_PROPERTY("IPAddress",				&nap::WebSocketServerEndPointBase::mIPAddress,					nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("AccessMode",				&nap::WebSocketServerEndPointBase::mMode,						nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("ConnectionLimit",		&nap::WebSocketServerEndPointBase::mConnectionLimit,			nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("LibraryLogLevel",		&nap::WebSocketServerEndPointBase::mLibraryLogLevel,			nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("AllowControlOrigin",		&nap::WebSocketServerEndPointBase::mAccessAllowControlOrigin,	nap::rtti::EPropertyMetaData::Default)
+        RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPointBase::mClients,					nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::WebSocketServerEndPointNoTLS)
+RTTI_BEGIN_CLASS(nap::UnsecureWebSocketServerEndPoint)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::WebSocketServerEndPointTLS)
-    RTTI_PROPERTY("Certificate", &nap::WebSocketServerEndPointTLS::mCertificateFile, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("PrivateKey", &nap::WebSocketServerEndPointTLS::mPrivateKeyFile, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("Passphrase", &nap::WebSocketServerEndPointTLS::mPassphrase, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SecureWebSocketServerEndPoint)
+	RTTI_PROPERTY("Mode",			&nap::SecureWebSocketServerEndPoint::mMode,				nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Certificate",	&nap::SecureWebSocketServerEndPoint::mCertificateFile,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
+    RTTI_PROPERTY("PrivateKey",		&nap::SecureWebSocketServerEndPoint::mPrivateKeyFile,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
+    RTTI_PROPERTY("Passphrase",		&nap::SecureWebSocketServerEndPoint::mPassphrase,		nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 namespace nap
 {
     template<typename config>
     WebSocketServerEndPoint<config>::WebSocketServerEndPoint()
-    {
-    }
+    { }
+
 
     template<typename config>
     bool WebSocketServerEndPoint<config>::start(nap::utility::ErrorState& error)
@@ -89,11 +90,13 @@ namespace nap
         return true;
     }
 
+
     template<typename config>
     bool WebSocketServerEndPoint<config>::isOpen() const
     {
         return mRunning;
     }
+
 
     template<typename config>
     bool WebSocketServerEndPoint<config>::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
@@ -107,6 +110,7 @@ namespace nap
         }
         return true;
     }
+
 
     template<typename config>
     bool WebSocketServerEndPoint<config>::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
@@ -172,6 +176,7 @@ namespace nap
                 outHosts.emplace_back(cptr->get_host());
         }
     }
+
 
     template<typename config>
     int WebSocketServerEndPoint<config>::getConnectionCount()
@@ -615,7 +620,7 @@ namespace nap
     }
 
 
-    bool WebSocketServerEndPointTLS::init(utility::ErrorState &errorState)
+    bool SecureWebSocketServerEndPoint::init(utility::ErrorState &errorState)
     {
         if(!errorState.check(utility::fileExists(mCertificateFile), "Certificate file %s not found", mCertificateFile.c_str()))
             return false;
@@ -627,59 +632,70 @@ namespace nap
     }
 
 
-    bool WebSocketServerEndPointTLS::start(nap::utility::ErrorState &error)
+    bool SecureWebSocketServerEndPoint::start(nap::utility::ErrorState &error)
     {
-        mEndPoint.set_tls_init_handler(std::bind(&WebSocketServerEndPointTLS::onTLSInit, this, std::placeholders::_1));
+        mEndPoint.set_tls_init_handler(std::bind(&SecureWebSocketServerEndPoint::onTLSInit, this, std::placeholders::_1));
         return WebSocketServerEndPoint<wspp::ConfigTLS>::start(error);
     }
 
 
-    std::shared_ptr<asio::ssl::context> WebSocketServerEndPointTLS::onTLSInit(wspp::ConnectionHandle con)
+    std::shared_ptr<asio::ssl::context> SecureWebSocketServerEndPoint::onTLSInit(wspp::ConnectionHandle con)
     {
         namespace asio = websocketpp::lib::asio;
-        // See https://wiki.mozilla.org/Security/Server_Side_TLS for more details about
-        // the TLS modes. The code below demonstrates how to implement both the modern
-        enum tls_mode
-        {
-            MOZILLA_INTERMEDIATE = 1,
-            MOZILLA_MODERN = 2
-        };
-
-        auto tls_mode = MOZILLA_INTERMEDIATE;
         auto ctx = websocketpp::lib::make_shared<asio::ssl::context>(asio::ssl::context::sslv23);
 
         try
         {
-            if(tls_mode == MOZILLA_MODERN)
-            {
-                // Modern disables TLSv1
-                ctx->set_options(asio::ssl::context::default_workarounds |
-                                 asio::ssl::context::no_sslv2 |
-                                 asio::ssl::context::no_sslv3 |
-                                 asio::ssl::context::no_tlsv1);
-            } else
-            {
-                ctx->set_options(asio::ssl::context::default_workarounds |
-                                 asio::ssl::context::no_sslv2 |
-                                 asio::ssl::context::no_sslv3);
-            }
+			switch (mMode)
+			{
+			case ETLSMode::Modern:
+				{
+					// Modern disables TLSv1
+					ctx->set_options(asio::ssl::context::default_workarounds |
+						asio::ssl::context::no_sslv2 |
+						asio::ssl::context::no_sslv3 |
+						asio::ssl::context::no_tlsv1);
+					break;
+				}
+			case ETLSMode::Intermediate:
+				{
+					ctx->set_options(asio::ssl::context::default_workarounds |
+						asio::ssl::context::no_sslv2 |
+						asio::ssl::context::no_sslv3);
+					break;
+				}
+			default:
+				assert(false);
+				break;
+			}
 
             ctx->set_password_callback([this](std::size_t, asio::ssl::context_base::password_purpose) { return mPassphrase; });
             ctx->use_certificate_chain_file(mCertificateFile);
             ctx->use_private_key_file(mPrivateKeyFile, asio::ssl::context::pem);
 
             std::string ciphers;
-            if(tls_mode == MOZILLA_MODERN)
-            {
-                ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK";
-            } else
-            {
-                ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA";
-            }
+			switch (mMode)
+			{
+				case ETLSMode::Modern:
+				{
+					ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!3DES:!MD5:!PSK";
+					break;
+				}
+				case ETLSMode::Intermediate:
+				{
+					ciphers = "ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-AES256-GCM-SHA384:DHE-RSA-AES128-GCM-SHA256:DHE-DSS-AES128-GCM-SHA256:kEDH+AESGCM:ECDHE-RSA-AES128-SHA256:ECDHE-ECDSA-AES128-SHA256:ECDHE-RSA-AES128-SHA:ECDHE-ECDSA-AES128-SHA:ECDHE-RSA-AES256-SHA384:ECDHE-ECDSA-AES256-SHA384:ECDHE-RSA-AES256-SHA:ECDHE-ECDSA-AES256-SHA:DHE-RSA-AES128-SHA256:DHE-RSA-AES128-SHA:DHE-DSS-AES128-SHA256:DHE-RSA-AES256-SHA256:DHE-DSS-AES256-SHA:DHE-RSA-AES256-SHA:AES128-GCM-SHA256:AES256-GCM-SHA384:AES128-SHA256:AES256-SHA256:AES128-SHA:AES256-SHA:AES:CAMELLIA:DES-CBC3-SHA:!aNULL:!eNULL:!EXPORT:!DES:!RC4:!MD5:!PSK:!aECDH:!EDH-DSS-DES-CBC3-SHA:!EDH-RSA-DES-CBC3-SHA:!KRB5-DES-CBC3-SHA";
+					break;
+				}
+				default:
+				{
+					assert(false);
+					break;
+				}
+			}
 
             if(SSL_CTX_set_cipher_list(ctx->native_handle() , ciphers.c_str()) != 1)
             {
-                nap::Logger::warn("Error setting cipher list");
+                nap::Logger::error("Error setting cipher list");
             }
         }
         catch (std::exception& e)

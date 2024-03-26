@@ -181,16 +181,19 @@ namespace nap
         std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
     };
 
+
     /**
-     * WebSocketServerEndPoint implementation. Type T is the websocketpp server end-point type.
-     * @tparam T the websocketpp server end-point type
-     */
+     * WebSocketServerEndPoint implementation, where type T is the websocketpp (secured / unsecured) end-point type.
+	 */
     template<typename config>
     class NAPAPI WebSocketServerEndPoint : public WebSocketServerEndPointBase
     {
-    RTTI_ENABLE(WebSocketServerEndPointBase)
+		RTTI_ENABLE(WebSocketServerEndPointBase)
     public:
+		// Default constructor
         WebSocketServerEndPoint();
+
+		// Stop endpoint on destruction
         ~WebSocketServerEndPoint() override;
 
         /**
@@ -220,11 +223,13 @@ namespace nap
 
         /**
          * Register a server for this endpoint so that it receives notifications from the endpoint.
+		 * @param server the server to register
          */
         void registerListener(IWebSocketServer& server) override;
 
         /**
          * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
+		 * @param server the server to unregister
          */
         void unregisterListener(IWebSocketServer& server) override;
 
@@ -279,12 +284,16 @@ namespace nap
          */
         void getHostNames(std::vector<std::string>& outHosts) override;
 
+		/**
+		 * @return total number of active connections
+		 */
         int getConnectionCount() override;
 
         /**
          * @return if the server end point accepts new connections
          */
          bool acceptsNewConnections() override;
+
     protected:
         /**
          * Runs the end point in a background thread until stopped.
@@ -345,20 +354,33 @@ namespace nap
         std::vector<IWebSocketServer*> mListeners;
     };
 
-    using WebSocketServerEndPointNoTLS = WebSocketServerEndPoint<wspp::Config>;
+
+	// Not secured web-socket server end point
+    using UnsecureWebSocketServerEndPoint = WebSocketServerEndPoint<wspp::Config>;
+
 
     /**
-     * WebSocketServerEndPointTLS implementation.
-     * Adds TLS support to the WebSocketServerEndPoint.
-     * Has some extra properties needed for TLS support.
+     * Secured web-socket server end point connection.
+     * Adds transport layer security (TLS) using the provided certificate and key.
      */
-    class NAPAPI WebSocketServerEndPointTLS : public WebSocketServerEndPoint<wspp::ConfigTLS>
+    class NAPAPI SecureWebSocketServerEndPoint : public WebSocketServerEndPoint<wspp::ConfigTLS>
     {
-    RTTI_ENABLE(WebSocketServerEndPoint<wspp::ConfigTLS>)
+		RTTI_ENABLE(WebSocketServerEndPoint<wspp::ConfigTLS>)
     public:
-        std::string mPrivateKeyFile = "private.pem";							///< Property: "PrivateKeyFile" path to the private key file
-        std::string mCertificateFile = "certificate.pem";						///< Property: "CertificateFile" path to the certificate file
-        std::string mPassphrase = "";                                           ///< Property: "Passphrase" passphrase for the private key file
+		/**
+		 * Transport layer security (TLS) mode.
+		 * See https://wiki.mozilla.org/Security/Server_Side_TLS for more details about the TLS modes.
+		 */
+		enum class ETLSMode : nap::uint8
+		{
+			Intermediate = 0,		///< Recommended config for general-purpose server.
+			Modern					///< For modern clients with no need for backwards compatibility.
+		};
+
+		ETLSMode mMode = ETLSMode::Intermediate;				///< Property: "Mode" TLS configuration mode
+		std::string mCertificateFile = "certificate.pem";		///< Property: "CertificateFile" TLS certificate file path
+        std::string mPrivateKeyFile  = "private.key";			///< Property: "PrivateKeyFile" TLS private key file path
+        std::string mPassphrase;								///< Property: "Passphrase" password for the private key, only required when key is generated with one.
 
         /**
          * Initializes the server endpoint.
@@ -374,12 +396,13 @@ namespace nap
          * @return if the endpoint started successfully.
          */
         bool start(nap::utility::ErrorState &error) override;
+
     private:
         /**
          * Called when the TLS context is initialized.
-         * @param con connection handle
-         * @return shared pointer to ssl context
-         */
-        std::shared_ptr<asio::ssl::context> onTLSInit(wspp::ConnectionHandle con);
-    };
+		 * @param con connection handle
+		 * @return shared pointer to ssl context
+		 */
+		std::shared_ptr<asio::ssl::context> onTLSInit(wspp::ConnectionHandle con);
+	};
 }

@@ -27,6 +27,8 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "Render2DTextComponent",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Text": "waiting for a websocket client to change this text",
                     "Font": "Font",
                     "TextColor": {
@@ -105,7 +107,7 @@
             ]
         },
         {
-            "Type": "nap::WebSocketServerEndPointNoTLS",
+            "Type": "nap::UnsecureWebSocketServerEndPoint",
             "mID": "WebSocketServerEndPoint",
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,

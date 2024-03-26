@@ -221,23 +221,11 @@
 
 	<style>
 		:root {
-  			--red: #FF5050;
-  			--pink: #FF347D;
-  			--blue: #2958FF;
-
   			--white: #FFFFFF;
   			--gray-light: #CDCDC3;
   			--gray-medium: #8D8B84;
   			--gray-dark: #2D2D2D;
   			--black: #000000;
-
-  			--green-light: #ECFFD3;
-  			--green-medium: #D6FFA3;
-  			--green-vibrant: #DBFF00;
-
-  			--yellow-light: #FFEDBE;
-  			--yellow-medium: #FFEA30;
-  			--yellow-dark: #FFA800;
 		}
 
 
@@ -253,10 +241,7 @@
 			font-family: "Manrope", sans-serif;
   			font-optical-sizing: auto;
   			font-style: normal;
-		}
-
-		h1, label, p{
-			letter-spacing: 0.05em;
+  			letter-spacing: 0.05em;
 		}
 
 		h1 {
@@ -283,6 +268,8 @@
 			border: none;
 			color: var(--white);
 			max-width: 640px;
+			font-family: "Manrope", sans-serif;
+			letter-spacing: 0.05em;
 		}
 
 		input:focus,
@@ -317,6 +304,7 @@
   			font-weight: normal;
   			font-style: normal;
   			font-size: 12px;
+  			letter-spacing: normal;
 		}
 
 		#status_header {
@@ -333,7 +321,6 @@
 		#refresh {
 			font-size: 12px;
 		}
-
 	</style>
 </head>
 <body>
@@ -344,7 +331,7 @@
 
 	<div class="input">
 		<p id="status_header"></p>
-		<label for="name">Send</label>
+		<label>Send</label>
 		<input type="text" id="input_field" name="name" size="30" oninput="doSend()" />
 	</div>
 
