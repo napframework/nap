@@ -30,58 +30,58 @@ bool convertSigningScheme(ESigningScheme scheme, std::string& out)
         default:
             return false;
     }
-
     return true;
 }
 
+
 namespace nap
 {
-namespace utility
-{
-    bool createSignature(const std::string& privkey, const std::string& message, ESigningScheme scheme, std::string& outSignature)
-    {
-        std::string signing_scheme;
-        if(!convertSigningScheme(scheme, signing_scheme))
-        {
-            return false;
-        }
-        return opensslapi::createSignature(privkey, message, signing_scheme, outSignature);
-    }
-
-
-    bool verifyMessage(const std::string &pubkey, const std::string &message, ESigningScheme scheme, const std::string &signature)
-    {
-        std::string signing_scheme;
-        if(!convertSigningScheme(scheme, signing_scheme))
-        {
-            return false;
-        }
-        return opensslapi::verifyMessage(pubkey, message, signing_scheme, signature);
-    }
-
-
-    bool generateRSAKey(unsigned int bits, std::string &outPrivKey, std::string &outPubKey)
-    {
-        return opensslapi::generateRSAKey(bits, outPrivKey, outPubKey);
-    }
-
-
-    std::string sha256(const std::string& str)
-    {
-        return opensslapi::sha256(str);
-    }
-
-
-    std::string encode64(const std::string& str)
-    {
-        return opensslapi::encode64(str);
-    }
-
-
-    std::string decode64(const std::string& str)
-    {
-        return opensslapi::decode64(str);
-    }
-}
+	namespace utility
+	{
+	    bool createSignature(const std::string& privkey, const std::string& message, ESigningScheme scheme, std::string& outSignature)
+	    {
+	        std::string signing_scheme;
+	        if(!convertSigningScheme(scheme, signing_scheme))
+	        {
+	            return false;
+	        }
+	        return openssl::createSignature(privkey, message, signing_scheme, outSignature);
+	    }
+	
+	
+	    bool verifyMessage(const std::string& pubkey, const std::string& message, ESigningScheme scheme, const std::string& signature)
+	    {
+	        std::string signing_scheme;
+	        if(!convertSigningScheme(scheme, signing_scheme))
+	        {
+	            return false;
+	        }
+	        return openssl::verifyMessage(pubkey, message, signing_scheme, signature);
+	    }
+	
+	
+	    bool generateRSAKey(unsigned int bits, std::string& outPrivKey, std::string& outPubKey)
+	    {
+	        return openssl::generateRSAKey(bits, outPrivKey, outPubKey);
+	    }
+	
+	
+	    std::string sha256(const std::string& str)
+	    {
+	        return openssl::sha256(str);
+	    }
+	
+	
+	    std::string encode64(const std::string& str)
+	    {
+	        return openssl::encode64(str);
+	    }
+	
+	
+	    std::string decode64(const std::string& str)
+	    {
+	        return openssl::decode64(str);
+	    }
+	}
 }
 

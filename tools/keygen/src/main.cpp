@@ -39,7 +39,7 @@ int main(int argc, char* argv[])
 	// Generate
     std::string private_key;
     std::string public_key;
-	if (!nap::opensslapi::generateRSAKey(commandLine.mBits, private_key, public_key))
+	if (!nap::openssl::generateRSAKey(commandLine.mBits, private_key, public_key))
     {
         std::cout << "Failed to generate keys" << std::endl;
         return -1;

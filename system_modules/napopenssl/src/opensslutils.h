@@ -17,8 +17,7 @@ namespace nap
     namespace utility
     {
         /**
-         * @brief Create a signature for a given message
-         * outSignature is encoded in base64
+         * Create a signature for a given message. outSignature is encoded in base64.
          * @param privkey The private key to use
          * @param message The message to sign
          * @param signingScheme The signing scheme to use
@@ -28,8 +27,7 @@ namespace nap
         bool NAPAPI createSignature(const std::string& privkey, const std::string& message, ESigningScheme scheme, std::string& outSignature);
 
         /**
-         * @brief Verify a message against a signature
-         * signature is expected to be encoded in base64
+         * Verify a message against a signature. Signature is expected to be encoded in base64.
          * @param pubkey The public key to use
          * @param message The message to verify
          * @param signingScheme The signing scheme to use
@@ -39,7 +37,7 @@ namespace nap
         bool NAPAPI verifyMessage(const std::string& pubkey, const std::string& message, ESigningScheme scheme, const std::string& signature);
 
         /**
-         * @brief Generate a RSA key pair
+         * Generate a RSA public-private key pair.
          * @param bits number of bits
          * @param outPrivKey string will be filled with the private key
          * @param outPubKey string will be filled with the public key
