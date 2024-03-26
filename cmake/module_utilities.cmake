@@ -71,13 +71,13 @@ function(add_import_library target_name implib dll include_dir)
             # install_name_tool -id @rpath/[library filename] [path to library]
             # The line below automates this, however when generating multiple configurations at the same time the processes clash.
             # Hence it is advised to instead call install_name_tool manually on every newly added external shared library.
-#            execute_process(COMMAND install_name_tool -id
-#                    @rpath/${library_name}
-#                    ${dll}
-#                    RESULT_VARIABLE EXIT_CODE)
-#            if(NOT ${EXIT_CODE} EQUAL 0)
-#                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using install_name_tool -id.")
-#            endif()
+            #            execute_process(COMMAND install_name_tool -id
+            #                    @rpath/${library_name}
+            #                    ${dll}
+            #                    RESULT_VARIABLE EXIT_CODE)
+            #            if(NOT ${EXIT_CODE} EQUAL 0)
+            #                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using install_name_tool -id.")
+            #            endif()
         else ()
             execute_process(COMMAND patchelf --set-soname
                     ${library_name}
@@ -112,8 +112,9 @@ function(add_static_import_library target_name implib include_dir)
     endif()
 
     add_library(${target_name} STATIC IMPORTED GLOBAL)
-    set_property(TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES ${include_dir})
+    target_include_directories(${target_name} INTERFACE ${include_dir})
     set_property(TARGET ${target_name} PROPERTY IMPORTED_LOCATION ${implib})
+    set_property(TARGET ${target_name} PROPERTY INCLUDE_DIRECTORIES ${include_dir})
 endfunction()
 
 
