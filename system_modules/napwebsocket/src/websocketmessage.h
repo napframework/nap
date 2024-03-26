@@ -15,7 +15,7 @@ namespace nap
 {
 	// Forward Declares
     template<typename T>
-    class WebSocketServerEndPoint;
+    class WebSocketServerEndPointSetup;
     template<typename T>
 	class WebSocketClientEndPoint;
     template<typename T>
@@ -29,7 +29,7 @@ namespace nap
 	class NAPAPI WebSocketMessage final
 	{
         template<typename T>
-        friend class WebSocketServerEndPoint;
+        friend class WebSocketServerEndPointSetup;
         template<typename T>
 		friend class WebSocketClientEndPoint;
         template<typename T>

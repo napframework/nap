@@ -183,18 +183,19 @@ namespace nap
 
 
     /**
-     * WebSocketServerEndPoint implementation, where type T is the websocketpp (secured / unsecured) end-point type.
+     * WebSocketServerEndPoint implementation,
+	 * where `config` is the websocketpp (secured / unsecured) end-point configuration type.
 	 */
     template<typename config>
-    class NAPAPI WebSocketServerEndPoint : public WebSocketServerEndPointBase
+    class NAPAPI WebSocketServerEndPointSetup : public WebSocketServerEndPointBase
     {
 		RTTI_ENABLE(WebSocketServerEndPointBase)
     public:
 		// Default constructor
-        WebSocketServerEndPoint();
+        WebSocketServerEndPointSetup();
 
 		// Stop endpoint on destruction
-        ~WebSocketServerEndPoint() override;
+        ~WebSocketServerEndPointSetup() override;
 
         /**
          * Initializes the server endpoint.
@@ -356,16 +357,16 @@ namespace nap
 
 
 	// Not secured web-socket server end point
-    using UnsecureWebSocketServerEndPoint = WebSocketServerEndPoint<wspp::Config>;
+    using WebSocketServerEndPoint = WebSocketServerEndPointSetup<wspp::Config>;
 
 
     /**
      * Secured web-socket server end point connection.
      * Adds transport layer security (TLS) using the provided certificate and key.
      */
-    class NAPAPI SecureWebSocketServerEndPoint : public WebSocketServerEndPoint<wspp::ConfigTLS>
+    class NAPAPI SecureWebSocketServerEndPoint : public WebSocketServerEndPointSetup<wspp::ConfigTLS>
     {
-		RTTI_ENABLE(WebSocketServerEndPoint<wspp::ConfigTLS>)
+		RTTI_ENABLE(WebSocketServerEndPointSetup<wspp::ConfigTLS>)
     public:
 		/**
 		 * Transport layer security (TLS) mode.

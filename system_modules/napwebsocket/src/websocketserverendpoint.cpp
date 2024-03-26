@@ -34,8 +34,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServerEndPointBase)
         RTTI_PROPERTY("Clients",				&nap::WebSocketServerEndPointBase::mClients,					nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::UnsecureWebSocketServerEndPoint)
-RTTI_END_CLASS
+RTTI_DEFINE_CLASS(nap::WebSocketServerEndPoint)
 
 RTTI_BEGIN_CLASS(nap::SecureWebSocketServerEndPoint)
 	RTTI_PROPERTY("Mode",			&nap::SecureWebSocketServerEndPoint::mMode,				nap::rtti::EPropertyMetaData::Default)
@@ -47,12 +46,12 @@ RTTI_END_CLASS
 namespace nap
 {
     template<typename config>
-    WebSocketServerEndPoint<config>::WebSocketServerEndPoint()
+    WebSocketServerEndPointSetup<config>::WebSocketServerEndPointSetup()
     { }
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::start(nap::utility::ErrorState& error)
+    bool WebSocketServerEndPointSetup<config>::start(nap::utility::ErrorState& error)
     {
         // Run until stopped
         assert(!mRunning);
@@ -84,7 +83,7 @@ namespace nap
         }
 
         // Run until stopped
-        mServerTask  = std::async(std::launch::async, std::bind(&WebSocketServerEndPoint<config>::run, this));
+        mServerTask  = std::async(std::launch::async, std::bind(&WebSocketServerEndPointSetup<config>::run, this));
         mRunning = true;
 
         return true;
@@ -92,14 +91,14 @@ namespace nap
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::isOpen() const
+    bool WebSocketServerEndPointSetup<config>::isOpen() const
     {
         return mRunning;
     }
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+    bool WebSocketServerEndPointSetup<config>::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
     {
         std::error_code stdec;
         mEndPoint.send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
@@ -113,7 +112,7 @@ namespace nap
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+    bool WebSocketServerEndPointSetup<config>::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
     {
         std::error_code stdec;
         mEndPoint.send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);
@@ -127,7 +126,7 @@ namespace nap
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+    bool WebSocketServerEndPointSetup<config>::broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
     {
         bool success(true);
         std::lock_guard<std::mutex> lock(mConnectionMutex);
@@ -141,7 +140,7 @@ namespace nap
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+    bool WebSocketServerEndPointSetup<config>::broadcast(void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
     {
         bool success(true);
         std::lock_guard<std::mutex> lock(mConnectionMutex);
@@ -155,7 +154,7 @@ namespace nap
 
 
     template<typename config>
-    std::string WebSocketServerEndPoint<config>::getHostName(const WebSocketConnection& connection)
+    std::string WebSocketServerEndPointSetup<config>::getHostName(const WebSocketConnection& connection)
     {
         std::error_code stdec;
         auto cptr = mEndPoint.get_con_from_hdl(connection.mConnection, stdec);
@@ -163,7 +162,7 @@ namespace nap
     }
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::getHostNames(std::vector<std::string>& outHosts)
+    void WebSocketServerEndPointSetup<config>::getHostNames(std::vector<std::string>& outHosts)
     {
         outHosts.clear();
         std::error_code stdec;
@@ -179,14 +178,14 @@ namespace nap
 
 
     template<typename config>
-    int WebSocketServerEndPoint<config>::getConnectionCount()
+    int WebSocketServerEndPointSetup<config>::getConnectionCount()
     {
         std::lock_guard<std::mutex> lock(mConnectionMutex);
         return mConnections.size();
     }
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::acceptsNewConnections()
+    bool WebSocketServerEndPointSetup<config>::acceptsNewConnections()
     {
         if (mConnectionLimit < 0)
             return true;
@@ -197,7 +196,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::run()
+    void WebSocketServerEndPointSetup<config>::run()
     {
         // Start running until stopped
         mEndPoint.run();
@@ -205,7 +204,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::stop()
+    void WebSocketServerEndPointSetup<config>::stop()
     {
         if (mRunning)
         {
@@ -238,7 +237,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::registerListener(IWebSocketServer& server)
+    void WebSocketServerEndPointSetup<config>::registerListener(IWebSocketServer& server)
     {
         std::unique_lock<std::mutex> lock(mListenerMutex);
         mListeners.push_back(&server);
@@ -246,7 +245,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::unregisterListener(IWebSocketServer& server)
+    void WebSocketServerEndPointSetup<config>::unregisterListener(IWebSocketServer& server)
     {
         std::unique_lock<std::mutex> lock(mListenerMutex);
         mListeners.erase(std::remove(mListeners.begin(), mListeners.end(), &server), mListeners.end());
@@ -254,14 +253,14 @@ namespace nap
 
 
     template<typename config>
-    WebSocketServerEndPoint<config>::~WebSocketServerEndPoint()
+    WebSocketServerEndPointSetup<config>::~WebSocketServerEndPointSetup()
     {
         stop();
     }
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::init(utility::ErrorState& errorState)
+    bool WebSocketServerEndPointSetup<config>::init(utility::ErrorState& errorState)
     {
         // Convert log levels
         mLogLevel = computeWebSocketLogLevel(mLibraryLogLevel);
@@ -288,16 +287,16 @@ namespace nap
         }
 
         // Install connection open / closed handlers
-        mEndPoint.set_http_handler(std::bind(&WebSocketServerEndPoint<config>::onHTTP, this, std::placeholders::_1));
-        mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPoint<config>::onConnectionOpened, this, std::placeholders::_1));
-        mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPoint<config>::onConnectionClosed, this, std::placeholders::_1));
-        mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPoint<config>::onConnectionFailed, this, std::placeholders::_1));
-        mEndPoint.set_validate_handler(std::bind(&WebSocketServerEndPoint<config>::onValidate, this, std::placeholders::_1));
-        mEndPoint.set_ping_handler(std::bind(&WebSocketServerEndPoint<config>::onPing, this, std::placeholders::_1, std::placeholders::_2));
+        mEndPoint.set_http_handler(std::bind(&WebSocketServerEndPointSetup<config>::onHTTP, this, std::placeholders::_1));
+        mEndPoint.set_open_handler(std::bind(&WebSocketServerEndPointSetup<config>::onConnectionOpened, this, std::placeholders::_1));
+        mEndPoint.set_close_handler(std::bind(&WebSocketServerEndPointSetup<config>::onConnectionClosed, this, std::placeholders::_1));
+        mEndPoint.set_fail_handler(std::bind(&WebSocketServerEndPointSetup<config>::onConnectionFailed, this, std::placeholders::_1));
+        mEndPoint.set_validate_handler(std::bind(&WebSocketServerEndPointSetup<config>::onValidate, this, std::placeholders::_1));
+        mEndPoint.set_ping_handler(std::bind(&WebSocketServerEndPointSetup<config>::onPing, this, std::placeholders::_1, std::placeholders::_2));
 
         // Install message handler
         mEndPoint.set_message_handler(std::bind(
-                &WebSocketServerEndPoint<config>::onMessageReceived, this,
+                &WebSocketServerEndPointSetup<config>::onMessageReceived, this,
                 std::placeholders::_1, std::placeholders::_2
         ));
 
@@ -310,7 +309,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::onConnectionOpened(wspp::ConnectionHandle connection)
+    void WebSocketServerEndPointSetup<config>::onConnectionOpened(wspp::ConnectionHandle connection)
     {
         std::error_code stdec;
         auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
@@ -332,7 +331,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::onConnectionClosed(wspp::ConnectionHandle connection)
+    void WebSocketServerEndPointSetup<config>::onConnectionClosed(wspp::ConnectionHandle connection)
     {
         std::error_code stdec;
         auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
@@ -372,7 +371,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::onConnectionFailed(wspp::ConnectionHandle connection)
+    void WebSocketServerEndPointSetup<config>::onConnectionFailed(wspp::ConnectionHandle connection)
     {
         std::error_code stdec;
         auto cptr = mEndPoint.get_con_from_hdl(connection, stdec);
@@ -388,7 +387,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
+    void WebSocketServerEndPointSetup<config>::onMessageReceived(wspp::ConnectionHandle con, wspp::MessagePtr msg)
     {
         WebSocketMessage message(msg);
         for (IWebSocketServer* listener : mListeners)
@@ -397,7 +396,7 @@ namespace nap
 
 
     template<typename config>
-    void WebSocketServerEndPoint<config>::onHTTP(wspp::ConnectionHandle con)
+    void WebSocketServerEndPointSetup<config>::onHTTP(wspp::ConnectionHandle con)
     {
         // Get handle to connection
         std::error_code stdec;
@@ -519,7 +518,7 @@ namespace nap
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::onValidate(wspp::ConnectionHandle con)
+    bool WebSocketServerEndPointSetup<config>::onValidate(wspp::ConnectionHandle con)
     {
         // Get connection handle
         std::error_code stdec;
@@ -594,14 +593,14 @@ namespace nap
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::onPing(wspp::ConnectionHandle con, std::string msg)
+    bool WebSocketServerEndPointSetup<config>::onPing(wspp::ConnectionHandle con, std::string msg)
     {
         return true;
     }
 
 
     template<typename config>
-    bool WebSocketServerEndPoint<config>::disconnect(nap::utility::ErrorState& error)
+    bool WebSocketServerEndPointSetup<config>::disconnect(nap::utility::ErrorState& error)
     {
         std::lock_guard<std::mutex> lock(mConnectionMutex);
         bool success = true;
@@ -628,14 +627,14 @@ namespace nap
         if(!errorState.check(utility::fileExists(mPrivateKeyFile), "PrivateKey file %s not found", mPrivateKeyFile.c_str()))
             return false;
 
-        return WebSocketServerEndPoint<wspp::ConfigTLS>::init(errorState);
+        return WebSocketServerEndPointSetup<wspp::ConfigTLS>::init(errorState);
     }
 
 
     bool SecureWebSocketServerEndPoint::start(nap::utility::ErrorState &error)
     {
         mEndPoint.set_tls_init_handler(std::bind(&SecureWebSocketServerEndPoint::onTLSInit, this, std::placeholders::_1));
-        return WebSocketServerEndPoint<wspp::ConfigTLS>::start(error);
+        return WebSocketServerEndPointSetup<wspp::ConfigTLS>::start(error);
     }
 
 

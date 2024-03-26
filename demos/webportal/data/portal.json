@@ -415,7 +415,7 @@
             ]
         },
         {
-            "Type": "nap::UnsecureWebSocketServerEndPoint",
+            "Type": "nap::WebSocketServerEndPoint",
             "mID": "WebSocketServerEndPoint",
             "AllowPortReuse": true,
             "LogConnectionUpdates": true,
