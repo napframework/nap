@@ -102,7 +102,7 @@
 			status_header.innerHTML = "connecting"
 			status_header.style.color = "#5D5E73"
 
-			const ws_uri = "wss://" + uri
+			const ws_uri = "ws://" + uri
 			websocket = new WebSocket(ws_uri, ticket)
 			writeToBox("connecting to: " + ws_uri)
 
