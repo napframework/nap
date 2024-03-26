@@ -349,16 +349,18 @@ namespace nap
 
     /**
      * WebSocketServerEndPointTLS implementation.
-     * Adds TLS support to the WebSocketServerEndPoint.
-     * Has some extra properties needed for TLS support.
+     * Adds TLS/SSL support to the WebSocketServerEndPoint.
+     * Has extra properties needed for TLS support. You can use this endpoint to create a secure connection.
+     * Either use a self-signed certificate or a certificate from a trusted certificate authority.
+     * Passphrase is optional and can be left blank if no passphrase is used.
      */
     class NAPAPI WebSocketServerEndPointTLS : public WebSocketServerEndPoint<wspp::ConfigTLS>
     {
     RTTI_ENABLE(WebSocketServerEndPoint<wspp::ConfigTLS>)
     public:
-        std::string mPrivateKeyFile = "private.pem";							///< Property: "PrivateKeyFile" path to the private key file
-        std::string mCertificateFile = "certificate.pem";						///< Property: "CertificateFile" path to the certificate file
-        std::string mPassphrase = "";                                           ///< Property: "Passphrase" passphrase for the private key file
+        std::string mPrivateKeyFile = "mycert.key";		///< Property: "PrivateKeyFile" path to the private key file
+        std::string mCertificateFile = "mycert.pem";	///< Property: "CertificateFile" path to the certificate file
+        std::string mPassphrase = "";                   ///< Property: "Passphrase" passphrase for the private key file, can be left blank if no passphrase is used
 
         /**
          * Initializes the server endpoint.
