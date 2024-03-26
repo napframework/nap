@@ -11,6 +11,9 @@ endif()
 
 project(${module_name})
 
+# Add demo apps
+add_subdirectory_apps(${CMAKE_CURRENT_SOURCE_DIR}/demo)
+
 # Add source
 file(GLOB SOURCES src/*.cpp)
 file(GLOB HEADERS src/*.h src/*.hpp)

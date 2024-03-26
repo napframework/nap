@@ -25,12 +25,13 @@ file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert data/shaders/*
 # Declare target
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
-set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib")
-
 # Pull in the app module if it exists
+try_add_module_from_dir(${CMAKE_CURRENT_SOURCE_DIR}/module)
 if (TARGET nap${PROJECT_NAME})
     target_link_libraries(${PROJECT_NAME} nap${PROJECT_NAME})
 endif()
+
+set_target_properties(${PROJECT_NAME} PROPERTIES INSTALL_RPATH "$ORIGIN/lib")
 
 # Create the cache directory in source
 set(cache_dir ${CMAKE_CURRENT_SOURCE_DIR}/cache)

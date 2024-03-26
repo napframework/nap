@@ -67,13 +67,17 @@ function(add_import_library target_name implib dll include_dir)
     if (UNIX)
         get_filename_component(library_name ${dll} NAME)
         if (APPLE)
-            execute_process(COMMAND install_name_tool -id
-                    @rpath/${library_name}
-                    ${dll}
-                    RESULT_VARIABLE EXIT_CODE)
-            if(NOT ${EXIT_CODE} EQUAL 0)
-                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using install_name_tool -id.")
-            endif()
+            # The library id needs to be set once on every dylib to @rpath/[library filename]:
+            # install_name_tool -id @rpath/[library filename] [path to library]
+            # The line below automates this, however when generating multiple configurations at the same time the processes clash.
+            # Hence it is advised to instead call install_name_tool manually on every newly added external shared library.
+#            execute_process(COMMAND install_name_tool -id
+#                    @rpath/${library_name}
+#                    ${dll}
+#                    RESULT_VARIABLE EXIT_CODE)
+#            if(NOT ${EXIT_CODE} EQUAL 0)
+#                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using install_name_tool -id.")
+#            endif()
         else ()
             execute_process(COMMAND patchelf --set-soname
                     ${library_name}
@@ -134,21 +138,29 @@ function(add_source_dir NAME DIR)
 endfunction()
 
 
-function(add_subdirectory_apps_and_modules subdirectory)
+function(add_subdirectory_apps subdirectory)
     set(directory ${CMAKE_CURRENT_SOURCE_DIR}/${subdirectory})
     file(GLOB children ${directory}/*)
     foreach(child ${children})
         if (IS_DIRECTORY ${child})
-            add_module_from_dir(${child})
-            add_app_from_dir(${child})
-            file(RELATIVE_PATH child_subdirectory ${CMAKE_CURRENT_SOURCE_DIR} ${child})
-            add_subdirectory_apps_and_modules(${child_subdirectory})
+            try_add_app_from_dir(${child})
         endif ()
     endforeach ()
 endfunction()
 
 
-function(add_module_from_dir module_dir)
+function(add_subdirectory_modules subdirectory)
+    set(directory ${CMAKE_CURRENT_SOURCE_DIR}/${subdirectory})
+    file(GLOB children ${directory}/*)
+    foreach(child ${children})
+        if (IS_DIRECTORY ${child})
+            try_add_module_from_dir(${child})
+        endif ()
+    endforeach ()
+endfunction()
+
+
+function(try_add_module_from_dir module_dir)
     if (EXISTS ${module_dir}/module.json)
         # We have a module!
         # Create CMakeLists.txt
@@ -164,7 +176,7 @@ function(add_module_from_dir module_dir)
 endfunction()
 
 
-function(add_app_from_dir app_dir)
+function(try_add_app_from_dir app_dir)
     if (EXISTS ${app_dir}/app.json)
         # We have an app!
         # Create CMakeLists.txt
