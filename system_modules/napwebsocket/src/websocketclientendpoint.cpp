@@ -15,12 +15,11 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketClientEndPointBase)
 	RTTI_PROPERTY("LibraryLogLevel", &nap::WebSocketClientEndPointBase::mLibraryLogLevel, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::WebSocketClientEndPointNoTLS)
-RTTI_END_CLASS
+RTTI_DEFINE_CLASS(nap::WebSocketClientEndPoint)
 
-RTTI_BEGIN_CLASS(nap::WebSocketClientEndPointTLS)
-    RTTI_PROPERTY("CertificateChainFile", &nap::WebSocketClientEndPointTLS::mCertificateChainFile, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("HostName", &nap::WebSocketClientEndPointTLS::mHostName, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SecureWebSocketClientEndPoint)
+    RTTI_PROPERTY("CertificateChainFile", &nap::SecureWebSocketClientEndPoint::mCertificateChainFile, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
+    RTTI_PROPERTY("HostName", &nap::SecureWebSocketClientEndPoint::mHostName, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -35,7 +34,7 @@ namespace nap
     bool verifyCommonName(const char * hostname, X509 * cert);
 
     template<typename config>
-	bool WebSocketClientEndPoint<config>::init(utility::ErrorState& errorState)
+	bool WebSocketClientEndPointSetup<config>::init(utility::ErrorState& errorState)
 	{
 		// Convert log levels
 		mLogLevel = computeWebSocketLogLevel(mLibraryLogLevel);
@@ -62,7 +61,7 @@ namespace nap
 	}
 
     template<typename config>
-    void WebSocketClientEndPoint<config>::stop()
+    void WebSocketClientEndPointSetup<config>::stop()
 	{		
 		// At this state we need to have an open end point and client thread
 		assert(mRunning);
@@ -87,8 +86,9 @@ namespace nap
 		mClients.clear();
 	}
 
+
     template<typename config>
-    bool WebSocketClientEndPoint<config>::start(utility::ErrorState& error)
+    bool WebSocketClientEndPointSetup<config>::start(utility::ErrorState& error)
 	{		
 		// Ensure state
 		assert(!mRunning);
@@ -97,15 +97,16 @@ namespace nap
 		mEndPoint.start_perpetual();
 
 		// Run client in background
-		mClientTask = std::async(std::launch::async, std::bind(&WebSocketClientEndPoint<config>::run, this));
+		mClientTask = std::async(std::launch::async, std::bind(&WebSocketClientEndPointSetup<config>::run, this));
 
 		mRunning = true;
 
 		return true;
 	}
 
+
     template<typename config>
-    bool WebSocketClientEndPoint<config>::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
+    bool WebSocketClientEndPointSetup<config>::send(const WebSocketConnection& connection, const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		std::error_code stdec;
 		mEndPoint.send(connection.mConnection, message, static_cast<wspp::OpCode>(code), stdec);
@@ -117,8 +118,9 @@ namespace nap
 		return true;
 	}
 
+
     template<typename config>
-    bool WebSocketClientEndPoint<config>::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
+    bool WebSocketClientEndPointSetup<config>::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
 	{
 		std::error_code stdec;
 		mEndPoint.send(connection.mConnection, payload, length, static_cast<wspp::OpCode>(code), stdec);
@@ -130,15 +132,17 @@ namespace nap
 		return true;
 	}
 
+
     template<typename config>
-    void WebSocketClientEndPoint<config>::run()
+    void WebSocketClientEndPointSetup<config>::run()
 	{
 		// Start running until stopped
 		mEndPoint.run();
 	}
 
+
     template<typename config>
-    bool WebSocketClientEndPoint<config>::registerClient(IWebSocketClient& client, utility::ErrorState& error)
+    bool WebSocketClientEndPointSetup<config>::registerClient(IWebSocketClient& client, utility::ErrorState& error)
 	{
 		// Get shared pointer to connection
 		std::error_code stdec;
@@ -182,8 +186,9 @@ namespace nap
 		return true;
 	}
 
+
     template<typename config>
-    void WebSocketClientEndPoint<config>::unregisterClient(const IWebSocketClient& client)
+    void WebSocketClientEndPointSetup<config>::unregisterClient(const IWebSocketClient& client)
 	{
 		auto found_it = std::find_if(mClients.begin(), mClients.end(), [&](const auto& it)
 		{
@@ -205,14 +210,14 @@ namespace nap
 	}
 
 
-    bool WebSocketClientEndPointTLS::start(nap::utility::ErrorState &error)
+    bool SecureWebSocketClientEndPoint::start(nap::utility::ErrorState &error)
     {
-        mEndPoint.set_tls_init_handler(std::bind(&WebSocketClientEndPointTLS::onTLSInit, this, std::placeholders::_1));
-        return WebSocketClientEndPoint<wspp::ConfigTLS>::start(error);
+        mEndPoint.set_tls_init_handler(std::bind(&SecureWebSocketClientEndPoint::onTLSInit, this, std::placeholders::_1));
+        return WebSocketClientEndPointSetup<wspp::ConfigTLS>::start(error);
     }
 
 
-    std::shared_ptr<asio::ssl::context> WebSocketClientEndPointTLS::onTLSInit(websocketpp::connection_hdl hdl)
+    std::shared_ptr<asio::ssl::context> SecureWebSocketClientEndPoint::onTLSInit(websocketpp::connection_hdl hdl)
     {
         auto ctx = websocketpp::lib::make_shared<asio::ssl::context>(asio::ssl::context::sslv23);
         auto connection = mEndPoint.get_con_from_hdl(hdl);
@@ -225,7 +230,7 @@ namespace nap
                              asio::ssl::context::single_dh_use);
 
             ctx->set_verify_mode(asio::ssl::verify_peer);
-            ctx->set_verify_callback(bind(&WebSocketClientEndPointTLS::verifyCertificate,
+            ctx->set_verify_callback(bind(&SecureWebSocketClientEndPoint::verifyCertificate,
                                           this,
                                           mHostName.c_str(),
                                           std::placeholders::_1, std::placeholders::_2));
@@ -240,13 +245,14 @@ namespace nap
         return ctx;
     }
 
+
     /**
-     * This code is derived from examples and documentation found ato00po
+     * This code is derived from examples and documentation found at 
      * http://www.boost.org/doc/libs/1_61_0/doc/html/boost_asio/example/cpp03/ssl/client.cpp
      * and
      * https://github.com/iSECPartners/ssl-conservatory
      */
-    bool WebSocketClientEndPointTLS::verifyCertificate(const char * hostname, bool preverified, asio::ssl::verify_context& ctx)
+    bool SecureWebSocketClientEndPoint::verifyCertificate(const char * hostname, bool preverified, asio::ssl::verify_context& ctx)
     {
         // The verify callback can be used to check whether the certificate that is
         // being presented is valid for the peer. For example, RFC 2818 describes
@@ -272,10 +278,12 @@ namespace nap
             if(verifySubjectAlternativeName(hostname, cert))
             {
                 return true;
-            }else if(verifyCommonName(hostname, cert))
+            }
+			else if(verifyCommonName(hostname, cert))
             {
                 return true;
-            }else
+            }
+			else
             {
                 return false;
             }
@@ -283,6 +291,7 @@ namespace nap
 
         return preverified;
     }
+
 
     template<typename config>
 	WebSocketClientWrapper<config>::WebSocketClientWrapper(IWebSocketClient& client, websocketpp::client<config>& endPoint, typename websocketpp::endpoint<websocketpp::connection<config>, config>::connection_ptr connection) :
@@ -299,6 +308,7 @@ namespace nap
 			std::placeholders::_1, std::placeholders::_2));
 	}
 
+
     template<typename config>
 	void WebSocketClientWrapper<config>::onConnectionOpened(wspp::ConnectionHandle connection)
 	{
@@ -306,6 +316,7 @@ namespace nap
 		mResource->connectionOpened();
 		mOpen = true;
 	}
+
 
     template<typename config>
 	void WebSocketClientWrapper<config>::onConnectionClosed(wspp::ConnectionHandle connection)
@@ -320,6 +331,7 @@ namespace nap
 		mOpen = false;
 	}
 
+
     template<typename config>
 	void WebSocketClientWrapper<config>::onConnectionFailed(wspp::ConnectionHandle connection)
 	{
@@ -333,12 +345,14 @@ namespace nap
 		mOpen = false;
 	}
 
+
     template<typename config>
 	void WebSocketClientWrapper<config>::onMessageReceived(wspp::ConnectionHandle connection, wspp::MessagePtr msg)
 	{
 		assert(mResource != nullptr);
 		mResource->messageReceived(WebSocketMessage(msg));
 	}
+
 
     template<typename config>
 	bool WebSocketClientWrapper<config>::disconnect(nap::utility::ErrorState& error)

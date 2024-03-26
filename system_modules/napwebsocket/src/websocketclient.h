@@ -36,9 +36,9 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketClient : public WebSocketInterface
 	{
-        template<typename T>
-		friend class WebSocketClientEndPoint;
-        template<typename T>
+        template<typename config>
+		friend class WebSocketClientEndPointSetup;
+        template<typename config>
 		friend class WebSocketClientWrapper;
 
 		RTTI_ENABLE(WebSocketInterface)

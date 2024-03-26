@@ -85,8 +85,13 @@ namespace nap
 		virtual void unregisterClient(const IWebSocketClient& client) = 0;
 	};
 
+
+	/**
+	 * WebSocketClientEndPointSetup implementation,
+	 * where `config` is the websocketpp (secured / unsecured) end-point configuration type.
+	 */
     template<typename config>
-    class NAPAPI WebSocketClientEndPoint : public WebSocketClientEndPointBase
+    class NAPAPI WebSocketClientEndPointSetup : public WebSocketClientEndPointBase
     {
     RTTI_ENABLE(WebSocketClientEndPointBase)
     public:
@@ -131,6 +136,7 @@ namespace nap
          * @return if message was sent successfully.
          */
         bool send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error) override;
+
     protected:
         /**
          * Runs the endpoint in a background thread until stopped.
@@ -159,19 +165,20 @@ namespace nap
         bool mRunning = false;													///< If the client connection to the server is open
         std::future<void> mClientTask;											///< The client server thread
         std::vector<std::unique_ptr<WebSocketClientWrapper<config>>> mClients;	///< All unique client connections
-        websocketpp::client<config> mEndPoint; ///< websocketpp client end point
+        websocketpp::client<config> mEndPoint;									///< websocketpp client end point
     };
 
-    using WebSocketClientEndPointNoTLS = WebSocketClientEndPoint<wspp::Config>;
 
-    /**
-     * WebSocketClientEndPointTLS implementation.
-     * Adds TLS support to the WebSocketClientEndPoint.
-     * Has some extra properties needed for TLS support.
-     */
-    class WebSocketClientEndPointTLS : public WebSocketClientEndPoint<wspp::ConfigTLS>
+	// Not secured web-socket client end point connection.
+    using WebSocketClientEndPoint = WebSocketClientEndPointSetup<wspp::Config>;
+
+
+	/**
+	 * Secured client end point connection.
+	 */
+    class NAPAPI SecureWebSocketClientEndPoint : public WebSocketClientEndPointSetup<wspp::ConfigTLS>
     {
-    RTTI_ENABLE(WebSocketClientEndPoint<wspp::ConfigTLS>)
+		RTTI_ENABLE(WebSocketClientEndPointSetup<wspp::ConfigTLS>)
     public:
         /**
          * Starts the endpoint. This is a non-blocking call.
@@ -181,8 +188,9 @@ namespace nap
          */
         bool start(nap::utility::ErrorState &error) override;
 
-        std::string mCertificateChainFile = ""; ///< Property: "CertificateChainFile" path to the certificate chain file
-        std::string mHostName = ""; ///< Property: "HostName" host name to verify against the certificate
+        std::string mCertificateChainFile = "";		///< Property: "CertificateChainFile" path to the certificate chain file
+        std::string mHostName = "";					///< Property: "HostName" host name to verify against the certificate
+
     private:
         /**
          * Called when a new connection is made
@@ -193,6 +201,7 @@ namespace nap
 
         bool verifyCertificate(const char * hostname, bool preverified, asio::ssl::verify_context& ctx);
     };
+
 
 	//////////////////////////////////////////////////////////////////////////
 	// WebSocketClientWrapper
@@ -207,7 +216,7 @@ namespace nap
 	class NAPAPI WebSocketClientWrapper final
 	{
         template<typename X>
-		friend class WebSocketClientEndPoint;
+		friend class WebSocketClientEndPointSetup;
 	public:
 		// Destructor
 		~WebSocketClientWrapper();
@@ -244,9 +253,8 @@ namespace nap
 		 * @param endPoint websocketpp end point.
 		 * @param connection websocketpp pointer to connection.
 		 */
-		WebSocketClientWrapper(IWebSocketClient& client,
-                               websocketpp::client<config>& endPoint,
-                               typename websocketpp::endpoint<websocketpp::connection<config>, config>::connection_ptr connection);
+		WebSocketClientWrapper(IWebSocketClient& client, websocketpp::client<config>& endPoint,
+			typename websocketpp::endpoint<websocketpp::connection<config>, config>::connection_ptr connection);
 
 		/**
 		 * Disconnects the web-socket client, ensuring no callbacks are triggered when
@@ -261,6 +269,7 @@ namespace nap
 		wspp::ConnectionHandle mHandle;
 		std::atomic<bool> mOpen = { false };
 	};
+
 
     template<typename config>
     WebSocketClientWrapper<config>::~WebSocketClientWrapper()
