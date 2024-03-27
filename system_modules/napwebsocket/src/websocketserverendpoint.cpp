@@ -9,6 +9,11 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 
+RTTI_BEGIN_ENUM(nap::SecureWebSocketServerEndPoint::ETLSMode)
+	RTTI_ENUM_VALUE(nap::SecureWebSocketServerEndPoint::ETLSMode::Intermediate,		"Intermediate"),
+	RTTI_ENUM_VALUE(nap::SecureWebSocketServerEndPoint::ETLSMode::Modern,			"Modern")
+RTTI_END_ENUM
+
 RTTI_DEFINE_CLASS(nap::WebSocketServerEndPoint)
 
 RTTI_BEGIN_CLASS(nap::SecureWebSocketServerEndPoint)

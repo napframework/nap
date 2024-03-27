@@ -158,7 +158,6 @@ namespace nap
                 return false;
             }
         }
-
         return preverified;
     }
 }

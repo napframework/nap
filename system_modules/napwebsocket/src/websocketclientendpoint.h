@@ -133,8 +133,8 @@ namespace nap
          */
         bool start(nap::utility::ErrorState &error) override;
 
-        std::string mCertificateChainFile = "";		///< Property: "CertificateChainFile" path to the certificate chain file
-        std::string mHostName = "";					///< Property: "HostName" host name to verify against the certificate
+        std::string mCertificateChainFile;									///< Property: "CertificateChainFile" path to the certificate chain file
+        std::string mHostName;												///< Property: "HostName" host name to verify against the certificate
 
     private:
         /**
