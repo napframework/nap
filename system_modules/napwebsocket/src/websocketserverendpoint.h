@@ -19,6 +19,7 @@
 #include <rapidjson/istreamwrapper.h>
 #include <rapidjson/prettywriter.h>
 #include <rapidjson/error/en.h>
+#include <nap/logger.h>
 
 namespace nap
 {
