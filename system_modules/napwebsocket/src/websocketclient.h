@@ -185,7 +185,7 @@ namespace nap
 		 */
 		bool send(const WebSocketMessage& message, nap::utility::ErrorState& error);
 
-	protected:
+	private:
 		/**
 		 * Called by web-socket client endpoint when the connection is opened.
 		 * Generates and forwards a nap::WebSocketConnectionEvent to the running application on the main thread.

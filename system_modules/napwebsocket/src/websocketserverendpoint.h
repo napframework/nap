@@ -162,6 +162,18 @@ namespace nap
          bool acceptsNewConnections() override;
 
     protected:
+		/**
+         * Register a server for this endpoint so that it receives notifications from the endpoint.
+         * @param server the server to register
+         */
+        void registerListener(IWebSocketServer& server) override;
+
+        /**
+         * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
+         * @param server the server to unregister
+         */
+        void unregisterListener(IWebSocketServer& server) override;
+
         /**
          * Runs the end point in a background thread until stopped.
          */
@@ -216,6 +228,8 @@ namespace nap
         uint32 mAccessLogLevel = 0;												///< Log client / server connection data
         std::future<void> mServerTask;											///< The background server thread
         std::vector<wspp::ConnectionHandle> mConnections;						///< List of all low level connections
+		std::mutex mListenerMutex;												///< Ensures registration is thread safe
+		std::vector<IWebSocketServer*> mListeners;								///< All registered web socket servers
     };
 
 
@@ -826,4 +840,22 @@ namespace nap
 		mConnections.clear();
 		return success;
 	}
+
+
+	template<typename config>
+	void WebSocketServerEndPointSetup<config>::registerListener(IWebSocketServer& server)
+	{
+		std::unique_lock<std::mutex> lock(mListenerMutex);
+		mListeners.push_back(&server);
+	}
+
+
+	template<typename config>
+	void WebSocketServerEndPointSetup<config>::unregisterListener(IWebSocketServer& server)
+	{
+		std::unique_lock<std::mutex> lock(mListenerMutex);
+		mListeners.erase(std::remove(mListeners.begin(), mListeners.end(), &server), mListeners.end());
+	}
+
+
 }

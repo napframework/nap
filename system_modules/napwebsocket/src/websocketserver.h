@@ -21,6 +21,9 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketServer : public WebSocketInterface
 	{
+		template<typename config>
+		friend class WebSocketServerEndPointSetup;
+
 		RTTI_ENABLE(WebSocketInterface)
 	public:
 		/**
@@ -41,6 +44,9 @@ namespace nap
 		 */
 		virtual void onDestroy() override;
 
+		ResourcePtr<IWebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
+
+	protected:
 		// Called by web-socket server endpoint when a new message is received
 		virtual void onMessageReceived(const WebSocketConnection& connection, const WebSocketMessage& message) = 0;
 
@@ -52,8 +58,6 @@ namespace nap
 
 		// Called by web-socket server endpoint when a client connection failed to establish
 		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) = 0;
-
-		ResourcePtr<IWebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
 	};
 
 

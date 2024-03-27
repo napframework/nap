@@ -24,17 +24,4 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketServerEndPoint)
 RTTI_END_CLASS
 
 namespace nap
-{
-	void IWebSocketServerEndPoint::registerListener(IWebSocketServer& server)
-	{
-		std::unique_lock<std::mutex> lock(mListenerMutex);
-		mListeners.push_back(&server);
-	}
-
-
-	void IWebSocketServerEndPoint::unregisterListener(IWebSocketServer& server)
-	{
-		std::unique_lock<std::mutex> lock(mListenerMutex);
-		mListeners.erase(std::remove(mListeners.begin(), mListeners.end(), &server), mListeners.end());
-	}
-}
+{ }
