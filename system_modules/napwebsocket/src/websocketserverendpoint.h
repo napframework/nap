@@ -101,18 +101,6 @@ namespace nap
         void stop() override;
 
         /**
-         * Register a server for this endpoint so that it receives notifications from the endpoint.
-		 * @param server the server to register
-         */
-        void registerListener(IWebSocketServer& server) override;
-
-        /**
-         * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
-		 * @param server the server to unregister
-         */
-        void unregisterListener(IWebSocketServer& server) override;
-
-        /**
          * Sends a message to a client.
          * @param connection the client connection
          * @param message the message to send
@@ -228,9 +216,6 @@ namespace nap
         uint32 mAccessLogLevel = 0;												///< Log client / server connection data
         std::future<void> mServerTask;											///< The background server thread
         std::vector<wspp::ConnectionHandle> mConnections;						///< List of all low level connections
-
-        std::mutex mListenerMutex;
-        std::vector<IWebSocketServer*> mListeners;
     };
 
 
@@ -473,22 +458,6 @@ namespace nap
 			mServerTask.wait();
 			mRunning = false;
 		}
-	}
-
-
-	template<typename config>
-	void WebSocketServerEndPointSetup<config>::registerListener(IWebSocketServer& server)
-	{
-		std::unique_lock<std::mutex> lock(mListenerMutex);
-		mListeners.push_back(&server);
-	}
-
-
-	template<typename config>
-	void WebSocketServerEndPointSetup<config>::unregisterListener(IWebSocketServer& server)
-	{
-		std::unique_lock<std::mutex> lock(mListenerMutex);
-		mListeners.erase(std::remove(mListeners.begin(), mListeners.end(), &server), mListeners.end());
 	}
 
 

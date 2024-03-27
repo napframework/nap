@@ -13,6 +13,7 @@
 #include <utility/errorstate.h>
 #include <nap/device.h>
 #include <nap/resourceptr.h>
+#include <mutex>
 
 namespace nap
 {
@@ -157,12 +158,17 @@ namespace nap
 	protected:
 		/**
 		 * Register a server for this endpoint so that it receives notifications from the endpoint.
+		 * @param server server to register as listener
 		 */
-        virtual void registerListener(IWebSocketServer& server) = 0;
+        void registerListener(IWebSocketServer& server);
 
 		/**
 		 * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
+		 * @param server the server to unregister as listener
 		 */
-        virtual void unregisterListener(IWebSocketServer& server) = 0;
+        void unregisterListener(IWebSocketServer& server);
+
+		std::mutex mListenerMutex;											///< Ensures registration is thread safe
+		std::vector<IWebSocketServer*> mListeners;							///< All registered web socket servers
     };
 }
