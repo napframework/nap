@@ -64,6 +64,7 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketServerEndPoint : public Device
 	{
+		friend class IWebSocketServer;
 		RTTI_ENABLE(Device)
 	public:
 
@@ -81,16 +82,6 @@ namespace nap
 		 * @return if the current end point is open and running
 		 */
 		virtual bool isOpen() const = 0;
-
-		/**
-		 * Register a server for this endpoint so that it receives notifications from the endpoint.
-		 */
-        virtual void registerListener(IWebSocketServer& server) = 0;
-
-		/**
-		 * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
-		 */
-        virtual void unregisterListener(IWebSocketServer& server) = 0;
 
 		/**
 		 * Sends a message to a client.
@@ -153,7 +144,7 @@ namespace nap
 		 */
 		virtual bool acceptsNewConnections() = 0;
 
-        EAccessMode mMode = EAccessMode::EveryOne;							///< Property: "AccessMode" client connection access mode.
+		EAccessMode mMode = EAccessMode::EveryOne;							///< Property: "AccessMode" client connection access mode.
         int mConnectionLimit = -1;											///< Property: "ConnectionLimit" number of allowed client connections at once, -1 = no limit
         int mPort = 80;														///< Property: "Port" to open and listen to for client requests.
         bool mLogConnectionUpdates = true;									///< Property: "LogConnectionUpdates" if client / server connect information is logged to the console.
@@ -162,5 +153,16 @@ namespace nap
         std::vector<ResourcePtr<WebSocketTicket>> mClients;					///< Property: "Clients" All authorized clients when mode is set to 'Reserved'"
         std::string mAccessAllowControlOrigin = "*";						///< Property: "AllowControlOrigin" Access-Control-Allow-Origin response header value. Indicates if the server response can be shared with request code from the given origin.
         std::string	mIPAddress = "";										///< Property: 'IPAddress' this server IP Address, when left empty the first available ethernet adapter is chosen.
+
+	protected:
+		/**
+		 * Register a server for this endpoint so that it receives notifications from the endpoint.
+		 */
+        virtual void registerListener(IWebSocketServer& server) = 0;
+
+		/**
+		 * Unregister a server for this endpoint so that it stops receiving notifications from the endpoint.
+		 */
+        virtual void unregisterListener(IWebSocketServer& server) = 0;
     };
 }

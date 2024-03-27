@@ -23,8 +23,9 @@
 namespace nap
 {
     /**
-	 * Server endpoint role that manages all client connections, where the
-	 * `config` is the websocketpp (secured / unsecured) end-point configuration type.
+	 * Web socket server endpoint implementation using a specific configuration.
+	 * Manages all client connections, where the `config` is the websocketpp (secured / unsecured)
+	 * end-point configuration type.
 	 * 
 	 * On start the web-socket endpoint starts listening to connection requests, updates and messages on a background thread.
 	 * The endpoint is a device that can be started and stopped. When stopped all

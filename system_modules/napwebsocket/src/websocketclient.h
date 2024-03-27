@@ -5,16 +5,13 @@
 #pragma once
 
 // Local Includes
-#include "websocketclientendpoint.h"
+#include "iwebsocketclientendpoint.h"
 #include "websocketinterface.h"
 #include "websocketticket.h"
 
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
-#include <nap/signalslot.h>
-#include <rtti/factory.h>
-#include <atomic>
 
 namespace nap
 {
@@ -38,6 +35,7 @@ namespace nap
 	{
         template<typename config>
 		friend class WebSocketClientEndPointSetup;
+
         template<typename config>
 		friend class WebSocketClientWrapper;
 
@@ -85,7 +83,7 @@ namespace nap
 		 */
 		const WebSocketConnection& getConnection() const				{ return mConnection; }
 
-		ResourcePtr<WebSocketClientEndPointBase> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
+		ResourcePtr<IWebSocketClientEndPoint> mEndPoint;				///< Property: 'EndPoint' the client endpoint that manages all connections.
 		ResourcePtr<WebSocketTicket> mTicket = nullptr;					///< Property: 'Ticket' optional identification token. 
 		std::string mURI;												///< Property: "UIR" Server URI to open connection to.
 
