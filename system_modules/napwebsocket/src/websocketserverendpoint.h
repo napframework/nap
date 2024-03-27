@@ -258,8 +258,8 @@ namespace nap
 
 		ETLSMode mMode = ETLSMode::Intermediate;				///< Property: "Mode" TLS configuration mode
 		std::string mCertificateFile;							///< Property: "CertificateFile" TLS certificate file (.pem)
-        std::string mPrivateKeyFile;							///< Property: "PrivateKeyFile" TLS private key file (.private)
-        std::string mPassphrase;								///< Property: "Passphrase" password for the private key, only required when key is generated with one.
+        std::string mPrivateKeyFile;							///< Property: "PrivateKeyFile" TLS private key file (.key)
+        std::string mPassphrase;								///< Property: "Passphrase" password for the private key, only required when key is generated with one
 
         /**
          * Initializes the server endpoint.
