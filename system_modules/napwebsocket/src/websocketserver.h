@@ -5,7 +5,7 @@
 #pragma once
 
 // Local Includes
-#include "websocketserverendpoint.h"
+#include "iwebsocketserverendpoint.h"
 #include "websocketinterface.h"
 
 // External Includes
@@ -53,7 +53,7 @@ namespace nap
 		// Called by web-socket server endpoint when a client connection failed to establish
 		virtual void onConnectionFailed(const WebSocketConnection& connection, int code, const std::string& reason) = 0;
 
-		ResourcePtr<WebSocketServerEndPointBase> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
+		ResourcePtr<IWebSocketServerEndPoint> mEndPoint;	///< Property: 'EndPoint' the server endpoint that manages all client connections
 	};
 
 

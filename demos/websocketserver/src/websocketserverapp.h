@@ -118,6 +118,6 @@ namespace nap
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
 		ObjectPtr<RenderWindow> mRenderWindow;							//< Pointer to the render window		
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that renders text
-		ObjectPtr<WebSocketServerEndPointBase> mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client
+		ObjectPtr<IWebSocketServerEndPoint> mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client
 	};
 }
