@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.19)
+cmake_minimum_required(VERSION 3.18.4)
 set(CMAKE_OSX_ARCHITECTURES arm64;x86_64)
 project(NAP)
 
