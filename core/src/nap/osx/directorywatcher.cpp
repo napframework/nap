@@ -17,6 +17,7 @@
 #include <iostream>
 #include <mutex>
 #include <thread>
+#include <filesystem>
 #include <unistd.h>
 
 namespace nap {
@@ -146,12 +147,15 @@ namespace nap {
             if (mPImpl->callbackInfo.modifiedFiles.empty())
                 return false;
             
-            std::string comparable_watched_path = utility::toComparableFilename(mPImpl->currentPath);
+            std::string comparable_watched_path = std::filesystem::canonical(mPImpl->currentPath);
             
             for (auto& modified_file : mPImpl->callbackInfo.modifiedFiles)
             {
-                std::string comparable_modified_file = utility::toComparableFilename(modified_file);
-                
+                std::string comparable_modified_file = std::filesystem::canonical(modified_file);
+
+                std::cout << "Modified file: " << comparable_modified_file << std::endl;
+                std::cout << "Watched path: " << comparable_watched_path << std::endl;
+
                 // check if the watched path is found at the start if the modified file's path
                 assert(comparable_modified_file.find(comparable_watched_path + "/") != std::string::npos);
 
