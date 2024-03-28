@@ -59,14 +59,14 @@ if (EXISTS ${MODULE_EXTRA_CMAKE_PATH})
     include(${MODULE_EXTRA_CMAKE_PATH})
 endif()
 
-# Copy module.json to bin
+# Copy module.json to bin and install
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
         ${CMAKE_CURRENT_SOURCE_DIR}/module.json
         ${LIB_DIR}/${PROJECT_NAME}.json)
 
-# Copy module data folder
+# Copy module data folder and install
 get_filename_component(parent_dir ${CMAKE_CURRENT_SOURCE_DIR} DIRECTORY)
 if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
     set(dest ${BIN_DIR}/${parent_name}/${PROJECT_NAME})
@@ -74,9 +74,10 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/data
         ${dest}/data)
+    message(STATUS ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME})
+    install(DIRECTORY ${dest}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME} OPTIONAL)
 endif()
 
 # Install library and module json
 install(FILES $<TARGET_FILE:${PROJECT_NAME}> TYPE LIB OPTIONAL)
 install(FILES ${LIB_DIR}/${PROJECT_NAME}.json TYPE LIB OPTIONAL)
-install(DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME} OPTIONAL)
