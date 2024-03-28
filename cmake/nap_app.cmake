@@ -1,5 +1,8 @@
 cmake_minimum_required(VERSION 3.19)
 
+# Scan for an app module
+try_add_module_from_dir(${CMAKE_CURRENT_SOURCE_DIR}/module)
+
 # Get the app name from the directory name
 get_filename_component(app_name ${CMAKE_CURRENT_SOURCE_DIR} NAME)
 
@@ -26,7 +29,6 @@ file(GLOB_RECURSE SHADERS data/shaders/*.frag data/shaders/*.vert data/shaders/*
 add_executable(${PROJECT_NAME} ${SOURCES} ${HEADERS} ${SHADERS})
 
 # Pull in the app module if it exists
-try_add_module_from_dir(${CMAKE_CURRENT_SOURCE_DIR}/module)
 if (TARGET nap${PROJECT_NAME})
     target_link_libraries(${PROJECT_NAME} nap${PROJECT_NAME})
 endif()
