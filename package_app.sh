@@ -77,22 +77,20 @@ echo App title is: $app_title
 
 # Cleaning previous install, if any
 echo Cleaning previous install output...
-rm -rf install/$app_title
+rm -rf "install/$app_title"
 
 # Rename output directory to app title
 if [ "$(uname)" = "Darwin" ]; then
-  mv install/MyApp.app install/$app_title
+  mv "install/MyApp.app" "install/$app_title"
 else
-  mv install/MyApp install/$app_title
+  mv "install/MyApp" "install/$app_title"
 fi
 
 # Codesign MacOS app bundle
 if [ "$(uname)" = "Darwin" ]; then
-  echo Codesigning MacOS bundle...
-  if [ "$#" -lt "3" ]; then
-    codesign --deep -s - -f install/$app_title
-  else
-    codesign --deep -s "$3" -f -i "com.$target.napframework.www" -f install/$app_title
+  if [ "$#" -gt "2" ]; then
+    echo Codesigning MacOS bundle...
+    codesign --deep -s "$3" -f -i "com.$target.napframework.www" -f "install/$app_title"
   fi
 fi
 
