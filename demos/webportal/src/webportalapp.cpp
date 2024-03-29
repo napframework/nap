@@ -49,7 +49,7 @@ namespace nap
 			return false;
 
 		// Server end point, handles connections
-		mServerEndPoint = mResourceManager->findObject<nap::WebSocketServerEndPointNoTLS>("WebSocketServerEndPoint");
+		mServerEndPoint = mResourceManager->findObject<nap::WebSocketServerEndPoint>("WebSocketServerEndPoint");
 		if (!error.check(mServerEndPoint != nullptr, "unable to find server end point with name WebSocketServerEndPoint"))
 			return false;
 

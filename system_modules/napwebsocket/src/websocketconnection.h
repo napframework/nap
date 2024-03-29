@@ -13,9 +13,9 @@
 namespace nap
 {
     template<typename T>
-    class WebSocketServerEndPoint;
+    class WebSocketServerEndPointSetup;
     template<typename T>
-	class WebSocketClientEndPoint;
+	class WebSocketClientEndPointSetup;
 
 	/**
 	 * Utility class that wraps a web-socket connection handle.
@@ -27,9 +27,9 @@ namespace nap
 	class NAPAPI WebSocketConnection final
 	{
         template<typename T>
-        friend class WebSocketServerEndPoint;
+        friend class WebSocketServerEndPointSetup;
         template<typename T>
-		friend class WebSocketClientEndPoint;
+		friend class WebSocketClientEndPointSetup;
 
 	public:
 		// Creates an invalid (expired) connection

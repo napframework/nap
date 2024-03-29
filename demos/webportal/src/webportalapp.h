@@ -104,6 +104,6 @@ namespace nap
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;		///< Pointer to the render window
 		ObjectPtr<Scene>			mScene = nullptr;				///< Pointer to the main scene
 		ObjectPtr<ParameterButton>	mButton = nullptr;				///< Pointer to GUI button
-		ObjectPtr<WebSocketServerEndPointNoTLS > mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client
+		ObjectPtr<WebSocketServerEndPoint > mServerEndPoint = nullptr;	//< Pointer to the web-socket server endpoint, manages all client
 	};
 }	

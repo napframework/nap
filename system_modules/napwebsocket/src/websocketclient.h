@@ -5,16 +5,13 @@
 #pragma once
 
 // Local Includes
-#include "websocketclientendpoint.h"
+#include "iwebsocketclientendpoint.h"
 #include "websocketinterface.h"
 #include "websocketticket.h"
 
 // External Includes
 #include <nap/resource.h>
 #include <nap/resourceptr.h>
-#include <nap/signalslot.h>
-#include <rtti/factory.h>
-#include <atomic>
 
 namespace nap
 {
@@ -36,9 +33,10 @@ namespace nap
 	 */
 	class NAPAPI IWebSocketClient : public WebSocketInterface
 	{
-        template<typename T>
-		friend class WebSocketClientEndPoint;
-        template<typename T>
+        template<typename config>
+		friend class WebSocketClientEndPointSetup;
+
+        template<typename config>
 		friend class WebSocketClientWrapper;
 
 		RTTI_ENABLE(WebSocketInterface)
@@ -85,7 +83,7 @@ namespace nap
 		 */
 		const WebSocketConnection& getConnection() const				{ return mConnection; }
 
-		ResourcePtr<WebSocketClientEndPointBase> mEndPoint;					///< Property: 'EndPoint' the client endpoint that manages all connections.
+		ResourcePtr<IWebSocketClientEndPoint> mEndPoint;				///< Property: 'EndPoint' the client endpoint that manages all connections.
 		ResourcePtr<WebSocketTicket> mTicket = nullptr;					///< Property: 'Ticket' optional identification token. 
 		std::string mURI;												///< Property: "UIR" Server URI to open connection to.
 
@@ -187,7 +185,7 @@ namespace nap
 		 */
 		bool send(const WebSocketMessage& message, nap::utility::ErrorState& error);
 
-	protected:
+	private:
 		/**
 		 * Called by web-socket client endpoint when the connection is opened.
 		 * Generates and forwards a nap::WebSocketConnectionEvent to the running application on the main thread.
