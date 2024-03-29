@@ -12,8 +12,7 @@
 #include <unordered_map>
 #include <nap/assert.h>
 
-#ifdef _WIN32 
-	#include <dll.h>
+#ifdef _WIN32
 	#include <windows.h>
 	#include <intrin.h>       
 	#include <iphlpapi.h>
@@ -23,11 +22,8 @@
     #include <net/if.h>
 #endif
 
-// Cryptopp includes
-#include <rsa.h>
-#include <files.h>
-#include <sha.h>
-#include <hex.h>
+// napopenssl includes
+#include <opensslutils.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
 	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
@@ -36,6 +32,8 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LicenseService)
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
+
+bool digest_message(unsigned char *message, unsigned char **digest, unsigned int *digest_len);
 
 namespace nap
 {
@@ -57,78 +55,6 @@ namespace nap
 		bool file_found = it != files.end();
 		outFile = file_found ? *it : "";
 		return file_found;
-	}
-
-
-	static std::unique_ptr<CryptoPP::PK_Verifier> createVerifier(const std::string& publicKey, nap::ESigningScheme signingScheme)
-	{
-		CryptoPP::StringSource pub_file(publicKey.c_str(), true, new CryptoPP::HexDecoder);
-		std::unique_ptr<CryptoPP::PK_Verifier> verifier;
-		switch (signingScheme)
-		{
-			case nap::ESigningScheme::SHA1:
-			{
-				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA1>::Verifier(pub_file));
-				return verifier;
-			}
-			case nap::ESigningScheme::SHA224:
-			{
-				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA224>::Verifier(pub_file));
-				return verifier;
-			}
-			case nap::ESigningScheme::SHA256:
-			{
-				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA256>::Verifier(pub_file));
-				return verifier;
-			}
-			case nap::ESigningScheme::SHA384:
-			{
-				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA384>::Verifier(pub_file));
-				return verifier;
-			}
-			case nap::ESigningScheme::SHA512:
-			{
-				verifier.reset(new CryptoPP::RSASS<CryptoPP::PKCS1v15, CryptoPP::SHA512>::Verifier(pub_file));
-				return verifier;
-			}
-			default:
-			{
-				assert(false);
-			}
-		}
-
-		return nullptr;
-	}
-
-
-	static bool rsaVerifyFile(const std::string& publicKey, nap::ESigningScheme signingScheme, const std::string& licenseFile, const std::string& signatureFile)
-	{
-		try
-		{
-			// Load public key
-			std::unique_ptr<CryptoPP::PK_Verifier> verifier = createVerifier(publicKey, signingScheme);
-
-			// Load license signature file and ensure byte length matches
-			CryptoPP::FileSource signature_file(signatureFile.c_str(), true, new CryptoPP::HexDecoder);
-			if (signature_file.MaxRetrievable() != verifier->SignatureLength())
-				return false;
-
-			// Copy into signature
-			CryptoPP::SecByteBlock signature(verifier->SignatureLength());
-			signature_file.Get(signature, signature.size());
-
-			// Load license and verify
-			CryptoPP::SignatureVerificationFilter *verifier_filter = new CryptoPP::SignatureVerificationFilter(*verifier);
-			verifier_filter->Put(signature, verifier->SignatureLength());
-
-			CryptoPP::FileSource license_file(licenseFile.c_str(), true, verifier_filter);
-			return verifier_filter->GetLastResult();
-		}
-		catch (const std::exception& e)
-		{
-			nap::Logger::error(e.what());
-			return false;
-		}
 	}
 
 
@@ -182,21 +108,17 @@ namespace nap
 			error.fail("Unable to read machine identifier");
 			return false;
 		}
-		std::hash<std::string> hasher;
-        num_id ^= static_cast<uint64>(hasher(id_str));
-        id_str = std::to_string(num_id);
 
-        // Turn into 256 hash, truncated to 10 bits for readability
-        CryptoPP::SHA256 hash; std::string digest;
-        hash.Update((const CryptoPP::byte*)id_str.data(), id_str.size());
-        digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
-        hash.TruncatedFinal((CryptoPP::byte*)&digest[0], digest.size());
+        // hash and encode
+        std::string hashed_id = utility::sha256(id_str);
+		std::string id_encoded = utility::encode64(hashed_id);
+        assert(id_encoded.size() >= 10);
 
-        // Encode base 16 and store as str.
-        std::stringstream buffer;
-        CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(buffer));
-        CryptoPP::StringSource string_source(digest, true, new CryptoPP::Redirector(encoder));
-        outID = buffer.str();
+        // convert to hex and truncate for readability
+        std::stringstream ss;
+        for(int i=0; i<10; ++i)
+            ss << std::uppercase << std::hex << (int)id_encoded[i];
+        outID = ss.str();
 
         return true;
 	}
@@ -282,27 +204,16 @@ namespace nap
 			"Could not read registry value"))
 			return false;
 
-		// Add uuid
-		std::hash<std::string> hasher;
-		uint64 machine_id = static_cast<uint64>(hasher(id_str));
-		num_id ^= machine_id;
+        // hash and encode
+        std::string hashed_id = utility::sha256(id_str);
+		std::string id_encoded = utility::encode64(hashed_id);
+        assert(id_encoded.size() >= 10);
 
-		// TODO: link against static CryptoPP lib instead of dll.
-		// FIPS DLL is obsolete and should not be used. See: https://www.cryptopp.com/wiki/FIPS_DLL
-		// Usage of 'CryptoPP::StringSink' causes heap corruption (MSVC) with dll -> used FileSink instead.
-		id_str = std::to_string(num_id); 
-
-		// Turn into 256 hash, truncated to 10 bits
-		CryptoPP::SHA256 hash; std::string digest;
-		hash.Update((const byte*)id_str.data(), id_str.size());
-		digest.resize(hash.DigestSize() > 10 ? 10 : hash.DigestSize());
-		hash.TruncatedFinal((CryptoPP::byte*)&digest[0], digest.size());
-
-		// Encode base 16 and store as str.
-		std::stringstream buffer;
-        CryptoPP::HexEncoder encoder(new CryptoPP::FileSink(buffer));
-		CryptoPP::StringSource string_source(digest, true, new CryptoPP::Redirector(encoder));
-		outID = buffer.str();
+        // convert to hex and truncate for readability
+        std::stringstream ss;
+        for(int i=0; i<10; ++i)
+            ss << std::uppercase << std::hex << (int)id_encoded[i];
+        outID = ss.str();
 
 		return true;
 	}
@@ -354,18 +265,24 @@ namespace nap
 			return false;
 		assert(utility::fileExists(mSignature));
 
-		// Verify license using provided public application key
-		if (!error.check(rsaVerifyFile(publicKey, signingScheme, mLicense, mSignature), "Signature verification failed"))
-			return false;
+        // Read license from disk
+        std::ifstream license_stream(mLicense);
+        std::stringstream license_content;
+        license_content << license_stream.rdbuf();
+        license_stream.close();
 
-		// TODO: The RSAVerifyFile function already loads the license, but when using cryptopp (compiled with msvc 2015),
-		// I am unable to first load the file to string and use that as a source for the verification operation -> runtime memory error
-		// See: https://www.cryptopp.com/wiki/FIPS_DLL
-		std::string user_license;
-		if (!utility::readFileToString(mLicense, user_license, error))
+        // Read signature from disk
+        std::ifstream signature_stream(mSignature);
+        std::stringstream signature_content;
+        signature_content << signature_stream.rdbuf();
+        signature_stream.close();
+
+		// Verify license using provided public application key
+		if (!error.check(utility::verifyMessage(publicKey, license_content.str(), signingScheme, signature_content.str()), "Signature verification failed"))
 			return false;
 
 		// Remove first part
+        std::string user_license = license_content.str();
 		assert(utility::startsWith(user_license, licenseToken, true));
 		user_license.erase(0, strlen(licenseToken));
 

@@ -2,7 +2,7 @@
 // blocking_token_tcp_client.cpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2018 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2023 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -22,13 +22,21 @@
 
 using asio::ip::tcp;
 
+// NOTE: This example uses the new form of the asio::async_result trait.
+// For an example that works with the Networking TS style of completion tokens,
+// please see an older version of asio.
+
+// We will use our sockets only with an io_context.
+using tcp_socket = asio::basic_stream_socket<
+    tcp, asio::io_context::executor_type>;
+
 //----------------------------------------------------------------------
 
 // A custom completion token that makes asynchronous operations behave as
 // though they are blocking calls with a timeout.
 struct close_after
 {
-  close_after(std::chrono::steady_clock::duration t, tcp::socket& s)
+  close_after(std::chrono::steady_clock::duration t, tcp_socket& s)
     : timeout_(t), socket_(s)
   {
   }
@@ -37,7 +45,7 @@ struct close_after
   std::chrono::steady_clock::duration timeout_;
 
   // The socket to be closed if the operation does not complete in time.
-  tcp::socket& socket_;
+  tcp_socket& socket_;
 };
 
 namespace asio {
@@ -50,50 +58,26 @@ template <typename T>
 class async_result<close_after, void(std::error_code, T)>
 {
 public:
-  // An asynchronous operation's initiating function automatically creates an
-  // completion_handler_type object from the token. This function object is
-  // then called on completion of the asynchronous operation.
-  class completion_handler_type
+  // The initiate() function is used to launch the asynchronous operation by
+  // calling the operation's initiation function object. For the close_after
+  // completion token, we use this function to run the io_context until the
+  // operation is complete.
+  template <typename Init, typename... Args>
+  static T initiate(Init init, close_after token, Args&&... args)
   {
-  public:
-    completion_handler_type(const close_after& token)
-      : token_(token)
-    {
-    }
+    asio::io_context& io_context = asio::query(
+        token.socket_.get_executor(), asio::execution::context);
 
-    void operator()(const std::error_code& error, T t)
-    {
-      *error_ = error;
-      *t_ = t;
-    }
-
-  private:
-    friend class async_result;
-    close_after token_;
-    std::error_code* error_;
-    T* t_;
-  };
-
-  // The async_result constructor associates the completion handler object with
-  // the result of the initiating function.
-  explicit async_result(completion_handler_type& h)
-    : timeout_(h.token_.timeout_),
-      socket_(h.token_.socket_)
-  {
-    h.error_ = &error_;
-    h.t_ = &t_;
-  }
-
-  // The return_type typedef determines the result type of the asynchronous
-  // operation's initiating function.
-  typedef T return_type;
-
-  // The get() function is used to obtain the result of the asynchronous
-  // operation's initiating function. For the close_after completion token, we
-  // use this function to run the io_context until the operation is complete.
-  return_type get()
-  {
-    asio::io_context& io_context = socket_.get_executor().context();
+    // Call the operation's initiation function object to start the operation.
+    // A lambda is supplied as the completion handler, to be called when the
+    // operation completes.
+    std::error_code error;
+    T result;
+    init([&](std::error_code e, T t)
+        {
+          error = e;
+          result = t;
+        }, std::forward<Args>(args)...);
 
     // Restart the io_context, as it may have been left in the "stopped" state
     // by a previous operation.
@@ -103,7 +87,7 @@ public:
     // the pending asynchronous operation is a composed operation, the deadline
     // applies to the entire operation, rather than individual operations on
     // the socket.
-    io_context.run_for(timeout_);
+    io_context.run_for(token.timeout_);
 
     // If the asynchronous operation completed successfully then the io_context
     // would have been stopped due to running out of work. If it was not
@@ -112,21 +96,15 @@ public:
     if (!io_context.stopped())
     {
       // Close the socket to cancel the outstanding asynchronous operation.
-      socket_.close();
+      token.socket_.close();
 
       // Run the io_context again until the operation completes.
       io_context.run();
     }
 
     // If the operation failed, throw an exception. Otherwise return the result.
-    return error_ ? throw std::system_error(error_) : t_;
+    return error ? throw std::system_error(error) : result;
   }
-
-private:
-  std::chrono::steady_clock::duration timeout_;
-  tcp::socket& socket_;
-  std::error_code error_;
-  T t_;
 };
 
 } // namespace asio
@@ -148,7 +126,7 @@ int main(int argc, char* argv[])
     // Resolve the host name and service to a list of endpoints.
     auto endpoints = tcp::resolver(io_context).resolve(argv[1], argv[2]);
 
-    tcp::socket socket(io_context);
+    tcp_socket socket(io_context);
 
     // Run an asynchronous connect operation with a timeout.
     asio::async_connect(socket, endpoints,

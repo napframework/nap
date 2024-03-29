@@ -28,9 +28,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	IWebSocketServer::IWebSocketServer(WebSocketService& service) : WebSocketInterface(service)
-	{
-
-	}
+	{ }
 
 
 	bool IWebSocketServer::init(utility::ErrorState& errorState)
@@ -54,9 +52,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	WebSocketServer::WebSocketServer(WebSocketService& service) : IWebSocketServer(service)
-	{
-
-	}
+	{ }
 
 
 	bool WebSocketServer::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)
