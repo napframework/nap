@@ -27,10 +27,14 @@ namespace nap
 {		
 	bool FFTAudioNodeComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Fetch resource
 		mResource = getComponent<FFTAudioNodeComponent>();
+
+		// Fetch audio service
 		mAudioService = getEntityInstance()->getCore()->getService<audio::AudioService>();
 		assert(mAudioService != nullptr);
-		
+
+		// Validate channel 
 		if (!errorState.check(mResource->mChannel < mInput->getChannelCount(), "%s: Channel exceeds number of input channels", mResource->mID.c_str()))
 			return false;
 

@@ -96,20 +96,10 @@
                 {
                     "Type": "nap::FluxMeasurementComponent",
                     "mID": "FluxMeasurement",
-                    "Parameters": [
-                        {
-                            "Type": "nap::FluxMeasurementComponent::FilterParameterItem",
-                            "mID": "FilterParameterItem_a5e484a3",
-                            "Parameter": "LowScaleParameter",
-                            "Multiplier": "",
-                            "Offset": "OffsetParameter",
-                            "Decay": "",
-                            "MinHertz": 0.0,
-                            "MaxHertz": 2000.0,
-                            "SmoothTime": 0.0333000011742115
-                        }
-                    ],
-                    "Enable": true
+                    "Scale": 1.0,
+                    "Decay": 0.949999988079071,
+                    "MinHertz": 0.0,
+                    "MaxHertz": 2000.0
                 }
             ],
             "Children": []
@@ -288,7 +278,7 @@
                     "Shininess": "Shininess",
                     "Alpha": "Alpha",
                     "Highlight": "Highlight",
-                    "HighlightLength": "LowScaleParameter",
+                    "HighlightLength": "HighlightLengthParameter",
                     "Reflection": "Reflection",
                     "Environment": "Environment"
                 },
@@ -1052,29 +1042,6 @@
         },
         {
             "Type": "nap::ParameterGroup",
-            "mID": "FFTParameters",
-            "Parameters": [
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "LowScaleParameter",
-                    "Name": "Low",
-                    "Value": 0.0,
-                    "Minimum": 0.0,
-                    "Maximum": 0.5
-                },
-                {
-                    "Type": "nap::ParameterFloat",
-                    "mID": "OffsetParameter",
-                    "Name": "Offset",
-                    "Value": 0.10000000149011612,
-                    "Minimum": 0.0,
-                    "Maximum": 1.0
-                }
-            ],
-            "Groups": []
-        },
-        {
-            "Type": "nap::ParameterGroup",
             "mID": "Parameters",
             "Parameters": [
                 {
@@ -1092,6 +1059,14 @@
                     "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 2.0
+                },
+                {
+                    "Type": "nap::ParameterFloat",
+                    "mID": "HighlightLengthParameter",
+                    "Name": "HighlightLength",
+                    "Value": 0.125,
+                    "Minimum": 0.0,
+                    "Maximum": 1.0
                 }
             ],
             "Groups": [

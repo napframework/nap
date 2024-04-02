@@ -204,10 +204,10 @@ namespace nap
 			// World space = { x:right, y:up, z:forward }
 
 			// Rotate 90 degrees over x
-			mCameraToMeshReferenceFrame = glm::rotate(glm::identity<glm::quat>(), glm::half_pi<float>(), sWorldRight);
+			mCameraToMeshReferenceFrame = glm::rotate(glm::identity<glm::quat>(), glm::half_pi<float>(), math::X_AXIS);
 
 			// Rotate 180 degrees over y
-			mCameraToMeshReferenceFrame *= glm::rotate(glm::identity<glm::quat>(), glm::pi<float>(), sWorldUp);
+			mCameraToMeshReferenceFrame *= glm::rotate(glm::identity<glm::quat>(), glm::pi<float>(), math::Y_AXIS);
 		}
 
 		return true;
@@ -234,13 +234,7 @@ namespace nap
 		mNoiseStrengthUniform->setValue(mResource->mNoiseStrength->mValue);
 		mNoiseScaleUniform->setValue(mResource->mNoiseScale->mValue);
 
-		const auto& flux_params = mFluxMeasurement->getParameterItems();
-		if (!flux_params.empty())
-		{
-			float offset = (flux_params.front()->mOffset != nullptr) ? flux_params.front()->mOffset->mValue : 0.0f;
-			float value = flux_params.front()->mParameter->mValue - offset;
-			mFluxUniform->setValue(value);
-		}
+		mFluxUniform->setValue(mFluxMeasurement->getFlux());
 		mFluxAccumulator += delta_time * mResource->mSwerveSpeed->mValue;
 
 		float max_angle = glm::half_pi<float>() * mResource->mSwerveIntensity->mValue;
@@ -272,22 +266,25 @@ namespace nap
 
 		if (mResource->mCamera != nullptr)
 		{
-			glm::vec3 follow_origin = mOrigin + mUp * mResource->mCameraFloatHeight->mValue - mDirection * mResource->mCameraFollowDistance->mValue;
+			float height = mResource->mCameraFloatHeight != nullptr ? mResource->mCameraFloatHeight->mValue : 1.0f;
+			float distance = mResource->mCameraFollowDistance != nullptr ? mResource->mCameraFollowDistance->mValue : 1.0f;
+			
+			glm::vec3 follow_origin = mOrigin + mUp * height - mDirection * distance;
 			const glm::vec3& new_translate = mCameraTranslationSmoother.update(follow_origin, delta_time);
 
 			auto& camera_transform = mCamera->getEntityInstance()->getComponent<TransformComponentInstance>();
 			camera_transform.setTranslate(new_translate);
 
-			float focus_theta = glm::atan(mResource->mCameraFloatHeight->mValue/mResource->mCameraFollowDistance->mValue);
+			float focus_theta = glm::atan(height/distance);
 			float cam_pitch_theta = pitch_theta - focus_theta;
 			cam_pitch_theta = mCameraPitchSmoother.update(cam_pitch_theta, delta_time);
-			glm::quat cam_pitch = glm::rotate(glm::identity<glm::quat>(), cam_pitch_theta, sWorldRight);
+			glm::quat cam_pitch = glm::rotate(glm::identity<glm::quat>(), cam_pitch_theta, math::X_AXIS);
 
 			float cam_roll_theta = mCameraRollSmoother.update(roll_theta, delta_time);
-			glm::quat cam_roll = glm::rotate(glm::identity<glm::quat>(), cam_roll_theta, sWorldForward);
+			glm::quat cam_roll = glm::rotate(glm::identity<glm::quat>(), cam_roll_theta, math::Z_AXIS);
 
 			float cam_yaw_theta = mCameraYawSmoother.update(yaw_theta, delta_time);
-			glm::quat cam_yaw = glm::rotate(glm::identity<glm::quat>(), cam_yaw_theta, sWorldUp);
+			glm::quat cam_yaw = glm::rotate(glm::identity<glm::quat>(), cam_yaw_theta, math::Y_AXIS);
 
 			camera_transform.setRotate(mCameraToMeshReferenceFrame * cam_roll * cam_pitch * cam_yaw);
 		}

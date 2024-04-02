@@ -161,11 +161,6 @@ namespace nap
 		static constexpr glm::vec3 sPlaneRight		= { 1.0f, 0.0f, 0.0f };
 		static constexpr glm::vec3 sPlaneUp			= { 0.0f, 0.0f, 1.0f };
 
-		// World space axes
-		static constexpr glm::vec3 sWorldForward = { 0.0f, 0.0f, 1.0f };
-		static constexpr glm::vec3 sWorldRight = { 1.0f, 0.0f, 0.0f };
-		static constexpr glm::vec3 sWorldUp = { 0.0f, 1.0f, 0.0f };
-
 		glm::vec3 mOrigin = { 0.0f, 0.0f, 0.0f };
 		glm::vec3 mDirection = sPlaneForward;
 		glm::vec3 mTangent = sPlaneRight;

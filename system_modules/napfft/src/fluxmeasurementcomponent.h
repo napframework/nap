@@ -7,9 +7,9 @@
 // Local includes
 #include "fftutils.h"
 
-// Nap includes
+// External includes
+#include <audio/service/audioservice.h>
 #include <component.h>
-#include <parameternumeric.h>
 #include <smoothdamp.h>
 
 namespace nap
@@ -19,77 +19,34 @@ namespace nap
 			
 	/**
 	 * Component to measure flux of the audio signal from an @AudioComponentBase.
+	 * Flux is measured by taking the difference between the RMS of the previous and current FFT.
+	 * The frequency band to be measured can be specified using `MinHz` and `MaxHz`.
+	 * The last frame's measurement minus a decrement value based on decay is compared against
+	 * the most recent measurement to return a smooth signal with `getFlux()`.
 	 */
 	class NAPAPI FluxMeasurementComponent : public Component
 	{
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(FluxMeasurementComponent, FluxMeasurementComponentInstance)	
 	public:
-		/**
-		 * FilterParameterItem
-		 */
-		class NAPAPI FilterParameterItem : public Resource
-		{
-			RTTI_ENABLE(Resource)
-		public:
-			bool init(utility::ErrorState& errorState) override { return true; }
-
-			ResourcePtr<ParameterFloat> mParameter;
-			ResourcePtr<ParameterFloat> mMultiplier;
-			ResourcePtr<ParameterFloat> mOffset;
-			ResourcePtr<ParameterFloat> mDecay;
-
-			float mMinHz = 0.0f;
-			float mMaxHz = 44100.0f;
-			float mSmoothTime = 0.05f;
-		};
-
-		// Constructor
-		FluxMeasurementComponent() :
-			Component() { }
-
 		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
-		std::vector<rtti::ObjectPtr<FilterParameterItem>> mParameters;
-		bool mEnable = true;
+		float mMinHz = 0.0f;			///< Property: 'MinHz' Minimum cutoff frequency
+		float mMaxHz = 44100.0f;		///< Property: 'MaxHz' Maximum cutoff frequency
+
+		float mScale = 1.0f;			///< Property: 'Scale' Scaling applied to raw result before clamping
+		float mDecay = 0.95f;			///< Property: 'Decay' Decay factor applied to final result
 	};
 		
 		
 	/**
 	 * Instance of component to measure onsets of the audio signal from an @AudioComponentBase.
-	 * A specific frequency band to be measured can be specified.
+
 	 */
 	class NAPAPI FluxMeasurementComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		/**
-		 * OnsetData
-		 */
-		class OnsetData
-		{
-		public:
-			OnsetData(FluxMeasurementComponent::FilterParameterItem& item) :
-				mParameter(*item.mParameter),
-				mMultiplier(item.mMultiplier.get()),
-				mOffset(item.mOffset.get()),
-				mDecay(item.mDecay.get()),
-				mOnsetSmoother({ 0.0f, item.mSmoothTime }),
-				mMinHz(std::clamp(item.mMinHz, 0.0f, 44100.0f)),
-				mMaxHz(std::clamp(item.mMaxHz, 0.0f, 44100.0f))
-			{ }
-
-			ParameterFloat& mParameter;
-			ParameterFloat* mMultiplier = nullptr;
-			ParameterFloat* mOffset = nullptr;
-			ParameterFloat* mDecay = nullptr;
-
-			float mMinHz = 0.0f;
-			float mMaxHz = 44100.0f;
-			float mOnsetValue = 0.0f;
-			math::FloatSmoothOperator mOnsetSmoother{ 0.0f, 0.05f };
-		};
-
 		// Constructor
 		FluxMeasurementComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource) {}
@@ -104,17 +61,34 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * 
+		 * @return the computed flux value between 0.0 and 1.0
 		 */
-		const std::vector<rtti::ObjectPtr<FluxMeasurementComponent::FilterParameterItem>>& getParameterItems() const { return mResource->mParameters; }
+		float getFlux() const								{ return mFlux; }
+
+		/**
+		 * Sets the decay factor
+		 * @param the decay factor
+		 */
+		void setDecay(float decay)							{ mDecay = decay; }
+
+		/**
+		 * Sets the scaling factor
+		 * @param the scaling factor
+		 */
+		void setScale(float scale)							{ mScale = scale; }
 
 	private:
-		FluxMeasurementComponent* mResource = nullptr;
-		FFTAudioNodeComponentInstance* mFFTAudioComponent = nullptr;
+		FluxMeasurementComponent*			mResource = nullptr;
+		audio::AudioService*				mAudioService = nullptr;
+		FFTAudioNodeComponentInstance*		mFFTAudioComponent = nullptr;
 
-		std::vector<OnsetData> mOnsetList;
+		FFTBuffer::AmplitudeSpectrum		mPreviousBuffer;
 
-		FFTBuffer::AmplitudeSpectrum mPreviousBuffer;
-		float mElapsedTime = 0.0f;
+		float								mMinHz = 0.0f;
+		float								mMaxHz = 44100.0f;
+
+		float								mScale = 1.0f;
+		float								mDecay = 0.95f;
+		float								mFlux = 0.0f;
 	};
 }
