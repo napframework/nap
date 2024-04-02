@@ -1,4 +1,4 @@
-include(${NAP_ROOT}/cmake/module_utilities.cmake)
+include(${NAP_ROOT}/cmake/nap_utilities.cmake)
 
 project(mpg123)
 

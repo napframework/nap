@@ -33,4 +33,7 @@ if (NAP_AUDIOFILE_SUPPORT)
     target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
 
     target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
+
+    add_license(libsndfile ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/libsndfile/source/COPYING)
+    add_license(mpg123 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/mpg123/source/COPYING)
 endif()

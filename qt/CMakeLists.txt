@@ -5,7 +5,7 @@
 project(napqt)
 
 include(${NAP_ROOT}/cmake/qtconfig.cmake)
-include(${NAP_ROOT}/cmake/module_utilities.cmake)
+include(${NAP_ROOT}/cmake/nap_utilities.cmake)
 find_qt()
 
 file(GLOB_RECURSE SOURCES src/*.cpp)

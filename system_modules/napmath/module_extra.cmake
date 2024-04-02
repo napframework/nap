@@ -11,3 +11,6 @@ target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES MODULE_NAME
 if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC NOMINMAX)
 endif()
+
+# Copy glm license
+add_license(glm ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glm/copying.txt)

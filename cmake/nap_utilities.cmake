@@ -191,3 +191,12 @@ function(try_add_app_from_dir app_dir)
         add_subdirectory(${app_subdirectory})
     endif()
 endfunction()
+
+
+function(add_license name license_path)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E make_directory ${BIN_DIR}/license/${name})
+    get_filename_component(license_filename ${license_path} NAME)
+    add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
+            ${license_path}
+            ${BIN_DIR}/license/${name}/${license_filename})
+endfunction()

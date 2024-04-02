@@ -1,4 +1,4 @@
-include (${NAP_ROOT}/cmake/module_utilities.cmake)
+include (${NAP_ROOT}/cmake/nap_utilities.cmake)
 
 add_subdirectory(thirdparty/assimp)
 add_subdirectory(thirdparty/SDL2)
@@ -26,17 +26,6 @@ endif()
 # Add libraries
 set(LIBRARIES ${VULKANSDK_LIBS})
 
-# TODO Investigate why we're using a static lib for Win64 only
-#if(MSVC)
-#    list(APPEND LIBRARIES
-#         ${ASSIMP_LIBRARY_DIRS}/${ASSIMP_LIBRARIES}${CMAKE_STATIC_LIBRARY_SUFFIX}
-#         )
-#elseif(UNIX)
-#    list(APPEND LIBRARIES
-#         ${ASSIMP_LIBRARY_DIRS}/${CMAKE_SHARED_LIBRARY_PREFIX}${ASSIMP_LIBRARIES}${CMAKE_SHARED_LIBRARY_SUFFIX}
-#         )
-#endif()
-
 if(UNIX AND NOT APPLE AND ${ARCH} STREQUAL "armhf")
     list(APPEND LIBRARIES atomic)
 endif()
@@ -62,4 +51,12 @@ add_custom_command(
         ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/vulkansdk/macos/universal/share/vulkan/icd.d/MoltenVK_icd.json
         ${LIB_DIR}/MoltenVK_icd.json)
 install(FILES ${LIB_DIR}/MoltenVK_icd.json TYPE LIB OPTIONAL)
+
+# Copy thirdparty licenses
+add_license(assimp ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/assimp/source/LICENSE)
+add_license(FreeImage ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/FreeImage/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/license)
+add_license(glslang ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glslang/source/LICENSE.txt)
+add_license(SDL2 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/COPYING.txt)
+add_license(SPIRV-cross ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SPIRV-cross/source/LICENSE)
+add_license(vulkansdk ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/vulkansdk/LICENSE.txt)
 

@@ -74,7 +74,6 @@ if (EXISTS ${CMAKE_CURRENT_SOURCE_DIR}/data)
         COMMAND ${CMAKE_COMMAND} -E copy_directory
         ${CMAKE_CURRENT_SOURCE_DIR}/data
         ${dest}/data)
-    message(STATUS ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME})
     install(DIRECTORY ${dest}/data DESTINATION ${CMAKE_INSTALL_DATADIR}/${parent_name}/${PROJECT_NAME} OPTIONAL)
 endif()
 

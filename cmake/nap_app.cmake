@@ -145,12 +145,15 @@ add_custom_command(TARGET ${PROJECT_NAME}
         COMMAND ${BIN_DIR}/fbxconverter -o ${bin_data_dir} ${bin_data_dir}/*.fbx
         COMMENT "Exporting FBX in '${bin_data_dir}'")
 
-# Copy NAP license files
+# Copy core license files
 set(bin_license_dir ${BIN_DIR}/license)
-add_custom_command(
-        TARGET ${PROJECT_NAME} POST_BUILD
-        COMMAND ${CMAKE_COMMAND} -E copy_directory
-        ${NAP_ROOT}/docs/license ${bin_license_dir}/NAP)
+add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_directory
+        ${NAP_ROOT}/docs/license
+        ${bin_license_dir}/NAP)
+add_license(moodycamel ${NAP_ROOT}/thirdparty/moodycamel/LICENSE.md)
+add_license(rapidjson ${NAP_ROOT}/thirdparty/rapidjson/license.txt)
+add_license(rttr ${NAP_ROOT}/thirdparty/rttr/source/LICENSE.txt)
+add_license(tclap ${NAP_ROOT}/thirdparty/tclap/COPYING)
 
 # Update executable rpath
 if(APPLE)

@@ -11,3 +11,4 @@ endif()
 
 target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
+add_license(portaudio ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/portaudio/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/LICENSE.txt)
