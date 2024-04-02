@@ -22,7 +22,9 @@ namespace nap
 		using AmplitudeSpectrum = std::vector<float>;
 		using PhaseSpectrum = std::vector<float>;
 
-		// Number of overlaps
+		/**
+		 * Number of overlaps (hops)
+		 */
 		enum EOverlap : uint
 		{
 			One		= 1,
@@ -77,11 +79,11 @@ namespace nap
 		struct KissContextDeleter { void operator()(KissContext* ctx) const; };
 		std::unique_ptr<KissContext, KissContextDeleter> mContext;
 
-		std::vector<std::complex<float>> mComplexOut;
-		std::vector<std::complex<float>> mComplexOutAverage;		//< Complex 
+		std::vector<std::complex<float>> mComplexOut;				//< Complex
+		std::vector<std::complex<float>> mComplexOutAverage;		//< Complex averaged over multiple analysis hops
 
-		AmplitudeSpectrum mAmplitude;								//< magnitude (rho)
-		PhaseSpectrum mPhase;										//< phase angle (theta)
+		AmplitudeSpectrum mAmplitude;								//< Magnitude (rho)
+		PhaseSpectrum mPhase;										//< Phase angle (theta)
 
 		std::vector<float> mForwardHammingWindow;					//< Preprocessed window function coefficients
 		float mHammingWindowSum;									//< The sum of all window function coefficients
@@ -92,12 +94,12 @@ namespace nap
 
 		std::vector<float> mSampleBufferWindowed;					//< The sample buffer after application of a window function
 
-		uint mBinCount;									
-		float mBinFrequency;
+		uint mBinCount;												//< The number of FFT bins			
+		float mBinFrequency;										//< The frequency each bin comprises
 
-		EOverlap mOverlap;
-		uint mHopSize;
+		EOverlap mOverlap;											//< The number of audio buffer overlaps for FFT analysis (hops)
+		uint mHopSize;												//< The number of bins of a single hop
 
-		bool mDirty = false;
+		bool mDirty = false;										//< Amplitudes dirty checking flag, prevents redundant FFT analyses 
 	};
 }
