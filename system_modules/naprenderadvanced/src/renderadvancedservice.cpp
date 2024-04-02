@@ -801,7 +801,7 @@ namespace nap
 			NAP_ASSERT_MSG(false, utility::stringFormat("%s\n%s: Failed to initialize cube map from file render target", error_state.toString().c_str(), RTTI_OF(RenderAdvancedService).get_name().to_string().c_str()).c_str());
 			return;
 		}
-		auto& entry = mCubeMapTargets.insert({ &cubemap, std::move(crt) });
+		auto entry = mCubeMapTargets.emplace(&cubemap, std::move(crt));
 		assert(entry.second);
 
 		// Queue a graphics command to pre-render the cube map

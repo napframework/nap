@@ -20,7 +20,6 @@
 #include "sdlhelpers.h"
 #include "shaderconstant.h"
 #include "renderlayer.h"
-#include "rendertag.h"
 
 // External Includes
 #include <nap/core.h>
@@ -238,15 +237,11 @@ namespace nap
 		switch (drawMode)
 		{
 			case EDrawMode::Points:
-				return true;
 			case EDrawMode::Lines:
-				return true;
-			case EDrawMode::LineStrip:
-				return false;
 			case EDrawMode::Triangles:
 				return true;
+			case EDrawMode::LineStrip:
 			case EDrawMode::TriangleStrip:
-				return false;
 			case EDrawMode::TriangleFan:
 				return false;
 			default:
