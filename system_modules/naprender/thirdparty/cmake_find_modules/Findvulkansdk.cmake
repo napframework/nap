@@ -57,6 +57,14 @@ elseif(APPLE)
     # Resolve symlink
     get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
 
+    find_library(MOLTENVK_LIB
+            NO_DEFAULT_PATH
+            NAMES MoltenVK
+            PATHS ${VULKANSDK_LIBS_DIR}
+    )
+    # Resolve symlink
+    get_filename_component(MOLTENVK_LIB ${MOLTENVK_LIB} REALPATH)
+
     # Additional library dependencies on apple
     find_library(METAL_LIB Metal)
     find_library(FOUNDATION_LIB Foundation)

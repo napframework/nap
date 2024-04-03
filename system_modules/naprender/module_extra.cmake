@@ -44,6 +44,15 @@ add_custom_command(
         ${LIB_DIR})
 install(FILES ${VULKAN_LIB} TYPE LIB OPTIONAL)
 
+if (APPLE)
+    add_custom_command(
+            TARGET ${PROJECT_NAME} POST_BUILD
+            COMMAND ${CMAKE_COMMAND} -E copy
+            ${MOLTENVK_LIB}
+            ${LIB_DIR})
+    install(FILES ${MOLTENVK_LIB} TYPE LIB OPTIONAL)
+endif()
+
 # Copy MoltenVK_icd.json to bin and install
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
@@ -59,4 +68,3 @@ add_license(glslang ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/glslang/source/LICENS
 add_license(SDL2 ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SDL2/COPYING.txt)
 add_license(SPIRV-cross ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/SPIRV-cross/source/LICENSE)
 add_license(vulkansdk ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/vulkansdk/LICENSE.txt)
-
