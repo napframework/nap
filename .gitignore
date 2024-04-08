@@ -138,4 +138,14 @@ system_modules/naplicense/thirdparty/cryptopp/linux/*/lib/libcryptopp.a
 !thirdparty/python/macos/universal/lib/
 !thirdparty/cmake/macos/universal/bin/
 !thirdparty/cmake/macos/universal/share/*/*
+!system_modules/napportaudio/thirdparty/portaudio/macos/x86_64/lib/
+!system_modules/napaudio/thirdparty/libsndfile/macos/x86_64/lib/
+!system_modules/napaudio/thirdparty/mpg123/macos/x86_64/lib/
+!system_modules/naposc/thirdparty/oscpack/macos/x86_64/lib/
+!system_modules/napmidi/thirdparty/rtmidi/macos/x86_64/lib/
+!thirdparty/rttr/macos/x86_64/bin/
+!thirdparty/python/macos/x86_64/bin/
+!thirdparty/python/macos/x86_64/lib/
+!thirdparty/cmake/macos/x86_64/bin/
+!thirdparty/cmake/macos/x86_64/share/*/*
 thirdparty/docker_images/cmake
