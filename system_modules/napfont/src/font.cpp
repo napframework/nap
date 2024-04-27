@@ -16,14 +16,14 @@
 
 RTTI_BEGIN_STRUCT(nap::FontProperties)
 	RTTI_VALUE_CONSTRUCTOR(int)
-	RTTI_PROPERTY("Size",		&nap::FontProperties::mSize,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",		&nap::FontProperties::mSize,	nap::rtti::EPropertyMetaData::Default, "Font size in 'em'")
 RTTI_END_STRUCT
 
 // nap::fontresource run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Font)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Font, "Loads a font (.ttf, .otf, etc...) from disk")
 	RTTI_CONSTRUCTOR(nap::FontService&)
-	RTTI_PROPERTY("Properties",		&nap::Font::mProperties,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY_FILELINK("Font",	&nap::Font::mFont,			nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Font)
+	RTTI_PROPERTY("Properties",		&nap::Font::mProperties,	nap::rtti::EPropertyMetaData::Required, "Font properties")
+	RTTI_PROPERTY_FILELINK("Font",	&nap::Font::mFont,			nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Font, "Path to the font (.ttf, .otf, etc...) on disk")
 RTTI_END_CLASS
 
 // nap::fontinstance run time class definition
