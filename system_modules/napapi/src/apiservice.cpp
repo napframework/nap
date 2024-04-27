@@ -12,7 +12,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIService, "Offers a C-Style interface that can be used to send and receive data from a running NAP application")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
