@@ -5,16 +5,16 @@
 #include "operationalcalendar.h"
 
 // nap::operationalcalendar run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OperationalCalendar)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OperationalCalendar, "Sets and controls operational hours for every day in the week")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("AllowLoadFailure",	&nap::OperationalCalendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Monday",				&nap::OperationalCalendar::mMonday,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Tuesday",			&nap::OperationalCalendar::mTuesday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Wednesday",			&nap::OperationalCalendar::mWednesday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Thursday",			&nap::OperationalCalendar::mThursday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Friday",				&nap::OperationalCalendar::mFriday,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Saturday",			&nap::OperationalCalendar::mSaturday,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Sunday",				&nap::OperationalCalendar::mSunday,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AllowLoadFailure",	&nap::OperationalCalendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default,	"Continue when loading a calendar from disk fails")
+	RTTI_PROPERTY("Monday",				&nap::OperationalCalendar::mMonday,			nap::rtti::EPropertyMetaData::Required,	"Monday operational hours")
+	RTTI_PROPERTY("Tuesday",			&nap::OperationalCalendar::mTuesday,		nap::rtti::EPropertyMetaData::Required, "Tuesday operational hours")
+	RTTI_PROPERTY("Wednesday",			&nap::OperationalCalendar::mWednesday,		nap::rtti::EPropertyMetaData::Required,	"Wednesday operational hours")
+	RTTI_PROPERTY("Thursday",			&nap::OperationalCalendar::mThursday,		nap::rtti::EPropertyMetaData::Required,	"Thursday operational hours")
+	RTTI_PROPERTY("Friday",				&nap::OperationalCalendar::mFriday,			nap::rtti::EPropertyMetaData::Required, "Friday operational hours")
+	RTTI_PROPERTY("Saturday",			&nap::OperationalCalendar::mSaturday,		nap::rtti::EPropertyMetaData::Required, "Saturday operational hours")
+	RTTI_PROPERTY("Sunday",				&nap::OperationalCalendar::mSunday,			nap::rtti::EPropertyMetaData::Required,	"Sunday operational hours")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
