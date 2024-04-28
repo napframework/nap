@@ -79,7 +79,7 @@ RTTI_BEGIN_CLASS(nap::IMGuiServiceConfiguration)
 	RTTI_PROPERTY("Style",				&nap::IMGuiServiceConfiguration::mStyle,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService, "Manages the global GUI state")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
