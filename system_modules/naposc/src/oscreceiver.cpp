@@ -14,10 +14,10 @@
 #include <nap/logger.h>
 #include <iostream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCReceiver)
-	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCReceiver, "Receives OSC network messages")
+	RTTI_PROPERTY("Port",				&nap::OSCReceiver::mPort,			nap::rtti::EPropertyMetaData::Required, "Port that is opened to receive osc messages")
+	RTTI_PROPERTY("EnableDebugOutput",	&nap::OSCReceiver::mDebugOutput,	nap::rtti::EPropertyMetaData::Default,	"Log OSC port network information")
+	RTTI_PROPERTY("AllowPortReuse",		&nap::OSCReceiver::mAllowPortReuse,	nap::rtti::EPropertyMetaData::Default,	"Don't lock the port")
 RTTI_END_CLASS
 
 namespace nap
@@ -80,25 +80,21 @@ namespace nap
 		mEvents.emplace(std::move(event));
 	}
 
+
 	void OSCReceiver::consumeEvents(std::queue<OSCEventPtr>& outEvents)
 	{
-		std::lock_guard<std::mutex> lock(mEventMutex);
-
 		// Swap events
+		std::lock_guard<std::mutex> lock(mEventMutex);
 		outEvents.swap(mEvents);
 
 		// Clear current queue
-        std::queue<OSCEventPtr> empty_queue;;
-		mEvents.swap(empty_queue);
+		mEvents.swap(std::queue<OSCEventPtr>());
 	}
 
 
-	/**
-	 * Starts the connection that receives osc messages
-	 */
 	void OSCReceiver::eventThread(int port)
 	{
-		// Create the listener
+		// Starts the connection that receives osc messages
 		mSocket->run();
 	}
 }

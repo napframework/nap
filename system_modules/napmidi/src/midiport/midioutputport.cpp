@@ -9,7 +9,7 @@
 // External Includes
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS(nap::MidiOutputPort, "Opens a midi output port that midi messages can be sent to")
+RTTI_BEGIN_CLASS(nap::MidiOutputPort, "Opens a midi output port")
 	RTTI_PROPERTY("AllowFailure",	&nap::MidiOutputPort::mAllowFailure,	nap::rtti::EPropertyMetaData::Default, "If opening the port is allowed to fail on initialization")
     RTTI_PROPERTY("Port",			&nap::MidiOutputPort::mPortName,		nap::rtti::EPropertyMetaData::Required, "Name of the port to open")
 RTTI_END_CLASS
