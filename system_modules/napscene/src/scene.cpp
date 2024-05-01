@@ -125,6 +125,7 @@ namespace nap
 				{
 					if (!component_instance->init(errorState))
 					{
+						errorState.fail("Failed to init component '%s'", component_instance->mID.c_str());
 						success = false;
 						break;
 					}
