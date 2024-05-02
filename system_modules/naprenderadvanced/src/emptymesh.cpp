@@ -20,19 +20,14 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	EmptyMesh::EmptyMesh(Core& core) :
-		mRenderService(core.getService<RenderService>())
+		mRenderService(core.getService<RenderService>()),
+		mMeshInstance(std::make_unique<MeshInstance>(*core.getService<RenderService>()))
 	{ }
 
 
 	bool EmptyMesh::init(utility::ErrorState& errorState)
 	{
-		assert(mRenderService != nullptr);
-		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
-
-		mMeshInstance->setNumVertices(0);
-		mMeshInstance->setUsage(EMemoryUsage::Static);
-		mMeshInstance->setDrawMode(EDrawMode::Triangles);
-		mMeshInstance->setCullMode(ECullMode::None);
+		assert(mRenderService != nullptr);	
 
 		// Initialize no mesh instance
 		return mMeshInstance->init(errorState);
