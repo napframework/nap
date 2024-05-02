@@ -42,6 +42,8 @@ namespace nap
 		float mLineWidth = 2.0f;							///< Property: 'LineWidth' frustrum line width
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };		///< Property: 'Color' frustrum draw color
 		float mOpacity = 1.0f;								///< Property: 'Opacity' frustrum alpha
+		EBlendMode mBlendMode = EBlendMode::Opaque;			///< Property: 'BlendMode' frustum blend mode
+		EDepthMode mDepthMode = EDepthMode::ReadOnly;		///< Property: 'DepthMode' frustum depth mode
 	};
 
 

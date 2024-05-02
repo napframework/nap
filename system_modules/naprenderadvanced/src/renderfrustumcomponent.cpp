@@ -23,6 +23,8 @@ RTTI_BEGIN_CLASS(nap::RenderFrustumComponent)
 	RTTI_PROPERTY("Line Width",	&nap::RenderFrustumComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Color",		&nap::RenderFrustumComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("Opacity",	&nap::RenderFrustumComponent::mOpacity,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("BlendMode",	&nap::RenderFrustumComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthMode",	&nap::RenderFrustumComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFrustumComponentInstance)
@@ -92,8 +94,8 @@ namespace nap
 			return false;
 
 		// Create resource for the constant material instance
-		mMaterialInstanceResource.mBlendMode = EBlendMode::Opaque;
-		mMaterialInstanceResource.mDepthMode = EDepthMode::ReadOnly;
+		mMaterialInstanceResource.mBlendMode = mResource->mBlendMode;
+		mMaterialInstanceResource.mDepthMode = mResource->mDepthMode;
 		mMaterialInstanceResource.mMaterial = constant_material;
 
 		// Create constant material instance
