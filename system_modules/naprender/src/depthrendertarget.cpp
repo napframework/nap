@@ -12,12 +12,12 @@
 #include <nap/logger.h>
 
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTarget)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTarget, "Stores the depth information of a render operation in a depth texture")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("DepthTexture",			&nap::DepthRenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SampleShading",			&nap::DepthRenderTarget::mSampleShading,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",				&nap::DepthRenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearValue",				&nap::DepthRenderTarget::mClearValue,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("DepthTexture",			&nap::DepthRenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Required, "Texture to store the depth information")
+	RTTI_PROPERTY("SampleShading",			&nap::DepthRenderTarget::mSampleShading,		nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("Samples",				&nap::DepthRenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
+	RTTI_PROPERTY("ClearValue",				&nap::DepthRenderTarget::mClearValue,			nap::rtti::EPropertyMetaData::Default,	"Render target clear value")
 RTTI_END_CLASS
 
 namespace nap

@@ -11,10 +11,10 @@
 #include <entity.h>
 
 // nap::ComputeComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::ComputeComponent)
-	RTTI_PROPERTY("Enabled",					&nap::ComputeComponent::mEnabled,							nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ComputeComponent::mComputeMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Invocations",				&nap::ComputeComponent::mInvocations,						nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ComputeComponent, "Runs a GPU compute shader program")
+	RTTI_PROPERTY("Enabled",					&nap::ComputeComponent::mEnabled,							nap::rtti::EPropertyMetaData::Default,	"If the compute program is run")
+	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ComputeComponent::mComputeMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required,	"The compute program to run")
+	RTTI_PROPERTY("Invocations",				&nap::ComputeComponent::mInvocations,						nap::rtti::EPropertyMetaData::Default,	"Number of compute invocations per dispatch")
 RTTI_END_CLASS
 
 // nap::ComputeComponentInstance run time class definition 
