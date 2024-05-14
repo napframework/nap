@@ -760,6 +760,56 @@ namespace nap
 	}
 
 
+	bool BaseMaterialInstance::updateConstants(utility::ErrorState& errorState)
+	{
+		BaseMaterial* material = getMaterial();
+		const auto& declarations = material->getShader().getConstantDeclarations();
+
+		for (const auto& declaration : declarations)
+		{
+			auto* constant_instance = material->findConstant(declaration.mName);
+
+			// If a constant is overriden
+			if (constant_instance != nullptr)
+			{
+				auto it = mShaderStageConstantMap.find(constant_instance->mDeclaration.mStage);
+				if (it != mShaderStageConstantMap.end())
+				{
+					auto& constant_map = it->second;
+
+					// Insert or update entry in the constant map associated with the specified stage
+					auto it_entry = constant_map.find(constant_instance->mDeclaration.mConstantID);
+					if (it_entry == constant_map.end())
+						constant_map.insert({ constant_instance->mDeclaration.mConstantID, constant_instance->mValue });
+					else
+						(*it_entry).second = constant_instance->mValue;
+				}
+				else
+				{
+					// Create new map for the specified stage and insert entry
+					ShaderConstantMap const_map = { { constant_instance->mDeclaration.mConstantID, constant_instance->mValue } };
+					mShaderStageConstantMap.insert({ constant_instance->mDeclaration.mStage, std::move(const_map) });
+				}
+			}
+		}
+
+		// Recompute the shader constant hash used to create a pipeline key
+		mConstantHash = 0;
+		for (const auto& entry : mShaderStageConstantMap)
+		{
+			auto stage = entry.first;
+			const auto& constant_map = entry.second;
+			for (const auto& constant : constant_map)
+			{
+				const auto& value = constant.second;
+				mConstantHash ^= std::hash<uint>{}(value);
+			}
+		}
+
+		return true;
+	}
+
+
 	void BaseMaterialInstance::updateSamplers(const DescriptorSet& descriptorSet)
 	{
 		// We acquired 'some' compatible DescriptorSet with unknown contents. The dstSet must be overwritten
