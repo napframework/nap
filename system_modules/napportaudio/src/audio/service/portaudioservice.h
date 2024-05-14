@@ -24,11 +24,12 @@ namespace nap
 		// Forward declarations
 		class PortAudioService;
 		
-		
+		/**
+		 * PortAudio service configuration
+		 */
 		class NAPAPI PortAudioServiceConfiguration : public ServiceConfiguration
 		{
 			RTTI_ENABLE(ServiceConfiguration)
-			
 		public:
 			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(PortAudioService); }
 
@@ -45,26 +46,26 @@ namespace nap
                 std::string mHostApi = "";
 
                 /**
-                 * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
+                 * Name of the input device being used. Use the AudioService to poll for available devices for a certain host API.
                  * If left empty, the default input device will be used.
                  */
                 std::string mInputDevice = "";
 
                 /**
-                 * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
+                 * Name of the output device being used. Use the AudioService to poll for available devices for a certain host API.
                  * If left empty the default output device will be used.
                  */
                 std::string mOutputDevice = "";
 
                 /**
                  * The number of input channels in the stream.
-                 * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
+                 * If the chosen input device does not support this amount of channels the stream will not start.
                  */
                 int mInputChannelCount = 1;
 
                 /**
                  * The number of output channels in the stream.
-                 * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
+                 * If the chosen output device does not support this amount of channels the stream will not start.
                  */
                 int mOutputChannelCount = 2;
 
@@ -78,8 +79,8 @@ namespace nap
                  */
                 bool mDisableOutput = false;
 
-                /**
-                 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
+				/**
+				 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
                  */
                 float mSampleRate = 44100;
 
@@ -102,13 +103,13 @@ namespace nap
             DeviceSettings mDeviceSettings;
 
             /**
-             * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
+             * If this is set to true, the audio stream will start even if the number of input or output channels is not supported.
              * In this case a zero signal will be used to emulate the input from an unsupported input channel.
              */
             bool mAllowChannelCountFailure = true;
 
             /**
-             * Indicates wether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
+             * Indicates whether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
              */
             bool mAllowDeviceFailure = true;
 		};
