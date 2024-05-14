@@ -39,6 +39,7 @@ namespace nap
 		bool isPressed() const { return mPressed; }
 
 	public:
+		Signal<>	click;		///< Signal that's raised when the button is active
 		Signal<>	press;		///< Signal that's raised when the button is pressed
 		Signal<>	release;	///< Signal that's raised when the button is released
 
