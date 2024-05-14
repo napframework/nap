@@ -13,7 +13,7 @@
 namespace nap
 {
 	/**
-	 * Parameter that triggers down, up and click for button actions
+	 * Button parameter
 	 */
 	class NAPAPI ParameterButton : public Parameter
 	{
@@ -31,7 +31,7 @@ namespace nap
 		 * Raises the "release" signal if the state changed to not pressed.
 		 * @param pressed The pressed state to set
 		 */
-		void setPressed(const bool& pressed);
+		void setPressed(bool pressed);
 
 		/**
 		 * @return whether the button is currently pressed
@@ -39,11 +39,10 @@ namespace nap
 		bool isPressed() const { return mPressed; }
 
 	public:
-		Signal<>	click;		///< Signal that's raised when the button is clicked
 		Signal<>	press;		///< Signal that's raised when the button is pressed
 		Signal<>	release;	///< Signal that's raised when the button is released
 
 	private:
-		bool		mPressed;	///< Stores whether the button is currently pressed
+		bool		mPressed = false;	///< Stores whether the button is currently pressed
 	};
 }

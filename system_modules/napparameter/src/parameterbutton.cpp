@@ -19,7 +19,7 @@ namespace nap
 	}
 
 
-	void ParameterButton::setPressed(const bool& pressed)
+	void ParameterButton::setPressed(bool pressed)
 	{
 		if (mPressed != pressed)
 		{
