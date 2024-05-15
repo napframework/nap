@@ -15,21 +15,21 @@
 #include <nap/logger.h>
 #include <rtti/rttiutilities.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource)
-	RTTI_PROPERTY(nap::material::uniforms,		&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY(nap::material::samplers,		&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY(nap::material::buffers,		&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY(nap::material::constants,		&nap::MaterialInstanceResource::mConstants,					nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstanceResource, "GPU program overrides")
+	RTTI_PROPERTY(nap::material::uniforms,		&nap::MaterialInstanceResource::mUniforms,					nap::rtti::EPropertyMetaData::Embedded, "Uniform inputs, overrides and binds numeric data (structs)")
+	RTTI_PROPERTY(nap::material::samplers,		&nap::MaterialInstanceResource::mSamplers,					nap::rtti::EPropertyMetaData::Embedded, "Sampler inputs, overrides and binds textures")
+	RTTI_PROPERTY(nap::material::buffers,		&nap::MaterialInstanceResource::mBuffers,					nap::rtti::EPropertyMetaData::Embedded, "Buffer inputs, overrides and binds large containers")
+	RTTI_PROPERTY(nap::material::constants,		&nap::MaterialInstanceResource::mConstants,					nap::rtti::EPropertyMetaData::Embedded, "Shader specialization constant overrides")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::MaterialInstanceResource)
-	RTTI_PROPERTY(nap::MaterialInstanceResource::matProperty,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendMode",	&nap::MaterialInstanceResource::mBlendMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",	&nap::MaterialInstanceResource::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::MaterialInstanceResource, "Applies a graphics material and provides an interface to override input defaults")
+	RTTI_PROPERTY(nap::MaterialInstanceResource::matProperty,	&nap::MaterialInstanceResource::mMaterial,	nap::rtti::EPropertyMetaData::Required, "Graphics material default")
+	RTTI_PROPERTY("BlendMode",	&nap::MaterialInstanceResource::mBlendMode,		nap::rtti::EPropertyMetaData::Default, "Color blend mode override")
+	RTTI_PROPERTY("DepthMode",	&nap::MaterialInstanceResource::mDepthMode,		nap::rtti::EPropertyMetaData::Default, "Depth mode override")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource)
-	RTTI_PROPERTY(nap::ComputeMaterialInstanceResource::matProperty, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::ComputeMaterialInstanceResource, "Applies a compute material and provides an interface to override input defaults")
+	RTTI_PROPERTY(nap::ComputeMaterialInstanceResource::matProperty, &nap::ComputeMaterialInstanceResource::mComputeMaterial,	nap::rtti::EPropertyMetaData::Required, "Compute material default")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterialInstance)

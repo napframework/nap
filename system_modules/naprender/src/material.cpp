@@ -65,8 +65,7 @@ namespace nap
 
 	BaseMaterial::BaseMaterial(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{ }
 
 	/**
 	 * The BaseMaterial rebuild will initialize all uniforms that can be used with the bound shader. The shader contains the authoritative set of Uniforms that can be set;
@@ -196,8 +195,7 @@ namespace nap
 
 	Material::Material(Core& core) :
 		BaseMaterial(core)
-	{
-	}
+	{ }
 
 
 	bool Material::init(utility::ErrorState& errorState)
