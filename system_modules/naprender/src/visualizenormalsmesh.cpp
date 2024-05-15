@@ -17,7 +17,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VisualizeNormalsMesh, "Constructs a
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",			&nap::VisualizeNormalsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default,	"If the mesh is static or frequently updated")
 	RTTI_PROPERTY("ReferenceMesh",	&nap::VisualizeNormalsMesh::mReferenceMesh, nap::rtti::EPropertyMetaData::Required,	"Input mesh, must have a normal vertex attribute")
-	RTTI_PROPERTY("Length",			&nap::VisualizeNormalsMesh::mNormalLength,	nap::rtti::EPropertyMetaData::Default,	"Generated normal line length")
+	RTTI_PROPERTY("Length",			&nap::VisualizeNormalsMesh::mNormalLength,	nap::rtti::EPropertyMetaData::Default,	"Length of the constructed normal")
 RTTI_END_CLASS
 
 namespace nap
