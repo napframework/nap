@@ -8,17 +8,17 @@
 #include <glm/gtc/constants.hpp>
 
 // nap::TorusMesh run time class definition
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TorusMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TorusMesh, "3D Torus mesh with normal, uv and color vertex attributes")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Radius",			&nap::TorusMesh::mRadius,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TubeRadius",		&nap::TorusMesh::mTubeRadius,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Segments",		&nap::TorusMesh::mSegments,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TubeSegments",	&nap::TorusMesh::mTubeSegments,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AngleOffset",	&nap::TorusMesh::mAngleOffset,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage",			&nap::TorusMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",	&nap::TorusMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",		&nap::TorusMesh::mCullMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",			&nap::TorusMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Radius",			&nap::TorusMesh::mRadius,			nap::rtti::EPropertyMetaData::Default, "Torus radius")
+	RTTI_PROPERTY("TubeRadius",		&nap::TorusMesh::mTubeRadius,		nap::rtti::EPropertyMetaData::Default, "Torus tube radius")
+	RTTI_PROPERTY("Segments",		&nap::TorusMesh::mSegments,			nap::rtti::EPropertyMetaData::Default, "Number of segments")
+	RTTI_PROPERTY("TubeSegments",	&nap::TorusMesh::mTubeSegments,		nap::rtti::EPropertyMetaData::Default, "Number of tube segments")
+	RTTI_PROPERTY("AngleOffset",	&nap::TorusMesh::mAngleOffset,		nap::rtti::EPropertyMetaData::Default, "Angle offset in degrees")
+	RTTI_PROPERTY("Usage",			&nap::TorusMesh::mUsage,			nap::rtti::EPropertyMetaData::Default, "If the mesh is static or updated at runtime")
+	RTTI_PROPERTY("PolygonMode",	&nap::TorusMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default, "Polygon draw mode (fill, line, etc..")
+	RTTI_PROPERTY("CullMode",		&nap::TorusMesh::mCullMode,			nap::rtti::EPropertyMetaData::Default, "Triangle cull mode: front, back, etc..")
+	RTTI_PROPERTY("Color",			&nap::TorusMesh::mColor,			nap::rtti::EPropertyMetaData::Default, "Torus vertex color")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
