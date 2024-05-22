@@ -26,6 +26,7 @@ namespace id
 	static constexpr const char separator = '_';
 	static constexpr const int count = 6;
 	static constexpr const int ssize = count + 2;
+	static constexpr std::array<char, 6> invalid = { '.', ' / ', ':','[',']', ',' };
 }
 
 
@@ -211,6 +212,11 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 
 void napkin::Document::patchLinks(const std::string& oldID, const std::string& newID)
 {
+#ifndef NDEBUG
+	for (const auto c : id::invalid)
+		assert(newID.find(c) == std::string::npos);
+#endif // !NDEBUG
+
 	// Iterate over the properties of a component or component ptr override.
 	// Find component and entity pointers that reference the old object and patch accordingly.
 	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::Scene) });
@@ -307,13 +313,21 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	auto index = object_path.find(oldID);
 	while (index != std::string::npos)
 	{
-		auto end_index = index + oldID.size();
-		if (end_index >= object_path.size() ||
-			object_path[end_index] == '/' ||
-			object_path[end_index] == ':')
-			break;
+		// When not at the beginning, ensure previous character is path separator
+		if (index > 0 && object_path[index - 1] != '/')
+		{
+			index = object_path.find(oldID, index + oldID.size());
+			continue;
+		}
 
-		index = object_path.find(oldID, index + 1);
+		// When not at the end, ensure next character is child or path separator
+		auto end_idx = index + oldID.size();
+		if (end_idx < object_path.size() && object_path[end_idx] != '/' && object_path[end_idx] != ':')
+		{
+			index = object_path.find(oldID, end_idx);
+			continue;
+		}
+		break;
 	}
 
 	// No match
@@ -352,7 +366,17 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	// Get name
+	// Ensure name doesn't include invalid characters
+	for (const auto c : id::invalid)
+	{
+		if (name.find(c) != std::string::npos)
+		{
+			nap::Logger::error("Unsupported character '%c' in new name: %s", c, name.c_str());
+			return object.mID;
+		}
+	}
+
+	// Ensure name is unique
 	auto new_name = getUniqueID(name, object, appenUUID);
 	if (new_name == object.mID)
 		return object.mID;
