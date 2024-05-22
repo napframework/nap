@@ -23,10 +23,12 @@ using namespace nap::rtti;
 
 namespace id
 {
-	static constexpr const char separator = '_';
-	static constexpr const int count = 6;
-	static constexpr const int ssize = count + 2;
-	static constexpr std::array<char, 6> invalid = { '.', '/', ':','[',']', ',' };
+	static constexpr char slash = '/';
+	static constexpr char child = ':';
+	static constexpr char uuids = '_';
+	static constexpr int count = 6;
+	static constexpr int ssize = count + 2;
+	static constexpr std::array<char, 8> invalid = { slash,child,'.','[',']',',','\\',';' };
 }
 
 
@@ -314,16 +316,19 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	while (index != std::string::npos)
 	{
 		// When not at the beginning, ensure previous character is path separator
-		if (index > 0 && object_path[index - 1] != '/')
+		if (index > 0 && object_path[index - 1] != id::slash)
 		{
+			// Keep searching
 			index = object_path.find(oldID, index + oldID.size());
 			continue;
 		}
 
 		// When not at the end, ensure next character is child or path separator
 		auto end_idx = index + oldID.size();
-		if (end_idx < object_path.size() && object_path[end_idx] != '/' && object_path[end_idx] != ':')
+		if (end_idx < object_path.size() &&
+			object_path[end_idx] != id::slash && object_path[end_idx] != id::child)
 		{
+			// Keep searching
 			index = object_path.find(oldID, end_idx);
 			continue;
 		}
@@ -491,8 +496,8 @@ std::string Document::getUniqueID(const std::string& suggestedName, const nap::r
 	while (scene_object != nullptr && scene_object != &object)
 	{
 		object_id = useUUID ?
-			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::separator, createUUID().c_str()) :
-			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::separator, i++);
+			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::uuids, createUUID().c_str()) :
+			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::uuids, i++);
 		scene_object = getObject(object_id);
 	}
 	return object_id;
@@ -1121,7 +1126,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 	nap::rtti::Object* target = factory.create(src.get_type()); assert(target != nullptr);
 
 	// Give it a new name
-	auto parts = nap::utility::splitString(src.mID, id::separator); assert(!parts.empty());
+	auto parts = nap::utility::splitString(src.mID, id::uuids); assert(!parts.empty());
 	target->mID = getUniqueID(parts.front(), *target, true);
 
 	// Add to managed object list
