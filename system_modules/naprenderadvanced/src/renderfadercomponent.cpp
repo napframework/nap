@@ -65,11 +65,6 @@ namespace nap
 		if (!mEmptyMesh.init(errorState))
 			return false;
 
-		// Create mesh / material combo that we can render
-		mRenderableMesh = mRenderService->createRenderableMesh(mEmptyMesh, mMaterialInstance, errorState);
-		if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
-			return false;
-
 		// Get uniforms
 		auto uniform_struct = mMaterialInstance.getOrCreateUniform(uniform::fade::uboStruct);
 		if (!errorState.check(uniform_struct != nullptr, "%s: Unable to find uniform struct: %s in shader: %s",

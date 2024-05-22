@@ -23,9 +23,12 @@ using namespace nap::rtti;
 
 namespace id
 {
-	static constexpr const char separator = '_';
-	static constexpr const int count = 6;
-	static constexpr const int ssize = count + 2;
+	static constexpr char slash = '/';
+	static constexpr char child = ':';
+	static constexpr char uuids = '_';
+	static constexpr int count = 6;
+	static constexpr int ssize = count + 2;
+	static constexpr std::array<char, 8> invalid = { slash,child,'.','[',']',',','\\',';' };
 }
 
 
@@ -211,6 +214,11 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 
 void napkin::Document::patchLinks(const std::string& oldID, const std::string& newID)
 {
+#ifndef NDEBUG
+	for (const auto c : id::invalid)
+		assert(newID.find(c) == std::string::npos);
+#endif // !NDEBUG
+
 	// Iterate over the properties of a component or component ptr override.
 	// Find component and entity pointers that reference the old object and patch accordingly.
 	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::Scene) });
@@ -307,13 +315,24 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	auto index = object_path.find(oldID);
 	while (index != std::string::npos)
 	{
-		auto end_index = index + oldID.size();
-		if (end_index >= object_path.size() ||
-			object_path[end_index] == '/' ||
-			object_path[end_index] == ':')
-			break;
+		// When not at the beginning, ensure previous character is path separator
+		if (index > 0 && object_path[index - 1] != id::slash)
+		{
+			// Keep searching
+			index = object_path.find(oldID, index + oldID.size());
+			continue;
+		}
 
-		index = object_path.find(oldID, index + 1);
+		// When not at the end, ensure next character is child or path separator
+		auto end_idx = index + oldID.size();
+		if (end_idx < object_path.size() &&
+			object_path[end_idx] != id::slash && object_path[end_idx] != id::child)
+		{
+			// Keep searching
+			index = object_path.find(oldID, end_idx);
+			continue;
+		}
+		break;
 	}
 
 	// No match
@@ -352,7 +371,17 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	// Get name
+	// Ensure name doesn't include invalid characters
+	for (const auto c : id::invalid)
+	{
+		if (name.find(c) != std::string::npos)
+		{
+			nap::Logger::error("Unsupported character '%c' in new name: %s", c, name.c_str());
+			return object.mID;
+		}
+	}
+
+	// Ensure name is unique
 	auto new_name = getUniqueID(name, object, appenUUID);
 	if (new_name == object.mID)
 		return object.mID;
@@ -467,8 +496,8 @@ std::string Document::getUniqueID(const std::string& suggestedName, const nap::r
 	while (scene_object != nullptr && scene_object != &object)
 	{
 		object_id = useUUID ?
-			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::separator, createUUID().c_str()) :
-			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::separator, i++);
+			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::uuids, createUUID().c_str()) :
+			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::uuids, i++);
 		scene_object = getObject(object_id);
 	}
 	return object_id;
@@ -1097,7 +1126,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 	nap::rtti::Object* target = factory.create(src.get_type()); assert(target != nullptr);
 
 	// Give it a new name
-	auto parts = nap::utility::splitString(src.mID, id::separator); assert(!parts.empty());
+	auto parts = nap::utility::splitString(src.mID, id::uuids); assert(!parts.empty());
 	target->mID = getUniqueID(parts.front(), *target, true);
 
 	// Add to managed object list

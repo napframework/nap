@@ -107,7 +107,6 @@ namespace nap
 
 	private:
 		MaterialInstance						mMaterialInstance;				///< The MaterialInstance as created from the resource. 
-		RenderableMesh							mRenderableMesh;				///< The currently active renderable mesh, either set during init() or set by setMesh.
 		EmptyMesh								mEmptyMesh;						///< The mesh to render
 		MaterialInstanceResource				mMaterialInstanceResource;		///< Resource used to initialize the material instance
 
