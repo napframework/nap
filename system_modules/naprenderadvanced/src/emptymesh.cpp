@@ -21,7 +21,7 @@ namespace nap
 
 	EmptyMesh::EmptyMesh(Core& core) :
 		mRenderService(core.getService<RenderService>()),
-		mMeshInstance(std::make_unique<MeshInstance>(*core.getService<RenderService>()))
+		mMeshInstance(std::make_unique<MeshInstance>(*mRenderService))
 	{ }
 
 
