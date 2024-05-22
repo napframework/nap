@@ -41,9 +41,6 @@ namespace nap
 
 		float mLineWidth = 2.0f;							///< Property: 'LineWidth' frustrum line width
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };		///< Property: 'Color' frustrum draw color
-		float mOpacity = 1.0f;								///< Property: 'Opacity' frustrum alpha
-		EBlendMode mBlendMode = EBlendMode::Opaque;			///< Property: 'BlendMode' frustum blend mode
-		EDepthMode mDepthMode = EDepthMode::ReadOnly;		///< Property: 'DepthMode' frustum depth mode
 	};
 
 
@@ -76,16 +73,6 @@ namespace nap
 		 * Set the frustrum draw color
 		 */
 		void setColor(const glm::vec3& color)												{ mColorUniform->setValue(color); }
-
-		/**
-		 * @return frustrum draw opacity
-		 */
-		float getOpacity() const															{ return mAlphaUniform->getValue(); }
-
-		/**
-		 * Set the frustrum draw opacity
-		 */
-		void setOpacity(float opacity)														{ mAlphaUniform->setValue(opacity); }
 
 		/**
 		 * Called by the Render Service. Supports orthographic and perspective cameras
@@ -123,7 +110,6 @@ namespace nap
 
 		UniformStructInstance* mUBOStruct = nullptr;								///< UBO struct
 		UniformVec3Instance* mColorUniform = nullptr;								///< Constant color uniform
-		UniformFloatInstance* mAlphaUniform = nullptr;								///< Alpha uniform
 	};
 }
 
