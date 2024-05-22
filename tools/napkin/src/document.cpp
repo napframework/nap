@@ -26,7 +26,7 @@ namespace id
 	static constexpr const char separator = '_';
 	static constexpr const int count = 6;
 	static constexpr const int ssize = count + 2;
-	static constexpr std::array<char, 6> invalid = { '.', ' / ', ':','[',']', ',' };
+	static constexpr std::array<char, 6> invalid = { '.', '/', ':','[',']', ',' };
 }
 
 
