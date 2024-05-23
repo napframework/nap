@@ -12,7 +12,7 @@
 #include <nap/numeric.h>
 
 // nap::boxmesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh, "Box mesh with uv, color and normal vertex attributes.")
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh, "Box shape with uv, color and normal vertex attributes")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",			&nap::BoxMesh::mUsage,			nap::rtti::EPropertyMetaData::Default, "If the mesh is updated at runtime or static")
 	RTTI_PROPERTY("CullMode",		&nap::BoxMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default, "Which triangles are culled, front facing, back facing etc..")
