@@ -8,9 +8,8 @@
 // external includes
 #include <nap/resourceptr.h>
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackEvent)
+RTTI_BEGIN_CLASS(nap::SequenceTrackEvent, "Sequenced events track")
 RTTI_END_CLASS
 
 namespace nap
-{
-}
+{ }
