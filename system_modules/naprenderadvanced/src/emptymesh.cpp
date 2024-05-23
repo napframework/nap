@@ -19,17 +19,15 @@ namespace nap
 	// NoMesh
 	//////////////////////////////////////////////////////////////////////////
 
-	EmptyMesh::EmptyMesh(Core& core) :
-		mRenderService(core.getService<RenderService>()),
-		mMeshInstance(std::make_unique<MeshInstance>(*mRenderService))
+	EmptyMesh::EmptyMesh(Core& core) : mRenderService(core.getService<RenderService>())
 	{ }
 
 
 	bool EmptyMesh::init(utility::ErrorState& errorState)
 	{
-		assert(mRenderService != nullptr);	
-
 		// Initialize no mesh instance
+		assert(mRenderService != nullptr);
+		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 		return mMeshInstance->init(errorState);
 	}
 }
