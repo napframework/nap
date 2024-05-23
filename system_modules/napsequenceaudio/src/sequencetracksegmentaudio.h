@@ -12,8 +12,6 @@
 
 namespace nap
 {
-    //////////////////////////////////////////////////////////////////////////
-
     /**
      * The SequenceTrackSegmentAudio contains a buffer id, pointer to the audio buffer id to use
      * Also, it contains a start time of the start position within the audio buffer
@@ -22,10 +20,7 @@ namespace nap
     {
         RTTI_ENABLE(SequenceTrackSegment)
     public:
-        // buffer id
-        std::string mAudioBufferID;
-
-        // start time in audio buffer
-        double mStartTimeInAudioSegment = 0.0;
+        std::string mAudioBufferID;					///< Property: 'BufferID' audio buffer identifier
+        double mStartTimeInAudioSegment = 0.0;		///< Property: 'Start Time In Segment' segment start time
     };
 }
