@@ -17,11 +17,11 @@
 #include <nap/logger.h>
 #include <descriptorsetcache.h>
 
-RTTI_BEGIN_CLASS(nap::RenderSkyBoxComponent)
-	RTTI_PROPERTY("BlendMode",		&nap::RenderSkyBoxComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default)		
-	RTTI_PROPERTY("CubeTexture",	&nap::RenderSkyBoxComponent::mCubeTexture,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Color",			&nap::RenderSkyBoxComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Opacity",		&nap::RenderSkyBoxComponent::mOpacity,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderSkyBoxComponent, "Renders a skybox using a cubemap texture")
+	RTTI_PROPERTY("BlendMode",		&nap::RenderSkyBoxComponent::mBlendMode,	nap::rtti::EPropertyMetaData::Default,	"Color blend mode, set to 'AlphaBlend' to use opacity")
+	RTTI_PROPERTY("CubeTexture",	&nap::RenderSkyBoxComponent::mCubeTexture,	nap::rtti::EPropertyMetaData::Required, "Cubemap color texure")
+	RTTI_PROPERTY("Color",			&nap::RenderSkyBoxComponent::mColor,		nap::rtti::EPropertyMetaData::Default,	"Skybox color")
+	RTTI_PROPERTY("Opacity",		&nap::RenderSkyBoxComponent::mOpacity,		nap::rtti::EPropertyMetaData::Default,	"Skybox opacity")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderSkyBoxComponentInstance)

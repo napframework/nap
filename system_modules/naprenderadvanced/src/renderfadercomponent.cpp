@@ -15,10 +15,10 @@
 #include <nap/logger.h>
 #include <transformcomponent.h>
 
-RTTI_BEGIN_CLASS(nap::RenderFaderComponent)
-	RTTI_PROPERTY("FadeIn",				&nap::RenderFaderComponent::mFadeIn,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FadeDuration",		&nap::RenderFaderComponent::mFadeDuration,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FadeColor",			&nap::RenderFaderComponent::mFadeColor,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderFaderComponent, "Scene fade in/out render operation")
+	RTTI_PROPERTY("FadeIn",				&nap::RenderFaderComponent::mFadeIn,		nap::rtti::EPropertyMetaData::Default, "Start fading in on startup")
+	RTTI_PROPERTY("FadeDuration",		&nap::RenderFaderComponent::mFadeDuration,	nap::rtti::EPropertyMetaData::Default, "Fade duration in seconds")
+	RTTI_PROPERTY("FadeColor",			&nap::RenderFaderComponent::mFadeColor,		nap::rtti::EPropertyMetaData::Default, "Fade color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFaderComponentInstance)

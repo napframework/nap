@@ -17,9 +17,9 @@
 #include <perspcameracomponent.h>
 #include <constantshader.h>
 
-RTTI_BEGIN_CLASS(nap::RenderFrustumComponent)
-	RTTI_PROPERTY("Line Width",	&nap::RenderFrustumComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",		&nap::RenderFrustumComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderFrustumComponent, "Renders the frustrum of a camera")
+	RTTI_PROPERTY("Line Width",	&nap::RenderFrustumComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default, "Frustrum line width")
+	RTTI_PROPERTY("Color",		&nap::RenderFrustumComponent::mColor,		nap::rtti::EPropertyMetaData::Default, "Frustrum line color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFrustumComponentInstance)
