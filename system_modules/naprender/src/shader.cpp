@@ -1080,12 +1080,15 @@ namespace nap
 			}
 			else
 			{
-				// Workgroup size of current dimension is explicitly specified
+				// Workgroup size of current dimension is specified explicitly in shader
 				// Use reflection to store constant defined in shader source
 				mWorkGroupSize[i] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, i);
 			}
 		}
-		assert(glm::all(glm::greaterThan(mWorkGroupSize, { 0, 0, 0 })));
+
+		if (!errorState.check(glm::all(glm::greaterThan(mWorkGroupSize, { 0, 0, 0 })),
+			"Compute shader `%s` workgroup size is undefined. Set `local_size_x` to a valid number or map `local_size_x_id` to a shader constant in the material.", mID.c_str()))
+			return false;
 
 #ifdef __APPLE__
 		// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,

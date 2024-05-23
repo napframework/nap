@@ -46,7 +46,7 @@ namespace nap
 		virtual const MeshInstance& getMeshInstance() const	override	{ return *mMeshInstance; }
 
 	private:
-		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
 		nap::RenderService* mRenderService = nullptr;					///< Handle to the render service
+		std::unique_ptr<MeshInstance> mMeshInstance;					///< The mesh instance to construct
 	};
 }

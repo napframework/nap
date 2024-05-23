@@ -71,12 +71,11 @@ Currently, whether working with the packaged framework release or against the fr
 ```
 x86-64: Windows (10 & 11), Visual Studio 2019 - MSVC
 x86-64: Ubuntu Linux LTS (v20.04 & v22.04) - GCC
-x86-64: macOS Catalina (v10.15) - Clang
 ```
 **ARM**
 ```
-armhf: Raspberry Pi OS (v11)
-arm64: Ubuntu Linux LTS (v22.04) *experimental*
+armhf: Raspberry Pi OS (v11) - GCC
+arm64: Ubuntu Linux LTS (v22.04) *experimental* - GCC
 ```
 
 ## Binary Packages
@@ -116,7 +115,6 @@ On success, run:
 
 `generate_solution.bat` to generate a `Visual Studio Solution` (Windows)<br>
 `generate_solution.sh` to generate `make files` (Linux)<br>
-`generate_solution.sh` to generate an `XCode project` (macOS)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `Release`. Alternatively you can use `CLion`.
 
@@ -208,7 +206,6 @@ Use the github [issues](https://github.com/napframework/nap/issues) page for bug
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://github.com/orgs/napframework/discussions) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
 MSVC, Platform Toolset v142 on Windows 10
-Clang targeting Catalina/10.15 on macOS
 GCC <= 9.3.0 on Ubuntu LTS 20.04
 ```
 
