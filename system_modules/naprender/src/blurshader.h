@@ -7,6 +7,7 @@
 // External Includes
 #include <shader.h>
 #include <renderservice.h>
+#include <nap/core.h>
 
 namespace nap
 {
