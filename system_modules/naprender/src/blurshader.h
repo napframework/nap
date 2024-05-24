@@ -11,9 +11,6 @@
 
 namespace nap
 {
-	// Forward declares
-	class Core;
-
 	/**
 	 * Supported blur kernels
 	 */
