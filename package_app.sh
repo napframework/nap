@@ -12,7 +12,7 @@ fi
 # Make sure cmake is installed
 if ! [ -x "$(command -v cmake)" ]; then
   echo Cmake is not installed. Install it for your system.
-  return 0
+  exit 0
 fi
 
 # Make sure jq is installed on unix
@@ -20,13 +20,13 @@ if [ "$(uname)" = "Darwin" ]; then
   if ! [ -x "$(command -v jq)" ]; then
     echo Jq json parser not found. To install from hemobrew run:
     echo brew install jq
-    return 0
+    exit 0
   fi
 elif [ "$(uname)" = "Linux" ]; then
   if ! [ -x "$(command -v jq)" ]; then
     echo Jq json parser not found. To install from package manager run:
     echo sudo apt install jq
-    return 0
+    exit 0
   fi
 #else
   # Windows
@@ -47,12 +47,21 @@ rm -rf $build_directory/bin
 
 # Generate the build directory
 cmake -S . -B $build_directory
+if ! [ $? -eq 0 ]; then
+  exit 0
+fi
 
 # Build the specified target
 cmake --build $build_directory --target $target --config Release --parallel 8
+if ! [ $? -eq 0 ]; then
+  exit 0
+fi
 
 # Run cmake install process
 cmake --install $build_directory --prefix install
+if ! [ $? -eq 0 ]; then
+  exit 0
+fi
 
 # Read app Title from project json
 if [ "$target" = "napkin" ]; then
@@ -71,6 +80,9 @@ else
   else
     # Use bundled jq.exe
     app_title=`./thirdparty/jq/msvc/x86_64/jq.exe -r '.Title' $build_directory/bin/$target.json`
+  fi
+  if ! [ $? -eq 0 ]; then
+    exit 0
   fi
 fi
 echo App title is: $app_title
@@ -99,9 +111,3 @@ if [ $# = "1" ]; then
   echo Removing build directory...
   rm -rf build
 fi
-
-## Remove local installation of jq.exe
-#if [ "$(uname)" != "Darwin" ] && [ "$(uname)" != "Linux" ]; then
-#  echo Removing local installation of jq.exe...
-#  rm jq.exe
-#fi
