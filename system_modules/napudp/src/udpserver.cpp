@@ -21,10 +21,10 @@
 
 #include <thread>
 
-RTTI_BEGIN_CLASS(nap::UDPServer)
-	RTTI_PROPERTY("Port",			        &nap::UDPServer::mPort,			                nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("IP Address",		        &nap::UDPServer::mIPAddress,	                nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Multicast Groups",		&nap::UDPServer::mMulticastGroups,	            nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::UDPServer, "Receives UDP packets sent to a local end point")
+	RTTI_PROPERTY("Port",				&nap::UDPServer::mPort,				nap::rtti::EPropertyMetaData::Default,	"Port to bind to")
+	RTTI_PROPERTY("IP Address",			&nap::UDPServer::mIPAddress,	    nap::rtti::EPropertyMetaData::Default,	"Local ip address to bind to, when left empty will bind to first available one")
+    RTTI_PROPERTY("Multicast Groups",	&nap::UDPServer::mMulticastGroups,	nap::rtti::EPropertyMetaData::Default,	"Multicast addresses to join")
 RTTI_END_CLASS
 
 using namespace asio::ip;
