@@ -10,7 +10,7 @@
 #include <entity.h>
 #include <nap/numeric.h>
 
-RTTI_BEGIN_CLASS(nap::LineColorComponent)
+RTTI_BEGIN_CLASS(nap::LineColorComponent, "Applies color to the blended poly line")
 	RTTI_PROPERTY("BlendComponent",			&nap::LineColorComponent::mBlendComponent,		nap::rtti::EPropertyMetaData::Required, "Link to the line blender")
 	RTTI_PROPERTY("FirstColor",				&nap::LineColorComponent::mColorOne,			nap::rtti::EPropertyMetaData::Required, "Start color")
 	RTTI_PROPERTY("SecondColor",			&nap::LineColorComponent::mColorTwo,			nap::rtti::EPropertyMetaData::Required, "End color")
