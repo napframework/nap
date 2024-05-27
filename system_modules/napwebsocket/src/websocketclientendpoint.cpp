@@ -4,11 +4,11 @@
 
 #include "websocketclientendpoint.h"
 
-RTTI_DEFINE_CLASS(nap::WebSocketClientEndPoint)
+RTTI_DEFINE_CLASS(nap::WebSocketClientEndPoint, "Not secure (ws) websocket client endpoint, manages all client-server connections")
 
-RTTI_BEGIN_CLASS(nap::SecureWebSocketClientEndPoint)
-    RTTI_PROPERTY("CertificateChainFile", &nap::SecureWebSocketClientEndPoint::mCertificateChainFile, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("HostName", &nap::SecureWebSocketClientEndPoint::mHostName, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SecureWebSocketClientEndPoint, "Secure (wss) websocket client endpoint, manages all client-server connections")
+    RTTI_PROPERTY("CertificateChainFile", &nap::SecureWebSocketClientEndPoint::mCertificateChainFile, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink, "SSL certificate chain file")
+    RTTI_PROPERTY("HostName", &nap::SecureWebSocketClientEndPoint::mHostName, nap::rtti::EPropertyMetaData::Default, "Hostname to verify against the certificate")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

@@ -14,13 +14,13 @@ RTTI_BEGIN_ENUM(nap::SecureWebSocketServerEndPoint::ETLSMode)
 	RTTI_ENUM_VALUE(nap::SecureWebSocketServerEndPoint::ETLSMode::Modern,			"Modern")
 RTTI_END_ENUM
 
-RTTI_DEFINE_CLASS(nap::WebSocketServerEndPoint)
+RTTI_DEFINE_CLASS(nap::WebSocketServerEndPoint, "Not secured websocket (ws) server end point connection")
 
-RTTI_BEGIN_CLASS(nap::SecureWebSocketServerEndPoint)
-	RTTI_PROPERTY("Mode",			&nap::SecureWebSocketServerEndPoint::mMode,				nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Certificate",	&nap::SecureWebSocketServerEndPoint::mCertificateFile,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("PrivateKey",		&nap::SecureWebSocketServerEndPoint::mPrivateKeyFile,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink)
-    RTTI_PROPERTY("Passphrase",		&nap::SecureWebSocketServerEndPoint::mPassphrase,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SecureWebSocketServerEndPoint, "Secured websocket (wss) server end point connection, adds transport layer security (TLS) using the provided certificate and key")
+	RTTI_PROPERTY("Mode",			&nap::SecureWebSocketServerEndPoint::mMode,				nap::rtti::EPropertyMetaData::Default, "TLS configuration mode")
+    RTTI_PROPERTY("Certificate",	&nap::SecureWebSocketServerEndPoint::mCertificateFile,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink, "TLS certificate file (.pem)")
+    RTTI_PROPERTY("PrivateKey",		&nap::SecureWebSocketServerEndPoint::mPrivateKeyFile,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::FileLink, "TLS private key file (.key)")
+    RTTI_PROPERTY("Passphrase",		&nap::SecureWebSocketServerEndPoint::mPassphrase,		nap::rtti::EPropertyMetaData::Default, "Private key password, only required when key is generated with one")
 RTTI_END_CLASS
 
 namespace nap

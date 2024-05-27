@@ -15,7 +15,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketServer)
 RTTI_END_CLASS
 
 // nap::websocketserver run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServer, "Receives and responds to client messages over a websocket")
 	RTTI_CONSTRUCTOR(nap::WebSocketService&)
 RTTI_END_CLASS
 

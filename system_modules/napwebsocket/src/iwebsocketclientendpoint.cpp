@@ -5,9 +5,9 @@
 #include "iwebsocketclientendpoint.h"
 
 // nap::websocketclientendpoint run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketClientEndPoint)
-	RTTI_PROPERTY("LogConnectionUpdates",	&nap::IWebSocketClientEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LibraryLogLevel",		&nap::IWebSocketClientEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketClientEndPoint, "Manages a list of client-server connections and acts as the main portal for the client to the server")
+	RTTI_PROPERTY("LogConnectionUpdates",	&nap::IWebSocketClientEndPoint::mLogConnectionUpdates,	nap::rtti::EPropertyMetaData::Default,	"Log client / server connection information to console.")
+	RTTI_PROPERTY("LibraryLogLevel",		&nap::IWebSocketClientEndPoint::mLibraryLogLevel,		nap::rtti::EPropertyMetaData::Default,	"Only log information equal or higher than this log level")
 RTTI_END_CLASS
 
 namespace nap
