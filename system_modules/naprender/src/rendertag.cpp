@@ -14,7 +14,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTag, "Categorizes render comp
 	RTTI_PROPERTY("Name", &nap::RenderTag::mName, nap::rtti::EPropertyMetaData::Default, "Name of the tag")
 RTTI_END_STRUCT
 
-DEFINE_GROUP(nap::RenderTagGroup)
+DEFINE_GROUP(nap::RenderTagGroup, nap::RenderTag)
 
 namespace nap
 {

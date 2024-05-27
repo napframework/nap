@@ -212,14 +212,30 @@ namespace nap
 }
 
 
-/**
- * Use this macro to register your own group.
- * ~~~~~{.cpp}
- * DEFINE_GROUP(nap::ResourceGroup)
- * ~~~~~ 
- */
-#define DEFINE_GROUP(Type)																																\
+//////////////////////////////////////////////////////////////////////////
+// Group registration
+//////////////////////////////////////////////////////////////////////////
+
+// Backwards compatible -> registration without description
+#define DEFINE_GROUP_1(Type)																															\
 	RTTI_BEGIN_CLASS(Type)																																\
 		RTTI_PROPERTY(nap::group::members,	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
 		RTTI_PROPERTY(nap::group::children,	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
 	RTTI_END_CLASS
+
+// Group registration with description
+#define DEFINE_GROUP_2(Type, ObjectType)																												\
+	RTTI_BEGIN_CLASS(Type, "Groups together a set of '"#ObjectType"' objects")																			\
+		RTTI_PROPERTY(nap::group::members,	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
+		RTTI_PROPERTY(nap::group::children,	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
+	RTTI_END_CLASS
+
+#define GET_DEFINE_GROUP_MACRO(_1,_2,NAME,...) NAME
+
+/**
+ * Use this macro to register your own group.
+ * ~~~~~{.cpp}
+ * DEFINE_GROUP(nap::ResourceGroup, nap::Resource)
+ * ~~~~~
+ */
+#define DEFINE_GROUP(...) GET_DEFINE_GROUP_MACRO(__VA_ARGS__, DEFINE_GROUP_2, DEFINE_GROUP_1)(__VA_ARGS__)
