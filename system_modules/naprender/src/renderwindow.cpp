@@ -21,7 +21,7 @@ RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
 	RTTI_ENUM_VALUE(nap::RenderWindow::EPresentationMode::FIFO,			"FIFO")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderWindow, "Window render target")
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderWindow, "Desktop render window")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Borderless",				&nap::RenderWindow::mBorderless,		nap::rtti::EPropertyMetaData::Default,	"If the window has borders")
 	RTTI_PROPERTY("Resizable",				&nap::RenderWindow::mResizable,			nap::rtti::EPropertyMetaData::Default,	"If the window is resizable")
