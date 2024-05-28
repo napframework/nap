@@ -29,17 +29,17 @@ RTTI_BEGIN_ENUM(nap::EShadowMapType)
 RTTI_END_ENUM
 
 RTTI_BEGIN_STRUCT(nap::LightComponent::Locator)
-	RTTI_PROPERTY("LineWidth",	&nap::LightComponent::Locator::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GnomonSize", &nap::LightComponent::Locator::mGnomonSize, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LineWidth",	&nap::LightComponent::Locator::mLineWidth,	nap::rtti::EPropertyMetaData::Default, "Locator line width")
+	RTTI_PROPERTY("GnomonSize", &nap::LightComponent::Locator::mGnomonSize, nap::rtti::EPropertyMetaData::Default, "Locator size")
 RTTI_END_STRUCT
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponent)
-	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CastShadows",		&nap::LightComponent::mCastShadows,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Locator",			&nap::LightComponent::mLocator,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Enabled",			&nap::LightComponent::mEnabled,				nap::rtti::EPropertyMetaData::Default, "If the light is enabled")
+	RTTI_PROPERTY("CastShadows",		&nap::LightComponent::mCastShadows,			nap::rtti::EPropertyMetaData::Default, "If the light casts shadows")
+	RTTI_PROPERTY("Color",				&nap::LightComponent::mColor,				nap::rtti::EPropertyMetaData::Default, "The color of the light source")
+	RTTI_PROPERTY("Intensity",			&nap::LightComponent::mIntensity,			nap::rtti::EPropertyMetaData::Default, "The intensity of the light source")
+	RTTI_PROPERTY("ShadowStrength",		&nap::LightComponent::mShadowStrength,		nap::rtti::EPropertyMetaData::Default, "The amount of light the shadow consumes")
+	RTTI_PROPERTY("Locator",			&nap::LightComponent::mLocator,				nap::rtti::EPropertyMetaData::Default, "Locator options")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LightComponentInstance)

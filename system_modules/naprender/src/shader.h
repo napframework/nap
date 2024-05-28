@@ -197,7 +197,7 @@ namespace nap
 		 */
 		const std::unordered_map<uint, std::string>& getWorkGroupSizeOverrides() const	{ return mWorkGroupSizeOverrides; }
 
-		bool mEnableMaxGroupSizeDefault = false;
+		bool mEnableMaxGroupSizeDefault = false; ///< Property: Overwrite work group size with maximum supported work-group size
 
 	protected:
 		/**

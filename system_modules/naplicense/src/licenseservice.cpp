@@ -26,10 +26,10 @@
 #include <opensslutils.h>
 
 RTTI_BEGIN_CLASS(nap::LicenseConfiguration)
-	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LicenseDirectory",	&nap::LicenseConfiguration::mDirectory,		nap::rtti::EPropertyMetaData::Default, "License search directory")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LicenseService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LicenseService, "Validates a license using a public key")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 

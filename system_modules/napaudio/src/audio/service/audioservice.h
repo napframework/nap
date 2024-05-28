@@ -16,11 +16,9 @@ namespace nap
 {
 	namespace audio
 	{
-		
 		// Forward declarations
 		class AudioService;
 
-		
 		/**
 		 * Service that provides audio input and output processing directly for hardware audio devices.
 		 * Provides static methods to poll the current system for available audio devices using portaudio.

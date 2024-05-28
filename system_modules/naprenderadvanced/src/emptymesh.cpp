@@ -9,7 +9,7 @@
 #include <renderservice.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmptyMesh)
+ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmptyMesh, "A mesh without data for simple render operations, with shaders without geometry")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

@@ -17,10 +17,10 @@
 #include <rtti/defaultlinkresolver.h>
 #include <fstream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer)
-        RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded)
-        RTTI_PROPERTY("Clock", &nap::SequencePlayer::mClock, nap::rtti::EPropertyMetaData::Embedded);
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayer, "Loads, plays and saves a sequence")
+        RTTI_PROPERTY("Default Show", &nap::SequencePlayer::mSequenceFileName, nap::rtti::EPropertyMetaData::Default, "The default (startup) sequence")
+        RTTI_PROPERTY("Outputs", &nap::SequencePlayer::mOutputs, nap::rtti::EPropertyMetaData::Embedded, "All the linked sequence outputs")
+        RTTI_PROPERTY("Clock", &nap::SequencePlayer::mClock, nap::rtti::EPropertyMetaData::Embedded, "Clock that controls playback");
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

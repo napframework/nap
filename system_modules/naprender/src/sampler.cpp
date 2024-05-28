@@ -46,36 +46,36 @@ RTTI_BEGIN_ENUM(nap::EDepthCompareMode)
 	RTTI_ENUM_VALUE(nap::EDepthCompareMode::Always,				"Always")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler)
-	RTTI_PROPERTY("Name",					&nap::Sampler::mName,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MinFilter",				&nap::Sampler::mMinFilter,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxFilter",				&nap::Sampler::mMaxFilter,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MipMapMode",				&nap::Sampler::mMipMapMode,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AddressModeVertical",	&nap::Sampler::mAddressModeVertical,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AddressModeHorizontal",	&nap::Sampler::mAddressModeHorizontal,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MinLodLevel",			&nap::Sampler::mMinLodLevel,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxLodLevel",			&nap::Sampler::mMaxLodLevel,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LodBias",				&nap::Sampler::mLodBias,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AnisotropicSamples",		&nap::Sampler::mMaxAnisotropy,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BorderColor",			&nap::Sampler::mBorderColor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CompareMode",			&nap::Sampler::mCompareMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableCompare",			&nap::Sampler::mEnableCompare,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler, "Shader texture input")
+	RTTI_PROPERTY("Name",					&nap::Sampler::mName,					nap::rtti::EPropertyMetaData::Default,	"Sampler name in shader program")
+	RTTI_PROPERTY("MinFilter",				&nap::Sampler::mMinFilter,				nap::rtti::EPropertyMetaData::Default,	"Filter used for minimization (scaling down)")
+	RTTI_PROPERTY("MaxFilter",				&nap::Sampler::mMaxFilter,				nap::rtti::EPropertyMetaData::Default,	"Filter used for maximization (scaling up)")
+	RTTI_PROPERTY("MipMapMode",				&nap::Sampler::mMipMapMode,				nap::rtti::EPropertyMetaData::Default,	"Filter used for generating mip-maps")
+	RTTI_PROPERTY("AddressModeVertical",	&nap::Sampler::mAddressModeVertical,	nap::rtti::EPropertyMetaData::Default,	"Vertical texture wrap mode")
+	RTTI_PROPERTY("AddressModeHorizontal",	&nap::Sampler::mAddressModeHorizontal,	nap::rtti::EPropertyMetaData::Default,	"Horizontal texture wrap mode")
+	RTTI_PROPERTY("MinLodLevel",			&nap::Sampler::mMinLodLevel,			nap::rtti::EPropertyMetaData::Default,	"Minimum level of detail, where 0 is the highest LOD and values > 0 exclude the higest LOD")
+	RTTI_PROPERTY("MaxLodLevel",			&nap::Sampler::mMaxLodLevel,			nap::rtti::EPropertyMetaData::Default,	"Maximum level of detail, where 0 = only the highest LOD")
+	RTTI_PROPERTY("LodBias",				&nap::Sampler::mLodBias,				nap::rtti::EPropertyMetaData::Default,	"The bias to be added to mipmap LOD calculation")
+	RTTI_PROPERTY("AnisotropicSamples",		&nap::Sampler::mMaxAnisotropy,			nap::rtti::EPropertyMetaData::Default,	"Max number of anisotropic filter samples")
+	RTTI_PROPERTY("BorderColor",			&nap::Sampler::mBorderColor,			nap::rtti::EPropertyMetaData::Default,	"Border color used for texture lookups")
+	RTTI_PROPERTY("CompareMode",			&nap::Sampler::mCompareMode,			nap::rtti::EPropertyMetaData::Default,	"The comparison operator to use when compare is enabled")
+	RTTI_PROPERTY("EnableCompare",			&nap::Sampler::mEnableCompare,			nap::rtti::EPropertyMetaData::Default,	"Enable comparison against a reference value during lookups")
 RTTI_END_CLASS
 
 RTTI_DEFINE_BASE(nap::SamplerArray)
 
 RTTI_BEGIN_CLASS(nap::Sampler2D)
-	RTTI_PROPERTY(nap::sampler::texture, &nap::Sampler2D::mTexture, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::sampler::texture, &nap::Sampler2D::mTexture, nap::rtti::EPropertyMetaData::Required, "The texture to bind to the sampler in the shader")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Sampler2DArray)
-	RTTI_PROPERTY(nap::sampler::textures, &nap::Sampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::sampler::textures, &nap::Sampler2DArray::mTextures, nap::rtti::EPropertyMetaData::Required, "The textures to bind to the sampler array in the shader")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::SamplerCube)
-	RTTI_PROPERTY(nap::sampler::texture, &nap::SamplerCube::mTextureCube, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::sampler::texture, &nap::SamplerCube::mTextureCube, nap::rtti::EPropertyMetaData::Required, "The cube texture to bind to the sampler in the shader")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::SamplerCubeArray)
-	RTTI_PROPERTY(nap::sampler::textures, &nap::SamplerCubeArray::mTextures, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::sampler::textures, &nap::SamplerCubeArray::mTextures, nap::rtti::EPropertyMetaData::Required, "The cube textures to bind to the sampler array in the shader")
 RTTI_END_CLASS

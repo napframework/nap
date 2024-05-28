@@ -5,4 +5,4 @@
 #include "cubemapfromfilegroup.h"
 
 // Register the group with RTTI
-DEFINE_GROUP(nap::CubeMapFromFileGroup)
+DEFINE_GROUP(nap::CubeMapFromFileGroup, nap::CubeMapFromFile)

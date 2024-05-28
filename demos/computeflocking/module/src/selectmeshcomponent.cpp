@@ -10,9 +10,9 @@
 #include <mathutils.h>
 
 // nap::SelectMeshComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::SelectMeshComponent)
-	RTTI_PROPERTY("Meshes",	&nap::SelectMeshComponent::mMeshes,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",	&nap::SelectMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::SelectMeshComponent, "Selects boid display mesh")
+	RTTI_PROPERTY("Meshes",	&nap::SelectMeshComponent::mMeshes,		nap::rtti::EPropertyMetaData::Required, "Meshes to choose from")
+	RTTI_PROPERTY("Index",	&nap::SelectMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Required, "Selected mesh index")
 RTTI_END_CLASS
 
 // nap::SelectMeshComponentInstance run time class definition 

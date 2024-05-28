@@ -63,7 +63,7 @@ namespace nap
 		};
 
 		bool							mHeadless = false;											///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
-		EPhysicalDeviceType				mPreferredGPU = EPhysicalDeviceType::Discrete;				///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected.
+		EPhysicalDeviceType				mPreferredGPU = EPhysicalDeviceType::Discrete;				///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable the fastest GPU  option is selected.
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.

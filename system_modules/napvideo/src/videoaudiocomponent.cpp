@@ -9,10 +9,10 @@
 #include <audio/service/audioservice.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::VideoAudioComponent)
-    RTTI_PROPERTY("VideoPlayer",	&nap::audio::VideoAudioComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required)
-    RTTI_PROPERTY("ChannelCount",	&nap::audio::VideoAudioComponent::mChannelCount,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ProcessAudio",	&nap::audio::VideoAudioComponent::mProcessAudio,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::audio::VideoAudioComponent, "Outputs audio from a video stream.")
+    RTTI_PROPERTY("VideoPlayer",	&nap::audio::VideoAudioComponent::mVideoPlayer,		nap::rtti::EPropertyMetaData::Required,	"Video player to output sound from")
+    RTTI_PROPERTY("ChannelCount",	&nap::audio::VideoAudioComponent::mChannelCount,	nap::rtti::EPropertyMetaData::Default,	"The number of channels of audio that will be requested from the Video")
+	RTTI_PROPERTY("ProcessAudio",	&nap::audio::VideoAudioComponent::mProcessAudio,	nap::rtti::EPropertyMetaData::Default,	"If the audio stream is decoded when available")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::VideoAudioComponentInstance)

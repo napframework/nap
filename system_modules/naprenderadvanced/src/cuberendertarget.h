@@ -185,7 +185,7 @@ namespace nap
 		static const std::vector<glm::mat4>& getCubeMapInverseViewMatrices();
 
 		bool									mSampleShading = true;										///< Property: 'SampleShading' Reduces texture aliasing when enabled, at higher computational cost.
-		bool									mUpdateLODs = false;										///< Property: 'UpdateLODs' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
+		bool									mUpdateLODs = false;										///< Property: 'UpdateLODs0' Updates mip-maps using blit operations after rendering when the texture has LODs enabled.
 		RGBAColorFloat							mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };					///< Property: 'ClearColor' color selection used for clearing the render target.
 
 		RenderTextureCube::EFormat				mColorFormat = RenderTextureCube::EFormat::RGBA8;			///< Property: 'ColorFormat' the cube texture color format.

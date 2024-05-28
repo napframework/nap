@@ -9,7 +9,7 @@
 #include <nap/core.h>
 
 // nap::FadeShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FadeShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FadeShader, "Render program that fades in and out from black")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

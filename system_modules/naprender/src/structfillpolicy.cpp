@@ -9,40 +9,40 @@
 // External Includes
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::StructFillPolicy)
+RTTI_BEGIN_CLASS(nap::StructFillPolicy, "Rule that defines how to fill a GPU struct buffer on initialization")
 	RTTI_PROPERTY("FillPolicies", &nap::StructFillPolicy::mFillPolicies, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructFillPolicy::BaseEntry)
-	RTTI_PROPERTY("Name", &nap::StructFillPolicy::BaseEntry::mName, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Name", &nap::StructFillPolicy::BaseEntry::mName, nap::rtti::EPropertyMetaData::Default, "The struct member name")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyUInt)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyUInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Unsigned integer fill value")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyInt)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyInt::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Integer fill value")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyFloat)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyFloat::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Float fill value")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyVec2)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec2::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Vec2 fill value")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyVec3)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec3::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Vec3 fill value")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyVec4)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyVec4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Vec4 fill value")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::StructFillPolicyMat4)
-	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("FillPolicy", &nap::StructFillPolicyMat4::mFillPolicy, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Matrix (4x4) fill value")
 RTTI_END_CLASS
 
 

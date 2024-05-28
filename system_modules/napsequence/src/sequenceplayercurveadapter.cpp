@@ -7,5 +7,4 @@
 #include "sequencetrackcurve.h"
 
 namespace nap
-{
-}
+{ }

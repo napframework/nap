@@ -20,21 +20,13 @@ namespace nap
     {
     RTTI_ENABLE(Event)
     public:
-        virtual ~SequenceEventBase()
-        {
-        };
-
-
         /**
-         * checks wether this event is of type T
+         * Checks wether this event is of type T
          * @tparam T the event type
          * @return true if event is derived from T
          */
         template<typename T>
-        bool isEventType() const
-        {
-            return RTTI_OF(T) == this->get_type();
-        }
+        bool isEventType() const		{ return RTTI_OF(T) == this->get_type(); }
 
 
         /**
@@ -43,19 +35,16 @@ namespace nap
          * @return const reference to derived class
          */
         template<typename T>
-        const T& getEventType() const
-        {
-            assert(this->get_type() == RTTI_OF(T)); // type mismatch
-            return static_cast<const T &>(*this);
-        }
-    };
+        const T& getEventType() const	{ assert(this->get_type() == RTTI_OF(T)); return static_cast<const T &>(*this); }
+	};
+
 
     /**
      * SequenceEvent is an event that holds a value of type T
      * @tparam T the value type
      */
     template<typename T>
-    class NAPAPI SequenceEvent : public SequenceEventBase
+    class SequenceEvent : public SequenceEventBase
     {
     RTTI_ENABLE(SequenceEventBase)
     public:
@@ -63,20 +52,13 @@ namespace nap
          * Constructor
          * @param value reference to value, is copied
          */
-        SequenceEvent(const T& value)
-            : mValue(value)
-        {
-        }
-
+        SequenceEvent(const T& value) :
+			mValue(value)				{ }
 
         /**
          * @return value of event
          */
-        const T& getValue() const
-        {
-            return mValue;
-        }
-
+        const T& getValue() const		{ return mValue; }
 
     private:
         // the value

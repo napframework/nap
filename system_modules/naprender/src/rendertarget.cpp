@@ -11,13 +11,13 @@
 #include <nap/logger.h>
 
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget, "Color and Depth texture target for render operations")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("DepthTexture",			&nap::RenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ColorTexture",			&nap::RenderTarget::mColorTexture,			nap::rtti::EPropertyMetaData::Required, "The storage color texture")
+	RTTI_PROPERTY("DepthTexture",			&nap::RenderTarget::mDepthTexture,			nap::rtti::EPropertyMetaData::Default,  "The storage depth texture")
+	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
+	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
 RTTI_END_CLASS
 
 namespace nap

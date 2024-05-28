@@ -11,11 +11,11 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::StructBuffer, "GPU data buffer that stores nested data structures")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::StructBuffer::mClear,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Descriptor", &nap::StructBuffer::mDescriptor,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("FillPolicy", &nap::StructBuffer::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::StructBuffer::mClear,			nap::rtti::EPropertyMetaData::Default,	"Initialize to zero without a fill policy")
+	RTTI_PROPERTY("Descriptor", &nap::StructBuffer::mDescriptor,	nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded, "The descriptor that defines the layout")
+	RTTI_PROPERTY("FillPolicy", &nap::StructBuffer::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional rule that defines how to fill the buffer")
 RTTI_END_CLASS
 
 namespace nap
