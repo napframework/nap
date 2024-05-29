@@ -22,6 +22,7 @@ namespace nap
 		 * @param fileName the absolute path to the file
 		 * @param output the buffer to read the file into
 		 * @param outSampleRate  sample rate of the audio file
+		 * @param errorState contains the error when reading fails
 		 * @return true on success
 		 */
 		bool NAPAPI readAudioFile(const std::string& fileName, MultiSampleBuffer& output, float& outSampleRate, nap::utility::ErrorState& errorState);

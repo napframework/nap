@@ -119,7 +119,7 @@ namespace nap
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
-		* @param index the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
+		* @param index the 0-based index of the DMX512 channel, ranging from 0 to the return value of getChannelCount - 1
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
 		const uint8 operator[](uint16 index) const { return getChannelByIndex(index); }

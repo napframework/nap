@@ -127,7 +127,7 @@ namespace nap
 		 * Broadcasts a message to all connected clients
 		 * @param payload the data to send
 		 * @param length payload byte size
-		 * @param websocket message type
+		 * @param code message type
 		 * @param error contains the error if sending fails
 		 * @return if message was broadcast successfully
 		 */

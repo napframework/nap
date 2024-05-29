@@ -113,9 +113,9 @@ namespace nap {
 
         /**
          * changes curvetype ( linear or bezier )
-         * @param trackID the trackID
-         * @param segmentID the segmentID
+         * @param segment the segment
          * @param type the new curve type
+         * @param curveIndex index of the curve
          */
         template<typename T>
         void changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
@@ -176,15 +176,14 @@ namespace nap {
 
         /**
          * changes tangent of curve point. Tangents are always aligned
-         * @paramt type of curve track
+         * @param segment the segment
          * @param trackID the trackID
-         * @param segmentID the segmentID
          * @param pointIndex the point index
          * @param curveIndex the curve index
          * @param tanType in or out tangent
          * @param time offset for new time
          * @param value offset for new value
-         * @param bool if true, tangents have been flipped
+         * @return if tangents have been flipped
          */
         template<typename T>
         bool changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex,
@@ -192,7 +191,6 @@ namespace nap {
 
         /**
          * changes a curvepoint value and time / position
-         * @paramt type of curve track
          * @param segment the segmentID
          * @param pointIndex the point index
          * @param curveIndex the curve index
