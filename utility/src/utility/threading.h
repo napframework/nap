@@ -13,7 +13,7 @@
 #include <thread>
 #include <vector>
 
-namespace nap 
+namespace nap
 {
     /**
      * Thread safe queue for tasks that are encapsulated in function objects.
@@ -24,7 +24,7 @@ namespace nap
     public:
         // a task in the queue is a function object
         using Task = std::function<void()>;
-        
+
     public:
         /**
          * Constructor takes maximum number of items that can be in the queue at a time.
@@ -34,24 +34,24 @@ namespace nap
          * Add a task to the end of the queue.
          */
         bool enqueue(Task task) { return mQueue.enqueue(task); }
-        
+
         /**
          * If the queue is empty, this function blocks until tasks are enqueued and executes them.
          * If the queue is not empty all the tasks are executed.
          */
         void processBlocking();
-        
+
         /**
          * Executes all tasks currently in the queue
          */
         void process();
-        
+
     private:
         moodycamel::BlockingReaderWriterQueue<Task> mQueue;
         std::vector<Task> mDequeuedTasks;
     };
-    
-    
+
+
     /**
      * A single thread that runs its own task queue
      */
@@ -64,47 +64,45 @@ namespace nap
 		WorkerThread();
 
 		/**
-         * @blocking: 
-         *   true: the threads blocks and waits for enqueued tasks to perform
-         *   false: the threads runs through the loop as fast as possible and emits @execute every iteration
-         * @maxQueueItems: the maximum number of items in the task queue
+         * @param blocking when true: the threads blocks and waits for enqueued tasks to perform, false: the threads runs through the loop as fast as possible and emits @execute every iteration
+         * @param maxQueueItems the maximum number of items in the task queue
          */
         WorkerThread(bool blocking, int maxQueueItems = 20);
 		virtual ~WorkerThread();
-        
+
         /**
          * enqueues a task to be performed on this thread
          */
         void enqueue(TaskQueue::Task task) { mTaskQueue.enqueue(task); }
-        
+
         /**
          * Start the thread and the thread loop.
          */
         void start();
-        
+
         /**
          * Stop the thread loop and join the thread.
          */
         void stop();
-        
+
         /**
          * Returns wether the thread is running and not shutting down.
          */
         bool isRunning() { return mRunning; }
-        
+
         /**
          * Overwrite this method to specify behaviour to be executed each loop after processing the task queue.
          */
         virtual void loop() { }
-        
+
     private:
         std::unique_ptr<std::thread> mThread = nullptr;
         std::atomic<bool> mRunning;
         bool mBlocking = true;
         TaskQueue mTaskQueue;
     };
-    
-    
+
+
     /**
      * A pool of threads that can be used to perform multiple tasks at the same time
      */
@@ -113,7 +111,7 @@ namespace nap
     public:
         ThreadPool(int numberOfThreads = 1, int maxQueueItems = 20, bool realTimePriority = false);
         ~ThreadPool();
-        
+
         /**
          * Enqueues a task to be performed on the next idle thread.
          */
@@ -121,17 +119,17 @@ namespace nap
             assert(task != nullptr);
             mTaskQueue.enqueue(task);
         }
-        
+
         /**
          * Sets stopping to true and joins and exits all threads in the pool.
          */
         void shutDown();
-        
+
         /**
          * Resizes the number of threads in the pool, joins and exits all existing threads first!
          */
         void resize(int numberOfThreads);
-        
+
         /**
          * Returns the number of threads in the pool.
          */
@@ -146,15 +144,15 @@ namespace nap
 		 * Thread-safe.
 		 */
 		int getTaskCount() const { return mTaskQueue.size_approx(); }
-        
+
         /**
          * Returns whether this thread is shutting down.
          */
         bool isStopping() const { return (mStop == true); }
-        
+
     private:
         void addThread();
-        
+
         std::vector<std::thread> mThreads;
         std::atomic<bool> mStop;
         moodycamel::BlockingConcurrentQueue<TaskQueue::Task> mTaskQueue;

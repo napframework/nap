@@ -193,8 +193,7 @@ namespace nap {
         /**
          * changes a curvepoint value and time / position
          * @paramt type of curve track
-         * @param trackID the trackID
-         * @param segmentID the segmentID
+         * @param segment the segmentID
          * @param pointIndex the point index
          * @param curveIndex the curve index
          * @param time offset for new time
@@ -208,9 +207,7 @@ namespace nap {
 
         /**
          * deletes point from curve
-         * @paramt type of curve track
-         * @param trackID the trackID
-         * @param segmentID the segmentID
+         * @param segment the segmentID
          * @param index the point index
          * @param curveIndex the curveIndex
          */
@@ -219,9 +216,7 @@ namespace nap {
 
         /**
          * insert point in curve of segment
-         * @paramt type of curve track
-         * @param trackID the track id
-         * @param segmentID the segment id
+         * @param segment the segment id
          * @param pos the position at which to insert the curvepoint in curve ( range 0-1 )
          * @param curveIndex the index of the curve
          */
@@ -230,14 +225,14 @@ namespace nap {
 
         /**
          * changes start or end value of segment of type T
-         * @param trackID the track id
-         * @param segmentID id of segment
-         * @param amount the amount that the value needs to change
+         * @param track the track id
+         * @param segment id of segment
+         * @param newValue new value
          * @param curveIndex the curve index of the value
          * @param valueType the segment value type ( first or last value )
          */
         template<typename T>
-        void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex,sequencecurveenums::ESegmentValueTypes valueType);
+        void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex, sequencecurveenums::ESegmentValueTypes valueType);
 
         // map for updating segments
         std::unordered_map<rttr::type, std::function<void(SequenceTrack&)>> mUpdateSegmentFunctionMap;

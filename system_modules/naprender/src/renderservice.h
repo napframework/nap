@@ -486,7 +486,7 @@ namespace nap
 		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
-		 * @param mask the objects to include
+		 * @param renderMask the objects to include
 		 */
 		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, RenderMask renderMask = mask::all);
 

@@ -69,9 +69,9 @@ namespace nap
 	 * Default implementation of a web-socket server.
 	 * Receives and responds to client messages over a web socket and can
 	 * be used to send a reply. Implements the IWebSocketServer interface.
-	 * The server converts raw messages and connection updates from a nap::WebSocketServerEndPoint 
-	 * into web-socket events that can be interpreted by the running application. 
-	 * Events are generated on a background thread and consumed on the main thread on update(). 
+	 * The server converts raw messages and connection updates from a nap::WebSocketServerEndPoint
+	 * into web-socket events that can be interpreted by the running application.
+	 * Events are generated on a background thread and consumed on the main thread on update().
 	 * Use a nap::WebSocketComponent to receive and react to client web-socket events in your application.
 	 */
 	class NAPAPI WebSocketServer : public IWebSocketServer
@@ -125,7 +125,9 @@ namespace nap
 
 		/**
 		 * Broadcasts a message to all connected clients
-		 * @param message the message to send
+		 * @param payload the data to send
+		 * @param length payload byte size
+		 * @param websocket message type
 		 * @param error contains the error if sending fails
 		 * @return if message was broadcast successfully
 		 */

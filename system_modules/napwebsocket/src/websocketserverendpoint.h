@@ -27,7 +27,7 @@ namespace nap
 	 * Web socket server endpoint implementation using a specific configuration.
 	 * Manages all client connections, where the `config` is the websocketpp (secured / unsecured)
 	 * end-point configuration type.
-	 * 
+	 *
 	 * On start the web-socket endpoint starts listening to connection requests, updates and messages on a background thread.
 	 * The endpoint is a device that can be started and stopped. When stopped all
 	 * active client-server connections are closed. This occurs when file changes are detected
@@ -127,7 +127,6 @@ namespace nap
          * @param message the message to send
          * @param code message type
          * @param error contains the error if sending fails
-         * @param message the message
          */
         bool broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) override;
 

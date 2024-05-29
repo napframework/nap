@@ -26,12 +26,12 @@ namespace nap
 		class NAPAPI AudioService final : public Service
 		{
 		RTTI_ENABLE(nap::Service)
-		
+
 		public:
 			AudioService(ServiceConfiguration* configuration);
-			
+
 			~AudioService() = default;
-			
+
 			/**
 			 * Initializes portaudio.
 			 */
@@ -43,19 +43,19 @@ namespace nap
 			 void shutdown() override;
 
 			/**
-			 * @return the audio node manager owned by the audio service. The @NodeManager contains a node system that performs all the DSP.
+			 * @return the audio node manager owned by the audio service. The node manager contains a node system that performs all the DSP.
 			 */
 			NodeManager& getNodeManager();
 
 			/**
              * This function is typically called by a hardware callback from the device to perform all the audio processing.
-             * It performs memory management and processes a lockfree event queue before it invokes the @NodeManager::process() to process audio.
+             * It performs memory management and processes a lockfree event queue before it invokes the NodeManager::process() to process audio.
              * @param inputBuffer: an array of float arrays, representing one sample buffer for every channel
              * @param outputBuffer: an array of float arrays, representing one sample buffer for every channel
              * @param framesPerBuffer: the number of samples that has to be processed per channel
              */
 			void onAudioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer);
-			
+
 			/**
 			 * Enqueue a task to be executed within the process() method for thread safety
 			 */
