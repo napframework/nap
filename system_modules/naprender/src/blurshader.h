@@ -29,13 +29,13 @@ namespace nap
 		namespace blur
 		{
 			namespace sampler
-			{	
+			{
 				inline constexpr const char* colorTexture	= "colorTexture";		///< Name of the color texture sampler
 			}
 
 			inline constexpr const char* uboStruct = "UBO";							///< UBO that contains all the uniforms
 			inline constexpr const char* textureSize = "textureSize";				///< Size of the texture
-			inline constexpr const char* direction = "direction";					///< Direction of the blur e.g. {1.0, 0.0} for horizontal, {0.0, 1.0} for vertical 
+			inline constexpr const char* direction = "direction";					///< Direction of the blur e.g. {1.0, 0.0} for horizontal, {0.0, 1.0} for vertical
 		}
 	}
 
@@ -45,18 +45,18 @@ namespace nap
 	 * vertically (direction = {0.0, 1.0}).
 	 *
 	 * The gaussianblur shader exposes the following shader variables:
-	 * 
-	 * ~~~~~{.vert}
+	 *
+	 * ~~~~~~~~~~~~~~~{.vert}
 	 *		uniform UBO
 	 *		{
 	 *			vec2 textureSize;	// The size of 'colorTexture', used to pre-calculate sampling coordinates in vertex shader
 	 *			vec2 direction;		// The sampling direction
 	 *		} ubo;
-	 * ~~~~
+	 * ~~~~~~~~~~~~~~~
 	 *
-	 * ~~~~{.frag}
+	 * ~~~~~~~~~~~~~~~{.frag}
 	 *		uniform sampler2D colorTexture;	// The input color texture to sample from
-	 * ~~~~
+	 * ~~~~~~~~~~~~~~~
 	 */
 	template <EBlurSamples KERNEL>
 	class BlurShader : public Shader
