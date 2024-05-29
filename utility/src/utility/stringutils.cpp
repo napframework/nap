@@ -8,6 +8,7 @@
 // Std Includes
 #include <regex>
 #include <cctype>
+#include <string.h>
 
 namespace nap
 {
@@ -60,20 +61,33 @@ namespace nap
 		}
 
 
-		// Converts a string to lower case characters
 		void toLower(std::string& ioString)
 		{
 			std::transform(ioString.begin(), ioString.end(), ioString.begin(), ::tolower);
 		}
 
 
-		// Converts @ioString to lower case characters, returns a copy
 		std::string toLower(const std::string& ioString)
 		{
 			std::string out_string = ioString;
 			std::transform(out_string.begin(), out_string.end(), out_string.begin(), ::tolower);
 			return out_string;
 		}
+
+
+		void toUpper(std::string& ioString)
+		{
+			std::transform(ioString.begin(), ioString.end(), ioString.begin(), ::toupper);
+		}
+
+
+		std::string toUpper(const std::string& string)
+		{
+			std::string out_string = string;
+			std::transform(out_string.begin(), out_string.end(), out_string.begin(), ::toupper);
+			return out_string;
+		}
+
 
 		void tokenize(const std::string& str, std::list<std::string>& tokens, const std::string& delims, bool omitTokens)
 		{

@@ -54,20 +54,14 @@ namespace napkin
 		void populate();
 
 		/**
-		 * Called when an object has been added
-		 * @param obj The object that was added
-		 */
-		void onObjectAdded(nap::rtti::Object* obj);
-
-		/**
-		 * Called when an object has drastically changed
-		 */
-		void onObjectChanged(nap::rtti::Object* obj);
-
-		/**
 		 * Called when an object has been  removed
 		 */
 		void onObjectRemoved(nap::rtti::Object* obj);
+
+		/**
+		 * Called when a child is removed
+		 */
+		void onPropertyValueChanged(const PropertyPath& path);
 
 		/**
 		 * Called when a new file was created.

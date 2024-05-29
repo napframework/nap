@@ -16,14 +16,21 @@
 //////////////////////////////////////////////////////////////////////////
 
 RTTI_BEGIN_CLASS(nap::TransformProperties)
-	RTTI_PROPERTY("Translate",		&nap::TransformProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rotate",			&nap::TransformProperties::mRotate,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Scale",			&nap::TransformProperties::mScale,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UniformScale",	&nap::TransformProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Translate",		&nap::TransformProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default, "Position (x, y, z)")
+	RTTI_PROPERTY("Rotate",			&nap::TransformProperties::mRotate,			nap::rtti::EPropertyMetaData::Default, "Rotation in degrees (yaw, pitch, roll)")
+	RTTI_PROPERTY("Scale",			&nap::TransformProperties::mScale,			nap::rtti::EPropertyMetaData::Default, "Axis scaling factor (x, y, z)")
+	RTTI_PROPERTY("UniformScale",	&nap::TransformProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default, "Uniform scaling factor")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::TransformComponent)
-	RTTI_PROPERTY("Properties", &nap::TransformComponent::mProperties, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::TransformInstanceProperties)
+	RTTI_PROPERTY("Translate",		&nap::TransformInstanceProperties::mTranslate,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Rotate",			&nap::TransformInstanceProperties::mRotate,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Scale",			&nap::TransformInstanceProperties::mScale,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("UniformScale",	&nap::TransformInstanceProperties::mUniformScale,	nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS(nap::TransformComponent, "Controls the position, rotation and scale of an entity")
+	RTTI_PROPERTY("Properties", &nap::TransformComponent::mProperties, nap::rtti::EPropertyMetaData::Default, "Translation, Rotation and Scale")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TransformComponentInstance)
@@ -89,6 +96,14 @@ namespace nap
 	}
 
 
+	void TransformComponentInstance::overrideLocalTransform(const glm::mat4x4& matrix)
+	{
+		mLocalMatrix = matrix;
+		mLocalDirty = false;
+		mWorldDirty = true;
+	}
+
+
 	// Sets local flag dirty
 	void TransformComponentInstance::setDirty()
 	{
@@ -126,6 +141,22 @@ namespace nap
 	void TransformComponentInstance::setUniformScale(float scale)
 	{
 		mUniformScale = scale;
+		setDirty();
+	}
+
+
+	TransformInstanceProperties TransformComponentInstance::getInstanceProperties() const
+	{
+		return { mTranslate, mRotate, mScale, mUniformScale };
+	}
+
+
+	void TransformComponentInstance::setInstanceProperties(const TransformInstanceProperties& props)
+	{
+		mTranslate = props.mTranslate;
+		mRotate = props.mRotate;
+		mScale = props.mScale;
+		mUniformScale = props.mUniformScale;
 		setDirty();
 	}
 }

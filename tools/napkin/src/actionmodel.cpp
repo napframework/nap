@@ -54,7 +54,12 @@ namespace napkin
 
 		// Help actions
 		auto& help_group = registerGroup(action::groups::help, mGroups);
-		registerAction<OpenDocsAction>(mActions, help_group);
+		registerAction<OpenURLAction>(mActions, help_group, "NAP Documentation", QUrl("https://docs.nap-framework.tech/pages.html"));
+
+		// Resource actions
+		auto& resources_group = registerGroup(action::groups::resources, mGroups);
+		registerAction<OpenURLAction>(mActions, resources_group, "NAP Community", QUrl("https://github.com/orgs/napframework/discussions"));
+		registerAction<OpenURLAction>(mActions, resources_group, "NAP User Modules", QUrl("https://modules.nap-framework.tech"));
 
 		// Create actions
 		auto& create_group = registerGroup(action::groups::object, mGroups);

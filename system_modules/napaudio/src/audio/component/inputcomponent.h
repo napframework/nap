@@ -18,9 +18,7 @@ namespace nap
 {
 	namespace audio
 	{
-		
 		class AudioInputComponentInstance;
-		
 		
 		/**
 		 * Component to receive audio input from the audio interface.
@@ -37,6 +35,7 @@ namespace nap
 			// Properties
 			std::vector<int> mChannels; ///< property: 'Channels' Defines what audio input channels to receive data from. The size of this array determines the number of channels that this component will output.
 			ControllerValue mGain = 1.0; ///< property: 'Gain' Overall gain.
+			bool mAllowOutOfBoundChannels = true; ///< property: 'AllowOutOfBoundChannels Indicates if input channels that are out of bounds will produce zero input or generate an init error.'
 		
 		private:
 		};

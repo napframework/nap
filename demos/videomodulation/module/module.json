@@ -5,7 +5,7 @@
         "naprender",
         "napvideo",
         "napscene",
-        "napaudio",
+        "napportaudio",
         "napmath"
     ],
     "WindowsDllSearchPaths": []

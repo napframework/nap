@@ -12,7 +12,7 @@
 #include <nap/core.h>
 #include <websocketservice.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketService, "Main interface for processing API websocket events in NAP")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
@@ -20,8 +20,7 @@ namespace nap
 {
 	APIWebSocketService::APIWebSocketService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{}
 
 
     bool APIWebSocketService::init(nap::utility::ErrorState& errorState)

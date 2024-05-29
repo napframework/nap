@@ -62,8 +62,6 @@ namespace nap
 		// Sample default color values from loaded color palette - overrides preset
 		const auto& palette = mGuiService->getPalette();
 		flocking_system.getResource().mDiffuseColorParam->setValue(palette.mHighlightColor1);
-		flocking_system.getResource().mDiffuseColorExParam->setValue(palette.mHighlightColor2);
-		flocking_system.getResource().mLightColorParam->setValue(palette.mHighlightColor4);
 		flocking_system.getResource().mHaloColorParam->setValue(palette.mHighlightColor4);
 		flocking_system.getResource().mSpecularColorParam->setValue(palette.mHighlightColor2);
 

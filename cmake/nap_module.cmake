@@ -36,8 +36,8 @@ if (EXISTS ${MODULE_EXTRA_PRE_TARGET_CMAKE_PATH})
 endif()
 
 # Add source
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS src/*.h src/*.hpp)
+file(GLOB SOURCES src/*.cpp)
+file(GLOB HEADERS src/*.h src/*.hpp)
 
 # Compile target as shared lib
 add_library(${PROJECT_NAME} SHARED ${SOURCES} ${HEADERS})

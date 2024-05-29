@@ -27,7 +27,7 @@ RTTI_END_ENUM
 // GPUBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer, "GPU data buffer object")
 	RTTI_PROPERTY("Usage", &nap::GPUBuffer::mMemoryUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -36,7 +36,7 @@ RTTI_END_CLASS
 // GPUBufferNumeric interface
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferNumeric)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferNumeric, "Numeric (int, float etc.) GPU buffer")
 	RTTI_PROPERTY("Count", &nap::GPUBufferNumeric::mCount, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -45,45 +45,45 @@ RTTI_END_CLASS
 // GPUBufferNumeric
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt, "Unsigned integer GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferUInt::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferUInt::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt, "Integer GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferInt::mClear,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferInt::mClear,			nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferFloat::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat, "Float GPU buffer")
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferFloat::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2, "Vector (vec2) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec2::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec2::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3, "Vector (vec3) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec3::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec3::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4, "Vector (vec4) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec4::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec4::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4, "Matrix (4x4) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferMat4::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferMat4::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
 
@@ -91,27 +91,27 @@ RTTI_END_CLASS
 // VertexBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferUInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferUInt, "Unsigned integer GPU vertex buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferInt, "Integer GPU vertex buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferFloat)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferFloat, "Float GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec2)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec2, "Vector (vec2) GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec3)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec3, "Vector (vec3) GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4, "Vector (vec4) GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -213,10 +213,8 @@ namespace nap
 			mDownloadStagingBufferIndices.resize(mRenderService->getMaxFramesInFlight());
 		}
 
-		// Setup usage flags
-		mUsageFlags |= mMemoryUsage == EMemoryUsage::DynamicRead ?
-			VK_BUFFER_USAGE_TRANSFER_SRC_BIT :
-			VK_BUFFER_USAGE_TRANSFER_DST_BIT;
+		// All GPU buffers may be read from and written to with transfer operations
+		this->ensureUsage(VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT);
 
 		return true;
 	}
@@ -246,19 +244,19 @@ namespace nap
 			return false;
 		}
 
-		// When read frequently, the buffer is a destination, otherwise used as a source for texture upload
-		VkBufferUsageFlags staging_buffer_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
+		// When read frequently, the staging buffer is a destination, otherwise used as a source for texture upload
+		VkBufferUsageFlags staging_buffer_usage = (mMemoryUsage == EMemoryUsage::DynamicRead) ?
 			VK_BUFFER_USAGE_TRANSFER_DST_BIT : VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
 
-		// When read frequently, the buffer receives from the GPU, otherwise the buffer receives from CPU
-		VmaMemoryUsage staging_memory_usage = mMemoryUsage == EMemoryUsage::DynamicRead ?
+		// When read frequently, the staging buffer receives from the GPU, otherwise the buffer receives from CPU
+		VmaMemoryUsage staging_memory_usage = (mMemoryUsage == EMemoryUsage::DynamicRead) ?
 			VMA_MEMORY_USAGE_GPU_TO_CPU : VMA_MEMORY_USAGE_CPU_TO_GPU;
 
 		// Create required staging buffers
 		for (auto& staging_buffer : mStagingBuffers)
 		{
 			// Create staging buffer
-			if (!createBuffer(allocator, size, staging_buffer_usage, staging_memory_usage, 0, staging_buffer, errorState))
+			if (!utility::createBuffer(allocator, size, staging_buffer_usage, staging_memory_usage, 0, staging_buffer, errorState))
 			{
 				errorState.fail("Unable to create staging buffer");
 				return false;
@@ -304,7 +302,7 @@ namespace nap
 		switch (mMemoryUsage)
 		{
 		case EMemoryUsage::DynamicWrite:
-			return setDataInternalDynamic(data, size, reservedSize, mUsageFlags, errorState);
+			return setDataInternalDynamic(data, size, reservedSize, errorState);
 		case EMemoryUsage::Static:
 			return setDataInternalStatic(data, size, errorState);
 		default:
@@ -339,7 +337,7 @@ namespace nap
 		for (auto& staging_buffer : mStagingBuffers)
 		{
 			// Copy data into staging buffer
-			if (!errorState.check(uploadToBuffer(allocator, size, data, staging_buffer), "Unable to upload data to staging buffer"))
+			if (!errorState.check(utility::uploadToBuffer(allocator, size, data, staging_buffer), "Unable to upload data to staging buffer"))
 				return false;
 		}
 
@@ -349,7 +347,7 @@ namespace nap
 	}
 
 
-	bool GPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, VkBufferUsageFlags deviceUsage, utility::ErrorState& errorState)
+	bool GPUBuffer::setDataInternalDynamic(const void* data, size_t size, size_t reservedSize, utility::ErrorState& errorState)
 	{
 		// For each update of data, we cycle through the buffers
 		mCurrentRenderBufferIndex = (mCurrentRenderBufferIndex + 1) % mRenderBuffers.size();
@@ -367,12 +365,17 @@ namespace nap
 			{
 				mRenderService->queueVulkanObjectDestructor([buffer = buffer_data](RenderService& renderService) mutable
 					{
-						destroyBuffer(renderService.getVulkanAllocator(), buffer);
+						utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 					});
 			}
 
+			// Sustain memory type related usage information when creating a dynamic staging buffer
+			VkBufferUsageFlags staging_usage = mUsageFlags;
+			staging_usage |= VK_BUFFER_USAGE_TRANSFER_SRC_BIT;
+			staging_usage &= ~(1UL << VK_BUFFER_USAGE_TRANSFER_DST_BIT);
+
 			// Create new buffer
-			if (!createBuffer(allocator, reservedSize, deviceUsage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
+			if (!createBuffer(allocator, reservedSize, staging_usage, VMA_MEMORY_USAGE_CPU_TO_GPU, 0, buffer_data, errorState))
 			{
 				errorState.fail("Render buffer error");
 				return false;
@@ -383,7 +386,7 @@ namespace nap
 		mSize = size;
 
 		// Upload directly into buffer, use exact data size
-		if (!errorState.check(uploadToBuffer(allocator, size, data, buffer_data), "Buffer upload failed"))
+		if (!errorState.check(utility::uploadToBuffer(allocator, size, data, buffer_data), "Buffer upload failed"))
 			return false;
 
 		bufferChanged();
@@ -432,7 +435,7 @@ namespace nap
 			mRenderService->queueVulkanObjectDestructor([staging_buffers = mStagingBuffers](RenderService& renderService) mutable
 			{
 				for (BufferData& buffer : staging_buffers)
-					destroyBuffer(renderService.getVulkanAllocator(), buffer);
+					utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 			});
 			for (BufferData& buffer : mStagingBuffers)
 				buffer.release();
@@ -542,12 +545,12 @@ namespace nap
 		{
 			// Destroy render buffers
 			for (BufferData& buffer : render_buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 
 			// Also destroy the staging buffers if we reach this point before the initial upload has occurred.
 			// This could happen e.g. if app initialization fails.
 			for (BufferData& buffer : staging_buffers)
-				destroyBuffer(renderService.getVulkanAllocator(), buffer);
+				utility::destroyBuffer(renderService.getVulkanAllocator(), buffer);
 		});
 	}
 

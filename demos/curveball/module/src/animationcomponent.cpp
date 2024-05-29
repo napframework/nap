@@ -11,8 +11,8 @@
 #include <glm/gtx/transform.hpp>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::AnimatorComponent)
-	RTTI_PROPERTY("Curve", &nap::AnimatorComponent::mCurve, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::AnimatorComponent, "Animates the height (y-axis) of an object using a curve")
+	RTTI_PROPERTY("Curve", &nap::AnimatorComponent::mCurve, nap::rtti::EPropertyMetaData::Default, "The animation curve to evaluate")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AnimatorComponentInstance)

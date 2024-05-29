@@ -12,14 +12,14 @@
 #include <nap/logger.h>
 
 // RTTI
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource)
-	RTTI_CONSTRUCTOR(nap::audio::AudioService &)
-	RTTI_PROPERTY_FILELINK("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Audio)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::AudioFileResource, "Loads an audio file (.wav, .mp3, etc..) from disk into memory")
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY_FILELINK("AudioFilePath", &nap::audio::AudioFileResource::mAudioFilePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Audio, "Path to the audio file (.wav, .mp3, etc..) on disk")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiAudioFileResource)
-	RTTI_CONSTRUCTOR(nap::audio::AudioService &)
-	RTTI_PROPERTY("AudioFilePaths", &nap::audio::MultiAudioFileResource::mAudioFilePaths, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::MultiAudioFileResource, "Loads multiple audio files from disk into memory as seperate channels, ie: 2x stereo '.wav' = 4 channels")
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("AudioFilePaths", &nap::audio::MultiAudioFileResource::mAudioFilePaths, nap::rtti::EPropertyMetaData::Required, "Paths to the audio files on disk to load")
 RTTI_END_CLASS
 
 namespace nap

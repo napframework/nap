@@ -6,6 +6,7 @@
 #include "naputils.h"
 #include "commands.h"
 #include "appcontext.h"
+#include "napkinglobals.h"
 
 // External Includes
 #include <nap/logger.h>
@@ -72,97 +73,97 @@ void SetValueCommand::redo()
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 SetPointerValueCommand::SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue)
-		: mPath(path), QUndoCommand()
+		: mPath(path), mNewObject(newValue), QUndoCommand()
 {
-	mNewValue = newValue ? newValue->mID : "";
-	setText(QString("Set pointer value at '%1' to '%2'").arg(QString::fromStdString(mPath.toString()),
-															 QString::fromStdString(mNewValue)));
+	setText(QString("Set pointer value at '%1' to '%2'").arg(
+		mPath.toString().c_str(),
+		mNewObject != nullptr ? mNewObject->mID.c_str() : napkin::TXT_NULL)
+	);
+
 	auto pointee = path.getPointee();
-	if (pointee != nullptr)
-		mOldValue = pointee->mID;
-	else
-		mOldValue.clear();
+	mOldValue = pointee != nullptr ? pointee->mID : mOldValue;
 }
+
 
 void SetPointerValueCommand::undo()
 {
-	nap::rtti::ResolvedPath resolvedPath = mPath.resolve();
-	assert(resolvedPath.isValid());
-
-
-	auto old_object = AppContext::get().getDocument()->getObject(mOldValue);
-	if (old_object == nullptr)
-	{
-		bool value_set = resolvedPath.setValue(nullptr);
-		nap::Logger::fatal("Sorry, can't clear pointer properties");
-	}
-	else
-	{
-		bool value_set = resolvedPath.setValue(old_object);
-		assert(value_set);
-	}
-
+	nap::rtti::ResolvedPath resolvedPath = mPath.resolve(); assert(resolvedPath.isValid());
+	nap::rtti::Object* old_v = mOldValue.empty() ? nullptr : AppContext::get().getDocument()->getObject(mOldValue);
+	resolvedPath.setValue(old_v);
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
+
 void SetPointerValueCommand::redo()
 {
-	nap::rtti::ResolvedPath resolved_path = mPath.resolve();
-	assert(resolved_path.isValid());
-
-	nap::rtti::Object* new_object = AppContext::get().getDocument()->getObject(mNewValue);
-
-	mPath.setPointee(new_object);
-
+	nap::rtti::ResolvedPath resolved_path = mPath.resolve(); assert(resolved_path.isValid());
+	mPath.setValue(mNewObject);
 	AppContext::get().getDocument()->propertyValueChanged(mPath);
 }
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-AddObjectCommand::AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent) : mType(type), QUndoCommand()
+AddObjectCommand::AddObjectCommand(const rttr::type& type) : mType(type), QUndoCommand()
 {
-	auto type_name = QString::fromUtf8(type.get_name().data());
-
-	if (parent != nullptr)
-	{
-		setText(QString("Add new %1 to %2").arg(type_name, QString::fromStdString(parent->mID)));
-		mParentName = parent->mID;
-	}
-	else
-	{
-		setText(QString("Add new %1").arg(type_name));
-	}
-
+	setText(QString("Add new %1").arg(mType.get_name().data()));
 }
 
 
 void AddObjectCommand::redo()
 {
-	auto& ctx = AppContext::get();
-
 	// Create object
-	auto parent = ctx.getDocument()->getObject(mParentName);
-	auto object = ctx.getDocument()->addObject(mType, parent);
+	auto& ctx = AppContext::get();
+	auto object = ctx.getDocument()->addObject(mType);
 
 	// Remember for undo
-	mObjectName = object->mID;
+	mObjectID = object->mID;
 	ctx.selectionChanged({object});
 }
 
 
 void AddObjectCommand::undo()
 {
-	AppContext::get().getDocument()->removeObject(mObjectName);
+	AppContext::get().getDocument()->removeObject(mObjectID);
 }
+
+
+//////////////////////////////////////////////////////////////////////////
+
+DuplicateObjectCommand::DuplicateObjectCommand(const nap::rtti::Object& object, const PropertyPath& parent) :
+	mObjectID(object.mID), mParent(parent)
+{
+	setText(QString("Duplicate %1").arg(mObjectID.c_str()));
+}
+
+
+void DuplicateObjectCommand::redo()
+{
+	// Get resources
+	auto& ctx = AppContext::get();
+	auto object = ctx.getDocument()->getObject(mObjectID);
+	if (object == nullptr)
+		return;
+
+	// Duplicate entire object structure, including embedded objects
+	auto* doc = ctx.getDocument(); assert(doc != nullptr);
+	auto* dup = doc->duplicateObject(*object, mParent);
+	mDuplicateID = dup != nullptr ? dup->mID : "";
+}
+
+
+void DuplicateObjectCommand::undo()
+{
+	AppContext::get().getDocument()->removeObject(mDuplicateID);
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 AddComponentCommand::AddComponentCommand(nap::Entity& entity, nap::rtti::TypeInfo type)
 : mEntityName(entity.mID), mType(type)
-{
+{ }
 
-}
 
 void AddComponentCommand::redo()
 {
@@ -173,10 +174,12 @@ void AddComponentCommand::redo()
 	mComponentName = comp->mID;
 }
 
+
 void AddComponentCommand::undo()
 {
 	nap::Logger::fatal("Undo is not available...");
 }
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
@@ -442,23 +445,21 @@ void napkin::GroupReparentCommand::undo()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-ArrayMoveElementCommand::ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
+ArraySwapElement::ArraySwapElement(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex)
 		: mPath(array_prop), mFromIndex(fromIndex), mToIndex(toIndex), QUndoCommand()
 {
 	setText(QString("Reorder '%1' from %2 to %3").arg(QString::fromStdString(array_prop.toString()),
 													  QString::number(fromIndex), QString::number(toIndex)));
 }
 
-void ArrayMoveElementCommand::redo()
+void ArraySwapElement::redo()
 {
-	// Also store indexes that may have shifted due to the operation so we can undo
-	mOldIndex = (mFromIndex > mToIndex) ? mFromIndex + 1 : mFromIndex;
-	mNewIndex = AppContext::get().getDocument()->arrayMoveElement(mPath, mFromIndex, mToIndex);
+	AppContext::get().getDocument()->arraySwapElement(mPath, mFromIndex, mToIndex);
 }
 
-void ArrayMoveElementCommand::undo()
+void ArraySwapElement::undo()
 {
-	AppContext::get().getDocument()->arrayMoveElement(mPath, mNewIndex, mOldIndex);
+	AppContext::get().getDocument()->arraySwapElement(mPath, mToIndex, mFromIndex);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -503,7 +504,7 @@ void ReplaceEmbeddedPointerCommand::redo()
 
 	// Create and point to new object
 	auto obj = doc->addObject(mType, mPath.getObject());
-	mPath.setPointee(obj);
+	mPath.setValue(obj);
 	doc->propertyValueChanged(mPath);
 }
 

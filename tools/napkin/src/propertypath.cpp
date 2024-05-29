@@ -101,145 +101,128 @@ const std::string PropertyPath::getName() const
 }
 
 
-nap::ComponentInstanceProperties* PropertyPath::instanceProps() const
+nap::ComponentInstanceProperties* PropertyPath::getInstanceProperties() const
 {
-	if (!isInstanceProperty())
+	// check if we have a root and are part of the scene
+	auto root_entitiy = getRootEntity();
+	if (root_entitiy == nullptr || root_entitiy->mInstanceProperties.empty())
 		return nullptr;
 
-	auto pathstr = propPathStr();
-
-	// find instanceproperties
-	auto rootEntity = getRootEntity();
-	if (rootEntity->mInstanceProperties.empty())
-		return nullptr;
-
-	auto compInstPath = getComponentInstancePath();
-	for (nap::ComponentInstanceProperties& instProp : rootEntity->mInstanceProperties)
+	// Check if we have a match
+	auto comp_instance_path = getComponentInstancePath();
+	for (nap::ComponentInstanceProperties& instProp : root_entitiy->mInstanceProperties)
 	{
-		if (isComponentInstancePathEqual(*rootEntity,
-										 *instProp.mTargetComponent.get(),
-										 instProp.mTargetComponent.getInstancePath(),
-										 compInstPath))
+		// TODO: This means the component ptr wasn't resolved, probably because of a name change
+		// TODO: Make sure to patch ComponentInstanceProperties
+		if(instProp.mTargetComponent.get() == nullptr)
+			continue;
+
+		if (isComponentInstancePathEqual(instProp.mTargetComponent.getInstancePath(), comp_instance_path))
 			return &instProp;
 	}
 	return nullptr;
 }
 
+
 nap::ComponentInstanceProperties& PropertyPath::getOrCreateInstanceProps()
 {
+	// Get existing instance property overrides
 	assert(isInstanceProperty());
-
-	auto props_ = instanceProps();
-	if (props_)
-		return *props_;
+	auto overrides = getInstanceProperties();
 
 	// No instance properties, create a new set
-	auto rootEntity = getRootEntity();
-	auto idx = rootEntity->mInstanceProperties.size();
-	rootEntity->mInstanceProperties.emplace_back();
+	if (overrides == nullptr)
+	{
+		auto root_entity = getRootEntity();
+		overrides = &root_entity->mInstanceProperties.emplace_back();
 
-	std::string targetID = getComponentInstancePath();
-
-	rootEntity->mInstanceProperties.at(idx).mTargetComponent.assign(targetID, *component());
-	return rootEntity->mInstanceProperties.at(idx);
+		std::string target_path = getComponentInstancePath();
+		auto* component = rtti_cast<nap::Component>(getObject());
+		assert(!target_path.empty() && component != nullptr);
+		overrides->mTargetComponent.assign(target_path, component);
+	}
+	return *overrides;
 }
+
 
 std::string PropertyPath::getComponentInstancePath() const
 {
-	if (mObjectPath.size() < 3)
+	// Check if we're a component
+	assert(getRootEntity() != nullptr);
+	auto* comp_object = rtti_cast<nap::Component>(getObject());
+	if (comp_object == nullptr)
 		return {};
 
-	// First object must be Scene
-	assert(mDocument != nullptr);
-	auto leadObject = mDocument->getObject(mObjectPath[0].mID);
-	if (!leadObject || !leadObject->get_type().is_derived_from<nap::Scene>())
-		return {};
-
-	// Second Object must be RootEntity
-	auto secondObject = mDocument->getObject(mObjectPath[1].mID);
-	if (!secondObject || !secondObject->get_type().is_derived_from<nap::Entity>())
-		return {};
-
-	// Last object must be Component
-	auto trailObject = getObject();
-	if (!trailObject || !trailObject->get_type().is_derived_from<nap::Component>())
-		return {};
-
-	std::vector<std::string> newPath(mObjectPath.begin() + 2, mObjectPath.begin() + mObjectPath.size());
-	return "./" + nap::utility::joinString(newPath, "/");
+	// Create path to component from root entity
+	assert(mObjectPath.size() > 2);
+	std::vector<std::string> component_path(mObjectPath.begin() + 2, mObjectPath.begin() + mObjectPath.size());
+	return "./" + nap::utility::joinString(component_path, "/");
 }
+
 
 nap::RootEntity* PropertyPath::getRootEntity() const
 {
-	if (mObjectPath.size() < 2)
-		return nullptr;
-
-	assert(mDocument != nullptr);
-	auto scene = rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID));
-	if (!scene)
-		return nullptr;
-
-	auto entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
-	if (!entity)
-		return nullptr;
-
-	auto nameIdx = mObjectPath[1].mIndex; int idx = 0;
-	for (auto& rootEntity : scene->mEntities)
+	// Find root if not queried before, note that a path doesn't have to have a root entity.
+	// This is the case when editing a path of a regular resource, not an entity instance.
+	if (mObjectPath.size() > 1 && !mRootQueried)
 	{
-		if (idx == nameIdx && rootEntity.mEntity.get() == entity)
-			return &rootEntity;
+		// Must have 2 objects, of which first the scene
+		assert(mDocument != nullptr);
+		if (rtti_cast<nap::Scene>(mDocument->getObject(mObjectPath[0].mID)) != nullptr)
+		{
+			auto* scene = static_cast<nap::Scene*>(mDocument->getObject(mObjectPath[0].mID));
+			auto* entity = rtti_cast<nap::Entity>(mDocument->getObject(mObjectPath[1].mID));
+			assert(entity != nullptr);
 
-		if (rootEntity.mEntity.get() == entity)
-			++idx;
+			// Find entity matching index in scene
+			auto entity_idx = mObjectPath[1].mIndex; int idx = 0;
+			for (auto& scene_entity : scene->mEntities)
+			{
+				if (scene_entity.mEntity.get() == entity && entity_idx == idx++)
+				{
+					mRootEntity = &scene_entity;
+					break;
+				}
+			}
+		}
+		mRootQueried = true;
 	}
-	return nullptr;
+	return mRootEntity;
 }
 
 
-nap::Component* PropertyPath::component() const
+nap::TargetAttribute* PropertyPath::getTargetAttribute() const
 {
-	return rtti_cast<nap::Component>(getObject());
-}
-
-
-nap::TargetAttribute* PropertyPath::targetAttribute() const
-{
-	auto instProps = instanceProps();
-	if (!instProps)
-		return nullptr;
-
-	auto pathstr = propPathStr();
-	for (auto& attr : instProps->mTargetAttributes)
+	nap::TargetAttribute* target = nullptr;
+	auto overrides = getInstanceProperties();
+	if (overrides != nullptr)
 	{
-		if (attr.mPath == pathstr)
-			return &attr;
+		auto prop_path = propPathStr();
+		auto it = std::find_if(overrides->mTargetAttributes.begin(), overrides->mTargetAttributes.end(), [&prop_path](const auto& attr)
+			{
+				return attr.mPath == prop_path;
+			});
+		target = it != overrides->mTargetAttributes.end() ? &(*it) : nullptr;
 	}
-	return nullptr;
+	return target;
 }
 
 
 nap::TargetAttribute& PropertyPath::getOrCreateTargetAttribute()
 {
+	// Find in existing instance properties
 	assert(isInstanceProperty());
+	auto target_attr = getTargetAttribute();
 
-	auto targetAttr = targetAttribute();
-	if (targetAttr)
-		return *targetAttr;
-
-	// didn't exist, create
-	auto& instProps = getOrCreateInstanceProps();
-
-	auto pathstr = propPathStr();
-	for (auto& attr : instProps.mTargetAttributes)
+	// Create if it doesn't exist
+	if (target_attr == nullptr)
 	{
-		if (attr.mPath == pathstr)
-			return attr;
+		// Create target attribute
+		auto& instance_properties = getOrCreateInstanceProps();
+		target_attr = &instance_properties.mTargetAttributes.emplace_back();
+		target_attr->mPath = propPathStr();
 	}
-
-	auto idx = instProps.mTargetAttributes.size();
-	instProps.mTargetAttributes.emplace_back();
-	instProps.mTargetAttributes.at(idx).mPath = pathstr;
-	return instProps.mTargetAttributes.at(idx);
+	return *target_attr;
 }
 
 
@@ -247,7 +230,7 @@ rttr::variant PropertyPath::getValue() const
 {
 	if (isInstanceProperty() && isOverridden())
 	{
-		auto target_attr = targetAttribute();
+		auto target_attr = getTargetAttribute();
 		if (target_attr)
 		{
 			return getInstancePropertyValue(*target_attr->mValue.get());
@@ -257,27 +240,47 @@ rttr::variant PropertyPath::getValue() const
 }
 
 
-bool PropertyPath::setValue(rttr::variant value)
+rttr::variant napkin::PropertyPath::patchValue(const rttr::variant& value) const
 {
-	// Regular property
-	auto resolved_path = resolve();
-	if (!isInstanceProperty())
+	// Only patch component and entity ptr paths
+	auto prop_type = getType();
+	if (!prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) &&
+		!prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
 	{
-		return resolved_path.setValue(value);
+		return value;
 	}
 
-	//////////////////////////////////////////////////////////////////////////
-	// TODO: Drastically improve handling of instance properties!!!
-	// The current implementation is shaky at best. It works, but that's about it. What to do?
-	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
-	// Properly implement callbacks, they're too scattered and hard to trace!
-	// Strengthen and simplify the entire model!
-	//////////////////////////////////////////////////////////////////////////
+	// Extract pointer from value
+	auto* target_object = value.get_type().is_wrapper() ?
+		value.get_wrapped_value<nap::rtti::Object*>() : value.get_value<nap::rtti::Object*>();
 
-	// Instance property: If the value is the same, remove property or bail
-	if (resolved_path.getValue() == value)
+	// Construct path to new pointer
+	// Note that it's allowed to invalidate the link by assigning it nothing (nullptr & empty path)
+	std::string path = target_object != nullptr ?
+		mDocument->relativeObjectPath(*getObject(), *target_object) : "";
+
+	// Assign the new value to the entity or component pointer (note that we're modifying a copy)
+	auto patched_ptr = getValue();
+	rttr::method assign_method = nap::rtti::findMethodRecursive(patched_ptr.get_type(), nap::rtti::method::assign);
+	assert(assign_method.is_valid());
+	assign_method.invoke(patched_ptr, path, target_object);
+
+	// Return it
+	return patched_ptr;
+}
+
+
+bool PropertyPath::setValue(rttr::variant new_value)
+{
+	// Resolve path to property
+	auto resolved_path = resolve();
+	auto resource_value = resolved_path.getValue();
+
+	// New value doesn't override resource value
+	if (resource_value == new_value)
 	{
-		auto target_attr = targetAttribute();
+		// Delete instance override when currently set
+		auto target_attr = getTargetAttribute();
 		if (target_attr != nullptr)
 		{
 			rttr::variant val = target_attr->mValue.get();
@@ -286,9 +289,23 @@ bool PropertyPath::setValue(rttr::variant value)
 		return true;
 	}
 
+	// Set value directly when we're not dealing with an instance override
+	// We patch the value to ensure component and entity ptr paths are also updated
+	auto patched_value = patchValue(new_value);
+	if (!isInstanceProperty())
+		return resolved_path.setValue(patched_value);
+
+	//////////////////////////////////////////////////////////////////////////
+	// TODO: Improve handling of instance properties!!!
+	// The current implementation is shaky at best. It works, but that's about it. What to do?
+	// Properly handle all types of nap::InstancePropertyValue! (no more exceptions)
+	// Properly implement callbacks, they're too scattered and hard to trace!
+	// Strengthen and simplify the entire model!
+	//////////////////////////////////////////////////////////////////////////
+
 	// Get instance property (as target). Create one if it doesn't exist.
 	// If it does exist: discard instance property value if the provided value is the same as the original
-	auto target_attr = targetAttribute();
+	auto target_attr = getTargetAttribute();
 	if (target_attr == nullptr)
 	{
 		nap::InstancePropertyValue* new_value = createInstanceProperty(getType(), *getDocument());
@@ -301,14 +318,17 @@ bool PropertyPath::setValue(rttr::variant value)
 
 	// Set instance property value
 	rttr::variant val = target_attr->mValue.get();
-	return setInstancePropertyValue(val, value);
+	return setInstancePropertyValue(val, patched_value);
 }
 
 
 void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, rttr::variant& val) const
 {
+	// TODO: Move this logic to napkin::Document and implement valueChanged signal for various properties.
+	// This allows the various models to respond appropriately -> only document should emit signals.
+
 	// remove from target attributes list
-	auto instProps = this->instanceProps();
+	auto instProps = getInstanceProperties();
 	auto& attrs = instProps->mTargetAttributes;
 	auto filter = [&](const nap::TargetAttribute& attr) { return &attr == targetAttr; };
 	attrs.erase(std::remove_if(attrs.begin(), attrs.end(), filter), attrs.end());
@@ -324,14 +344,6 @@ void PropertyPath::removeInstanceValue(const nap::TargetAttribute* targetAttr, r
 	// Remove from object list
 	removeInstanceProperty(val, *getDocument());
 	assert(mDocument != nullptr);
-
-	// Notify listeners
-	auto component = instProps->mTargetComponent.get();
-	mDocument->objectChanged(component);
-	for (auto scene : mDocument->getObjects<nap::Scene>())
-	{
-		mDocument->objectChanged(scene);
-	}
 }
 
 
@@ -342,34 +354,10 @@ Object* PropertyPath::getPointee() const
 
 	auto value = getValue();
 	auto type = value.get_type();
-	auto wrappedType = type.is_wrapper() ? type.get_wrapped_type() : type;
-	return wrappedType != type ?
+	auto wrapped_type = type.is_wrapper() ? type.get_wrapped_type() : type;
+	return wrapped_type != type ? 
 		value.extract_wrapped_value().get_value<nap::rtti::Object*>() :
 		value.get_value<nap::rtti::Object*>();
-}
-
-
-void PropertyPath::setPointee(Object* pointee)
-{
-	// Handle assignment for component and entity ptr
-	auto prop_type = getType();
-	if (prop_type.is_derived_from(RTTI_OF(nap::ComponentPtrBase)) ||
-		prop_type.is_derived_from(RTTI_OF(nap::EntityPtr)))
-	{
-		// Assign the new value to the pointer (note that we're modifying a copy)
-		rttr::method assign_method = nap::rtti::findMethodRecursive(prop_type, nap::rtti::method::assign);
-		auto target_val = getValue();
-		assert(mDocument != nullptr);
-		auto path = mDocument->relativeObjectPath(*getObject(), *pointee);
-		assign_method.invoke(target_val, path, *pointee);
-
-		// Apply the modified value back to the source property
-		setValue(target_val);
-		return;
-	}
-
-	// Regular object
-	setValue(pointee);
 }
 
 
@@ -467,12 +455,9 @@ bool napkin::PropertyPath::getArrayEditable() const
 	assert(isArray());
 	ResolvedPath resolved_path = resolve();
 	assert(resolved_path.isValid());
-
 	Variant array = resolved_path.getValue();
 	assert(array.is_valid());
-
-	VariantArray array_view = array.create_array_view();
-	return array_view.is_dynamic();
+	return array.create_array_view().is_dynamic(); 
 }
 
 
@@ -489,14 +474,13 @@ bool napkin::PropertyPath::referencesObject(const std::string& name)
 
 std::string PropertyPath::toString() const
 {
-	return hasProperty() ? propPathStr() + "@" + objectPathStr() :
-		objectPathStr();
+	return hasProperty() ? propPathStr() + "@" + objectPathStr() : objectPathStr();
 }
 
 
 bool PropertyPath::isInstanceProperty() const
 {
-	return hasProperty() && getRootEntity();
+	return this->getRootEntity() != nullptr;
 }
 
 
@@ -533,32 +517,16 @@ rttr::type PropertyPath::getWrappedType() const
 
 bool PropertyPath::isOverridden() const
 {
-    if (hasProperty())
-        return targetAttribute() != nullptr;
-    return false;
+	return hasProperty() ? getTargetAttribute() != nullptr : false;
 }
 
 
 void PropertyPath::removeOverride()
 {
-	auto at = targetAttribute();
-	if (!at) 
-		return;
-	rttr::variant val = at->mValue.get();
-	removeInstanceValue(at, val);
-}
-
-
-bool PropertyPath::hasOverriddenChildren() const
-{
-	if (isOverridden())
-		return true;
-
-	for (auto child : getChildren(IterFlag::Resursive))
-		if (child.isOverridden())
-			return true;
-
-	return false;
+	auto target_attr = getTargetAttribute();
+	assert(target_attr != nullptr);
+	rttr::variant val = target_attr->mValue.get();
+	removeInstanceValue(target_attr, val);
 }
 
 
@@ -590,27 +558,19 @@ bool PropertyPath::isArray() const
 
 bool PropertyPath::isPointer() const
 {
-	if (isArray())
-		return getArrayElementType().is_pointer();
-	return getWrappedType().is_pointer();
+	return isArray() ? getArrayElementType().is_pointer() : getWrappedType().is_pointer();
 }
 
 
 bool PropertyPath::isEmbeddedPointer() const
 {
-	if (!isPointer())
-		return false;
-
-	return nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+	return isPointer() ? nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded) : false;
 }
 
 
 bool PropertyPath::isNonEmbeddedPointer() const
 {
-	if (!isPointer())
-		return false;
-
-	return !nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded);
+	return isPointer() ? !nap::rtti::hasFlag(getProperty(), EPropertyMetaData::Embedded) : false;
 }
 
 
@@ -713,24 +673,27 @@ int PropertyPath::getInstanceChildEntityIndex() const
 }
 
 
-int PropertyPath::getRealChildEntityIndex() const
+int PropertyPath::getEntityIndex() const
 {
 	auto parent = getParent();
 	assert(parent.isValid());
 	assert(parent.getType().is_derived_from<nap::Entity>());
-	auto parentEntity = rtti_cast<nap::Entity>(parent.getObject());
-	assert(parentEntity);
+	auto parent_entity = rtti_cast<nap::Entity>(parent.getObject());
+	assert(parent_entity);
 
-	int foundIDs = 0;
-	int instanceIndex = getInstanceChildEntityIndex();
-	for (int i = 0, len = static_cast<int>(parentEntity->mChildren.size()); i < len; i++)
+	int found_id = 0;
+	int instance_idx = getInstanceChildEntityIndex();
+	for (int i = 0, len = static_cast<int>(parent_entity->mChildren.size()); i < len; i++)
 	{
-		auto currChild = parentEntity->mChildren[i];
-		if (getObject()->mID == currChild->mID)
+		auto current_child = parent_entity->mChildren[i];
+		if (getObject()->mID == current_child->mID)
 		{
-			if (foundIDs == instanceIndex)
-				return i;
-			foundIDs++;
+			if (found_id != instance_idx)
+			{
+				found_id++;
+				continue;
+			}
+			return i;
 		}
 	}
 	assert(false);
@@ -790,10 +753,9 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 			return;
 	}
 
-	auto pointee = getPointee();
-
 	// prune here if there is no pointer value
-	if (!pointee)
+	auto pointee = getPointee();
+	if (pointee == nullptr)
 		return;
 
 	for (auto childprop : pointee->get_type().get_properties())
@@ -802,15 +764,11 @@ void PropertyPath::iteratePointerProperties(PropertyVisitor visitor, int flags) 
 		std::string name = childprop.get_name().data();
 		QString qName = QString::fromStdString(name);
 
-		PPath op;
-		op.emplace_back(pointee->mID);
-
-		PPath p;
-		p.emplace_back(name);
-
 		// This path points to the pointee
+		PPath op = { pointee->mID };
+		PPath pp = { name };
 		assert(mDocument != nullptr);
-		PropertyPath childPath(op, p, *mDocument);
+		PropertyPath childPath(op, pp, *mDocument);
 
 		if (!visitor(childPath))
 			return;

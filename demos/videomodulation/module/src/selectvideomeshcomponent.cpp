@@ -10,9 +10,9 @@
 #include <mathutils.h>
 
 // nap::selectvideomeshcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::SelectVideoMeshComponent)
-	RTTI_PROPERTY("Meshes",	&nap::SelectVideoMeshComponent::mMeshes,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Index",	&nap::SelectVideoMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SelectVideoMeshComponent, "Video mesh selector")
+	RTTI_PROPERTY("Meshes",	&nap::SelectVideoMeshComponent::mMeshes,	nap::rtti::EPropertyMetaData::Required,	"All available video mesh files")
+	RTTI_PROPERTY("Index",	&nap::SelectVideoMeshComponent::mIndex,		nap::rtti::EPropertyMetaData::Default,	"Initial mesh selection")
 RTTI_END_CLASS
 
 // nap::selectvideomeshcomponentInstance run time class definition 

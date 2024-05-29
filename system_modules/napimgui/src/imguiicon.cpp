@@ -13,11 +13,11 @@
 #include <bitmapfilebuffer.h>
 #include <copyimagedata.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Icon)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Icon, "Icon that can be displayed in a GUI")
 	RTTI_CONSTRUCTOR(nap::IMGuiService&)
 	RTTI_CONSTRUCTOR(nap::IMGuiService&, const std::string&)
-	RTTI_PROPERTY("Invert",		&nap::Icon::mInvert,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ImagePath",	&nap::Icon::mImagePath, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
+	RTTI_PROPERTY("Invert",		&nap::Icon::mInvert,	nap::rtti::EPropertyMetaData::Default, "Invert icon colors")
+	RTTI_PROPERTY("ImagePath",	&nap::Icon::mImagePath, nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink, "Path to the image on disk")
 RTTI_END_CLASS
 
 namespace nap
@@ -86,6 +86,7 @@ namespace nap
 			return false;
 
 		// Create 2D texture
+		mTexture.mID = mName;
 		return mTexture.init(descriptor, true, file_buffer.getData(), 0, error);
 	}
 

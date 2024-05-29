@@ -19,12 +19,26 @@ namespace nap
 	namespace audio
 	{
 		// --- Process  ---//
-		
+
+		Process::Process(NodeManager& nodeManager) : mNodeManager(&nodeManager)
+		{
+			mNodeManager->registerProcess(*this);
+		}
+
+
 		Process::Process(ParentProcess& parent) : mNodeManager(&parent.getNodeManager())
 		{
+			mNodeManager->registerProcess(*this);
 		}
-		
-		
+
+
+		Process::~Process()
+		{
+			if (mRegisteredWithNodeManager.load())
+				getNodeManager().unregisterProcess(*this);
+		}
+
+
 		void Process::update()
 		{
 			if (mLastCalculatedSample < getSampleTime())

@@ -45,16 +45,10 @@ namespace nap
 	/**
 	 * Orthographic camera resource.
 	 */
-	class NAPAPI OrthoCameraComponent : public Component
+	class NAPAPI OrthoCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(Component)
+		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(OrthoCameraComponent, OrthoCameraComponentInstance)
-
-		/**
-		 * This camera depends on a transform to calculate the view matrix.
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 	public:
 		OrthoCameraProperties mProperties;		///< Property:'Properties' the camera settings
 	};
@@ -106,7 +100,7 @@ namespace nap
 		/**
 		* @return The planes for this orthographic camera.
 		*/
-		const OrthoCameraProperties& getProperties() { return mProperties; }
+		const OrthoCameraProperties& getProperties() const { return mProperties; }
 
 		/**
 		* Sets the orthographic camera properties.
@@ -131,6 +125,16 @@ namespace nap
 		* Restores the clip rectangle to a unit rectangle, disabling clipping
 		*/
 		void restoreClipRect();
+
+		/**
+		 * @return camera near clipping plane
+		 */
+		virtual float getNearClippingPlane() const override;
+
+		/**
+		 * @return camera far clipping plane
+		 */
+		virtual float getFarClippingPlane() const override;
 
 		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
@@ -170,6 +174,7 @@ namespace nap
 		void updateProjectionMatrices() const;
 
 	private:
+		mutable glm::mat4x4				mViewMatrix;							// The composed view matrix
 		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
 		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
 		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated

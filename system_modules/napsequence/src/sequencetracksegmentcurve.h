@@ -188,9 +188,9 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
     // Helper Macro
     //////////////////////////////////////////////////////////////////////////
-#define DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(Type)                                                                            \
-        RTTI_BEGIN_CLASS(Type)                                                                                        \
-            RTTI_PROPERTY("Curves",    &Type::mCurves, nap::rtti::EPropertyMetaData::Default)                        \
+#define DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(Type)                                               \
+        RTTI_BEGIN_CLASS(Type,  "Bezier curve track segment")										\
+            RTTI_PROPERTY("Curves",    &Type::mCurves, nap::rtti::EPropertyMetaData::Default)		\
             RTTI_PROPERTY("Curve Types", &Type::mCurveTypes, nap::rtti::EPropertyMetaData::Default) \
         RTTI_END_CLASS
 }

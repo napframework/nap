@@ -8,6 +8,8 @@
 #include "vk_mem_alloc.h"
 #include "pipelinekey.h"
 #include "renderutils.h"
+#include "imagedata.h"
+#include "rendertag.h"
 
 // External Includes
 #include <nap/service.h>
@@ -15,6 +17,7 @@
 #include <rendertarget.h>
 #include <material.h>
 #include <rect.h>
+#include <color.h>
 
 namespace nap
 {
@@ -31,8 +34,10 @@ namespace nap
 	class MaterialInstance;
 	class ComputeMaterialInstance;
 	class ComputeComponentInstance;
+	class Texture;
 	class Texture2D;
-
+	class RenderLayer;
+	class RenderChain;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Render Service Configuration
@@ -57,19 +62,20 @@ namespace nap
 			Other		= 0		///< Unknown type graphics card
 		};
 
-		bool						mHeadless = false;												///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
-		EPhysicalDeviceType			mPreferredGPU = EPhysicalDeviceType::Discrete;					///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable, the first GPU in the list is selected.
-		std::vector<std::string>	mLayers = { "VK_LAYER_KHRONOS_validation" };			        ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
-		std::vector<std::string>	mAdditionalExtensions = { };									///< Property: 'Extensions' Additional required Vulkan device extensions
-		uint32						mVulkanVersionMajor = 1;										///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32						mVulkanVersionMinor = 0;										///< Property: 'VulkanMinor' The minor required vulkan API instance version.
-		uint32						mAnisotropicFilterSamples = 8;									///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
-		bool						mEnableHighDPIMode = true;										///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
-		bool						mEnableCompute = true;											///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
-		bool						mEnableCaching = true;											///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
-		bool						mEnableRobustBufferAccess = false;								///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
-		bool						mPrintAvailableLayers = false;									///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
-		bool						mPrintAvailableExtensions = false;								///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
+		bool							mHeadless = false;											///< Property: 'Headless' Render without a window. Turning this on forbids the use of a nap::RenderWindow.
+		EPhysicalDeviceType				mPreferredGPU = EPhysicalDeviceType::Discrete;				///< Property: 'PreferredGPU' The preferred type of GPU to use. When unavailable the fastest GPU  option is selected.
+		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
+		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
+		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
+		uint32							mVulkanVersionMinor = 0;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
+		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
+		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.
+		bool							mEnableCaching = true;										///< Property: 'Caching' Saves state between sessions, including window size & position, when turned on.
+		bool							mEnableDebug = true;										///< Property: 'EnableDebug' Loads debug extension for printing Vulkan debug messages.
+		bool							mEnableRobustBufferAccess = false;							///< Property: 'EnableRobustBufferAccess' Enables buffer bounds-checking on the GPU. Only enable this when absolutely necessary for debugging your application.
+		bool							mPrintAvailableLayers = false;								///< Property: 'ShowLayers' If all the available Vulkan layers are printed to console
+		bool							mPrintAvailableExtensions = false;							///< Property: 'ShowExtensions' If all the available Vulkan extensions are printed to console
 
 		virtual rtti::TypeInfo		getServiceType() const override									{ return RTTI_OF(RenderService); }
 	};
@@ -152,26 +158,26 @@ namespace nap
 		int getIndex() const { return mIndex; }
 
 		/**
-		 * Returns diagonal dots per inch. 0 if diagonal DPI not available. 
+		 * Returns diagonal dots per inch. 0 if diagonal DPI not available.
 		 * @return diagonal dots per inch. 0 if diagonal DPI not available.
 		 */
 		float getDiagonalDPI() const { return mDDPI; }
 
 		/**
-		 * Returns horizontal dots per inch. 0 if horizontal DPI not available. 
-		 * @return horizontal dots per inch. 0 if horizontal DPI not available. 
+		 * Returns horizontal dots per inch. 0 if horizontal DPI not available.
+		 * @return horizontal dots per inch. 0 if horizontal DPI not available.
 		 */
 		float getHorizontalDPI() const { return mHDPI; }
 
 		/**
-		 * Returns vertical dots per inch. 0 if vertical DPI not available.   
+		 * Returns vertical dots per inch. 0 if vertical DPI not available.
 		 * @return vertical dots per inch. 0 if vertical DPI not available.
 		 */
 		float getVerticalDPI() const { return mVDPI; }
 
 		/**
-		 * Returns display name, empty if not available. 
-		 * @return display name, empty if not available. 
+		 * Returns display name, empty if not available.
+		 * @return display name, empty if not available.
 		 */
 		const std::string& getName() const { return mName; }
 
@@ -236,14 +242,14 @@ namespace nap
 	 * When rendering geometry the service automatically sorts your selection based on the blend mode of the material.
 	 * Opaque objects are rendered front to back, alpha blended objects are rendered back to front.
 	 *
-	 * By default headless rendering is turned off. This means Vulkan is setup to display the result of a render operation 
+	 * By default headless rendering is turned off. This means Vulkan is setup to display the result of a render operation
 	 * in a nap::RenderWindow, next to a nap::RenderTarget. This requires a display device to be connected to the system.
 	 * Enable headless rendering when you do NOT want to render to a window or when there is no display attached to the system.
 	 * This in turn forbids the use of a nap::RenderWindow inside your application.
 	 *
-	 * When headless rendering is enabled, the engine will be initialized  without surface and swapchain support, 
-	 * which are required by a nap::RenderWindow to display images on screen. You can therefore only render to a 
-	 * nap::RenderTarget when Headless rendering is enabled. 
+	 * When headless rendering is enabled, the engine will be initialized  without surface and swapchain support,
+	 * which are required by a nap::RenderWindow to display images on screen. You can therefore only render to a
+	 * nap::RenderTarget when Headless rendering is enabled.
 	 *
 	 * Turn headless rendering on / off using the nap::RenderServiceConfiguration.
 	 *
@@ -268,14 +274,19 @@ namespace nap
 	*/
 	class NAPAPI RenderService : public Service
 	{
+		friend class Texture;
 		friend class Texture2D;
 		friend class GPUBuffer;
 		friend class RenderWindow;
+		friend class RenderTag;
+		friend class RenderChain;
+
 		RTTI_ENABLE(Service)
 	public:
-		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const CameraComponentInstance&)>;
+		using SortFunction = std::function<void(std::vector<RenderableComponentInstance*>&, const glm::mat4& viewMatrix)>;
 		using VulkanObjectDestructor = std::function<void(RenderService&)>;
-		
+		using RenderCommand = std::function<void(RenderService&)>;
+
 		/**
 		 * Binds a pipeline and pipeline layout together.
 		 */
@@ -304,7 +315,7 @@ namespace nap
 		 * Tells the system you are about to render a new frame.
 		 * The system might wait until all commands issued previously, associated with the same frame handle (fence), have been processed.
 		 * Multiple frames are in flight at the same time, but if the graphics load is heavy, the system might wait here to ensure resources are available.
-		 * Pending upload requests are executed. Previously issued download requests are checked for completion. 
+		 * Pending upload requests are executed. Previously issued download requests are checked for completion.
 		 * Queued resources that are out of scope are destroyed.
 		 *
 		 * Call this function at the beginning of the render loop, before any RenderService::beginRecording() calls.
@@ -321,7 +332,7 @@ namespace nap
 		 * ~~~~~
 		 */
 		void beginFrame();
-		
+
 		/**
 		 * Tells the system you finished rendering into the frame.
 		 * Always call this at the end of the render() loop, after RenderService::beginFrame().
@@ -341,7 +352,7 @@ namespace nap
 		void endFrame();
 
 		/**
-		 * Starts a headless render operation.
+		 * Starts a headless render operation. Records any queued headless render commands.
 		 * Call this when you want to render objects to a render-target instead of a render window.
 		 * Make sure to call RenderService::endHeadlessRecording() afterwards.
 		 *
@@ -357,7 +368,7 @@ namespace nap
 		 * @return if the headless record operation started successfully.
 		 */
 		bool beginHeadlessRecording();
-		
+
 		/**
 		 * Ends a headless render operation, submits the recorded command buffer to the queue.
 		 * Always call this function after a successful call to nap::RenderService::beginHeadlessRecording().
@@ -375,6 +386,30 @@ namespace nap
 		void endHeadlessRecording();
 
 		/**
+		 * Queues a headless render command with priority in the subsequent frame. The queue is handled the next time
+		 * `RenderService::beginHeadlessRecording` is called.
+		 *
+		 * ~~~~~{.cpp}
+		 * mRenderService->queueHeadlessCommand([](RenderService&){});
+		 * ~~~~~
+		 *
+		 * @param command the command to queue, ownership is transferred
+		 */
+		void queueHeadlessCommand(const RenderCommand& command);
+
+		/**
+		 * Queues a compute render command with priority in the subsequent frame. The queue is handled the next time
+		 * `RenderService::beginComputeRecording` is called.
+		 *
+		 * ~~~~~{.cpp}
+		 * mRenderService->queueComputeCommand([](RenderService&){});
+		 * ~~~~~
+		 *
+		 * @param command the command to queue, ownership is transferred
+		 */
+		void queueComputeCommand(const RenderCommand& command);
+
+		/**
 		 * Starts a window render operation. Call this when you want to render geometry to a render window.
 		 * Always call RenderService::endRecording() afterwards, on success.
 		 *
@@ -390,7 +425,7 @@ namespace nap
 		 * @return if the window record operation started successfully.
 		 */
 		bool beginRecording(RenderWindow& renderWindow);
-		
+
 		/**
 		 * Ends a window render operation, submits the recorded command buffer to the queue.
 		 * Always call this function after a successful call to nap::RenderService::beginRecording().
@@ -408,7 +443,8 @@ namespace nap
 		void endRecording();
 
 		/**
-		 * Starts a compute operation. Call this when you want to start recording general purpose computate operations to the compute queue.
+		 * Starts a compute operation. Records any queued compute render commands.
+		 * Call this when you want to start recording general purpose computate operations to the compute queue.
 		 * Always call RenderService::endComputeRecording() afterwards, on success.
 		 * Must be called before any (headless) rendering has been recorded in the current frame.
 		 *
@@ -429,7 +465,7 @@ namespace nap
 		/**
 		 * Ends a compute operation, submits the recorded compute command buffer to the compute queue.
 		 * Always call this function after a successful call to nap::RenderService::beginComputeRecording().
-		 * 
+		 *
 		 * ~~~~~{.cpp}
 		 *		mRenderService->beginFrame();
 		 *		if (mRenderService->beginComputeRecording(*mRenderWindow))
@@ -450,37 +486,56 @@ namespace nap
 		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
+		 * @param renderMask the objects to include
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, RenderMask renderMask = mask::all);
 
 		/**
 		 * Renders all available nap::RenderableComponent(s) in the scene to a specific renderTarget.
+		 * The objects to render are sorted using the provided sort function.
 		 * Components that can't be rendered with the given camera are omitted.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param sortFunction The function used to sort the components to render
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction, RenderMask = mask::all);
 
 		/**
-		 * Renders a specific set of objects to a specific renderTarget.
+		 * Renders a specific set of objects to a specific renderTarget using an optional mask
 		 * The objects to render are sorted using the default sort function (front-to-back for opaque objects, back-to-front for transparent objects)
 		 * The sort function is provided by the render service itself, using the default NAP DepthSorter.
 		 * @param renderTarget the target to render to
 		 * @param camera the camera used for rendering all the available components
 		 * @param comps the components to render to renderTarget
+		 * @param renderMask optional component filter mask
 		 */
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps);
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask = mask::all);
 
 		/**
-		* Renders a specific set of objects to a specific renderTarget.
-		*
-		* @param renderTarget the target to render to
-		* @param camera the camera used for rendering all the available components
-		* @param comps the components to render to renderTarget
-		* @param sortFunction The function used to sort the components to render
-		*/
-		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction);
+		 * Renders a specific set of objects to a specific renderTarget using an optional mask
+		 * The objects to render are sorted using the provided sort function.
+		 * Components that can't be rendered with the given camera are omitted.
+		 * @param renderTarget the target to render to
+		 * @param camera the camera used for rendering all the available components
+		 * @param comps the components to render to renderTarget
+		 * @param sortFunction The function used to sort the components to render
+		 * @param renderMask optional component filter mask
+		 */
+		void renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = mask::all);
+
+		/**
+		 * Renders a specific set of objects to a specific renderTarget using a
+		 * specific projection and view matrix and optional mask.
+		 * The objects to render are sorted using the provided sort function.
+		 * Components that can't be rendered with the given camera are omitted.
+		 * @param renderTarget the target to render to
+		 * @param projection the camera projection matrix
+		 * @param view the camera view matrix
+		 * @param comps the components to render to renderTarget
+		 * @param sortFunction The function used to sort the components to render
+		 * @param renderMask optional component filter mask
+		 */
+		void renderObjects(IRenderTarget& renderTarget, const glm::mat4& projection, const glm::mat4& view, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask = mask::all);
 
 		/**
 		 * Calls onCompute() on a specific set of compute component instances, in the order specified.
@@ -490,12 +545,19 @@ namespace nap
 		void computeObjects(const std::vector<ComputeComponentInstance*>& comps);
 
 		/**
+		 * Filters list of renderable components with the specified render mask.
+		 * @param comps the render components to filter
+		 * @param renderMask the render mask used to filter
+		 * @return a list of filtered objects
+		 */
+		std::vector<RenderableComponentInstance*> filterObjects(const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask);
+
+		/**
 		 * Add a new window as target to the render engine.
 		 * @param window the window to add as a valid render target
 		 * @param errorState contains the error message if the window could not be added
 		 */
 		bool addWindow(RenderWindow& window, utility::ErrorState& errorState);
-
 		/**
 		 * Remove a window as a valid target from the render engine.
 		 * @param window the window to remove from the render service
@@ -552,7 +614,7 @@ namespace nap
 		/**
 		 * Creates a renderable mesh, that represents the coupling between a mesh and material, that can be rendered to screen.
 		 * Internally the renderable mesh manages a vertex array object that is issued by the render service.
-		 * This function should be called from on initialization of components that work with meshes and materials: ie: all types of RenderableComponent. 
+		 * This function should be called from on initialization of components that work with meshes and materials: ie: all types of RenderableComponent.
 		 * The result should be validated by calling RenderableMesh.isValid(). Invalid mesh / material representations can't be rendered together.
 		 * @param mesh The mesh that is used in the mesh-material combination.
 		 * @param materialInstance The material instance that is used in the mesh-material combination.
@@ -593,7 +655,7 @@ namespace nap
 		 *		RenderService::Pipeline pipeline = mRenderService->getOrCreateComputePipeline(compute_material_instance, error_state);
 		 *		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mPipeline);
 		 * ~~~~~
-		 * 
+		 *
 		 * @param computeMaterialInstance the compute material instance
 		 * @param errorState contains the error if the pipeline can't be created
 		 * @return new or cached compute pipeline.
@@ -641,7 +703,6 @@ namespace nap
 		 * Returns a descriptor set cache based on the given layout.
 		 * The cache is used to acquire descriptor sets.
 		 * @param layout the descriptor set layout to create the cache for.
-		 * @param key
 		 * @return descriptor set cache for the given layout.
 		 */
 		DescriptorSetCache& getOrCreateDescriptorSetCache(VkDescriptorSetLayout layout);
@@ -649,10 +710,20 @@ namespace nap
 		/**
 		 * @return main Vulkan allocator
 		 */
-		VmaAllocator getVulkanAllocator() const { return mVulkanAllocator; }
-		
+		VmaAllocator getVulkanAllocator() const										{ return mVulkanAllocator; }
+
 		/**
-		 * Returns if the render engine runs headless. 
+		 * @return whether there are headless render commands in the queue
+		 */
+		bool isHeadlessCommandQueued() const										{ return !mHeadlessCommandQueue.empty(); }
+
+		/**
+		 * @return whether there are compute render commands in the queue
+		 */
+		bool isComputeCommandQueued() const											{ return !mComputeCommandQueue.empty(); }
+
+		/**
+		 * Returns if the render engine runs headless.
 		 * This allows you to render images without any display device.
 		 * This in turn means that when enabled it is not possible to display (present) images to a window.
 		 * @return if the render engine runs headless.
@@ -667,7 +738,7 @@ namespace nap
 		 * @return the command buffer that is being recorded.
 		 */
 		VkCommandBuffer getCurrentCommandBuffer()									{ assert(mCurrentCommandBuffer != VK_NULL_HANDLE); return mCurrentCommandBuffer; }
-		
+
 		/**
 		 * Returns the window that is being rendered to, only valid between a
 		 * successfull call to: RenderService::beginRecording() and RenderService::endRecording().
@@ -723,6 +794,12 @@ namespace nap
 		VkSampleCountFlagBits getMaxRasterizationSamples() const;
 
 		/**
+		 * Returns the max compute shader workgroup size.
+		 * @return the max compute shader workgroup size.
+		 */
+		glm::uvec3 getMaxComputeWorkGroupSize() const;
+
+		/**
 		 * Returns max supported rasterization samples based on the requested number of samples.
 		 * The output is automatically clamped if the requested number of samples exceeds the hardware limit.
 		 * @return if requested number of samples is supported by hardware.
@@ -776,7 +853,7 @@ namespace nap
 		bool getHighDPIEnabled() const												{ return mEnableHighDPIMode; }
 
 		/**
-		 * Returns the (system default) number of anisotropic filter samples. 
+		 * Returns the (system default) number of anisotropic filter samples.
 		 * The output is always 1 when anisotropic filtering is not supported.
 		 * @return system default number of max anisotropic filter samples.
 		 */
@@ -794,18 +871,18 @@ namespace nap
 		 * @return handle to the Vulkan command pool object.
 		 */
 		VkCommandPool getCommandPool() const										{ return mCommandPool; }
-		
+
 		/**
 		 * @return flags that specify which depth aspects of an image are included in a view.
 		 */
 		VkImageAspectFlags getDepthAspectFlags() const;
-		
+
 		/**
 		 * Returns the index of the selected queue family.
 		 * @return the main queue index.
 		 */
 		uint32 getQueueIndex() const												{ return mPhysicalDevice.getQueueIndex(); }
-		
+
 		/**
 		 * Returns the selected queue, used to execute recorded command buffers.
 		 * The queue must support Graphics and Transfer operations.
@@ -820,10 +897,41 @@ namespace nap
 		bool isComputeAvailable() const;
 
 		/**
-		 * Returns an empty texture that is available on the GPU for temporary binding or storage.
+		 * Returns an empty 2D texture that is available on the GPU for temporary binding or storage.
 		 * @return empty texture that is available on the GPU.
 		 */
-		Texture2D& getEmptyTexture() const											{ return *mEmptyTexture; }
+		Texture2D& getEmptyTexture2D() const										{ return *mEmptyTexture2D; }
+
+		/**
+		 * Returns an error cube texture that can be bound to materials to signal an application warning or error.
+		 * @return the error cube texture.
+		 */
+		TextureCube& getEmptyTextureCube() const									{ return *mEmptyTextureCube; }
+
+		/**
+		 * Returns an error 2D texture that can be bound to materials to signal an application warning or error.
+		 * @return the error 2D texture.
+		 */
+		Texture2D& getErrorTexture2D() const										{ return *mErrorTexture2D; }
+
+		/**
+		 * Returns an empty cube texture that is available on the GPU for temporary binding or storage.
+		 * @return empty texture that is available on the GPU.
+		 */
+		TextureCube& getErrorTextureCube() const									{ return *mErrorTextureCube; }
+
+		/**
+		 * Returns the render mask for the given tag.
+		 * @return The render mask associated with the given tag.
+		 */
+		RenderMask getRenderMask(const RenderTag& renderTag) const;
+
+		/**
+		 * Returns the render mask for the given render tag name, 0 if no match is found.
+		 * @param tagName name of the render tag
+		 * @return The render mask for the associated tag name, 0 if there is no match.
+		 */
+		RenderMask getRenderMask(const std::string& tagName);
 
 		/**
 		 * Returns an existing or new material for the given type of shader that can be shared.
@@ -882,7 +990,7 @@ namespace nap
 		 * Returns the physical device properties for the requested Vulkan format.
 		 * @return physical device properties for the requested Vulkan format.
 		 */
-		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties);
+		void getFormatProperties(VkFormat format, VkFormatProperties& outProperties) const;
 
 		/**
 		 * Returns if the render service is currently recording (rendering) a frame.
@@ -920,7 +1028,7 @@ namespace nap
 		 * Initializes GLSL shader compilation and linking.
 		 * Don't call this in your application! Only required by external processes
 		 * that want to use the nap render interface.
-		 * @error contains the error if initialization fails
+		 * @param error contains the error if initialization fails
 		 * @return if shader compiler and linker initialized successfully
 		 */
 		bool initShaderCompilation(utility::ErrorState& error);
@@ -940,7 +1048,7 @@ namespace nap
 		 * in an undefined state and can therefore not be queried
 		 * @return if the render service is initialized and therefore running
 		 */
-		bool isInitialized() const	{ return mInitialized; }
+		bool isInitialized() const													{ return mInitialized; }
 
 		/**
 		 * Wait for the fence belonging to the specified frame index. This ensures that, after the wait, all resources for that frame are no longer in use.
@@ -950,6 +1058,16 @@ namespace nap
 		 * @param frameIndex The index of the frame to wait for
 		 */
 		void waitForFence(int frameIndex);
+
+		/**
+		 * Returns the rank of the given layer in the render chain.
+		 * Asserts and returns `RenderChain::invalidRank` if the rank is not registered.
+		 * The rank controls the order in which objects are rendered.
+		 *
+		 * @param layer the layer to get the rank index for
+		 * @return the rank index of the given layer in the render chain, -1 if rank is not registered
+		 */
+		int getRank(const nap::RenderLayer& layer) const;
 
 	protected:
 		/**
@@ -990,23 +1108,14 @@ namespace nap
 		 */
 		virtual void update(double deltaTime) override;
 
-    private:
+	private:
 		/**
-		 * Sorts a set of renderable components based on distance to the camera, ie: depth
-		 * Note that when the object is of a type mesh it will use the material to sort based on opacity
-		 * If the renderable object is not a mesh the sorting will occur front-to-back regardless of it's type as we don't
-		 * know the way the object is rendered to screen
-		 * @param comps the renderable components to sort
-		 * @param camera the camera used for sorting based on distance
-		 */
-		void sortObjects(std::vector<RenderableComponentInstance*>& comps, const CameraComponentInstance& camera);
-
-		/**
-		 * Initializes the empty texture, fills it with zero. The texture is uploaded at the beginning of the next frame.
+		 * Initializes empty textures filled with zero, and error textures filled with a red error color.
+		 * The textures are uploaded at the beginning of the next frame.
 		 * @param errorState contains the error if the texture could not be initialized
-		 * @return if the texture initialized successfully.
+		 * @return if the textures initialized successfully.
 		 */
-		bool initEmptyTexture(nap::utility::ErrorState& errorState);
+		bool initEmptyTextures(nap::utility::ErrorState& errorState);
 
 		/**
 		 * Deletes all texture upload and download requests.
@@ -1019,7 +1128,7 @@ namespace nap
 		* Request a texture clear
 		* @param texture the texture to clear.
 		*/
-		void requestTextureClear(Texture2D& texture);
+		void requestTextureClear(Texture& texture);
 
 		/**
 		 * Request a pixel data transfer, from a staging buffer to image buffer.
@@ -1064,12 +1173,12 @@ namespace nap
 		 * @param transferFunction function that is called at the appropriate time to upload the data.
 		 */
 		void transferData(VkCommandBuffer commandBuffer, const std::function<void()>& transferFunction);
-		
+
 		/**
 		 * Downloads all previously queued data from the GPU.
 		 */
 		void downloadData();
-		
+
 		/**
 		 * Called by transferdata(), uploads all texture and buffer data to the GPU. Also performs requested clear operations.
 		 */
@@ -1080,7 +1189,7 @@ namespace nap
 		 * Textures and buffers for which the download has completed are notified.
 		 */
 		void updateDownloads();
-		
+
 		/**
 		 * Called by the render engine at the appropriate time to delete all queued Vulkan resources.
 		 * @param frameIndex index of the frame to delete resources for.
@@ -1117,13 +1226,40 @@ namespace nap
 		 */
 		void restoreWindow(nap::RenderWindow& window);
 
+		/**
+		 * Registers a new render tag to the render service. Called by RenderTag::start.
+		 * @param the render tag to register.
+		 * @param error the error message if adding the mask fails
+		 * @return if the tag was added
+		 */
+		bool addTag(const RenderTag& renderTag, nap::utility::ErrorState& error);
+
+		/**
+		 * Removes a render tag from the render service. Called by RenderTag::stop.
+		 * @param the render tag to remove. Asserts if not found.
+		 */
+		void removeTag(const RenderTag& renderTag);
+
+		/**
+		 * Registers a new render chain with the render service
+		 * @param chain the chain to register
+		 */
+		void addChain(const RenderChain& chain);
+
+		/**
+		 * Removes a render chain from the render service
+		 * @param chain the chain to remove. Asserts if not found.
+		 */
+		void removeChain(const RenderChain& chain);
+
 	private:
 		struct UniqueMaterial;
 		using PipelineCache = std::unordered_map<PipelineKey, Pipeline>;
 		using ComputePipelineCache = std::unordered_map<ComputePipelineKey, Pipeline>;
 		using WindowList = std::vector<RenderWindow*>;
 		using DescriptorSetCacheMap = std::unordered_map<VkDescriptorSetLayout, std::unique_ptr<DescriptorSetCache>>;
-		using TextureSet = std::unordered_set<Texture2D*>;
+		using TextureSet = std::unordered_set<Texture*>;
+		using Texture2DSet = std::unordered_set<Texture2D*>;
 		using BufferSet = std::unordered_set<GPUBuffer*>;
 		using VulkanObjectDestructorList = std::vector<VulkanObjectDestructor>;
 		using UniqueMaterialCache = std::unordered_map<rtti::TypeInfo, std::unique_ptr<UniqueMaterial>>;
@@ -1147,7 +1283,7 @@ namespace nap
 		{
 			VkFence								mFence;								///< CPU sync primitive
 			std::vector<Texture2D*>				mTextureDownloads;					///< All textures currently being downloaded
-			std::vector<GPUBuffer*>			mBufferDownloads;					///< All buffers currently being downloaded
+			std::vector<GPUBuffer*>				mBufferDownloads;					///< All buffers currently being downloaded
 			VkCommandBuffer						mUploadCommandBuffer;				///< Command buffer used to upload data from CPU to GPU
 			VkCommandBuffer						mDownloadCommandBuffer;				///< Command buffer used to download data from GPU to CPU
 			VkCommandBuffer						mHeadlessCommandBuffer;				///< Command buffer used to record operations not associated with a window
@@ -1179,13 +1315,21 @@ namespace nap
 		uint32									mAnisotropicSamples = 1;
 		WindowList								mWindows;
 		DisplayList								mDisplays;
-		SceneService*							mSceneService = nullptr;								
+		SceneService*							mSceneService = nullptr;
 		bool									mIsRenderingFrame = false;
 		bool									mCanDestroyVulkanObjectsImmediately = true;
-		std::unique_ptr<Texture2D>				mEmptyTexture;
+
+		// Empty textures
+		std::unique_ptr<Texture2D>				mEmptyTexture2D;
+		std::unique_ptr<TextureCube>			mEmptyTextureCube;
+
+		// Error textures
+		std::unique_ptr<Texture2D>				mErrorTexture2D;
+		std::unique_ptr<TextureCube>			mErrorTextureCube;
+		const RGBAColorFloat					mErrorColor = { 1.0f, 0.3137f, 0.3137f, 1.0f };
 
 		TextureSet								mTexturesToClear;
-		TextureSet								mTexturesToUpload;
+		Texture2DSet							mTexturesToUpload;
 		BufferSet								mBuffersToClear;
 		BufferSet								mBuffersToUpload;
 
@@ -1199,6 +1343,8 @@ namespace nap
 		VkInstance								mInstance = VK_NULL_HANDLE;
 		VmaAllocator							mVulkanAllocator = VK_NULL_HANDLE;
 		VkDebugReportCallbackEXT				mDebugCallback = VK_NULL_HANDLE;
+		VkDebugUtilsMessengerEXT				mDebugUtilsMessengerCallback = VK_NULL_HANDLE;
+
 		PhysicalDevice							mPhysicalDevice;
 		VkDevice								mDevice = VK_NULL_HANDLE;
 		VkCommandBuffer							mCurrentCommandBuffer = VK_NULL_HANDLE;
@@ -1220,7 +1366,17 @@ namespace nap
 
 		UniqueMaterialCache						mMaterials;
 
+		// Render command queues
+		std::vector<RenderCommand>				mHeadlessCommandQueue;
+		std::vector<RenderCommand>				mComputeCommandQueue;
+
+		// The registered render tag and layer registries
+		std::vector<const RenderTag*>			mRenderTags;
+
 		// Cache read from ini file, contains saved settings
 		std::vector<std::unique_ptr<rtti::Object>> mCache;
+
+		// Render chains
+		std::vector<const RenderChain*> mRenderChains;
 	};
 } // nap

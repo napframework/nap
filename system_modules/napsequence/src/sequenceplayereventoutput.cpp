@@ -6,7 +6,7 @@
 #include "sequenceservice.h"
 #include "sequencetrackevent.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerEventOutput)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerEventOutput, "Sends an event when triggered, on the main thread.")
 RTTI_END_CLASS
 
 namespace nap

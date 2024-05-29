@@ -304,6 +304,15 @@ namespace napkin
 			return;
 		}
 
+		// Constants
+		if (!mNested && mPath.getName() == nap::material::constants)
+		{
+			const auto* dec = selectConstantDeclaration(parent);
+			if (dec != nullptr)
+				addConstantBinding(*dec, mPath);
+			return;
+		}
+
 		// Vertex binding
 		auto array_type = mPath.getArrayElementType();
 		if (!mNested && mPath.getName() == nap::material::vbindings)
@@ -372,6 +381,7 @@ namespace napkin
 			RTTI_OF(nap::Uniform),
 			RTTI_OF(nap::Sampler),
 			RTTI_OF(nap::BufferBinding),
+			RTTI_OF(nap::ShaderConstant),
 			RTTI_OF(nap::Material::VertexAttributeBinding)
 		};
 
@@ -399,7 +409,8 @@ namespace napkin
 
 	const nap::ShaderVariableDeclaration* MaterialPropertyMapper::selectVariableDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
 	{
-		QStringList names;
+		using namespace nap::qt;
+		StringModel::Entries entries;
 		std::unordered_map<std::string, const nap::ShaderVariableDeclaration*> dec_map;
 		dec_map.reserve(list.size());
 		for (const auto& dec : list)
@@ -407,17 +418,18 @@ namespace napkin
 			if (dec.mName != nap::uniform::mvpStruct)
 			{
 				dec_map.emplace(dec.mName, &dec);
-				names << QString::fromStdString(dec.mName);
+				entries << QString::fromStdString(dec.mName);
 			}
 		}
-		auto selection = nap::qt::FilterPopup::show(parent, names);
+		auto selection = nap::qt::FilterPopup::show(parent, std::move(entries));
 		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
 	}
 
 
 	const nap::ShaderVariableDeclaration* MaterialPropertyMapper::selectVariableDeclaration(const nap::ShaderVariableStructDeclaration& uniform, QWidget* parent)
 	{
-		QStringList names;
+		using namespace nap::qt;
+		StringModel::Entries entries;
 		std::unordered_map<std::string, const nap::ShaderVariableDeclaration*> dec_map;
 		dec_map.reserve(uniform.mMembers.size());
 		for (const auto& dec : uniform.mMembers)
@@ -425,45 +437,47 @@ namespace napkin
 			if (dec->mName != nap::uniform::mvpStruct)
 			{
 				dec_map.emplace(dec->mName, dec.get());
-				names << QString::fromStdString(dec->mName);
+				entries << QString::fromStdString(dec->mName);
 			}
 		}
-		auto selection = nap::qt::FilterPopup::show(parent, names);
+		auto selection = nap::qt::FilterPopup::show(parent, std::move(entries));
 		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
 	}
 
 
 	const nap::SamplerDeclaration* MaterialPropertyMapper::selectSamplerDeclaration(QWidget* parent)
 	{
-		QStringList names;
+		using namespace nap::qt;
+		StringModel::Entries entries;
 		const auto& shader_decs = mShader->getSamplerDeclarations();
 		std::unordered_map<std::string, const nap::SamplerDeclaration*> dec_map;
 		dec_map.reserve(shader_decs.size());
 		for (const auto& dec : shader_decs)
 		{
 			dec_map.emplace(dec.mName, &dec);
-			names << QString::fromStdString(dec.mName);
+			entries << QString::fromStdString(dec.mName);
 		}
-		auto selection = nap::qt::FilterPopup::show(parent, names);
+		auto selection = nap::qt::FilterPopup::show(parent, std::move(entries));
 		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
 	}
 
 
 	const nap::VertexAttributeDeclaration* MaterialPropertyMapper::selectVertexAttrDeclaration(QWidget* parent)
 	{
+		using namespace nap::qt;
 		nap::Shader* shader = rtti_cast<nap::Shader>(mShader);
 		assert(shader != nullptr);
 
-		QStringList names;
+		StringModel::Entries entries;
 		const auto& vert_attrs = shader->getAttributes();
 		std::unordered_map<std::string, const nap::VertexAttributeDeclaration*> dec_map;
 		dec_map.reserve(vert_attrs.size());
 		for (const auto& attr : vert_attrs)
 		{
 			dec_map.emplace(attr.second->mName, attr.second.get());
-			names << QString::fromStdString(attr.second->mName);
+			entries << QString::fromStdString(attr.second->mName);
 		}
-		auto selection = nap::qt::FilterPopup::show(parent, names);
+		auto selection = nap::qt::FilterPopup::show(parent, std::move(entries));
 		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
 	}
 
@@ -498,17 +512,23 @@ namespace napkin
 		auto* doc = AppContext::get().getDocument();
 		assert(doc != nullptr);
 
-		// Only 2D samplers are supports
-		if (declaration.mType != nap::SamplerDeclaration::EType::Type_2D)
+		// Only 2D and Cube samplers are supported
+		if (declaration.mType == nap::SamplerDeclaration::EType::Type_2D)
 		{
-			nap::Logger::warn("Data type of shader variable %s is not supported", declaration.mName.c_str());
+			bool is_array = declaration.mNumElements > 1;
+			nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
+			createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
+			return;
+		}
+		else if (declaration.mType == nap::SamplerDeclaration::EType::Type_Cube)
+		{
+			bool is_array = declaration.mNumElements > 1;
+			nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::SamplerCubeArray) : RTTI_OF(nap::SamplerCube);
+			createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
 			return;
 		}
 
-		// Create binding
-		bool is_array = declaration.mNumArrayElements > 1;
-		nap::rtti::TypeInfo sampler_type = is_array ? RTTI_OF(nap::Sampler2DArray) : RTTI_OF(nap::Sampler2D);
-		createBinding<nap::Sampler>(declaration.mName, sampler_type, propPath, *doc);
+		nap::Logger::warn("Data type of shader variable %s is not supported", declaration.mName.c_str());
 	}
 
 	
@@ -642,18 +662,18 @@ namespace napkin
 	}
 
 
-
 	const nap::BufferObjectDeclaration* MaterialPropertyMapper::selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent)
 	{
-		QStringList names;
+		using namespace nap::qt;
+		StringModel::Entries entries;
 		std::unordered_map<std::string, const nap::BufferObjectDeclaration*> dec_map;
 		dec_map.reserve(list.size());
 		for (const auto& dec : list)
 		{
 			dec_map.emplace(dec.mName, &dec);
-			names << QString::fromStdString(dec.mName);
+			entries << QString::fromStdString(dec.mName);
 		}
-		auto selection = nap::qt::FilterPopup::show(parent, names);
+		auto selection = nap::qt::FilterPopup::show(parent, std::move(entries));
 		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
 	}
 
@@ -704,6 +724,37 @@ namespace napkin
 
 		nap::Logger::warn("Unable to create buffer binding");
 		nap::Logger::warn("Unsupported shader variable declaration '%s'", declaration.get_type().get_name().data());
+	}
+
+
+	const nap::ShaderConstantDeclaration* MaterialPropertyMapper::selectConstantDeclaration(QWidget* parent)
+	{
+		using namespace nap::qt;
+		StringModel::Entries entries;
+		const auto& shader_decs = mShader->getConstantDeclarations();
+		std::unordered_map<std::string, const nap::ShaderConstantDeclaration*> dec_map;
+		dec_map.reserve(shader_decs.size());
+		for (const auto& dec : shader_decs)
+		{
+			dec_map.emplace(dec.mName, &dec);
+			entries << QString::fromStdString(dec.mName);
+		}
+		auto selection = nap::qt::FilterPopup::show(parent, std::move(entries));
+		return selection.isEmpty() ? nullptr : dec_map[selection.toStdString()];
+	}
+
+
+	void MaterialPropertyMapper::addConstantBinding(const nap::ShaderConstantDeclaration& declaration, const PropertyPath& propPath)
+	{
+		// Get document
+		auto* doc = AppContext::get().getDocument();
+		assert(doc != nullptr);
+
+		// Create binding
+		auto* binding = createBinding<nap::ShaderConstant>(declaration.mName, RTTI_OF(nap::ShaderConstant), propPath, *doc);
+
+		// Set it to the default value specified in the shader
+		binding->mValue = declaration.mValue;
 	}
 
 

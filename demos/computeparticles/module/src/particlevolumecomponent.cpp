@@ -17,13 +17,13 @@
 #include <descriptorsetcache.h>
 #include <bufferbindinginstance.h>
 
-RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent)
-	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mSpeed,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Displacement",				&nap::ParticleVolumeComponent::mDisplacement,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ParticleVolumeComponent, "Component that computes a large group of particles on the GPU, rendered as a single mesh")
+	RTTI_PROPERTY("NumParticles",				&nap::ParticleVolumeComponent::mNumParticles,				nap::rtti::EPropertyMetaData::Default, "Total number of particles")
+	RTTI_PROPERTY("Speed",						&nap::ParticleVolumeComponent::mSpeed,						nap::rtti::EPropertyMetaData::Default, "System clock speed")
+	RTTI_PROPERTY("Displacement",				&nap::ParticleVolumeComponent::mDisplacement,				nap::rtti::EPropertyMetaData::Default, "Displacement amount")
+	RTTI_PROPERTY("RotationSpeed",				&nap::ParticleVolumeComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default, "Base rotation speed")
+	RTTI_PROPERTY("RotationVariation",			&nap::ParticleVolumeComponent::mRotationVariation,			nap::rtti::EPropertyMetaData::Default, "Rotation variation")
+	RTTI_PROPERTY("Size",						&nap::ParticleVolumeComponent::mSize,						nap::rtti::EPropertyMetaData::Default, "Overall particle size")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParticleVolumeComponentInstance)

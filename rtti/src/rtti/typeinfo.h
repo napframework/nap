@@ -10,6 +10,7 @@
 	#include "pythonmodule.h"
 #endif
 #include <utility/dllexport.h>
+#include <string.h>
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
@@ -94,22 +95,22 @@
  *		RTTI_END_ENUM
 
  *		RTTI_BEGIN_CLASS(DataStruct)
- *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty,	nap::rtti::EPropertyMetaData::None);
- *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty,	nap::rtti::EPropertyMetaData::Required);
- *				RTTI_PROPERTY("EnumProperty",	&DataStruct::mEnumProperty,		nap::rtti::EPropertyMetaData::Required);
+ *				RTTI_PROPERTY("FloatProperty",	&DataStruct::mFloatProperty,	nap::rtti::EPropertyMetaData::None,			"Property description");
+ *				RTTI_PROPERTY("StringProperty", &DataStruct::mStringProperty,	nap::rtti::EPropertyMetaData::Required,		"Property description");
+ *				RTTI_PROPERTY("EnumProperty",	&DataStruct::mEnumProperty,		nap::rtti::EPropertyMetaData::Required,		"Property description");
  *		RTTI_END_CLASS
  *
  *		RTTI_BEGIN_CLASS(BaseClass)
  *				RTTI_PROPERTY("FloatProperty",	&BaseClass::mFloatProperty, nap::rtti::EPropertyMetaData::None);
  *		RTTI_END_CLASS
  *
- *		RTTI_BEGIN_CLASS(DerivedClass)
+ *		RTTI_BEGIN_CLASS(DerivedClass, "Type description")
  *				RTTI_CONSTRUCTOR(int)
  *				RTTI_PROPERTY("IntProperty",	&DerivedClass::mIntProperty, nap::rtti::EPropertyMetaData::None)
  *				RTTI_FUNCTION("getValue",		&DerivedClass::getValue)
  *		RTTI_END_CLASS
  *
- * The above code, which *must* be located in the cpp, is responsible for the registration. As you can see, it is very straightforward.
+ * The above code, which *must* be located in the cpp, is responsible for the registration.
  * In general, to register a type and its attributes with the RTTI system, you simply use the RTTI_BEGIN_CLASS/RTTI_END_CLASS pair and add RTTI_PROPERTY, RTTI_CONSTRUCTOR and RTTI_FUNCTION calls to register the properties you need.
  *
  * Once registered, the type can be looked up in the RTTI system and can be inspected for properties etc. A simple example that prints out the names of all properties of an RTTI class:
@@ -145,15 +146,27 @@ namespace nap
 		using VariantMap = rttr::variant_associative_view;
 
 		/**
+		 * Common shared rtti defined methods
+		 */
+		namespace method
+		{
+			constexpr const char* description = "description";					///< rtti type description
+			constexpr const char* assign = "assign";							///< assignment
+			constexpr const char* toObject = "toObject";						///< to object pointer
+			constexpr const char* toString	= "toString";						///< to object path
+			constexpr const char* translateTargetID = "translateTargetID";		///< transform id
+		}
+
+		/**
 		 * Controls how an RTTI property is interpreted
 		 */
 		enum class EPropertyMetaData : uint8_t
 		{
-			Default  	= 0,				///< Uses the (class) default if the property isn't set
-			Required 	= 1,				///< Load will fail if the property isn't set
-			FileLink 	= 2,				///< Defines a relationship with an external file
-			Embedded 	= 4,				///< An embedded pointer
-			ReadOnly	= 8					///< A read only property in Python
+			Default  	= 0,		///< Uses the (class) default if the property isn't set
+			Required 	= 1,		///< Load will fail if the property isn't set
+			FileLink 	= 2,		///< Defines a relationship with an external file
+			Embedded 	= 4,		///< An embedded pointer
+			ReadOnly	= 8			///< A read only property in Python
 		};
 
 		/**
@@ -205,18 +218,6 @@ namespace nap
 			return (current_flags & (uint8_t)flags) != 0;
 		}
 
-		/**
-		 * Helper function to check whether a property is associated with a specific type of file
-		 */
-		inline bool isFileType(const rtti::Property &property, EPropertyFileType filetype)
-		{
-			const rtti::Variant& meta_data = property.get_metadata("filetype");
-			if (!meta_data.is_valid())
-				return false;
-
-			uint8_t current_type = meta_data.convert<uint8_t>();
-			return current_type == (uint8_t)filetype;
-		}
 
 		/**
 		 * Finds method recursively in class and its base classes. Note: this should normally work through the regular rttr::get_method function,
@@ -232,6 +233,70 @@ namespace nap
 			}
 			return type.get_method(methodName);
 		}
+
+
+		/**
+		 * Checks if a description is provided for the given property.
+		 * @return if a description is provided for the given property.
+		 */
+		inline bool hasDescription(const rtti::Property& property)
+		{
+			return property.get_metadata("description").is_valid();
+		}
+
+		/**
+		 * Returns the description of a property.
+		 * @return property description, nullptr when not defined.
+		 */
+		inline const char* getDescription(const rtti::Property& property)
+		{
+			const rtti::Variant& meta_data = property.get_metadata("description");
+			return meta_data.is_valid() ? meta_data.convert<const char*>() : nullptr;
+		}
+
+		/**
+		 * Checks if a description is provided for the given type, including base types.
+		 * @return if a description is provided for the given type.
+		 */
+		inline bool hasDescription(const rtti::TypeInfo& type)
+		{	
+			auto description_method = type.get_method(rtti::method::description);
+			return description_method.is_valid();
+		}
+
+		/**
+		 * Returns the description of a type, including base types.
+		 * @return type description, nullptr when not defined.
+		 */
+		inline const char* getDescription(const rtti::TypeInfo& type)
+		{
+			const rttr::method* description_method = nullptr;
+			auto range = type.get_methods(rttr::filter_item::static_item | rttr::filter_item::public_access);
+			for (const auto& method : range)
+			{
+				if (method.get_name() == nap::rtti::method::description)
+					description_method = &method;
+			}
+
+			// Description available in actual or base class
+			return description_method != nullptr ?
+				description_method->invoke(rttr::instance()).convert<const char*>() : nullptr;
+		}
+
+		/**
+		 * Helper function to check whether a property is associated with a specific type of file
+		 * @return if the property is a specific type of file
+		 */
+		inline bool isFileType(const rtti::Property &property, EPropertyFileType filetype)
+		{
+			const rtti::Variant& meta_data = property.get_metadata("filetype");
+			if (!meta_data.is_valid())
+				return false;
+
+			uint8_t current_type = meta_data.convert<uint8_t>();
+			return current_type == (uint8_t)filetype;
+		}
+
 
 		/**
 		* Selects whether the type check should be an exact type match or whether
@@ -250,16 +315,6 @@ namespace nap
 		inline bool isTypeMatch(const rtti::TypeInfo& typeA, const rtti::TypeInfo& typeB, ETypeCheck typeCheck)
 		{
 			return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
-		}
-
-		/**
-		 * Common shared rtti defined methods
-		 */
-		namespace method
-		{
-			constexpr const char* assign = "assign";
-			constexpr const char* toString	= "toString";
-			constexpr const char* translateTargetID = "translateTargetID";
 		}
 	}
 
@@ -332,21 +387,40 @@ namespace nap
 //////////////////////////////////////////////////////////////////////////
 
 /**
- *	@return the rtti type of @Type
+ *	@return the rtti type of Type
  */
 #define RTTI_OF(Type) nap::rtti::TypeInfo::get<Type>()
+
+
+ //////////////////////////////////////////////////////////////////////////
+ // RTTI_ENABLE
+ //////////////////////////////////////////////////////////////////////////
+
+ /**
+  * Receives information about the inheritance graph of a class.
+  * When class B is derived from A -> A uses: RTTI_ENABLE(), B uses: RTTI_ENABLE(A)
+  * When D is derived from B and C, D uses: RTTI_ENABLE(B,C)
+  */
+#define RTTI_ENABLE(...)																						\
+	RTTR_ENABLE(__VA_ARGS__)																					\
+	RTTR_REGISTRATION_FRIEND
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR
+//////////////////////////////////////////////////////////////////////////
 
 #define CONCAT_UNIQUE_NAMESPACE(x, y)				namespace x##y
 #define UNIQUE_REGISTRATION_NAMESPACE(id)			CONCAT_UNIQUE_NAMESPACE(__rtti_registration_, id)
 
- /**
-  * Defines the beginning of an RTTI enabled class of @Type
-  * This macro will register the class of @Type with the RTTI system
-  * It also enables the class to be available to python
-  * @param Type the type to register
-  */
+/**
+ * Defines the beginning of an RTTI enabled class.
+ * This macro will register the class with the RTTI system.
+ * It also enables the class to be available to python.
+ * @param Type the type to register
+ */
 #ifdef NAP_ENABLE_PYTHON
-	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
+	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		RTTR_REGISTRATION																						\
@@ -358,51 +432,145 @@ namespace nap
 			registration::class_<Type> rtti_class_type(#Type);													\
 			PythonClassType python_class(#Type);
 #else // NAP_ENABLE_PYTHON
-	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)														\
+	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
-			registration::class_<Type> rtti_class_type(#Type);
+			registration::class_<Type> rtti_class_type(#Type);													
 #endif // NAP_ENABLE_PYTHON
 
 
-  /**
-   * Registers a property of @name that is readable and writable in C++ and Python
-   * Call this after starting your class definition
-   * @param Name RTTI name of the property
-   * @param Member reference to the member variable
-   * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
-   */
+ /**
+  * Defines the beginning of an RTTI enabled class with a description.
+  * This macro will register the class of with the RTTI system.
+  * It also enables the class to be available to python.
+  * @param Type the type to register
+  * @param Description type description
+  */
 #ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY(Name, Member, Flags)																\
-		rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
-		python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
-		{																									\
-			if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)					\
-				cls.def_readonly(Name, Member);																\
-			else																							\
-				cls.def_readwrite(Name, Member);															\
-		});
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		static const char* getTypeDescription() { return Description; }											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			namespace py = pybind11;																			\
+			using PythonClassType = nap::rtti::PythonClass<Type, nap::detail::BaseClassList<Type>::List>;		\
+			std::string rtti_class_type_name = #Type;															\
+			registration::class_<Type> rtti_class_type(#Type);													\
+			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);						\
+			PythonClassType python_class(#Type);
 #else // NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY(Name, Member, Flags)																\
-        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
+	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
+	{																											\
+		static const char* getTypeDescription()	{ return Description; }											\
+		RTTR_REGISTRATION																						\
+		{																										\
+			using namespace rttr;																				\
+			std::string rtti_class_type_name = #Type;															\
+			registration::class_<Type> rtti_class_type(#Type);													\
+			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);
+#endif // NAP_ENABLE_PYTHON
+
+// Selector
+#define GET_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_MACRO(_1,_2,NAME,...) NAME
+
+  /**
+   * Defines the beginning of an RTTI enabled class with an optional description
+   * This macro will register the class with the RTTI system.
+   * It also enables the class to be available to python.
+   * @param Type the type to register
+   * @param Description optional type description
+   */
+#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(...) GET_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_MACRO(__VA_ARGS__, RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2, RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1)(__VA_ARGS__)
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_PROPERTY
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Registers a property that is readable and writable in C++ and Python
+ * Call this after starting your class definition
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
+ */
+#ifdef NAP_ENABLE_PYTHON
+	#define RTTI_PROPERTY_3(Name, Member, Flags)																\
+			rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));						\
+			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
+			{																									\
+				if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)					\
+					cls.def_readonly(Name, Member);																\
+				else																							\
+					cls.def_readwrite(Name, Member);															\
+			});
+#else
+	#define RTTI_PROPERTY_3(Name, Member, Flags)																\
+	        rtti_class_type.property(Name, Member)( metadata("flags", (uint8_t)(Flags)));
 #endif // NAP_ENABLE_PYTHON
 
 /**
- * Registers a property of @name that will refer to a filename
- * Call this after starting your class definition
- *
+ * Registers a property that is readable and writable in C++ and Python.
+ * Call this after starting your class definition.
  * @param Name RTTI name of the property
  * @param Member reference to the member variable
- * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd.
- * 		  Note that EPropertyMetaData is added by default.
- * @param FileType Specify the type of file we're going to refer to (EPropertyFileType)
+ * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd\
+ * @param Description property description
  */
 #ifdef NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)												\
+	#define RTTI_PROPERTY_4(Name, Member, Flags, Description)													\
+				rtti_class_type.property(Name, Member)( 														\
+									metadata("flags", (uint8_t)(Flags)),										\
+									metadata("description", (const char*)(Description)));						\
+				python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)	\
+				{																								\
+					if(((uint8_t)(Flags) & (uint8_t)(nap::rtti::EPropertyMetaData::ReadOnly)) != 0)				\
+						cls.def_readonly(Name, Member);															\
+					else																						\
+						cls.def_readwrite(Name, Member);														\
+				});
+#else
+	#define RTTI_PROPERTY_4(Name, Member, Flags, Description)													\
+				rtti_class_type.property(Name, Member)( 														\
+									metadata("flags", (uint8_t)(Flags)),										\
+									metadata("description", (const char*)(Description)));
+#endif // NAP_ENABLE_PYTHON
+
+#define GET_PROPERTY_MACRO(_1,_2,_3,_4,NAME,...) NAME
+
+/**
+ * Registers a property of that is readable and writable in C++ and Python, with or without description.
+ * Call this after starting your class definition.
+ * @param Name RTTI name of the property.
+ * @param Member reference to the member variable.
+ * @param Flags flags associated with the property of type: EPropertyMetaData. these can be or'd
+ * @param Description optional 
+ * @param Description property optional property description
+ */
+#define RTTI_PROPERTY(...) GET_PROPERTY_MACRO(__VA_ARGS__, RTTI_PROPERTY_4, RTTI_PROPERTY_3)(__VA_ARGS__)
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_PROPERTY_FILELINK
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Registers a property that will point to a file on disk.
+ * Call this after starting your class definition.
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
+ * @param FileType the type of file we're going to refer to (EPropertyFileType)
+ */
+#ifdef NAP_ENABLE_PYTHON
+#define RTTI_PROPERTY_FILELINK_4(Name, Member, Flags, FileType)													\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));										\
@@ -411,34 +579,78 @@ namespace nap
 				cls.def_readwrite(Name, Member);																\
 			});
 #else // NAP_ENABLE_PYTHON
-	#define RTTI_PROPERTY_FILELINK(Name, Member, Flags, FileType)												\
+#define RTTI_PROPERTY_FILELINK_4(Name, Member, Flags, FileType)													\
 			rtti_class_type.property(Name, Member)( 															\
 								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
 								metadata("filetype", (uint8_t)(FileType)));
 #endif // NAP_ENABLE_PYTHON
 
-
 /**
-* Registers a function of @name
-* Call this after starting your class definition
-* @param Name RTTI name of the function
-* @param Member reference to the member function
-*/
+ * Registers a property that will point to a file on disk.
+ * Call this after starting your class definition.
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
+ * @param FileType the type of file we're going to refer to (EPropertyFileType)
+ * @param Description property description 
+ */
 #ifdef NAP_ENABLE_PYTHON
-#define RTTI_FUNCTION(Name, Member)																				\
-			rtti_class_type.method(Name, Member);																\
+#define RTTI_PROPERTY_FILELINK_5(Name, Member, Flags, FileType, Description)									\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
+								metadata("filetype", (uint8_t)(FileType)),										\
+								metadata("description", (const char*)(Description)));							\
 			python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)		\
 			{																									\
-				cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
+				cls.def_readwrite(Name, Member);																\
 			});
+#else // NAP_ENABLE_PYTHON
+#define RTTI_PROPERTY_FILELINK_5(Name, Member, Flags, FileType, Description)									\
+			rtti_class_type.property(Name, Member)( 															\
+								metadata("flags", (uint8_t)(nap::rtti::EPropertyMetaData::FileLink | Flags)),	\
+								metadata("filetype", (uint8_t)(FileType)),										\
+								metadata("description", (const char*)(Description)));							
+#endif // NAP_ENABLE_PYTHON
+
+#define GET_PROPERTY_FILELINK_MACRO(_1,_2,_3,_4,_5,NAME,...) NAME
+
+/**
+ * Registers a property that will point to a file on disk with or without a description.
+ * Call this after starting your class definition.
+ * @param Name RTTI name of the property
+ * @param Member reference to the member variable
+ * @param Flags additional flags of type 'EPropertyMetaData', these can be or'd.
+ * @param FileType the type of file we're going to refer to (EPropertyFileType)
+ * @param Description optional property description
+ */
+#define RTTI_PROPERTY_FILELINK(...) GET_PROPERTY_FILELINK_MACRO(__VA_ARGS__, RTTI_PROPERTY_FILELINK_5, RTTI_PROPERTY_FILELINK_4)(__VA_ARGS__)
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_FUNCTION
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Registers a function of the given name.
+ * Call this after starting your class definition.
+ * @param Name RTTI name of the function
+ * @param Member reference to the member function
+ */
+#ifdef NAP_ENABLE_PYTHON
+#define RTTI_FUNCTION(Name, Member)																				\
+		rtti_class_type.method(Name, Member);																	\
+		python_class.registerFunction([](pybind11::module& module, PythonClassType::PybindClass& cls)			\
+		{																										\
+			cls.def(Name, Member, nap::detail::isReturnTypeLValueReference(Member) ? py::return_value_policy::reference : py::return_value_policy::automatic_reference);	\
+		});
 #else // NAP_ENABLE_PYTHON
 #define RTTI_FUNCTION(Name, Member)																				\
 			rtti_class_type.method(Name, Member);
 #endif // NAP_ENABLE_PYTHON
 
 /**
- * Registers a set of custom functions that are exposed to python
- * Call this after starting your class definition
+ * Registers a set of custom functions that are exposed to python.
+ * Call this after starting your class definition.
  * @param Func the name of the function that registers a set of python bindings
  */
 #ifdef NAP_ENABLE_PYTHON
@@ -446,12 +658,16 @@ namespace nap
 			python_class.registerFunction(std::bind(&Func<PythonClassType::PybindClass>, std::placeholders::_1, std::placeholders::_2));
 #else // NAP_ENABLE_PYTHON
 #define RTTI_CUSTOM_REGISTRATION_FUNCTION(Func)
-
 #endif // NAP_ENABLE_PYTHON
 
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_CONSTRUCTOR
+//////////////////////////////////////////////////////////////////////////
+
  /**
- * Registers a default constructor. This is exposed to the RTTI system and python
- * Use this constructor for larger objects and object that can't be copy constructed
+ * Registers a default constructor. This is exposed to the RTTI system and python.
+ * Use this constructor for larger objects and object that can't be copy constructed.
  * The rtti variant holds a pointer to the newly created object.
  * That means the object is created with a new-expression and its lifetime lasts until it is destroyed using a delete-expression.
  * Call this after starting your class definition
@@ -468,14 +684,19 @@ namespace nap
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_raw_ptr);
 #endif // NAP_ENABLE_PYTHON
 
+
+ //////////////////////////////////////////////////////////////////////////
+ // RTTI_VALUE_CONSTRUCTOR
+ //////////////////////////////////////////////////////////////////////////
+
  /**
- * Registers a value based constructor. This is exposed to the RTTI system and python
- * This constructor creates an instance of a class with automatic storage.
- * For this to work the object must be copy-constructible.
- * Use this constructor in conjunction with simple struct like objects or objects that carry a limited set of data
- * Objects with automatic storage duration are automatically destroyed when the variant is out of scope
- * Call this after starting your class definition
- */
+  * Registers a value based constructor. This is exposed to the RTTI system and python
+  * This constructor creates an instance of a class with automatic storage.
+  * For this to work the object must be copy-constructible.
+  * Use this constructor in conjunction with simple struct like objects or objects that carry a limited set of data.
+  * Objects with automatic storage duration are automatically destroyed when the variant is out of scope.
+  * Call this after starting your class definition.
+  */
 #ifdef NAP_ENABLE_PYTHON
 #define RTTI_VALUE_CONSTRUCTOR(...)																				\
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);								\
@@ -488,10 +709,15 @@ namespace nap
 			rtti_class_type.constructor<__VA_ARGS__>()(policy::ctor::as_object);
 #endif // NAP_ENABLE_PYTHON
 
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_END_CLASS
+//////////////////////////////////////////////////////////////////////////
+
  /**
- * Signals the end of the class definition
- * Define this after having defined the various constructors, properties, functions etc.
- */
+  * Signals the end of the class definition.
+  * Define this after having defined the various constructors, properties, functions etc.
+  */
 #ifdef NAP_ENABLE_PYTHON
 #define RTTI_END_CLASS																							\
 			nap::rtti::PythonModule& python_module = nap::rtti::PythonModule::get("nap");						\
@@ -506,51 +732,146 @@ namespace nap
 													 });														\
 		}																										\
 	}
-#else // NAP_ENABLE_PYTHON
+#else
 #define RTTI_END_CLASS																							\
 		}																										\
 	}
 #endif // NAP_ENABLE_PYTHON
 
- /**
- * Defines the beginning of an RTTI enabled class of @Type
- * Use this in conjunction with light or copy-constructible objects
- * This macro will register the class of @Type with the RTTI system
- * It also enables the class to be available to python
- * @param Type the type to register
- */
-#define RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR(Type)															\
-	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR
+//////////////////////////////////////////////////////////////////////////
 
  /**
- * Signals the end of the class definition
- * Use this in conjunction with light or copy-constructible objects
+ * Defines the beginning of an RTTI enabled struct.
+ * Use this in conjunction with light or copy-constructible objects.
+ * This macro will register the class of Type with the RTTI system.
+ * It also enables the class to be available to python.
+ * @param Type the type to register
+ */
+#define RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)
+
+/**
+* Defines the beginning of an RTTI enabled struct.
+* Use this in conjunction with light or copy-constructible objects.
+* This macro will register the class of Type with the RTTI system.
+* It also enables the class to be available to python.
+* @param Type the type to register
+* @param Description type description
+*/
+#define RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type, Description)
+
+#define GET_RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR_MACRO(_1,_2,NAME,...) NAME
+
+/**
+ * Defines the beginning of an RTTI enabled struct.
+ * Use this in conjunction with light or copy-constructible objects.
+ * This macro will register the class of Type with the RTTI system.
+ * It also enables the class to be available to python.
+ * @param Type the type to register
+ * @param Description optional type description
+ */
+#define RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR(...) GET_RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR_MACRO(__VA_ARGS__, RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR_2, RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR_1)(__VA_ARGS__)
+
+
+ //////////////////////////////////////////////////////////////////////////
+ // RTTI_END_STRUCT
+ //////////////////////////////////////////////////////////////////////////
+
+ /**
+ * Signals the end of the class definition.
+ * Use this in conjunction with light or copy-constructible objects.
  * Define this after having defined the various constructors, properties, functions etc.
  */
 #define RTTI_END_STRUCT																							\
 	RTTI_END_CLASS
 
+
+ //////////////////////////////////////////////////////////////////////////
+ // RTTI_BEGIN_CLASS
+ //////////////////////////////////////////////////////////////////////////
+
 /**
- * Utility that defines the beginning of a class of @Type together with a default (no argument) constructor
- * The rtti constructor creates the object with a new-expression and it's lifetime lasts until destroyed
+ * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
+ * The rtti constructor creates the object with a new-expression and it's lifetime lasts until destroyed.
  * In order to invoke the delete expression use the corresponding rtti destructor.
+ * @param Type the type to register
  */
-#define RTTI_BEGIN_CLASS(Type)																					\
-	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																\
+#define RTTI_BEGIN_CLASS_1(Type)																					\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																	\
 	RTTI_CONSTRUCTOR()
 
- /**
- * Utility that defines the beginning of a class of @Type together with a default (no argument) constructor
- * This constructor creates an instance of a class with automatic storage.
- * For this to work the object must be copy-constructible.
- * Use this definition in conjunction with simple struct like objects or objects that carry a limited set of data
+/**
+ * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
+ * The rtti constructor creates the object with a new-expression and it's lifetime lasts until destroyed.
+ * In order to invoke the delete expression use the corresponding rtti destructor.
+ * @param Type the type to register
+ * @param Description type description
  */
-#define RTTI_BEGIN_STRUCT(Type)																					\
-	RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR(Type)																\
-	RTTI_VALUE_CONSTRUCTOR()
+#define RTTI_BEGIN_CLASS_2(Type, Description)																		\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type, Description)														\
+	RTTI_CONSTRUCTOR()
+
+#define GET_RTTI_BEGIN_CLASS_MACRO(_1,_2,NAME,...) NAME
+
+/**
+ * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
+ * The rtti constructor creates the object with a new-expression and it's lifetime lasts until destroyed.
+ * In order to invoke the delete expression use the corresponding rtti destructor.
+ * @param Type the type to register
+ * @param Description type description
+ */
+#define RTTI_BEGIN_CLASS(...) GET_RTTI_BEGIN_CLASS_MACRO(__VA_ARGS__, RTTI_BEGIN_CLASS_2, RTTI_BEGIN_CLASS_1)(__VA_ARGS__)
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_BEGIN_STRUCT
+//////////////////////////////////////////////////////////////////////////
 
  /**
-  * Starts the RTTI definition of an enumerator of @Type
+  * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
+  * This constructor creates an instance of a class with automatic storage.
+  * For this to work the object must be copy-constructible.
+  * Use this definition in conjunction with simple struct like objects or objects that carry a limited set of data.
+  * @param Type the type to register
+  */
+#define RTTI_BEGIN_STRUCT_1(Type)																					\
+	RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR(Type)																	\
+	RTTI_VALUE_CONSTRUCTOR()
+
+/**
+ * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
+ * This constructor creates an instance of a class with automatic storage.
+ * For this to work the object must be copy-constructible.
+ * Use this definition in conjunction with simple struct like objects or objects that carry a limited set of data.
+ * @param Type the type to register
+ * @param Description the type description
+ */
+#define RTTI_BEGIN_STRUCT_2(Type, Description)																		\
+	RTTI_BEGIN_STRUCT_NO_DEFAULT_CONSTRUCTOR(Type, Description)														\
+	RTTI_VALUE_CONSTRUCTOR()
+
+#define GET_RTTI_BEGIN_STRUCT_MACRO(_1,_2,NAME,...) NAME
+
+ /**
+  * Utility that defines the beginning of a class of Type together with a default (no argument) constructor.
+  * The rtti constructor creates the object with a new-expression and it's lifetime lasts until destroyed.
+  * In order to invoke the delete expression use the corresponding rtti destructor.
+  * @param Type the type to register
+  * @param Description type description
+  */
+#define RTTI_BEGIN_STRUCT(...) GET_RTTI_BEGIN_STRUCT_MACRO(__VA_ARGS__, RTTI_BEGIN_STRUCT_2, RTTI_BEGIN_STRUCT_1)(__VA_ARGS__)
+
+
+ //////////////////////////////////////////////////////////////////////////
+ // RTTI_BEGIN_ENUM
+ //////////////////////////////////////////////////////////////////////////
+
+ /**
+  * Starts the RTTI definition of an enumerator of Type.
   * @param Type the enumeration type
   */
 #define RTTI_BEGIN_ENUM(Type)																					\
@@ -563,7 +884,7 @@ namespace nap
 			(
 
   /**
-   * Adds a enumeration value, every value has a name
+   * Adds a enumeration value, every value has a name.
    * @param Value the enumeration value declaration
    * @param String the rtti name of the enumeration value
    */
@@ -578,31 +899,101 @@ namespace nap
 		}																										\
 	}
 
-/**
- * Receives information about the inheritance graph of a class.
- * When class B is derived from A -> A uses: RTTI_ENABLE(), B uses: RTTI_ENABLE(A)
- * When D is derived from B and C, D uses: RTTI_ENABLE(B,C)
- */
-#define RTTI_ENABLE(...)																						\
-	RTTR_ENABLE(__VA_ARGS__)																					\
-	RTTR_REGISTRATION_FRIEND
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_DEFINE_BASE
+//////////////////////////////////////////////////////////////////////////
 
 /**
- * Defines an abstract (not create-able) class of @Type
- * This class can't be constructed using the RTTI system
- * Use this macro for defining abstract or base classes
+ * Defines an abstract (not create-able) class of Type.
+ * This class can't be constructed using the RTTI system.
+ * Use this macro for defining abstract or base classes.
  * @param Type the type to register
  */
-#define RTTI_DEFINE_BASE(Type)																					\
+#define RTTI_DEFINE_BASE_1(Type)																				\
 	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type)																\
 	RTTI_END_CLASS
 
-// Legacy macros only used for backwards compatibility with the old RTTI system.
-#define RTTI_DEFINE_CLASS(Type)																					\
+ /**
+  * Defines an abstract (not create-able) class of Type.
+  * This class can't be constructed using the RTTI system.
+  * Use this macro for defining abstract or base classes.
+  * @param Type the type to register
+  * @param Description type description
+  */
+#define RTTI_DEFINE_BASE_2(Type, Description)																	\
+	RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(Type, Description)													\
+	RTTI_END_CLASS
+
+#define GET_RTTI_DEFINE_BASE_MACRO(_1,_2,NAME,...) NAME
+
+  /**
+   * Defines an abstract (not create-able) class of Type.
+   * This class can't be constructed using the RTTI system.
+   * Use this macro for defining abstract or base classes.
+   * @param Type the type to register
+   * @param Description optional type description
+   */
+#define RTTI_DEFINE_BASE(...) GET_RTTI_DEFINE_BASE_MACRO(__VA_ARGS__, RTTI_DEFINE_BASE_2, RTTI_DEFINE_BASE_1)(__VA_ARGS__)
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_DEFINE_CLASS
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Registers a class of Type without properties (legacy).
+ * @param Type the type to register
+ */
+#define RTTI_DEFINE_CLASS_1(Type)																				\
 	RTTI_BEGIN_CLASS(Type)																						\
 	RTTI_END_CLASS
 
-// Legacy macros only used for backwards compatibility with the old RTTI system.
-#define RTTI_DEFINE_STRUCT(Type)																				\
+/**
+ * Registers a class of Type without properties (legacy).
+ * @param Type the type to register
+ * @param Description type description
+ */
+#define RTTI_DEFINE_CLASS_2(Type, Description)																	\
+	RTTI_BEGIN_CLASS(Type, Description)																			\
+	RTTI_END_CLASS
+
+#define GET_RTTI_DEFINE_CLASS_MACRO(_1,_2,NAME,...) NAME
+
+/**
+ * Registers a class of Type without properties (legacy).
+ * @param Type the type to register
+ * @param Description optional type description
+ */
+#define RTTI_DEFINE_CLASS(...) GET_RTTI_DEFINE_CLASS_MACRO(__VA_ARGS__, RTTI_DEFINE_CLASS_2, RTTI_DEFINE_CLASS_1)(__VA_ARGS__)
+
+
+//////////////////////////////////////////////////////////////////////////
+// RTTI_DEFINE_STRUCT
+//////////////////////////////////////////////////////////////////////////
+
+/**
+ * Registers a struct of Type without properties (legacy).
+ * @param Type the type to register
+ */
+#define RTTI_DEFINE_STRUCT_1(Type)																				\
 	RTTI_BEGIN_STRUCT(Type)																						\
 	RTTI_END_STRUCT
+
+/**
+ * Registers a struct of Type without properties (legacy).
+ * @param Type the type to register
+ * @param Description type description
+ */
+#define RTTI_DEFINE_STRUCT_2(Type, Description)																	\
+	RTTI_BEGIN_STRUCT(Type, Description)																		\
+	RTTI_END_STRUCT
+
+#define GET_RTTI_DEFINE_STRUCT_MACRO(_1,_2,NAME,...) NAME
+
+/**
+ * Registers a struct of Type without properties (legacy).
+ * @param Type the type to register
+ * @param Description optional type description
+ */
+#define RTTI_DEFINE_STRUCT(...) GET_RTTI_DEFINE_STRUCT_MACRO(__VA_ARGS__, RTTI_DEFINE_STRUCT_2, RTTI_DEFINE_STRUCT_1)(__VA_ARGS__)

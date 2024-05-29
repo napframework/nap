@@ -49,5 +49,9 @@ namespace napkin
 	inline constexpr const char* QRC_ICONS_WARNING					= ":/icons/warning.png";
 	inline constexpr const char* QRC_ICONS_ERROR					= ":/icons/error.png";
 	inline constexpr const char* QRC_ICONS_CHECK					= ":/icons/check.png";
+	inline constexpr const char* QRC_ICONS_MOVE_DOWN				= ":/icons/move_down.png";
+	inline constexpr const char* QRC_ICONS_MOVE_UP					= ":/icons/move_up.png";
+	inline constexpr const char* QRC_ICONS_CLEAR					= ":/icons/clear.png";
+	inline constexpr const char* QRC_ICONS_DUPLICATE				= ":/icons/duplicate.png";
 }
 

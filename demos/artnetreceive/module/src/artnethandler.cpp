@@ -10,8 +10,8 @@
 #include <algorithm>
 
 // Register Art-Net Handler Component
-RTTI_BEGIN_CLASS(nap::ArtNetHandlerComponent)
-	RTTI_PROPERTY("Input", &nap::ArtNetHandlerComponent::mInput, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::ArtNetHandlerComponent, "Stores the most recent Art-Net stream data")
+	RTTI_PROPERTY("Input", &nap::ArtNetHandlerComponent::mInput, nap::rtti::EPropertyMetaData::Required, "Art-Net input component from which to receive events")
 RTTI_END_CLASS
 
 // Register Art-Net Handler Component Instance

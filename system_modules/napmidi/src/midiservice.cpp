@@ -3,99 +3,41 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "midiservice.h"
-#include "midiinputport.h"
-#include "midioutputport.h"
 #include "midiinputcomponent.h"
+
+#ifdef NAP_ENABLE_RTMIDI
+    #include "midiport/midiinputport.h"
+    #include "midiport/midioutputport.h"
+    #include "midiport/midiportinfo.h"
+#endif
 
 #include <nap/logger.h>
 #include <utility/stringutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiService, "Keeps track of opened midi input ports and processes incoming messages.")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
 namespace nap
 {
+
 	MidiService::MidiService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
+
 
     bool MidiService::init(nap::utility::ErrorState& errorState)
     {
-        try 
-		{
-            mMidiIn = std::make_unique<RtMidiIn>();
-            mMidiOut = std::make_unique<RtMidiOut>();
-            printPorts();
-            return true;
-        }
-        catch (RtMidiError& error)
-        {
-            errorState.fail(error.getMessage());
+#ifdef NAP_ENABLE_RTMIDI
+        // When RtMdidi is enabled, try to initialize it and poll for available ports
+        MidiPortInfo portInfo;
+        if (!portInfo.init(errorState))
             return false;
-        }
-    }
-    
-    
-    void MidiService::registerObjectCreators(rtti::Factory& factory)
-    {
-        factory.addObjectCreator(std::make_unique<MidiInputPortObjectCreator>(*this));
-        factory.addObjectCreator(std::make_unique<MidiOutputPortObjectCreator>(*this));
-    }
 
-    
-    int MidiService::getInputPortCount()
-    {
-        return mMidiIn->getPortCount();
-    }
-    
-    
-    std::string MidiService::getInputPortName(int portNumber)
-    {
-        return mMidiIn->getPortName(portNumber);
-    }
-    
-    
-    int MidiService::getInputPortNumber(const std::string& portName)
-    {
-        for (auto i = 0; i < mMidiIn->getPortCount(); ++i)
-            if (utility::toLower(portName) == utility::toLower(mMidiIn->getPortName(i)))
-                return i;
-        return -1;
-    }
-    
-    
-    int MidiService::getOutputPortCount()
-    {
-        return mMidiOut->getPortCount();
-    }
-    
-    
-    std::string MidiService::getOutputPortName(int portNumber)
-    {
-        return mMidiOut->getPortName(portNumber);
-    }
-    
-    
-    int MidiService::getOutputPortNumber(const std::string& portName)
-    {
-        for (auto i = 0; i < mMidiOut->getPortCount(); ++i)
-            if (utility::toLower(portName) == utility::toLower(mMidiOut->getPortName(i)))
-                return i;
-        return -1;
-    }
-    
-    
-    void MidiService::printPorts()
-    {
-        Logger::info("Available midi input ports:");
-        for (auto i = 0; i < getInputPortCount(); ++i)
-            nap::Logger::info("%d: %s", i, getInputPortName(i).c_str());
-
-        Logger::info("Available midi output ports:");
-        for (auto i = 0; i < getOutputPortCount(); ++i)
-            nap::Logger::info("%d: %s", i, getOutputPortName(i).c_str());
+        // Print available midi ports
+        portInfo.printPorts();
+#endif
+        return true;
     }
     
     
