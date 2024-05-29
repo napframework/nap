@@ -151,7 +151,6 @@ namespace nap
 		/**
 		 * Allocates buffers, called by derived classes
 		 * @param size size in bytes of the buffer to allocate
-		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
 		 * @param errorState contains error when data could not be set.
 		 * @return if the data was set
 		 */
@@ -162,7 +161,6 @@ namespace nap
 		 * @param data pointer to the data to upload.
 		 * @param size size in bytes of the data to upload
 		 * @param reservedSize allows the buffer to allocate more memory than required, needs to be >= size
-		 * @param deviceUsage how the data is used at runtime on the device (e.g. VERTEX, INDEX, UNIFORM, STORAGE)
 		 * @param errorState contains error when data could not be set.
 		 * @return if the data was set
 		 */
@@ -218,7 +216,7 @@ namespace nap
 
 	/**
 	 * Base interface for all types of one dimensional GPU buffers.
-	 * Supported values for child classes such as GPUBufferNumeric<T> must be primitives that can be mapped to 
+	 * Supported values for child classes such as GPUBufferNumeric<T> must be primitives that can be mapped to
 	 * VkFormat. This is enforced by the requirement to implement getFormat().
 	 */
 	class NAPAPI GPUBufferNumeric : public GPUBuffer
@@ -303,7 +301,7 @@ namespace nap
 	 *
 	 * This buffer (when 'storage' is set to 'true' on construction) can be bound to a descriptor in a shader.
 	 * This allows the buffer be read and set inside a shader program.
-	 * 
+	 *
 	 * @tparam T primitive value data type
 	 */
 	template<typename T>
@@ -381,7 +379,7 @@ namespace nap
 	 *
 	 * This buffer (when 'storage' is set to 'true' on construction) can be bound to a descriptor in a shader.
 	 * This allows the buffer be read and set inside a shader program.
-	 * 
+	 *
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
@@ -436,7 +434,7 @@ namespace nap
 	 *
 	 * This buffer (when 'storage' is set to 'true' on construction) can be bound to a descriptor in a shader.
 	 * This allows the buffer be read and set inside a shader program.
-	 * 
+	 *
 	 * Supported types are primitive types that can be mapped to VkFormat.
 	 * @tparam T primitive value data type
 	 */
@@ -444,10 +442,7 @@ namespace nap
 	{
 		RTTI_ENABLE(TypedGPUBufferNumeric<uint>)
 	public:
-		/**
-		 * Every index buffer needs to have access to the render engine.
-		 * @param renderService the render engine
-		 */
+		// Constructor
 		IndexBuffer(Core & core) : TypedGPUBufferNumeric<uint>(core)			{ }
 
 		/**

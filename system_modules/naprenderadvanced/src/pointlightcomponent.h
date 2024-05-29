@@ -18,7 +18,7 @@ namespace nap
 
 	/**
 	 * Point light component for NAP RenderAdvanced's light system.
-	 * 
+	 *
 	 * Omnidirectional light that emits from its origin. Therefore, ignores the `direction` uniform. The Render Advanced
 	 * service creates and manages a `nap::CubeDepthRenderTarget` and `nap::DepthRenderTextureCube` for rendering this
 	 * light's shadow maps.
@@ -50,7 +50,6 @@ namespace nap
 
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the LightComponentInstance is initialized successfully
 		 */

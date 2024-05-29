@@ -109,7 +109,7 @@ namespace nap
 		 * @param message the message to send
 		 * @param code message type
 		 * @param error contains the error if sending fails
-		 * @param message the message
+		 * @return if the message is broadcast
 		 */
         virtual bool broadcast(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error) = 0;
 

@@ -97,15 +97,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Attempts to find a member in this group with the given ID. 
+		 * Attempts to find a member in this group with the given ID.
 		 * @param id member ID
-		 * @param attempt to find member in child groups as well
 		 * @return member with the given ID, nullptr if not found
 		 */
 		rtti::ObjectPtr<T> findObject(const std::string& id) const;
 
 		/**
-		 * Attempts to find a member in this group and all child groups with the given ID. 
+		 * Attempts to find a member in this group and all child groups with the given ID.
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found
 		 */
@@ -117,7 +116,7 @@ namespace nap
 		 *~~~~~{.cpp}
 		 * auto window = mGroup->findObject<nap::RenderWindow>("Window0");
 		 *~~~~~
-		 * 
+		 *
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
@@ -126,11 +125,11 @@ namespace nap
 
 		/**
 		 * Attempts to find a member in this group, and all child groups, with the given ID as type M.
-		 * 
+		 *
 		 *~~~~~{.cpp}
 		 * auto window = mGroup->findObjectRecursive<nap::RenderWindow>("Window0");
 		 *~~~~~
-		 * 
+		 *
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
