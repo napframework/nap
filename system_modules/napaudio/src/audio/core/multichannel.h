@@ -24,28 +24,28 @@ namespace nap
 			 * Destructor
 			 */
 			virtual ~IMultiChannelOutput() = default;
-			
+
 			/**
 			 * Override this method to specify the number of audio channels output by this object.
 			 * @return the number of channels this object outputs.
 			 */
 			virtual int getChannelCount() const = 0;
-			
+
 			/**
 			 * To be overridden by descendants.
 			 * @param channel channel index to request the output for
 			 * @return the output pin that outputs audio data for the specified channel.
 			 */
 			virtual OutputPin* getOutputForChannel(int channel) = 0;
-			
+
 			/**
 			 * @return an output pin for a given channel, but returns nullptr if the channel is out of bounds.
 			 */
 			OutputPin* tryGetOutputForChannel(unsigned int);
-			
+
 		};
-		
-		
+
+
 		/**
 		 * Interface for any class that exposes multichannel audio input.
 		 */
@@ -56,29 +56,29 @@ namespace nap
 			 * Destructor
 			 */
 			virtual ~IMultiChannelInput() = default;
-			
+
 			/**
 			 * This method has to be overwritten to connect an output pin from another object to this object's input.
 			 * @param channel index of the channel to connect to
 			 * @param pin pin that will be connected to this object
 			 */
 			virtual void connect(unsigned int channel, OutputPin& pin) { }
-			
+
 			/**
 			 * This method has to be overwritten by descendants.
 			 * @return the number of input channels of audio this object receives.
 			 */
 			virtual int getInputChannelCount() const { return 0; }
-			
+
 			/**
 			 * This method calls connect() but first checks wether the given channel is not out of bounds.
 			 * @param channel channel index to connect to
 			 * @param pin pin that will be connected to this object
 			 */
 			void tryConnect(unsigned int channel, OutputPin& pin);
-			
+
 			/**
-			 * Convenience method that connects the outputs of @inputObject to the inputs of this object.
+			 * Convenience method that connects the outputs of inputObject to the inputs of this object.
 			 * If this object has more input channels than inputObject has output channels they will be repeated.
 			 * @param inputObject object to be connected to this object
 			 */

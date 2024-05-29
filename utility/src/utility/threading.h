@@ -64,7 +64,7 @@ namespace nap
 		WorkerThread();
 
 		/**
-         * @param blocking when true: the threads blocks and waits for enqueued tasks to perform, false: the threads runs through the loop as fast as possible and emits @execute every iteration
+         * @param blocking when true: the threads blocks and waits for enqueued tasks to perform, false: the threads runs through the loop as fast as possible and emits 'execute' every iteration
          * @param maxQueueItems the maximum number of items in the task queue
          */
         WorkerThread(bool blocking, int maxQueueItems = 20);

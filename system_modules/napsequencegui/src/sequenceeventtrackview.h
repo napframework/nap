@@ -55,7 +55,7 @@ namespace nap
          * @param drawList pointer to ImGui drawlist
          * @param topLeft top left position
          * @param x x position of segment on track
-         * @param draw color
+         * @param color draw color
          */
         virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color) = 0;
 

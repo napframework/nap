@@ -20,7 +20,7 @@ namespace nap
          * Create a signature for a given message. outSignature is encoded in base64.
          * @param privkey The private key to use
          * @param message The message to sign
-         * @param signingScheme The signing scheme to use
+         * @param scheme The signing scheme to use
          * @param outSignature The signature encoded in base64
          * @return True if the signature was created successfully
          */
@@ -30,7 +30,7 @@ namespace nap
          * Verify a message against a signature. Signature is expected to be encoded in base64.
          * @param pubkey The public key to use
          * @param message The message to verify
-         * @param signingScheme The signing scheme to use
+         * @param scheme The signing scheme to use
          * @param signature The signature encoded in base64
          * @return True if the message was verified successfully
          */
