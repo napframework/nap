@@ -48,7 +48,7 @@ NAP documentation can be found online at [docs.nap-framework.tech](https://docs.
 
 ## Gallery
 
-Visit [nap-labs.tech](https://nap-labs.tech) for more examples
+Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 
 ![Between Mind and Matter, Nick Verstand](https://download.nap-labs.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
