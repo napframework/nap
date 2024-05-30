@@ -58,7 +58,7 @@ Visit [nap-labs.tech](https://nap-labs.tech) for more examples
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap-labs.tech/shared/napkin_1280.jpg)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_compute_1280.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -84,7 +84,7 @@ Pre-compiled packages of official NAP releases are made available for download o
 
 ## Raspberry Pi
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. Add `arm_64bit=0` to `boot/config.txt` to ensure the 32 bit kernel is loaded - the 64 bit kernel is not yet supported.
+Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
 
 # Compilation
 
