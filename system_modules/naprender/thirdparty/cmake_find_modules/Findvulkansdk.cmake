@@ -16,7 +16,7 @@ elseif(APPLE)
     find_path(VULKANSDK_DIR
         NO_DEFAULT_PATH
         NAMES include/vulkan/vulkan.h
-        HINTS ${VULKANSDK_ROOT_DIR}/macos/x86_64
+        HINTS ${VULKANSDK_ROOT_DIR}/macos/universal
         )
 elseif(UNIX)
     find_path(VULKANSDK_DIR
@@ -39,18 +39,31 @@ set(VULKANSDK_LIBS_DIR ${VULKANSDK_DIR}/lib)
 # Find Vulkan library
 if(WIN32)
     # Vulkan core lib -> vulkan-1.lib
-    find_library(VULKANSDK_LIBS
+    find_library(VULKAN_LIB
                 NO_DEFAULT_PATH
                 NAMES vulkan-1
                 PATHS ${VULKANSDK_LIBS_DIR}
                 )
+    # Resolve symlink
+    get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
+    set(VULKANSDK_LIBS ${VULKAN_LIB})
 elseif(APPLE)
-    # Moltenvk -> libvulkan.so
+    # Moltenvk -> libvulkan.dylib
     find_library(VULKAN_LIB
             NO_DEFAULT_PATH
             NAMES vulkan
             PATHS ${VULKANSDK_LIBS_DIR}
             )
+    # Resolve symlink
+    get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
+
+    find_library(MOLTENVK_LIB
+            NO_DEFAULT_PATH
+            NAMES MoltenVK
+            PATHS ${VULKANSDK_LIBS_DIR}
+    )
+    # Resolve symlink
+    get_filename_component(MOLTENVK_LIB ${MOLTENVK_LIB} REALPATH)
 
     # Additional library dependencies on apple
     find_library(METAL_LIB Metal)
@@ -66,11 +79,14 @@ elseif(APPLE)
 
 elseif(UNIX)
     # Vulkan core lib -> libvulkan.so
-    find_library(VULKANSDK_LIBS
+    find_library(VULKAN_LIB
             NO_DEFAULT_PATH
             NAMES vulkan
             PATHS ${VULKANSDK_LIBS_DIR}
             )
+    # Resolve symlink
+    get_filename_component(VULKAN_LIB ${VULKAN_LIB} REALPATH)
+    set(VULKANSDK_LIBS ${VULKAN_LIB})
 endif()
 
 # Files to copy along with distribution
@@ -85,3 +101,9 @@ mark_as_advanced(VULKANSDK_ROOT_DIR)
 # Promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(vulkansdk REQUIRED_VARS VULKANSDK_DIR VULKANSDK_INCLUDE_DIRS VULKANSDK_LIBS)
+
+## Define VulkanSDK target
+#add_library(VulkanSDK SHARED IMPORTED)
+#set_property(TARGET VulkanSDK PROPERTY IMPORTED_LOCATION ${FREEIMAGE_LIBRARIES})
+#target_include_directories(FreeImage INTERFACE ${FREEIMAGE_INCLUDE_DIR})
+

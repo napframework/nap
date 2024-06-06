@@ -15,9 +15,9 @@ CC_X86_64 = $(shell xcrun -find clang)
 CPP_I386 = $(shell xcrun -find clang++)
 CPP_X86_64 = $(shell xcrun -find clang++)
 MACOSX_DEPLOY = -mmacosx-version-min=$(MACOSX_DEPLOYMENT_TARGET)
-COMPILERFLAGS = -Os -fexceptions -fvisibility=hidden -DNO_LCMS -D__ANSI__ -DDISABLE_PERF_MEASUREMENT
+COMPILERFLAGS = -Os -fexceptions -fvisibility=hidden -DNO_LCMS -D__ANSI__ -DDISABLE_PERF_MEASUREMENT -DPNG_ARM_NEON_OPT=0
 COMPILERFLAGS_I386 = -arch i386
-COMPILERFLAGS_X86_64 = -arch x86_64
+COMPILERFLAGS_X86_64 = -arch x86_64 -arch arm64
 COMPILERPPFLAGS = -Wno-ctor-dtor-privacy -D__ANSI__ -std=c++11 -stdlib=libc++ -Wc++11-narrowing
 INCLUDE +=
 INCLUDE_I386 = -isysroot $(MACOSX_SYSROOT)
@@ -53,31 +53,28 @@ all: dist
 
 # ONLY STATIC AND 64 BIT // START ---
 
-#dist: FreeImage
-#	cp *.a Dist
-#	cp Source/FreeImage.h Dist
+dist: FreeImage
+	cp *.a Dist
+	cp Source/FreeImage.h Dist
 
-#FreeImage: $(STATICLIB)
+FreeImage: $(STATICLIB)
 
-#$(STATICLIB): $(STATICLIB)-x86_64
-#	cp -p $(STATICLIB)-x86_64 $(STATICLIB)
+$(STATICLIB): $(STATICLIB)-x86_64
+	cp -p $(STATICLIB)-x86_64 $(STATICLIB)
 
 # --- END
 
 # STATIC AND DYNAMIC 32 and 64 BIT // START ---
 
-dist: FreeImage
-	cp *.a Dist
-	cp *.dylib Dist
-	cp Source/FreeImage.h Dist
+#dist: FreeImage
+#	cp *.a Dist
+#	cp *.dylib Dist
+#	cp Source/FreeImage.h Dist
 
-FreeImage: $(STATICLIB) $(SHAREDLIB)
+# FreeImage: $(STATICLIB) $(SHAREDLIB )
 
-$(STATICLIB): $(STATICLIB)-x86_64
-	$(LIPO) -create $(STATICLIB)-x86_64 -output $(STATICLIB)
-
-$(SHAREDLIB): $(SHAREDLIB)-x86_64
-	$(LIPO) -create $(SHAREDLIB)-x86_64 -output $(SHAREDLIB)
+#$(STATICLIB): $(STATICLIB)-i386 $(STATICLIB)-x86_64
+#	$(LIPO) -create $(STATICLIB)-i386 $(STATICLIB)-x86_64 -output $(STATICLIB)
 
 # --- END
 
@@ -85,13 +82,16 @@ $(STATICLIB)-i386: $(MODULES_I386)
 	$(LIBTOOL) -arch_only i386 -o $@ $(MODULES_I386)
 
 $(STATICLIB)-x86_64: $(MODULES_X86_64)
-	$(LIBTOOL) -arch_only x86_64 -o $@ $(MODULES_X86_64)
+	$(LIBTOOL) -o $@ $(MODULES_X86_64)
+
+#$(SHAREDLIB): $(SHAREDLIB)-i386 $(SHAREDLIB)-x86_64
+#	$(LIPO) -create $(SHAREDLIB)-i386 $(SHAREDLIB)-x86_64 -output $(SHAREDLIB)
 
 $(SHAREDLIB)-i386: $(MODULES_I386)
 	$(CPP_I386) -arch i386 -dynamiclib $(LIBRARIES_I386) -o $@ $(MODULES_I386)
 
 $(SHAREDLIB)-x86_64: $(MODULES_X86_64)
-	$(CPP_X86_64) -arch x86_64 -dynamiclib $(LIBRARIES_X86_64) -o $@ $(MODULES_X86_64)
+	$(CPP_X86_64) -arch x86_64 -arm arm64 -dynamiclib $(LIBRARIES_X86_64) -o $@ $(MODULES_X86_64)
 
 .c.o-i386:
 	$(CC_I386) $(CFLAGS_I386) -c $< -o $@

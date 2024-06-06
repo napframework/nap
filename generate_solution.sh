@@ -1,5 +1,4 @@
 #!/bin/sh
-nap_root=$( cd "$(dirname -- "$0")" ; pwd -P )
-. $nap_root/tools/buildsystem/common/sh_shared.sh
-configure_python $nap_root
-$python $nap_root/tools/buildsystem/generate_solution/generate_solution.py "$@"
+
+echo Generating XCode solution in directory "xcode"...
+cmake -S . -B xcode -GXcode

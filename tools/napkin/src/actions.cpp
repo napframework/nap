@@ -20,6 +20,24 @@
 
 using namespace napkin;
 
+/**
+ * Show a dialog that asks the user if the given file should be set as project default
+ * @param parent parent widget
+ * @param filename file to set as project default
+ * @return if file should be set as project default
+ */
+static bool setAsProjectDefault(QWidget* parent, const QString& fileName)
+{
+	QMessageBox msg(parent);
+	msg.setWindowTitle("Set as Project Default?");
+	msg.setText(QString("Set '%1' as project default?").arg(QFileInfo(fileName).fileName()));
+	msg.setIconPixmap(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_QUESTION).pixmap(32, 32));
+	msg.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+	msg.setDefaultButton(QMessageBox::No);
+	return msg.exec() == QMessageBox::Yes;
+}
+
+
 Action::Action(QObject* parent, const char* text, const char* iconName) :
 	QAction(parent), mIconName(iconName)
 {
@@ -264,14 +282,9 @@ void SaveFileAsAction::perform()
 	if (ctx.saveDocumentAs(filename))
 	{
 		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault())
+		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?",
-				QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction(nullptr).trigger();
+			UpdateDefaultFileAction(nullptr).trigger();
 		}
 	}
 	else
@@ -320,13 +333,9 @@ void napkin::OpenFileAction::perform()
 	if (ctx.loadDocument(filename) != nullptr)
 	{
 		/// If the saved document is different from current project default, ask to update
-		if (!ctx.documentIsProjectDefault())
+		if (!ctx.documentIsProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("Set %1 as project default?").arg(QFileInfo(filename).fileName()));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				UpdateDefaultFileAction(nullptr).trigger();
+			UpdateDefaultFileAction(nullptr).trigger();
 		}
 	}
 }
@@ -352,6 +361,25 @@ void CreateResourceAction::perform()
 
 	if (type.is_valid() && !type.is_derived_from(RTTI_OF(nap::Component)))
 		AppContext::get().executeCommand(new AddObjectCommand(type));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+
+DuplicateObjectAction::DuplicateObjectAction(QObject* parent, const nap::rtti::Object& object, const PropertyPath& parentArray) :
+	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object), mParent(parentArray)
+{ }
+
+
+DuplicateObjectAction::DuplicateObjectAction(QObject* parent, const nap::rtti::Object& object) :
+	Action(parent, nap::utility::stringFormat("Duplicate '%s'", object.mID.c_str()).c_str(), QRC_ICONS_DUPLICATE), mObject(&object), mParent({})
+{ }
+
+
+void napkin::DuplicateObjectAction::perform()
+{
+	// Duplicate resource
+	AppContext::get().executeCommand(new DuplicateObjectCommand(*mObject, mParent));
 }
 
 
@@ -626,7 +654,7 @@ CreateEntityAction::CreateEntityAction(QObject* parent) :
 
 void CreateEntityAction::perform()
 {
-	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity), nullptr));
+	AppContext::get().executeCommand(new AddObjectCommand(RTTI_OF(nap::Entity)));
 }
 
 
@@ -800,38 +828,6 @@ void LoadShaderAction::perform()
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-RemoveChildEntityAction::RemoveChildEntityAction(QObject* parent, EntityItem& entityItem) :
-	Action(parent, nap::utility::stringFormat("Remove '%s'", entityItem.getEntity().mID.c_str()).c_str(), QRC_ICONS_REMOVE),
-	mEntityItem(&entityItem)
-{ }
-
-
-void RemoveChildEntityAction::perform()
-{
-	// TODO: Move into Command
-	auto parentItem = qobject_cast<EntityItem*>(mEntityItem->parentItem());
-	auto doc = AppContext::get().getDocument();
-	auto index = parentItem->childIndex(*mEntityItem);
-	assert(index >= 0);
-
-	// Grab all component paths for later instance property removal
-	QStringList componentPaths;
-	nap::qt::traverse(*parentItem->model(), [&componentPaths](QStandardItem* item)
-	{
-		auto compItem = qobject_cast<ComponentItem*>(static_cast<RTTIItem*>(item));
-		if (compItem)
-		{
-			componentPaths << QString::fromStdString(compItem->componentPath());
-		}
-		return true;
-	}, mEntityItem->index());
-
-	doc->removeChildEntity(parentItem->getEntity(), index);
-}
-
-
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 RemovePathAction::RemovePathAction(QObject* parent, const PropertyPath& path) :
 	Action(parent, nap::utility::stringFormat("Remove '%s'", path.getName().c_str()).c_str(), QRC_ICONS_REMOVE), mPath(path)
 { }
@@ -933,14 +929,9 @@ void napkin::SaveServiceConfigurationAs::perform()
 	}
 
 	// Set as project default if saved config is different from project default
-	if(!ctx.getServiceConfig()->isProjectDefault())
+	if(!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 	{
-		auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-			"Set as Project Default?",
-			QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
-
-		if (result == QMessageBox::StandardButton::Yes)
-			SetAsDefaultServiceConfigAction(nullptr).trigger();
+		SetAsDefaultServiceConfigAction(nullptr).trigger();
 	}
 }
 
@@ -971,13 +962,9 @@ void napkin::OpenServiceConfigAction::perform()
 	if (ctx.getServiceConfig()->load(filename))
 	{
 		// Set as project default if new config is different from project default
-		if (!ctx.getServiceConfig()->isProjectDefault())
+		if (!ctx.getServiceConfig()->isProjectDefault() && setAsProjectDefault(parentWidget(), filename))
 		{
-			auto result = QMessageBox::question(AppContext::get().getMainWindow(),
-				"Set as Project Default?", QString("Set %1 as default configuration?").arg(QFileInfo(filename).fileName()));
-
-			if (result == QMessageBox::StandardButton::Yes)
-				SetAsDefaultServiceConfigAction(nullptr).trigger();
+			SetAsDefaultServiceConfigAction(nullptr).trigger();
 		}
 	}
 }
@@ -1019,17 +1006,3 @@ void napkin::OpenURLAction::perform()
 {
 	QDesktopServices::openUrl(mAddress);
 }
-
-
-napkin::OpenDocsAction::OpenDocsAction(QObject* parent) :
-	Action(parent, "NAP Documentation", QRC_ICONS_HELP)
-{
-	setShortcut(QKeySequence(Qt::CTRL | Qt::Key_Question));
-}
-
-
-void napkin::OpenDocsAction::perform()
-{
-	QDesktopServices::openUrl(QUrl("https://docs.nap.tech/pages.html"));
-}
-

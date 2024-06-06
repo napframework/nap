@@ -1,5 +1,7 @@
 __pycache__
 bin/
+install/
+lib/
 build/
 .idea/
 .idea/workspace.xml
@@ -11,6 +13,7 @@ cmake-build-debug/*
 core/Debug/
 .vscode/
 vs/
+cache/
 system_modules/napof/Debug/
 system_modules/napof/Release/
 system_modules/napgui/Debug/
@@ -21,7 +24,6 @@ system_modules/napinput/Debug/
 system_modules/napetherservice/Debug/
 core/Release/
 system_modules/napinput/Release/
-lib/
 test/unittest/Release/unittest.vcxprojResolveAssemblyReference.cache
 *.user
 system_modules/napawesomium/Release/napawesomium.vcxprojResolveAssemblyReference.cache
@@ -98,6 +100,7 @@ thirdparty/rapidjson/thirdparty/
 *.o
 thirdparty/rttr/macos/*
 !thirdparty/rttr/macos/x86_64
+!thirdparty/rttr/macos/universal
 thirdparty/rttr/msvc/*
 !thirdparty/rttr/msvc/x86_64
 thirdparty/rttr/linux/*
@@ -125,4 +128,24 @@ pyvenv.cfg
 system_modules/naprender/thirdparty/vulkansdk/linux/lib/libVkLayer_khronos_validation.so
 system_modules/naprender/thirdparty/vulkansdk/linux/lib/libVkLayer_api_dump.so
 system_modules/naplicense/thirdparty/cryptopp/linux/*/lib/libcryptopp.a
+!system_modules/napportaudio/thirdparty/portaudio/macos/universal/lib/
+!system_modules/napaudio/thirdparty/libsndfile/macos/universal/lib/
+!system_modules/napaudio/thirdparty/mpg123/macos/universal/lib/
+!system_modules/naposc/thirdparty/oscpack/macos/universal/lib/
+!system_modules/napmidi/thirdparty/rtmidi/macos/universal/lib/
+!thirdparty/rttr/macos/universal/bin/
+!thirdparty/python/macos/universal/bin/
+!thirdparty/python/macos/universal/lib/
+!thirdparty/cmake/macos/universal/bin/
+!thirdparty/cmake/macos/universal/share/*/*
+!system_modules/napportaudio/thirdparty/portaudio/macos/x86_64/lib/
+!system_modules/napaudio/thirdparty/libsndfile/macos/x86_64/lib/
+!system_modules/napaudio/thirdparty/mpg123/macos/x86_64/lib/
+!system_modules/naposc/thirdparty/oscpack/macos/x86_64/lib/
+!system_modules/napmidi/thirdparty/rtmidi/macos/x86_64/lib/
+!thirdparty/rttr/macos/x86_64/bin/
+!thirdparty/python/macos/x86_64/bin/
+!thirdparty/python/macos/x86_64/lib/
+!thirdparty/cmake/macos/x86_64/bin/
+!thirdparty/cmake/macos/x86_64/share/*/*
 thirdparty/docker_images/cmake

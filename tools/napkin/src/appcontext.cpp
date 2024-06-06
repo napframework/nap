@@ -363,9 +363,7 @@ void AppContext::connectDocumentSignals(bool enable)
     if (enable)
 	{
 		connect(doc, &Document::childEntityAdded, this, &AppContext::childEntityAdded);
-		connect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
 		connect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
-		connect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 		connect(doc, &Document::removingObject, this, &AppContext::removingObject);
 		connect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 		connect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
@@ -374,14 +372,13 @@ void AppContext::connectDocumentSignals(bool enable)
 		connect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		connect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		connect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		connect(doc, &Document::arrayIndexSwapped, this, &AppContext::arrayIndexSwapped);
 		connect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 	}
 	else
 	{
 		disconnect(doc, &Document::childEntityAdded, this, &AppContext::childEntityAdded);
-		disconnect(doc, &Document::componentAdded, this, &AppContext::componentAdded);
 		disconnect(doc, &Document::objectAdded, this, &AppContext::objectAdded);
-		disconnect(doc, &Document::objectChanged, this, &AppContext::objectChanged);
 		disconnect(doc, &Document::removingObject, this, &AppContext::removingObject);
 		disconnect(doc, &Document::objectRemoved, this, &AppContext::objectRemoved);
 		disconnect(doc, &Document::objectReparenting, this, &AppContext::objectReparenting);
@@ -390,6 +387,7 @@ void AppContext::connectDocumentSignals(bool enable)
 		disconnect(doc, &Document::propertyValueChanged, this, &AppContext::propertyValueChanged);
 		disconnect(doc, &Document::propertyChildInserted, this, &AppContext::propertyChildInserted);
 		disconnect(doc, &Document::propertyChildRemoved, this, &AppContext::propertyChildRemoved);
+		disconnect(doc, &Document::arrayIndexSwapped, this, &AppContext::arrayIndexSwapped);
 		disconnect(&mDocument->getUndoStack(), &QUndoStack::indexChanged, this, &AppContext::onUndoIndexChanged);
 	}
 }

@@ -33,7 +33,7 @@ namespace nap
 		}
 
 	public:
-		nap::ResourcePtr<nap::math::FloatFCurve> mCurve;
+		nap::ResourcePtr<nap::math::FloatFCurve> mCurve;		///< Property: 'Curve' The animation curve
 	};
 
 

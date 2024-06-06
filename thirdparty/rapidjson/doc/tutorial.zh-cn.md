@@ -82,7 +82,7 @@ JSON Number 类型表示所有数值。然而，C++ 需要使用更专门的类�
 ~~~~~~~~~~cpp
 assert(document["i"].IsNumber());
 
-// 在此情况下，IsUint()/IsInt64()/IsUInt64() 也会返回 true
+// 在此情况下，IsUint()/IsInt64()/IsUint64() 也会返回 true
 assert(document["i"].IsInt());          
 printf("i = %d\n", document["i"].GetInt());
 // 另一种用法： (int)document["i"]
@@ -250,7 +250,7 @@ string(const char* s, size_t count);
 
 ~~~~~~~~~~cpp
 if (document["hello"] == document["n"]) /*...*/;    // 比较两个值
-if (document["hello"] == "world") /*...*/;          // 与字符串家面量作比较
+if (document["hello"] == "world") /*...*/;          // 与字符串字面量作比较
 if (document["i"] != 123) /*...*/;                  // 与整数作比较
 if (document["pi"] != 3.14) /*...*/;                // 与 double 作比较
 ~~~~~~~~~~
@@ -294,7 +294,7 @@ Value a(kArrayType);
 
 ## 转移语义（Move Semantics） {#MoveSemantics}
 
-在设计 RapidJSON 时有一个非常特别的决定，就是 Value 赋值并不是把来源 Value 复制至目的 Value，而是把把来源 Value 转移（move）至目的 Value。例如：
+在设计 RapidJSON 时有一个非常特别的决定，就是 Value 赋值并不是把来源 Value 复制至目的 Value，而是把来源 Value 转移（move）至目的 Value。例如：
 
 ~~~~~~~~~~cpp
 Value a(123);
@@ -343,7 +343,7 @@ Value o(kObjectType);
 
 ![转移语义不需复制。](diagram/move3.png)
 
-在 C++11 中这称为转移赋值操作（move assignment operator）。由于 RapidJSON 支持 C++03，它在赋值操作采用转移语义，其它修改形函数如 `AddMember()`, `PushBack()` 也采用转移语义。
+在 C++11 中这称为转移赋值操作（move assignment operator）。由于 RapidJSON 支持 C++03，它在赋值操作采用转移语义，其它修改型函数如 `AddMember()`, `PushBack()` 也采用转移语义。
 
 ### 转移语义及临时值 {#TemporaryValues}
 
@@ -383,11 +383,12 @@ memset(buffer, 0, sizeof(buffer));
 
 另外，上面的 `SetString()` 需要长度参数。这个 API 能处理含有空字符的字符串。另一个 `SetString()` 重载函数没有长度参数，它假设输入是空字符结尾的，并会调用类似 `strlen()` 的函数去获取长度。
 
-最后，对于字符串字面量或有安全生命周期的字符串，可以使用 const-string 版本的 `SetString()`，它没有 allocator 参数。对于字符串家面量（或字符数组常量），只需简单地传递字面量，又安全又高效：
+最后，对于字符串字面量或有安全生命周期的字符串，可以使用 const-string 版本的 `SetString()`，它没有
+allocator 参数。对于字符串字面量（或字符数组常量），只需简单地传递字面量，又安全又高效：
 
 ~~~~~~~~~~cpp
 Value s;
-s.SetString("rapidjson");    // 可包含空字符，长度在编译萁推导
+s.SetString("rapidjson");    // 可包含空字符，长度在编译期推导
 s = "rapidjson";             // 上行的缩写
 ~~~~~~~~~~
 
@@ -446,7 +447,7 @@ contact.PushBack(val, document.GetAllocator());
 ~~~~~~~~~~
 
 ## 修改 Object {#ModifyObject}
-Object 是键值对的集合。每个键必须为 String。要修改 Object，方法是增加或移除成员。以下的 API 用来增加城员：
+Object 是键值对的集合。每个键必须为 String。要修改 Object，方法是增加或移除成员。以下的 API 用来增加成员：
 
 * `Value& AddMember(Value&, Value&, Allocator& allocator)`
 * `Value& AddMember(StringRefType, Value&, Allocator&)`

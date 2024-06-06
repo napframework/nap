@@ -87,6 +87,11 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 		uint val = index.model()->data(index, Qt::DisplayRole).toUInt();
 		QStyleOptionViewItem op(option);
 		op.text = enumIndexToQString(type.get_enumeration(), val);
+		if (path.isInstanceProperty())
+		{
+			op.palette.setColor(QPalette::Text,
+				AppContext::get().getThemeManager().getColor(napkin::theme::color::dimmedItem));
+		}
 		QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &op, painter);
 	}
 	else if (path.isNonEmbeddedPointer())
@@ -151,7 +156,7 @@ void PropertyValueItemDelegate::paint(QPainter* painter, const QStyleOptionViewI
 
 		QColor frame_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::dark1);
 		QColor icon_color = napkin::AppContext::get().getThemeManager().getColor(theme::color::front4);
-		button_style.palette.setBrush(QPalette::Background, frame_color);
+		button_style.palette.setBrush(QPalette::AlternateBase, frame_color);
 		button_style.palette.setBrush(QPalette::Base, frame_color);
 		button_style.palette.setBrush(QPalette::Highlight, frame_color);
 		button_style.palette.setBrush(QPalette::Text, icon_color);

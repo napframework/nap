@@ -12,4 +12,12 @@ namespace napkin
 	{
 		return qitem_cast<RTTIItem*>(QStandardItem::parent());
 	}
+
+
+	void RTTIItem::insertChild(int rowIndex, const QList<RTTIItem*>& items)
+	{
+		this->model()->insertRow(rowIndex, this->index());
+		for (auto i = 0; i < items.size(); i++)
+			this->setChild(rowIndex, i, items[i]);
+	}
 }

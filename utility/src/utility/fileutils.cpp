@@ -72,7 +72,7 @@ namespace nap
 				char buffer[MAX_PATH_SIZE];
 				if (absolute)
 				{
-					sprintf(buffer, "%s/%s", directory, ent->d_name);
+                    snprintf(buffer, 1024, "%s/%s", directory, ent->d_name);
 					outFilenames.push_back(buffer);
 				}
 				else {

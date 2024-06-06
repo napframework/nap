@@ -26,7 +26,7 @@ namespace napkin
 	class AddObjectCommand : public QUndoCommand
 	{
 	public:
-		AddObjectCommand(const rttr::type& type, nap::rtti::Object* parent = nullptr);
+		AddObjectCommand(const rttr::type& type);
 
 		/**
 		 * Redo
@@ -39,9 +39,30 @@ namespace napkin
 		void undo() override;
 	private:
 		const rttr::type mType;
-		std::string mObjectName;
-		std::string mParentName = "";
+		std::string mObjectID;
 	};
+
+
+	class DuplicateObjectCommand : public QUndoCommand
+	{
+	public:
+		DuplicateObjectCommand(const nap::rtti::Object& object, const PropertyPath& parent);
+
+		/**
+		 * Apply duplication
+		 */
+		void redo() override;
+
+		/**
+		 * Remove duplication
+		 */
+		void undo() override;
+	private:
+		std::string mObjectID;
+		std::string mDuplicateID;
+		PropertyPath mParent;
+	};
+
 
 	class AddComponentCommand : public QUndoCommand
 	{
@@ -56,6 +77,7 @@ namespace napkin
 		std::string mComponentName;
 	};
 
+
 	class RemoveComponentCommand : public QUndoCommand
 	{
 	public:
@@ -66,6 +88,7 @@ namespace napkin
 		std::string mEntityName;
 		std::string mComponentName;
 	};
+
 
     /**
      * TODO: To be implemented
@@ -88,6 +111,7 @@ namespace napkin
 		const std::string mObjectName;
 
 	};
+
 
 	/**
 	 * This command sets the value of a property
@@ -119,13 +143,13 @@ namespace napkin
 		QVariant mOldValue; // The old value
 	};
 
+
 	class SetPointerValueCommand : public QUndoCommand
 	{
 	public:
 		/**
-		 * @param ptr The pointer to the object
-		 * @param path The path to the property
-		 * @param newValue The new value of the property
+		 * @param path The property path
+		 * @param newValue The new object, nullptr to clear
 		 */
 		SetPointerValueCommand(const PropertyPath& path, nap::rtti::Object* newValue);
 
@@ -140,9 +164,9 @@ namespace napkin
 		void redo() override;
 
 	private:
-		PropertyPath		mPath;			// The path to the property
-		std::string			mNewValue;		// The new value
-		std::string			mOldValue;		// The old value
+		PropertyPath		mPath;					// The path to the property
+		nap::rtti::Object*	mNewObject = nullptr;	// The new object
+		std::string			mOldValue;				// The old object name
 	};
 
 
@@ -162,6 +186,7 @@ namespace napkin
 		size_t mIndex;
 	};
 
+
 	/**
 	 * Add an Entity as a child to another entity
 	 */
@@ -177,6 +202,7 @@ namespace napkin
 		size_t mIndex;
 	};
 
+
 	class RemoveChildEntityCommand : public QUndoCommand
 	{
 	public:
@@ -188,6 +214,7 @@ namespace napkin
 		size_t mIndex;
 	};
 
+
 	class RemoveCommand : public QUndoCommand
 	{
 	public:
@@ -197,6 +224,7 @@ namespace napkin
 	private:
 		PropertyPath mPath;
 	};
+
 
 	/**
 	 * Add an element to an array
@@ -342,16 +370,16 @@ namespace napkin
 		PropertyPath mNewPath = {};
 	};
 
-	class ArrayMoveElementCommand : public QUndoCommand
+	class ArraySwapElement : public QUndoCommand
 	{
 	public:
 		/**
-		 * Reorder an element within an array
+		 * Swap element within an array
 		 * @param array_prop The array that contains the element
 		 * @param fromIndex The index of the element to move
 		 * @param toIndex The index at which the element must be after the move
 		 */
-		ArrayMoveElementCommand(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex);
+		ArraySwapElement(const PropertyPath& array_prop, size_t fromIndex, size_t toIndex);
 
 		void redo() override;
 		void undo() override;
@@ -359,8 +387,6 @@ namespace napkin
 		const PropertyPath& mPath; ///< The path representing the array
 		size_t mFromIndex; ///< The element index to move
 		size_t mToIndex; ///< The element index to move to
-		size_t mOldIndex; ///< The actual old index (may have been shifted)
-		size_t mNewIndex; ///< The actual new index (may have been shifted)
 	};
 
 	class ReplaceEmbeddedPointerCommand : public QUndoCommand

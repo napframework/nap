@@ -39,6 +39,7 @@
     },
     "DataSearchPaths": [
         "{ROOT}/system_modules/naprender/data",
-        "{ROOT}/system_modules/{MODULE_NAME}/data"
+        "{ROOT}/system_modules/{MODULE_NAME}/data",
+        "{PROJECT_DIR}/../Resources/system_modules/{MODULE_NAME}/data"
     ]
 }

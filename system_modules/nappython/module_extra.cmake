@@ -13,9 +13,20 @@ if(NAP_BUILD_CONTEXT MATCHES "framework_release")
         win64_copy_python_modules_postbuild(FALSE)
     endif()
 
+    message(STATUS test)
+
     if(UNIX)
+        if (APPLE)
+            set(PYTHON_MODULES_DIR ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/python3.11)
+        else ()
+            set(PYTHON_MODULES_DIR ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/python3.6)
+        endif()
+
+        message(STATUS python modules)
+        message(STATUS  ${PYTHON_MODULES_DIR})
+
         # Python modules library installation
-        install(DIRECTORY ${THIRDPARTY_DIR}/python/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/python3.6
+        install(DIRECTORY ${PYTHON_MODULES_DIR}
                 DESTINATION lib/
                 PATTERN __pycache__ EXCLUDE
                 PATTERN *.pyc EXCLUDE)

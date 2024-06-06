@@ -10,6 +10,7 @@
 #include <rtti/object.h>
 #include <rtti/factory.h>
 #include <nap/resourceptr.h>
+#include <nap/core.h>
 
 namespace nap
 {
@@ -26,7 +27,7 @@ namespace nap
 		{
 			RTTI_ENABLE(AudioBufferResource)
 		public:
-			AudioFileResource(AudioService& service) : AudioBufferResource(service) { }
+			AudioFileResource(Core& core) : AudioBufferResource(core) { }
 			
 			// Inherited from AudioBufferResource
 			bool init(utility::ErrorState& errorState) override;
@@ -45,7 +46,7 @@ namespace nap
 			RTTI_ENABLE(AudioBufferResource)
 		
 		public:
-			MultiAudioFileResource(AudioService& service) : AudioBufferResource(service) { }
+			MultiAudioFileResource(Core& core) : AudioBufferResource(core) { }
 			
 			// Inherited from AudioBufferResource
 			bool init(utility::ErrorState& errorState) override;
@@ -53,10 +54,6 @@ namespace nap
 		public:
 			std::vector<std::string> mAudioFilePaths; ///< property: 'AudioFilePaths' The paths to the audio files on disk
 		};
-		
-		
-		using AudioFileResourceObjectCreator = rtti::ObjectCreator<AudioFileResource, AudioService>;
-		using MultiAudioFileResourceObjectCreator = rtti::ObjectCreator<MultiAudioFileResource, AudioService>;
-		
+
 	}
 }

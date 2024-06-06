@@ -73,6 +73,13 @@ namespace napkin
 		std::vector<nap::rtti::Object*> getObjects(const nap::rtti::TypeInfo& type);
 
 		/**
+		 * Get all objects from this document, derived from the specified types.
+		 * @param types List of types the object has to be derived from
+		 * @return All the objects in this document, derived from the provided types
+		 */
+		std::vector<nap::rtti::Object*> getObjects(const std::vector<nap::rtti::TypeInfo>& types);
+
+		/**
 		 * Get all objects from this document, derived from the specified type.
 		 * @tparam T The type each object has to be derived from
 		 * @return All the objects in this document, derived from the provided type
@@ -190,8 +197,8 @@ namespace napkin
 
 		/**
 		 * Add an object of the specified type.
-		 * @param type The type of the desired object.
-		 * @param parent The parent of the object: In the case of Entity, this will be its new parent.
+		 * @param type The type of the the object to add
+		 * @param parent Optional parent of the object, nullptr if object has no parent
 		 * In the case of Component, this is going to be the owning Entity.
 		 * @return The newly created object
 		 */
@@ -207,16 +214,22 @@ namespace napkin
 		void reparentObject(nap::rtti::Object& object, const PropertyPath& currentPath, const PropertyPath& newPath);
 
 		/**
-		 * Add an object of the specified type
-		 * @tparam T
-		 * @param parent
-		 * @return
+		 * Add an object of the specified type T
+		 * @param parent Optional parent of the object, nullptr if object has no parent
+		 * @param name optional object name
+		 * @return the added object of type T
 		 */
 		template<typename T>
-		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string())
-		{
-			return reinterpret_cast<T*>(addObject(RTTI_OF(T), parent, name));
-		}
+		T* addObject(nap::rtti::Object* parent = nullptr, const std::string& name = std::string()) 		{ return static_cast<T*>(addObject(RTTI_OF(T), parent, name)); }
+
+		/**
+		 * Duplicate the object, including all child properties, links and embedded objects.
+		 * The duplicated object is added to the parent (property) if valid.
+		 * @param src the object to duplicate
+		 * @param parent optional parent to which the src and duplicate belong
+		 * @return the duplicated object, nullptr if duplication failed
+		 */
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, const PropertyPath& parent);
 
 		/**
 		 * Add and entity to the document
@@ -368,15 +381,13 @@ namespace napkin
 		void groupRemoveElement(nap::IGroup& group, rttr::property arrayProperty, size_t index);
 
 		/**
-		 * Move an item within an array. If \p fromIndex is greater than \p toIndex,
-		 * \p toIndex is considered to be the destination index <b>before</b> the move happens.
-		 * The propertyValueChanged signal will be emitted.
+		 * Swaps the element at 'fromIndex' with the element at 'toIndex' in an array.
+		 * The propertyValueChanged and propertyIndexChanged signal will be emitted.
 		 * @param path The path to the array property
-		 * @param fromIndex The index of the element to move
-		 * @param toIndex The destination index of the element
-		 * @return The resulting index of the element
+		 * @param fromIndex the source index
+		 * @param toIndex the target index
 		 */
-		size_t arrayMoveElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
+		void arraySwapElement(const PropertyPath& path, size_t fromIndex, size_t toIndex);
 
 		/**
 		 * Get an element from an array
@@ -487,25 +498,11 @@ namespace napkin
 
 		/**
 		 * Qt Signal
-		 * Invoked when a Component has been added to the system
-		 * @param comp
-		 * @param owner
-		 */
-		void componentAdded(nap::Component* comp, nap::Entity* owner);
-
-		/**
-		 * Qt Signal
 		 * Invoked after any object has been added (this includes Entities and Groups)
 		 * @param obj The newly added object
 		 * @param parent The parent item of the newly added object, can be nullptr
 		 */
 		void objectAdded(nap::rtti::Object* obj, nap::rtti::Object* parent);
-
-		/**
-		 * Qt Signal
-		 * Invoked after an object has changed drastically
-		 */
-		void objectChanged(nap::rtti::Object* obj);
 
 		/**
 		 * Qt Signal
@@ -571,10 +568,19 @@ namespace napkin
 		/**
 		 * Qt Signal
 		 * Invoked just after a property child has been removed
-		 * @param path The path to the parent of the newly added child
+		 * @param parentPath The path to the parent of the newly added child
 		 * @param childIndex The index of the child that was removed
 		 */
 		void propertyChildRemoved(const PropertyPath& parentPath, size_t childIndex);
+
+		/**
+		 * Qt Signal
+		 * Invoked when an element in an array is swapped
+		 * @param parentPath Path of the parent array 
+		 * @param fromIndex the original index
+		 * @param toIndex the new index
+		 */
+		void arrayIndexSwapped(const PropertyPath& parentPath, size_t fromIndex, size_t toIndex);
 
 	private:
 		nap::Core& mCore;							// nap's core
@@ -583,20 +589,45 @@ namespace napkin
 		QUndoStack mUndoStack;						// This document's undostack
 
 		/**
+		 * Creates a unique object name based on the suggested name
+		 * @param suggestedName the suggested object name
+		 * @param object the object to get the name for
+		 * @param useUUID if a unique identifier is generated and appended
 		 * @return unique object name
 		 */
-		std::string getUniqueName(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
+		std::string getUniqueID(const std::string& suggestedName, const nap::rtti::Object& object, bool useUUID);
 
 		/**
 		 * Patches entity and component ptr links. This occurs when
 		 * the name of an entity or a component changes, which invalidates existing links to those objects.
-		 * All components that reference the component or entity are re-assigned the updated path.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
 		 * Note that entity and component links are string based and handled separately from regular resources,
 		 * hence the manual patching here.
 		 * @param oldID old entity or component ID
 		 * @param newID new entity or component ID
 		 */
 		void patchLinks(const std::string& oldID, const std::string& newID);
+
+		/**
+		 * Recursively patches resource entity and component ptr links. This occurs when
+		 * the name of an entity or a component changes, which invalidates existing links to those objects.
+		 * All components and overrides that reference the component or entity are re-assigned the updated path.
+		 * Note that entity and component links are string based and handled separately from regular resources,
+		 * hence the manual patching here.
+		 * @param object the object to patch links for
+		 * @param oldID old entity or component ID
+		 * @param newID new entity or component ID
+		 * @param current property path
+		 */
+		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
+
+		/**
+		 * Duplicate the object, including all child properties, links and embedded pointers.
+		 * @param src object to duplicate
+		 * @param parent optional parent of the object, nullptr if object has no parent
+		 * @return src duplicate, nullptr if duplication failed because object can't be created
+		 */
+		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent);
 	};
 
 
