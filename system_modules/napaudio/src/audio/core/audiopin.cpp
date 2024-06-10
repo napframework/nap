@@ -63,6 +63,15 @@ namespace nap
 			});
 		}
 		
+    
+        void InputPinBase::enqueueDisconnectAll()
+        {
+            getNode().getNodeManager().enqueueTask([&]() {
+                disconnectAll();
+            });
+        }
+
+    
 		// --- InputPin --- //
 		
 		InputPin::~InputPin()

@@ -68,7 +68,12 @@ namespace nap
 			 * This is the disconnect() function that is exposed to RTTR and to python.
 			 */
 			void enqueueDisconnect(OutputPin& pin);
-
+            
+            /**
+             * Enqueues a disconnectAll() call the be executed on the audio thread
+             */
+            void enqueueDisconnectAll();
+			
 			/**
 			 * @return the node that owns this input.
 			 */
