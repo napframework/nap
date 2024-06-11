@@ -55,7 +55,7 @@ namespace nap
 			 */
 			T getNextValue()
 			{
-				if (mNewDestination != mDestination)
+                if (mNewDestination.load() != mDestination)
 				{
 					mDestination = mNewDestination;
 					mStepCounter = mStepCount;
@@ -91,12 +91,12 @@ namespace nap
 			inline bool isRamping() const { return mStepCounter > 0 || mDestination != mNewDestination; }
 		
 		private:
-			T mNewDestination = 0;
+			std::atomic<T> mNewDestination = 0;
 			
 			T mValue; // Value that is being controlled by this object.
 			T mIncrement; // Increment value per step of the current ramp when mode is linear.
 			T mDestination = 0; // Destination value of the current ramp.
-			int mStepCount = 0; // Number of steps in the ramp.
+			std::atomic<int> mStepCount = 0; // Number of steps in the ramp.
 			int mStepCounter = 0; // Current step index, 0 means at destination
 		};
 		

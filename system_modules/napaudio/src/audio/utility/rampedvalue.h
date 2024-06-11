@@ -75,7 +75,7 @@ namespace nap
 			T getNextValue()
 			{
 				if (mStepCounter > 0) {
-					switch (mRampMode) {
+                    switch (mRampMode.load()) {
 						case RampMode::Linear:
 							mValue = mValue + mIncrement;
 							break;
@@ -126,8 +126,8 @@ namespace nap
 				}
 
 				mStepCounter = mStepCount;
-
-				switch (mRampMode)
+				
+                switch (mRampMode.load())
 				{
 					case RampMode::Linear:
 						mIncrement = (mDestination - mValue) / T(mStepCount);
@@ -163,10 +163,10 @@ namespace nap
 				T mIncrement; // Increment value per step of the current ramp when mode is linear.
 				T mFactor; // Factor value per step of the current ramp when mode is exponential.
 			};
-			T mDestination = 0; // Destination value of the current ramp.
-			int mStepCount = 0; // Number of steps in the ramp.
+			std::atomic<T> mDestination = 0; // Destination value of the current ramp.
+			std::atomic<int> mStepCount = 0; // Number of steps in the ramp.
 			int mStepCounter = {0}; // Current step index, 0 means at destination
-			RampMode mRampMode = {RampMode::Linear}; // The mode of the current ramp
+			std::atomic<RampMode> mRampMode = {RampMode::Linear}; // The mode of the current ramp
 			bool mDestinationZero = false; // In case of a linear ramp this indicates wether the destination value needs to be rounded to zero.
 		};
 
