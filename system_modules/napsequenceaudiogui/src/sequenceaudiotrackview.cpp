@@ -341,7 +341,8 @@ namespace nap
                 {
                     if(mState.mAction->isAction<HoveringSegment>())
                     {
-                        mState.mAction = createAction<StartDraggingSegment>(track.mID, segment->mID, segment->mStartTime);
+                        bool move_next_segments = ImGui::GetIO().KeyCtrl;
+                        mState.mAction = createAction<StartDraggingSegment>(track.mID, segment->mID, segment->mStartTime, move_next_segments);
                     }
                 } else if(ImGui::IsMouseDown(1))
                 {
@@ -599,11 +600,18 @@ namespace nap
         if(mState.mAction->isAction<StartDraggingSegment>())
         {
             auto *action = mState.mAction->getDerived<StartDraggingSegment>();
-            mState.mAction = createAction<DraggingSegment>(action->mTrackID, action->mSegmentID, action->mStartDuration);
+            getEditor().takeSnapshot(action->get_type());
+            mState.mAction = createAction<DraggingSegment>(action->mTrackID,
+                                                           action->mSegmentID,
+                                                           action->mStartDuration,
+                                                           action->mMoveNextSegments);
+
         } else
         {
             auto *action = mState.mAction->getDerived<DraggingSegment>();
             assert(action != nullptr);
+
+
 
             // get audio controller
             auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
@@ -657,6 +665,7 @@ namespace nap
                             // deserialize objects
                             utility::ErrorState error_state;
 
+                            getEditor().takeSnapshot(action->get_type());
                             if(pasteClipboard(action->mTrackID, action->mTime, error_state))
                             {
                                 ImGui::CloseCurrentPopup();
@@ -699,6 +708,7 @@ namespace nap
                         {
                             if(valid_selection)
                             {
+                                getEditor().takeSnapshot(action->get_type());
                                 audio_controller.insertAudioSegment(action->mTrackID, action->mTime, audio_buffers[action->mCurrentItem]);
                                 mState.mAction = createAction<None>();
                                 mState.mDirty = true;
@@ -771,6 +781,13 @@ namespace nap
 
         if(ImGui::BeginPopup("Edit Audio Segment"))
         {
+            auto take_snapshot = [this, action]
+            {
+                if(action->mTakeSnapshot)
+                    action->mTakeSnapshot = false;
+                getEditor().takeSnapshot(action->get_type());
+            };
+
             /**
              * obtain controller & segment
              */
@@ -798,6 +815,8 @@ namespace nap
 
             if(edit_time)
             {
+                take_snapshot();
+
                 double new_time = convertMMSSMSArrayToTime(time_array);
                 audio_controller.segmentAudioStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
                 mState.mDirty = true;
@@ -819,6 +838,8 @@ namespace nap
 
             if(edit_time)
             {
+                take_snapshot();
+
                 double new_time = convertMMSSMSArrayToTime(time_array);
                 audio_controller.segmentAudioStartTimeInSegmentChange(action->mTrackID, action->mSegmentID, new_time);
                 mState.mDirty = true;
@@ -840,6 +861,8 @@ namespace nap
 
             if(edit_time)
             {
+                take_snapshot();
+
                 double new_time = convertMMSSMSArrayToTime(time_array);
                 audio_controller.segmentAudioDurationChange(action->mTrackID, action->mSegmentID, new_time);
                 mState.mDirty = true;
@@ -862,6 +885,8 @@ namespace nap
              */
             if(Combo("Audio Buffer", &selection, audio_buffers))
             {
+                take_snapshot();
+
                 audio_controller.changeAudioSegmentAudioBuffer(action->mTrackID, action->mSegmentID, audio_buffers[selection]);
                 mState.mDirty = true;
             }
@@ -872,6 +897,8 @@ namespace nap
             auto &gui = mService.getGui();
             if(ImGui::ImageButton(gui.getIcon(icon::del)))
             {
+                take_snapshot();
+
                 audio_controller.deleteSegment(action->mTrackID, action->mSegmentID);
                 mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
                 mState.mDirty = true;
@@ -955,6 +982,13 @@ namespace nap
             // get the derived action
             auto *action = mState.mAction->getDerived<DraggingLeftAudioSegmentHandler>();
 
+            // take snapshot
+            if(action->mTakeSnapshot)
+            {
+                getEditor().takeSnapshot(action->get_type());
+                action->mTakeSnapshot = false;
+            }
+
             // get audio controller
             auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
 
@@ -993,6 +1027,13 @@ namespace nap
         {
             // get the derived action
             auto *action = mState.mAction->getDerived<DraggingRightAudioSegmentHandler>();
+
+            // take snapshot
+            if(action->mTakeSnapshot)
+            {
+                getEditor().takeSnapshot(action->get_type());
+                action->mTakeSnapshot = false;
+            }
 
             // get audio controller
             auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
@@ -1063,6 +1104,7 @@ namespace nap
                     auto &gui = mService.getGui();
                     if(ImGui::ImageButton(gui.getIcon(icon::ok), "Done"))
                     {
+                        getEditor().takeSnapshot(load_action->get_type()); 
                         if(mState.mClipboard->load(preset_files[load_action->mSelectedPresetIndex], error_state))
                         {
                             if(pasteClipboard(load_action->mTrackID, load_action->mTime, error_state))

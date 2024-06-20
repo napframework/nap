@@ -226,57 +226,94 @@ namespace nap
     }
 
 
-    double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID,
-                                                          float duration)
+    double SequenceControllerCurve::segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration, bool adjustFollowingSegments)
     {
         double return_duration = duration;
 
-        performEditAction([this, trackID, segmentID, duration, &return_duration]()
+        performEditAction([this, trackID, segmentID, duration, &return_duration, adjustFollowingSegments]()
                           {
+                              // Minimal duration of a segment
+                              // This value is used to check if the new duration is valid
+                              const float minimal_duration = 0.05f;
+
                               SequenceTrack *track = findTrack(trackID);
                               assert(track != nullptr); // track not found
 
-                              SequenceTrackSegmentDuration* previous_segment = nullptr;
-                              for(auto track_segment: track->mSegments)
-                              {
-                                  auto* duration_segment = static_cast<SequenceTrackSegmentDuration*>(track_segment.get());
+                              // declare variables for previous, next and current segment
+                              SequenceTrackSegmentCurveBase* next_segment = nullptr;
+                              SequenceTrackSegmentCurveBase* track_segment = nullptr;
 
-                                  if(duration_segment->mID == segmentID)
+                              // find the segment
+                              for(int i = 0 ; i < track->mSegments.size(); i++)
+                              {
+                                  if(track->mSegments[i]->mID == segmentID)
                                   {
+                                      // get the previous, next and current segment
+                                      track_segment = static_cast<SequenceTrackSegmentCurveBase*>(track->mSegments[i].get());
+                                      if(i+1 < track->mSegments.size())
+                                          next_segment = static_cast<SequenceTrackSegmentCurveBase*>(track->mSegments[i+1].get());
+
                                       // check if new duration is valid
                                       bool valid = true;
                                       double new_duration = duration;
+                                      double difference = new_duration - track_segment->mDuration;
 
-                                      if(new_duration > 0.0)
+                                      if(new_duration > minimal_duration)
                                       {
-                                          if(previous_segment != nullptr)
+                                          // iterate through the rest of the segments and check if the new duration is valid
+                                          // if a segment is locked it can happen that the new duration is not valid because its
+                                          // previous segment start time + duration cannot exceed the start time of the next locked segment
+                                          for(int j = i+1; j < track->mSegments.size(); j++)
                                           {
-                                              if(duration_segment->mStartTime + new_duration < previous_segment->mStartTime + previous_segment->mDuration)
+                                              auto* previous_segment_local = static_cast<SequenceTrackSegmentCurveBase*>(track->mSegments[j - 1].get());
+                                              auto* track_segment_local = static_cast<SequenceTrackSegmentCurveBase*>(track->mSegments[j].get());
+                                              if(track_segment_local->mLocked || !adjustFollowingSegments)
                                               {
-                                                  valid = false;
+                                                  if(previous_segment_local->mStartTime + previous_segment_local->mDuration + difference >
+                                                     track_segment_local->mStartTime + track_segment_local->mDuration - minimal_duration)
+                                                  {
+                                                      valid = false;
+                                                      break;
+                                                  }
                                               }
                                           }
-                                      } else
+                                      }else
                                       {
                                           valid = false;
                                       }
 
                                       if(valid)
                                       {
-                                          duration_segment->mDuration = duration;
+                                          track_segment->mDuration = duration;
 
-                                          auto it = mUpdateSegmentFunctionMap.find(track->get_type());
-                                          assert (it != mUpdateSegmentFunctionMap.end());
-                                          it->second(*track);
+                                          // if the drag is locked, adjust only start time of next segment to match the end time of the current segment
+                                          // also, iterate through the rest of the segments and adjust their start times and durations if one is locked
+                                          if(next_segment)
+                                          {
+                                              for(int j = i+1; j < track->mSegments.size(); j++)
+                                              {
+                                                  auto* previous_segment_local = static_cast<SequenceTrackSegmentCurveBase*>(track->mSegments[j - 1].get());
+                                                  auto* track_segment_local = static_cast<SequenceTrackSegmentCurveBase*>(track->mSegments[j].get());
+                                                  if(track_segment_local->mLocked || !adjustFollowingSegments)
+                                                  {
+                                                      double new_start_time = previous_segment_local->mStartTime + previous_segment_local->mDuration;
+                                                      double difference = track_segment_local->mStartTime - new_start_time;
+                                                      track_segment_local->mStartTime = new_start_time;
+                                                      track_segment_local->mDuration += difference;
+                                                      break;
+                                                  }else
+                                                  {
+                                                      track_segment_local->mStartTime = previous_segment_local->mStartTime + previous_segment_local->mDuration;
+                                                  }
+                                              }
+                                          }
 
                                           updateTracks();
                                       }
 
-                                      return_duration = duration_segment->mDuration;
+                                      return_duration = track_segment->mDuration;
                                       break;
                                   }
-
-                                  previous_segment = duration_segment;
                               }
                           });
 
@@ -294,6 +331,36 @@ namespace nap
         return it->second(trackID, time);
 
         return nullptr;
+    }
+
+
+    void SequenceControllerCurve::setSegmentLocked(const std::string& trackID, const std::string& segmentID, bool locked)
+    {
+        performEditAction([this, trackID, segmentID, locked]()
+                          {
+                              SequenceTrack *track = findTrack(trackID);
+                              assert(track != nullptr); // track not found
+
+                              auto *segment = static_cast<SequenceTrackSegmentCurveBase *>(findSegment(trackID, segmentID));
+                              assert(segment != nullptr); // segment not found
+
+                              segment->mLocked = locked;
+                          });
+    }
+
+
+    void SequenceControllerCurve::changeSegmentColor(const std::string &trackID, const std::string &segmentID, const nap::RGBAColorFloat &newColor)
+    {
+        performEditAction([this, trackID, segmentID, newColor]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment!=nullptr); // segment not found
+
+                              auto *curve_segment = static_cast<SequenceTrackSegmentCurveBase*>(segment);
+                              assert(curve_segment!= nullptr); // cannot upcast to curve segment base
+
+                              curve_segment->mColor = newColor;
+                          });
     }
 
 

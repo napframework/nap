@@ -1,3 +1,5 @@
+#include <utility>
+
 #pragma once
 
 namespace nap
@@ -268,9 +270,12 @@ namespace nap
              * @param startTime new start time of segment
              * @param duration new duration of segment
              * @param label new label of segment
+             * @param color new color of segment
+             * @param moveNextSegments if true, move next segments
+             * @param segmentLocked if true, segment is locked
              */
-            EditingCurveSegment(std::string trackID, std::string segmentID, const rttr::type &segmentType, double startTime, double duration, std::string label)
-                : TrackAction(trackID), mSegmentID(segmentID), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration), mSegmentLabel(label)
+            EditingCurveSegment(std::string trackID, std::string segmentID, const rttr::type &segmentType, double startTime, double duration, std::string label, const RGBAColorFloat& color, bool moveNextSegments, bool segmentLocked)
+                : TrackAction(std::move(trackID)), mSegmentID(std::move(segmentID)), mSegmentType(segmentType), mStartTime(startTime), mDuration(duration), mColor(color), mSegmentLabel(std::move(label)), mMoveNextSegments(moveNextSegments), mSegmentLocked(segmentLocked)
             {}
 
             bool mOpened = false;
@@ -279,6 +284,9 @@ namespace nap
             double mStartTime;
             double mDuration;
             std::string mSegmentLabel;
+            RGBAColorFloat mColor;
+            bool mMoveNextSegments = false;
+            bool mSegmentLocked = false;
         };
 
 

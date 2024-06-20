@@ -15,9 +15,8 @@ namespace nap
     {
     RTTI_ENABLE(SequenceTrackSegment)
     public:
-        // Constructor
+        // Default Constructor & destructor
         SequenceTrackSegmentDuration() = default;
-
         virtual ~SequenceTrackSegmentDuration() = default;
 
         double mDuration = 1.0; ///< Property: 'Duration' duration of the segment in the track

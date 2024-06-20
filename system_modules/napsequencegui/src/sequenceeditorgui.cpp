@@ -167,6 +167,9 @@ namespace nap
         // begin window
         if(visible)
         {
+            // handle hotkeys
+            handleHotKeys();
+
             // if the sequence has changed, mark the state dirty so caches can get cleared
             if(mState.mSequenceName!=sequence_player.getSequenceFilename())
             {
@@ -304,6 +307,39 @@ namespace nap
                 {
                     mState.mAction = createAction<SavePresetPopup>("segments");
                 }
+            }
+
+            ImGui::SameLine();
+
+            // only show undo/redo when editor contains snapshots
+            if(mEditor.getHistorySize() > 0)
+            {
+                // if history index has reached the limit, don't show undo option
+                if(mEditor.getHistoryIndex() > 0)
+                {
+                    if(ImGui::ImageButton(gui.getIcon(icon::sequencer::undo), "undo"))
+                    {
+                        mState.mAction = createAction<PerformUndo>();
+                    }
+                }
+
+                // if history index is not at at the most recent history, show redo
+                ImGui::SameLine();
+                if(mEditor.getHistoryIndex() < mEditor.getHistorySize() - 1)
+                {
+                    if(ImGui::ImageButton(gui.getIcon(icon::sequencer::redo), "redo"))
+                    {
+                        mState.mAction = createAction<PerformRedo>();
+                    }
+                    ImGui::SameLine();
+                }
+
+                //
+                if(ImGui::ImageButton(gui.getIcon(icon::sequencer::history), "History"))
+                {
+                    mState.mAction = createAction<OpenHistoryPopup>();
+                }
+                ImGui::SameLine();
             }
 
             ImGui::SameLine();
@@ -1801,6 +1837,9 @@ namespace nap
             ImGui::Text("Select & drag :");
             ImGui::SameLine(width);
             ImGui::TextColored(color, "Left mouse button");
+            ImGui::Text("Select & drag + move next segments accordingly :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Left mouse button + Control");
             ImGui::Text("Select & open edit popup :");
             ImGui::SameLine(width);
             ImGui::TextColored(color, "Right mouse button");
@@ -1829,7 +1868,221 @@ namespace nap
             // clicked outside so exit popup
             mState.mAction = createAction<None>();
         }
+    }
 
+
+    void SequenceEditorGUIView::handleHistoryPopup()
+    {
+        static auto strip_class_prefix_and_namespaces = [](std::string& type_string)
+        {
+            /**
+             * Remove "class " prefix if present
+             */
+            std::string class_prefix = "class ";
+            auto npos = type_string.find(class_prefix);
+            if(npos != std::string::npos)
+            {
+                type_string.erase(npos, class_prefix.length());
+            }
+
+            /**
+             * Remove templated class names "<>"
+             */
+            size_t first = type_string.find_first_of("<");
+            size_t last = type_string.find_last_of(">");
+            while(first != std::string::npos && last != std::string::npos)
+            {
+                type_string.erase(first,last-first+1);
+
+                first = type_string.find_first_of("<");
+                last = type_string.find_last_of(">");
+            }
+
+            /**
+             * Remove all namespaces
+             */
+            npos = type_string.find("::");
+            while(npos != std::string::npos)
+            {
+                type_string.erase(0, npos + 2);
+                npos = type_string.find("::");
+            }
+        };
+
+        if(mState.mAction->isAction<OpenHistoryPopup>())
+        {
+            mState.mAction = createAction<SelectHistoryPopup>();
+            ImGui::OpenPopup("History");
+        }
+
+        IMGuiService &gui = mService.getGui();
+
+        if(mState.mAction->isAction<SelectHistoryPopup>())
+        {
+            if(ImGui::BeginPopupModal("History", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
+            {
+                // widths of table
+                const float widths[3] =
+                        {
+                                300.0f * mState.mScale,
+                                500.0f * mState.mScale,
+                                600.0f * mState.mScale
+                        };
+
+                // highlight color
+                const auto highlight_color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
+
+                ImGui::Text("Action:");
+                ImGui::SameLine(widths[0]);
+                ImGui::Text("Date & Time:");
+                ImGui::SameLine(widths[1]);
+                ImGui::Text("Size:");
+                ImGui::Separator();
+
+                const auto& history = mEditor.getHistory();
+                int history_index = mEditor.getHistoryIndex();
+
+                double total_kilobyte = 0.0;
+
+                int idx = history.size() - 1;
+                for (auto it = history.rbegin(); it != history.rend(); ++it)
+                {
+                    const auto& history_point = *it;
+
+                    ImGui::PushID(idx);
+                    if(history_index == idx)
+                    {
+                        ImGui::PushStyleColor(ImGuiCol_Text, highlight_color);
+                    }
+                    std::string type_name = history_point->mActionType.get_raw_type().get_name().to_string();
+
+                    strip_class_prefix_and_namespaces(type_name);
+                    ImGui::Text(type_name.c_str());
+                    ImGui::SameLine(widths[0]);
+                    ImGui::Text(history_point->mDateTime.toString().c_str());
+                    ImGui::SameLine(widths[1]);
+                    float kilobyte = (static_cast<float>(history_point->mBinaryWriter.getBuffer().size()) / 1024.0f);
+                    total_kilobyte += kilobyte;
+                    std::string size_string = utility::stringFormat("%.2fkb", kilobyte);
+                    ImGui::Text(size_string.c_str());
+                    if(history_index == idx)
+                    {
+                        ImGui::PopStyleColor();
+                    }
+                    ImGui::SameLine(widths[2]);
+                    if(ImGui::ImageButton(gui.getIcon(icon::load), "select"))
+                    {
+                        if(mEditor.getHistoryIndex() == mEditor.getHistorySize())
+                        {
+                            mEditor.takeSnapshot(RTTI_OF(sequenceguiactions::PerformUndo));
+                        }
+                        mEditor.jumpToHistoryPointIndex(idx);
+                        mState.mDirty = true;
+                    }
+                    idx--;
+                    ImGui::PopID();
+                }
+
+                ImGui::Spacing();
+                ImGui::Separator();
+                std::string total_size_string = utility::stringFormat("Total history size %.2fmb", total_kilobyte / 1024.0);
+                ImGui::Text(total_size_string.c_str());
+                ImGui::Spacing();
+
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+                {
+                    ImGui::CloseCurrentPopup();
+                    mState.mAction = createAction<None>();
+                }
+                ImGui::EndPopup();
+            } else
+            {
+                // clicked outside so exit popup
+                mState.mAction = createAction<None>();
+            }
+        }
+    }
+
+
+    void SequenceEditorGUIView::handleUndo()
+    {
+        assert(mState.mAction->isAction<PerformUndo>());
+        auto* action = mState.mAction->getDerived<PerformUndo>();
+
+        // clear clipboard
+        mState.mClipboard = createClipboard<Empty>();
+
+        // if history index is currently at the end of the history size, take a snapshot to store the current
+        // state of the sequence and add it to the history
+        if(mEditor.getHistoryIndex() == mEditor.getHistorySize())
+        {
+            mEditor.takeSnapshot(action->get_type());
+            mEditor.undo();
+        }
+        mEditor.undo();
+        mState.mAction = createAction<None>();
+        mState.mDirty = true;
+    }
+
+
+    void SequenceEditorGUIView::handleRedo()
+    {
+        // clear clipboard
+        mState.mClipboard = createClipboard<Empty>();
+
+        mEditor.redo();
+        mState.mAction = createAction<None>();
+        mState.mDirty = true;
+    }
+
+
+    void SequenceEditorGUIView::handleHotKeys()
+    {
+        // if window is focused
+        if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
+        {
+            // if ctrl is pressed, check for undo/redo actions
+            if(ImGui::GetIO().KeyCtrl)
+            {
+                // redo
+                if(ImGui::GetIO().KeyShift)
+                {
+                    if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+                    {
+                        if(mEditor.getHistoryIndex() < mEditor.getHistorySize()-1)
+                        {
+                            mState.mAction = createAction<PerformRedo>();
+                        }
+                    }
+                }else
+                {
+                    // undo
+                    if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Z)))
+                    {
+                        mState.mAction = createAction<PerformUndo>();
+                    }
+                }
+            }else
+            {
+                // Start stop player with keyboard
+                if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
+                {
+                    mEditor.mSequencePlayer->setIsPlaying(!mEditor.mSequencePlayer->getIsPlaying());
+                }
+            }
+
+            // allow mouse zoom-in with mouse wheel and ctrl
+            if(ImGui::GetIO().KeyCtrl)
+            {
+                float scroll = ImGui::GetIO().MouseWheel;
+                if(scroll != 0.0f)
+                {
+                    float new_resolution = mState.mHorizontalResolution + ImGui::GetIO().MouseWheel * 5.0f;
+                    new_resolution = math::max<float>(new_resolution, 2.5f);
+                    mState.mAction = createAction<ChangeHorizontalResolution>(new_resolution);
+                }
+            }
+        }
     }
 
 
@@ -1844,6 +2097,10 @@ namespace nap
         registerActionHandler(RTTI_OF(SaveAsPopup), [this] { handleSaveAsPopup(); });
         registerActionHandler(RTTI_OF(HelpPopup), [this] { handleHelpPopup(); });
         registerActionHandler(RTTI_OF(SavePresetPopup), [this] { handleSaveClipboardPopup(); });
+        registerActionHandler(RTTI_OF(OpenHistoryPopup), [this] { handleHistoryPopup(); });
+        registerActionHandler(RTTI_OF(SelectHistoryPopup), [this] { handleHistoryPopup(); });
+        registerActionHandler(RTTI_OF(PerformUndo), [this] { handleUndo(); });
+        registerActionHandler(RTTI_OF(PerformRedo), [this] { handleRedo(); });
 
         /**
          * action handlers for changing horizontal resolution (zoom)

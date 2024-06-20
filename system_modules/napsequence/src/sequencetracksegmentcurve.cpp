@@ -4,6 +4,11 @@
 
 #include "sequencetracksegmentcurve.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceTrackSegmentCurveBase)
+    RTTI_PROPERTY("Locked", &nap::SequenceTrackSegmentCurveBase::mLocked, nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("Color", &nap::SequenceTrackSegmentCurveBase::mColor, nap::rtti::EPropertyMetaData::Default)
+RTTI_END_CLASS
+
 DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveFloat)
 DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec2)
 DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(nap::SequenceTrackSegmentCurveVec3)
