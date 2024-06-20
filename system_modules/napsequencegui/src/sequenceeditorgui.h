@@ -59,7 +59,6 @@ namespace nap
          */
         SequenceGUIService& getService() { return mService; }
 
-
         // properties
         ResourcePtr<RenderWindow> mRenderWindow = nullptr;
         ResourcePtr<SequenceEditor> mSequenceEditor = nullptr; ///< Property: 'Sequence Editor' link to editor resource

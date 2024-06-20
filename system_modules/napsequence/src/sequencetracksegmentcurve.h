@@ -23,6 +23,7 @@ namespace nap
         // properties
         std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;   ///< Property: 'Curves' vector holding curves
         std::vector<math::ECurveInterp> mCurveTypes;                    ///< Property: 'Curve Types' curve types of this segment ( linear, bezier )
+        bool mLocked = false;                                           ///< Property: 'Locked' if true, the segment is locked and its start time and duration cannot be changed
 
         /**
          * init evaluates the data hold in curves and checks if its valid for this type
@@ -193,5 +194,6 @@ namespace nap
             RTTI_PROPERTY("Curves",         &Type::mCurves,     nap::rtti::EPropertyMetaData::Default) \
             RTTI_PROPERTY("Curve Types",    &Type::mCurveTypes, nap::rtti::EPropertyMetaData::Default) \
             RTTI_PROPERTY("Duration",       &Type::mDuration,   nap::rtti::EPropertyMetaData::Default) \
+            RTTI_PROPERTY("Locked",         &Type::mLocked,     nap::rtti::EPropertyMetaData::Default) \
         RTTI_END_CLASS
 }
