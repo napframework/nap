@@ -234,8 +234,11 @@ namespace nap
                     // display segment label
                     for(const auto &segment: track.mSegments)
                     {
-                        float segment_start = (float) segment->mStartTime * mState.mStepSize;
-                        float segment_width = (float) segment->mDuration * mState.mStepSize;
+                        // upcast to duration segment
+                        assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentDuration))); // type mismatch
+                        const auto* segment_duration = static_cast<const SequenceTrackSegmentDuration*>(segment.get());
+                        float segment_start = (float) segment_duration->mStartTime * mState.mStepSize;
+                        float segment_width = (float) segment_duration->mDuration * mState.mStepSize;
 
                         if(mState.mMousePos.x > trackTopLeft.x + segment_start &&
                            mState.mMousePos.x < trackTopLeft.x + segment_start + segment_width)
@@ -304,23 +307,24 @@ namespace nap
         int segment_count = 0;
         for(const auto &segment: track.mSegments)
         {
-            const auto *segment_ptr = segment.get();
-            float segment_x = (float) (segment->mStartTime + segment->mDuration) * mState.mStepSize;
-            float segment_width = (float) segment->mDuration * mState.mStepSize;
+            // upcast to duration segment
+            const auto *segment_duration = static_cast<const SequenceTrackSegmentDuration*>(segment.get());
+
+            // calculate segment x and width
+            float segment_x = (float) (segment_duration->mStartTime + segment_duration->mDuration) * mState.mStepSize;
+            float segment_width = (float) segment_duration->mDuration * mState.mStepSize;
 
             // draw segment handlers
             drawSegmentHandler(
                 track,
-                *segment_ptr,
+                *segment_duration,
                 trackTopLeft, segment_x, segment_width, draw_list);
 
             // draw segment content
-            auto it = getDrawCurveSegmentsMap().find(segment_ptr->get_type());
+            auto it = getDrawCurveSegmentsMap().find(segment_duration->get_type());
             if(it != getDrawCurveSegmentsMap().end())
             {
-                (*this.*
-                 it->second)(track, *segment_ptr, trackTopLeft, previous_segment_x, segment_width, segment_x, draw_list, (
-                    segment_count == 0));
+                (*this.*it->second)(track, *segment_duration, trackTopLeft, previous_segment_x, segment_width, segment_x, draw_list, (segment_count == 0));
             }
 
             previous_segment_x = segment_x;
@@ -342,6 +346,9 @@ namespace nap
         const float line_thickness_regular = 1.0f * mState.mScale;
         const float line_thickness_active = 3.0f * mState.mScale;
         const float track_height = track.mTrackHeight * mState.mScale;
+
+        // upcast to duration segment
+        const auto &segment_duration = static_cast<const SequenceTrackSegmentDuration&>(segment);
 
         // check if user is hovering or dragging the handler of this segment
         if(mState.mIsWindowFocused
@@ -367,24 +374,24 @@ namespace nap
 
             // show timestamp
             ImGui::BeginTooltip();
-            ImGui::Text(formatTimeString(segment.mStartTime + segment.mDuration).c_str());
+            ImGui::Text(formatTimeString(segment.mStartTime + segment_duration.mDuration).c_str());
             ImGui::EndTooltip();
 
             // left mouse is start dragging
             if(ImGui::IsMouseDown(0))
             {
-                mState.mAction = createAction<StartDraggingSegment>(track.mID, segment.mID, segment.mDuration);
+                mState.mAction = createAction<StartDraggingSegment>(track.mID, segment.mID, segment_duration.mDuration);
             }
                 // right mouse is edit popup
             else if(ImGui::IsMouseDown(1))
             {
                 mState.mAction = createAction<EditingCurveSegment>(
                     track.mID,
-                    segment.mID,
-                    segment.get_type(),
-                    segment.mStartTime,
-                    segment.mDuration,
-                    segment.mLabel
+                    segment_duration.mID,
+                    segment_duration.get_type(),
+                    segment_duration.mStartTime,
+                    segment_duration.mDuration,
+                    segment_duration.mLabel
                 );
             }
 
@@ -443,8 +450,8 @@ namespace nap
                         line_thickness_active // thickness
                     );
                 ImGui::BeginTooltip();
-                ImGui::Text(segment.mLabel.c_str());
-                ImGui::Text(formatTimeString(segment.mStartTime + segment.mDuration).c_str());
+                ImGui::Text(segment_duration.mLabel.c_str());
+                ImGui::Text(formatTimeString(segment_duration.mStartTime + segment_duration.mDuration).c_str());
                 ImGui::EndTooltip();
             } else
             {
@@ -1214,7 +1221,7 @@ namespace nap
              */
             // obtain segment
             auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-            const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
+            const auto *segment = static_cast<const SequenceTrackSegmentDuration*>(curve_controller.getSegment(action->mTrackID, action->mSegmentID));
             assert(segment != nullptr);
 
             double time = action->mTime * segment->mDuration + segment->mStartTime;

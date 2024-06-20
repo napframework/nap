@@ -236,10 +236,12 @@ namespace nap
                               SequenceTrack *track = findTrack(trackID);
                               assert(track != nullptr); // track not found
 
-                              ResourcePtr<SequenceTrackSegment> previous_segment = nullptr;
+                              SequenceTrackSegmentDuration* previous_segment = nullptr;
                               for(auto track_segment: track->mSegments)
                               {
-                                  if(track_segment->mID == segmentID)
+                                  auto* duration_segment = static_cast<SequenceTrackSegmentDuration*>(track_segment.get());
+
+                                  if(duration_segment->mID == segmentID)
                                   {
                                       // check if new duration is valid
                                       bool valid = true;
@@ -249,8 +251,7 @@ namespace nap
                                       {
                                           if(previous_segment != nullptr)
                                           {
-                                              if(track_segment->mStartTime + new_duration <
-                                                 previous_segment->mStartTime + previous_segment->mDuration)
+                                              if(duration_segment->mStartTime + new_duration < previous_segment->mStartTime + previous_segment->mDuration)
                                               {
                                                   valid = false;
                                               }
@@ -262,7 +263,7 @@ namespace nap
 
                                       if(valid)
                                       {
-                                          track_segment->mDuration = duration;
+                                          duration_segment->mDuration = duration;
 
                                           auto it = mUpdateSegmentFunctionMap.find(track->get_type());
                                           assert (it != mUpdateSegmentFunctionMap.end());
@@ -271,11 +272,11 @@ namespace nap
                                           updateTracks();
                                       }
 
-                                      return_duration = track_segment->mDuration;
+                                      return_duration = duration_segment->mDuration;
                                       break;
                                   }
 
-                                  previous_segment = track_segment;
+                                  previous_segment = duration_segment;
                               }
                           });
 
@@ -311,8 +312,11 @@ namespace nap
                                   {
                                       if(segment->mID == segmentID)
                                       {
+                                          // upcast to duration segment
+                                          const auto* duration_segment = static_cast<SequenceTrackSegmentDuration*>(segment.get());
+
                                           // store the duration of the segment that we are deleting
-                                          double duration = segment->mDuration;
+                                          double duration = duration_segment->mDuration;
 
                                           // erase it from the list
                                           track->mSegments.erase(track->mSegments.begin() + segment_index);
@@ -321,7 +325,7 @@ namespace nap
                                           if(track->mSegments.begin() + segment_index != track->mSegments.end())
                                           {
                                               // add the duration
-                                              track->mSegments[segment_index]->mDuration += duration;
+                                              static_cast<SequenceTrackSegmentDuration*>(track->mSegments[segment_index].get())->mDuration += duration;
                                           }
 
                                           deleteObjectFromSequencePlayer(segmentID);

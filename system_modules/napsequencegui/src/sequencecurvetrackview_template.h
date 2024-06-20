@@ -53,7 +53,7 @@ namespace nap
              */
             // obtain segment
             auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-            const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
+            const auto *segment = static_cast<const SequenceTrackSegmentDuration*>(curve_controller.getSegment(action->mTrackID, action->mSegmentID));
             assert(segment != nullptr);
 
             double time = action->mTime * segment->mDuration + segment->mStartTime;

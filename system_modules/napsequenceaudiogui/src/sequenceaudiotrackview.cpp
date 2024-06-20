@@ -215,9 +215,13 @@ namespace nap
         int segment_count = 0;
         for(const auto &segment: track.mSegments)
         {
+            // upcast to duration segment
+            assert(segment.get()->get_type().is_derived_from<SequenceTrackSegmentAudio>()); // type mismatch
+            const auto* segment_audio = static_cast<const SequenceTrackSegmentAudio*>(segment.get());
+
             // obtain width & position
-            float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
-            float segment_width = (float) (segment->mDuration) * mState.mStepSize;
+            float segment_x = (float) (segment_audio->mStartTime) * mState.mStepSize;
+            float segment_width = (float) (segment_audio->mDuration) * mState.mStepSize;
 
             // calc segment top left and bottom right
             const float one_pixel_offset = 1.0f * mState.mScale;
@@ -410,10 +414,6 @@ namespace nap
                                                           : (hovering_segment
                                                              ? mAudioGUIService->getColors().mAudioSegmentBackgroundHovering
                                                              : mAudioGUIService->getColors().mAudioSegmentBackground)); // color
-
-            // up cast segment
-            assert(segment.get()->get_type().is_derived_from<SequenceTrackSegmentAudio>()); // type mismatch
-            auto *segment_audio = static_cast<SequenceTrackSegmentAudio *>(segment.get());
 
             // get sequence player
             const SequencePlayer *sequence_player = getEditor().mSequencePlayer.get();

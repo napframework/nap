@@ -4,6 +4,7 @@
 
 // local includes
 #include "sequenceeditor.h"
+#include "sequencetracksegmentduration.h"
 
 // external includes
 #include <fcurve.h>
@@ -100,7 +101,13 @@ namespace nap
                             double longest_segment = 0.0;
                             for(auto &segment: track->mSegments)
                             {
-                                double time = segment->mStartTime + segment->mDuration;
+                                double time = segment->mStartTime;
+                                if(segment.get_type().is_derived_from<SequenceTrackSegmentDuration>())
+                                {
+                                    auto* duration_segment = static_cast<SequenceTrackSegmentDuration*>(segment.get());
+                                    time += duration_segment->mDuration;
+                                }
+
                                 longest_segment = math::max<double>(longest_segment, time);
                             }
                             longest_track = math::max<double>(longest_segment, longest_track);
