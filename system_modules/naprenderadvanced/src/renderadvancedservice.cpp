@@ -19,8 +19,6 @@
 #include <renderglobals.h>
 #include <sceneservice.h>
 #include <parametervec.h>
-#include <parameternumeric.h>
-#include <parametermat.h>
 #include <parametercolor.h>
 #include <cubemapfromfile.h>
 
@@ -591,7 +589,9 @@ namespace nap
 	void RenderAdvancedService::shutdown()
 	{
 		// Destroy all remaining dynamically spawned entities and clear
-		mLightScene->onDestroy();
+		if (mLightScene)
+			mLightScene->onDestroy();
+
 		mLightScene.reset();
 	}
 
