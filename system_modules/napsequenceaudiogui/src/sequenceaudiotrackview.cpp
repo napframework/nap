@@ -584,6 +584,9 @@ namespace nap
         auto *action = mState.mAction->getDerived<AssignOutputIDToTrack>();
         assert(action != nullptr);
 
+        // take snapshot
+        getEditor().takeSnapshot(action->get_type());
+
         // get audio controller
         auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
 
@@ -611,7 +614,12 @@ namespace nap
             auto *action = mState.mAction->getDerived<DraggingSegment>();
             assert(action != nullptr);
 
-
+            // take snapshot
+            if(action->mTakeSnapshot)
+            {
+                getEditor().takeSnapshot(action->get_type());
+                action->mTakeSnapshot = false;
+            }
 
             // get audio controller
             auto &audio_controller = getEditor().getController<SequenceControllerAudio>();
