@@ -105,12 +105,6 @@ namespace nap
         const Sequence &sequence = mEditor.mSequencePlayer->getSequenceConst();
         SequencePlayer &sequence_player = *mEditor.mSequencePlayer.get();
 
-        // Start stop player with keyboard
-        if(ImGui::IsKeyPressed(ImGui::GetKeyIndex(ImGuiKey_Space)))
-        {
-            sequence_player.setIsPlaying(!sequence_player.getIsPlaying());
-        }
-
         // calc track spacing
         const float track_spacing = 20.0f * mState.mScale;
 
@@ -1832,14 +1826,17 @@ namespace nap
 
         if(ImGui::BeginPopupModal("Help", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
         {
-            const float width = 200.0f * mState.mScale;
+            const float width = 300.0f * mState.mScale;
             auto color = ImGui::ColorConvertU32ToFloat4(mService.getColors().mHigh2);
+            ImGui::Text("Start / Stop playback :");
+            ImGui::SameLine(width);
+            ImGui::TextColored(color, "Spacebar");
             ImGui::Text("Select & drag :");
             ImGui::SameLine(width);
             ImGui::TextColored(color, "Left mouse button");
-            ImGui::Text("Select & drag + move next segments accordingly :");
+            ImGui::Text("Select & drag + move next segments :");
             ImGui::SameLine(width);
-            ImGui::TextColored(color, "Left mouse button + Control");
+            ImGui::TextColored(color, "Control + Left mouse button");
             ImGui::Text("Select & open edit popup :");
             ImGui::SameLine(width);
             ImGui::TextColored(color, "Right mouse button");

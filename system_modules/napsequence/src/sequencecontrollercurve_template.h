@@ -73,6 +73,7 @@ namespace nap
                                               new_segment->mDuration = segment_curve->mStartTime + segment_curve->mDuration - time;
                                               new_segment->mCurves.resize(curve_count);
                                               new_segment->mCurveTypes.resize(curve_count);
+                                              new_segment->mLocked = segment_curve->mLocked;
                                               for(int i = 0; i < curve_count; i++)
                                               {
                                                   std::unique_ptr<math::FCurve<float, float>> fcurve = std::make_unique<math::FCurve<float, float>>();
@@ -104,6 +105,9 @@ namespace nap
                                                   // ... otherwise it just gets this segments end value
                                                   new_segment->setEndValue(segment_curve->getEndValue());
                                               }
+
+                                              // change locked status of old segment
+                                              segment_curve->mLocked = false;
 
                                               // the segment's end value gets the start value the newly inserted segment
                                               segment_curve->setEndValue(new_segment->getStartValue());
