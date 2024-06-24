@@ -126,7 +126,7 @@ this means that all video frames up until time 2 will be dropped.
 #include <string.h>
 #include <iostream>
 #include <limits>
-#include "nap/logger.h"
+#include <nap/logger.h>
 
 extern "C"
 {
@@ -541,6 +541,8 @@ namespace nap
 				continue;
 			if (packet == mSeekEndPacket.get())
 				continue;
+            if(packet == mIOFinishedPacket.get())
+                continue;
 
 			av_packet_free(&packet);
 		}
@@ -604,16 +606,18 @@ namespace nap
 	
 	bool AVState::addPacket(AVPacket& packet, const bool& exitIOThreadSignalled)
 	{
-		// Allocate packet our side
 		assert(matchesStream(packet));
-		if (!mVideo->allocatePacket(packet.size))
-			return false;
 
-		// Add to packet queue
-		std::unique_lock<std::mutex> lock(mPacketQueueMutex);
-		mPacketQueue.emplace(&packet);
-		mPacketAvailableCondition.notify_all();
-		return true;
+        // Allocate packet our side
+        if (!mVideo->allocatePacket(packet.size))
+            return false;
+
+        // Add to packet queue
+        std::unique_lock<std::mutex> lock(mPacketQueueMutex);
+        mPacketQueue.emplace(&packet);
+        mPacketAvailableCondition.notify_all();
+
+        return true;
 	}
 
 	void AVState::notifyStartIOThread()
@@ -726,6 +730,7 @@ namespace nap
 			// Push the frame onto the frame queue
 			{
 				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+
 				mFrameQueueRoomAvailableCondition.wait(lock, [this]() { return mActiveFrameQueue->size() < 16 || mExitDecodeThreadSignalled; });
 				if (mExitDecodeThreadSignalled)
 				{
@@ -737,6 +742,12 @@ namespace nap
 				mFrameDataAvailableCondition.notify_all();
 				VIDEO_DEBUG_LOG("push frame (stream %d): pkt_pos: %d, dts: %d, pts: %d", mStream, new_frame.mFrame->pkt_pos, new_frame.mFrame->pkt_dts, new_frame.mFrame->pkt_pts);
 			}
+
+            // sleep the thread for a bit
+            // this prevents a very rare race condition that can happen while seeking
+            // a seekstart packet can be pushed onto the queue but the decode thread is so fast that it processes the packet before waitSeekStartPacketProcessed is called
+            // this can happen with black frames in the videos and fast CPU's
+            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
 		av_frame_free(&frame);
@@ -789,12 +800,25 @@ namespace nap
 			else if (packet == mSeekEndPacket.get())
 			{
 				VIDEO_DEBUG_LOG("seek end received");
+                {
+                    // clear any previous frames, we're not interested in them anymore
+                    clearFrameQueue(mFrameQueue, false);
 
-				clearFrameQueue(mSeekFrameQueue, false);
+                    // Copy seek frame queues into the regular frame queue
+                    while(!mSeekFrameQueue.empty())
+                    {
+                        Frame f = popSeekFrame();
+                        std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+                        mFrameQueue.push(f);
+                    }
+                }
+
+                // Clear the seek frame queue
+                clearFrameQueue(mSeekFrameQueue, false);
 
 				// Seeking is done, switch back to the regular frame queue so that the user can continue
 				// processing frames
-				std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+                std::unique_lock<std::mutex> lock(mFrameQueueMutex);
 				mActiveFrameQueue = &mFrameQueue;
 
 				// We are guessing the best 'last pts'. The seek target PTS is smaller or equal to the seeked PTS, (unless we 
@@ -803,7 +827,7 @@ namespace nap
 			}
 			else if (packet == mIOFinishedPacket.get())
 			{
-				// I/O thread has no more packets to produce. It is the last packet in the queue, so 
+				// I/O thread has no more packets to produce. It is the last packet in the queue, so
 				// we are also done producing frames.
 				mFinishedProducingFrames = true;
 				return nullptr;
@@ -840,8 +864,8 @@ namespace nap
 					// We have a frame, copy the first DTS that was used to produce this packet (and reset it for the next frame)
 					frameFirstPacketDTS = mFrameFirstPacketDTS;
 					mFrameFirstPacketDTS = -INT_MAX;
-					VIDEO_DEBUG_LOG("receive_frame: pkt_pos: %d, dts: %d, pts: %d", frame.pkt_pos, frame.pkt_dts, frame.pkt_pts);					
-					return EDecodeFrameResult::GotFrame;
+					VIDEO_DEBUG_LOG("receive_frame: pkt_pos: %d, dts: %d, pts: %d", frame.pkt_pos, frame.pkt_dts, frame.pkt_pts);
+                    return EDecodeFrameResult::GotFrame;
 				}
 
 				// An EOF is returned from avcoded_receive_frame if an EOF packet (a specific packet with a nullptr for data) is sent
@@ -849,7 +873,7 @@ namespace nap
 				if (result == AVERROR_EOF)
 				{
 					avcodec_flush_buffers(mCodecContext);
-					mEndOfFileProcessedEvent.set();
+                    mEndOfFileProcessedEvent.set();
 					return EDecodeFrameResult::EndOfFile;
 				}
 
@@ -860,7 +884,7 @@ namespace nap
 
 			AVPacket* packet = popPacket();
 			if (packet == nullptr)
-				return EDecodeFrameResult::Exit;
+                return EDecodeFrameResult::Exit;
 
 			VIDEO_DEBUG_LOG("avcodec_send_packet: pkt_pos: %d, dts: %d, pts: %d", packet->pos, packet->dts, packet->pts);
 
@@ -911,7 +935,6 @@ namespace nap
 		{
 			if (cur_frame.isValid())
 			{
-				//nap::Logger::info("Dropping frame at time %f (clock is at %f)", mFrameQueue.front().mPTSSecs, pts);
 				cur_frame.free();
 			}
 
@@ -1123,6 +1146,7 @@ namespace nap
 		mSeekTarget = -1;
 		mSeekKeyframeTarget = -1;
 		mSeekTargetSecs = seconds;
+        mSystemClockSecs = sClockMax;
 		setIOThreadState(IOThreadState::SeekRequest);
 	}
 
@@ -1398,24 +1422,26 @@ namespace nap
 					// because the audio clock won't progress, due to no packets being added to the audio state, because we're waiting for video here.
 					if (audioEnabled())
 						mAudioState.addSeekStartPacket(mExitIOThreadSignalled);
-					
-					mVideoState.addSeekStartPacket(mExitIOThreadSignalled);
 
 					// Wait until the seek start is processed so that we are sure that there is not more state pending in the decode thread
 					if (audioEnabled())
 						mAudioState.waitSeekStartPacketProcessed();
-					
-					mVideoState.waitSeekStartPacketProcessed();					
+
+                    // Add seek start packet
+                    mVideoState.addSeekStartPacket(mExitIOThreadSignalled);
+
+                    // Wait for the decode thread to process the start packet
+					mVideoState.waitSeekStartPacketProcessed();
 
 					VIDEO_DEBUG_LOG("ioThread seek to %d", mSeekKeyframeTarget);
 
 					// Use audio state to seek if there is an audio stream, otherwise seek by video (see documentation at top of file for information)
 					mSeekState = audioEnabled() ? &mAudioState : &mVideoState;
-					
+
 					// We can only determine the seek target in stream units once we know the AVState we'll use to seek
-					bool initialSeek = mSeekTarget == -1;
-					if (initialSeek)
-						setSeekTarget(*mSeekState, mSeekTargetSecs);
+					bool initial_seek = mSeekTarget == -1;
+					if (initial_seek)
+                        setSeekTarget(*mSeekState, mSeekTargetSecs);
 
 					// We can only seek by DTS, but we start out with a target PTS (in stream units). The DTS will be smaller or equal to the PTS. We search
 					// backwards in the stream to the current keyframe target. Later we will test if that keyframes' PTS is actually smaller or equal to the
@@ -1430,7 +1456,7 @@ namespace nap
 						mSeekState = &mVideoState;
 
 						// Reset the seek target to use the VideoState
-						if (initialSeek)
+						if (initial_seek)
 							setSeekTarget(*mSeekState, mSeekTargetSecs);
 
 						seek_result = av_seek_frame(mFormatContext, mSeekState->getStream(), mSeekKeyframeTarget, AVSEEK_FLAG_BACKWARD);
@@ -1438,7 +1464,7 @@ namespace nap
 
 					if (seek_result < 0)
 					{
-						Logger::error("Failed to seek to %f: %s", mSeekTargetSecs, sErrorToString(seek_result).c_str());
+                        Logger::error("Failed to seek to %f: %s", mSeekTargetSecs, sErrorToString(seek_result).c_str());
 						setErrorOccurred(sErrorToString(seek_result));
 						return;
 					}
@@ -1494,7 +1520,6 @@ namespace nap
 					{				
 						// The new seek target is computed by targeting any packet *before* the smallest DTS that was used to construct this frame
 						mSeekKeyframeTarget = seek_frame.mFirstPacketDTS - 1;
-
 						setIOThreadState(IOThreadState::SeekRequest);
 					}
 					else if (seek_frame.mFrame->best_effort_timestamp < mSeekTarget && produce_packet_result != EProducePacketResult::EndOfFile)
@@ -1506,7 +1531,7 @@ namespace nap
 					{
 						// If the frame we've found is an exact match with the PTS we're looking for, or we can't search further to the left (because the frame is at the start of the stream),
 						// we finish the seek operation and resume normal play
-						finishSeeking(*mSeekState, true);
+						finishSeeking(*mSeekState, false);
 					}
 					seek_frame.free();
 				}
@@ -1520,6 +1545,7 @@ namespace nap
 					// a frame that is greater or equal to the target PTS.
 					while (true)
 					{
+
 						// Receive single frame in lock-step
 						EProducePacketResult produce_packet_result = EProducePacketResult::GotPacket;
 						int receive_frame_result = 0;
@@ -1532,7 +1558,8 @@ namespace nap
 							} while (produce_packet_result != seekPacketType && produce_packet_result != EProducePacketResult::EndOfFile);
 
 							if (produce_packet_result == EProducePacketResult::Error)
-								return;
+                                return;
+
 						}
 
 						// If we broke out of the receive frame loop because exit was signaled, just break out here (we can't make any assumptions about the state of the video frame queue)
@@ -1752,7 +1779,7 @@ namespace nap
 		{
 			Frame frame = mVideoState.peekFrame();
 			if (frame.isValid())
-				mSystemClockSecs = frame.mPTSSecs;
+                mSystemClockSecs = frame.mPTSSecs;
 		}
 
 		// If the video we're playing has an audio stream, we use the audio clock to present frames.
