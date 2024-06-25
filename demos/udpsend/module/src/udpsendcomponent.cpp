@@ -80,7 +80,7 @@ namespace nap
         api_message.mID = mColorMessageSignature->mID;
 
         // Fill the message with a single API string containing message content
-        assert(mColorMessageSignature->mArguments.size() > 0);
+        assert(!mColorMessageSignature->mArguments.empty());
         auto api_value = APIIntArray(mColorMessageSignature->mArguments[0]->mName,
 			{value.getRed(), value.getGreen(), value.getBlue()});
         api_value.mID = math::generateUUID();
@@ -99,7 +99,7 @@ namespace nap
         api_message.mID = mTextMessageSignature->mID;
 
         // Fill the message with a single API string containing message content
-        assert(mColorMessageSignature->mArguments.size() > 0);
+        assert(!mTextMessageSignature->mArguments.empty());
         auto api_value = APIString(mTextMessageSignature->mArguments[0]->mName, value);
         api_value.mID = math::generateUUID();
         api_message.mArguments.emplace_back(&api_value);

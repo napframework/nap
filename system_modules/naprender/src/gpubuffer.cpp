@@ -58,6 +58,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt, "Integer GPU buffer")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat, "Float GPU buffer")
+	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Clear",		&nap::GPUBufferFloat::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
