@@ -9,7 +9,7 @@
 // External Includes
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::RandomFillPolicyUInt, "")
+RTTI_BEGIN_CLASS(nap::RandomFillPolicyUInt)
 	RTTI_PROPERTY("LowerBound", &nap::RandomFillPolicyUInt::mLowerBound, nap::rtti::EPropertyMetaData::Default, "Lower unsigned interger value")
 	RTTI_PROPERTY("UpperBound", &nap::RandomFillPolicyUInt::mUpperBound, nap::rtti::EPropertyMetaData::Default, "Upper unsigned interger value")
 RTTI_END_CLASS
