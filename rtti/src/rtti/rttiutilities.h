@@ -120,7 +120,7 @@ namespace nap
 		 * Returns the description of a property.
 		 * @return property description, nullptr when not defined.
 		 */
-		const NAPAPI char* getDescription(const rtti::Property& property);
+		NAPAPI const char* getDescription(const rtti::Property& property);
 
 		/**
 		 * Checks if a description is provided for the given type, including base types.
@@ -132,7 +132,7 @@ namespace nap
 		 * Returns the description of a type, including base types.
 		 * @return type description, nullptr when not defined.
 		 */
-		const NAPAPI char* getDescription(const rtti::TypeInfo& type);
+		NAPAPI const char* getDescription(const rtti::TypeInfo& type);
 
 	} //< End Namespace RTTI
 
