@@ -124,6 +124,7 @@ namespace nap
 
 		/**
 		 * Checks if a description is provided for the given type, including base types.
+		 * Note that if a description is defined for multiple types, the top-most (derived) description is returned.
 		 * @return if a description is provided for the given type.
 		 */
 		bool NAPAPI hasDescription(const rtti::TypeInfo& type);

@@ -249,6 +249,8 @@ namespace nap
 
 		/**
 		 * Finds method recursively in class and its base classes.
+		 * Note that if a function is defined twice the base class gets priority.
+		 * 
 		 * Note: this should normally work through the regular rttr::get_method function,
 		 * but this does not seem to work properly. This function is used as a workaround until we solve the issue.
 		 */
