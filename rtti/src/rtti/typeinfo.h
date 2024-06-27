@@ -11,7 +11,6 @@
 #endif
 #include <utility/dllexport.h>
 #include <string.h>
-#include <iostream>
 
 /**
  * This file contains the macros necessary to register types and their attributes with the RTTI system. When registering into the RTTI system, properties and functions are also automatically exposed to Python.
