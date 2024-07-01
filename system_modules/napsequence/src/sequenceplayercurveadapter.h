@@ -97,9 +97,9 @@ namespace nap
 
                         // call set or store function
                         (*this.*mSetFunction)(value);
-                    }
 
-                    break;
+                        break;
+                    }
                 }
             }
         }
