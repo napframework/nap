@@ -12,9 +12,8 @@
 #include <audio/core/audionodemanager.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::InputPinBase)
-	RTTI_FUNCTION("connect", &nap::audio::InputPinBase::enqueueConnect)
-	RTTI_FUNCTION("disconnect", &nap::audio::InputPinBase::enqueueDisconnect)
-	RTTI_FUNCTION("isConnected", &nap::audio::InputPinBase::isConnected)
+	RTTI_FUNCTION("connect", &nap::audio::InputPinBase::connect)
+	RTTI_FUNCTION("disconnect", &nap::audio::InputPinBase::disconnect)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::InputPin)
@@ -46,37 +45,15 @@ namespace nap
 		}
 		
 		
-		void InputPinBase::enqueueConnect(OutputPin& pin)
-		{
-			OutputPin* pinPtr = &pin;
-			pin.mNode->getNodeManager().enqueueTask([&, pinPtr]() {
-				connect(*pinPtr);
-			});
-		}
-		
-		
-		void InputPinBase::enqueueDisconnect(OutputPin& pin)
-		{
-			OutputPin* pinPtr = &pin;
-			pin.mNode->getNodeManager().enqueueTask([&, pinPtr]() {
-				disconnect(*pinPtr);
-			});
-		}
-		
-    
-        void InputPinBase::enqueueDisconnectAll()
-        {
-            getNode().getNodeManager().enqueueTask([&]() {
-                disconnectAll();
-            });
-        }
-
-    
 		// --- InputPin --- //
 		
 		InputPin::~InputPin()
 		{
-			disconnectAll();
+			if (mInput)
+			{
+				mInput->mOutputs.erase(this);
+				mInput = nullptr;
+			}
 		}
 		
 		
@@ -89,35 +66,45 @@ namespace nap
 		}
 		
 		
-		void InputPin::connect(OutputPin& input)
+		void InputPin::connect(OutputPin& connection)
 		{
-			// remove old connection
-			if (mInput)
-				mInput->mOutputs.erase(this);
-			
-			// make the input and output point to one another
-			mInput = &input;
-			mInput->mOutputs.emplace(this);
+            auto connectionPtr = &connection;
+
+            getNode().getNodeManager().enqueueTask([&, connectionPtr](){
+                // remove old connection
+                if (mInput)
+                    mInput->mOutputs.erase(this);
+
+                // make the input and output point to one another
+                mInput = connectionPtr;
+                mInput->mOutputs.emplace(this);
+            });
 		}
 		
 		
-		void InputPin::disconnect(OutputPin& input)
+		void InputPin::disconnect(OutputPin& connection)
 		{
-			if (&input == mInput)
-			{
-				mInput->mOutputs.erase(this);
-				mInput = nullptr;
-			}
+            auto connectionPtr = &connection;
+
+            getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
+				if (connectionPtr == mInput)
+				{
+					mInput->mOutputs.erase(this);
+					mInput = nullptr;
+				}
+			});
 		}
 		
 		
 		void InputPin::disconnectAll()
 		{
-			if (mInput)
-			{
-				mInput->mOutputs.erase(this);
-				mInput = nullptr;
-			}
+			getNode().getNodeManager().enqueueTask([&]() {
+				if (mInput)
+				{
+					mInput->mOutputs.erase(this);
+					mInput = nullptr;
+				}
+			});
 		}
 		
 		
@@ -131,7 +118,15 @@ namespace nap
 		
 		MultiInputPin::~MultiInputPin()
 		{
-			disconnectAll();
+			while (!mInputs.empty())
+			{
+				auto input = *mInputs.begin();
+				input->mOutputs.erase(this);
+				auto it = std::find(mInputs.begin(), mInputs.end(), input);
+				assert(it != mInputs.end());
+				mInputs.erase(it);
+			}
+			mInputsCache.clear();
 		}
 		
 		
@@ -146,35 +141,72 @@ namespace nap
 		}
 		
 		
-		void MultiInputPin::connect(OutputPin& input)
+		void MultiInputPin::connect(OutputPin& connection)
 		{
-			auto it = std::find(mInputs.begin(), mInputs.end(), &input);
-			if (it == mInputs.end())
-				mInputs.emplace_back(&input);
-			input.mOutputs.emplace(this);
+			auto connectionPtr = &connection;
+
+			getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
+				auto it = std::find(mInputs.begin(), mInputs.end(), connectionPtr);
+				if (it == mInputs.end())
+					mInputs.emplace_back(connectionPtr);
+				connectionPtr->mOutputs.emplace(this);
+			});
 		}
 		
 		
-		void MultiInputPin::disconnect(OutputPin& input)
+		void MultiInputPin::disconnect(OutputPin& connection)
 		{
-			auto it = std::find(mInputs.begin(), mInputs.end(), &input);
-			if (it != mInputs.end())
-				mInputs.erase(it);
-			input.mOutputs.erase(this);
+			auto connectionPtr = &connection;
+
+			getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
+				auto it = std::find(mInputs.begin(), mInputs.end(), connectionPtr);
+				if (it != mInputs.end())
+					mInputs.erase(it);
+				connectionPtr->mOutputs.erase(this);
+			});
 		}
-		
-		
+
+
+		void MultiInputPin::connect(const std::vector<OutputPin*>& pins)
+		{
+			getNode().getNodeManager().enqueueTask([&, pins]() {
+				for (auto pin : pins)
+				{
+					auto it = std::find(mInputs.begin(), mInputs.end(), pin);
+					if (it == mInputs.end())
+						mInputs.emplace_back(pin);
+					pin->mOutputs.emplace(this);
+				}
+			});
+		}
+
+
+		void MultiInputPin::disconnect(const std::vector<OutputPin*>& pins)
+		{
+			getNode().getNodeManager().enqueueTask([&, pins]() {
+				for (auto pin : pins)
+				{
+					auto it = std::find(mInputs.begin(), mInputs.end(), pin);
+					if (it != mInputs.end())
+						mInputs.erase(it);
+					pin->mOutputs.erase(this);
+				}
+			});
+		}
+
+
 		void MultiInputPin::disconnectAll()
 		{
-			while (!mInputs.empty())
-			{
-				auto input = *mInputs.begin();
-				input->mOutputs.erase(this);
-				auto it = std::find(mInputs.begin(), mInputs.end(), input);
-				assert(it != mInputs.end());
-				mInputs.erase(it);
-			}
-			mInputsCache.clear();
+			getNode().getNodeManager().enqueueTask([&]() {
+				while (!mInputs.empty()) {
+					auto input = *mInputs.begin();
+					input->mOutputs.erase(this);
+					auto it = std::find(mInputs.begin(), mInputs.end(), input);
+					assert(it != mInputs.end());
+					mInputs.erase(it);
+				}
+				mInputsCache.clear();
+			});
 		}
 		
 		

@@ -53,28 +53,6 @@ namespace nap
 			virtual void disconnectAll() = 0;
 
 			/**
-			 * Returns wether this pin is connected to one or more other pins.
-			 */
-			virtual bool isConnected() const = 0;
-
-			/**
-			 * Enqueues a connect() call the be executed on the audio thread.
-			 * This is the connect() function that is exposed to RTTR and to python.
-			 */
-			void enqueueConnect(OutputPin& pin);
-
-			/**
-			 * Enqueues a disconnect() call the be executed on the audio thread
-			 * This is the disconnect() function that is exposed to RTTR and to python.
-			 */
-			void enqueueDisconnect(OutputPin& pin);
-            
-            /**
-             * Enqueues a disconnectAll() call the be executed on the audio thread
-             */
-            void enqueueDisconnectAll();
-			
-			/**
 			 * @return the node that owns this input.
 			 */
 			Node& getNode() { return *mNode; }
@@ -177,6 +155,18 @@ namespace nap
 			 * @param input the pin to be disconnected from this pin
 			 */
 			void disconnect(OutputPin& input) override;
+
+			/**
+			 * Overload for connect function to defer multiple connections at once to the audio thread
+			 * @param pins Pins to be connected to this pin
+			 */
+			void connect(const std::vector<OutputPin*>& pins);
+
+			/**
+			 * Overload for disconnect function to defer multiple connections at once to the audio thread
+			 * @param pins Pins to be disconnected to this pin
+			 */
+			void disconnect(const std::vector<OutputPin*>& pins);
 
 			/**
 			 * Disconnects this input from all the connected pins.

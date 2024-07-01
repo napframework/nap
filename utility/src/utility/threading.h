@@ -47,7 +47,7 @@ namespace nap
         void process();
 
     private:
-        moodycamel::BlockingReaderWriterQueue<Task> mQueue;
+        moodycamel::BlockingConcurrentQueue<Task> mQueue;
         std::vector<Task> mDequeuedTasks;
     };
 

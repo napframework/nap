@@ -174,7 +174,7 @@ namespace nap
 					process.setSampleRate(mSampleRate);
 				if (oldBufferSize != mInternalBufferSize)
 					process.setBufferSize(mInternalBufferSize);
-			  process.mRegisteredWithNodeManager.store(true);
+				process.mRegisteredWithNodeManager.store(true);
 				mProcesses.emplace(&process);
 			});
 		}
