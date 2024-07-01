@@ -87,7 +87,7 @@ namespace nap
                     assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
                     const auto &source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
 
-                    if(time >= segment->mStartTime + source.mDuration)
+                    if(time < segment->mStartTime + source.mDuration)
                     {
                         // retrieve the source value
                         CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
