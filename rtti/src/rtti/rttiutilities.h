@@ -110,6 +110,31 @@ namespace nap
 		 */
 		void NAPAPI getDerivedTypesRecursive(const rtti::TypeInfo& baseType, std::vector<rtti::TypeInfo>& types);
 
+		/**
+		 * Checks if a description is provided for the given property.
+		 * @return if a description is provided for the given property.
+		 */
+		bool NAPAPI hasDescription(const rtti::Property& property);
+
+		/**
+		 * Returns the description of a property.
+		 * @return property description, nullptr when not defined.
+		 */
+		NAPAPI const char* getDescription(const rtti::Property& property);
+
+		/**
+		 * Checks if a description is provided for the given type, including base types.
+		 * Note that if a description is defined for multiple types, the top-most (derived) description is returned.
+		 * @return if a description is provided for the given type.
+		 */
+		bool NAPAPI hasDescription(const rtti::TypeInfo& type);
+
+		/**
+		 * Returns the description of a type, including base types.
+		 * @return type description, nullptr when not defined.
+		 */
+		NAPAPI const char* getDescription(const rtti::TypeInfo& type);
+
 	} //< End Namespace RTTI
 
 }
