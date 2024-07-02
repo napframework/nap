@@ -43,8 +43,36 @@ namespace nap
 		{
 			mNode->mInputs.erase(this);
 		}
-		
-		
+
+
+		void InputPinBase::connect(OutputPin& connection)
+		{
+			auto connectionPtr = &connection;
+
+			getNode().getNodeManager().enqueueTask([&, connectionPtr](){
+				connectNow(*connectionPtr);
+			});
+		}
+
+
+		void InputPinBase::disconnect(OutputPin& connection)
+		{
+			auto connectionPtr = &connection;
+
+			getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
+				disconnectNow(*connectionPtr);
+			});
+		}
+
+
+		void InputPinBase::disconnectAll()
+		{
+			getNode().getNodeManager().enqueueTask([&]() {
+				disconnectAllNow();
+			});
+		}
+
+
 		// --- InputPin --- //
 		
 		InputPin::~InputPin()
@@ -66,45 +94,35 @@ namespace nap
 		}
 		
 		
-		void InputPin::connect(OutputPin& connection)
+		void InputPin::connectNow(OutputPin& connection)
 		{
-            auto connectionPtr = &connection;
+			// remove old connection
+			if (mInput)
+				mInput->mOutputs.erase(this);
 
-            getNode().getNodeManager().enqueueTask([&, connectionPtr](){
-                // remove old connection
-                if (mInput)
-                    mInput->mOutputs.erase(this);
-
-                // make the input and output point to one another
-                mInput = connectionPtr;
-                mInput->mOutputs.emplace(this);
-            });
+			// make the input and output point to one another
+			mInput = &connection;
+			mInput->mOutputs.emplace(this);
 		}
 		
 		
-		void InputPin::disconnect(OutputPin& connection)
+		void InputPin::disconnectNow(OutputPin& connection)
 		{
-            auto connectionPtr = &connection;
-
-            getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
-				if (connectionPtr == mInput)
-				{
-					mInput->mOutputs.erase(this);
-					mInput = nullptr;
-				}
-			});
+			if (&connection == mInput)
+			{
+				mInput->mOutputs.erase(this);
+				mInput = nullptr;
+			}
 		}
 		
 		
-		void InputPin::disconnectAll()
+		void InputPin::disconnectAllNow()
 		{
-			getNode().getNodeManager().enqueueTask([&]() {
-				if (mInput)
-				{
-					mInput->mOutputs.erase(this);
-					mInput = nullptr;
-				}
-			});
+			if (mInput)
+			{
+				mInput->mOutputs.erase(this);
+				mInput = nullptr;
+			}
 		}
 		
 		
@@ -118,15 +136,7 @@ namespace nap
 		
 		MultiInputPin::~MultiInputPin()
 		{
-			while (!mInputs.empty())
-			{
-				auto input = *mInputs.begin();
-				input->mOutputs.erase(this);
-				auto it = std::find(mInputs.begin(), mInputs.end(), input);
-				assert(it != mInputs.end());
-				mInputs.erase(it);
-			}
-			mInputsCache.clear();
+			disconnectAllNow();
 		}
 		
 		
@@ -141,72 +151,35 @@ namespace nap
 		}
 		
 		
-		void MultiInputPin::connect(OutputPin& connection)
+		void MultiInputPin::connectNow(OutputPin& connection)
 		{
-			auto connectionPtr = &connection;
-
-			getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
-				auto it = std::find(mInputs.begin(), mInputs.end(), connectionPtr);
-				if (it == mInputs.end())
-					mInputs.emplace_back(connectionPtr);
-				connectionPtr->mOutputs.emplace(this);
-			});
+			auto it = std::find(mInputs.begin(), mInputs.end(), &connection);
+			if (it == mInputs.end())
+				mInputs.emplace_back(&connection);
+			connection.mOutputs.emplace(this);
 		}
 		
 		
-		void MultiInputPin::disconnect(OutputPin& connection)
+		void MultiInputPin::disconnectNow(OutputPin& connection)
 		{
-			auto connectionPtr = &connection;
-
-			getNode().getNodeManager().enqueueTask([&, connectionPtr]() {
-				auto it = std::find(mInputs.begin(), mInputs.end(), connectionPtr);
-				if (it != mInputs.end())
-					mInputs.erase(it);
-				connectionPtr->mOutputs.erase(this);
-			});
+			auto it = std::find(mInputs.begin(), mInputs.end(), &connection);
+			if (it != mInputs.end())
+				mInputs.erase(it);
+			connection.mOutputs.erase(this);
 		}
 
 
-		void MultiInputPin::connect(const std::vector<OutputPin*>& pins)
+		void MultiInputPin::disconnectAllNow()
 		{
-			getNode().getNodeManager().enqueueTask([&, pins]() {
-				for (auto pin : pins)
-				{
-					auto it = std::find(mInputs.begin(), mInputs.end(), pin);
-					if (it == mInputs.end())
-						mInputs.emplace_back(pin);
-					pin->mOutputs.emplace(this);
-				}
-			});
-		}
-
-
-		void MultiInputPin::disconnect(const std::vector<OutputPin*>& pins)
-		{
-			getNode().getNodeManager().enqueueTask([&, pins]() {
-				for (auto pin : pins)
-				{
-					auto it = std::find(mInputs.begin(), mInputs.end(), pin);
-					if (it != mInputs.end())
-						mInputs.erase(it);
-					pin->mOutputs.erase(this);
-				}
-			});
-		}
-
-
-		void MultiInputPin::disconnectAll()
-		{
-			getNode().getNodeManager().enqueueTask([&]() {
-				while (!mInputs.empty()) {
-					auto input = *mInputs.begin();
-					input->mOutputs.erase(this);
-					auto it = std::find(mInputs.begin(), mInputs.end(), input);
-					assert(it != mInputs.end());
-					mInputs.erase(it);
-				}
-				mInputsCache.clear();
-			});
+			while (!mInputs.empty())
+			{
+				auto input = *mInputs.begin();
+				input->mOutputs.erase(this);
+				auto it = std::find(mInputs.begin(), mInputs.end(), input);
+				assert(it != mInputs.end());
+				mInputs.erase(it);
+			}
+			mInputsCache.clear();
 		}
 		
 		
@@ -232,14 +205,15 @@ namespace nap
 		OutputPin::~OutputPin()
 		{
 			mNode->mOutputs.erase(this);
-			disconnectAll();
+			disconnectAllNow();
 		}
 		
 		
 		void OutputPin::disconnectAll()
 		{
-			while (!mOutputs.empty())
-				(*mOutputs.begin())->disconnect(*this);
+			getNode().getNodeManager().enqueueTask([&]() {
+				disconnectAllNow();
+			});
 		}
 		
 		
@@ -248,12 +222,20 @@ namespace nap
 			mNode->update();
 			return &mBuffer;
 		}
-		
-		
+
+
+		void OutputPin::disconnectAllNow()
+		{
+			while (!mOutputs.empty())
+				(*mOutputs.begin())->disconnectNow(*this);
+		}
+
+
 		void OutputPin::setBufferSize(int bufferSize)
 		{
 			mBuffer.resize(bufferSize, 0.f);
 		}
 		
 	}
+
 }
