@@ -8,7 +8,7 @@
 RTTI_DEFINE_BASE(nap::IGroup)
 
 // Define (common) Resource Group
-DEFINE_GROUP(nap::ResourceGroup)
+DEFINE_GROUP(nap::ResourceGroup, nap::Resource)
 
 namespace nap
 {

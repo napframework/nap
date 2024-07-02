@@ -16,19 +16,19 @@ RTTI_BEGIN_ENUM(nap::EOrthoCameraMode)
 	RTTI_ENUM_VALUE(nap::EOrthoCameraMode::Custom,				"Custom")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
-	RTTI_PROPERTY("Mode",				&nap::OrthoCameraProperties::mMode,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RightPlane",			&nap::OrthoCameraProperties::mRightPlane,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TopPlane",			&nap::OrthoCameraProperties::mTopPlane,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BottomPlane",		&nap::OrthoCameraProperties::mBottomPlane,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NearClippingPlane",	&nap::OrthoCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClipRect",			&nap::OrthoCameraProperties::mClipRect,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OrthoCameraProperties, "Orthographic camera properties")
+	RTTI_PROPERTY("Mode",				&nap::OrthoCameraProperties::mMode,					nap::rtti::EPropertyMetaData::Default, "Camera space operation mode")
+	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default, "Left plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("RightPlane",			&nap::OrthoCameraProperties::mRightPlane,			nap::rtti::EPropertyMetaData::Default, "Right plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("TopPlane",			&nap::OrthoCameraProperties::mTopPlane,				nap::rtti::EPropertyMetaData::Default, "Top plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("BottomPlane",		&nap::OrthoCameraProperties::mBottomPlane,			nap::rtti::EPropertyMetaData::Default, "Bottom plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("NearClippingPlane",	&nap::OrthoCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default, "Camera near clipping plane")
+	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default, "Camera far clipping plane")
+	RTTI_PROPERTY("ClipRect",			&nap::OrthoCameraProperties::mClipRect,				nap::rtti::EPropertyMetaData::Default, "Normalized camera view cropping (clip) rectangle")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::OrthoCameraComponent)
-	RTTI_PROPERTY("Properties",			&nap::OrthoCameraComponent::mProperties,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OrthoCameraComponent, "Creates an orthographic camera projection and view matrix")
+	RTTI_PROPERTY("Properties",			&nap::OrthoCameraComponent::mProperties,			nap::rtti::EPropertyMetaData::Default, "Orthographic camera properties")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrthoCameraComponentInstance)
@@ -65,8 +65,7 @@ namespace nap
 	// Hook up attribute changes
 	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity, Component& resource) :
 		CameraComponentInstance(entity, resource)
-	{
-	}
+	{ }
 
 
 	bool OrthoCameraComponentInstance::init(utility::ErrorState& errorState)

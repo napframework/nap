@@ -44,10 +44,10 @@ namespace nap
 	 * This is NAP's default blinn-phong shader program and is compatible with the `naprenderadvanced` light system.
 	 * It also supports shadows and environment maps. When compiling NAP for Raspberry Pi, shadows are disabled when
 	 * the Vulkan version is lower than 1.1.
-	 * 
+	 *
 	 * The blinnphongcolor shader exposes the following shader variables for users:
 	 *
-	 * ~~~~~{.vert}{.frag}
+	 * ~~~~~{.frag}
 	 * uniform UBO
 	 * {
 	 *		vec3	ambient;						//< Ambient
@@ -59,11 +59,11 @@ namespace nap
 	 *		float	reflection;						//< Reflection
 	 *		uint	environment;					//< Whether to sample an environment map
 	 * } ubo;
-	 * ~~~~
+	 * ~~~~~
 	 *
-	 * ~~~~{.frag}
+	 * ~~~~~{.frag}
 	 *		uniform samplerCube environmentMap;
-	 * ~~~~
+	 * ~~~~~
 	 *
 	 * The remaining uniforms are set automatically by the `nap::RenderAdvancedService`.
 	 */

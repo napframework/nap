@@ -20,11 +20,11 @@ namespace nap
 	 *
 	 * Allocates all required host (staging) and device buffers based on the specified properties.
 	 *
-	 * The layout of the struct buffer is defined by a StructBufferDescriptor. This descriptor is used to denote the 
+	 * The layout of the struct buffer is defined by a StructBufferDescriptor. This descriptor is used to denote the
 	 * buffer layout, allocate the right amount of memory, and possibly store information on how fill the buffer
 	 * accordingly. As the size of the buffer is determined by the descriptor, it is important that it matches the
 	 * declaration of the shader variable it is bound to. Initialization of buffer bindings may fail otherwise.
-	 * 
+	 *
 	 * If a 'FillPolicy' is available, the buffer will also be uploaded to immediately. Alternatively, 'Clear' sets all
 	 * of the buffer values to zero on init(). 'FillPolicy' and 'Clear' are mutually exclusive and the former has
 	 * priority over the latter.
@@ -75,7 +75,7 @@ namespace nap
 		 * Uploads data to the GPU based on the settings provided.
 		 * This function automatically allocates GPU memory if required.
 		 * @param data pointer to the block of data that needs to be uploaded.
-		 * @param the size of the data in bytes
+		 * @param size the size of the data in bytes
 		 * @param error contains the error if upload operation failed
 		 * @return if upload succeeded
 		 */

@@ -10,8 +10,8 @@
 #include <functional>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor)
-        RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor, "Edits the sequence (model)")
+        RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required, "The sequence player")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

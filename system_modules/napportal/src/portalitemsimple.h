@@ -169,7 +169,7 @@ namespace nap
 /**
  * Helper macro that can be used to define the RTTI for a portal item simple type
  */
-#define DEFINE_PORTAL_ITEM_SIMPLE(Type)															\
-	RTTI_BEGIN_CLASS(Type)																		\
-		RTTI_PROPERTY("Parameter",	&Type::mParameter,	nap::rtti::EPropertyMetaData::Required)	\
+#define DEFINE_PORTAL_ITEM_SIMPLE(Type)																					\
+	RTTI_BEGIN_CLASS(Type)																								\
+		RTTI_PROPERTY("Parameter",	&Type::mParameter,	nap::rtti::EPropertyMetaData::Required, "Parameter resource")	\
 	RTTI_END_CLASS

@@ -202,7 +202,7 @@ namespace nap
 
 		/**
 		 * Find a file in one of the given directories.
-		 * @param file The file to look for, including extension
+		 * @param filename The file to look for, including extension
 		 * @param dirs The directories to search in
 		 * @return The absolute path to the found file or an empty string if none was found
 		 */
@@ -214,7 +214,7 @@ namespace nap
 		std::string joinPath(const std::vector<std::string>& parts);
 
 		/**
-		 * Returns a file path with the correct path separator for the current platform. 
+		 * Returns a file path with the correct path separator for the current platform.
 		 * @param path path name to correct
 		 * @return A file path with the correct path separator for the current platform
 		 */

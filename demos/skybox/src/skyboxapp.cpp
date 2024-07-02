@@ -12,7 +12,6 @@
 #include <imgui/imgui.h>
 #include <renderskyboxcomponent.h>
 #include <skyboxshader.h>
-#include <blinnphongcolorshader.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SkyBoxApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -38,6 +37,7 @@ namespace nap
 		// Gather resources
 		auto scene = mResourceManager->findObject<Scene>("Scene");
 		mRenderWindow = mResourceManager->findObject<RenderWindow>("RenderWindow");
+		mCubeMapGroup = mResourceManager->findObject<CubeMapFromFileGroup>("CubeMaps");
 		mDefaultInputRouter = scene->findEntity("DefaultInputRouterEntity");
 
 		// Get the skybox
@@ -54,9 +54,6 @@ namespace nap
 		mCameraEntity = scene->findEntity("CameraEntity");
 		if (!errorState.check(mCameraEntity != nullptr, "Missing CameraEntity"))
 			return false;
-
-		// Cache cube maps
-		mCubeMaps = mResourceManager->getObjects<CubeMapFromFile>();
 
 		return true;
 	}
@@ -92,24 +89,25 @@ namespace nap
 
 		// Create a list of cubemap labels
 		std::vector<const char*> labels;
-		labels.reserve(mCubeMaps.size());
-		std::for_each(mCubeMaps.begin(), mCubeMaps.end(), [&labels](const auto& cube) {
-			labels.emplace_back(cube->mID.c_str());
-			});
+		labels.reserve(mCubeMapGroup->mMembers.size());
+		for (const auto& map : mCubeMapGroup->mMembers)
+			labels.emplace_back(map->mID.c_str());
 
 		// Here we create a simple combobox that allows the user to switch between cube maps
 		// On selection, we must update the sampler instance of the sky box and all render components that display its reflection
-		if (ImGui::Combo("Cube Maps", &mCubeMapIndex, labels.data(), mCubeMaps.size()))
+		if (ImGui::Combo("Cube Maps", &mCubeMapIndex, labels.data(), mCubeMapGroup->mMembers.size()))
 		{
-			// Update the sampler instance of the skybox
-			render_skybox.setTexture(*mCubeMaps[mCubeMapIndex]);
+			// Get cube map at index and set it for the skybox
+			auto* cube_texture =  rtti_cast<nap::TextureCube>(mCubeMapGroup->mMembers[mCubeMapIndex].get());
+			assert(cube_texture != nullptr);
+			render_skybox.setTexture(*cube_texture);
 
 			// Update the cube map in the torus -> Normally you would do this in a controlling component.
-			// That component would update the cube texture of all compatible materials on initialization and when changed.
+			// That component would update the cube texture for all compatible materials on initialization and when changed.
 			auto& render_torus = mTorusEntity->getComponent<RenderableMeshComponentInstance>();
-			auto* sampler = render_torus.getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>(uniform::blinnphongcolor::sampler::environmentMap);
+			auto* sampler = render_torus.getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>("environmentMap");
 			assert(sampler != nullptr);
-			sampler->setTexture(*mCubeMaps[mCubeMapIndex]);
+			sampler->setTexture(*cube_texture);
 		}
 
 		// Change sky box color

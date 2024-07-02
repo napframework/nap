@@ -22,6 +22,15 @@ namespace nap
 	// RenderMask definition, supports up to 64 different tags
 	using RenderMask = uint64;
 
+	namespace mask
+	{
+		// Includes every tag
+		constexpr RenderMask all  = std::numeric_limits<RenderMask>::max();
+
+		// No tag provided
+		constexpr RenderMask none = 0;
+	}
+
 	/**
 	 * Render tags can be used to categorize render components. Unlike render layers, tags are unordered and multiple
 	 * of them can be assigned to a single render component. Each tag resource registers itself in the render service
@@ -31,12 +40,12 @@ namespace nap
 	 * One useful example would be to categorize specific components as "Debug", distinguishing objects used as visual
 	 * aid for debugging purposes from standard objects (tag "Default"). They may be excluded from rendering based on
 	 * settings or a window setup for instance. You could do the following:
-	 * 
+	 *
 	 * `````{.cpp}
 	 * // Consider caching the render mask
-	 * auto debug_mask = mResourceManager->findObject("DebugTag").getMask();
-	 * auto scene_mask = mResourceManager->findObject("SceneTag").getMask();
-	 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_mask | scene_mask);
+	 * auto debug_tag = mResourceManager->findObject("DebugTag");
+	 * auto scene_tag = mResourceManager->findObject("SceneTag");
+	 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_tag | scene_tag);
 	 * `````
 	 */
 	class NAPAPI RenderTag : public Device
@@ -75,8 +84,8 @@ namespace nap
 		 * Mask inclusion operator: Combines this tag with the given tag.
 		 *
 		 * `````{.cpp}
-		 * const auto& debug_tag = *mResourceManager->findObject("DebugTag");
-		 * const auto& scene_tag = *mResourceManager->findObject("SceneTag");
+		 * auto debug_tag = *mResourceManager->findObject("DebugTag");
+		 * auto scene_tag = *mResourceManager->findObject("SceneTag");
 		 * mRenderService->renderObjects(renderTarget, camera, render_comps, debug_tag | scene_tag);
 		 * `````
 		 *
@@ -88,7 +97,7 @@ namespace nap
 		/**
 		 * Mask inclusion operator: Combines this tag with the given mask.
 		 * @param other the mask to composite
-		 * @retirm the composited mask
+		 * @return the composited mask
 		 */
 		RenderMask operator|(RenderMask other) const			{ return other | this->getMask(); }
 

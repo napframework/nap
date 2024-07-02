@@ -1,6 +1,51 @@
 {
     "Objects": [
         {
+            "Type": "nap::CubeMapFromFileGroup",
+            "mID": "CubeMaps",
+            "Members": [
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "UffiziCubeMap",
+                    "Width": 1024,
+                    "Height": 1024,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "ImagePath": "equi_uffizi.png",
+                    "SampleShading": false,
+                    "GenerateLODs": true
+                },
+                {
+                    "Type": "nap::CubeMapFromFile",
+                    "mID": "TestCubeMap",
+                    "Width": 256,
+                    "Height": 256,
+                    "Format": "RGBA8",
+                    "ColorSpace": "Linear",
+                    "ClearColor": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    },
+                    "ImagePath": "equi_test.jpg",
+                    "SampleShading": false,
+                    "GenerateLODs": true
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Entity",
             "mID": "CameraEntity",
             "Components": [
@@ -277,51 +322,6 @@
             "AdditionalSwapImages": 1,
             "RestoreSize": true,
             "RestorePosition": true
-        },
-        {
-            "Type": "nap::ResourceGroup",
-            "mID": "CubeMaps",
-            "Members": [
-                {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "UffiziCubeMap",
-                    "Width": 1024,
-                    "Height": 1024,
-                    "Format": "RGBA8",
-                    "ColorSpace": "Linear",
-                    "ClearColor": {
-                        "Values": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "ImagePath": "equi_uffizi.png",
-                    "SampleShading": false,
-                    "GenerateLODs": true
-                },
-                {
-                    "Type": "nap::CubeMapFromFile",
-                    "mID": "TestCubeMap",
-                    "Width": 256,
-                    "Height": 256,
-                    "Format": "RGBA8",
-                    "ColorSpace": "Linear",
-                    "ClearColor": {
-                        "Values": [
-                            0.0,
-                            0.0,
-                            0.0,
-                            0.0
-                        ]
-                    },
-                    "ImagePath": "equi_test.jpg",
-                    "SampleShading": false,
-                    "GenerateLODs": true
-                }
-            ],
-            "Children": []
         },
         {
             "Type": "nap::ResourceGroup",

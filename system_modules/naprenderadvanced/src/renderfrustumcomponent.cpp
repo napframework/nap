@@ -7,22 +7,19 @@
 
 // External Includes
 #include <entity.h>
-#include <rect.h>
 #include <mathutils.h>
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <renderservice.h>
 #include <renderglobals.h>
-#include <nap/logger.h>
 #include <descriptorsetcache.h>
 #include <orthocameracomponent.h>
 #include <perspcameracomponent.h>
 #include <constantshader.h>
 
-RTTI_BEGIN_CLASS(nap::RenderFrustumComponent)
-	RTTI_PROPERTY("Line Width",	&nap::RenderFrustumComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",		&nap::RenderFrustumComponent::mColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Opacity",	&nap::RenderFrustumComponent::mOpacity,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderFrustumComponent, "Renders the frustrum of a camera")
+	RTTI_PROPERTY("Line Width",	&nap::RenderFrustumComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default, "Frustrum line width")
+	RTTI_PROPERTY("Color",		&nap::RenderFrustumComponent::mColor,		nap::rtti::EPropertyMetaData::Default, "Frustrum line color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderFrustumComponentInstance)
@@ -121,14 +118,11 @@ namespace nap
 			this->mID.c_str(), uniform::constant::uboStruct, RTTI_OF(ConstantShader).get_name().data()))
 			return false;
 
+        // Set color
 		mColorUniform = getUniform<UniformVec3Instance>(uniform::constant::color, *mUBOStruct, errorState);
-		mAlphaUniform = getUniform<UniformFloatInstance>(uniform::constant::alpha, *mUBOStruct, errorState);
-		if (mColorUniform == nullptr || mAlphaUniform == nullptr)
+		if (mColorUniform == nullptr)
 			return false;
-
-		// Set color & opacity
 		mColorUniform->setValue(mResource->mColor.toVec3());
-		mAlphaUniform->setValue(mResource->mOpacity);
 
 		// Initialize frustum mesh
 		mFrustumMesh.mUsage = EMemoryUsage::DynamicWrite;

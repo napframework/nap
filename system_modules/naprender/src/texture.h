@@ -10,7 +10,6 @@
 
 // External Includes
 #include <nap/resource.h>
-#include <utility/dllexport.h>
 #include <glm/glm.hpp>
 #include <nap/numeric.h>
 #include <rtti/factory.h>
@@ -80,7 +79,7 @@ namespace nap
 		/**
 		 * @return render service
 		 */
-		const RenderService& getRenderService()					{ return mRenderService; }
+		RenderService& getRenderService()						{ return mRenderService; }
 
 		/**
 		 * @return render service
@@ -145,11 +144,11 @@ namespace nap
 		 * @return if the texture initialized successfully.
 		 */
 		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, const glm::vec4& clearColor, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
-		
+
 		/**
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * Otherwise the layout of the texture on the GPU will be undefined until upload.
-		 * The Vulkan image usage flags are derived from texture usage. 
+		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
 		 * @param generateMipMaps if mip maps are generated when data is uploaded.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
@@ -157,7 +156,7 @@ namespace nap
 		 * @return if the texture initialized successfully.
 		 */
 		bool init(const SurfaceDescriptor& descriptor, bool generateMipMaps, VkImageUsageFlags requiredFlags, utility::ErrorState& errorState);
-		
+
 		/**
 		 * Creates the texture on the GPU using the provided settings and immediately requests a content upload.
 		 * The Vulkan image usage flags are derived from texture usage.
@@ -186,13 +185,13 @@ namespace nap
 		int getHeight() const									{ return mDescriptor.mHeight; }
 
 		/**
-		 * Uploads CPU data to the texture on the GPU. 
+		 * Uploads CPU data to the texture on the GPU.
 		 * Note that you can only update the contents of a texture once if 'Usage' is 'DynamicRead' or 'Static'.
 		 * @param data pointer to the CPU data.
 		 * @param width width of the image in pixels
 		 * @param height height of the image in pixels
 		 * @param pitch size in bytes of a single row of pixel data.
-		 * @param channels total number of channels: 3 for RGB, 4 for RGBA etc. 
+		 * @param channels total number of channels: 3 for RGB, 4 for RGBA etc.
 		 */
 		void update(const void* data, int width, int height, int pitch, ESurfaceChannels channels);
 
@@ -220,7 +219,7 @@ namespace nap
 		virtual const ImageData& getHandle() const override		{ return mImageData; }
 
 		/**
-		 * Starts a transfer of texture data from GPU to CPU. 
+		 * Starts a transfer of texture data from GPU to CPU.
 		 * This is a non blocking call. When the transfer completes, the bitmap will be filled with the texture data.
 		 * @param bitmap the bitmap to download texture data into.
 		 */
@@ -311,6 +310,7 @@ namespace nap
 		 * Creates the texture on the GPU using the provided settings. The texture is cleared to 'ClearColor'.
 		 * The Vulkan image usage flags are derived from texture usage.
 		 * @param descriptor texture description.
+		 * @param generateMipMaps if mip-maps are auto generated
 		 * @param clearColor the color to clear the texture with.
 		 * @param requiredFlags image usage flags that are required, 0 = no additional usage flags.
 		 * @param errorState contains the error if the texture can't be initialized.

@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "pointlightcomponent.h"
 
 // Local includes
@@ -14,10 +18,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 // nap::PointLightComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::PointLightComponent)
-	RTTI_PROPERTY("Attenuation",	&nap::PointLightComponent::mAttenuation,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClippingPlanes",	&nap::PointLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowMapSize",	&nap::PointLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::PointLightComponent, "Omnidirectional light that emits from its origin")
+	RTTI_PROPERTY("Attenuation",	&nap::PointLightComponent::mAttenuation,	nap::rtti::EPropertyMetaData::Default, "Light intensity decay rate, higher values = less light further away from the source")
+	RTTI_PROPERTY("ClippingPlanes",	&nap::PointLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default, "Shadow camera near and far clipping planes")
+	RTTI_PROPERTY("ShadowMapSize",	&nap::PointLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default, "Resolution of the shadow texture")
 RTTI_END_CLASS
 
 // nap::PointLightComponentInstance run time class definition

@@ -1,6 +1,9 @@
-#include "spotlightcomponent.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
+#include "spotlightcomponent.h"
 #include "renderadvancedservice.h"
 
 // External Includes
@@ -11,13 +14,13 @@
 #include <renderablemeshcomponent.h>
 
 // nap::SpotLightComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::SpotLightComponent)
-	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FieldOfViewClip",		&nap::SpotLightComponent::mFOVClip,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SpotLightComponent, "Emits light in a cone shape from a specific position")
+	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default, "Light intensity decay rate, higher values = less light further away from the source")
+	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default, "Cone angle in degrees")
+	RTTI_PROPERTY("FieldOfViewClip",		&nap::SpotLightComponent::mFOVClip,			nap::rtti::EPropertyMetaData::Default, "Shadow camera field of view clip percentage, 0=full and 1='cone angle'")
+	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default, "Cone angle falloff, 0=none and 1='linear gradient'")
+	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default, "Shadow camera near and far clipping planes")
+	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default, "Resolution of the shadow texture")
 RTTI_END_CLASS
 
 // nap::SpotLightComponentInstance run time class definition
@@ -41,9 +44,9 @@ namespace nap
 		// Copy resource properties
 		auto* resource = getComponent<SpotLightComponent>();
 		mAttenuation = resource->mAttenuation;
-		mAngle = resource->mAngle;
 		mFalloff = resource->mFalloff;
 		mShadowMapSize = resource->mShadowMapSize;
+		mFOVClip = resource->mFOVClip;
 
 		// Register uniforms to auto push
 		registerUniformLightProperty(uniform::light::attenuation);
@@ -94,6 +97,9 @@ namespace nap
 			errorState.fail("Unable to spawn directional spotlight shadow entity");
 			return false;
 		}
+
+		// Push angle
+		setAngle(resource->mAngle);
 		return true;
 	}
 
@@ -107,7 +113,7 @@ namespace nap
 
 	void SpotLightComponentInstance::setFOVClip(float clip)
 	{
-		mFOVClip = std::clamp(clip, 0.0f, 1.0f);
+		mFOVClip = clip;
 		mSpawnedCamera->getComponent<PerspCameraComponentInstance>().setFieldOfView(mAngle * mFOVClip);
 	}
 }

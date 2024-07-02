@@ -1,6 +1,9 @@
-#include "directionallightcomponent.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
+#include "directionallightcomponent.h"
 #include "renderadvancedservice.h"
 
 // External Includes
@@ -14,10 +17,10 @@
 #include <glm/gtx/quaternion.hpp>
 
 // nap::DirectionalLightComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::DirectionalLightComponent)
-	RTTI_PROPERTY("ProjectionSize",		&nap::DirectionalLightComponent::mProjectionSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowMapSize",		&nap::DirectionalLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClippingPlanes",		&nap::DirectionalLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::DirectionalLightComponent, "Emits light in a single direction from an infinite position")
+	RTTI_PROPERTY("ProjectionSize",		&nap::DirectionalLightComponent::mProjectionSize,	nap::rtti::EPropertyMetaData::Default, "Shadow camera scene projection size")
+	RTTI_PROPERTY("ShadowMapSize",		&nap::DirectionalLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default, "Shadow texture resolution")
+	RTTI_PROPERTY("ClippingPlanes",		&nap::DirectionalLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default, "Shadow camera near and far clipping planes")
 RTTI_END_CLASS
 
 // nap::DirectionalLightComponentInstance run time class definition

@@ -9,7 +9,7 @@
 #include <midiinputcomponent.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::MidiHandlerComponent)
+RTTI_BEGIN_CLASS(nap::MidiHandlerComponent, "Converts incoming midi messages to a string and stores them")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiHandlerComponentInstance)

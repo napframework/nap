@@ -14,13 +14,13 @@
 #include <nap/logger.h>
 
 // nap::blendparameterscomponent run time class definition
-RTTI_BEGIN_CLASS(nap::ParameterBlendComponent)
-	RTTI_PROPERTY("EnableBlending",		&nap::ParameterBlendComponent::mEnableBlending,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PresetIndex",		&nap::ParameterBlendComponent::mPresetIndex,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PresetBlendTime",	&nap::ParameterBlendComponent::mPresetBlendTime,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendOnInit",		&nap::ParameterBlendComponent::mBlendOnInit,		nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("IgnoreNonBlendable",	&nap::ParameterBlendComponent::mIgnoreNonBlendableParameters,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ParameterBlendComponent, "Blends a set of parameters over time towards a given preset")
+	RTTI_PROPERTY("EnableBlending",		&nap::ParameterBlendComponent::mEnableBlending,		nap::rtti::EPropertyMetaData::Required, "If blending is enabled")
+	RTTI_PROPERTY("BlendGroup",			&nap::ParameterBlendComponent::mBlendGroup,			nap::rtti::EPropertyMetaData::Required, "The list of parameters to blend over time")
+	RTTI_PROPERTY("PresetIndex",		&nap::ParameterBlendComponent::mPresetIndex,		nap::rtti::EPropertyMetaData::Required,	"Index of the preset to blend to")
+	RTTI_PROPERTY("PresetBlendTime",	&nap::ParameterBlendComponent::mPresetBlendTime,	nap::rtti::EPropertyMetaData::Required,	"Time it takes to blend in seconds")
+	RTTI_PROPERTY("BlendOnInit",		&nap::ParameterBlendComponent::mBlendOnInit,		nap::rtti::EPropertyMetaData::Default, "Blend to the given preset index on initialization")
+    RTTI_PROPERTY("IgnoreNonBlendable",	&nap::ParameterBlendComponent::mIgnoreNonBlendableParameters,	nap::rtti::EPropertyMetaData::Default, "Ignore not blendable parameters, instead of failing")
 RTTI_END_CLASS
 
 // nap::blendparameterscomponentInstance run time class definition

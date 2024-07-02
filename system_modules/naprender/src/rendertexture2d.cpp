@@ -16,13 +16,13 @@ RTTI_BEGIN_ENUM(nap::RenderTexture2D::EFormat)
 	RTTI_ENUM_VALUE(nap::RenderTexture2D::EFormat::R32,		"R32")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTexture2D, "Holds the color output from a render pass using a render target")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mColorFormat,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",		&nap::RenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of the texture in texels")
+	RTTI_PROPERTY("Height",		&nap::RenderTexture2D::mHeight,			nap::rtti::EPropertyMetaData::Required, "Height of the texture in texels")
+	RTTI_PROPERTY("Format",		&nap::RenderTexture2D::mColorFormat,	nap::rtti::EPropertyMetaData::Required, "Texture color format")
+	RTTI_PROPERTY("ColorSpace", &nap::RenderTexture2D::mColorSpace,		nap::rtti::EPropertyMetaData::Default,	"Texture color space")
+	RTTI_PROPERTY("ClearColor", &nap::RenderTexture2D::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial clear color")
 RTTI_END_CLASS
 
 RTTI_BEGIN_ENUM(nap::DepthRenderTexture2D::EDepthFormat)
@@ -30,14 +30,14 @@ RTTI_BEGIN_ENUM(nap::DepthRenderTexture2D::EDepthFormat)
 	RTTI_ENUM_VALUE(nap::DepthRenderTexture2D::EDepthFormat::D32,	"D32")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTexture2D)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DepthRenderTexture2D, "Holds the depth output from a render pass using a render target")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Fill",		&nap::DepthRenderTexture2D::mFill,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Width",		&nap::DepthRenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Height",		&nap::DepthRenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mDepthFormat,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ColorSpace", &nap::DepthRenderTexture2D::mColorSpace,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearValue", &nap::DepthRenderTexture2D::mClearValue,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Fill",		&nap::DepthRenderTexture2D::mFill,			nap::rtti::EPropertyMetaData::Default,	"If the texture is initialized to black when usage is static")
+	RTTI_PROPERTY("Width",		&nap::DepthRenderTexture2D::mWidth,			nap::rtti::EPropertyMetaData::Required, "Width of the texture in texels")
+	RTTI_PROPERTY("Height",		&nap::DepthRenderTexture2D::mHeight,		nap::rtti::EPropertyMetaData::Required, "Height of the texture in texels")
+	RTTI_PROPERTY("Format",		&nap::DepthRenderTexture2D::mDepthFormat,	nap::rtti::EPropertyMetaData::Required, "Texture depth format")
+	RTTI_PROPERTY("ColorSpace", &nap::DepthRenderTexture2D::mColorSpace,	nap::rtti::EPropertyMetaData::Default,	"Texture color space")
+	RTTI_PROPERTY("ClearValue", &nap::DepthRenderTexture2D::mClearValue,	nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
 RTTI_END_CLASS
 
 

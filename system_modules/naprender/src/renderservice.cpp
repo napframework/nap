@@ -20,7 +20,6 @@
 #include "sdlhelpers.h"
 #include "shaderconstant.h"
 #include "renderlayer.h"
-#include "rendertag.h"
 
 // External Includes
 #include <nap/core.h>
@@ -95,24 +94,24 @@ RTTI_BEGIN_ENUM(nap::RenderServiceConfiguration::EPhysicalDeviceType)
 	RTTI_ENUM_VALUE(nap::RenderServiceConfiguration::EPhysicalDeviceType::CPU,			"Other")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration)
-	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderServiceConfiguration, "Render service configuration")
+	RTTI_PROPERTY("Headless",					&nap::RenderServiceConfiguration::mHeadless,					nap::rtti::EPropertyMetaData::Default, "Render without a window, turning this on `forbids` the use of a nap::RenderWindow")
+	RTTI_PROPERTY("PreferredGPU",				&nap::RenderServiceConfiguration::mPreferredGPU,				nap::rtti::EPropertyMetaData::Default, "The preferred GPU type, when unavailable the fastest option is selected")
+	RTTI_PROPERTY("Layers",						&nap::RenderServiceConfiguration::mLayers,						nap::rtti::EPropertyMetaData::Default, "Vulkan layers the engine tries to load in Debug mode, layers are disabled in release mode.")
+	RTTI_PROPERTY("Extensions",					&nap::RenderServiceConfiguration::mAdditionalExtensions,		nap::rtti::EPropertyMetaData::Default, "Additional required Vulkan device extensions")
+	RTTI_PROPERTY("VulkanMajor",				&nap::RenderServiceConfiguration::mVulkanVersionMajor,			nap::rtti::EPropertyMetaData::Default, "The major required vulkan API instance version")
+	RTTI_PROPERTY("VulkanMinor",				&nap::RenderServiceConfiguration::mVulkanVersionMinor,			nap::rtti::EPropertyMetaData::Default, "The minor required vulkan API instance version")
+	RTTI_PROPERTY("AnisotropicSamples",			&nap::RenderServiceConfiguration::mAnisotropicFilterSamples,	nap::rtti::EPropertyMetaData::Default, "Default max number of anisotropic filter samples, can be overridden by a sampler if required")
+	RTTI_PROPERTY("EnableHighDPI",				&nap::RenderServiceConfiguration::mEnableHighDPIMode,			nap::rtti::EPropertyMetaData::Default, "Enable high DPI scaling and rendering")
+	RTTI_PROPERTY("EnableCompute",				&nap::RenderServiceConfiguration::mEnableCompute,				nap::rtti::EPropertyMetaData::Default, "Ensures Vulkan compute is supported")
+	RTTI_PROPERTY("EnableCaching",				&nap::RenderServiceConfiguration::mEnableCaching,				nap::rtti::EPropertyMetaData::Default, "Saves state between sessions, including window size & position")
+	RTTI_PROPERTY("EnableDebug",				&nap::RenderServiceConfiguration::mEnableDebug,					nap::rtti::EPropertyMetaData::Default, "Load debug extension for printing Vulkan debug messages")
+	RTTI_PROPERTY("EnableRobustBufferAccess",	&nap::RenderServiceConfiguration::mEnableRobustBufferAccess,	nap::rtti::EPropertyMetaData::Default, "Enables buffer bounds-checking on the GPU, only necessary for debugging purposes")
+	RTTI_PROPERTY("ShowLayers",					&nap::RenderServiceConfiguration::mPrintAvailableLayers,		nap::rtti::EPropertyMetaData::Default, "Print all available Vulkan layers to console")
+	RTTI_PROPERTY("ShowExtensions",				&nap::RenderServiceConfiguration::mPrintAvailableExtensions,	nap::rtti::EPropertyMetaData::Default, "Print all available Vulkan extensions to console")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderService, "Main interface for GPU Render (2D/3D) and Compute operations")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 	
@@ -238,15 +237,11 @@ namespace nap
 		switch (drawMode)
 		{
 			case EDrawMode::Points:
-				return true;
 			case EDrawMode::Lines:
-				return true;
-			case EDrawMode::LineStrip:
-				return false;
 			case EDrawMode::Triangles:
 				return true;
+			case EDrawMode::LineStrip:
 			case EDrawMode::TriangleStrip:
-				return false;
 			case EDrawMode::TriangleFan:
 				return false;
 			default:
@@ -1516,14 +1511,14 @@ namespace nap
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, RenderMask renderMask)
 	{
-		renderObjects(renderTarget, camera, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2));
+		renderObjects(renderTarget, camera, std::bind(&sorter::sortObjectsByDepth, std::placeholders::_1, std::placeholders::_2), renderMask);
 	}
 
 
 	// Render all objects in scene graph using specified camera
-	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction)
+	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction, RenderMask renderMask)
 	{
 		// Get all render-able components
 		// Only gather renderable components that can be rendered using the given caera
@@ -1535,9 +1530,10 @@ namespace nap
 			{
 				entity_render_comps.clear();
 				entity->getComponentsOfType<nap::RenderableComponentInstance>(entity_render_comps);
+				render_comps.reserve(render_comps.size() + entity_render_comps.size());
 				for (const auto& comp : entity_render_comps) 
 				{
-					if (comp->isSupported(camera))
+					if (comp->isSupported(camera) && comp->includesMask(renderMask))
 						render_comps.emplace_back(comp);
 				}
 			}
@@ -1560,7 +1556,7 @@ namespace nap
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && comp->hasMask(renderMask))
+			if (comp->isSupported(camera) && comp->includesMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 
@@ -1608,9 +1604,10 @@ namespace nap
 	{
 		// Only gather renderable components that can be rendered using the given mask
 		std::vector<RenderableComponentInstance*> render_comps;
+		render_comps.reserve(comps.size());
 		for (const auto& comp : comps)
 		{
-			if (comp->hasMask(renderMask))
+			if (comp->includesMask(renderMask))
 				render_comps.emplace_back(comp);
 		}
 		return render_comps;
@@ -2557,7 +2554,7 @@ namespace nap
 
 		// Record queued headless render commands
 		for (const auto& command : mHeadlessCommandQueue)
-			command->record(*this);
+			command(*this);
 
 		mHeadlessCommandQueue.clear();
 		return true;
@@ -2583,19 +2580,15 @@ namespace nap
 	}
 
 
-	void RenderService::queueRenderCommand(const RenderCommand* command)
+	void RenderService::queueHeadlessCommand(const RenderCommand& command)
 	{
-		if (command->get_type().is_derived_from(RTTI_OF(HeadlessCommand)))
-		{
-			mHeadlessCommandQueue.emplace_back(static_cast<const HeadlessCommand*>(command));
-			return;
-		}
-		else if (command->get_type().is_derived_from(RTTI_OF(ComputeCommand)))
-		{
-			mComputeCommandQueue.emplace_back(static_cast<const ComputeCommand*>(command));
-			return;
-		}
-		NAP_ASSERT_MSG(false, "Unsupported nap::RenderCommand type");
+		mHeadlessCommandQueue.emplace_back(command);
+	}
+
+
+	void RenderService::queueComputeCommand(const RenderCommand& command)
+	{
+		mComputeCommandQueue.emplace_back(command);
 	}
 
 
@@ -2658,7 +2651,7 @@ namespace nap
 
 		// Record queued headless render commands
 		for (const auto& command : mComputeCommandQueue)
-			command->record(*this);
+			command(*this);
 
 		mComputeCommandQueue.clear();
 
@@ -2886,5 +2879,4 @@ namespace nap
 	{
 		return { glm::vec2(mMin), glm::vec2(mMax) };
 	}
-
 }

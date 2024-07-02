@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External includes
@@ -100,7 +104,7 @@ namespace nap
 	 * Other uniforms may be defined by derived light types. They must be in accordance with the data and shader interface
 	 * in the `light.glslinc` file in the RenderAdvanced shader folder. New light types can be added here in the future,
 	 * or user implementations can use the 'Custom' enum.
-	 * 
+	 *
 	 * NAP comes with a default nap::BlinnPhongShader that is compatible with the light system. Hooking this up to a
 	 * nap::Material allows for quick scene lighting setups. Material surface uniforms as defined by the shader interface
 	 * must be set in data or at runtime. A description of these can be found in the documentation of the shader or its
@@ -111,7 +115,7 @@ namespace nap
 	 * Rendering with lights requires an additional call to the render advanced service. You can either use `pushLights` on
 	 * the render components you wish to render or `renderShadows` with the `updateMaterials` argument set to `true` if you
 	 * wish to use shadows too.
-	 * 
+	 *
 	 * Update light uniforms of lit components when shadows are disabled.
 	 * ~~~~~{.cpp}
 	 *	mRenderAdvancedService->pushLights(components_to_render, error_state);
@@ -219,7 +223,6 @@ namespace nap
 
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the LightComponentInstance is initialized successfully
 		 */
@@ -229,7 +232,7 @@ namespace nap
 		 * Unregisters itself from the advanced render service
 		 */
 		virtual void onDestroy() override;
-		
+
 		/**
 		 * Activates the light
 		 * @param enable if the light is activate or not
@@ -333,7 +336,7 @@ namespace nap
 		 */
 		CameraComponentInstance& getCamera()								{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<CameraComponentInstance>(); }
 
-		/** 
+		/**
 		 * @return the origin gnomon.
 		 */
 		const RenderGnomonComponentInstance& getGnomon() const				{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->getComponent<RenderGnomonComponentInstance>(); }
@@ -353,7 +356,7 @@ namespace nap
 		 */
 		RenderFrustumComponentInstance* getFrustrum()						{ assert(mSpawnedCamera != nullptr); return mSpawnedCamera->findComponent<RenderFrustumComponentInstance>(); }
 
-		float mIntensity = 1.0f;												
+		float mIntensity = 1.0f;
 		RGBColorFloat mColor = { 1.0f, 1.0f, 1.0f };
 
 	protected:

@@ -23,10 +23,9 @@ namespace nap
 	 * Stores information of a shader constant declaration. These can be identified in shaders by their special constant ID.
 	 * NAP currently only supports unsigned integer constants.
 	 *
-	 * ~~~~~{.glsl}
+	 * ~~~~~~~~~~~~~~~{.glsl}
 	 * layout (constant_id = 0) const uint QUAD_SAMPLE_COUNT = 8;
-	 * ~~~~~
-	 * ```
+	 * ~~~~~~~~~~~~~~~
 	 */
 	class NAPAPI ShaderConstantDeclaration final
 	{

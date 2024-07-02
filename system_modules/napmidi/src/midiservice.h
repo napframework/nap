@@ -14,12 +14,11 @@
 // Midi includes
 #include "midievent.h"
 
-namespace nap {
-
+namespace nap
+{
     // Forward declarations
     class MidiInputPort;
     class MidiInputComponentInstance;
-
 
     /**
      * Service keeping tracking of opened midi input ports and processing incoming messages.

@@ -11,10 +11,10 @@
 #include <meshutils.h>
 
 // nap::gnomon run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GnomonMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GnomonMesh, "3D Gnomon orientation mesh, x=red, y=green, z=blue")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Size",		&nap::GnomonMesh::mSize,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",	&nap::GnomonMesh::mPosition,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Size",		&nap::GnomonMesh::mSize,		nap::rtti::EPropertyMetaData::Default, "Gnomon axis length")
+	RTTI_PROPERTY("Position",	&nap::GnomonMesh::mPosition,	nap::rtti::EPropertyMetaData::Default, "Gnomon position")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

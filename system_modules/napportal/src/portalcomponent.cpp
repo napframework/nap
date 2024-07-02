@@ -11,9 +11,9 @@
 #include <nap/logger.h>
 
 // nap::PortalComponent run time class definition
-RTTI_BEGIN_CLASS(nap::PortalComponent)
-	RTTI_PROPERTY("Server", &nap::PortalComponent::mServer, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::PortalComponent, "Handles communication between the NAP application and a web portal")
+	RTTI_PROPERTY("Server", &nap::PortalComponent::mServer, nap::rtti::EPropertyMetaData::Required, "The Portal WebSocket server to listen to")
+	RTTI_PROPERTY("Items", &nap::PortalComponent::mItems, nap::rtti::EPropertyMetaData::Embedded, "All available portal items")
 RTTI_END_CLASS
 
 // nap::PortalComponentInstance run time class definition

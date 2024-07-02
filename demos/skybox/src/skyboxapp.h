@@ -14,14 +14,11 @@
 #include <sceneservice.h>
 #include <inputservice.h>
 #include <inputrouter.h>
-#include <rendertarget.h>
 #include <app.h>
 #include <imguiservice.h>
 #include <renderservice.h>
-#include <parametergui.h>
-#include <parameternumeric.h>
 #include <nap/signalslot.h>
-#include <cubemapfromfile.h>
+#include <cubemapfromfilegroup.h>
 
 namespace nap
 {
@@ -86,8 +83,7 @@ namespace nap
 		rtti::ObjectPtr<EntityInstance> mCameraEntity;					//< Entity that holds the camera
 		rtti::ObjectPtr<EntityInstance> mTorusEntity;					//< The torus entity
 		rtti::ObjectPtr<EntityInstance> mSkyboxEntity;					//< Sky box render entity
-
-		std::vector<rtti::ObjectPtr<CubeMapFromFile>> mCubeMaps;		//< Cube maps cache
+		rtti::ObjectPtr<CubeMapFromFileGroup> mCubeMapGroup;			//< All available cube maps
 		int mCubeMapIndex = 0;
 	};
 }

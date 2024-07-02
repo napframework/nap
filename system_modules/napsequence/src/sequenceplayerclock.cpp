@@ -5,19 +5,20 @@
 #include "sequenceplayerclock.h"
 #include "sequenceservice.h"
 
-RTTI_BEGIN_CLASS(nap::SequencePlayerIndependentClock)
-        RTTI_PROPERTY("Frequency", &nap::SequencePlayerIndependentClock::mFrequency, nap::rtti::EPropertyMetaData::Default)
+RTTI_DEFINE_BASE(nap::SequencePlayerClock, "Updates a sequence")
+
+RTTI_BEGIN_CLASS(nap::SequencePlayerIndependentClock, "Updates a sequence at a certain frequency from an independent thread")
+        RTTI_PROPERTY("Frequency", &nap::SequencePlayerIndependentClock::mFrequency, nap::rtti::EPropertyMetaData::Default, "Update frequency in hertz (number of times per second)")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerStandardClock)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerStandardClock, "Updates a sequence every frame from the main thread")
 RTTI_END_CLASS
 
 namespace nap
 {
     SequencePlayerStandardClock::SequencePlayerStandardClock(SequenceService& service)
         : mService(service)
-    {
-    }
+    { }
 
 
     void SequencePlayerStandardClock::start(Slot<double>& updateSlot)

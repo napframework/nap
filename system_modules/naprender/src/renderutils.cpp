@@ -309,8 +309,8 @@ namespace nap
 			{
 				if (data.getSubView(i) != VK_NULL_HANDLE)
 				{
-					vkDestroyImageView(device, data.getSubView(i), nullptr);
-					data.getSubView(i) = VK_NULL_HANDLE;
+					vkDestroyImageView(device, data.mSubViews[i], nullptr);
+					data.mSubViews[i] = VK_NULL_HANDLE;
 				}
 			}
 

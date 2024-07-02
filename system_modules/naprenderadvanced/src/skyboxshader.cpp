@@ -9,7 +9,7 @@
 #include <nap/core.h>
 
 // nap::SkyBoxShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SkyBoxShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SkyBoxShader, "Shader program that draws a skybox using a cubemap texture")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

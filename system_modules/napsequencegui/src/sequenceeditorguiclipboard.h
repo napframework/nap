@@ -102,6 +102,7 @@ namespace nap
             /**
              * returns true when clipboard holds serialized object of specified id
              * @param objectID the object id of serialized object
+             * @param sequenceName name of the sequence
              * @return true if clipboard contains serialized object
              */
             bool containsObject(const std::string& objectID, const std::string& sequenceName) const;

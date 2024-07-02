@@ -14,12 +14,12 @@
 #include <libavformat/avformat.h>
 
 // nap::videoplayer run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoPlayer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoPlayer, "Decodes a video in a background thread and stores the result in a set of YUV textures.")
 	RTTI_CONSTRUCTOR(nap::VideoService&)
-	RTTI_PROPERTY("Loop",		&nap::VideoPlayer::mLoop,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("VideoFiles",	&nap::VideoPlayer::mVideoFiles,		nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("VideoIndex",	&nap::VideoPlayer::mVideoIndex,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed",		&nap::VideoPlayer::mSpeed,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Loop",		&nap::VideoPlayer::mLoop,			nap::rtti::EPropertyMetaData::Default,	"Loop the selected video")
+	RTTI_PROPERTY("VideoFiles",	&nap::VideoPlayer::mVideoFiles,		nap::rtti::EPropertyMetaData::Embedded, "All video files")
+	RTTI_PROPERTY("VideoIndex",	&nap::VideoPlayer::mVideoIndex,		nap::rtti::EPropertyMetaData::Default,	"Selected video file index")
+	RTTI_PROPERTY("Speed",		&nap::VideoPlayer::mSpeed,			nap::rtti::EPropertyMetaData::Default,	"Video playback speed")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

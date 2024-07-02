@@ -27,17 +27,17 @@ RTTI_BEGIN_ENUM(nap::ESVGUnits)
 	RTTI_ENUM_VALUE(nap::ESVGUnits::DPI,	"dpi")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::LineFromFile, "Loads a set of poly lines from an svg file")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("File",		&nap::LineFromFile::mFile,		nap::rtti::EPropertyMetaData::Required,		nap::rtti::EPropertyFileType::Any)
-	RTTI_PROPERTY("Units",				&nap::LineFromFile::mUnits,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DPI",				&nap::LineFromFile::mDPI,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Tolerance",			&nap::LineFromFile::mTolerance, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Normalize",			&nap::LineFromFile::mNormalize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Scale",				&nap::LineFromFile::mScale,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipHorizontal",		&nap::LineFromFile::mFlipX,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipVertical",		&nap::LineFromFile::mFlipY,		nap::rtti::EPropertyMetaData::Default)	
-	RTTI_PROPERTY("LineIndex",			&nap::LineFromFile::mLineIndex,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("File",		&nap::LineFromFile::mFile,		nap::rtti::EPropertyMetaData::Required,		nap::rtti::EPropertyFileType::Any, "Path to the the svg file to read")
+	RTTI_PROPERTY("Units",				&nap::LineFromFile::mUnits,		nap::rtti::EPropertyMetaData::Default,		"SVG unit interpretation")
+	RTTI_PROPERTY("DPI",				&nap::LineFromFile::mDPI,		nap::rtti::EPropertyMetaData::Default,		"The DPI of the SVG file")
+	RTTI_PROPERTY("Tolerance",			&nap::LineFromFile::mTolerance, nap::rtti::EPropertyMetaData::Default,		"Cubic re-sample line tolerance, lower values = higher resolution")
+	RTTI_PROPERTY("Normalize",			&nap::LineFromFile::mNormalize,	nap::rtti::EPropertyMetaData::Default,		"Normalize lines relative to 0, ie: max bounds are -0.5 and 0.5")
+	RTTI_PROPERTY("Scale",				&nap::LineFromFile::mScale,		nap::rtti::EPropertyMetaData::Default,		"Final line multiplcation scale")
+	RTTI_PROPERTY("FlipHorizontal",		&nap::LineFromFile::mFlipX,		nap::rtti::EPropertyMetaData::Default,		"Flip lines on the x axis")
+	RTTI_PROPERTY("FlipVertical",		&nap::LineFromFile::mFlipY,		nap::rtti::EPropertyMetaData::Default,		"Flip lines on the y axis")
+	RTTI_PROPERTY("LineIndex",			&nap::LineFromFile::mLineIndex,	nap::rtti::EPropertyMetaData::Default,		"Current active line index")
 RTTI_END_CLASS
 
 /**

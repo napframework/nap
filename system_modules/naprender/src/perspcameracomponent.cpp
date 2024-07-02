@@ -11,15 +11,15 @@
 #include "transformcomponent.h"
 #include "mathutils.h"
 
-RTTI_BEGIN_CLASS(nap::PerspCameraProperties)
-	RTTI_PROPERTY("FieldOfView",		&nap::PerspCameraProperties::mFieldOfView,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NearClippingPlane",	&nap::PerspCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FarClippingPlane",	&nap::PerspCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GridDimensions",		&nap::PerspCameraProperties::mGridDimensions,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GridLocation",		&nap::PerspCameraProperties::mGridLocation,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::PerspCameraProperties, "Perspective camera properties")
+	RTTI_PROPERTY("FieldOfView",		&nap::PerspCameraProperties::mFieldOfView,			nap::rtti::EPropertyMetaData::Default, "Camera field of view in degrees")
+	RTTI_PROPERTY("NearClippingPlane",	&nap::PerspCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default, "Camera near clipping plane")
+	RTTI_PROPERTY("FarClippingPlane",	&nap::PerspCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default, "Camera far clipping plane")
+	RTTI_PROPERTY("GridDimensions",		&nap::PerspCameraProperties::mGridDimensions,		nap::rtti::EPropertyMetaData::Default, "Split projection dimensions, a value of 1 (default) = a regular symmetric perspective projection")
+	RTTI_PROPERTY("GridLocation",		&nap::PerspCameraProperties::mGridLocation,			nap::rtti::EPropertyMetaData::Default, "Camera split projection index when dimensions > 0")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::PerspCameraComponent)
+RTTI_BEGIN_CLASS(nap::PerspCameraComponent, "Creates a perspective camera projection and view matrix")
 	RTTI_PROPERTY("Properties",			&nap::PerspCameraComponent::mProperties,			nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 

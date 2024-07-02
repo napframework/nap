@@ -9,7 +9,7 @@
 // External Includes
 #include <apivalue.h>
 
-RTTI_BEGIN_CLASS(nap::PortalItemButton)
+RTTI_BEGIN_CLASS(nap::PortalItemButton, "Portal button item")
 	RTTI_PROPERTY("Parameter", &nap::PortalItemButton::mParameter, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("Default Alignment", &nap::PortalItemButton::mDefaultAlignment, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

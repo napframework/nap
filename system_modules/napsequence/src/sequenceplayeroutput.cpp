@@ -6,7 +6,7 @@
 #include "sequenceplayeroutput.h"
 #include "sequenceservice.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerOutput)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerOutput, "Translates and shares track information with the application")
 RTTI_END_CLASS
 
 namespace nap

@@ -40,7 +40,7 @@ namespace nap
 		 * @return sampler shader declaration.
 		 */
 		const SamplerDeclaration& getDeclaration() const	{ assert(mDeclaration != nullptr); return *mDeclaration; }
-		
+
 		/**
 		 * @return the vulkan sampler handle
 		 */
@@ -49,7 +49,7 @@ namespace nap
 	protected:
 		/**
 		 * Called when the texture changes.
-		 * @param the texture index, zero unless the noninitial texture in a sampler array is changed.
+		 * @param index texture index, zero unless the non-initial texture in a sampler array is changed.
 		 */
 		void raiseChanged(int index = 0)					{ if (mSamplerChangedCallback) mSamplerChangedCallback(*this, index); }
 
@@ -205,7 +205,7 @@ namespace nap
 
 		/**
 		 * Binds a texture to the cube sampler.
-		 * @param texture the new texture to bind
+		 * @param textureCube the new texture to bind
 		 */
 		void setTexture(TextureCube& textureCube);
 
@@ -266,7 +266,7 @@ namespace nap
 		/**
 		 * Binds a texture at the given index
 		 * @param index the index to bind the texture to
-		 * @param texture the texture to bind.
+		 * @param textureCube the texture to bind.
 		 */
 		void setTexture(int index, TextureCube& textureCube);
 

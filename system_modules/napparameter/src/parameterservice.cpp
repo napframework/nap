@@ -13,12 +13,12 @@
 #include <utility/fileutils.h>
 #include <fstream>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterService, "Global parameter settings")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ParameterServiceConfiguration)
-	RTTI_PROPERTY("PresetsDirectory",		&nap::ParameterServiceConfiguration::mPresetsDirectory,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("PresetsDirectory",		&nap::ParameterServiceConfiguration::mPresetsDirectory,		nap::rtti::EPropertyMetaData::Default, "Directory to store/load presets")
 RTTI_END_CLASS
 
 namespace nap

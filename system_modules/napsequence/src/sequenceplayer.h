@@ -206,7 +206,7 @@ namespace nap
         std::string mSequenceFileName; ///< Property: 'Default Sequence' linked default Sequence file
         bool mCreateEmptySequenceOnLoadFail = true; ///< Property: 'Create Sequence on Failure' when true, the init will successes upon failure of loading default sequence and create an empty sequence
         std::vector<ResourcePtr<SequencePlayerOutput>> mOutputs;  ///< Property: 'Outputs' linked outputs
-        ResourcePtr<SequencePlayerClock> mClock;
+        ResourcePtr<SequencePlayerClock> mClock;	///< Property: 'Clock' Controls timing of playback
     protected:
         /**
          * adptersCreated Signal is triggered from main thread, after creating adapters

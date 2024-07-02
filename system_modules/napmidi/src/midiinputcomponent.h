@@ -15,9 +15,7 @@
 
 namespace nap
 {
-    
     class MidiInputComponentInstance;
-    
 
     /**
      * Component that filters incoming midi messages and makes them available for other components by emitting a signal.

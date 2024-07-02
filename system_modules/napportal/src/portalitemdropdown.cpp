@@ -9,8 +9,8 @@
 // External Includes
 #include <apivalue.h>
 
-RTTI_BEGIN_CLASS(nap::PortalItemDropDown)
-    RTTI_PROPERTY("Parameter", &nap::PortalItemDropDown::mParameter, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::PortalItemDropDown, "Portal dropdown item")
+    RTTI_PROPERTY("Parameter", &nap::PortalItemDropDown::mParameter, nap::rtti::EPropertyMetaData::Required, "Dropdown parameter")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -25,13 +25,6 @@ namespace nap
         mDisplayName = mParameter->getDisplayName();
 
         return true;
-    }
-
-
-    void PortalItemDropDown::onDestroy()
-    {
-        mParameter->itemsChanged.disconnect(mItemsChangedSlot);
-        mParameter->indexChanged.disconnect(mIndexChangedSlot);
     }
 
 

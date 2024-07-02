@@ -7,7 +7,7 @@
 // NAP includes
 #include <rtti/typeinfo.h>
 
-RTTI_BEGIN_CLASS(nap::ShaderConstant)
-	RTTI_PROPERTY("Name", &nap::ShaderConstant::mName, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Value", &nap::ShaderConstant::mValue, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ShaderConstant, "Assigns a value to a specialization constant in a shader")
+	RTTI_PROPERTY("Name", &nap::ShaderConstant::mName, nap::rtti::EPropertyMetaData::Default,	"Constant name in shader")
+	RTTI_PROPERTY("Value", &nap::ShaderConstant::mValue, nap::rtti::EPropertyMetaData::Default, "Constant value")
 RTTI_END_CLASS

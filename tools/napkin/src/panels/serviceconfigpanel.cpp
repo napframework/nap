@@ -34,6 +34,11 @@ namespace napkin
 		{
 		case Qt::DecorationRole:
 			return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_CONFIGURATION);
+		case Qt::ToolTipRole:
+		{
+			const char* obj_desc = nap::rtti::getDescription(mConfig.getServiceType());
+			return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
+		}
 		default:
 			return QStandardItem::data(role);
 		}

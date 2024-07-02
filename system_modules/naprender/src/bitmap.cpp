@@ -16,12 +16,12 @@
 #undef BYTE
 
 // nap::bitmap run time class definition 
-RTTI_BEGIN_CLASS(nap::Bitmap)
-	RTTI_PROPERTY("Settings",	&nap::Bitmap::mSurfaceDescriptor,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::Bitmap, "2D image resource without GPU representation")
+	RTTI_PROPERTY("Settings",	&nap::Bitmap::mSurfaceDescriptor,	nap::rtti::EPropertyMetaData::Default, "Bitmap initialization settings")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::BitmapFromFile)
-	RTTI_PROPERTY("Path",		&nap::BitmapFromFile::mPath,		nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::BitmapFromFile, "2D image resource loaded from disk, without GPU representation")
+	RTTI_PROPERTY("Path",		&nap::BitmapFromFile::mPath,		nap::rtti::EPropertyMetaData::Required, "Path to the image on disk")
 RTTI_END_CLASS
 
 

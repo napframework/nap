@@ -10,8 +10,8 @@
 #include <nap/logger.h>
 
 // nap::apicomponent run time class definition
-RTTI_BEGIN_CLASS(nap::APIComponent)
-	RTTI_PROPERTY("Signatures",	&nap::APIComponent::mSignatures, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::APIComponent, "Receives API Events from the API Service")
+	RTTI_PROPERTY("Signatures",	&nap::APIComponent::mSignatures, nap::rtti::EPropertyMetaData::Default, "The API calls accepted by this component")
 RTTI_END_CLASS
 
 // nap::apicomponentInstance run time class definition
