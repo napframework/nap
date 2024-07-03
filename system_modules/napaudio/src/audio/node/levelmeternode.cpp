@@ -53,35 +53,34 @@ namespace nap
 			if (inputBuffer == nullptr)
 				return;
             
-			switch (mType) {
+			switch (mType)
+			{
 				case PEAK:
-
-					for (auto& sample : *inputBuffer) {
-						
+					for (auto& sample : *inputBuffer)
+					{
 						// keep track of peak, sample by sample
-						float newValue = fabs(sample);
+						float newValue = sample;
+						if (newValue < 0.f)
+							newValue = -newValue;
 						if (newValue > mPeakTemp)
 							mPeakTemp = newValue;
 						
 						// reset temp and update the output value once every 'window'
 						mIndex++;
-						if(mIndex == mWindowSizeInSamples)
+						if (mIndex == mWindowSizeInSamples)
 						{
 							mPeak = mPeakTemp;
 							mPeakTemp = 0.f;
 							mIndex = 0;
 						}
-						
 					}
 					
 					mValue.store(mPeak);
-
 					break;
 
 				default: // RMS
-
-					for (auto& sample : *inputBuffer) {
-						
+					for (auto& sample : *inputBuffer)
+					{
 						// updated squared sum
 						mSquaredSum -= mSquaredBuffer[mIndex];
 						mSquaredBuffer[mIndex] = sample * sample;
@@ -91,15 +90,11 @@ namespace nap
 						mIndex++;
 						if (mIndex == mSquaredBuffer.size())
 							mIndex = 0;
-						
 					}
 					
 					mValue.store(mSquaredSum / (float)mSquaredBuffer.size());
-					
 					break;
-					
 			}
-
 		}
 
 		void LevelMeterNode::sampleRateChanged(float sampleRate)
