@@ -55,7 +55,7 @@ namespace nap
 			 */
 			T getNextValue()
 			{
-                if (mNewDestination.load() != mDestination)
+				if (mNewDestination.load() != mDestination)
 				{
 					mDestination = mNewDestination;
 					mStepCounter = mStepCount;

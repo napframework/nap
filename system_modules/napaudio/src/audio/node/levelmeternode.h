@@ -63,14 +63,14 @@ namespace nap
 			int mIndex = 0; // Current write index of the buffer being analyzed.
 			Type mType = Type::RMS; // Algorithm currently being used to calculate the output level value from one buffer.
 			TimeValue mAnalysisWindowSize = 0.f;
-            int mWindowSizeInSamples = 0;
-            std::atomic<float> mValue = 0.f; // Calculated output level value
-            
-            SampleBuffer mSquaredBuffer;
-            float mSquaredSum = 0.f;
-            
-            float mPeak = 0.f;
-            float mPeakTemp = 0.f;
+			int mWindowSizeInSamples = 0;
+			std::atomic<float> mValue = 0.f; // Calculated output level value
+			
+			SampleBuffer mSquaredBuffer;
+			float mSquaredSum = 0.f;
+			
+			float mPeak = 0.f;
+			float mPeakTemp = 0.f;
 
 			bool mRootProcess = false;
 		};

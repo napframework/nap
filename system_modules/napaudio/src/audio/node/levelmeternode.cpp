@@ -42,7 +42,7 @@ namespace nap
 
 		float LevelMeterNode::getLevel()
 		{
-            return mValue.load();
+			return mValue.load();
 		}
 
 
@@ -54,15 +54,15 @@ namespace nap
 				return;
             
 			switch (mType) {
-                 		case PEAK:
+				case PEAK:
 
 					for (auto& sample : *inputBuffer) {
-
+						
 						// keep track of peak, sample by sample
 						float newValue = fabs(sample);
 						if (newValue > mPeakTemp)
 							mPeakTemp = newValue;
-
+						
 						// reset temp and update the output value once every 'window'
 						mIndex++;
 						if(mIndex == mWindowSizeInSamples)
@@ -71,8 +71,9 @@ namespace nap
 							mPeakTemp = 0.f;
 							mIndex = 0;
 						}
+						
 					}
-
+					
 					mValue.store(mPeak);
 
 					break;
@@ -80,21 +81,23 @@ namespace nap
 				default: // RMS
 
 					for (auto& sample : *inputBuffer) {
-
+						
 						// updated squared sum
 						mSquaredSum -= mSquaredBuffer[mIndex];
 						mSquaredBuffer[mIndex] = sample * sample;
 						mSquaredSum += mSquaredBuffer[mIndex];
-
+						
 						// increment index
 						mIndex++;
 						if (mIndex == mSquaredBuffer.size())
 							mIndex = 0;
-
+						
 					}
-                    
+					
 					mValue.store(mSquaredSum / (float)mSquaredBuffer.size());
-
+					
+					break;
+					
 			}
 
 		}

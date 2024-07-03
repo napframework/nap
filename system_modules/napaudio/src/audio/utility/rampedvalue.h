@@ -75,7 +75,7 @@ namespace nap
 			T getNextValue()
 			{
 				if (mStepCounter > 0) {
-                    switch (mRampMode.load()) {
+					switch (mRampMode.load()) {
 						case RampMode::Linear:
 							mValue = mValue + mIncrement;
 							break;
@@ -127,7 +127,7 @@ namespace nap
 
 				mStepCounter = mStepCount;
 				
-                switch (mRampMode.load())
+				switch (mRampMode.load())
 				{
 					case RampMode::Linear:
 						mIncrement = (mDestination - mValue) / T(mStepCount);
