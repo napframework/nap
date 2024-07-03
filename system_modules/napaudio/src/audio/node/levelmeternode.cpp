@@ -25,7 +25,7 @@ namespace nap
 
 		LevelMeterNode::LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize, bool rootProcess) : Node(nodeManager), mRootProcess(rootProcess), mAnalysisWindowSize(analysisWindowSize)
 		{
-            mWindowSizeInSamples = getNodeManager().getSamplesPerMillisecond() * mAnalysisWindowSize;
+			mWindowSizeInSamples = getNodeManager().getSamplesPerMillisecond() * mAnalysisWindowSize;
 			mSquaredBuffer.resize(mWindowSizeInSamples);
             
 			if (rootProcess)
@@ -53,56 +53,56 @@ namespace nap
 			if (inputBuffer == nullptr)
 				return;
             
-            switch (mType) {
-                 case PEAK:
-                     
-                     for (auto& sample : *inputBuffer) {
+			switch (mType) {
+                 		case PEAK:
 
-                         // keep track of peak, sample by sample
-                         float newValue = fabs(sample);
-                         if (newValue > mPeakTemp)
-                             mPeakTemp = newValue;
-                         
-                         // reset temp and update the output value once every 'window'
-                         mIndex++;
-                         if(mIndex == mWindowSizeInSamples)
-                         {
-                             mPeak = mPeakTemp;
-                             mPeakTemp = 0.f;
-                             mIndex = 0;
-                         }
-                     }
-                    
-                    mValue.store(mPeak);
-                     
-                    break;
+					for (auto& sample : *inputBuffer) {
 
-                 default: // RMS
-                    
-                    for (auto& sample : *inputBuffer) {
+						// keep track of peak, sample by sample
+						float newValue = fabs(sample);
+						if (newValue > mPeakTemp)
+							mPeakTemp = newValue;
 
-                        // updated squared sum
-                        mSquaredSum -= mSquaredBuffer[mIndex];
-                        mSquaredBuffer[mIndex] = sample * sample;
-                        mSquaredSum += mSquaredBuffer[mIndex];
-                        
-                        // increment index
-                        mIndex++;
-                        if (mIndex == mSquaredBuffer.size())
-                             mIndex = 0;
-                        
-                    }
+						// reset temp and update the output value once every 'window'
+						mIndex++;
+						if(mIndex == mWindowSizeInSamples)
+						{
+							mPeak = mPeakTemp;
+							mPeakTemp = 0.f;
+							mIndex = 0;
+						}
+					}
+
+					mValue.store(mPeak);
+
+					break;
+
+				default: // RMS
+
+					for (auto& sample : *inputBuffer) {
+
+						// updated squared sum
+						mSquaredSum -= mSquaredBuffer[mIndex];
+						mSquaredBuffer[mIndex] = sample * sample;
+						mSquaredSum += mSquaredBuffer[mIndex];
+
+						// increment index
+						mIndex++;
+						if (mIndex == mSquaredBuffer.size())
+							mIndex = 0;
+
+					}
                     
-                    mValue.store(mSquaredSum / (float)mSquaredBuffer.size());
-                                        
-             }
+					mValue.store(mSquaredSum / (float)mSquaredBuffer.size());
+
+			}
 
 		}
 
 		void LevelMeterNode::sampleRateChanged(float sampleRate)
 		{
-            mWindowSizeInSamples = getNodeManager().getSamplesPerMillisecond() * mAnalysisWindowSize;
-            mSquaredBuffer.resize(mWindowSizeInSamples);
+			mWindowSizeInSamples = getNodeManager().getSamplesPerMillisecond() * mAnalysisWindowSize;
+			mSquaredBuffer.resize(mWindowSizeInSamples);
 		}
 
 	}
