@@ -56,10 +56,10 @@ namespace nap
 			{
 				assert(stepCount >= 0);
 
-				mDestination = destination;
-				mStepCount = stepCount;
-				mRampMode = mode;
-
+				mDestination.store(destination);
+				mStepCount.store(stepCount);
+				mRampMode.store(mode);
+				
 				updateRamp();
 			}
 
@@ -74,8 +74,10 @@ namespace nap
 			 */
 			T getNextValue()
 			{
+				RampMode rampMode = mRampMode.load();
+				
 				if (mStepCounter > 0) {
-					switch (mRampMode.load()) {
+					switch (rampMode) {
 						case RampMode::Linear:
 							mValue = mValue + mIncrement;
 							break;
@@ -85,10 +87,10 @@ namespace nap
 					}
 					mStepCounter--;
 					if (mStepCounter == 0) {
-						if (mRampMode == RampMode::Exponential && mDestinationZero)
+						if (rampMode == RampMode::Exponential && mDestinationZero)
 							mValue = 0;
 						else
-							mValue = mDestination;
+							mValue = mDestination.load();
 						destinationReachedSignal(mValue);
 					}
 				}
@@ -116,11 +118,14 @@ namespace nap
 		private:
 			void updateRamp()
 			{
+				T destination = mDestination.load();
+				int stepCount = mStepCount.load();
+				
 				// if there are zero steps we reach the destination of the ramp immediately
-				if (mStepCount <= 0)
+				if (stepCount <= 0)
 				{
 					mStepCounter = 0;
-					mValue = mDestination;
+					mValue = destination;
 					destinationReachedSignal(mValue);
 					return;
 				}
@@ -130,27 +135,25 @@ namespace nap
 				switch (mRampMode.load())
 				{
 					case RampMode::Linear:
-						mIncrement = (mDestination - mValue) / T(mStepCount);
+						mIncrement = (destination - mValue) / T(stepCount);
 						break;
 
 					case RampMode::Exponential:
 						// avoid divisions by zero by avoiding mValue = 0
 						if (mValue == 0)
-							mValue = mDestination *
-							         smallestFactor; // this is a 140dB ramp up from mValue to mDestination
-
+							mValue = destination * smallestFactor; // this is a 140dB ramp up from mValue to mDestination
+						
 						// avoid divisions by zero by avoiding mDestination = 0
-						if (mDestination == 0)
+						if (destination == 0)
 						{
-							mDestination =
-									mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
+							destination = mValue * smallestFactor; // this is a 140 dB ramp down from mValue to mDestination
 							mDestinationZero = true;
 						}
 						else
 							mDestinationZero = false;
 
 						// calculate the increment factor
-						mFactor = pow(double(mDestination / mValue), double(1.0 / mStepCount));
+						mFactor = pow(double(destination / mValue), double(1.0 / stepCount));
 						break;
 				}
 			}
@@ -163,9 +166,9 @@ namespace nap
 				T mIncrement; // Increment value per step of the current ramp when mode is linear.
 				T mFactor; // Factor value per step of the current ramp when mode is exponential.
 			};
-			std::atomic<T> mDestination = 0; // Destination value of the current ramp.
-			std::atomic<int> mStepCount = 0; // Number of steps in the ramp.
-			int mStepCounter = {0}; // Current step index, 0 means at destination
+			std::atomic<T> mDestination = { 0 }; // Destination value of the current ramp.
+			std::atomic<int> mStepCount = { 0 }; // Number of steps in the ramp.
+			int mStepCounter = 0; // Current step index, 0 means at destination
 			std::atomic<RampMode> mRampMode = {RampMode::Linear}; // The mode of the current ramp
 			bool mDestinationZero = false; // In case of a linear ramp this indicates wether the destination value needs to be rounded to zero.
 		};
