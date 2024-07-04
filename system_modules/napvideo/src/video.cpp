@@ -492,6 +492,8 @@ namespace nap
 
 	void AVState::waitSeekStartPacketProcessed()
 	{
+        // clear the frame queue, as we are going to seek to a new position
+        clearFrameQueue(mSeekFrameQueue, false);
 		mSeekStartProcessedEvent.wait();
 	}
 
@@ -742,12 +744,6 @@ namespace nap
 				mFrameDataAvailableCondition.notify_all();
 				VIDEO_DEBUG_LOG("push frame (stream %d): pkt_pos: %d, dts: %d, pts: %d", mStream, new_frame.mFrame->pkt_pos, new_frame.mFrame->pkt_dts, new_frame.mFrame->pkt_pts);
 			}
-
-            // sleep the thread for a bit
-            // this prevents a very rare race condition that can happen while seeking
-            // a seekstart packet can be pushed onto the queue but the decode thread is so fast that it processes the packet before waitSeekStartPacketProcessed is called
-            // this can happen with black frames in the videos and fast CPU's
-            std::this_thread::sleep_for(std::chrono::milliseconds(1));
 		}
 
 		av_frame_free(&frame);
