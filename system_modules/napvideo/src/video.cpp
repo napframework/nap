@@ -800,21 +800,13 @@ namespace nap
 			else if (packet == mSeekEndPacket.get())
 			{
 				VIDEO_DEBUG_LOG("seek end received");
-                {
-                    // clear any previous frames, we're not interested in them anymore
-                    clearFrameQueue(mFrameQueue, false);
 
-                    // Copy seek frame queues into the regular frame queue
-                    while(!mSeekFrameQueue.empty())
-                    {
-                        Frame f = popSeekFrame();
-                        std::unique_lock<std::mutex> lock(mFrameQueueMutex);
-                        mFrameQueue.push(f);
-                    }
-                }
+                // clear frame queue
+                clearFrameQueue(mFrameQueue, false);
 
-                // Clear the seek frame queue
-                clearFrameQueue(mSeekFrameQueue, false);
+                // Copy seek frame queues into the regular frame queue
+                while(!mSeekFrameQueue.empty())
+                    mFrameQueue.push(popSeekFrame());
 
 				// Seeking is done, switch back to the regular frame queue so that the user can continue
 				// processing frames
