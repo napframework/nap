@@ -581,32 +581,32 @@ namespace nap
 	}
 
 
-	bool AVState::addSeekStartPacket(const bool& exitIOThreadSignalled)
+	bool AVState::addSeekStartPacket()
 	{
-		return addPacket(*mSeekStartPacket, exitIOThreadSignalled);
+		return addPacket(*mSeekStartPacket);
 	}
 
 
-	bool AVState::addSeekEndPacket(const bool& exitIOThreadSignalled, double seekTargetSecs)
+	bool AVState::addSeekEndPacket(double seekTargetSecs)
 	{
 		mSeekTargetSecs = seekTargetSecs;
-		return addPacket(*mSeekEndPacket, exitIOThreadSignalled);
+		return addPacket(*mSeekEndPacket);
 	}
 
 
-	bool AVState::addEndOfFilePacket(const bool& exitIOThreadSignalled)
+	bool AVState::addEndOfFilePacket()
 	{
-		return addPacket(*mEndOfFilePacket, exitIOThreadSignalled);
+		return addPacket(*mEndOfFilePacket);
 	}
 
 
-	bool AVState::addIOFinishedPacket(const bool& exitIOThreadSignalled)
+	bool AVState::addIOFinishedPacket()
 	{
-		return addPacket(*mIOFinishedPacket, exitIOThreadSignalled);
+		return addPacket(*mIOFinishedPacket);
 	}
 
 	
-	bool AVState::addPacket(AVPacket& packet, const bool& exitIOThreadSignalled)
+	bool AVState::addPacket(AVPacket& packet)
 	{
 		assert(matchesStream(packet));
 
@@ -1198,9 +1198,9 @@ namespace nap
 			// packet by the decode thread. avcoded_receive_frame will decode it and return EOF when receiving. This lets
 			// the decode thread know it reached the end of the stream. By doing it this way, we are sure that all frames
 			// in the queue are properly processed. The decode thread will flush the codec at that point in time.
-			mVideoState.addEndOfFilePacket(mExitIOThreadSignalled);
+			mVideoState.addEndOfFilePacket();
 			if (audioEnabled())
-				mAudioState.addEndOfFilePacket(mExitIOThreadSignalled);
+				mAudioState.addEndOfFilePacket();
 
 			return EProducePacketResult::EndOfFile;
 		}
@@ -1216,7 +1216,7 @@ namespace nap
 			packet_result = EProducePacketResult::GotVideoPacket;
 			if (targetState == nullptr || targetState == &mVideoState)
 			{
-				if (mVideoState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+				if (mVideoState.addPacket(*packet.mPacket))
 					packet.mPacket = nullptr;
 			}
 		}
@@ -1227,7 +1227,7 @@ namespace nap
 			packet_result = EProducePacketResult::GotAudioPacket;
 			if (targetState == nullptr || targetState == &mAudioState)
 			{
-				if (mAudioState.addPacket(*packet.mPacket, mExitIOThreadSignalled))
+				if (mAudioState.addPacket(*packet.mPacket))
 					packet.mPacket = nullptr;
 			}
 		}
@@ -1248,9 +1248,9 @@ namespace nap
 		setIOThreadState(IOThreadState::Playing);
 
 		// Inform the decode thread that it should switch back to the regular frame queue
-		mVideoState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
+		mVideoState.addSeekEndPacket(mSeekTargetSecs);
 		if (audioEnabled())
-			mAudioState.addSeekEndPacket(mExitIOThreadSignalled, mSeekTargetSecs);
+			mAudioState.addSeekEndPacket(mSeekTargetSecs);
 
 		// Reset audio clock to something that won't drop all frames after we've finished seeking.
 		// We'll rely on the audio callback to set this back to proper values once frames start being decoded
@@ -1369,9 +1369,9 @@ namespace nap
 						{
 							// We have reached end of the packet stream and we're not looping. Inform the decode 
 							// threads that it does not need to expect any more packets.
-							mVideoState.addIOFinishedPacket(mExitIOThreadSignalled);
+							mVideoState.addIOFinishedPacket();
 							if (audioEnabled())
-								mAudioState.addIOFinishedPacket(mExitIOThreadSignalled);
+								mAudioState.addIOFinishedPacket();
 
 							return;
 						}
@@ -1409,14 +1409,14 @@ namespace nap
 					// For example, when the video frame queue is full, waiting for the seek start to be processed on the video state will block indefinitely,
 					// because the audio clock won't progress, due to no packets being added to the audio state, because we're waiting for video here.
 					if (audioEnabled())
-						mAudioState.addSeekStartPacket(mExitIOThreadSignalled);
+						mAudioState.addSeekStartPacket();
 
 					// Wait until the seek start is processed so that we are sure that there is not more state pending in the decode thread
 					if (audioEnabled())
 						mAudioState.waitSeekStartPacketProcessed();
 
                     // Add seek start packet
-                    mVideoState.addSeekStartPacket(mExitIOThreadSignalled);
+                    mVideoState.addSeekStartPacket();
 
                     // Wait for the decode thread to process the start packet
 					mVideoState.waitSeekStartPacketProcessed();
