@@ -59,6 +59,11 @@ namespace nap
 			void disconnectAll();
 			
 			/**
+			 * Returns wether this pin is connected to one or more other pins.
+			 */
+			virtual bool isConnected() const = 0;
+			
+			/**
 			 * @return the node that owns this input.
 			 */
 			Node& getNode() { return *mNode; }
@@ -124,11 +129,6 @@ namespace nap
 
 
 			/**
-			 * If connected, disconnects this pin.
-			 */
-			void disconnectAll() override;
-
-			/**
 			 * @return wether the input is connected
 			 */
 			bool isConnected() const override { return mInput != nullptr; }
@@ -136,7 +136,7 @@ namespace nap
 		private:
 			void disconnectAllNow() override;
 
-			/*
+			/**
 			 * The audio output connected to this input.
 			 * When it is a nullptr this input is not connected.
 			 */
@@ -169,18 +169,6 @@ namespace nap
 			void pull(std::vector<SampleBuffer*>& result);
 
 			/**
-			 * Connect another node's output to this pin.
-			 * @param input to be connected to this pin.
-			 */
-			void connect(OutputPin& input) override;
-
-			/**
-			 * Disconnect another node's output from this pin, if it is connected to this pin.
-			 * @param input the pin to be disconnected from this pin
-			 */
-			void disconnect(OutputPin& input) override;
-
-			/**
 			 * Overload for connect function to defer multiple connections at once to the audio thread
 			 * @param pins Pins to be connected to this pin
 			 */
@@ -191,11 +179,6 @@ namespace nap
 			 * @param pins Pins to be disconnected to this pin
 			 */
 			void disconnect(const std::vector<OutputPin*>& pins);
-
-			/**
-			 * Disconnects this input from all the connected pins.
-			 */
-			void disconnectAll() override;
 
 			/**
 			 * @return wether the input is connected to any outputs
