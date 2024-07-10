@@ -1,7 +1,9 @@
 {
     "Type": "nap::ModuleInfo",
     "mID": "ModuleInfo",
-    "RequiredModules": [],
+    "RequiredModules": [
+        "napopenssl"
+    ],
     "WindowsDllSearchPaths": [
         "{ROOT}/system_modules/naplicense/thirdparty/cryptopp/msvc/{BUILD_ARCH}/lib/{BUILD_TYPE}"
     ],

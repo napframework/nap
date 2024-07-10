@@ -423,7 +423,6 @@
                         "GnomonSize": 1.0
                     },
                     "Attenuation": 0.10000000149011612,
-                    "FieldOfView": 30.0,
                     "ClippingPlanes": {
                         "x": 0.10000000149011612,
                         "y": 30.0
@@ -637,7 +636,7 @@
                             0.7490196228027344
                         ]
                     },
-                    "Intensity": 0.699999988079071,
+                    "Intensity": 0.8500000238418579,
                     "ShadowStrength": 1.0,
                     "Locator": {
                         "LineWidth": 1.0,

@@ -11,10 +11,10 @@
 #include <entity.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableComponent)
-	RTTI_PROPERTY("Visible", &nap::RenderableComponent::mVisible, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Tags", &nap::RenderableComponent::mTags, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Layer", &nap::RenderableComponent::mLayer, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableComponent, "Object that can be rendered to a window or other render target")
+	RTTI_PROPERTY("Visible",	&nap::RenderableComponent::mVisible,	nap::rtti::EPropertyMetaData::Default, "If the object is rendered")
+	RTTI_PROPERTY("Tags",		&nap::RenderableComponent::mTags,		nap::rtti::EPropertyMetaData::Default, "Associated render categories, empty = every category")
+	RTTI_PROPERTY("Layer",		&nap::RenderableComponent::mLayer,		nap::rtti::EPropertyMetaData::Default, "The position in the render chain, defaults to 0 (front) without a layer")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableComponentInstance)
@@ -38,7 +38,7 @@ namespace nap
 		for (const auto& tag : resource->mTags)
 		{
 			// Ensure tag is present
-			if (!errorState.check(tag != nullptr, "%s: Empty tag entry encountered", resource->mID.c_str()))
+			if (!errorState.check(tag != nullptr, "%s: Empty (NULL) tag encountered", resource->mID.c_str()))
 				return false;
 
 			// Add to render mask

@@ -13,7 +13,7 @@ namespace nap
 	class Core;
 	class RenderService;
 
-	// Video shader sampler names 
+	// Video shader sampler names
 	namespace uniform
 	{
 		namespace video
@@ -33,11 +33,11 @@ namespace nap
 	 *
 	 * The video shader exposes the following shader variables:
 	 *
-	 * ~~~~~{.frag}
+	 * ~~~~~~~~~~~~~~~{.frag}
 	 *		uniform sampler2D yTexture;
 	 *		uniform sampler2D uTexture;
 	 *		uniform sampler2D vTexture;
-	 * ~~~~
+	 * ~~~~~~~~~~~~~~~
 	 */
 	class NAPAPI VideoShader : public Shader
 	{

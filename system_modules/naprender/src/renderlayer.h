@@ -50,9 +50,6 @@ namespace nap
 		const std::string& getName() const		{ return mName; }
 
 		std::string mName;						///< Property: 'Name' The render layer name
-
-	private:
-		RenderService* mRenderService = nullptr;
 	};
 
 	

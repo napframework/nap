@@ -18,9 +18,9 @@ RTTI_BEGIN_CLASS(nap::RootEntity)
 	RTTI_PROPERTY("InstanceProperties", &nap::RootEntity::mInstanceProperties,	nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Scene)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Scene, "Spawns and manages a set of entities")
 	RTTI_FUNCTION("findEntity",			&nap::Scene::findEntity)
-	RTTI_PROPERTY("Entities",			&nap::Scene::mEntities,					nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Entities",			&nap::Scene::mEntities,					nap::rtti::EPropertyMetaData::Required, "The entities to spawn")
 RTTI_END_CLASS
 
 namespace nap
@@ -125,6 +125,7 @@ namespace nap
 				{
 					if (!component_instance->init(errorState))
 					{
+						errorState.fail("Failed to init component '%s'", component_instance->mID.c_str());
 						success = false;
 						break;
 					}

@@ -53,9 +53,6 @@ namespace nap
         /**
          * shows inspector block
          * @param track reference to track
-         * @param deleteTrack reference to bool to indicate whether delete is pressed
-         * @param moveUp reference to bool indicating to move the track upwards
-         * @param moveDown reference to bool indicating to move the track downwards
          */
         virtual void showInspector(const SequenceTrack& track);
 

@@ -22,50 +22,37 @@ namespace nap
 	 */
 	struct NAPAPI ImageData
 	{
-		friend class Texture;
-
 		// Default Constructor
 		ImageData() = default;
 
 		// Constructor
 		ImageData(uint viewCount) :
-			mSubViews(viewCount)
-		{}
+			mSubViews(viewCount, VK_NULL_HANDLE)			{ }
 
 		/**
 		 * @return Handle to Vulkan Image View
 		 */
-		VkImageView& getView()							{ return mView; }
+		VkImageView getView() const							{ return mView; }
 
 		/**
 		 * @return Handle to Vulkan Image View
 		 */
-		VkImageView getView() const						{ return mView; }
+		VkImageView getSubView(uint index) const			{ assert(index < mSubViews.size()); return mSubViews[index]; }
 
 		/**
 		 * @return Handle to Vulkan Image View
 		 */
-		VkImageView& getSubView(uint index)				{ assert(index < mSubViews.size()); return mSubViews[index]; }
-
-		/**
-		 * @return Handle to Vulkan Image View
-		 */
-		VkImageView getSubView(uint index) const		{ assert(index < mSubViews.size()); return mSubViews[index]; }
-
-		/**
-		 * @return Handle to Vulkan Image View
-		 */
-		uint getSubViewCount() const					{ return mSubViews.size(); }
+		uint getSubViewCount() const						{ return mSubViews.size(); }
 
 		/**
 		 * @return Handle to Vulkan Image Data
 		 */
-		VkImage getImage() const						{ return mImage; }
+		VkImage getImage() const							{ return mImage; }
 
 		/**
 		 * @return Current Vulkan image layout.
 		 */
-		VkImageLayout getLayout() const					{ return mCurrentLayout; }
+		VkImageLayout getLayout() const						{ return mCurrentLayout; }
 
 		/**
 		 * Releases the image and view, resetting all the handles to null. Does not delete it.
@@ -77,8 +64,6 @@ namespace nap
 		VmaAllocation					mAllocation = VK_NULL_HANDLE;					///< Vulkan single memory allocation
 		VmaAllocationInfo				mAllocationInfo;								///< Vulkan memory allocation information
 		VkImageLayout					mCurrentLayout = VK_IMAGE_LAYOUT_UNDEFINED;		///< Vulkan image layout
-
-	private:
 		std::vector<VkImageView>		mSubViews;										///< Vulkan Image views
 	};
 }

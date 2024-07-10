@@ -14,10 +14,10 @@
 #include <apiservice.h>
 #include <apiutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketClient)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketClient, "Sends API events to a websocket server")
 	RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
-	RTTI_PROPERTY("SendWebSocketEvents",	&nap::APIWebSocketClient::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Verbose",				&nap::APIWebSocketClient::mVerbose,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SendWebSocketEvents",	&nap::APIWebSocketClient::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default, "Generate and forward websocket events, next to API events")
+	RTTI_PROPERTY("Verbose",				&nap::APIWebSocketClient::mVerbose,				nap::rtti::EPropertyMetaData::Default, "Log message conversion issues")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

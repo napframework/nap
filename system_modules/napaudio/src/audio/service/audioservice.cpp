@@ -25,7 +25,6 @@ namespace nap
 {
 	namespace audio
 	{
-		
 		AudioService::AudioService(ServiceConfiguration* configuration) :
 				Service(configuration), mNodeManager(mDeletionQueue)
 		{ }

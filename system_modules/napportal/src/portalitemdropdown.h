@@ -21,12 +21,6 @@ namespace nap
     RTTI_ENABLE(PortalItem)
 
     public:
-
-        /**
-         * Unsubscribes from the parameter changed signal
-         */
-        void onDestroy() override;
-
         /**
          * Processes an update type API event.
          * @param event The event to be processed
@@ -47,6 +41,7 @@ namespace nap
 
         // Properties
         ResourcePtr<ParameterDropDown> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
+
     protected:
         /**
          * Subscribes to the parameter changed signal
@@ -54,6 +49,7 @@ namespace nap
          * @return if initialization succeeded.
          */
         bool onInit(utility::ErrorState& errorState) override;
+
     private:
         /**
          * The slot and callback called when index of drop down changes

@@ -2,16 +2,18 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local Includes
 #include "websocketclient.h"
 #include "websocketservice.h"
 
+// External Includes
 #include <nap/logger.h>
 
 // nap::websocketclient run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketClient)
-	RTTI_PROPERTY("URI",		&nap::IWebSocketClient::mURI,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("EndPoint",	&nap::IWebSocketClient::mEndPoint,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Ticket",		&nap::IWebSocketClient::mTicket,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketClient, "Websocket client interface")
+	RTTI_PROPERTY("URI",		&nap::IWebSocketClient::mURI,		nap::rtti::EPropertyMetaData::Required, "Server identification name, http://..")
+	RTTI_PROPERTY("EndPoint",	&nap::IWebSocketClient::mEndPoint,	nap::rtti::EPropertyMetaData::Required,	"The client endpoint that manages all connections")
+	RTTI_PROPERTY("Ticket",		&nap::IWebSocketClient::mTicket,	nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Optional identification token")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketClient)
@@ -28,9 +30,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	IWebSocketClient::IWebSocketClient(WebSocketService& service) : WebSocketInterface(service)
-	{
-
-	}
+	{ }
 
 
 	bool IWebSocketClient::init(utility::ErrorState& errorState)
@@ -96,9 +96,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	WebSocketClient::WebSocketClient(WebSocketService& service) : IWebSocketClient(service)
-	{
-
-	}
+	{ }
 
 
 	bool WebSocketClient::send(const std::string& message, EWebSocketOPCode code, nap::utility::ErrorState& error)

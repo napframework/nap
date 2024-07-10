@@ -10,7 +10,7 @@
 #include <renderservice.h>
 
 // nap::BlinnPhongColorShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BlinnPhongColorShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BlinnPhongColorShader, "Default blinn-phong shader program, compatible with the 'render advanced' light system")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

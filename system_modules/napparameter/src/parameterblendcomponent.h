@@ -43,7 +43,7 @@ namespace nap
 		nap::ResourcePtr<ParameterInt> mPresetIndex = nullptr;					///< Property: 'PresetIndex' index of the preset to blend to
 		nap::ResourcePtr<ParameterFloat> mPresetBlendTime = nullptr;			///< Property: 'PresetBlendTime' time it takes to blend parameters (seconds)
 		bool mEnableBlending = false;											///< Property: 'EnableBlending' if blending is enabled or not
-		bool mBlendOnInit = false;												///< Property: 'BlendOnInit' if the first preset should be blended on initialization
+		bool mBlendOnInit = false;												///< Property: 'BlendOnInit' Blend to the given 'PresetIndex' on initialization
 		bool mIgnoreNonBlendableParameters = true;                              ///< Property: 'IgnoreNonBlendable' if false, throws error when parameters cannot be blended
 	};
 

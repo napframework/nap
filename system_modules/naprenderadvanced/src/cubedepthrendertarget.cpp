@@ -15,12 +15,12 @@
 #include <entity.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeDepthRenderTarget)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeDepthRenderTarget, "Depth texture target for cube map render operations")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("CubeDepthTexture",		&nap::CubeDepthRenderTarget::mCubeDepthTexture,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SampleShading",			&nap::CubeDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Samples",				&nap::CubeDepthRenderTarget::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearValue",				&nap::CubeDepthRenderTarget::mClearValue,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("CubeDepthTexture",		&nap::CubeDepthRenderTarget::mCubeDepthTexture,			nap::rtti::EPropertyMetaData::Required, "Cube depth texture to render to")
+	RTTI_PROPERTY("SampleShading",			&nap::CubeDepthRenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("Samples",				&nap::CubeDepthRenderTarget::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default,	"The number of MSAA samples to use")
+	RTTI_PROPERTY("ClearValue",				&nap::CubeDepthRenderTarget::mClearValue,				nap::rtti::EPropertyMetaData::Default,	"Depth target initial clear value")
 
 RTTI_END_CLASS
 

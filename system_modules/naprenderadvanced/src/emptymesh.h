@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External Includes
@@ -41,8 +45,13 @@ namespace nap
 		 */
 		virtual const MeshInstance& getMeshInstance() const	override	{ return *mMeshInstance; }
 
+        EMemoryUsage			mUsage = EMemoryUsage::Static;		    ///< Property: 'Usage' GPU memory usage
+        EDrawMode				mDrawMode = EDrawMode::Triangles;	    ///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
+        ECullMode				mCullMode = ECullMode::Back;		    ///< Property: 'CullMode' The triangle cull mode to use
+        EPolygonMode			mPolygonMode = EPolygonMode::Fill;	    ///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be the default
+
 	private:
-		std::unique_ptr<MeshInstance> mMeshInstance = nullptr;			///< The mesh instance to construct
 		nap::RenderService* mRenderService = nullptr;					///< Handle to the render service
+		std::unique_ptr<MeshInstance> mMeshInstance;					///< The mesh instance to construct
 	};
 }

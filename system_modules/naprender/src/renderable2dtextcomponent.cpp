@@ -15,12 +15,12 @@
 #include <nap/logger.h>
 
 // nap::Renderable2DTextComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent)
-	RTTI_PROPERTY("Location",			&nap::Renderable2DTextComponent::mLocation,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Orientation",		&nap::Renderable2DTextComponent::mOrientation,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",			&nap::Renderable2DTextComponent::mDepthMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("IgnoreTransform",	&nap::Renderable2DTextComponent::mIgnoreTransform,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DPI Aware",			&nap::Renderable2DTextComponent::mDPIAware,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::Renderable2DTextComponent, "Render text at a specific location in screen space")
+	RTTI_PROPERTY("Location",			&nap::Renderable2DTextComponent::mLocation,			nap::rtti::EPropertyMetaData::Default, "Pixel coordinates")
+	RTTI_PROPERTY("Orientation",		&nap::Renderable2DTextComponent::mOrientation,		nap::rtti::EPropertyMetaData::Default, "Horizontal text alignment")
+	RTTI_PROPERTY("DepthMode",			&nap::Renderable2DTextComponent::mDepthMode,		nap::rtti::EPropertyMetaData::Default, "Text depth mode")
+	RTTI_PROPERTY("IgnoreTransform",	&nap::Renderable2DTextComponent::mIgnoreTransform,	nap::rtti::EPropertyMetaData::Default, "Ignores transform component when available")
+	RTTI_PROPERTY("DPI Aware",			&nap::Renderable2DTextComponent::mDPIAware,			nap::rtti::EPropertyMetaData::Default, "Scale text based on display DPI")
 RTTI_END_CLASS
 
 // nap::Renderable2DTextComponentInstance run time class definition 

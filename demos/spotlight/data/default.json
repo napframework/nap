@@ -221,9 +221,9 @@
                         "GnomonSize": 1.0
                     },
                     "Attenuation": 0.009999999776482582,
-                    "Angle": 45.0,
+                    "Angle": 70.0,
+                    "FieldOfViewClip": 0.5,
                     "Falloff": 1.0,
-                    "FieldOfView": 30.0,
                     "ClippingPlanes": {
                         "x": 1.0,
                         "y": 10.0

@@ -9,10 +9,10 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ImageFromFile, "2D image that is loaded from disk and uploaded to the GPU. Holds the CPU (bitmap) and GPU (texture) data")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("ImagePath",		&nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
-	RTTI_PROPERTY("GenerateLods",			&nap::ImageFromFile::mGenerateLods,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("ImagePath",		&nap::ImageFromFile::mImagePath, 		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image, "Path to the image on disk")
+	RTTI_PROPERTY("GenerateLods",			&nap::ImageFromFile::mGenerateLods,		nap::rtti::EPropertyMetaData::Default, "If lower levels of detail (LODs) are auto-generated for the image")
 RTTI_END_CLASS
 
 namespace nap

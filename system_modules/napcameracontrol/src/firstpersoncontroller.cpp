@@ -13,10 +13,10 @@
 #include <glm/gtx/quaternion.hpp>
 #include <glm/gtx/transform.hpp>
 
-RTTI_BEGIN_CLASS(nap::FirstPersonController)
-	RTTI_PROPERTY("MovementSpeed",			&nap::FirstPersonController::mMovementSpeed,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotateSpeed",			&nap::FirstPersonController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PerspCameraComponent",	&nap::FirstPersonController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::FirstPersonController, "Applies first-person movement to a camera")
+	RTTI_PROPERTY("MovementSpeed",			&nap::FirstPersonController::mMovementSpeed,		nap::rtti::EPropertyMetaData::Default,	"Movement speed, units per second")
+	RTTI_PROPERTY("RotateSpeed",			&nap::FirstPersonController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default,	"Rotation speed, angle")
+	RTTI_PROPERTY("PerspCameraComponent",	&nap::FirstPersonController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required, "The camera to control")
 RTTI_END_CLASS 
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FirstPersonControllerInstance)
@@ -27,8 +27,7 @@ namespace nap
 {
 	FirstPersonControllerInstance::FirstPersonControllerInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
-	{
-	}
+	{ }
 
 
 	bool FirstPersonControllerInstance::init(utility::ErrorState& errorState)

@@ -14,7 +14,7 @@
 #include <nap/logger.h>
 #include <utility/stringutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiService, "Keeps track of opened midi input ports and processes incoming messages.")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
@@ -23,8 +23,8 @@ namespace nap
 
 	MidiService::MidiService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
+
 
     bool MidiService::init(nap::utility::ErrorState& errorState)
     {

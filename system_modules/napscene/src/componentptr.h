@@ -100,7 +100,7 @@ namespace nap
 		ComponentPtr(ComponentType* component) : mResource(component)								{ }
 
 		/**
-		 * Returns the path to the target component including component ID 
+		 * Returns the path to the target component including component ID
 		 * @return the path to the target component including component ID
 		 */
 		const std::string& getInstancePath() const							{ return mPath; }
@@ -121,7 +121,7 @@ namespace nap
 		 * Assign the path to the component (including ID) and object to this pointer.
 		 * Used for pointer resolving by the ResourceManager.
 		 * Should not be called manually (is only public so that we can register it in RTTI)
-		 * @param targetPath path to the target component including ID, empty to clear
+		 * @param targetID path to the target component including ID, empty to clear
 		 * @param targetObject The component to assign, nullptr to clear
 		 */
 		virtual void assign(const std::string& targetID, rtti::Object* targetObject) override;
@@ -159,7 +159,7 @@ namespace nap
 		template<typename OTHER>
 		bool operator!=(const ComponentPtr<OTHER>& other) const				{ return mResource != other.mResource; }
 
-		template<typename OTHER>											
+		template<typename OTHER>
 		bool operator!=(const OTHER* ptr) const								{ return mResource != ptr; }
 
 		bool operator!=(std::nullptr_t) const								{ return mResource != nullptr; }
@@ -287,7 +287,7 @@ namespace nap
 		template<typename OTHER>
 		bool operator!=(const ComponentInstancePtr<OTHER>& other) const					{ return mInstance != other.mPtr; }
 
-		template<typename OTHER>														
+		template<typename OTHER>
 		bool operator!=(const OTHER* ptr) const											{ return mInstance != ptr; }
 
 		bool operator!=(std::nullptr_t) const											{ return mInstance != nullptr; }

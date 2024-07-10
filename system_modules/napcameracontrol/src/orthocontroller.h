@@ -40,7 +40,6 @@ namespace nap
 		float								mMovementSpeed = 1.0f;	///< Property: "MovementSpeed" The speed with which to move
 		float								mZoomSpeed = 0.005f;	///< Property: "ZoomSpeed" The speed with which to zoom
 		ComponentPtr<OrthoCameraComponent>	mOrthoCameraComponent;	///< Property: "OrthoCameraComponent" Camera that we're controlling
-		bool								mEnable = true;			///< Property: "Enable" Whether camera control through this component is enabled
 	};
 
 

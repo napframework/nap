@@ -21,11 +21,8 @@ namespace nap
     class UDPSendComponentInstance;
 
     /**
-     * UDPSendComponent listens to changes of the assign ParameterString and ParameterColor and converts them into
-     * API messages according to the assigned signatures.
-	 * 
-     * API Events will be serialized in JSON format and send as UDP packets using the UDP Client
-     * This demonstrates both the use of the napapi module and napudp
+	 * Sends text and color changes as api commands (messages) over a UDP socket
+     * This demonstrates both the use of the napapi module and napudp.
      */
     class NAPAPI UDPSendComponent : public Component
     {

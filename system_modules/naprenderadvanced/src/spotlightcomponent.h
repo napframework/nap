@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Local includes
@@ -53,7 +57,6 @@ namespace nap
 
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the LightComponentInstance is initialized successfully
 		 */
@@ -70,7 +73,7 @@ namespace nap
 		virtual EShadowMapType getShadowMapType() const override			{ return EShadowMapType::Quad; }
 
 		/**
-		 * The rate at which light intensity is lost over distance from the origin 
+		 * The rate at which light intensity is lost over distance from the origin
 		 * @return light attenuation
 		 */
 		float getAttenuation() const										{ return mAttenuation; }
@@ -84,7 +87,7 @@ namespace nap
 		/**
 		 * Light angle of view in degrees
 		 * @return lamp angle of view in degrees
-		 */	
+		 */
 		float getAngle() const												{ return mAngle; }
 
 		/**
@@ -106,14 +109,15 @@ namespace nap
 		void setFOVClip(float clip);
 
 		/**
-		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient. 
-		 * @return lamp falloff
-		 */	
+		 * Light falloff. A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient.
+		 * @return light falloff
+		 */
 		float getFalloff() const											{ return mFalloff; }
 
 		/**
-		 * Set the spotlight falloff
-		 * @param angle spotlight angle
+		 * Set the spotlight falloff.
+		 * A value of 0.0 results in a hard edge, a value of 1.0 results in a linear gradient.
+		 * @param falloff light falloff value (0-1)
 		 */
 		void setFalloff(float falloff)										{ mFalloff = falloff; }
 

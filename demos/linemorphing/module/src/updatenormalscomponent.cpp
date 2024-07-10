@@ -9,7 +9,7 @@
 #include <nap/logger.h>
 
 // nap::updatenormalscomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::UpdateNormalsComponent)
+RTTI_BEGIN_CLASS(nap::UpdateNormalsComponent, "Pushes the re-computed line normals to the GPU every frame")
 	RTTI_PROPERTY("NormalMesh", &nap::UpdateNormalsComponent::mNormalMesh, nap::rtti::EPropertyMetaData::Required, "The mesh to visualize the normals of")
 RTTI_END_CLASS
 

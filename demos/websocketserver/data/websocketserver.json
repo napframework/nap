@@ -27,6 +27,8 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "Render2DTextComponent",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Text": "waiting for a websocket client to change this text",
                     "Font": "Font",
                     "TextColor": {
@@ -90,7 +92,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",

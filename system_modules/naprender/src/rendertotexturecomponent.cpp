@@ -19,13 +19,13 @@
 #include <orthocameracomponent.h>
 
 // nap::rendertotexturecomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
-	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PreserveAspect",				&nap::RenderToTextureComponent::mPreserveAspect,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderToTextureComponent, "Renders an effect directly to texture using a custom material without having to define a render target or mesh")
+	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required, "Target (output) texture")
+	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required, "Render material, including overrides")
+	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
+	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial target texture clear color")
+	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading,				nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("PreserveAspect",				&nap::RenderToTextureComponent::mPreserveAspect,			nap::rtti::EPropertyMetaData::Default,	"Whether to preserve the texture aspect ratio")
 RTTI_END_CLASS
 
 // nap::rendertotexturecomponentInstance run time class definition 

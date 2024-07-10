@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::ColorAdjustmentShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ColorAdjustmentShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ColorAdjustmentShader, "Shader that changes the contrast, brightness and saturation of an input texture")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

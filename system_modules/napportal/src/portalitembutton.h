@@ -56,6 +56,7 @@ namespace nap
 
 		ResourcePtr<ParameterButton> mParameter;	///< Property: 'Parameter' the parameter linked to this portal item
         EPortalItemAlignment mDefaultAlignment = EPortalItemAlignment::Left; ///< Property: 'Alignment' the alignment of the portal item
+
     protected:
         void addStateArguments(nap::APIEventPtr &event) const override;
     private:
