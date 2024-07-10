@@ -111,18 +111,19 @@ namespace nap
 		private:
 			/**
 			 * Connects another node's OutputPin to this input.
-			 * If either this ipnut or the connected output is already connected it will be disconnected first.
+			 * If either this input or the connected output is already connected it will be disconnected first.
 			 * @param input: The output that this InputPin will be connected to.
 			 */
 			void connectNow(OutputPin& input) override;
-
 
 			/**
 			 * Disconnects this input from the specified output, if this connections exists.
 			 */
 			void disconnectNow(OutputPin& input) override;
 
-		private:
+			/**
+			 * If connected, disconnects this pin.
+			 */
 			void disconnectAllNow() override;
 
 			/**
