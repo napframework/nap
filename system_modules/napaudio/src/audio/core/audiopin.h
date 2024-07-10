@@ -57,12 +57,7 @@ namespace nap
 			 * For threadsafety connection is enqueued on the audio thread.
 			 */
 			void disconnectAll();
-			
-			/**
-			 * Returns wether this pin is connected to one or more other pins.
-			 */
-			virtual bool isConnected() const = 0;
-			
+						
 			/**
 			 * @return the node that owns this input.
 			 */
@@ -127,12 +122,6 @@ namespace nap
 			 */
 			void disconnectNow(OutputPin& input) override;
 
-
-			/**
-			 * @return wether the input is connected
-			 */
-			bool isConnected() const override { return mInput != nullptr; }
-
 		private:
 			void disconnectAllNow() override;
 
@@ -168,22 +157,6 @@ namespace nap
 			 */
 			void pull(std::vector<SampleBuffer*>& result);
 
-			/**
-			 * Overload for connect function to defer multiple connections at once to the audio thread
-			 * @param pins Pins to be connected to this pin
-			 */
-			void connect(const std::vector<OutputPin*>& pins);
-
-			/**
-			 * Overload for disconnect function to defer multiple connections at once to the audio thread
-			 * @param pins Pins to be disconnected to this pin
-			 */
-			void disconnect(const std::vector<OutputPin*>& pins);
-
-			/**
-			 * @return wether the input is connected to any outputs
-			 */
-			bool isConnected() const override { return !mInputs.empty(); }
 
 			/**
 			 * Allocates memory to be able to handle the specified number of inputs without having to perform allocations on the audio thread.
@@ -242,12 +215,6 @@ namespace nap
 			 * For threadsafety connection is enqueued on the audio thread.
 			 */
 			void disconnectAll();
-
-			/**
-			 * Checks wether the output is connected to any inputs
-			 */
-			bool isConnected() const
-			{ return !mOutputs.empty(); }
 
 			/**
 			 * Used by InputPin to poll this output for a new buffer of output samples
