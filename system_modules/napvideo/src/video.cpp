@@ -800,9 +800,11 @@ namespace nap
                 // clear frame queue
                 clearFrameQueue(mFrameQueue, false);
 
-                // Copy seek frame queues into the regular frame queue
-                while(!mSeekFrameQueue.empty())
-                    mFrameQueue.push(popSeekFrame());
+                // Swap seek frame queues with the regular frame queue
+                {
+                    std::unique_lock<std::mutex> lock(mFrameQueueMutex);
+                    mFrameQueue.swap(mSeekFrameQueue);
+                }
 
 				// Seeking is done, switch back to the regular frame queue so that the user can continue
 				// processing frames
