@@ -158,6 +158,7 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 		entries << QString::fromStdString(obj->mID);
 	}
 
+	StringModel::sort(entries);
 	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(entries)).toStdString();
 	if (selectedID.empty())
 		return nullptr;
@@ -167,24 +168,6 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 		return nullptr;
 
 	return *it;
-}
-
-
-nap::rtti::TypeInfo napkin::showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName)
-{
-	using namespace nap::qt;
-	auto* material = rtti_cast<nap::Material>(prop.getObject());
-	assert(material != nullptr);
-	if (material->mShader == nullptr)
-		return nap::rtti::TypeInfo::empty();
-
-	StringModel::Entries names;
-	const auto& ubo_decs = material->mShader->getUBODeclarations();
-	for (const auto& dec : ubo_decs)
-		names << StringModel::Entry(QString::fromStdString(dec.mName));
-
-	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
-	return nap::rtti::TypeInfo::empty();
 }
 
 
@@ -203,6 +186,8 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		names << QString(t.get_name().data());
 	}
 
+	// Sort and select
+	StringModel::sort(names);
 	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
 	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
