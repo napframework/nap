@@ -144,8 +144,8 @@ namespace nap
 
             int inputDeviceIndex = -1;
             int outputDeviceIndex = -1;
-            int inputChannelCount = 0;
-            int outputChannelCount = 0;
+            int inputChannelCount = deviceSettings.mInputChannelCount;
+            int outputChannelCount = deviceSettings.mOutputChannelCount;
 
             // Initialize the audio device
             if (deviceSettings.mBufferSize % deviceSettings.mInternalBufferSize != 0) {
@@ -163,13 +163,13 @@ namespace nap
                 return false;
             }
 
-            if (deviceSettings.mDisableInput)
+            if (deviceSettings.mDisableInput || inputChannelCount < 1)
             {
                 inputDeviceIndex = -1;
             }
             else
-			{
-				inputDeviceIndex = deviceSettings.mInputDevice.empty() ? Pa_GetDefaultInputDevice() : getInputDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
+            {
+                inputDeviceIndex = deviceSettings.mInputDevice.empty() ? Pa_GetDefaultInputDevice() : getInputDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
                 if (inputDeviceIndex < 0)
                 {
                     errorState.fail("Audio input device not found: %s", deviceSettings.mInputDevice.c_str());
@@ -177,13 +177,13 @@ namespace nap
                 }
             }
 
-            if (deviceSettings.mDisableOutput)
+            if (deviceSettings.mDisableOutput || outputChannelCount < 1)
             {
                 outputDeviceIndex = -1;
             }
             else
-			{
-				outputDeviceIndex = deviceSettings.mOutputDevice.empty() ? Pa_GetDefaultOutputDevice() : getOutputDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
+            {
+                outputDeviceIndex = deviceSettings.mOutputDevice.empty() ? Pa_GetDefaultOutputDevice() : getOutputDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
                 if (outputDeviceIndex < 0)
                 {
                     errorState.fail("Audio output device not found: %s", deviceSettings.mOutputDevice.c_str());
