@@ -210,31 +210,30 @@ namespace nap
 		/**
 		 * Adds the 'seek start' packet to the packet queue. This functions as a command to the decode thread.
 		 */
-		bool addSeekStartPacket(const bool& exitIOThreadSignalled);
+		bool addSeekStartPacket();
 
 		/**
 		 * Adds the 'seek end' packet to the packet queue. This functions as a command to the decode thread.
 		 */
-		bool addSeekEndPacket(const bool& exitIOThreadSignalled, double seekTargetSecs);
+		bool addSeekEndPacket(double seekTargetSecs);
 
 		/**
 		 * Adds the 'end of file' packet to the packet queue. The end of file packet is a special packet
 		 * with a nullptr for data.
 		 */
-		bool addEndOfFilePacket(const bool& exitIOThreadSignalled);
+		bool addEndOfFilePacket();
 
 		/**
 		 * Adds the 'I/O finished' packet to the packet queue. This functions as a command to the decode thread.
 		 */
-		bool addIOFinishedPacket(const bool& exitIOThreadSignalled);
+		bool addIOFinishedPacket();
 
 		/**
 		 * Adds a packet to the packet queue.
 		 * @param packet The packet to add.
-		 * @param exitIOThreadSignalled When I/O thread is in exit mode, this must be true.
 		 * @return if packet was added
 		 */
-		bool addPacket(AVPacket& packet, const bool& exitIOThreadSignalled);
+		bool addPacket(AVPacket& packet);
 
 		/**
 		 * Wait for the frame to be empty
