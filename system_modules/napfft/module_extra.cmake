@@ -16,12 +16,12 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
         target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0A00)
     endif()
 
-    # Package kissfft into platform release
-    set(KISSDEST system_modules/${PROJECT_NAME}/thirdparty/kissfft)
-    install(FILES ${KISSFFT_LICENSE_FILES} DESTINATION ${KISSDEST}/licenses)
+    # Package kissfft license into platform release
+    set(KISS_LICENSE_TARGET_DIR system_modules/${PROJECT_NAME}/thirdparty/kissfft/licenses)
+    install(FILES ${KISSFFT_LICENSE_FILES} DESTINATION ${KISS_LICENSE_TARGET_DIR})
 else()
     # Install kissfft license into packaged project
-    set(module_thirdparty ${NAP_ROOT}/system_modules/${PROJECT_NAME}/thirdparty/kissfft)
-    file(GLOB KISSFFT_LICENSE_FILES ${module_thirdparty}/licenses/*)
+    set(KISS_LICENSE_SOURCE_DIR ${NAP_ROOT}/system_modules/napfft/thirdparty/kissfft/licenses)
+    file(GLOB KISSFFT_LICENSE_FILES ${KISS_LICENSE_SOURCE_DIR}/*)
     install(FILES ${KISSFFT_LICENSE_FILES} DESTINATION licenses/kissfft/)
 endif()
