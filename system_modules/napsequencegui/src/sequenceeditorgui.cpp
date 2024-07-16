@@ -2036,7 +2036,7 @@ namespace nap
     void SequenceEditorGUIView::handleHotKeys()
     {
         // if window is focused
-        if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows))
+        if(ImGui::IsWindowFocused(ImGuiFocusedFlags_RootAndChildWindows) && !ImGui::IsAnyItemActive())
         {
             // if ctrl is pressed, check for undo/redo actions
             if(ImGui::GetIO().KeyCtrl)
