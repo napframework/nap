@@ -40,7 +40,7 @@ namespace nap
 	 * One useful example would be to categorize specific components as "Debug", distinguishing objects used as visual
 	 * aid for debugging purposes from standard objects (tag "Default"). They may be excluded from rendering based on
 	 * settings or a window setup for instance. You could do the following:
-	 * 
+	 *
 	 * `````{.cpp}
 	 * // Consider caching the render mask
 	 * auto debug_tag = mResourceManager->findObject("DebugTag");
@@ -97,7 +97,7 @@ namespace nap
 		/**
 		 * Mask inclusion operator: Combines this tag with the given mask.
 		 * @param other the mask to composite
-		 * @retirm the composited mask
+		 * @return the composited mask
 		 */
 		RenderMask operator|(RenderMask other) const			{ return other | this->getMask(); }
 

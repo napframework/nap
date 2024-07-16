@@ -2,7 +2,7 @@
 // stream_descriptor.cpp
 // ~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2018 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2023 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -51,20 +51,27 @@ void test()
   try
   {
     io_context ioc;
+    const io_context::executor_type ioc_ex = ioc.get_executor();
     char mutable_char_buffer[128] = "";
     const char const_char_buffer[128] = "";
     posix::descriptor_base::bytes_readable io_control_command;
+    archetypes::immediate_handler immediate;
     archetypes::lazy_handler lazy;
     asio::error_code ec;
 
     // basic_stream_descriptor constructors.
 
     posix::stream_descriptor descriptor1(ioc);
+    posix::stream_descriptor descriptor2(ioc_ex);
     int native_descriptor1 = -1;
-    posix::stream_descriptor descriptor2(ioc, native_descriptor1);
+    posix::stream_descriptor descriptor3(ioc, native_descriptor1);
+    posix::stream_descriptor descriptor4(ioc_ex, native_descriptor1);
 
 #if defined(ASIO_HAS_MOVE)
-    posix::stream_descriptor descriptor3(std::move(descriptor2));
+    posix::stream_descriptor descriptor5(std::move(descriptor2));
+
+    posix::basic_stream_descriptor<io_context::executor_type> descriptor6(ioc);
+    posix::stream_descriptor descriptor7(std::move(descriptor6));
 #endif // defined(ASIO_HAS_MOVE)
 
     // basic_stream_descriptor operators.
@@ -72,14 +79,10 @@ void test()
 #if defined(ASIO_HAS_MOVE)
     descriptor1 = posix::stream_descriptor(ioc);
     descriptor1 = std::move(descriptor2);
+    descriptor1 = std::move(descriptor6);
 #endif // defined(ASIO_HAS_MOVE)
 
     // basic_io_object functions.
-
-#if !defined(ASIO_NO_DEPRECATED)
-    io_context& ioc_ref = descriptor1.get_io_context();
-    (void)ioc_ref;
-#endif // !defined(ASIO_NO_DEPRECATED)
 
     posix::stream_descriptor::executor_type ex = descriptor1.get_executor();
     (void)ex;
@@ -90,9 +93,9 @@ void test()
       = descriptor1.lowest_layer();
     (void)lowest_layer;
 
-    const posix::stream_descriptor& descriptor4 = descriptor1;
+    const posix::stream_descriptor& descriptor8 = descriptor1;
     const posix::stream_descriptor::lowest_layer_type& lowest_layer2
-      = descriptor4.lowest_layer();
+      = descriptor8.lowest_layer();
     (void)lowest_layer2;
 
     int native_descriptor2 = -1;
@@ -132,6 +135,7 @@ void test()
     descriptor1.wait(posix::descriptor_base::wait_write, ec);
 
     descriptor1.async_wait(posix::descriptor_base::wait_read, &wait_handler);
+    descriptor1.async_wait(posix::descriptor_base::wait_read, immediate);
     int i1 = descriptor1.async_wait(posix::descriptor_base::wait_write, lazy);
     (void)i1;
 
@@ -150,6 +154,9 @@ void test()
         write_some_handler);
     descriptor1.async_write_some(null_buffers(),
         write_some_handler);
+    descriptor1.async_write_some(buffer(mutable_char_buffer), immediate);
+    descriptor1.async_write_some(buffer(const_char_buffer), immediate);
+    descriptor1.async_write_some(null_buffers(), immediate);
     int i2 = descriptor1.async_write_some(buffer(mutable_char_buffer), lazy);
     (void)i2;
     int i3 = descriptor1.async_write_some(buffer(const_char_buffer), lazy);
@@ -163,6 +170,8 @@ void test()
 
     descriptor1.async_read_some(buffer(mutable_char_buffer), read_some_handler);
     descriptor1.async_read_some(null_buffers(), read_some_handler);
+    descriptor1.async_read_some(buffer(mutable_char_buffer), immediate);
+    descriptor1.async_read_some(null_buffers(), immediate);
     int i5 = descriptor1.async_read_some(buffer(mutable_char_buffer), lazy);
     (void)i5;
     int i6 = descriptor1.async_read_some(null_buffers(), lazy);
@@ -181,5 +190,5 @@ void test()
 ASIO_TEST_SUITE
 (
   "posix/stream_descriptor",
-  ASIO_TEST_CASE(posix_stream_descriptor_compile::test)
+  ASIO_COMPILE_TEST_CASE(posix_stream_descriptor_compile::test)
 )

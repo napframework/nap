@@ -9,13 +9,13 @@
 // External Includes
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::RenderLayer)
-	RTTI_PROPERTY("Name", &nap::RenderLayer::mName, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderLayer, "Groups together a set of renderable components under a single name so they can be ordered")
+	RTTI_PROPERTY("Name", &nap::RenderLayer::mName, nap::rtti::EPropertyMetaData::Default, "Name of the layer")
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderChain)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderChain, "Controls the order in which components are rendered")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Layers", &nap::RenderChain::mLayers, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+	RTTI_PROPERTY("Layers", &nap::RenderChain::mLayers, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "The render layers in ranked order")
 RTTI_END_CLASS
 
 namespace nap

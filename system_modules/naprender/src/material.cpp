@@ -30,30 +30,30 @@ RTTI_BEGIN_ENUM(nap::EDepthMode)
 	RTTI_ENUM_VALUE(nap::EDepthMode::NoReadWrite,			"NoReadWrite")
 RTTI_END_ENUM
 
-RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding)
+RTTI_BEGIN_STRUCT(nap::Material::VertexAttributeBinding, "Mesh (CPU) to shader (GPU) vertex binding")
 	RTTI_VALUE_CONSTRUCTOR(const std::string&, const std::string&)
-	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshAttributeID",			&nap::Material::VertexAttributeBinding::mMeshAttributeID, nap::rtti::EPropertyMetaData::Required, "Mesh vertex attribute name, ie: 'Position'")
+	RTTI_PROPERTY("ShaderAttributeID",			&nap::Material::VertexAttributeBinding::mShaderAttributeID, nap::rtti::EPropertyMetaData::Required, "Shader vertex input name, ie: 'in_Position")
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial)
-	RTTI_PROPERTY(nap::material::uniforms,		&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY(nap::material::samplers,		&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY(nap::material::buffers,		&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY(nap::material::constants,		&nap::BaseMaterial::mConstants,				nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseMaterial, "GPU program interface")
+	RTTI_PROPERTY(nap::material::uniforms,		&nap::BaseMaterial::mUniforms,				nap::rtti::EPropertyMetaData::Embedded, "Uniform inputs, binds numeric data (structs)")
+	RTTI_PROPERTY(nap::material::samplers,		&nap::BaseMaterial::mSamplers,				nap::rtti::EPropertyMetaData::Embedded, "Sampler inputs, binds textures")
+	RTTI_PROPERTY(nap::material::buffers,		&nap::BaseMaterial::mBuffers,				nap::rtti::EPropertyMetaData::Embedded, "Buffer inputs, binds large containers")
+	RTTI_PROPERTY(nap::material::constants,		&nap::BaseMaterial::mConstants,				nap::rtti::EPropertyMetaData::Embedded, "Shader specialization constants")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Material, "Graphics shader interface, binds data to a GPU graphics program")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY(nap::material::shader,		&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY(nap::material::vbindings,		&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",					&nap::Material::mDepthMode,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY(nap::material::shader,		&nap::Material::mShader,					nap::rtti::EPropertyMetaData::Required,	"The GPU graphics program")
+	RTTI_PROPERTY(nap::material::vbindings,		&nap::Material::mVertexAttributeBindings,	nap::rtti::EPropertyMetaData::Default,	"Optional vertex mapping, from mesh (CPU) vertex attribute to shader (GPU) vertex attribute")
+	RTTI_PROPERTY("BlendMode",					&nap::Material::mBlendMode,					nap::rtti::EPropertyMetaData::Default,	"Default color blend mode")
+	RTTI_PROPERTY("DepthMode",					&nap::Material::mDepthMode,					nap::rtti::EPropertyMetaData::Default,	"Default depth mode")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeMaterial, "Compute shader interface, binds data to a GPU compute program")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY(nap::material::shader,		&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::material::shader,		&nap::ComputeMaterial::mShader,				nap::rtti::EPropertyMetaData::Required, "The GPU compute program")
 RTTI_END_CLASS
 
 
@@ -65,8 +65,7 @@ namespace nap
 
 	BaseMaterial::BaseMaterial(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{ }
 
 	/**
 	 * The BaseMaterial rebuild will initialize all uniforms that can be used with the bound shader. The shader contains the authoritative set of Uniforms that can be set;
@@ -196,8 +195,7 @@ namespace nap
 
 	Material::Material(Core& core) :
 		BaseMaterial(core)
-	{
-	}
+	{ }
 
 
 	bool Material::init(utility::ErrorState& errorState)

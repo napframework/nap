@@ -21,11 +21,11 @@ RTTI_BEGIN_ENUM(nap::Texture::EUsage)
 RTTI_END_ENUM
 
 // Define Texture base
-RTTI_DEFINE_BASE(nap::Texture)
+RTTI_DEFINE_BASE(nap::Texture, "GPU Texture")
 
 // Texture2D class definition
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D)
-	RTTI_PROPERTY("Usage", 			&nap::Texture2D::mUsage,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Texture2D, "GPU representation of a 2D image, does not own any CPU data")
+	RTTI_PROPERTY("Usage",	&nap::Texture2D::mUsage, nap::rtti::EPropertyMetaData::Default, "How the texture is used at runtime (static, updated etc..)")
 RTTI_END_CLASS
 
 // TextureCube class definition

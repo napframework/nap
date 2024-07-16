@@ -1,0 +1,17 @@
+{
+    "Type": "nap::ModuleInfo",
+    "mID": "ModuleInfo",
+    "RequiredModules": [
+    ],
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/napopenssl/thirdparty/openssl/msvc/{BUILD_ARCH}/libs"
+    ],
+    "LibrarySearchPaths": {
+        "Linux": [
+            "{ROOT}/system_modules/napopenssl/thirdparty/openssl/linux/{BUILD_ARCH}/libs"
+        ],
+        "Windows": [
+            "{ROOT}/system_modules/napopenssl/thirdparty/openssl/msvc/{BUILD_ARCH}/libs"
+        ]
+    }
+}

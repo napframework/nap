@@ -11,9 +11,9 @@
 #include <mathutils.h>
 
 // nap::apimessage run time class definition 
-RTTI_BEGIN_CLASS(nap::APIMessage)
-	RTTI_PROPERTY("Name", &nap::APIMessage::mName, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Arguments",	&nap::APIMessage::mArguments, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::APIMessage, "Message that can be sent or received by a running NAP application")
+	RTTI_PROPERTY("Name", &nap::APIMessage::mName, nap::rtti::EPropertyMetaData::Required, "Message name")
+	RTTI_PROPERTY("Arguments",	&nap::APIMessage::mArguments, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Input argument types")
 	RTTI_CONSTRUCTOR(const std::string&)
 RTTI_END_CLASS
 

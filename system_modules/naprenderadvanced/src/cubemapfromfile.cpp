@@ -9,11 +9,11 @@
 #include <nap/core.h>
 
 // nap::cubemapfromfile run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeMapFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeMapFromFile, "Creates a cube map from a equirectangular image loaded from disk")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("ImagePath", &nap::CubeMapFromFile::mImagePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image)
-	RTTI_PROPERTY("SampleShading", &nap::CubeMapFromFile::mSampleShading, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("GenerateLODs", &nap::CubeMapFromFile::mGenerateLODs, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("ImagePath", &nap::CubeMapFromFile::mImagePath,		nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Image, "Path to the equirectangular image on disk")
+	RTTI_PROPERTY("SampleShading",		&nap::CubeMapFromFile::mSampleShading,	nap::rtti::EPropertyMetaData::Default, "Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("GenerateLODs",		&nap::CubeMapFromFile::mGenerateLODs,	nap::rtti::EPropertyMetaData::Default, "Create mip-maps")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

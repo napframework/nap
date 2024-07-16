@@ -114,8 +114,8 @@ namespace nap
 
 		/**
 		 * Get the index of the display associated with a window.
-		 * @param window the window to get the display index for 
-		 * @return The index of the display containing the center of the window on success or a negative error code 
+		 * @param window the window to get the display index for
+		 * @return The index of the display containing the center of the window on success or a negative error code
 		 */
 		int NAPAPI getDisplayIndex(SDL_Window* window);
 
@@ -140,8 +140,8 @@ namespace nap
 		int NAPAPI getDisplayDPI(SDL_Window* window, float* ddpi, float* hdpi, float* vdpi);
 
 		/**
-		 * @param displayIndex index of display to get name for  
-		 * @return display name for given display index, nullptr on failure
+		 * @param displayIndex index of display to get name for
+		 * @param outName display name for given display index
 		 */
 		bool NAPAPI getDisplayName(int displayIndex, std::string& outName);
 

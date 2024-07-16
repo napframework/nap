@@ -5,8 +5,7 @@
  // Local Includes
 #include "parameterbutton.h"
 
-RTTI_BEGIN_CLASS(nap::ParameterButton)
-RTTI_END_CLASS
+RTTI_DEFINE_CLASS(nap::ParameterButton)
 
 namespace nap
 {
@@ -19,7 +18,7 @@ namespace nap
 	}
 
 
-	void ParameterButton::setPressed(const bool& pressed)
+	void ParameterButton::setPressed(bool pressed)
 	{
 		if (mPressed != pressed)
 		{

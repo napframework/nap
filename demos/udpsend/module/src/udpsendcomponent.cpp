@@ -9,7 +9,7 @@
 #include <nap/logger.h>
 
 // nap::UDPReceiveComponent run time class definition
-RTTI_BEGIN_CLASS(nap::UDPSendComponent)
+RTTI_BEGIN_CLASS(nap::UDPSendComponent, "Sends text and color changes as api commands (messages) over a UDP socket")
         RTTI_PROPERTY("Client",					&nap::UDPSendComponent::mClient,				nap::rtti::EPropertyMetaData::Required, "Link to the UDP client that handles packet transport")
         RTTI_PROPERTY("MessageParam",			&nap::UDPSendComponent::mMessageParam,			nap::rtti::EPropertyMetaData::Required, "Link to the parameter that holds the text to send")
         RTTI_PROPERTY("ColorParam",				&nap::UDPSendComponent::mColorParam,			nap::rtti::EPropertyMetaData::Required, "Link to the parameter that holds the color to send")
@@ -80,7 +80,7 @@ namespace nap
         api_message.mID = mColorMessageSignature->mID;
 
         // Fill the message with a single API string containing message content
-        assert(mColorMessageSignature->mArguments.size() > 0);
+        assert(!mColorMessageSignature->mArguments.empty());
         auto api_value = APIIntArray(mColorMessageSignature->mArguments[0]->mName,
 			{value.getRed(), value.getGreen(), value.getBlue()});
         api_value.mID = math::generateUUID();
@@ -99,7 +99,7 @@ namespace nap
         api_message.mID = mTextMessageSignature->mID;
 
         // Fill the message with a single API string containing message content
-        assert(mColorMessageSignature->mArguments.size() > 0);
+        assert(!mTextMessageSignature->mArguments.empty());
         auto api_value = APIString(mTextMessageSignature->mArguments[0]->mName, value);
         api_value.mID = math::generateUUID();
         api_message.mArguments.emplace_back(&api_value);

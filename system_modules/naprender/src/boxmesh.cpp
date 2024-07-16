@@ -12,15 +12,15 @@
 #include <nap/numeric.h>
 
 // nap::boxmesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh, "Box shape with uv, color and normal vertex attributes")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",			&nap::BoxMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",		&nap::BoxMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",	&nap::BoxMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",			&nap::BoxMesh::mSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",		&nap::BoxMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",			&nap::BoxMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlipNormals",	&nap::BoxMesh::mFlipNormals,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::BoxMesh::mUsage,			nap::rtti::EPropertyMetaData::Default, "If the mesh is updated at runtime or static")
+	RTTI_PROPERTY("CullMode",		&nap::BoxMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default, "Which triangles are culled, front facing, back facing etc..")
+	RTTI_PROPERTY("PolygonMode",	&nap::BoxMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default, "Polygon rasterization mode")
+	RTTI_PROPERTY("Size",			&nap::BoxMesh::mSize,			nap::rtti::EPropertyMetaData::Default, "Box dimensions")
+	RTTI_PROPERTY("Position",		&nap::BoxMesh::mPosition,		nap::rtti::EPropertyMetaData::Default, "Box position")
+	RTTI_PROPERTY("Color",			&nap::BoxMesh::mColor,			nap::rtti::EPropertyMetaData::Default, "Box vertex color")
+	RTTI_PROPERTY("FlipNormals",	&nap::BoxMesh::mFlipNormals,	nap::rtti::EPropertyMetaData::Default, "Point the vertex normals inwards instead of outwards")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

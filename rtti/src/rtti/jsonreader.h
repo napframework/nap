@@ -53,7 +53,7 @@ namespace nap
 		 * @param json The JSON string to deserialize
 		 * @param propertyValidationMode whether missing required properties should be treated as errors
 		 * @param pointerPropertyMode controls ownership of the created objects. Use 'NoRawPointers' in process and 'OnlyRawPointers' out of process.
-		 * @param factory RTTI object factory. 
+		 * @param factory RTTI object factory.
 		 * @param result the result of the deserialization operation
 		 * @param errorState contains the error when de-serialization fails.
 		 *
@@ -124,13 +124,12 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		std::unique_ptr<T>
-			getObjectFromJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, utility::ErrorState& errorState)
+		std::unique_ptr<T> getObjectFromJSONFile(const std::string& path, EPropertyValidationMode propertyValidationMode, Factory& factory, utility::ErrorState& errorState)
 		{
 			auto obj = getObjectFromJSONFile(path, propertyValidationMode, factory, errorState);
 			if (obj == nullptr)
 			{
-				errorState.fail("Failed to extract object of type: %s", 
+				errorState.fail("Failed to extract object of type: %s",
 					RTTI_OF(T).get_name().to_string().c_str());
 				return{};
 			}

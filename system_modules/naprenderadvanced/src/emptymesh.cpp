@@ -9,9 +9,13 @@
 #include <renderservice.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmptyMesh)
+ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::EmptyMesh, "A mesh without data for simple render operations, with shaders without geometry")
 	RTTI_CONSTRUCTOR(nap::Core&)
-RTTI_END_CLASS
+    RTTI_PROPERTY("Usage",			&nap::EmptyMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("DrawMode",		&nap::EmptyMesh::mDrawMode,	    nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("CullMode",		&nap::EmptyMesh::mCullMode,	    nap::rtti::EPropertyMetaData::Default)
+    RTTI_PROPERTY("PolygonMode",	&nap::EmptyMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
+ RTTI_END_CLASS
 
 namespace nap
 {
@@ -19,22 +23,23 @@ namespace nap
 	// NoMesh
 	//////////////////////////////////////////////////////////////////////////
 
-	EmptyMesh::EmptyMesh(Core& core) :
-		mRenderService(core.getService<RenderService>())
+	EmptyMesh::EmptyMesh(Core& core) : mRenderService(core.getService<RenderService>())
 	{ }
 
 
 	bool EmptyMesh::init(utility::ErrorState& errorState)
 	{
+		// Initialize no mesh instance
 		assert(mRenderService != nullptr);
 		mMeshInstance = std::make_unique<MeshInstance>(*mRenderService);
 
-		mMeshInstance->setNumVertices(0);
-		mMeshInstance->setUsage(EMemoryUsage::Static);
-		mMeshInstance->setDrawMode(EDrawMode::Triangles);
-		mMeshInstance->setCullMode(ECullMode::None);
+        // Configure the mesh instance
+        mMeshInstance->setUsage(mUsage);
+        mMeshInstance->setDrawMode(mDrawMode);
+        mMeshInstance->setCullMode(mCullMode);
+        mMeshInstance->setPolygonMode(mPolygonMode);
+        mMeshInstance->setNumVertices(0);
 
-		// Initialize no mesh instance
 		return mMeshInstance->init(errorState);
 	}
 }

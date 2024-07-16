@@ -49,7 +49,6 @@ namespace nap
 
 		/**
 		 * Initialize LightComponentInstance based on the LightComponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
 		 * @param errorState should hold the error message when initialization fails
 		 * @return if the LightComponentInstance is initialized successfully
 		 */

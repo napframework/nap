@@ -9,7 +9,7 @@
 #include <nap/core.h>
 
 // nap::CubeMapShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeMapShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CubeMapShader, "Renders a cubemap face from an equirectangular texture")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

@@ -55,6 +55,13 @@ namespace nap
 			virtual QVariant data(const QModelIndex& index, int role) const override;
 
 			/**
+			 * Alphabetically sorts string model entries
+			 * @param ioEntries the entries to sort
+			 * @param reverseSort if the alphabetical order should be reversed
+			 */
+			static void sort(Entries& ioEntries, bool reverseSort = false);
+
+			/**
 			 * Move Constructor
 			 * @param items movable item data
 			 */

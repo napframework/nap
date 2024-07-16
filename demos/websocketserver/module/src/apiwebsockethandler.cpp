@@ -12,7 +12,7 @@
 #include <nap/logger.h>
 
 // nap::apiwebsockethandler run time class definition 
-RTTI_BEGIN_CLASS(nap::APIWebSocketHandlerComponent)
+RTTI_BEGIN_CLASS(nap::APIWebSocketHandlerComponent, "Updates the text after receiving a 'ChangeText' (api) command over a websocket")
 	RTTI_PROPERTY("APIComponent",	&nap::APIWebSocketHandlerComponent::mAPIComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("TextComponent",	&nap::APIWebSocketHandlerComponent::mTextComponent, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Server",			&nap::APIWebSocketHandlerComponent::mServer,		nap::rtti::EPropertyMetaData::Required)

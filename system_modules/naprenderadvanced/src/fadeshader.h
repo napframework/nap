@@ -14,7 +14,7 @@ namespace nap
 	class Core;
 	class RenderAdvancedService;
 
-	// FadeShader sampler names 
+	// FadeShader sampler names
 	namespace uniform
 	{
 		namespace fade
@@ -36,7 +36,7 @@ namespace nap
 	 *			vec3 color;
 	 *			float alpha;
 	 *		} ubo;
-	 * ~~~~
+	 * ~~~~~
 	 */
 	class NAPAPI FadeShader : public Shader
 	{
@@ -44,7 +44,6 @@ namespace nap
 	public:
 		FadeShader(Core& core);
 
-		/**
 		/**
 		 * Cross compiles the constant GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.
 		 * @param errorState contains the error if initialization fails.

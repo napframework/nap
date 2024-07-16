@@ -15,7 +15,7 @@
 #include "boxframemesh.h"
 
 // nap::BoxFrameMesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxFrameMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxFrameMesh, "Predefined box line mesh of 1 unit")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Usage",				&nap::BoxFrameMesh::mUsage,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
