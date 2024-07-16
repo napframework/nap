@@ -58,6 +58,13 @@ namespace nap
             double track_duration = 0.0;
             double longest_segment = 0.0;
 
+            // sort segments by start time
+            std::sort(track->mSegments.begin(), track->mSegments.end(),
+                      [](const rtti::ObjectPtr<SequenceTrackSegment> &a, const rtti::ObjectPtr<SequenceTrackSegment> &b)
+                      {
+                          return a->mStartTime < b->mStartTime;
+                      });
+
             // get the last segment on the track
             for(const auto &track_segment: track->mSegments)
             {

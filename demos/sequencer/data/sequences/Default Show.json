@@ -11,6 +11,7 @@
                         {
                             "Type": "nap::SequenceTrackSegmentAudio",
                             "mID": "Generated_11",
+                            "Label": "default",
                             "Start Time": 0.0,
                             "Duration": 136.71832275390626,
                             "BufferID": "AudioFileResource",
@@ -18,7 +19,8 @@
                         }
                     ],
                     "Output ID": "SequencePlayerAudioOutput",
-                    "Name": "AudioTrack"
+                    "Name": "AudioTrack",
+                    "Height": 200.0
                 },
                 {
                     "Type": "nap::SequenceTrackEvent",
@@ -27,22 +29,22 @@
                         {
                             "Type": "nap::SequenceTrackSegmentEventString",
                             "mID": "Generated_2",
+                            "Label": "default",
                             "Start Time": 3.669999122619629,
-                            "Duration": 0.0,
                             "Value": "Hello There!"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentEventInt",
                             "mID": "Generated",
+                            "Label": "default",
                             "Start Time": 6.314285755157471,
-                            "Duration": 0.0,
                             "Value": 42
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentEventVec3",
                             "mID": "Generated_8",
+                            "Label": "default",
                             "Start Time": 8.171428680419922,
-                            "Duration": 0.0,
                             "Value": {
                                 "x": 1.0,
                                 "y": 2.0,
@@ -51,7 +53,8 @@
                         }
                     ],
                     "Output ID": "SequencePlayerEventOutput",
-                    "Name": "Event Track"
+                    "Name": "Event Track",
+                    "Height": 200.0
                 },
                 {
                     "Type": "nap::SequenceTrackCurveFloat",
@@ -60,18 +63,30 @@
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
                             "mID": "Generated_7",
+                            "Label": "default",
                             "Start Time": 0.0,
                             "Duration": 10.0,
+                            "Locked": false,
+                            "Color": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
                             "Curves": [
                                 "Generated_6"
                             ],
                             "Curve Types": [
                                 "Bezier"
-                            ]
+                            ],
+                            "Duration": 10.0
                         }
                     ],
                     "Output ID": "Float Output",
                     "Name": "Float Track",
+                    "Height": 200.0,
                     "Minimum": 0.0,
                     "Maximum": 1.0
                 },
@@ -82,8 +97,18 @@
                         {
                             "Type": "nap::SequenceTrackSegmentCurveVec3",
                             "mID": "Generated_57",
+                            "Label": "default",
                             "Start Time": 0.0,
                             "Duration": 10.000015258789065,
+                            "Locked": false,
+                            "Color": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
                             "Curves": [
                                 "Generated_52",
                                 "Generated_55",
@@ -93,11 +118,13 @@
                                 "Bezier",
                                 "Bezier",
                                 "Bezier"
-                            ]
+                            ],
+                            "Duration": 10.000015258789065
                         }
                     ],
                     "Output ID": "Vec3 Output",
                     "Name": "Vec3 Track",
+                    "Height": 200.0,
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0,
@@ -116,8 +143,18 @@
                         {
                             "Type": "nap::SequenceTrackSegmentCurveVec2",
                             "mID": "Generated_60",
+                            "Label": "default",
                             "Start Time": 0.0,
                             "Duration": 10.0,
+                            "Locked": false,
+                            "Color": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
                             "Curves": [
                                 "Generated_58",
                                 "Generated_59"
@@ -125,11 +162,13 @@
                             "Curve Types": [
                                 "Bezier",
                                 "Bezier"
-                            ]
+                            ],
+                            "Duration": 10.0
                         }
                     ],
                     "Output ID": "Vec2 Output",
                     "Name": "Vec2 Track",
+                    "Height": 200.0,
                     "Minimum": {
                         "x": 0.0,
                         "y": 0.0
@@ -146,32 +185,120 @@
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
                             "mID": "Generated_62",
+                            "Label": "default",
                             "Start Time": 0.0,
                             "Duration": 2.8442811965942385,
+                            "Locked": false,
+                            "Color": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
                             "Curves": [
                                 "Generated_61"
                             ],
                             "Curve Types": [
                                 "Bezier"
-                            ]
+                            ],
+                            "Duration": 2.8442811965942385
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentCurveFloat",
                             "mID": "Generated_5",
+                            "Label": "default",
                             "Start Time": 2.8442811965942385,
                             "Duration": 3.0299954414367677,
+                            "Locked": false,
+                            "Color": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
                             "Curves": [
                                 "Generated_4"
                             ],
                             "Curve Types": [
                                 "Bezier"
-                            ]
+                            ],
+                            "Duration": 3.0299954414367677
                         }
                     ],
                     "Output ID": "Int Output",
                     "Name": "Float to Int Parameter",
+                    "Height": 200.0,
                     "Minimum": 0.0,
                     "Maximum": 20.0
+                },
+                {
+                    "Type": "nap::SequenceTrackColor",
+                    "mID": "Generated_12",
+                    "Segments": [
+                        {
+                            "Type": "nap::SequenceTrackSegmentColor",
+                            "mID": "Generated_13",
+                            "Label": "default",
+                            "Start Time": 5.484596084803343,
+                            "Color": {
+                                "Values": [
+                                    0.5921568870544434,
+                                    0.13236446678638459,
+                                    0.13236446678638459,
+                                    0.572549045085907
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::SequenceTrackSegmentColor",
+                            "mID": "Generated_14",
+                            "Label": "default",
+                            "Start Time": 9.920226389542222,
+                            "Color": {
+                                "Values": [
+                                    0.15294118225574494,
+                                    0.11764705926179886,
+                                    0.7882353067398071,
+                                    0.8980392217636108
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::SequenceTrackSegmentColor",
+                            "mID": "Generated_15",
+                            "Label": "default",
+                            "Start Time": 12.707480054348708,
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    0.0,
+                                    0.800000011920929,
+                                    0.9921568632125855
+                                ]
+                            }
+                        },
+                        {
+                            "Type": "nap::SequenceTrackSegmentColor",
+                            "mID": "Generated_16",
+                            "Label": "default",
+                            "Start Time": 15.7644681930542,
+                            "Color": {
+                                "Values": [
+                                    0.15276530385017396,
+                                    0.8117647171020508,
+                                    0.13688580691814423,
+                                    0.9098039269447327
+                                ]
+                            }
+                        }
+                    ],
+                    "Output ID": "",
+                    "Name": "Generated_12",
+                    "Height": 200.0
                 }
             ],
             "Sequence Markers": [

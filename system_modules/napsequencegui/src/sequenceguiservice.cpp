@@ -19,6 +19,8 @@
 #include "sequencetrackevent.h"
 #include "sequencecurvetrackview.h"
 #include "sequencetrackview.h"
+#include "sequencecolortrackview.h"
+#include "sequencetrackcolor.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceGUIService)
         RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
@@ -112,6 +114,10 @@ namespace nap
         }
 
         // Register all views
+        if(!errorState.check(registerTrackTypeForView(RTTI_OF(SequenceTrackColor), RTTI_OF(SequenceColorTrackView)),
+                             "Error registering track view"))
+            return false;
+
         if(!errorState.check(registerEventView<std::string>(), "Error registering event view"))
             return false;
 
@@ -165,6 +171,18 @@ namespace nap
                                         SequenceEditorGUIState &state) -> std::unique_ptr<SequenceTrackView>
                                      {
                                          return std::make_unique<SequenceEventTrackView>(service, editorGuiView, state);
+                                     }))
+        {
+            errorState.fail("Error registering track view factory function");
+            return false;
+        }
+
+        if(!registerTrackViewFactory(RTTI_OF(SequenceColorTrackView),
+                                     [](SequenceGUIService& service,
+                                        SequenceEditorGUIView& editorGuiView,
+                                        SequenceEditorGUIState &state) -> std::unique_ptr<SequenceTrackView>
+                                     {
+                                         return std::make_unique<SequenceColorTrackView>(service, editorGuiView, state);
                                      }))
         {
             errorState.fail("Error registering track view factory function");

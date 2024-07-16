@@ -28,12 +28,16 @@
 #include "sequenceplayereventadapter.h"
 #include "sequenceplayercurveadapter.h"
 #include "sequenceplayerclock.h"
+#include "sequenceplayercoloradapter.h"
+#include "sequencetrackcolor.h"
+#include "sequencecontrollercolor.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceService)
         RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
-namespace nap {
+namespace nap
+{
     SequenceService::SequenceService(ServiceConfiguration* configuration)
             : Service(configuration)
     {
@@ -50,6 +54,7 @@ namespace nap {
         factory.addObjectCreator(std::make_unique<SequencePlayerEventOutputObjectCreator>(*this));
         factory.addObjectCreator(std::make_unique<SequencePlayerCurveOutputObjectCreator>(*this));
         factory.addObjectCreator(std::make_unique<SequencePlayerStandClockObjectCreator>(*this));
+        factory.addObjectCreator(std::make_unique<SequencePlayerColorOutputObjectCreator>(*this));
     }
 
 
@@ -125,6 +130,13 @@ namespace nap {
             return false;
         }
 
+        // register the color controller type
+        if(!registerControllerTypeForTrackType(RTTI_OF(SequenceTrackColor), RTTI_OF(SequenceControllerColor)))
+        {
+            errorState.fail("Error registering color controller type");
+            return false;
+        }
+
         // register the curve controller factory function
         if(!errorState.check(registerControllerFactoryFunc(RTTI_OF(SequenceControllerCurve), [this](
                 SequencePlayer& player, SequenceEditor& editor) -> std::unique_ptr<SequenceController>
@@ -138,6 +150,14 @@ namespace nap {
                 SequencePlayer& player, SequenceEditor& editor) -> std::unique_ptr<SequenceController>
         {
             return std::make_unique<SequenceControllerEvent>(*this, player, editor);
+        }), "Error registering controller factory function"))
+            return false;
+
+        // register the color controller factory function
+        if(!errorState.check(registerControllerFactoryFunc(RTTI_OF(SequenceControllerColor), [this](
+                SequencePlayer& player, SequenceEditor& editor) -> std::unique_ptr<SequenceController>
+        {
+            return std::make_unique<SequenceControllerColor>(*this, player, editor);
         }), "Error registering controller factory function"))
             return false;
 
@@ -262,6 +282,25 @@ namespace nap {
 			return nullptr;
 		}), "Error registering adapter factory function"))
 			return false;
+
+        if(!errorState.check(registerAdapterFactoryFunc(RTTI_OF(SequenceTrackColor), [](const SequenceTrack& track,
+                                                                                       SequencePlayerOutput& output,
+                                                                                       const SequencePlayer& player) -> std::unique_ptr<SequencePlayerAdapter>
+        {
+            assert(track.get_type() == RTTI_OF(SequenceTrackColor)); // type mismatch
+            assert(output.get_type() == RTTI_OF(SequencePlayerColorOutput)); //  type mismatch
+
+            auto& color_output = static_cast<SequencePlayerColorOutput&>(output);
+
+            assert(color_output.mParameter.get()->get_type() == RTTI_OF(ParameterRGBAColorFloat)); // type mismatch
+            if(color_output.mParameter.get()->get_type() == RTTI_OF(ParameterRGBAColorFloat))
+            {
+                return std::make_unique<SequencePlayerColorAdapter>(track, color_output, player);
+            }
+
+            return nullptr;
+        }), "Error registering adapter factory function"))
+            return false;
 
         return true;
     }
