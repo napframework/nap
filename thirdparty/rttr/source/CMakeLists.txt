@@ -36,7 +36,6 @@ cmake_minimum_required (VERSION 2.8.12)
 project ("rttr")
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/CMake")
-set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
 
 if (CMAKE_BUILD_TYPE STREQUAL "")
   # CMake defaults to leaving CMAKE_BUILD_TYPE empty. This screws up
