@@ -348,7 +348,7 @@ namespace nap
 	template<class T>
 	void TypedBufferBindingNumericInstance<T>::setBuffer(const TypedBufferBindingNumeric<T>& resource)
 	{
-		NAP_ASSERT_MSG(resource.mBuffer.getSize() == mDeclaration->mSize, utility::stringFormat("Buffer size (%zu bytes) does not match the shader declaration (%d bytes)", buffer.getSize(), mDeclaration->mSize).c_str());
+		NAP_ASSERT_MSG(resource.mBuffer.getSize() == mDeclaration->mSize, utility::stringFormat("Buffer size (%zu bytes) does not match the shader declaration (%d bytes)", resource.mBuffer.getSize(), mDeclaration->mSize).c_str());
 		BufferBindingInstance::mBuffer = resource.mBuffer.get();
 		raiseChanged();
 	}
