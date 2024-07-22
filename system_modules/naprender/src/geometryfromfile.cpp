@@ -10,15 +10,15 @@
 #include <assimp/scene.h>
 #include <renderglobals.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GeometryFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GeometryFromFile, "Imports 3D Geometry from file and converts the individual meshes into a single mesh instance")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Path",					&nap::GeometryFromFile::mPath,				nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink)
-	RTTI_PROPERTY("GenerateNormals",		&nap::GeometryFromFile::mGenerateNormals,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CalculateTangents",		&nap::GeometryFromFile::mCalculateTangents, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NormalSmoothingAngle",	&nap::GeometryFromFile::mSmoothingAngle,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage",					&nap::GeometryFromFile::mUsage,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",				&nap::GeometryFromFile::mCullMode,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",			&nap::GeometryFromFile::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Path",					&nap::GeometryFromFile::mPath,				nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::FileLink, "Path to the geometry (.fbx, .obj, etc.) file on disk")
+	RTTI_PROPERTY("GenerateNormals",		&nap::GeometryFromFile::mGenerateNormals,	nap::rtti::EPropertyMetaData::Default, "If normals are auto generated when not present")
+	RTTI_PROPERTY("CalculateTangents",		&nap::GeometryFromFile::mCalculateTangents, nap::rtti::EPropertyMetaData::Default, "If tangents and bi-tangents are calculated, does nothing if no normals are present or generated")
+	RTTI_PROPERTY("NormalSmoothingAngle",	&nap::GeometryFromFile::mSmoothingAngle,	nap::rtti::EPropertyMetaData::Default, "The maximum angle between two normals at the same vertex position to be considered the same. Only used when normals are generated")
+	RTTI_PROPERTY("Usage",					&nap::GeometryFromFile::mUsage,				nap::rtti::EPropertyMetaData::Default, "If the mesh is static or frequently updated")
+	RTTI_PROPERTY("CullMode",				&nap::GeometryFromFile::mCullMode,			nap::rtti::EPropertyMetaData::Default, "Controls which triangles are culled, back facing, front facing etc.")
+	RTTI_PROPERTY("PolygonMode",			&nap::GeometryFromFile::mPolygonMode,		nap::rtti::EPropertyMetaData::Default, "Mesh polygon draw mode (fill, wires, points)")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

@@ -115,6 +115,7 @@ add_subdirectory(system_modules/napudp)
 add_subdirectory(system_modules/napcalendar)
 add_subdirectory(system_modules/napasio)
 add_subdirectory(system_modules/napportal)
+add_subdirectory(system_modules/napopenssl)
 add_subdirectory(system_modules/naprenderadvanced)
 add_subdirectory(system_modules/napfft)
 

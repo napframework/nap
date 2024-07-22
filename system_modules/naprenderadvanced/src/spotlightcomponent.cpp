@@ -14,13 +14,13 @@
 #include <renderablemeshcomponent.h>
 
 // nap::SpotLightComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::SpotLightComponent)
-	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FieldOfViewClip",		&nap::SpotLightComponent::mFOVClip,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SpotLightComponent, "Emits light in a cone shape from a specific position")
+	RTTI_PROPERTY("Attenuation",			&nap::SpotLightComponent::mAttenuation,		nap::rtti::EPropertyMetaData::Default, "Light intensity decay rate, higher values = less light further away from the source")
+	RTTI_PROPERTY("Angle",					&nap::SpotLightComponent::mAngle,			nap::rtti::EPropertyMetaData::Default, "Cone angle in degrees")
+	RTTI_PROPERTY("FieldOfViewClip",		&nap::SpotLightComponent::mFOVClip,			nap::rtti::EPropertyMetaData::Default, "Shadow camera field of view clip percentage, 0=full and 1='cone angle'")
+	RTTI_PROPERTY("Falloff",				&nap::SpotLightComponent::mFalloff,			nap::rtti::EPropertyMetaData::Default, "Cone angle falloff, 0=none and 1='linear gradient'")
+	RTTI_PROPERTY("ClippingPlanes",			&nap::SpotLightComponent::mClippingPlanes,	nap::rtti::EPropertyMetaData::Default, "Shadow camera near and far clipping planes")
+	RTTI_PROPERTY("ShadowMapSize",			&nap::SpotLightComponent::mShadowMapSize,	nap::rtti::EPropertyMetaData::Default, "Resolution of the shadow texture")
 RTTI_END_CLASS
 
 // nap::SpotLightComponentInstance run time class definition

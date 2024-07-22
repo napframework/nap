@@ -11,10 +11,10 @@
 #include <nap/logger.h>
 
 // nap::rendergnomoncomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderGnomonComponent)
-	RTTI_PROPERTY("Gnomon",		&nap::RenderGnomonComponent::mMesh,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LineWidth",	&nap::RenderGnomonComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",	&nap::RenderGnomonComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderGnomonComponent, "Renders a Gnomon orientation mesh")
+	RTTI_PROPERTY("Gnomon",		&nap::RenderGnomonComponent::mMesh,			nap::rtti::EPropertyMetaData::Required, "Gnomon orientation mesh")
+	RTTI_PROPERTY("LineWidth",	&nap::RenderGnomonComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default,	"Width the of lines")
+	RTTI_PROPERTY("DepthMode",	&nap::RenderGnomonComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default,	"Depth buffer read-write mode")
 RTTI_END_CLASS
 
 // nap::rendergnomoncomponentInstance run time class definition 

@@ -37,17 +37,17 @@ RTTI_BEGIN_ENUM(nap::ESerialStopBits)
 RTTI_END_ENUM
 
 // nap::serialport run time class definition 
-RTTI_BEGIN_CLASS(nap::SerialPort)
-	RTTI_PROPERTY("PortName",			&nap::SerialPort::mPortName,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BaudRate",			&nap::SerialPort::mBaudRate,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ByteSize",			&nap::SerialPort::mByteSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Parity",				&nap::SerialPort::mParity,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StopBits",			&nap::SerialPort::mStopBits,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FlowControl",		&nap::SerialPort::mFlowControl,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ReadTimeout",		&nap::SerialPort::mReadTimeout,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WriteTimeout",		&nap::SerialPort::mWriteTimeout,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InterByteTimeout",	&nap::SerialPort::mInterByteTimeout,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("AllowFailure",		&nap::SerialPort::mAllowFailure,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SerialPort, "Creates and opens a serial communication port")
+	RTTI_PROPERTY("PortName",			&nap::SerialPort::mPortName,			nap::rtti::EPropertyMetaData::Required, "Name of the port to open and communicate with, like 'COM1' on windows or '/dev/ttyS0' on linux.")
+	RTTI_PROPERTY("BaudRate",			&nap::SerialPort::mBaudRate,			nap::rtti::EPropertyMetaData::Default,	"Baud rate (bits per second) of the serial port")
+	RTTI_PROPERTY("ByteSize",			&nap::SerialPort::mByteSize,			nap::rtti::EPropertyMetaData::Default,	"Size of each byte in the serial transmission of data")
+	RTTI_PROPERTY("Parity",				&nap::SerialPort::mParity,				nap::rtti::EPropertyMetaData::Default,	"Serial parity mode")
+	RTTI_PROPERTY("StopBits",			&nap::SerialPort::mStopBits,			nap::rtti::EPropertyMetaData::Default,	"Number of stop bits to mark the end of a signal")
+	RTTI_PROPERTY("FlowControl",		&nap::SerialPort::mFlowControl,			nap::rtti::EPropertyMetaData::Default,	"Serial flow control type")
+	RTTI_PROPERTY("ReadTimeout",		&nap::SerialPort::mReadTimeout,			nap::rtti::EPropertyMetaData::Default,	"Time (ms) until a timeout occurs after a call to read is made, 0 = non blocking mode")
+	RTTI_PROPERTY("WriteTimeout",		&nap::SerialPort::mWriteTimeout,		nap::rtti::EPropertyMetaData::Default,	"Time (ms) until a timeout occurs after a call to write is made, 0 = non blocking mode")
+	RTTI_PROPERTY("InterByteTimeout",	&nap::SerialPort::mInterByteTimeout,	nap::rtti::EPropertyMetaData::Default,	"Max amount of time (ms) between receiving bytes that can pass before a timeout occurs, 0 prevents inter byte timeouts")
+	RTTI_PROPERTY("AllowFailure",		&nap::SerialPort::mAllowFailure,		nap::rtti::EPropertyMetaData::Default,	"Allow port failure on startup")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

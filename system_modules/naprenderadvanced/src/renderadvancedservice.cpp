@@ -19,18 +19,16 @@
 #include <renderglobals.h>
 #include <sceneservice.h>
 #include <parametervec.h>
-#include <parameternumeric.h>
-#include <parametermat.h>
 #include <parametercolor.h>
 #include <cubemapfromfile.h>
 
 RTTI_BEGIN_CLASS(nap::RenderAdvancedServiceConfiguration)
-	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ShadowDepthFormatCube",	&nap::RenderAdvancedServiceConfiguration::mDepthFormatCube,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("EnableShadowMapping",	&nap::RenderAdvancedServiceConfiguration::mEnableShadowMapping,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ShadowDepthFormat",		&nap::RenderAdvancedServiceConfiguration::mDepthFormat,			nap::rtti::EPropertyMetaData::Default, "Shadow texture depth format")
+	RTTI_PROPERTY("ShadowDepthFormatCube",	&nap::RenderAdvancedServiceConfiguration::mDepthFormatCube,		nap::rtti::EPropertyMetaData::Default, "Shadow cube texture depth format")
+	RTTI_PROPERTY("EnableShadowMapping",	&nap::RenderAdvancedServiceConfiguration::mEnableShadowMapping,	nap::rtti::EPropertyMetaData::Default, "If generation of shadow maps is enabled")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAdvancedService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAdvancedService, "Interface for additional render operations, including: lights, shadows, cube-maps etc..")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 	
@@ -591,7 +589,9 @@ namespace nap
 	void RenderAdvancedService::shutdown()
 	{
 		// Destroy all remaining dynamically spawned entities and clear
-		mLightScene->onDestroy();
+		if (mLightScene)
+			mLightScene->onDestroy();
+
 		mLightScene.reset();
 	}
 

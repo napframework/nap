@@ -10,7 +10,7 @@
 #include <color.h>
 
 // nap::UDPReceiveComponent run time class definition
-RTTI_BEGIN_CLASS(nap::UDPReceiveComponent)
+RTTI_BEGIN_CLASS(nap::UDPReceiveComponent, "Receives packets from the UDP server and forwards them to the api service as system commands (messages)")
         RTTI_PROPERTY("Server",	                &nap::UDPReceiveComponent::mServer,					nap::rtti::EPropertyMetaData::Required, "Link to the UDP server that handles packet transport")
         RTTI_PROPERTY("APIComponent",	        &nap::UDPReceiveComponent::mAPIComponent,			nap::rtti::EPropertyMetaData::Required, "Link to the API Component that deserializes and routes packet io")
         RTTI_PROPERTY("TextMessageSignature",   &nap::UDPReceiveComponent::mTextMessageSignature,	nap::rtti::EPropertyMetaData::Required, "Link to the signature that describes the layout of the text message")

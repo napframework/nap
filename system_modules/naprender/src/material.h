@@ -51,7 +51,7 @@ namespace nap
 		/**
 		 * @return The shader
 		 */
-		const BaseShader& getShader() const					{ assert(mShader != nullptr); return *mShader; }
+		const BaseShader& getShader() const				{ assert(mShader != nullptr); return *mShader; }
 
 		std::vector<ResourcePtr<UniformStruct>>			mUniforms;												///< Property: 'Uniforms' Static uniforms (as read from file, or as set in code before calling init())
 		std::vector<ResourcePtr<BufferBinding>>			mBuffers;												///< Property: 'Buffers' Static buffer bindings (as read from file, or as set in code before calling init())

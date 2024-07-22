@@ -21,7 +21,7 @@ RTTI_BEGIN_STRUCT(nap::NoiseProperties)
 	RTTI_PROPERTY("AmplitudeSmoothTime",	&nap::NoiseProperties::mAmplitudeSmoothTime,	nap::rtti::EPropertyMetaData::Default,	"Noise ampliture smooth time (seconds)")
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS(nap::LineNoiseComponent)
+RTTI_BEGIN_CLASS(nap::LineNoiseComponent, "Applies displacement to the blended poly line")
 	RTTI_PROPERTY("Properties",			&nap::LineNoiseComponent::mProperties,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY("BlendComponent",		&nap::LineNoiseComponent::mBlendComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS

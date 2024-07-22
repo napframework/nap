@@ -12,12 +12,11 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-RTTI_BEGIN_CLASS(nap::OrthoController)
-	RTTI_PROPERTY("MovementSpeed",			&nap::OrthoController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ZoomSpeed",				&nap::OrthoController::mZoomSpeed,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("OrthoCameraComponent",	&nap::OrthoController::mOrthoCameraComponent,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Enable",					&nap::OrthoController::mEnable,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_END_CLASS
+RTTI_BEGIN_CLASS(nap::OrthoController, "Adds Orthographic camera control to the entity it is attached to")
+	RTTI_PROPERTY("MovementSpeed",			&nap::OrthoController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default,	"Movement speed, units per second")
+	RTTI_PROPERTY("ZoomSpeed",				&nap::OrthoController::mZoomSpeed,				nap::rtti::EPropertyMetaData::Default,	"Zoom speed")
+	RTTI_PROPERTY("OrthoCameraComponent",	&nap::OrthoController::mOrthoCameraComponent,	nap::rtti::EPropertyMetaData::Default,	"Camera to control")
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrthoControllerInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
@@ -31,12 +30,12 @@ namespace nap
 		components.push_back(RTTI_OF(KeyInputComponent));
 	}
 
+
 	//////////////////////////////////////////////////////////////////////////
 
 	OrthoControllerInstance::OrthoControllerInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)
-	{
-	}
+	{ }
 
 
 	bool OrthoControllerInstance::init(utility::ErrorState& errorState)
@@ -56,8 +55,6 @@ namespace nap
 
 		// The CorrectAspectRatio mode will correct the height based on the aspect ratio
 		mOrthoCameraComponent->setMode(EOrthoCameraMode::CorrectAspectRatio);
-		mEnabled = getComponent<OrthoController>()->mEnable;
-
 		return true;
 	}
 

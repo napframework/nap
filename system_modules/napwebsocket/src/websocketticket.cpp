@@ -11,9 +11,9 @@
 #include <bitset>
 
 // nap::websocketticket run time class definition 
-RTTI_BEGIN_CLASS(nap::WebSocketTicket)
-	RTTI_PROPERTY("UserName", &nap::WebSocketTicket::mUsername, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Password", &nap::WebSocketTicket::mPassword, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::WebSocketTicket, "Used by the websocket server endpoint to reject or accept a client connection")
+	RTTI_PROPERTY("UserName", &nap::WebSocketTicket::mUsername, nap::rtti::EPropertyMetaData::Required, "Ticket username")
+	RTTI_PROPERTY("Password", &nap::WebSocketTicket::mPassword, nap::rtti::EPropertyMetaData::Required, "Ticket password")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

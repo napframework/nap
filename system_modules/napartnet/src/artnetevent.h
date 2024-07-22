@@ -98,28 +98,28 @@ namespace nap
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 1-based channel number.
-		* @param number the 1-based number of the DMX512 channel, ranging from 1 to the return value of @getChannelCount
+		* @param number the 1-based number of the DMX512 channel, ranging from 1 to the return value of getChannelCount
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
 		uint8 getChannelByNumber(uint16 number) const { return getChannelByIndex(number - 1); };
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
-		* @param number the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
+		* @param index the 0-based index of the DMX512 channel, ranging from 0 to the return value of getChannelCount - 1
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
 		uint8 getChannelByIndex(uint16 index) const;
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
-		* @param number the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
+		* @param index the 0-based index of the DMX512 channel, ranging from 0 to the return value of getChannelCount - 1
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
 		uint8 operator[](uint16 index) { return getChannelByIndex(index); }
 
 		/**
 		* Retrieve the 8-bit value of a single DMX512 channel by its 0-based channel index.
-		* @param number the 0-based index of the DMX512 channel, ranging from 0 to the return value of @getChannelCount - 1
+		* @param index the 0-based index of the DMX512 channel, ranging from 0 to the return value of getChannelCount - 1
 		* @return the 8-bit value of a single DMX512 channel in the ArtDmx packet
 		*/
 		const uint8 operator[](uint16 index) const { return getChannelByIndex(index); }

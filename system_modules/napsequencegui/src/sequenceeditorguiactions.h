@@ -106,6 +106,7 @@ namespace nap
              * Constructor
              * @param trackId trackID of segment being dragged
              * @param segmentID segmentID of segment being dragged
+             * @param newDuration segment duration
              */
             DraggingSegment(std::string trackId, std::string segmentID, double newDuration)
                 : TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mNewDuration(newDuration)
@@ -128,6 +129,7 @@ namespace nap
             * Constructor
             * @param trackId id of track being dragged
             * @param segmentID id of segment being dragged
+            * @param startDuration drag start point
             */
             StartDraggingSegment(std::string trackId, std::string segmentID, double startDuration)
                 : TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mStartDuration(startDuration)
@@ -451,7 +453,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              */
             HoveringTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId))
             {}
@@ -466,7 +468,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              */
             DraggingTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId))
             {}

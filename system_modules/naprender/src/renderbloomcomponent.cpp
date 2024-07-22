@@ -21,11 +21,11 @@
 #include <orthocameracomponent.h>
 
 // nap::RenderBloomComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderBloomComponent)
-	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Kernel",						&nap::RenderBloomComponent::mKernel,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputTexture",				&nap::RenderBloomComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::RenderBloomComponent, "Applies a bloom effect to a texture")
+	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default,	"Number of combined horizontal / vertical passes")
+	RTTI_PROPERTY("Kernel",						&nap::RenderBloomComponent::mKernel,					nap::rtti::EPropertyMetaData::Default,	"The blur kernel")
+	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required,	"The texture to apply the effect to")
+	RTTI_PROPERTY("OutputTexture",				&nap::RenderBloomComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required, "The texture the effect is applied to")
 RTTI_END_CLASS
 
 // nap::RenderBloomComponentInstance run time class definition 

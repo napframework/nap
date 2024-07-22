@@ -10,10 +10,10 @@
 #include <audio/resource/audiobufferresource.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioOutput)
-    RTTI_PROPERTY("Audio Buffers", &nap::SequencePlayerAudioOutput::mAudioBuffers, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Manual Routing", &nap::SequencePlayerAudioOutput::mManualRouting, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Max Channels", &nap::SequencePlayerAudioOutput::mMaxChannels, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioOutput, "Outputs the sound from the sequenced audio track")
+    RTTI_PROPERTY("Audio Buffers", &nap::SequencePlayerAudioOutput::mAudioBuffers, nap::rtti::EPropertyMetaData::Default, "Audio output buffers")
+    RTTI_PROPERTY("Manual Routing", &nap::SequencePlayerAudioOutput::mManualRouting, nap::rtti::EPropertyMetaData::Default, "Directly output to selected audio output device")
+    RTTI_PROPERTY("Max Channels", &nap::SequencePlayerAudioOutput::mMaxChannels, nap::rtti::EPropertyMetaData::Default, "Maximum number of audio channels to use")
 RTTI_END_CLASS
 
 using namespace nap::audio;

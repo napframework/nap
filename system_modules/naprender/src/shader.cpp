@@ -25,22 +25,22 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 
-RTTI_DEFINE_BASE(nap::BaseShader)
-RTTI_DEFINE_BASE(nap::Shader)
-RTTI_DEFINE_BASE(nap::ComputeShader)
+RTTI_DEFINE_BASE(nap::BaseShader, "GPU program")
+RTTI_DEFINE_BASE(nap::Shader, "Graphics GPU program")
+RTTI_DEFINE_BASE(nap::ComputeShader, "Compute GPU program")
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ShaderFromFile, "Loads a GLSL graphics shader from disk")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("VertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader)
-	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader)
-	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("VertShader", &nap::ShaderFromFile::mVertPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::VertShader, "Path to the vertex (.vert) shader on disk")
+	RTTI_PROPERTY_FILELINK("FragShader", &nap::ShaderFromFile::mFragPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::FragShader, "Path to the fragment (.frag) shader on disk")
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default, "Exclude shader include search paths")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComputeShaderFromFile, "Loads a GLSL compute shader from disk")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader)
-	RTTI_PROPERTY("EnableMaxGroupSizeDefault", &nap::ComputeShaderFromFile::mEnableMaxGroupSizeDefault, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY_FILELINK("ComputeShader", &nap::ComputeShaderFromFile::mComputePath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::ComputeShader, "Path to the compute (.comp) shader on disk")
+	RTTI_PROPERTY("EnableMaxGroupSizeDefault", &nap::ComputeShaderFromFile::mEnableMaxGroupSizeDefault, nap::rtti::EPropertyMetaData::Default, "Overwrite workgroup size with maximum supported workgroup size")
+	RTTI_PROPERTY("RestrictModuleIncludes", &nap::ComputeShaderFromFile::mRestrictModuleIncludes, nap::rtti::EPropertyMetaData::Default, "Exclude shader include search paths")
 RTTI_END_CLASS
 
 using namespace std; // Include the standard namespace
@@ -1080,12 +1080,15 @@ namespace nap
 			}
 			else
 			{
-				// Workgroup size of current dimension is explicitly specified
+				// Workgroup size of current dimension is specified explicitly in shader
 				// Use reflection to store constant defined in shader source
 				mWorkGroupSize[i] = comp_shader_compiler.get_execution_mode_argument(spv::ExecutionMode::ExecutionModeLocalSize, i);
 			}
 		}
-		assert(glm::all(glm::greaterThan(mWorkGroupSize, { 0, 0, 0 })));
+
+		if (!errorState.check(glm::all(glm::greaterThan(mWorkGroupSize, { 0, 0, 0 })),
+			"Compute shader `%s` workgroup size is undefined. Set `local_size_x` to a valid number or map `local_size_x_id` to a shader constant in the material.", mID.c_str()))
+			return false;
 
 #ifdef __APPLE__
 		// Clamp work group size for Apple to 512, based on maxTotalThreadsPerThreadgroup,

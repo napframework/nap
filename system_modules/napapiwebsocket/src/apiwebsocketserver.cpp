@@ -15,10 +15,10 @@
 #include <apiutils.h>
 
 // nap::websocketapiserver run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIWebSocketServer, "Receives and sends API messages over a websocket")
 	RTTI_CONSTRUCTOR(nap::APIWebSocketService&)
-	RTTI_PROPERTY("SendWebSocketEvents",	&nap::APIWebSocketServer::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Verbose",				&nap::APIWebSocketServer::mVerbose,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SendWebSocketEvents",	&nap::APIWebSocketServer::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default, "Generate and forward websocket events, next to API events")
+	RTTI_PROPERTY("Verbose",				&nap::APIWebSocketServer::mVerbose,				nap::rtti::EPropertyMetaData::Default, "Log message conversion issues")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -29,9 +29,7 @@ namespace nap
 	APIWebSocketServer::APIWebSocketServer(APIWebSocketService& service) : 
 		IWebSocketServer(service.getWebSocketService()), 
 		mAPIService(&(service.getAPIService()))
-	{
-
-	}
+	{ }
 
 
 	bool APIWebSocketServer::send(nap::APIEventPtr apiEvent, const WebSocketConnection& connection, utility::ErrorState& error)

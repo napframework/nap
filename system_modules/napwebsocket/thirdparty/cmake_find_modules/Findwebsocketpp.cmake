@@ -19,3 +19,4 @@ mark_as_advanced(WEBSOCKETPP_INCLUDE_DIR)
 # promote package for find
 include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(websocketpp REQUIRED_VARS WEBSOCKETPP_ROOT_DIR WEBSOCKETPP_DIR WEBSOCKETPP_LICENSE_FILES)
+

@@ -49,7 +49,7 @@ namespace nap
 	 *
 	 * The blinnphongcolor shader exposes the following shader variables for users:
 	 *
-	 * ~~~~~{.vert}{.frag}
+	 * ~~~~~{.frag}
 	 * uniform UBO
 	 * {
 	 *		vec3	ambient;						//< Ambient
@@ -61,12 +61,12 @@ namespace nap
 	 *		float	reflection;						//< Reflection
 	 *		uint	environment;					//< Whether to sample an environment map
 	 * } ubo;
-	 * ~~~~
+	 * ~~~~~
 	 *
-	 * ~~~~{.frag}
+	 * ~~~~~{.frag}
 	 *		uniform sampler2D colorTexture;
 	 *		uniform samplerCube environmentMap;
-	 * ~~~~
+	 * ~~~~~
 	 *
 	 * The remaining uniforms are set automatically by the `nap::RenderAdvancedService`.
 	 */
@@ -76,7 +76,6 @@ namespace nap
 	public:
 		BlinnPhongTextureShader(Core& core);
 
-		/**
 		/**
 		 * Cross compiles the constant GLSL shader code to SPIR-V, creates the shader module and parses all the uniforms and samplers.
 		 * @param errorState contains the error if initialization fails.

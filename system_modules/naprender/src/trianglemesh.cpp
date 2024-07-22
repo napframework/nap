@@ -13,7 +13,7 @@
 #include <glm/glm.hpp>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleMesh, "Normalized 2D Triangle mesh centered at the origin on the xy axis")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -22,8 +22,8 @@ namespace nap
 {
 	TriangleMesh::TriangleMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{ }
+
 
 	bool TriangleMesh::init(utility::ErrorState& errorState)
 	{

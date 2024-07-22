@@ -27,7 +27,7 @@ RTTI_END_ENUM
 // GPUBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBuffer, "GPU data buffer object")
 	RTTI_PROPERTY("Usage", &nap::GPUBuffer::mMemoryUsage, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -36,7 +36,7 @@ RTTI_END_CLASS
 // GPUBufferNumeric interface
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferNumeric)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferNumeric, "Numeric (int, float etc.) GPU buffer")
 	RTTI_PROPERTY("Count", &nap::GPUBufferNumeric::mCount, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
@@ -45,45 +45,46 @@ RTTI_END_CLASS
 // GPUBufferNumeric
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferUInt, "Unsigned integer GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferUInt::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferUInt::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferUInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferInt, "Integer GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferInt::mClear,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferInt::mClear,			nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferInt::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferFloat::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferFloat, "Float GPU buffer")
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferFloat::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferFloat::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec2, "Vector (vec2) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec2::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec2::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec2::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec3, "Vector (vec3) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec3::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec3::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec3::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4, "Vector (vec4) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec4::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferVec4::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4, "Matrix (4x4) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Clear",		&nap::GPUBufferMat4::mClear,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferMat4::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy",	&nap::GPUBufferMat4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
 
@@ -91,27 +92,27 @@ RTTI_END_CLASS
 // VertexBuffer
 //////////////////////////////////////////////////////////////////////////
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferUInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferUInt, "Unsigned integer GPU vertex buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferInt)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferInt, "Integer GPU vertex buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferFloat)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferFloat, "Float GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec2)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec2, "Vector (vec2) GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec3)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec3, "Vector (vec3) GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4, "Vector (vec4) GPU vertex data")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

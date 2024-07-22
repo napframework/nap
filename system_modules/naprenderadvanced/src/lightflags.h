@@ -54,10 +54,11 @@ namespace nap
 	LightFlags NAPAPI getLightFlags(const LightComponentInstance& light, uint index);
 
 	/**
-	 * 
+	 * Update light flags from given light.
+	 * @param light to push
+	 * @param outFlags flags to update
 	 */
 	void NAPAPI updateLightFlags(const LightComponentInstance& light, LightFlags& outFlags);
-
 
 	/**
 	 * Persistent shadow toggle information coded in a uint32
@@ -66,7 +67,7 @@ namespace nap
 	using ShadowFlags = uint;
 
 	/**
-	 *
+	 * @return The shadow flags for the given lights
 	 */
 	ShadowFlags NAPAPI getShadowFlags(const std::vector<LightComponentInstance*> lights);
 }

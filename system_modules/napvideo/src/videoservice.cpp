@@ -17,7 +17,7 @@ extern "C"
 	#include <libavformat/avformat.h>
 }
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoService, "Initializes the FFMPEG library (libavformat etc.) and registers all the codecs")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 

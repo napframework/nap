@@ -13,17 +13,17 @@
 
 constexpr int StitchCombine = 256;	// 0-255 = alpha blended, value > 255 = source image is combined to the distination image
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Snapshot, "Renders a scene and saves the result as an image to a specified location on disk")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Width", &nap::Snapshot::mWidth, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Height", &nap::Snapshot::mHeight, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Divisor", &nap::Snapshot::mDivisor, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputDirectory", &nap::Snapshot::mOutputDirectory, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ImageFileFormat", &nap::Snapshot::mImageFileFormat, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TextureFormat", &nap::Snapshot::mTextureFormat, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SampleShading", &nap::Snapshot::mSampleShading, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RequestedSamples", &nap::Snapshot::mRequestedSamples, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor", &nap::Snapshot::mClearColor, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Width",				&nap::Snapshot::mWidth,				nap::rtti::EPropertyMetaData::Required, "Total snapshot width in texels")
+	RTTI_PROPERTY("Height",				&nap::Snapshot::mHeight,			nap::rtti::EPropertyMetaData::Required, "Total snapshot height in texels")
+	RTTI_PROPERTY("Divisor",			&nap::Snapshot::mDivisor,			nap::rtti::EPropertyMetaData::Required, "Splits snapshot in X number of rows and columns")
+	RTTI_PROPERTY("OutputDirectory",	&nap::Snapshot::mOutputDirectory,	nap::rtti::EPropertyMetaData::Default,	"Where to store the image result")
+	RTTI_PROPERTY("ImageFileFormat",	&nap::Snapshot::mImageFileFormat,	nap::rtti::EPropertyMetaData::Default,	"CPU Image storage format")
+	RTTI_PROPERTY("TextureFormat",		&nap::Snapshot::mTextureFormat,		nap::rtti::EPropertyMetaData::Default,	"GPU Texture storage format")
+	RTTI_PROPERTY("SampleShading",		&nap::Snapshot::mSampleShading,		nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("RequestedSamples",	&nap::Snapshot::mRequestedSamples,	nap::rtti::EPropertyMetaData::Default,	"Total number of MSAA samples to use")
+	RTTI_PROPERTY("ClearColor",			&nap::Snapshot::mClearColor,		nap::rtti::EPropertyMetaData::Default,	"Initial target clear color")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

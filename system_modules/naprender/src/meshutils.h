@@ -47,6 +47,7 @@ namespace nap
 		* Note that this function only works for meshes that are of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 		* This call asserts when the triangle number is out of bounds, the mesh has no indices or the draw mode is not of type triangle
 		* @param mesh the mesh to get the indices from
+		* @param drawMode mesh topology
 		* @param number the triangle number to get the for
 		* @param indices the new indices
 		* @return if the triangle indices are valid

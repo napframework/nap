@@ -11,12 +11,12 @@
 #include <nap/logger.h>
 #include "nap/core.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MeshFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MeshFromFile, "Loads a converted binary '.mesh' file from disk")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",			&nap::MeshFromFile::mUsage,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",		&nap::MeshFromFile::mCullMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",	&nap::MeshFromFile::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY_FILELINK("Path",	&nap::MeshFromFile::mPath,			nap::rtti::EPropertyMetaData::Required,		nap::rtti::EPropertyFileType::Mesh)
+	RTTI_PROPERTY("Usage",			&nap::MeshFromFile::mUsage,			nap::rtti::EPropertyMetaData::Default, "If the mesh is static or updated at runtime")
+	RTTI_PROPERTY("CullMode",		&nap::MeshFromFile::mCullMode,		nap::rtti::EPropertyMetaData::Default, "Triangle cull mode: back facing, front facing etc..")
+	RTTI_PROPERTY("PolygonMode",	&nap::MeshFromFile::mPolygonMode,	nap::rtti::EPropertyMetaData::Default, "Polygon draw mode: fill, line, point etc..")
+	RTTI_PROPERTY_FILELINK("Path",	&nap::MeshFromFile::mPath,			nap::rtti::EPropertyMetaData::Required,	nap::rtti::EPropertyFileType::Mesh, "Path to the '.mesh' file on disk")
 RTTI_END_CLASS
 
 namespace nap

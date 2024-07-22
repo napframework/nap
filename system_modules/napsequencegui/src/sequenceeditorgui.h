@@ -85,6 +85,7 @@ namespace nap
     public:
         /**
          * Constructor
+         * @param service sequence gui service handle
          * @param editor reference to editor
          * @param id id of the GUI resource, used to push ID by IMGUI
          * @param renderWindow the render window
@@ -133,8 +134,8 @@ namespace nap
 
         /**
          * Draw lines of markers
-         * @param sequencePlayer reference to sequenceplayer
          * @param sequence reference to sequence
+         * @param player reference to sequenceplayer
          */
         void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
 

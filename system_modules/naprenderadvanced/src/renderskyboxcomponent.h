@@ -62,7 +62,7 @@ namespace nap
 		/**
 		 * Initializes the skybox render component, including required materials, meshes and bindings.
 		 * @param errorState contains the error when initialization fails
-		 * @return if initialization succeeded. 
+		 * @return if initialization succeeded.
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -73,14 +73,14 @@ namespace nap
 		void setTexture(const TextureCube& texture);
 
 		/**
-		 * Get the current sky box texture 
+		 * Get the current sky box texture
 		 * @return current sky box texture
 		 */
 		const TextureCube& getTexture() const					{ return mCubeSampler->getTexture(); }
 
 		/**
 		 * Set the sky box color
-		 * @param texture new skybox color
+		 * @param color new skybox color
 		 */
 		void setColor(const glm::vec3& color)					{ mColorUniform->setValue(color); }
 
