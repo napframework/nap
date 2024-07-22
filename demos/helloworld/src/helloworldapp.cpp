@@ -25,14 +25,6 @@ RTTI_END_CLASS
 
 namespace nap 
 {
-	static void printTime()
-	{
-		auto current_time = getCurrentTime();
-		auto seconds = std::chrono::duration_cast<nap::Minutes>(current_time.time_since_epoch());
-		auto hours = std::chrono::duration_cast<nap::Hours>(current_time.time_since_epoch());
-		nap::Logger::info("Minutes: %d, \tHours: %d", seconds.count(), hours.count());
-	}
-
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -122,12 +114,6 @@ namespace nap
 		// Push text color
 		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 		text_comp.setColor(mTextColor);
-
-		if (mTimer.getElapsedTime() > 5.0f)
-		{
-			printTime();
-			mTimer.reset();
-		}
 	}
 
 	

@@ -95,7 +95,5 @@ namespace nap
 		RGBColorFloat mColorTwo;										//< Second sphere blend color
 		RGBColorFloat mHaloColor;										//< Sphere halo color
 		RGBColorFloat mTextColor;										//< Color or text
-
-		nap::SteadyTimer mTimer;
 	};
 }
