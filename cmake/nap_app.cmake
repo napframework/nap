@@ -155,6 +155,13 @@ add_license(rapidjson ${NAP_ROOT}/thirdparty/rapidjson/license.txt)
 add_license(rttr ${NAP_ROOT}/thirdparty/rttr/source/LICENSE.txt)
 add_license(tclap ${NAP_ROOT}/thirdparty/tclap/COPYING)
 
+# Update executable rpath
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD COMMAND
+            if ! otool -l $<TARGET_FILE:${PROJECT_NAME}> | grep -q @executable_path/${LIB_RPATH}/.\; then ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${LIB_RPATH}/." $<TARGET_FILE:${PROJECT_NAME}>\; fi)
+endif()
+
 # Install to packaged app
 install(FILES $<TARGET_FILE:${PROJECT_NAME}> PERMISSIONS OWNER_READ OWNER_WRITE OWNER_EXECUTE TYPE BIN OPTIONAL)
 install(FILES ${app_install_data_dir}/app.json TYPE BIN OPTIONAL)

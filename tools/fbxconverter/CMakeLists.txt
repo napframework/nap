@@ -13,6 +13,12 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} naprender)
 
+# Update executable rpath
+if(APPLE)
+    add_custom_command(TARGET ${PROJECT_NAME}
+            POST_BUILD COMMAND
+            if ! otool -l $<TARGET_FILE:${PROJECT_NAME}> | grep -q @executable_path/${LIB_RPATH}/.\; then ${CMAKE_INSTALL_NAME_TOOL} -add_rpath "@executable_path/${LIB_RPATH}/." $<TARGET_FILE:${PROJECT_NAME}>\; fi)
+endif()
 
 # ======================= UNIT TESTS
 enable_testing()
