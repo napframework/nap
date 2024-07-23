@@ -46,7 +46,7 @@ echo Cleaning previous build output...
 rm -rf $build_directory/bin
 
 # Generate the build directory
-cmake -S . -B $build_directory
+cmake -S . -B $build_directory -DCMAKE_BUILD_TYPE=RELEASE
 if ! [ $? -eq 0 ]; then
   exit 0
 fi
