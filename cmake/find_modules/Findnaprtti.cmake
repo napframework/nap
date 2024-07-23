@@ -1,5 +1,5 @@
 # Find RTTR
-find_rttr()
+
 
 # Find rapidjson
 find_package(rapidjson)

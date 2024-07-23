@@ -2,8 +2,7 @@ project(naprtti)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
-include(${NAP_ROOT}/cmake/find_utilities.cmake)
-find_rttr()
+add_subdirectory(thirdparty/rttr)
 
 set(rapidjson_FIND_QUIETLY TRUE)
 find_package(rapidjson REQUIRED)
@@ -42,7 +41,7 @@ if (NAP_ENABLE_PYTHON)
 endif()
 
 target_link_libraries(${PROJECT_NAME} naputility)
-target_link_libraries(${PROJECT_NAME} RTTR::Core)
+target_link_import_library(${PROJECT_NAME} rttr_core)
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework CoreServices")
@@ -53,8 +52,7 @@ endif ()
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:RTTR::Core>
+        $<TARGET_FILE:rttr_core>
         ${LIB_DIR})
 
 install(TARGETS ${PROJECT_NAME} LIBRARY OPTIONAL)
-install(FILES $<TARGET_FILE:RTTR::Core> TYPE LIB OPTIONAL)
