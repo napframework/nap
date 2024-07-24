@@ -158,7 +158,8 @@ namespace nap {
                     assert(comparable_modified_file.find(comparable_watched_path + "/") != std::string::npos);
 
                     // strip the watched path from the start
-                    comparable_modified_file.erase(0, mPImpl->currentPath.size() + 1);
+                    comparable_modified_file.erase(0, comparable_watched_path.size() + 1);
+
                     modifiedFiles.emplace_back(comparable_modified_file);
                 }
             }
