@@ -77,11 +77,7 @@ namespace nap
 		
 		InputPin::~InputPin()
 		{
-			if (mInput)
-			{
-				mInput->mOutputs.erase(this);
-				mInput = nullptr;
-			}
+			disconnectAllNow();
 		}
 		
 		
