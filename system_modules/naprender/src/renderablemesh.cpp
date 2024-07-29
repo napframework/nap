@@ -35,8 +35,7 @@ namespace nap
 		mVertexBuffers = std::move(other.mVertexBuffers);
 		mVertexBufferOffsets = std::move(other.mVertexBufferOffsets);
 		mVertexBuffersDirty = other.mVertexBuffersDirty;
-		mVertexBufferDataChangedSlot.disconnect();
-		mVertexBufferDataChangedSlot.copyCauses(other.mVertexBufferDataChangedSlot);
+		mVertexBufferDataChangedSlot = std::move(other.mVertexBufferDataChangedSlot);
 	}
 
 
@@ -47,8 +46,7 @@ namespace nap
 		mVertexBuffers = rhs.mVertexBuffers;
 		mVertexBufferOffsets = rhs.mVertexBufferOffsets;
 		mVertexBuffersDirty = rhs.mVertexBuffersDirty;
-		mVertexBufferDataChangedSlot.disconnect();
-		mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
+		mVertexBufferDataChangedSlot = rhs.mVertexBufferDataChangedSlot;
 	}
 
 
