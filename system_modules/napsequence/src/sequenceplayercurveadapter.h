@@ -80,23 +80,26 @@ namespace nap
         {
             for(const auto &segment: mTrack->mSegments)
             {
-                if(time >= segment->mStartTime && time < segment->mStartTime + segment->mDuration)
+                // get the segment we need
+
+                if(time >= segment->mStartTime)
                 {
-                    // get the segment we need
                     assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentCurve<CURVE_TYPE>)));
                     const auto &source = static_cast<const SequenceTrackSegmentCurve<CURVE_TYPE>&>(*segment.get());
 
-                    // retrieve the source value
-                    CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
+                    if(time < segment->mStartTime + source.mDuration)
+                    {
+                        // retrieve the source value
+                        CURVE_TYPE source_value = source.getValue((time - source.mStartTime) / source.mDuration);
 
-                    // cast it to a parameter value
-                    auto value = static_cast<PARAMETER_VALUE_TYPE>(
-                        source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
+                        // cast it to a parameter value
+                        auto value = static_cast<PARAMETER_VALUE_TYPE>(source_value * (mTrack->mMaximum - mTrack->mMinimum) + mTrack->mMinimum);
 
-                    // call set or store function
-                    (*this.*mSetFunction)(value);
+                        // call set or store function
+                        (*this.*mSetFunction)(value);
 
-                    break;
+                        break;
+                    }
                 }
             }
         }

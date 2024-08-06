@@ -5,6 +5,7 @@
 #include "sequencecontroller.h"
 #include "sequenceeditor.h"
 #include "sequenceservice.h"
+#include "sequencetracksegmentcurve.h"
 
 #include <nap/logger.h>
 #include <mathutils.h>
@@ -57,12 +58,21 @@ namespace nap
             double track_duration = 0.0;
             double longest_segment = 0.0;
 
-            for(const auto &segment: track->mSegments)
+            // get the last segment on the track
+            for(const auto &track_segment: track->mSegments)
             {
-                if(segment->mStartTime + segment->mDuration > longest_segment)
+                if(track_segment->mStartTime > longest_segment)
                 {
-                    longest_segment = segment->mStartTime + segment->mDuration;
+                    longest_segment = track_segment->mStartTime;
                     track_duration = longest_segment;
+
+                    // if the segment has a duration add it to the track duration
+                    const auto& curve_segment = static_cast<const SequenceTrackSegmentDuration&>(*track_segment.get());
+                    if(track_segment->mStartTime + curve_segment.mDuration > track_duration)
+                    {
+                        track_duration = track_segment->mStartTime + curve_segment.mDuration;
+                        longest_segment = track_duration;
+                    }
                 }
             }
 

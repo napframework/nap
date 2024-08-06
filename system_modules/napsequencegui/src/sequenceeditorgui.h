@@ -53,12 +53,10 @@ namespace nap
          */
         virtual void show(bool newWindow = true);
 
-
         /**
          * @return sequence editor gui service
          */
         SequenceGUIService& getService() { return mService; }
-
 
         // properties
         ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -205,6 +203,21 @@ namespace nap
         void handleSaveClipboardPopup();
 
         /**
+         * undo last action
+         */
+        void handleUndo();
+
+        /*
+         * redo last action
+         */
+        void handleRedo();
+
+        /**
+         * history popup
+         */
+        void handleHistoryPopup();
+
+        /**
          * registers handlers for actions
          * @param actionType the action type to register a handler function for
          * @param action the handler function
@@ -212,6 +225,8 @@ namespace nap
         void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
 
     protected:
+        void handleHotKeys();
+
         void registerActionHandlers();
 
         // reference to editor

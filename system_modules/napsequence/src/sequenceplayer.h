@@ -19,6 +19,7 @@
 #include <mutex>
 #include <nap/timer.h>
 #include <concurrentqueue.h>
+#include <numeric>
 
 namespace nap
 {
@@ -68,6 +69,14 @@ namespace nap
          * @return true on success
          */
         bool load(const std::string& name, utility::ErrorState& errorState);
+
+        /**
+         * Load a sequence serialized as a binary blob
+         * @param buffer reference to binary data
+         * @param errorState contains error upon failure
+         * @return true on success
+         */
+        bool loadBinary(const std::vector<glm::uint8>& buffer, utility::ErrorState& errorState);
 
         /**
          * Play or stop the player. Note that player can still be paused, so adapters will be called but time will not advance

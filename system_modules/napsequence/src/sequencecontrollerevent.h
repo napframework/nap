@@ -97,15 +97,18 @@ namespace nap
                               std::unique_ptr<SEGMENT_TYPE> new_segment = std::make_unique<SEGMENT_TYPE>();
                               new_segment->mStartTime = time;
                               new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
-                              new_segment->mDuration = 0.0;
 
-                              //
+                              // find track
                               SequenceTrack *track = findTrack(trackID);
                               assert(track != nullptr); // track not found
 
+                              // add segment to track
                               track->mSegments.emplace_back(ResourcePtr<SEGMENT_TYPE>(new_segment.get()));
 
+                              // resolve return ptr
                               return_ptr = new_segment.get();
+
+                              // move ownership
                               getPlayerOwnedObjects().emplace_back(std::move(new_segment));
                           });
 

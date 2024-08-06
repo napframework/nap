@@ -61,40 +61,37 @@ namespace nap
                                       int segment_count = 1;
                                       for(auto &segment: track->mSegments)
                                       {
-                                          if(segment->mStartTime < time &&
-                                             segment->mStartTime + segment->mDuration > time)
+                                          auto* segment_curve = static_cast<SequenceTrackSegmentCurve<T> *>(segment.get());
+                                          if(segment_curve->mStartTime < time &&
+                                             segment_curve->mStartTime + segment_curve->mDuration > time)
                                           {
                                               // segment found
 
                                               // create new segment & set parameters
                                               std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
                                               new_segment->mStartTime = time;
-                                              new_segment->mDuration = segment->mStartTime + segment->mDuration - time;
+                                              new_segment->mDuration = segment_curve->mStartTime + segment_curve->mDuration - time;
                                               new_segment->mCurves.resize(curve_count);
                                               new_segment->mCurveTypes.resize(curve_count);
+                                              new_segment->mLocked = segment_curve->mLocked;
                                               for(int i = 0; i < curve_count; i++)
                                               {
-                                                  std::unique_ptr<math::FCurve<float, float>> segment_curve = std::make_unique<math::FCurve<float, float>>();
-                                                  segment_curve->mPoints[1].mInTan.mTime = -0.4f;
-                                                  segment_curve->mPoints[1].mOutTan.mTime = 0.4f;
-                                                  segment_curve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+                                                  std::unique_ptr<math::FCurve<float, float>> fcurve = std::make_unique<math::FCurve<float, float>>();
+                                                  fcurve->mPoints[1].mInTan.mTime = -0.4f;
+                                                  fcurve->mPoints[1].mOutTan.mTime = 0.4f;
+                                                  fcurve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
                                                   // assign curve
-                                                  new_segment->mCurves[i] = nap::ResourcePtr<math::FCurve<float, float>>(segment_curve.get());
+                                                  new_segment->mCurves[i] = { fcurve.get() };
 
                                                   new_segment->mCurveTypes[i] = math::ECurveInterp::Bezier;
 
                                                   // move ownership
-                                                  getPlayerOwnedObjects().emplace_back(std::move(segment_curve));
+                                                  getPlayerOwnedObjects().emplace_back(std::move(fcurve));
                                               }
 
-                                              //
-                                              auto &segment_curve_2 = *static_cast<SequenceTrackSegmentCurve<T> *>(segment.get());
-
                                               // set the value by evaluation curve
-                                              new_segment->setStartValue(segment_curve_2.getValue(
-                                                  (segment->mStartTime + segment->mDuration - time) /
-                                                  segment->mDuration));
+                                              new_segment->setStartValue(segment_curve->getValue((segment->mStartTime + segment_curve->mDuration - time) / segment_curve->mDuration));
 
                                               // check if there is a next segment
                                               if(segment_count < track->mSegments.size())
@@ -106,14 +103,17 @@ namespace nap
                                               } else
                                               {
                                                   // ... otherwise it just gets this segments end value
-                                                  new_segment->setEndValue(segment_curve_2.getEndValue());
+                                                  new_segment->setEndValue(segment_curve->getEndValue());
                                               }
 
+                                              // change locked status of old segment
+                                              segment_curve->mLocked = false;
+
                                               // the segment's end value gets the start value the newly inserted segment
-                                              segment_curve_2.setEndValue(new_segment->getStartValue());
+                                              segment_curve->setEndValue(new_segment->getStartValue());
 
                                               // change duration of segment before inserted segment
-                                              segment->mDuration = new_segment->mStartTime - segment->mStartTime;
+                                              segment_curve->mDuration = new_segment->mStartTime - segment->mStartTime;
 
                                               // generate unique id
                                               new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
@@ -138,7 +138,7 @@ namespace nap
 
                                               // create new segment & set parameters
                                               std::unique_ptr<SequenceTrackSegmentCurve<T>> new_segment = std::make_unique<SequenceTrackSegmentCurve<T>>();
-                                              new_segment->mStartTime = segment->mStartTime + segment->mDuration;
+                                              new_segment->mStartTime = segment->mStartTime + segment_curve->mDuration;
                                               new_segment->mDuration = time - new_segment->mStartTime;
                                               new_segment->mCurves.resize(curve_count);
                                               new_segment->mCurveTypes.resize(curve_count);
