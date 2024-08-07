@@ -1094,7 +1094,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "NoiseScaleParam",
                             "Name": "NoiseScale",
-                            "Value": 0.30000001192092898,
+                            "Value": 0.33000001311302187,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1102,7 +1102,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "NoiseStrengthParam",
                             "Name": "NoiseStrength",
-                            "Value": 0.25,
+                            "Value": 0.4000000059604645,
                             "Minimum": 0.0,
                             "Maximum": 1.0
                         },
@@ -1126,7 +1126,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "BumpAmountParameter",
                             "Name": "BumpAmount",
-                            "Value": 1.0,
+                            "Value": 2.0,
                             "Minimum": 0.0,
                             "Maximum": 5.0
                         }
