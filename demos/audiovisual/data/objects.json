@@ -1078,7 +1078,7 @@
                             "Type": "nap::ParameterInt",
                             "mID": "RenderIndexParam",
                             "Name": "RenderIndex",
-                            "Value": 0,
+                            "Value": 1,
                             "Minimum": 0,
                             "Maximum": 1
                         },
