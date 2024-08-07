@@ -173,10 +173,12 @@ namespace nap
 	}
 
 
-	void VideoPlayer::play(double mStartTime)
+	void VideoPlayer::play(double mStartTime, bool clearTheTextures)
 	{
 		// Clear textures and start playback
-		clearTextures();
+        if(clearTheTextures)
+		    clearTextures();
+
 		getVideo().play(mStartTime);
 	}
 
