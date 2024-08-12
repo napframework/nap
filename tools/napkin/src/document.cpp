@@ -1121,9 +1121,37 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-static bool hasEmbeddedPointers()
+/**
+ * Different types of embedded properties
+ */
+enum class EPropertyType : nap::uint8
 {
+	None					= 0,		///< Regular property
+	EmbeddedPointer			= 1,		///< Embedded pointer object
+	EmbeddedPointerArray	= 2,		///< List of embedded pointer objects
+	NestedEmbeddedPointer	= 3			///< Compound with nested embedded pointer (very unusual)
+};
 
+
+static EPropertyType getPropertyType(const nap::rtti::Property& property)
+{
+	// Embedded object
+	if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
+	{
+		return property.is_array() ?
+			EPropertyType::EmbeddedPointerArray : EPropertyType::EmbeddedPointer;
+	}
+
+	// Recursively find embedded objects in children
+	auto properties = property.get_type().get_properties();
+	for (const auto& nested_property : properties)
+	{
+		if (getPropertyType(nested_property) != EPropertyType::None)
+			return EPropertyType::NestedEmbeddedPointer;
+	}
+
+	// Not an embedded property
+	return EPropertyType::None;
 }
 
 
@@ -1147,7 +1175,7 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 	// Bail if creation fails
 	if (!new_instance.is_valid())
 	{
-		nap::Logger::error("Cannot create object of type: %s", instance_type.get_name().data());
+		nap::Logger::error("Unable to create object of type: %s", instance_type.get_name().data());
 		return nap::rtti::Instance();
 	}
 
@@ -1183,22 +1211,22 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 
 		// Check if it's an embedded pointer or embedded pointer array ->
 		// In that case we need to deep copy the embedded object and set that.
-		if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
+		switch (getPropertyType(property))
 		{
-			// Regular embedded pointer -> duplicate and set
-			if (!property.is_array())
+			case EPropertyType::EmbeddedPointer:
 			{
 				assert(value.get_type().is_wrapper() && value.get_type().get_wrapped_type().is_pointer());
 				auto variant = value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
 				value = src_obj != nullptr ? deepCopyInstance(src_obj, parent_obj) : value;
+				break;
 			}
-			else
+			case EPropertyType::EmbeddedPointerArray:
 			{
 				// Iterate over array, duplicate entries and set
-				auto array_view  = value.create_array_view();
-				auto array_type =  array_view.get_rank_type(array_view.get_rank());
+				auto array_view = value.create_array_view();
+				auto array_type = array_view.get_rank_type(array_view.get_rank());
 				assert(array_type.is_wrapper() && array_type.get_wrapped_type().is_pointer());
 				for (auto i = 0; i < array_view.get_size(); i++)
 				{
@@ -1217,11 +1245,17 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 					}
 					array_view.set_value(i, obj_handle);
 				}
+				break;
 			}
-		}
-		else if (property.get_type().is_derived_from(RTTI_OF(nap::BaseMaterialInstanceResource)))
-		{
-			value = deepCopyInstance(value, parent_obj);
+			case EPropertyType::NestedEmbeddedPointer:
+			{
+				value = deepCopyInstance(value, parent_obj);
+				break;
+			}
+			default:
+			{
+				break;
+			}
 		}
 
 		// Set copied value
@@ -1235,6 +1269,7 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 	// Notify listeners object has been added and return
 	if(obj_instance != nullptr)
 		objectAdded(obj_instance, parent);
+
 	return new_instance;
 }
 
