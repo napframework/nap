@@ -1134,14 +1134,14 @@ nap::rtti::Instance Document::duplicateInstance(const nap::rtti::Instance src, n
 	}
 
 	// If it's an object, handle it appropriately
-	nap::rtti::Object* obj_instance = new_instance.try_convert<nap::rtti::Object>();
+	nap::rtti::Object* obj_instance = nullptr;
 	if (new_instance.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)))
 	{
 		// Give unique ID
 		nap::rtti::Object* src_obj = src.try_convert<nap::rtti::Object>(); assert(src_obj != nullptr);
 		auto parts = nap::utility::splitString(src_obj->mID, id::uuids); assert(!parts.empty());
 
-		assert(obj_instance != nullptr);
+		obj_instance = new_instance.try_convert<nap::rtti::Object>(); assert(obj_instance != nullptr);
 		obj_instance->mID = getUniqueID(parts.front(), *obj_instance, true);
 
 		// Add to managed object list
@@ -1200,8 +1200,10 @@ nap::rtti::Instance Document::duplicateInstance(const nap::rtti::Instance src, n
 		else if (property.get_type().is_derived_from(RTTI_OF(nap::MaterialInstanceResource)))
 		{
 			auto new_instance = duplicateInstance(src_value, parent);
-			auto* new_mat_instance = new_instance.try_convert<nap::MaterialInstanceResource>();
-			src_value = *new_mat_instance;
+			assert(new_instance.get_type().is_pointer());
+			auto* material_resource = new_instance.try_convert<nap::MaterialInstanceResource>();
+			src_value = *material_resource;
+			delete material_resource;
 		}
 
 		// Copy value if available
