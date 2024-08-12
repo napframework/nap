@@ -240,10 +240,15 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 
 nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& src, const PropertyPath& parent)
 {
-	// Duplicate and add object
+	// Deep copy object and all child properties
 	auto* parent_obj = parent.getObject();
-	auto duplicate_instance = duplicateInstance(&src, parent_obj); assert(duplicate_instance.is_valid());
+	auto duplicate_instance = deepCopyInstance(&src, parent_obj);
+	if (!duplicate_instance.is_valid())
+		return nullptr;
 
+	// Extract object
+	assert(duplicate_instance.get_type().is_pointer());
+	assert(duplicate_instance.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 	auto duplicate = duplicate_instance.convert<nap::rtti::Object*>();
 	assert(duplicate != nullptr);
 
@@ -1116,7 +1121,13 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap::rtti::Object* parent)
+static bool hasEmbeddedPointers()
+{
+
+}
+
+
+nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap::rtti::Object* parent)
 {
 	// Fetch rtti factory
 	Factory& factory = mCore.getResourceManager()->getFactory();
@@ -1171,7 +1182,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 		nap::rtti::Variant value = property.get_value(src);
 
 		// Check if it's an embedded pointer or embedded pointer array ->
-		// In that case we need to duplicate the embedded object and set that
+		// In that case we need to deep copy the embedded object and set that.
 		if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
 		{
 			// Regular embedded pointer -> duplicate and set
@@ -1181,7 +1192,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 				auto variant = value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
-				value = src_obj != nullptr ? duplicateInstance(src_obj, parent_obj) : value;
+				value = src_obj != nullptr ? deepCopyInstance(src_obj, parent_obj) : value;
 			}
 			else
 			{
@@ -1201,7 +1212,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 					nap::rtti::Object* obj_handle = nullptr;
 					if (src_array_obj != nullptr)
 					{
-						auto new_instance = duplicateInstance(src_array_obj, parent_obj);
+						auto new_instance = deepCopyInstance(src_array_obj, parent_obj);
 						obj_handle = new_instance.convert<nap::rtti::Object*>();
 					}
 					array_view.set_value(i, obj_handle);
@@ -1210,7 +1221,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 		}
 		else if (property.get_type().is_derived_from(RTTI_OF(nap::BaseMaterialInstanceResource)))
 		{
-			value = duplicateInstance(value, parent_obj);
+			value = deepCopyInstance(value, parent_obj);
 		}
 
 		// Set copied value
