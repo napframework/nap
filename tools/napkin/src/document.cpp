@@ -1133,6 +1133,9 @@ enum class EPropertyType : nap::uint8
 };
 
 
+/**
+ * Returns the deep copy property type
+ */
 static EPropertyType getPropertyType(const nap::rtti::Property& property)
 {
 	// Embedded object
@@ -1157,9 +1160,6 @@ static EPropertyType getPropertyType(const nap::rtti::Property& property)
 
 nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap::rtti::Object* parent)
 {
-	// Fetch rtti factory
-	Factory& factory = mCore.getResourceManager()->getFactory();
-
 	// Get the type to create, we support rtti objects and copy construct-able objects
 	nap::rtti::TypeInfo instance_type = src.get_type();
 	if (instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
@@ -1169,6 +1169,7 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 	}
 
 	// Create the new instance of object, new or copy constructed, depending on constructor type!
+	Factory& factory = mCore.getResourceManager()->getFactory();
 	nap::rtti::Variant new_instance = factory.canCreate(instance_type) ?
 		factory.create(instance_type) : src.get_type().create();
 
@@ -1209,8 +1210,8 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 		// Get value (by copy)
 		nap::rtti::Variant value = property.get_value(src);
 
-		// Check if it's an embedded pointer or embedded pointer array ->
-		// In that case we need to deep copy the embedded object and set that.
+		// Check if it's an embedded pointer property ->
+		// In that case we need to deep copy the embedded rtti object and set that.
 		switch (getPropertyType(property))
 		{
 			case EPropertyType::EmbeddedPointer:
