@@ -185,65 +185,8 @@
                     "Layer": "",
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UBO",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "colorOne",
-                                        "Name": "colorOne",
-                                        "Value": {
-                                            "x": 0.0,
-                                            "y": 0.0,
-                                            "z": 0.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "colorTwo",
-                                        "Name": "colorTwo",
-                                        "Value": {
-                                            "x": 0.0,
-                                            "y": 0.0,
-                                            "z": 0.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "haloColor",
-                                        "Name": "haloColor",
-                                        "Value": {
-                                            "x": 0.0,
-                                            "y": 0.0,
-                                            "z": 0.0
-                                        }
-                                    }
-                                ]
-                            }
-                        ],
-                        "Samplers": [
-                            {
-                                "Type": "nap::Sampler2D",
-                                "mID": "inWorldTexture",
-                                "Name": "inWorldTexture",
-                                "MinFilter": "Linear",
-                                "MaxFilter": "Linear",
-                                "MipMapMode": "Linear",
-                                "AddressModeVertical": "ClampToEdge",
-                                "AddressModeHorizontal": "ClampToEdge",
-                                "MinLodLevel": 0,
-                                "MaxLodLevel": 1000,
-                                "LodBias": 0.0,
-                                "AnisotropicSamples": "Default",
-                                "BorderColor": "IntOpaqueBlack",
-                                "CompareMode": "LessOrEqual",
-                                "EnableCompare": false,
-                                "Texture": "WorldTexture"
-                            }
-                        ],
+                        "Uniforms": [],
+                        "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
                         "Material": "WorldMaterial",
