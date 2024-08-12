@@ -17,6 +17,7 @@
 #include <nap/timer.h>
 #include <entityptr.h>
 #include <componentptr.h>
+#include <materialinstance.h>
 
 using namespace napkin;
 using namespace nap::rtti;
@@ -241,7 +242,10 @@ nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& sr
 {
 	// Duplicate and add object
 	auto* parent_obj = parent.getObject();
-	auto* duplicate = duplicateInstance(src, parent_obj); assert(duplicate != nullptr);
+	auto duplicate_instance = duplicateInstance(src, parent_obj); assert(duplicate_instance.is_valid());
+
+	auto* duplicate = duplicate_instance.try_convert<nap::rtti::Object>();
+	assert(duplicate != nullptr);
 
 	// Add duplicate to parent
 	if (duplicate != nullptr && parent_obj != nullptr)
@@ -1112,27 +1116,38 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-nap::rtti::Object* Document::duplicateInstance(const nap::rtti::Instance src, nap::rtti::Object* parent)
+nap::rtti::Instance Document::duplicateInstance(const nap::rtti::Instance src, nap::rtti::Object* parent)
 {
-	// Make sure we can create the object
+	// Fetch rtti factory
 	Factory& factory = mCore.getResourceManager()->getFactory();
-	if (!factory.canCreate(src.get_derived_type()))
+
+	// Check if the factory can create the object, otherwise try using default constructor
+	nap::rtti::Instance new_instance = factory.canCreate(src.get_derived_type()) ?
+		factory.create(src.get_derived_type()) :
+		src.get_derived_type().create();
+
+	// Ensure the new instance is valid
+	if (!new_instance.is_valid())
 	{
-		nap::Logger::error("Cannot create object of type: %s", src.get_type().get_name().data());
-		return nullptr;
+		nap::Logger::error("Cannot create object of type: %s", src.get_derived_type().get_name().data());
+		return nap::rtti::Instance();
 	}
 
-	// Create the object
-	nap::rtti::Object* target = factory.create(src.get_derived_type()); assert(target != nullptr);
+	// If it's an object, handle it appropriately
+	nap::rtti::Object* obj_instance = new_instance.try_convert<nap::rtti::Object>();
+	if (new_instance.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)))
+	{
+		// Give unique ID
+		nap::rtti::Object* src_obj = src.try_convert<nap::rtti::Object>(); assert(src_obj != nullptr);
+		auto parts = nap::utility::splitString(src_obj->mID, id::uuids); assert(!parts.empty());
 
-	// Give it a new name
-	const auto* obj = src.try_convert<nap::rtti::Object>();
-	auto parts = nap::utility::splitString(obj->mID, id::uuids); assert(!parts.empty());
-	target->mID = getUniqueID(parts.front(), *target, true);
+		assert(obj_instance != nullptr);
+		obj_instance->mID = getUniqueID(parts.front(), *obj_instance, true);
 
-	// Add to managed object list
-	mObjects.emplace(std::make_pair(target->mID, target));
-	
+		// Add to managed object list
+		mObjects.emplace(obj_instance->mID, obj_instance);
+	}
+
 	// Copy properties
 	auto properties = src.get_derived_type().get_properties();
 	for (const auto& property : properties)
@@ -1143,7 +1158,7 @@ nap::rtti::Object* Document::duplicateInstance(const nap::rtti::Instance src, na
 
 		// Get value (by copy)
 		nap::rtti::Variant src_value = property.get_value(src);
-		 
+
 		// Check if it's an embedded pointer or embedded pointer array ->
 		// In that case we need to duplicate the embedded object and set that
 		if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
@@ -1155,7 +1170,7 @@ nap::rtti::Object* Document::duplicateInstance(const nap::rtti::Instance src, na
 				auto variant = src_value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
-				src_value = src_obj != nullptr ? duplicateInstance(*src_obj, target) : src_value;
+				src_value = src_obj != nullptr ? duplicateInstance(*src_obj, obj_instance) : src_value;
 			}
 			else
 			{
@@ -1172,15 +1187,25 @@ nap::rtti::Object* Document::duplicateInstance(const nap::rtti::Instance src, na
 					auto src_array_obj = variant.get_value<nap::rtti::Object*>();
 
 					// Duplicate & set
-					nap::rtti::Object* obj_handle = src_array_obj != nullptr ? 
-						duplicateInstance(*src_array_obj, target) : nullptr;
+					nap::rtti::Object* obj_handle = nullptr;
+					if (src_array_obj != nullptr)
+					{
+						auto new_instance = duplicateInstance(*src_array_obj, obj_instance);
+						obj_handle = new_instance.try_convert<nap::rtti::Object>();
+					}
 					array_view.set_value(i, obj_handle);
 				}
 			}
 		}
+		else if (property.get_type().is_derived_from(RTTI_OF(nap::MaterialInstanceResource)))
+		{
+			auto new_instance = duplicateInstance(src_value, parent);
+			auto* new_mat_instance = new_instance.try_convert<nap::MaterialInstanceResource>();
+			src_value = *new_mat_instance;
+		}
 
 		// Copy value if available
-		if (!property.set_value(target, src_value))
+		if (!property.set_value(new_instance, src_value))
 		{
 			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
 				property.get_name().data()).c_str());
@@ -1188,8 +1213,9 @@ nap::rtti::Object* Document::duplicateInstance(const nap::rtti::Instance src, na
 	}
 
 	// Notify listeners object has been added and return
-	objectAdded(target, parent);
-	return target;
+	if(obj_instance != nullptr)
+		objectAdded(obj_instance, parent);
+	return new_instance;
 }
 
 
