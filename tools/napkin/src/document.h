@@ -627,7 +627,7 @@ namespace napkin
 		 * @param parent optional parent of the object, nullptr if object has no parent
 		 * @return src duplicate, nullptr if duplication failed because object can't be created
 		 */
-		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent);
+		nap::rtti::Object* duplicateInstance(const nap::rtti::Instance src, nap::rtti::Object* parent);
 	};
 
 

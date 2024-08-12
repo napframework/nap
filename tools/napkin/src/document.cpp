@@ -241,7 +241,7 @@ nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& sr
 {
 	// Duplicate and add object
 	auto* parent_obj = parent.getObject();
-	auto* duplicate = duplicateObject(src, parent_obj); assert(duplicate != nullptr);
+	auto* duplicate = duplicateInstance(src, parent_obj); assert(duplicate != nullptr);
 
 	// Add duplicate to parent
 	if (duplicate != nullptr && parent_obj != nullptr)
@@ -1112,28 +1112,29 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent)
+nap::rtti::Object* Document::duplicateInstance(const nap::rtti::Instance src, nap::rtti::Object* parent)
 {
 	// Make sure we can create the object
 	Factory& factory = mCore.getResourceManager()->getFactory();
-	if (!factory.canCreate(src.get_type()))
+	if (!factory.canCreate(src.get_derived_type()))
 	{
 		nap::Logger::error("Cannot create object of type: %s", src.get_type().get_name().data());
 		return nullptr;
 	}
 
 	// Create the object
-	nap::rtti::Object* target = factory.create(src.get_type()); assert(target != nullptr);
+	nap::rtti::Object* target = factory.create(src.get_derived_type()); assert(target != nullptr);
 
 	// Give it a new name
-	auto parts = nap::utility::splitString(src.mID, id::uuids); assert(!parts.empty());
+	const auto* obj = src.try_convert<nap::rtti::Object>();
+	auto parts = nap::utility::splitString(obj->mID, id::uuids); assert(!parts.empty());
 	target->mID = getUniqueID(parts.front(), *target, true);
 
 	// Add to managed object list
 	mObjects.emplace(std::make_pair(target->mID, target));
 	
 	// Copy properties
-	auto properties = src.get_type().get_properties();
+	auto properties = src.get_derived_type().get_properties();
 	for (const auto& property : properties)
 	{
 		// Skip ID
@@ -1154,7 +1155,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 				auto variant = src_value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
-				src_value = src_obj != nullptr ? duplicateObject(*src_obj, target) : src_value;
+				src_value = src_obj != nullptr ? duplicateInstance(*src_obj, target) : src_value;
 			}
 			else
 			{
@@ -1172,7 +1173,7 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 
 					// Duplicate & set
 					nap::rtti::Object* obj_handle = src_array_obj != nullptr ? 
-						duplicateObject(*src_array_obj, target) : nullptr;
+						duplicateInstance(*src_array_obj, target) : nullptr;
 					array_view.set_value(i, obj_handle);
 				}
 			}
