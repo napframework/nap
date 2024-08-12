@@ -1138,7 +1138,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 		return nap::rtti::Instance();
 	}
 
-	// If it's an object, handle it appropriately
+	// If the object that is copied is an rtti object, make sure it is given a unique id!
 	nap::rtti::Object* obj_instance = nullptr;
 	if (new_instance.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)))
 	{
@@ -1153,6 +1153,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 		// Add to managed object list
 		mObjects.emplace(obj_instance->mID, obj_instance);
 	}
+	nap::rtti::Object* parent_obj = obj_instance != nullptr ? obj_instance : parent;
 
 	// Copy properties
 	auto properties = instance_type.get_properties();
@@ -1176,7 +1177,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 				auto variant = value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
-				value = src_obj != nullptr ? duplicateInstance(src_obj, obj_instance) : value;
+				value = src_obj != nullptr ? duplicateInstance(src_obj, parent_obj) : value;
 			}
 			else
 			{
@@ -1196,19 +1197,16 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 					nap::rtti::Object* obj_handle = nullptr;
 					if (src_array_obj != nullptr)
 					{
-						auto new_instance = duplicateInstance(src_array_obj, obj_instance);
+						auto new_instance = duplicateInstance(src_array_obj, parent_obj);
 						obj_handle = new_instance.convert<nap::rtti::Object*>();
 					}
 					array_view.set_value(i, obj_handle);
 				}
 			}
 		}
-		else if (property.get_type().is_derived_from(RTTI_OF(nap::MaterialInstanceResource)))
+		else if (property.get_type().is_derived_from(RTTI_OF(nap::BaseMaterialInstanceResource)))
 		{
-			auto new_instance = duplicateInstance(value, parent);
-			//auto* material_resource = new_instance.try_convert<nap::MaterialInstanceResource>();
-			//value = *material_resource;
-			value = new_instance;
+			value = duplicateInstance(value, parent_obj);
 		}
 
 		// Copy value if available
