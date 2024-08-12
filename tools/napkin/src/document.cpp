@@ -1121,26 +1121,28 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 	// Fetch rtti factory
 	Factory& factory = mCore.getResourceManager()->getFactory();
 
-	// Check if the factory can create the object, otherwise try using default constructor
-	// We can duplicate objects or regular copy constructable objects
-	auto instance_type = src.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)) ?
-		src.get_value<nap::rtti::Object*>()->get_type().get_raw_type() :
-		src.get_type();
+	// Get the type to create, we support rtti objects and copy construct-able objects
+	nap::rtti::TypeInfo instance_type = src.get_type();
+	if (instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
+	{
+		assert(instance_type.is_pointer());
+		instance_type = src.get_value<nap::rtti::Object*>()->get_type().get_raw_type();
+	}
 
+	// Create the new instance of object, new or copy constructed, depending on constructor type!
 	nap::rtti::Variant new_instance = factory.canCreate(instance_type) ?
-		factory.create(instance_type) :
-		src.get_type().create();
+		factory.create(instance_type) : src.get_type().create();
 
-	// Ensure the new instance is valid
+	// Bail if creation fails
 	if (!new_instance.is_valid())
 	{
 		nap::Logger::error("Cannot create object of type: %s", instance_type.get_name().data());
 		return nap::rtti::Instance();
 	}
 
-	// If the object that is copied is an rtti object, make sure it is given a unique id!
+	// When copying a nap object we must give it a unique ID and add it to our list of managed objects
 	nap::rtti::Object* obj_instance = nullptr;
-	if (new_instance.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)))
+	if (instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
 	{
 		// Give unique ID
 		assert(src.get_type().is_pointer());
@@ -1153,6 +1155,8 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 		// Add to managed object list
 		mObjects.emplace(obj_instance->mID, obj_instance);
 	}
+
+	// Keep parent when object to copy is not a nap rtti object
 	nap::rtti::Object* parent_obj = obj_instance != nullptr ? obj_instance : parent;
 
 	// Copy properties
@@ -1209,10 +1213,7 @@ nap::rtti::Variant Document::duplicateInstance(const nap::rtti::Variant src, nap
 			value = duplicateInstance(value, parent_obj);
 		}
 
-		// Copy value if available
-		auto instance_type = new_instance.get_type();
-		auto value_type = value.get_type();
-
+		// Set copied value
 		if (!property.set_value(new_instance, value))
 		{
 			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
