@@ -27,7 +27,7 @@ namespace nap
 
 		static std::mt19937& getGenerator()
 		{
-			static std::unique_ptr<std::mt19937> generator = nullptr;
+			static thread_local std::unique_ptr<std::mt19937> generator = nullptr;
 			if (generator == nullptr)
 			{
 				std::random_device r;

@@ -33,18 +33,6 @@ namespace nap
 		// Destruction
 		~Signal();
 
-		// Connection
-        
-        /**
-         * Connect to another signal that can call other functions, slots or signals in turn
-         */
-		void connect(Signal<Args...>& signal);
-        
-        /**
-         * Disconnect from another signal
-         */
-		void disconnect(Signal<Args...>& signal);
-
         /**
          * Connect to a slot with similar signature. A slot is an object managing a function to be called.
          * Advantages of connecting to a slot instead of a raw function:
@@ -66,6 +54,16 @@ namespace nap
          */
 		void connect(const Function& inFunction);
 
+		/**
+         * Connect to another signal that calls other slots, functions or signals when invoked
+         */
+		void connect(Signal<Args...>& signal);
+        
+        /**
+         * Disconnect from another signal
+         */
+		void disconnect(Signal<Args...>& signal);
+
 #ifdef NAP_ENABLE_PYTHON
         /**
          * Connect a function from a pybind11 python module. Internally the python function is wrapped in a function object.
@@ -77,36 +75,32 @@ namespace nap
          * Convenience method to connect a member function with one argument.
          */
 		template <typename U, typename F>
-		void connect(U* object, F memberFunction)
-		{
-			connect(std::bind(memberFunction, object, std::placeholders::_1));
-		}
+		void connect(U* object, F memberFunction)									{ connect(std::bind(memberFunction, object, std::placeholders::_1)); }
 
         /**
          * Call operator to trigger the signal to be emitted.
          */
-		inline void operator()(Args... args) 
-		{ 
-			trigger(std::forward<Args>(args)...); 
-		}
+		inline void operator()(Args... args)										{ trigger(std::forward<Args>(args)...);  }
 
         /**
          * Trigger the signal to be emitted
+		 * @param args signal arguments
          */
 		void trigger(Args... args);
 
 	private:
+		// Called by signal when connected
 		void addCause(Signal<Args...>& event);
 		void removeCause(Signal<Args...>& event);
 
 	private:
-
-		// Data acts like a variant type with a few known types.  
-		// The reason for this approach is that we can use a single list
-		// of elements in Signal instead of having a separate list for each.
-		// This saves out a number of dynamic memory allocations and a large
-		// overhead in member data, without introducing any virtual function
-		// calls.
+		/**
+		 * Data acts like a variant type with a few known types.
+		 * The reason for this approach is that we can use a single list
+		 * of elements in Signal instead of having a separate list for each.
+		 * This saves out a number of dynamic memory allocations and a large
+		 * overhead in member data, without introducing any virtual function
+		 */
 		struct Data
 		{
 			union 
@@ -138,11 +132,9 @@ namespace nap
 
 
 	/**
-	@brief Slot
-
-	A slot manages a function call that can be connected to a signal.
-	A slot hides the connect / disconnect behavior of an event.
-	**/
+	 * Manages a function call that can be connected to a signal.
+	 * A slot hides the connect / disconnect behavior of an event.
+	 */
 	template <typename... Args>
 	class Slot final
 	{
@@ -150,68 +142,81 @@ namespace nap
 		using Function = std::function<void(Args... args)>;
 
 	public:
-		//@name Construction
+		// Default constructor
 		Slot() = default;
 
+		/**
+		 * Initialize this slot with the function to call
+		 * @param inFunction function to call
+		 */
 		Slot(Function inFunction) : 
 			mFunction(inFunction) 
-		{
-		}
+		{ }
 
-		//! This templated constructor can be used to initialize the slot with a member function with one single
-		//! parameter
+		/**
+		 * This templated constructor can be used to initialize the slot with a member function with one single parameter
+		 * @param parent parent object
+		 * @param memberFunction member function to call
+		 */
 		template <typename U, typename F>
 		Slot(U* parent, F memberFunction) : 
 			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))
-		{
-		}
+		{ }
 
-		//! This templated constructor can be used to initialize the slot with a member function with one single
-		//! parameter, last argument is a signal to connect to straightaway after construction
+		/**
+		 * This templated constructor can be used to initialize the slot with a member function with one single
+		 * parameter, last argument is a signal to connect to straightaway after construction
+		 * @param parent parent object
+		 * @param memberFunction member function to call
+		 */
 		template <typename U, typename F>
 		Slot(U* parent, F memberFunction, Signal<Args...>& signal) : 
-			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))
-		{
-			signal.connect(*this);
-		}
+			mFunction(std::bind(memberFunction, parent, std::placeholders::_1))		{ signal.connect(*this); }
 
-		~Slot()
-		{
-			disconnect();
-		}
+		// Disconnect slot from signals on destruction
+		~Slot()																		{ disconnect(); }
 
 		/**
 		 * Disconnects the slot from all signals it is connected to
 		 */
 		void disconnect();
 
-		void setFunction(Function func) 
-		{ 
-			mFunction = func; 
-		}
+		/**
+		 * Update callable function
+		 * @param func the function to set
+		 */
+		void setFunction(Function func)												{ mFunction = func; }
 
-		void trigger(Args... args)
-		{
-			if (mFunction)
-				mFunction(std::forward<Args>(args)...);
-		}
+		/**
+		 * Trigger function using given argument
+		 * @param args callabale argument
+		 */
+		void trigger(Args... args);
 
-		void copyCauses(const Slot& rhs)
-		{
-			for (auto cause : rhs.mCauses)
-				cause->connect(*this);
-		}
+		/**
+		 * Assign a slot by copying all signal connections.
+		 * Note that the function is NOT copied, only the active signal connections.
+		 */
+		Slot& operator=(Slot&& other);
+
+		/**
+		 * Assign a slot by copying all signal connections.
+		 * Note that the assigned callback is NOT copied, only the connections.
+		 * The data of the other slot is invalidated -> all active connections are removed.
+		 */
+		Slot& operator=(const Slot& other);
 
 	private:
+		
 		template<typename... Args_> friend class Signal;
-
-		void addCause(Signal<Args...>& event);
-		void removeCause(Signal<Args...>& event);
-
-	private:
 		typedef std::vector<Signal<Args...>*> SignalList;
-		Function mFunction;
-		SignalList mCauses;
+
+		void addCause(Signal<Args...>& event);					///< Called by the signal when connected
+		void removeCause(Signal<Args...>& event);				///< Called by the signal when removed
+		void copyCauses(const Slot& rhs);						///< Copies all connections
+
+		Function mFunction;										///< The function callback
+		SignalList mCauses;										///< List of signals this slot is called by
 	};
 
 
@@ -263,7 +268,6 @@ namespace nap
 		data.mType = Data::EType::SignalEffect;
 		data.Signal.mSignal = &signal;
 		mData.push_back(data);
-
 		signal.addCause(*this);
 	}
 
@@ -289,7 +293,6 @@ namespace nap
 		data.mType = Data::EType::SlotEffect;
 		data.Slot.mSlot = &slot;
 		mData.push_back(data);
-
 		slot.addCause(*this);
 	}
 
@@ -342,7 +345,6 @@ namespace nap
     }
 #endif // NAP_ENABLE_PYTHON
     
-    
 	template <typename... Args>
 	void Signal<Args...>::trigger(Args... args)
 	{
@@ -357,6 +359,37 @@ namespace nap
 		if (mFunctionEffects)
 			for (auto& effect : *mFunctionEffects)
 				effect(std::forward<Args>(args)...);
+	}
+
+	template <typename... Args>
+	void nap::Slot<Args...>::copyCauses(const nap::Slot<Args...>& rhs)
+	{
+		for (auto cause : rhs.mCauses)
+			cause->connect(*this);
+	}
+
+	template <typename... Args>
+	nap::Slot<Args...>& nap::Slot<Args...>::operator=(nap::Slot<Args...>&& other)
+	{
+		disconnect(); 
+		copyCauses(other);
+		other.disconnect();
+		return *this;
+	}
+
+	template <typename... Args>
+	nap::Slot<Args...>& nap::Slot<Args...>::operator=(const nap::Slot<Args...>& other)
+	{
+		disconnect();
+		copyCauses(other);
+		return *this;
+	}
+
+	template <typename... Args>
+	void nap::Slot<Args...>::trigger(Args... args)
+	{
+		if (mFunction)
+			mFunction(std::forward<Args>(args)...);
 	}
 
 	template <typename... Args>
