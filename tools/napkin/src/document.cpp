@@ -1176,8 +1176,9 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 	// Bail if creation fails
 	if (!new_instance.is_valid())
 	{
-		nap::Logger::error("Unable to create object of type: %s", instance_type.get_name().data());
-		return nap::rtti::Instance();
+		auto msg = nap::utility::stringFormat("Unable to create object of type: %s", instance_type.get_name().data());
+		nap::Logger::error(msg);
+		NAP_ASSERT_MSG(false, msg.c_str());
 	}
 
 	// When copying a nap object we must give it a unique ID and add it to our list of managed objects
@@ -1262,8 +1263,11 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 		// Set copied value
 		if (!property.set_value(new_instance, value))
 		{
-			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
-				property.get_name().data()).c_str());
+			auto value_type = value.get_type();
+			auto value_poin = value.get_type().is_pointer();
+			auto msg = nap::utility::stringFormat("Failed to copy: %s", property.get_name().data());
+			nap::Logger::error(msg);
+			NAP_ASSERT_MSG(false, msg.c_str());
 		}
 	}
 
