@@ -85,7 +85,7 @@ namespace nap
 		uint full_buffer_size = (mHopSize > 1) ? data_size * 2 : data_size;;
 
 		// Create sample buffer
-		mSampleBuffer.resize(data_size * 2);
+		mSampleBufferFormatted.resize(data_size * 2);
 		mSampleBufferWindowed.resize(data_size);
 
 		// Compute hamming window
@@ -113,88 +113,94 @@ namespace nap
 
 	void FFTBuffer::supply(const std::vector<float>& samples)
 	{
-		const uint data_size = mContext->getSize();
-		const uint data_bytes = data_size * sizeof(float);
-
+		// Copy samples
 		{
 			std::lock_guard<std::mutex> lock(mSampleBufferMutex);
-			auto* half_ptr = mSampleBuffer.data() + mSampleBuffer.size() / 2;
-
-			// Copy second half to first half
-			std::memcpy(mSampleBuffer.data(), half_ptr, data_bytes);
-
-			// Copy new samples to second half
-			if (samples.size() == data_size)
-			{
-				std::memcpy(half_ptr, samples.data(), data_bytes);
-			}
-			else if (samples.size() > data_size)
-			{
-				// Zero-padding
-				mSampleBuffer.clear();
-				std::memcpy(half_ptr, samples.data(), data_bytes);
-			}
-			else
-			{
-				NAP_ASSERT_MSG(false, "Specified sample buffer size too small");
-				return;
-			}
+			mSampleBufferA = samples;
 		}
+
+		// TODO: Use notification to transform data on different thread!
 		mDirty = true;
 	}
 
 
 	void FFTBuffer::transform()
 	{
-		if (mDirty)
+		if (!mDirty)
+			return;
+
+		// Move original samples into sample storage
 		{
-			// Copy data to windowed array
-			const uint data_size = mContext->getSize();
-			const uint hop_count = static_cast<uint>(mOverlap);
-			std::fill(mComplexOutAverage.begin(), mComplexOutAverage.end(), 0.0f);
-
-			{
-				std::lock_guard<std::mutex> lock(mSampleBufferMutex);
-				auto* half_ptr = mSampleBuffer.data() + mSampleBuffer.size() / 2;
-
-				// Perform FFT
-				std::memcpy(mSampleBufferWindowed.data(), half_ptr, sizeof(float) * data_size);
-
-				for (uint h = 0; h < hop_count; h++)
-				{
-					const uint start = (h+1) * mHopSize;
-
-					// Apply hamming window
-					for (uint i = 0; i < data_size; ++i)
-						mSampleBufferWindowed[i] = mSampleBuffer[start + i] * mForwardHammingWindow[i];
-
-					// Scales amplitudes by nfft/2
-					kiss_fftr(mContext->mForwardConfig, static_cast<const float*>(mSampleBufferWindowed.data()), reinterpret_cast<kiss_fft_cpx*>(mComplexOut.data()));
-
-					// Add complex out to average
-					for (uint i = 0; i < mComplexOut.size(); ++i)
-						mComplexOutAverage[i] += mComplexOut[i];
-				}
-			}
-
-			// Average windowed buffer
-			if (hop_count > 1)
-			{
-				const float divisor = 1.0f / static_cast<float>(hop_count);
-				for (auto& c : mComplexOutAverage)
-					c *= divisor;
-			}
-
-			// Compute amplitudes and phase angles
-			for (uint i = 0; i < mBinCount; i++)
-			{
-				const auto& cpx = mComplexOutAverage[i];
-				const auto cpx_norm = cpx * mNormalizationFactor;
-				mAmplitude[i] = std::abs(cpx_norm);
-				mPhase[i] = std::arg(cpx_norm);
-			}
-			mDirty = false;
+			std::lock_guard<std::mutex> lock(mSampleBufferMutex);
+			mSampleBufferB = std::move(mSampleBufferA);
 		}
+
+		// Create formatted buffer
+		const uint data_size = mContext->getSize();
+		const uint data_bytes = data_size * sizeof(float);
+		auto* half_ptr = mSampleBufferFormatted.data() + mSampleBufferFormatted.size() / 2;
+
+		// Copy second half to first half
+		std::memcpy(mSampleBufferFormatted.data(), half_ptr, data_bytes);
+
+		// Copy new samples to second half
+		if (mSampleBufferB.size() == data_size)
+		{
+			std::memcpy(half_ptr, mSampleBufferB.data(), data_bytes);
+		}
+		else if (mSampleBufferB.size() > data_size)
+		{
+			// Zero-padding
+			mSampleBufferFormatted.clear();
+			std::memcpy(half_ptr, mSampleBufferB.data(), data_bytes);
+		}
+		else
+		{
+			NAP_ASSERT_MSG(false, "Specified sample buffer size too small");
+			return;
+		}
+
+		// Copy data to windowed array
+		const uint hop_count = static_cast<uint>(mOverlap);
+		std::fill(mComplexOutAverage.begin(), mComplexOutAverage.end(), 0.0f);
+
+		// Perform FFT
+		std::memcpy(mSampleBufferWindowed.data(), half_ptr, sizeof(float) * data_size);
+
+		for (uint h = 0; h < hop_count; h++)
+		{
+			const uint start = (h + 1) * mHopSize;
+
+			// Apply hamming window
+			for (uint i = 0; i < data_size; ++i)
+				mSampleBufferWindowed[i] = mSampleBufferFormatted[start + i] * mForwardHammingWindow[i];
+
+			// Scales amplitudes by nfft/2
+			kiss_fftr(mContext->mForwardConfig, static_cast<const float*>(mSampleBufferWindowed.data()), reinterpret_cast<kiss_fft_cpx*>(mComplexOut.data()));
+
+			// Add complex out to average
+			for (uint i = 0; i < mComplexOut.size(); ++i)
+				mComplexOutAverage[i] += mComplexOut[i];
+		}
+
+		// Average windowed buffer
+		if (hop_count > 1)
+		{
+			const float divisor = 1.0f / static_cast<float>(hop_count);
+			for (auto& c : mComplexOutAverage)
+				c *= divisor;
+		}
+
+		// Compute amplitudes and phase angles
+		for (uint i = 0; i < mBinCount; i++)
+		{
+			const auto& cpx = mComplexOutAverage[i];
+			const auto cpx_norm = cpx * mNormalizationFactor;
+			mAmplitude[i] = std::abs(cpx_norm);
+			mPhase[i] = std::arg(cpx_norm);
+		}
+
+		mDirty = false;
 	}
 
 

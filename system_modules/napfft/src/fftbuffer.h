@@ -88,9 +88,11 @@ namespace nap
 		float mHammingWindowSum;									//< The sum of all window function coefficients
 		float mNormalizationFactor;									//< Inverse of the window sum (2/sum)
 
-		std::vector<float> mSampleBuffer;							//< The sample buffer is accessed on both the audio and main thread. Use mutex for read/write.
-		std::mutex mSampleBufferMutex;								//< The mutex for accessing the sample buffer
 
+		std::mutex mSampleBufferMutex;								//< The mutex for accessing the sample buffer
+		std::vector<float> mSampleBufferA;							//< Samples provided by the audio node
+		std::vector<float> mSampleBufferB;							//< Thread safe copy of original samples
+		std::vector<float> mSampleBufferFormatted;					//< The sample buffer before application of a window function
 		std::vector<float> mSampleBufferWindowed;					//< The sample buffer after application of a window function
 
 		uint mBinCount;												//< The number of FFT bins			
