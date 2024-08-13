@@ -66,12 +66,6 @@ namespace nap
 	};
 
 
-	void FFTBuffer::KissContextDeleter::operator()(FFTBuffer::KissContext* ctx) const
-	{
-		delete ctx;
-	}
-
-
 	//////////////////////////////////////////////////////////////////////////
 	// FFT Buffer
 	//////////////////////////////////////////////////////////////////////////
@@ -80,7 +74,7 @@ namespace nap
 	{
 		// Create kiss context
 		assert(dataSize >= 2);
-		mContext = std::unique_ptr<FFTBuffer::KissContext, FFTBuffer::KissContextDeleter>(new FFTBuffer::KissContext(dataSize));
+		mContext = std::make_unique<FFTBuffer::KissContext>(dataSize);
 		const uint data_size = mContext->getSize();
 
 		// Compute hop size

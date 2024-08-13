@@ -25,7 +25,7 @@ namespace nap
 		/**
 		 * Number of overlaps (hops)
 		 */
-		enum EOverlap : uint
+		enum class EOverlap : uint
 		{
 			One		= 1,
 			Three	= 3,
@@ -76,8 +76,7 @@ namespace nap
 
 	private:
 		class KissContext;
-		struct KissContextDeleter { void operator()(KissContext* ctx) const; };
-		std::unique_ptr<KissContext, KissContextDeleter> mContext;
+		std::unique_ptr<KissContext> mContext;
 
 		std::vector<std::complex<float>> mComplexOut;				//< Complex
 		std::vector<std::complex<float>> mComplexOutAverage;		//< Complex averaged over multiple analysis hops
