@@ -200,18 +200,14 @@ namespace nap
 
 	const std::vector<float>& FFTBuffer::getAmplitudeSpectrum()
 	{
-		if (mDirty)
-			transform();
-
+		transform();
 		return mAmplitude;
 	}
 
 
 	const std::vector<float>& FFTBuffer::getPhaseSpectrum()
 	{
-		if (mDirty)
-			transform();
-
+		transform();
 		return mPhase;
 	}
 

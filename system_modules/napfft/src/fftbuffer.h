@@ -99,6 +99,6 @@ namespace nap
 		EOverlap mOverlap;											//< The number of audio buffer overlaps for FFT analysis (hops)
 		uint mHopSize;												//< The number of bins of a single hop
 
-		bool mDirty = false;										//< Amplitudes dirty checking flag, prevents redundant FFT analyses 
+		std::atomic<bool> mDirty = { false };										//< Amplitudes dirty checking flag, prevents redundant FFT analyses 
 	};
 }
