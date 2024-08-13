@@ -41,9 +41,6 @@ namespace nap
 
 		/**
 		 * Initialize SelectRenderComponentInstance based on the SelectRenderComponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the SelectRenderComponentInstance is initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 

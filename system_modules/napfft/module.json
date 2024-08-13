@@ -4,11 +4,7 @@
     "RequiredModules": [
         "napmath",
         "napscene",
-        "napparameter",
         "napportaudio"
     ],
-    "WindowsDllSearchPaths": [
-        "{ROOT}/bin/{BUILD_ARCH}",
-        "{ROOT}/system_modules/napfft/thirdparty/kissfft/msvc/{BUILD_ARCH}/bin/{BUILD_TYPE}"
-    ]
+    "WindowsDllSearchPaths": []
 }

@@ -9,7 +9,6 @@
 
 // Nap includes
 #include <component.h>
-#include <parameternumeric.h>
 #include <audio/utility/safeptr.h>
 
 // Audio includes
