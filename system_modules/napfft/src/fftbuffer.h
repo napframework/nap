@@ -15,7 +15,7 @@ namespace nap
 	/**
 	 * Wraps a kiss context
 	 */
-	class NAPAPI FFTBuffer
+	class NAPAPI FFTBuffer final
 	{
 		RTTI_ENABLE()
 	public:

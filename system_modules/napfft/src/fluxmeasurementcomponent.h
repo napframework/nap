@@ -18,7 +18,7 @@ namespace nap
 	class FFTAudioNodeComponentInstance;
 			
 	/**
-	 * Component to measure flux of the audio signal from an @AudioComponentBase.
+	 * Component to measure flux of the audio signal from an audio component.
 	 * Flux is measured by taking the difference between the RMS of the previous and current FFT.
 	 * The frequency band to be measured can be specified using `MinHz` and `MaxHz`.
 	 * The last frame's measurement minus a decrement value based on decay is compared against
@@ -40,8 +40,7 @@ namespace nap
 		
 		
 	/**
-	 * Instance of component to measure onsets of the audio signal from an @AudioComponentBase.
-
+	 * Instance of component to measure onsets of the audio signal from an audio component.
 	 */
 	class NAPAPI FluxMeasurementComponentInstance : public ComponentInstance
 	{
