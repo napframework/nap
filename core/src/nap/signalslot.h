@@ -373,7 +373,9 @@ namespace nap
 	{
 		disconnect(); 
 		copyCauses(other);
+		mFunction = other.mFunction;
 		other.disconnect();
+		other.mFunction = nullptr;
 		return *this;
 	}
 
@@ -382,6 +384,7 @@ namespace nap
 	{
 		disconnect();
 		copyCauses(other);
+		mFunction = other.mFunction;
 		return *this;
 	}
 
