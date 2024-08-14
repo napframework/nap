@@ -13,7 +13,8 @@ set_target_properties(${PROJECT_NAME} PROPERTIES FOLDER Tools)
 target_compile_definitions(${PROJECT_NAME} PRIVATE MODULE_NAME=${PROJECT_NAME})
 target_link_libraries(${PROJECT_NAME} naprender)
 
-# Update executable rpath
+# Update executable rpath if it hasn't been set already
+# Using a bash script, it checks if the '@executablepath/%{LIB_RPATH}/' already exists in the list displayed by 'otool -l'. If not, it calls the CMAKE_INSTALL_NAME_TOOL to add the install name.
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
             POST_BUILD COMMAND
