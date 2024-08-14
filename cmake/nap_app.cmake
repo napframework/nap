@@ -155,7 +155,8 @@ add_license(rapidjson ${NAP_ROOT}/thirdparty/rapidjson/license.txt)
 add_license(rttr ${NAP_ROOT}/thirdparty/rttr/source/LICENSE.txt)
 add_license(tclap ${NAP_ROOT}/thirdparty/tclap/COPYING)
 
-# Update executable rpath
+# Update executable rpath if it hasn't been set already
+# Using a bash script, it checks if the '@executablepath/%{LIB_RPATH}/' already exists in the list displayed by 'otool -l'. If not, it calls the CMAKE_INSTALL_NAME_TOOL to install the name.
 if(APPLE)
     add_custom_command(TARGET ${PROJECT_NAME}
             POST_BUILD COMMAND
