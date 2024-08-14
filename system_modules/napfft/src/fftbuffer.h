@@ -9,6 +9,7 @@
 #include <nap/numeric.h>
 #include <complex>
 #include <mutex>
+#include <atomic>
 
 namespace nap
 {
