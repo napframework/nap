@@ -21,17 +21,17 @@ namespace nap
 		return creator->second->create();
 	}
 
+
 	rtti::Object* rtti::Factory::createDefaultObject(rtti::TypeInfo typeInfo)
 	{
 		return typeInfo.create<Object>();
 	}
 
+	
 	bool rtti::Factory::canCreate(rtti::TypeInfo typeInfo) const
 	{
 		CreatorMap::const_iterator creator = mCreators.find(typeInfo);
-		if (creator == mCreators.end())
-			return typeInfo.can_create_instance();
-
-		return true;
+		return creator != mCreators.end() ? true :
+			typeInfo.get_raw_type().is_derived_from(RTTI_OF(rtti::Object)) && typeInfo.can_create_instance();
 	}
 }

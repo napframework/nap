@@ -622,12 +622,12 @@ namespace napkin
 		void patchLinks(nap::rtti::Object* object, const std::string& oldID, const std::string& newID, nap::rtti::Path& path);
 
 		/**
-		 * Duplicate the object, including all child properties, links and embedded pointers.
+		 * Deep copy an rtti enabled object, including all child properties, links and embedded pointers.
 		 * @param src object to duplicate
 		 * @param parent optional parent of the object, nullptr if object has no parent
-		 * @return src duplicate, nullptr if duplication failed because object can't be created
+		 * @return src duplicate, invalid variant when object can't be deep-copied
 		 */
-		nap::rtti::Object* duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent);
+		nap::rtti::Variant deepCopyInstance(const nap::rtti::Variant& src, nap::rtti::Object* parent);
 	};
 
 
