@@ -193,14 +193,20 @@ namespace nap
 		 */
 		void trigger(Args... args);
 
+        /**
+         * Clears existing and copies rhs connections
+         * @param rhs
+         */
+        void copyCauses(const Slot& rhs);
+
 		/**
-		 * Assign a slot by copying all signal connections.
+		 * Assign a slot by copying all connections and callable function
 		 * Note that the function is NOT copied, only the active signal connections.
 		 */
 		Slot& operator=(Slot&& other);
 
 		/**
-		 * Assign a slot by copying all signal connections.
+		 * Assign a slot by copying all signal connections and callable function.
 		 * Note that the assigned callback is NOT copied, only the connections.
 		 * The data of the other slot is invalidated -> all active connections are removed.
 		 */
@@ -213,7 +219,6 @@ namespace nap
 
 		void addCause(Signal<Args...>& event);					///< Called by the signal when connected
 		void removeCause(Signal<Args...>& event);				///< Called by the signal when removed
-		void copyCauses(const Slot& rhs);						///< Copies all connections
 
 		Function mFunction;										///< The function callback
 		SignalList mCauses;										///< List of signals this slot is called by
@@ -364,6 +369,7 @@ namespace nap
 	template <typename... Args>
 	void nap::Slot<Args...>::copyCauses(const nap::Slot<Args...>& rhs)
 	{
+        disconnect();
 		for (auto cause : rhs.mCauses)
 			cause->connect(*this);
 	}
@@ -371,7 +377,6 @@ namespace nap
 	template <typename... Args>
 	nap::Slot<Args...>& nap::Slot<Args...>::operator=(nap::Slot<Args...>&& other)
 	{
-		disconnect(); 
 		copyCauses(other);
 		mFunction = other.mFunction;
 		other.disconnect();
@@ -382,7 +387,6 @@ namespace nap
 	template <typename... Args>
 	nap::Slot<Args...>& nap::Slot<Args...>::operator=(const nap::Slot<Args...>& other)
 	{
-		disconnect();
 		copyCauses(other);
 		mFunction = other.mFunction;
 		return *this;
