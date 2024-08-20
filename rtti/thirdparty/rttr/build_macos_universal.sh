@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 cd "$(dirname "${BASH_SOURCE[0]}")" ; pwd -P
-../cmake/macos/universal/bin/cmake -Hsource -Bxcode -G Xcode -DCMAKE_INSTALL_PREFIX=macos/universal -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64"
+cmake -Hsource -Bxcode -G Xcode -DCMAKE_INSTALL_PREFIX=macos/universal -DCMAKE_OSX_ARCHITECTURES="arm64;x86_64" -DCMAKE_OSX_DEPLOYMENT_TARGET=10.15
 cd xcode
 xcodebuild -configuration Debug -target install
 xcodebuild -configuration Release -target install
