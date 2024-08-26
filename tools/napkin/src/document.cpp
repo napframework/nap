@@ -1160,13 +1160,22 @@ static EPropertyType getPropertyType(const nap::rtti::Property& property)
 
 nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap::rtti::Object* parent)
 {
-	// Get the type to create, we support rtti objects and copy construct-able objects
+	// We can only duplicate rtti::Object* or 'structs' -> because the variant doesn't expose derived pointer types.
+	// Therefore make sure we are dealing with an rtti::Object* or copy constructable struct.
 	nap::rtti::TypeInfo instance_type = src.get_type();
-	if (instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
+	if (instance_type.is_pointer())
 	{
-		assert(instance_type.is_pointer());
+		if (!instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
+		{
+			auto msg = nap::utility::stringFormat("Encountered invalid pointer type: %s", instance_type.get_name().data());
+			nap::Logger::error(msg); NAP_ASSERT_MSG(false, msg.c_str());
+			return nap::rtti::Variant();
+		}
 		instance_type = src.get_value<nap::rtti::Object*>()->get_type().get_raw_type();
 	}
+
+	// We can't deep copy wrapper types (resource ptr etc.)
+	assert(!instance_type.is_wrapper());
 
 	// Create the new instance of object, new or copy constructed, depending on constructor type!
 	Factory& factory = mCore.getResourceManager()->getFactory();
@@ -1177,8 +1186,8 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 	if (!new_instance.is_valid())
 	{
 		auto msg = nap::utility::stringFormat("Unable to create object of type: %s", instance_type.get_name().data());
-		nap::Logger::error(msg);
-		NAP_ASSERT_MSG(false, msg.c_str());
+		nap::Logger::error(msg); NAP_ASSERT_MSG(false, msg.c_str());
+		return nap::rtti::Variant();
 	}
 
 	// When copying a nap object we must give it a unique ID and add it to our list of managed objects
@@ -1263,11 +1272,8 @@ nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap
 		// Set copied value
 		if (!property.set_value(new_instance, value))
 		{
-			auto value_type = value.get_type();
-			auto value_poin = value.get_type().is_pointer();
 			auto msg = nap::utility::stringFormat("Failed to copy: %s", property.get_name().data());
-			nap::Logger::error(msg);
-			NAP_ASSERT_MSG(false, msg.c_str());
+			nap::Logger::error(msg); NAP_ASSERT_MSG(false, msg.c_str());
 		}
 	}
 

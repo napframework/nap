@@ -623,6 +623,7 @@ namespace napkin
 
 		/**
 		 * Deep copy an rtti enabled object, including all child properties, links and embedded pointers.
+		 * The object must be a pointer of type nap::rtti::Object or copy constructable struct
 		 * @param src object to duplicate
 		 * @param parent optional parent of the object, nullptr if object has no parent
 		 * @return src duplicate, invalid variant when object can't be deep-copied
