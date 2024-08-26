@@ -240,6 +240,10 @@ def check_build_environment(against_source):
     build_essential_installed = apt_package_installed('build-essential')
     log_test_success('for build-essential package', build_essential_installed)
 
+    # Check package libxcb-xinerama, brings in xcb dependencies for running napkin
+    libxcb_installed = apt_package_installed('libxcb-xinerama0')
+    log_test_success('for libxcb-xinerama package', libxcb_installed)
+
     # Check C++ is GCC
     compiler_ok = check_compiler()
 
@@ -311,6 +315,8 @@ def check_build_environment(against_source):
         packages_to_install.append('libglu1-mesa-dev')
     if not mesa_vulkan_installed:
         packages_to_install.append('mesa-vulkan-drivers')
+    if not libxcb_installed:
+        packages_to_install.append('libxcb-xinerama0')
 
     if len(packages_to_install) > 0:
         package_str = ' '.join(packages_to_install)
