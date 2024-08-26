@@ -314,7 +314,7 @@ namespace nap
                     take_snapshot();
 
                 // time
-                std::vector<int> time_array = convertTimeToMMSSMSArray(action->mStartTime);
+                std::vector<int> time_array = utility::convertTimeToMMSSMSArray(action->mStartTime);
 
                 bool edit_time = false;
 
@@ -335,7 +335,7 @@ namespace nap
                     take_snapshot();
 
                     auto &event_controller = getEditor().getController<SequenceControllerEvent>();
-                    double new_time = convertMMSSMSArrayToTime(time_array);
+                    double new_time = utility::convertMMSSMSArrayToTime(time_array);
                     double time = event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
                     updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
                     action->mStartTime = time;

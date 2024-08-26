@@ -7,6 +7,7 @@
 #include "sequencecontroller.h"
 #include "sequencetracksegmentevent.h"
 #include "color.h"
+#include "sequencetracksegmentcolor.h"
 
 #include <nap/logger.h>
 
@@ -33,6 +34,10 @@ namespace nap
         const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
 
         const SequenceTrackSegment* insertColorSegment(const std::string& trackID, double time, const RGBAColorFloat& color);
+
+        void changeSegmentColor(const std::string& trackID, const std::string& segmentID, const RGBAColorFloat& color);
+
+        void changeSegmentColorBlendMethod(const std::string& trackID, const std::string& segmentID, SequenceTrackSegmentColor::EBlendMethod blendMethod);
 
         void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 

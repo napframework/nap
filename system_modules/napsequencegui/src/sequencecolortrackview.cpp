@@ -8,6 +8,8 @@
 #include "sequenceplayercoloroutput.h"
 #include "sequencetrackcolor.h"
 #include "sequenceguiservice.h"
+#include "sequenceutils.h"
+#include "sequenceguiutils.h"
 
 #include <nap/logger.h>
 #include <iostream>
@@ -19,12 +21,14 @@ namespace nap
     using namespace sequenceguiclipboard;
 
 
+
+
     SequenceColorTrackView::SequenceColorTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
             : SequenceTrackView(view, state)
     {
         // register applicable action handlers
         registerActionHandler(RTTI_OF(InsertColorSegmentPopup), [this] { handleInsertColorSegmentPopup(); });
-        registerActionHandler(RTTI_OF(EditSegmentPopup), [this] { handleEditSegmentValuePopup(); });
+        registerActionHandler(RTTI_OF(EditingColorSegment), [this] { handleEditSegmentValuePopup(); });
         registerActionHandler(RTTI_OF(AssignOutputIDToTrack), [this] { handleAssignOutputIDToTrack(); });
         registerActionHandler(RTTI_OF(DraggingSegment), [this] { handleSegmentDrag(); });
         registerActionHandler(RTTI_OF(LoadPresetPopup), [this] { handleLoadPresetPopup(); });
@@ -156,26 +160,54 @@ namespace nap
         int segment_count = 0;
         if(!track.mSegments.empty())
         {
-            static std::function<ImU32(const RGBAColorFloat)> to_im_color = [](const RGBAColorFloat& color)
-            {
-                return IM_COL32(
-                        static_cast<int>(color.getRed() * 255.0f),
-                        static_cast<int>(color.getGreen() * 255.0f),
-                        static_cast<int>(color.getBlue() * 255.0f),
-                        static_cast<int>(color.getAlpha()* 255.0f));
-            };
-
             // draw first blend
-            auto a = to_im_color(RGBAColorFloat( 0.0f, 0.0f, 0.0f, 0.0f ));
+            auto a = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.0f);
             for(const auto &segment: track.mSegments)
             {
-                float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
+                auto b = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mColor;
+                auto b_blend_type = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mBlendMethod;
 
-                auto b = to_im_color(static_cast<const SequenceTrackSegmentColor*>(segment.get())->mColor);
-                draw_list->AddRectFilledMultiColor(
-                        {trackTopLeft.x + prev_segment_x, trackTopLeft.y},
-                        {trackTopLeft.x + segment_x, trackTopLeft.y + track.mTrackHeight * mState.mScale},
-                        a, b, b, a);
+                float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
+                float width = segment_x - prev_segment_x;
+                int steps = width / 2.0f;
+                float step_width = width / (float)steps;
+
+                for(int i = 0; i < steps; i ++)
+                {
+                    float blend_a = (float)i / (float)steps;
+                    float blend_b = (float)(i + 1) / (float)steps;
+
+                    if(b_blend_type == SequenceTrackSegmentColor::EBlendMethod::OKLAB)
+                    {
+                        auto a_blend = utility::colorspace::blendColors(a, b, blend_a, utility::colorspace::EType::OKLab);
+                        auto b_blend = utility::colorspace::blendColors(a, b, blend_b, utility::colorspace::EType::OKLab);
+                        auto a_im = utility::toImColor(a_blend);
+                        auto b_im = utility::toImColor(b_blend);
+
+                        float pos = trackTopLeft.x + prev_segment_x + i * step_width;
+
+                        draw_list->AddRectFilledMultiColor(
+                                {pos, trackTopLeft.y},
+                                {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale},
+                                a_im, b_im, b_im, a_im);
+                    }else
+                    {
+                        auto linear_mix_a = utility::colorspace::blendColors(a, b, blend_a, utility::colorspace::EType::RGB);
+                        auto linear_mix_b = utility::colorspace::blendColors(a, b, blend_b, utility::colorspace::EType::RGB);
+
+                        auto a_im = utility::toImColor(linear_mix_a);
+                        auto b_im = utility::toImColor(linear_mix_b);
+
+                        float pos = trackTopLeft.x + prev_segment_x + i * step_width;
+
+                        draw_list->AddRectFilledMultiColor(
+                                {pos, trackTopLeft.y},
+                                {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale},
+                                a_im, b_im, b_im, a_im);
+                    }
+
+                }
+
                 a = b;
 
                 prev_segment_x = segment_x;
@@ -186,6 +218,7 @@ namespace nap
             for(const auto &segment: track.mSegments)
             {
                 float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
+
                 // draw segment handlers
                 drawSegmentHandler(
                         track,
@@ -328,7 +361,8 @@ namespace nap
             // right mouse in deletion popup
             if(ImGui::IsMouseDown(1))
             {
-                mState.mAction = createAction<EditSegmentPopup>(track.mID, segment.mID, segment.get_type());
+                auto& segment_color = static_cast<const SequenceTrackSegmentColor&>(segment);
+                mState.mAction = createAction<EditingColorSegment>(track.mID, segment.mID, mState.mMousePos, segment_color.mColor, segment_color.mBlendMethod, segment.mStartTime);
             }
 
             // handled shift click for add/remove to clipboard
@@ -411,112 +445,60 @@ namespace nap
 
     void SequenceColorTrackView::handleEditSegmentValuePopup()
     {
-        auto* action = mState.mAction->getDerived<EditSegmentPopup>();
+        auto* action = mState.mAction->getDerived<EditingColorSegment>();
         assert(action!= nullptr);
-        if(!action->mOpened)
+        if(!ImGui::IsPopupOpen("Edit Color Segment"))
         {
-            // invoke insert sequence popup
-            ImGui::OpenPopup("Edit Segment");
-            action->mOpened = true;
+            // invoke edit segment popup
+            ImGui::OpenPopup("Edit Color Segment");
         }
 
         // handle edit segment popup
-        if(ImGui::BeginPopup("Edit Segment"))
+        if(ImGui::BeginPopup("Edit Color Segment"))
         {
-            auto *action = mState.mAction->getDerived<EditSegmentPopup>();
+            auto *action = mState.mAction->getDerived<EditingColorSegment>();
 
-            bool display_copy = !mState.mClipboard->isClipboard<ColorSegmentClipboard>();
+            // get controller
+            auto& controller = getEditor().getController<SequenceControllerColor>();
 
-            // if clipboard is from different sequence, create new clipboard, so display copy
-            if(!display_copy)
+            // color picker
+            if(ImGui::ColorEdit4("Color", &action->mValue[0]))
             {
-                if(mState.mClipboard->getDerived<ColorSegmentClipboard>()->getSequenceName() !=
-                   getEditor().mSequencePlayer->getSequenceFilename())
-                    mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(SequenceTrackColor), getEditor().mSequencePlayer->getSequenceFilename());
+                controller.changeSegmentColor(action->mTrackID, action->mSegmentID, action->mValue);
             }
 
-            if(display_copy)
+            // blend method
+            static const char *blend_methods[] = {"Linear", "Oklab"};
+            if(ImGui::BeginCombo("Blend Method", blend_methods[static_cast<int>(action->mBlendMethod)]))
             {
-                if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy)))
+                for(int i = 0; i < IM_ARRAYSIZE(blend_methods); i++)
                 {
-                    // create clipboard
-                    mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(SequenceTrackColor), getEditor().mSequencePlayer->getSequenceFilename());
-
-                    // serialize segment
-                    utility::ErrorState errorState;
-                    auto &controller = getEditor().getController<SequenceControllerColor>();
-                    const auto *event_segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-                    mState.mClipboard->addObject(event_segment, getPlayer().getSequenceFilename(), errorState);
-
-                    // exit popup
-                    ImGui::CloseCurrentPopup();
-                    mState.mAction = createAction<None>();
-                    ImGui::EndPopup();
-
-                    return;
-                }
-            } else
-            {
-                // obtain derived clipboard
-                auto *clipboard = mState.mClipboard->getDerived<ColorSegmentClipboard>();
-
-                // is event contained by clipboard ? if so, add remove button
-                bool display_remove_from_clipboard = clipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename());
-
-                if(display_remove_from_clipboard)
-                {
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::remove), "Remove from clipboard"))
+                    bool is_selected = (static_cast<int>(action->mBlendMethod) == i);
+                    if(ImGui::Selectable(blend_methods[i], is_selected))
                     {
-                        clipboard->removeObject(action->mSegmentID);
-
-                        // if clipboard is empty, remove current clipboard
-                        if(clipboard->getObjectCount() == 0)
-                        {
-                            mState.mClipboard = createClipboard<Empty>();
-                        }
-
-                        // exit popup
-                        ImGui::CloseCurrentPopup();
-                        mState.mAction = createAction<None>();
-                        ImGui::EndPopup();
-                        return;
+                        controller.changeSegmentColorBlendMethod(action->mTrackID, action->mSegmentID, static_cast<SequenceTrackSegmentColor::EBlendMethod>(i));
                     }
-                } else
-                {
-                    // clipboard is of correct type, but does not contain this segment, present the user with an add button
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::copy), "Add to clipboard"))
+
+                    if(is_selected)
                     {
-                        // obtain controller
-                        auto &controller = getEditor().getController<SequenceControllerColor>();
-
-                        // fetch segment
-                        const auto *segment = controller.getSegment(action->mTrackID, action->mSegmentID);
-
-                        // serialize object into clipboard
-                        utility::ErrorState errorState;
-                        clipboard->addObject(segment, getPlayer().getSequenceFilename(), errorState);
-
-                        // log any errors
-                        if(errorState.hasErrors())
-                        {
-                            nap::Logger::error(errorState.toString());
-                        }
-
-                        // exit popup
-                        ImGui::CloseCurrentPopup();
-                        mState.mAction = createAction<None>();
-                        ImGui::EndPopup();
-                        return;
+                        ImGui::SetItemDefaultFocus();
                     }
                 }
+                ImGui::EndCombo();
             }
+
+            // ok button
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+            {
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+            }
+
             ImGui::SameLine();
-
             if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
             {
                 getEditor().takeSnapshot(action->get_type());
 
-                auto &controller = getEditor().getController<SequenceControllerColor>();
                 controller.deleteSegment(action->mTrackID, action->mSegmentID);
 
                 // remove segment from clipboard
@@ -528,27 +510,6 @@ namespace nap
                 mState.mDirty = true;
                 ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
-            } else
-            {
-                if(action->mSegmentType.is_derived_from<SequenceTrackSegmentEventBase>())
-                {
-                    ImGui::SameLine();
-                    if(ImGui::ImageButton(mService.getGui().getIcon(icon::edit)))
-                    {
-                        auto &color_controller = getEditor().getController<SequenceControllerColor>();
-                        const auto *color_segment = dynamic_cast<const SequenceTrackSegmentColor *>(color_controller.getSegment(action->mTrackID, action->mSegmentID));
-
-                        assert(color_segment != nullptr);
-
-                        if(color_segment != nullptr)
-                        {
-                            rttr::type type = color_segment->get_type();
-
-                            // TODO : do something
-                        }
-                        ImGui::CloseCurrentPopup();
-                    }
-                }
             }
 
             ImGui::SameLine();
@@ -562,6 +523,7 @@ namespace nap
         } else
         {
             // click outside popup so cancel action
+            ImGui::CloseCurrentPopup();
             mState.mAction = createAction<None>();
         }
     }

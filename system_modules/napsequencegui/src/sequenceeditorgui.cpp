@@ -1620,7 +1620,7 @@ namespace nap
 
             double time = action->mTime;
 
-            std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+            std::vector<int> time_array = utility::convertTimeToMMSSMSArray(time);
 
             bool edit_time = false;
 
@@ -1634,7 +1634,7 @@ namespace nap
 
             if(edit_time)
             {
-                double new_time = convertMMSSMSArrayToTime(time_array);
+                double new_time = utility::convertMMSSMSArrayToTime(time_array);
                 action->mTime = new_time;
                 mEditor.changeMarkerTime(action->mID, new_time);
             }
@@ -1762,7 +1762,7 @@ namespace nap
         {
             double duration = mEditor.mSequencePlayer->getDuration();
 
-            std::vector<int> time_array = convertTimeToMMSSMSArray(duration);
+            std::vector<int> time_array = utility::convertTimeToMMSSMSArray(duration);
 
             bool edit_time = false;
 
@@ -1777,7 +1777,7 @@ namespace nap
 
             if(edit_time)
             {
-                double new_duration = convertMMSSMSArrayToTime(time_array);
+                double new_duration = utility::convertMMSSMSArrayToTime(time_array);
                 mEditor.changeSequenceDuration(new_duration);
                 mState.mDirty = true;
             }

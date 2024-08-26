@@ -809,7 +809,7 @@ namespace nap
             /**
              * handle start time in track
              */
-            std::vector<int> time_array = convertTimeToMMSSMSArray(audio_segment->mStartTime);
+            std::vector<int> time_array = utility::convertTimeToMMSSMSArray(audio_segment->mStartTime);
             bool edit_time = false;
 
             ImGui::PushItemWidth(100.0f * mState.mScale);
@@ -825,7 +825,7 @@ namespace nap
             {
                 take_snapshot();
 
-                double new_time = convertMMSSMSArrayToTime(time_array);
+                double new_time = utility::convertMMSSMSArrayToTime(time_array);
                 audio_controller.segmentAudioStartTimeChange(action->mTrackID, action->mSegmentID, new_time);
                 mState.mDirty = true;
             }
@@ -833,7 +833,7 @@ namespace nap
             /**
              * handle start time in audio segment
              */
-            time_array = convertTimeToMMSSMSArray(audio_segment->mStartTimeInAudioSegment);
+            time_array = utility::convertTimeToMMSSMSArray(audio_segment->mStartTimeInAudioSegment);
 
             ImGui::PushItemWidth(100.0f * mState.mScale);
 
@@ -848,7 +848,7 @@ namespace nap
             {
                 take_snapshot();
 
-                double new_time = convertMMSSMSArrayToTime(time_array);
+                double new_time = utility::convertMMSSMSArrayToTime(time_array);
                 audio_controller.segmentAudioStartTimeInSegmentChange(action->mTrackID, action->mSegmentID, new_time);
                 mState.mDirty = true;
             }
@@ -856,7 +856,7 @@ namespace nap
             /**
              * handle duration
              */
-            time_array = convertTimeToMMSSMSArray(audio_segment->mDuration);
+            time_array = utility::convertTimeToMMSSMSArray(audio_segment->mDuration);
 
             ImGui::PushItemWidth(100.0f * mState.mScale);
 
@@ -871,7 +871,7 @@ namespace nap
             {
                 take_snapshot();
 
-                double new_time = convertMMSSMSArrayToTime(time_array);
+                double new_time = utility::convertMMSSMSArrayToTime(time_array);
                 audio_controller.segmentAudioDurationChange(action->mTrackID, action->mSegmentID, new_time);
                 mState.mDirty = true;
             }

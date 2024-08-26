@@ -60,7 +60,7 @@ namespace nap
             double min_time = segment->mStartTime;
             double max_time = segment->mStartTime + segment->mDuration;
 
-            std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+            std::vector<int> time_array = utility::convertTimeToMMSSMSArray(time);
 
             bool edit_time = false;
 
@@ -74,7 +74,7 @@ namespace nap
 
             if(edit_time)
             {
-                double new_time = convertMMSSMSArrayToTime(time_array);
+                double new_time = utility::convertMMSSMSArrayToTime(time_array);
                 new_time = math::clamp(new_time, min_time, max_time);
 
                 float perc = (new_time - segment->mStartTime) / segment->mDuration;

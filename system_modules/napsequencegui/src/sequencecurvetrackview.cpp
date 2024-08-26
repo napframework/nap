@@ -1044,7 +1044,7 @@ namespace nap
 
                     ImGui::Checkbox("Move next segments", &action->mMoveNextSegments);
 
-                    auto time_array = convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
+                    auto time_array = utility::convertTimeToMMSSMSArray(action->mDuration + action->mStartTime);
                     bool edit_time = false;
 
                     edit_time = ImGui::InputInt3("End time (mm:ss:ms)", &time_array[0]);
@@ -1056,7 +1056,7 @@ namespace nap
                     {
                         take_snapshot();
 
-                        double new_time = convertMMSSMSArrayToTime(time_array);
+                        double new_time = utility::convertMMSSMSArrayToTime(time_array);
                         double new_duration = controller.segmentDurationChange(action->mTrackID,
                                                                                action->mSegmentID,
                                                                                (float) (new_time - action->mStartTime),
@@ -1326,7 +1326,7 @@ namespace nap
             double min_time = segment->mStartTime;
             double max_time = segment->mStartTime + segment->mDuration;
 
-            std::vector<int> time_array = convertTimeToMMSSMSArray(time);
+            std::vector<int> time_array = utility::convertTimeToMMSSMSArray(time);
 
             bool edit_time = false;
 
@@ -1342,7 +1342,7 @@ namespace nap
             {
                 take_snapshot();
 
-                double new_time = convertMMSSMSArrayToTime(time_array);
+                double new_time = utility::convertMMSSMSArrayToTime(time_array);
                 new_time = math::clamp(new_time, min_time, max_time);
 
                 float perc = (new_time - segment->mStartTime) / segment->mDuration;

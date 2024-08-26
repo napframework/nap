@@ -18,7 +18,14 @@ namespace nap
     {
     RTTI_ENABLE(SequenceTrackSegment)
     public:
+        enum NAPAPI EBlendMethod
+        {
+            LINEAR,
+            OKLAB
+        };
+
         // properties
         RGBAColorFloat mColor;
+        EBlendMethod mBlendMethod = EBlendMethod::OKLAB;
     };
 }

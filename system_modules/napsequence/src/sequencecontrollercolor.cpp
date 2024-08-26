@@ -87,6 +87,34 @@ namespace nap
     }
 
 
+    void SequenceControllerColor::changeSegmentColor(const std::string &trackID, const std::string &segmentID, const nap::RGBAColorFloat &color)
+    {
+        performEditAction([this, trackID, segmentID, color]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+                              segment_color.mColor = color;
+                          });
+    }
+
+
+    void SequenceControllerColor::changeSegmentColorBlendMethod(const std::string &trackID, const std::string &segmentID, SequenceTrackSegmentColor::EBlendMethod blendMethod)
+    {
+        performEditAction([this, trackID, segmentID, blendMethod]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+                              segment_color.mBlendMethod = blendMethod;
+                          });
+    }
+
+
     const SequenceTrackSegment* SequenceControllerColor::insertColorSegment(const std::string &trackID, double time, const nap::RGBAColorFloat &color)
     {
         SequenceTrackSegment* return_ptr = nullptr;

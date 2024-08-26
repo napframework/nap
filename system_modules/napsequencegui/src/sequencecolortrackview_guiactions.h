@@ -3,6 +3,7 @@
 #include <utility>
 
 #include "sequenceeditorguiactions.h"
+#include "sequencetracksegmentcolor.h"
 
 namespace nap
 {
@@ -71,14 +72,15 @@ namespace nap
              * @param value the new value of the event segment
              * @param startTime the new start time of the event segment
              */
-            EditingColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, RGBAColorFloat  value, double startTime)
-                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(std::move(value)), mStartTime(startTime)
+            EditingColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, RGBAColorFloat value, SequenceTrackSegmentColor::EBlendMethod blendMethod, double startTime)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(std::move(value)), mBlendMethod(blendMethod), mStartTime(startTime)
             {}
 
 
             std::string mSegmentID;
             ImVec2 mWindowPos;
             RGBAColorFloat mValue;
+            SequenceTrackSegmentColor::EBlendMethod mBlendMethod = SequenceTrackSegmentColor::EBlendMethod::OKLAB;
             double mStartTime;
         };
     }

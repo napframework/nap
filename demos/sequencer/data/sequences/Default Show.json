@@ -243,57 +243,61 @@
                             "Type": "nap::SequenceTrackSegmentColor",
                             "mID": "Generated_13",
                             "Label": "default",
-                            "Start Time": 5.484596084803343,
+                            "Start Time": 1.596538639627397,
                             "Color": {
                                 "Values": [
-                                    0.5921568870544434,
-                                    0.13236446678638459,
-                                    0.13236446678638459,
-                                    0.572549045085907
+                                    0.0,
+                                    0.36362552642822268,
+                                    1.0,
+                                    1.0
                                 ]
-                            }
-                        },
-                        {
-                            "Type": "nap::SequenceTrackSegmentColor",
-                            "mID": "Generated_14",
-                            "Label": "default",
-                            "Start Time": 9.920226389542222,
-                            "Color": {
-                                "Values": [
-                                    0.15294118225574494,
-                                    0.11764705926179886,
-                                    0.7882353067398071,
-                                    0.8980392217636108
-                                ]
-                            }
+                            },
+                            "BlendMethod": "Oklab"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentColor",
                             "mID": "Generated_15",
                             "Label": "default",
-                            "Start Time": 12.707480054348708,
+                            "Start Time": 4.015190054196866,
                             "Color": {
                                 "Values": [
-                                    1.0,
                                     0.0,
-                                    0.800000011920929,
-                                    0.9921568632125855
+                                    1.0,
+                                    0.18796992301940919,
+                                    1.0
                                 ]
-                            }
+                            },
+                            "BlendMethod": "Oklab"
+                        },
+                        {
+                            "Type": "nap::SequenceTrackSegmentColor",
+                            "mID": "Generated_17",
+                            "Label": "default",
+                            "Start Time": 16.655589058995248,
+                            "Color": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "BlendMethod": "Oklab"
                         },
                         {
                             "Type": "nap::SequenceTrackSegmentColor",
                             "mID": "Generated_16",
                             "Label": "default",
-                            "Start Time": 15.7644681930542,
+                            "Start Time": 20.88941797427833,
                             "Color": {
                                 "Values": [
-                                    0.15276530385017396,
-                                    0.8117647171020508,
-                                    0.13688580691814423,
-                                    0.9098039269447327
+                                    0.8960554003715515,
+                                    0.9764705896377564,
+                                    0.0,
+                                    1.0
                                 ]
-                            }
+                            },
+                            "BlendMethod": "Oklab"
                         }
                     ],
                     "Output ID": "",
