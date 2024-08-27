@@ -1942,6 +1942,8 @@ namespace nap
                 double total_kilobyte = 0.0;
 
                 int idx = history.size() - 1;
+                bool jump_to_history_point = false;
+                int jump_to_history_point_idx = -1;
                 for (auto it = history.rbegin(); it != history.rend(); ++it)
                 {
                     const auto& history_point = *it;
@@ -1967,17 +1969,26 @@ namespace nap
                         ImGui::PopStyleColor();
                     }
                     ImGui::SameLine(widths[2]);
+
+                    // jump to different history point outside this loop because it
+                    // modifies the history deque
                     if(ImGui::ImageButton(gui.getIcon(icon::load), "select"))
                     {
-                        if(mEditor.getHistoryIndex() == mEditor.getHistorySize())
-                        {
-                            mEditor.takeSnapshot(RTTI_OF(sequenceguiactions::PerformUndo));
-                        }
-                        mEditor.jumpToHistoryPointIndex(idx);
-                        mState.mDirty = true;
+                        jump_to_history_point = true;
+                        jump_to_history_point_idx = idx;
                     }
                     idx--;
                     ImGui::PopID();
+                }
+
+                // jump to history point if user pressed load on a history point
+                if(jump_to_history_point)
+                {
+                    if(mEditor.getHistoryIndex() == mEditor.getHistorySize())
+                        mEditor.takeSnapshot(RTTI_OF(sequenceguiactions::PerformUndo));
+
+                    mEditor.jumpToHistoryPointIndex(jump_to_history_point_idx);
+                    mState.mDirty = true;
                 }
 
                 ImGui::Spacing();
