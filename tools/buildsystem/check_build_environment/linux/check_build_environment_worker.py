@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import sys
 
-REQUIRED_UBUNTU_VERSION = '20.04'
+REQUIRED_UBUNTU_VERSIONS = ['20.04','22.04','24.04']
 REQUIRED_QT_VERSION = '5.15.2'
 REQUIRED_RASPBIAN_VERSION = '11'
 SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64', 'armhf')
@@ -86,8 +86,8 @@ def check_distribution_version():
         release_ok = release == REQUIRED_RASPBIAN_VERSION
         log_test_success('Raspbian %s' % REQUIRED_RASPBIAN_VERSION, release_ok)
     else:
-        release_ok = release == REQUIRED_UBUNTU_VERSION
-        log_test_success('Ubuntu %s' % REQUIRED_UBUNTU_VERSION, release_ok)
+        release_ok = release in REQUIRED_UBUNTU_VERSIONS
+        log_test_success('Ubuntu %s' % release, release_ok)
     return release_ok
 
 def apt_package_installed(package_name):
@@ -126,7 +126,7 @@ def check_qt_version():
         shutil.rmtree(temp_build_dir)
 
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, 'thirdparty')
     arch = get_build_arch()
     cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
 
