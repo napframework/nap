@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2002-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2002-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -104,7 +104,7 @@ mat4_open	(SF_PRIVATE *psf)
 
 	psf->container_close = mat4_close ;
 
-	psf->blockwidth = psf->bytewidth * psf->sf.channels ;
+	psf->blockwidth = (sf_count_t) psf->bytewidth * psf->sf.channels ;
 
 	switch (subformat)
 	{	case SF_FORMAT_PCM_16 :
@@ -173,16 +173,16 @@ mat4_write_header (SF_PRIVATE *psf, int calc_length)
 	samplerate = psf->sf.samplerate ;
 
 	if (psf->endian == SF_ENDIAN_BIG)
-	{	psf_binheader_writef (psf, "Em444", MAT4_BE_DOUBLE, 1, 1, 0) ;
-		psf_binheader_writef (psf, "E4bd", 11, "samplerate", make_size_t (11), samplerate) ;
-		psf_binheader_writef (psf, "tEm484", encoding, psf->sf.channels, psf->sf.frames, 0) ;
-		psf_binheader_writef (psf, "E4b", 9, "wavedata", make_size_t (9)) ;
+	{	psf_binheader_writef (psf, "Em444", BHWm (MAT4_BE_DOUBLE), BHW4 (1), BHW4 (1), BHW4 (0)) ;
+		psf_binheader_writef (psf, "E4bd", BHW4 (11), BHWv ("samplerate"), BHWz (11), BHWd (samplerate)) ;
+		psf_binheader_writef (psf, "tEm484", BHWm (encoding), BHW4 (psf->sf.channels), BHW8 (psf->sf.frames), BHW4 (0)) ;
+		psf_binheader_writef (psf, "E4b", BHW4 (9), BHWv ("wavedata"), BHWz (9)) ;
 		}
 	else if (psf->endian == SF_ENDIAN_LITTLE)
-	{	psf_binheader_writef (psf, "em444", MAT4_LE_DOUBLE, 1, 1, 0) ;
-		psf_binheader_writef (psf, "e4bd", 11, "samplerate", make_size_t (11), samplerate) ;
-		psf_binheader_writef (psf, "tem484", encoding, psf->sf.channels, psf->sf.frames, 0) ;
-		psf_binheader_writef (psf, "e4b", 9, "wavedata", make_size_t (9)) ;
+	{	psf_binheader_writef (psf, "em444", BHWm (MAT4_LE_DOUBLE), BHW4 (1), BHW4 (1), BHW4 (0)) ;
+		psf_binheader_writef (psf, "e4bd", BHW4 (11), BHWv ("samplerate"), BHWz (11), BHWd (samplerate)) ;
+		psf_binheader_writef (psf, "tem484", BHWm (encoding), BHW4 (psf->sf.channels), BHW8 (psf->sf.frames), BHW4 (0)) ;
+		psf_binheader_writef (psf, "e4b", BHW4 (9), BHWv ("wavedata"), BHWz (9)) ;
 		}
 	else
 		return SFE_BAD_OPEN_FORMAT ;
@@ -248,7 +248,7 @@ mat4_read_header (SF_PRIVATE *psf)
 	if ((rows != 1) || (cols != 1))
 		return SFE_MAT4_NO_SAMPLERATE ;
 
-	psf->sf.samplerate = lrint (value) ;
+	psf->sf.samplerate = psf_lrint (value) ;
 
 	/* Now write out the audio data. */
 
@@ -320,7 +320,7 @@ mat4_read_header (SF_PRIVATE *psf)
 				psf->filelength - psf->dataoffset, psf->sf.channels * psf->sf.frames * psf->bytewidth) ;
 		}
 	else if ((psf->filelength - psf->dataoffset) > psf->sf.channels * psf->sf.frames * psf->bytewidth)
-		psf->dataend = psf->dataoffset + rows * cols * psf->bytewidth ;
+		psf->dataend = psf->dataoffset + (sf_count_t) rows * (sf_count_t) cols * psf->bytewidth ;
 
 	psf->datalength = psf->filelength - psf->dataoffset - psf->dataend ;
 

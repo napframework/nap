@@ -264,10 +264,25 @@ typedef	struct
 } GSM610_WAV_FMT ;
 
 typedef struct
+{	unsigned short	format ;
+	unsigned short	channels ;
+	unsigned int	samplerate ;
+	unsigned int	bytespersec ;
+	unsigned short	blockalign ;
+	unsigned short	bitwidth ;
+	unsigned short	extrabytes ;
+	unsigned short	id ;
+	unsigned int	flags ;
+	unsigned short	blocksize ;
+	unsigned short	samplesperblock ;
+	unsigned short	codecdelay ;
+} MPEGLAYER3_WAV_FMT ;
+
+typedef struct
 {	unsigned int	esf_field1 ;
 	unsigned short	esf_field2 ;
 	unsigned short	esf_field3 ;
-	char			esf_field4 [8] ;
+	unsigned char	esf_field4 [8] ;
 } EXT_SUBFORMAT ;
 
 typedef	struct
@@ -291,6 +306,7 @@ typedef union
 	G72x_ADPCM_WAV_FMT	g72x ;
 	EXTENSIBLE_WAV_FMT	ext ;
 	GSM610_WAV_FMT		gsm610 ;
+	MPEGLAYER3_WAV_FMT	mpeg3 ;
 	WAV_FMT_SIZE20		size20 ;
 	char				padding [512] ;
 } WAV_FMT ;
@@ -340,10 +356,10 @@ void	wavlike_write_guid (SF_PRIVATE *psf, const EXT_SUBFORMAT * subformat) ;
 void	wavlike_analyze (SF_PRIVATE *psf) ;
 int		wavlike_gen_channel_mask (const int *chan_map, int channels) ;
 
-int		wavlike_read_bext_chunk (SF_PRIVATE *psf, unsigned int chunksize) ;
+int		wavlike_read_bext_chunk (SF_PRIVATE *psf, uint32_t chunksize) ;
 int		wavlike_write_bext_chunk (SF_PRIVATE *psf) ;
 
-int		wavlike_read_cart_chunk (SF_PRIVATE *psf, unsigned int chunksize) ;
+int		wavlike_read_cart_chunk (SF_PRIVATE *psf, uint32_t chunksize) ;
 int		wavlike_write_cart_chunk (SF_PRIVATE *psf) ;
 
 int		wavlike_subchunk_parse	(SF_PRIVATE *psf, int chunk, uint32_t length) ;

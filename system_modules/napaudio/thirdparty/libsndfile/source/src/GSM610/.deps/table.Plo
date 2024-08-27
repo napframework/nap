@@ -1,6 +1,0 @@
-GSM610/table.lo: GSM610/table.c /usr/include/stdc-predef.h \
- GSM610/gsm610_priv.h
-
-/usr/include/stdc-predef.h:
-
-GSM610/gsm610_priv.h:
