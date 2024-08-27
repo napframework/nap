@@ -46,9 +46,7 @@ if (NAP_AUDIOFILE_SUPPORT)
 
         set(INCLUDES ${LIBSNDFILE_INCLUDE_DIR} ${LIBMPG123_INCLUDE_DIR})
         target_include_directories(${PROJECT_NAME} PUBLIC ${INCLUDES})
-
         target_link_libraries(${PROJECT_NAME} ${LIBRARIES})
-
         target_compile_definitions(${PROJECT_NAME} PRIVATE _USE_MATH_DEFINES)
 
         # Copy over DLLs on Windows
@@ -96,8 +94,10 @@ if (NAP_AUDIOFILE_SUPPORT)
             endforeach()
         elseif(UNIX)
             file(GLOB MPG123_DYLIBS ${LIBMPG123_LIB_DIR}/libmpg123*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
-            install(FILES ${MPG123_DYLIBS}
-                    DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
+            install(FILES ${MPG123_DYLIBS} DESTINATION ${dest_thirdparty}/mpg123/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
+
+
+
         endif()
 
         # Package libsndfile into platform release
@@ -112,7 +112,7 @@ if (NAP_AUDIOFILE_SUPPORT)
             install(FILES ${LIBSNDFILE_IMPLIBS}
                     DESTINATION ${dest_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
         elseif(UNIX)
-            file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+            file(GLOB LIBSNDFILE_DYLIBS ${LIBSNDFILE_LIB_DIR}/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${LIBSNDFILE_DYLIBS}
                     DESTINATION ${dest_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib)
         endif()
@@ -152,7 +152,7 @@ if (NAP_AUDIOFILE_SUPPORT)
             install(FILES ${MPG123_DYLIBS} DESTINATION lib)
 
             # Install libsndfile into packaged app
-            file(GLOB SNDFILE_DYLIBS ${module_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/libsnd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+            file(GLOB SNDFILE_DYLIBS ${module_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
         endif()
 
