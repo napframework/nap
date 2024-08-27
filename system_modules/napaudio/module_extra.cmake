@@ -152,7 +152,7 @@ if (NAP_AUDIOFILE_SUPPORT)
             install(FILES ${MPG123_DYLIBS} DESTINATION lib)
 
             # Install libsndfile into packaged app
-            file(GLOB SNDFILE_DYLIBS ${module_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/lib*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
+            file(GLOB SNDFILE_DYLIBS ${module_thirdparty}/libsndfile/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/lib/snd*${CMAKE_SHARED_LIBRARY_SUFFIX}*)
             install(FILES ${SNDFILE_DYLIBS} DESTINATION lib)
         endif()
 
