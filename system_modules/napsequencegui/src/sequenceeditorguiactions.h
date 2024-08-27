@@ -542,7 +542,6 @@ namespace nap
         class NAPAPI OpenHistoryPopup : public Action
         {
         RTTI_ENABLE(Action)
-        public:
         };
 
         /**
@@ -551,7 +550,6 @@ namespace nap
         class NAPAPI SelectHistoryPopup : public Action
         {
         RTTI_ENABLE(Action)
-        public:
         };
 
         /**

@@ -76,7 +76,7 @@ namespace nap
          * @param errorState contains error upon failure
          * @return true on success
          */
-        bool loadBinary(const std::vector<glm::uint8>& buffer, utility::ErrorState& errorState);
+        bool loadBinary(const std::vector<nap::uint8>& buffer, utility::ErrorState& errorState);
 
         /**
          * Play or stop the player. Note that player can still be paused, so adapters will be called but time will not advance

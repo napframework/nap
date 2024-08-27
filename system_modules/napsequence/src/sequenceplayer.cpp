@@ -219,7 +219,7 @@ namespace nap
     }
 
 
-    bool SequencePlayer::loadBinary(const std::vector<uint8>& buffer, utility::ErrorState& errorState)
+    bool SequencePlayer::loadBinary(const std::vector<nap::uint8>& buffer, utility::ErrorState& errorState)
     {
         std::lock_guard<std::mutex> lock(mMutex);
         rtti::DeserializeResult result;
