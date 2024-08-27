@@ -244,6 +244,10 @@ def check_build_environment(against_source):
     libxcb_installed = apt_package_installed('libxcb-xinerama0')
     log_test_success('for libxcb-xinerama package', libxcb_installed)
 
+    # Check package libjack0 - required by portaudio
+    libjack_installed = apt_package_installed('libjack0')
+    log_test_success('for libjack0 package', libjack_installed)
+
     # Check C++ is GCC
     compiler_ok = check_compiler()
 
@@ -317,6 +321,8 @@ def check_build_environment(against_source):
         packages_to_install.append('mesa-vulkan-drivers')
     if not libxcb_installed:
         packages_to_install.append('libxcb-xinerama0')
+    if not libjack_installed:
+        packages_to_install.append('libjack0')
 
     if len(packages_to_install) > 0:
         package_str = ' '.join(packages_to_install)
