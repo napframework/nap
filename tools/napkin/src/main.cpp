@@ -151,7 +151,7 @@ int main(int argc, char* argv[])
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("nap-labs");
 	QApplication::setApplicationName("napkin");
-	QApplication::setApplicationVersion("0.5");
+	QApplication::setApplicationVersion("0.7");
 	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
