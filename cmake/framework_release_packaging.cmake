@@ -220,7 +220,7 @@ macro(package_qt)
     if(WIN32)
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
-            set(QT_FRAMEWORK_SRC ${QT_DIR}/bin/Qt5${QT_INSTALL_FRAMEWORK})
+            set(QT_FRAMEWORK_SRC ${QT_DIR}/bin/Qt6${QT_INSTALL_FRAMEWORK})
 
             install(FILES ${QT_FRAMEWORK_SRC}d.dll
                     DESTINATION thirdparty/Qt/bin/Debug
@@ -287,7 +287,7 @@ macro(package_qt)
 
         # Install frameworks
         foreach(QT_INSTALL_FRAMEWORK ${QT_FRAMEWORKS})
-            file(GLOB QT_FRAMEWORK_SRC ${QT_DIR}/lib/libQt5${QT_INSTALL_FRAMEWORK}.so*)
+            file(GLOB QT_FRAMEWORK_SRC ${QT_DIR}/lib/libQt6${QT_INSTALL_FRAMEWORK}.so*)
 
             install(FILES ${QT_FRAMEWORK_SRC}
                     DESTINATION thirdparty/Qt/lib

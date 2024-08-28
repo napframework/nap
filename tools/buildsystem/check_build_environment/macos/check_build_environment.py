@@ -225,20 +225,20 @@ def check_and_warn_for_potential_packaged_qt():
 
     have_homebrew = call('which brew') != ''
     if have_homebrew:
-        (_, returncode) = call_with_returncode('brew ls --versions qt5')
+        (_, returncode) = call_with_returncode('brew ls --versions qt6')
         if returncode == 0:
             packages_found = True
             print("\nWarning: You appear to have Qt installed via Homebrew. This may cause issues, especially with packaging.")
 
     have_macports = call('which port') != ''
     if have_macports:
-        if call('port installed | grep qt5') != '':
+        if call('port installed | grep qt6') != '':
             packages_found = True
             print("\nWarning: You appear to have some Qt packages installed via MacPorts. This may cause issues, especially with packaging.")
 
     have_fink = call('which fink') != ''
     if have_fink:
-        if call('fink list --installed | grep qt5') != '':
+        if call('fink list --installed | grep qt6') != '':
             packages_found = True
             print("\nWarning: You appear to have some Qt packages installed via Fink. This may cause issues, especially with packaging.")
 
