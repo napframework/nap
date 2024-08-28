@@ -1,8 +1,0 @@
-G72x/g721.lo: G72x/g721.c /usr/include/stdc-predef.h G72x/g72x.h \
- G72x/g72x_priv.h
-
-/usr/include/stdc-predef.h:
-
-G72x/g72x.h:
-
-G72x/g72x_priv.h:

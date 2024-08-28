@@ -21,7 +21,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
+#endif
 
 #include <math.h>
 
@@ -32,6 +36,8 @@
 
 #define	SAMPLE_RATE		16000
 #define	DATA_LENGTH		(SAMPLE_RATE)
+
+static const char CMP_TEST_PREFIX[] = "cmp" ;
 
 static float data_out [DATA_LENGTH] ;
 
@@ -48,6 +54,8 @@ vorbis_test (void)
 	SF_INFO sfinfo ;
 	float max_abs = 0.0 ;
 	unsigned k ;
+
+	get_unique_test_name (&filename, CMP_TEST_PREFIX) ;
 
 	print_test_name ("vorbis_test", filename) ;
 
@@ -94,7 +102,7 @@ vorbis_test (void)
 	sf_close (file) ;
 
 	for (k = 0 ; k < ARRAY_LEN (float_data) ; k ++)
-		max_abs = max_float (max_abs, fabs (float_data [k])) ;
+		max_abs = max_float (max_abs, fabsf (float_data [k])) ;
 
 	exit_if_true (max_abs > 1.023,
 		"\n\nLine %d : max_abs %f should be < 1.023.\n\n", __LINE__, max_abs) ;
@@ -118,6 +126,8 @@ compression_size_test (int format, const char * filename)
 	int q3_size, q6_size ;
 	double quality ;
 	int k ;
+
+	get_unique_test_name (&filename, CMP_TEST_PREFIX) ;
 
 	snprintf (q3_fname, sizeof (q3_fname), "q3_%s", filename) ;
 	snprintf (q6_fname, sizeof (q6_fname), "q6_%s", filename) ;
@@ -150,8 +160,8 @@ compression_size_test (int format, const char * filename)
 	sf_close (q3_file) ;
 	sf_close (q6_file) ;
 
-	q3_size = file_length (q3_fname) ;
-	q6_size = file_length (q6_fname) ;
+	q3_size = (int) file_length (q3_fname) ;
+	q6_size = (int) file_length (q6_fname) ;
 
 	exit_if_true (q3_size >= q6_size,
 		"\n\nLine %d : q3 size (%d) >= q6 size (%d)\n\n", __LINE__, q3_size, q6_size) ;
@@ -165,7 +175,7 @@ compression_size_test (int format, const char * filename)
 
 int
 main (int argc, char *argv [])
-{	int all_tests = 0, tests = 0 ;
+{	int all_tests = 0 ;
 
 	if (argc != 2)
 	{	printf (
@@ -173,28 +183,47 @@ main (int argc, char *argv [])
 			"    Where <test> is one of:\n"
 			"        vorbis - test Ogg/Vorbis\n"
 			"        flac   - test FLAC\n"
+			"        opus   - test Opus\n"
+			"        mpeg   - test mpeg\n"
 			"        all    - perform all tests\n",
 			argv [0]) ;
 		exit (0) ;
 		} ;
 
-	if (! HAVE_EXTERNAL_XIPH_LIBS)
-	{	puts ("    No Ogg/Vorbis tests because Ogg/Vorbis support was not compiled in.") ;
-		return 0 ;
-	} ;
-
 	if (strcmp (argv [1], "all") == 0)
 		all_tests = 1 ;
 
 	if (all_tests || strcmp (argv [1], "vorbis") == 0)
-	{	vorbis_test () ;
-		compression_size_test (SF_FORMAT_OGG | SF_FORMAT_VORBIS, "vorbis.oga") ;
-		tests ++ ;
+	{	if (HAVE_EXTERNAL_XIPH_LIBS)
+		{	vorbis_test () ;
+			compression_size_test (SF_FORMAT_OGG | SF_FORMAT_VORBIS, "vorbis.oga") ;
+			}
+		else
+			puts ("    No Ogg Vorbis tests because support was not compiled in.") ;
 		} ;
 
 	if (all_tests || strcmp (argv [1], "flac") == 0)
-	{	compression_size_test (SF_FORMAT_FLAC | SF_FORMAT_PCM_16, "pcm16.flac") ;
-		tests ++ ;
+	{	if (HAVE_EXTERNAL_XIPH_LIBS)
+		{	compression_size_test (SF_FORMAT_FLAC | SF_FORMAT_PCM_16, "pcm16.flac") ;
+			}
+		else
+			puts ("    No FLAC tests because support was not compiled in.") ;
+		} ;
+
+	if (all_tests || strcmp (argv [1], "opus") == 0)
+	{	if (HAVE_EXTERNAL_XIPH_LIBS)
+		{	compression_size_test (SF_FORMAT_OGG | SF_FORMAT_OPUS, "opus.opus") ;
+			}
+		else
+			puts ("    No Opus tests because support was not compiled in.") ;
+		} ;
+
+	if (all_tests || strcmp (argv [1], "mpeg") == 0)
+	{	if (HAVE_MPEG)
+		{	compression_size_test (SF_FORMAT_MPEG | SF_FORMAT_MPEG_LAYER_III, "mpeg.mp3") ;
+			}
+		else
+			puts ("    No MPEG tests because support was not compiled in.") ;
 		} ;
 
 	return 0 ;

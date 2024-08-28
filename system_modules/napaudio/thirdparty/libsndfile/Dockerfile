@@ -9,7 +9,7 @@ COPY source ${src_dir}
 RUN \
   cd ${src_dir} && \
   autoreconf -f -i && \
-  ./configure --prefix=${inst_dir} && \
+  ./configure --disable-external-libs --disable-mpeg --prefix=${inst_dir} && \
   make -j `nproc` && \
   make -j `nproc` install && \
   rm -rf ${inst_dir}/bin ${inst_dir}/share ${inst_dir}/lib/*a && \

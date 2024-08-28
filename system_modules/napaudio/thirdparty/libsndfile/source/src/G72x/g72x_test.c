@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2014 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -16,8 +16,14 @@
 ** Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA 02111-1307, USA.
 */
 
+#include "sfconfig.h"
+
 #include <stdio.h>
+#if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
+#endif
 #include <stdlib.h>
 #include <string.h>
 #include <math.h>
@@ -124,7 +130,7 @@ g723_test	(double margin)
 			} ;
 		} ;
 
-	printf ("\n\nMax error of %d at postion %d.\n", max_err, position) ;
+	printf ("\n\nMax error of %d at position %d.\n", max_err, position) ;
 
 	for (k = 0 ; k < BUFFER_SIZE ; k++)
 	{	if (error_function (data [k], orig [k], margin))
