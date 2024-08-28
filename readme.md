@@ -103,7 +103,7 @@ The editor (Napkin) depends on QT:
 		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
 		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.15.17\gcc_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.15.17\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
 ## Create the Solution
 
