@@ -19,7 +19,7 @@
 #include <mutex>
 #include <nap/timer.h>
 #include <concurrentqueue.h>
-#include <numeric>
+#include <nap/numeric.h>
 
 namespace nap
 {
