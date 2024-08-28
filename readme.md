@@ -95,15 +95,15 @@ The editor (Napkin) depends on QT:
 - Qt 5
 	- x86_64
 		- The precompiled package uses Qt 5.15 (LTS), although other versions are known to work.
-		- Go to [qt.io](https://www.qt.io/download) and select **Downloads for open source users**
+		- Go to [qt.io](https://www.qt.io/download-open-source) for open source users
 		- Download the Qt online installer
 		- During installation select **Custom installation** 
 		- Filter on the **LTS** category to download and install Qt 5.15 for your target platform
-	- ARM
+	- armhf
 		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
 		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.12.11\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.15.17\gcc_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
 ## Create the Solution
 
@@ -120,7 +120,7 @@ The solution allows you to build every target and inspect the code of the demos,
 
 ## Run a Demo
 
-Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `./build.sh helloworld`.
+Open the generated solution in `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `./build.sh helloworld`.
 
 ---
 
