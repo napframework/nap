@@ -268,6 +268,9 @@ def check_build_environment(against_source):
         glut_installed, apts_to_install = apt_package_installed('libglu1-mesa-dev', apts_to_install)
         log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
 
+        libxkb_installed, apts_to_install = apt_package_installed('libxkbcommon-dev', apts_to_install)
+        log_test_success('for libxkbcommon-dev package (needed by Qt for Napkin)', libxkb_installed)
+
         # Check for Qt
         qt_env_var_ok = check_qt_env_var()
 
