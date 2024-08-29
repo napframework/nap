@@ -234,7 +234,7 @@ namespace nap
                           {
                               // Minimal duration of a segment
                               // This value is used to check if the new duration is valid
-                              const float minimal_duration = 0.05f;
+                              static constexpr float minimal_duration = 0.05f;
 
                               SequenceTrack *track = findTrack(trackID);
                               assert(track != nullptr); // track not found
