@@ -1,6 +1,6 @@
 [+ AutoGen5 template h c +]
 /*
-** Copyright (C) 2002-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2002-2018 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -31,13 +31,15 @@
 extern "C" {
 #endif	/* __cplusplus */
 
+#include "sfconfig.h"
+
 #include <stdint.h>
 #include <stdarg.h>
 
 #define	ARRAY_LEN(x)		((int) (sizeof (x)) / (sizeof ((x) [0])))
 #define SIGNED_SIZEOF(x)	((int64_t) (sizeof (x)))
 #define	NOT(x)				(! (x))
-#define	ABS(x)				((x) >= 0 ? (x) : -(x))
+#define	ABS(x)				((x) >= 0 ? (x) : - (x))
 
 #define	PIPE_INDEX(x)	((x) + 500)
 #define	PIPE_TEST_LEN	12345
@@ -61,7 +63,7 @@ void	write_mono_file (const char * filename, int format, int srate, float * outp
 #ifdef __GNUC__
 static inline void
 exit_if_true (int test, const char *format, ...)
-#if (defined (__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO)
+#if (defined (__USE_MINGW_ANSI_STDIO) && __USE_MINGW_ANSI_STDIO && !defined (__clang__))
 	__attribute__ ((format (gnu_printf, 2, 3))) ;
 #else
 	__attribute__ ((format (printf, 2, 3))) ;
@@ -101,6 +103,8 @@ int		truncate_file_to_zero (const char *fname) ;
 void	count_open_files (void) ;
 void	increment_open_file_count (void) ;
 void	check_open_file_count_or_die (int lineno) ;
+
+void	get_unique_test_name (const char ** filename, const char * test) ;
 
 #ifdef SNDFILE_H
 
@@ -189,6 +193,7 @@ sf_count_t		file_length_fd (int fd) ;
 #include <string.h>
 #include <ctype.h>
 #include <math.h>
+#include <float.h>
 #include <fcntl.h>
 #include <sys/stat.h>
 
@@ -200,16 +205,38 @@ sf_count_t		file_length_fd (int fd) ;
 #define	M_PI		3.14159265358979323846264338
 #endif
 
-#define	LOG_BUFFER_SIZE		2048
+#define	LOG_BUFFER_SIZE		4096
 
 /*
-**	Neat solution to the Win32/OS2 binary file flage requirement.
+**	Neat solution to the Win32/OS2 binary file flag requirement.
 **	If O_BINARY isn't already defined by the inclusion of the system
 **	headers, set it to zero.
 */
 #ifndef O_BINARY
 #define O_BINARY 0
 #endif
+
+
+/*
+**      Compare for equality, with epsilon
+*/
+static inline int
+equals_short (const short a, const short b)
+{        return (a == b);
+} /* equals_short */
+static inline int
+equals_int (const int a, const int b)
+{        return (a == b);
+} /* equals_int */
+static inline int
+equals_float (const float a, const float b)
+{        return (fabsf(a - b) <= FLT_EPSILON);
+} /* equals_float */
+static inline int
+equals_double (const double a, const double b)
+{       return (fabs(a - b) <= DBL_EPSILON);
+} /* equals_double */
+
 
 [+ FOR float_type +]
 void
@@ -237,6 +264,7 @@ create_short_sndfile (const char *filename, int format, int channels)
 	SNDFILE *file ;
 	SF_INFO sfinfo ;
 
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
 	sfinfo.samplerate = 44100 ;
 	sfinfo.channels = channels ;
 	sfinfo.format = format ;
@@ -398,8 +426,8 @@ check_log_buffer_or_die (SNDFILE *file, int line_num)
 		} ;
 
 	/* Look for "Should" */
-	if (strstr (buffer, "nknown marker"))
-	{	printf ("\n\nLine %d : Log buffer contains `nknown marker'. Dumping.\n", line_num) ;
+	if (strstr (buffer, "unknown marker"))
+	{	printf ("\n\nLine %d : Log buffer contains `unknown marker'. Dumping.\n", line_num) ;
 		puts (buffer) ;
 		exit (1) ;
 		} ;
@@ -500,7 +528,7 @@ test_sf_format_or_die (const SF_INFO *info, int line_num)
 {	int res ;
 
 	if ((res = sf_format_check (info)) != 1)
-	{	printf ("\n\nLine %d : sf_format_check returned error (%d)\n\n", line_num,res) ;
+	{	printf ("\n\nLine %d : sf_format_check returned error (%d)\n\n", line_num, res) ;
 		exit (1) ;
 		} ;
 
@@ -747,8 +775,8 @@ compare_[+ (get "io_element") +]_or_die (const [+ (get "io_element") +] *expecte
 	unsigned k ;
 
 	for (k = 0 ; k < count ; k++)
-		if (expected [k] != actual [k])
-		{	printf ("\n\nLine %d : Error at index %d, got " [+ (get "format_str") +] ", should be " [+ (get "format_str") +] ".\n\n", line_num, k, actual [k], expected [k]) ;
+		if (!equals_[+ (get "io_element") +](expected [k], actual [k]))
+		{	printf ("\n\nLine %d : Error at index %d, got " [+ (get "format_str") +] ", should be " [+ (get "format_str") +] "(delta=" [+ (get "format_str") +] " ).\n\n", line_num, k, actual [k], expected [k], actual [k] - expected [k]) ;
 			exit (1) ;
 			} ;
 
@@ -847,6 +875,15 @@ check_open_file_count_or_die (int lineno)
 		} ;
 #endif
 } /* check_open_file_count_or_die */
+
+void
+get_unique_test_name (const char ** filename, const char * test)
+{	static char	buffer [1024] ;
+
+	snprintf (buffer, sizeof (buffer), "%s_%s", test, *filename) ;
+
+	*filename = buffer ;
+} /* get_unique_test_name */
 
 void
 write_mono_file (const char * filename, int format, int srate, float * output, int len)

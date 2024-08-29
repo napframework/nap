@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -303,19 +303,19 @@ paf_write_header (SF_PRIVATE *psf, int UNUSED (calc_length))
 
 	if (psf->endian == SF_ENDIAN_BIG)
 	{	/* Marker, version, endianness, samplerate */
-		psf_binheader_writef (psf, "Em444", PAF_MARKER, 0, 0, psf->sf.samplerate) ;
+		psf_binheader_writef (psf, "Em444", BHWm (PAF_MARKER), BHW4 (0), BHW4 (0), BHW4 (psf->sf.samplerate)) ;
 		/* format, channels, source */
-		psf_binheader_writef (psf, "E444", paf_format, psf->sf.channels, 0) ;
+		psf_binheader_writef (psf, "E444", BHW4 (paf_format), BHW4 (psf->sf.channels), BHW4 (0)) ;
 		}
 	else if (psf->endian == SF_ENDIAN_LITTLE)
 	{	/* Marker, version, endianness, samplerate */
-		psf_binheader_writef (psf, "em444", FAP_MARKER, 0, 1, psf->sf.samplerate) ;
+		psf_binheader_writef (psf, "em444", BHWm (FAP_MARKER), BHW4 (0), BHW4 (1), BHW4 (psf->sf.samplerate)) ;
 		/* format, channels, source */
-		psf_binheader_writef (psf, "e444", paf_format, psf->sf.channels, 0) ;
+		psf_binheader_writef (psf, "e444", BHW4 (paf_format), BHW4 (psf->sf.channels), BHW4 (0)) ;
 		} ;
 
 	/* Zero fill to dataoffset. */
-	psf_binheader_writef (psf, "z", (size_t) (psf->dataoffset - psf->header.indx)) ;
+	psf_binheader_writef (psf, "z", BHWz ((size_t) (psf->dataoffset - psf->header.indx))) ;
 
 	psf_fwrite (psf->header.ptr, psf->header.indx, 1, psf) ;
 
@@ -350,7 +350,7 @@ paf24_init (SF_PRIVATE *psf)
 					(PAF24_BLOCK_SIZE + PAF24_SAMPLES_PER_BLOCK * sizeof (int)) ;
 
 	/*
-	**	Not exatly sure why this needs to be here but the tests
+	**	Not exactly sure why this needs to be here but the tests
 	**	fail without it.
 	*/
 	psf->last_op = 0 ;
@@ -493,7 +493,7 @@ paf24_read_block (SF_PRIVATE *psf, PAF24_PRIVATE *ppaf24)
 		} ;
 
 	/* Read the block. */
-	if ((k = psf_fread (ppaf24->block, 1, ppaf24->blocksize, psf)) != ppaf24->blocksize)
+	if ((k = (int) psf_fread (ppaf24->block, 1, ppaf24->blocksize, psf)) != ppaf24->blocksize)
 		psf_log_printf (psf, "*** Warning : short read (%d != %d).\n", k, ppaf24->blocksize) ;
 
 	/* Do endian swapping if necessary. */
@@ -549,7 +549,7 @@ paf24_read_s (SF_PRIVATE *psf, short *ptr, sf_count_t len)
 	iptr = ubuf.ibuf ;
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 	while (len > 0)
-	{	readcount = (len >= bufferlen) ? bufferlen : len ;
+	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = paf24_read (psf, ppaf24, iptr, readcount) ;
 		for (k = 0 ; k < readcount ; k++)
 			ptr [total + k] = iptr [k] >> 16 ;
@@ -591,7 +591,7 @@ paf24_read_f (SF_PRIVATE *psf, float *ptr, sf_count_t len)
 	iptr = ubuf.ibuf ;
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 	while (len > 0)
-	{	readcount = (len >= bufferlen) ? bufferlen : len ;
+	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = paf24_read (psf, ppaf24, iptr, readcount) ;
 		for (k = 0 ; k < readcount ; k++)
 			ptr [total + k] = normfact * iptr [k] ;
@@ -619,7 +619,7 @@ paf24_read_d (SF_PRIVATE *psf, double *ptr, sf_count_t len)
 	iptr = ubuf.ibuf ;
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 	while (len > 0)
-	{	readcount = (len >= bufferlen) ? bufferlen : len ;
+	{	readcount = (len >= bufferlen) ? bufferlen : (int) len ;
 		count = paf24_read (psf, ppaf24, iptr, readcount) ;
 		for (k = 0 ; k < readcount ; k++)
 			ptr [total + k] = normfact * iptr [k] ;
@@ -668,7 +668,7 @@ paf24_write_block (SF_PRIVATE *psf, PAF24_PRIVATE *ppaf24)
 		} ;
 
 	/* Write block to disk. */
-	if ((k = psf_fwrite (ppaf24->block, 1, ppaf24->blocksize, psf)) != ppaf24->blocksize)
+	if ((k = (int) psf_fwrite (ppaf24->block, 1, ppaf24->blocksize, psf)) != ppaf24->blocksize)
 		psf_log_printf (psf, "*** Warning : short write (%d != %d).\n", k, ppaf24->blocksize) ;
 
 	if (ppaf24->sample_count < ppaf24->write_block * PAF24_SAMPLES_PER_BLOCK + ppaf24->write_count)
@@ -718,7 +718,7 @@ paf24_write_s (SF_PRIVATE *psf, const short *ptr, sf_count_t len)
 	iptr = ubuf.ibuf ;
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 	while (len > 0)
-	{	writecount = (len >= bufferlen) ? bufferlen : len ;
+	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
 			iptr [k] = ptr [total + k] << 16 ;
 		count = paf24_write (psf, ppaf24, iptr, writecount) ;
@@ -772,9 +772,9 @@ paf24_write_f (SF_PRIVATE *psf, const float *ptr, sf_count_t len)
 	iptr = ubuf.ibuf ;
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 	while (len > 0)
-	{	writecount = (len >= bufferlen) ? bufferlen : len ;
+	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
-			iptr [k] = lrintf (normfact * ptr [total + k]) ;
+			iptr [k] = psf_lrintf (normfact * ptr [total + k]) ;
 		count = paf24_write (psf, ppaf24, iptr, writecount) ;
 		total += count ;
 		len -= writecount ;
@@ -803,9 +803,9 @@ paf24_write_d (SF_PRIVATE *psf, const double *ptr, sf_count_t len)
 	iptr = ubuf.ibuf ;
 	bufferlen = ARRAY_LEN (ubuf.ibuf) ;
 	while (len > 0)
-	{	writecount = (len >= bufferlen) ? bufferlen : len ;
+	{	writecount = (len >= bufferlen) ? bufferlen : (int) len ;
 		for (k = 0 ; k < writecount ; k++)
-			iptr [k] = lrint (normfact * ptr [total+k]) ;
+			iptr [k] = psf_lrint (normfact * ptr [total+k]) ;
 		count = paf24_write (psf, ppaf24, iptr, writecount) ;
 		total += count ;
 		len -= writecount ;

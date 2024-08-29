@@ -108,12 +108,12 @@ namespace nap
 				struct
 				{
 					Signal<Args...>* mSignal;
-				} Signal;
+				} USignal;
 
 				struct
 				{
 					Slot<Args...>* mSlot;
-				} Slot;
+				} USlot;
 			};
 
 			enum class EType : uint8_t
@@ -235,11 +235,11 @@ namespace nap
 		for (auto& data : mData)
 		{
 			if (data.mType == Data::EType::SignalCause)
-				data.Signal.mSignal->disconnect(*this);
+				data.USignal.mSignal->disconnect(*this);
 			else if (data.mType == Data::EType::SignalEffect)
-				data.Signal.mSignal->removeCause(*this);
+				data.USignal.mSignal->removeCause(*this);
 			else
-				data.Slot.mSlot->removeCause(*this);
+				data.USlot.mSlot->removeCause(*this);
 		}
 	}
 
@@ -248,7 +248,7 @@ namespace nap
 	{
 		Data data;
 		data.mType = Data::EType::SignalCause;
-		data.Signal.mSignal = &signal;
+		data.USignal.mSignal = &signal;
 		mData.push_back(data);
 	}
 
@@ -258,7 +258,7 @@ namespace nap
 		for (int index = 0; index < mData.size(); ++index)
 		{
 			Data& value = mData[index];
-			if (value.mType == Data::EType::SignalCause && value.Signal.mSignal == &event)
+			if (value.mType == Data::EType::SignalCause && value.USignal.mSignal == &event)
 			{
 				mData.erase(mData.begin() + index);
 				break;
@@ -271,7 +271,7 @@ namespace nap
 	{
 		Data data;
 		data.mType = Data::EType::SignalEffect;
-		data.Signal.mSignal = &signal;
+		data.USignal.mSignal = &signal;
 		mData.push_back(data);
 		signal.addCause(*this);
 	}
@@ -282,9 +282,9 @@ namespace nap
 		for (int index = 0; index < mData.size(); ++index)
 		{
 			Data& value = mData[index];
-			if (value.mType == Data::EType::SignalEffect && value.Signal.mSignal == &signal)
+			if (value.mType == Data::EType::SignalEffect && value.USignal.mSignal == &signal)
 			{
-				value.Signal.mSignal->removeCause(*this);
+				value.USignal.mSignal->removeCause(*this);
 				mData.erase(mData.begin() + index);
 				break;
 			}
@@ -296,7 +296,7 @@ namespace nap
 	{
 		Data data;
 		data.mType = Data::EType::SlotEffect;
-		data.Slot.mSlot = &slot;
+		data.USlot.mSlot = &slot;
 		mData.push_back(data);
 		slot.addCause(*this);
 	}
@@ -307,9 +307,9 @@ namespace nap
 		for (int index = 0; index < mData.size(); ++index)
 		{
 			Data& data = mData[index];
-			if (data.mType == Data::EType::SlotEffect && data.Slot.mSlot == &slot)
+			if (data.mType == Data::EType::SlotEffect && data.USlot.mSlot == &slot)
 			{
-				data.Slot.mSlot->removeCause(*this);
+				data.USlot.mSlot->removeCause(*this);
 				mData.erase(mData.begin() + index);
 				break;
 			}
@@ -356,9 +356,9 @@ namespace nap
 		for (auto& data : mData)
 		{
 			if (data.mType == Data::EType::SignalEffect)
-				data.Signal.mSignal->trigger(std::forward<Args>(args)...);
+				data.USignal.mSignal->trigger(std::forward<Args>(args)...);
 			else if (data.mType == Data::EType::SlotEffect)
-				data.Slot.mSlot->trigger(std::forward<Args>(args)...);
+				data.USlot.mSlot->trigger(std::forward<Args>(args)...);
 		}
 
 		if (mFunctionEffects)

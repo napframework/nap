@@ -1,7 +1,0 @@
-windows.lo: windows.c /usr/include/stdc-predef.h sfconfig.h config.h
-
-/usr/include/stdc-predef.h:
-
-sfconfig.h:
-
-config.h:
