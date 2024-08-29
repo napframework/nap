@@ -7,6 +7,7 @@
 #undef HAVE_LONG_LONG
 #undef HAVE_CONFIG_H
 #include <tclap/CmdLine.h>
+#include <cstdint>
 
 /**
  * Class to parse the commandline and store the parsed output
@@ -32,7 +33,7 @@ public:
 			ValueArg<std::string>			output_directory		("o", "outdir", "Output directory (absolute)", true, "", "path_to_output_directory");
 			ValueArg<std::string>			seed					("s", "seed", "Random seed", true, "", "random_seed");
 			ValueArg<std::string>			name					("n", "name", "Key name", false, "key", "key_name");
-            ValueArg<int32_t>			    bits				    ("b", "bits", "Number of bits", false, 4096, "number_of_bits");
+            ValueArg<std::int32_t>			bits				    ("b", "bits", "Number of bits", false, 4096, "number_of_bits");
 
 			command.add(output_directory);
 			command.add(name);
