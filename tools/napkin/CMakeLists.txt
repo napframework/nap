@@ -56,7 +56,6 @@ set(LIBS
     Qt6::Widgets Qt6::Core Qt6::Gui
     )
 
-
 target_link_libraries(${PROJECT_NAME} ${LIBS} ${QT_LIBS})
 nap_qt_post(${PROJECT_NAME})
 
