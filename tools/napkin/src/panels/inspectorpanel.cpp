@@ -84,10 +84,6 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 {
 	setLayout(&mLayout);
 	layout()->setContentsMargins(0, 0, 0, 0);
-
-	auto font = mTitle.font();
-	font.setPointSize(14);
-	mTitle.setFont(font);
 	mSubTitle.setAlignment(Qt::AlignRight);
 
 	mHeaderLayout.addWidget(&mTitle);
