@@ -37,7 +37,7 @@ namespace nap
 
         void changeSegmentColor(const std::string& trackID, const std::string& segmentID, const RGBAColorFloat& color);
 
-        void changeSegmentColorBlendMethod(const std::string& trackID, const std::string& segmentID, SequenceTrackSegmentColor::EBlendMethod blendMethod);
+        void changeSegmentColorBlendMethod(const std::string& trackID, const std::string& segmentID, SequenceTrackSegmentColor::EColorSpace blendMethod);
 
         void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 

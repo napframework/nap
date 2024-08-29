@@ -48,11 +48,11 @@ namespace utility
         }
 
 
-        RGBAColorFloat blendColors(const RGBAColorFloat& colorOne, const RGBAColorFloat& colorTwo, float blend, EType type)
+        RGBAColorFloat blendColors(const RGBAColorFloat& colorOne, const RGBAColorFloat& colorTwo, float blend, SequenceTrackSegmentColor::EColorSpace type)
         {
             switch(type)
             {
-                case EType::RGB:
+                case SequenceTrackSegmentColor::EColorSpace::LINEAR:
                 {
                     return RGBAColorFloat
                             {
@@ -62,18 +62,18 @@ namespace utility
                                     glm::mix(colorOne.getAlpha(), colorTwo.getAlpha(), blend)
                             };
                 }
-                case EType::OKLab:
+                case SequenceTrackSegmentColor::EColorSpace::OKLAB:
                 {
-                    OKLabColor oklabColorOne = rgbToOKLab(colorOne);
-                    OKLabColor oklabColorTwo = rgbToOKLab(colorTwo);
-                    OKLabColor blendedColor
+                    OKLabColor oklab_color_one = rgbToOKLab(colorOne);
+                    OKLabColor oklab_color_two = rgbToOKLab(colorTwo);
+                    OKLabColor blended_color
                     {
-                        glm::mix(oklabColorOne.L, oklabColorTwo.L, blend),
-                        glm::mix(oklabColorOne.a, oklabColorTwo.a, blend),
-                        glm::mix(oklabColorOne.b, oklabColorTwo.b, blend),
-                        glm::mix(oklabColorOne.alpha, oklabColorTwo.alpha, blend)
+                        glm::mix(oklab_color_one.L, oklab_color_two.L, blend),
+                        glm::mix(oklab_color_one.a, oklab_color_two.a, blend),
+                        glm::mix(oklab_color_one.b, oklab_color_two.b, blend),
+                        glm::mix(oklab_color_one.alpha, oklab_color_two.alpha, blend)
                     };
-                    return OKLabToRGB(blendedColor);
+                    return OKLabToRGB(blended_color);
                 }
 
                 default:

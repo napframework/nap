@@ -40,6 +40,18 @@ namespace nap
                               new_segment->mStartTime = time;
                               new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
 
+                              // create curve
+                              std::unique_ptr<math::FCurve<float, float>> fcurve = std::make_unique<math::FCurve<float, float>>();
+                              fcurve->mPoints[1].mInTan.mTime = -0.4f;
+                              fcurve->mPoints[1].mOutTan.mTime = 0.4f;
+                              fcurve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+
+                              // set curve
+                              new_segment->mCurve = ResourcePtr<math::FCurve<float, float>>(fcurve.get());
+
+                              // move ownership
+                              getPlayerOwnedObjects().emplace_back(std::move(fcurve));
+
                               // find track
                               SequenceTrack *track = findTrack(trackID);
                               assert(track != nullptr); // track not found
@@ -101,7 +113,7 @@ namespace nap
     }
 
 
-    void SequenceControllerColor::changeSegmentColorBlendMethod(const std::string &trackID, const std::string &segmentID, SequenceTrackSegmentColor::EBlendMethod blendMethod)
+    void SequenceControllerColor::changeSegmentColorBlendMethod(const std::string &trackID, const std::string &segmentID, SequenceTrackSegmentColor::EColorSpace blendMethod)
     {
         performEditAction([this, trackID, segmentID, blendMethod]()
                           {
@@ -125,6 +137,18 @@ namespace nap
                               new_segment->mStartTime = time;
                               new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
                               new_segment->mColor = color;
+
+                              // create curve
+                              std::unique_ptr<math::FCurve<float, float>> fcurve = std::make_unique<math::FCurve<float, float>>();
+                              fcurve->mPoints[1].mInTan.mTime = -0.4f;
+                              fcurve->mPoints[1].mOutTan.mTime = 0.4f;
+                              fcurve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
+
+                              // set curve
+                              new_segment->mCurve = ResourcePtr<math::FCurve<float, float>>(fcurve.get());
+
+                              // move ownership
+                              getPlayerOwnedObjects().emplace_back(std::move(fcurve));
 
                               // find track
                               SequenceTrack *track = findTrack(trackID);

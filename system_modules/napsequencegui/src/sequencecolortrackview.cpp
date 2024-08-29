@@ -161,10 +161,14 @@ namespace nap
         if(!track.mSegments.empty())
         {
             // draw first blend
-            auto a = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.0f);
+            auto a_segment_color = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.0f);
             for(const auto &segment: track.mSegments)
             {
-                auto b = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mColor;
+                // upcast to color segment
+                assert(segment.get()->get_type() == RTTI_OF(SequenceTrackSegmentColor));
+                const auto& color_segment = static_cast<const SequenceTrackSegmentColor&>(*segment.get());
+
+                auto b_segment_color = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mColor;
                 auto b_blend_type = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mBlendMethod;
 
                 float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
@@ -172,40 +176,54 @@ namespace nap
                 int steps = width / 2.0f;
                 float step_width = width / (float)steps;
 
+                // colors used for blending
+                RGBAColorFloat a_color;
+                RGBAColorFloat b_color;
                 for(int i = 0; i < steps; i ++)
                 {
+                    // calculate blend values
                     float blend_a = (float)i / (float)steps;
                     float blend_b = (float)(i + 1) / (float)steps;
 
-                    if(b_blend_type == SequenceTrackSegmentColor::EBlendMethod::OKLAB)
-                    {
-                        auto a_blend = utility::colorspace::blendColors(a, b, blend_a, utility::colorspace::EType::OKLab);
-                        auto b_blend = utility::colorspace::blendColors(a, b, blend_b, utility::colorspace::EType::OKLab);
-                        auto a_im = utility::toImColor(a_blend);
-                        auto b_im = utility::toImColor(b_blend);
+                    // get positions of the left and right of the curve with these bounds of the rectangle
+                    float a_pos = color_segment.mCurve->evaluate(blend_a);
+                    float b_pos = color_segment.mCurve->evaluate(blend_b);
 
-                        float pos = trackTopLeft.x + prev_segment_x + i * step_width;
+                    // blend colors depending on blend method
+                    a_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, a_pos, b_blend_type);
+                    b_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, b_pos, b_blend_type);
 
-                        draw_list->AddRectFilledMultiColor(
-                                {pos, trackTopLeft.y},
-                                {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale},
-                                a_im, b_im, b_im, a_im);
-                    }else
-                    {
-                        auto linear_mix_a = utility::colorspace::blendColors(a, b, blend_a, utility::colorspace::EType::RGB);
-                        auto linear_mix_b = utility::colorspace::blendColors(a, b, blend_b, utility::colorspace::EType::RGB);
+                    // convert the a and b colors to imgui colors
+                    auto a_im = utility::toImColor(a_color);
+                    auto b_im = utility::toImColor(b_color);
 
-                        auto a_im = utility::toImColor(linear_mix_a);
-                        auto b_im = utility::toImColor(linear_mix_b);
+                    float pos = trackTopLeft.x + prev_segment_x + i * step_width;
 
-                        float pos = trackTopLeft.x + prev_segment_x + i * step_width;
+                    // draw rectangle of this part of the segment
+                    draw_list->AddRectFilledMultiColor(
+                            {pos, trackTopLeft.y},
+                            {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale},
+                            a_im, b_im, b_im, a_im);
 
-                        draw_list->AddRectFilledMultiColor(
-                                {pos, trackTopLeft.y},
-                                {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale},
-                                a_im, b_im, b_im, a_im);
-                    }
+                    // we want to have the curve color always visible against the background (in case alpha is used)
+                    // so we get the background color and inverse the color and get the inverse of the curve color
+                    // depending on the alpha, the negative curve color is blended with the negative background color
+                    // this way, the curve is always clearly visible no matter the curve color or alpha
+                    auto background_color = mService.getGui().getPalette().mBackgroundColor;
+                    auto curve_color = utility::toImColor({ (1.0f - a_color.getRed()) * a_color.getAlpha() + (1.0f - (float)background_color.getRed() / 255.0f) * (1.0f - a_color.getAlpha()),
+                                                                   (1.0f - a_color.getGreen()) * a_color.getAlpha() + (1.0f - (float)background_color.getGreen() / 255.0f) * (1.0f - a_color.getAlpha()),
+                                                                   (1.0f - a_color.getBlue())* a_color.getAlpha() + (1.0f - (float)background_color.getBlue() / 255.0f) * (1.0f - a_color.getAlpha()),
+                                                                    1.0f});
 
+                    // obtain the curve height for points a and b
+                    float curve_height_a = track.mTrackHeight * a_pos;
+                    float curve_height_b = track.mTrackHeight * b_pos;
+
+                    // draw part of the curve in the rectangle curve
+                    draw_list->AddLine(
+                            {pos, trackTopLeft.y + track.mTrackHeight - curve_height_a},
+                            {pos + step_width, trackTopLeft.y + track.mTrackHeight - curve_height_b},
+                            curve_color, 2.0f * mState.mScale);
                 }
 
                 a = b;
@@ -447,19 +465,18 @@ namespace nap
     {
         auto* action = mState.mAction->getDerived<EditingColorSegment>();
         assert(action!= nullptr);
-        if(!ImGui::IsPopupOpen("Edit Color Segment"))
+        if(!action->mPopupOpened)
         {
             // invoke edit segment popup
             ImGui::OpenPopup("Edit Color Segment");
+            action->mPopupOpened = true;
         }
 
         // handle edit segment popup
         if(ImGui::BeginPopup("Edit Color Segment"))
         {
-            auto *action = mState.mAction->getDerived<EditingColorSegment>();
-
             // get controller
-            auto& controller = getEditor().getController<SequenceControllerColor>();
+            auto &controller = getEditor().getController<SequenceControllerColor>();
 
             // color picker
             if(ImGui::ColorEdit4("Color", &action->mValue[0]))
@@ -468,7 +485,7 @@ namespace nap
             }
 
             // blend method
-            static const char *blend_methods[] = {"Linear", "Oklab"};
+            static constexpr const char *blend_methods[] = {"Linear", "Oklab"};
             if(ImGui::BeginCombo("Blend Method", blend_methods[static_cast<int>(action->mBlendMethod)]))
             {
                 for(int i = 0; i < IM_ARRAYSIZE(blend_methods); i++)
@@ -476,7 +493,8 @@ namespace nap
                     bool is_selected = (static_cast<int>(action->mBlendMethod) == i);
                     if(ImGui::Selectable(blend_methods[i], is_selected))
                     {
-                        controller.changeSegmentColorBlendMethod(action->mTrackID, action->mSegmentID, static_cast<SequenceTrackSegmentColor::EBlendMethod>(i));
+                        action->mBlendMethod = static_cast<SequenceTrackSegmentColor::EColorSpace>(i);
+                        controller.changeSegmentColorBlendMethod(action->mTrackID, action->mSegmentID, action->mBlendMethod);
                     }
 
                     if(is_selected)
@@ -503,9 +521,7 @@ namespace nap
 
                 // remove segment from clipboard
                 if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
-                {
                     mState.mClipboard->removeObject(action->mSegmentID);
-                }
 
                 mState.mDirty = true;
                 ImGui::CloseCurrentPopup();
@@ -520,7 +536,7 @@ namespace nap
             }
 
             ImGui::EndPopup();
-        } else
+        }else
         {
             // click outside popup so cancel action
             ImGui::CloseCurrentPopup();

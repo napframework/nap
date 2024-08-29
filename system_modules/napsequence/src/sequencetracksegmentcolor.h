@@ -18,7 +18,7 @@ namespace nap
     {
     RTTI_ENABLE(SequenceTrackSegment)
     public:
-        enum NAPAPI EBlendMethod
+        enum NAPAPI EColorSpace
         {
             LINEAR,
             OKLAB
@@ -26,6 +26,8 @@ namespace nap
 
         // properties
         RGBAColorFloat mColor;
-        EBlendMethod mBlendMethod = EBlendMethod::OKLAB;
+        SequenceTrackSegmentColor::EColorSpace mBlendMethod = SequenceTrackSegmentColor::EColorSpace::OKLAB;
+        ResourcePtr<math::FCurve<float, float>> mCurve;
+        math::ECurveInterp mCurveType = math::ECurveInterp::Linear;
     };
 }

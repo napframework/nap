@@ -72,15 +72,15 @@ namespace nap
              * @param value the new value of the event segment
              * @param startTime the new start time of the event segment
              */
-            EditingColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, RGBAColorFloat value, SequenceTrackSegmentColor::EBlendMethod blendMethod, double startTime)
+            EditingColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, RGBAColorFloat value, SequenceTrackSegmentColor::EColorSpace blendMethod, double startTime)
                     : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(std::move(value)), mBlendMethod(blendMethod), mStartTime(startTime)
             {}
 
-
+            bool mPopupOpened = false;
             std::string mSegmentID;
             ImVec2 mWindowPos;
             RGBAColorFloat mValue;
-            SequenceTrackSegmentColor::EBlendMethod mBlendMethod = SequenceTrackSegmentColor::EBlendMethod::OKLAB;
+            SequenceTrackSegmentColor::EColorSpace mBlendMethod = SequenceTrackSegmentColor::EColorSpace::OKLAB;
             double mStartTime;
         };
     }

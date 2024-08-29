@@ -1,5 +1,8 @@
 #pragma once
 
+// Internal includes
+#include "sequencetracksegmentcolor.h"
+
 // External Includes
 #include <glm/glm.hpp>
 #include <color.h>
@@ -10,12 +13,6 @@ namespace utility
 {
     namespace colorspace
     {
-        enum NAPAPI EType
-        {
-            RGB,
-            OKLab
-        };
-
         /**
          * Struct representing a color in the OKLab color space
          */
@@ -49,7 +46,7 @@ namespace utility
          * @param type the color space to blend in
          * @return returns the blended color in RGBA color space
          */
-        RGBAColorFloat NAPAPI blendColors(const RGBAColorFloat& colorOne, const RGBAColorFloat& colorTwo, float blend, EType type);
+        RGBAColorFloat NAPAPI blendColors(const RGBAColorFloat& colorOne, const RGBAColorFloat& colorTwo, float blend, SequenceTrackSegmentColor::EColorSpace type);
     }
 }
 }
