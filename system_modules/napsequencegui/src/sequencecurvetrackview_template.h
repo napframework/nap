@@ -53,7 +53,7 @@ namespace nap
              */
             // obtain segment
             auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-            const auto *segment = curve_controller.getSegment(action->mTrackID, action->mSegmentID);
+            const auto *segment = static_cast<const SequenceTrackSegmentDuration*>(curve_controller.getSegment(action->mTrackID, action->mSegmentID));
             assert(segment != nullptr);
 
             double time = action->mTime * segment->mDuration + segment->mStartTime;
@@ -139,6 +139,12 @@ namespace nap
         if(ImGui::BeginPopup("Segment Value Actions"))
         {
             int curveIndex = action->mCurveIndex;
+
+            if(action->mTakeSnapshot)
+            {
+                action->mTakeSnapshot = false;
+                getEditor().takeSnapshot(action->get_type());
+            }
 
             float value =
                 action->mValue[curveIndex] * (action->mMaximum[curveIndex] - action->mMinimum[curveIndex]) +
@@ -365,6 +371,13 @@ namespace nap
         }
 
         const float track_height = track.mTrackHeight * mState.mScale;
+
+        // draw segment color
+        const auto& curve_segment = static_cast<const SequenceTrackSegmentCurve<T>&>(segment);
+        drawList->AddRectFilled(
+                { trackTopLeft.x + segmentX - segmentWidth, trackTopLeft.y }, // top left
+                { trackTopLeft.x + segmentX, trackTopLeft.y + track.mTrackHeight * mState.mScale }, // top right
+                ImGui::ColorConvertFloat4ToU32(curve_segment.mColor)); // color
 
         if(draw_selection_background)
         {
@@ -1076,7 +1089,7 @@ namespace nap
                 curve_controller->changeSegmentLabel(trackId, new_segment->mID, curve_segment->mLabel);
 
                 // change duration
-                curve_controller->segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration);
+                curve_controller->segmentDurationChange(trackId, new_segment->mID, curve_segment->mDuration, true);
 
                 // update any segments that could be changed
                 updateSegmentsInClipboard(trackId);
@@ -1163,7 +1176,7 @@ namespace nap
             }
 
             // change duration
-            curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration);
+            curve_controller.segmentDurationChange(trackId, target_segment_upcast->mID, curve_segment->mDuration, true);
 
             // copy curve points & curve type
             for(int c = 0; c < curve_segment->mCurves.size(); c++)
@@ -1207,11 +1220,20 @@ namespace nap
     template<typename T>
     void SequenceCurveTrackView::handleChangeMinMaxCurve()
     {
+        // get action
         auto *action = mState.mAction->template getDerived<sequenceguiactions::ChangeMinMaxCurve<T>>();
+
+        // take snapshot
+        getEditor().takeSnapshot(action->get_type());
+
+        // perform action
         auto &controller = getEditor().template getController<SequenceControllerCurve>();
         controller.template changeMinMaxCurveTrack<T>(action->mTrackID, action->mNewMin, action->mNewMax);
 
+        // state is dirty
         mState.mDirty = true;
+
+        // stop action
         mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
     }
 }

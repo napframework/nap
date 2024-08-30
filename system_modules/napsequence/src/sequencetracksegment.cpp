@@ -8,7 +8,6 @@
 RTTI_BEGIN_CLASS(nap::SequenceTrackSegment, "Part of a track")
         RTTI_PROPERTY("Label", &nap::SequenceTrackSegment::mLabel, nap::rtti::EPropertyMetaData::Default, "Segment name")
         RTTI_PROPERTY("Start Time", &nap::SequenceTrackSegment::mStartTime, nap::rtti::EPropertyMetaData::Default, "Segment start time")
-        RTTI_PROPERTY("Duration", &nap::SequenceTrackSegment::mDuration, nap::rtti::EPropertyMetaData::Default, "Segment end time")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
