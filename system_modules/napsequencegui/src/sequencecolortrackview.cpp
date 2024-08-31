@@ -32,6 +32,7 @@ namespace nap
         registerActionHandler(RTTI_OF(AssignOutputIDToTrack), [this] { handleAssignOutputIDToTrack(); });
         registerActionHandler(RTTI_OF(DraggingSegment), [this] { handleSegmentDrag(); });
         registerActionHandler(RTTI_OF(LoadPresetPopup), [this] { handleLoadPresetPopup(); });
+        registerActionHandler(RTTI_OF(EditColorCurvePopup), [this] { handleEditCurvePopup(); });
 
         mSegmentViews.emplace(RTTI_OF(SequenceTrackSegmentColor), std::make_unique<SequenceColorTrackSegmentView>());
     }
@@ -160,6 +161,12 @@ namespace nap
         int segment_count = 0;
         if(!track.mSegments.empty())
         {
+            //
+            if(mState.mDirty)
+            {
+                mCachePoints.clear();
+            }
+
             // draw first blend
             auto a_segment_color = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.0f);
             for(const auto &segment: track.mSegments)
@@ -173,60 +180,166 @@ namespace nap
 
                 float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
                 float width = segment_x - prev_segment_x;
-                int steps = width / 2.0f;
+                int steps = width;
                 float step_width = width / (float)steps;
 
-                // colors used for blending
-                RGBAColorFloat a_color;
-                RGBAColorFloat b_color;
-                for(int i = 0; i < steps; i ++)
+                // check if we're hovering the curve
+                bool hovering_segment = false;
+                float mouse_pos_in_curve = 0.0f;
+                // only check if we're not in an action or already hovering the curve
+                if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
                 {
-                    // calculate blend values
-                    float blend_a = (float)i / (float)steps;
-                    float blend_b = (float)(i + 1) / (float)steps;
+                    if(mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
+                            {trackTopLeft.x + prev_segment_x, trackTopLeft.y},
+                            {trackTopLeft.x + segment_x, trackTopLeft.y + track.mTrackHeight * mState.mScale}))
+                    {
+                        // check if we're hovering the curve
+                        // get the normalized mouse x position in the segment
+                        float mouse_x_in_segment_normalized = (mState.mMousePos.x - trackTopLeft.x - prev_segment_x) / width;
+                        if(mouse_x_in_segment_normalized >= 0.0f && mouse_x_in_segment_normalized <= 1.0f)
+                        {
+                            // get the normalized mouse y position in the segment
+                            float mouse_y_in_segment_normalized = (mState.mMousePos.y - trackTopLeft.y) / track.mTrackHeight;
+                            if(mouse_y_in_segment_normalized >= 0.0f && mouse_y_in_segment_normalized <= 1.0f)
+                            {
+                                // get the curve value at this position
+                                float h = color_segment.mCurve->evaluate(mouse_x_in_segment_normalized);
 
-                    // get positions of the left and right of the curve with these bounds of the rectangle
-                    float a_pos = color_segment.mCurve->evaluate(blend_a);
-                    float b_pos = color_segment.mCurve->evaluate(blend_b);
-
-                    // blend colors depending on blend method
-                    a_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, a_pos, b_blend_type);
-                    b_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, b_pos, b_blend_type);
-
-                    // convert the a and b colors to imgui colors
-                    auto a_im = utility::toImColor(a_color);
-                    auto b_im = utility::toImColor(b_color);
-
-                    float pos = trackTopLeft.x + prev_segment_x + i * step_width;
-
-                    // draw rectangle of this part of the segment
-                    draw_list->AddRectFilledMultiColor(
-                            {pos, trackTopLeft.y},
-                            {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale},
-                            a_im, b_im, b_im, a_im);
-
-                    // we want to have the curve color always visible against the background (in case alpha is used)
-                    // so we get the background color and inverse the color and get the inverse of the curve color
-                    // depending on the alpha, the negative curve color is blended with the negative background color
-                    // this way, the curve is always clearly visible no matter the curve color or alpha
-                    auto background_color = mService.getGui().getPalette().mBackgroundColor;
-                    auto curve_color = utility::toImColor({ (1.0f - a_color.getRed()) * a_color.getAlpha() + (1.0f - (float)background_color.getRed() / 255.0f) * (1.0f - a_color.getAlpha()),
-                                                                   (1.0f - a_color.getGreen()) * a_color.getAlpha() + (1.0f - (float)background_color.getGreen() / 255.0f) * (1.0f - a_color.getAlpha()),
-                                                                   (1.0f - a_color.getBlue())* a_color.getAlpha() + (1.0f - (float)background_color.getBlue() / 255.0f) * (1.0f - a_color.getAlpha()),
-                                                                    1.0f});
-
-                    // obtain the curve height for points a and b
-                    float curve_height_a = track.mTrackHeight * a_pos;
-                    float curve_height_b = track.mTrackHeight * b_pos;
-
-                    // draw part of the curve in the rectangle curve
-                    draw_list->AddLine(
-                            {pos, trackTopLeft.y + track.mTrackHeight - curve_height_a},
-                            {pos + step_width, trackTopLeft.y + track.mTrackHeight - curve_height_b},
-                            curve_color, 2.0f * mState.mScale);
+                                // check if mouse is hovering the curve
+                                if(fabsf(h - (1.0f - mouse_y_in_segment_normalized)) < 0.05f)
+                                {
+                                    hovering_segment = true;
+                                    mouse_pos_in_curve = mouse_x_in_segment_normalized;
+                                }
+                            }
+                        }
+                    }
                 }
 
-                a = b;
+                // invoke hovering color curve action if not already active
+                if(hovering_segment)
+                {
+                    if(mState.mAction->isAction<None>())
+                    {
+                        mState.mAction = createAction<HoveringCurveColorSegment>(track.mID,
+                                                                                 segment->mID,
+                                                                                 mState.mMousePos);
+                    }
+
+                    // if right mouse button is clicked, open edit color curve popup
+                    if(mState.mAction->isAction<HoveringCurveColorSegment>())
+                    {
+                        if(ImGui::IsMouseDown(1))
+                        {
+                            mState.mAction = createAction<EditColorCurvePopup>(track.mID,
+                                                                               segment->mID,
+                                                                               mState.mMousePos,
+                                                                               mouse_pos_in_curve);
+                        }
+                    }
+                }else
+                {
+                    // if we're not hovering the curve, check if we're hovering the curve action
+                    if(mState.mAction->isAction<HoveringCurveColorSegment>())
+                    {
+                        auto *action = mState.mAction->getDerived<HoveringCurveColorSegment>();
+                        if(action->mSegmentID == segment->mID)
+                        {
+                            // if we're not hovering the curve, remove the action
+                            mState.mAction = createAction<None>();
+                        }
+                    }
+                }
+
+                // create cache points if state is dirty
+                // cache points are used to draw the curve and the color blend
+                if(mState.mDirty)
+                {
+                    RGBAColorFloat a_color;
+                    RGBAColorFloat b_color;
+                    for(int i = 0; i < steps; i ++)
+                    {
+                        CachePoint cache_point;
+
+                        // calculate blend values
+                        float blend_a = (float)i / (float)steps;
+                        float blend_b = (float)(i + 1) / (float)steps;
+
+                        // get positions of the left and right of the curve with these bounds of the rectangle
+                        float a_pos = color_segment.mCurve->evaluate(blend_a);
+                        float b_pos = color_segment.mCurve->evaluate(blend_b);
+
+                        // blend colors depending on blend method
+                        a_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, a_pos, b_blend_type);
+                        b_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, b_pos, b_blend_type);
+
+                        // convert the a and b colors to imgui colors
+                        auto a_im = utility::toImColor(a_color);
+                        auto b_im = utility::toImColor(b_color);
+
+                        float pos = trackTopLeft.x + prev_segment_x + i * step_width;
+
+                        // set the rectangle points and colors
+                        cache_point.mRectStart = {pos, trackTopLeft.y};
+                        cache_point.mRectEnd = {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale};
+                        cache_point.mColorStart = a_im;
+                        cache_point.mColorEnd = b_im;
+
+                        // we want to have the curve color always visible against the background (in case alpha is used)
+                        // so we get the background color and inverse the color and get the inverse of the curve color
+                        // depending on the alpha, the negative curve color is blended with the negative background color
+                        // this way, the curve is always clearly visible no matter the curve color or alpha
+                        auto background_color = mService.getGui().getPalette().mBackgroundColor;
+                        auto curve_color = utility::toImColor({ (1.0f - a_color.getRed()) * a_color.getAlpha() + (1.0f - (float)background_color.getRed() / 255.0f) * (1.0f - a_color.getAlpha()),
+                                                                (1.0f - a_color.getGreen()) * a_color.getAlpha() + (1.0f - (float)background_color.getGreen() / 255.0f) * (1.0f - a_color.getAlpha()),
+                                                                (1.0f - a_color.getBlue())* a_color.getAlpha() + (1.0f - (float)background_color.getBlue() / 255.0f) * (1.0f - a_color.getAlpha()),
+                                                                1.0f});
+
+                        // obtain the curve height for points a and b
+                        float curve_height_a = track.mTrackHeight * a_pos;
+                        float curve_height_b = track.mTrackHeight * b_pos;
+
+                        // set the curve points and color
+                        cache_point.mCurveColor = curve_color;
+                        cache_point.mCurveStart = {pos, trackTopLeft.y + track.mTrackHeight - curve_height_a};
+                        cache_point.mCurveEnd = {pos + step_width, trackTopLeft.y + track.mTrackHeight - curve_height_b};
+
+                        // add the cache point
+                        mCachePoints[segment->mID].emplace_back(cache_point);
+                    }
+                    a_segment_color = b_segment_color;
+                }
+
+                //
+                assert(mCachePoints.find(segment->mID) != mCachePoints.end());
+                const auto& cached_points = mCachePoints[segment->mID];
+                for(const auto& cached_point : cached_points)
+                {
+                    // draw the rectangle
+                    draw_list->AddRectFilledMultiColor(
+                            cached_point.mRectStart,
+                            cached_point.mRectEnd,
+                            cached_point.mColorStart,
+                            cached_point.mColorEnd,
+                            cached_point.mColorEnd,
+                            cached_point.mColorStart);
+
+                    // draw the curve
+                    draw_list->AddLine(
+                            cached_point.mCurveStart,
+                            cached_point.mCurveEnd,
+                            cached_point.mCurveColor,
+                            hovering_segment ? 4.0f * mState.mScale : 2.0f * mState.mScale);
+                }
+
+                // draw curve points
+                const auto& curve_points = color_segment.mCurve->mPoints;
+                for(int i = 0; i < curve_points.size(); i++)
+                {
+                    ImVec2 curve_point = {trackTopLeft.x + prev_segment_x + curve_points[i].mPos.mTime * width,
+                                          trackTopLeft.y + track.mTrackHeight - curve_points[i].mPos.mValue * track.mTrackHeight};
+                    draw_list->AddCircle(curve_point, 6.0f * mState.mScale, mService.getColors().mFro4);
+                }
 
                 prev_segment_x = segment_x;
                 segment_count++;
@@ -274,6 +387,9 @@ namespace nap
                 // call function to controller
                 auto &controller = getEditor().getController<SequenceControllerColor>();
                 controller.insertColorSegment(action->mTrackID, action->mTime, action->mValue);
+
+                // mark state dirty
+                mState.mDirty = true;
 
                 // exit popup
                 ImGui::CloseCurrentPopup();
@@ -481,6 +597,17 @@ namespace nap
             // color picker
             if(ImGui::ColorEdit4("Color", &action->mValue[0]))
             {
+                // Mark state dirty
+                mState.mDirty = true;
+
+                // Take snapshot
+                if(action->mTakeSnapshot)
+                {
+                    getEditor().takeSnapshot(action->get_type());
+                    action->mTakeSnapshot = false;
+                }
+
+                // change color
                 controller.changeSegmentColor(action->mTrackID, action->mSegmentID, action->mValue);
             }
 
@@ -493,6 +620,16 @@ namespace nap
                     bool is_selected = (static_cast<int>(action->mBlendMethod) == i);
                     if(ImGui::Selectable(blend_methods[i], is_selected))
                     {
+                        // Mark state dirty
+                        mState.mDirty = true;
+
+                        // Take snapshot
+                        if(action->mTakeSnapshot)
+                        {
+                            getEditor().takeSnapshot(action->get_type());
+                            action->mTakeSnapshot = false;
+                        }
+
                         action->mBlendMethod = static_cast<SequenceTrackSegmentColor::EColorSpace>(i);
                         controller.changeSegmentColorBlendMethod(action->mTrackID, action->mSegmentID, action->mBlendMethod);
                     }
@@ -524,13 +661,6 @@ namespace nap
                     mState.mClipboard->removeObject(action->mSegmentID);
 
                 mState.mDirty = true;
-                ImGui::CloseCurrentPopup();
-                mState.mAction = createAction<None>();
-            }
-
-            ImGui::SameLine();
-            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
-            {
                 ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }
@@ -644,8 +774,12 @@ namespace nap
     {
         if(ImGui::IsMouseDown(0))
         {
+            // get action
             auto *action = mState.mAction->getDerived<sequenceguiactions::DraggingSegment>();
             assert(action != nullptr);
+
+            // Mark state as dirty, so that the cache is updated
+            mState.mDirty = true;
 
             // calc new time
             float amount = mState.mMouseDelta.x / mState.mStepSize;
@@ -670,6 +804,49 @@ namespace nap
         } else
         {
             mState.mAction = sequenceguiactions::createAction<sequenceguiactions::None>();
+        }
+    }
+
+
+    void SequenceColorTrackView::handleEditCurvePopup()
+    {
+        auto* action = mState.mAction->getDerived<EditColorCurvePopup>();
+        assert(action!= nullptr);
+        if(!action->mPopupOpened)
+        {
+            // invoke edit segment popup
+            ImGui::OpenPopup("Edit Color Curve");
+            action->mPopupOpened = true;
+        }
+
+        // handle edit curve popup
+        if(ImGui::BeginPopup("Edit Color Curve"))
+        {
+            // get controller
+            auto &controller = getEditor().getController<SequenceControllerColor>();
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert), "insert point"))
+            {
+                // take snapshot
+                getEditor().takeSnapshot(action->get_type());
+                
+
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+            }
+
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::cancel)))
+            {
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+            }
+
+            ImGui::EndPopup();
+        }else
+        {
+            // click outside popup so cancel action
+            ImGui::CloseCurrentPopup();
+            mState.mAction = createAction<None>();
         }
     }
 

@@ -77,11 +77,38 @@ namespace nap
             {}
 
             bool mPopupOpened = false;
+            bool mTakeSnapshot = true;
             std::string mSegmentID;
             ImVec2 mWindowPos;
             RGBAColorFloat mValue;
             SequenceTrackSegmentColor::EColorSpace mBlendMethod = SequenceTrackSegmentColor::EColorSpace::OKLAB;
             double mStartTime;
+        };
+
+        class HoveringCurveColorSegment : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            HoveringCurveColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos)
+            {}
+
+            std::string mSegmentID;
+            ImVec2 mWindowPos;
+        };
+
+        class EditColorCurvePopup : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            EditColorCurvePopup(const std::string& trackID, std::string segmentID, ImVec2 windowPos, float timeInCurve)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mTimeInCurve(timeInCurve)
+            {}
+
+            bool mPopupOpened = false;
+            float mTimeInCurve = 0.0f;
+            std::string mSegmentID;
+            ImVec2 mWindowPos;
         };
     }
 }

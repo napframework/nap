@@ -143,9 +143,26 @@ namespace nap
          */
         void handleLoadPresetPopup();
 
+        /**
+         *
+         */
+        void handleEditCurvePopup();
+
     private:
         // map of segment views for different event views
         std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceColorTrackSegmentView>> mSegmentViews;
+
+        struct CachePoint
+        {
+            ImU32 mColorStart;
+            ImU32 mColorEnd;
+            ImU32 mCurveColor;
+            ImVec2 mCurveStart;
+            ImVec2 mCurveEnd;
+            ImVec2 mRectStart;
+            ImVec2 mRectEnd;
+        };
+        std::unordered_map<std::string, std::vector<CachePoint>> mCachePoints;
     };
 
 
