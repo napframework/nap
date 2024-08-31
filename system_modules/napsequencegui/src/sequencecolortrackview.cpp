@@ -277,6 +277,7 @@ namespace nap
                         auto a_im = utility::toImColor(a_color);
                         auto b_im = utility::toImColor(b_color);
 
+                        // x position of the rectangle and part of curve
                         float pos = trackTopLeft.x + prev_segment_x + i * step_width;
 
                         // set the rectangle points and colors
@@ -310,7 +311,7 @@ namespace nap
                     a_segment_color = b_segment_color;
                 }
 
-                //
+                // draw the cached points
                 assert(mCachePoints.find(segment->mID) != mCachePoints.end());
                 const auto& cached_points = mCachePoints[segment->mID];
                 for(const auto& cached_point : cached_points)
@@ -336,9 +337,42 @@ namespace nap
                 const auto& curve_points = color_segment.mCurve->mPoints;
                 for(int i = 0; i < curve_points.size(); i++)
                 {
+                    // Calculate the position of the curve point
                     ImVec2 curve_point = {trackTopLeft.x + prev_segment_x + curve_points[i].mPos.mTime * width,
                                           trackTopLeft.y + track.mTrackHeight - curve_points[i].mPos.mValue * track.mTrackHeight};
-                    draw_list->AddCircle(curve_point, 6.0f * mState.mScale, mService.getColors().mFro4);
+
+                    // calculate the size of the curve point
+                    const float curve_point_size = 6.0f * mState.mScale;
+
+                    // check if we're hovering the curve point, ignore the first and last points
+                    bool is_hovering = ImGui::IsMouseHoveringRect(
+                            {curve_point.x - curve_point_size, curve_point.y - curve_point_size},
+                            {curve_point.x + curve_point_size, curve_point.y + curve_point_size}) &&
+                                    i != 0 && i != curve_points.size() - 1;
+
+                    // draw the curve point
+                    if(is_hovering)
+                    {
+                        //
+                        if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
+                        {
+                            mState.mAction = createAction<HoveringColorCurvePoint>(track.mID, segment->mID, i);
+                        }
+
+                        draw_list->AddCircleFilled(curve_point, curve_point_size, mService.getColors().mFro4);
+                    } else
+                    {
+                        if(mState.mAction->isAction<HoveringColorCurvePoint>())
+                        {
+                            auto *action = mState.mAction->getDerived<HoveringColorCurvePoint>();
+                            if(action->mSegmentID == segment->mID && action->mPointIndex == i)
+                            {
+                                mState.mAction = createAction<None>();
+                            }
+                        }
+
+                        draw_list->AddCircle(curve_point, curve_point_size, mService.getColors().mFro4);
+                    }
                 }
 
                 prev_segment_x = segment_x;
@@ -829,8 +863,16 @@ namespace nap
             {
                 // take snapshot
                 getEditor().takeSnapshot(action->get_type());
-                
 
+                // insert point
+                controller.insertCurvePoint(action->mTrackID,
+                                            action->mSegmentID,
+                                            action->mTimeInCurve);
+
+                // mark state dirty
+                mState.mDirty = true;
+
+                // exit popup
                 ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
             }

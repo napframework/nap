@@ -39,6 +39,8 @@ namespace nap
 
         void changeSegmentColorBlendMethod(const std::string& trackID, const std::string& segmentID, SequenceTrackSegmentColor::EColorSpace blendMethod);
 
+        void insertCurvePoint(const std::string& trackID, const std::string& segmentID, float pos);
+
         void deleteSegment(const std::string& trackID, const std::string& segmentID) override;
 
         void addNewColorTrack();

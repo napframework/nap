@@ -110,5 +110,17 @@ namespace nap
             std::string mSegmentID;
             ImVec2 mWindowPos;
         };
+
+        class HoveringColorCurvePoint : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            HoveringColorCurvePoint(const std::string& trackID, std::string segmentID, int pointIndex)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mPointIndex(pointIndex)
+            {}
+
+            std::string mSegmentID;
+            int mPointIndex;
+        };
     }
 }

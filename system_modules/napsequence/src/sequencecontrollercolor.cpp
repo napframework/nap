@@ -170,6 +170,46 @@ namespace nap
     }
 
 
+    void SequenceControllerColor::insertCurvePoint(const std::string &trackID, const std::string &segmentID, float pos)
+    {
+        performEditAction([this, trackID, segmentID, pos]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+
+                              // iterate trough points of curve
+                              for(int i = 0; i < segment_color.mCurve->mPoints.size() - 1; i++)
+                              {
+                                  // find the point the new point needs to get inserted after
+                                  if(segment_color.mCurve->mPoints[i].mPos.mTime <= pos &&
+                                     segment_color.mCurve->mPoints[i + 1].mPos.mTime > pos)
+                                  {
+                                      // create point
+                                      math::FCurvePoint<float, float> p;
+                                      p.mPos.mTime = pos;
+                                      p.mPos.mValue = segment_color.mCurve->evaluate(pos);
+                                      p.mInTan.mTime = -0.1f;
+                                      p.mOutTan.mTime = 0.1f;
+                                      p.mInTan.mValue = 0.0f;
+                                      p.mOutTan.mValue = 0.0f;
+                                      p.mTangentsAligned = true;
+                                      p.mInterp = segment_color.mCurveType;
+
+                                      // insert point
+                                      segment_color.mCurve->mPoints.insert(
+                                              segment_color.mCurve->mPoints.begin() + i + 1, p);
+                                      segment_color.mCurve->invalidate();
+
+                                      break;
+                                  }
+                              }
+                          });
+    }
+
+
     void SequenceControllerColor::addNewColorTrack()
     {
         performEditAction([this]()
