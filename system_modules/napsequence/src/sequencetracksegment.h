@@ -36,8 +36,6 @@ namespace nap
         };
     public:
         double mStartTime = 0.0; ///< Property: 'Start time' start time of segment in track
-        double mDuration = 1.0; ///< Property: 'Duration' duration of segment
-
         std::string mLabel = "default"; ///< Property: 'Label' label of this segment
     };
 }

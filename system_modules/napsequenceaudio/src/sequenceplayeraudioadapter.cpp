@@ -37,16 +37,16 @@ namespace nap
         // iterate trough audio segments
         for (const auto& segment : audio_track.mSegments)
         {
-            // check if time is inside audio segment
-            if (time>=segment->mStartTime && time<segment->mStartTime+segment->mDuration)
-            {
-                // get the segment we need
-                assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentAudio)));
-                const auto& audio_segment = static_cast<const SequenceTrackSegmentAudio&>(*segment.get());
+            // upcast to audio segment
+            assert(segment.get()->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentAudio)));
+            auto* segment_audio = static_cast<SequenceTrackSegmentAudio*>(segment.get());
 
+            // check if time is inside audio segment
+            if (time>=segment_audio->mStartTime && time<segment_audio->mStartTime+segment_audio->mDuration)
+            {
                 // get time in segment
-                double time_in_segment = time-audio_segment.mStartTime+audio_segment.mStartTimeInAudioSegment;
-                started_segment_id = audio_segment.mAudioBufferID;
+                double time_in_segment = time-segment_audio->mStartTime+segment_audio->mStartTimeInAudioSegment;
+                started_segment_id = segment_audio->mAudioBufferID;
 
                 // if time is different, continue to play from the right position
                 // else stop the player
@@ -58,14 +58,14 @@ namespace nap
                     }
                     else
                     {
-                        mOutput.handleAudioSegmentPlay(this, audio_segment.mAudioBufferID, mPrevTimeInSegment, mPlayer.getPlaybackSpeed());
+                        mOutput.handleAudioSegmentPlay(this, segment_audio->mAudioBufferID, mPrevTimeInSegment, mPlayer.getPlaybackSpeed());
 
                         mPrevTimeInSegment = time_in_segment;
                     }
                 }
                 else
                 {
-                    mOutput.handleAudioSegmentStop(this, audio_segment.mAudioBufferID);
+                    mOutput.handleAudioSegmentStop(this, segment_audio->mAudioBufferID);
                 }
 
                 mPrevTime = time;
