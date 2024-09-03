@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "rttiitem.h"
+#include "thememanager.h"
 
 // External Includes
 #include <QWidget>
@@ -99,6 +100,7 @@ namespace napkin
 
 	private:
 		void populateFilterCombo();
+
 		/**
 		 * Provide FilterTreeView with a way of filtering log messages based on our level
 		 */
@@ -108,6 +110,11 @@ namespace napkin
 		void onDoubleClicked(const QModelIndex& index);
 		void onRowsAboutToBeInserted(const QModelIndex &parent, int first, int last);
 		void onRowInserted(const QModelIndex &parent, int first, int last);
+
+		/**
+		 * Occurs when theme changes
+		 */
+		void themeChanged(const Theme* theme);
 
 		nap::qt::FilterTreeView mTreeView; 	// Treeview with log entries
 		QVBoxLayout mLayout;		// The main layout

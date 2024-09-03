@@ -5,7 +5,7 @@ QMainWindow
 
 QWidget
 {
-    font-family: "@font1";
+    font-family: "@regularFont";
     font-size: 13px;
     font-weight: 500;
     selection-background-color:@highlight1;
@@ -71,7 +71,6 @@ QGroupBox:title {
 QDockWidget {
     color: @front4;
     border: 1px solid @header;
-    font-family: "@font1";
     font-size: 15px;
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
@@ -203,6 +202,7 @@ QTabBar:tab::!selected {
 QStatusBar {
     color: @front3;
     background: @status;
+    font-family: "@monoFont";
 }
 
 QGraphicsView {

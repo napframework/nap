@@ -107,6 +107,9 @@ LogPanel::LogPanel() : QWidget()
 	connect(&mTreeView.getTreeView(), &QTreeView::doubleClicked, this, &LogPanel::onDoubleClicked);
 	connect(mTreeView.getModel(), &QAbstractItemModel::rowsInserted, this, &LogPanel::onRowInserted);
 	connect(mTreeView.getModel(), &QAbstractItemModel::rowsAboutToBeInserted, this, &LogPanel::onRowsAboutToBeInserted);
+
+	// Update font when theme changes
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &LogPanel::themeChanged);
 }
 
 void LogPanel::populateFilterCombo()
@@ -197,6 +200,15 @@ int LogPanel::getLevelIndex(const nap::LogLevel& level) const
 {
 	const auto& levels = nap::Logger::getLevels();
 	return static_cast<int>(std::find(levels.begin(), levels.end(), &level) - levels.begin());
+}
+
+
+void napkin::LogPanel::themeChanged(const Theme* theme)
+{
+	if (theme != nullptr)
+	{
+		theme->changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::mono);
+	}
 }
 
 

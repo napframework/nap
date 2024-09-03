@@ -5,7 +5,7 @@ QMainWindow
 
 QWidget
 {
-    font-family: "@font1";
+    font-family: "@regularFont";
     font-size: 13px;
     font-weight: 500;
     selection-background-color:@front3;
@@ -200,6 +200,7 @@ QTabBar:tab::!selected {
 QStatusBar {
     color: @front3;
     background: @status;
+    font-family: "@monoFont";
 }
 
 QGraphicsView {

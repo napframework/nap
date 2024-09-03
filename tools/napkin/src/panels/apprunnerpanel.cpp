@@ -15,7 +15,6 @@
 napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 {
 	setLayout(&mLayout);
-	themeChanged(nullptr);
 	mStopButton.setEnabled(false);
 
 	mLayout.addWidget(&mFileSelector);
@@ -33,7 +32,7 @@ napkin::AppRunnerPanel::AppRunnerPanel() : QWidget()
 	// Cast to tell the compiler which override to use
 	connect(&mProcess, (void (QProcess::*)(int, QProcess::ExitStatus)) & QProcess::finished, this, &AppRunnerPanel::onAppFinished);
 
-	// When theme changes, update icons
+	// When theme changes, update icons & font
 	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &AppRunnerPanel::themeChanged);
 
 	// When project loads find executable and set it
@@ -160,4 +159,10 @@ void napkin::AppRunnerPanel::themeChanged(const Theme* theme)
 {
 	mStartButton.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_PLAY_APP));
 	mStopButton.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_STOP_APP));
+
+	if (theme != nullptr)
+	{
+		assert(theme != nullptr);
+		theme->changeWidgetFont(mFileSelector.getLineEdit(), napkin::theme::font::mono);
+	}
 }
