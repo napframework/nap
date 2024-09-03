@@ -5,7 +5,7 @@
 #pragma once
 
 // NAP Includes
-#include <sequencetracksegment.h>
+#include <sequencetracksegmentduration.h>
 
 // External Includes
 #include <nap/event.h>
@@ -16,9 +16,9 @@ namespace nap
      * The SequenceTrackSegmentAudio contains a buffer id, pointer to the audio buffer id to use
      * Also, it contains a start time of the start position within the audio buffer
      */
-    class SequenceTrackSegmentAudio : public SequenceTrackSegment
+    class NAPAPI SequenceTrackSegmentAudio : public SequenceTrackSegmentDuration
     {
-        RTTI_ENABLE(SequenceTrackSegment)
+        RTTI_ENABLE(SequenceTrackSegmentDuration)
     public:
         std::string mAudioBufferID;					///< Property: 'BufferID' audio buffer identifier
         double mStartTimeInAudioSegment = 0.0;		///< Property: 'Start Time In Segment' segment start time

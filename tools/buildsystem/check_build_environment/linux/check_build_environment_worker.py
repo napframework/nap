@@ -7,7 +7,7 @@ import subprocess
 import shutil
 import sys
 
-REQUIRED_UBUNTU_VERSION = '20.04'
+REQUIRED_UBUNTU_VERSIONS = ['20.04','22.04', '24.04']
 REQUIRED_QT_VERSION = '5.15.2'
 REQUIRED_RASPBIAN_VERSION = '11'
 SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64', 'armhf')
@@ -86,15 +86,18 @@ def check_distribution_version():
         release_ok = release == REQUIRED_RASPBIAN_VERSION
         log_test_success('Raspbian %s' % REQUIRED_RASPBIAN_VERSION, release_ok)
     else:
-        release_ok = release == REQUIRED_UBUNTU_VERSION
-        log_test_success('Ubuntu %s' % REQUIRED_UBUNTU_VERSION, release_ok)
+        release_ok = release in REQUIRED_UBUNTU_VERSIONS
+        log_test_success('Ubuntu %s' % release, release_ok)
     return release_ok
 
-def apt_package_installed(package_name):
+def apt_package_installed(package_name, packages_to_install):
     """Check if a package is installed via apt"""
 
     list_output = call('dpkg -l %s | grep %s' % (package_name, package_name))
-    return list_output.startswith('ii')
+    available = list_output.startswith('ii')
+    if not available:
+        packages_to_install.append(package_name)
+    return available, packages_to_install
 
 def check_compiler():
     """Check that c++ is setup for GCC"""
@@ -126,7 +129,7 @@ def check_qt_version():
         shutil.rmtree(temp_build_dir)
 
     # Run Qt version checking logic, parsing output
-    thirdparty_dir = os.path.join(nap_root, os.pardir, 'thirdparty')
+    thirdparty_dir = os.path.join(nap_root, 'thirdparty')
     arch = get_build_arch()
     cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
 
@@ -228,34 +231,41 @@ def check_build_environment(against_source):
         if arch == 'armhf':
             print("\nThis version of NAP supports Raspbian Linux (%s). Other distributions may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
         else:
-            print("\nThis version of NAP supports Ubuntu Linux (%s). Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
-        print("Hint for the adventurous: On Debian-based distros we depend on build-essential, patchelf and when working against Source libglu1-mesa-dev (for Qt)")
+            print("\nThis version of NAP supports Ubuntu Linux. Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSIONS)
         print("\nNot continuing checks.")
         sys.exit(1)
 
     # Check distribution version
     distribution_version_ok = check_distribution_version()
 
-    # Check package build-essential installed
-    build_essential_installed = apt_package_installed('build-essential')
-    log_test_success('for build-essential package', build_essential_installed)
-
     # Check C++ is GCC
     compiler_ok = check_compiler()
 
+    # Check package build-essential installed
+    apts_to_install = []
+    build_essential_installed, apts_to_install = apt_package_installed('build-essential', apts_to_install)
+    log_test_success('for build-essential package', build_essential_installed)
+
+    # Check package libxcb-xinerama, brings in xcb dependencies for running napkin
+    libxcb_installed, apts_to_install = apt_package_installed('libxcb-xinerama0', apts_to_install)
+    log_test_success('for libxcb-xinerama0 package', libxcb_installed)
+
+    # Check package libjack0 - required by portaudio
+    libjack_installed, apts_to_install = apt_package_installed('libjack0', apts_to_install)
+    log_test_success('for libjack0 package', libjack_installed)
+
     # Check package patchelf installed
-    patchelf_installed = apt_package_installed('patchelf')
+    patchelf_installed, apts_to_install = apt_package_installed('patchelf', apts_to_install)
     log_test_success('for patchelf package', patchelf_installed)
 
     # Check mesa vulkan drivers installed
-    mesa_vulkan_installed = apt_package_installed('mesa-vulkan-drivers')
+    mesa_vulkan_installed, apts_to_install = apt_package_installed('mesa-vulkan-drivers', apts_to_install)
     log_test_success('for mesa vulkan drivers', mesa_vulkan_installed)
 
     if against_source:
-
         # Check package libglu1-mesa-dev installed, currently brings in
         # dependencies needed by Qt when working against source
-        glut_installed = apt_package_installed('libglu1-mesa-dev')
+        glut_installed, apts_to_install = apt_package_installed('libglu1-mesa-dev', apts_to_install)
         log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
 
         # Check for Qt
@@ -272,48 +282,31 @@ def check_build_environment(against_source):
 
     # If we're running for source users check source requirements are met
     extra_source_requirements_ok = True
-    if against_source and (not qt_env_var_ok or not qt_version_ok or not glut_installed):
+    if against_source and (not qt_env_var_ok or not qt_version_ok):
         extra_source_requirements_ok = False
 
     # If everything looks good log and exit
-    if distribution_version_ok \
-      and build_essential_installed \
-      and patchelf_installed \
-      and compiler_ok \
-      and extra_source_requirements_ok:
+    if distribution_version_ok and compiler_ok and extra_source_requirements_ok and len(apts_to_install) == 0:
         print("Your build environment appears to be ready for NAP!")
-
         if against_source:
             check_and_warn_for_potential_system_qt()
-
         return False
 
-    print("Some issues were encountered:")
-
     # Warn about wrong Ubuntu version
+    print("Some issues were encountered:")
     if not distribution_version_ok:
         if arch == 'armhf':
             print("\nWarning: This version of NAP is supported on Raspbian %s. Other Linux configurations may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
         else:
-            print("\nWarning: This version of NAP is supported on Ubuntu %s. Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSION)
+            print("\nWarning: This version of NAP is supported on Ubuntu %s. Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSIONS)
 
     if not compiler_ok:
         print("\nYour C++ compiler is not currently set to GCC. This release of NAP only currently supports GCC.")
         return False
 
     # Build apt packages to offer to install
-    packages_to_install = []
-    if not build_essential_installed:
-        packages_to_install.append('build-essential')
-    if not patchelf_installed:
-        packages_to_install.append('patchelf')
-    if against_source and not glut_installed:
-        packages_to_install.append('libglu1-mesa-dev')
-    if not mesa_vulkan_installed:
-        packages_to_install.append('mesa-vulkan-drivers')
-
-    if len(packages_to_install) > 0:
-        package_str = ' '.join(packages_to_install)
+    if len(apts_to_install) > 0:
+        package_str = ' '.join(apts_to_install)
         print("\nThe following package/s are required and are not installed: %s" % package_str)
         installation_approved = read_yes_no("Kick off installation via apt?")
         if installation_approved:
@@ -324,7 +317,7 @@ def check_build_environment(against_source):
             return False
 
     # Show Qt help
-    if against_source :
+    if against_source:
         if (not qt_env_var_ok or not qt_version_ok):
             log_qt_help(qt_env_var_ok, qt_found_version)
 

@@ -5,24 +5,41 @@
 #pragma once
 
 // Local Includes
-#include "sequencetracksegment.h"
+#include "sequencetracksegmentduration.h"
+
+// External Includes
+#include <color.h>
 
 namespace nap
 {
     //////////////////////////////////////////////////////////////////////////
 
     /**
+     * Base class for all curve based track segments
+     * Contains a locked property that can be used to lock the segment.
+     * Locked segments cannot be moved or resized from the GUI
+     */
+    class NAPAPI SequenceTrackSegmentCurveBase : public SequenceTrackSegmentDuration
+    {
+    RTTI_ENABLE(SequenceTrackSegmentDuration)
+    public:
+        RGBAColorFloat mColor = { 0.0f, 0.0f, 0.0f, 0.0f }; ///< Property: 'Color' color of this segment
+        bool mLocked = false; ///< Property: 'Locked' if true, the segment is locked and its start time and duration cannot be changed
+    };
+
+    /**
      * A SequenceTrackSegment that holds an arbitrary amount of curves
      * There are four supported types ( float, vec2, vec3, vec4 ) that can contain 1, 2 , 3 or 4 curves
      */
     template<typename T>
-    class SequenceTrackSegmentCurve : public SequenceTrackSegment
+    class SequenceTrackSegmentCurve : public SequenceTrackSegmentCurveBase
     {
-    RTTI_ENABLE(SequenceTrackSegment)
+    RTTI_ENABLE(SequenceTrackSegmentCurveBase)
     public:
         // properties
-        std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;        ///< Property: 'Curves' vector holding curves
-        std::vector<math::ECurveInterp> mCurveTypes;    ///< Property: 'Curve Types' curve types of this segment ( linear, bezier )
+        std::vector<ResourcePtr<math::FCurve<float, float>>> mCurves;   ///< Property: 'Curves' vector holding curves
+        std::vector<math::ECurveInterp> mCurveTypes;                    ///< Property: 'Curve Types' curve types of this segment ( linear, bezier )
+
 
         /**
          * init evaluates the data hold in curves and checks if its valid for this type
@@ -88,12 +105,10 @@ namespace nap
         if(!SequenceTrackSegment::init(errorState))
             return false;
 
-        if(!errorState.check(
-            mCurves.size() == this->getCurveCount(), "size of curves must be %i", this->getCurveCount()))
+        if(!errorState.check(mCurves.size() == this->getCurveCount(), "size of curves must be %i", this->getCurveCount()))
             return false;
 
-        if(!errorState.check(
-            mCurveTypes.size() == this->getCurveCount(), "size of curvetypes must be %i", this->getCurveCount()))
+        if(!errorState.check(mCurveTypes.size() == this->getCurveCount(), "size of curvetypes must be %i", this->getCurveCount()))
             return false;
 
         for(int i = 0; i < mCurves.size(); i++)
@@ -190,7 +205,8 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 #define DEFINE_VECTOR_SEQUENCETRACKSEGMENTCURVE(Type)                                               \
         RTTI_BEGIN_CLASS(Type,  "Bezier curve track segment")										\
-            RTTI_PROPERTY("Curves",    &Type::mCurves, nap::rtti::EPropertyMetaData::Default)		\
-            RTTI_PROPERTY("Curve Types", &Type::mCurveTypes, nap::rtti::EPropertyMetaData::Default) \
+            RTTI_PROPERTY("Curves",         &Type::mCurves,     nap::rtti::EPropertyMetaData::Default) \
+            RTTI_PROPERTY("Curve Types",    &Type::mCurveTypes, nap::rtti::EPropertyMetaData::Default) \
+            RTTI_PROPERTY("Duration",       &Type::mDuration,   nap::rtti::EPropertyMetaData::Default) \
         RTTI_END_CLASS
 }

@@ -17,6 +17,7 @@
 #include <parameter.h>
 #include <nap/logger.h>
 #include <atomic>
+#include <rtti/binarywriter.h>
 
 namespace nap
 {
@@ -24,6 +25,22 @@ namespace nap
 
     // forward declares
     class SequenceController;
+
+    /**
+     * A history point created by the SequenceEditor
+     * A history point of a serialized sequence, action type that describes the action that creates the history point and
+     * the date & time of the history point
+     */
+    struct NAPAPI SequenceEditorHistoryPoint
+    {
+        SequenceEditorHistoryPoint(DateTime dateTime, rtti::TypeInfo actionType) :
+                mDateTime(dateTime), mActionType(actionType)
+        { }
+
+        DateTime mDateTime;
+        rtti::TypeInfo mActionType;
+        rtti::BinaryWriter mBinaryWriter;
+    };
 
     /**
      * The SequenceEditor is responsible for editing the sequence (model) and makes sure the model stays valid during editing.
@@ -118,8 +135,55 @@ namespace nap
          */
         void changeMarkerMessage(const std::string& markerID, const std::string& markerMessage);
 
+        /**
+        * Serializes current sequence into binary format. Creates history point with current date and time and takes
+        * type info and stores it.
+        * @param actionType action that calls the method
+        */
+        void takeSnapshot(rtti::TypeInfo actionType);
+
+        /**
+         * Loads previous history point and deserializes the binary sequence
+         */
+        void undo();
+
+        /**
+         * Loads next history point and deserializes the binary sequence
+         */
+        void redo();
+
+        /**
+         * Jumps to given index of history. If index is not valid, does nothing
+         * @param index
+         */
+        void jumpToHistoryPointIndex(int index);
+
+        /**
+         * Clears all stored history points
+         */
+        void clearHistory();
+
+        /**
+         * Returns const reference to history
+         * @return const reference to history
+         */
+        const std::deque<std::unique_ptr<SequenceEditorHistoryPoint>>& getHistory() const{ return mHistory; }
+
+        /**
+         * Returns current history index
+         * @return current history index
+         */
+        size_t getHistoryIndex() const{ return mHistoryIndex; }
+
+        /**
+         * Returns history size
+         * @return history size
+         */
+        size_t getHistorySize() const{ return mHistory.size(); }
+
         // properties
         ResourcePtr<SequencePlayer> mSequencePlayer = nullptr; ///< Property: 'Sequence Player' ResourcePtr to the sequence player
+        int mUndoSteps = 100; ///< Property: 'Undo Steps' number of undo steps to store
     private:
         // map of all controllers
         std::unordered_map<rttr::type, std::unique_ptr<SequenceController>> mControllers;
@@ -136,6 +200,12 @@ namespace nap
 
         // service reference
         SequenceService& mService;
+
+        // History index
+        int mHistoryIndex = 0;
+
+        // History
+        std::deque<std::unique_ptr<SequenceEditorHistoryPoint>> mHistory;
     };
 
     using SequenceEditorObjectCreator = rtti::ObjectCreator<SequenceEditor, SequenceService>;

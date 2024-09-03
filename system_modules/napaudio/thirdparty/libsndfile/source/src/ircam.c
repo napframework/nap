@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2001-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2001-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -171,35 +171,35 @@ ircam_read_header	(SF_PRIVATE *psf)
 	switch (encoding)
 	{	case IRCAM_PCM_16 :
 				psf->bytewidth = 2 ;
-				psf->blockwidth = psf->sf.channels * psf->bytewidth ;
+				psf->blockwidth = (sf_count_t) psf->sf.channels * psf->bytewidth ;
 
 				psf->sf.format = SF_FORMAT_IRCAM | SF_FORMAT_PCM_16 ;
 				break ;
 
 		case IRCAM_PCM_32 :
 				psf->bytewidth = 4 ;
-				psf->blockwidth = psf->sf.channels * psf->bytewidth ;
+				psf->blockwidth = (sf_count_t) psf->sf.channels * psf->bytewidth ;
 
 				psf->sf.format = SF_FORMAT_IRCAM | SF_FORMAT_PCM_32 ;
 				break ;
 
 		case IRCAM_FLOAT :
 				psf->bytewidth = 4 ;
-				psf->blockwidth = psf->sf.channels * psf->bytewidth ;
+				psf->blockwidth = (sf_count_t) psf->sf.channels * psf->bytewidth ;
 
 				psf->sf.format = SF_FORMAT_IRCAM | SF_FORMAT_FLOAT ;
 				break ;
 
 		case IRCAM_ALAW :
 				psf->bytewidth = 1 ;
-				psf->blockwidth = psf->sf.channels * psf->bytewidth ;
+				psf->blockwidth = (sf_count_t) psf->sf.channels * psf->bytewidth ;
 
 				psf->sf.format = SF_FORMAT_IRCAM | SF_FORMAT_ALAW ;
 				break ;
 
 		case IRCAM_ULAW :
 				psf->bytewidth = 1 ;
-				psf->blockwidth = psf->sf.channels * psf->bytewidth ;
+				psf->blockwidth = (sf_count_t) psf->sf.channels * psf->bytewidth ;
 
 				psf->sf.format = SF_FORMAT_IRCAM | SF_FORMAT_ULAW ;
 				break ;
@@ -266,19 +266,19 @@ ircam_write_header (SF_PRIVATE *psf, int UNUSED (calc_length))
 
 	switch (psf->endian)
 	{	case SF_ENDIAN_BIG :
-			psf_binheader_writef (psf, "Emf", IRCAM_02B_MARKER, samplerate) ;
-			psf_binheader_writef (psf, "E44", psf->sf.channels, encoding) ;
+			psf_binheader_writef (psf, "Emf", BHWm (IRCAM_02B_MARKER), BHWf (samplerate)) ;
+			psf_binheader_writef (psf, "E44", BHW4 (psf->sf.channels), BHW4 (encoding)) ;
 			break ;
 
 		case SF_ENDIAN_LITTLE :
-			psf_binheader_writef (psf, "emf", IRCAM_03L_MARKER, samplerate) ;
-			psf_binheader_writef (psf, "e44", psf->sf.channels, encoding) ;
+			psf_binheader_writef (psf, "emf", BHWm (IRCAM_03L_MARKER), BHWf (samplerate)) ;
+			psf_binheader_writef (psf, "e44", BHW4 (psf->sf.channels), BHW4 (encoding)) ;
 			break ;
 
 		default : return SFE_BAD_OPEN_FORMAT ;
 		} ;
 
-	psf_binheader_writef (psf, "z", (size_t) (IRCAM_DATA_OFFSET - psf->header.indx)) ;
+	psf_binheader_writef (psf, "z", BHWz ((size_t) (IRCAM_DATA_OFFSET - psf->header.indx))) ;
 
 	/* Header construction complete so write it out. */
 	psf_fwrite (psf->header.ptr, psf->header.indx, 1, psf) ;
