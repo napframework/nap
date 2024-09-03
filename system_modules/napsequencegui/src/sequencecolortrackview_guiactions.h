@@ -31,7 +31,7 @@ namespace nap
 
             bool mOpened = false;
             double mTime;
-            RGBAColorFloat mValue;
+            RGBAColorFloat mValue{1.0f, 1.0f, 1.0f, 1.0f};
             std::string mMessage = "hello world";
             std::string mErrorString;
         };
@@ -55,7 +55,7 @@ namespace nap
 
             std::string mSegmentID;
             ImVec2 mWindowPos;
-            RGBAColorFloat mValue;
+            RGBAColorFloat mValue{1.0f, 1.0f, 1.0f, 1.0f};
             double mStartTime;
         };
 
@@ -69,18 +69,20 @@ namespace nap
              * @param trackID the track id of the track that holds the segment being edited
              * @param segmentID the segment id being edited
              * @param windowPos current window position
+             * @p
              * @param value the new value of the event segment
              * @param startTime the new start time of the event segment
              */
-            EditingColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, RGBAColorFloat value, SequenceTrackSegmentColor::EColorSpace blendMethod, double startTime)
-                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mValue(std::move(value)), mBlendMethod(blendMethod), mStartTime(startTime)
+            EditingColorSegment(const std::string& trackID, std::string segmentID, ImVec2 windowPos, math::ECurveInterp curveType, RGBAColorFloat value, SequenceTrackSegmentColor::EColorSpace blendMethod, double startTime)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mWindowPos(windowPos), mCurveType(curveType), mValue(std::move(value)), mBlendMethod(blendMethod), mStartTime(startTime)
             {}
 
             bool mPopupOpened = false;
             bool mTakeSnapshot = true;
             std::string mSegmentID;
             ImVec2 mWindowPos;
-            RGBAColorFloat mValue;
+            math::ECurveInterp mCurveType = math::ECurveInterp::Linear;
+            RGBAColorFloat mValue{1.0f, 1.0f, 1.0f, 1.0f};
             SequenceTrackSegmentColor::EColorSpace mBlendMethod = SequenceTrackSegmentColor::EColorSpace::OKLAB;
             double mStartTime;
         };
@@ -121,6 +123,63 @@ namespace nap
 
             std::string mSegmentID;
             int mPointIndex;
+        };
+
+        class EditColorCurvePoint : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            EditColorCurvePoint(const std::string& trackID, std::string segmentID, int pointIndex, ImVec2 windowPos)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mPointIndex(pointIndex), mWindowPos(windowPos)
+            {}
+
+            bool mPopupOpened = false;
+            std::string mSegmentID;
+            int mPointIndex;
+            ImVec2 mWindowPos;
+            glm::vec2 mPosition;
+        };
+
+        class DraggingColorCurvePoint : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction)
+        public:
+            DraggingColorCurvePoint(const std::string& trackID, std::string segmentID, int pointIndex, const glm::vec2& position)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mPointIndex(pointIndex), mPosition(position)
+            {}
+
+            bool mTakeSnapshot = true;
+            std::string mSegmentID;
+            int mPointIndex;
+            glm::vec2 mPosition;
+        };
+
+        class HoveringColorCurveTanPoint : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction);
+        public:
+            HoveringColorCurveTanPoint(const std::string& trackID, std::string segmentID, int pointIndex, int tanIndex)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mPointIndex(pointIndex), mTanIndex(tanIndex)
+            {}
+
+            std::string mSegmentID;
+            int mPointIndex;
+            int mTanIndex;
+        };
+
+        class DraggingColorCurveTanPoint : public TrackAction
+        {
+        RTTI_ENABLE(TrackAction);
+        public:
+            DraggingColorCurveTanPoint(const std::string& trackID, std::string segmentID, int pointIndex, int tanIndex, const glm::vec2& position)
+                    : TrackAction(trackID), mSegmentID(std::move(segmentID)), mPointIndex(pointIndex), mTanIndex(tanIndex), mPosition(position)
+            {}
+
+            bool mTakeSnapshot = true;
+            std::string mSegmentID;
+            int mPointIndex;
+            int mTanIndex;
+            glm::vec2 mPosition;
         };
     }
 }

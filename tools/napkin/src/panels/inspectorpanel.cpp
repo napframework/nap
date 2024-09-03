@@ -105,6 +105,7 @@ InspectorPanel::InspectorPanel() : mTreeView(new QTreeView())
 	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&InspectorPanel::onItemContextMenu, this, std::placeholders::_1));
 
+    connect(mTreeView.getSelectionModel(), &QItemSelectionModel::selectionChanged, this, &InspectorPanel::onSelectionChanged);
 	connect(&AppContext::get(), &AppContext::propertySelectionChanged, this, &InspectorPanel::onPropertySelectionChanged);
 	connect(&AppContext::get(), &AppContext::documentClosing, this, &InspectorPanel::onFileClosing);
 	connect(&AppContext::get(), &AppContext::objectRenamed, this, &InspectorPanel::onObjectRenamed);
@@ -681,6 +682,11 @@ void InspectorModel::populateItems()
 		}
 		appendRow(row);
 	}
+}
+
+
+void InspectorPanel::onSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
+{
 }
 
 

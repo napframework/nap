@@ -180,6 +180,8 @@ namespace napkin
 		 * @param items row items
 		 */
 		void onChildAdded(QList<QStandardItem*> items);
+
+        void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);
 		
 		/**
 		 * Called just before the current document is closed

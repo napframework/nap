@@ -148,6 +148,14 @@ namespace nap
          */
         void handleEditCurvePopup();
 
+        /**
+         *
+         */
+        void handleDragCurvePoint();
+
+        void handleEditCurvePointPopup();
+
+        void handleDragCurveTanPoint();
     private:
         // map of segment views for different event views
         std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceColorTrackSegmentView>> mSegmentViews;

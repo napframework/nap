@@ -33,6 +33,9 @@ namespace nap
         registerActionHandler(RTTI_OF(DraggingSegment), [this] { handleSegmentDrag(); });
         registerActionHandler(RTTI_OF(LoadPresetPopup), [this] { handleLoadPresetPopup(); });
         registerActionHandler(RTTI_OF(EditColorCurvePopup), [this] { handleEditCurvePopup(); });
+        registerActionHandler(RTTI_OF(DraggingColorCurvePoint), [this] { handleDragCurvePoint(); });
+        registerActionHandler(RTTI_OF(EditColorCurvePoint), [this] { handleEditCurvePointPopup(); });
+        registerActionHandler(RTTI_OF(DraggingColorCurveTanPoint), [this] { handleDragCurveTanPoint(); });
 
         mSegmentViews.emplace(RTTI_OF(SequenceTrackSegmentColor), std::make_unique<SequenceColorTrackSegmentView>());
     }
@@ -116,9 +119,8 @@ namespace nap
                     // right mouse down
                     if(ImGui::IsMouseClicked(1))
                     {
+                        // open insert color segment popup
                         double time = mState.mMouseCursorTime;
-
-                        //
                         mState.mAction = createAction<InsertColorSegmentPopup>(track.mID, time);
                     }
                 }
@@ -182,6 +184,10 @@ namespace nap
                 float width = segment_x - prev_segment_x;
                 int steps = width;
                 float step_width = width / (float)steps;
+
+                // obtain normalized mouse position, we need this information later when dragging curve points or tan handlers
+                glm::vec2 normalized_mouse_pos = { (mState.mMousePos.x - trackTopLeft.x - prev_segment_x) / width,
+                                                   -(mState.mMousePos.y - trackTopLeft.y - track.mTrackHeight) / track.mTrackHeight};
 
                 // check if we're hovering the curve
                 bool hovering_segment = false;
@@ -268,6 +274,8 @@ namespace nap
                         // get positions of the left and right of the curve with these bounds of the rectangle
                         float a_pos = color_segment.mCurve->evaluate(blend_a);
                         float b_pos = color_segment.mCurve->evaluate(blend_b);
+                        a_pos = glm::clamp(a_pos, 0.0f, 1.0f);
+                        b_pos = glm::clamp(b_pos, 0.0f, 1.0f);
 
                         // blend colors depending on blend method
                         a_color = utility::colorspace::blendColors(a_segment_color, b_segment_color, a_pos, b_blend_type);
@@ -341,6 +349,9 @@ namespace nap
                     ImVec2 curve_point = {trackTopLeft.x + prev_segment_x + curve_points[i].mPos.mTime * width,
                                           trackTopLeft.y + track.mTrackHeight - curve_points[i].mPos.mValue * track.mTrackHeight};
 
+                    // get curve point color
+                    auto point_color = cached_points[(int)(curve_points[i].mPos.mTime * width)].mCurveColor;
+
                     // calculate the size of the curve point
                     const float curve_point_size = 6.0f * mState.mScale;
 
@@ -353,15 +364,36 @@ namespace nap
                     // draw the curve point
                     if(is_hovering)
                     {
-                        //
+                        // create the hovering curve point action
                         if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
                         {
                             mState.mAction = createAction<HoveringColorCurvePoint>(track.mID, segment->mID, i);
                         }
 
-                        draw_list->AddCircleFilled(curve_point, curve_point_size, mService.getColors().mFro4);
-                    } else
+                        // draw the curve point
+                        draw_list->AddCircleFilled(curve_point, curve_point_size, point_color);
+
+                        // left mouse is start dragging
+                        if(ImGui::IsMouseDown(0))
+                        {
+                            float delta_x = mState.mMouseDelta.x / width;
+                            float delta_y = -mState.mMouseDelta.y / track.mTrackHeight;
+
+                            if(!mState.mAction->isAction<DraggingColorCurvePoint>())
+                            {
+                                if(mState.mAction->isAction<HoveringColorCurvePoint>())
+                                    mState.mAction = createAction<DraggingColorCurvePoint>(track.mID, segment->mID, i, glm::vec2(delta_x, delta_y));
+                            }
+                        }else if(ImGui::IsMouseDown(1))
+                        {
+                            if(mState.mAction->isAction<HoveringColorCurvePoint>())
+                            {
+                                mState.mAction = createAction<EditColorCurvePoint>(track.mID, segment->mID, i, mState.mMousePos);
+                            }
+                        }
+                    }else
                     {
+                        // if we're not hovering the curve point, stop the action
                         if(mState.mAction->isAction<HoveringColorCurvePoint>())
                         {
                             auto *action = mState.mAction->getDerived<HoveringColorCurvePoint>();
@@ -371,10 +403,125 @@ namespace nap
                             }
                         }
 
-                        draw_list->AddCircle(curve_point, curve_point_size, mService.getColors().mFro4);
+                        // if we're dragging the curve point, update the position
+                        if(mState.mAction->isAction<DraggingColorCurvePoint>())
+                        {
+                            if(ImGui::IsMouseDown(0))
+                            {
+                                auto *action = mState.mAction->getDerived<DraggingColorCurvePoint>();
+                                if(action->mSegmentID == segment->mID && action->mPointIndex == i)
+                                {
+                                    action->mPosition = normalized_mouse_pos;
+                                }
+                            }else
+                            {
+                                mState.mAction = createAction<None>();
+                            }
+                        }
+
+                        // draw the curve point
+                        draw_list->AddCircle(curve_point, curve_point_size, point_color);
+                    }
+
+                    // draw tan points
+                    if(color_segment.mCurveType== math::ECurveInterp::Bezier)
+                    {
+                        for(int j = 0; j < 2; j++)
+                        {
+                            // get the correct tan point
+                            const math::FComplex<float, float> &tan_complex = j == 0 ? curve_points[i].mInTan : curve_points[i].mOutTan;
+
+                            // get the offset from the tan
+                            const float tan_constant_size = 200.0f * mState.mScale;
+                            ImVec2 offset = {tan_complex.mTime * tan_constant_size,
+                                             static_cast<float>(tan_complex.mValue) * -1.0f * tan_constant_size};
+                            ImVec2 tan_point = {curve_point.x + offset.x, curve_point.y + offset.y};
+
+                            // tan bounds represent the area around which the mouse can hover the tan point
+                            const float tan_bounds = mState.mScale * 5.0f;
+
+                            // check if we're hovering the tan point
+                            bool tan_point_hovered = false;
+
+                            // set if we are hoverting this point with the mouse
+                            if(mState.mAction->isAction<None>() ||
+                               mState.mAction->isAction<HoveringCurveColorSegment>() ||
+                               mState.mAction->isAction<HoveringSegment>())
+                            {
+                                tan_point_hovered = ImGui::IsMouseHoveringRect(
+                                        {tan_point.x - tan_bounds, tan_point.y - tan_bounds},
+                                        {tan_point.x + tan_bounds, tan_point.y + tan_bounds});
+
+                                if(tan_point_hovered)
+                                {
+                                    mState.mAction = createAction<HoveringColorCurveTanPoint>(track.mID, segment->mID, i, j);
+                                }
+                            }else if(mState.mAction->isAction<HoveringColorCurveTanPoint>())
+                            {
+                                tan_point_hovered = ImGui::IsMouseHoveringRect(
+                                        {tan_point.x - tan_bounds, tan_point.y - tan_bounds},
+                                        {tan_point.x + tan_bounds, tan_point.y + tan_bounds});
+
+                                if(!tan_point_hovered)
+                                {
+                                    auto *action = mState.mAction->getDerived<HoveringColorCurveTanPoint>();
+                                    if(action->mSegmentID == segment->mID && action->mPointIndex == i && action->mTanIndex == j)
+                                    {
+                                        tan_point_hovered = false;
+                                        mState.mAction = createAction<None>();
+                                    }
+                                }
+                            }
+
+                            // if we're hovering the tan point and holding down the mouse, start dragging the tan point
+                            if(tan_point_hovered)
+                            {
+                                if(ImGui::IsMouseDown(0))
+                                {
+                                    if(!mState.mAction->isAction<DraggingColorCurveTanPoint>())
+                                    {
+                                        glm::vec2 delta = { mState.mMouseDelta.x / tan_constant_size,
+                                                            (mState.mMouseDelta.y / tan_constant_size) * -1.0f };
+                                        glm::vec2 new_tan = { tan_complex.mTime + delta.x, tan_complex.mValue + delta.y };
+
+                                        if(mState.mAction->isAction<HoveringColorCurveTanPoint>())
+                                            mState.mAction = createAction<DraggingColorCurveTanPoint>(track.mID, segment->mID, i, j, new_tan);
+                                    }
+                                }
+                            }
+
+                            // handle dragging of tan point
+                            if(mState.mAction->isAction<DraggingColorCurveTanPoint>())
+                            {
+                                if(ImGui::IsMouseDown(0))
+                                {
+                                    auto *action = mState.mAction->getDerived<DraggingColorCurveTanPoint>();
+                                    if(action->mSegmentID == segment->mID && action->mPointIndex == i && action->mTanIndex == j)
+                                    {
+                                        glm::vec2 delta = { mState.mMouseDelta.x / tan_constant_size,
+                                                            (mState.mMouseDelta.y / tan_constant_size) * -1.0f };
+                                        glm::vec2 new_tan = { tan_complex.mTime + delta.x, tan_complex.mValue + delta.y };
+
+                                        action->mPosition = new_tan;
+                                    }
+                                }else
+                                {
+                                    // mouse released, stop dragging
+                                    mState.mAction = createAction<None>();
+                                }
+                            }
+
+                            // draw line
+                            draw_list->AddLine(curve_point, tan_point, point_color,
+                                               tan_point_hovered ? 2.0f * mState.mScale : 1.0f * mState.mScale);
+
+                            // draw handler
+                            draw_list->AddCircleFilled(tan_point, tan_point_hovered ? 6.0f * mState.mScale : 3.0f * mState.mScale, point_color);
+                        }
                     }
                 }
 
+                // proceed with the next segment
                 prev_segment_x = segment_x;
                 segment_count++;
             }
@@ -530,7 +677,13 @@ namespace nap
             if(ImGui::IsMouseDown(1))
             {
                 auto& segment_color = static_cast<const SequenceTrackSegmentColor&>(segment);
-                mState.mAction = createAction<EditingColorSegment>(track.mID, segment.mID, mState.mMousePos, segment_color.mColor, segment_color.mBlendMethod, segment.mStartTime);
+                mState.mAction = createAction<EditingColorSegment>(track.mID,
+                                                                   segment.mID,
+                                                                   mState.mMousePos,
+                                                                   segment_color.mCurveType,
+                                                                   segment_color.mColor,
+                                                                   segment_color.mBlendMethod,
+                                                                   segment.mStartTime);
             }
 
             // handled shift click for add/remove to clipboard
@@ -666,6 +819,37 @@ namespace nap
 
                         action->mBlendMethod = static_cast<SequenceTrackSegmentColor::EColorSpace>(i);
                         controller.changeSegmentColorBlendMethod(action->mTrackID, action->mSegmentID, action->mBlendMethod);
+                    }
+
+                    if(is_selected)
+                    {
+                        ImGui::SetItemDefaultFocus();
+                    }
+                }
+                ImGui::EndCombo();
+            }
+
+            // curve interp
+            static constexpr const char *curve_interps[] = {"Bezier", "Linear", "Stepped"};
+            if(ImGui::BeginCombo("Curve Interpolation", curve_interps[static_cast<int>(action->mCurveType)]))
+            {
+                for(int i = 0; i < IM_ARRAYSIZE(curve_interps); i++)
+                {
+                    bool is_selected = (static_cast<int>(action->mCurveType) == i);
+                    if(ImGui::Selectable(curve_interps[i], is_selected))
+                    {
+                        // Mark state dirty
+                        mState.mDirty = true;
+
+                        // Take snapshot
+                        if(action->mTakeSnapshot)
+                        {
+                            getEditor().takeSnapshot(action->get_type());
+                            action->mTakeSnapshot = false;
+                        }
+
+                        action->mCurveType = static_cast<math::ECurveInterp>(i);
+                        controller.changeSegmentCurveType(action->mTrackID, action->mSegmentID, action->mCurveType);
                     }
 
                     if(is_selected)
@@ -842,6 +1026,85 @@ namespace nap
     }
 
 
+    void SequenceColorTrackView::handleDragCurvePoint()
+    {
+        // get action
+        auto* action = mState.mAction->getDerived<DraggingColorCurvePoint>();
+        assert(action!= nullptr);
+
+        // get editor & controller
+        auto &editor = getEditor();
+        auto &color_controller = editor.getController<SequenceControllerColor>();
+
+        // take snapshot
+        if(action->mTakeSnapshot)
+        {
+            action->mTakeSnapshot = false;
+            editor.takeSnapshot(action->get_type());
+        }
+
+        // change curve point
+        color_controller.changeSegmentCurvePoint(action->mTrackID,
+                                                 action->mSegmentID,
+                                                 action->mPointIndex,
+                                                 action->mPosition);
+
+        // mark state dirty
+        mState.mDirty = true;
+    }
+
+
+    void SequenceColorTrackView::handleEditCurvePointPopup()
+    {
+        auto* action = mState.mAction->getDerived<EditColorCurvePoint>();
+        assert(action!= nullptr);
+        if(!action->mPopupOpened)
+        {
+            // invoke edit segment popup
+            ImGui::OpenPopup("Edit Color Curve Point");
+            action->mPopupOpened = true;
+        }
+
+        // handle edit segment popup
+        if(ImGui::BeginPopup("Edit Color Curve Point"))
+        {
+            // get controller
+            auto &controller = getEditor().getController<SequenceControllerColor>();
+
+            // delete button
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
+            {
+                // take snapshot
+                getEditor().takeSnapshot(action->get_type());
+
+                // delete point
+                controller.deleteCurvePoint(action->mTrackID, action->mSegmentID, action->mPointIndex);
+
+                // mark state dirty
+                mState.mDirty = true;
+
+                // exit popup
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+            }
+
+            // ok button
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::ok)))
+            {
+                ImGui::CloseCurrentPopup();
+                mState.mAction = createAction<None>();
+            }
+
+            ImGui::EndPopup();
+        }else
+        {
+            // click outside popup so cancel action
+            ImGui::CloseCurrentPopup();
+            mState.mAction = createAction<None>();
+        }
+    }
+
+
     void SequenceColorTrackView::handleEditCurvePopup()
     {
         auto* action = mState.mAction->getDerived<EditColorCurvePopup>();
@@ -890,6 +1153,35 @@ namespace nap
             ImGui::CloseCurrentPopup();
             mState.mAction = createAction<None>();
         }
+    }
+
+
+    void SequenceColorTrackView::handleDragCurveTanPoint()
+    {
+        // get action
+        auto* action = mState.mAction->getDerived<DraggingColorCurveTanPoint>();
+        assert(action!= nullptr);
+
+        // get editor & controller
+        auto &editor = getEditor();
+        auto &color_controller = editor.getController<SequenceControllerColor>();
+
+        // take snapshot
+        if(action->mTakeSnapshot)
+        {
+            action->mTakeSnapshot = false;
+            editor.takeSnapshot(action->get_type());
+        }
+
+        // change curve point
+        color_controller.changeSegmentCurveTanPoint(action->mTrackID,
+                                                    action->mSegmentID,
+                                                    action->mPointIndex,
+                                                    action->mTanIndex,
+                                                    action->mPosition);
+
+        // mark state dirty
+        mState.mDirty = true;
     }
 
 

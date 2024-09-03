@@ -48,6 +48,11 @@ namespace nap
 
                               // set curve
                               new_segment->mCurve = ResourcePtr<math::FCurve<float, float>>(fcurve.get());
+                              for(auto &point: fcurve->mPoints)
+                              {
+                                  point.mInterp = new_segment->mCurveType;
+                              }
+                              new_segment->mCurve->invalidate();
 
                               // move ownership
                               getPlayerOwnedObjects().emplace_back(std::move(fcurve));
@@ -147,6 +152,14 @@ namespace nap
                               // set curve
                               new_segment->mCurve = ResourcePtr<math::FCurve<float, float>>(fcurve.get());
 
+                              // set curve interp
+                              new_segment->mCurve = ResourcePtr<math::FCurve<float, float>>(fcurve.get());
+                              for(auto &point: fcurve->mPoints)
+                              {
+                                  point.mInterp = new_segment->mCurveType;
+                              }
+                              new_segment->mCurve->invalidate();
+
                               // move ownership
                               getPlayerOwnedObjects().emplace_back(std::move(fcurve));
 
@@ -167,6 +180,42 @@ namespace nap
                           });
 
         return return_ptr;
+    }
+
+
+    void SequenceControllerColor::changeSegmentCurvePoint(const std::string &trackID, const std::string &segmentID, int pointIndex, const glm::vec2 &value)
+    {
+        performEditAction([this, trackID, segmentID, pointIndex, value]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+
+                              // iterate trough points of curve
+                              for(int i = 0; i < segment_color.mCurve->mPoints.size(); i++)
+                              {
+                                    // find the point the new point needs to get inserted after
+                                    if(i == pointIndex)
+                                    {
+                                        // create point
+                                        math::FCurvePoint<float, float> p = segment_color.mCurve->mPoints[i];
+                                        p.mPos.mValue = value.y;
+                                        p.mPos.mTime = value.x;
+                                        p.mPos.mValue = glm::clamp(p.mPos.mValue, 0.0f, 1.0f);
+                                        p.mPos.mTime = glm::clamp(p.mPos.mTime, 0.0f, 1.0f);
+
+                                        // insert point
+                                        segment_color.mCurve->mPoints[i] = p;
+                                        segment_color.mCurve->invalidate();
+
+                                        break;
+                                    }
+                              }
+
+                              segment_color.mCurve->invalidate();
+                          });
     }
 
 
@@ -201,6 +250,100 @@ namespace nap
                                       // insert point
                                       segment_color.mCurve->mPoints.insert(
                                               segment_color.mCurve->mPoints.begin() + i + 1, p);
+                                      segment_color.mCurve->invalidate();
+
+                                      break;
+                                  }
+                              }
+                          });
+    }
+
+
+    void SequenceControllerColor::changeSegmentCurveType(const std::string &trackID, const std::string &segmentID, math::ECurveInterp curveType)
+    {
+        performEditAction([this, trackID, segmentID, curveType]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+                              segment_color.mCurveType = curveType;
+
+                              for(auto &point: segment_color.mCurve->mPoints)
+                              {
+                                  point.mInterp = curveType;
+                              }
+
+                              segment_color.mCurve->invalidate();
+                          });
+    }
+
+
+    void SequenceControllerColor::changeSegmentCurveTanPoint(const std::string &trackID, const std::string &segmentID, int pointIndex, int tanIndex, const glm::vec2 &value)
+    {
+        performEditAction([this, trackID, segmentID, pointIndex, tanIndex, value]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+
+                              // iterate trough points of curve
+                              for(int i = 0; i < segment_color.mCurve->mPoints.size(); i++)
+                              {
+                                  // find the point the new point needs to get inserted after
+                                  if(i == pointIndex)
+                                  {
+                                      // create point
+                                      math::FCurvePoint<float, float> p = segment_color.mCurve->mPoints[i];
+                                      if(tanIndex == 0)
+                                      {
+                                          p.mInTan.mTime = value.x;
+                                          p.mInTan.mValue = value.y;
+                                          p.mOutTan.mTime = -value.x;
+                                          p.mOutTan.mValue = -value.y;
+                                      }
+                                      else
+                                      {
+                                          p.mOutTan.mTime = value.x;
+                                          p.mOutTan.mValue = value.y;
+                                          p.mInTan.mTime = -value.x;
+                                          p.mInTan.mValue = -value.y;
+                                      }
+
+                                      p.mTangentsAligned = true;
+
+                                      // insert point
+                                      segment_color.mCurve->mPoints[i] = p;
+                                      segment_color.mCurve->invalidate();
+
+                                      break;
+                                  }
+                              }
+                          });
+    }
+
+
+    void SequenceControllerColor::deleteCurvePoint(const std::string &trackID, const std::string &segmentID, int pointIndex)
+    {
+        performEditAction([this, trackID, segmentID, pointIndex]()
+                          {
+                              auto *segment = findSegment(trackID, segmentID);
+                              assert(segment != nullptr); // segment not found
+                              assert(segment->get_type().is_derived_from(RTTI_OF(SequenceTrackSegmentColor))); // type mismatch
+
+                              auto &segment_color = static_cast<SequenceTrackSegmentColor &>(*segment);
+
+                              // iterate trough points of curve
+                              for(int i = 0; i < segment_color.mCurve->mPoints.size(); i++)
+                              {
+                                  // find the point the new point needs to get inserted after
+                                  if(i == pointIndex)
+                                  {
+                                      // erase point
+                                      segment_color.mCurve->mPoints.erase(segment_color.mCurve->mPoints.begin() + i);
                                       segment_color.mCurve->invalidate();
 
                                       break;
