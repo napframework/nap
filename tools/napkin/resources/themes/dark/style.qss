@@ -252,3 +252,51 @@ QToolTip {
     border: none;
     text-align: center;
 }
+
+QSpinBox {
+    background-color: @dark2;
+    color: @front3;
+    padding: 2px;
+}
+
+QSpinBox::up-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 12px;
+    border-image: url(:/icons/spin_up.png);
+    margin-right: 2px;
+}
+
+QSpinBox::down-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 12px;
+    margin-right: 2px;
+    border-image: url(:/icons/spin_down.png);
+}
+
+QDoubleSpinBox {
+    background-color: @dark2;
+    color: @front3;
+    padding: 2px;
+}
+
+QDoubleSpinBox::up-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 12px;
+    border-image: url(:/icons/spin_up.png);
+    margin-right: 2px;
+}
+
+QDoubleSpinBox::down-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 12px;
+    margin-right: 2px;
+    border-image: url(:/icons/spin_down.png);
+}
