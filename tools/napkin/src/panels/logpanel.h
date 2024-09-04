@@ -114,7 +114,7 @@ namespace napkin
 		/**
 		 * Occurs when theme changes
 		 */
-		void themeChanged(const Theme* theme);
+		void themeChanged(const Theme& theme);
 
 		nap::qt::FilterTreeView mTreeView; 	// Treeview with log entries
 		QVBoxLayout mLayout;		// The main layout

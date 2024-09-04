@@ -250,7 +250,7 @@ namespace napkin
          * Will be fired when the theme has changed
          * @param theme The name of the theme
          */
-        void themeChanged(const Theme* theme);
+        void themeChanged(const Theme& theme);
 
 	private:
 
@@ -258,7 +258,7 @@ namespace napkin
          * Set apply the specified theme by name.
          * @param theme The name of the theme
          */
-		void setTheme(Theme* theme);
+		void setTheme(Theme& theme);
 
 		/**
 		 * Find the theme with the given name

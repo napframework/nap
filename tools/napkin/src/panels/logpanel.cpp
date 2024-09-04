@@ -203,12 +203,9 @@ int LogPanel::getLevelIndex(const nap::LogLevel& level) const
 }
 
 
-void napkin::LogPanel::themeChanged(const Theme* theme)
+void napkin::LogPanel::themeChanged(const Theme& theme)
 {
-	if (theme != nullptr)
-	{
-		theme->changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::mono);
-	}
+		theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::mono);
 }
 
 

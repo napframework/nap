@@ -397,12 +397,9 @@ void napkin::ResourcePanel::createMenuCallbacks()
 }
 
 
-void napkin::ResourcePanel::themeChanged(const Theme* theme)
+void napkin::ResourcePanel::themeChanged(const Theme& theme)
 {
-	if (theme != nullptr)
-	{
-		theme->changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::regular);
-	}
+	theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::regular);
 }
 
 

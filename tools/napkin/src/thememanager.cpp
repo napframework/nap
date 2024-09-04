@@ -246,16 +246,11 @@ ThemeManager::ThemeManager()
 }
 
 
-void ThemeManager::setTheme(Theme* theme)
+void ThemeManager::setTheme(Theme& theme)
 {
-	mCurrentTheme = theme;
+	mCurrentTheme = &theme;
 	applyTheme();
-	QString themeName = "";
-	if (mCurrentTheme != nullptr)
-		themeName = mCurrentTheme->getName();
-
-	QSettings().setValue(settingsKey::LAST_THEME, themeName);
-	themeChanged(mCurrentTheme);
+	QSettings().setValue(settingsKey::LAST_THEME, theme.getName());
 }
 
 
@@ -267,7 +262,7 @@ void ThemeManager::setTheme(const QString& name)
 		nap::Logger::warn("Unable to find theme with name: %s", name.toStdString().c_str());
 		return;
 	}
-	setTheme(new_theme);
+	setTheme(*new_theme);
 }
 
 
@@ -367,6 +362,9 @@ void ThemeManager::applyTheme()
 
 	QApplication::setStyle(QStyleFactory::create("Fusion"));
 	app->setStyleSheet(styleSheet);
+
+	// Notify listeners
+	themeChanged(*mCurrentTheme);
 }
 
 

@@ -168,7 +168,7 @@ namespace napkin
 		/**
 		 * Occurs when theme changes
 		 */
-		void themeChanged(const Theme* theme);
+		void themeChanged(const Theme& theme);
 
 	private:
 		void emitSelectionChanged();

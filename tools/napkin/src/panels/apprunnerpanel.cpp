@@ -155,14 +155,9 @@ void napkin::AppRunnerPanel::onAppFinished(int exitCode, QProcess::ExitStatus)
 }
 
 
-void napkin::AppRunnerPanel::themeChanged(const Theme* theme)
+void napkin::AppRunnerPanel::themeChanged(const Theme& theme)
 {
 	mStartButton.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_PLAY_APP));
 	mStopButton.setIcon(AppContext::get().getResourceFactory().getIcon(QRC_ICONS_STOP_APP));
-
-	if (theme != nullptr)
-	{
-		assert(theme != nullptr);
-		theme->changeWidgetFont(mFileSelector.getLineEdit(), napkin::theme::font::mono);
-	}
+	theme.changeWidgetFont(mFileSelector.getLineEdit(), napkin::theme::font::mono);
 }

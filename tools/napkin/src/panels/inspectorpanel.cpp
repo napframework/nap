@@ -601,13 +601,10 @@ void napkin::InspectorPanel::createMenuCallbacks()
 }
 
 
-void InspectorPanel::themeChanged(const Theme* theme)
+void InspectorPanel::themeChanged(const Theme& theme)
 {
-	if (theme != nullptr)
-	{
-		theme->changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::regular);
-		theme->changeWidgetFont(mPathField, napkin::theme::font::mono);
-	}
+	theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::regular);
+	theme.changeWidgetFont(mPathField, napkin::theme::font::mono);
 }
 
 
