@@ -316,10 +316,11 @@ namespace nap
             float segment_width = (float) segment_duration->mDuration * mState.mStepSize;
 
             // draw segment handlers
-            drawSegmentHandler(
-                track,
-                *segment_duration,
-                trackTopLeft, segment_x, segment_width, draw_list);
+            showSegmentHandler(
+                    track,
+                    *segment_duration,
+                    trackTopLeft, segment_x,
+                    draw_list);
 
             // draw segment content
             auto it = getDrawCurveSegmentsMap().find(segment_duration->get_type());
@@ -334,157 +335,23 @@ namespace nap
     }
 
 
-    void SequenceCurveTrackView::drawSegmentHandler(
-            const SequenceTrack& track,
-            const SequenceTrackSegment& segment,
-            const ImVec2& trackTopLeft,
-            const float segmentX,
-            const float segmentWidth,
-            ImDrawList* drawList)
+    void SequenceCurveTrackView::onHandleEditSegment(const nap::SequenceTrack &track,
+                                                     const nap::SequenceTrackSegment &segment)
     {
-        //
-        const auto& segment_curve = static_cast<const SequenceTrackSegmentCurveBase&>(segment);
-
-        // const values
-        const float seg_bounds = 10.0f * mState.mScale;
-        const float line_thickness_regular = 1.0f * mState.mScale;
-        const float line_thickness_active = 3.0f * mState.mScale;
-        const float track_height = track.mTrackHeight * mState.mScale;
-        float line_thickness = line_thickness_regular;
-
-        // check if user is hovering or dragging the handler of this segment
-        if(mState.mIsWindowFocused
-           && ((mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringSegment>()) ||
-               (mState.mAction->isAction<StartDraggingSegment>() &&
-                mState.mAction->getDerived<StartDraggingSegment>()->mSegmentID != segment.mID))
-           && ImGui::IsMouseHoveringRect(
-                {trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds}, // top left
-                {trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + track_height + seg_bounds}))  // bottom right
-        {
-            line_thickness = line_thickness_active;
-
-            // we are hovering this segment with the mouse
-            mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
-
-            // show timestamp
-            ImGui::BeginTooltip();
-            ImGui::Text(formatTimeString(segment_curve.mStartTime + segment_curve.mDuration).c_str());
-            ImGui::EndTooltip();
-
-            // left mouse is start dragging
-            if(ImGui::IsMouseDown(0) && !segment_curve.mLocked)
-            {
-                // if ctrl is down, also move the start time of the next segments in the track
-                bool move_next_segments = ImGui::GetIO().KeyCtrl;
-                mState.mAction = createAction<StartDraggingSegment>(track.mID, segment_curve.mID, segment_curve.mDuration, move_next_segments);
-            }
-                // right mouse is edit popup
-            else if(ImGui::IsMouseDown(1))
-            {
-                assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurveBase>());
-                const auto& segment_curve_base = static_cast<const SequenceTrackSegmentCurveBase&>(segment);
-                mState.mAction = createAction <EditingCurveSegment>(
-                        track.mID,
-                        segment_curve.mID,
-                        segment_curve.get_type(),
-                        segment_curve.mStartTime,
-                        segment_curve.mDuration,
-                        segment_curve.mLabel,
-                        segment_curve.mColor,
-                        false,
-                        segment_curve_base.mLocked
-                );
-            }
-
-            // if mouse is clicked, check if shift is down, if so, handle clipboard actions (add or remove)
-            if(ImGui::IsMouseClicked(0))
-            {
-                if(ImGui::GetIO().KeyShift)
-                {
-                    // create new curve segment clipboard if necessary or when clipboard is from different sequence
-                    if(!mState.mClipboard->isClipboard<CurveSegmentClipboard>())
-                        mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
-
-                    // is this a different track then previous clipboard ? then create a new clipboard, discarding the old clipboard
-                    auto *clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-                    if(clipboard->getTrackID() != track.mID)
-                    {
-                        mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
-                        clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-                    }
-
-                    // is clipboard from another sequence, create new clipboard
-                    if(clipboard->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename())
-                    {
-                        mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
-                        clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
-                    }
-
-                    // see if the clipboard already contains this segment, if so, remove it, if not, add it
-                    if(mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
-                    {
-                        mState.mClipboard->removeObject(segment.mID);
-                    } else
-                    {
-                        utility::ErrorState errorState;
-                        mState.mClipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
-
-                        // log any errors
-                        if(errorState.hasErrors())
-                        {
-                            Logger::error(errorState.toString());
-                        }
-                    }
-                }
-            }
-        } else if(mState.mAction->isAction<DraggingSegment>())
-        {
-            line_thickness = line_thickness_active;
-
-            auto *action = mState.mAction->getDerived<DraggingSegment>();
-            if(action->mSegmentID == segment_curve.mID)
-            {
-                line_thickness = line_thickness_active;
-
-                ImGui::BeginTooltip();
-                ImGui::Text(segment_curve.mLabel.c_str());
-                ImGui::Text(formatTimeString(segment_curve.mStartTime + segment_curve.mDuration).c_str());
-                ImGui::EndTooltip();
-            } else
-            {
-                line_thickness = line_thickness_regular;
-            }
-        } else
-        {
-            // release if we are not hovering this segment
-            if(mState.mAction->isAction<HoveringSegment>()
-               && mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID)
-            {
-                mState.mAction = createAction<None>();
-            }
-        }
-
-        // draw handler of segment duration
-        drawList->AddLine(  {trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
-                            {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
-                            mService.getColors().mFro4, // color
-                            line_thickness); // thickness
-
-        // draw locked icon
+        assert(segment.get_type().is_derived_from<SequenceTrackSegmentCurveBase>());
         const auto& segment_curve_base = static_cast<const SequenceTrackSegmentCurveBase&>(segment);
-        if(segment_curve_base.mLocked)
-        {
-            const float offset = 5.0f * mState.mScale;
-            drawList->AddImage(
-                    mService.getGui().getIcon(icon::sequencer::lock).getTextureHandle(),
-                    {trackTopLeft.x + segmentX + offset, trackTopLeft.y + track_height - seg_bounds - offset },
-                    {trackTopLeft.x + segmentX + seg_bounds + offset, trackTopLeft.y + track_height - offset},
-                    {0.0f, 1.0f},
-                    {1.0f, 0.0f},
-                    mService.getColors().mFro4);
-        }
+        mState.mAction = createAction <EditingCurveSegment>(
+                track.mID,
+                segment_curve_base.mID,
+                segment_curve_base.get_type(),
+                segment_curve_base.mStartTime,
+                segment_curve_base.mDuration,
+                segment_curve_base.mLabel,
+                segment_curve_base.mColor,
+                false,
+                segment_curve_base.mLocked
+        );
     }
-
 
     void SequenceCurveTrackView::handleInsertSegmentPopup()
     {

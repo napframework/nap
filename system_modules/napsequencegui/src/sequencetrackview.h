@@ -102,6 +102,9 @@ namespace nap
         static std::string formatTimeString(double time);
 
     protected:
+        /**
+         * handles track options popup
+         */
         void handleTrackOptionsPopup();
 
         /**
@@ -123,6 +126,36 @@ namespace nap
          * @param handler handler function
          */
         void registerActionHandler(const rttr::type& type, const std::function<void()>& handler);
+
+        /**
+         * Draws a standard segment handler
+         * @param track reference to track
+         * @param segment reference to segment
+         * @param trackTopLeft orientation
+         * @param segmentX segment x position
+         * @param drawList pointer to window drawlist
+         */
+        virtual void showSegmentHandler(const SequenceTrack& track,
+                                        const SequenceTrackSegment& segment,
+                                        const ImVec2& trackTopLeft,
+                                        float segmentX,
+                                        ImDrawList* drawList);
+
+        /**
+         * Happens when a segment is edited, overload this method to handle segment editing
+         * @param track reference to track
+         * @param segment reference to segment
+         */
+        virtual void onHandleEditSegment(const SequenceTrack& track, const SequenceTrackSegment& segment) {}
+
+        /**
+         * Override this method to draw your own custom segment handler
+         * @param top top position of handler
+         * @param bottom bottom position of handler
+         * @param drawList pointer to window drawlist
+         * @param bold if true, draw handler bold
+         */
+        virtual void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList* drawList, bool bold);
 
         // reference to gui view
         SequenceEditorGUIView& mView;

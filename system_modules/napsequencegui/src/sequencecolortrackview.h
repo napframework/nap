@@ -61,6 +61,15 @@ namespace nap
 
     protected:
         /**
+         * Opens edit color segment popup
+         * @param track reference to track
+         * @param segment reference to segment
+         */
+        void onHandleEditSegment(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
+
+        void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool bold) override;
+
+        /**
          * shows inspector content
          * @param track reference to track
          */
@@ -95,18 +104,6 @@ namespace nap
         void onPreShowTrack() override;
 
         /**
-         * draws segment handler
-         * @param track reference to track
-         * @param segment reference to segment
-         * @param trackTopLeft tracks topleft position
-         * @param segmentX segment x position
-         * @param segmentWidth width of segment
-         * @param drawList pointer to window drawlist
-         */
-        void
-        drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
-
-        /**
          * handles delete segment popup
          */
         void handleEditSegmentValuePopup();
@@ -117,6 +114,7 @@ namespace nap
          * @param segmentID the segment id
          */
         void updateSegmentInClipboard(const std::string& trackID, const std::string& segmentID);
+
 
         /**
          * handles assigning of new output id to track

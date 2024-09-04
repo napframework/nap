@@ -41,6 +41,13 @@ namespace nap
 
     protected:
         /**
+         * Handles edit segment action, right click on segment handler
+         * @param track reference to track
+         * @param segment reference to segment
+         */
+        void onHandleEditSegment(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
+
+        /**
          * draws the contents of a segment
          * @tparam T the type of this segment
          * @param track reference to track
@@ -68,17 +75,6 @@ namespace nap
          */
         template<typename T>
         void drawSegmentValue(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, sequencecurveenums::ESegmentValueTypes segmentType, ImDrawList* drawList);
-
-        /**
-         * draws segment handler
-         * @param track reference to track
-         * @param segment reference to segment
-         * @param trackTopLeft tracks topleft position
-         * @param segmentX segment x position
-         * @param segmentWidth width of segment
-         * @param drawList pointer to window drawlist
-         */
-        void drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
 
         /**
          * draws control points of curve segment

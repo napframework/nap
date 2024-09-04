@@ -21,8 +21,6 @@ namespace nap
     using namespace sequenceguiclipboard;
 
 
-
-
     SequenceColorTrackView::SequenceColorTrackView(SequenceGUIService& service, SequenceEditorGUIView& view, SequenceEditorGUIState& state)
             : SequenceTrackView(view, state)
     {
@@ -106,71 +104,16 @@ namespace nap
     {
         ImDrawList *draw_list = ImGui::GetWindowDrawList();
 
-        if(mState.mIsWindowFocused)
-        {
-            const float track_height = track.mTrackHeight * mState.mScale;
-            // handle insertion of segment
-            if(mState.mAction->isAction<None>())
-            {
-                if(ImGui::IsMouseHoveringRect(
-                        trackTopLeft, // top left position
-                        {trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + track_height}))
-                {
-                    // position of mouse in track
-                    draw_list->AddLine(
-                            {mState.mMousePos.x, trackTopLeft.y}, // top left
-                            {mState.mMousePos.x, trackTopLeft.y + track_height}, // bottom right
-                            mService.getColors().mFro2, // color
-                            1.0f * mState.mScale); // thickness
+        // track height
+        const float track_height = track.mTrackHeight * mState.mScale;
 
-                    ImGui::BeginTooltip();
-                    ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
-                    ImGui::EndTooltip();
-
-                    // right mouse down
-                    if(ImGui::IsMouseClicked(1))
-                    {
-                        // open insert color segment popup
-                        double time = mState.mMouseCursorTime;
-                        mState.mAction = createAction<InsertColorSegmentPopup>(track.mID, time);
-                    }
-                }
-            }
-
-            // draw line in track while in inserting segment popup
-            if(mState.mAction->isAction<InsertColorSegmentPopup>())
-            {
-                auto *action = mState.mAction->getDerived<InsertColorSegmentPopup>();
-                if(action->mTrackID == track.mID)
-                {
-                    // position of insertion in track
-                    draw_list->AddLine(
-                            {trackTopLeft.x + (float) action->mTime * mState.mStepSize, trackTopLeft.y}, // top left
-                            {trackTopLeft.x + (float) action->mTime * mState.mStepSize,
-                             trackTopLeft.y + track_height}, // bottom right
-                            mService.getColors().mFro2, // color
-                            1.0f * mState.mScale); // thickness
-                }
-            }
-
-            if(mState.mAction->isAction<InsertColorSegmentPopup>())
-            {
-                auto *action = mState.mAction->getDerived<InsertColorSegmentPopup>();
-                if(action->mTrackID == track.mID)
-                {
-                    // position of insertion in track
-                    draw_list->AddLine(
-                            {trackTopLeft.x + (float) action->mTime * mState.mStepSize, trackTopLeft.y}, // top left
-                            {trackTopLeft.x + (float) action->mTime * mState.mStepSize,
-                             trackTopLeft.y + track_height}, // bottom right
-                            mService.getColors().mFro2, // color
-                            1.0f * mState.mScale); // thickness
-                }
-            }
-        }
+        // black background color for the curve and handlers
+        const ImU32 black_imu_color = mService.getColors().mDark;
+        const ImU32 white_imu_color = mService.getColors().mFro4;
 
         float prev_segment_x = 0.0f;
 
+        // continue drawing the segments
         int segment_count = 0;
         if(!track.mSegments.empty())
         {
@@ -194,22 +137,18 @@ namespace nap
 
                 // obtain normalized mouse position, we need this information later when dragging curve points or tan handlers
                 glm::vec2 normalized_mouse_pos = { (mState.mMousePos.x - trackTopLeft.x - prev_segment_x) / width,
-                                                   -(mState.mMousePos.y - trackTopLeft.y - track.mTrackHeight) / track.mTrackHeight};
+                                                   -(mState.mMousePos.y - trackTopLeft.y - track_height) / track_height};
 
                 // check if we're hovering the curve
                 bool hovering_curve = false;
                 float mouse_pos_in_curve = 0.0f;
-
-                // black background color for the curve and handlers
-                const ImU32 black_imu_color = utility::toImColor({0.0f, 0.0f, 0.0f, 1.0f});
-                const ImU32 white_imu_color = utility::toImColor({1.0f, 1.0f, 1.0f, 1.0f});
 
                 // only check if we're not in an action or already hovering the curve
                 if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
                 {
                     if(mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
                             {trackTopLeft.x + prev_segment_x, trackTopLeft.y},
-                            {trackTopLeft.x + segment_x, trackTopLeft.y + track.mTrackHeight * mState.mScale}))
+                            {trackTopLeft.x + segment_x, trackTopLeft.y + track_height}))
                     {
                         // check if we're hovering the curve
                         // get the normalized mouse x position in the segment
@@ -217,7 +156,7 @@ namespace nap
                         if(mouse_x_in_segment_normalized >= 0.0f && mouse_x_in_segment_normalized <= 1.0f)
                         {
                             // get the normalized mouse y position in the segment
-                            float mouse_y_in_segment_normalized = (mState.mMousePos.y - trackTopLeft.y) / track.mTrackHeight;
+                            float mouse_y_in_segment_normalized = (mState.mMousePos.y - trackTopLeft.y) / track_height;
                             if(mouse_y_in_segment_normalized >= 0.0f && mouse_y_in_segment_normalized <= 1.0f)
                             {
                                 // get the curve value at this position
@@ -304,7 +243,7 @@ namespace nap
 
                         // set the rectangle points and colors
                         cache_point.mRectStart = {pos, trackTopLeft.y};
-                        cache_point.mRectEnd = {pos + step_width, trackTopLeft.y + track.mTrackHeight * mState.mScale};
+                        cache_point.mRectEnd = {pos + step_width, trackTopLeft.y + track_height};
                         cache_point.mColorStart = a_im;
                         cache_point.mColorEnd = b_im;
 
@@ -312,12 +251,12 @@ namespace nap
                         mCachePoints[segment->mID].emplace_back(cache_point);
 
                         // obtain the curve height for points a and b
-                        float curve_height_a = track.mTrackHeight * a_pos;
-                        float curve_height_b = track.mTrackHeight * b_pos;
+                        float curve_height_a = track_height * a_pos;
+                        float curve_height_b = track_height * b_pos;
 
                         // add the polyline points
-                        ImVec2 curve_point_a = {pos, trackTopLeft.y + track.mTrackHeight - curve_height_a};
-                        ImVec2 curve_point_b = {pos + step_width, trackTopLeft.y + track.mTrackHeight - curve_height_b};
+                        ImVec2 curve_point_a = {pos, trackTopLeft.y + track_height - curve_height_a};
+                        ImVec2 curve_point_b = {pos + step_width, trackTopLeft.y + track_height - curve_height_b};
                         polyline.emplace_back(curve_point_a);
                         polyline.emplace_back(curve_point_b);
 
@@ -328,26 +267,30 @@ namespace nap
                 }
 
                 // draw the cached points for this segment
-                assert(mCachePoints.find(segment->mID) != mCachePoints.end());
-                const auto& cached_points = mCachePoints[segment->mID];
-                for(const auto& cached_point : cached_points)
+                if(mCachePoints.find(segment->mID) != mCachePoints.end())
                 {
-                    // draw the rectangle
-                    draw_list->AddRectFilledMultiColor(
-                            cached_point.mRectStart,
-                            cached_point.mRectEnd,
-                            cached_point.mColorStart,
-                            cached_point.mColorEnd,
-                            cached_point.mColorEnd,
-                            cached_point.mColorStart);
+                    const auto& cached_points = mCachePoints[segment->mID];
+                    for(const auto& cached_point : cached_points)
+                    {
+                        // draw the rectangle
+                        draw_list->AddRectFilledMultiColor(
+                                cached_point.mRectStart,
+                                cached_point.mRectEnd,
+                                cached_point.mColorStart,
+                                cached_point.mColorEnd,
+                                cached_point.mColorEnd,
+                                cached_point.mColorStart);
+                    }
                 }
 
                 // draw cached polyline
-                assert(mCachedPolylines.find(segment->mID) != mCachedPolylines.end());
-                const auto& cached_polyline = mCachedPolylines[segment->mID];
-                float curve_size = hovering_curve ? 4.0f * mState.mScale : 2.0f * mState.mScale;
-                draw_list->AddPolyline(cached_polyline.data(), cached_polyline.size(), black_imu_color, false, curve_size * 2.0f);
-                draw_list->AddPolyline(cached_polyline.data(), cached_polyline.size(), white_imu_color, false, curve_size);
+                if(mCachedPolylines.find(segment->mID) != mCachedPolylines.end())
+                {
+                    const auto& cached_polyline = mCachedPolylines[segment->mID];
+                    float curve_size = hovering_curve ? 4.0f * mState.mScale : 2.0f * mState.mScale;
+                    draw_list->AddPolyline(cached_polyline.data(), cached_polyline.size(), black_imu_color, false, curve_size * 2.0f);
+                    draw_list->AddPolyline(cached_polyline.data(), cached_polyline.size(), white_imu_color, false, curve_size);
+                }
 
                 // draw curve points
                 const auto& curve_points = color_segment.mCurve->mPoints;
@@ -355,7 +298,7 @@ namespace nap
                 {
                     // Calculate the position of the curve point
                     ImVec2 curve_point = {trackTopLeft.x + prev_segment_x + curve_points[i].mPos.mTime * width,
-                                          trackTopLeft.y + track.mTrackHeight - curve_points[i].mPos.mValue * track.mTrackHeight};
+                                          trackTopLeft.y + track_height - curve_points[i].mPos.mValue * track_height};
 
                     // get curve point color
                     int point_color_cache_idx = (int)(curve_points[i].mPos.mTime * width);
@@ -545,15 +488,96 @@ namespace nap
             {
                 float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
 
-                // draw segment handlers
-                drawSegmentHandler(
+                // draw segment handler
+                showSegmentHandler(
                         track,
-                        *(segment.get()),
+                        *segment,
                         trackTopLeft, segment_x,
-                        0.0f, draw_list);
+                        draw_list);
             }
         }
 
+        // draw line of mouse cursor in track
+        if(mState.mIsWindowFocused)
+        {
+            // handle insertion of segment
+            if(mState.mAction->isAction<None>())
+            {
+                if(ImGui::IsMouseHoveringRect(
+                        trackTopLeft, // top left position
+                        {trackTopLeft.x + mState.mTimelineWidth, trackTopLeft.y + track_height}))
+                {
+                    // position of mouse in track
+                    ImVec2 top = {mState.mMousePos.x, trackTopLeft.y};
+                    ImVec2 bottom = {mState.mMousePos.x, trackTopLeft.y + track_height};
+
+                    draw_list->AddLine(
+                            top, // top
+                            bottom, // bottom right
+                            mService.getColors().mDark, // color
+                            2.0f * mState.mScale); // thickness
+
+                    draw_list->AddLine(
+                            top, // top
+                            bottom, // bottom
+                            mService.getColors().mFro2, // color
+                            1.0f * mState.mScale); // thickness
+
+                    ImGui::BeginTooltip();
+                    ImGui::Text(formatTimeString(mState.mMouseCursorTime).c_str());
+                    ImGui::EndTooltip();
+
+                    // right mouse down
+                    if(ImGui::IsMouseClicked(1))
+                    {
+                        // open insert color segment popup
+                        double time = mState.mMouseCursorTime;
+                        mState.mAction = createAction<InsertColorSegmentPopup>(track.mID, time);
+                    }
+                }
+            }
+
+            // draw line in track while in inserting segment popup
+            if(mState.mAction->isAction<InsertColorSegmentPopup>())
+            {
+                auto *action = mState.mAction->getDerived<InsertColorSegmentPopup>();
+                if(action->mTrackID == track.mID)
+                {
+                    ImVec2 top = {trackTopLeft.x + (float) action->mTime * mState.mStepSize, trackTopLeft.y};
+                    ImVec2 bottom = {trackTopLeft.x + (float) action->mTime * mState.mStepSize, trackTopLeft.y + track_height};
+
+                    // position of insertion in track
+                    draw_list->AddLine(top, // top left
+                                       bottom, // bottom right
+                                       mService.getColors().mDark, // color
+                                       2.0f * mState.mScale); // thickness
+                    draw_list->AddLine(top, // top left
+                                       bottom, // bottom right
+                                       mService.getColors().mFro2, // color
+                                       1.0f * mState.mScale); // thickness
+                }
+            }
+
+            if(mState.mAction->isAction<InsertColorSegmentPopup>())
+            {
+                auto *action = mState.mAction->getDerived<InsertColorSegmentPopup>();
+                if(action->mTrackID == track.mID)
+                {
+                    ImVec2 top = {trackTopLeft.x + (float) action->mTime * mState.mStepSize, trackTopLeft.y};
+                    ImVec2 bottom = {trackTopLeft.x + (float) action->mTime * mState.mStepSize, trackTopLeft.y + track_height};
+
+                    // position of insertion in track
+                    draw_list->AddLine(top, // top left
+                                       bottom, // bottom right
+                                       mService.getColors().mFro2, // color
+                                       2.0f * mState.mScale); // thickness
+                    draw_list->AddLine(top, // top left
+                                       bottom, // bottom right
+                                       mService.getColors().mFro2, // color
+                                       1.0f * mState.mScale); // thickness
+                }
+            }
+        }
     }
 
 
@@ -619,162 +643,26 @@ namespace nap
     }
 
 
-    void SequenceColorTrackView::drawSegmentHandler(
-            const SequenceTrack& track,
-            const SequenceTrackSegment& segment,
-            const ImVec2& trackTopLeft,
-            const float segmentX,
-            const float segmentWidth,
-            ImDrawList* drawList)
+    void SequenceColorTrackView::onHandleEditSegment(const nap::SequenceTrack &track,
+                                                     const nap::SequenceTrackSegment &segment)
     {
-        const float track_height = track.mTrackHeight * mState.mScale;
-        float seg_bounds = 10.0f * mState.mScale;
-
-        // segment handler
-        if(((mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
-                {trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds},
-                {trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + track_height + seg_bounds})) &&
-            (mState.mAction->isAction<None>() || (mState.mAction->isAction<HoveringSegment>() &&
-                                                  mState.mAction->getDerived<HoveringSegment>()->mSegmentID ==
-                                                  segment.mID)))
-           ||
-           (mState.mAction->isAction<DraggingSegment>() &&
-            mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID))
-        {
-            bool isAlreadyHovering = false;
-            if(mState.mAction->isAction<HoveringSegment>())
-            {
-                isAlreadyHovering = mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID;
-            }
-
-            bool isAlreadyDragging = false;
-            if(mState.mAction->isAction<DraggingSegment>())
-            {
-                isAlreadyDragging = mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID;
-            }
-
-            // draw handler of segment
-            drawList->AddLine(
-                    {trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
-                    {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
-                    mService.getColors().mFro4, // color
-                    3.0f * mState.mScale); // thickness
-
-            if(!isAlreadyHovering && !isAlreadyDragging)
-            {
-                if(!ImGui::IsMouseDragging(0))
-                {
-                    // we are hovering this segment with the mouse
-                    mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
-                }
-
-            }
-
-            ImGui::BeginTooltip();
-            ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-            ImGui::EndTooltip();
-
-            // left mouse is start dragging
-            if(!isAlreadyDragging)
-            {
-                if(!mState.mAction->isAction<DraggingSegment>())
-                {
-                    if(ImGui::IsMouseDown(0))
-                    {
-                        bool move_next_segment = ImGui::GetIO().KeyCtrl;
-                        mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mStartTime, move_next_segment);
-                    }
-                }
-            }
-
-            // right mouse in deletion popup
-            if(ImGui::IsMouseDown(1))
-            {
-                auto& segment_color = static_cast<const SequenceTrackSegmentColor&>(segment);
-                mState.mAction = createAction<EditingColorSegment>(track.mID,
-                                                                   segment.mID,
-                                                                   mState.mMousePos,
-                                                                   segment_color.mCurveType,
-                                                                   segment_color.mColor,
-                                                                   segment_color.mBlendMethod,
-                                                                   segment.mStartTime);
-            }
-
-            // handled shift click for add/remove to clipboard
-            if(ImGui::IsMouseClicked(0))
-            {
-                if(ImGui::GetIO().KeyShift)
-                {
-                    // if no event segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
-                    if(!mState.mClipboard->isClipboard<ColorSegmentClipboard>())
-                        mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(SequenceTrackColor), getEditor().mSequencePlayer->getSequenceFilename());
-                    else if(mState.mClipboard->getDerived<ColorSegmentClipboard>()->getSequenceName() !=
-                            getEditor().mSequencePlayer->getSequenceFilename())
-                        mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(SequenceTrackColor), getEditor().mSequencePlayer->getSequenceFilename());
-
-                    // get derived clipboard
-                    auto *clipboard = mState.mClipboard->getDerived<ColorSegmentClipboard>();
-
-                    // if the clipboard contains this segment or is a different sequence, remove it
-                    if(clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
-                    {
-                        clipboard->removeObject(segment.mID);
-                    } else
-                    {
-                        // if not, serialize it into clipboard
+        assert(segment.get_type() == RTTI_OF(SequenceTrackSegmentColor));
+        auto& segment_color = static_cast<const SequenceTrackSegmentColor&>(segment);
+        mState.mAction = createAction<EditingColorSegment>(track.mID,
+                                                           segment.mID,
+                                                           mState.mMousePos,
+                                                           segment_color.mCurveType,
+                                                           segment_color.mColor,
+                                                           segment_color.mBlendMethod,
+                                                           segment.mStartTime);
+    }
 
 
-                        utility::ErrorState errorState;
-                        clipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
+    void SequenceColorTrackView::onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool bold)
+    {
 
-                        // log any errors
-                        if(errorState.hasErrors())
-                        {
-                            Logger::error(errorState.toString());
-                        }
-                    }
-                }
-            }
-        } else
-        {
-            ImU32 line_color = mService.getColors().mFro3;
-
-            // if segment is in clipboard, line is red
-            if(mState.mClipboard->isClipboard<ColorSegmentClipboard>())
-            {
-                if(mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
-                {
-                    line_color = mService.getColors().mHigh1;
-                }
-            }
-
-            // draw handler of segment duration
-            drawList->AddLine(
-                    {trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
-                    {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
-                    line_color, // color
-                    1.0f * mState.mScale); // thickness
-
-            if(mState.mAction->isAction<HoveringSegment>())
-            {
-                auto *action = mState.mAction->getDerived<HoveringSegment>();
-                if(action->mSegmentID == segment.mID)
-                {
-                    mState.mAction = createAction<None>();
-                }
-            }
-        }
-
-        if(ImGui::IsMouseReleased(0))
-        {
-            if(mState.mAction->isAction<DraggingSegment>())
-            {
-                if(mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID)
-                {
-                    mState.mAction = createAction<None>();
-                }
-            }
-        }
+        drawList->AddLine(top, bottom, mService.getColors().mDark, bold ? 6.0f * mState.mScale : 2.0f * mState.mScale);
+        drawList->AddLine(top, bottom, mService.getColors().mFro4, bold ? 3.0f * mState.mScale : 1.0f * mState.mScale);
     }
 
 

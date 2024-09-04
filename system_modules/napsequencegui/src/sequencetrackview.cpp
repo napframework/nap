@@ -6,6 +6,7 @@
 #include "sequencetrackview.h"
 #include "sequenceeditorgui.h"
 #include "sequenceeditorguiactions.h"
+#include "sequencetracksegmentduration.h"
 
 // External Includes
 #include <imgui/imgui.h>
@@ -431,6 +432,118 @@ namespace nap
             mState.mAction = sequenceguiactions::createAction<None>();
             ImGui::CloseCurrentPopup();
         }
+    }
+
+
+    void SequenceTrackView::showSegmentHandler(const SequenceTrack& track,
+                                               const SequenceTrackSegment& segment,
+                                               const ImVec2& trackTopLeft,
+                                               float segmentX,
+                                               ImDrawList* drawList)
+    {
+        // obtain track height and handler bounds
+        const float track_height = track.mTrackHeight * mState.mScale;
+        const float handler_bounds = 10.0f * mState.mScale;
+
+        // line thickness depends on actions performed on the segment handler
+        bool bold_handler = false;
+
+        // check if window is focused
+        if(mState.mIsWindowFocused)
+        {
+            // check if we are currently hovering this segment
+            if(mState.mAction->isAction<HoveringSegment>())
+            {
+                auto *action = mState.mAction->getDerived<HoveringSegment>();
+                if(action->mSegmentID == segment.mID)
+                {
+                    // hovering this segment, if outside bounds, end action
+                    if(!ImGui::IsMouseHoveringRect(
+                            {trackTopLeft.x + segmentX - handler_bounds, trackTopLeft.y - handler_bounds},
+                            {trackTopLeft.x + segmentX + handler_bounds,
+                             trackTopLeft.y + track_height + handler_bounds}))
+                    {
+                        mState.mAction = createAction<None>();
+                    }else
+                    {
+                        // otherwise, bold handler
+                        bold_handler = true;
+                    }
+
+                    // if we are clicking, start dragging segment
+                    if(ImGui::IsMouseDown(0))
+                    {
+                        // if we are holding ctrl, move to next segments on track accordingly
+                        bool move_next_segment = ImGui::GetIO().KeyCtrl;
+
+                        // duration Segments work a little bit different since their handlers are at the end
+                        // of the segment, so we need to calculate the position accordingly
+                        double position = segment.mStartTime;
+                        if(segment.get_type().is_derived_from<SequenceTrackSegmentDuration>())
+                        {
+                            const auto& duration_segment = static_cast<const SequenceTrackSegmentDuration&>(segment);
+                            position = duration_segment.mDuration;
+                        }
+
+                        // create dragging segment action
+                        mState.mAction = createAction<DraggingSegment>(track.mID,
+                                                                       segment.mID,
+                                                                       position,
+                                                                       move_next_segment);
+                    }else if(ImGui::IsMouseDown(1))
+                    {
+                        // if we are right clicking, open edit segment popup
+                        onHandleEditSegment(track, segment);
+                    }
+
+                    // show tooltip with time
+                    ImGui::BeginTooltip();
+                    ImGui::Text(formatTimeString(segment.mStartTime).c_str());
+                    ImGui::EndTooltip();
+                }
+            }else
+            {
+                // if we are not dragging a segment, check if we are hovering a segment
+                if(!mState.mAction->isAction<DraggingSegment>())
+                {
+                    if(ImGui::IsMouseHoveringRect(
+                            {trackTopLeft.x + segmentX - handler_bounds, trackTopLeft.y - handler_bounds},
+                            {trackTopLeft.x + segmentX + handler_bounds,
+                             trackTopLeft.y + track_height + handler_bounds}))
+                    {
+                        bold_handler = true;
+                        mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
+                    }
+                }else
+                {
+                    // if we are dragging a segment, check if we are dragging this segment
+                    auto *action = mState.mAction->getDerived<DraggingSegment>();
+                    if(action->mSegmentID == segment.mID)
+                    {
+                        // if so, bold handler
+                        bold_handler = true;
+
+                        // if we are releasing the mouse, end dragging
+                        if(ImGui::IsMouseReleased(0))
+                        {
+                            mState.mAction = createAction<None>();
+                        }
+                    }
+                }
+            }
+        }
+
+        // draw handler of segment
+        onDrawSegmentHandler({trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
+                             {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
+                             drawList, // draw list
+                             bold_handler); // bold
+    }
+
+
+    void SequenceTrackView::onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool bold)
+    {
+        drawList->AddLine(top, bottom, mService.getColors().mFro4, bold ? 3.0f * mState.mScale : 1.0f * mState.mScale);
     }
 
 

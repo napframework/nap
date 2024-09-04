@@ -162,6 +162,8 @@ namespace nap
         SequenceEventTrackView& operator=(const SequenceEventTrackView&) = delete;
 
     protected:
+        void onHandleEditSegment(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
+
         /**
          * shows inspector content
          * @param track reference to track
@@ -205,18 +207,6 @@ namespace nap
          */
         template<typename T>
         void pasteEvent(const std::string& trackID, const SequenceTrackSegmentEventBase& baseEvent, double time);
-
-        /**
-         * draws segment handler
-         * @param track reference to track
-         * @param segment reference to segment
-         * @param trackTopLeft tracks topleft position
-         * @param segmentX segment x position
-         * @param segmentWidth width of segment
-         * @param drawList pointer to window drawlist
-         */
-        void
-        drawSegmentHandler(const SequenceTrack& track, const SequenceTrackSegment& segment, const ImVec2& trackTopLeft, float segmentX, float segmentWidth, ImDrawList* drawList);
 
         /**
          * handles delete segment popup

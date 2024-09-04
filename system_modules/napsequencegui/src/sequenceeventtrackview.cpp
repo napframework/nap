@@ -183,11 +183,11 @@ namespace nap
             float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
 
             // draw segment handlers
-            drawSegmentHandler(
-                track,
-                *(segment.get()),
-                trackTopLeft, segment_x,
-                0.0f, draw_list);
+            showSegmentHandler(
+                    track,
+                    *segment,
+                    trackTopLeft, segment_x,
+                    draw_list);
 
             // static map of draw functions for different event types
             auto type = (segment.get())->get_type();
@@ -303,155 +303,10 @@ namespace nap
     }
 
 
-    void SequenceEventTrackView::drawSegmentHandler(
-            const SequenceTrack& track,
-            const SequenceTrackSegment& segment,
-            const ImVec2& trackTopLeft,
-            const float segmentX,
-            const float segmentWidth,
-            ImDrawList* drawList)
+    void SequenceEventTrackView::onHandleEditSegment(const nap::SequenceTrack &track,
+                                                     const nap::SequenceTrackSegment &segment)
     {
-        const float track_height = track.mTrackHeight * mState.mScale;
-        float seg_bounds = 10.0f * mState.mScale;
-
-        // segment handler
-        if(((mState.mIsWindowFocused && ImGui::IsMouseHoveringRect(
-            {trackTopLeft.x + segmentX - seg_bounds, trackTopLeft.y - seg_bounds},
-            {trackTopLeft.x + segmentX + seg_bounds, trackTopLeft.y + track_height + seg_bounds})) &&
-            (mState.mAction->isAction<None>() || (mState.mAction->isAction<HoveringSegment>() &&
-                                                  mState.mAction->getDerived<HoveringSegment>()->mSegmentID ==
-                                                  segment.mID)))
-           ||
-           (mState.mAction->isAction<DraggingSegment>() &&
-            mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID))
-        {
-            bool isAlreadyHovering = false;
-            if(mState.mAction->isAction<HoveringSegment>())
-            {
-                isAlreadyHovering = mState.mAction->getDerived<HoveringSegment>()->mSegmentID == segment.mID;
-            }
-
-            bool isAlreadyDragging = false;
-            if(mState.mAction->isAction<DraggingSegment>())
-            {
-                isAlreadyDragging = mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID;
-            }
-
-            // draw handler of segment
-            drawList->AddLine(
-                {trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
-                {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
-                mService.getColors().mFro4, // color
-                3.0f * mState.mScale); // thickness
-
-            if(!isAlreadyHovering && !isAlreadyDragging)
-            {
-                if(!ImGui::IsMouseDragging(0))
-                {
-                    // we are hovering this segment with the mouse
-                    mState.mAction = createAction<HoveringSegment>(track.mID, segment.mID);
-                }
-
-            }
-
-            ImGui::BeginTooltip();
-            ImGui::Text(formatTimeString(segment.mStartTime).c_str());
-            ImGui::EndTooltip();
-
-            // left mouse is start dragging
-            if(!isAlreadyDragging)
-            {
-                if(!mState.mAction->isAction<DraggingSegment>())
-                {
-                    if(ImGui::IsMouseDown(0))
-                    {
-                        bool move_next_segment = ImGui::GetIO().KeyCtrl;
-                        mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mStartTime, move_next_segment);
-                    }
-                }
-            }
-
-            // right mouse in deletion popup
-            if(ImGui::IsMouseDown(1))
-            {
-                mState.mAction = createAction<EditSegmentPopup>(track.mID, segment.mID, segment.get_type());
-            }
-
-            // handled shift click for add/remove to clipboard
-            if(ImGui::IsMouseClicked(0))
-            {
-                if(ImGui::GetIO().KeyShift)
-                {
-                    // if no event segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
-                    if(!mState.mClipboard->isClipboard<EventSegmentClipboard>())
-                        mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
-                    else if(mState.mClipboard->getDerived<EventSegmentClipboard>()->getSequenceName() !=
-                            getEditor().mSequencePlayer->getSequenceFilename())
-                        mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
-
-                    // get derived clipboard
-                    auto *clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
-
-                    // if the clipboard contains this segment or is a different sequence, remove it
-                    if(clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
-                    {
-                        clipboard->removeObject(segment.mID);
-                    } else
-                    {
-                        // if not, serialize it into clipboard
-
-
-                        utility::ErrorState errorState;
-                        clipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
-
-                        // log any errors
-                        if(errorState.hasErrors())
-                        {
-                            Logger::error(errorState.toString());
-                        }
-                    }
-                }
-            }
-        } else
-        {
-            ImU32 line_color = mService.getColors().mFro3;
-
-            // if segment is in clipboard, line is red
-            if(mState.mClipboard->isClipboard<EventSegmentClipboard>())
-            {
-                if(mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
-                {
-                    line_color = mService.getColors().mHigh1;
-                }
-            }
-
-            // draw handler of segment duration
-            drawList->AddLine(
-                {trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
-                {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
-                line_color, // color
-                1.0f * mState.mScale); // thickness
-
-            if(mState.mAction->isAction<HoveringSegment>())
-            {
-                auto *action = mState.mAction->getDerived<HoveringSegment>();
-                if(action->mSegmentID == segment.mID)
-                {
-                    mState.mAction = createAction<None>();
-                }
-            }
-        }
-
-        if(ImGui::IsMouseReleased(0))
-        {
-            if(mState.mAction->isAction<DraggingSegment>())
-            {
-                if(mState.mAction->getDerived<DraggingSegment>()->mSegmentID == segment.mID)
-                {
-                    mState.mAction = createAction<None>();
-                }
-            }
-        }
+        mState.mAction = createAction<EditSegmentPopup>(track.mID, segment.mID, segment.get_type());
     }
 
 
