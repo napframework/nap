@@ -393,7 +393,3 @@ void PropertyValueItemDelegate::setModelData(QWidget* editor, QAbstractItemModel
 	}
 }
 
-
-
-
-
