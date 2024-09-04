@@ -15,7 +15,7 @@ macro(nap_qt_pre)
             # If we're doing a platform release let's enforce the an explicit Qt path so that we're
             # certain what we're bundling with the release
             message(FATAL_ERROR "Please set the QT_DIR environment variable to define the Qt6 version"
-                                "to be installed with the platform release, eg. \"C:/dev/Qt/6.5.3/msvc2015_64\"")
+                                "to be installed with the platform release, eg. \"C:/dev/qt/6.7.2/msvc2019_64\"")
         endif()
     endif()
 
