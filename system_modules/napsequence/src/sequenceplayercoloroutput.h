@@ -14,7 +14,7 @@
 #include <parametercolor.h>
 
 // external includes
-#include <queue>
+#include <concurrentqueue.h>
 
 namespace nap
 {
@@ -35,8 +35,8 @@ namespace nap
          */
         SequencePlayerColorOutput(SequenceService& service);
 
-        ResourcePtr<ParameterRGBColorFloat> mParameter;
-        bool mUseMainThread = true;
+        ResourcePtr<ParameterRGBAColorFloat> mParameter; ///< Property: 'Parameter' parameter resource
+        bool mUseMainThread = true; ///< Property: 'Use Main Thread' update in main thread or player thread
     protected:
         /**
          * called from sequence service main thread
@@ -45,6 +45,19 @@ namespace nap
         void update(double deltaTime) override;
 
     private:
+        /**
+         * stores color in queue
+         * @param color color to store
+         */
+        void storeColor(const RGBAColorFloat& color);
+
+        /**
+         * sets color
+         * @param color color to set
+         */
+        void setColor(const RGBAColorFloat& color);
+
+        moodycamel::ConcurrentQueue<RGBAColorFloat> mColorQueue;
     };
 
     using SequencePlayerColorOutputObjectCreator = rtti::ObjectCreator<SequencePlayerColorOutput, SequenceService>;

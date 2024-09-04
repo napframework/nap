@@ -15,8 +15,8 @@
                             "Start Time": 4.205040734261274,
                             "Color": {
                                 "Values": [
+                                    0.9545453786849976,
                                     1.0,
-                                    0.0,
                                     0.0,
                                     0.9882352948188782
                                 ]
@@ -30,6 +30,22 @@
                                         "Position": {
                                             "Time": 0.0,
                                             "Value": 0.0
+                                        },
+                                        "InTangent": {
+                                            "Time": -0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "OutTangent": {
+                                            "Time": 0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "InterpolationType": "Bezier",
+                                        "AlignedTangents": true
+                                    },
+                                    {
+                                        "Position": {
+                                            "Time": 0.07354278117418289,
+                                            "Value": 1.0
                                         },
                                         "InTangent": {
                                             "Time": -0.10000000149011612,
@@ -69,13 +85,13 @@
                             "Start Time": 7.850741386413574,
                             "Color": {
                                 "Values": [
-                                    0.0,
+                                    0.9999899864196777,
                                     1.0,
-                                    0.4880950450897217,
+                                    0.9999951124191284,
                                     1.0
                                 ]
                             },
-                            "BlendMethod": "Oklab",
+                            "BlendMethod": "Linear",
                             "Curve": {
                                 "Type": "nap::math::FloatFCurve",
                                 "mID": "Generated_3",
@@ -84,6 +100,54 @@
                                         "Position": {
                                             "Time": 0.0,
                                             "Value": 0.0
+                                        },
+                                        "InTangent": {
+                                            "Time": -0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "OutTangent": {
+                                            "Time": 0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "InterpolationType": "Linear",
+                                        "AlignedTangents": true
+                                    },
+                                    {
+                                        "Position": {
+                                            "Time": 0.17916539311408997,
+                                            "Value": 0.1792406141757965
+                                        },
+                                        "InTangent": {
+                                            "Time": -0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "OutTangent": {
+                                            "Time": 0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "InterpolationType": "Linear",
+                                        "AlignedTangents": true
+                                    },
+                                    {
+                                        "Position": {
+                                            "Time": 0.5047880411148071,
+                                            "Value": 0.5049999952316284
+                                        },
+                                        "InTangent": {
+                                            "Time": -0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "OutTangent": {
+                                            "Time": 0.10000000149011612,
+                                            "Value": 0.0
+                                        },
+                                        "InterpolationType": "Linear",
+                                        "AlignedTangents": true
+                                    },
+                                    {
+                                        "Position": {
+                                            "Time": 0.74284827709198,
+                                            "Value": 0.7429583072662354
                                         },
                                         "InTangent": {
                                             "Time": -0.10000000149011612,
@@ -120,12 +184,12 @@
                             "Type": "nap::SequenceTrackSegmentColor",
                             "mID": "Generated_4",
                             "Label": "default",
-                            "Start Time": 11.456488376483322,
+                            "Start Time": 11.41658509708941,
                             "Color": {
                                 "Values": [
                                     1.0,
-                                    0.0,
-                                    0.3849058151245117,
+                                    0.9999899864196777,
+                                    0.9999939799308777,
                                     1.0
                                 ]
                             },
@@ -206,7 +270,7 @@
                             "Type": "nap::SequenceTrackSegmentColor",
                             "mID": "Generated_6",
                             "Label": "default",
-                            "Start Time": 16.160940170288087,
+                            "Start Time": 16.16094017028809,
                             "Color": {
                                 "Values": [
                                     0.9820842742919922,
@@ -311,7 +375,7 @@
                             "CurveType": "Linear"
                         }
                     ],
-                    "Output ID": "",
+                    "Output ID": "SequencePlayerColorOutput",
                     "Name": "Generated_7",
                     "Height": 200.0
                 }

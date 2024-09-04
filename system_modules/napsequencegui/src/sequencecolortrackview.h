@@ -79,12 +79,6 @@ namespace nap
         void handleInsertColorSegmentPopup();
 
         /**
-         * handles event segment popup
-         */
-        template<typename T>
-        void handleEditEventSegmentPopup();
-
-        /**
          * handles pasting of clipboard content to event segment
          * @tparam T the event segment type
          * @param trackID the track id of where to paste the new event
@@ -95,14 +89,10 @@ namespace nap
         bool pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
 
         /**
-         * Paste events of type T. Base event is base class of event of type T
-         * @tparam T type of event
-         * @param trackID track on which to paste event
-         * @param baseEvent reference to base class of event to paste
-         * @param time time in seconds
+         * Called before call to showTrack during the same frame
+         * Clears the cache of points and polylines
          */
-        template<typename T>
-        void pasteEvent(const std::string& trackID, const SequenceTrackSegmentEventBase& baseEvent, double time);
+        void onPreShowTrack() override;
 
         /**
          * draws segment handler
@@ -139,38 +129,47 @@ namespace nap
         void handleSegmentDrag();
 
         /**
-         *
+         * handles the load preset popup
          */
         void handleLoadPresetPopup();
 
         /**
-         *
+         * handles the edit curve popup
          */
         void handleEditCurvePopup();
 
         /**
-         *
+         * handles the drag curve point popup
          */
         void handleDragCurvePoint();
 
+        /**
+         * handles the edit curve point popup
+         */
         void handleEditCurvePointPopup();
 
+        /**
+         * handles the drag curve tan point popup
+         */
         void handleDragCurveTanPoint();
     private:
         // map of segment views for different event views
         std::unordered_map<rtti::TypeInfo, std::unique_ptr<SequenceColorTrackSegmentView>> mSegmentViews;
 
+        /**
+         * Internal struct that caches points for drawing
+         */
         struct CachePoint
         {
             ImU32 mColorStart;
             ImU32 mColorEnd;
-            ImU32 mCurveColor;
-            ImVec2 mCurveStart;
-            ImVec2 mCurveEnd;
             ImVec2 mRectStart;
             ImVec2 mRectEnd;
         };
+
+        // caches
         std::unordered_map<std::string, std::vector<CachePoint>> mCachePoints;
+        std::unordered_map<std::string, std::vector<ImVec2>> mCachedPolylines;
     };
 
 

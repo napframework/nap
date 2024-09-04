@@ -22,5 +22,23 @@ namespace nap
 
     void SequencePlayerColorOutput::update(double deltaTime)
     {
+        while(mColorQueue.size_approx()>0)
+        {
+            RGBAColorFloat color;
+            mColorQueue.try_dequeue(color);
+            setColor(color);
+        }
+    }
+
+
+    void SequencePlayerColorOutput::setColor(const nap::RGBAColorFloat &color)
+    {
+        mParameter->setValue(color);
+    }
+
+
+    void SequencePlayerColorOutput::storeColor(const nap::RGBAColorFloat &color)
+    {
+        mColorQueue.enqueue(color);
     }
 }

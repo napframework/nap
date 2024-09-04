@@ -71,6 +71,19 @@
                     "Value": 0,
                     "Minimum": 0,
                     "Maximum": 100
+                },
+                {
+                    "Type": "nap::ParameterRGBAColorFloat",
+                    "mID": "ParameterRGBAColorFloat",
+                    "Name": "Color",
+                    "Value": {
+                        "Values": [
+                            0.0,
+                            0.0,
+                            0.0,
+                            0.0
+                        ]
+                    }
                 }
             ],
             "Groups": []
@@ -95,7 +108,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::RenderWindow",
@@ -117,7 +132,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",
@@ -183,6 +200,12 @@
                     ],
                     "Manual Routing": true,
                     "Max Channels": 2
+                },
+                {
+                    "Type": "nap::SequencePlayerColorOutput",
+                    "mID": "SequencePlayerColorOutput",
+                    "Parameter": "ParameterRGBAColorFloat",
+                    "Use Main Thread": true
                 }
             ],
             "Clock": {

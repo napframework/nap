@@ -18,19 +18,18 @@ namespace nap
     class SequencePlayerColorOutput;
 
     /**
-     * Adapter responsible for handling events from an event track and sync them with the main thread using a
-     * SequencePlayerEventOutput intermediate class.
      */
     class NAPAPI SequencePlayerColorAdapter final : public SequencePlayerAdapter
     {
     public:
         /**
          * Constructor
-         * @param track reference to sequence event track
+         * @param track reference to sequence color track
          * @param output reference to event receiver
          * @param player reference to the sequence player
          */
-        SequencePlayerColorAdapter(const SequenceTrack& track, SequencePlayerColorOutput& output,
+        SequencePlayerColorAdapter(const SequenceTrack& track,
+                                   SequencePlayerColorOutput& output,
                                    const SequencePlayer& player);
 
         /**
@@ -39,16 +38,20 @@ namespace nap
          */
         void tick(double time) override;
 
-
         /**
-         * called upon destruction of the adapter
+         * called when adapter is destroyed
          */
-        void destroy() override{};
+        void destroy() override{}
     private:
+        const SequencePlayer& mPlayer;
+
         // reference to track linked to adapter
         const SequenceTrack& mTrack;
 
         // reference to output linked to adapter
         SequencePlayerColorOutput& mOutput;
+
+        // set or store, depending on main thread or player thread
+        std::function<void(const RGBAColorFloat&)> mSetFunction;
     };
 }

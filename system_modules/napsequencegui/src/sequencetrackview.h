@@ -62,6 +62,16 @@ namespace nap
          */
         virtual void showTrack(const SequenceTrack& track);
 
+        /**
+         * Called before call to showTrack during the same frame
+         */
+        virtual void onPreShowTrack() {}
+
+        /**
+         * Called after call to showTrack during the same frame
+         */
+        virtual void onPostShowTrack() {}
+
         /////////////////////////////////////////////////////////////////////////////
         // static utility methods
         ////////////////////////////////////////////////////////////////////////////

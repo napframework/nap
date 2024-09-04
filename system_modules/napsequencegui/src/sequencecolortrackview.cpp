@@ -41,6 +41,17 @@ namespace nap
     }
 
 
+    void SequenceColorTrackView::onPreShowTrack()
+    {
+        // if state is dirty, clear cache points
+        if(mState.mDirty)
+        {
+            mCachePoints.clear();
+            mCachedPolylines.clear();
+        }
+    }
+
+
     void SequenceColorTrackView::showInspectorContent(const SequenceTrack& track)
     {
         // draw the assigned receiver
@@ -163,12 +174,6 @@ namespace nap
         int segment_count = 0;
         if(!track.mSegments.empty())
         {
-            //
-            if(mState.mDirty)
-            {
-                mCachePoints.clear();
-            }
-
             // draw first blend
             auto a_segment_color = RGBAColorFloat(0.0f, 0.0f, 0.0f, 0.0f);
             for(const auto &segment: track.mSegments)
@@ -177,12 +182,14 @@ namespace nap
                 assert(segment.get()->get_type() == RTTI_OF(SequenceTrackSegmentColor));
                 const auto& color_segment = static_cast<const SequenceTrackSegmentColor&>(*segment.get());
 
+                // get segment color and blend type
                 auto b_segment_color = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mColor;
                 auto b_blend_type = static_cast<const SequenceTrackSegmentColor*>(segment.get())->mBlendMethod;
 
+                // get segment position on screen and size
                 float segment_x = (float) (segment->mStartTime) * mState.mStepSize;
                 float width = segment_x - prev_segment_x;
-                int steps = width;
+                int steps = (int) width;
                 float step_width = width / (float)steps;
 
                 // obtain normalized mouse position, we need this information later when dragging curve points or tan handlers
@@ -190,8 +197,13 @@ namespace nap
                                                    -(mState.mMousePos.y - trackTopLeft.y - track.mTrackHeight) / track.mTrackHeight};
 
                 // check if we're hovering the curve
-                bool hovering_segment = false;
+                bool hovering_curve = false;
                 float mouse_pos_in_curve = 0.0f;
+
+                // black background color for the curve and handlers
+                const ImU32 black_imu_color = utility::toImColor({0.0f, 0.0f, 0.0f, 1.0f});
+                const ImU32 white_imu_color = utility::toImColor({1.0f, 1.0f, 1.0f, 1.0f});
+
                 // only check if we're not in an action or already hovering the curve
                 if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
                 {
@@ -214,7 +226,7 @@ namespace nap
                                 // check if mouse is hovering the curve
                                 if(fabsf(h - (1.0f - mouse_y_in_segment_normalized)) < 0.05f)
                                 {
-                                    hovering_segment = true;
+                                    hovering_curve = true;
                                     mouse_pos_in_curve = mouse_x_in_segment_normalized;
                                 }
                             }
@@ -223,7 +235,7 @@ namespace nap
                 }
 
                 // invoke hovering color curve action if not already active
-                if(hovering_segment)
+                if(hovering_curve)
                 {
                     if(mState.mAction->isAction<None>())
                     {
@@ -263,8 +275,10 @@ namespace nap
                 {
                     RGBAColorFloat a_color;
                     RGBAColorFloat b_color;
+                    std::vector<ImVec2> polyline;
                     for(int i = 0; i < steps; i ++)
                     {
+                        // create cache point
                         CachePoint cache_point;
 
                         // calculate blend values
@@ -294,32 +308,26 @@ namespace nap
                         cache_point.mColorStart = a_im;
                         cache_point.mColorEnd = b_im;
 
-                        // we want to have the curve color always visible against the background (in case alpha is used)
-                        // so we get the background color and inverse the color and get the inverse of the curve color
-                        // depending on the alpha, the negative curve color is blended with the negative background color
-                        // this way, the curve is always clearly visible no matter the curve color or alpha
-                        auto background_color = mService.getGui().getPalette().mBackgroundColor;
-                        auto curve_color = utility::toImColor({ (1.0f - a_color.getRed()) * a_color.getAlpha() + (1.0f - (float)background_color.getRed() / 255.0f) * (1.0f - a_color.getAlpha()),
-                                                                (1.0f - a_color.getGreen()) * a_color.getAlpha() + (1.0f - (float)background_color.getGreen() / 255.0f) * (1.0f - a_color.getAlpha()),
-                                                                (1.0f - a_color.getBlue())* a_color.getAlpha() + (1.0f - (float)background_color.getBlue() / 255.0f) * (1.0f - a_color.getAlpha()),
-                                                                1.0f});
+                        // add the cache point
+                        mCachePoints[segment->mID].emplace_back(cache_point);
 
                         // obtain the curve height for points a and b
                         float curve_height_a = track.mTrackHeight * a_pos;
                         float curve_height_b = track.mTrackHeight * b_pos;
 
-                        // set the curve points and color
-                        cache_point.mCurveColor = curve_color;
-                        cache_point.mCurveStart = {pos, trackTopLeft.y + track.mTrackHeight - curve_height_a};
-                        cache_point.mCurveEnd = {pos + step_width, trackTopLeft.y + track.mTrackHeight - curve_height_b};
+                        // add the polyline points
+                        ImVec2 curve_point_a = {pos, trackTopLeft.y + track.mTrackHeight - curve_height_a};
+                        ImVec2 curve_point_b = {pos + step_width, trackTopLeft.y + track.mTrackHeight - curve_height_b};
+                        polyline.emplace_back(curve_point_a);
+                        polyline.emplace_back(curve_point_b);
 
-                        // add the cache point
-                        mCachePoints[segment->mID].emplace_back(cache_point);
+                        // add the polyline point to cache
+                        mCachedPolylines[segment->mID].emplace_back(curve_point_a);
                     }
                     a_segment_color = b_segment_color;
                 }
 
-                // draw the cached points
+                // draw the cached points for this segment
                 assert(mCachePoints.find(segment->mID) != mCachePoints.end());
                 const auto& cached_points = mCachePoints[segment->mID];
                 for(const auto& cached_point : cached_points)
@@ -332,14 +340,14 @@ namespace nap
                             cached_point.mColorEnd,
                             cached_point.mColorEnd,
                             cached_point.mColorStart);
-
-                    // draw the curve
-                    draw_list->AddLine(
-                            cached_point.mCurveStart,
-                            cached_point.mCurveEnd,
-                            cached_point.mCurveColor,
-                            hovering_segment ? 4.0f * mState.mScale : 2.0f * mState.mScale);
                 }
+
+                // draw cached polyline
+                assert(mCachedPolylines.find(segment->mID) != mCachedPolylines.end());
+                const auto& cached_polyline = mCachedPolylines[segment->mID];
+                float curve_size = hovering_curve ? 4.0f * mState.mScale : 2.0f * mState.mScale;
+                draw_list->AddPolyline(cached_polyline.data(), cached_polyline.size(), black_imu_color, false, curve_size * 2.0f);
+                draw_list->AddPolyline(cached_polyline.data(), cached_polyline.size(), white_imu_color, false, curve_size);
 
                 // draw curve points
                 const auto& curve_points = color_segment.mCurve->mPoints;
@@ -350,19 +358,18 @@ namespace nap
                                           trackTopLeft.y + track.mTrackHeight - curve_points[i].mPos.mValue * track.mTrackHeight};
 
                     // get curve point color
-                    auto point_color = cached_points[(int)(curve_points[i].mPos.mTime * width)].mCurveColor;
-
-                    // calculate the size of the curve point
-                    const float curve_point_size = 6.0f * mState.mScale;
+                    int point_color_cache_idx = (int)(curve_points[i].mPos.mTime * width);
+                    point_color_cache_idx = math::clamp(point_color_cache_idx, 0, steps - 1);
 
                     // check if we're hovering the curve point, ignore the first and last points
-                    bool is_hovering = ImGui::IsMouseHoveringRect(
-                            {curve_point.x - curve_point_size, curve_point.y - curve_point_size},
-                            {curve_point.x + curve_point_size, curve_point.y + curve_point_size}) &&
+                    const float curve_point_bounds = 5.0f * mState.mScale;
+                    bool is_hovering_curve_point = ImGui::IsMouseHoveringRect(
+                            {curve_point.x - curve_point_bounds, curve_point.y - curve_point_bounds},
+                            {curve_point.x + curve_point_bounds, curve_point.y + curve_point_bounds}) &&
                                     i != 0 && i != curve_points.size() - 1;
 
-                    // draw the curve point
-                    if(is_hovering)
+                    // handle curve point interaction
+                    if(is_hovering_curve_point)
                     {
                         // create the hovering curve point action
                         if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
@@ -370,19 +377,13 @@ namespace nap
                             mState.mAction = createAction<HoveringColorCurvePoint>(track.mID, segment->mID, i);
                         }
 
-                        // draw the curve point
-                        draw_list->AddCircleFilled(curve_point, curve_point_size, point_color);
-
                         // left mouse is start dragging
                         if(ImGui::IsMouseDown(0))
                         {
-                            float delta_x = mState.mMouseDelta.x / width;
-                            float delta_y = -mState.mMouseDelta.y / track.mTrackHeight;
-
                             if(!mState.mAction->isAction<DraggingColorCurvePoint>())
                             {
                                 if(mState.mAction->isAction<HoveringColorCurvePoint>())
-                                    mState.mAction = createAction<DraggingColorCurvePoint>(track.mID, segment->mID, i, glm::vec2(delta_x, delta_y));
+                                    mState.mAction = createAction<DraggingColorCurvePoint>(track.mID, segment->mID, i, normalized_mouse_pos);
                             }
                         }else if(ImGui::IsMouseDown(1))
                         {
@@ -412,24 +413,27 @@ namespace nap
                                 if(action->mSegmentID == segment->mID && action->mPointIndex == i)
                                 {
                                     action->mPosition = normalized_mouse_pos;
+                                    is_hovering_curve_point = true;
                                 }
                             }else
                             {
                                 mState.mAction = createAction<None>();
                             }
                         }
-
-                        // draw the curve point
-                        draw_list->AddCircle(curve_point, curve_point_size, point_color);
                     }
+
+                    // draw the curve point
+                    const float curve_point_size = is_hovering_curve_point ? 6.0f * mState.mScale : 4.0f * mState.mScale;
+                    draw_list->AddCircleFilled(curve_point, curve_point_size * 1.5f, black_imu_color);
+                    draw_list->AddCircleFilled(curve_point, curve_point_size, white_imu_color);
 
                     // draw tan points
                     if(color_segment.mCurveType== math::ECurveInterp::Bezier)
                     {
-                        for(int j = 0; j < 2; j++)
+                        for(int tan_idx = 0; tan_idx < 2; tan_idx++)
                         {
                             // get the correct tan point
-                            const math::FComplex<float, float> &tan_complex = j == 0 ? curve_points[i].mInTan : curve_points[i].mOutTan;
+                            const math::FComplex<float, float> &tan_complex = tan_idx == 0 ? curve_points[i].mInTan : curve_points[i].mOutTan;
 
                             // get the offset from the tan
                             const float tan_constant_size = 200.0f * mState.mScale;
@@ -443,7 +447,7 @@ namespace nap
                             // check if we're hovering the tan point
                             bool tan_point_hovered = false;
 
-                            // set if we are hoverting this point with the mouse
+                            // check if we are hovering this point with the mouse
                             if(mState.mAction->isAction<None>() ||
                                mState.mAction->isAction<HoveringCurveColorSegment>() ||
                                mState.mAction->isAction<HoveringSegment>())
@@ -454,18 +458,18 @@ namespace nap
 
                                 if(tan_point_hovered)
                                 {
-                                    mState.mAction = createAction<HoveringColorCurveTanPoint>(track.mID, segment->mID, i, j);
+                                    mState.mAction = createAction<HoveringColorCurveTanPoint>(track.mID, segment->mID, i, tan_idx);
                                 }
                             }else if(mState.mAction->isAction<HoveringColorCurveTanPoint>())
                             {
-                                tan_point_hovered = ImGui::IsMouseHoveringRect(
-                                        {tan_point.x - tan_bounds, tan_point.y - tan_bounds},
-                                        {tan_point.x + tan_bounds, tan_point.y + tan_bounds});
+                                tan_point_hovered = ImGui::IsMouseHoveringRect({tan_point.x - tan_bounds, tan_point.y - tan_bounds},
+                                                                               {tan_point.x + tan_bounds, tan_point.y + tan_bounds});
 
+                                // if we are not hovering the tan point, stop the action
                                 if(!tan_point_hovered)
                                 {
                                     auto *action = mState.mAction->getDerived<HoveringColorCurveTanPoint>();
-                                    if(action->mSegmentID == segment->mID && action->mPointIndex == i && action->mTanIndex == j)
+                                    if(action->mSegmentID == segment->mID && action->mPointIndex == i && action->mTanIndex == tan_idx)
                                     {
                                         tan_point_hovered = false;
                                         mState.mAction = createAction<None>();
@@ -485,7 +489,7 @@ namespace nap
                                         glm::vec2 new_tan = { tan_complex.mTime + delta.x, tan_complex.mValue + delta.y };
 
                                         if(mState.mAction->isAction<HoveringColorCurveTanPoint>())
-                                            mState.mAction = createAction<DraggingColorCurveTanPoint>(track.mID, segment->mID, i, j, new_tan);
+                                            mState.mAction = createAction<DraggingColorCurveTanPoint>(track.mID, segment->mID, i, tan_idx, new_tan);
                                     }
                                 }
                             }
@@ -495,14 +499,17 @@ namespace nap
                             {
                                 if(ImGui::IsMouseDown(0))
                                 {
+                                    // obtain dragging action and set new position
                                     auto *action = mState.mAction->getDerived<DraggingColorCurveTanPoint>();
-                                    if(action->mSegmentID == segment->mID && action->mPointIndex == i && action->mTanIndex == j)
+                                    if(action->mSegmentID == segment->mID && action->mPointIndex == i && action->mTanIndex == tan_idx)
                                     {
                                         glm::vec2 delta = { mState.mMouseDelta.x / tan_constant_size,
                                                             (mState.mMouseDelta.y / tan_constant_size) * -1.0f };
                                         glm::vec2 new_tan = { tan_complex.mTime + delta.x, tan_complex.mValue + delta.y };
 
                                         action->mPosition = new_tan;
+
+                                        tan_point_hovered = true;
                                     }
                                 }else
                                 {
@@ -511,12 +518,19 @@ namespace nap
                                 }
                             }
 
+                            // draw line background
+                            float tan_line_size = tan_point_hovered ? 2.0f * mState.mScale : 1.0f * mState.mScale;
+                            draw_list->AddLine(curve_point, tan_point, black_imu_color, tan_line_size * 2.0f);
+
                             // draw line
-                            draw_list->AddLine(curve_point, tan_point, point_color,
-                                               tan_point_hovered ? 2.0f * mState.mScale : 1.0f * mState.mScale);
+                            draw_list->AddLine(curve_point, tan_point, white_imu_color, tan_line_size);
+
+                            // draw handler background
+                            float tan_point_size = tan_point_hovered ? 4.0f * mState.mScale : 2.0f * mState.mScale;
+                            draw_list->AddCircleFilled(tan_point, tan_point_size * 2.0f, black_imu_color);
 
                             // draw handler
-                            draw_list->AddCircleFilled(tan_point, tan_point_hovered ? 6.0f * mState.mScale : 3.0f * mState.mScale, point_color);
+                            draw_list->AddCircleFilled(tan_point, tan_point_size, white_imu_color);
                         }
                     }
                 }

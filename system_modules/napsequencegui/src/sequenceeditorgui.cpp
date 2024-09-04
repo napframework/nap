@@ -576,6 +576,12 @@ namespace nap
         // get cursor pos
         auto cursor_pos = ImGui::GetCursorPos();
 
+        // call onPreShowTrack for all views
+        for(auto &it: mViews)
+        {
+            it.second->onPreShowTrack();
+        }
+
         // draw tracks
         for(int i = 0; i < sequence.mTracks.size(); i++)
         {
@@ -597,6 +603,12 @@ namespace nap
             auto it = mViews.find(view_type);
             assert(it != mViews.end()); // no view class created for this view type
             it->second->showTrack(*sequence.mTracks[i].get());
+        }
+
+        // call onPostShowTrack for all views
+        for(auto &it: mViews)
+        {
+            it.second->onPostShowTrack();
         }
     }
 
