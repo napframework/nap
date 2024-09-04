@@ -8,7 +8,6 @@
 #include "appcontext.h"
 #include "napkin-resources.h"
 #include "napkinutils.h"
-#include "colorpicker.h"
 
 #include <QComboBox>
 #include <QMouseEvent>
@@ -16,6 +15,7 @@
 #include <QPainter>
 #include <color.h>
 #include <QCheckBox>
+#include <napqt/colorpicker.h>
 
 using namespace napkin;
 
