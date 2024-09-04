@@ -94,11 +94,12 @@ The editor (Napkin) depends on QT:
 
 - Qt 5
 	- x86_64
-		- The precompiled package uses Qt 5.15 (LTS), although other versions are known to work.
+		- The precompiled package uses Qt 5.15.2 (LTS), although other versions are known to work.
 		- Go to [qt.io](https://www.qt.io/download-open-source) for open source users
 		- Download the Qt online installer
 		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download and install Qt 5.15 for your target platform
+		- Filter on **Archive** and **LTS** and select Qt 5.15.2 for your target platform
+  		- **Only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required
 	- armhf
 		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
 		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
