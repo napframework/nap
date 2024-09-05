@@ -6,7 +6,7 @@ QMainWindow
 QWidget
 {
     font-family: "@regularFont";
-    font-size: 13px;
+    font-size: 10pt;
     font-weight: 500;
     selection-background-color:@highlight1;
     selection-color: @front1;
@@ -84,7 +84,7 @@ QGroupBox:title {
 QDockWidget {
     color: @front4;
     border: 1px solid @header;
-    font-size: 15px;
+    font-size: 11pt;
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
     background: @front1;
