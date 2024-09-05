@@ -92,13 +92,13 @@ Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supp
 
 The editor (Napkin) depends on QT:
 
-- The precompiled package uses Qt 6.5 (LTS), although other versions are known to work.
+- The precompiled package uses Qt 6.7.2, although other versions are known to work.
 - Go to [qt.io](https://www.qt.io/download-open-source) for open source users
 - Download the Qt online installer
 - During installation select **Custom installation** 
-- Filter on the **LTS** category to download and install Qt 6.5 for your target platform
+- Filter on the **LTS** category to download and install Qt6 for your target platform
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.15.17\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
 ## Create the Solution
 
