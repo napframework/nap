@@ -597,19 +597,20 @@ namespace nap
 
 	void RenderWindow::setFullscreen(bool value)
 	{
-		if (SDL::getFullscreen(mSDLWindow) == value)
-		{
-			mToggleFullscreen = false;
-			return;
-		}
-		mToggleFullscreen = true;
-		mRecreateSwapchain = true;
+		if (SDL::getFullscreen(mSDLWindow) != value)
+			toggleFullscreen();
 	}
 
 
 	void RenderWindow::toggleFullscreen()
 	{
-		mToggleFullscreen  = true;
+		// TODO: This can trigger a resize event that is handled in a new frame.
+		// causing the swap-chain to be re-created twice. Avoid this by
+		// checking against the swap extent instead of keeping flags or
+		// pushing an SDL window resize event on the stack for processing later.
+		bool cur_state = SDL::getFullscreen(mSDLWindow);
+		if(!SDL::setFullscreen(mSDLWindow, !cur_state))
+			nap::Logger::error(SDL::getSDLError());
 		mRecreateSwapchain = true;
 	}
 
@@ -628,10 +629,10 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		// Causes the swap chain to be re-created if window size is different.
-		// TODO: This can trigger a resize event that is handled in a new frame. 
+		// TODO: This can trigger a resize event that is handled in a new frame.
 		// causing the swap-chain to be re-created twice. Avoid this by
-		// checking against the swap extent instead of keeping one or multiple flags.
+		// checking against the swap extent instead of keeping flags or
+		// pushing an SDL window resize event on the stack for processing later.
 		if (size != SDL::getWindowSize(mSDLWindow))
 		{
 			SDL::setWindowSize(mSDLWindow, size);
@@ -708,13 +709,6 @@ namespace nap
 		// therefore we need to handle both situations explicitly.
 		if (mRecreateSwapchain)
 		{
-			if (mToggleFullscreen)
-			{
-				bool cur_state = SDL::getFullscreen(mSDLWindow);
-				SDL::setFullscreen(mSDLWindow, !cur_state);
-				mToggleFullscreen = false;
-			}
-
  			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
 				Logger::error("Unable to recreate swapchain: %s", errorState.toString().c_str());
@@ -840,11 +834,7 @@ namespace nap
 		// Recreate swapchain when window is resized
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
-		{
-			mRecreateSwapchain = resized_event->mX != mSwapchainExtent.width ||
-				resized_event->mY != mSwapchainExtent.height;
-
-		}
+			mRecreateSwapchain = true;
 	}
 
 
