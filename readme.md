@@ -70,7 +70,7 @@ Currently, whether working with the packaged framework release or against the fr
 **x86**
 ```
 x86-64: Windows (10 & 11), Visual Studio 2019 - MSVC
-x86-64: Ubuntu Linux LTS (v20.04, v22.04 & v24.04) - GCC
+x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
 ```
 **ARM**
 ```
@@ -92,18 +92,13 @@ Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supp
 
 The editor (Napkin) depends on QT:
 
-- Qt 5
-	- x86_64
-		- The precompiled package uses Qt 5.15 (LTS), although other versions are known to work.
-		- Go to [qt.io](https://www.qt.io/download-open-source) for open source users
-		- Download the Qt online installer
-		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download and install Qt 5.15 for your target platform
-	- armhf
-		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
+- The precompiled package uses Qt 6.7.2, although other versions are known to work.
+- Go to [qt.io](https://www.qt.io/download-open-source) for open source users
+- Download the Qt online installer
+- During installation select **Custom installation** 
+- Filter on the **LTS** category to download and install Qt6 for your target platform
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.15.17\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
 ## Create the Solution
 
@@ -206,7 +201,7 @@ Use the github [issues](https://github.com/napframework/nap/issues) page for bug
 New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://github.com/orgs/napframework/discussions) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
 MSVC, Platform Toolset v142 on Windows 10
-GCC <= 9.3.0 on Ubuntu LTS 20.04
+GCC <= 11 on Ubuntu LTS 22.04
 ```
 
 # License

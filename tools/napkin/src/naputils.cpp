@@ -5,6 +5,7 @@
 #include "naputils.h"
 #include "napkinglobals.h"
 #include "appcontext.h"
+#include "thememanager.h"
 
 #include <QtGui/QtGui>
 #include <QHBoxLayout>
@@ -86,6 +87,16 @@ QVariant napkin::RTTITypeItem::data(int role) const
 		{
 			const char* obj_desc = nap::rtti::getDescription(mType);
 			return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
+		}
+	case Qt::FontRole:
+		{
+			// Change the font to mono, keep other settings in place
+			auto data = QStandardItem::data(role);
+			QFont font = data.value<QFont>();
+			auto font_name = AppContext::get().getThemeManager().getFontName(napkin::theme::font::mono);
+			if (!font_name.isEmpty())
+				font.setFamily(font_name);
+			return font;
 		}
 	default:
 		{
@@ -431,3 +442,4 @@ nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int
 	}
 	return nullptr;
 }
+

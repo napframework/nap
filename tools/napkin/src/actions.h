@@ -46,7 +46,7 @@ namespace napkin
 
 	private:
 		void loadIcon();
-		void onThemeChanged(const Theme* theme)		{ loadIcon(); }
+		void onThemeChanged(const Theme& theme)		{ loadIcon(); }
 		QString mIconName;
 	};
 
