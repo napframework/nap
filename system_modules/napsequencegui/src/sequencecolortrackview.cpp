@@ -643,6 +643,16 @@ namespace nap
                 }
             }
 
+            if(ImGui::ImageButton(mService.getGui().getIcon(icon::load), "Load preset"))
+            {
+                if(mState.mClipboard->getTrackType() != RTTI_OF(SequenceTrackColor))
+                {
+                    mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(SequenceTrackColor), getEditor().mSequencePlayer->getSequenceFilename());
+                }
+                mState.mAction = createAction<LoadPresetPopup>(action->mTrackID, action->mTime, RTTI_OF(SequenceTrackColor));
+                ImGui::CloseCurrentPopup();
+            }
+
             if(ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
             {
                 ImGui::Text(action->mErrorString.c_str());
@@ -903,6 +913,7 @@ namespace nap
             // obtain controller
             auto &controller = getEditor().getController<SequenceControllerColor>();
 
+            // insert deserialized color segments
             for(auto *segment : deserialized_color_segments)
             {
                 // add segment to controller

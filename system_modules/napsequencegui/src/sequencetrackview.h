@@ -159,6 +159,11 @@ namespace nap
          */
         virtual void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList* drawList, bool inClipboard, bool bold);
 
+        /**
+         * Happens when a segment is added to clipboard, overload this method to handle segment adding to clipboard
+         * @param track reference to track
+         * @param segment reference to segment
+         */
         virtual void onAddSegmentToClipboard(const SequenceTrack& track, const SequenceTrackSegment& segment) {}
 
         // reference to gui view

@@ -72,10 +72,16 @@ namespace nap
          * @param top top position of handler
          * @param bottom bottom position of handler
          * @param drawList drawlist to draw on
+         * @param inClipboard if true, segment is in clipboard
          * @param bold if true, draw handler bold
          */
         void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool inClipboard, bool bold) override;
 
+        /**
+         * Adds segment to clipboard
+         * @param track reference to track
+         * @param segment reference to segment
+         */
         void onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
 
         /**
