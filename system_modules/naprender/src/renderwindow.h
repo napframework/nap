@@ -275,7 +275,7 @@ namespace nap
 		ERasterizationSamples	mRequestedSamples	= ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages	= 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 		bool					mRestorePosition	= true;								///< Property: 'RestorePosition' if window position is restored from previous session
-		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session
+		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session	
 
 	private:
 		RenderService*					mRenderService	= nullptr;
@@ -302,6 +302,7 @@ namespace nap
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
+		bool							mToggleFullscreen = false;
 
 		/**
 		 * Called by the render service. 

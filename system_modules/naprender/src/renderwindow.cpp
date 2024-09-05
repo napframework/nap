@@ -597,14 +597,20 @@ namespace nap
 
 	void RenderWindow::setFullscreen(bool value)
 	{
-		SDL::setFullscreen(mSDLWindow, value);
+		if (SDL::getFullscreen(mSDLWindow) == value)
+		{
+			mToggleFullscreen = false;
+			return;
+		}
+		mToggleFullscreen = true;
+		mRecreateSwapchain = true;
 	}
 
 
 	void RenderWindow::toggleFullscreen()
 	{
-		bool cur_state = SDL::getFullscreen(mSDLWindow);
-		setFullscreen(!cur_state);
+		mToggleFullscreen  = true;
+		mRecreateSwapchain = true;
 	}
 
 
@@ -702,7 +708,14 @@ namespace nap
 		// therefore we need to handle both situations explicitly.
 		if (mRecreateSwapchain)
 		{
-			utility::ErrorState errorState;
+			if (mToggleFullscreen)
+			{
+				bool cur_state = SDL::getFullscreen(mSDLWindow);
+				SDL::setFullscreen(mSDLWindow, !cur_state);
+				mToggleFullscreen = false;
+			}
+
+ 			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
 				Logger::error("Unable to recreate swapchain: %s", errorState.toString().c_str());
 			return VK_NULL_HANDLE;
@@ -827,7 +840,11 @@ namespace nap
 		// Recreate swapchain when window is resized
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
-			mRecreateSwapchain = true;
+		{
+			mRecreateSwapchain = resized_event->mX != mSwapchainExtent.width ||
+				resized_event->mY != mSwapchainExtent.height;
+
+		}
 	}
 
 
