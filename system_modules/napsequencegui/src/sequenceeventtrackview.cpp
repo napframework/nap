@@ -470,6 +470,37 @@ namespace nap
     }
 
 
+    void SequenceEventTrackView::onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment)
+    {
+        // if no event segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
+        if(!mState.mClipboard->isClipboard<EventSegmentClipboard>())
+            mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+        else if(mState.mClipboard->getDerived<EventSegmentClipboard>()->getSequenceName() !=
+                getEditor().mSequencePlayer->getSequenceFilename())
+            mState.mClipboard = createClipboard<EventSegmentClipboard>(RTTI_OF(SequenceTrackEvent), getEditor().mSequencePlayer->getSequenceFilename());
+
+        // get derived clipboard
+        auto *clipboard = mState.mClipboard->getDerived<EventSegmentClipboard>();
+
+        // if the clipboard contains this segment or is a different sequence, remove it
+        if(clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
+        {
+            clipboard->removeObject(segment.mID);
+        } else
+        {
+            // if not, serialize it into clipboard
+            utility::ErrorState errorState;
+            clipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
+
+            // log any errors
+            if(errorState.hasErrors())
+            {
+                Logger::error(errorState.toString());
+            }
+        }
+    }
+
+
     bool SequenceEventTrackView::pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
     {
         auto *paste_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::EventSegmentClipboard>();

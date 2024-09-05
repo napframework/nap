@@ -135,7 +135,7 @@ namespace nap
     const SequenceTrackSegment* SequenceControllerColor::insertColorSegment(const std::string &trackID, double time, const nap::RGBAColorFloat &color)
     {
         SequenceTrackSegment* return_ptr = nullptr;
-        performEditAction([this, return_ptr , trackID, time, color]() mutable
+        performEditAction([this, &return_ptr , trackID, time, color]() mutable
                           {
                               // create new segment & set parameters
                               std::unique_ptr<SequenceTrackSegmentColor> new_segment = std::make_unique<SequenceTrackSegmentColor>();

@@ -47,6 +47,8 @@ namespace nap
          */
         void onHandleEditSegment(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
 
+        void onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
+
         /**
          * draws the contents of a segment
          * @tparam T the type of this segment

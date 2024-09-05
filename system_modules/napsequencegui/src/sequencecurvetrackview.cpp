@@ -304,29 +304,47 @@ namespace nap
             }
         }
 
+        // locked icon offset and size
+        const float locked_icon_offset = 5.0f * mState.mScale;
+        const float locked_icon_size = 20.0f * mState.mScale;
+
+        // draw segment handlers and content
         float previous_segment_x = 0.0f;
         int segment_count = 0;
         for(const auto &segment: track.mSegments)
         {
             // upcast to duration segment
-            const auto *segment_duration = static_cast<const SequenceTrackSegmentDuration*>(segment.get());
+            const auto& segment_curve_base = static_cast<const SequenceTrackSegmentCurveBase&>(*segment);
 
             // calculate segment x and width
-            float segment_x = (float) (segment_duration->mStartTime + segment_duration->mDuration) * mState.mStepSize;
-            float segment_width = (float) segment_duration->mDuration * mState.mStepSize;
+            float segment_x = (float) (segment_curve_base.mStartTime + segment_curve_base.mDuration) * mState.mStepSize;
+            float segment_width = (float) segment_curve_base.mDuration * mState.mStepSize;
 
             // draw segment handlers
             showSegmentHandler(
                     track,
-                    *segment_duration,
+                    segment_curve_base,
                     trackTopLeft, segment_x,
-                    draw_list);
+                    draw_list,
+                    !segment_curve_base.mLocked);
 
             // draw segment content
-            auto it = getDrawCurveSegmentsMap().find(segment_duration->get_type());
+            auto it = getDrawCurveSegmentsMap().find(segment_curve_base.get_type());
             if(it != getDrawCurveSegmentsMap().end())
             {
-                (*this.*it->second)(track, *segment_duration, trackTopLeft, previous_segment_x, segment_width, segment_x, draw_list, (segment_count == 0));
+                (*this.*it->second)(track, segment_curve_base, trackTopLeft, previous_segment_x, segment_width, segment_x, draw_list, (segment_count == 0));
+            }
+
+            // draw locked icon
+            if(segment_curve_base.mLocked)
+            {
+                draw_list->AddImage(
+                        mService.getGui().getIcon(icon::sequencer::lock).getTextureHandle(),
+                        {trackTopLeft.x + segment_x + locked_icon_offset, trackTopLeft.y + track_height - locked_icon_size - locked_icon_offset },
+                        {trackTopLeft.x + segment_x + locked_icon_size + locked_icon_offset, trackTopLeft.y + track_height - locked_icon_offset},
+                        {0.0f, 1.0f},
+                        {1.0f, 0.0f},
+                        mService.getColors().mFro4);
             }
 
             previous_segment_x = segment_x;
@@ -352,6 +370,46 @@ namespace nap
                 segment_curve_base.mLocked
         );
     }
+
+
+    void SequenceCurveTrackView::onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment)
+    {
+        // create new curve segment clipboard if necessary or when clipboard is from different sequence
+        if(!mState.mClipboard->isClipboard<CurveSegmentClipboard>())
+            mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
+
+        // is this a different track then previous clipboard ? then create a new clipboard, discarding the old clipboard
+        auto *clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+        if(clipboard->getTrackID() != track.mID)
+        {
+            mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
+            clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+        }
+
+        // is clipboard from another sequence, create new clipboard
+        if(clipboard->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename())
+        {
+            mState.mClipboard = createClipboard<CurveSegmentClipboard>(track.get_type(), track.mID, getEditor().mSequencePlayer->getSequenceFilename());
+            clipboard = mState.mClipboard->getDerived<CurveSegmentClipboard>();
+        }
+
+        // see if the clipboard already contains this segment, if so, remove it, if not, add it
+        if(mState.mClipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
+        {
+            mState.mClipboard->removeObject(segment.mID);
+        } else
+        {
+            utility::ErrorState errorState;
+            mState.mClipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
+
+            // log any errors
+            if(errorState.hasErrors())
+            {
+                Logger::error(errorState.toString());
+            }
+        }
+    }
+
 
     void SequenceCurveTrackView::handleInsertSegmentPopup()
     {

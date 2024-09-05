@@ -596,8 +596,9 @@ namespace nap
         // handle insert segment popup
         if(ImGui::BeginPopup("Insert Color"))
         {
+            // Insert color segment, first color picker followed by insert icon on same line
             ImGui::ColorEdit4("Color", &action->mValue[0]);
-
+            ImGui::SameLine();
             if(ImGui::ImageButton(mService.getGui().getIcon(icon::insert)))
             {
                 // take snapshot
@@ -613,6 +614,33 @@ namespace nap
                 // exit popup
                 ImGui::CloseCurrentPopup();
                 mState.mAction = createAction<None>();
+            }
+
+            // show the ability to paste from clipboard if the clipboard contains color segments
+            if(mState.mClipboard->isClipboard<ColorSegmentClipboard>())
+            {
+                if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
+                {
+                    // take snapshot
+                    getEditor().takeSnapshot(action->get_type());
+
+                    // paste from clipboard
+                    utility::ErrorState error_state;
+                    if(!pasteFromClipboard(action->mTrackID, action->mTime, error_state))
+                    {
+                        // log error and open error popup
+                        Logger::error(error_state.toString());
+                        ImGui::OpenPopup("Error");
+                        action->mErrorString = error_state.toString();
+                    }else
+                    {
+                        ImGui::CloseCurrentPopup();
+                        mState.mAction = createAction<None>();
+                    }
+
+                    // mark state dirty
+                    mState.mDirty = true;
+                }
             }
 
             if(ImGui::BeginPopupModal("Error", nullptr, ImGuiWindowFlags_AlwaysAutoResize))
@@ -658,11 +686,46 @@ namespace nap
     }
 
 
-    void SequenceColorTrackView::onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool bold)
+    void SequenceColorTrackView::onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool inClipboard, bool bold)
     {
+        drawList->AddLine(top,
+                          bottom,
+                          mService.getColors().mDark,
+                          bold ? 6.0f * mState.mScale : (inClipboard ? 4.0f : 2.0f) * mState.mScale);
+        drawList->AddLine(top,
+                          bottom,
+                          inClipboard ? mService.getColors().mHigh1 : mService.getColors().mFro4,
+                          bold ? 3.0f * mState.mScale : (inClipboard ? 2.0f : 1.0f) * mState.mScale);
+    }
 
-        drawList->AddLine(top, bottom, mService.getColors().mDark, bold ? 6.0f * mState.mScale : 2.0f * mState.mScale);
-        drawList->AddLine(top, bottom, mService.getColors().mFro4, bold ? 3.0f * mState.mScale : 1.0f * mState.mScale);
+
+    void SequenceColorTrackView::onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment)
+    {
+        // if no color segment clipboard, create it or if previous clipboard is from a different sequence, create new clipboard
+        if(!mState.mClipboard->isClipboard<ColorSegmentClipboard>())
+            mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(ColorSegmentClipboard), getEditor().mSequencePlayer->getSequenceFilename());
+        else if(mState.mClipboard->getDerived<ColorSegmentClipboard>()->getSequenceName() != getEditor().mSequencePlayer->getSequenceFilename())
+            mState.mClipboard = createClipboard<ColorSegmentClipboard>(RTTI_OF(ColorSegmentClipboard), getEditor().mSequencePlayer->getSequenceFilename());
+
+        // get derived clipboard
+        auto *clipboard = mState.mClipboard->getDerived<ColorSegmentClipboard>();
+
+        // if the clipboard contains this segment or is a different sequence, remove it
+        if(clipboard->containsObject(segment.mID, getPlayer().getSequenceFilename()))
+        {
+            clipboard->removeObject(segment.mID);
+        } else
+        {
+            // if not, serialize it into clipboard
+            utility::ErrorState errorState;
+            clipboard->addObject(&segment, getPlayer().getSequenceFilename(), errorState);
+
+            // log any errors
+            if(errorState.hasErrors())
+            {
+                Logger::error(errorState.toString());
+            }
+        }
     }
 
 
@@ -698,6 +761,9 @@ namespace nap
 
                 // change color
                 controller.changeSegmentColor(action->mTrackID, action->mSegmentID, action->mValue);
+
+                // update segment in clipboard
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
             }
 
             // blend method
@@ -719,8 +785,12 @@ namespace nap
                             action->mTakeSnapshot = false;
                         }
 
+                        // change blend method
                         action->mBlendMethod = static_cast<SequenceTrackSegmentColor::EColorSpace>(i);
                         controller.changeSegmentColorBlendMethod(action->mTrackID, action->mSegmentID, action->mBlendMethod);
+
+                        // update segment in clipboard
+                        updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
                     }
 
                     if(is_selected)
@@ -750,8 +820,12 @@ namespace nap
                             action->mTakeSnapshot = false;
                         }
 
+                        // change curve type
                         action->mCurveType = static_cast<math::ECurveInterp>(i);
                         controller.changeSegmentCurveType(action->mTrackID, action->mSegmentID, action->mCurveType);
+
+                        // update segment in clipboard
+                        updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
                     }
 
                     if(is_selected)
@@ -777,8 +851,7 @@ namespace nap
                 controller.deleteSegment(action->mTrackID, action->mSegmentID);
 
                 // remove segment from clipboard
-                if(mState.mClipboard->containsObject(action->mSegmentID, getPlayer().getSequenceFilename()))
-                    mState.mClipboard->removeObject(action->mSegmentID);
+                mState.mClipboard->removeObject(action->mSegmentID);
 
                 mState.mDirty = true;
                 ImGui::CloseCurrentPopup();
@@ -795,7 +868,7 @@ namespace nap
     }
 
 
-    bool SequenceColorTrackView::pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
+    bool SequenceColorTrackView::pasteFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState)
     {
         auto *paste_clipboard = mState.mClipboard->getDerived<sequenceguiclipboard::ColorSegmentClipboard>();
 
@@ -824,19 +897,32 @@ namespace nap
             }
             for(int i = 1; i < deserialized_color_segments.size(); i++)
             {
-                deserialized_color_segments[i]->mStartTime =
-                        deserialized_color_segments[i]->mStartTime - first_segment_time;
+                deserialized_color_segments[i]->mStartTime = deserialized_color_segments[i]->mStartTime - first_segment_time;
             }
 
             // obtain controller
             auto &controller = getEditor().getController<SequenceControllerColor>();
 
-            // TODO
-            /*
-            for(const auto *color: deserialized_color_segments)
+            for(auto *segment : deserialized_color_segments)
             {
-                mService.invokePasteEvent(event->get_type(), *this, trackID, *event, time);
-            }*/
+                // add segment to controller
+                const auto* new_segment = controller.insertColorSegment(trackID, time + segment->mStartTime, segment->mColor);
+
+                // add points
+                for(int p = 0; p < segment->mCurve->mPoints.size(); p++)
+                {
+                    // skip first and last points, they are already added when creating the segment
+                    if(p!=0 && p < segment->mCurve->mPoints.size() - 1)
+                        controller.insertCurvePoint(trackID, new_segment->mID, segment->mCurve->mPoints[p].mPos.mTime);
+
+                    controller.changeSegmentCurvePoint(trackID, new_segment->mID, p, { segment->mCurve->mPoints[p].mPos.mTime, segment->mCurve->mPoints[p].mPos.mValue });
+                    controller.changeSegmentCurveTanPoint(trackID, new_segment->mID, p, 0, { segment->mCurve->mPoints[p].mInTan.mTime, segment->mCurve->mPoints[p].mInTan.mValue });
+                }
+
+                // copy blend method and curve type
+                controller.changeSegmentColorBlendMethod(trackID, new_segment->mID, segment->mBlendMethod);
+                controller.changeSegmentCurveType(trackID, new_segment->mID, segment->mCurveType);
+            }
         } else
         {
             if(!errorState.hasErrors())
@@ -951,6 +1037,9 @@ namespace nap
                                                  action->mPointIndex,
                                                  action->mPosition);
 
+        // update segment in clipboard
+        updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
         // mark state dirty
         mState.mDirty = true;
     }
@@ -981,6 +1070,9 @@ namespace nap
 
                 // delete point
                 controller.deleteCurvePoint(action->mTrackID, action->mSegmentID, action->mPointIndex);
+
+                // update segment in clipboard
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
                 // mark state dirty
                 mState.mDirty = true;
@@ -1034,6 +1126,9 @@ namespace nap
                                             action->mSegmentID,
                                             action->mTimeInCurve);
 
+                // update segment in clipboard
+                updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
+
                 // mark state dirty
                 mState.mDirty = true;
 
@@ -1081,6 +1176,9 @@ namespace nap
                                                     action->mPointIndex,
                                                     action->mTanIndex,
                                                     action->mPosition);
+
+        // update segment in clipboard
+        updateSegmentInClipboard(action->mTrackID, action->mSegmentID);
 
         // mark state dirty
         mState.mDirty = true;
@@ -1136,7 +1234,7 @@ namespace nap
                             // take snapshot
                             getEditor().takeSnapshot(load_action->get_type());
 
-                            if(pasteEventsFromClipboard(load_action->mTrackID, load_action->mTime, error_state))
+                            if(pasteFromClipboard(load_action->mTrackID, load_action->mTime, error_state))
                             {
                                 mState.mAction = createAction<None>();
                                 mState.mDirty = true;

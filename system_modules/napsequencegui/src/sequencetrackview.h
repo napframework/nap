@@ -134,12 +134,14 @@ namespace nap
          * @param trackTopLeft orientation
          * @param segmentX segment x position
          * @param drawList pointer to window drawlist
+         * @param movable if true, handler is movable
          */
         virtual void showSegmentHandler(const SequenceTrack& track,
                                         const SequenceTrackSegment& segment,
                                         const ImVec2& trackTopLeft,
                                         float segmentX,
-                                        ImDrawList* drawList);
+                                        ImDrawList* drawList,
+                                        bool movable = true);
 
         /**
          * Happens when a segment is edited, overload this method to handle segment editing
@@ -155,7 +157,9 @@ namespace nap
          * @param drawList pointer to window drawlist
          * @param bold if true, draw handler bold
          */
-        virtual void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList* drawList, bool bold);
+        virtual void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList* drawList, bool inClipboard, bool bold);
+
+        virtual void onAddSegmentToClipboard(const SequenceTrack& track, const SequenceTrackSegment& segment) {}
 
         // reference to gui view
         SequenceEditorGUIView& mView;

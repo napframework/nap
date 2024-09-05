@@ -439,7 +439,8 @@ namespace nap
                                                const SequenceTrackSegment& segment,
                                                const ImVec2& trackTopLeft,
                                                float segmentX,
-                                               ImDrawList* drawList)
+                                               ImDrawList* drawList,
+                                               bool movable)
     {
         // obtain track height and handler bounds
         const float track_height = track.mTrackHeight * mState.mScale;
@@ -470,26 +471,41 @@ namespace nap
                         bold_handler = true;
                     }
 
-                    // if we are clicking, start dragging segment
-                    if(ImGui::IsMouseDown(0))
+                    // if we clicked on segment and hold shift, add segment to clipboard
+                    if(ImGui::IsMouseClicked(0))
                     {
-                        // if we are holding ctrl, move to next segments on track accordingly
-                        bool move_next_segment = ImGui::GetIO().KeyCtrl;
-
-                        // duration Segments work a little bit different since their handlers are at the end
-                        // of the segment, so we need to calculate the position accordingly
-                        double position = segment.mStartTime;
-                        if(segment.get_type().is_derived_from<SequenceTrackSegmentDuration>())
+                        // add segment to clipboard
+                        if(ImGui::GetIO().KeyShift)
                         {
-                            const auto& duration_segment = static_cast<const SequenceTrackSegmentDuration&>(segment);
-                            position = duration_segment.mDuration;
+                            onAddSegmentToClipboard(track, segment);
                         }
+                    }
 
-                        // create dragging segment action
-                        mState.mAction = createAction<DraggingSegment>(track.mID,
-                                                                       segment.mID,
-                                                                       position,
-                                                                       move_next_segment);
+                    // if we clicked on handler and not holding shift, start dragging segment
+                    if(ImGui::IsMouseDown(0) && !ImGui::GetIO().KeyShift)
+                    {
+                        // if we are and segment is movable, start dragging segment
+                        if(movable)
+                        {
+                            // if we are holding ctrl, move to next segments on track accordingly
+                            bool move_next_segment = ImGui::GetIO().KeyCtrl;
+
+                            // duration Segments work a little bit different since their handlers are at the end
+                            // of the segment, so we need to calculate the position accordingly
+                            double position = segment.mStartTime;
+                            if(segment.get_type().is_derived_from<SequenceTrackSegmentDuration>())
+                            {
+                                const auto& duration_segment = static_cast<const SequenceTrackSegmentDuration&>(segment);
+                                position = duration_segment.mDuration;
+                            }
+
+                            // create dragging segment action
+                            mState.mAction = createAction<DraggingSegment>(track.mID,
+                                                                           segment.mID,
+                                                                           position,
+                                                                           move_next_segment);
+
+                        }
                     }else if(ImGui::IsMouseDown(1))
                     {
                         // if we are right clicking, open edit segment popup
@@ -537,13 +553,17 @@ namespace nap
         onDrawSegmentHandler({trackTopLeft.x + segmentX, trackTopLeft.y}, // top left
                              {trackTopLeft.x + segmentX, trackTopLeft.y + track_height}, // bottom right
                              drawList, // draw list
+                             mState.mClipboard->containsObject(segment.mID, getPlayer().mSequenceFileName), // in clipboard
                              bold_handler); // bold
     }
 
 
-    void SequenceTrackView::onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool bold)
+    void SequenceTrackView::onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool inClipboard, bool bold)
     {
-        drawList->AddLine(top, bottom, mService.getColors().mFro4, bold ? 3.0f * mState.mScale : 1.0f * mState.mScale);
+        drawList->AddLine(top,
+                          bottom,
+                          inClipboard ? mService.getColors().mHigh1 : mService.getColors().mFro4,
+                          bold ? 3.0f * mState.mScale : (inClipboard ? 2.0f : 1.0f) * mState.mScale);
     }
 
 

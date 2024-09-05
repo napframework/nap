@@ -162,7 +162,19 @@ namespace nap
         SequenceEventTrackView& operator=(const SequenceEventTrackView&) = delete;
 
     protected:
+        /**
+         * Override this method to draw your own custom edit segment handler
+         * @param track reference to track
+         * @param segment reference to segment
+         */
         void onHandleEditSegment(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
+
+        /**
+         * Override this method to add segment to clipboard
+         * @param track reference to track
+         * @param segment reference to segment
+         */
+        void onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
 
         /**
          * shows inspector content

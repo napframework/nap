@@ -67,7 +67,16 @@ namespace nap
          */
         void onHandleEditSegment(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
 
-        void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool bold) override;
+        /**
+         * Overridden function to draw segment handler,
+         * @param top top position of handler
+         * @param bottom bottom position of handler
+         * @param drawList drawlist to draw on
+         * @param bold if true, draw handler bold
+         */
+        void onDrawSegmentHandler(ImVec2 top, ImVec2 bottom, ImDrawList *drawList, bool inClipboard, bool bold) override;
+
+        void onAddSegmentToClipboard(const nap::SequenceTrack &track, const nap::SequenceTrackSegment &segment) override;
 
         /**
          * shows inspector content
@@ -95,7 +104,7 @@ namespace nap
          * @param errorState contains any errors
          * @return true on succes
          */
-        bool pasteEventsFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
+        bool pasteFromClipboard(const std::string& trackID, double time, utility::ErrorState& errorState);
 
         /**
          * Called before call to showTrack during the same frame
