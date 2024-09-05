@@ -47,14 +47,6 @@ namespace nap
         double segmentAudioStartTimeChange(const std::string& trackID, const std::string& segmentID, double time);
 
         /**
-         * Inserts a segment, don;t use this function. Instead use insertAudioSegment
-         * @param trackID track id of the track
-         * @param time the time at which to insert the segment
-         * @return raw pointer to newly inserted segment
-         */
-        const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
-
-        /**
          * Deletes a segment from the track
          * @param trackID the id of the track containing the segment
          * @param segmentID the id of the segment to delete

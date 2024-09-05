@@ -52,13 +52,6 @@ namespace nap
         double segmentEventStartTimeChange(const std::string& trackID, const std::string& segmentID, double time);
 
         /**
-         * overloaded insert segment message
-         * @param trackID the track id
-         * @param time the time
-         */
-        const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
-
-        /**
         * insert event segment of type SEGMENT_TYPE
         * @param trackID the track id
         * @param time the time

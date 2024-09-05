@@ -130,12 +130,12 @@ namespace nap {
         void changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
 
         /**
-         * overloaded insert segment function
+         * Insert curve segment
          * @param trackID the track id
          * @param time time
          * @return const pointer to newly created segment
          */
-        const SequenceTrackSegment* insertSegment(const std::string& trackID, double time) override;
+        const SequenceTrackSegment* insertCurveSegment(const std::string& trackID, double time);
 
         /**
          * overloaded delete segment function

@@ -29,54 +29,6 @@ namespace nap
     }
 
 
-    const SequenceTrackSegment *SequenceControllerColor::insertSegment(const std::string &trackID, double time)
-    {
-        SequenceTrackSegment *return_ptr = nullptr;
-
-        performEditAction([this, trackID, time, &return_ptr]() mutable
-                          {
-                              // create new segment & set parameters
-                              std::unique_ptr<SequenceTrackSegmentColor> new_segment = std::make_unique<SequenceTrackSegmentColor>();
-                              new_segment->mStartTime = time;
-                              new_segment->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
-
-                              // create curve
-                              std::unique_ptr<math::FCurve<float, float>> fcurve = std::make_unique<math::FCurve<float, float>>();
-                              fcurve->mPoints[1].mInTan.mTime = -0.4f;
-                              fcurve->mPoints[1].mOutTan.mTime = 0.4f;
-                              fcurve->mID = mService.generateUniqueID(getPlayerReadObjectIDs());
-
-                              // set curve
-                              new_segment->mCurve = ResourcePtr<math::FCurve<float, float>>(fcurve.get());
-                              for(auto &point: fcurve->mPoints)
-                              {
-                                  point.mInterp = new_segment->mCurveType;
-                              }
-                              new_segment->mCurve->invalidate();
-
-                              // move ownership
-                              getPlayerOwnedObjects().emplace_back(std::move(fcurve));
-
-                              // find track
-                              SequenceTrack *track = findTrack(trackID);
-                              assert(track != nullptr); // track not found
-
-                              // add segment to track
-                              track->mSegments.emplace_back(ResourcePtr<SequenceTrackSegmentColor>(new_segment.get()));
-
-                              // resolve return ptr
-                              return_ptr = new_segment.get();
-
-                              // move ownership
-                              getPlayerOwnedObjects().emplace_back(std::move(new_segment));
-
-                              updateTracks();
-                          });
-
-        return return_ptr;
-    }
-
-
     void SequenceControllerColor::deleteSegment(const std::string &trackID, const std::string &segmentID)
     {
         performEditAction([this, trackID, segmentID]()

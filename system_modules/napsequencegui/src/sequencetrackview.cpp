@@ -251,7 +251,8 @@ namespace nap
             // show the track content
             showTrackContent(track, track_top_left);
 
-            // extension handler of track height
+            // handle extension handler of track height
+            bool draw_extension_handler = false;
             const float extension_handler_margin = 10.0f * mState.mScale;
             const float extension_handler_line_thickness = 5.0f * mState.mScale;
             if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringTrackExtensionHandler>())
@@ -263,9 +264,8 @@ namespace nap
                     // create hovering action
                     mState.mAction = createAction<HoveringTrackExtensionHandler>(track.mID);
 
-                    // draw line to indicate we are hovering
-                    draw_list->AddLine({track_top_left.x, track_bottom_right.y}, {track_bottom_right.x,
-                                                                                  track_bottom_right.y}, mService.getColors().mFro1, extension_handler_line_thickness);
+                    // we should draw the extension handler
+                    draw_extension_handler = true;
 
                     // if click, continue dragging
                     if(ImGui::IsMouseDown(0))
@@ -290,10 +290,16 @@ namespace nap
                 auto *action = mState.mAction->getDerived<DraggingTrackExtensionHandler>();
                 if(action->mTrackID == track.mID)
                 {
-                    // draw line to indicate we are dragging
-                    draw_list->AddLine({track_top_left.x, track_bottom_right.y}, {track_bottom_right.x,
-                                                                                  track_bottom_right.y}, mService.getColors().mFro1, extension_handler_line_thickness);
+                    // we should draw the extension handler
+                    draw_extension_handler = true;
                 }
+            }
+
+            if(draw_extension_handler)
+            {
+                // draw line to indicate we are dragging
+                draw_list->AddLine({track_top_left.x, track_bottom_right.y}, {track_bottom_right.x,
+                                                                              track_bottom_right.y}, mService.getColors().mFro1, extension_handler_line_thickness);
             }
 
             // pop id
@@ -520,7 +526,7 @@ namespace nap
             }else
             {
                 // if we are not dragging a segment, check if we are hovering a segment
-                if(!mState.mAction->isAction<DraggingSegment>())
+                if(mState.mAction->isAction<None>())
                 {
                     if(ImGui::IsMouseHoveringRect(
                             {trackTopLeft.x + segmentX - handler_bounds, trackTopLeft.y - handler_bounds},
@@ -533,16 +539,19 @@ namespace nap
                 }else
                 {
                     // if we are dragging a segment, check if we are dragging this segment
-                    auto *action = mState.mAction->getDerived<DraggingSegment>();
-                    if(action->mSegmentID == segment.mID)
+                    if(mState.mAction->isAction<DraggingSegment>())
                     {
-                        // if so, bold handler
-                        bold_handler = true;
-
-                        // if we are releasing the mouse, end dragging
-                        if(ImGui::IsMouseReleased(0))
+                        auto *action = mState.mAction->getDerived<DraggingSegment>();
+                        if(action->mSegmentID == segment.mID)
                         {
-                            mState.mAction = createAction<None>();
+                            // if so, bold handler
+                            bold_handler = true;
+
+                            // if we are releasing the mouse, end dragging
+                            if(ImGui::IsMouseReleased(0))
+                            {
+                                mState.mAction = createAction<None>();
+                            }
                         }
                     }
                 }

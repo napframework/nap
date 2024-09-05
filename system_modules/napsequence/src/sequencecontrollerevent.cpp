@@ -32,13 +32,6 @@ namespace nap
     }
 
 
-    const SequenceTrackSegment *SequenceControllerEvent::insertSegment(const std::string &trackID, double time)
-    {
-        nap::Logger::warn("insertSegment not used, use insertEventSegment instead");
-        return nullptr;
-    }
-
-
     void SequenceControllerEvent::deleteSegment(const std::string &trackID, const std::string &segmentID)
     {
         performEditAction([this, trackID, segmentID]()

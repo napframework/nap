@@ -114,13 +114,6 @@ namespace nap
     }
 
 
-    const SequenceTrackSegment* SequenceControllerAudio::insertSegment(const std::string& trackID, double time)
-    {
-        nap::Logger::warn("insertSegment not used, use insertAudioSegment instead");
-        return nullptr;
-    }
-
-
     void SequenceControllerAudio::deleteSegment(const std::string& trackID, const std::string& segmentID)
     {
         /**

@@ -35,7 +35,9 @@ namespace nap
 
     void SequencePlayerAudioClock::stop()
     {
-        mAudioClockProcess->disconnectUpdateSlot(mUpdateSlot);
+        // disconnect the slot, first check if the process node is created
+        if(mAudioClockProcess!=nullptr)
+            mAudioClockProcess->disconnectUpdateSlot(mUpdateSlot);
     }
 
 

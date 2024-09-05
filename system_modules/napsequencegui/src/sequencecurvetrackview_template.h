@@ -729,7 +729,8 @@ namespace nap
                 {
                     if((mState.mAction->isAction<sequenceguiactions::None>() ||
                         mState.mAction->isAction<sequenceguiactions::HoveringControlPoint>() ||
-                        mState.mAction->isAction<sequenceguiactions::HoveringCurve>())
+                        mState.mAction->isAction<sequenceguiactions::HoveringCurve>() ||
+                        mState.mAction->isAction<sequenceguiactions::HoveringTrackExtensionHandler>())
                        && ImGui::IsMouseHoveringRect({circle_point.x - offset, circle_point.y - offset},
                                                      {circle_point.x + offset, circle_point.y + offset}))
                     {
@@ -931,7 +932,8 @@ namespace nap
                 // check if hovered
                 if((mState.mAction->template isAction<sequenceguiactions::None>() ||
                     mState.mAction->template isAction<sequenceguiactions::HoveringCurve>() ||
-                    mState.mAction->template isAction<sequenceguiactions::HoveringSegment>())
+                    mState.mAction->template isAction<sequenceguiactions::HoveringSegment>() ||
+                    mState.mAction->template isAction<sequenceguiactions::HoveringTrackExtensionHandler>())
                    && ImGui::IsMouseHoveringRect
                        (
                            {tan_point.x - tan_bounds, tan_point.y - tan_bounds},
@@ -1083,7 +1085,7 @@ namespace nap
                 auto *curve_controller = static_cast<SequenceControllerCurve *>(base_controller);
 
                 // insert new segment
-                const auto *new_segment = curve_controller->insertSegment(trackId, time + curve_segment->mStartTime);
+                const auto *new_segment = curve_controller->insertCurveSegment(trackId, time + curve_segment->mStartTime);
 
                 // copy label
                 curve_controller->changeSegmentLabel(trackId, new_segment->mID, curve_segment->mLabel);

@@ -443,7 +443,7 @@ namespace nap
                 getEditor().takeSnapshot(action->get_type());
 
                 auto &curve_controller = getEditor().getController<SequenceControllerCurve>();
-                curve_controller.insertSegment(action->mTrackID, action->mTime);
+                curve_controller.insertCurveSegment(action->mTrackID, action->mTime);
                 updateSegmentsInClipboard(action->mTrackID);
                 mState.mAction = createAction<None>();
 

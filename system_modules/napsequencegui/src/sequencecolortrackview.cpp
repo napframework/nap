@@ -315,7 +315,7 @@ namespace nap
                     if(is_hovering_curve_point)
                     {
                         // create the hovering curve point action
-                        if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>())
+                        if(mState.mAction->isAction<None>() || mState.mAction->isAction<HoveringCurveColorSegment>() || mState.mAction->isAction<HoveringTrackExtensionHandler>())
                         {
                             mState.mAction = createAction<HoveringColorCurvePoint>(track.mID, segment->mID, i);
                         }
@@ -393,7 +393,8 @@ namespace nap
                             // check if we are hovering this point with the mouse
                             if(mState.mAction->isAction<None>() ||
                                mState.mAction->isAction<HoveringCurveColorSegment>() ||
-                               mState.mAction->isAction<HoveringSegment>())
+                               mState.mAction->isAction<HoveringSegment>() ||
+                               mState.mAction->isAction<HoveringTrackExtensionHandler>())
                             {
                                 tan_point_hovered = ImGui::IsMouseHoveringRect(
                                         {tan_point.x - tan_bounds, tan_point.y - tan_bounds},

@@ -321,7 +321,7 @@ namespace nap
     }
 
 
-    const SequenceTrackSegment* SequenceControllerCurve::insertSegment(const std::string& trackID, double time)
+    const SequenceTrackSegment* SequenceControllerCurve::insertCurveSegment(const std::string& trackID, double time)
     {
         auto *track = findTrack(trackID);
         assert(track != nullptr); // track not found
