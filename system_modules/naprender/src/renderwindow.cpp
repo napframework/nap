@@ -741,7 +741,6 @@ namespace nap
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
 		if (result == VK_ERROR_OUT_OF_DATE_KHR)
 		{
-			nap::Logger::warn("Unable to acquire next presentable image, surface not compatible with swapchain");
 			mRecreateSwapchain = true;
 			return VK_NULL_HANDLE;
 		}
@@ -829,7 +828,6 @@ namespace nap
             break;
 		case VK_ERROR_OUT_OF_DATE_KHR:
 		case VK_SUBOPTIMAL_KHR:
-			nap::Logger::warn("Unable to queue surface for presentation, surface not compatible with swapchain");
 			mRecreateSwapchain = true;
 			break;
 		default:
