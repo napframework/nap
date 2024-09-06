@@ -56,11 +56,11 @@ namespace nap
 		}
 
 
-		void setFullscreen(SDL_Window* window, bool value)
+		bool setFullscreen(SDL_Window* window, bool value)
 		{
 			// Otherwise set
 			uint32 full_screen_flag = SDL_WINDOW_FULLSCREEN_DESKTOP;
-			SDL_SetWindowFullscreen(window, value ? full_screen_flag : 0);
+			return SDL_SetWindowFullscreen(window, value ? full_screen_flag : 0) == 0;
 		}
 
 
@@ -129,7 +129,7 @@ namespace nap
 		// Returns the last SDL error
 		std::string getSDLError()
 		{
-			return std::string(SDL_GetError());
+			return SDL_GetError();
 		}
 
 
