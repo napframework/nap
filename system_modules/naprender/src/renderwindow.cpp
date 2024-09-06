@@ -559,6 +559,9 @@ namespace nap
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
+		// We want to respond to resize events for this window
+		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
+
 		// Show if requestd
 		if (mVisible)
 			this->show();
@@ -699,9 +702,7 @@ namespace nap
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
-		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date or when
-		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
-		// therefore we need to handle both situations explicitly.
+		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date.
 		if (mRecreateSwapchain)
 		{
  			utility::ErrorState errorState;
@@ -724,7 +725,7 @@ namespace nap
 			return VK_NULL_HANDLE;
 
 		// If the next image is for some reason out of date, recreate the framebuffer the next frame and record nothing.
-		// This situation is unlikely but could occur when in between frame buffer creation and acquire the window is resized.
+		// This situation occurs when the swapchain dimensions don't match the current extent, ie: window has been resized.
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		assert(mSwapchain != VK_NULL_HANDLE);
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
@@ -735,7 +736,8 @@ namespace nap
 		}
 
 		// We expect to have a working image here, otherwise something is seriously wrong.
-		NAP_ASSERT_MSG(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Unable to retrieve the index of the next available presentable image");
+		NAP_ASSERT_MSG(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR,
+			"Unable to retrieve the index of the next available presentable image");
 
 		// Reset command buffer for current frame
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
@@ -951,6 +953,14 @@ namespace nap
 	bool RenderWindow::validSwapchainExtent() const
 	{
 		return mSwapchainExtent.width > 0 && mSwapchainExtent.height > 0;
+	}
+
+
+	void RenderWindow::handleEvent(const Event& event)
+	{
+		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
+		if (resized_event != nullptr)
+			mRecreateSwapchain = true;
 	}
 
 
