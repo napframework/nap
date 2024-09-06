@@ -97,6 +97,7 @@ The editor (Napkin) depends on QT:
 - Download the Qt online installer
 - During installation select **Custom installation** 
 - Filter on the **LTS** category to download and install Qt6 for your target platform
+- **Only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required
 
 Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
