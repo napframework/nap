@@ -300,6 +300,7 @@ namespace nap
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
+		bool							mWindowDirty = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
 		bool							mToggleFullscreen = false;

@@ -611,7 +611,7 @@ namespace nap
 		bool cur_state = SDL::getFullscreen(mSDLWindow);
 		if(!SDL::setFullscreen(mSDLWindow, !cur_state))
 			nap::Logger::error(SDL::getSDLError());
-		mRecreateSwapchain = true;
+		mWindowDirty = true;
 	}
 
 
@@ -636,7 +636,7 @@ namespace nap
 		if (size != SDL::getWindowSize(mSDLWindow))
 		{
 			SDL::setWindowSize(mSDLWindow, size);
-			mRecreateSwapchain = true;
+			mWindowDirty = true;
 		}
 	}
 
@@ -703,6 +703,12 @@ namespace nap
 
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
+		// Don't allow recording when the window dimensions have changed but the request to recreate the swapchain hasn't come through yet.
+		// In that case we skip recording and presenting, because the swap chain dimensions are out of date ->
+		// This occurs when at runtime the size is set but SDL hasn't issued the resize event.
+		if (mWindowDirty && !mRecreateSwapchain)
+			return VK_NULL_HANDLE;
+
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
 		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date or when
 		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
@@ -711,8 +717,10 @@ namespace nap
 		{
  			utility::ErrorState errorState;
 			if (!recreateSwapChain(errorState))
-				Logger::error("Unable to recreate swapchain: %s", errorState.toString().c_str());
-			return VK_NULL_HANDLE;
+			{
+				Logger::fatal("Unable to recreate swapchain: %s", errorState.toString().c_str());
+				assert(false);
+			}
 		}
 
 		// Check if the current extent has a valid (non-zero) size.
@@ -731,14 +739,15 @@ namespace nap
 		int	current_frame = mRenderService->getCurrentFrameIndex();
 		assert(mSwapchain != VK_NULL_HANDLE);
 		VkResult result = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableSemaphores[current_frame], VK_NULL_HANDLE, &mCurrentImageIndex);
-		if(result == VK_ERROR_OUT_OF_DATE_KHR)
-        {
-		    mRecreateSwapchain = true;
-		    return VK_NULL_HANDLE;
-        }
+		if (result == VK_ERROR_OUT_OF_DATE_KHR)
+		{
+			nap::Logger::warn("Unable to acquire next presentable image, surface not compatible with swapchain");
+			mRecreateSwapchain = true;
+			return VK_NULL_HANDLE;
+		}
 
 		// We expect to have a working image here, otherwise something is seriously wrong.
-		assert(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR);
+		NAP_ASSERT_MSG(result == VK_SUCCESS || result == VK_SUBOPTIMAL_KHR, "Unable to retrieve the index of the next available presentable image");
 
 		// Reset command buffer for current frame
 		VkCommandBuffer commandBuffer = mCommandBuffers[current_frame];
@@ -820,6 +829,7 @@ namespace nap
             break;
 		case VK_ERROR_OUT_OF_DATE_KHR:
 		case VK_SUBOPTIMAL_KHR:
+			nap::Logger::warn("Unable to queue surface for presentation, surface not compatible with swapchain");
 			mRecreateSwapchain = true;
 			break;
 		default:
@@ -847,6 +857,7 @@ namespace nap
 
 		// Destroy all swapchain related Vulkan resources
 		mRecreateSwapchain = false;
+		mWindowDirty = false;
 		destroySwapChainResources();
 
 		// Update surface capabilities
@@ -968,17 +979,13 @@ namespace nap
 
 	void RenderWindow::beginRendering()
 	{
-		// Always use actual buffer size, not size of window. 
-		// Window size != buffer size on HighDPI monitors
-		glm::ivec2 buffer_size = getBufferSize();
-
 		// Create information for render pass
 		VkRenderPassBeginInfo render_pass_info = {};
 		render_pass_info.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
 		render_pass_info.renderPass = mRenderPass;
 		render_pass_info.framebuffer = mSwapChainFramebuffers[mCurrentImageIndex];
 		render_pass_info.renderArea.offset = { 0, 0 };
-		render_pass_info.renderArea.extent = { (uint32_t)buffer_size.x, (uint32_t)buffer_size.y };
+		render_pass_info.renderArea.extent = mSwapchainExtent;
 
 		// Clear color
 		std::array<VkClearValue, 2> clear_values = {};
@@ -994,15 +1001,14 @@ namespace nap
 		VkRect2D rect;
 		rect.offset.x = 0;
 		rect.offset.y = 0;
-		rect.extent.width = buffer_size.x;
-		rect.extent.height = buffer_size.y;
+		rect.extent = mSwapchainExtent;
 		vkCmdSetScissor(mCommandBuffers[current_frame], 0, 1, &rect);
 
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = buffer_size.x;
-		viewport.height = buffer_size.y;
+		viewport.width = mSwapchainExtent.width;
+		viewport.height = mSwapchainExtent.height;
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mCommandBuffers[current_frame], 0, 1, &viewport);
