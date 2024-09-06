@@ -559,9 +559,6 @@ namespace nap
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
-		// We want to respond to resize events for this window
-		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
-
 		// Show if requestd
 		if (mVisible)
 			this->show();
@@ -611,7 +608,6 @@ namespace nap
 		bool cur_state = SDL::getFullscreen(mSDLWindow);
 		if(!SDL::setFullscreen(mSDLWindow, !cur_state))
 			nap::Logger::error(SDL::getSDLError());
-		mWindowDirty = true;
 	}
 
 
@@ -636,7 +632,6 @@ namespace nap
 		if (size != SDL::getWindowSize(mSDLWindow))
 		{
 			SDL::setWindowSize(mSDLWindow, size);
-			mWindowDirty = true;
 		}
 	}
 
@@ -703,12 +698,6 @@ namespace nap
 
 	VkCommandBuffer RenderWindow::beginRecording()
 	{
-		// Don't allow recording when the window dimensions have changed but the request to recreate the swapchain hasn't come through yet.
-		// In that case we skip recording and presenting, because the swap chain dimensions are out of date ->
-		// This occurs when at runtime the size is set but SDL hasn't issued the resize event.
-		if (mWindowDirty && !mRecreateSwapchain)
-			return VK_NULL_HANDLE;
-
 		// Recreate the entire swapchain when the framebuffer (size or format) no longer matches the existing swapchain .
 		// This occurs when vkAcquireNextImageKHR or vkQueuePresentKHR  signals that the image is out of date or when
 		// the window is resized. Sometimes vkAcquireNextImageKHR and vkQueuePresentKHR return false positives (possible with some drivers),
@@ -837,15 +826,6 @@ namespace nap
 	}
 
 
-	void RenderWindow::handleEvent(const Event& event)
-	{
-		// Recreate swapchain when window is resized
-		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
-		if (resized_event != nullptr)
-			mRecreateSwapchain = true;
-	}
-
-
 	bool RenderWindow::recreateSwapChain(utility::ErrorState& errorState)
 	{
 		// Wait to ensure all command buffers have finished processing
@@ -855,7 +835,6 @@ namespace nap
 
 		// Destroy all swapchain related Vulkan resources
 		mRecreateSwapchain = false;
-		mWindowDirty = false;
 		destroySwapChainResources();
 
 		// Update surface capabilities
@@ -1053,15 +1032,6 @@ namespace nap
 		{
 			mSwapchainExtent = mSurfaceCapabilities.currentExtent;
 		}
-
-		// Notify if current swapchain extent differs from current buffer size
-		if (mSwapchainExtent.width != buffer_size.x || mSwapchainExtent.height != buffer_size.y)
-			nap::Logger::warn("Swap chain size mismatch: extent of surface (%d:%d) does not match size of buffer (%d:%d)",
-				mSwapchainExtent.width,
-				mSwapchainExtent.height,
-				buffer_size.x,
-				buffer_size.y);
-
 		return true;
 	}
 }

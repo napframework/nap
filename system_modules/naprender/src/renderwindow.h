@@ -300,10 +300,8 @@ namespace nap
 		uint32							mCurrentImageIndex = 0;
 		uint32							mSwapChainImageCount = 0;
 		bool							mRecreateSwapchain = false;
-		bool							mWindowDirty = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
-		bool							mToggleFullscreen = false;
 
 		/**
 		 * Called by the render service. 
@@ -318,11 +316,6 @@ namespace nap
 		 * Ends the recording operation, submits the queue and asks for presentation.
 		 */
 		void endRecording();
-		
-		/**
-		 * Checks if the event is a window resize event and updates size accordingly.
-		 */
-		void handleEvent(const Event& event);
 
 		/**
 		 * Obtain the surface properties that are required for the creation of the swap chain 
