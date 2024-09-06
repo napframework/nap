@@ -597,8 +597,8 @@ namespace nap
 
 	void RenderWindow::setFullscreen(bool value)
 	{
-		if (SDL::getFullscreen(mSDLWindow) != value)
-			toggleFullscreen();
+		if(!SDL::setFullscreen(mSDLWindow, value))
+			nap::Logger::error(SDL::getSDLError());
 	}
 
 
