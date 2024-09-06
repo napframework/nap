@@ -1021,9 +1021,9 @@ namespace nap
 			return false;
 
 		// Based on surface capabilities, determine swap image size
-		glm::ivec2 buffer_size = this->getBufferSize();
 		if (mSurfaceCapabilities.currentExtent.width == UINT32_MAX)
 		{
+			glm::ivec2 buffer_size = this->getBufferSize();
 			mSwapchainExtent =
 			{
 				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
