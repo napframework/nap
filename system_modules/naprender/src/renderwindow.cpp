@@ -604,10 +604,6 @@ namespace nap
 
 	void RenderWindow::toggleFullscreen()
 	{
-		// TODO: This can trigger a resize event that is handled in a new frame.
-		// causing the swap-chain to be re-created twice. Avoid this by
-		// checking against the swap extent instead of keeping flags or
-		// pushing an SDL window resize event on the stack for processing later.
 		bool cur_state = SDL::getFullscreen(mSDLWindow);
 		if(!SDL::setFullscreen(mSDLWindow, !cur_state))
 			nap::Logger::error(SDL::getSDLError());
@@ -628,10 +624,6 @@ namespace nap
 
 	void RenderWindow::setSize(const glm::ivec2& size)
 	{
-		// TODO: This can trigger a resize event that is handled in a new frame.
-		// causing the swap-chain to be re-created twice. Avoid this by
-		// checking against the swap extent instead of keeping flags or
-		// pushing an SDL window resize event on the stack for processing later.
 		if (size != SDL::getWindowSize(mSDLWindow))
 		{
 			SDL::setWindowSize(mSDLWindow, size);
@@ -994,8 +986,8 @@ namespace nap
 		VkViewport viewport = {};
 		viewport.x = 0.0f;
 		viewport.y = 0.0f;
-		viewport.width = mSwapchainExtent.width;
-		viewport.height = mSwapchainExtent.height;
+		viewport.width = static_cast<float>(mSwapchainExtent.width);
+		viewport.height = static_cast<float>(mSwapchainExtent.height);
 		viewport.minDepth = 0.0f;
 		viewport.maxDepth = 1.0f;
 		vkCmdSetViewport(mCommandBuffers[current_frame], 0, 1, &viewport);
@@ -1034,8 +1026,8 @@ namespace nap
 		{
 			mSwapchainExtent =
 			{
-				math::clamp<uint32>((uint32)buffer_size.x, mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
-				math::clamp<uint32>((uint32)buffer_size.y, mSurfaceCapabilities.minImageExtent.height, mSurfaceCapabilities.maxImageExtent.height),
+				math::clamp<uint32>(static_cast<uint32>(buffer_size.x), mSurfaceCapabilities.minImageExtent.width,  mSurfaceCapabilities.maxImageExtent.width),
+				math::clamp<uint32>(static_cast<uint32>(buffer_size.y), mSurfaceCapabilities.minImageExtent.height, mSurfaceCapabilities.maxImageExtent.height),
 			};
 		}
 		else
