@@ -74,8 +74,7 @@ x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
 ```
 **ARM**
 ```
-armhf: Raspberry Pi OS (v11) - GCC
-arm64: Ubuntu Linux LTS (v22.04) *experimental* - GCC
+arm64: Raspberry Pi OS (v12 Bookworm) - GCC
 ```
 
 ## Binary Packages
@@ -84,7 +83,7 @@ Pre-compiled packages of official NAP releases are made available for download o
 
 ## Raspberry Pi
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
+Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
 
 # Compilation
 
