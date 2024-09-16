@@ -241,6 +241,8 @@ class Random(_random.Random):
                 "enough bits to choose from a population range this large.\n"
                 "To remove the range limitation, add a getrandbits() method.")
             return int(random() * n)
+        if n == 0:
+            raise ValueError("Boundary cannot be zero")
         rem = maxsize % n
         limit = (maxsize - rem) / maxsize   # int(limit * maxsize) % n == 0
         r = random()
@@ -358,7 +360,9 @@ class Random(_random.Random):
             raise ValueError('The number of weights does not match the population')
         bisect = _bisect.bisect
         total = cum_weights[-1]
-        return [population[bisect(cum_weights, random() * total)] for i in range(k)]
+        hi = len(cum_weights) - 1
+        return [population[bisect(cum_weights, random() * total, 0, hi)]
+                for i in range(k)]
 
 ## -------------------- real-valued distributions  -------------------
 
