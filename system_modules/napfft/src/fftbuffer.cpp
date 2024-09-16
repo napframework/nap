@@ -151,7 +151,7 @@ namespace nap
 		else if (mSampleBufferB.size() > data_size)
 		{
 			// Zero-padding
-			mSampleBufferFormatted.clear();
+			std::fill(mSampleBufferFormatted.begin(), mSampleBufferFormatted.end(), 0.0f);
 			std::memcpy(half_ptr, mSampleBufferB.data(), data_bytes);
 		}
 		else
