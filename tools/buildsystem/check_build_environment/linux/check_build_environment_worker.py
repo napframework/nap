@@ -9,8 +9,8 @@ import sys
 
 REQUIRED_UBUNTU_VERSIONS = ['20.04','22.04', '24.04']
 REQUIRED_QT_VERSION = '6.7.2'
-REQUIRED_RASPBIAN_VERSION = '11'
-SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64', 'armhf')
+REQUIRED_RASPBIAN_VERSION = '12'
+SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64')
 
 def call(cmd):
     """Execute command and return stdout"""
@@ -67,8 +67,9 @@ def check_distribution():
     arch = get_build_arch()
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
-    if arch == 'armhf':
-        distribution_ok = distributor_id == 'raspbian'
+    if arch == 'arm64':
+        print(distributor_id)
+        distribution_ok = distributor_id == 'debian'
         log_test_success('Raspbian distribution', distribution_ok)
     else:
         distribution_ok = distributor_id == 'ubuntu'
@@ -82,7 +83,7 @@ def check_distribution_version():
     arch = get_build_arch()
     release = call('lsb_release -r')
     release = release.split(':')[1].strip()
-    if arch == 'armhf':
+    if arch == 'arm64':
         release_ok = release == REQUIRED_RASPBIAN_VERSION
         log_test_success('Raspbian %s' % REQUIRED_RASPBIAN_VERSION, release_ok)
     else:
@@ -228,7 +229,7 @@ def check_build_environment(against_source):
     # Check distribution
     distribution_ok = check_distribution()
     if not distribution_ok:
-        if arch == 'armhf':
+        if arch == 'arm64':
             print("\nThis version of NAP supports Raspbian Linux (%s). Other distributions may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
         else:
             print("\nThis version of NAP supports Ubuntu Linux. Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSIONS)
