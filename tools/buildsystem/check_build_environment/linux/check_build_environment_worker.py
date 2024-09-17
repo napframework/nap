@@ -217,7 +217,7 @@ def check_build_environment(against_source):
         supported_arch = arch in SUPPORTED_ARCHITECTURES
         log_test_success('supported architecture', supported_arch)
         if not supported_arch:
-            print("\nNAP only currently supports %s systems under Linux".format(','.join(SUPPORTED_ARCHITECTURES)))
+            print("\nNAP only currently supports {0} systems under Linux".format(' and '.join(SUPPORTED_ARCHITECTURES)))
             sys.exit(1)
     else:
         # Check if arch matches build
