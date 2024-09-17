@@ -158,7 +158,7 @@ endmacro()
 
 # Check existence of bcm_host.h header file to see if we're building on Raspberry
 macro(check_raspbian_os RASPBERRY)
-    if(${ARCH} MATCHES "armhf")
+    if(${ARCH} MATCHES "armhf" OR ${ARCH} MATCHES "arm64")
         MESSAGE(VERBOSE "Looking for bcm_host.h")
         INCLUDE(CheckIncludeFiles)
 
