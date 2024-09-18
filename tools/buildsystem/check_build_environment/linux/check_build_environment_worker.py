@@ -259,10 +259,6 @@ def check_build_environment(against_source):
     libxkbcommon_installed, apts_to_install = apt_package_installed('libxkbcommon0', apts_to_install)
     log_test_success('for libxkbcommon0 package', libxkbcommon_installed)
 
-    # Check package libjack0 - required by portaudio
-    libjack_installed, apts_to_install = apt_package_installed('libjack0', apts_to_install)
-    log_test_success('for libjack0 package', libjack_installed)
-
     # Check package patchelf installed
     patchelf_installed, apts_to_install = apt_package_installed('patchelf', apts_to_install)
     log_test_success('for patchelf package', patchelf_installed)
