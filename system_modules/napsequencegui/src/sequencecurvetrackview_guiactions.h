@@ -293,7 +293,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              * @param segmentID the segment being edited
              * @param type segment value type, begin or end
              * @param curveIndex the index of the curve
@@ -347,7 +347,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              * @param segmentID the segment being edited
              * @param type segment value, begin or end
              * @param curveIndex the index of the curve
@@ -371,7 +371,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              * @param segmentID the segment being edited
              * @param type segment value, begin or end
              * @param curveIndex the index of the curve

@@ -12,14 +12,15 @@
 #include <nap/numeric.h>
 
 // nap::boxmesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoxMesh, "Box shape with uv, color and normal vertex attributes")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",			&nap::BoxMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",		&nap::BoxMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",	&nap::BoxMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",			&nap::BoxMesh::mSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",		&nap::BoxMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",			&nap::BoxMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::BoxMesh::mUsage,			nap::rtti::EPropertyMetaData::Default, "If the mesh is updated at runtime or static")
+	RTTI_PROPERTY("CullMode",		&nap::BoxMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default, "Which triangles are culled, front facing, back facing etc..")
+	RTTI_PROPERTY("PolygonMode",	&nap::BoxMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default, "Polygon rasterization mode")
+	RTTI_PROPERTY("Size",			&nap::BoxMesh::mSize,			nap::rtti::EPropertyMetaData::Default, "Box dimensions")
+	RTTI_PROPERTY("Position",		&nap::BoxMesh::mPosition,		nap::rtti::EPropertyMetaData::Default, "Box position")
+	RTTI_PROPERTY("Color",			&nap::BoxMesh::mColor,			nap::rtti::EPropertyMetaData::Default, "Box vertex color")
+	RTTI_PROPERTY("FlipNormals",	&nap::BoxMesh::mFlipNormals,	nap::rtti::EPropertyMetaData::Default, "Point the vertex normals inwards instead of outwards")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -85,7 +86,7 @@ namespace nap
 	};
 
 
-	const std::vector<glm::vec3> boxUVs =
+	const static std::vector<glm::vec3> boxUVs =
 	{
 		{ 1.0f,0.0f,0.0f },
 		{ 0.0f,0.0f,0.0f },
@@ -113,9 +114,9 @@ namespace nap
 		{ 0.0f,1.0f,0.0f }
 	};
 
-	constexpr nap::uint planeVertCount = 4;					//< Number of vertices per plane
-	constexpr nap::uint boxVertCount = planeVertCount * 6;	//< Total number of box vertices
-	constexpr nap::uint triCount = 6 * 2;					//< Total number of box triangles
+	constexpr static uint planeVertCount = 4;					//< Number of vertices per plane
+	constexpr static uint boxVertCount = planeVertCount * 6;	//< Total number of box vertices
+	constexpr static uint triCount = 6 * 2;						//< Total number of box triangles
 
 	BoxMesh::BoxMesh(Core& core) :
 		mRenderService(core.getService<RenderService>())
@@ -182,9 +183,23 @@ namespace nap
 
 		// Set data
 		position_attribute.setData(vertex_data);
-		normal_attribute.setData(boxNormals);
 		uv_attribute.setData(boxUVs);
 		color_attribute.setData({boxVertCount, mColor.toVec4()});
+
+		if (mFlipNormals)
+		{
+			std::vector<glm::vec3> flipped_normals;
+			flipped_normals.reserve(boxNormals.size());
+			std::for_each(boxNormals.begin(), boxNormals.end(), [&flipped_normals](const auto& v)
+			{
+				flipped_normals.emplace_back(-v);
+			});
+			normal_attribute.setData(flipped_normals);
+		}
+		else
+		{
+			normal_attribute.setData(boxNormals);
+		}
 
 		// Create the shape
 		MeshShape& shape = mesh.createShape();

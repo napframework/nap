@@ -8,6 +8,7 @@
 #include "samplerinstance.h"
 #include "uniforminstance.h"
 #include "bufferbindinginstance.h"
+#include "shaderconstant.h"
 
 namespace nap
 {
@@ -23,6 +24,7 @@ namespace nap
 		using UniformStructInstanceList = std::vector<std::unique_ptr<UniformStructInstance>>;
 		using BufferBindingInstanceList = std::vector<std::unique_ptr<BufferBindingInstance>>;
 		using SamplerInstanceList = std::vector<std::unique_ptr<SamplerInstance>>;
+		using ShaderConstantInstanceList = std::vector<std::unique_ptr<ShaderConstantInstance>>;
 
         UniformContainer() = default;
 		virtual ~UniformContainer() = default;
@@ -35,28 +37,28 @@ namespace nap
 		 * @param name name of the uniform struct (ubo) as declared in the shader.
 		 * @return a uniform struct instance (ubo), nullptr if not present.
 		 */
-		UniformStructInstance* findUniform(const std::string& name);
+		UniformStructInstance* findUniform(const std::string& name) const;
+
+		/**
+		 * Tries to find a sampler instance with the given name.
+		 * @param name the name of the sampler as declared in the shader.
+		 * @return the sampler with the given name, nullptr if not found.
+		 */
+		SamplerInstance* findSampler(const std::string& name) const;
 
 		/**
 		 * Tries to find a buffer binding instance with the given name.
 		 * @param name name of the buffer binding as declared in the shader.
 		 * @return a buffer binding instance, nullptr if not present.
 		 */
-		BufferBindingInstance* findBinding(const std::string& name);
+		BufferBindingInstance* findBinding(const std::string& name) const;
 
 		/**
-		 * Returns a uniform struct instance with the given name, the struct has to exist.
-		 * @param name name of the uniform struct as declared in the shader.
-		 * @return uniform struct instance with the given name, asserts if not present.
+		 * Tries to find a shader constant instance with the given name.
+		 * @param name name of the shader constant as declared in the shader.
+		 * @return a shader constant instance, nullptr if not present.
 		 */
-		UniformStructInstance& getUniform(const std::string& name);
-
-		/**
-		 * Returns a buffer binding instance with the given name. The binding must exist.
-		 * @param name name of the buffer binding as declared in the shader.
-		 * @return buffer binding instance with the given name, asserts if not present.
-		 */
-		BufferBindingInstance& getBinding(const std::string& name);
+		ShaderConstantInstance* findConstant(const std::string& name) const;
 
 		/**
 		 * @return all the uniforms sampler instances.
@@ -69,25 +71,25 @@ namespace nap
 		const BufferBindingInstanceList& getBufferBindings() const					{ return mBindingInstances; }
 
 		/**
+		 * @return all the shader constants.
+		 */
+		const ShaderConstantInstanceList& getConstants() const						{ return mConstantInstances; }
+
+		/**
 		 * @return all the uniform root structs.
 		 */
 		const UniformStructInstanceList& getUniformStructs() const					{ return mUniformRootStructs; }
-
-		/**
-		 * Tries to find a sampler instance with the given name.
-		 * @param name the name of the sampler as declared in the shader.
-		 * @return the sampler with the given name, nullptr if not found.
-		 */
-		SamplerInstance* findSampler(const std::string& name) const;
 
 	protected:
 		UniformStructInstance& createUniformRootStruct(const ShaderVariableStructDeclaration& declaration, const UniformCreatedCallback& uniformCreatedCallback);
 		BufferBindingInstance& addBindingInstance(std::unique_ptr<BufferBindingInstance> instance);
 		SamplerInstance& addSamplerInstance(std::unique_ptr<SamplerInstance> instance);
-
+		ShaderConstantInstance& addConstantInstance(std::unique_ptr<ShaderConstantInstance> instance);
+		
 	private:
-		std::vector<std::unique_ptr<UniformStructInstance>> mUniformRootStructs;
-		std::vector<std::unique_ptr<BufferBindingInstance>> mBindingInstances;
-		std::vector<std::unique_ptr<SamplerInstance>> mSamplerInstances;
+		UniformStructInstanceList mUniformRootStructs;
+		BufferBindingInstanceList mBindingInstances;
+		SamplerInstanceList mSamplerInstances;
+		ShaderConstantInstanceList mConstantInstances;
 	};
 }

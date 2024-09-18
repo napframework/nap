@@ -18,15 +18,12 @@ uniform FRAGUBO
 	vec3		lightPosition;				// Light position
 	float		lightIntensity;				// Light intensity
 	vec3		diffuseColor;				// Color or the boid
-	vec3		diffuseColorEx;				// Secondary color or the boid
 	vec3		lightColor;					// Color of the light
 	vec3		haloColor;					// Color of the halo/fresnel effect
 	float		specularIntensity;			// Amount of added specular
 	vec3		specularColor;				// Specular color
 	float		shininess;					// Specular angle shininess
-	float		ambientIntensity;			// Ambient of ambient light
 	float		diffuseIntensity;			// Diffuse scaling factor
-	float		mateColorRate;				// Maximum mate color percentage
 	uint 		randomColor;				// Random color flag
 } ubo;
 
@@ -34,7 +31,6 @@ in vec3 pass_Position;
 in vec3 pass_Normal;
 
 in float pass_Fresnel;
-in float pass_Mates;
 flat in uint pass_Id;
 
 out vec4 out_Color;
@@ -63,9 +59,8 @@ void main(void)
 {
 	// Diffuse color
 	vec3 boid_hsv = vec3(mod(pass_Id, 360)/360.0, 1.0, 0.9);
-	vec3 boid_randomrgb = hsv2rgb(boid_hsv);
-	vec3 boid_diffuse = mix(ubo.diffuseColor, ubo.diffuseColorEx, map(pass_Mates, 0.05, ubo.mateColorRate, 0.0, 1.0));		
-	vec3 boid_color = mix(boid_diffuse, boid_randomrgb, step(EPSILON, ubo.randomColor));
+	vec3 boid_randomrgb = hsv2rgb(boid_hsv);	
+	vec3 boid_color = mix(ubo.diffuseColor, boid_randomrgb, step(EPSILON, ubo.randomColor));
 
 	// Surface to camera normal
 	vec3 surface_to_cam = normalize(mvp.cameraPosition - pass_Position);
@@ -87,13 +82,12 @@ void main(void)
 	// Compute final specual contribution
 	float specular = specular_coefficient * ubo.specularIntensity * ubo.lightIntensity;
 
-	// Compute final ambient, diffuse and specular color values
-	vec3 ambient_color = boid_color * ubo.ambientIntensity;
+	// Compute final diffuse and specular color values
 	vec3 diffuse_color = boid_color * ubo.lightColor * diffuse;
 	vec3 specular_color = ubo.specularColor * specular;
 
 	// Compute composite color value
-	vec3 comp_color = diffuse_color + specular_color + ambient_color;
+	vec3 comp_color = diffuse_color + specular_color;
 	comp_color = clamp(comp_color, vec3(0.0), vec3(1.0));
 
 	// Compute final color value

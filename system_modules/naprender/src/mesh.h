@@ -116,10 +116,10 @@ namespace nap
 
 		/**
 		 * Adds a single index to the index CPU buffer. Use setIndices to add an entire list of indices.
-	 	 * Call either before init() or call update() to reflect the changes in the GPU buffer.
+		 * Call either before init() or call update() to reflect the changes in the GPU buffer.
 		 * @param index Index to add.
 		 */
-		void addIndex(int index)										{ mIndices.emplace_back(index); }
+		void addIndex(uint32 index)										{ mIndices.emplace_back(index); }
 
 		/**
 		 * Array subscript overload.
@@ -159,7 +159,7 @@ namespace nap
 		using VertexAttributeList = std::vector<VERTEX_ATTRIBUTE_PTR>;
 
 		int						mNumVertices = 0;					///< Property: 'NumVertices' number of mesh vertices
-		EMemoryUsage			mUsage = EMemoryUsage::Static;	///< Property: 'Usage' GPU memory usage
+		EMemoryUsage			mUsage = EMemoryUsage::Static;		///< Property: 'Usage' GPU memory usage
 		EDrawMode				mDrawMode = EDrawMode::Triangles;	///< Property: 'DrawMode' The draw mode that should be used to draw the shapes
 		ECullMode				mCullMode = ECullMode::Back;		///< Property: 'CullMode' The triangle cull mode to use
 		EPolygonMode			mPolygonMode = EPolygonMode::Fill;	///< Property: 'PolygonMode' The polygon mode to use, fill is always available and should be the default
@@ -343,7 +343,7 @@ namespace nap
 		 * Set the usage for this mesh. Note that it only makes sense to change this before init is called, 
 		 * changing it after init will not have any effect.
 		 */
-		void setUsage(EMemoryUsage inUsage)									{ mProperties.mUsage = inUsage; }
+		void setUsage(EMemoryUsage inUsage)										{ mProperties.mUsage = inUsage; }
 
 		/**
 		 * @return how this mesh is used at runtime

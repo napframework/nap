@@ -180,9 +180,7 @@ namespace nap
 			// Consume all messages from the main queue
 			{
 				std::lock_guard<std::mutex> lock(mQueueMutex);
-
 				writeQueue.swap(mMessages);
-
 				std::queue<LogMessage> empty;
 				mMessages.swap(empty);
 			}

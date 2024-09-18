@@ -11,8 +11,8 @@
 #include <nap/core.h>
 #include <iostream>
 
-RTTI_BEGIN_CLASS(nap::OSCInputComponent)
-	RTTI_PROPERTY("Addresses", &nap::OSCInputComponent::mAddressFilter, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OSCInputComponent, "Receives OSC events")
+	RTTI_PROPERTY("Addresses", &nap::OSCInputComponent::mAddressFilter, nap::rtti::EPropertyMetaData::Default, "OSC addresses this component is allowed to receive, empty = all")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCInputComponentInstance)

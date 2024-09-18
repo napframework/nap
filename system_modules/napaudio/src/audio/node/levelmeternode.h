@@ -20,7 +20,7 @@ namespace nap
 
 		// Forward declarations
 		class AudioService;
-		
+
 		/**
 		 * Node to measure the amplitude level of an audio signal.
 		 * Can be used for VU meters or envelope followers for example.
@@ -35,9 +35,9 @@ namespace nap
 			};
 
 			/**
-			 * @param audioService: the NAP audio service.
+			 * @param nodeManager: the node manager
 			 * @param analysisWindowSize: the time window in milliseconds that will be used to generate one single output value. Also the period that corresponds to the analysis frequency.
-			 * @param rootProcess: indicates that the node is registered as root process with the @AudioNodeManager and is processed automatically.
+			 * @param rootProcess: indicates that the node is registered as root process with the AudioNodeManager and is processed automatically.
 			 */
 			LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize = 10, bool rootProcess = true);
 

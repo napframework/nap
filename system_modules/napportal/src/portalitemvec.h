@@ -186,7 +186,7 @@ namespace nap
 /**
  * Helper macro that can be used to define the RTTI for a portal item numeric type
  */
-#define DEFINE_PORTAL_ITEM_VEC(Type)															\
-	RTTI_BEGIN_CLASS(Type)																		\
-		RTTI_PROPERTY("Parameter",	&Type::mParameter,	nap::rtti::EPropertyMetaData::Required)	\
+#define DEFINE_PORTAL_ITEM_VEC(Type)																					\
+	RTTI_BEGIN_CLASS(Type, "Portal vector item")																		\
+		RTTI_PROPERTY("Parameter",	&Type::mParameter,	nap::rtti::EPropertyMetaData::Required, "Vector parameter")		\
 	RTTI_END_CLASS

@@ -64,7 +64,7 @@ namespace nap
 
         /**
          * Returns pointer to base class of controller type, asserts when type not found
-         * @param type rttr::type information of controller type to be returned
+         * @param trackType rttr::type information of controller type to be returned
          * @return ptr to controller base class, null ptr when not found
          */
         SequenceController *getControllerWithTrackType(rtti::TypeInfo trackType);

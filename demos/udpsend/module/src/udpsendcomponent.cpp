@@ -9,7 +9,7 @@
 #include <nap/logger.h>
 
 // nap::UDPReceiveComponent run time class definition
-RTTI_BEGIN_CLASS(nap::UDPSendComponent)
+RTTI_BEGIN_CLASS(nap::UDPSendComponent, "Sends text and color changes as api commands (messages) over a UDP socket")
         RTTI_PROPERTY("Client",					&nap::UDPSendComponent::mClient,				nap::rtti::EPropertyMetaData::Required, "Link to the UDP client that handles packet transport")
         RTTI_PROPERTY("MessageParam",			&nap::UDPSendComponent::mMessageParam,			nap::rtti::EPropertyMetaData::Required, "Link to the parameter that holds the text to send")
         RTTI_PROPERTY("ColorParam",				&nap::UDPSendComponent::mColorParam,			nap::rtti::EPropertyMetaData::Required, "Link to the parameter that holds the color to send")

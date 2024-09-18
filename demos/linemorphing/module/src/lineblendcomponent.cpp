@@ -10,7 +10,7 @@
 #include <mathutils.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS(nap::LineBlendComponent)
+RTTI_BEGIN_CLASS(nap::LineBlendComponent, "Blends between two lines")
 	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineBlendComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required, "Link to the first line selector")
 	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineBlendComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required, "Link to the second line selector")
 	RTTI_PROPERTY("Target",					&nap::LineBlendComponent::mTarget,					nap::rtti::EPropertyMetaData::Required, "Target poly line on which blend operation is performed")

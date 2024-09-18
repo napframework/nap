@@ -12,36 +12,26 @@
 #include <utility/stringutils.h>
 #include <nap/core.h>
 
-RTTI_BEGIN_STRUCT(nap::audio::PortAudioServiceConfiguration::DeviceSettings)
-        RTTI_PROPERTY("HostApi", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mHostApi,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("InputDevice", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mInputDevice,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("OutputDevice", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mOutputDevice,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("InputChannelCount", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mInputChannelCount,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("OutputChannelCount", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mOutputChannelCount,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("DisableInput", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mDisableInput,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("DisableOutput", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mDisableOutput,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("SampleRate", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mSampleRate,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("BufferSize", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mBufferSize,
-                      nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("InternalBufferSize", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mInternalBufferSize,
-                      nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_STRUCT(nap::audio::PortAudioServiceConfiguration::DeviceSettings, "Audio device settings")
+        RTTI_PROPERTY("HostApi", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mHostApi, nap::rtti::EPropertyMetaData::Default, "Name of the host API (or driver type) used for the audio stream")
+        RTTI_PROPERTY("InputDevice", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mInputDevice, nap::rtti::EPropertyMetaData::Default, "Name of the audio input device")
+        RTTI_PROPERTY("OutputDevice", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mOutputDevice, nap::rtti::EPropertyMetaData::Default, "Name of the audio output device")
+        RTTI_PROPERTY("InputChannelCount", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mInputChannelCount, nap::rtti::EPropertyMetaData::Default, "Number of stream input channels to use")
+        RTTI_PROPERTY("OutputChannelCount", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mOutputChannelCount, nap::rtti::EPropertyMetaData::Default, "Number of stream output channels to use")
+        RTTI_PROPERTY("DisableInput", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mDisableInput, nap::rtti::EPropertyMetaData::Default, "Disables audio input")
+        RTTI_PROPERTY("DisableOutput", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mDisableOutput, nap::rtti::EPropertyMetaData::Default, "Disables audio output")
+        RTTI_PROPERTY("SampleRate", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mSampleRate, nap::rtti::EPropertyMetaData::Default, "Audio sample rate, the number of samples processed per channel per second")
+        RTTI_PROPERTY("BufferSize", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mBufferSize, nap::rtti::EPropertyMetaData::Default, "Audio buffer size, the number of samples to process every click. Lower values = less latency")
+        RTTI_PROPERTY("InternalBufferSize", &nap::audio::PortAudioServiceConfiguration::DeviceSettings::mInternalBufferSize, nap::rtti::EPropertyMetaData::Default, "The buffer size used by the node system for processing. Lower values = less latency")
 RTTI_END_STRUCT
 
-RTTI_BEGIN_CLASS(nap::audio::PortAudioServiceConfiguration)
-        RTTI_PROPERTY("Audio Device Settings", &nap::audio::PortAudioServiceConfiguration::mDeviceSettings, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::PortAudioServiceConfiguration::mAllowChannelCountFailure, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::PortAudioServiceConfiguration::mAllowDeviceFailure, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::audio::PortAudioServiceConfiguration, "Audio service configuration")
+        RTTI_PROPERTY("Audio Device Settings", &nap::audio::PortAudioServiceConfiguration::mDeviceSettings, nap::rtti::EPropertyMetaData::Default, "Audio device settings")
+        RTTI_PROPERTY("AllowChannelCountFailure", &nap::audio::PortAudioServiceConfiguration::mAllowChannelCountFailure, nap::rtti::EPropertyMetaData::Default, "Start the audio stream when the number of input or output channels is not supported")
+        RTTI_PROPERTY("AllowDeviceFailure", &nap::audio::PortAudioServiceConfiguration::mAllowDeviceFailure, nap::rtti::EPropertyMetaData::Default, "Continue initialization when audio device settings are not supported or invalid")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PortAudioService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::PortAudioService, "Audio input & output device manager")
 		RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
@@ -50,7 +40,6 @@ namespace nap
 {
 	namespace audio
 	{
-		
 		/*
          * The audio callback will be called by portaudio to process a buffer of audio input/output
          */
@@ -178,11 +167,9 @@ namespace nap
             {
                 inputDeviceIndex = -1;
             }
-            else {
-                if (deviceSettings.mInputDevice.empty())
-                    inputDeviceIndex = Pa_GetDefaultInputDevice();
-                else
-                    inputDeviceIndex = getInputDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
+            else
+			{
+				inputDeviceIndex = deviceSettings.mInputDevice.empty() ? Pa_GetDefaultInputDevice() : getInputDeviceIndex(mHostApiIndex, deviceSettings.mInputDevice);
                 if (inputDeviceIndex < 0)
                 {
                     errorState.fail("Audio input device not found: %s", deviceSettings.mInputDevice.c_str());
@@ -194,11 +181,9 @@ namespace nap
             {
                 outputDeviceIndex = -1;
             }
-            else {
-                if (deviceSettings.mOutputDevice.empty())
-                    outputDeviceIndex = Pa_GetDefaultOutputDevice();
-                else
-                    outputDeviceIndex = getOutputDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
+            else
+			{
+				outputDeviceIndex = deviceSettings.mOutputDevice.empty() ? Pa_GetDefaultOutputDevice() : getOutputDeviceIndex(mHostApiIndex, deviceSettings.mOutputDevice);
                 if (outputDeviceIndex < 0)
                 {
                     errorState.fail("Audio output device not found: %s", deviceSettings.mOutputDevice.c_str());
@@ -402,9 +387,15 @@ namespace nap
 		{
 			return *Pa_GetDeviceInfo(Pa_HostApiDeviceIndexToDeviceIndex(hostApiIndex, deviceIndex));
 		}
-		
-		
-		std::vector<const PaDeviceInfo*> PortAudioService::getDevices(unsigned int hostApiIndex)
+
+
+        const PaDeviceInfo& PortAudioService::getDeviceInfo(unsigned int deviceIndex)
+        {
+            return *Pa_GetDeviceInfo(deviceIndex);
+        }
+
+
+        std::vector<const PaDeviceInfo*> PortAudioService::getDevices(unsigned int hostApiIndex)
 		{
 			std::vector<const PaDeviceInfo*> result;
 			for (auto i = 0; i < getHostApiInfo(hostApiIndex).deviceCount; ++i)

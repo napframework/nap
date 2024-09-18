@@ -28,7 +28,7 @@ namespace nap
 			color_attachment.format = colorFormat;
 			color_attachment.samples = samples;
 			color_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-			color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 			color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 			color_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
@@ -160,8 +160,8 @@ namespace nap
 		if (mRenderPass != VK_NULL_HANDLE)
 			vkDestroyRenderPass(mRenderService->getDevice(), mRenderPass, nullptr);
 
-		destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
-		destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		utility::destroyImageAndView(mDepthImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
+		utility::destroyImageAndView(mColorImage, mRenderService->getDevice(), mRenderService->getVulkanAllocator());
 	}
 
 	bool SnapshotRenderTarget::init(Snapshot* snapshot, utility::ErrorState& errorState)

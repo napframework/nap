@@ -12,29 +12,28 @@ RTTI_END_CLASS
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::InputComponentInstance)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::KeyInputComponent)
+RTTI_BEGIN_CLASS(nap::KeyInputComponent, "Receives keyboard press and release events")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::KeyInputComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::PointerInputComponent)
+RTTI_BEGIN_CLASS(nap::PointerInputComponent, "Receives mouse input events")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PointerInputComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::TouchInputComponent)
+RTTI_BEGIN_CLASS(nap::TouchInputComponent, "Receives touch input events")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TouchInputComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
-
-RTTI_BEGIN_CLASS(nap::ControllerInputComponent)
+RTTI_BEGIN_CLASS(nap::ControllerInputComponent, "Receives controller / joystick input events")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ControllerInputComponentInstance)

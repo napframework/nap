@@ -9,12 +9,6 @@ struct Boid
 	vec4 position;
 	vec4 velocity;
 	vec4 orientation;
-
-	uint padding_0;
-	uint padding_1;
-	uint padding_2;
-
-	float mateRate;
 };
 
 // UNIFORM
@@ -29,7 +23,6 @@ uniform nap
 
 uniform VERTUBO
 {
-	vec3 cameraLocation;
 	float boidSize;
 	float fresnelScale;
 	float fresnelPower;
@@ -49,7 +42,6 @@ out vec3 pass_Position;
 out vec3 pass_Normal;
 
 out float pass_Fresnel;
-out float pass_Mates;
 flat out uint pass_Id;
 
 
@@ -88,9 +80,6 @@ void main(void)
 	vec3 eye_to_surface = normalize(world_position.xyz - mvp.cameraPosition);
 	float fresnel = 0.04 + 0.96 * pow(clamp(1.0 + dot(eye_to_surface, world_normal), 0.0, 1.0), fresnelPower);
 	pass_Fresnel = fresnelScale * fresnel;
-
-	// Pass percentage of neighbors (normalized)
-	pass_Mates = b.mateRate;
 
 	// Pass element id
 	pass_Id = gl_InstanceIndex;

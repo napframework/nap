@@ -19,13 +19,13 @@
 #include <orthocameracomponent.h>
 
 // nap::rendertotexturecomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderToTextureComponent)
-	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PreserveAspect",				&nap::RenderToTextureComponent::mPreserveAspect,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderToTextureComponent, "Renders an effect directly to texture using a custom material without having to define a render target or mesh")
+	RTTI_PROPERTY("OutputTexture",				&nap::RenderToTextureComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required, "Target (output) texture")
+	RTTI_PROPERTY("MaterialInstance",			&nap::RenderToTextureComponent::mMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required, "Render material, including overrides")
+	RTTI_PROPERTY("Samples",					&nap::RenderToTextureComponent::mRequestedSamples,			nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
+	RTTI_PROPERTY("ClearColor",					&nap::RenderToTextureComponent::mClearColor,				nap::rtti::EPropertyMetaData::Default,	"Initial target texture clear color")
+	RTTI_PROPERTY("SampleShading",				&nap::RenderToTextureComponent::mSampleShading,				nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
+	RTTI_PROPERTY("PreserveAspect",				&nap::RenderToTextureComponent::mPreserveAspect,			nap::rtti::EPropertyMetaData::Default,	"Whether to preserve the texture aspect ratio")
 RTTI_END_CLASS
 
 // nap::rendertotexturecomponentInstance run time class definition 
@@ -206,7 +206,8 @@ namespace nap
 			mViewMatrixUniform->setValue(viewMatrix);
 
 		// Get valid descriptor set
-		const DescriptorSet& descriptor_set = mMaterialInstance.update();
+		MaterialInstance& mat_instance = getMaterialInstance();
+		const DescriptorSet& descriptor_set = mat_instance.update();
 
 		// Gather draw info
 		MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
@@ -214,7 +215,7 @@ namespace nap
 
 		// Get pipeline to to render with
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		RenderService::Pipeline pipeline = mService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 

@@ -20,15 +20,16 @@ namespace nap
 {
 	namespace audio
 	{
-		
+
 		// Forward declarations
 		class PortAudioService;
-		
-		
+
+		/**
+		 * PortAudio service configuration
+		 */
 		class NAPAPI PortAudioServiceConfiguration : public ServiceConfiguration
 		{
 			RTTI_ENABLE(ServiceConfiguration)
-			
 		public:
 			virtual rtti::TypeInfo getServiceType() const	{ return RTTI_OF(PortAudioService); }
 
@@ -38,33 +39,33 @@ namespace nap
             struct NAPAPI DeviceSettings
             {
                 /**
-                 * Name of the host API (or driver type) used for this audio stream. Use @AudioService to poll for available host APIs
+                 * Name of the host API (or driver type) used for this audio stream. Use AudioService to poll for available host APIs
                  * The host API is an audio driver API like Windows MME, ASIO, CoreAudio, Jack, etc.
                  * If left empty the default host API will be used.
                  */
                 std::string mHostApi = "";
 
                 /**
-                 * Name of the input device being used. Use @AudioService to poll for available devices for a certain host API.
+                 * Name of the input device being used. Use the AudioService to poll for available devices for a certain host API.
                  * If left empty, the default input device will be used.
                  */
                 std::string mInputDevice = "";
 
                 /**
-                 * Name of the output device being used. Use @AudioService to poll for available devices for a certain host API.
+                 * Name of the output device being used. Use the AudioService to poll for available devices for a certain host API.
                  * If left empty the default output device will be used.
                  */
                 std::string mOutputDevice = "";
 
                 /**
                  * The number of input channels in the stream.
-                 * If the chosen device @mInputDevice does not support this amount of channels the stream will not start.
+                 * If the chosen input device does not support this amount of channels the stream will not start.
                  */
                 int mInputChannelCount = 1;
 
                 /**
                  * The number of output channels in the stream.
-                 * If the chosen device @mOutputDevice does not support this amount of channels the stream will not start.
+                 * If the chosen output device does not support this amount of channels the stream will not start.
                  */
                 int mOutputChannelCount = 2;
 
@@ -78,8 +79,8 @@ namespace nap
                  */
                 bool mDisableOutput = false;
 
-                /**
-                 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
+				/**
+				 * The sample rate the audio stream will run on, the number of samples processed per channel per second.
                  */
                 float mSampleRate = 44100;
 
@@ -102,17 +103,17 @@ namespace nap
             DeviceSettings mDeviceSettings;
 
             /**
-             * If this is set to true, the audio stream will start even if the number of channels specified in @mInputChannelCount and @mOutputChannelCount is not supported.
+             * If this is set to true, the audio stream will start even if the number of input or output channels is not supported.
              * In this case a zero signal will be used to emulate the input from an unsupported input channel.
              */
             bool mAllowChannelCountFailure = true;
 
             /**
-             * Indicates wether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
+             * Indicates whether the app will continue to run when the audio device, samplerate and buffersize settings are invalid
              */
             bool mAllowDeviceFailure = true;
 		};
-		
+
 		/**
 		 * Service that provides audio input and output processing directly for hardware audio devices.
 		 * Provides static methods to poll the current system for available audio devices using portaudio.
@@ -120,17 +121,17 @@ namespace nap
 		class NAPAPI PortAudioService final : public Service
 		{
 		    RTTI_ENABLE(nap::Service)
-		
+
 		public:
 			PortAudioService(ServiceConfiguration* configuration);
-			
+
 			~PortAudioService() = default;
-			
+
 			/**
 			 * Register specific object creators
 			 */
 			void registerObjectCreators(rtti::Factory& factory) override;
-			
+
 			/**
 			 * Initializes portaudio.
 			 */
@@ -147,7 +148,7 @@ namespace nap
              void preShutdown() override;
 
 			/**
-			 * @return the audio node manager owned by the audio service. The @NodeManager contains a node system that performs all the DSP.
+			 * @return the audio node manager owned by the audio service. The NodeManager contains a node system that performs all the DSP.
 			 */
 			NodeManager& getNodeManager() { return mAudioService->getNodeManager(); }
 
@@ -155,35 +156,35 @@ namespace nap
 			 * @return: returns wether we will allow input and output channel numbers that exceed the current device's maximum channel counts. If so zero signals will be returned for non-existing input channel numbers. If not initialization will fail.
 			 */
 			bool getAllowChannelCountFailure() { return getConfiguration<PortAudioServiceConfiguration>()->mAllowChannelCountFailure; }
-			
+
 			/**
 			 * @return: the number of available host APIs ont this system
 			 */
 			unsigned int getHostApiCount();
-			
+
 			/**
 			 * Returns information about a given host api
 			 * @param hostApiIndex:
 			 * @return: struct containing information about the specified host api
 			 */
 			const PaHostApiInfo& getHostApiInfo(unsigned int hostApiIndex);
-			
+
 			/**
 			 * @return information on all available host apis
 			 */
 			std::vector<const PaHostApiInfo*> getHostApis();
-			
+
 			/**
 			 * @return: name of the specified host API
 			 */
 			std::string getHostApiName(unsigned int hostApiIndex);
-			
+
 			/**
 			 * @param hostApiIndex: the number of the host api
 			 * @return: the number of all available audio devices for a certain host api, the total number contains both input and output devices separately.
 			 */
 			unsigned int getDeviceCount(unsigned int hostApiIndex);
-			
+
 			/**
 			 * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
 			 * @param hostApiIndex: the number of the host api
@@ -191,26 +192,33 @@ namespace nap
 			 * @return reference to a record containing information about the given device
 			 */
 			const PaDeviceInfo& getDeviceInfo(unsigned int hostApiIndex, unsigned int localDeviceIndex);
-			
-			/**
+
+            /**
+             * Returns information of an audio device in a PaDeviceInfo struct defined by portaudio.
+             * @param deviceIndex: the index of the device.
+             * @return reference to a record containing information about the given device
+             */
+            const PaDeviceInfo& getDeviceInfo(unsigned int deviceIndex);
+
+            /**
 			 * Returns information on all the available devices for a given host API
-			 * @param hostApiIndex: the number of the host api
+			 * @param hostApiIndex the number of the host api
 			 * @return vector with pointers to records containing information about each device.
 			 */
 			std::vector<const PaDeviceInfo*> getDevices(unsigned int hostApiIndex);
-			
+
 			/**
 			 * Prints the number and name of all available audio devices to the console
 			 */
 			void printDevices();
-			
+
 			/**
-			 * @param hostApiIndex: the number of the host api
-			 * @param deviceIndex: the number of the devie within the host api
+			 * @param hostApiIndex the number of the host api
+			 * @param localDeviceIndex the number of the devie within the host api
 			 * @return the name of an available device specified by host api and device number
 			 */
 			std::string getDeviceName(unsigned int hostApiIndex, unsigned int localDeviceIndex);
-			
+
 			/**
 			 * Lookups the index for an input device with a certain name on a host API.
 			 * @param hostApiIndex index of the host API
@@ -236,7 +244,7 @@ namespace nap
 			 * Returns -1 if the specified device was not found.
 			 */
 			int getDeviceIndex(int hostApiIndex, int hostApiDeviceIndex);
-			
+
 			/**
 			 * Seatch for the index of a host API by name.
 			 * Uses case insensitive search.
@@ -244,22 +252,22 @@ namespace nap
 			 * Returns -1 if the host api specified was not found.
 			 */
 			int getHostApiIndex(const std::string& hostApi);
-			
+
 			/**
 			 * @return the index of the host API that is currently being used.
 			 */
 			int getCurrentHostApiIndex() const { return mHostApiIndex; }
-			
+
 			/**
 			 * @return the index of the current input device.
 			 */
 			int getCurrentInputDeviceIndex() const { return mInputDeviceIndex; }
-			
+
 			/**
 			 * @return the index of the current output device.
 			 */
 			int getCurrentOutputDeviceIndex() const { return mOutputDeviceIndex; }
-			
+
 			/**
 			 * @return the current buffer size.
 			 */
@@ -279,37 +287,37 @@ namespace nap
              * @return const ref to current device settings used by service
              */
             const PortAudioServiceConfiguration::DeviceSettings& getDeviceSettings() const;
-			
+
 			/**
 			 * Closes the current stream. Assumes that it has been opened successfully.
 			 * @return true on success.
 			 */
 			bool closeStream(utility::ErrorState& errorState);
-			
+
 			/**
-			 * Restart the audio stream after it has been stopped by calling @stop().
-			 * Logs errors in the @errorState. Assumes the stream has been opened succesfully.
+			 * Restart the audio stream after it has been stopped by calling stop().
+			 * Logs errors in the errorState. Assumes the stream has been opened succesfully.
 			 * @return true on success
 			 */
 			bool start(utility::ErrorState& errorState);
-			
+
 			/**
 			 * Stops the audio stream, waits for any running audio callback before returning.
-			 * Logs errors in the @errorState. Assumes the stream has been opened succesfully.
+			 * Logs errors in the errorState. Assumes the stream has been opened succesfully.
 			 * @return true on success
 			 */
 			bool stop(utility::ErrorState& errorState);
-			
+
 			/**
 			 * @return Whether the audio stream is succesfully initialized
 			 */
 			bool isOpened() { return mStream != nullptr; }
-			
+
 			/**
 			 * @return Whether the audio stream is currently running and not been paused.
 			 */
 			bool isActive();
-			
+
             /**
              * @return Error message from last call to openStream() in case it was unsuccessful.
              */
@@ -336,7 +344,7 @@ namespace nap
 			 */
 			bool checkChannelCounts(int inputDeviceIndex, int outputDeviceIndex, int& inputChannelCount,
 			                        int& outputChannelCount, utility::ErrorState& errorState);
-			
+
 		private:
 			PaStream* mStream = nullptr; // Pointer to the stream managed by portaudio.
 			int mHostApiIndex = -1; // The actual host Api being used.

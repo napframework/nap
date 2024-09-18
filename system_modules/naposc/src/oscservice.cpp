@@ -19,7 +19,7 @@
 #include "oscreceiver.h"
 #include "oscinputcomponent.h"
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OSCService, "Processes OSC messages in NAP")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
@@ -27,8 +27,8 @@ namespace nap
 {
 	OSCService::OSCService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
+
 
 	OSCService::~OSCService()
 	{ }

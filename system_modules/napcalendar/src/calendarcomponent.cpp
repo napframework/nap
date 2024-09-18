@@ -9,9 +9,9 @@
 #include <rtti/rttiutilities.h>
 
 // nap::calendarcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::CalendarComponent)
-	RTTI_PROPERTY("Frequency",	&nap::CalendarComponent::mFrequency,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Calendar",	&nap::CalendarComponent::mCalendar,		nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::CalendarComponent, "Notifies listeners when a calendar event starts and ends.")
+	RTTI_PROPERTY("Frequency",	&nap::CalendarComponent::mFrequency,	nap::rtti::EPropertyMetaData::Default,	"How many times per second the calendar is checked for changes, defaults to 1")
+	RTTI_PROPERTY("Calendar",	&nap::CalendarComponent::mCalendar,		nap::rtti::EPropertyMetaData::Required,	"The calendar to watch")
 RTTI_END_CLASS
 
 // nap::calendarcomponentInstance run time class definition 
