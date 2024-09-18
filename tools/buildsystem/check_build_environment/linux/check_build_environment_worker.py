@@ -309,7 +309,7 @@ def check_build_environment(against_source):
     # Warn about wrong Ubuntu version
     print("Some issues were encountered:")
     if not distribution_version_ok:
-        if arch == 'armhf':
+        if arch == 'arm64':
             print("\nWarning: This version of NAP is supported on Raspbian %s. Other Linux configurations may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
         else:
             print("\nWarning: This version of NAP is supported on Ubuntu %s. Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSIONS)
