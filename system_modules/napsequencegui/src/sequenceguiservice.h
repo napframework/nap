@@ -37,13 +37,17 @@ namespace nap
     {
         namespace sequencer
         {
-            inline constexpr const char *play = "seq_play.png";
-            inline constexpr const char *stop = "seq_stop.png";
-            inline constexpr const char *rewind = "seq_replay.png";
-            inline constexpr const char *up = "seq_up-arrow.png";
-            inline constexpr const char *down = "seq_down-arrow.png";
-            inline constexpr const char *pause = "seq_pause.png";
-            inline constexpr const char *unpause = "seq_unpause.png";
+            inline constexpr const char *play       = "seq_play.png";
+            inline constexpr const char *stop       = "seq_stop.png";
+            inline constexpr const char *rewind     = "seq_replay.png";
+            inline constexpr const char *up         = "seq_up-arrow.png";
+            inline constexpr const char *down       = "seq_down-arrow.png";
+            inline constexpr const char *pause      = "seq_pause.png";
+            inline constexpr const char *unpause    = "seq_unpause.png";
+            inline constexpr const char *lock       = "seq_lock.png";
+            inline constexpr const char *undo       = "seq_undo.png";
+            inline constexpr const char *redo       = "seq_redo.png";
+            inline constexpr const char *history    = "seq_history.png";
         }
     }
 

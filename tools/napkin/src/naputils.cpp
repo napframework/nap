@@ -5,6 +5,7 @@
 #include "naputils.h"
 #include "napkinglobals.h"
 #include "appcontext.h"
+#include "thememanager.h"
 
 #include <QtGui/QtGui>
 #include <QHBoxLayout>
@@ -87,6 +88,16 @@ QVariant napkin::RTTITypeItem::data(int role) const
 			const char* obj_desc = nap::rtti::getDescription(mType);
 			return obj_desc != nullptr ? QString(obj_desc) : QStandardItem::data(role);
 		}
+	case Qt::FontRole:
+		{
+			// Change the font to mono, keep other settings in place
+			auto data = QStandardItem::data(role);
+			QFont font = data.value<QFont>();
+			auto font_name = AppContext::get().getThemeManager().getFontName(napkin::theme::font::mono);
+			if (!font_name.isEmpty())
+				font.setFamily(font_name);
+			return font;
+		}
 	default:
 		{
 			return QStandardItem::data(role);
@@ -158,6 +169,7 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 		entries << QString::fromStdString(obj->mID);
 	}
 
+	StringModel::sort(entries);
 	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(entries)).toStdString();
 	if (selectedID.empty())
 		return nullptr;
@@ -167,24 +179,6 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 		return nullptr;
 
 	return *it;
-}
-
-
-nap::rtti::TypeInfo napkin::showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName)
-{
-	using namespace nap::qt;
-	auto* material = rtti_cast<nap::Material>(prop.getObject());
-	assert(material != nullptr);
-	if (material->mShader == nullptr)
-		return nap::rtti::TypeInfo::empty();
-
-	StringModel::Entries names;
-	const auto& ubo_decs = material->mShader->getUBODeclarations();
-	for (const auto& dec : ubo_decs)
-		names << StringModel::Entry(QString::fromStdString(dec.mName));
-
-	auto selectedID = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
-	return nap::rtti::TypeInfo::empty();
 }
 
 
@@ -203,6 +197,8 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		names << QString(t.get_name().data());
 	}
 
+	// Sort and select
+	StringModel::sort(names);
 	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
 	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
@@ -446,3 +442,4 @@ nap::Entity* napkin::findChild(nap::Entity& parent, const std::string& name, int
 	}
 	return nullptr;
 }
+

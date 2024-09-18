@@ -1,4 +1,4 @@
-.Dd November 2, 2014
+.Dd September 10, 2021
 .Dt SNDFILE-PLAY 1
 .Os
 .Sh NAME
@@ -14,11 +14,13 @@ output APIs. The following table summarizes which audio API is used where:
 .Pp
 .Bl -tag -width MacOSX10XXX -compact
 .It Linux
-ALSA or OSS
+ALSA, OSS or sndio
 .It OpenBSD
 sndio
 .It FreeBSD
-/dev/dsp (OSS)
+/dev/dsp (OSS) or sndio
+.It NetBSD
+/dev/audio
 .It Solaris
 /dev/audio
 .It MacOSX 10.6
@@ -29,6 +31,6 @@ AudioToolbox
 waveOut
 .El
 .Sh SEE ALSO
-.Lk http://www.mega-nerd.com/libsndfile/
+.Lk http://libsndfile.github.io/libsndfile/
 .Sh AUTHORS
 .An Erik de Castro Lopo Aq Mt erikd@mega-nerd.com

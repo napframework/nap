@@ -9,8 +9,7 @@ using namespace napkin;
 ThemeSelectionMenu::ThemeSelectionMenu() : QMenu("Theme")
 {
 	refresh();
-	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this,
-			&ThemeSelectionMenu::onThemeChanged);
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &ThemeSelectionMenu::onThemeChanged);
 }
 
 
@@ -32,7 +31,7 @@ void ThemeSelectionMenu::refresh()
 }
 
 
-void ThemeSelectionMenu::onThemeChanged(const Theme* theme)
+void ThemeSelectionMenu::onThemeChanged(const Theme& theme)
 {
 	checkCurrentTheme();
 }
@@ -44,8 +43,6 @@ void ThemeSelectionMenu::checkCurrentTheme()
 	if (theme != nullptr)
 	{
 		for (auto action : actions())
-		{
 			action->setChecked(action->text() == theme->getName());
-		}
 	}
 }

@@ -10,8 +10,7 @@
 namespace nap
 {
 	RenderableMesh::RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance) :
-		mMaterialInstance(&materialInstance),
-		mMesh(&mesh)
+		mMaterialInstance(&materialInstance), mMesh(&mesh)
 	{
 		GPUMesh& gpu_mesh = mMesh->getMeshInstance().getGPUMesh();
 		const Material& material = mMaterialInstance->getMaterial();
@@ -27,36 +26,33 @@ namespace nap
 	}
 
 
-	RenderableMesh::RenderableMesh(const RenderableMesh& rhs)
+	void RenderableMesh::move(RenderableMesh&& other)
+	{
+		mMaterialInstance = other.mMaterialInstance;
+		other.mMaterialInstance = nullptr;
+		mMesh = other.mMesh;
+		other.mMesh = nullptr;
+		mVertexBuffers = std::move(other.mVertexBuffers);
+		mVertexBufferOffsets = std::move(other.mVertexBufferOffsets);
+		mVertexBuffersDirty = other.mVertexBuffersDirty;
+
+        // Don't copy the slot -> that will also copy the function that is called
+        // Only copy potential triggers (signals)
+        mVertexBufferDataChangedSlot.copyCauses(other.mVertexBufferDataChangedSlot);
+	}
+
+
+	void RenderableMesh::copy(const RenderableMesh& rhs)
 	{
 		mMaterialInstance = rhs.mMaterialInstance;
 		mMesh = rhs.mMesh;
 		mVertexBuffers = rhs.mVertexBuffers;
 		mVertexBufferOffsets = rhs.mVertexBufferOffsets;
 		mVertexBuffersDirty = rhs.mVertexBuffersDirty;
-		mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
-	}
 
-
-	RenderableMesh& RenderableMesh::operator=(const RenderableMesh& rhs)
-	{
-		if (this != &rhs)
-		{
-			mMaterialInstance = rhs.mMaterialInstance;
-			mMesh = rhs.mMesh;
-			mVertexBuffers = rhs.mVertexBuffers;
-			mVertexBufferOffsets = rhs.mVertexBufferOffsets;
-			mVertexBuffersDirty = rhs.mVertexBuffersDirty;
-			mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
-		}
-
-		return *this;
-	}
-	
-
-	void RenderableMesh::onVertexBufferDataChanged()
-	{
-		mVertexBuffersDirty = true;
+        // Don't copy the slot -> that will also copy the function that is called
+        // Only copy potential triggers (signals)
+        mVertexBufferDataChangedSlot.copyCauses(rhs.mVertexBufferDataChangedSlot);
 	}
 
 
@@ -102,12 +98,6 @@ namespace nap
 		}
 		assert(false);
 		return -1;
-	}
-
-
-	bool RenderableMesh::operator==(const RenderableMesh& rhs) const
-	{
-		return mMaterialInstance == rhs.mMaterialInstance && mMesh == rhs.mMesh;
 	}
 
 }
