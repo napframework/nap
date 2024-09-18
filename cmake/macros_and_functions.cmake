@@ -87,8 +87,12 @@ macro(bootstrap_environment)
         # Ensure we have patchelf on Linux, preventing silent failures
         ensure_patchelf_installed()
 
-        # Check if we're building on raspbian
-        check_raspbian_os(RASPBIAN)
+        # Check if we're building on a pi
+        get_rpi_model(RPI_MODEL)
+        if(RPI_MODEL)
+            message(STATUS "Detected Raspberry Pi model ${RPI_MODEL}")
+        endif()
+
     endif()
 endmacro()
 
@@ -156,18 +160,21 @@ macro(ensure_patchelf_installed)
     endif()
 endmacro()
 
-# Check existence of bcm_host.h header file to see if we're building on Raspberry
-macro(check_raspbian_os RASPBERRY)
-    if(${ARCH} MATCHES "armhf")
-        MESSAGE(VERBOSE "Looking for bcm_host.h")
-        INCLUDE(CheckIncludeFiles)
+# Check existence of '/proc/device-tree/model' file to see if we're building on Raspberry
+macro(get_rpi_model RPI_MODEL)
+    if(${ARCH} MATCHES "armhf" OR ${ARCH} MATCHES "arm64")
 
-        # Raspbian bullseye bcm_host.h location
-        CHECK_INCLUDE_FILES("/usr/include/bcm_host.h" RASPBERRY)
-
-        # otherwise, check previous location of bcm_host.h on older Raspbian OS's
-        if(NOT RASPBERRY)
-            CHECK_INCLUDE_FILES("/opt/vc/include/bcm_host.h" RASPBERRY)
+        # Read file that identifies model
+        set(MODEL_FILE "/proc/device-tree/model")
+        if(EXISTS ${MODEL_FILE})
+            file(READ ${MODEL_FILE} DEVICE_MODEL)
+        
+            # Identify raspberry pi - we support 4 & 5
+            if(DEVICE_MODEL MATCHES "^Raspberry Pi 4")
+                set(RPI_MODEL 4)
+            elseif(DEVICE_MODEL MATCHES "^Raspberry Pi 5")
+                set(RPI_MODEL 5)
+            endif()
         endif()
     endif()
 endmacro()

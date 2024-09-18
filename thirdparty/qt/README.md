@@ -1,10 +1,10 @@
 # Qt for NAP
 
-When working from source NAP requires Qt v5.15.2 which for most major platforms can be downloaded from [qt.io](https://qt.io). Once deployed Qt should then be pointed to with the environment `QT_DIR` so it can be picked up by NAP.
+When working from source NAP requires Qt v6.7.2 which for most major platforms can be downloaded from [qt.io](https://qt.io). Once deployed Qt should then be pointed to with the environment `QT_DIR` so it can be picked up by NAP.
 
 eg. on Linux for x86_64 in your .bashrc this might look like 
 ```
-export QT_DIR=/home/username/Qt/5.11.3/gcc_64
+export QT_DIR=/home/username/Qt/6.7.2/gcc_64
 ```
 
 For published NAP Framework Releases Qt is included within and doesn't need to be downloaded separately.

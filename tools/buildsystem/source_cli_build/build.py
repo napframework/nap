@@ -53,7 +53,7 @@ def main(target, clean_build, build_type, enable_python):
         solution_args.append('-p')
     
     # Generate solution
-    rc = call(nap_root, solution_args)
+    rc = call(nap_root, solution_args, True)
         
     # Build
     build_config = build_type.capitalize()

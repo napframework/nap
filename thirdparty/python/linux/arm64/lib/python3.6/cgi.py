@@ -117,7 +117,8 @@ log = initlog           # The current logging function
 # 0 ==> unlimited input
 maxlen = 0
 
-def parse(fp=None, environ=os.environ, keep_blank_values=0, strict_parsing=0):
+def parse(fp=None, environ=os.environ, keep_blank_values=0,
+          strict_parsing=0, separator='&'):
     """Parse a query in the environment or from a file (default stdin)
 
         Arguments, all optional:
@@ -136,6 +137,9 @@ def parse(fp=None, environ=os.environ, keep_blank_values=0, strict_parsing=0):
         strict_parsing: flag indicating what to do with parsing errors.
             If false (the default), errors are silently ignored.
             If true, errors raise a ValueError exception.
+
+        separator: str. The symbol to use for separating the query arguments.
+            Defaults to &.
     """
     if fp is None:
         fp = sys.stdin
@@ -180,7 +184,7 @@ def parse(fp=None, environ=os.environ, keep_blank_values=0, strict_parsing=0):
             qs = ""
         environ['QUERY_STRING'] = qs    # XXX Shouldn't, really
     return urllib.parse.parse_qs(qs, keep_blank_values, strict_parsing,
-                                 encoding=encoding)
+                                 encoding=encoding, separator=separator)
 
 
 # parse query string function called from urlparse,
@@ -404,7 +408,8 @@ class FieldStorage:
     """
     def __init__(self, fp=None, headers=None, outerboundary=b'',
                  environ=os.environ, keep_blank_values=0, strict_parsing=0,
-                 limit=None, encoding='utf-8', errors='replace'):
+                 limit=None, encoding='utf-8', errors='replace',
+                 max_num_fields=None, separator='&'):
         """Constructor.  Read multipart/* until last part.
 
         Arguments, all optional:
@@ -444,10 +449,15 @@ class FieldStorage:
             for the page sending the form (content-type : meta http-equiv or
             header)
 
+        max_num_fields: int. If set, then __init__ throws a ValueError
+            if there are more than n fields read by parse_qsl().
+
         """
         method = 'GET'
         self.keep_blank_values = keep_blank_values
         self.strict_parsing = strict_parsing
+        self.max_num_fields = max_num_fields
+        self.separator = separator
         if 'REQUEST_METHOD' in environ:
             method = environ['REQUEST_METHOD'].upper()
         self.qs_on_post = None
@@ -670,12 +680,11 @@ class FieldStorage:
         qs = qs.decode(self.encoding, self.errors)
         if self.qs_on_post:
             qs += '&' + self.qs_on_post
-        self.list = []
         query = urllib.parse.parse_qsl(
             qs, self.keep_blank_values, self.strict_parsing,
-            encoding=self.encoding, errors=self.errors)
-        for key, value in query:
-            self.list.append(MiniFieldStorage(key, value))
+            encoding=self.encoding, errors=self.errors,
+            max_num_fields=self.max_num_fields, separator=self.separator)
+        self.list = [MiniFieldStorage(key, value) for key, value in query]
         self.skip_lines()
 
     FieldStorageClass = None
@@ -689,9 +698,9 @@ class FieldStorage:
         if self.qs_on_post:
             query = urllib.parse.parse_qsl(
                 self.qs_on_post, self.keep_blank_values, self.strict_parsing,
-                encoding=self.encoding, errors=self.errors)
-            for key, value in query:
-                self.list.append(MiniFieldStorage(key, value))
+                encoding=self.encoding, errors=self.errors,
+                max_num_fields=self.max_num_fields, separator=self.separator)
+            self.list.extend(MiniFieldStorage(key, value) for key, value in query)
 
         klass = self.FieldStorageClass or self.__class__
         first_line = self.fp.readline() # bytes
@@ -705,6 +714,11 @@ class FieldStorage:
                 first_line):
             first_line = self.fp.readline()
             self.bytes_read += len(first_line)
+
+        # Propagate max_num_fields into the sub class appropriately
+        max_num_fields = self.max_num_fields
+        if max_num_fields is not None:
+            max_num_fields -= len(self.list)
 
         while True:
             parser = FeedParser()
@@ -727,7 +741,15 @@ class FieldStorage:
 
             part = klass(self.fp, headers, ib, environ, keep_blank_values,
                          strict_parsing,self.limit-self.bytes_read,
-                         self.encoding, self.errors)
+                         self.encoding, self.errors, max_num_fields, self.separator)
+
+            if max_num_fields is not None:
+                max_num_fields -= 1
+                if part.list:
+                    max_num_fields -= len(part.list)
+                if max_num_fields < 0:
+                    raise ValueError('Max number of fields exceeded')
+
             self.bytes_read += part.bytes_read
             self.list.append(part)
             if part.done or self.bytes_read >= self.length > 0:
