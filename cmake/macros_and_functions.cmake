@@ -90,7 +90,7 @@ macro(bootstrap_environment)
         # Check if we're building on a pi
         get_rpi_model(RPI_MODEL)
         if(RPI_MODEL)
-            message(STATUS "Detected Raspberry Pi Model ${RPI_MODEL}")
+            message(STATUS "Detected Raspberry Pi model ${RPI_MODEL}")
         endif()
 
     endif()
