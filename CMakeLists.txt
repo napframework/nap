@@ -20,7 +20,6 @@ include(cmake/qtconfig.cmake)
 # Initialize environment
 bootstrap_environment()
 set_source_build_configuration()
-
 set(MODULE_INTO_PARENT TRUE)
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
