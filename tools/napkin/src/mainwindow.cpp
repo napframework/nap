@@ -55,11 +55,6 @@ void MainWindow::showEvent(QShowEvent* event)
 		mShown = true;
 	}
 
-	// Set status bar font
-	auto sf = statusBar()->font();
-	sf.setPixelSize(this->font().pixelSize());
-	statusBar()->setFont(sf);
-
 	connect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress, Qt::UniqueConnection);
 }
 
