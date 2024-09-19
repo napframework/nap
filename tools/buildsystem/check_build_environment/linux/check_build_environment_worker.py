@@ -68,7 +68,6 @@ def check_distribution():
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
     if arch == 'arm64':
-        print(distributor_id)
         distribution_ok = distributor_id == 'debian'
         log_test_success('Raspbian distribution', distribution_ok)
     else:
