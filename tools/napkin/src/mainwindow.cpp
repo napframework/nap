@@ -81,15 +81,15 @@ void MainWindow::addDocks()
 {
 //	addDock("History", &mHistoryPanel);
 //	addDock("Path Browser", &mPathBrowser);
+	addDock("AppRunner", &mAppRunnerPanel);
 	addDock("Resources", &mResourcePanel);
+	addDock("Scene", &mScenePanel);
 	addDock("Inspector", &mInspectorPanel);
 	addDock("Log", &mLogPanel);
-	addDock("AppRunner", &mAppRunnerPanel);
-    addDock("Scene", &mScenePanel);
-	addDock("Curve", &mCurvePanel);
-	addDock("Modules", &mModulePanel);
-	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Configuration", &mServiceConfigPanel);
+	addDock("Instance Properties", &mInstPropPanel);
+	addDock("Modules", &mModulePanel);
+	addDock("Curve", &mCurvePanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 
