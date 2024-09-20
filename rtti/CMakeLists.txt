@@ -2,7 +2,9 @@ project(naprtti)
 
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
-add_subdirectory(thirdparty/rttr)
+# Find RTTR::Core through its provided cmake files using the package finder
+set(RTTR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rttr/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/cmake")
+find_package(RTTR CONFIG REQUIRED Core)
 
 set(rapidjson_FIND_QUIETLY TRUE)
 find_package(rapidjson REQUIRED)
@@ -40,8 +42,7 @@ if (NAP_ENABLE_PYTHON)
     target_link_directories(${PROJECT_NAME} PUBLIC ${PYTHON_LIB_DIR})
 endif()
 
-target_link_libraries(${PROJECT_NAME} naputility)
-target_link_import_library(${PROJECT_NAME} rttr_core)
+target_link_libraries(${PROJECT_NAME} naputility RTTR::Core)
 
 if(APPLE)
     target_link_libraries(${PROJECT_NAME} "-framework CoreServices")
@@ -49,10 +50,15 @@ elseif(UNIX)
     target_link_libraries(${PROJECT_NAME} dl pthread)
 endif ()
 
+# Copy RTTR::Core libraries to bin
 add_custom_command(
         TARGET ${PROJECT_NAME} POST_BUILD
         COMMAND ${CMAKE_COMMAND} -E copy
-        $<TARGET_FILE:rttr_core>
+        $<TARGET_FILE:RTTR::Core>
         ${LIB_DIR})
 
+# Package RTTR::Core libraries
+install(FILES $<TARGET_FILE:RTTR::Core> TYPE LIB OPTIONAL)
+
+# Package naprtti library
 install(TARGETS ${PROJECT_NAME} LIBRARY OPTIONAL)
