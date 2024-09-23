@@ -323,7 +323,10 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'nouveau_dri',
     'radeonsi_dri',
     'sun4i-drm_dri',
-    'vc4_dri'
+    'vc4_dri',
+    'libvulkan_virtio',
+    'libvulkan_freedreno.so',
+    'ld-linux-aarch64'
 ]
 
 # List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
