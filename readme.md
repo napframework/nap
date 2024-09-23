@@ -89,13 +89,13 @@ Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' 
 
 ## Dependencies
 
-The editor `Napkin` depends on Qt. 
+The editor `Napkin` depends on open source Qt. 
 
 **Download**
 
 Download and extract the pre-compiled binaries for your target platform:
 
-  - [Qt6 for x86-64: Windows](https://download.nap-labs.tech/qt/qt_672_msvc_x86_64.tar.gz) (msvc)
+  - [Qt6 for x86-64: Windows](https://download.nap-labs.tech/qt/qt_672_msvc_x86_64.zip) (msvc)
   - [Qt6 for x86-64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_x86_64.tar.gz) (gcc)
   - [Qt6 for arm64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_arm64.tar.gz) (gcc)
 

@@ -49,9 +49,9 @@ macro(nap_qt_pre)
     else()
         message(FATAL_ERROR
                 "Qt6 could not be found, please set the QT_DIR environment variable, eg.:"
-                "\n Win64 - \"C:/dev/Qt/6.5.3/msvc2015_64\""
-                "\n macOS - \"/Users/username/dev/Qt/6.5.3/clang_64\""
-                "\n Linux - \"/home/username/dev/Qt/6.5.3/gcc_64\"")
+                "\n Win64 - \"C:/dev/Qt/6.7.2/msvc2019_64\""
+                "\n macOS - \"/Users/username/dev/Qt/6.7.2/clang_64\""
+                "\n Linux - \"/home/username/dev/Qt/6.7.2/gcc_64\"")
     endif()
 
     # TODO Update to CMake 3.24+ and use global scope here to avoid redefining
