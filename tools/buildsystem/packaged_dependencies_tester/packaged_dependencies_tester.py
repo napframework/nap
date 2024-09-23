@@ -311,6 +311,7 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'libxcb-xinerama',
     'libxcb-xkb',
     'libxcb-xfixes',
+    'libxcb-cursor',
     'libxkbcommon',
     'libxkbcommon-x11',
     'libxml2',
@@ -325,8 +326,11 @@ LINUX_BASE_ACCEPTED_SYSTEM_LIBS = [
     'sun4i-drm_dri',
     'vc4_dri',
     'libvulkan_virtio',
-    'libvulkan_freedreno.so',
-    'ld-linux-aarch64'
+    'libvulkan_freedreno',
+    'ld-linux-aarch64',
+    'libmpg123',
+    'libEGL',
+    'libOpenGL'
 ]
 
 # List of locations on a macOS system where we're happy to find system libraries. As with Ubuntu, 
