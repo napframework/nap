@@ -25,6 +25,9 @@ RTTI_END_CLASS
 
 namespace nap 
 {
+	// If the gui is visible
+	static bool showGui = true;
+
 	/**
 	 * Initialize all the resources and store the objects we need later on
 	 */
@@ -39,22 +42,38 @@ namespace nap
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
 
-		// Get screen size
-		glm::ivec2 screen_size = SDL::getScreenSize(0);
-		
-		// Calculate x and y window offsets
-		int offset_x = (screen_size.x - (3 * 512)) / 2;
-		int offset_y = (screen_size.y - 512) / 2;
-
-		// Extract windows and set position
+		// Extract windows
 		mRenderWindowOne = mResourceManager->findObject<nap::RenderWindow>("Window0");
-		mRenderWindowOne->setPosition({ offset_x, offset_y });
-
 		mRenderWindowTwo = mResourceManager->findObject<nap::RenderWindow>("Window1");
-		mRenderWindowTwo->setPosition({ offset_x + 512, offset_y });
-		
 		mRenderWindowThree = mResourceManager->findObject<nap::RenderWindow>("Window2");
-		mRenderWindowThree->setPosition({ offset_x + 1024, offset_y });
+
+		// Align windows next to each other on primary (first) display
+		auto* display = mRenderService->findDisplay(*mRenderWindowOne);
+		if(display != nullptr)
+		{
+			// Calculate window size
+			constexpr float eoff = 200.0f * 2.0f;
+			auto screen_size = display->getBounds().getMax() - display->getBounds().getMin();
+			float sdim = (screen_size.x-eoff) / 3.0f;
+			float ddim = sdim * 2.0f;
+			float tdim = sdim * 3.0f;
+
+			// Calculate x and y window coordinate offsets
+			float offset_x = (screen_size.x - tdim) / 2 + display->getBounds().getMin().x;
+			float offset_y = (screen_size.y - sdim) / 2 + display->getBounds().getMin().y + 1;
+
+			// Align window1
+			mRenderWindowOne->setPosition({ offset_x, offset_y });
+			mRenderWindowOne->setSize({sdim, sdim});
+
+			// Align window2
+			mRenderWindowTwo->setPosition({ offset_x + sdim, offset_y });
+			mRenderWindowTwo->setSize({sdim, sdim});
+
+			// Align window3
+			mRenderWindowThree->setPosition({ offset_x + ddim, offset_y });
+			mRenderWindowThree->setSize({sdim, sdim});
+		}
 
 		// Extract textures
 		mTextureOne = mResourceManager->findObject<ImageFromFile>("TextureOne");
@@ -275,6 +294,10 @@ namespace nap
 				nap::RenderWindow* window = mRenderService->findWindow(press_event->mWindow);
 				window->toggleFullscreen();
 			}
+
+			// Toggle gui
+			if(press_event->mKey == nap::EKeyCode::KEY_h)
+				showGui = !showGui;
 		}
 		mInputService->addEvent(std::move(inputEvent));
 	}
@@ -317,6 +340,10 @@ namespace nap
 
 	void MultiWindowApp::updateGUI()
 	{
+		// Bail if gui is not visible
+		if(!showGui)
+			return;
+
 		// Select window 1
 		mGuiService->selectWindow(mRenderWindowOne);
 

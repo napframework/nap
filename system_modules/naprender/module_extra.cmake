@@ -106,7 +106,10 @@ if(NAP_BUILD_CONTEXT MATCHES "source")
     install(FILES ${SDL2_LICENSE_FILES} DESTINATION ${thirdparty_module_dest}/SDL2)
 
     # Vulkan SDK
-    install(DIRECTORY ${VULKANSDK_DIR} DESTINATION ${thirdparty_module_dest}/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR})
+    install(DIRECTORY ${VULKANSDK_DIR}
+            DESTINATION ${thirdparty_module_dest}/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR}
+            PATTERN "*.tar.gz" EXCLUDE)
+
     install(FILES ${VULKANSDK_LICENSE_FILES} DESTINATION ${thirdparty_module_dest}/vulkansdk)
     if(APPLE)
         install(FILES dist/vulkan_macos/MoltenVK_icd.json DESTINATION system_modules/${PROJECT_NAME}/macos/)
@@ -141,7 +144,8 @@ else()
         install(DIRECTORY ${ASSIMP_LIBRARY_DIRS}/
                 DESTINATION lib
                 PATTERN "cmake" EXCLUDE
-                PATTERN "pkgconfig" EXCLUDE)
+                PATTERN "pkgconfig" EXCLUDE
+                PATTERN "*.a" EXCLUDE)
 
         # Package SDL2 into packaged project on *nix
         install(DIRECTORY ${SDL2_LIBS_DIR}/

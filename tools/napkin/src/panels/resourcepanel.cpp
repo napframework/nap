@@ -115,6 +115,8 @@ napkin::ResourcePanel::ResourcePanel()
 			this->onIndexChanged(parent, item);
 		});
 
+	connect(&AppContext::get().getThemeManager(), &ThemeManager::themeChanged, this, &ResourcePanel::themeChanged);
+
 	createMenuCallbacks();
 	mTreeView.setMenuHook(std::bind(&ResourcePanel::menuHook, this, std::placeholders::_1));
 	mTreeView.installEventFilter(this);
@@ -395,6 +397,12 @@ void napkin::ResourcePanel::createMenuCallbacks()
 }
 
 
+void napkin::ResourcePanel::themeChanged(const Theme& theme)
+{
+	theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::regular);
+}
+
+
 void napkin::ResourcePanel::onProjectLoaded(const nap::ProjectInfo& projectInfo)
 {
 	mModel.getRootResourcesItem().setEnabled(true);
@@ -506,4 +514,3 @@ void ResourcePanel::emitSelectionChanged()
 	}
 	selectionChanged(selectedPaths);
 }
-

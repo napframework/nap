@@ -5,8 +5,9 @@ QMainWindow
 
 QWidget
 {
-    font-family: "@font1";
-    font-size: 13px;
+    font-family: "@regularFont";
+    font-size: 10pt;
+    font-weight: 500;
     selection-background-color:@highlight1;
     selection-color: @front4;
     border: none;
@@ -70,7 +71,7 @@ QGroupBox:title {
 QDockWidget {
     color: @front4;
     border: 1px solid @header;
-    font-size: 15px;
+    font-size: 11pt;
     titlebar-close-icon:url(:/icons/icon_close_nap.png);
     titlebar-normal-icon:url(:/icons/icon_restore_nap.png);
     background: @front1;
@@ -201,6 +202,7 @@ QTabBar:tab::!selected {
 QStatusBar {
     color: @front3;
     background: @status;
+    font-family: "@monoFont";
 }
 
 QGraphicsView {
@@ -249,4 +251,52 @@ QToolTip {
     padding: 2px;
     border: none;
     text-align: center;
+}
+
+QSpinBox {
+    background-color: @dark2;
+    color: @front3;
+    padding: 2px;
+}
+
+QSpinBox::up-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 10px;
+    border-image: url(:/icons/spin_up.png);
+    margin-right: 2px;
+}
+
+QSpinBox::down-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 10px;
+    margin-right: 2px;
+    border-image: url(:/icons/spin_down.png);
+}
+
+QDoubleSpinBox {
+    background-color: @dark2;
+    color: @front3;
+    padding: 2px;
+}
+
+QDoubleSpinBox::up-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: top right;
+    width: 10px;
+    border-image: url(:/icons/spin_up.png);
+    margin-right: 2px;
+}
+
+QDoubleSpinBox::down-button 
+{
+    subcontrol-origin: border;
+    subcontrol-position: bottom right;
+    width: 10px;
+    margin-right: 2px;
+    border-image: url(:/icons/spin_down.png);
 }

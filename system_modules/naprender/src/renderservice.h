@@ -67,7 +67,7 @@ namespace nap
 		std::vector<std::string>		mLayers = { "VK_LAYER_KHRONOS_validation" };			    ///< Property: 'Layers' Vulkan layers the engine tries to load in Debug mode. Warning is issued if the layer can't be loaded. Layers are disabled in release mode.
 		std::vector<std::string>		mAdditionalExtensions = { };								///< Property: 'Extensions' Additional required Vulkan device extensions
 		uint32							mVulkanVersionMajor = 1;									///< Property: 'VulkanMajor The major required vulkan API instance version.
-		uint32							mVulkanVersionMinor = 0;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
+		uint32							mVulkanVersionMinor = 1;									///< Property: 'VulkanMinor' The minor required vulkan API instance version.
 		uint32							mAnisotropicFilterSamples = 8;								///< Property: 'AnisotropicSamples' Default max number of anisotropic filter samples, can be overridden by a sampler if required.
 		bool							mEnableHighDPIMode = true;									///< Property: 'EnableHighDPI' If high DPI render mode is enabled, on by default
 		bool							mEnableCompute = true;										///< Property: 'EnableCompute' Ensures the selected queue supports Vulkan Compute commands. Enable this if you wish to use Vulkan Compute functionality.

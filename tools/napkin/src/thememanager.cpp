@@ -188,11 +188,42 @@ QColor Theme::getLogColor(const nap::LogLevel& lvl) const
 
 QColor Theme::getColor(const QString& key) const
 {
-	if (mColors.contains(key))
-		return mColors[key];
+	auto it = mColors.find(key);
+	if (it != mColors.end())
+		return it.value();
 
 	nap::Logger::error("Color not found: %s", key.toStdString().c_str());
 	return {};
+}
+
+
+QString napkin::Theme::getFontName(const QString& key) const
+{
+	auto it = mFonts.find(key);
+	if (it != mFonts.end())
+		return it.value();
+
+	nap::Logger::warn("Font not found: %s", key.toStdString().c_str());
+	return {};
+}
+
+
+QFont napkin::Theme::getFont(const QString& key, const QString& style, int size) const
+{
+	return QFontDatabase::font(getFontName(key), style, size);
+}
+
+
+void napkin::Theme::changeWidgetFont(QWidget& widget, const QString& key) const
+{
+	// Fetch current font and update it
+	auto font_family_name = getFontName(key);
+	if (!font_family_name.isEmpty())
+	{
+		auto new_font = widget.font();
+		new_font.setFamily(font_family_name);
+		widget.setFont(new_font);
+	}
 }
 
 
@@ -215,16 +246,11 @@ ThemeManager::ThemeManager()
 }
 
 
-void ThemeManager::setTheme(Theme* theme)
+void ThemeManager::setTheme(Theme& theme)
 {
-	mCurrentTheme = theme;
+	mCurrentTheme = &theme;
 	applyTheme();
-	QString themeName = "";
-	if (mCurrentTheme != nullptr)
-		themeName = mCurrentTheme->getName();
-
-	QSettings().setValue(settingsKey::LAST_THEME, themeName);
-	themeChanged(mCurrentTheme);
+	QSettings().setValue(settingsKey::LAST_THEME, theme.getName());
 }
 
 
@@ -236,7 +262,7 @@ void ThemeManager::setTheme(const QString& name)
 		nap::Logger::warn("Unable to find theme with name: %s", name.toStdString().c_str());
 		return;
 	}
-	setTheme(new_theme);
+	setTheme(*new_theme);
 }
 
 
@@ -336,6 +362,9 @@ void ThemeManager::applyTheme()
 
 	QApplication::setStyle(QStyleFactory::create("Fusion"));
 	app->setStyleSheet(styleSheet);
+
+	// Notify listeners
+	themeChanged(*mCurrentTheme);
 }
 
 
@@ -427,6 +456,7 @@ void ThemeManager::loadThemes()
 	}
 }
 
+
 QColor ThemeManager::getLogColor(const nap::LogLevel& lvl) const
 {
 	if (mCurrentTheme)
@@ -437,7 +467,28 @@ QColor ThemeManager::getLogColor(const nap::LogLevel& lvl) const
 
 QColor ThemeManager::getColor(const QString& key) const
 {
-	if (mCurrentTheme)
-		return mCurrentTheme->getColor(key);
-	return {};
+	return mCurrentTheme != nullptr ? mCurrentTheme->getColor(key) :
+		QColor();
 }
+
+
+QString napkin::ThemeManager::getFontName(const QString& key) const
+{
+	return mCurrentTheme != nullptr ? mCurrentTheme->getFontName(key) :
+		QString();
+}
+
+
+QFont napkin::ThemeManager::getFont(const QString& key, const QString& style, int pointSize) const
+{
+	return mCurrentTheme != nullptr ? mCurrentTheme->getFont(key, style, pointSize) :
+		QFont();
+}
+
+
+void napkin::ThemeManager::changeWidgetFont(QWidget& widget, const QString& key) const
+{
+	if (mCurrentTheme != nullptr)
+		mCurrentTheme->changeWidgetFont(widget, key);
+}
+

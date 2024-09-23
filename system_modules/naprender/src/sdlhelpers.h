@@ -35,8 +35,9 @@ namespace nap
 		 * Sets the window to be full screen in desktop mode
 		 * @param window the window to enable / disable
 		 * @param value if the window is full screen
+		 * @return if full screen operation succeeded
 		 */
-		void NAPAPI setFullscreen(SDL_Window* window, bool value);
+		bool NAPAPI setFullscreen(SDL_Window* window, bool value);
 
 		/**
 		 * Returns if the window is full screen (Desktop)

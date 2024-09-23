@@ -8,9 +8,9 @@ import shutil
 import sys
 
 REQUIRED_UBUNTU_VERSIONS = ['20.04','22.04', '24.04']
-REQUIRED_QT_VERSION = '5.15.2'
-REQUIRED_RASPBIAN_VERSION = '11'
-SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64', 'armhf')
+REQUIRED_QT_VERSION = '6.7.2'
+REQUIRED_RASPBIAN_VERSION = '12'
+SUPPORTED_ARCHITECTURES = ('x86_64', 'arm64')
 
 def call(cmd):
     """Execute command and return stdout"""
@@ -67,8 +67,8 @@ def check_distribution():
     arch = get_build_arch()
     distribution = call('lsb_release -id | grep ID')
     distributor_id = distribution.split(':')[1].strip().lower()
-    if arch == 'armhf':
-        distribution_ok = distributor_id == 'raspbian'
+    if arch == 'arm64':
+        distribution_ok = distributor_id == 'debian'
         log_test_success('Raspbian distribution', distribution_ok)
     else:
         distribution_ok = distributor_id == 'ubuntu'
@@ -82,7 +82,7 @@ def check_distribution_version():
     arch = get_build_arch()
     release = call('lsb_release -r')
     release = release.split(':')[1].strip()
-    if arch == 'armhf':
+    if arch == 'arm64':
         release_ok = release == REQUIRED_RASPBIAN_VERSION
         log_test_success('Raspbian %s' % REQUIRED_RASPBIAN_VERSION, release_ok)
     else:
@@ -131,7 +131,7 @@ def check_qt_version():
     # Run Qt version checking logic, parsing output
     thirdparty_dir = os.path.join(nap_root, 'thirdparty')
     arch = get_build_arch()
-    cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', 'x86_64', 'bin', 'cmake')
+    cmake = os.path.join(thirdparty_dir, 'cmake', 'linux', arch, 'bin', 'cmake')
 
     (out, returncode) = call_with_returncode(' '.join((cmake, qt_checker_path, '-B', temp_build_dir)))
     if returncode == 0:
@@ -216,7 +216,7 @@ def check_build_environment(against_source):
         supported_arch = arch in SUPPORTED_ARCHITECTURES
         log_test_success('supported architecture', supported_arch)
         if not supported_arch:
-            print("\nNAP only currently supports %s systems under Linux".format(','.join(SUPPORTED_ARCHITECTURES)))
+            print("\nNAP only currently supports {0} systems under Linux".format(' and '.join(SUPPORTED_ARCHITECTURES)))
             sys.exit(1)
     else:
         # Check if arch matches build
@@ -228,7 +228,7 @@ def check_build_environment(against_source):
     # Check distribution
     distribution_ok = check_distribution()
     if not distribution_ok:
-        if arch == 'armhf':
+        if arch == 'arm64':
             print("\nThis version of NAP supports Raspbian Linux (%s). Other distributions may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
         else:
             print("\nThis version of NAP supports Ubuntu Linux. Other distributions may work but are unsupported." % REQUIRED_UBUNTU_VERSIONS)
@@ -247,12 +247,16 @@ def check_build_environment(against_source):
     log_test_success('for build-essential package', build_essential_installed)
 
     # Check package libxcb-xinerama, brings in xcb dependencies for running napkin
-    libxcb_installed, apts_to_install = apt_package_installed('libxcb-xinerama0', apts_to_install)
-    log_test_success('for libxcb-xinerama0 package', libxcb_installed)
+    xinerama0_installed, apts_to_install = apt_package_installed('libxcb-xinerama0', apts_to_install)
+    log_test_success('for libxcb-xinerama0 package', xinerama0_installed)
 
-    # Check package libjack0 - required by portaudio
-    libjack_installed, apts_to_install = apt_package_installed('libjack0', apts_to_install)
-    log_test_success('for libjack0 package', libjack_installed)
+    # Check package libxcb-cursor0, brings in xcb dependencies for running napkin
+    libxcb_cursor_installed, apts_to_install = apt_package_installed('libxcb-cursor0', apts_to_install)
+    log_test_success('for libxcb-cursor0 package', libxcb_cursor_installed)
+
+    # Check package libxcb-cursor0, brings in xcb dependencies for running napkin
+    libxkbcommon_installed, apts_to_install = apt_package_installed('libxkbcommon0', apts_to_install)
+    log_test_success('for libxkbcommon0 package', libxkbcommon_installed)
 
     # Check package patchelf installed
     patchelf_installed, apts_to_install = apt_package_installed('patchelf', apts_to_install)
@@ -267,6 +271,11 @@ def check_build_environment(against_source):
         # dependencies needed by Qt when working against source
         glut_installed, apts_to_install = apt_package_installed('libglu1-mesa-dev', apts_to_install)
         log_test_success('for libglu1-mesa-dev package (needed by Qt for Napkin)', glut_installed)
+
+        # Check package libglu1-mesa-dev installed, currently brings in
+        # dependencies needed by Qt when working against source
+        libxkbcommon_dev_installed, apts_to_install = apt_package_installed('libxkbcommon-dev', apts_to_install)
+        log_test_success('for libxkbcommon-dev package (needed by Qt for Napkin)', libxkbcommon_dev_installed)
 
         # Check for Qt
         qt_env_var_ok = check_qt_env_var()
@@ -295,7 +304,7 @@ def check_build_environment(against_source):
     # Warn about wrong Ubuntu version
     print("Some issues were encountered:")
     if not distribution_version_ok:
-        if arch == 'armhf':
+        if arch == 'arm64':
             print("\nWarning: This version of NAP is supported on Raspbian %s. Other Linux configurations may work but are unsupported." % REQUIRED_RASPBIAN_VERSION)
         else:
             print("\nWarning: This version of NAP is supported on Ubuntu %s. Other Linux configurations may work but are unsupported." % REQUIRED_UBUNTU_VERSIONS)

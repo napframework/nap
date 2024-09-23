@@ -5,22 +5,22 @@ project(NAP)
 set(NAP_ROOT ${CMAKE_CURRENT_LIST_DIR})
 message(STATUS "Using NAP Root: ${CMAKE_CURRENT_LIST_DIR}")
 
+# Inform system we're building from source
 set(NAP_BUILD_CONTEXT "source")
 
 # Thirdparty libraries reside in this location, keep an absolute path
 set(THIRDPARTY_DIR ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty)
 message(STATUS "Using thirdparty directory: ${THIRDPARTY_DIR}")
 
+# Include utilities
 include(cmake/macros_and_functions.cmake)
 include(cmake/framework_release_packaging.cmake)
-bootstrap_environment()
-
-set_source_build_configuration()
-
 include(cmake/qtconfig.cmake)
 
+# Initialize environment
+bootstrap_environment()
+set_source_build_configuration()
 set(MODULE_INTO_PARENT TRUE)
-
 set(CMAKE_INSTALL_PREFIX ${CMAKE_SOURCE_DIR}/packaging_staging)
 
 # store project directory
@@ -48,10 +48,18 @@ add_subdirectory(demos/helloworld)
 add_subdirectory(demos/rotatingtexcube)
 add_subdirectory(demos/vinyl)
 add_subdirectory(demos/multiwindow)
-add_subdirectory(demos/heightmap)
+if(RPI_MODEL)
+    message(STATUS "Skipping target: heightmap, not supported on Raspberry Pi")
+else()
+    add_subdirectory(demos/heightmap)
+endif()
 add_subdirectory(demos/dynamicgeo)
 add_subdirectory(demos/computeparticles)
-add_subdirectory(demos/computeflocking)
+if(RPI_MODEL)
+    message(STATUS "Skipping target: computeflocking, not supported on Raspberry Pi")
+else()
+    add_subdirectory(demos/computeflocking)
+endif()
 add_subdirectory(demos/videomodulation)
 add_subdirectory(demos/blobtrace)
 add_subdirectory(demos/audioanalysis)

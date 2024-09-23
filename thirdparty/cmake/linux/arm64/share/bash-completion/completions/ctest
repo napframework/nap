@@ -3,7 +3,9 @@
 _ctest()
 {
     local cur prev words cword
-    if type -t _init_completion >/dev/null; then
+    if type -t _comp_initialize >/dev/null; then
+        _comp_initialize -n = || return
+    elif type -t _init_completion >/dev/null; then
         _init_completion -n = || return
     else
         # manual initialization for older bash completion versions
@@ -101,6 +103,17 @@ _ctest()
         --help-variable)
             COMPREPLY=( $( compgen -W '$( ctest --help-variable-list \
                 2>/dev/null | grep -v "^ctest version " )' -- "$cur" ) )
+            return
+            ;;
+         --preset)
+            local IFS=$'\n'
+            local quoted
+            printf -v quoted %q "$cur"
+            COMPREPLY=( $( compgen -W '$( ctest --list-presets 2>/dev/null |
+                grep -o "^  \".*\"" | sed \
+                -e "s/^  //g" \
+                -e "s/\"//g" \
+                -e "s/ /\\\\ /g" )' -- "$quoted" ) )
             return
             ;;
     esac
