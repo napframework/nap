@@ -89,16 +89,30 @@ Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' 
 
 ## Dependencies
 
-The editor (Napkin) depends on QT:
+The editor `Napkin` depends on Qt. 
 
-- The precompiled package uses Qt 6.7.2, although other versions are known to work.
+**Download**
+
+Download and extract the pre-compiled binaries for your target platform:
+
+  - [Qt6 for x86-64: Windows](https://download.nap-labs.tech/qt/qt_672_msvc_x86_64.tar.gz) (msvc)
+  - [Qt6 for x86-64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_x86_64.tar.gz) (gcc)
+  - [Qt6 for arm64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_arm64.tar.gz) (gcc)
+
+***Alternatively***
 - Go to [qt.io](https://www.qt.io/download-open-source) for open source users
 - Download the Qt online installer
 - During installation select **Custom installation** 
 - Filter on the **LTS** category to download and install Qt6 for your target platform
-- **Only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required
+- NAP uses `Qt 6.7.2`, although other versions are known to work. 
+ 
+Note that only **only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required, other content is optional.
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+**Setup**
+
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT.
+Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+
 
 ## Create the Solution
 
