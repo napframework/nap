@@ -58,7 +58,7 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap-labs.tech/shared/napkin_multiwindow_demo.jpg)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_multiwindow_demo_hq.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
