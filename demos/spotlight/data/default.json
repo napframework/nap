@@ -49,13 +49,13 @@
                     "MovementSpeed": 0.10000000149011612,
                     "RotateSpeed": 0.003000000026077032,
                     "PerspCameraComponent": "./PerspectiveCamera",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 0.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 0.5,
-                    "LimitZoomDistance": false
+                    }
                 },
                 {
                     "Type": "nap::PointerInputComponent",
@@ -280,9 +280,9 @@
                                         "mID": "diffuse_df8b08e8",
                                         "Name": "diffuse",
                                         "Value": {
-                                            "x": 0.18000000715255738,
-                                            "y": 0.18000000715255738,
-                                            "z": 0.18000000715255738
+                                            "x": 0.18000000715255737,
+                                            "y": 0.18000000715255737,
+                                            "z": 0.18000000715255737
                                         }
                                     },
                                     {
@@ -367,7 +367,7 @@
             "Borderless": false,
             "Resizable": true,
             "Visible": true,
-            "SampleShading": true,
+            "SampleShading": false,
             "Title": "Example Window",
             "Width": 1280,
             "Height": 720,

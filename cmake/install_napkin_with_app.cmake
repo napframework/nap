@@ -8,7 +8,7 @@ include(${CMAKE_CURRENT_LIST_DIR}/macros_and_functions.cmake)
 set(NAPKIN_DEPENDENT_NAP_MODULES napscene napmath)
 
 # Qt frameworks which Napkin uses
-set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtPrintSupport QtOpenGL)
+set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 message(STATUS "Preparing Napkin deployment to output directory")
 
 # Let find_python find our prepackaged Python in thirdparty,

@@ -41,7 +41,7 @@ unset(libdir)
 unset(includedir)
 
 set(_sdl2_libraries_in "-lSDL2")
-set(_sdl2_static_private_libs_in " -lm -ldl -lpthread")
+set(_sdl2_static_private_libs_in " -lm -lpthread")
 
 # Convert _sdl2_libraries to list and keep only libraries + library directories
 string(REGEX MATCHALL "-[lm]([-a-zA-Z0-9._]+)" _sdl2_libraries "${_sdl2_libraries_in}")

@@ -7,6 +7,7 @@
 // Local includes
 #include "actions.h"
 #include "menuoptioncontroller.h"
+#include "thememanager.h"
 
 // External includes
 #include <standarditemsobject.h>
@@ -163,6 +164,11 @@ namespace napkin
 		 * Creates possible actions for menu hook
 		 */
 		void createMenuCallbacks();
+
+		/**
+		 * Occurs when theme changes
+		 */
+		void themeChanged(const Theme& theme);
 
 	private:
 		void emitSelectionChanged();

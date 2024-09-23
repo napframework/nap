@@ -944,7 +944,7 @@ nap::RootEntity& ComponentInstanceItem::rootEntity() const
 
 QVariant ComponentInstanceItem::data(int role) const
 {
-	if (role == Qt::TextColorRole)
+	if (role == Qt::ForegroundRole)
 	{
 		for (const auto& overrides : mRootEntity.mInstanceProperties)
 		{

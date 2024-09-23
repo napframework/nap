@@ -88,7 +88,7 @@ void ColorModel::setHex(const QString& hexvalue)
 
 	if (v == hex())
 		return;
-	mColor.setNamedColor(v);
+	mColor.fromString(v);
 	changed(mColor);
 }
 
