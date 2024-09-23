@@ -86,10 +86,13 @@ namespace nap
 			Logger::info("Portaudio initialized");
 			printDevices();
 
-			if (!(openStream(device_settings, errorState) && start(errorState)))
+			utility::ErrorState stream_error_state;
+			if (!(openStream(device_settings, stream_error_state) && start(stream_error_state)))
 			{
 				if (!configuration->mAllowDeviceFailure)
 				{
+					// Pass on the stream error state only if device failure is not allowed
+					errorState = stream_error_state;
 					return false;
 				}
 				else
