@@ -58,7 +58,7 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap-labs.tech/shared/napkin_compute_1280.jpg)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_multiwindow_demo.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -96,8 +96,8 @@ The editor `Napkin` depends on open source Qt.
 Download and extract the pre-compiled binaries for your target platform:
 
   - [Qt6 for x86-64: Windows](https://download.nap-labs.tech/qt/qt_672_msvc_x86_64.zip) (msvc)
-  - [Qt6 for x86-64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_x86_64.tar.gz) (gcc)
-  - [Qt6 for arm64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_arm64.tar.gz) (gcc)
+  - [Qt6 for x86-64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_x86_64.tar.bz2) (gcc)
+  - [Qt6 for arm64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_arm64.tar.bz2) (gcc)
 
 ***Alternatively***
 - Go to [qt.io](https://www.qt.io/download-open-source) for open source users
