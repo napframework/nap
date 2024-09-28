@@ -10,7 +10,7 @@
 #include <ft2build.h>
 #include FT_FREETYPE_H
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FontService)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FontService, "Manages the font library")
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
@@ -18,8 +18,7 @@ namespace nap
 {
 	FontService::FontService(ServiceConfiguration* configuration) :
 		Service(configuration)
-	{
-	}
+	{ }
 
 
 	FontService::~FontService()

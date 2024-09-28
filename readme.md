@@ -48,7 +48,7 @@ NAP documentation can be found online at [docs.nap-framework.tech](https://docs.
 
 ## Gallery
 
-Visit [nap-labs.tech](https://nap-labs.tech) for more examples
+Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 
 ![Between Mind and Matter, Nick Verstand](https://download.nap-labs.tech/shared/bmm_1280.jpg)
 [Between Mind and Matter](http://www.nickverstand.com/) by Nick Verstand, Marcel Smit and 4DSOUND
@@ -58,7 +58,7 @@ Visit [nap-labs.tech](https://nap-labs.tech) for more examples
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap-labs.tech/shared/napkin_1280.jpg)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_compute_1280.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -70,55 +70,36 @@ Currently, whether working with the packaged framework release or against the fr
 **x86**
 ```
 x86-64: Windows (10 & 11), Visual Studio 2019 - MSVC
-x86-64: Ubuntu Linux LTS (v20.04 & v22.04) - GCC
-x86-64: macOS Catalina (v10.15) - Clang
+x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
 ```
 **ARM**
 ```
-armhf: Raspberry Pi OS (v11)
-arm64: Ubuntu Linux LTS (v22.04) *experimental*
+armhf: Raspberry Pi OS (v11) - GCC
+arm64: Ubuntu Linux LTS (v22.04) *experimental* - GCC
 ```
 
 ## Binary Packages
 
-Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. For most developers this is the best place to start. Our developer experience is tuned to work with the packaged version of NAP, where the process of managing projects and modules is more streamlined. Certain functionality, eg. packaging a project for distribution, is only available through a NAP package, which is [created from source](#build-your-own-nap-distribution-package).
-
-When working against a binary package, follow the official [installation](https://docs.nap-framework.tech) instructions, instead of the instructions in this document. Continue reading below to compile and get started with the NAP source code.
+Pre-compiled packages of official NAP releases are made available for download on [Github](https://github.com/napframework/nap/releases) for all supported platforms. Follow the [framework installation instructions](https://docs.nap-framework.tech/pages.html) to get started. Continue reading below to compile, package and work with NAP from source.
 
 ## Raspberry Pi
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4. Add `arm_64bit=0` to `boot/config.txt` to ensure the 32 bit kernel is loaded - the 64 bit kernel is not yet supported.
+Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
 
 # Compilation
-
-Windows 10<br/>
-[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapWin64)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
-
-Ubuntu 20.04<br/>
-[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapLinux)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
-
-macOS 10.15<br/>
-[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapOsx)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
-
-Raspbian 11<br/>
-[![Build Status](http://build.nap-labs.tech:8092/app/rest/builds/buildType:(id:Public_PackageNapRaspberryPi)/statusIcon)](http://build.nap-labs.tech:8092/viewType.html?buildTypeId=myID&guest=1)
 
 ## Dependencies
 
 The editor (Napkin) depends on QT:
 
-- Qt 5
-	- x86_64
-		- The precompiled package uses Qt 5.15 (LTS), although other versions are known to work.
-		- Go to [qt.io](https://www.qt.io/download) and select **Downloads for open source users**
-		- Download the Qt online installer
-		- During installation select **Custom installation** 
-		- Filter on the **LTS** category to download and install Qt 5.15 for your target platform
-	- ARM
-		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-armhf-pi4-raspbian_bullseye.tar.xz) Qt 5.15.2 for Raspberry Pi OS 11 *armhf*
-		- [Download](https://download.nap-labs.tech/shared/qt-5.15.2-arm64-ubuntu_20.04.tar.xz) Qt 5.15.2 for Ubuntu 20.04 *arm64*
+- The precompiled package uses Qt 6.7.2, although other versions are known to work.
+- Go to [qt.io](https://www.qt.io/download-open-source) for open source users
+- Download the Qt online installer
+- During installation select **Custom installation** 
+- Filter on the **LTS** category to download and install Qt6 for your target platform
+- **Only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\5.12.11\msvc2015_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
 
 ## Create the Solution
 
@@ -130,19 +111,18 @@ On success, run:
 
 `generate_solution.bat` to generate a `Visual Studio Solution` (Windows)<br>
 `generate_solution.sh` to generate `make files` (Linux)<br>
-`generate_solution.sh` to generate an `XCode project` (macOS)<br>
 
 The solution allows you to build every target and inspect the code of the demos, editor, modules, core etc. NAP uses a pre-bundled version of CMake in third-party to ensure compatibility for all platforms. The default build configuration is `Release`. Alternatively you can use `CLion`.
 
 ## Run a Demo
 
-Open the generated solution in `XCode` or `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `./build.sh helloworld`.
+Open the generated solution in `Visual Studio`, select a build configuration (`Debug`or `Release`) and a demo as target. Compile and run the demo. You can also use the `build` script to compile one or more projects using the command line, for example: `./build.sh helloworld`.
 
 ---
 
 ## Work Against Source
 
-Allows you to step into the NAP Framework source code and make changes if required. If access to the NAP source code is not required during development it is advised to work against a pre-compiled NAP package instead.
+Allows you to step into the NAP Framework source code and make changes if required.
 
 ### Create Application
 
@@ -217,13 +197,12 @@ More options for packaging can be queried by adding the flag `--help` when runni
 
 We welcome contributions and potential bug fixes. But before you submit any code for review make sure to read and follow our [C++ styleguide](styleguide/styleguide.md). Also take into consideration that reviewing code takes time: Be as thorough and explicit as possible. 
 
-Do not use the github `issues` page to ask questions. We already have a perfectly well functioning [forum](https://community.napframework.com/) for that. Only use the github `issues` page for bug reports and well defined feature requests. 
+Use the github [issues](https://github.com/napframework/nap/issues) page for bug reports and well defined feature requests. Use the Github [discussions](https://github.com/orgs/napframework/discussions) page for general questions and help.
 
-New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://community.napframework.com/) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
+New modules are not considered unless useful, vital or important enough to have as part of the core release. If you feel a module is missing we would like to [hear](https://github.com/orgs/napframework/discussions) from you. If a module depends on a third-party library, linkage should be dynamic and not violate the NAP license policy. Static linkage is discouraged unless recommended by the library or when a NAP application, that uses the module, doesn't require the library to link and run. In that case all third-party code is compiled into the module when NAP is packaged. Third-party dependencies must work cross-platform and must be compiled using
 ```
 MSVC, Platform Toolset v142 on Windows 10
-Clang targeting Catalina/10.15 on macOS
-GCC <= 9.3.0 on Ubuntu LTS 20.04
+GCC <= 11 on Ubuntu LTS 22.04
 ```
 
 # License

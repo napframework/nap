@@ -7,6 +7,7 @@
 // Local Includes
 #include "irendertarget.h"
 #include "renderutils.h"
+#include "imagedata.h"
 #include "snapshot.h"
 
 // External Includes

@@ -26,7 +26,7 @@ namespace nap
         /**
          * SequencePlayerAudioOutputComponent is an component that routes output from SequencePlayerAudioOutput and exposes it
 		 * to other AudioComponents.
-		 * The component has to be used in combination with an @OutputComponent to send the playback to DAC.
+		 * The component has to be used in combination with an OutputComponent to send the playback to DAC.
          */
         class NAPAPI SequencePlayerAudioOutputComponent : public AudioComponentBase
         {

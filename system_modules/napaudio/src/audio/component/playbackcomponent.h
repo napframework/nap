@@ -44,9 +44,9 @@ namespace nap
 			TimeValue mStartPosition = 0;                       ///< property: 'StartPosition' Start position of playback in milliseconds.
 			TimeValue mDuration = 0;                            ///< property: 'Duration' Duration of playback in milliseconds.
 			TimeValue mFadeInTime = 0;                          ///< property: 'FadeInTime' Fade in time of playback in milliseconds, to prevent clicks.
-			TimeValue mFadeOutTime = 0;                         ///< property: 'FadeOutTime' Fade out time of playback in milliseconds, te prevent clicks
+			TimeValue mFadeOutTime = 0;                         ///< property: 'FadeOutTime' Fade out time of playback in milliseconds, to prevent clicks
 			ControllerValue mPitch = 1.0;                       ///< property: 'Pitch' Pitch as a fraction of the original: 2.0 means double speed, 0.5 means halve speed.
-			ControllerValue mGain = 1.0;                        ///< property: 'Gain' Overall gain/
+			ControllerValue mGain = 1.0;                        ///< property: 'Gain' Overall gain
 			ControllerValue mStereoPanning = 0.5;               ///< property: 'StereoPanning' Panning in the stereo field: 0 means far left, 0.5 means center, 1.0  means far right. This property only applies when two channels are being played back.
 			
 			/**

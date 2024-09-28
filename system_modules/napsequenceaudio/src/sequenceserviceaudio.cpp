@@ -30,11 +30,7 @@ namespace nap
 {
     SequenceServiceAudio::SequenceServiceAudio(ServiceConfiguration* configuration)
             :Service(configuration)
-    {
-    }
-
-
-    SequenceServiceAudio::~SequenceServiceAudio() = default;
+    { }
 
 
     void SequenceServiceAudio::registerObjectCreators(rtti::Factory& factory)

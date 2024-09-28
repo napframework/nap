@@ -15,11 +15,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // nap::rendervideototexturecomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderVideoComponent)
-	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderVideoComponent, "Renders the output of a video player directly to texture without having to define a render target, shader or mesh")
+	RTTI_PROPERTY("OutputTexture",	&nap::RenderVideoComponent::mOutputTexture,			nap::rtti::EPropertyMetaData::Required,	"The texture to render output to")
+	RTTI_PROPERTY("VideoPlayer",	&nap::RenderVideoComponent::mVideoPlayer,			nap::rtti::EPropertyMetaData::Required, "The video player to render to texture")
+	RTTI_PROPERTY("Samples",		&nap::RenderVideoComponent::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"The number of rasterization samples")
+	RTTI_PROPERTY("ClearColor",		&nap::RenderVideoComponent::mClearColor,			nap::rtti::EPropertyMetaData::Default,	"Initial target clear color")
 RTTI_END_CLASS
 
 // nap::rendervideototexturecomponentInstance run time class definition 
@@ -72,7 +72,8 @@ namespace nap
 		mOutputTexture = resource->mOutputTexture.get();
 		if (!errorState.check(mOutputTexture != nullptr, "%s: no output texture", resource->mID.c_str()))
 			return false;
-		if (!errorState.check(mOutputTexture->mFormat == RenderTexture2D::EFormat::RGBA8, "%s: output texture color format is not RGBA8", resource->mID.c_str()))
+
+		if (!errorState.check(mOutputTexture->mColorFormat == RenderTexture2D::EFormat::RGBA8, "%s: output texture color format is not RGBA8", resource->mID.c_str()))
 			return false;
 
 		// Setup render target and initialize

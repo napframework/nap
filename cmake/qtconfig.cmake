@@ -14,8 +14,8 @@ macro(find_qt)
         elseif(DEFINED NAP_PACKAGED_BUILD)
             # If we're doing a platform release let's enforce the an explicit Qt path so that we're
             # certain what we're bundling with the release
-            message(FATAL_ERROR "Please set the QT_DIR environment variable to define the Qt5 version"
-                                "to be installed with the platform release, eg. \"C:/dev/Qt/6.1.1/msvc2019_64\"")
+            message(FATAL_ERROR "Please set the QT_DIR environment variable to define the Qt6 version"
+                                "to be installed with the platform release, eg. \"C:/dev/qt/6.7.2/msvc2019_64\"")
         endif()
     endif()
 
@@ -38,14 +38,14 @@ macro(find_qt)
 
         # TODO Ensure we're not packaging system Qt on Linux, we only want to use a download from qt.io
 
-        # Find_package for Qt5 will pick up the Qt installation from CMAKE_PREFIX_PATH
+        # Find_package for Qt6 will pick up the Qt installation from CMAKE_PREFIX_PATH
         set(CMAKE_PREFIX_PATH ${CMAKE_PREFIX_PATH} ${QT_DIR})
     else()
         message(FATAL_ERROR
-                "Qt5 could not be found, please set the QT_DIR environment variable, eg.:"
-                "\n Win64 - \"C:/dev/Qt/5.11.3/msvc2015_64\""
-                "\n macOS - \"/Users/username/dev/Qt/Qt5.11.3/5.11.3/clang_64\""
-                "\n Linux - \"/home/username/dev/Qt/Qt5.11.3/5.11.3/gcc_64\"")
+                "Qt6 could not be found, please set the QT_DIR environment variable, eg.:"
+                "\n Win64 - \"C:/dev/Qt/6.5.3/msvc2015_64\""
+                "\n macOS - \"/Users/username/dev/Qt/6.5.3/clang_64\""
+                "\n Linux - \"/home/username/dev/Qt/6.5.3/gcc_64\"")
     endif()
 
     # TODO Update to CMake 3.24+ and use global scope here to avoid redefining
@@ -61,20 +61,3 @@ macro(find_qt)
     set(QT_LIBS Qt6::Widgets Qt6::Core Qt6::Gui Qt6::OpenGL)
 endmacro()
 
-#macro(nap_qt_post PROJECTNAME)
-#    if(WIN32)
-#        add_custom_command(TARGET ${PROJECTNAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy_if_different
-#                $<TARGET_FILE:Qt6::Widgets>
-#                $<TARGET_FILE:Qt6::Core>
-#                $<TARGET_FILE:Qt6::Gui>
-#                $<TARGET_FILE:Qt6::OpenGL>
-#                $<TARGET_FILE_DIR:${PROJECTNAME}>
-#                COMMENT "Copy Qt DLLs")
-#    endif()
-#
-#    add_custom_command(TARGET ${PROJECTNAME} POST_BUILD
-#                       COMMAND ${CMAKE_COMMAND} -E copy_directory
-#                       ${CMAKE_CURRENT_LIST_DIR}/resources
-#                       $<TARGET_FILE_DIR:${PROJECTNAME}>/resources
-#                       COMMENT "Copy Resources")
-#endmacro()

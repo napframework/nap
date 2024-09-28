@@ -45,8 +45,9 @@ namespace nap
          * Extend this method to implement the way editing this event type must be handle in the GUI
          * For examples, see template specializations in SequenceEventTrackView.cpp
          * @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
+         * @return true on edit
          */
-        virtual void handleEditPopupContent(sequenceguiactions::Action& action) = 0;
+        virtual bool handleEditPopupContent(sequenceguiactions::Action& action) = 0;
 
         /**
          * Extend this method to specify a way to draw this event type
@@ -55,6 +56,7 @@ namespace nap
          * @param drawList pointer to ImGui drawlist
          * @param topLeft top left position
          * @param x x position of segment on track
+         * @param color draw color
          */
         virtual void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color) = 0;
 
@@ -102,8 +104,9 @@ namespace nap
          * This method needs specialization in order to implement the way popups are handled when editing this segment
          * For examples, see template specializations in SequenceEventTrackView.cpp
          * @param action the incoming action from the gui, contains information about the track time and segment. Segment can be assumed to be of type SequenceTrackSegmentEvent<T>
+         * @return true on edit
          */
-        void handleEditPopupContent(sequenceguiactions::Action& action) override;
+        bool handleEditPopupContent(sequenceguiactions::Action& action) override;
 
         /**
          * Specialize this method to specify a way to draw this event type
@@ -112,6 +115,7 @@ namespace nap
          * @param drawList pointer to ImGui drawlist
          * @param topLeft top left position
          * @param x x position of segment on track
+         * @param color draw color
          */
         void drawEvent(const SequenceTrackSegment& segment, ImDrawList* drawList, const ImVec2& topLeft, float x, ImU32 color) override;
 
@@ -293,12 +297,21 @@ namespace nap
         {
             auto *action = mState.mAction->getDerived<sequenceguiactions::EditingEventSegment<T>>();
 
+            auto take_snapshot = [this, action]()
+            {
+                if(action->mTakeSnapshot)
+                    action->mTakeSnapshot = false;
+
+                getEditor().takeSnapshot(action->get_type());
+            };
+
             if(ImGui::BeginPopup("Edit Event"))
             {
                 // draw the registered popup content for this event
                 auto it = mSegmentViews.find(RTTI_OF(SequenceTrackSegmentEvent<T>));
                 assert(it != mSegmentViews.end()); // type not found
-                it->second->handleEditPopupContent(*action);
+                if(it->second->handleEditPopupContent(*action))
+                    take_snapshot();
 
                 // time
                 std::vector<int> time_array = convertTimeToMMSSMSArray(action->mStartTime);
@@ -319,6 +332,8 @@ namespace nap
 
                 if(edit_time)
                 {
+                    take_snapshot();
+
                     auto &event_controller = getEditor().getController<SequenceControllerEvent>();
                     double new_time = convertMMSSMSArrayToTime(time_array);
                     double time = event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, new_time);

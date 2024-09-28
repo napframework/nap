@@ -8,7 +8,7 @@
 #include <color.h>
 #include <nap/numeric.h>
 #include <mathutils.h>
-#include <texture2d.h>
+#include <texture.h>
 #include <utility/dllexport.h>
 
 //---- Define assertion handler. Defaults to calling assert().

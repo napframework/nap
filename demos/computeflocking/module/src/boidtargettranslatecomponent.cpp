@@ -10,10 +10,10 @@
 #include <mathutils.h>
 #include <glm/gtc/noise.hpp>
 
-RTTI_BEGIN_CLASS(nap::BoidTargetTranslateComponent)
-	RTTI_PROPERTY("Radius", &nap::BoidTargetTranslateComponent::mRadius, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Speed", &nap::BoidTargetTranslateComponent::mSpeed, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RandomOffset", &nap::BoidTargetTranslateComponent::mRandomOffset, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::BoidTargetTranslateComponent, "Translates the boid entity randomly over time within a specified radius")
+	RTTI_PROPERTY("Radius", &nap::BoidTargetTranslateComponent::mRadius, nap::rtti::EPropertyMetaData::Default, "Transformation radius")
+	RTTI_PROPERTY("Speed", &nap::BoidTargetTranslateComponent::mSpeed, nap::rtti::EPropertyMetaData::Default, "Transformation speed")
+	RTTI_PROPERTY("RandomOffset", &nap::BoidTargetTranslateComponent::mRandomOffset, nap::rtti::EPropertyMetaData::Default, "Random offset")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BoidTargetTranslateComponentInstance)

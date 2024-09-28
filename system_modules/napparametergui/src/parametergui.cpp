@@ -9,10 +9,10 @@
 #include <imguiutils.h>
 #include <imguiservice.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterGUI)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ParameterGUI, "GUI window that displays all parameters inside a group")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Serializable",	&nap::ParameterGUI::mSerializable,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Group",			&nap::ParameterGUI::mParameterGroup,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Serializable",	&nap::ParameterGUI::mSerializable,		nap::rtti::EPropertyMetaData::Default,	"Allow the parameters to be saved / loaded")
+	RTTI_PROPERTY("Group",			&nap::ParameterGUI::mParameterGroup,	nap::rtti::EPropertyMetaData::Required, "The group to display, including all child groups")
 RTTI_END_CLASS
 
 namespace nap

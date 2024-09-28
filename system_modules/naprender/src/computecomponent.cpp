@@ -11,9 +11,10 @@
 #include <entity.h>
 
 // nap::ComputeComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::ComputeComponent)
-	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ComputeComponent::mComputeMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Invocations",				&nap::ComputeComponent::mInvocations,						nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ComputeComponent, "Runs a GPU compute shader program")
+	RTTI_PROPERTY("Enabled",					&nap::ComputeComponent::mEnabled,							nap::rtti::EPropertyMetaData::Default,	"If the compute program is run")
+	RTTI_PROPERTY("ComputeMaterialInstance",	&nap::ComputeComponent::mComputeMaterialInstanceResource,	nap::rtti::EPropertyMetaData::Required,	"The compute program to run")
+	RTTI_PROPERTY("Invocations",				&nap::ComputeComponent::mInvocations,						nap::rtti::EPropertyMetaData::Default,	"Number of compute invocations per dispatch")
 RTTI_END_CLASS
 
 // nap::ComputeComponentInstance run time class definition 
@@ -74,12 +75,18 @@ namespace nap
 
 	void ComputeComponentInstance::compute(VkCommandBuffer commandBuffer)
 	{
+		if (!isEnabled())
+			return;
+
 		onCompute(commandBuffer, mInvocations);
 	}
 
 
 	void ComputeComponentInstance::compute(VkCommandBuffer commandBuffer, uint numInvocations)
 	{
+		if (!isEnabled())
+			return;
+
 		onCompute(commandBuffer, numInvocations);
 	}
 
@@ -97,7 +104,10 @@ namespace nap
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_COMPUTE, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Dispatch compute work with a single group dimension
-		uint group_count_x = (numInvocations / getWorkGroupSize().x) + 1;
+		auto workgroup_size = getWorkGroupSize();
+		assert(workgroup_size.x > 0);
+
+		uint group_count_x = (numInvocations / workgroup_size.x) + 1;
 		vkCmdDispatch(commandBuffer, group_count_x, 1, 1);
 
 		// Insert memory barriers if required

@@ -10,7 +10,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Component)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Component, "Behavioural trait (charactaristic, quality) of an entity")
 RTTI_END_CLASS
 
 namespace nap
@@ -35,9 +35,6 @@ namespace nap
 
 	const std::string& Component::getOriginalID() const
 	{
-		if (mOriginalComponent != nullptr)
-			return mOriginalComponent->mID;
-
-		return mID;
+		return mOriginalComponent != nullptr ? mOriginalComponent->mID : mID;
 	}
 }

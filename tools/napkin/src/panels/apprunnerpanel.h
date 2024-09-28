@@ -79,7 +79,7 @@ namespace napkin
 		/**
 		 * Occurs when theme changes
 		 */
-		void themeChanged(const Theme* theme);
+		void themeChanged(const Theme& theme);
 
 		nap::qt::FileSelector mFileSelector;	// Widget allowing you to select a file
 		QHBoxLayout mLayout;					// Layout

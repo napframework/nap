@@ -6,32 +6,32 @@
 #include "vertexattribute.h"
 
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseVertexAttribute)
-	RTTI_PROPERTY("AttributeID", &nap::BaseVertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::BaseVertexAttribute, "Vertex data container")
+	RTTI_PROPERTY("AttributeID", &nap::BaseVertexAttribute::mAttributeID, nap::rtti::EPropertyMetaData::Required, "Vertex attribute name, ie: 'Position' or 'Normal")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::UIntVertexAttribute)
-	RTTI_PROPERTY("Data", &nap::UIntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Data", &nap::UIntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Unsigned integer vertex data")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::IntVertexAttribute)
-	RTTI_PROPERTY("Data", &nap::IntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Data", &nap::IntVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Integer vertex data")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::FloatVertexAttribute)
-	RTTI_PROPERTY("Data", &nap::FloatVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Data", &nap::FloatVertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Float vertex data")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Vec2VertexAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec2VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Data", &nap::Vec2VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Vector (vec2) vertex data")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Vec3VertexAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec3VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Data", &nap::Vec3VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Vector (vec3) vertex data")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::Vec4VertexAttribute)
-	RTTI_PROPERTY("Data", &nap::Vec4VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Data", &nap::Vec4VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Vector (vec4) vertex data")
 RTTI_END_CLASS
 
 namespace nap

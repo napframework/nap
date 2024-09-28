@@ -29,7 +29,7 @@ namespace nap
 	 */
 	enum class ECullWindingOrder : int
 	{
-		Clockwise,
+		Clockwise = 0,
 		CounterClockwise
 	};
 
@@ -46,6 +46,29 @@ namespace nap
 		WriteOnly,				///< Only write depth
 		NoReadWrite				///< Neither read or write depth
 	};
+
+
+	/**
+	 *	Supported depth compare modes for shadow texture samplers e.g. `sampler2DShadow`.
+	 */
+	enum class EDepthCompareMode : int
+	{
+		NotSet = 0,
+		Never,
+		Less,
+		Equal,
+		LessOrEqual,
+		Greater,
+		NotEqual,
+		GreaterOrEqual,
+		Always
+	};
+
+
+	/**
+	 * Hash value for shader specialization constants
+	 */
+	using ShaderConstantHash = uint;
 
 
 	/**

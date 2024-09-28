@@ -10,10 +10,10 @@
 #include <audio/resource/audiobufferresource.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioOutput)
-    RTTI_PROPERTY("Audio Buffers", &nap::SequencePlayerAudioOutput::mAudioBuffers, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Manual Routing", &nap::SequencePlayerAudioOutput::mManualRouting, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Max Channels", &nap::SequencePlayerAudioOutput::mMaxChannels, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioOutput, "Outputs the sound from the sequenced audio track")
+    RTTI_PROPERTY("Audio Buffers", &nap::SequencePlayerAudioOutput::mAudioBuffers, nap::rtti::EPropertyMetaData::Default, "Audio output buffers")
+    RTTI_PROPERTY("Manual Routing", &nap::SequencePlayerAudioOutput::mManualRouting, nap::rtti::EPropertyMetaData::Default, "Directly output to selected audio output device")
+    RTTI_PROPERTY("Max Channels", &nap::SequencePlayerAudioOutput::mMaxChannels, nap::rtti::EPropertyMetaData::Default, "Maximum number of audio channels to use")
 RTTI_END_CLASS
 
 using namespace nap::audio;
@@ -54,7 +54,7 @@ namespace nap
             {
                 auto output_node = node_manager.makeSafe<OutputNode>(node_manager);
                 output_node->setOutputChannel(i);
-                output_node->audioInput.enqueueConnect(mix_nodes[i]->audioOutput);
+                output_node->audioInput.connect(mix_nodes[i]->audioOutput);
                 output_nodes.emplace_back(std::move(output_node));
             }
         }
@@ -116,7 +116,7 @@ namespace nap
 
             for (int i = 0; i<channel_count; i++)
             {
-                mMixNodes[i]->inputs.enqueueConnect(*buffer_player->getOutputPins()[i]);
+                mMixNodes[i]->inputs.connect(*buffer_player->getOutputPins()[i]);
             }
 
             // create new entry  of buffer player
@@ -146,7 +146,7 @@ namespace nap
                 for (int i = 0; i<output_pins.size(); i++)
                 {
                     assert(i<mMixNodes.size());
-                    mMixNodes[i]->inputs.enqueueDisconnect(*output_pins[i]);
+                    mMixNodes[i]->inputs.disconnect(*output_pins[i]);
                 }
             }
         }
@@ -170,14 +170,14 @@ namespace nap
     void SequencePlayerAudioOutput::connectInputPin(audio::InputPin& inputPin, int channel)
     {
         assert(channel<mMaxChannels);
-        inputPin.enqueueConnect(mMixNodes[channel]->audioOutput);
+        inputPin.connect(mMixNodes[channel]->audioOutput);
     }
 
 
     void SequencePlayerAudioOutput::disconnectInputPin(audio::InputPin& inputPin, int channel)
     {
         assert(channel<mMaxChannels);
-        inputPin.enqueueDisconnect(mMixNodes[channel]->audioOutput);
+        inputPin.disconnect(mMixNodes[channel]->audioOutput);
     }
 
 

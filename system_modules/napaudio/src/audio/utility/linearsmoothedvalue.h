@@ -21,9 +21,8 @@ namespace nap
 		public:
 		
 		public:
-			LinearSmoothedValue(const T& initValue, int stepCount) : mNewDestination(initValue), mValue(initValue), mDestination(initValue)
+			LinearSmoothedValue(const T& initValue, int stepCount) : mNewDestination(initValue), mValue(initValue), mDestination(initValue), mStepCount(stepCount)
 			{
-				mStepCount = stepCount;
 			}
 
 			/**
@@ -33,7 +32,7 @@ namespace nap
 			 */
 			void reset(const T& initValue)
 			{
-				mNewDestination = initValue;
+				mNewDestination.store(initValue);
 				mValue = initValue;
 				mDestination = initValue;
 			}
@@ -41,13 +40,13 @@ namespace nap
 			/**
 			 * Change the number of steps the value takes to reach a new destination.
 			 */
-			void setStepCount(int stepCount) { mStepCount = stepCount; }
+			void setStepCount(int stepCount) { mStepCount.store(stepCount); }
 			
 			/**
 			 * Start a ramp
 			 * @param destination: the finishing value
 			 */
-			void setValue(const T& destination) { mNewDestination = destination; }
+			void setValue(const T& destination) { mNewDestination.store(destination); }
 			
 			/**
 			 * Take the next step in the current ramp.
@@ -55,14 +54,17 @@ namespace nap
 			 */
 			T getNextValue()
 			{
-				if (mNewDestination != mDestination)
+				T newDestination = mNewDestination.load();
+				int stepCount = mStepCount.load();
+				
+				if (newDestination != mDestination)
 				{
-					mDestination = mNewDestination;
-					mStepCounter = mStepCount;
+					mDestination = newDestination;
+					mStepCounter = stepCount;
 					if (mStepCounter == 0)
 						mValue = mDestination;
 					else
-						mIncrement = (mDestination - mValue) / T(mStepCount);
+						mIncrement = (mDestination - mValue) / T(stepCount);
 				}
 				
 				if (mStepCounter > 0)
@@ -82,21 +84,21 @@ namespace nap
 			 */
 			inline T getValue() const { return mValue; }
 			
-			inline T getDestination() const { return mNewDestination; }
+			inline T getDestination() const { return mNewDestination.load(); }
 			
 			/**
 			 * Returns true when currently playing a ramp.
 			 * Should only be called from the audio thread.
 			 */
-			inline bool isRamping() const { return mStepCounter > 0 || mDestination != mNewDestination; }
+			inline bool isRamping() const { return mStepCounter > 0 || mDestination != mNewDestination.load(); }
 		
 		private:
-			T mNewDestination = 0;
+			std::atomic<T> mNewDestination = 0;
 			
 			T mValue; // Value that is being controlled by this object.
 			T mIncrement; // Increment value per step of the current ramp when mode is linear.
 			T mDestination = 0; // Destination value of the current ramp.
-			int mStepCount = 0; // Number of steps in the ramp.
+			std::atomic<int> mStepCount = 0; // Number of steps in the ramp.
 			int mStepCounter = 0; // Current step index, 0 means at destination
 		};
 		

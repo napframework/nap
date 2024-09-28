@@ -42,6 +42,11 @@ namespace nap
 			 */
 			const QString getFilename();
 
+			/**
+			 * @return the line edit widget
+			 */
+			QLineEdit& getLineEdit() { return mLineEdit; }
+
 		Q_SIGNALS:
 
 			/**

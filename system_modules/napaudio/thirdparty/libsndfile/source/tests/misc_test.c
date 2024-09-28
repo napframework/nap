@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 2001-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 2001-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software ; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ static void	filesystem_full_test (int format) ;
 static void	permission_test (const char *filename, int typemajor) ;
 static void	wavex_amb_test (const char *filename) ;
 static void rf64_downgrade_test (const char *filename) ;
+static void rf64_long_file_downgrade_test (const char *filename) ;
 
 int
 main (int argc, char *argv [])
@@ -145,6 +146,9 @@ main (int argc, char *argv [])
 		filesystem_full_test (SF_FORMAT_RF64 | SF_FORMAT_PCM_16) ;
 		permission_test ("readonly.rf64", SF_FORMAT_RF64) ;
 		rf64_downgrade_test ("downgrade.wav") ;
+		/* Disable this by default, because it needs to write 4 gigabytes of data. */
+		if (SF_FALSE)
+			rf64_long_file_downgrade_test ("no-downgrade.rf64") ;
 		test_count++ ;
 		} ;
 
@@ -256,16 +260,17 @@ zero_data_test (const char *filename, int format)
 
 static void
 filesystem_full_test (int format)
-{	SNDFILE		*file ;
+{
+#if (defined (WIN32) || defined (_WIN32))
+	(void) format ;
+	/* Can't run this test on Win32 so return. */
+	return ;
+#else
+	SNDFILE		*file ;
 	SF_INFO		sfinfo ;
 	struct stat buf ;
 
 	const char	*filename = "/dev/full", *errorstr ;
-
-#if (defined (WIN32) || defined (_WIN32))
-	/* Can't run this test on Win32 so return. */
-	return ;
-#endif
 
 	/* Make sure errno is zero before doing anything else. */
 	errno = 0 ;
@@ -288,7 +293,7 @@ filesystem_full_test (int format)
 	sfinfo.frames = 0 ;
 
 	if ((file = sf_open (filename, SFM_WRITE, &sfinfo)) != NULL)
-	{	printf ("\n\nLine %d : Error, file should not have openned.\n", __LINE__ - 1) ;
+	{	printf ("\n\nLine %d : Error, file should not have opened.\n", __LINE__ - 1) ;
 		exit (1) ;
 		} ;
 
@@ -300,6 +305,7 @@ filesystem_full_test (int format)
 		} ;
 
 	puts ("ok") ;
+#endif
 } /* filesystem_full_test */
 
 static void
@@ -307,8 +313,8 @@ permission_test (const char *filename, int typemajor)
 {
 #if (OS_IS_WIN32)
 	/* Avoid compiler warnings. */
-	filename = filename ;
-	typemajor = typemajor ;
+	(void) filename ;
+	(void) typemajor ;
 
 	/* Can't run this test on Win32 so return. */
 	return ;
@@ -471,3 +477,57 @@ rf64_downgrade_test (const char *filename)
 
 	return ;
 } /* rf64_downgrade_test */
+
+static void
+rf64_long_file_downgrade_test (const char *filename)
+{	static int	output	[BUFFER_LEN] ;
+	static int	input	[1] = { 0 } ;
+
+	SNDFILE		*file ;
+	SF_INFO		sfinfo ;
+	sf_count_t	output_frames = 0 ;
+
+	print_test_name (__func__, filename) ;
+
+	sf_info_clear (&sfinfo) ;
+
+	memset (output, 0, sizeof (output)) ;
+	output [0] = 0x1020304 ;
+
+	sfinfo.samplerate	= 44100 ;
+	sfinfo.frames		= ARRAY_LEN (output) ;
+	sfinfo.channels		= 1 ;
+	sfinfo.format		= SF_FORMAT_RF64 | SF_FORMAT_PCM_32 ;
+
+	file = test_open_file_or_die (filename, SFM_WRITE, &sfinfo, SF_TRUE, __LINE__) ;
+
+	exit_if_true (sf_command (file, SFC_RF64_AUTO_DOWNGRADE, NULL, SF_TRUE) != SF_TRUE, "\n\nLine %d: sf_command failed.\n", __LINE__) ;
+
+	while (output_frames * sizeof (output [0]) < 0x100000000)
+	{	test_write_int_or_die (file, 0, output, ARRAY_LEN (output), __LINE__) ;
+		output_frames += ARRAY_LEN (output) ;
+		} ;
+
+	sf_close (file) ;
+
+	sf_info_clear (&sfinfo) ;
+
+	file = test_open_file_or_die (filename, SFM_READ, &sfinfo, SF_TRUE, __LINE__) ;
+
+	exit_if_true (sfinfo.format != (SF_FORMAT_RF64 | SF_FORMAT_PCM_32), "\n\nLine %d: RF64 to WAV downgrade should have failed.\n", __LINE__) ;
+	exit_if_true (sfinfo.channels != 1, "\n\nLine %d: Incorrect number of channels in file.\n", __LINE__) ;
+	exit_if_true (sfinfo.frames != output_frames, "\n\nLine %d: Incorrect number of frames in file (%d should be %d).\n", __LINE__, (int) sfinfo.frames, (int) output_frames) ;
+
+	/* Check that the first sample read is the same as the first written. */
+	test_read_int_or_die (file, 0, input, ARRAY_LEN (input), __LINE__) ;
+	exit_if_true (input [0] != output [0], "\n\nLine %d: Bad first sample (0x%08x).\n", __LINE__, input [0]) ;
+
+	check_log_buffer_or_die (file, __LINE__) ;
+
+	sf_close (file) ;
+
+	puts ("ok") ;
+	unlink (filename) ;
+
+	return ;
+} /* rf64_long_file_downgrade_test */

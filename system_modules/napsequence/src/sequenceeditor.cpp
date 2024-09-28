@@ -4,14 +4,15 @@
 
 // local includes
 #include "sequenceeditor.h"
+#include "sequencetracksegmentduration.h"
 
 // external includes
 #include <fcurve.h>
 #include <functional>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor)
-        RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceEditor, "Edits the sequence (model)")
+        RTTI_PROPERTY("Sequence Player", &nap::SequenceEditor::mSequencePlayer, nap::rtti::EPropertyMetaData::Required, "The sequence player")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -100,7 +101,13 @@ namespace nap
                             double longest_segment = 0.0;
                             for(auto &segment: track->mSegments)
                             {
-                                double time = segment->mStartTime + segment->mDuration;
+                                double time = segment->mStartTime;
+                                if(segment.get_type().is_derived_from<SequenceTrackSegmentDuration>())
+                                {
+                                    auto* duration_segment = static_cast<SequenceTrackSegmentDuration*>(segment.get());
+                                    time += duration_segment->mDuration;
+                                }
+
                                 longest_segment = math::max<double>(longest_segment, time);
                             }
                             longest_track = math::max<double>(longest_segment, longest_track);
@@ -223,5 +230,127 @@ namespace nap
         auto controller_type = mService.getControllerTypeForTrackType(trackType);
         assert(mControllers.find(controller_type) != mControllers.end()); // entry not found
         return mControllers.find(controller_type)->second.get();
+    }
+
+
+
+    void SequenceEditor::undo()
+    {
+        // if history is empty, do nothing
+        if(!mHistory.empty())
+        {
+            // only perform undo when no action is performed, undo/redo should always be called on the same thread as the editor is called
+            assert(!mPerformingEditAction.load());
+
+            // decrease history
+            mHistoryIndex--;
+
+            // check if history index is still within bounds
+            if(mHistoryIndex >= 0 && mHistoryIndex < mHistory.size())
+            {
+                // get the buffer of the history and let the player load it
+                utility::ErrorState error_state;
+                const auto& buffer = mHistory[mHistoryIndex]->mBinaryWriter.getBuffer();
+                if(!mSequencePlayer->loadBinary(buffer, error_state))
+                {
+                    nap::Logger::error(*this, error_state.toString());
+                }
+            }
+
+            // clamp history index if necessary
+            mHistoryIndex = math::clamp<int>(mHistoryIndex, 0, mHistory.size()+1);
+        }
+    }
+
+
+    void SequenceEditor::redo()
+    {
+        // if history is empty, do nothing
+        if(!mHistory.empty())
+        {
+            // only perform redo when no action is performed, undo/redo should always be called on the same thread as the editor is called
+            assert(!mPerformingEditAction.load());
+
+            // advance history index
+            mHistoryIndex++;
+
+            // check if history index is still within bounds
+            if(mHistoryIndex >= 0 && mHistoryIndex < mHistory.size())
+            {
+                // get the buffer of the history and let the player load it
+                utility::ErrorState error_state;
+                const auto& buffer = mHistory[mHistoryIndex]->mBinaryWriter.getBuffer();
+                if(!mSequencePlayer->loadBinary(buffer, error_state))
+                {
+                    nap::Logger::error(*this, error_state.toString());
+                }
+            }
+
+            // clamp history index if necessary
+            mHistoryIndex = math::clamp<int>(mHistoryIndex, 0, mHistory.size()+1);
+        }
+    }
+
+
+    void SequenceEditor::clearHistory()
+    {
+        mHistory.clear();
+        mHistoryIndex = 0;
+    }
+
+
+    void SequenceEditor::takeSnapshot(rtti::TypeInfo actionType)
+    {
+        // create history point
+        auto history_point = std::make_unique<SequenceEditorHistoryPoint>(getCurrentDateTime(), actionType);
+
+        // serialize current sequence into a binary blob
+        utility::ErrorState error_state;
+        rtti::BinaryWriter binary_writer;
+        if(!rtti::serializeObjects(rtti::ObjectList{mSequencePlayer->mSequence}, history_point->mBinaryWriter, error_state))
+        {
+            // log any errors
+            nap::Logger::error(*this, error_state.toString());
+        }else
+        {
+            // erase history after current history index
+            if(mHistoryIndex < mHistory.size())
+            {
+                mHistory.erase(mHistory.begin() + mHistoryIndex, mHistory.end());
+            }
+
+            // put the newly created snapshot on the end of history queue
+            mHistory.emplace_back(std::move(history_point));
+
+            // if history size exceeds limit of undo steps, erase the first history
+            if(mHistory.size() > mUndoSteps)
+            {
+                mHistory.pop_front();
+            }
+
+            // set the correct history index
+            mHistoryIndex = static_cast<int>(mHistory.size());
+        }
+    }
+
+
+    void SequenceEditor::jumpToHistoryPointIndex(int index)
+    {
+        if(!mHistory.empty())
+        {
+            // check if history index is still within bounds
+            if(index >= 0 && index < mHistory.size())
+            {
+                mHistoryIndex = index;
+
+                // get the buffer of the history and let the player load it
+                utility::ErrorState error_state;
+                const auto& buffer = mHistory[mHistoryIndex]->mBinaryWriter.getBuffer();
+                if(!mSequencePlayer->loadBinary(buffer, error_state))
+                {
+                    nap::Logger::error(*this, error_state.toString());
+                }
+            }
+        }
     }
 }
