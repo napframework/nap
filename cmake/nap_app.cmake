@@ -152,7 +152,7 @@ add_custom_command(TARGET ${PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_COMMAND} -E
         ${bin_license_dir}/NAP)
 add_license(moodycamel ${NAP_ROOT}/thirdparty/moodycamel/LICENSE.md)
 add_license(rapidjson ${NAP_ROOT}/thirdparty/rapidjson/license.txt)
-add_license(rttr ${NAP_ROOT}/rtti/thirdparty/rttr/source/LICENSE.txt)
+add_license(rttr ${NAP_ROOT}/thirdparty/rttr/source/LICENSE.txt)
 add_license(tclap ${NAP_ROOT}/thirdparty/tclap/COPYING)
 
 # Update executable rpath if it hasn't been set already

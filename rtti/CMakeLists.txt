@@ -3,7 +3,7 @@ project(naprtti)
 file(GLOB_RECURSE SOURCES src/*.cpp src/*.h)
 
 # Find RTTR::Core through its provided cmake files using the package finder
-set(RTTR_DIR "${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rttr/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/cmake")
+set(RTTR_DIR "${NAP_ROOT}/thirdparty/rttr/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}/cmake")
 find_package(RTTR CONFIG REQUIRED Core)
 
 set(rapidjson_FIND_QUIETLY TRUE)
