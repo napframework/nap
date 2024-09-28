@@ -576,7 +576,7 @@ class SSLObject:
 
     When compared to ``SSLSocket``, this object lacks the following features:
 
-     * Any form of network IO incluging methods such as ``recv`` and ``send``.
+     * Any form of network IO, including methods such as ``recv`` and ``send``.
      * The ``do_handshake_on_connect`` and ``suppress_ragged_eofs`` machinery.
     """
 
@@ -714,6 +714,9 @@ class SSLObject:
         current SSL channel. """
         return self._sslobj.version()
 
+    def verify_client_post_handshake(self):
+        return self._sslobj.verify_client_post_handshake()
+
 
 class SSLSocket(socket):
     """This class implements a subtype of socket.socket that wraps
@@ -845,8 +848,8 @@ class SSLSocket(socket):
             return self._sslobj.session_reused
 
     def dup(self):
-        raise NotImplemented("Can't dup() %s instances" %
-                             self.__class__.__name__)
+        raise NotImplementedError("Can't dup() %s instances" %
+                                  self.__class__.__name__)
 
     def _checkClosed(self, msg=None):
         # raise an exception here if you wish to check for spurious closes
@@ -1051,6 +1054,12 @@ class SSLSocket(socket):
             s = self._sslobj.unwrap()
             self._sslobj = None
             return s
+        else:
+            raise ValueError("No SSL wrapper around " + str(self))
+
+    def verify_client_post_handshake(self):
+        if self._sslobj:
+            return self._sslobj.verify_client_post_handshake()
         else:
             raise ValueError("No SSL wrapper around " + str(self))
 

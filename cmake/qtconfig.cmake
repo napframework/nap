@@ -19,6 +19,12 @@ macro(find_qt)
         endif()
     endif()
 
+    # Set vulkan SDK environment variable so QT to can find and use Vulkan
+    if(NOT DEFINED ENV{VULKAN_SDK})
+        set(ENV{VULKAN_SDK} "${NAP_ROOT}/system_modules/naprender/thirdparty/vulkansdk/${NAP_THIRDPARTY_PLATFORM_DIR}/${ARCH}")
+        message(STATUS "Using VULKAN_SDK environment variable: $ENV{VULKAN_SDK}")
+    endif()
+
     # Add possible Qt installation paths to the HINTS section
     # The version probably doesn't have to match exactly (5.8.? is probably fine)
     find_path(QT_DIR lib/cmake/Qt6/Qt6Config.cmake
@@ -43,9 +49,9 @@ macro(find_qt)
     else()
         message(FATAL_ERROR
                 "Qt6 could not be found, please set the QT_DIR environment variable, eg.:"
-                "\n Win64 - \"C:/dev/Qt/6.5.3/msvc2015_64\""
-                "\n macOS - \"/Users/username/dev/Qt/6.5.3/clang_64\""
-                "\n Linux - \"/home/username/dev/Qt/6.5.3/gcc_64\"")
+                "\n Win64 - \"C:/dev/Qt/6.7.2/msvc2019_64\""
+                "\n macOS - \"/Users/username/dev/Qt/6.7.2/clang_64\""
+                "\n Linux - \"/home/username/dev/Qt/6.7.2/gcc_64\"")
     endif()
 
     # TODO Update to CMake 3.24+ and use global scope here to avoid redefining

@@ -8,7 +8,8 @@
 #include <nap/logger.h>
 #include <nap/core.h>
 
-#ifdef __x86_64__
+#if defined(__x86_64__) || defined(_M_X64)
+	#define __XSIMD__
     #include <xmmintrin.h>
 #endif
 
@@ -30,11 +31,11 @@ namespace nap
 
 		void NodeManager::process(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
-#ifdef __x86_64__
+#ifdef __XSIMD__
 			// Disable denormal math
             // Denormal math can have a dramatic impact on the CPU load for any DSP algorithm that contains a feedback loop.
             // However denormal precision doesn't produce any audible result to the human ear.
-            // Unfortunately this code is not supported on ARM processors though, hence the #ifndef .
+            // Unfortunately this code is not supported on ARM32 processors though, hence the #ifndef .
 			int oldMXCSR = _mm_getcsr();
 			int newMXCSR = oldMXCSR | 0x8040;
 			_mm_setcsr( newMXCSR);
@@ -74,7 +75,7 @@ namespace nap
 			if (mInternalBufferOffset != framesPerBuffer)
 				nap::Logger::warn("Internal buffer does not fit PortAudio buffer");
 
-#ifdef __x86_64__
+#ifdef __XSIMD__
             // Reset previous denormal handling mode
 			_mm_setcsr(oldMXCSR);
 #endif

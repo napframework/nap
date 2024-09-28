@@ -55,11 +55,6 @@ void MainWindow::showEvent(QShowEvent* event)
 		mShown = true;
 	}
 
-	// Set status bar font
-	auto sf = statusBar()->font();
-	sf.setPixelSize(this->font().pixelSize());
-	statusBar()->setFont(sf);
-
 	connect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress, Qt::UniqueConnection);
 }
 
@@ -86,15 +81,15 @@ void MainWindow::addDocks()
 {
 //	addDock("History", &mHistoryPanel);
 //	addDock("Path Browser", &mPathBrowser);
+	addDock("AppRunner", &mAppRunnerPanel);
 	addDock("Resources", &mResourcePanel);
+	addDock("Scene", &mScenePanel);
 	addDock("Inspector", &mInspectorPanel);
 	addDock("Log", &mLogPanel);
-	addDock("AppRunner", &mAppRunnerPanel);
-    addDock("Scene", &mScenePanel);
-	addDock("Curve", &mCurvePanel);
-	addDock("Modules", &mModulePanel);
-	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Configuration", &mServiceConfigPanel);
+	addDock("Instance Properties", &mInstPropPanel);
+	addDock("Modules", &mModulePanel);
+	addDock("Curve", &mCurvePanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 

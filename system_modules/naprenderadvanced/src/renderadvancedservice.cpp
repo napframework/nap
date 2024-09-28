@@ -117,15 +117,14 @@ namespace nap
         // Enable shadow mapping
         mShadowMappingEnabled = configuration->mEnableShadowMapping;
 
-#ifdef RENDERADVANCED_RPI
+#ifdef RASPBERRY_PI
         // Disable shadows on Vulkan version <1.1
-        if (!errorState.check(mRenderService->getVulkanVersionMajor() >= 1, "Vulkan version 1.0+ required"))
-            return false;
-
-        if (mRenderService->getVulkanVersionMajor() == 1 && mRenderService->getVulkanVersionMinor() < 1)
+        if (mRenderService->getVulkanVersionMajor() == 1 &&
+        	mRenderService->getVulkanVersionMinor() <  1)
         {
-            nap::Logger::warn("Shadow mapping is not supported for RPI with Vulkan version <1.1");
-            mShadowMappingEnabled = false;
+			if(!errorState.check(!mShadowMappingEnabled,
+				"Shadow mapping is not supported on RPI running Vulkan < 1.1, turn off 'EnableShadowMapping' to continue"))
+				return false;
         }
 #endif
 

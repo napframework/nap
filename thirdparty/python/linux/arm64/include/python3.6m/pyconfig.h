@@ -141,6 +141,9 @@
 /* Define to 1 if you have the `copysign' function. */
 #define HAVE_COPYSIGN 1
 
+/* Define to 1 if you have the <crypt.h> header file. */
+#define HAVE_CRYPT_H 1
+
 /* Define to 1 if you have the `ctermid' function. */
 #define HAVE_CTERMID 1
 
@@ -942,7 +945,7 @@
 /* Define to 1 if you have the <stdlib.h> header file. */
 #define HAVE_STDLIB_H 1
 
-/* Has stdatomic.h, atomic_int and _Atomic void* types work */
+/* Has stdatomic.h with atomic_int */
 #define HAVE_STD_ATOMIC 1
 
 /* Define to 1 if you have the `strdup' function. */
@@ -1484,7 +1487,7 @@
 /* #undef _POSIX_THREADS */
 
 /* Define to force use of thread-safe errno, h_errno, and other functions */
-/* #undef _REENTRANT */
+#define _REENTRANT 1
 
 /* Define to the level of X/Open that your system supports */
 #define _XOPEN_SOURCE 700

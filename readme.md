@@ -58,7 +58,7 @@ Visit [nap-labs.tech](https://nap-labs.tech/use-cases) for more examples
 [Shylight](https://www.studiodrift.com/work#/work/shylight/) by Studio Drift
 ![4DSound System](https://download.nap-labs.tech/shared/4D_1280.jpg)
 [4DSound System](https://4dsound.net/)
-![NAP Framework](https://download.nap-labs.tech/shared/napkin_compute_1280.jpg)
+![NAP Framework](https://download.nap-labs.tech/shared/napkin_multiwindow_demo_hq.jpg)
 [NAP Framework](https://nap.tech) editor & demo
 
 # Where to Start
@@ -74,8 +74,7 @@ x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
 ```
 **ARM**
 ```
-armhf: Raspberry Pi OS (v11) - GCC
-arm64: Ubuntu Linux LTS (v22.04) *experimental* - GCC
+arm64: Raspberry Pi OS (v12 Bookworm) - GCC
 ```
 
 ## Binary Packages
@@ -84,22 +83,36 @@ Pre-compiled packages of official NAP releases are made available for download o
 
 ## Raspberry Pi
 
-Only the `Raspberry Pi 4` running `Debian Bullseye (v11, armhf)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
+Only the `Raspberry Pi 4 & 5` running `Debian Bookworm (v12, arm64)` is 'fully' supported. Headless applications and services without graphics should run on older models, although this has not been tested. The editor (napkin) only works on the Raspberry Pi 4 and higher.
 
 # Compilation
 
 ## Dependencies
 
-The editor (Napkin) depends on QT:
+The editor `Napkin` depends on open source Qt. 
 
-- The precompiled package uses Qt 6.7.2, although other versions are known to work.
+**Download**
+
+Download and extract the pre-compiled binaries for your target platform:
+
+  - [Qt6 for x86-64: Windows](https://download.nap-labs.tech/qt/qt_672_msvc_x86_64.zip) (msvc)
+  - [Qt6 for x86-64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_x86_64.tar.bz2) (gcc)
+  - [Qt6 for arm64: Linux](https://download.nap-labs.tech/qt/qt_672_linux_arm64.tar.bz2) (gcc)
+
+***Alternatively***
 - Go to [qt.io](https://www.qt.io/download-open-source) for open source users
 - Download the Qt online installer
 - During installation select **Custom installation** 
 - Filter on the **LTS** category to download and install Qt6 for your target platform
-- **Only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required
+- NAP uses `Qt 6.7.2`, although other versions are known to work. 
+ 
+Note that only **only** the desktop binaries (MSVC 2019 64-bit or gcc 64-bit) are required, other content is optional.
 
-Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT. Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+**Setup**
+
+Create an environment variable called `QT_DIR` and point it to the directory that contains the QT libraries, for example: `C:\qt\6.7.2\msvc2019_64`. The build system uses this environment variable to locate QT.
+Note that only the editor (Napkin) depends on Qt, NAP distributable applications do not have a dependency on Qt.
+
 
 ## Create the Solution
 
