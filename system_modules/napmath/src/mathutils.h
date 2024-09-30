@@ -48,7 +48,7 @@ namespace nap
 		 * @return mapped value
 		 */
 		template<typename T>
-		float fit(T value, T min, T max, T outMin, T outMax);
+		T fit(T value, T min, T max, T outMin, T outMax);
 
 		/**
 		 * Blends a value between start and end value based on percentage (0-1).
@@ -336,7 +336,7 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		template<typename T>
-		float fit(T value, T min, T max, T outMin, T outMax)
+		T fit(T value, T min, T max, T outMin, T outMax)
 		{
 			T v = glm::clamp<T>(value, min, max);
 			T m = max - min;
