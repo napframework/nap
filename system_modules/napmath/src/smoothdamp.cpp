@@ -40,6 +40,7 @@ namespace nap
 		{
 			mVelocity = 0.0f;
 			mTarget = 0.0f;
+			mPreviousTarget = 0.0f;
 		}
 
 		template<>
@@ -47,6 +48,7 @@ namespace nap
 		{
 			mVelocity = 0.0;
 			mTarget = 0.0;
+			mPreviousTarget = 0.0;
 		}
 
 		template<>
@@ -54,7 +56,7 @@ namespace nap
 		{
 			mVelocity = { 0.0f, 0.0f };
 			mTarget = { 0.0f, 0.0f };
-
+			mPreviousTarget = { 0.0f, 0.0f };
 		}
 
 		template<>
@@ -62,6 +64,7 @@ namespace nap
 		{
 			mVelocity = { 0.0f, 0.0f, 0.0f };
 			mTarget	= { 0.0f, 0.0f, 0.0f };
+			mPreviousTarget = { 0.0f, 0.0f, 0.0f };
 		}
 
 		template<>
@@ -69,6 +72,7 @@ namespace nap
 		{
 			mVelocity = { 0.0f, 0.0f, 0.0f, 0.0f };
 			mTarget	= { 0.0f, 0.0f, 0.0f, 0.0f };
+			mPreviousTarget = { 0.0f, 0.0f, 0.0f, 0.0f };
 		}
 
 		template<>

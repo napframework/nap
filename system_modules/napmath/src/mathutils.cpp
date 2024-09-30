@@ -125,52 +125,6 @@ namespace nap
 		}
 
 
-		float smoothDamp(float currentValue, float targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
-		{
-			smoothTime = math::max<float>(math::epsilon<float>(), smoothTime);
-			float num = 2.0f / smoothTime;
-			float num2 = num * deltaTime;
-			float num3 = 1.0f / (1.0f + num2 + 0.48f * num2 * num2 + 0.235f * num2 * num2 * num2);
-			float num4 = currentValue - targetValue;
-			float num5 = targetValue;
-			float num6 = maxSpeed * smoothTime;
-			num4 = math::clamp<float>(num4, -num6, num6);
-			float target = currentValue - num4;
-			float num7 = (currentVelocity + num * num4) * deltaTime;
-			currentVelocity = (currentVelocity - num * num7) * num3;
-			float num8 = target + (num4 + num7) * num3;
-			if (num5 - currentValue > 0.0f == num8 > num5)
-			{
-				num8 = num5;
-				currentVelocity = (num8 - num5) / deltaTime;
-			}
-			return num8;
-		}
-
-
-		double smoothDamp(double currentValue, double targetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed /*= math::max<float>()*/)
-		{
-			smoothTime = math::max<float>(math::epsilon<float>(), smoothTime);
-			double num = 2.0f / (double)smoothTime;
-			double num2 = num * (double)deltaTime;
-			double num3 = 1.0f / (1.0f + num2 + 0.48f * num2 * num2 + 0.235f * num2 * num2 * num2);
-			double num4 = currentValue - targetValue;
-			double num5 = targetValue;
-			double num6 = (double)maxSpeed * (double)smoothTime;
-			num4 = math::clamp<double>(num4, -num6, num6);
-			double target = currentValue - num4;
-			double num7 = (currentVelocity + num * num4) * (double)deltaTime;
-			currentVelocity = (currentVelocity - num * num7) * num3;
-			double num8 = target + (num4 + num7) * num3;
-			if (num5 - currentValue > 0.0f == num8 > num5)
-			{
-				num8 = num5;
-				currentVelocity = (num8 - num5) / (double)deltaTime;
-			}
-			return num8;
-		}
-
-
 		template<>
 		void smooth(float& currentValue, const float& targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
 		{
@@ -211,22 +165,62 @@ namespace nap
 			currentValue.w = smoothDamp(currentValue.w, targetValue.w, currentVelocity.w, deltaTime, smoothTime, maxSpeed);
 		}
 
+		template<>
+		void smoothMove(float& currentValue, const float& targetValue, const float& previousTargetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+		{
+			currentValue = smoothDampMove(currentValue, targetValue, previousTargetValue, currentVelocity, deltaTime, smoothTime, maxSpeed);
+		}
+
+
+		template<>
+		void smoothMove(double& currentValue, const double& targetValue, const double& previousTargetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+		{
+			currentValue = smoothDampMove(currentValue, targetValue, previousTargetValue, currentVelocity, deltaTime, smoothTime, maxSpeed);
+		}
+
+
+		template<>
+		void smoothMove(glm::vec2& currentValue, const glm::vec2& targetValue, const glm::vec2& previousTargetValue, glm::vec2& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+		{
+			currentValue.x = smoothDampMove(currentValue.x, targetValue.x, previousTargetValue.x, currentVelocity.x, deltaTime, smoothTime, maxSpeed);
+			currentValue.y = smoothDampMove(currentValue.y, targetValue.y, previousTargetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
+		}
+
+
+		template<>
+		void smoothMove(glm::vec3& currentValue, const glm::vec3& targetValue, const glm::vec3& previousTargetValue, glm::vec3& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+		{
+			currentValue.x = smoothDampMove(currentValue.x, targetValue.x, previousTargetValue.x, currentVelocity.x, deltaTime, smoothTime, maxSpeed);
+			currentValue.y = smoothDampMove(currentValue.y, targetValue.y, previousTargetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
+			currentValue.z = smoothDampMove(currentValue.z, targetValue.z, previousTargetValue.z, currentVelocity.z, deltaTime, smoothTime, maxSpeed);
+		}
+
+
+		template<>
+		void smoothMove(glm::vec4& currentValue, const glm::vec4& targetValue, const glm::vec4& previousTargetValue, glm::vec4& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+		{
+			currentValue.x = smoothDampMove(currentValue.x, targetValue.x, previousTargetValue.x, currentVelocity.x, deltaTime, smoothTime, maxSpeed);
+			currentValue.y = smoothDampMove(currentValue.y, targetValue.y, previousTargetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
+			currentValue.z = smoothDampMove(currentValue.z, targetValue.z, previousTargetValue.z, currentVelocity.z, deltaTime, smoothTime, maxSpeed);
+			currentValue.w = smoothDampMove(currentValue.w, targetValue.w, previousTargetValue.z, currentVelocity.w, deltaTime, smoothTime, maxSpeed);
+		}
+
 
 		glm::mat4 composeMatrix(const glm::vec3& translate, const glm::quat& rotate, const glm::vec3& scale)
 		{
-			return glm::translate(glm::mat4x4(), translate) * glm::toMat4(rotate) * glm::scale(glm::mat4x4(), scale);
+			return glm::translate(glm::identity<glm::mat4>(), translate) * glm::toMat4(rotate) * glm::scale(glm::mat4x4(), scale);
 		}
 
 
 		glm::quat eulerToQuat(const glm::vec3& eulerAngle)
 		{
-			return glm::quat(eulerAngle);
+			return { eulerAngle };
 		}
 
 
 		glm::quat eulerToQuat(float roll, float pitch, float yaw)
 		{
-			return eulerToQuat({ roll, pitch, yaw });
+			return { glm::vec3(roll, pitch, yaw) };
 		}
 
 
@@ -264,19 +258,19 @@ namespace nap
 		}
 
 
-		glm::vec3 extractPosition(const glm::mat4x4& matrix)
+		glm::vec3 extractPosition(const glm::mat4& matrix)
 		{
-			return{ matrix[3][0], matrix[3][1], matrix[3][2] };
+			return { matrix[3][0], matrix[3][1], matrix[3][2] };
 		}
 
 
-		glm::vec3 objectToWorld(const glm::vec3& point, const glm::mat4x4& transform)
+		glm::vec3 objectToWorld(const glm::vec3& point, const glm::mat4& transform)
 		{
 			return transform * glm::vec4(point, 1.0f);
 		}
 
 
-		glm::vec3 worldToObject(const glm::vec3& point, const glm::mat4x4& objectToWorldMatrix)
+		glm::vec3 worldToObject(const glm::vec3& point, const glm::mat4& objectToWorldMatrix)
 		{
 			return inverse(objectToWorldMatrix) * glm::vec4(point, 1.0f);
 		}
