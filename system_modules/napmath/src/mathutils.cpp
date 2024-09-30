@@ -165,46 +165,6 @@ namespace nap
 			currentValue.w = smoothDamp(currentValue.w, targetValue.w, currentVelocity.w, deltaTime, smoothTime, maxSpeed);
 		}
 
-		template<>
-		void smoothMove(float& currentValue, const float& targetValue, const float& previousTargetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
-		{
-			currentValue = smoothDampMove(currentValue, targetValue, previousTargetValue, currentVelocity, deltaTime, smoothTime, maxSpeed);
-		}
-
-
-		template<>
-		void smoothMove(double& currentValue, const double& targetValue, const double& previousTargetValue, double& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
-		{
-			currentValue = smoothDampMove(currentValue, targetValue, previousTargetValue, currentVelocity, deltaTime, smoothTime, maxSpeed);
-		}
-
-
-		template<>
-		void smoothMove(glm::vec2& currentValue, const glm::vec2& targetValue, const glm::vec2& previousTargetValue, glm::vec2& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
-		{
-			currentValue.x = smoothDampMove(currentValue.x, targetValue.x, previousTargetValue.x, currentVelocity.x, deltaTime, smoothTime, maxSpeed);
-			currentValue.y = smoothDampMove(currentValue.y, targetValue.y, previousTargetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
-		}
-
-
-		template<>
-		void smoothMove(glm::vec3& currentValue, const glm::vec3& targetValue, const glm::vec3& previousTargetValue, glm::vec3& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
-		{
-			currentValue.x = smoothDampMove(currentValue.x, targetValue.x, previousTargetValue.x, currentVelocity.x, deltaTime, smoothTime, maxSpeed);
-			currentValue.y = smoothDampMove(currentValue.y, targetValue.y, previousTargetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
-			currentValue.z = smoothDampMove(currentValue.z, targetValue.z, previousTargetValue.z, currentVelocity.z, deltaTime, smoothTime, maxSpeed);
-		}
-
-
-		template<>
-		void smoothMove(glm::vec4& currentValue, const glm::vec4& targetValue, const glm::vec4& previousTargetValue, glm::vec4& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
-		{
-			currentValue.x = smoothDampMove(currentValue.x, targetValue.x, previousTargetValue.x, currentVelocity.x, deltaTime, smoothTime, maxSpeed);
-			currentValue.y = smoothDampMove(currentValue.y, targetValue.y, previousTargetValue.y, currentVelocity.y, deltaTime, smoothTime, maxSpeed);
-			currentValue.z = smoothDampMove(currentValue.z, targetValue.z, previousTargetValue.z, currentVelocity.z, deltaTime, smoothTime, maxSpeed);
-			currentValue.w = smoothDampMove(currentValue.w, targetValue.w, previousTargetValue.z, currentVelocity.w, deltaTime, smoothTime, maxSpeed);
-		}
-
 
 		glm::mat4 composeMatrix(const glm::vec3& translate, const glm::quat& rotate, const glm::vec3& scale)
 		{

@@ -130,7 +130,6 @@ namespace nap
 
 			T mValue;			// Current blend value
 			T mTarget;			// Current blend target
-			T mPreviousTarget;	// Previous blend target
 			T mVelocity;		// Current velocity
 		};
 
@@ -143,9 +142,7 @@ namespace nap
 		T& SmoothOperator<T>::update(const T& targetValue, float deltaTime)
 		{
 			mTarget = targetValue;
-			smoothMove<T>(mValue, targetValue, mPreviousTarget, mVelocity, deltaTime, mSmoothTime, mMaxSpeed);
-			mPreviousTarget = targetValue;
-
+			smooth<T>(mValue, targetValue, mVelocity, deltaTime, mSmoothTime, mMaxSpeed);
 			return mValue;
 		}
 
