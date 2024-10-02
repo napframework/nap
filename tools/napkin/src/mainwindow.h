@@ -26,6 +26,7 @@
 #include "panels/modulepanel.h"
 #include "panels/instanceproppanel.h"
 #include "panels/serviceconfigpanel.h"
+#include "panels/renderpanel.h"
 
 namespace napkin
 {
@@ -183,7 +184,10 @@ namespace napkin
 		LogPanel mLogPanel;
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
+		ScenePanel mScenePanel;
+		RenderPanel mRenderPanel;
 		ServiceConfigPanel mServiceConfigPanel;
+
 		ThemeSelectionMenu mThemeMenu;
 		QMenu mProjectMenu;
 		QMenu mFileMenu;
@@ -191,7 +195,6 @@ namespace napkin
 		QMenu mCreateMenu;
 		QMenu mHelpMenu;
 		QMenu mRecentProjectsMenu;
-		ScenePanel mScenePanel;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;
 		QTimer mTimer;
