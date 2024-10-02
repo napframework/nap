@@ -48,7 +48,7 @@ namespace nap
 	 * Creates a new SDL window based on the settings provided by the render window
 	 * @return: the create window, nullptr if not successful
 	 */
-	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, nap::utility::ErrorState& errorState)
+	static SDL_Window* createSDLWindow(const RenderWindow& renderWindow, bool allowHighDPI, utility::ErrorState& error)
 	{
 		// Construct options
 		Uint32 options = SDL_WINDOW_VULKAN;
@@ -66,7 +66,20 @@ namespace nap
 			renderWindow.mHeight,
 			options);
 
-		if (!errorState.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
+		if (!error.check(new_window != nullptr, "Failed to create window: %s", SDL::getSDLError().c_str()))
+			return nullptr;
+
+		return new_window;
+	}
+
+	/**
+	 * Creates SDL window based on settings from native hardware handle
+	 * @return: the window, nullptr if creation failed
+	 */
+	static SDL_Window* createSDLWindow(const void* nativeHandle, utility::ErrorState& error)
+	{
+		auto new_window = SDL_CreateWindowFrom(nativeHandle);
+		if (!error.check(new_window != nullptr, "Failed to create window from handle: %s", SDL::getSDLError().c_str()))
 			return nullptr;
 
 		return new_window;
@@ -455,6 +468,13 @@ namespace nap
 	{ }
 
 
+	RenderWindow::RenderWindow(Core& core, const void* nativeHandle) :
+		mNativeHandle(nativeHandle), mRenderService(core.getService<RenderService>())
+	{
+		assert(mNativeHandle != nullptr);
+	}
+
+
 	RenderWindow::~RenderWindow()
 	{
 		// Return immediately if there's no actual native window present.
@@ -501,7 +521,10 @@ namespace nap
 
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
+		mSDLWindow = mNativeHandle != nullptr ? createSDLWindow(mNativeHandle, errorState) :
+			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
+
+		// Ensure window is valid
 		if (mSDLWindow == nullptr)
 			return false;
 
@@ -568,8 +591,8 @@ namespace nap
 
 		return true;
 	}
-    
-    
+
+
 	void RenderWindow::onDestroy()
 	{
 		mRenderService->removeWindow(*this);

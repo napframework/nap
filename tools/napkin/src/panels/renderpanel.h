@@ -4,10 +4,14 @@
 
 #pragma once
 
+// Local Includes
+#include "appcontext.h"
+
 // External Includes
 #include <QWidget>
 #include <QWindow>
 #include <QBoxLayout>
+#include <renderwindow.h>
 
 namespace napkin
 {
@@ -18,12 +22,12 @@ namespace napkin
 		// Creates surface and adds it to this widget
 		RenderPanel();
 
-		// Deletes surface
-		~RenderPanel();
-
 	private:
 		QWindow mNativeWindow;
-		QWidget* mContainer = nullptr;
 		QVBoxLayout mLayout;
+		QWidget* mContainer = nullptr;
+		std::unique_ptr<nap::RenderWindow> mRenderWindow = nullptr;
+		void projectLoaded(const nap::ProjectInfo& info);
+		void createResources();
 	};
 }

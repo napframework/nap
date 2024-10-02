@@ -1679,7 +1679,7 @@ namespace nap
 
 		// Initialize SDL video
 		mSDLInitialized = SDL::initVideo(errorState);
-		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video"))
+		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
 			return false;
 
 		// Add displays
@@ -1881,6 +1881,11 @@ namespace nap
 
 	bool RenderService::initShaderCompilation(utility::ErrorState& error)
 	{
+		// Initialize SDL video
+		mSDLInitialized = SDL::initVideo(error);
+		if (!error.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
+			return false;
+
 		// Initialize shader compilation
 		mShInitialized = ShInitialize() != 0;
 		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))

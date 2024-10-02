@@ -64,6 +64,11 @@ namespace nap
 		RenderWindow(Core& core);
 
 		/**
+		 * This constructor is called when creating the render window using napkin
+		 */
+		RenderWindow(Core& core, const void* nativeHandle);
+
+		/**
 		 * Destroys all render resources
 		 */
 		virtual ~RenderWindow() override;
@@ -74,7 +79,7 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Called when the window is detroyed.
+		 * Called when the window is destroyed.
 		 */
 		virtual void onDestroy() override;
 
@@ -302,6 +307,7 @@ namespace nap
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
+		const void*						mNativeHandle = nullptr;
 
 		/**
 		 * Called by the render service. 

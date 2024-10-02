@@ -4,6 +4,7 @@
 
 // Local includes
 #include "renderpanel.h"
+#include "appcontext.h"
 
 // External includes
 #include <QSurfaceFormat>
@@ -13,6 +14,21 @@ namespace napkin
 {
 	RenderPanel::RenderPanel()
 	{
+		// Create render resources on project load
+		connect(&AppContext::get(), &AppContext::projectLoaded, this, &RenderPanel::projectLoaded);
+	}
+
+
+	void RenderPanel::projectLoaded(const nap::ProjectInfo& info)
+	{
+		// Create if no resources are available
+		if (mRenderWindow == nullptr)
+			createResources();
+	}
+
+
+	void RenderPanel::createResources()
+	{
 		// Setup format (TODO: Use system preferences)
 		QSurfaceFormat format;
 		format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
@@ -21,18 +37,25 @@ namespace napkin
 		mNativeWindow.setFormat(format);
 
 		// Create QWidget window container
+		assert(mContainer == nullptr);
 		mContainer = QWidget::createWindowContainer(&mNativeWindow, this);
 		mContainer->setFocusPolicy(Qt::TabFocus);
 
-		// Add container that holds the windows to widget
-		mLayout.addWidget(mContainer);
+		// Set the layout
+		assert(layout() == nullptr);
 		mLayout.setContentsMargins(0, 0, 0, 0);
+		mLayout.addWidget(mContainer);
 		setLayout(&mLayout);
-	}
 
-
-	RenderPanel::~RenderPanel()
-	{
-		mNativeWindow.destroy();
+		// Create render window
+		auto* render_service = AppContext::get().getRenderService();
+		assert(render_service != nullptr && mRenderWindow == nullptr);
+		auto id = mContainer->winId(); assert(id != 0);
+		mRenderWindow = std::make_unique<nap::RenderWindow>(render_service->getCore(), (void*)id);
+		nap::utility::ErrorState error;
+		if (!mRenderWindow->init(error))
+		{
+			nap::Logger::error(error.toString());
+		}
 	}
 }
