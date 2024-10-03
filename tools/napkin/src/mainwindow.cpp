@@ -90,7 +90,7 @@ void MainWindow::addDocks()
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
-	addDock("Render", &mRenderPanel);
+	addDock("3D Preview", &mRenderPanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 
