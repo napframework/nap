@@ -22,6 +22,9 @@ namespace napkin
 		// Creates surface and adds it to this widget
 		RenderPanel();
 
+	protected:
+		virtual bool eventFilter(QObject* watched, QEvent* event) override;
+
 	private:
 		QWindow mNativeWindow;
 		QVBoxLayout mLayout;
@@ -29,5 +32,7 @@ namespace napkin
 		std::unique_ptr<nap::RenderWindow> mRenderWindow = nullptr;
 		void projectLoaded(const nap::ProjectInfo& info);
 		void createResources();
+
+		void draw();
 	};
 }

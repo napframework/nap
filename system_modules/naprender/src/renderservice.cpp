@@ -533,14 +533,8 @@ namespace nap
 	 */
 	static bool createSurface(SDL_Window* window, VkInstance instance, VkSurfaceKHR& outSurface, utility::ErrorState& errorState)
 	{
-		// Use SDL to create the surface
-		if (!errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
-			"Unable to create Vulkan compatible surface using SDL"))
-		{
-			errorState.fail(SDL::getSDLError());
-			return false;
-		}
-		return true;
+		return errorState.check(SDL_Vulkan_CreateSurface(window, instance, &outSurface) == SDL_TRUE,
+			"Unable to create Vulkan compatible surface using SDL");
 	}
 
 
