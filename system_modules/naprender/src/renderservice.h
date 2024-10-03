@@ -1034,6 +1034,13 @@ namespace nap
 		bool initShaderCompilation(utility::ErrorState& error);
 
 		/**
+		 * Initialize the renderer, the service owns the renderer.
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
 		 * Called when a new window is added to the system
 		 */
 		nap::Signal<nap::RenderWindow&> windowAdded;
@@ -1074,13 +1081,6 @@ namespace nap
 		 * Register dependencies, render module depends on scene
 		 */
 		virtual void getDependentServices(std::vector<rtti::TypeInfo>& dependencies) override;
-
-		/**
-		 * Initialize the renderer, the service owns the renderer.
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Waits for the device to be idle and deletes queued resources.

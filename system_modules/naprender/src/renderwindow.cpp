@@ -12,6 +12,7 @@
 #include <nap/core.h>
 #include <nap/logger.h>
 #include <SDL_vulkan.h>
+#include <SDL_hints.h>
 #include <mathutils.h>
 
 RTTI_BEGIN_ENUM(nap::RenderWindow::EPresentationMode)
@@ -78,6 +79,9 @@ namespace nap
 	 */
 	static SDL_Window* createSDLWindow(const void* nativeHandle, utility::ErrorState& error)
 	{
+		if (SDL_SetHintWithPriority(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, "1", SDL_HINT_OVERRIDE) == SDL_FALSE)
+			nap::Logger::warn("Unable to enable '%s'", SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN);
+
 		auto new_window = SDL_CreateWindowFrom(nativeHandle);
 		if (!error.check(new_window != nullptr, "Failed to create window from handle: %s", SDL::getSDLError().c_str()))
 			return nullptr;

@@ -29,12 +29,15 @@ namespace napkin
 
 	void RenderPanel::createResources()
 	{
+		// Fetch render service
+		auto* render_service = AppContext::get().getRenderService();
+		assert(render_service != nullptr);
+
 		// Setup format (TODO: Use system preferences)
 		QSurfaceFormat format;
 		format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
-		format.setSwapBehavior(QSurfaceFormat::DoubleBuffer);
-		format.setSamples(4);
 		mNativeWindow.setFormat(format);
+		mNativeWindow.setSurfaceType(QSurface::VulkanSurface);
 
 		// Create QWidget window container
 		assert(mContainer == nullptr);
@@ -48,8 +51,7 @@ namespace napkin
 		setLayout(&mLayout);
 
 		// Create render window
-		auto* render_service = AppContext::get().getRenderService();
-		assert(render_service != nullptr && mRenderWindow == nullptr);
+		assert(mRenderWindow == nullptr);
 		auto id = mContainer->winId(); assert(id != 0);
 		mRenderWindow = std::make_unique<nap::RenderWindow>(render_service->getCore(), (void*)id);
 		nap::utility::ErrorState error;

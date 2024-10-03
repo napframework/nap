@@ -146,7 +146,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	if (mRenderService != nullptr)
 	{
 		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
-		if (!mRenderService->initShaderCompilation(err))
+		if (!mRenderService->init(err))
 		{
 			nap::Logger::error(err.toString());
 			progressChanged(1.0f);
