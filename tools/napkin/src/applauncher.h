@@ -10,6 +10,7 @@
 #include <thread>
 #include <future>
 #include <nap/projectinfo.h>
+#include <functional>
 
 namespace napkin
 {
@@ -47,7 +48,7 @@ namespace napkin
 		 * Launches and runs the app in a separate thread
 		 * @param projectInfoFile the project info to load
 		 */
-		void launch(const std::string& projectFilename);
+		void run(const std::string& projectFilename);
 
 		/**
 		 * Aborts the running of the application.
@@ -59,12 +60,6 @@ namespace napkin
 		nap::Core mCore;													///< Unique core instance
 		std::unique_ptr<nap::AppRunner<APP, HANDLER>> mRunner = nullptr;	///< Application runner
 		std::future<int> mTask;												///< The client server thread with exit code
-
-		/**
-		 * Runs the application until stopped
-		 * @return exit code
-		 */
-		int run();
 	};
 
 
@@ -74,7 +69,7 @@ namespace napkin
 
 
 	template<typename APP, typename HANDLER>
-	void AppLauncher<APP, HANDLER>::launch(const std::string& projectFilename)
+	void AppLauncher<APP, HANDLER>::run(const std::string& projectFilename)
 	{
 		// Create app runner
 		assert(mRunner == nullptr);
@@ -83,24 +78,20 @@ namespace napkin
 
 		// Create and run task
 		assert(!mTask.valid());
-		mTask = std::async(std::launch::async, std::bind(&AppLauncher<APP, HANDLER>::run, this));
-	}
+		mTask = std::async(std::launch::async, [&]()->int
+			{
+				// Initialize and run application until stopped
+				nap::utility::ErrorState error;
+				assert(mRunner != nullptr);
+				if (!mRunner->start(error))
+				{
+					nap::Logger::error("error: %s", error.toString().c_str());
+					return napkin::exitcode::failStart;
+				}
 
-
-	template<typename APP, typename HANDLER>
-	int AppLauncher<APP, HANDLER>::run()
-	{
-		// Initialize and run application until stopped
-		nap::utility::ErrorState error;
-		assert(mRunner != nullptr);
-		if (!mRunner->start(error))
-		{
-			nap::Logger::error("error: %s", error.toString().c_str());
-			return napkin::exitcode::failStart;
-		}
-
-		// Return exit code
-		return mRunner.exitCode();
+				// Return exit code
+				return mRunner->exitCode();
+			});
 	}
 
 
@@ -114,6 +105,7 @@ namespace napkin
 			assert(mRunner != nullptr);
 			mRunner->stop();
 			exit_code = mTask.get();
+			mRunner = nullptr;
 		}
 		return exit_code;
 	}

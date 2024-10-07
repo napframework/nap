@@ -66,6 +66,9 @@ namespace napkin
 
 		// Install listener
 		mContainer->installEventFilter(this);
+
+		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
+		mPreviewLauncher.run(preview_app);
 	}
 
 
@@ -126,3 +129,4 @@ namespace napkin
 		return false;
 	}
 }
+

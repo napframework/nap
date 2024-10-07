@@ -7,12 +7,14 @@
 // Local Includes
 #include "appcontext.h"
 #include "applauncher.h"
+#include "apps/renderpreviewapp.h"
 
 // External Includes
 #include <QWidget>
 #include <QWindow>
 #include <QBoxLayout>
 #include <renderwindow.h>
+#include <sdlappeventhandler.h>
 
 namespace napkin
 {
@@ -34,5 +36,8 @@ namespace napkin
 		void projectLoaded(const nap::ProjectInfo& info);
 		void createResources();
 		void draw();
+
+		using PreviewLauncher = napkin::AppLauncher<nap::RenderPreviewApp, nap::SDLAppEventHandler>;
+		PreviewLauncher mPreviewLauncher;
 	};
 }

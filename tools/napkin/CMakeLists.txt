@@ -10,6 +10,7 @@ if (MSVC)
 endif()
 
 add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
@@ -38,7 +39,7 @@ if(${ARCH} STREQUAL "armhf")
 endif()
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napinput napfont napapp)
+set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napfont napapp napsdlinput)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)
