@@ -4,8 +4,7 @@
     "RequiredModules": [
         "napscene",
         "napmath",
-        "napinput",
-        "napparameter"
+        "napinput"
     ],
     "WindowsDllSearchPaths": []
 }
