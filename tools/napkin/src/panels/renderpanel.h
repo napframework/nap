@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "appcontext.h"
+#include "applauncher.h"
 
 // External Includes
 #include <QWidget>
@@ -32,7 +33,6 @@ namespace napkin
 		std::unique_ptr<nap::RenderWindow> mRenderWindow = nullptr;
 		void projectLoaded(const nap::ProjectInfo& info);
 		void createResources();
-
 		void draw();
 	};
 }

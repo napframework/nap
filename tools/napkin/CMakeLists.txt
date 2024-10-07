@@ -38,7 +38,7 @@ if(${ARCH} STREQUAL "armhf")
 endif()
 
 # The NAP modules Napkin needs
-set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napinput napfont)
+set(NAP_MODULES_DEPENDENCIES napscene napcolor napmath naprender napinput napfont napapp)
 
 # Add python if enabled
 if(NAP_ENABLE_PYTHON)

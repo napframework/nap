@@ -39,6 +39,14 @@ namespace nap
 		 * @param core the nap core this runner uses in conjunction with the app and handler
 		 */
 		AppRunner(nap::Core& core);
+
+		/**
+		 * Constructor with the project and context to run
+		 * @param core the nap core this runner uses in conjunction with the app and handler
+		 * @param projectInfo the application project information
+		 * @param app runner context
+		 */
+		AppRunner(nap::Core& core, const std::string& projectInfo, ProjectInfo::EContext context);
 		
 		/**
 		 *	Destructor
@@ -68,6 +76,16 @@ namespace nap
 		bool start(utility::ErrorState& error);
 
 		/**
+		 * Starts the app loop, if the loop could not start for some reason
+		 * the error contains the reason. This call will initialize core
+		 * and the application and run the application loop until AppRunner::stop()
+		 * or BaseApp::quit() is invoked.
+		 * @param error the error message if the loop couldn't be started
+		 * @return if the app loop has successfully started
+		 */
+		bool start(const std::string& projectInfo, ProjectInfo::EContext context, utility::ErrorState& error);
+
+		/**
 		 * Stops the loop and exits the application
 		 */
 		void stop();
@@ -91,8 +109,10 @@ namespace nap
 		nap::Core&					mCore;					// Core
 		std::unique_ptr<APP>		mApp = nullptr;			// App this runner works with
 		std::unique_ptr<HANDLER>	mHandler = nullptr;		// App handler this runner works with
-		bool						mStop = false;			// If the runner should stop
+		std::atomic<bool>			mStop = { false };		// If the runner should stop
 		int							mExitCode = 0;			// Application exit code* Call update() to force an update.
+		std::string					mProjectInfo;			// Optional application project information
+		ProjectInfo::EContext		mProjectContext;		// Optional application context information
 	};
 
 
@@ -129,6 +149,16 @@ namespace nap
 	}
 
 
+
+	template<typename APP, typename HANDLER>
+	nap::AppRunner<APP, HANDLER>::AppRunner(nap::Core& core, const std::string& projectInfo, ProjectInfo::EContext context) :
+		nap::AppRunner<APP, HANDLER>(core)
+	{
+		this->mProjectInfo = projectInfo;
+		this->mProjectContext = context;
+	}
+
+
 	template<typename APP, typename HANDLER>
 	bool nap::AppRunner<APP, HANDLER>::start(utility::ErrorState& error)
 	{
@@ -136,11 +166,12 @@ namespace nap
 		nap::AppEventHandler& app_event_handler = getHandler();
 
 		// Initialize engine
-		if (!mCore.initializeEngine(error))
-		{
-			error.fail("Unable to initialize engine");
+		bool initialized = !this->mProjectInfo.empty() ?
+			mCore.initializeEngine(this->mProjectInfo, this->mProjectContext, error) :
+			mCore.initializeEngine(error);
+
+		if (!error.check(initialized, "Unable to initialize engine"))
 			return false;
-		}
 
 		// Initialize the various services
 		// Bail if handle is invalid, this means service initialization failed
