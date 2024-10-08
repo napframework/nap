@@ -1034,7 +1034,12 @@ namespace nap
 		bool initShaderCompilation(utility::ErrorState& error);
 
 		/**
-		 * Initialize the renderer, the service owns the renderer.
+		 * Initializes the complete render engine
+		 */
+		virtual bool initEngine(utility::ErrorState& error);
+
+		/**
+		 * Initialize the SDL video sub system and renderer, the service owns the renderer.
 		 * @param errorState contains the error message if the service could not be initialized
 		 * @return if the service has been initialized successfully
 		 */

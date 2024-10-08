@@ -1644,248 +1644,18 @@ namespace nap
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
-		// Get handle to scene service
-		mSceneService = getCore().getService<SceneService>();
-		assert(mSceneService != nullptr);
-
-		// Enable high dpi support if requested (windows)
-		auto* render_config = getConfiguration<RenderServiceConfiguration>();
-
-		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
-		mHeadless = render_config->mHeadless;
-
-		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
-		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
-
-		// Check if we need to cache state between sessions
-		mEnableCaching = render_config->mEnableCaching;
-
-#ifdef _WIN32
-		if (mEnableHighDPIMode)
-		{
-			// Make process dpi aware
-			if(!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
-				"Unable to make process DPI aware"))
-			{
-				return false;
-			}
-		}
-#endif // _WIN32
-
-		// Metal limits sampler descriptors per shader to 16 by default. Here we explicitly unlock this limitation.
-#if defined(__APPLE__)
-		setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
-#endif // __APPLE__
-
 		// Initialize SDL video
 		mSDLInitialized = SDL::initVideo(errorState);
 		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
 			return false;
 
-		// Add displays
-		for (int i = 0; i < SDL::getDisplayCount(); i++)
-		{
-			auto it = mDisplays.emplace_back(Display(i));
-			nap::Logger::info(it.toString());
-			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
-			{
-				return false;
-			}
-		}
-
-		// Initialize shader compilation
-		mShInitialized = ShInitialize() != 0;
-		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
-			return false;
-
-		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
-		// Allows for easy destruction of previously created and assigned resources when initialization fails.
-		DummyWindow dummy_window;
-		
-		// Get available vulkan instance extensions using SDL.
-		// Returns, next to the default VK_KHR_surface, a platform specific extension.
-		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
-		// When running headless we don't present so don't need the extensions.
-		std::vector<std::string> instance_extensions;
-		if (!mHeadless)
-		{
-			// Create dummy window and verify creation
-			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
-			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
-				return false;
-			
-			// Get all available vulkan instance extensions, required to create a presentable surface.
-			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
-			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
-				return false;
-		}
-
-		// Add debug display extension, we need this to relay debug messages
-		bool is_debug_utils_found = false;
-		const bool is_debug_enabled = render_config->mEnableDebug;
-		if (is_debug_enabled)
-		{
-			if (!errorState.check(getDebugInstanceExtensions(is_debug_utils_found, instance_extensions, errorState), "Failed to find available debug extension while debug is enabled"))
-				return false;
-		}
-
-		// Get available vulkan layer extensions, notify when not all could be found
-		std::vector<std::string> found_layers;
-#ifndef NDEBUG
-		// Get all available vulkan layers
-		const std::vector<std::string>& requested_layers = render_config->mLayers;
-		bool print_layers = render_config->mPrintAvailableLayers;
-		if (!getAvailableVulkanLayers(requested_layers, print_layers, found_layers, errorState))
-			return false;
-
-		// Warn when not all requested layers could be found
-		if (found_layers.size() != requested_layers.size())
-			nap::Logger::warn("Not all requested layers were found");
-
-		// Print the ones we're enabling
-		for (const auto& layer : found_layers)
-			Logger::info("Applying layer: %s", layer.c_str());
-#endif // NDEBUG
-
-		// Create Vulkan Instance together with required extensions and layers
-		mAPIVersion = VK_MAKE_API_VERSION(0, render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
-		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
-			return false;
-
-		// Set Vulkan messaging callback based on the available debug messaging extension
-		if (is_debug_enabled)
-		{
-			if (is_debug_utils_found)
-				setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, errorState);
-			else 
-				setupDebugCallback(mInstance, mDebugCallback, errorState);
-		}
-
-		// Create presentation surface if not running headless. Can only do this after creation of instance.
-		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
-		if (!mHeadless)
-		{
-			dummy_window.mInstance = mInstance;
-			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
-				return false;
-		}
-
-		// Get the preferred physical device to select
-		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
-
-		// Get the required queue capabilities
-		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mEnableCompute);
-
-		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
-		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
-			return false;
-
-		// Sample physical device features and notify
-		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice.getHandle());
-		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
-		mSampleShadingSupported = mPhysicalDevice.getFeatures().sampleRateShading > 0;
-		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
-		mAnisotropicFilteringSupported = mPhysicalDevice.getFeatures().samplerAnisotropy > 0;
-		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
-		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
-		nap::Logger::info("Max anisotropic filter samples: %d", mAnisotropicSamples);
-		mWideLinesSupported = mPhysicalDevice.getFeatures().wideLines > 0;
-		nap::Logger::info("Wide lines: %s", mWideLinesSupported ? "Supported" : "Not Supported");
-		mLargePointsSupported = mPhysicalDevice.getFeatures().largePoints > 0;
-		nap::Logger::info("Large points: %s", mLargePointsSupported ? "Supported" : "Not Supported");
-		mNonSolidFillModeSupported = mPhysicalDevice.getFeatures().fillModeNonSolid > 0;
-		nap::Logger::info("Non solid fill mode: %s", mNonSolidFillModeSupported ? "Supported" : "Not Supported");
-
-		// Get extensions that are required for NAP render engine to function.
-		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
-
-		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
-		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
-
-		// Add additional requests
-		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());
-		
-		// Create unique set
-		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
-		for (const auto& ext : required_ext_names)
-			unique_ext_names.emplace(ext);
-
-		// Create a logical device that interfaces with the physical device.
-		bool print_extensions = render_config->mPrintAvailableExtensions;
-		bool robust_buffer_access = render_config->mEnableRobustBufferAccess;
-		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, robust_buffer_access, mDevice, errorState))
-			return false;
-
-		// Create command pool
-		if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getQueueIndex(), mCommandPool), "Failed to create Command Pool"))
-			return false;
-
-		// Determine depth format for the current device
-		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
-			return false;
-
-		// Get a compatible queue responsible for processing commands
-		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
-
-		VmaAllocatorCreateInfo allocatorInfo = {};
-		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
-		allocatorInfo.device = mDevice;
-        allocatorInfo.vulkanApiVersion = mAPIVersion;
-        allocatorInfo.instance = mInstance;
-
-		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
-			return false;
-
-		// Create allocator for descriptor sets
-		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
-
-		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
-		if (!initEmptyTextures(errorState))
-			return false;
-		
-		mFramesInFlight.resize(getMaxFramesInFlight());
-		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
-		{
-			Frame& frame = mFramesInFlight[frame_index];
-			if (!createFence(mDevice, frame.mFence, errorState))
-				return false;
-
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mUploadCommandBuffer, errorState))
-				return false;
-
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffer, errorState))
-				return false;
-
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
-				return false;
-
-			if (!createCommandBuffer(mDevice, mCommandPool, frame.mComputeCommandBuffer, errorState))
-				return false;
-
-			// Clear the queue submit operation flags
-			frame.mQueueSubmitOps = 0;
-		}
-
-		// Try to load .ini file and extract saved settings, allowed to fail
-		nap::utility::ErrorState ini_error;
-		if (!loadIni(getIniFilePath(), ini_error))
-		{
-			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
-			nap::Logger::warn(errorState.toString());
-		}
-
-		mInitialized = true;
-		return true;
+		// Initialize engine
+		return initEngine(errorState);
 	}
 
 
 	bool RenderService::initShaderCompilation(utility::ErrorState& error)
 	{
-		// Initialize SDL video
-		mSDLInitialized = SDL::initVideo(error);
-		if (!error.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
-			return false;
-
 		// Initialize shader compilation
 		mShInitialized = ShInitialize() != 0;
 		if (!error.check(mShInitialized, "Failed to initialize shader compiler"))
@@ -1944,6 +1714,238 @@ namespace nap
 		// Create a logical device that interfaces with the physical device.
 		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, false, false, mDevice, error))
 			return false;
+
+		mInitialized = true;
+		return true;
+	}
+
+
+	bool RenderService::initEngine(utility::ErrorState& errorState)
+	{
+		// Get handle to scene service
+		mSceneService = getCore().getService<SceneService>();
+		assert(mSceneService != nullptr);
+
+		// Enable high dpi support if requested (windows)
+		auto* render_config = getConfiguration<RenderServiceConfiguration>();
+
+		// Store if we are running headless, there is no display device (monitor) attached to the GPU.
+		mHeadless = render_config->mHeadless;
+
+		// Check if we need to support high dpi rendering, that's the case when requested and we're not running headless
+		mEnableHighDPIMode = render_config->mEnableHighDPIMode && !mHeadless;
+
+		// Check if we need to cache state between sessions
+		mEnableCaching = render_config->mEnableCaching;
+
+#ifdef _WIN32
+		if (mEnableHighDPIMode)
+		{
+			// Make process dpi aware
+			if (!errorState.check(SetThreadDpiAwarenessContext(DPI_AWARENESS_CONTEXT_PER_MONITOR_AWARE) != nullptr,
+				"Unable to make process DPI aware"))
+			{
+				return false;
+			}
+		}
+#endif // _WIN32
+
+		// Metal limits sampler descriptors per shader to 16 by default. Here we explicitly unlock this limitation.
+#if defined(__APPLE__)
+		setenv("MVK_CONFIG_USE_METAL_ARGUMENT_BUFFERS", "1", 1);
+#endif // __APPLE__
+
+		// Add displays
+		for (int i = 0; i < SDL::getDisplayCount(); i++)
+		{
+			auto it = mDisplays.emplace_back(Display(i));
+			nap::Logger::info(it.toString());
+			if (!errorState.check(it.isValid(), "Display: %d, unable to extract required information"))
+			{
+				return false;
+			}
+		}
+
+		// Initialize shader compilation
+		mShInitialized = ShInitialize() != 0;
+		if (!errorState.check(mShInitialized, "Failed to initialize shader compiler"))
+			return false;
+
+		// Temporary window used to bind an SDL_Window and Vulkan surface together. 
+		// Allows for easy destruction of previously created and assigned resources when initialization fails.
+		DummyWindow dummy_window;
+
+		// Get available vulkan instance extensions using SDL.
+		// Returns, next to the default VK_KHR_surface, a platform specific extension.
+		// These extensions have to be enabled in order to create a swapchain and a handle to a presentable surface.
+		// When running headless we don't present so don't need the extensions.
+		std::vector<std::string> instance_extensions;
+		if (!mHeadless)
+		{
+			// Create dummy window and verify creation
+			dummy_window.mWindow = SDL_CreateWindow("Dummy", 0, 0, 32, 32, SDL_WINDOW_VULKAN | SDL_WINDOW_HIDDEN);
+			if (!errorState.check(dummy_window.mWindow != nullptr, "Unable to create SDL window"))
+				return false;
+
+			// Get all available vulkan instance extensions, required to create a presentable surface.
+			// It also provides a way to determine whether a queue family in a physical device supports presenting to particular surface.
+			if (!getSurfaceInstanceExtensions(dummy_window.mWindow, instance_extensions, errorState))
+				return false;
+		}
+
+		// Add debug display extension, we need this to relay debug messages
+		bool is_debug_utils_found = false;
+		const bool is_debug_enabled = render_config->mEnableDebug;
+		if (is_debug_enabled)
+		{
+			if (!errorState.check(getDebugInstanceExtensions(is_debug_utils_found, instance_extensions, errorState), "Failed to find available debug extension while debug is enabled"))
+				return false;
+		}
+
+		// Get available vulkan layer extensions, notify when not all could be found
+		std::vector<std::string> found_layers;
+#ifndef NDEBUG
+		// Get all available vulkan layers
+		const std::vector<std::string>& requested_layers = render_config->mLayers;
+		bool print_layers = render_config->mPrintAvailableLayers;
+		if (!getAvailableVulkanLayers(requested_layers, print_layers, found_layers, errorState))
+			return false;
+
+		// Warn when not all requested layers could be found
+		if (found_layers.size() != requested_layers.size())
+			nap::Logger::warn("Not all requested layers were found");
+
+		// Print the ones we're enabling
+		for (const auto& layer : found_layers)
+			Logger::info("Applying layer: %s", layer.c_str());
+#endif // NDEBUG
+
+		// Create Vulkan Instance together with required extensions and layers
+		mAPIVersion = VK_MAKE_API_VERSION(0, render_config->mVulkanVersionMajor, render_config->mVulkanVersionMinor, 0);
+		if (!createVulkanInstance(found_layers, instance_extensions, mAPIVersion, mInstance, errorState))
+			return false;
+
+		// Set Vulkan messaging callback based on the available debug messaging extension
+		if (is_debug_enabled)
+		{
+			if (is_debug_utils_found)
+				setupDebugUtilsMessengerCallback(mInstance, mDebugUtilsMessengerCallback, errorState);
+			else
+				setupDebugCallback(mInstance, mDebugCallback, errorState);
+		}
+
+		// Create presentation surface if not running headless. Can only do this after creation of instance.
+		// Used to select a queue family that next to Graphics and Transfer commands supports presentation.
+		if (!mHeadless)
+		{
+			dummy_window.mInstance = mInstance;
+			if (!createSurface(dummy_window.mWindow, mInstance, dummy_window.mSurface, errorState))
+				return false;
+		}
+
+		// Get the preferred physical device to select
+		VkPhysicalDeviceType pref_gpu = getPhysicalDeviceType(render_config->mPreferredGPU);
+
+		// Get the required queue capabilities
+		VkQueueFlags req_queue_capabilities = getQueueFlags(render_config->mEnableCompute);
+
+		// Request a single (unified) family queue that supports the full set of QueueFamilyOptions in mQueueFamilies, meaning graphics/transfer and compute
+		if (!selectPhysicalDevice(mInstance, pref_gpu, mAPIVersion, dummy_window.mSurface, req_queue_capabilities, mPhysicalDevice, errorState))
+			return false;
+
+		// Sample physical device features and notify
+		mMaxRasterizationSamples = getMaxSampleCount(mPhysicalDevice.getHandle());
+		nap::Logger::info("Max number of rasterization samples: %d", (int)(mMaxRasterizationSamples));
+		mSampleShadingSupported = mPhysicalDevice.getFeatures().sampleRateShading > 0;
+		nap::Logger::info("Sample rate shading: %s", mSampleShadingSupported ? "Supported" : "Not Supported");
+		mAnisotropicFilteringSupported = mPhysicalDevice.getFeatures().samplerAnisotropy > 0;
+		nap::Logger::info("Anisotropic filtering: %s", mAnisotropicFilteringSupported ? "Supported" : "Not Supported");
+		mAnisotropicSamples = mAnisotropicFilteringSupported ? render_config->mAnisotropicFilterSamples : 1;
+		nap::Logger::info("Max anisotropic filter samples: %d", mAnisotropicSamples);
+		mWideLinesSupported = mPhysicalDevice.getFeatures().wideLines > 0;
+		nap::Logger::info("Wide lines: %s", mWideLinesSupported ? "Supported" : "Not Supported");
+		mLargePointsSupported = mPhysicalDevice.getFeatures().largePoints > 0;
+		nap::Logger::info("Large points: %s", mLargePointsSupported ? "Supported" : "Not Supported");
+		mNonSolidFillModeSupported = mPhysicalDevice.getFeatures().fillModeNonSolid > 0;
+		nap::Logger::info("Non solid fill mode: %s", mNonSolidFillModeSupported ? "Supported" : "Not Supported");
+
+		// Get extensions that are required for NAP render engine to function.
+		std::vector<std::string> required_ext_names = getRequiredDeviceExtensionNames(mAPIVersion);
+
+		// Add swapchain when not running headless. Adds the ability to present rendered results to a surface.
+		if (!mHeadless) { required_ext_names.emplace_back(VK_KHR_SWAPCHAIN_EXTENSION_NAME); };
+
+		// Add additional requests
+		required_ext_names.insert(required_ext_names.end(), render_config->mAdditionalExtensions.begin(), render_config->mAdditionalExtensions.end());
+
+		// Create unique set
+		std::unordered_set<std::string> unique_ext_names(required_ext_names.size());
+		for (const auto& ext : required_ext_names)
+			unique_ext_names.emplace(ext);
+
+		// Create a logical device that interfaces with the physical device.
+		bool print_extensions = render_config->mPrintAvailableExtensions;
+		bool robust_buffer_access = render_config->mEnableRobustBufferAccess;
+		if (!createLogicalDevice(mPhysicalDevice, found_layers, unique_ext_names, print_extensions, robust_buffer_access, mDevice, errorState))
+			return false;
+
+		// Create command pool
+		if (!errorState.check(createCommandPool(mPhysicalDevice.getHandle(), mDevice, mPhysicalDevice.getQueueIndex(), mCommandPool), "Failed to create Command Pool"))
+			return false;
+
+		// Determine depth format for the current device
+		if (!errorState.check(findDepthFormat(mPhysicalDevice.getHandle(), mDepthFormat), "Unable to find depth format"))
+			return false;
+
+		// Get a compatible queue responsible for processing commands
+		vkGetDeviceQueue(mDevice, mPhysicalDevice.getQueueIndex(), 0, &mQueue);
+
+		VmaAllocatorCreateInfo allocatorInfo = {};
+		allocatorInfo.physicalDevice = mPhysicalDevice.getHandle();
+		allocatorInfo.device = mDevice;
+		allocatorInfo.vulkanApiVersion = mAPIVersion;
+		allocatorInfo.instance = mInstance;
+
+		if (!errorState.check(vmaCreateAllocator(&allocatorInfo, &mVulkanAllocator) == VK_SUCCESS, "Failed to create Vulkan Memory Allocator"))
+			return false;
+
+		// Create allocator for descriptor sets
+		mDescriptorSetAllocator = std::make_unique<DescriptorSetAllocator>(mDevice);
+
+		// Initialize an empty texture. This texture is used as the default for any samplers that don't have a texture bound to them in the data.
+		if (!initEmptyTextures(errorState))
+			return false;
+
+		mFramesInFlight.resize(getMaxFramesInFlight());
+		for (int frame_index = 0; frame_index != mFramesInFlight.size(); ++frame_index)
+		{
+			Frame& frame = mFramesInFlight[frame_index];
+			if (!createFence(mDevice, frame.mFence, errorState))
+				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mUploadCommandBuffer, errorState))
+				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mDownloadCommandBuffer, errorState))
+				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mHeadlessCommandBuffer, errorState))
+				return false;
+
+			if (!createCommandBuffer(mDevice, mCommandPool, frame.mComputeCommandBuffer, errorState))
+				return false;
+
+			// Clear the queue submit operation flags
+			frame.mQueueSubmitOps = 0;
+		}
+
+		// Try to load .ini file and extract saved settings, allowed to fail
+		nap::utility::ErrorState ini_error;
+		if (!loadIni(getIniFilePath(), ini_error))
+		{
+			ini_error.fail("Unable to load: %s", getIniFilePath().c_str());
+			nap::Logger::warn(errorState.toString());
+		}
 
 		mInitialized = true;
 		return true;

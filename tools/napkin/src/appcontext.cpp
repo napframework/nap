@@ -21,6 +21,7 @@
 #include <mathutils.h>
 #include <renderservice.h>
 #include <constantshader.h>
+#include <sdlhelpers.h>
 
 // local
 #include <naputils.h>
@@ -145,6 +146,14 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	mRenderService = mCore.getService<nap::RenderService>();
 	if (mRenderService != nullptr)
 	{
+		// Initialize SDL video rendering (used by NAP)
+		if (!nap::SDL::initVideo(err))
+		{
+			err.fail("Failed to init SDL Video subsystem");
+			return nullptr;
+		}
+
+		// Init GLSL shader compilation
 		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
 		if (!mRenderService->init(err))
 		{
