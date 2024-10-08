@@ -41,16 +41,21 @@ namespace napkin
 		mContainer = QWidget::createWindowContainer(&mNativeWindow, this);
 		mContainer->setFocusPolicy(Qt::StrongFocus);
 
-		// Fetch render service
-		auto* render_service = AppContext::get().getRenderService();
-		assert(render_service != nullptr);
+		// Initialize applet
+		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
+		nap::utility::ErrorState error;
+		if (!mApplet.init(preview_app, error))
+		{
+			error.fail("Failed to initialize preview applet!");
+			nap::Logger::error(error.toString());
+			return;
+		}
 
 		// Create render window
-		assert(mRenderWindow == nullptr && render_service != nullptr);
+		assert(mRenderWindow == nullptr);
 		auto id = mContainer->winId(); assert(id != 0);
-		mRenderWindow = std::make_unique<nap::RenderWindow>(render_service->getCore(), (void*)id);
+		mRenderWindow = std::make_unique<nap::RenderWindow>(mApplet.getCore(), (void*)id);
 		mRenderWindow->mID = this->objectName().toStdString() + "_VKWindow";
-		nap::utility::ErrorState error;
 		if (!mRenderWindow->init(error))
 		{
 			mRenderWindow = nullptr;
@@ -66,17 +71,13 @@ namespace napkin
 
 		// Install listener
 		mContainer->installEventFilter(this);
-
-		//auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
-		//mPreviewLauncher.run(preview_app);
 	}
-
 
 	void RenderPanel::draw()
 	{
 		// Fetch render service
-		auto* render_service = AppContext::get().getRenderService();
-		assert(mRenderWindow != nullptr && render_service != nullptr);
+		auto render_service =  mApplet.getCore().getService<nap::RenderService>();
+		assert(render_service != nullptr);
 
 		// Clear and draw (TEST)
 		auto col = nap::math::random<glm::vec3>({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
@@ -90,7 +91,6 @@ namespace napkin
 		}
 		render_service->endFrame();
 	}
-
 
 	bool RenderPanel::eventFilter(QObject* obj, QEvent* event)
 	{
@@ -129,3 +129,4 @@ namespace napkin
 		return false;
 	}
 }
+

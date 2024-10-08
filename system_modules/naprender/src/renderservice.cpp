@@ -1644,10 +1644,14 @@ namespace nap
 	// Set the currently active renderer
 	bool RenderService::init(nap::utility::ErrorState& errorState)
 	{
-		// Initialize SDL video
-		mSDLInitialized = SDL::initVideo(errorState);
-		if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
-			return false;
+		// Attempt to initialize SDL video subsystem if not yet available
+		// TODO: Try to find a more clean, optimized way of handling this.
+		if (!SDL::videoInitialized())
+		{
+			mSDLInitialized = SDL::initVideo(errorState);
+			if (!errorState.check(mSDLInitialized, "Failed to init SDL Video subsystem"))
+				return false;
+		}
 
 		// Initialize engine
 		return initEngine(errorState);

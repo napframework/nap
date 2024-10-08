@@ -155,7 +155,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 		// Init GLSL shader compilation
 		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
-		if (!mRenderService->init(err))
+		if (!mRenderService->initShaderCompilation(err))
 		{
 			nap::Logger::error(err.toString());
 			progressChanged(1.0f);

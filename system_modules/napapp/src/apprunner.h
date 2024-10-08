@@ -76,16 +76,6 @@ namespace nap
 		bool start(utility::ErrorState& error);
 
 		/**
-		 * Starts the app loop, if the loop could not start for some reason
-		 * the error contains the reason. This call will initialize core
-		 * and the application and run the application loop until AppRunner::stop()
-		 * or BaseApp::quit() is invoked.
-		 * @param error the error message if the loop couldn't be started
-		 * @return if the app loop has successfully started
-		 */
-		bool start(const std::string& projectInfo, ProjectInfo::EContext context, utility::ErrorState& error);
-
-		/**
 		 * Stops the loop and exits the application
 		 */
 		void stop();
@@ -137,13 +127,7 @@ namespace nap
 	template<typename APP, typename HANDLER>
 	nap::AppRunner<APP, HANDLER>::AppRunner(nap::Core& core) : mCore(core)
 	{
-		// Ensure the app is an application
-		assert(RTTI_OF(APP).is_derived_from(RTTI_OF(BaseApp)));
-
-		// Ensure the handler is an app event handler
-		assert(RTTI_OF(HANDLER).is_derived_from(RTTI_OF(AppEventHandler)));
-
-		// Create 'm
+		// Create app and handler
 		mApp = std::make_unique<APP>(core);
 		mHandler = std::make_unique<HANDLER>(*mApp);
 	}

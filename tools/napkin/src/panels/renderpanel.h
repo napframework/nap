@@ -6,7 +6,7 @@
 
 // Local Includes
 #include "appcontext.h"
-#include "applauncher.h"
+#include "appletlauncher.h"
 #include "apps/renderpreviewapp.h"
 
 // External Includes
@@ -37,7 +37,7 @@ namespace napkin
 		void createResources();
 		void draw();
 
-		using PreviewLauncher = napkin::AppLauncher<nap::RenderPreviewApp, nap::SDLAppEventHandler>;
-		PreviewLauncher mPreviewLauncher;
+		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::SDLAppEventHandler>;
+		PreviewApplet mApplet;
 	};
 }
