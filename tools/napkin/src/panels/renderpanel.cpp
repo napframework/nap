@@ -129,4 +129,3 @@ namespace napkin
 		return false;
 	}
 }
-

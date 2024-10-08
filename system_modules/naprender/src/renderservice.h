@@ -1025,6 +1025,20 @@ namespace nap
 		uint32 getVulkanVersionMinor() const;
 
 		/**
+		 * Initialize the SDL video sub system and render engine -> the service owns the renderer.
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		virtual bool init(nap::utility::ErrorState& errorState) override;
+
+		/**
+		 * Initializes the complete render engine
+		 * @param errorState contains the error message if the service could not be initialized
+		 * @return if the service has been initialized successfully
+		 */
+		bool initEngine(utility::ErrorState& error);
+		
+		/**
 		 * Initializes GLSL shader compilation and linking.
 		 * Don't call this in your application! Only required by external processes
 		 * that want to use the nap render interface.
@@ -1032,18 +1046,6 @@ namespace nap
 		 * @return if shader compiler and linker initialized successfully
 		 */
 		bool initShaderCompilation(utility::ErrorState& error);
-
-		/**
-		 * Initializes the complete render engine
-		 */
-		virtual bool initEngine(utility::ErrorState& error);
-
-		/**
-		 * Initialize the SDL video sub system and renderer, the service owns the renderer.
-		 * @param errorState contains the error message if the service could not be initialized
-		 * @return if the service has been initialized successfully
-		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
 
 		/**
 		 * Called when a new window is added to the system
