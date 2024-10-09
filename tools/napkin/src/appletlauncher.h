@@ -173,6 +173,3 @@ namespace napkin
 	}
 	*/
 }
-
-
-

@@ -6,10 +6,9 @@
     "RequiredModules": [
         "napapp",
         "napcameracontrol",
-        "naprender",
-        "napsdlinput"
+        "napimgui"
     ],
-    "Data": "data/objects.json",
+    "Data": "data/testworld.json",
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }

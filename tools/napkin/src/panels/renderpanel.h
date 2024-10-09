@@ -15,7 +15,7 @@
 #include <QTImer>
 #include <QBoxLayout>
 #include <renderwindow.h>
-#include <sdlappeventhandler.h>
+#include <guiappeventhandler.h>
 
 namespace napkin
 {
@@ -38,7 +38,7 @@ namespace napkin
 		void createResources();
 		void draw();
 
-		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::SDLAppEventHandler>;
+		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::GUIAppEventHandler>;
 		PreviewApplet mApplet;
 
 		QTimer mTimer;

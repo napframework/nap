@@ -152,6 +152,7 @@ namespace napkin
 	nap::uint8 napkin::AppletRunner<APP, HANDLER>::run()
 	{
 		mCore.start();
+		mHandler->start();
 		return applet::exitcode::success;
 	}
 

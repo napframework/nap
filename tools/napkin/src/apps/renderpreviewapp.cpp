@@ -4,8 +4,12 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
+#include <orthocameracomponent.h>
 #include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
+#include <renderablemeshcomponent.h>
+#include <renderable2dtextcomponent.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderPreviewApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -20,29 +24,34 @@ namespace nap
 	bool RenderPreviewApp::init(utility::ErrorState& error)
 	{
 		// Retrieve services
-		mRenderService	= getCore().getService<nap::RenderService>();
-		mSceneService	= getCore().getService<nap::SceneService>();
-		mInputService	= getCore().getService<nap::InputService>();
+		mRenderService = getCore().getService<nap::RenderService>();
+		mSceneService = getCore().getService<nap::SceneService>();
+		mInputService = getCore().getService<nap::InputService>();
+		mGuiService = getCore().getService<nap::IMGuiService>();
 
-		// Fetch the resource manager
+		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
 
-		// Get the scene that contains our entities and components
-		mScene = mResourceManager->findObject<Scene>("Scene");
-		if (!error.check(mScene != nullptr, "unable to find scene with name: %s", "Scene"))
-			return false;
+		// Extract loaded resources
+		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("WorldTexture");
 
-		// Get the camera entity
-		mCameraEntity = mScene->findEntity("CameraEntity");
-		if (!error.check(mCameraEntity != nullptr, "unable to find entity with name: %s", "CameraEntity"))
-			return false;
+		// Get the resource that manages all the entities
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 
-		// Get the Gnomon entity
-		mGnomonEntity = mScene->findEntity("GnomonEntity");
-		if (!error.check(mGnomonEntity != nullptr, "unable to find entity with name: %s", "GnomonEntity"))
-			return false;
+		// Fetch world and text
+		mWorldEntity = scene->findEntity("World");
+		mTextEntity = scene->findEntity("Text");
 
-		// All done!
+		// Fetch the two different cameras
+		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
+		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
+
+		// Sample default color values from loaded color palette
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
+		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
+		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+		mTextColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+
 		return true;
 	}
 	
@@ -50,9 +59,49 @@ namespace nap
 	// Update app
 	void RenderPreviewApp::update(double deltaTime)
 	{
-		// Use a default input router to forward input events (recursively) to all input components in the default scene
-		nap::DefaultInputRouter input_router(true);
-		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+		// Create an input router, the default one forwards messages to mouse and keyboard input components
+		nap::DefaultInputRouter input_router;
+
+		// Now forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+
+		// Push the current color selection to the shader.
+		nap::RenderableMeshComponentInstance& renderer = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto ubo = renderer.getMaterialInstance().getOrCreateUniform("UBO");
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
+		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
+
+		// Setup GUI
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+
+		// Colors
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+			ImGui::ColorEdit3("Text Color", mTextColor.getData());
+		}
+
+		// Display world texture in GUI
+		if (ImGui::CollapsingHeader("Textures"))
+		{
+			float col_width = ImGui::GetColumnWidth();
+			float ratio = (float)mWorldTexture->getHeight() / (float)mWorldTexture->getWidth();
+			ImGui::Image(*mWorldTexture, ImVec2(col_width, col_width * ratio));
+			ImGui::Text("Word Texture");
+		}
+		ImGui::End();
+
+		// Push text color
+		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
+		text_comp.setColor(mTextColor);
 	}
 	
 	
@@ -67,30 +116,41 @@ namespace nap
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
-			// Begin render pass
+			// Begin the render pass
 			assert(mRenderWindow != nullptr);
 			mRenderWindow->beginRendering();
 
-			// Get Perspective camera to render with
-			auto& perp_cam = mCameraEntity->getComponent<PerspCameraComponentInstance>();
+			// Find the world and add as an object to render
+			std::vector<nap::RenderableComponentInstance*> components_to_render;
+			nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
+			components_to_render.emplace_back(&renderable_world);
 
-			// Add Gnomon
-			std::vector<nap::RenderableComponentInstance*> components_to_render
-			{
-				&mGnomonEntity->getComponent<RenderGnomonComponentInstance>()
-			};
+			// Find the perspective camera
+			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
 
-			// Render Gnomon
-			mRenderService->renderObjects(*mRenderWindow, perp_cam, components_to_render);
+			// Render the world with the right camera directly to screen
+			mRenderService->renderObjects(*mRenderWindow, persp_camera, components_to_render);
 
-			// Stop render pass
+			// Locate component that can render text to screen
+			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+
+			// Center text and render it using the given draw call, 
+			// alternatively you can use an orthographic camera to render the text, similar to how the 3D mesh is rendered:  
+			// mRenderService::renderObjects(*mRenderWindow, ortho_camera, components_to_render);
+			render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
+			render_text.draw(*mRenderWindow);
+
+			// Draw our GUI
+			mGuiService->draw();
+
+			// End the render pass
 			mRenderWindow->endRendering();
 
 			// End recording
 			mRenderService->endRecording();
 		}
 
-		// Proceed to next frame
+		// Signal the ending of the frame
 		mRenderService->endFrame();
 	}
 	

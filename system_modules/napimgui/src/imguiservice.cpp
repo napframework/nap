@@ -1250,4 +1250,3 @@ namespace nap
 		ImGui::SetCurrentContext(mPreviousContext);
 	}
 }
-
