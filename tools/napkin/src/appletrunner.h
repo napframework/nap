@@ -54,6 +54,12 @@ namespace napkin
 		bool init(const std::string& projectInfo, nap::ProjectInfo::EContext context, nap::utility::ErrorState& error);
 
 		/**
+		 * Runs the application until quit or stopped
+		 * @return applet exit code
+		 */
+		nap::uint8 run();
+
+		/**
 		 * @return the app
 		 */
 		APP& getApp()														{ assert(mApp != nullptr); return *mApp; }
@@ -84,7 +90,6 @@ namespace napkin
 		std::atomic<bool>			mStop = { false };						// If the runner should stop
 		bool						mInitialized =  false;					// If the application is initialized
 	};
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
@@ -140,6 +145,14 @@ namespace napkin
 
 		mInitialized = true;
 		return true;
+	}
+
+
+	template<typename APP, typename HANDLER>
+	nap::uint8 napkin::AppletRunner<APP, HANDLER>::run()
+	{
+		mCore.start();
+		return applet::exitcode::success;
 	}
 
 

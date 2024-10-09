@@ -52,7 +52,7 @@ namespace nap
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
-		//mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
+		mInputService->processWindowEvents(*mRenderWindow, input_router, { &mScene->getRootEntity() });
 	}
 	
 	
@@ -64,12 +64,11 @@ namespace nap
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
-		/*
-
 		// Begin recording the render commands for the main render window
 		if (mRenderService->beginRecording(*mRenderWindow))
 		{
 			// Begin render pass
+			assert(mRenderWindow != nullptr);
 			mRenderWindow->beginRendering();
 
 			// Get Perspective camera to render with
@@ -90,7 +89,6 @@ namespace nap
 			// End recording
 			mRenderService->endRecording();
 		}
-		*/
 
 		// Proceed to next frame
 		mRenderService->endFrame();

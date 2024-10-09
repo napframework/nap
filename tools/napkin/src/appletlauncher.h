@@ -50,7 +50,18 @@ namespace napkin
 		 */
 		// int abort();
 
+		/**
+		 * Initializes the applet
+		 * @param projectFilename the project to initialize
+		 * @param error holds the error if initialization fails
+		 */
 		bool init(const std::string& projectFilename, nap::utility::ErrorState error);
+
+		/**
+		 * Runs the applet until stop is called
+		 * @return applet exit code
+		 */
+		nap::uint8 run();
 
 		/**
 		 * @return core instance
@@ -61,6 +72,11 @@ namespace napkin
 		 * @return app instance
 		 */
 		APP& getApp()							{ assert(mRunner != nullptr); return mRunner->getApp(); }
+
+		/**
+		 * @return handler
+		 */
+		HANDLER& getHandler()					{ assert(mRunner != nullptr); return mRunner->getHandler(); }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Signals
@@ -87,6 +103,7 @@ namespace napkin
 	};
 
 
+
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
@@ -104,6 +121,15 @@ namespace napkin
 			return false;
 		}
 		return true;
+	}
+
+
+	template<typename APP, typename HANDLER>
+	nap::uint8 napkin::AppletLauncher<APP, HANDLER>::run()
+	{
+		// Start core
+		assert(mRunner != nullptr);
+		return mRunner->run();
 	}
 
 	/*

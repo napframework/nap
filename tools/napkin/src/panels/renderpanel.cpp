@@ -63,34 +63,49 @@ namespace napkin
 			return;
 		}
 
+		// Set the window to use
+		mApplet.getApp().setWindow(*mRenderWindow);
+
 		// Add container to layout and set
 		assert(layout() == nullptr);
 		mLayout.setContentsMargins(0, 0, 0, 0);
 		mLayout.addWidget(mContainer);
 		setLayout(&mLayout);
 
+		// Run the applet (TODO: make it run in the background)
+		mApplet.run();
+
 		// Install listener
 		mContainer->installEventFilter(this);
+
+		// Intstall timer
+		connect(&mTimer, &QTimer::timeout, this, &RenderPanel::timerEvent);
+		mTimer.start(20);
 	}
 
 	void RenderPanel::draw()
 	{
-		// Fetch render service
-		auto render_service =  mApplet.getCore().getService<nap::RenderService>();
-		assert(render_service != nullptr);
+		// Pointer to function used inside update call by core
+		auto& app = mApplet.getApp();
+		auto& han = mApplet.getHandler();
 
-		// Clear and draw (TEST)
+		// Process and update (core + app)
+		han.process();
+		std::function<void(double)> update_call = std::bind(&nap::RenderPreviewApp::update, &app, std::placeholders::_1);
+		mApplet.getCore().update(update_call);
+
+		// Render
+		assert(mRenderWindow != nullptr);
 		auto col = nap::math::random<glm::vec3>({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
-		mRenderWindow->setClearColor({col.x, col.y, col.z, 1.0f});
-		render_service->beginFrame();
-		if (render_service->beginRecording(*mRenderWindow))
-		{
-			mRenderWindow->beginRendering();
-			mRenderWindow->endRendering();
-			render_service->endRecording();
-		}
-		render_service->endFrame();
+		mApplet.getApp().render();
 	}
+
+
+	void RenderPanel::timerEvent()
+	{
+		draw();
+	}
+
 
 	bool RenderPanel::eventFilter(QObject* obj, QEvent* event)
 	{
@@ -99,16 +114,8 @@ namespace napkin
 
 		switch (event->type())
 		{
-		case QEvent::Resize:
-		{
-			QResizeEvent* size_event = static_cast<QResizeEvent*>(event);
-			mRenderWindow->setSize({ size_event->size().width(), size_event->size().height() });
-			draw();
-			return true;
-		}
 		case QEvent::Show:
 		{
-			draw();
 			return true;
 		}
 		case QEvent::KeyPress:
@@ -116,7 +123,6 @@ namespace napkin
 			QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
 			if (key_event->key() == Qt::Key_Space)
 			{
-				draw();
 				return true;
 			}
 			return false;

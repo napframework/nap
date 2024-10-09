@@ -12,6 +12,7 @@
 // External Includes
 #include <QWidget>
 #include <QWindow>
+#include <QTImer>
 #include <QBoxLayout>
 #include <renderwindow.h>
 #include <sdlappeventhandler.h>
@@ -39,5 +40,8 @@ namespace napkin
 
 		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::SDLAppEventHandler>;
 		PreviewApplet mApplet;
+
+		QTimer mTimer;
+		void timerEvent();
 	};
 }
