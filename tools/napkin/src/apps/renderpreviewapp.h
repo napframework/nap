@@ -69,9 +69,9 @@ namespace nap
 		virtual int shutdown() override;
 
 		/**
-		 * Set the render window to use
+		 * @return window used by application
 		 */
-		void setWindow(nap::RenderWindow& renderWindow)				{ mRenderWindow = &renderWindow; }
+		nap::RenderWindow& getRenderWindow()							{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
 
 	private:
 		ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
@@ -86,7 +86,7 @@ namespace nap
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
 		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
-		RenderWindow*				mRenderWindow;						//< Pointer to the render window		
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the world texture		
 
 		RGBColorFloat mColorOne;										//< First sphere blend color
 		RGBColorFloat mColorTwo;										//< Second sphere blend color

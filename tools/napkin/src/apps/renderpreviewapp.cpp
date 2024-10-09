@@ -34,6 +34,7 @@ namespace nap
 
 		// Extract loaded resources
 		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("WorldTexture");
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("RenderWindow");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");

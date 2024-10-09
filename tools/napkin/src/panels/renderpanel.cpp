@@ -48,6 +48,12 @@ namespace napkin
 		mContainer = QWidget::createWindowContainer(&mNativeWindow, this);
 		mContainer->setFocusPolicy(Qt::StrongFocus);
 
+		// Add render window object creator
+		auto& factory = mApplet.getCore().getResourceManager()->getFactory();
+		auto id = mContainer->winId(); assert(id != 0);
+		auto obj_creator = std::make_unique<napkin::RenderWindowObjectCreator>(mApplet.getCore(), (void*)id);
+		factory.addObjectCreator(std::move(obj_creator));
+
 		// Initialize applet
 		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
 		nap::utility::ErrorState error;
@@ -57,24 +63,6 @@ namespace napkin
 			nap::Logger::error(error.toString());
 			return;
 		}
-
-		// Add render window object creator
-		auto& factory = mApplet.getCore().getResourceManager()->getFactory();
-		auto id = mContainer->winId(); assert(id != 0);
-		auto obj_creator = std::make_unique<napkin::RenderWindowObjectCreator>(mApplet.getCore(), (void*)id);
-		factory.addObjectCreator(std::move(obj_creator));
-
-		// Create render window
-		mRenderWindow = mApplet.getCore().getResourceManager()->createObject<nap::RenderWindow>();
-		if (!mRenderWindow->init(error))
-		{
-			mRenderWindow = nullptr;
-			nap::Logger::error(error.toString());
-			return;
-		}
-
-		// Set it in the app so it can be used to draw to
-		mApplet.getApp().setWindow(*mRenderWindow);
 
 		// Add container to layout and set
 		assert(layout() == nullptr);
@@ -88,7 +76,7 @@ namespace napkin
 		// Install listener
 		mContainer->installEventFilter(this);
 
-		// Intstall timer
+		// Install timer
 		connect(&mTimer, &QTimer::timeout, this, &RenderPanel::timerEvent);
 		mTimer.start(20);
 	}
@@ -99,14 +87,14 @@ namespace napkin
 		auto& app = mApplet.getApp();
 		auto& han = mApplet.getHandler();
 
-		// Process and update (core + app)
+		// Process SDL events
 		han.process();
+
+		// Update 
 		std::function<void(double)> update_call = std::bind(&nap::RenderPreviewApp::update, &app, std::placeholders::_1);
 		mApplet.getCore().update(update_call);
 
-		// Render
-		assert(mRenderWindow != nullptr);
-		auto col = nap::math::random<glm::vec3>({ 0.0f, 0.0f, 0.0f }, { 1.0f, 1.0f, 1.0f });
+		// Draw
 		mApplet.getApp().render();
 	}
 

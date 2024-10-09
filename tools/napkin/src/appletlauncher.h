@@ -23,9 +23,6 @@ namespace napkin
 	public:
 		AppletLauncher() = default;
 
-		// Terminates the application if running 
-		virtual ~AppletLauncher() { mRunner = nullptr; }
-
 		/**
 		 * Copy is not allowed
 		 */
@@ -66,17 +63,17 @@ namespace napkin
 		/**
 		 * @return core instance
 		 */
-		nap::Core& getCore()					{ assert(mRunner != nullptr); return mRunner->getCore(); }
+		nap::Core& getCore()					{ return mRunner.getCore(); }
 
 		/**
 		 * @return app instance
 		 */
-		APP& getApp()							{ assert(mRunner != nullptr); return mRunner->getApp(); }
+		APP& getApp()							{ return mRunner.getApp(); }
 
 		/**
 		 * @return handler
 		 */
-		HANDLER& getHandler()					{ assert(mRunner != nullptr); return mRunner->getHandler(); }
+		HANDLER& getHandler()					{ return mRunner.getHandler(); }
 
 		//////////////////////////////////////////////////////////////////////////
 		// Signals
@@ -98,8 +95,8 @@ namespace napkin
 		nap::Signal<APP&> appletStopped;
 
 	private:
-		std::unique_ptr<AppletRunner<APP, HANDLER>> mRunner = nullptr;		///< Application runner
-		std::future<nap::uint8> mTask;										///< The client server thread with exit code
+		AppletRunner<APP, HANDLER> mRunner;						///< Application runner
+		std::future<nap::uint8> mTask;							///< The client server thread with exit code
 	};
 
 
@@ -113,9 +110,7 @@ namespace napkin
 	bool napkin::AppletLauncher<APP, HANDLER>::init(const std::string& projectFilename, nap::utility::ErrorState error)
 	{
 		// Initialize engine and application
-		assert(mRunner == nullptr);
-		mRunner = std::make_unique<napkin::AppletRunner<APP, HANDLER>>();
-		if (!mRunner->init(projectFilename, nap::ProjectInfo::EContext::Editor, error))
+		if (!mRunner.init(projectFilename, nap::ProjectInfo::EContext::Editor, error))
 		{
 			nap::Logger::error("error: %s", error.toString().c_str());
 			return false;
@@ -128,8 +123,7 @@ namespace napkin
 	nap::uint8 napkin::AppletLauncher<APP, HANDLER>::run()
 	{
 		// Start core
-		assert(mRunner != nullptr);
-		return mRunner->run();
+		return mRunner.run();
 	}
 
 	/*
