@@ -24,7 +24,7 @@ namespace napkin
 		AppletLauncher() = default;
 
 		// Terminates the application if running 
-		virtual ~AppletLauncher()											{ }
+		virtual ~AppletLauncher() { mRunner = nullptr; }
 
 		/**
 		 * Copy is not allowed

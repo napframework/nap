@@ -160,6 +160,7 @@ namespace napkin
 	template<typename APP, typename HANDLER>
 	napkin::AppletRunner<APP, HANDLER>::~AppletRunner()
 	{
+		mHandler->shutdown();
 		mServices = nullptr;
 	}
 }

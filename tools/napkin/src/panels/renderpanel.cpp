@@ -10,6 +10,7 @@
 #include <QSurfaceFormat>
 #include <QLayout>
 #include <QResizeEvent>
+#include <rtti/factory.h>
 
 namespace napkin
 {
@@ -20,11 +21,17 @@ namespace napkin
 	}
 
 
+	RenderPanel::~RenderPanel()
+	{ }
+
+
 	void RenderPanel::projectLoaded(const nap::ProjectInfo& info)
 	{
 		// Create if no resources are available
 		if (mRenderWindow == nullptr)
+		{
 			createResources();
+		}
 	}
 
 
@@ -51,11 +58,14 @@ namespace napkin
 			return;
 		}
 
-		// Create render window
-		assert(mRenderWindow == nullptr);
+		// Add render window object creator
+		auto& factory = mApplet.getCore().getResourceManager()->getFactory();
 		auto id = mContainer->winId(); assert(id != 0);
-		mRenderWindow = std::make_unique<nap::RenderWindow>(mApplet.getCore(), (void*)id);
-		mRenderWindow->mID = this->objectName().toStdString() + "_VKWindow";
+		auto obj_creator = std::make_unique<napkin::RenderWindowObjectCreator>(mApplet.getCore(), (void*)id);
+		factory.addObjectCreator(std::move(obj_creator));
+
+		// Create render window
+		mRenderWindow = mApplet.getCore().getResourceManager()->createObject<nap::RenderWindow>();
 		if (!mRenderWindow->init(error))
 		{
 			mRenderWindow = nullptr;
@@ -63,7 +73,7 @@ namespace napkin
 			return;
 		}
 
-		// Set the window to use
+		// Set it in the app so it can be used to draw to
 		mApplet.getApp().setWindow(*mRenderWindow);
 
 		// Add container to layout and set
