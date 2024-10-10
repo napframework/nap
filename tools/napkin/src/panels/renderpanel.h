@@ -69,7 +69,6 @@ namespace napkin
 		nap::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;
 		void projectLoaded(const nap::ProjectInfo& info);
 		void createResources();
-		void draw();
 
 		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::GUIAppEventHandler>;
 		PreviewApplet mApplet;
@@ -78,3 +77,5 @@ namespace napkin
 		void timerEvent();
 	};
 }
+
+

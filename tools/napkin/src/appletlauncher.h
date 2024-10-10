@@ -36,29 +36,28 @@ namespace napkin
 		AppletLauncher& operator=(AppletLauncher&&) = delete;
 
 		/**
-		 * Launches and runs the app in a separate thread
-		 * @param projectInfoFile the project info to load
-		 */
-		// void run(const std::string& projectFilename);
-
-		/**
-		 * Aborts and joins the running application if it runs (= valid)
-		 * @return application exit code
-		 */
-		// int abort();
-
-		/**
-		 * Initializes the applet
+		 * Initializes the applet using the given launch policy
 		 * @param projectFilename the project to initialize
-		 * @param error holds the error if initialization fails
 		 */
-		bool init(const std::string& projectFilename, nap::utility::ErrorState error);
+		void init(const std::string& projectFilename, std::launch launchPolicy);
 
 		/**
-		 * Runs the applet until stop is called
+		 * Waits until the applet has been initialized
+		 * @return if initialization succeeded
+		 */
+		bool initialized();
+
+		/**
+		 * Runs the applet using the given launch policy
 		 * @return applet exit code
 		 */
-		nap::uint8 run();
+		void run(std::launch launchPolicy);
+
+		/**
+		 * Aborts and waits for the application to stop running
+		 * @return application exit code
+		 */
+		nap::uint8 stop();
 
 		/**
 		 * @return core instance
@@ -96,74 +95,76 @@ namespace napkin
 
 	private:
 		AppletRunner<APP, HANDLER> mRunner;						///< Application runner
-		std::future<nap::uint8> mTask;							///< The client server thread with exit code
-	};
+		std::future<bool> mInitTask;							///< The initialization future contract
+		std::future<nap::uint8> mRunTask;						///< The run future contract
+		std::atomic<bool> mAbort = { false };					///< Aborts the application from running
 
+		/**
+		 * Runs the applet until stop is called
+		 * @return applet exit code
+		 */
+		nap::uint8 runApplet();
+	};
 
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-
 	template<typename APP, typename HANDLER>
-	bool napkin::AppletLauncher<APP, HANDLER>::init(const std::string& projectFilename, nap::utility::ErrorState error)
+	void AppletLauncher<APP, HANDLER>::init(const std::string& projectFilename, std::launch launchPolicy)
 	{
-		// Initialize engine and application
-		if (!mRunner.init(projectFilename, nap::ProjectInfo::EContext::Editor, error))
-		{
-			nap::Logger::error("error: %s", error.toString().c_str());
-			return false;
-		}
-		return true;
-	}
-
-
-	template<typename APP, typename HANDLER>
-	nap::uint8 napkin::AppletLauncher<APP, HANDLER>::run()
-	{
-		// Start core
-		return mRunner.run();
-	}
-
-	/*
-	template<typename APP, typename HANDLER>
-	void AppletLauncher<APP, HANDLER>::run(const std::string& projectFilename)
-	{
-		// Create app runner
-		assert(mRunner == nullptr);
-		mRunner = std::make_unique<napkin::AppletRunner<APP, HANDLER>>();
-
 		// Create and run task
-		assert(!mTask.valid());
-		mTask = std::async(std::launch::deferred, [projectFilename, this]()->nap::uint8
+		assert(!mInitTask.valid());
+		mInitTask = std::async(launchPolicy, [projectFilename, this]()-> bool
 			{
 				// Initialize engine and application
 				nap::utility::ErrorState error;
-				assert(mRunner != nullptr);
-				if (!mRunner->init(projectFilename, nap::ProjectInfo::EContext::Editor, error))
+				if (!mRunner.init(projectFilename, nap::ProjectInfo::EContext::Editor, error))
 				{
 					nap::Logger::error("error: %s", error.toString().c_str());
-					return napkin::applet::exitcode::initFailure;
+					return false;
 				}
-
-				// Return exit code
-				return mRunner->exitCode();
+				return true;
 			});
 	}
 
 
 	template<typename APP, typename HANDLER>
-	int AppletLauncher<APP, HANDLER>::abort()
+	bool napkin::AppletLauncher<APP, HANDLER>::initialized()
 	{
-		// Stop application task
-		auto exit_code = napkin::applet::exitcode::invalid;
-		if (mTask.valid())
-		{
-			assert(mRunner != nullptr);
-			exit_code = mTask.get();
-		}
-		return exit_code;
+		if (mInitTask.valid())
+			return mInitTask.get();
+		return false;
 	}
-	*/
+
+
+	template<typename APP, typename HANDLER>
+	void napkin::AppletLauncher<APP, HANDLER>::run(std::launch launchPolicy)
+	{
+		mAbort = false;
+		mRunTask = std::async(launchPolicy, [&]() -> nap::uint8
+		{
+			mRunner.start();
+			while(!mAbort)
+			{
+				mRunner.process();
+				std::this_thread::sleep_for(nap::Milliseconds(20));
+			}
+			return mRunner.stop();
+		});
+	}
+
+
+	template<typename APP, typename HANDLER>
+	nap::uint8 napkin::AppletLauncher<APP, HANDLER>::stop()
+	{
+		if (!mRunTask.valid())
+			return napkin::applet::exitcode::invalid;
+
+		// Shutdown
+		mAbort = true;
+		return mRunTask.get();
+	}
 }
+

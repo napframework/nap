@@ -54,10 +54,20 @@ namespace napkin
 		bool init(const std::string& projectInfo, nap::ProjectInfo::EContext context, nap::utility::ErrorState& error);
 
 		/**
-		 * Runs the application until quit or stopped
+		 * Starts running the application
 		 * @return applet exit code
 		 */
-		nap::uint8 run();
+		void start();
+
+		/**
+		 * Process the application
+		 */
+		void process();
+
+		/**
+		 * Stop the application from running
+		 */
+		nap::uint8 stop();
 
 		/**
 		 * @return the app
@@ -149,18 +159,45 @@ namespace napkin
 
 
 	template<typename APP, typename HANDLER>
-	nap::uint8 napkin::AppletRunner<APP, HANDLER>::run()
+	void napkin::AppletRunner<APP, HANDLER>::start()
 	{
 		mCore.start();
 		mHandler->start();
-		return applet::exitcode::success;
+	}
+
+
+
+	template<typename APP, typename HANDLER>
+	void napkin::AppletRunner<APP, HANDLER>::process()
+	{
+		// Pointer to function used inside update call by core
+		auto& app = getApp();
+		auto& han = getHandler();
+
+		// Process SDL events
+		// han.process();
+
+		// Update core and app
+		std::function<void(double)> update_call = std::bind(&APP::update, &app, std::placeholders::_1);
+		mCore.update(update_call);
+
+		// Render content
+		app.render();
+	}
+
+
+	template<typename APP, typename HANDLER>
+	nap::uint8 napkin::AppletRunner<APP, HANDLER>::stop()
+	{
+		mHandler->shutdown();
+		return static_cast<nap::uint8>(mApp->shutdown());
 	}
 
 
 	template<typename APP, typename HANDLER>
 	napkin::AppletRunner<APP, HANDLER>::~AppletRunner()
 	{
-		mHandler->shutdown();
-		mServices = nullptr;
+		// Shutdown and destroy services before core!
+		mServices.reset();
 	}
 }
