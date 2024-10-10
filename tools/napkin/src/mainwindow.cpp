@@ -74,6 +74,9 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		event->ignore();
 		return;
 	}
+
+	// TODO: Close signal is not emitted 
+	mRenderPanel.close();
 	BaseWindow::closeEvent(event);
 }
 

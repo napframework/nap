@@ -94,6 +94,13 @@ namespace napkin
 	{ }
 
 
+	void RenderPanel::abort()
+	{
+		if (mApplet.running())
+			mApplet.abort();
+	}
+
+
 	bool RenderPanel::eventFilter(QObject* obj, QEvent* event)
 	{
 		if (obj != mContainer)
@@ -105,18 +112,14 @@ namespace napkin
 			{
 				if (!mApplet.running() && mInitialized)
 				{
-					mApplet.run(std::launch::async);
+					mApplet.run(std::launch::async, 60);
 				}
 				return true;
 			}
-			case QEvent::KeyPress:
+			case QEvent::Close:
 			{
-				QKeyEvent* key_event = static_cast<QKeyEvent*>(event);
-				if (key_event->key() == Qt::Key_Space)
-				{
-					return true;
-				}
-				return false;
+				abort();
+				return true;
 			}
 			default:
 			{
@@ -124,6 +127,12 @@ namespace napkin
 			}
 		}
 		return false;
+	}
+
+
+	void RenderPanel::closeEvent(QCloseEvent* event)
+	{
+		abort();
 	}
 }
 

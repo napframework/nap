@@ -34,6 +34,7 @@ namespace napkin
 
 	protected:
 		virtual bool eventFilter(QObject* watched, QEvent* event) override;
+		void closeEvent(QCloseEvent* event) override;
 
 	private:
 		QWindow mNativeWindow;
@@ -49,6 +50,7 @@ namespace napkin
 
 		QTimer mTimer;
 		void timerEvent();
+		void abort();
 	};
 }
 

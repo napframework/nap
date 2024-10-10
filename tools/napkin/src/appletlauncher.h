@@ -38,6 +38,7 @@ namespace napkin
 		/**
 		 * Initializes the applet using the given launch policy
 		 * @param projectFilename the project to initialize
+		 * @param launchPolicy deferred or a-synchronous
 		 */
 		void init(const std::string& projectFilename, std::launch launchPolicy);
 
@@ -49,9 +50,11 @@ namespace napkin
 
 		/**
 		 * Runs the applet using the given launch policy
+		 * @param launchPolicy deferred or a-synchronous
+		 * @parawm frequency process frequency (hz)
 		 * @return applet exit code
 		 */
-		void run(std::launch launchPolicy);
+		void run(std::launch launchPolicy, nap::uint frequency);
 
 		/**
 		 * @return if the applet is running
@@ -84,6 +87,7 @@ namespace napkin
 		std::future<bool> mInitTask;				///< The initialization future contract
 		std::future<nap::uint8> mRunTask;			///< The run future contract
 		std::atomic<bool> mAbort = { false };		///< Aborts the application from running
+		std::atomic<nap::uint> mFrequency = 60;		///< Processing frequency (hz)
 	};
 
 
@@ -120,16 +124,28 @@ namespace napkin
 
 
 	template<typename APPLET, typename HANDLER>
-	void napkin::AppletLauncher<APPLET, HANDLER>::run(std::launch launchPolicy)
+	void napkin::AppletLauncher<APPLET, HANDLER>::run(std::launch launchPolicy, nap::uint frequency)
 	{
 		mAbort = false;
-		mRunTask = std::async(launchPolicy, [&]() -> nap::uint8
+		mRunTask = std::async(launchPolicy, [frequency, this]() -> nap::uint8
 		{
+			nap::SteadyTimer process_timer;
 			mRunner.start();
+			float ffreq = static_cast<float>(frequency);
+
 			while(!mAbort)
 			{
+				// Process frame
+				process_timer.start();
 				mRunner.process();
-				std::this_thread::sleep_for(nap::Milliseconds(20));
+
+				// Sleep a bit
+				if (ffreq > nap::math::epsilon<float>())
+				{
+					auto tick = nap::math::min<float>((float)(process_timer.getTicks()), 1000.0f);
+					auto wait = static_cast<nap::uint32>((1000.0f - tick) / ffreq);
+					std::this_thread::sleep_for(nap::Milliseconds(wait));
+				}
 			}
 			return mRunner.stop();
 		});

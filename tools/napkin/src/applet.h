@@ -53,16 +53,18 @@ namespace napkin
 		RTTI_ENABLE(nap::App)
 		friend class napkin::RenderPanel;
 	public:
-		Applet(nap::Core& core) : nap::App(core)			{ }
+		Applet(nap::Core& core) : nap::App(core)	{ }
 
 		/**
 		 * @return embedded nap render window
 		 */
-		nap::RenderWindow& getRenderWindow()				{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
+		nap::RenderWindow& getRenderWindow()		{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
+
+	protected:
+
+	nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
 
 	private:
-		nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
-
 		/**
 		 * Create and initializes a render window from an external window handle
 		 * @param handle the hardware window handle
