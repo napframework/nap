@@ -175,7 +175,8 @@ namespace napkin
 		auto& han = getHandler();
 
 		// Process SDL events
-		// han.process();
+		// TODO: This should not be in here -> move to dedicated SDL handle thread.
+		han.process();
 
 		// Update core and app
 		std::function<void(double)> update_call = std::bind(&APP::update, &app, std::placeholders::_1);
