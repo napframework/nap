@@ -270,30 +270,6 @@
             }
         },
         {
-            "Type": "nap::RenderWindow",
-            "mID": "RenderWindow",
-            "Borderless": false,
-            "Resizable": true,
-            "Visible": true,
-            "SampleShading": true,
-            "Title": "",
-            "Width": 512,
-            "Height": 512,
-            "Mode": "Immediate",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ]
-            },
-            "Samples": "Four",
-            "AdditionalSwapImages": 1,
-            "RestoreSize": true,
-            "RestorePosition": true
-        },
-        {
             "Type": "nap::ResourceGroup",
             "mID": "Rendering",
             "Members": [

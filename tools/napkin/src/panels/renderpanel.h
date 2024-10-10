@@ -20,33 +20,6 @@
 namespace napkin
 {
 	/**
-	 * Window created using an external SDL window handle
-	 */
-	class RenderWindowObjectCreator : public nap::rtti::IObjectCreator
-	{
-	public:
-		/**
-		*/
-		RenderWindowObjectCreator(nap::Core& core, void* windowHandle) :
-			mCore(core), mWindowHandle(windowHandle) { }
-
-		/**
-		* @return type to create
-		*/
-		nap::rtti::TypeInfo getTypeToCreate() const override { return RTTI_OF(nap::RenderWindow); }
-
-		/**
-		* @return Constructs the resource using as a first argument the object stored in this class
-		*/
-		virtual nap::rtti::Object* create() override { return new nap::RenderWindow(mCore, mWindowHandle); }
-
-	private:
-		void* mWindowHandle = nullptr;
-		nap::Core& mCore;
-	};
-
-
-	/**
 	 * Runs a nap application inside a widget
 	 */
 	class RenderPanel : public QWidget
@@ -72,6 +45,7 @@ namespace napkin
 
 		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::GUIAppEventHandler>;
 		PreviewApplet mApplet;
+		bool mInitialized = false;
 
 		QTimer mTimer;
 		void timerEvent();

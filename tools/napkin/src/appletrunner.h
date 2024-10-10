@@ -72,7 +72,7 @@ namespace napkin
 		/**
 		 * @return the app
 		 */
-		APP& getApp()														{ assert(mApp != nullptr); return *mApp; }
+		APP& getApplet()													{ assert(mApp != nullptr); return *mApp; }
 
 		/**
 		 * @return the app handler
@@ -171,7 +171,7 @@ namespace napkin
 	void napkin::AppletRunner<APP, HANDLER>::process()
 	{
 		// Pointer to function used inside update call by core
-		auto& app = getApp();
+		auto& app = getApplet();
 		auto& han = getHandler();
 
 		// Process SDL events

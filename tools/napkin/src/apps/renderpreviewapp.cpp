@@ -34,7 +34,6 @@ namespace nap
 
 		// Extract loaded resources
 		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("WorldTexture");
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("RenderWindow");
 
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
@@ -65,7 +64,7 @@ namespace nap
 
 		// Now forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
-		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+		mInputService->processWindowEvents(getRenderWindow(), input_router, entities);
 
 		// Push the current color selection to the shader.
 		nap::RenderableMeshComponentInstance& renderer = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
@@ -115,11 +114,12 @@ namespace nap
 		mRenderService->beginFrame();
 
 		// Begin recording the render commands for the main render window
-		if (mRenderService->beginRecording(*mRenderWindow))
+		nap::RenderWindow& render_window = getRenderWindow();
+
+		if (mRenderService->beginRecording(render_window))
 		{
 			// Begin the render pass
-			assert(mRenderWindow != nullptr);
-			mRenderWindow->beginRendering();
+			render_window.beginRendering();
 
 			// Find the world and add as an object to render
 			std::vector<nap::RenderableComponentInstance*> components_to_render;
@@ -130,7 +130,7 @@ namespace nap
 			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
 
 			// Render the world with the right camera directly to screen
-			mRenderService->renderObjects(*mRenderWindow, persp_camera, components_to_render);
+			mRenderService->renderObjects(render_window, persp_camera, components_to_render);
 
 			// Locate component that can render text to screen
 			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
@@ -138,14 +138,14 @@ namespace nap
 			// Center text and render it using the given draw call, 
 			// alternatively you can use an orthographic camera to render the text, similar to how the 3D mesh is rendered:  
 			// mRenderService::renderObjects(*mRenderWindow, ortho_camera, components_to_render);
-			render_text.setLocation({ mRenderWindow->getWidthPixels() / 2, mRenderWindow->getHeightPixels() / 2 });
-			render_text.draw(*mRenderWindow);
+			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
+			render_text.draw(render_window);
 
 			// Draw our GUI
 			mGuiService->draw();
 
 			// End the render pass
-			mRenderWindow->endRendering();
+			render_window.endRendering();
 
 			// End recording
 			mRenderService->endRecording();

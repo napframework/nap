@@ -23,7 +23,7 @@ namespace napkin
 
 	RenderPanel::~RenderPanel()
 	{
-		mApplet.stop();
+		mApplet.abort();
 	}
 
 
@@ -39,7 +39,12 @@ namespace napkin
 
 	void RenderPanel::createResources()
 	{
-		// Setup format (TODO: Use system preferences)
+		// Start initializing the applet (core, services & application)
+		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
+		nap::utility::ErrorState error;
+		mApplet.init(preview_app, std::launch::async);
+
+		// Setup QT format (TODO: Use system preferences)
 		QSurfaceFormat format;
 		format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
 		mNativeWindow.setFormat(format);
@@ -50,22 +55,25 @@ namespace napkin
 		mContainer = QWidget::createWindowContainer(&mNativeWindow, this);
 		mContainer->setFocusPolicy(Qt::StrongFocus);
 
-		// Add render window object creator
-		auto& factory = mApplet.getCore().getResourceManager()->getFactory();
-		auto id = mContainer->winId(); assert(id != 0);
-		auto obj_creator = std::make_unique<napkin::RenderWindowObjectCreator>(mApplet.getCore(), (void*)id);
-		factory.addObjectCreator(std::move(obj_creator));
-
-		// Initialize applet
-		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
-		nap::utility::ErrorState error;
-		mApplet.init(preview_app, std::launch::deferred);
+		// Wait for applet to finish initialization -> bail if it failed
+		assert(!mInitialized);
 		if(!mApplet.initialized())
 		{
-			error.fail("Failed to initialize preview applet!");
 			nap::Logger::error(error.toString());
 			return;
 		}
+
+		// Everything initialized correctly, set the render window in the app
+		auto id = mContainer->winId(); assert(id != 0);
+		mRenderWindow = mApplet.getApplet().setWindowFromHandle((void*)id, error);
+		if (mRenderWindow == nullptr)
+		{
+			nap::Logger::error(error.toString());
+			return;
+		}
+
+		// Initialization succeeded
+		mInitialized = true;
 
 		// Add container to layout and set
 		assert(layout() == nullptr);
@@ -75,9 +83,6 @@ namespace napkin
 
 		// Install listener
 		mContainer->installEventFilter(this);
-
-		// Run the applet (TODO: make it run in the background)
-		mApplet.run(std::launch::async);
 
 		// Install timer
 		connect(&mTimer, &QTimer::timeout, this, &RenderPanel::timerEvent);
@@ -98,6 +103,10 @@ namespace napkin
 		{
 			case QEvent::Show:
 			{
+				if (!mApplet.running() && mInitialized)
+				{
+					mApplet.run(std::launch::async);
+				}
 				return true;
 			}
 			case QEvent::KeyPress:

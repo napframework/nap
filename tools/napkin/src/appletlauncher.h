@@ -17,7 +17,7 @@ namespace napkin
 	/**
 	 * Wraps and runs a NAP applet in a separate thread until aborted.
 	 */
-	template<typename APP, typename HANDLER>
+	template<typename APPLET, typename HANDLER>
 	class AppletLauncher
 	{
 	public:
@@ -54,56 +54,36 @@ namespace napkin
 		void run(std::launch launchPolicy);
 
 		/**
+		 * @return if the applet is running
+		 */
+		bool running() const						{ return mRunTask.valid(); }
+
+		/**
 		 * Aborts and waits for the application to stop running
 		 * @return application exit code
 		 */
-		nap::uint8 stop();
+		nap::uint8 abort();
 
 		/**
 		 * @return core instance
 		 */
-		nap::Core& getCore()					{ return mRunner.getCore(); }
+		nap::Core& getCore()						{ return mRunner.getCore(); }
 
 		/**
 		 * @return app instance
 		 */
-		APP& getApp()							{ return mRunner.getApp(); }
+		APPLET& getApplet()							{ return mRunner.getApplet(); }
 
 		/**
 		 * @return handler
 		 */
-		HANDLER& getHandler()					{ return mRunner.getHandler(); }
-
-		//////////////////////////////////////////////////////////////////////////
-		// Signals
-		//////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * Called after the applet, including engine and required services, has been initialized
-		 */
-		nap::Signal<APP&> appletInitialized;
-
-		/**
-		 * Called when the applet started running
-		 */
-		nap::Signal<APP&> appletStarted;
-
-		/**
-		 * Called when the applet stops running
-		 */
-		nap::Signal<APP&> appletStopped;
+		HANDLER& getHandler()						{ return mRunner.getHandler(); }
 
 	private:
-		AppletRunner<APP, HANDLER> mRunner;						///< Application runner
-		std::future<bool> mInitTask;							///< The initialization future contract
-		std::future<nap::uint8> mRunTask;						///< The run future contract
-		std::atomic<bool> mAbort = { false };					///< Aborts the application from running
-
-		/**
-		 * Runs the applet until stop is called
-		 * @return applet exit code
-		 */
-		nap::uint8 runApplet();
+		AppletRunner<APPLET, HANDLER> mRunner;		///< Application runner
+		std::future<bool> mInitTask;				///< The initialization future contract
+		std::future<nap::uint8> mRunTask;			///< The run future contract
+		std::atomic<bool> mAbort = { false };		///< Aborts the application from running
 	};
 
 
@@ -111,8 +91,8 @@ namespace napkin
 	// Template Definitions
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename APP, typename HANDLER>
-	void AppletLauncher<APP, HANDLER>::init(const std::string& projectFilename, std::launch launchPolicy)
+	template<typename APPLET, typename HANDLER>
+	void AppletLauncher<APPLET, HANDLER>::init(const std::string& projectFilename, std::launch launchPolicy)
 	{
 		// Create and run task
 		assert(!mInitTask.valid());
@@ -130,8 +110,8 @@ namespace napkin
 	}
 
 
-	template<typename APP, typename HANDLER>
-	bool napkin::AppletLauncher<APP, HANDLER>::initialized()
+	template<typename APPLET, typename HANDLER>
+	bool napkin::AppletLauncher<APPLET, HANDLER>::initialized()
 	{
 		if (mInitTask.valid())
 			return mInitTask.get();
@@ -139,8 +119,8 @@ namespace napkin
 	}
 
 
-	template<typename APP, typename HANDLER>
-	void napkin::AppletLauncher<APP, HANDLER>::run(std::launch launchPolicy)
+	template<typename APPLET, typename HANDLER>
+	void napkin::AppletLauncher<APPLET, HANDLER>::run(std::launch launchPolicy)
 	{
 		mAbort = false;
 		mRunTask = std::async(launchPolicy, [&]() -> nap::uint8
@@ -156,8 +136,8 @@ namespace napkin
 	}
 
 
-	template<typename APP, typename HANDLER>
-	nap::uint8 napkin::AppletLauncher<APP, HANDLER>::stop()
+	template<typename APPLET, typename HANDLER>
+	nap::uint8 napkin::AppletLauncher<APPLET, HANDLER>::abort()
 	{
 		if (!mRunTask.valid())
 			return napkin::applet::exitcode::invalid;

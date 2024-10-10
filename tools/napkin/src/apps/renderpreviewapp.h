@@ -11,9 +11,11 @@
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
-#include <app.h>
 #include <imagefromfile.h>
 #include <imguiservice.h>
+
+// Local includes
+#include "../applet.h"
 
 namespace nap
 {
@@ -22,7 +24,7 @@ namespace nap
 	/**
 	 * Main application that is called from within the main loop
 	 */
-	class RenderPreviewApp : public App
+	class RenderPreviewApp : public napkin::Applet
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -30,7 +32,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		RenderPreviewApp(nap::Core& core) : App(core) { }
+		RenderPreviewApp(nap::Core& core) : napkin::Applet(core) { }
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -68,11 +70,6 @@ namespace nap
 		 */
 		virtual int shutdown() override;
 
-		/**
-		 * @return window used by application
-		 */
-		nap::RenderWindow& getRenderWindow()							{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
-
 	private:
 		ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
 		RenderService*				mRenderService = nullptr;			///< Render Service that handles render calls
@@ -86,7 +83,6 @@ namespace nap
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
 		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
-		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the world texture		
 
 		RGBColorFloat mColorOne;										//< First sphere blend color
 		RGBColorFloat mColorTwo;										//< Second sphere blend color
