@@ -4,6 +4,7 @@
 
 // Local includes
 #include "appleteventloop.h"
+#include "applet.h"
 
 // External includes
 #include <QThread>
@@ -12,6 +13,8 @@
 #include <sdlhelpers.h>
 #include <nap/logger.h>
 #include <mathutils.h>
+#include <SDL_events.h>
+#include <imguiservice.h>
 
 namespace napkin
 {
@@ -32,7 +35,7 @@ namespace napkin
 		{
 			connect(&mTimer, &QTimer::timeout, this, &AppletEventLoop::pollEvent);
 			int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
-			mTimer.start(ms_poll);
+			//mTimer.start(ms_poll);
 		}
 		else
 		{
@@ -47,8 +50,76 @@ namespace napkin
 	}
 
 
+	void AppletEventLoop::setApplet(napkin::Applet& applet)
+	{
+		mApplet = &applet;
+		auto* sdl_service = mApplet->getCore().getService<nap::SDLInputService>();
+		assert(sdl_service != nullptr);
+		mEventConverter = std::make_unique<nap::SDLEventConverter>(*sdl_service);
+		mGuiService = mApplet->getCore().getService<nap::IMGuiService>();
+	}
+
+
 	void AppletEventLoop::pollEvent()
 	{
-		//nap::Logger::info("SDL process callback");
+		// Flush everything if we're not targeting a specific applet
+		if (mEventConverter == nullptr)
+		{
+			SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
+			return;
+		}
+
+		SDL_Event event;
+		assert(mApplet != nullptr);
+		while (SDL_PollEvent(&event) > 0)
+		{
+			// Forward if we're not capturing the mouse in the GUI and it's a pointer event
+			if (mEventConverter->isMouseEvent(event))
+			{
+				nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
+				if (input_event == nullptr)
+					continue;
+
+				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
+				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
+				{
+					mApplet->inputMessageReceived(std::move(input_event));
+				}
+			}
+
+			// Forward if we're not capturing the keyboard in the GUI and it's a key event
+			else if (mEventConverter->isKeyEvent(event))
+			{
+				nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
+				if (input_event == nullptr)
+					continue;
+
+				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
+				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
+				{
+					mApplet->inputMessageReceived(std::move(input_event));
+				}
+			}
+
+			// Always forward controller events
+			else if (mEventConverter->isControllerEvent(event))
+			{
+				nap::InputEventPtr input_event = mEventConverter->translateControllerEvent(event);
+				if (input_event != nullptr)
+				{
+					mApplet->inputMessageReceived(std::move(input_event));
+				}
+			}
+
+			// Always forward window events
+			else if (mEventConverter->isWindowEvent(event))
+			{
+				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
+				if (window_event != nullptr)
+				{
+					mApplet->windowMessageReceived(std::move(window_event));
+				}
+			}
+		}
 	}
 }

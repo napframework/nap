@@ -235,6 +235,11 @@ namespace napkin
 		nap::RenderService* getRenderService() const;
 
 		/**
+		 * Returns the applet process loop, nullptr if project not loaded
+		 */
+		AppletEventLoop* getEventLoop() const;
+
+		/**
 		 * Convenience method to retrieve this QApplication's instance.
 		 * @return The QApplication singleton.
 		 */

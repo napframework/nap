@@ -8,9 +8,17 @@
 #include <nap/resource.h>
 #include <nap/numeric.h>
 #include <QTimer>
+#include <sdleventconverter.h>
+
+namespace nap
+{
+	class IMGuiService;
+}
 
 namespace napkin
 {
+	class Applet;
+
 	/**
 	 * Initializes the various required SDL subsystems for NAP (notably video) and polls events.
 	 * This class MUST be created and running on the GUI (main) QT thread.
@@ -27,15 +35,23 @@ namespace napkin
 		AppletEventLoop(nap::uint frequency);
 
 		/**
-		 * Shuts down the event loop and close
+		 * Shuts down the event loop and closes video subsystem
 		 */
 		virtual ~AppletEventLoop();
 
+		/**
+		 * Set the applet to forward SDL poll events to
+		 * @param applet the applet to forward events to
+		 */
+		void setApplet(napkin::Applet& applet);
+
 	private:
 		nap::uint mFrequency = 60;
-		bool mInitialized = false;
-
 		QTimer mTimer;
+		napkin::Applet* mApplet = nullptr;
+		std::unique_ptr<nap::SDLEventConverter> mEventConverter = nullptr;
+		nap::IMGuiService* mGuiService = nullptr;
+
 		void pollEvent();
 	};
 }

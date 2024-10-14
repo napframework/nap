@@ -524,6 +524,12 @@ nap::RenderService* napkin::AppContext::getRenderService() const
 }
 
 
+napkin::AppletEventLoop* napkin::AppContext::getEventLoop() const
+{
+	return mAppletEventLoop.get();
+}
+
+
 QApplication* napkin::AppContext::getQApplication() const
 {
 	return qobject_cast<QApplication*>(qGuiApp);

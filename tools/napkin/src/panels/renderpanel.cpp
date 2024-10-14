@@ -72,6 +72,10 @@ namespace napkin
 			return;
 		}
 
+		// Tell event loop to forward events to this applet
+		auto* event_loop = AppContext::get().getEventLoop(); assert(event_loop != nullptr);
+		event_loop->setApplet(mApplet.getApplet());
+
 		// Initialization succeeded
 		mInitialized = true;
 
