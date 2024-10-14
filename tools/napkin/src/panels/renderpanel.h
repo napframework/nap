@@ -54,4 +54,3 @@ namespace napkin
 	};
 }
 
-

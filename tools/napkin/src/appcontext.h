@@ -9,6 +9,7 @@
 #include "document.h"
 #include "resourcefactory.h"
 #include "serviceconfig.h"
+#include "appleteventloop.h"
 
 #include <vector>
 #include <QApplication>
@@ -493,7 +494,7 @@ namespace napkin
 		ResourceFactory mResourceFactory;											// Le resource factory
 		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
 		nap::RenderService* mRenderService = nullptr;								// The render service (if available)
-
+		std::unique_ptr<napkin::AppletEventLoop> mAppletEventLoop = nullptr;				// The SDL applet event loop
 		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;					// Clone of core project info
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
 		QString mCurrentFilename;													// The currently opened file
@@ -503,3 +504,4 @@ namespace napkin
 	};
 
 };
+

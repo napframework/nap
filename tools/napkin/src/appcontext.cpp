@@ -48,6 +48,9 @@ AppContext::~AppContext()
 	// Close service configuration
 	closeServiceConfiguration();
 
+	// Stop applet event loop
+	mAppletEventLoop.reset(nullptr);
+
 	// Clear project info
 	mProjectInfo.reset(nullptr);
 }
@@ -146,13 +149,6 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 	mRenderService = mCore.getService<nap::RenderService>();
 	if (mRenderService != nullptr)
 	{
-		// Initialize SDL video rendering (used by NAP)
-		if (!nap::SDL::initVideo(err))
-		{
-			err.fail("Failed to init SDL Video subsystem");
-			return nullptr;
-		}
-
 		// Init GLSL shader compilation
 		nap::Logger::info("Initializing %s", mRenderService->getTypeName().data());
 		if (!mRenderService->initShaderCompilation(err))
@@ -162,6 +158,10 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 			return nullptr;
 		}
 	}
+
+	// Create and start SDL app event handler for NAP applets
+	// Also initializes the video subsystem
+	mAppletEventLoop = std::make_unique<AppletEventLoop>(60);
 
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);
