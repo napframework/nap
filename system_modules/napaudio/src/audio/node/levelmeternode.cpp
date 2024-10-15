@@ -42,7 +42,7 @@ namespace nap
 
 		float LevelMeterNode::getLevel()
 		{
-			return mValue.load();
+			return mType == RMS ? sqrt(mValue.load()) : mValue.load();
 		}
 
 
