@@ -87,15 +87,7 @@ namespace napkin
 
 		// Install listener
 		mContainer->installEventFilter(this);
-
-		// Install timer
-		//connect(&mTimer, &QTimer::timeout, this, &RenderPanel::timerEvent);
-		//mTimer.start(20);
 	}
-
-
-	void RenderPanel::timerEvent()
-	{ }
 
 
 	void RenderPanel::abort()

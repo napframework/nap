@@ -45,9 +45,6 @@ namespace napkin
 
 		PreviewAppletRunner mRunner;
 		bool mInitialized = false;
-
-		QTimer mTimer;
-		void timerEvent();
 		void abort();
 	};
 }
