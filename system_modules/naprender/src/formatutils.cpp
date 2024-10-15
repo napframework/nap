@@ -41,7 +41,8 @@ namespace nap
 			{RTTI_OF(float),		VkFormat::VK_FORMAT_R32_SFLOAT},
 			{RTTI_OF(glm::vec2),	VkFormat::VK_FORMAT_R32G32_SFLOAT},
 			{RTTI_OF(glm::vec3),	VkFormat::VK_FORMAT_R32G32B32_SFLOAT},
-			{RTTI_OF(glm::vec4),	VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT}
+			{RTTI_OF(glm::vec4),	VkFormat::VK_FORMAT_R32G32B32A32_SFLOAT},
+			{RTTI_OF(glm::ivec4),	VkFormat::VK_FORMAT_R32G32B32A32_SINT}
 		};
 
 		const auto it = format_table.find(type);
