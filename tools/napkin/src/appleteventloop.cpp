@@ -63,7 +63,7 @@ namespace napkin
 	void AppletEventLoop::pollEvent()
 	{
 		// Flush everything if we're not targeting a specific applet
-		if (mEventConverter == nullptr)
+		if (mRunner == nullptr)
 		{
 			SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 			return;
@@ -84,7 +84,7 @@ namespace napkin
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
 				{
-					events.emplace_back(std::move(input_event));
+					mRunner->sendEvent(std::move(input_event));
 				}
 			}
 
@@ -98,7 +98,7 @@ namespace napkin
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
 				{
-					events.emplace_back(std::move(input_event));
+					mRunner->sendEvent(std::move(input_event));
 				}
 			}
 
@@ -108,10 +108,9 @@ namespace napkin
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
-					events.emplace_back(std::move(window_event));
+					mRunner->sendEvent(std::move(window_event));
 				}
 			}
 		}
-		mRunner->sendEvents(events);
 	}
 }

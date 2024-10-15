@@ -90,6 +90,7 @@ namespace napkin
 				mCore.start();
 				double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
 				nap::Milliseconds wm(static_cast<int>(wd));
+				std::queue<nap::EventPtr> event_queue;
 
 				std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
 				while (!mAbort)
@@ -97,31 +98,32 @@ namespace napkin
 					std::unique_lock<std::mutex> lk(mProcessMutex);
 					mProcessCondition.wait_for(lk, wm, [this] 
 						{
-							return !mEvents.empty();
+							return !mEventQueue.empty();
 						}
 					);
 
-					// Forward input and window events to application (thread safe)
-					for (auto& event : mEvents)
-					{
-						if(event->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
-						{
-							auto* input_event = static_cast<nap::InputEvent*>(event.release());
-							mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
-							continue;
-						}
-
-						if (event->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
-						{
-							auto* input_event = static_cast<nap::WindowEvent*>(event.release());
-							mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(input_event));
-							continue;
-						}
-					}
-
-					// Clear and unlock
-					mEvents.clear();
+					// Trade and unlock for further processing
+					assert(event_queue.empty());
+					event_queue.swap(mEventQueue);
 					lk.unlock();
+
+					// Forward input to running app
+					while (!event_queue.empty())
+					{
+						auto& event_ref = event_queue.front();
+						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
+						{
+							auto* input_event = static_cast<nap::InputEvent*>(event_ref.release());
+							mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
+						}
+
+						else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
+						{
+							auto* window_event = static_cast<nap::WindowEvent*>(event_ref.release());
+							mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(window_event));
+						}
+						event_queue.pop();
+					}
 
 					// Update core and application
 					mCore.update(update_call);
@@ -129,18 +131,17 @@ namespace napkin
 					// Render content
 					mApplet->render();
 				}
-
 				return static_cast<nap::uint8>(mApplet->shutdown());
 			});
 	}
 
 
-	void AppletRunner::sendEvents(nap::EventPtrList& events)
+	void AppletRunner::sendEvent(nap::EventPtr event)
 	{
 		// Swap and notify handling thread
 		{
 			std::lock_guard lk(mProcessMutex);
-			mEvents.swap(events);
+			mEventQueue.emplace(std::move(event));
 		}
 		mProcessCondition.notify_one();
 	}
