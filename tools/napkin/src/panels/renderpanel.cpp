@@ -74,7 +74,7 @@ namespace napkin
 
 		// Tell event loop to forward events to this applet
 		auto* event_loop = AppContext::get().getEventLoop(); assert(event_loop != nullptr);
-		event_loop->setApplet(mRunner.getApplet());
+		event_loop->setApplet(mRunner);
 
 		// Initialization succeeded
 		mInitialized = true;

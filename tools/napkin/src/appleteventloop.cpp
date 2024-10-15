@@ -50,13 +50,13 @@ namespace napkin
 	}
 
 
-	void AppletEventLoop::setApplet(napkin::Applet& applet)
+	void AppletEventLoop::setApplet(napkin::AppletRunner& applet)
 	{
-		mApplet = &applet;
-		auto* sdl_service = mApplet->getCore().getService<nap::SDLInputService>();
+		mRunner = &applet;
+		auto* sdl_service = mRunner->getCore().getService<nap::SDLInputService>();
 		assert(sdl_service != nullptr);
 		mEventConverter = std::make_unique<nap::SDLEventConverter>(*sdl_service);
-		mGuiService = mApplet->getCore().getService<nap::IMGuiService>();
+		mGuiService = mRunner->getCore().getService<nap::IMGuiService>();
 	}
 
 
@@ -70,7 +70,8 @@ namespace napkin
 		}
 
 		SDL_Event event;
-		assert(mApplet != nullptr);
+		assert(mRunner != nullptr);
+		nap::InputEventPtrList inputs;
 		while (SDL_PollEvent(&event) > 0)
 		{
 			// Forward if we're not capturing the mouse in the GUI and it's a pointer event
@@ -83,7 +84,7 @@ namespace napkin
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
 				{
-					mApplet->inputMessageReceived(std::move(input_event));
+					inputs.emplace_back(std::move(input_event));
 				}
 			}
 
@@ -97,17 +98,7 @@ namespace napkin
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
 				{
-					mApplet->inputMessageReceived(std::move(input_event));
-				}
-			}
-
-			// Always forward controller events
-			else if (mEventConverter->isControllerEvent(event))
-			{
-				nap::InputEventPtr input_event = mEventConverter->translateControllerEvent(event);
-				if (input_event != nullptr)
-				{
-					mApplet->inputMessageReceived(std::move(input_event));
+					inputs.emplace_back(std::move(input_event));
 				}
 			}
 
@@ -117,9 +108,10 @@ namespace napkin
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
-					mApplet->windowMessageReceived(std::move(window_event));
+					//mApplet->windowMessageReceived(std::move(window_event));
 				}
 			}
 		}
+		mRunner->sendInput(inputs);
 	}
 }

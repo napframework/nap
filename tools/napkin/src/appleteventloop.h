@@ -10,6 +10,9 @@
 #include <QTimer>
 #include <sdleventconverter.h>
 
+// Local Includes
+#include "appletrunner.h"
+
 namespace nap
 {
 	class IMGuiService;
@@ -43,12 +46,12 @@ namespace napkin
 		 * Set the applet to forward SDL poll events to
 		 * @param applet the applet to forward events to
 		 */
-		void setApplet(napkin::Applet& applet);
+		void setApplet(napkin::AppletRunner& applet);
 
 	private:
 		nap::uint mFrequency = 60;
 		QTimer mTimer;
-		napkin::Applet* mApplet = nullptr;
+		napkin::AppletRunner* mRunner = nullptr;
 		std::unique_ptr<nap::SDLEventConverter> mEventConverter = nullptr;
 		nap::IMGuiService* mGuiService = nullptr;
 

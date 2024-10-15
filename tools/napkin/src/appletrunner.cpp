@@ -88,7 +88,6 @@ namespace napkin
 		mRunTask = std::async(launchPolicy, [frequency, this]() -> nap::uint8
 			{
 				mCore.start();
-				nap::SteadyTimer process_timer;
 				double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
 				nap::Milliseconds wm(static_cast<int>(wd));
 
@@ -96,14 +95,21 @@ namespace napkin
 				while (!mAbort)
 				{
 					std::unique_lock<std::mutex> lk(mProcessMutex);
-					mProcessCondition.wait_for(lk, wm, []
-						{ return false; }
+					mProcessCondition.wait_for(lk, wm, [this] 
+						{
+							return !mInputEvents.empty();
+						}
 					);
 
-					// Process frame
-					process_timer.start();
+					// Forward input to application
+					for (auto& event : mInputEvents)
+						mApplet->inputMessageReceived(std::move(event));
 
-					// Update core and app
+					// Clear and unlock
+					mInputEvents.clear();
+					lk.unlock();
+
+					// Update core and application
 					mCore.update(update_call);
 
 					// Render content
@@ -112,6 +118,17 @@ namespace napkin
 
 				return static_cast<nap::uint8>(mApplet->shutdown());
 			});
+	}
+
+
+	void AppletRunner::sendInput(nap::InputEventPtrList& events)
+	{
+		// Swap and notify handling thread
+		{
+			std::lock_guard lk(mProcessMutex);
+			mInputEvents.swap(events);
+		}
+		mProcessCondition.notify_one();
 	}
 
 
