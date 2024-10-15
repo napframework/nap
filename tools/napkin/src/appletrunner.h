@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // External includes
@@ -5,6 +9,11 @@
 #include <nap/numeric.h>
 #include <nap/projectinfo.h>
 #include <nap/logger.h>
+#include <future>
+
+// Local includes
+#include "applet.h"
+#include "apps/renderpreviewapp.h"
 
 namespace napkin
 {
@@ -19,8 +28,8 @@ namespace napkin
 	}
 
 	/**
-	 * Utility class that runs a nap::BaseApp until BaseApp::quit() is called or
-	 * AppRunner::stop(). The APP template argument should be derived from
+	 * Utility class that runs a napkin::Applet until Applet::quit() is called or
+	 * AppletRunner::abort(). The APP template argument should be derived from
 	 * nap::BaseApp, HANDLER should be of type nap::BaseAppEventHandler()
 	 *
 	 * This class is different from a regular AppRunner because it is thread safe, ie:
@@ -34,171 +43,109 @@ namespace napkin
 	 * On start() the runner initializes nap::Core, together with all available services and
 	 * loads the application data. If everything succeeds the app loop is started.
 	 */
-
-	template<typename APP, typename HANDLER>
-	class AppletRunner final
+	class AppletRunner
 	{
 	public:
 		// Default constructor
-		AppletRunner();
+		AppletRunner(nap::rtti::TypeInfo appletType);
 
-		~AppletRunner();
+		// Destructor
+		virtual ~AppletRunner()																{ mServices = nullptr; }
 
 		/**
-		 * Initializes the engine and the application.
-		 * @param projectInfo the project to load and run
-		 * @param context project run context (relative to app or editor)
-		 * @param error the error message if the app failed to initialize
-		 * @return if the app initialized successfully started
+		 * Copy is not allowed
 		 */
-		bool init(const std::string& projectInfo, nap::ProjectInfo::EContext context, nap::utility::ErrorState& error);
+		AppletRunner(AppletRunner&) = delete;
+		AppletRunner& operator=(const AppletRunner&) = delete;
 
 		/**
-		 * Starts running the application
+		 * Move is not allowed
+		 */
+		AppletRunner(AppletRunner&&) = delete;
+		AppletRunner& operator=(AppletRunner&&) = delete;
+
+		/**
+		 * Initializes the applet using the given launch policy
+		 * @param projectFilename the project to initialize
+		 * @param launchPolicy deferred or a-synchronous
+		 */
+		void init(const std::string& projectFilename, std::launch launchPolicy);
+
+		/**
+		 * Waits until the applet has been initialized
+		 * @return if initialization succeeded
+		 */
+		bool initialized();
+
+		/**
+		 * Runs the applet using the given launch policy
+		 * @param launchPolicy deferred or a-synchronous
+		 * @parawm frequency process frequency (hz)
 		 * @return applet exit code
 		 */
-		void start();
+		void run(std::launch launchPolicy, nap::uint frequency);
 
 		/**
-		 * Process the application
+		 * @return if the applet is running
 		 */
-		void process();
+		bool running() const															{ return mRunTask.valid(); }
 
 		/**
-		 * Stop the application from running
+		 * Aborts and waits for the application to stop running
+		 * @return application exit code
 		 */
-		nap::uint8 stop();
+		nap::uint8 abort();
 
 		/**
-		 * @return the app
+		 * @return the applet
 		 */
-		APP& getApplet()													{ assert(mApp != nullptr); return *mApp; }
+		napkin::Applet& getApplet()											{ assert(mApplet != nullptr); return *mApplet; }
 
 		/**
-		 * @return the app handler
+		 * @return the applet 
 		 */
-		HANDLER& getHandler()												{ assert(mHandler != nullptr); return *mHandler; }
+		const napkin::Applet& getApplet() const								{ assert(mApplet != nullptr); return *mApplet; }
 
 		/**
 		 * @return core
 		 */
 		nap::Core& getCore()												{ return mCore; }
 
-		/**
-		 * @return exit code
-		 */
-		nap::uint8 exitCode() const											{ return mExitCode; }
-
 	private:
-		nap::Core					mCore;									/// Associated core instance
-		nap::Core::ServicesHandle	mServices = nullptr;					/// Initialized services
-		
-		std::unique_ptr<APP>		mApp = nullptr;							// App to run
-		std::unique_ptr<HANDLER>	mHandler = nullptr;						// Handler to use
-		nap::uint8					mExitCode = applet::exitcode::success;	// Application exit code
+		nap::Core mCore;													/// Associated core instance
+		nap::Core::ServicesHandle mServices = nullptr;						/// Initialized services
+		std::unique_ptr<napkin::Applet> mApplet;							/// Applet to run
 
-		std::atomic<bool>			mStop = { false };						// If the runner should stop
-		bool						mInitialized =  false;					// If the application is initialized
+		std::future<bool>			mInitTask;								///< The initialization future contract
+		std::future<nap::uint8>		mRunTask;								///< The run future contract
+		std::atomic<bool>			mAbort = { false };						///< Aborts the application from running
+		std::atomic<nap::uint>		mFrequency = 60;						///< Processing frequency (hz)
+
+		/**
+		 * Initializes the engine and the application.
+		 * @param projectInfo the project to load and run
+		 * @param error the error message if the app failed to initialize
+		 * @return if the app initialized successfully started
+		 */
+		bool initEngine(const std::string& projectInfo, nap::utility::ErrorState& error);
 	};
 
+
 	//////////////////////////////////////////////////////////////////////////
-	// Template Definitions
+	// Typed template runner 
 	//////////////////////////////////////////////////////////////////////////
 
-	template<typename APP, typename HANDLER>
-	AppletRunner<APP, HANDLER>::AppletRunner()
+	template<typename T>
+	class TypedAppletRunner : public AppletRunner
 	{
-		// Create application and handler
-		mApp = std::make_unique<APP>(mCore);
-		mHandler = std::make_unique<HANDLER>(*mApp);
-	}
+	public:
+		TypedAppletRunner() : AppletRunner(RTTI_OF(T)) { }
+	};
 
 
-	template<typename APP, typename HANDLER>
-	bool napkin::AppletRunner<APP, HANDLER>::init(const std::string& projectInfo, nap::ProjectInfo::EContext context, nap::utility::ErrorState& error)
-	{
-		assert(!mInitialized);
-		mInitialized = false;
+	//////////////////////////////////////////////////////////////////////////
+	// Template runners
+	//////////////////////////////////////////////////////////////////////////
 
-		// Initialize engine
-		if (!error.check(mCore.initializeEngine(projectInfo, context, error), "Unable to initialize engine"))
-			return false;
-
-		// Initialize and keep handle to the various services
-		// Bail if handle is invalid, this means service initialization failed
-		mServices = mCore.initializeServices(error);
-		if (mServices == nullptr)
-			return false;
-
-		// Change current working directory to directory that contains the data file
-		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
-		nap::utility::changeDir(data_dir);
-		nap::Logger::info("Current working directory: % s", data_dir.c_str());
-
-		// Ensure project data is available
-		if (!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
-			mCore.getProjectInfo()->getProjectDir().c_str()))
-			return false;
-
-		// Load project data
-		std::string data_file = nap::utility::getFileName(mCore.getProjectInfo()->getDataFile());
-		nap::Logger::info("Loading data: %s", data_file.c_str());
-		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error), "Failed to load data: %s", data_file.c_str()))
-			return false;
-
-		// Watch the data directory
-		mCore.getResourceManager()->watchDirectory(data_dir);
-
-		// Initialize application
-		if (!error.check(mApp->init(error), "Unable to initialize application"))
-			return false;
-
-		mInitialized = true;
-		return true;
-	}
-
-
-	template<typename APP, typename HANDLER>
-	void napkin::AppletRunner<APP, HANDLER>::start()
-	{
-		mCore.start();
-		mHandler->start();
-	}
-
-
-
-	template<typename APP, typename HANDLER>
-	void napkin::AppletRunner<APP, HANDLER>::process()
-	{
-		// Pointer to function used inside update call by core
-		auto& app = getApplet();
-		auto& han = getHandler();
-
-		// Process SDL events
-		// TODO: This should not be in here -> move to dedicated SDL handle thread.
-		han.process();
-
-		// Update core and app
-		std::function<void(double)> update_call = std::bind(&APP::update, &app, std::placeholders::_1);
-		mCore.update(update_call);
-
-		// Render content
-		app.render();
-	}
-
-
-	template<typename APP, typename HANDLER>
-	nap::uint8 napkin::AppletRunner<APP, HANDLER>::stop()
-	{
-		mHandler->shutdown();
-		return static_cast<nap::uint8>(mApp->shutdown());
-	}
-
-
-	template<typename APP, typename HANDLER>
-	napkin::AppletRunner<APP, HANDLER>::~AppletRunner()
-	{
-		// Shutdown and destroy services before core!
-		mServices.reset();
-	}
+	using PreviewAppletRunner = TypedAppletRunner<nap::RenderPreviewApp>;
 }

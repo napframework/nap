@@ -26,7 +26,7 @@ namespace nap
 	 */
 	class RenderPreviewApp : public napkin::Applet
 	{
-		RTTI_ENABLE(App)
+		RTTI_ENABLE(napkin::Applet)
 	public:
 		/**
 		 * Constructor

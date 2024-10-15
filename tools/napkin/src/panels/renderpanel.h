@@ -6,8 +6,7 @@
 
 // Local Includes
 #include "appcontext.h"
-#include "appletlauncher.h"
-#include "apps/renderpreviewapp.h"
+#include "appletrunner.h"
 
 // External Includes
 #include <QWidget>
@@ -44,8 +43,7 @@ namespace napkin
 		void projectLoaded(const nap::ProjectInfo& info);
 		void createResources();
 
-		using PreviewApplet = napkin::AppletLauncher<nap::RenderPreviewApp, nap::GUIAppEventHandler>;
-		PreviewApplet mApplet;
+		PreviewAppletRunner mRunner;
 		bool mInitialized = false;
 
 		QTimer mTimer;

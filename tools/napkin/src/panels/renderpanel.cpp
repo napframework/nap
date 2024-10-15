@@ -23,7 +23,7 @@ namespace napkin
 
 	RenderPanel::~RenderPanel()
 	{
-		mApplet.abort();
+		mRunner.abort();
 	}
 
 
@@ -42,7 +42,7 @@ namespace napkin
 		// Start initializing the applet (core, services & application)
 		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
 		nap::utility::ErrorState error;
-		mApplet.init(preview_app, std::launch::async);
+		mRunner.init(preview_app, std::launch::async);
 
 		// Setup QT format (TODO: Use system preferences)
 		QSurfaceFormat format;
@@ -57,7 +57,7 @@ namespace napkin
 
 		// Wait for applet to finish initialization -> bail if it failed
 		assert(!mInitialized);
-		if(!mApplet.initialized())
+		if(!mRunner.initialized())
 		{
 			nap::Logger::error(error.toString());
 			return;
@@ -65,7 +65,7 @@ namespace napkin
 
 		// Everything initialized correctly, set the render window in the app
 		auto id = mContainer->winId(); assert(id != 0);
-		mRenderWindow = mApplet.getApplet().setWindowFromHandle((void*)id, error);
+		mRenderWindow = mRunner.getApplet().setWindowFromHandle((void*)id, error);
 		if (mRenderWindow == nullptr)
 		{
 			nap::Logger::error(error.toString());
@@ -74,7 +74,7 @@ namespace napkin
 
 		// Tell event loop to forward events to this applet
 		auto* event_loop = AppContext::get().getEventLoop(); assert(event_loop != nullptr);
-		event_loop->setApplet(mApplet.getApplet());
+		event_loop->setApplet(mRunner.getApplet());
 
 		// Initialization succeeded
 		mInitialized = true;
@@ -89,8 +89,8 @@ namespace napkin
 		mContainer->installEventFilter(this);
 
 		// Install timer
-		connect(&mTimer, &QTimer::timeout, this, &RenderPanel::timerEvent);
-		mTimer.start(20);
+		//connect(&mTimer, &QTimer::timeout, this, &RenderPanel::timerEvent);
+		//mTimer.start(20);
 	}
 
 
@@ -100,8 +100,8 @@ namespace napkin
 
 	void RenderPanel::abort()
 	{
-		if (mApplet.running())
-			mApplet.abort();
+		if (mRunner.running())
+			mRunner.abort();
 	}
 
 
@@ -114,9 +114,9 @@ namespace napkin
 		{
 			case QEvent::Show:
 			{
-				if (!mApplet.running() && mInitialized)
+				if (!mRunner.running() && mInitialized)
 				{
-					mApplet.run(std::launch::async, 60);
+					mRunner.run(std::launch::async, 60);
 				}
 				return true;
 			}

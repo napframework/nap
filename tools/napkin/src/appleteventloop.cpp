@@ -35,7 +35,7 @@ namespace napkin
 		{
 			connect(&mTimer, &QTimer::timeout, this, &AppletEventLoop::pollEvent);
 			int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
-			//mTimer.start(ms_poll);
+			mTimer.start(ms_poll);
 		}
 		else
 		{
