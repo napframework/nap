@@ -89,10 +89,17 @@ namespace napkin
 			{
 				mCore.start();
 				nap::SteadyTimer process_timer;
-				float ffreq = static_cast<float>(frequency);
+				double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
+				nap::Milliseconds wm(static_cast<int>(wd));
+
 				std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
 				while (!mAbort)
 				{
+					std::unique_lock<std::mutex> lk(mProcessMutex);
+					mProcessCondition.wait_for(lk, wm, []
+						{ return false; }
+					);
+
 					// Process frame
 					process_timer.start();
 
@@ -101,14 +108,6 @@ namespace napkin
 
 					// Render content
 					mApplet->render();
-
-					// Sleep a bit
-					if (ffreq > nap::math::epsilon<float>())
-					{
-						auto tick = nap::math::min<float>((float)(process_timer.getTicks()), 1000.0f);
-						auto wait = static_cast<nap::uint32>((1000.0f - tick) / ffreq);
-						std::this_thread::sleep_for(nap::Milliseconds(wait));
-					}
 				}
 
 				return static_cast<nap::uint8>(mApplet->shutdown());

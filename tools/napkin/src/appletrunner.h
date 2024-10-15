@@ -10,6 +10,7 @@
 #include <nap/projectinfo.h>
 #include <nap/logger.h>
 #include <future>
+#include <condition_variable>
 
 // Local includes
 #include "applet.h"
@@ -117,6 +118,8 @@ namespace napkin
 		std::unique_ptr<napkin::Applet> mApplet;							/// Applet to run
 
 		std::future<bool>			mInitTask;								///< The initialization future contract
+		std::mutex					mProcessMutex;							///< Process related mutex
+		std::condition_variable		mProcessCondition;						///< Process condition variable
 		std::future<nap::uint8>		mRunTask;								///< The run future contract
 		std::atomic<bool>			mAbort = { false };						///< Aborts the application from running
 		std::atomic<nap::uint>		mFrequency = 60;						///< Processing frequency (hz)
