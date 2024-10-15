@@ -69,9 +69,9 @@ namespace napkin
 			return;
 		}
 
-		SDL_Event event;
 		assert(mRunner != nullptr);
-		nap::InputEventPtrList inputs;
+		SDL_Event event; 
+		nap::EventPtrList events;
 		while (SDL_PollEvent(&event) > 0)
 		{
 			// Forward if we're not capturing the mouse in the GUI and it's a pointer event
@@ -84,7 +84,7 @@ namespace napkin
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
 				{
-					inputs.emplace_back(std::move(input_event));
+					events.emplace_back(std::move(input_event));
 				}
 			}
 
@@ -98,7 +98,7 @@ namespace napkin
 				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
 				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
 				{
-					inputs.emplace_back(std::move(input_event));
+					events.emplace_back(std::move(input_event));
 				}
 			}
 
@@ -108,10 +108,10 @@ namespace napkin
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
 				if (window_event != nullptr)
 				{
-					//mApplet->windowMessageReceived(std::move(window_event));
+					events.emplace_back(std::move(window_event));
 				}
 			}
 		}
-		mRunner->sendInput(inputs);
+		mRunner->sendEvents(events);
 	}
 }

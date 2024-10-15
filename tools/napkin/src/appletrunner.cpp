@@ -97,16 +97,30 @@ namespace napkin
 					std::unique_lock<std::mutex> lk(mProcessMutex);
 					mProcessCondition.wait_for(lk, wm, [this] 
 						{
-							return !mInputEvents.empty();
+							return !mEvents.empty();
 						}
 					);
 
-					// Forward input to application
-					for (auto& event : mInputEvents)
-						mApplet->inputMessageReceived(std::move(event));
+					// Forward input and window events to application (thread safe)
+					for (auto& event : mEvents)
+					{
+						if(event->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
+						{
+							auto* input_event = static_cast<nap::InputEvent*>(event.release());
+							mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
+							continue;
+						}
+
+						if (event->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
+						{
+							auto* input_event = static_cast<nap::WindowEvent*>(event.release());
+							mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(input_event));
+							continue;
+						}
+					}
 
 					// Clear and unlock
-					mInputEvents.clear();
+					mEvents.clear();
 					lk.unlock();
 
 					// Update core and application
@@ -121,12 +135,12 @@ namespace napkin
 	}
 
 
-	void AppletRunner::sendInput(nap::InputEventPtrList& events)
+	void AppletRunner::sendEvents(nap::EventPtrList& events)
 	{
 		// Swap and notify handling thread
 		{
 			std::lock_guard lk(mProcessMutex);
-			mInputEvents.swap(events);
+			mEvents.swap(events);
 		}
 		mProcessCondition.notify_one();
 	}

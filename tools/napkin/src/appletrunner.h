@@ -87,10 +87,10 @@ namespace napkin
 		void run(std::launch launchPolicy, nap::uint frequency);
 
 		/**
-		 * Sends a list of input events for processing, thread safe
+		 * Sends a list of events for processing, thread safe
 		 * @param events the events to send
 		 */
-		void sendInput(nap::InputEventPtrList& events);
+		void sendEvents(nap::EventPtrList& events);
 
 		/**
 		 * @return if the applet is running
@@ -129,8 +129,7 @@ namespace napkin
 		std::future<nap::uint8>		mRunTask;								///< The run future contract
 		std::atomic<bool>			mAbort = { false };						///< Aborts the application from running
 		std::atomic<nap::uint>		mFrequency = 60;						///< Processing frequency (hz)
-
-		nap::InputEventPtrList		mInputEvents;
+		nap::EventPtrList			mEvents;								///< Events to forward to the running app
 
 		/**
 		 * Initializes the engine and the application.
