@@ -1,0 +1,93 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#version 450 core
+
+// Extensions
+#extension GL_GOOGLE_include_directive : enable
+
+// Includes
+#include "noise.glslinc"
+
+// NAP overwrites the workgroup size specialization constant, when detected and not 0, with the maximum group 
+// size supported by the device on pipeline creation.
+layout(local_size_x_id = 0) in;
+
+// Ensure we register a constant to set
+layout(constant_id = 0) const uint MAX_GROUP_SIZE_X = 32;
+
+// Derive attribute buffer sizes from plane dimensions
+const uint ROW_COUNT = 1024;
+const uint COLUMN_COUNT = 256;
+const uint POSITION_COUNT = ROW_COUNT*COLUMN_COUNT;
+
+layout(std430) readonly buffer InPositions
+{
+	vec4 inpositions[POSITION_COUNT];
+};
+
+layout(std430) writeonly buffer OutPositions
+{
+	vec4 outpositions[POSITION_COUNT];
+};
+
+uniform UBO
+{
+	vec3 origin;
+	vec3 direction;
+	vec3 tangent;
+	vec3 up;
+	float amps[COLUMN_COUNT];
+	float prevAmps[COLUMN_COUNT];
+	float flux;
+	float bump;
+	float elapsedTime;
+	float noiseStrength;
+	float noiseScale;
+} ubo;
+
+const float TWO_PI = 6.283185;
+const float EXTENT = 0.5;
+
+
+float weighted_sample(float value, uint index)
+{
+	float w = min(index/float(COLUMN_COUNT), 1.0);
+	return mix(value, value * w * 40.0, 0.5);
+}
+
+
+void main()
+{
+	const uint gid = gl_GlobalInvocationID.x;
+	const vec2 cell_size = { 1.0/float(COLUMN_COUNT), 1.0/float(ROW_COUNT) };
+
+	if (gid < COLUMN_COUNT)
+	{
+		float prev = ubo.prevAmps[gid];
+		float height = weighted_sample(ubo.amps[gid], gid);
+		height = mix(prev * 0.95, height, 0.5) * ubo.bump;
+
+		float uvx = (gid%COLUMN_COUNT)/float(COLUMN_COUNT);
+		vec4 n = simplexd(vec3((uvx*2.0-1.0)*ubo.noiseScale, ubo.elapsedTime, 0.0));
+		height += n.w * ubo.noiseStrength;
+
+		vec3 forward = ubo.direction;
+		vec3 right = ubo.tangent;
+		vec3 up = ubo.up;
+
+		vec3 p = ubo.origin + (uvx * right - right * 0.5) + height * up + forward * cell_size.y;
+		outpositions[gid] = vec4(p, ubo.flux);
+
+		// Polar
+		// float theta = uvx * TWO_PI;
+		// vec2 coord = { cos(theta), sin(theta) };
+	}
+
+	uint gid_off = gid+COLUMN_COUNT;
+	if (gid_off >= inpositions.length())
+		return;
+
+	outpositions[gid_off] = inpositions[gid];
+}
