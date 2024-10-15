@@ -26,7 +26,7 @@
 #include "panels/modulepanel.h"
 #include "panels/instanceproppanel.h"
 #include "panels/serviceconfigpanel.h"
-#include "panels/renderpanel.h"
+#include "panels/previewpanel.h"
 
 namespace napkin
 {
@@ -185,7 +185,7 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
-		RenderPanel mRenderPanel;
+		PreviewPanel mPreviewPanel;
 		ServiceConfigPanel mServiceConfigPanel;
 
 		ThemeSelectionMenu mThemeMenu;

@@ -14,86 +14,32 @@
 
 namespace napkin
 {
-	RenderPanel::RenderPanel()
+	RenderPanel* RenderPanel::create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error)
 	{
-		// Create render resources on project load
-		connect(&AppContext::get(), &AppContext::projectLoaded, this, &RenderPanel::projectLoaded);
-	}
-
-
-	RenderPanel::~RenderPanel()
-	{
-		mRunner.abort();
-	}
-
-
-	void RenderPanel::projectLoaded(const nap::ProjectInfo& info)
-	{
-		// Create if no resources are available
-		if (mRenderWindow == nullptr)
-		{
-			createResources();
-		}
-	}
-
-
-	void RenderPanel::createResources()
-	{
-		// Start initializing the applet (core, services & application)
-		auto preview_app = nap::utility::getExecutableDir() + "/resources/apps/renderpreview/app.json";
-		nap::utility::ErrorState error;
-		mRunner.init(preview_app, std::launch::async);
+		// Create native window
+		QWindow* native_window = new QWindow();
 
 		// Setup QT format (TODO: Use system preferences)
 		QSurfaceFormat format;
 		format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
-		mNativeWindow.setFormat(format);
-		mNativeWindow.setSurfaceType(QSurface::VulkanSurface);
+		native_window->setFormat(format);
+		native_window->setSurfaceType(QSurface::VulkanSurface);
 
-		// Create QWidget window container
-		assert(mContainer == nullptr);
-		mContainer = QWidget::createWindowContainer(&mNativeWindow, this);
-		mContainer->setFocusPolicy(Qt::StrongFocus);
-
-		// Wait for applet to finish initialization -> bail if it failed
-		assert(!mInitialized);
-		if(!mRunner.initialized())
-		{
-			nap::Logger::error(error.toString());
-			return;
-		}
+		// Create QWidget window container (without parent)
+		auto* container = QWidget::createWindowContainer(native_window, nullptr);
+		container->setFocusPolicy(Qt::StrongFocus);
 
 		// Everything initialized correctly, set the render window in the app
-		auto id = mContainer->winId(); assert(id != 0);
-		mRenderWindow = mRunner.getApplet().setWindowFromHandle((void*)id, error);
-		if (mRenderWindow == nullptr)
+		auto id = container->winId(); assert(id != 0);
+		auto render_window = applet.setWindowFromHandle((void*)id, error);
+		if (render_window == nullptr)
 		{
-			nap::Logger::error(error.toString());
-			return;
+			delete container;
+			return nullptr;
 		}
 
-		// Tell event loop to forward events to this applet
-		auto* event_loop = AppContext::get().getEventLoop(); assert(event_loop != nullptr);
-		event_loop->setApplet(mRunner);
-
-		// Initialization succeeded
-		mInitialized = true;
-
-		// Add container to layout and set
-		assert(layout() == nullptr);
-		mLayout.setContentsMargins(0, 0, 0, 0);
-		mLayout.addWidget(mContainer);
-		setLayout(&mLayout);
-
-		// Install listener
-		mContainer->installEventFilter(this);
-	}
-
-
-	void RenderPanel::abort()
-	{
-		if (mRunner.running())
-			mRunner.abort();
+		// Create and return the new panel
+		return new RenderPanel(container, render_window, parent);
 	}
 
 
@@ -106,15 +52,7 @@ namespace napkin
 		{
 			case QEvent::Show:
 			{
-				if (!mRunner.running() && mInitialized)
-				{
-					mRunner.run(std::launch::async, 60);
-				}
-				return true;
-			}
-			case QEvent::Close:
-			{
-				abort();
+				setLayout(&mLayout);
 				return true;
 			}
 			default:
@@ -126,9 +64,16 @@ namespace napkin
 	}
 
 
-	void RenderPanel::closeEvent(QCloseEvent* event)
+	RenderPanel::RenderPanel(QWidget* container, nap::ObjectPtr<nap::RenderWindow> window, QWidget* parent) :
+		QWidget(parent), mContainer(container), mRenderWindow(window)
 	{
-		abort();
+		mContainer->setParent(this);
+		mContainer->installEventFilter(this);
+
+		mLayout.setContentsMargins(0, 0, 0, 0);
+		mLayout.addWidget(mContainer);
+		installEventFilter(this);
 	}
+
 }
 

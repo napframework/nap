@@ -5,13 +5,11 @@
 #pragma once
 
 // Local Includes
-#include "appcontext.h"
-#include "appletrunner.h"
+#include "../applet.h"
 
 // External Includes
 #include <QWidget>
 #include <QWindow>
-#include <QTImer>
 #include <QBoxLayout>
 #include <renderwindow.h>
 #include <guiappeventhandler.h>
@@ -25,27 +23,19 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-		// Creates surface and adds it to this widget
-		RenderPanel();
 
-		// Free resources
-		virtual ~RenderPanel() override;
+		static RenderPanel* create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error);
 
 	protected:
 		virtual bool eventFilter(QObject* watched, QEvent* event) override;
-		void closeEvent(QCloseEvent* event) override;
 
 	private:
-		QWindow mNativeWindow;
+		// Render panel embeds the container
+		RenderPanel(QWidget* container, nap::rtti::ObjectPtr<nap::RenderWindow> window, QWidget* parent);
+
 		QVBoxLayout mLayout;
 		QWidget* mContainer = nullptr;
-		nap::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;
-		void projectLoaded(const nap::ProjectInfo& info);
-		void createResources();
-
-		PreviewAppletRunner mRunner;
-		bool mInitialized = false;
-		void abort();
+		nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;
 	};
 }
 

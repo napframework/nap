@@ -76,7 +76,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	}
 
 	// TODO: Close signal is not emitted 
-	mRenderPanel.close();
+	mPreviewPanel.close();
 	BaseWindow::closeEvent(event);
 }
 
@@ -93,7 +93,7 @@ void MainWindow::addDocks()
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
-	addDock("3D Preview", &mRenderPanel);
+	addDock("3D Preview", &mPreviewPanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 
