@@ -12,29 +12,64 @@
 #include <QWindow>
 #include <QBoxLayout>
 #include <renderwindow.h>
-#include <guiappeventhandler.h>
 
 namespace napkin
 {
 	/**
-	 * Runs a nap application inside a widget
+	 * Creates and binds a QT widget container to a NAP render window.
 	 */
 	class RenderPanel : public QWidget
 	{
 		Q_OBJECT
 	public:
 
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * Creates and binds a QT widget container to a NAP render window.
+		 * @param applet the applet to bind the window to
+		 * @param parent parent widget that owns the render panel
+		 * @param the error if creation or binding fails
+		 * @return the panel, nullptr if panel could not be created or bound
+		 */
 		static RenderPanel* create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error);
 
+		//////////////////////////////////////////////////////////////////////////
+
+		/**
+		 * @return render window
+		 */
+		nap::RenderWindow& getWindow()					{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
+
+		/**
+		 * @return render window
+		 */
+		const nap::RenderWindow& getWindow() const		{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
+
+		/**
+		 * @return QT window container
+		 */
+		QWidget& getContainer()							{ assert(mContainer != nullptr); return *mContainer; }
+
+		/**
+		 * @return QT window container
+		 */
+		const QWidget& getContainer() const				{ assert(mContainer != nullptr); return *mContainer; }
+
+	Q_SIGNALS:
+		// Signal called when the panel is shown
+		void shown(RenderPanel& panel);
+
 	protected:
+		// Handle shown event
 		virtual bool eventFilter(QObject* watched, QEvent* event) override;
 
 	private:
-		// Render panel embeds the container
+		// Private constructor, call create instead
 		RenderPanel(QWidget* container, nap::rtti::ObjectPtr<nap::RenderWindow> window, QWidget* parent);
 
-		QVBoxLayout mLayout;
-		QWidget* mContainer = nullptr;
+		QVBoxLayout		mLayout;
+		QWidget*		mContainer = nullptr;
 		nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;
 	};
 }

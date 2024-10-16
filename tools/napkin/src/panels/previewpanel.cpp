@@ -27,8 +27,16 @@ namespace napkin
 	}
 
 
+	void PreviewPanel::panelShown(napkin::RenderPanel& panel)
+	{
+		assert(mWindow != nullptr);
+	}
+
+
 	void PreviewPanel::init(const nap::ProjectInfo& info)
 	{
+		assert(mWindow == nullptr);
+
 		// Initializing the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		mRunner.init(preview_app, std::launch::deferred);
@@ -44,6 +52,9 @@ namespace napkin
 			return;
 		}
 
+		// Listen to window events
+		connect(mWindow, &RenderPanel::shown, this, &PreviewPanel::panelShown);
+
 		// Tell event loop to forward events to this applet
 		auto* event_loop = AppContext::get().getEventLoop();
 		assert(event_loop != nullptr);
@@ -55,8 +66,7 @@ namespace napkin
 		mLayout.addWidget(mWindow);
 		setLayout(&mLayout);
 
-		// Start running
-		// TODO: Only start running when shown
+		// Start running the application (threaded)
 		mRunner.run(std::launch::async, 60);
 	}
 

@@ -52,7 +52,9 @@ namespace napkin
 		{
 			case QEvent::Show:
 			{
-				setLayout(&mLayout);
+				if (layout() == nullptr)
+					setLayout(&mLayout);
+				shown(*this);
 				return true;
 			}
 			default:

@@ -95,7 +95,7 @@ namespace napkin
 		/**
 		 * @return if the applet is running
 		 */
-		bool running() const															{ return mRunTask.valid(); }
+		bool running() const												{ return mRunTask.valid(); }
 
 		/**
 		 * Aborts and waits for the application to stop running

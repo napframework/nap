@@ -17,24 +17,38 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
+		// App to load (relative to executable)
+		static constexpr const char* app = "/resources/apps/renderpreview/app.json";
+
 		// Creates the surface and adds it to this widget
 		PreviewPanel();
 
 		// Ensures applet stops running
 		~PreviewPanel();
 
-		// App to load (relative to executable)
-		static constexpr const char* app = "/resources/apps/renderpreview/app.json";
+		/**
+		 * @return if the preview applet is initialized
+		 */
+		bool initialized() const				{ return mWindow != nullptr; }
+
+		/**
+		 * @return if the applet is running
+		 */
+		bool running() const					{ return mRunner.running(); }
 
 	protected:
 
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
+		// Called when the embedded render panel is made visible
+		void panelShown(napkin::RenderPanel& panel);
+
 	private:
-		RenderPanel*			mWindow;		//< Window that is drawn to
-		PreviewAppletRunner		mRunner;		//< Application that is run
-		QVBoxLayout				mLayout;		//< Widget layout
+		RenderPanel*			mWindow = nullptr;	//< NAP compatible Qt render window
+		PreviewAppletRunner		mRunner;			//< Application that is run
+		QVBoxLayout				mLayout;			//< Widget layout
+		bool					mInitialized;		//< If the panel is initialized
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);
