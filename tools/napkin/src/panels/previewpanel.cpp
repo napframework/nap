@@ -41,7 +41,10 @@ namespace napkin
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		mRunner.init(preview_app, std::launch::deferred);
 		if (!mRunner.initialized())
+		{
+			nap::Logger::error("Unable to initialize preview panel");
 			return;
+		}
 
 		// Create the underlying QWidget render window
 		nap::utility::ErrorState error;

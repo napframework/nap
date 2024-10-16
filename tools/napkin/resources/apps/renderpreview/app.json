@@ -8,7 +8,7 @@
         "napcameracontrol",
         "napimgui"
     ],
-    "Data": "data/testworld.json",
+    "Data": "data/preview.json",
     "ServiceConfig": "",
     "PathMapping": "cache/path_mapping.json"
 }

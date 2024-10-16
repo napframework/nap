@@ -33,18 +33,32 @@ namespace nap
 		mResourceManager = getCore().getResourceManager();
 
 		// Extract loaded resources
-		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("WorldTexture");
+		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("PreviewWorldTexture");
+		if (!error.check(mWorldTexture != nullptr, "Missing 'PreviewWorldTexture'"))
+			return false;
 
 		// Get the resource that manages all the entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("PreviewScene");
+		if (!error.check(scene != nullptr, "Missing 'PreviewScene'"))
+			return false;
 
 		// Fetch world and text
-		mWorldEntity = scene->findEntity("World");
-		mTextEntity = scene->findEntity("Text");
+		mWorldEntity = scene->findEntity("PreviewWorld");
+		if (!error.check(mWorldEntity != nullptr, "Missing 'PreviewWorldEntity'"))
+			return false;
+
+		mTextEntity = scene->findEntity("PreviewText");
+		if (!error.check(mTextEntity != nullptr, "Missing 'PreviewTextEntity'"))
+			return false;
 
 		// Fetch the two different cameras
-		mPerspectiveCamEntity = scene->findEntity("PerspectiveCamera");
-		mOrthographicCamEntity = scene->findEntity("OrthographicCamera");
+		mPerspectiveCamEntity = scene->findEntity("PreviewPerspectiveCamera");
+		if (!error.check(mPerspectiveCamEntity != nullptr, "Missing 'PreviewPerspectiveCamera'"))
+			return false;
+
+		mOrthographicCamEntity = scene->findEntity("PreviewOrthographicCamera");
+		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'PreviewOrthographicCamera'"))
+			return false;
 
 		// Sample default color values from loaded color palette
 		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();

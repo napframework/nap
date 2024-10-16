@@ -2,11 +2,11 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "OrthographicCamera",
+            "mID": "PreviewOrthographicCamera",
             "Components": [
                 {
                     "Type": "nap::OrthoCameraComponent",
-                    "mID": "nap::OrthoCameraComponent",
+                    "mID": "PreviewOrthoCameraComponent",
                     "Properties": {
                         "Mode": "PixelSpace",
                         "LeftPlane": 0.0,
@@ -29,7 +29,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_4",
+                    "mID": "PreviewOrthoCameraTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -54,11 +54,11 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "PerspectiveCamera",
+            "mID": "PreviewPerspectiveCamera",
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
-                    "mID": "PerspCameraComponent",
+                    "mID": "PreviewPersCameraComponent",
                     "Properties": {
                         "FieldOfView": 45.0,
                         "NearClippingPlane": 0.10000000149011612,
@@ -75,7 +75,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_2",
+                    "mID": "PreviewPersCameraTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -97,18 +97,18 @@
                 },
                 {
                     "Type": "nap::KeyInputComponent",
-                    "mID": "nap::KeyInputComponent"
+                    "mID": "PreviewPersCameraKeyInputComponent"
                 },
                 {
                     "Type": "nap::PointerInputComponent",
-                    "mID": "nap::PointerInputComponent"
+                    "mID": "PreviewPersCameraInputComponent"
                 },
                 {
                     "Type": "nap::OrbitController",
-                    "mID": "nap::OrbitController",
+                    "mID": "PreviewPersCameraOrbitController",
                     "MovementSpeed": 0.032999999821186066,
                     "RotateSpeed": 0.0032999999821186066,
-                    "PerspCameraComponent": "PerspCameraComponent",
+                    "PerspCameraComponent": "PreviewPersCameraComponent",
                     "LimitZoomDistance": false,
                     "MinimumZoomDistance": 0.5,
                     "LookAtPosition": {
@@ -122,16 +122,16 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "Text",
+            "mID": "PreviewText",
             "Components": [
                 {
                     "Type": "nap::Renderable2DTextComponent",
-                    "mID": "nap::RenderableTextComponent",
+                    "mID": "PreviewTextRenderComponent",
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Text": "Hi there! Welcome to NAP",
-                    "Font": "Font",
+                    "Text": "3D Preview Applet",
+                    "Font": "PreviewFont",
                     "TextColor": {
                         "Values": [
                             1.0,
@@ -150,7 +150,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent_3",
+                    "mID": "PreviewTextTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -175,21 +175,21 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "World",
+            "mID": "PreviewWorld",
             "Components": [
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "nap::RenderableMeshComponent",
+                    "mID": "PreviewWorldRenderComponent",
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Mesh": "WorldMesh",
+                    "Mesh": "PreviewWorldMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
                         "Constants": [],
-                        "Material": "WorldMaterial",
+                        "Material": "PreviewWorldMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
                     },
@@ -207,7 +207,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "nap::TransformComponent",
+                    "mID": "PreviewWorldTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -229,7 +229,7 @@
                 },
                 {
                     "Type": "nap::RotateComponent",
-                    "mID": "nap::RotateComponent",
+                    "mID": "PreviewWorldRotateComponent",
                     "Enabled": true,
                     "Properties": {
                         "Axis": {
@@ -246,7 +246,7 @@
         },
         {
             "Type": "nap::Font",
-            "mID": "Font",
+            "mID": "PreviewFont",
             "Properties": {
                 "Size": 24
             },
@@ -271,18 +271,18 @@
         },
         {
             "Type": "nap::ResourceGroup",
-            "mID": "Rendering",
+            "mID": "PreviewRendering",
             "Members": [
                 {
                     "Type": "nap::ShaderFromFile",
-                    "mID": "WorldShader",
+                    "mID": "PreviewWorldShader",
                     "VertShader": "shaders/helloworld/world.vert",
                     "FragShader": "shaders/helloworld/world.frag",
                     "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::SphereMesh",
-                    "mID": "WorldMesh",
+                    "mID": "PreviewWorldMesh",
                     "Usage": "Static",
                     "CullMode": "None",
                     "PolygonMode": "Fill",
@@ -305,7 +305,7 @@
                 },
                 {
                     "Type": "nap::Material",
-                    "mID": "WorldMaterial",
+                    "mID": "PreviewWorldMaterial",
                     "Uniforms": [],
                     "Samplers": [
                         {
@@ -324,12 +324,12 @@
                             "BorderColor": "IntOpaqueBlack",
                             "CompareMode": "LessOrEqual",
                             "EnableCompare": false,
-                            "Texture": "WorldTexture"
+                            "Texture": "PreviewWorldTexture"
                         }
                     ],
                     "Buffers": [],
                     "Constants": [],
-                    "Shader": "WorldShader",
+                    "Shader": "PreviewWorldShader",
                     "VertexAttributeBindings": [
                         {
                             "MeshAttributeID": "Position",
@@ -351,11 +351,11 @@
             "Children": [
                 {
                     "Type": "nap::ResourceGroup",
-                    "mID": "Textures",
+                    "mID": "PreviewTextures",
                     "Members": [
                         {
                             "Type": "nap::ImageFromFile",
-                            "mID": "WorldTexture",
+                            "mID": "PreviewWorldTexture",
                             "Usage": "Static",
                             "ImagePath": "world_texture.png",
                             "GenerateLods": true
@@ -367,22 +367,22 @@
         },
         {
             "Type": "nap::Scene",
-            "mID": "Scene",
+            "mID": "PreviewScene",
             "Entities": [
                 {
-                    "Entity": "World",
+                    "Entity": "PreviewWorld",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "PerspectiveCamera",
+                    "Entity": "PreviewPerspectiveCamera",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "Text",
+                    "Entity": "PreviewText",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "OrthographicCamera",
+                    "Entity": "PreviewOrthographicCamera",
                     "InstanceProperties": []
                 }
             ]

@@ -39,7 +39,7 @@ namespace napkin
 		mCore.getResourceManager()->watchDirectory(data_dir);
 
 		// Initialize application
-		if (!error.check(mApplet->init(error), "Unable to initialize application"))
+		if (!error.check(mApplet->init(error), "Unable to initialize applet"))
 			return false;
 
 		return true;
