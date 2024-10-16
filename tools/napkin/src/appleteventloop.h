@@ -53,7 +53,6 @@ namespace napkin
 		QTimer mTimer;
 		napkin::AppletRunner* mRunner = nullptr;
 		std::unique_ptr<nap::SDLEventConverter> mEventConverter = nullptr;
-		nap::IMGuiService* mGuiService = nullptr;
 
 		void pollEvent();
 	};

@@ -6,7 +6,8 @@
     "RequiredModules": [
         "napapp",
         "napcameracontrol",
-        "napimgui"
+        "napsdlinput",
+        "naprender"
     ],
     "Data": "data/preview.json",
     "ServiceConfig": "",

@@ -14,7 +14,6 @@
 #include <nap/logger.h>
 #include <mathutils.h>
 #include <SDL_events.h>
-#include <imguiservice.h>
 
 namespace napkin
 {
@@ -56,7 +55,6 @@ namespace napkin
 		auto* sdl_service = mRunner->getCore().getService<nap::SDLInputService>();
 		assert(sdl_service != nullptr);
 		mEventConverter = std::make_unique<nap::SDLEventConverter>(*sdl_service);
-		mGuiService = mRunner->getCore().getService<nap::IMGuiService>();
 	}
 
 
@@ -74,35 +72,17 @@ namespace napkin
 		nap::EventPtrList events;
 		while (SDL_PollEvent(&event) > 0)
 		{
-			// Forward if we're not capturing the mouse in the GUI and it's a pointer event
-			if (mEventConverter->isMouseEvent(event))
+			// Check if we are dealing with an input event (mouse / keyboard)
+			if (mEventConverter->isInputEvent(event))
 			{
-				nap::InputEventPtr input_event = mEventConverter->translateMouseEvent(event);
-				if (input_event == nullptr)
-					continue;
-
-				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
-				if (ctx != nullptr && !mGuiService->isCapturingMouse(ctx))
+				nap::InputEventPtr input_event = mEventConverter->translateInputEvent(event);
+				if (input_event != nullptr)
 				{
 					mRunner->sendEvent(std::move(input_event));
 				}
 			}
 
-			// Forward if we're not capturing the keyboard in the GUI and it's a key event
-			else if (mEventConverter->isKeyEvent(event))
-			{
-				nap::InputEventPtr input_event = mEventConverter->translateKeyEvent(event);
-				if (input_event == nullptr)
-					continue;
-
-				ImGuiContext* ctx = mGuiService->processInputEvent(*input_event);
-				if (ctx != nullptr && !mGuiService->isCapturingKeyboard(ctx))
-				{
-					mRunner->sendEvent(std::move(input_event));
-				}
-			}
-
-			// Always forward window events
+			// Check if we're dealing with a window event
 			else if (mEventConverter->isWindowEvent(event))
 			{
 				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
