@@ -94,7 +94,6 @@ void MainWindow::addDocks()
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
 	addDock("3D Preview", &mPreviewPanel);
-	addDock("Texture Preview", &mTexturePanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 

@@ -186,7 +186,6 @@ namespace napkin
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
 		PreviewPanel mPreviewPanel;
-		PreviewPanel mTexturePanel;
 		ServiceConfigPanel mServiceConfigPanel;
 
 		ThemeSelectionMenu mThemeMenu;
