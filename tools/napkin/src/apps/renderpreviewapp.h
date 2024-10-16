@@ -12,7 +12,6 @@
 #include <renderwindow.h>
 #include <entity.h>
 #include <imagefromfile.h>
-#include <imguiservice.h>
 
 // Local includes
 #include "../applet.h"
@@ -75,7 +74,6 @@ namespace nap
 		RenderService*				mRenderService = nullptr;			///< Render Service that handles render calls
 		SceneService*				mSceneService = nullptr;			///< Manages all the objects in the scene
 		InputService*				mInputService = nullptr;			///< Input service for processing input
-		IMGuiService*				mGuiService = nullptr;				///< Manages gui related update / draw calls
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
 
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
