@@ -124,11 +124,11 @@ namespace nap
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
 	static std::unique_ptr<INSTANCE_TYPE> createUniformValueInstance(const Uniform* value, const DECLARATION_TYPE& declaration, utility::ErrorState& errorState)
 	{
-		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(declaration);
+		auto result = std::make_unique<INSTANCE_TYPE>(declaration);
 		if (value != nullptr)
 		{
-			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(value);
-			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader"))
+			const auto* typed_resource = rtti_cast<const RESOURCE_TYPE>(value);
+			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader (%s)", declaration.mName.c_str()))
 				return nullptr;
 
 			result->set(*typed_resource);

@@ -34,6 +34,10 @@ RTTI_BEGIN_CLASS(nap::Vec4VertexAttribute)
 	RTTI_PROPERTY("Data", &nap::Vec4VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Vector (vec4) vertex data")
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS(nap::IVec4VertexAttribute)
+	RTTI_PROPERTY("Data", &nap::IVec4VertexAttribute::mData, nap::rtti::EPropertyMetaData::Required, "Integer vector (ivec4) vertex data")
+RTTI_END_CLASS
+
 namespace nap
 {
 	// Only here to make sure this cpp is not removed during optimization, which would cause the RTTI definitions to be missing
@@ -60,4 +64,7 @@ namespace nap
 
 	template<>
 	VkFormat Vec4VertexAttribute::getFormat() const { return VK_FORMAT_R32G32B32A32_SFLOAT; }
+
+	template<>
+	VkFormat IVec4VertexAttribute::getFormat() const { return VK_FORMAT_R32G32B32A32_SINT; }
 }

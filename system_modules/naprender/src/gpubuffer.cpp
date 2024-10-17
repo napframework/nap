@@ -81,6 +81,12 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferVec4, "Vector (vec4) GPU b
 	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferIVec4, "Integer Vector 4 (ivec4) GPU buffer")
+	RTTI_CONSTRUCTOR(nap::Core&)
+	RTTI_PROPERTY("Clear",		&nap::GPUBufferIVec4::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
+	RTTI_PROPERTY("FillPolicy", &nap::GPUBufferIVec4::mFillPolicy,	nap::rtti::EPropertyMetaData::Default, "Optional buffer fill rule")
+RTTI_END_CLASS
+
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GPUBufferMat4, "Matrix (4x4) GPU buffer")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Clear",		&nap::GPUBufferMat4::mClear,		nap::rtti::EPropertyMetaData::Default, "Clear to zero if no fill policy is set")
@@ -116,6 +122,9 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferVec4, "Vector (vec4) GP
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VertexBufferIVec4, "Integer Vector 4 (ivec4) GPU vertex buffer")
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 // IndexBuffer

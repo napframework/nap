@@ -170,7 +170,8 @@ namespace nap
 	using Vec2VertexAttribute	= VertexAttribute<glm::vec2>;
 	using Vec3VertexAttribute	= VertexAttribute<glm::vec3>;
 	using Vec4VertexAttribute	= VertexAttribute<glm::vec4>;
-
+	using IVec4VertexAttribute	= VertexAttribute<glm::ivec4>;
+	
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
@@ -220,5 +221,7 @@ namespace nap
 	template<>
 	NAPAPI VkFormat Vec4VertexAttribute::getFormat() const;
 
+	template<>
+	NAPAPI VkFormat IVec4VertexAttribute::getFormat() const;
 } // nap
 

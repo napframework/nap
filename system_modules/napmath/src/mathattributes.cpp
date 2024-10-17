@@ -110,6 +110,15 @@ RTTI_BEGIN_STRUCT(glm::ivec3)
 	RTTI_CUSTOM_REGISTRATION_FUNCTION(sRegisterIntVectorOperators)
 RTTI_END_STRUCT
 
+RTTI_BEGIN_STRUCT(glm::ivec4)
+	RTTI_VALUE_CONSTRUCTOR(int, int, int, int)
+	RTTI_PROPERTY("x", &glm::ivec4::x, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("y", &glm::ivec4::y, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("z", &glm::ivec4::z, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("w", &glm::ivec4::w, nap::rtti::EPropertyMetaData::Default)
+	RTTI_CUSTOM_REGISTRATION_FUNCTION(sRegisterIntVectorOperators)
+RTTI_END_STRUCT
+
 RTTI_BEGIN_STRUCT(glm::quat)
 	RTTI_VALUE_CONSTRUCTOR(float, float, float, float)
 	RTTI_PROPERTY("x", &glm::quat::x, nap::rtti::EPropertyMetaData::Default)
