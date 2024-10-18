@@ -22,7 +22,6 @@ namespace napkin
 		namespace exitcode
 		{
 			constexpr nap::uint8 success		= 0;
-			constexpr nap::uint8 initFailure	= 1;
 			constexpr nap::uint8 invalid		= 2;
 		}
 	}
@@ -65,25 +64,13 @@ namespace napkin
 		AppletRunner& operator=(AppletRunner&&) = delete;
 
 		/**
-		 * Initializes the applet using the given launch policy
-		 * @param projectFilename the project to initialize
-		 * @param launchPolicy deferred or a-synchronous
+		 * Initializes and runs the applet a-synchronous
+		 * @param projectFilename project to run
+		 * @param frequency process frequency (hz)
+		 * @param syncTask task to wait for (sync with) after initialization, before running
+		 * @return if initialization succeeded or not
 		 */
-		void init(const std::string& projectFilename, std::launch launchPolicy);
-
-		/**
-		 * Waits until the applet has been initialized
-		 * @return if initialization succeeded
-		 */
-		bool initialized();
-
-		/**
-		 * Runs the applet using the given launch policy
-		 * @param launchPolicy deferred or a-synchronous
-		 * @parawm frequency process frequency (hz)
-		 * @return applet exit code
-		 */
-		void run(std::launch launchPolicy, nap::uint frequency);
+		std::future<bool> run(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask);
 
 		/**
 		 * Sends an event to the app for processing, thread safe
@@ -94,7 +81,7 @@ namespace napkin
 		/**
 		 * @return if the applet is running
 		 */
-		bool running() const												{ return mRunTask.valid(); }
+		bool running() const												{ return mThread.joinable(); }
 
 		/**
 		 * Aborts and waits for the application to stop running
@@ -122,13 +109,13 @@ namespace napkin
 		nap::Core::ServicesHandle mServices = nullptr;						/// Initialized services
 		std::unique_ptr<napkin::Applet> mApplet;							/// Applet to run
 
-		std::future<bool>			mInitTask;								///< The initialization future contract
 		std::mutex					mProcessMutex;							///< Process related mutex
 		std::condition_variable		mProcessCondition;						///< Process condition variable
-		std::future<nap::uint8>		mRunTask;								///< The run future contract
 		std::atomic<bool>			mAbort = { false };						///< Aborts the application from running
 		std::atomic<nap::uint>		mFrequency = 60;						///< Processing frequency (hz)
 		std::queue<nap::EventPtr>	mEventQueue;							///< Events to forward to the running app
+		std::thread					mThread;								///< Running thread
+		std::promise<bool>			mInitPromise;							///< If runner initialized correctly
 
 		/**
 		 * Initializes the engine and the application.
@@ -137,6 +124,11 @@ namespace napkin
 		 * @return if the app initialized successfully started
 		 */
 		bool initEngine(const std::string& projectInfo, nap::utility::ErrorState& error);
+
+		/**
+		 * Runs the applet until stopped
+		 */
+		void runApplet(nap::uint frequency);
 	};
 
 
@@ -151,3 +143,4 @@ namespace napkin
 		TypedAppletRunner() : AppletRunner(RTTI_OF(T)) { }
 	};
 }
+

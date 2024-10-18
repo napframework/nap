@@ -62,7 +62,7 @@ namespace napkin
 
 	protected:
 
-	nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
+		nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
 
 	private:
 		/**

@@ -6,7 +6,7 @@
             "Components": [
                 {
                     "Type": "nap::OrthoCameraComponent",
-                    "mID": "PreviewOrthoCameraComponent",
+                    "mID": "TexOrthoCameraComponent",
                     "Properties": {
                         "Mode": "PixelSpace",
                         "LeftPlane": 0.0,
@@ -29,7 +29,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "PreviewOrthoCameraTransformComponent",
+                    "mID": "TexOrthoCameraTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -58,7 +58,7 @@
             "Components": [
                 {
                     "Type": "nap::PerspCameraComponent",
-                    "mID": "PreviewPersCameraComponent",
+                    "mID": "TexPersCameraComponent",
                     "Properties": {
                         "FieldOfView": 45.0,
                         "NearClippingPlane": 0.10000000149011612,
@@ -75,7 +75,7 @@
                 },
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "PreviewPersCameraTransformComponent",
+                    "mID": "TexPersCameraTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -97,18 +97,18 @@
                 },
                 {
                     "Type": "nap::KeyInputComponent",
-                    "mID": "PreviewPersCameraKeyInputComponent"
+                    "mID": "TexPersCameraKeyInputComponent"
                 },
                 {
                     "Type": "nap::PointerInputComponent",
-                    "mID": "PreviewPersCameraInputComponent"
+                    "mID": "TexPersCameraInputComponent"
                 },
                 {
                     "Type": "nap::OrbitController",
-                    "mID": "PreviewPersCameraOrbitController",
+                    "mID": "TexPersCameraOrbitController",
                     "MovementSpeed": 0.032999999821186066,
                     "RotateSpeed": 0.0032999999821186066,
-                    "PerspCameraComponent": "PreviewPersCameraComponent",
+                    "PerspCameraComponent": "TexPersCameraComponent",
                     "LimitZoomDistance": false,
                     "MinimumZoomDistance": 0.5,
                     "LookAtPosition": {
@@ -251,23 +251,6 @@
                 "Size": 24
             },
             "Font": "fonts/Manrope-Light.otf"
-        },
-        {
-            "Type": "nap::PerspCameraComponent",
-            "mID": "PerspectiveCameraComponent",
-            "Properties": {
-                "FieldOfView": 50.0,
-                "NearClippingPlane": 1.0,
-                "FarClippingPlane": 1000.0,
-                "GridDimensions": {
-                    "x": 1,
-                    "y": 1
-                },
-                "GridLocation": {
-                    "x": 0,
-                    "y": 0
-                }
-            }
         },
         {
             "Type": "nap::ResourceGroup",

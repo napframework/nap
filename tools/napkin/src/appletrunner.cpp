@@ -6,6 +6,32 @@
 
 namespace napkin
 {
+	std::future<bool> AppletRunner::run(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask)
+	{
+		// Create and run task
+		mThread = std::thread([task = std::move(syncTask), projectFilename, frequency, this]() mutable
+		{
+			// Initialize engine and application
+			nap::utility::ErrorState error;
+			if (!initEngine(projectFilename, error))
+			{
+				mInitPromise.set_value(false);
+				return;
+			}
+
+			// Notify other threads we initialized
+			mInitPromise.set_value(true);
+
+			// Wait for other thread to initialize
+			if (task.get())
+			{
+				runApplet(frequency);
+			}
+		});
+		return mInitPromise.get_future();
+	}
+
+
 	bool napkin::AppletRunner::initEngine(const std::string& projectInfo, nap::utility::ErrorState& error)
 	{
 		// Initialize engine
@@ -35,9 +61,6 @@ namespace napkin
 		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error), "Failed to load data: %s", data_file.c_str()))
 			return false;
 
-		// Watch the data directory
-		mCore.getResourceManager()->watchDirectory(data_dir);
-
 		// Initialize application
 		if (!error.check(mApplet->init(error), "Unable to initialize applet"))
 			return false;
@@ -55,87 +78,6 @@ namespace napkin
 	}
 
 
-	void AppletRunner::init(const std::string& projectFilename, std::launch launchPolicy)
-	{
-		// Create and run task
-		assert(!mInitTask.valid());
-		mInitTask = std::async(launchPolicy, [projectFilename, this]()-> bool
-			{
-				// Initialize engine and application
-				nap::utility::ErrorState error;
-				if (!initEngine(projectFilename, error))
-				{
-					nap::Logger::error("error: %s", error.toString().c_str());
-					return false;
-				}
-				return true;
-			});
-	}
-
-
-	bool AppletRunner::initialized()
-	{
-		if (mInitTask.valid())
-			return mInitTask.get();
-		return false;
-
-	}
-
-
-	void AppletRunner::run(std::launch launchPolicy, nap::uint frequency)
-	{
-		mAbort = false;
-		mRunTask = std::async(launchPolicy, [frequency, this]() -> nap::uint8
-			{
-				mCore.start();
-				double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
-				nap::Milliseconds wm(static_cast<int>(wd));
-				std::queue<nap::EventPtr> event_queue;
-
-				std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
-				while (!mAbort)
-				{
-					std::unique_lock<std::mutex> lk(mProcessMutex);
-					mProcessCondition.wait_for(lk, wm, [this] 
-						{
-							return !mEventQueue.empty();
-						}
-					);
-
-					// Trade and unlock for further processing
-					assert(event_queue.empty());
-					event_queue.swap(mEventQueue);
-					lk.unlock();
-
-					// Forward input to running app
-					while (!event_queue.empty())
-					{
-						auto& event_ref = event_queue.front();
-						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
-						{
-							auto* input_event = static_cast<nap::InputEvent*>(event_ref.release());
-							mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
-						}
-
-						else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
-						{
-							auto* window_event = static_cast<nap::WindowEvent*>(event_ref.release());
-							mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(window_event));
-						}
-						event_queue.pop();
-					}
-
-					// Update core and application
-					mCore.update(update_call);
-
-					// Render content
-					mApplet->render();
-				}
-				return static_cast<nap::uint8>(mApplet->shutdown());
-			});
-	}
-
-
 	void AppletRunner::sendEvent(nap::EventPtr event)
 	{
 		// Swap and notify handling thread
@@ -149,11 +91,64 @@ namespace napkin
 
 	nap::uint8 AppletRunner::abort()
 	{
-		if (!mRunTask.valid())
-			return napkin::applet::exitcode::invalid;
+		if (mThread.joinable())
+		{
+			mAbort = true;
+			mThread.join();
+			return::napkin::applet::exitcode::success;
+		}
+		return::napkin::applet::exitcode::invalid;
+	}
 
-		// Shutdown
-		mAbort = true;
-		return mRunTask.get();
+
+	void AppletRunner::runApplet(nap::uint frequency)
+	{
+		mCore.start();
+		double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
+		nap::Milliseconds wm(static_cast<int>(wd));
+		std::queue<nap::EventPtr> event_queue;
+
+		std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
+		while (!mAbort)
+		{
+			std::unique_lock<std::mutex> lk(mProcessMutex);
+			mProcessCondition.wait_for(lk, wm, [this]
+				{
+					return !mEventQueue.empty();
+				}
+			);
+
+			// Trade and unlock for further processing
+			assert(event_queue.empty());
+			event_queue.swap(mEventQueue);
+			lk.unlock();
+
+			// Forward input to running app
+			while (!event_queue.empty())
+			{
+				auto& event_ref = event_queue.front();
+				if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
+				{
+					auto* input_event = static_cast<nap::InputEvent*>(event_ref.release());
+					mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
+				}
+
+				else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
+				{
+					auto* window_event = static_cast<nap::WindowEvent*>(event_ref.release());
+					mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(window_event));
+				}
+				event_queue.pop();
+			}
+
+			// Update core and application
+			mCore.update(update_call);
+
+			// Render content
+			mApplet->render();
+		}
+		mServices = nullptr;
 	}
 }
+
+

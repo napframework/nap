@@ -35,24 +35,28 @@ namespace napkin
 
 	void TexturePanel::init(const nap::ProjectInfo& info)
 	{
+		// Signals completion setup resources gui thread
 		assert(mWindow == nullptr);
+		std::promise<bool> window_promise;
 
 		// Initializing the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		mRunner.init(preview_app, std::launch::deferred);
-		if (!mRunner.initialized())
+		auto init_future = mRunner.run(preview_app, 60, window_promise.get_future());
+
+		// Wait for the thread to finish initialization and bail if it fails
+		if (!init_future.get())
 		{
 			nap::Logger::error("Unable to initialize preview panel");
 			return;
 		}
 
-		// Create the underlying QWidget render window
+		// Create and set the underlying QWidget render window in the gui thread
 		nap::utility::ErrorState error;
 		mWindow = RenderPanel::create(mRunner.getApplet(), this, error);
 		if (mWindow == nullptr)
 		{
 			nap::Logger::error(error.toString());
-			return;
+			window_promise.set_value(false);
 		}
 
 		// Listen to window events
@@ -69,7 +73,7 @@ namespace napkin
 		mLayout.addWidget(mWindow);
 		setLayout(&mLayout);
 
-		// Start running the application (threaded)
-		mRunner.run(std::launch::async, 60);
+		// Notify runner we're done and it can continue
+		window_promise.set_value(true);
 	}
 }
