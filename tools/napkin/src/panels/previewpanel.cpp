@@ -41,7 +41,7 @@ namespace napkin
 
 		// Initializing the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		auto init_future = mRunner.run(preview_app, 60, window_promise.get_future());
+		auto init_future = mRunner.start(preview_app, 60, window_promise.get_future());
 
 		// Wait for the thread to finish initialization
 		if (!init_future.get())
@@ -71,7 +71,7 @@ namespace napkin
 		mLayout.addWidget(mWindow);
 		setLayout(&mLayout);
 
-		// Notify runner we're done and it can continue
+		// Notify runner we're done and it can start the process loop
 		window_promise.set_value(true);
 	}
 

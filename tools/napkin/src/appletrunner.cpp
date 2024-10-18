@@ -26,7 +26,7 @@ namespace napkin
 	}
 
 
-	std::future<bool> AppletRunner::run(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask)
+	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask)
 	{
 		// Create and run task
 		mThread = std::thread([task = std::move(syncTask), projectFilename, frequency, this]() mutable
@@ -38,8 +38,6 @@ namespace napkin
 				mInitPromise.set_value(false);
 				return;
 			}
-
-			// Notify other threads we initialized
 			mInitPromise.set_value(true);
 
 			// Wait for other thread to initialize and run on success
@@ -49,6 +47,8 @@ namespace napkin
 			// Always clear services
 			mServices = nullptr;
 		});
+
+		// Allows the calling thread to wait for (sync) with the applet
 		return mInitPromise.get_future();
 	}
 

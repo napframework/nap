@@ -62,12 +62,13 @@ namespace napkin
 
 		/**
 		 * Initializes and runs the applet a-synchronous.
-		 * @param projectFilename project to run
-		 * @param frequency process frequency (hz)
-		 * @param syncTask task to wait for (sync with) after successful initialization
+		 * Initialization and processing happens on the same thread!
+		 * @param projectFilename full path to the project to run
+		 * @param process frequency (hz)
+		 * @param syncTask task to wait for (sync with) after initialization
 		 * @return if initialization succeeded or not
 		 */
-		std::future<bool> run(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask);
+		std::future<bool> start(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask);
 
 		/**
 		 * Sends an event to the app for processing, thread safe
