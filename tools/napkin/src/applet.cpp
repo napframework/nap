@@ -6,7 +6,7 @@
 
 namespace napkin
 {
-	nap::rtti::ObjectPtr<nap::RenderWindow> Applet::setWindowFromHandle(void* handle, nap::utility::ErrorState& error)
+	nap::RenderWindow* Applet::setWindowFromHandle(void* handle, nap::utility::ErrorState& error)
 	{
 		// Make sure that a new window is created using the given handle
 		auto& factory = getCore().getResourceManager()->getFactory();
@@ -14,11 +14,10 @@ namespace napkin
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and initialize our render window
-		mRenderWindow = getCore().getResourceManager()->createObject<nap::RenderWindow>();
+		mRenderWindow = getCore().getResourceManager()->createObject<nap::RenderWindow>().get();
 		if (!mRenderWindow->init(error))
-		{
 			mRenderWindow = nullptr;
-		}
+
 		return mRenderWindow;
 	}
 }

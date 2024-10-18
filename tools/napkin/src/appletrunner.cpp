@@ -6,6 +6,26 @@
 
 namespace napkin
 {
+	AppletRunner::AppletRunner(nap::rtti::TypeInfo appletType)
+	{
+		assert(appletType.is_derived_from(RTTI_OF(napkin::Applet)));
+		mApplet.reset(appletType.create<napkin::Applet>({ mCore }));
+		assert(mApplet != nullptr);
+	}
+
+
+	nap::uint8 AppletRunner::abort()
+	{
+		if (mThread.joinable())
+		{
+			mAbort = true;
+			mThread.join();
+			return::napkin::applet::exitcode::success;
+		}
+		return::napkin::applet::exitcode::invalid;
+	}
+
+
 	std::future<bool> AppletRunner::run(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask)
 	{
 		// Create and run task
@@ -22,11 +42,12 @@ namespace napkin
 			// Notify other threads we initialized
 			mInitPromise.set_value(true);
 
-			// Wait for other thread to initialize
+			// Wait for other thread to initialize and run on success
 			if (task.get())
-			{
 				runApplet(frequency);
-			}
+
+			// Always clear services
+			mServices = nullptr;
 		});
 		return mInitPromise.get_future();
 	}
@@ -41,8 +62,8 @@ namespace napkin
 
 		// Initialize and keep handle to the various services
 		// Bail if handle is invalid, this means service initialization failed
-		mServices = mCore.initializeServices(error);
-		if (mServices == nullptr)
+		auto service_handle = mCore.initializeServices(error);
+		if (service_handle == nullptr)
 			return false;
 
 		// Change current working directory to directory that contains the data file
@@ -65,39 +86,9 @@ namespace napkin
 		if (!error.check(mApplet->init(error), "Unable to initialize applet"))
 			return false;
 
+		// Store services
+		mServices = std::move(service_handle);
 		return true;
-	}
-
-
-	AppletRunner::AppletRunner(nap::rtti::TypeInfo appletType)
-	{
-		assert(appletType.is_derived_from(RTTI_OF(napkin::Applet)));
-		auto* applet = appletType.create<napkin::Applet>({ mCore });
-		assert(applet != nullptr);
-		mApplet.reset(applet);
-	}
-
-
-	void AppletRunner::sendEvent(nap::EventPtr event)
-	{
-		// Swap and notify handling thread
-		{
-			std::lock_guard lk(mProcessMutex);
-			mEventQueue.emplace(std::move(event));
-		}
-		mProcessCondition.notify_one();
-	}
-
-
-	nap::uint8 AppletRunner::abort()
-	{
-		if (mThread.joinable())
-		{
-			mAbort = true;
-			mThread.join();
-			return::napkin::applet::exitcode::success;
-		}
-		return::napkin::applet::exitcode::invalid;
 	}
 
 
@@ -147,7 +138,17 @@ namespace napkin
 			// Render content
 			mApplet->render();
 		}
-		mServices = nullptr;
+	}
+
+
+	void AppletRunner::sendEvent(nap::EventPtr event)
+	{
+		// Swap and notify handling thread
+		{
+			std::lock_guard lk(mProcessMutex);
+			mEventQueue.emplace(std::move(event));
+		}
+		mProcessCondition.notify_one();
 	}
 }
 

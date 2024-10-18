@@ -48,9 +48,6 @@ namespace napkin
 		// Default constructor
 		AppletRunner(nap::rtti::TypeInfo appletType);
 
-		// Destructor
-		virtual ~AppletRunner()																{ mServices = nullptr; }
-
 		/**
 		 * Copy is not allowed
 		 */
@@ -64,10 +61,10 @@ namespace napkin
 		AppletRunner& operator=(AppletRunner&&) = delete;
 
 		/**
-		 * Initializes and runs the applet a-synchronous
+		 * Initializes and runs the applet a-synchronous.
 		 * @param projectFilename project to run
 		 * @param frequency process frequency (hz)
-		 * @param syncTask task to wait for (sync with) after initialization, before running
+		 * @param syncTask task to wait for (sync with) after successful initialization
 		 * @return if initialization succeeded or not
 		 */
 		std::future<bool> run(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask);

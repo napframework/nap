@@ -57,6 +57,7 @@ namespace napkin
 		{
 			nap::Logger::error(error.toString());
 			window_promise.set_value(false);
+			return;
 		}
 
 		// Tell event loop to forward events to this applet

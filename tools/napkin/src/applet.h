@@ -61,8 +61,7 @@ namespace napkin
 		nap::RenderWindow& getRenderWindow()		{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
 
 	protected:
-
-		nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
+		nap::RenderWindow* mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
 
 	private:
 		/**
@@ -70,6 +69,6 @@ namespace napkin
 		 * @param handle the hardware window handle
 		 * @param error holds the error if window creation failed
 		 */
-		nap::rtti::ObjectPtr<nap::RenderWindow> setWindowFromHandle(void* handle, nap::utility::ErrorState& error);
+		nap::RenderWindow* setWindowFromHandle(void* handle, nap::utility::ErrorState& error);
 	};
 }

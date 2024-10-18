@@ -66,11 +66,11 @@ namespace napkin
 
 	private:
 		// Private constructor, call create instead
-		RenderPanel(QWidget* container, nap::rtti::ObjectPtr<nap::RenderWindow> window, QWidget* parent);
+		RenderPanel(QWidget* container, nap::RenderWindow* window, QWidget* parent);
 
 		QVBoxLayout		mLayout;
 		QWidget*		mContainer = nullptr;
-		nap::rtti::ObjectPtr<nap::RenderWindow> mRenderWindow = nullptr;
+		nap::RenderWindow* mRenderWindow = nullptr;
 	};
 }
 
