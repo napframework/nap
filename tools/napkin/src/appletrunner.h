@@ -14,7 +14,6 @@
 
 // Local includes
 #include "applet.h"
-#include "apps/renderpreviewapp.h"
 
 namespace napkin
 {
@@ -151,11 +150,4 @@ namespace napkin
 	public:
 		TypedAppletRunner() : AppletRunner(RTTI_OF(T)) { }
 	};
-
-
-	//////////////////////////////////////////////////////////////////////////
-	// Template runners
-	//////////////////////////////////////////////////////////////////////////
-
-	using PreviewAppletRunner = TypedAppletRunner<nap::RenderPreviewApp>;
 }

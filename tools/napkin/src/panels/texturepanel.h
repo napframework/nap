@@ -6,29 +6,29 @@
 
 // Local includes
 #include "renderpanel.h"
-#include "apps/renderpreviewapp.h"
+#include "apps/texturepreviewapp.h"
 #include "../appletrunner.h"
 
 namespace napkin
 {
 	// The applet this panel runs & embeds
-	using PreviewAppletRunner = TypedAppletRunner<nap::RenderPreviewApp>;
+	using TextureAppletRunner = TypedAppletRunner<nap::TexturePreviewApp>;
 
 	/**
 	 * Allows for previewing material and meshes
 	 */
-	class PreviewPanel : public QWidget
+	class TexturePanel : public QWidget
 	{
 		Q_OBJECT
 	public:
 		// App to load (relative to executable)
-		static constexpr const char* app = "/resources/apps/renderpreview/app.json";
+		static constexpr const char* app = "/resources/apps/texturepreview/app.json";
 
 		// Creates the surface and adds it to this widget
-		PreviewPanel();
+		TexturePanel();
 
 		// Ensures applet stops running
-		~PreviewPanel();
+		~TexturePanel();
 
 		/**
 		 * @return if the preview applet is initialized
@@ -50,7 +50,7 @@ namespace napkin
 
 	private:
 		RenderPanel*			mWindow = nullptr;	//< NAP compatible Qt render window
-		PreviewAppletRunner		mRunner;			//< Application that is run
+		TextureAppletRunner		mRunner;			//< Application that is run
 		QVBoxLayout				mLayout;			//< Widget layout
 		bool					mInitialized;		//< If the panel is initialized
 

@@ -2,38 +2,38 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "previewpanel.h"
+#include "texturepanel.h"
 #include "../appcontext.h"
 
 namespace napkin
 {
-	PreviewPanel::PreviewPanel()
+	TexturePanel::TexturePanel()
 	{
 		// Create render resources on project load
-		connect(&AppContext::get(), &AppContext::projectLoaded, this, &PreviewPanel::init);
+		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePanel::init);
 	}
 
 
-	PreviewPanel::~PreviewPanel()
+	TexturePanel::~TexturePanel()
 	{	
 		mRunner.abort();
 	}
 
 
-	void PreviewPanel::closeEvent(QCloseEvent* event)
+	void TexturePanel::closeEvent(QCloseEvent* event)
 	{
 		mRunner.abort();
 		return QWidget::closeEvent(event);
 	}
 
 
-	void PreviewPanel::panelShown(napkin::RenderPanel& panel)
+	void TexturePanel::panelShown(napkin::RenderPanel& panel)
 	{
 		assert(mWindow != nullptr);
 	}
 
 
-	void PreviewPanel::init(const nap::ProjectInfo& info)
+	void TexturePanel::init(const nap::ProjectInfo& info)
 	{
 		assert(mWindow == nullptr);
 
@@ -56,7 +56,7 @@ namespace napkin
 		}
 
 		// Listen to window events
-		connect(mWindow, &RenderPanel::shown, this, &PreviewPanel::panelShown);
+		connect(mWindow, &RenderPanel::shown, this, &TexturePanel::panelShown);
 
 		// Tell event loop to forward events to this applet
 		auto* event_loop = AppContext::get().getEventLoop();
@@ -72,5 +72,4 @@ namespace napkin
 		// Start running the application (threaded)
 		mRunner.run(std::launch::async, 60);
 	}
-
 }

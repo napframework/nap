@@ -66,7 +66,7 @@ namespace napkin
 	}
 
 
-	RenderPanel::RenderPanel(QWidget* container, nap::ObjectPtr<nap::RenderWindow> window, QWidget* parent) :
+	RenderPanel::RenderPanel(QWidget* container, nap::rtti::ObjectPtr<nap::RenderWindow> window, QWidget* parent) :
 		QWidget(parent), mContainer(container), mRenderWindow(window)
 	{
 		mContainer->setParent(this);

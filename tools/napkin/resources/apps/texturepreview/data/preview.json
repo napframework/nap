@@ -1,0 +1,391 @@
+{
+    "Objects": [
+        {
+            "Type": "nap::Entity",
+            "mID": "TexOrthographicCamera",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "PreviewOrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 0.0,
+                        "FarClippingPlane": 2.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PreviewOrthoCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 1.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TexPerspectiveCamera",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "PreviewPersCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 45.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "PreviewPersCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 4.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::KeyInputComponent",
+                    "mID": "PreviewPersCameraKeyInputComponent"
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "PreviewPersCameraInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "PreviewPersCameraOrbitController",
+                    "MovementSpeed": 0.032999999821186066,
+                    "RotateSpeed": 0.0032999999821186066,
+                    "PerspCameraComponent": "PreviewPersCameraComponent",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 0.5,
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TexText",
+            "Components": [
+                {
+                    "Type": "nap::Renderable2DTextComponent",
+                    "mID": "TexTextRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Text": "Texture Preview Applet",
+                    "Font": "TexFont",
+                    "TextColor": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Location": {
+                        "x": 0,
+                        "y": 0
+                    },
+                    "Orientation": "Center",
+                    "DepthMode": "NoReadWrite",
+                    "IgnoreTransform": true,
+                    "DPI Aware": true
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TexTextTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TexWorld",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "TexWorldRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "TexWorldMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "TexWorldMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "TexWorldTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "TexWorldRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.02500000037252903,
+                        "Offset": 0.6499999761581421
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Font",
+            "mID": "TexFont",
+            "Properties": {
+                "Size": 24
+            },
+            "Font": "fonts/Manrope-Light.otf"
+        },
+        {
+            "Type": "nap::PerspCameraComponent",
+            "mID": "PerspectiveCameraComponent",
+            "Properties": {
+                "FieldOfView": 50.0,
+                "NearClippingPlane": 1.0,
+                "FarClippingPlane": 1000.0,
+                "GridDimensions": {
+                    "x": 1,
+                    "y": 1
+                },
+                "GridLocation": {
+                    "x": 0,
+                    "y": 0
+                }
+            }
+        },
+        {
+            "Type": "nap::ResourceGroup",
+            "mID": "TexRendering",
+            "Members": [
+                {
+                    "Type": "nap::ShaderFromFile",
+                    "mID": "TexWorldShader",
+                    "VertShader": "shaders/helloworld/world.vert",
+                    "FragShader": "shaders/helloworld/world.frag",
+                    "RestrictModuleIncludes": false
+                },
+                {
+                    "Type": "nap::SphereMesh",
+                    "mID": "TexWorldMesh",
+                    "Usage": "Static",
+                    "CullMode": "None",
+                    "PolygonMode": "Fill",
+                    "Radius": 1.0,
+                    "Rings": 50,
+                    "Sectors": 50,
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Position": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                },
+                {
+                    "Type": "nap::Material",
+                    "mID": "TexWorldMaterial",
+                    "Uniforms": [],
+                    "Samplers": [
+                        {
+                            "Type": "nap::Sampler2D",
+                            "mID": "world_input_tex_uniform",
+                            "Name": "inWorldTexture",
+                            "MinFilter": "Linear",
+                            "MaxFilter": "Linear",
+                            "MipMapMode": "Linear",
+                            "AddressModeVertical": "ClampToEdge",
+                            "AddressModeHorizontal": "ClampToEdge",
+                            "MinLodLevel": 0,
+                            "MaxLodLevel": 1000,
+                            "LodBias": 0.0,
+                            "AnisotropicSamples": "Default",
+                            "BorderColor": "IntOpaqueBlack",
+                            "CompareMode": "LessOrEqual",
+                            "EnableCompare": false,
+                            "Texture": "TexWorldTexture"
+                        }
+                    ],
+                    "Buffers": [],
+                    "Constants": [],
+                    "Shader": "TexWorldShader",
+                    "VertexAttributeBindings": [
+                        {
+                            "MeshAttributeID": "Position",
+                            "ShaderAttributeID": "in_Position"
+                        },
+                        {
+                            "MeshAttributeID": "UV0",
+                            "ShaderAttributeID": "in_UV0"
+                        },
+                        {
+                            "MeshAttributeID": "Normal",
+                            "ShaderAttributeID": "in_Normal"
+                        }
+                    ],
+                    "BlendMode": "Opaque",
+                    "DepthMode": "InheritFromBlendMode"
+                }
+            ],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "TexTextures",
+                    "Members": [
+                        {
+                            "Type": "nap::ImageFromFile",
+                            "mID": "TexWorldTexture",
+                            "Usage": "Static",
+                            "ImagePath": "world_texture.png",
+                            "GenerateLods": true
+                        }
+                    ],
+                    "Children": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::Scene",
+            "mID": "TexScene",
+            "Entities": [
+                {
+                    "Entity": "TexWorld",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "TexPerspectiveCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "TexText",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "TexOrthographicCamera",
+                    "InstanceProperties": []
+                }
+            ]
+        }
+    ]
+}

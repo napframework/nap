@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "texturepreview",
+    "Version": "0.1.0",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napsdlinput",
+        "naprender"
+    ],
+    "Data": "data/preview.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}
