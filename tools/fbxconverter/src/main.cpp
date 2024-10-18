@@ -56,6 +56,8 @@ int main(int argc, char* argv[])
 
 	// Determine convert options
 	EFBXConversionOptions convert_options = commandLine.mForceConvert ? EFBXConversionOptions::CONVERT_ALWAYS : EFBXConversionOptions::CONVERT_IF_NEWER;
+	bool convert_compute = commandLine.mComputeConvert;
+	bool no_tangents = commandLine.mNoTangents;
 
 	// Convert files
 	for (const std::string& file : files_to_convert)
@@ -64,7 +66,7 @@ int main(int argc, char* argv[])
 
 		std::vector<std::string> converted_files;
 		utility::ErrorState convert_result;
-		if (!convertFBX(file, commandLine.mOutputDirectory, convert_options, converted_files, convert_result))
+		if (!convertFBX(file, commandLine.mOutputDirectory, convert_options, convert_compute, no_tangents, converted_files, convert_result))
 		{
 			Logger::fatal("\tFailed to convert: %s", convert_result.toString().c_str());
 			return -1;
