@@ -42,7 +42,7 @@ namespace nap
 
 		float LevelMeterNode::getLevel()
 		{
-			return mType == RMS ? sqrt(mValue.load()) : mValue.load();
+			return mType == Type::RMS ? std::sqrt(mValue.load()) : mValue.load();
 		}
 
 
@@ -55,7 +55,7 @@ namespace nap
             
 			switch (mType)
 			{
-				case PEAK:
+				case Type::PEAK:
 					for (auto& sample : *inputBuffer)
 					{
 						// keep track of peak, sample by sample

@@ -29,7 +29,7 @@ namespace nap
 		class NAPAPI LevelMeterNode : public Node
 		{
 		public:
-			enum Type
+			enum class Type
 			{
 				PEAK, RMS
 			};
