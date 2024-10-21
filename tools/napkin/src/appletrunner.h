@@ -68,7 +68,7 @@ namespace napkin
 		 * @param syncTask task to wait for (sync with) after initialization
 		 * @return if initialization succeeded or not
 		 */
-		std::future<bool> start(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask);
+		std::future<bool> start(const std::string& projectFilename, nap::uint frequency);
 
 		/**
 		 * Sends an event to the app for processing, thread safe

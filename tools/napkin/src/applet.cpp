@@ -4,20 +4,10 @@
 
 #include "applet.h"
 
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::Applet)
+	RTTI_CONSTRUCTOR(nap::Core&)
+RTTI_END_CLASS
+
+
 namespace napkin
-{
-	nap::RenderWindow* Applet::setWindowFromHandle(void* handle, nap::utility::ErrorState& error)
-	{
-		// Make sure that a new window is created using the given handle
-		auto& factory = getCore().getResourceManager()->getFactory();
-		auto obj_creator = std::make_unique<napkin::AppletWindowObjectCreator>(getCore(), handle);
-		factory.addObjectCreator(std::move(obj_creator));
-
-		// Create and initialize our render window
-		mRenderWindow = getCore().getResourceManager()->createObject<nap::RenderWindow>().get();
-		if (!mRenderWindow->init(error))
-			mRenderWindow = nullptr;
-
-		return mRenderWindow;
-	}
-}
+{ }

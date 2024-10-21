@@ -26,23 +26,26 @@ namespace napkin
 	}
 
 
-	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency, std::future<bool> syncTask)
+	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency)
 	{
 		// Create and run task
-		mThread = std::thread([task = std::move(syncTask), projectFilename, frequency, this]() mutable
+		mThread = std::thread([projectFilename, frequency, this]() mutable
 		{
 			// Initialize engine and application
 			nap::utility::ErrorState error;
 			if (!initEngine(projectFilename, error))
 			{
+				// Notify waiting thread init failed
+				nap::Logger::error(error.toString());
 				mInitPromise.set_value(false);
 				return;
 			}
+
+			// Notify waiting thread init succeeded
 			mInitPromise.set_value(true);
 
-			// Wait for other thread to initialize and run on success
-			if (task.get())
-				runApplet(frequency);
+			// Start running on success
+			runApplet(frequency);
 
 			// Always clear services
 			mServices = nullptr;

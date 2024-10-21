@@ -81,6 +81,7 @@ namespace nap
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
 		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
+		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
 
 		RGBColorFloat mColorOne;										//< First sphere blend color
 		RGBColorFloat mColorTwo;										//< Second sphere blend color

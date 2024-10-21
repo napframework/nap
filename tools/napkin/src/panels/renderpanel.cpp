@@ -11,11 +11,19 @@
 #include <QLayout>
 #include <QResizeEvent>
 #include <rtti/factory.h>
+#include <SDL_render.h>
+#include <SDL_hints.h>
+#include <sdlhelpers.h>
+#include <QThread>
 
 namespace napkin
 {
 	RenderPanel* RenderPanel::create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error)
 	{
+		// SDL window must be created on QT GUI thread
+		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
+			"SDL event loop must be created and running on the QT GUI thread");
+
 		// Create native window
 		QWindow* native_window = new QWindow();
 
@@ -29,17 +37,27 @@ namespace napkin
 		auto* container = QWidget::createWindowContainer(native_window, nullptr);
 		container->setFocusPolicy(Qt::StrongFocus);
 
-		// Everything initialized correctly, set the render window in the app
+		// Create an SDL window from QT handle ID
 		auto id = container->winId(); assert(id != 0);
-		auto render_window = applet.setWindowFromHandle((void*)id, error);
-		if (render_window == nullptr)
+		if (SDL_SetHintWithPriority(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, "1", SDL_HINT_OVERRIDE) == SDL_FALSE)
+			nap::Logger::warn("Unable to enable '%s'", SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN);
+
+		// TODO: Perform correct nullptr check (0 != nullptr)
+		auto sdl_window = SDL_CreateWindowFrom((void*)id);
+		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", nap::SDL::getSDLError().c_str()))
 		{
 			delete container;
 			return nullptr;
 		}
 
+		// Make sure that the applet window is created using the given handle
+		nap::Core& app_core = applet.getCore();
+		auto& factory = app_core.getResourceManager()->getFactory();
+		auto obj_creator = std::make_unique<napkin::AppletWindowObjectCreator>(app_core, sdl_window);
+		factory.addObjectCreator(std::move(obj_creator));
+
 		// Create and return the new panel
-		return new RenderPanel(container, render_window, parent);
+		return new RenderPanel(container, parent);
 	}
 
 
@@ -66,8 +84,8 @@ namespace napkin
 	}
 
 
-	RenderPanel::RenderPanel(QWidget* container, nap::RenderWindow* window, QWidget* parent) :
-		QWidget(parent), mContainer(container), mRenderWindow(window)
+	RenderPanel::RenderPanel(QWidget* container, QWidget* parent) :
+		QWidget(parent), mContainer(container)
 	{
 		mContainer->setParent(this);
 		mContainer->installEventFilter(this);

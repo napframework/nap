@@ -73,22 +73,6 @@ namespace nap
 		return new_window;
 	}
 
-	/**
-	 * Creates SDL window based on settings from native hardware handle
-	 * @return: the window, nullptr if creation failed
-	 */
-	static SDL_Window* createSDLWindow(const void* nativeHandle, utility::ErrorState& error)
-	{
-		if (SDL_SetHintWithPriority(SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN, "1", SDL_HINT_OVERRIDE) == SDL_FALSE)
-			nap::Logger::warn("Unable to enable '%s'", SDL_HINT_VIDEO_FOREIGN_WINDOW_VULKAN);
-
-		auto new_window = SDL_CreateWindowFrom(nativeHandle);
-		if (!error.check(new_window != nullptr, "Failed to create window from handle: %s", SDL::getSDLError().c_str()))
-			return nullptr;
-
-		return new_window;
-	}
-
 
 	//////////////////////////////////////////////////////////////////////////
 	// Static Vulkan Functions
@@ -471,11 +455,9 @@ namespace nap
 	{ }
 
 
-	RenderWindow::RenderWindow(Core& core, const void* nativeHandle) :
-		mNativeHandle(nativeHandle), mRenderService(core.getService<RenderService>())
-	{
-		assert(mNativeHandle != nullptr);
-	}
+	RenderWindow::RenderWindow(Core& core, SDL_Window* windowHandle) :
+		mRenderService(core.getService<RenderService>()), mExternalHandle(windowHandle)
+	{ }
 
 
 	RenderWindow::~RenderWindow()
@@ -524,8 +506,9 @@ namespace nap
 
 		// Create SDL window first
 		assert(mSDLWindow == nullptr);
-		mSDLWindow = mNativeHandle != nullptr ? createSDLWindow(mNativeHandle, errorState) :
-			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState);
+		mSDLWindow = mExternalHandle == nullptr ?
+			createSDLWindow(*this, mRenderService->getHighDPIEnabled(), errorState) :
+			mExternalHandle;
 
 		// Ensure window is valid
 		if (mSDLWindow == nullptr)
@@ -588,7 +571,7 @@ namespace nap
 		// We want to respond to resize events for this window
 		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
 
-		// Show if requestd
+		// Show if requested
 		if (mVisible)
 			this->show();
 
@@ -1063,3 +1046,4 @@ namespace nap
 		return true;
 	}
 }
+

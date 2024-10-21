@@ -35,6 +35,11 @@ namespace nap
 		if (!error.check(mWorldTexture != nullptr, "Missing 'PreviewWorldTexture'"))
 			return false;
 
+		// Fetch render window
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("AppletWindow");
+		if (!error.check(mRenderWindow != nullptr, "Missing 'AppletWindow'"))
+			return false;
+
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("PreviewScene");
 		if (!error.check(scene != nullptr, "Missing 'PreviewScene'"))
@@ -76,7 +81,7 @@ namespace nap
 
 		// Now forward all input events associated with the first window to the listening components
 		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
-		mInputService->processWindowEvents(getRenderWindow(), input_router, entities);
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Push the current color selection to the shader.
 		nap::RenderableMeshComponentInstance& renderer = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
@@ -100,7 +105,7 @@ namespace nap
 		mRenderService->beginFrame();
 
 		// Begin recording the render commands for the main render window
-		nap::RenderWindow& render_window = getRenderWindow();
+		nap::RenderWindow& render_window = *mRenderWindow;
 
 		if (mRenderService->beginRecording(render_window))
 		{

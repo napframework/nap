@@ -8,6 +8,7 @@
 #include <app.h>
 #include <renderwindow.h>
 #include <rtti/objectptr.h>
+#include <SDL_render.h>
 
 namespace napkin
 {
@@ -22,7 +23,7 @@ namespace napkin
 	public:
 		/**
 		*/
-		AppletWindowObjectCreator(nap::Core& core, void* windowHandle) :
+		AppletWindowObjectCreator(nap::Core& core, SDL_Window* windowHandle) :
 			mCore(core), mWindowHandle(windowHandle) { }
 
 		/**
@@ -36,7 +37,7 @@ namespace napkin
 		virtual nap::rtti::Object* create() override { return new nap::RenderWindow(mCore, mWindowHandle); }
 
 	private:
-		void* mWindowHandle = nullptr;
+		SDL_Window* mWindowHandle = nullptr;
 		nap::Core& mCore;
 	};
 
@@ -54,21 +55,5 @@ namespace napkin
 		friend class napkin::RenderPanel;
 	public:
 		Applet(nap::Core& core) : nap::App(core)	{ }
-
-		/**
-		 * @return embedded nap render window
-		 */
-		nap::RenderWindow& getRenderWindow()		{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
-
-	protected:
-		nap::RenderWindow* mRenderWindow = nullptr;		//< Pointer to the embedded QT render window
-
-	private:
-		/**
-		 * Create and initializes a render window from an external window handle
-		 * @param handle the hardware window handle
-		 * @param error holds the error if window creation failed
-		 */
-		nap::RenderWindow* setWindowFromHandle(void* handle, nap::utility::ErrorState& error);
 	};
 }

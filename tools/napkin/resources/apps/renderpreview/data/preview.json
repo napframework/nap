@@ -349,6 +349,30 @@
             ]
         },
         {
+            "Type": "nap::RenderWindow",
+            "mID": "AppletWindow",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": false,
+            "SampleShading": true,
+            "Title": "Window 1",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": false,
+            "RestorePosition": false
+        },
+        {
             "Type": "nap::Scene",
             "mID": "PreviewScene",
             "Entities": [

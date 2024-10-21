@@ -26,25 +26,15 @@ namespace napkin
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
-		 * Creates and binds a QT widget container to a NAP render window.
+		 * Creates QT widget container for a NAP render window.
 		 * @param applet the applet to bind the window to
 		 * @param parent parent widget that owns the render panel
 		 * @param the error if creation or binding fails
-		 * @return the panel, nullptr if panel could not be created or bound
+		 * @return the panel, nullptr if panel could not be created
 		 */
 		static RenderPanel* create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error);
 
 		//////////////////////////////////////////////////////////////////////////
-
-		/**
-		 * @return render window
-		 */
-		nap::RenderWindow& getWindow()					{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
-
-		/**
-		 * @return render window
-		 */
-		const nap::RenderWindow& getWindow() const		{ assert(mRenderWindow != nullptr); return *mRenderWindow; }
 
 		/**
 		 * @return QT window container
@@ -66,11 +56,10 @@ namespace napkin
 
 	private:
 		// Private constructor, call create instead
-		RenderPanel(QWidget* container, nap::RenderWindow* window, QWidget* parent);
+		RenderPanel(QWidget* container, QWidget* parent);
 
 		QVBoxLayout		mLayout;
 		QWidget*		mContainer = nullptr;
-		nap::RenderWindow* mRenderWindow = nullptr;
 	};
 }
 

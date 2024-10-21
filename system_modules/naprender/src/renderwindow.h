@@ -66,7 +66,7 @@ namespace nap
 		/**
 		 * This constructor is called when creating the render window using napkin
 		 */
-		RenderWindow(Core& core, const void* nativeHandle);
+		RenderWindow(Core& core, SDL_Window* windowHandle);
 
 		/**
 		 * Destroys all render resources
@@ -307,7 +307,7 @@ namespace nap
 		bool							mRecreateSwapchain = false;
 		VkSurfaceCapabilitiesKHR		mSurfaceCapabilities;
 		VkExtent2D						mSwapchainExtent = {0,0};
-		const void*						mNativeHandle = nullptr;
+		SDL_Window*						mExternalHandle = nullptr;
 
 		/**
 		 * Called by the render service. 
