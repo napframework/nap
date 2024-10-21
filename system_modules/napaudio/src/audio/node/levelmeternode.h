@@ -29,7 +29,7 @@ namespace nap
 		class NAPAPI LevelMeterNode : public Node
 		{
 		public:
-			enum class Type
+			enum class EType
 			{
 				PEAK, RMS
 			};
@@ -53,7 +53,7 @@ namespace nap
 			/**
 			 * Set the Type of the analysis. PEAK means the highest absolute amplitude within the analyzed window will be output. RMS means the root mean square of all values within the analyzed window will be output.
 			 */
-			void setType(Type type) { mType = type; }
+			void setType(EType type) { mType = type; }
 
 			// Inherited from Node
 			void process() override;
@@ -61,7 +61,7 @@ namespace nap
 
 		private:
 			int mIndex = 0; // Current write index of the buffer being analyzed.
-			Type mType = Type::RMS; // Algorithm currently being used to calculate the output level value from one buffer.
+			EType mType = EType::RMS; // Algorithm currently being used to calculate the output level value from one buffer.
 			TimeValue mAnalysisWindowSize = 0.f;
 			int mWindowSizeInSamples = 0;
 			std::atomic<float> mValue = 0.f; // Calculated output level value
