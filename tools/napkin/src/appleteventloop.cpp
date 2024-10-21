@@ -49,48 +49,11 @@ namespace napkin
 	}
 
 
-	void AppletEventLoop::setApplet(napkin::AppletRunner& applet)
-	{
-		mRunner = &applet;
-		auto* sdl_service = mRunner->getCore().getService<nap::SDLInputService>();
-		assert(sdl_service != nullptr);
-		mEventConverter = std::make_unique<nap::SDLEventConverter>(*sdl_service);
-	}
-
 
 	void AppletEventLoop::pollEvent()
 	{
-		// Flush everything if we're not targeting a specific applet
-		if (mRunner == nullptr)
-		{
-			SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
-			return;
-		}
-
-		assert(mRunner != nullptr);
-		SDL_Event event; 
-		nap::EventPtrList events;
-		while (SDL_PollEvent(&event) > 0)
-		{
-			// Check if we are dealing with an input event (mouse / keyboard)
-			if (mEventConverter->isInputEvent(event))
-			{
-				nap::InputEventPtr input_event = mEventConverter->translateInputEvent(event);
-				if (input_event != nullptr)
-				{
-					mRunner->sendEvent(std::move(input_event));
-				}
-			}
-
-			// Check if we're dealing with a window event
-			else if (mEventConverter->isWindowEvent(event))
-			{
-				nap::WindowEventPtr window_event = mEventConverter->translateWindowEvent(event);
-				if (window_event != nullptr)
-				{
-					mRunner->sendEvent(std::move(window_event));
-				}
-			}
-		}
+		// Flush everything -> events are forward by the individual render panels
+		// TODO: Remove SDL when using applets
+		SDL_FlushEvents(SDL_FIRSTEVENT, SDL_LASTEVENT);
 	}
 }

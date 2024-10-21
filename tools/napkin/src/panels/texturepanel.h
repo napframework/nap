@@ -33,7 +33,7 @@ namespace napkin
 		/**
 		 * @return if the preview applet is initialized
 		 */
-		bool initialized() const				{ return mWindow != nullptr; }
+		bool initialized() const				{ return mPanel != nullptr; }
 
 		/**
 		 * @return if the applet is running
@@ -49,7 +49,7 @@ namespace napkin
 		void panelShown(napkin::RenderPanel& panel);
 
 	private:
-		RenderPanel*			mWindow = nullptr;	//< NAP compatible Qt render window
+		RenderPanel*			mPanel = nullptr;	//< NAP compatible Qt render window
 		TextureAppletRunner		mRunner;			//< Application that is run
 		QVBoxLayout				mLayout;			//< Widget layout
 		bool					mInitialized;		//< If the panel is initialized

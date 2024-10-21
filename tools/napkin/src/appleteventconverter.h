@@ -1,0 +1,89 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+#pragma once
+
+// External includes
+#include <QEvent>
+#include <inputevent.h>
+#include <SDL_video.h>
+#include <QPoint>
+
+namespace napkin
+{
+	/**
+	 * Converts QT events into NAP Input Events
+	 */
+	class AppletEventConverter final
+	{
+	public:
+		// Default constructor
+		AppletEventConverter(SDL_Window* window) : mWindow(window) { }
+
+		// Default destructor
+		virtual ~AppletEventConverter() = default;
+
+		/**
+		 * Copy is not allowed
+		 */
+		AppletEventConverter(AppletEventConverter&) = delete;
+		AppletEventConverter& operator=(const AppletEventConverter&) = delete;
+
+		/**
+		 * Move is not allowed
+		 */
+		AppletEventConverter(AppletEventConverter&&) = delete;
+		AppletEventConverter& operator=(AppletEventConverter&&) = delete;
+
+		/**
+		* Utility function that checks if this is an input event (key, mouse, touch or controller)
+		* @param qtEvent the Qt to verify
+		* @return if this Qt event is an input event
+		*/
+		bool isInputEvent(const QEvent& qtEvent) const;
+
+		/**
+		* Utility function to translate a Qt event to a generic nap InputEvent
+		* @param qtEvent The event to translate
+		* @return Null if the Qt event is not an input event (or an unknown input event), the nap event otherwise
+		*/
+		nap::InputEventPtr translateInputEvent(const QEvent& qtEvent);
+
+		/**
+		* Utility function that checks if this is a key input event (key press down/up or text input)
+		* @param qtEvent the qt event to check
+		* @return if the Qt event is an input event
+		*/
+		bool isKeyEvent(const QEvent& qtEvent) const;
+
+		/**
+		* Utility function to translate an Qt event into a NAP key event
+		* This call assumes that the given Qt event can be translated into a NAP key event!
+		* Use isKeyEvent() to verify if the events are compatible
+		* @param qtEvent the qt event to translate
+		* @return a nap key event, nullptr if the event could not be translated
+		*/
+		nap::InputEventPtr translateKeyEvent(const QEvent& qtEvent);
+
+		/**
+		* Utility function that checks if the Qt event is a mouse input event
+		* @param qtEvent the qt event to verify
+		* @return if the event is a mouse input event
+		*/
+		bool isMouseEvent(const QEvent& qtEvent) const;
+
+		/**
+		* Utility function to translate an Qt event into a NAP mouse event.
+		* This call assumes that the given Qt event can be translated into a NAP pointer (mouse) event!
+		* Use isMouseEvent() to verify if the events are compatible.
+		* @param qtEvent the qt mouse event to translate
+		* @return a nap pointer event, nullptr if the event could not be translated
+		*/
+		nap::InputEventPtr translateMouseEvent(const QEvent& qtEvent);
+
+	private:
+		SDL_Window* mWindow = nullptr;		///< SDL window handle
+		QPoint mLocation = { -1, -1 };		///< Previous mouse location
+	};
+}

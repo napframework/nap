@@ -5,6 +5,7 @@
 // Local includes
 #include "renderpanel.h"
 #include "appcontext.h"
+#include "../appletrunner.h"
 
 // External includes
 #include <QSurfaceFormat>
@@ -18,7 +19,7 @@
 
 namespace napkin
 {
-	RenderPanel* RenderPanel::create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error)
+	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget* parent, const QString& name, nap::utility::ErrorState& error)
 	{
 		// SDL window must be created on QT GUI thread
 		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
@@ -36,6 +37,7 @@ namespace napkin
 		// Create QWidget window container (without parent)
 		auto* container = QWidget::createWindowContainer(native_window, nullptr);
 		container->setFocusPolicy(Qt::StrongFocus);
+		container->setMouseTracking(true);
 
 		// Create an SDL window from QT handle ID
 		auto id = container->winId(); assert(id != 0);
@@ -57,22 +59,59 @@ namespace napkin
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and return the new panel
-		return new RenderPanel(container, parent);
+		return new RenderPanel(container, sdl_window, parent, applet, name);
+	}
+
+
+	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet, const QString& name) :
+		QWidget(parent), mContainer(container), mWindow(window), mApplet(applet), mName(name), mConverter(window)
+	{
+		mContainer->setParent(this);
+		mContainer->installEventFilter(this);
+		this->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
+	}
+
+
+	void RenderPanel::showEvent(QShowEvent* event)
+	{
+		// Add layout when shown
+		if (layout() == nullptr)
+		{		
+			mLayout.setContentsMargins(0, 0, 0, 0);
+			mLayout.addWidget(mContainer);
+			setLayout(&mLayout);
+		}
 	}
 
 
 	bool RenderPanel::eventFilter(QObject* obj, QEvent* event)
 	{
-		if (obj != mContainer)
-			return false;
-
+		// Handle specific events targeting the window
+		assert(obj == mContainer);
 		switch (event->type())
 		{
 			case QEvent::Show:
 			{
-				if (layout() == nullptr)
-					setLayout(&mLayout);
-				shown(*this);
+				return true;
+			}
+			case QEvent::MouseButtonPress:
+			case QEvent::MouseButtonRelease:
+			case QEvent::MouseMove:
+			{
+				auto ptr = mConverter.translateMouseEvent(*event);
+				if (ptr != nullptr)
+					mApplet.sendEvent(std::move(ptr));
+				event->accept();
+				return true;
+			}
+			case QEvent::KeyPress:
+			case QEvent::KeyRelease:
+			{
+				auto* key_event = static_cast<QKeyEvent*>(event);
+				auto ptr = mConverter.translateKeyEvent(*event);
+				if (ptr != nullptr)
+					mApplet.sendEvent(std::move(ptr));
+				event->accept();
 				return true;
 			}
 			default:
@@ -82,18 +121,4 @@ namespace napkin
 		}
 		return false;
 	}
-
-
-	RenderPanel::RenderPanel(QWidget* container, QWidget* parent) :
-		QWidget(parent), mContainer(container)
-	{
-		mContainer->setParent(this);
-		mContainer->installEventFilter(this);
-
-		mLayout.setContentsMargins(0, 0, 0, 0);
-		mLayout.addWidget(mContainer);
-		installEventFilter(this);
-	}
-
 }
-

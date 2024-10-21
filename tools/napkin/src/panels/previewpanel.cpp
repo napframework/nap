@@ -29,19 +29,19 @@ namespace napkin
 
 	void PreviewPanel::panelShown(napkin::RenderPanel& panel)
 	{
-		assert(mWindow != nullptr);
+		assert(mPanel != nullptr);
 	}
 
 
 	void PreviewPanel::init(const nap::ProjectInfo& info)
 	{
 		// Signals completion setup resources gui thread
-		assert(mWindow == nullptr);
+		assert(mPanel == nullptr);
 
 		// Create the window
 		nap::utility::ErrorState error;
-		mWindow = RenderPanel::create(mRunner.getApplet(), this, error);
-		if (mWindow == nullptr)
+		mPanel = RenderPanel::create(mRunner, this, "Preview Panel", error);
+		if (mPanel == nullptr)
 		{
 			nap::Logger::error(error.toString());
 			return;
@@ -57,7 +57,7 @@ namespace napkin
 			// Install window into this widget
 			assert(layout() == nullptr);
 			mLayout.setContentsMargins(0, 0, 0, 0);
-			mLayout.addWidget(mWindow);
+			mLayout.addWidget(mPanel);
 			setLayout(&mLayout);
 		}
 

@@ -4,8 +4,8 @@
 
 #pragma once
 
-// Local Includes
-#include "../applet.h"
+// Local includes
+#include "appleteventconverter.h"
 
 // External Includes
 #include <QWidget>
@@ -15,6 +15,9 @@
 
 namespace napkin
 {
+	// Forward declares
+	class AppletRunner;
+
 	/**
 	 * Creates and binds a QT widget container to a NAP render window.
 	 */
@@ -22,7 +25,6 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-
 		//////////////////////////////////////////////////////////////////////////
 
 		/**
@@ -32,7 +34,7 @@ namespace napkin
 		 * @param the error if creation or binding fails
 		 * @return the panel, nullptr if panel could not be created
 		 */
-		static RenderPanel* create(napkin::Applet& applet, QWidget* parent, nap::utility::ErrorState& error);
+		static RenderPanel* create(napkin::AppletRunner& applet, QWidget* parent, const QString& name, nap::utility::ErrorState& error);
 
 		//////////////////////////////////////////////////////////////////////////
 
@@ -46,9 +48,15 @@ namespace napkin
 		 */
 		const QWidget& getContainer() const				{ assert(mContainer != nullptr); return *mContainer; }
 
-	Q_SIGNALS:
-		// Signal called when the panel is shown
-		void shown(RenderPanel& panel);
+		/**
+		 * @return SDL window handle
+		 */
+		SDL_Window* getWindow() const					{ assert(mWindow != nullptr); return mWindow; }
+
+		/**
+		 * Called when the panel is shown
+		 */
+		void showEvent(QShowEvent* event) override;
 
 	protected:
 		// Handle shown event
@@ -56,10 +64,14 @@ namespace napkin
 
 	private:
 		// Private constructor, call create instead
-		RenderPanel(QWidget* container, QWidget* parent);
+		RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet, const QString& name);
 
-		QVBoxLayout		mLayout;
-		QWidget*		mContainer = nullptr;
+		QVBoxLayout				mLayout;
+		QWidget*				mContainer = nullptr;
+		SDL_Window*				mWindow = nullptr;
+		AppletRunner&			mApplet;
+		QString					mName;
+		AppletEventConverter	mConverter;
 	};
 }
 

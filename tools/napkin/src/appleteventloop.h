@@ -42,12 +42,6 @@ namespace napkin
 		 */
 		virtual ~AppletEventLoop();
 
-		/**
-		 * Set the applet to forward SDL poll events to
-		 * @param applet the applet to forward events to
-		 */
-		void setApplet(napkin::AppletRunner& applet);
-
 	private:
 		nap::uint mFrequency = 60;
 		QTimer mTimer;

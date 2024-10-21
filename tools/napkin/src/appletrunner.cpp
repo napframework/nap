@@ -105,8 +105,8 @@ namespace napkin
 		std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
 		while (!mAbort)
 		{
-			std::unique_lock<std::mutex> lk(mProcessMutex);
-			mProcessCondition.wait_for(lk, wm, [this]
+			std::unique_lock<std::mutex> lock(mProcessMutex);
+			mProcessCondition.wait_for(lock, wm, [this]
 				{
 					return !mEventQueue.empty();
 				}
@@ -115,7 +115,7 @@ namespace napkin
 			// Trade and unlock for further processing
 			assert(event_queue.empty());
 			event_queue.swap(mEventQueue);
-			lk.unlock();
+			lock.unlock();
 
 			// Forward input to running app
 			while (!event_queue.empty())

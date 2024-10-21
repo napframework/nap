@@ -169,6 +169,4 @@ namespace nap
 	{
 		return 0;
 	}
-
 }
-
