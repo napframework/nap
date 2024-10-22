@@ -19,7 +19,7 @@
 
 namespace napkin
 {
-	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget* parent, const QString& name, nap::utility::ErrorState& error)
+	RenderPanel* RenderPanel::create(napkin::AppletRunner& applet, QWidget* parent, nap::utility::ErrorState& error)
 	{
 		// SDL window must be created on QT GUI thread
 		NAP_ASSERT_MSG(QThread::currentThread() == QCoreApplication::instance()->thread(),
@@ -59,12 +59,12 @@ namespace napkin
 		factory.addObjectCreator(std::move(obj_creator));
 
 		// Create and return the new panel
-		return new RenderPanel(container, sdl_window, parent, applet, name);
+		return new RenderPanel(container, sdl_window, parent, applet);
 	}
 
 
-	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet, const QString& name) :
-		QWidget(parent), mContainer(container), mWindow(window), mApplet(applet), mName(name), mConverter(window)
+	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet) :
+		QWidget(parent), mContainer(container), mWindow(window), mApplet(applet), mConverter(window)
 	{
 		mContainer->setParent(this);
 		mContainer->installEventFilter(this);

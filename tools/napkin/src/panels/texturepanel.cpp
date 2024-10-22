@@ -40,7 +40,7 @@ namespace napkin
 
 		// Create the window
 		nap::utility::ErrorState error;
-		mPanel = RenderPanel::create(mRunner, this, "Texture Panel", error);
+		mPanel = RenderPanel::create(mRunner, this, error);
 		if (mPanel == nullptr)
 		{
 			nap::Logger::error(error.toString());
@@ -60,9 +60,5 @@ namespace napkin
 			mLayout.addWidget(mPanel);
 			setLayout(&mLayout);
 		}
-
-		// Tell event loop to forward events to this applet
-		auto* event_loop = AppContext::get().getEventLoop();
-		assert(event_loop != nullptr);
 	}
 }
