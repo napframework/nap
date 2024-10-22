@@ -108,6 +108,8 @@ namespace nap
 		}
 		ImGui::End();
 
+		ImGui::ShowDemoWindow(nullptr);
+
 		// Push text color
 		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
 		text_comp.setColor(mTextColor);

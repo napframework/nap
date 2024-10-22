@@ -3,6 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 #include "appletrunner.h"
+#include "imguiservice.h"
 
 namespace napkin
 {
@@ -97,11 +98,12 @@ namespace napkin
 
 	void AppletRunner::runApplet(nap::uint frequency)
 	{
-		mCore.start();
 		double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
 		nap::Milliseconds wm(static_cast<int>(wd));
 		std::queue<nap::EventPtr> event_queue;
+		auto* gui_service = mApplet->getCore().getService<nap::IMGuiService>();
 
+		mCore.start();
 		std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
 		while (!mAbort)
 		{
@@ -123,6 +125,32 @@ namespace napkin
 				auto& event_ref = event_queue.front();
 				if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
 				{
+					// Allow gui service to process input
+					auto* gui_ctx = gui_service != nullptr ?
+						gui_service->processInputEvent(static_cast<nap::InputEvent&>(*event_ref)) : nullptr;
+
+					// Skip forwarding event if processed (captured) by gui
+					if (gui_ctx != nullptr)
+					{
+						// Gui is capturing this keyboard event
+						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyEvent)) &&
+							gui_service->isCapturingKeyboard(gui_ctx))
+						{
+							event_queue.pop();
+							continue;
+						}
+
+						// Gui is capturing this mouse event
+						if ((event_ref->get_type().is_derived_from(RTTI_OF(nap::PointerEvent)) ||
+							event_ref->get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent))) &&
+							gui_service->isCapturingMouse(gui_ctx))
+						{
+							event_queue.pop();
+							continue;
+						}
+					}
+
+					// Gui not available or capturing -> forward to app
 					auto* input_event = static_cast<nap::InputEvent*>(event_ref.release());
 					mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
 				}
@@ -154,5 +182,4 @@ namespace napkin
 		mProcessCondition.notify_one();
 	}
 }
-
 

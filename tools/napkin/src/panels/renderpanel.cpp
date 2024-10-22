@@ -97,18 +97,11 @@ namespace napkin
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
 			case QEvent::MouseMove:
-			{
-				auto ptr = mConverter.translateMouseEvent(*event);
-				if (ptr != nullptr)
-					mApplet.sendEvent(std::move(ptr));
-				event->accept();
-				return true;
-			}
+			case QEvent::Wheel:
 			case QEvent::KeyPress:
 			case QEvent::KeyRelease:
 			{
-				auto* key_event = static_cast<QKeyEvent*>(event);
-				auto ptr = mConverter.translateKeyEvent(*event);
+				auto ptr = mConverter.translateInputEvent(*event);
 				if (ptr != nullptr)
 					mApplet.sendEvent(std::move(ptr));
 				event->accept();

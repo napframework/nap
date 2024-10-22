@@ -1041,7 +1041,7 @@ namespace nap
 			// This ensures that keys that are pressed and released within the same frame are always registered
 			assert(key < context.mKeyPressed.size());
 			context.mKeyPressed[key] = false;
-		} 
+		}
 		context.mKeyRelease.clear();
 
 		// Update key modifiers
@@ -1110,6 +1110,9 @@ namespace nap
 
 	void IMGuiService::handleKeyEvent(const KeyEvent& keyEvent, GUIContext& context)
 	{
+		if (keyEvent.mKey == EKeyCode::KEY_UNKNOWN)
+			return;
+
 		int key_idx = static_cast<int>(keyEvent.mKey); assert(key_idx < 512);
 		int mod_idx = getModKeyIndex(keyEvent.mKey);
 
