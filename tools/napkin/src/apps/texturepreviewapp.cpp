@@ -26,6 +26,7 @@ namespace nap
 		mRenderService = getCore().getService<nap::RenderService>();
 		mSceneService = getCore().getService<nap::SceneService>();
 		mInputService = getCore().getService<nap::InputService>();
+		mGuiService = getCore().getService<nap::IMGuiService>();
 
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
@@ -64,10 +65,10 @@ namespace nap
 			return false;
 
 		// Sample default color values from loaded color palette
-		mColorTwo = RGBColor8(0x29, 0x58, 0xff).convert<RGBColorFloat>();
+		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
 		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
-		mHaloColor = RGBColor8(0xFF, 0xFF, 0xFF).convert<RGBColorFloat>();
-		mTextColor = mHaloColor;
+		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
+		mTextColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
 
 		return true;
 	}
@@ -89,6 +90,23 @@ namespace nap
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
 		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
+
+		// Setup GUI
+		ImGui::Begin("Controls");
+		ImGui::Text(getCurrentDateTime().toString().c_str());
+		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
+		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+
+		// Colors
+		if (ImGui::CollapsingHeader("Colors"))
+		{
+			ImGui::ColorEdit3("Color One", mColorOne.getData());
+			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
+			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
+			ImGui::ColorEdit3("Text Color", mTextColor.getData());
+		}
+		ImGui::End();
 
 		// Push text color
 		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
@@ -132,6 +150,9 @@ namespace nap
 			// mRenderService::renderObjects(*mRenderWindow, ortho_camera, components_to_render);
 			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
 			render_text.draw(render_window);
+
+			// Render gui to screen
+			mGuiService->draw();
 
 			// End the render pass
 			render_window.endRendering();

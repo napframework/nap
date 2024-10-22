@@ -87,3 +87,4 @@ namespace napkin
 		QPoint mLocation = { -1, -1 };		///< Previous mouse location
 	};
 }
+

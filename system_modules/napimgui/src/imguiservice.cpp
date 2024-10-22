@@ -83,10 +83,17 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IMGuiService, "Manages the global G
 	RTTI_CONSTRUCTOR(nap::ServiceConfiguration*)
 RTTI_END_CLASS
 
+//////////////////////////////////////////////////////////////////////////
+// Define thread local ImGUI context (Important!)
+// Ensures the current enabled context is local to the thread accessing it
+// Without thread local access the context is shared among gui instances
+//////////////////////////////////////////////////////////////////////////
+thread_local ImGuiContext* ImGuiTLS = nullptr;
+
 // Static data associated with IMGUI
-static VkDescriptorPool			gDescriptorPool = VK_NULL_HANDLE;
-static VkDescriptorSetLayout    gDescriptorSetLayout = VK_NULL_HANDLE;
-static VkSampler                gSampler = VK_NULL_HANDLE;
+static thread_local VkDescriptorPool		gDescriptorPool = VK_NULL_HANDLE;
+static thread_local VkDescriptorSetLayout   gDescriptorSetLayout = VK_NULL_HANDLE;
+static thread_local VkSampler               gSampler = VK_NULL_HANDLE;
 
 namespace nap
 {
