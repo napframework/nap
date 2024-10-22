@@ -90,11 +90,6 @@ RTTI_END_CLASS
 //////////////////////////////////////////////////////////////////////////
 thread_local ImGuiContext* ImGuiTLS = nullptr;
 
-// Static data associated with IMGUI
-static thread_local VkDescriptorPool		gDescriptorPool = VK_NULL_HANDLE;
-static thread_local VkDescriptorSetLayout   gDescriptorSetLayout = VK_NULL_HANDLE;
-static thread_local VkSampler               gSampler = VK_NULL_HANDLE;
-
 namespace nap
 {
 	//////////////////////////////////////////////////////////////////////////
@@ -231,7 +226,7 @@ namespace nap
 	}
 
 
-	static void createDeviceObjects(RenderService& renderService)
+	static void createDeviceObjects(RenderService& renderService, VkSampler& sampler, VkDescriptorSetLayout& layout)
 	{
 		VkResult err;
 
@@ -247,7 +242,7 @@ namespace nap
 		info.minLod = -1000;
 		info.maxLod = 1000;
 		info.maxAnisotropy = 1.0f;
-		err = vkCreateSampler(renderService.getDevice(), &info, nullptr, &gSampler);
+		err = vkCreateSampler(renderService.getDevice(), &info, nullptr, &sampler);
 		checkVKResult(err);
 
 		// Create a descriptor set layout for the images we want to display
@@ -261,20 +256,25 @@ namespace nap
 		set_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 		set_info.bindingCount = 1;
 		set_info.pBindings = binding;
-		err = vkCreateDescriptorSetLayout(renderService.getDevice(), &set_info, nullptr, &gDescriptorSetLayout);
+		err = vkCreateDescriptorSetLayout(renderService.getDevice(), &set_info, nullptr, &layout);
 		checkVKResult(err);
 	}
 
 
-	static void destroyDeviceObjects(RenderService& renderService)
+	static void destroyDeviceObjects(RenderService& renderService, VkSampler sampler, VkDescriptorSetLayout layout)
 	{
-		if (gDescriptorSetLayout) { vkDestroyDescriptorSetLayout(renderService.getDevice(), gDescriptorSetLayout, nullptr); }
-		if (gSampler) { vkDestroySampler(renderService.getDevice(), gSampler, nullptr); }
+		if (layout != VK_NULL_HANDLE) {
+			vkDestroyDescriptorSetLayout(renderService.getDevice(), layout, nullptr);
+		}
+
+		if (sampler != VK_NULL_HANDLE) {
+			vkDestroySampler(renderService.getDevice(), sampler, nullptr);
+		}
 	}
 
 
 	// Create descriptor pool for imgui vulkan implementation, allows creation / allocation right resources on that side
-	static void createFontDescriptorPool(RenderService& renderService)
+	static void createFontDescriptorPool(RenderService& renderService, VkDescriptorPool& pool)
 	{
 		VkDescriptorPoolSize pool_size = { VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, (uint32_t)(1) };
 
@@ -285,14 +285,14 @@ namespace nap
 		poolInfo.maxSets = 1;
 		poolInfo.flags = VK_DESCRIPTOR_POOL_CREATE_FREE_DESCRIPTOR_SET_BIT;
 
-		VkResult result = vkCreateDescriptorPool(renderService.getDevice(), &poolInfo, nullptr, &gDescriptorPool);
+		VkResult result = vkCreateDescriptorPool(renderService.getDevice(), &poolInfo, nullptr, &pool);
 		assert(result == VK_SUCCESS);
 	}
 
 
-	static void destroyFontDescriptorPool(RenderService& renderService)
+	static void destroyFontDescriptorPool(RenderService& renderService, VkDescriptorPool pool)
 	{
-		vkDestroyDescriptorPool(renderService.getDevice(), gDescriptorPool, nullptr);
+		vkDestroyDescriptorPool(renderService.getDevice(), pool, nullptr);
 	}
 
 
@@ -683,11 +683,11 @@ namespace nap
 			return (ImTextureID)(it->second);
 
 		// Allocate new description set
-		VkDescriptorSet descriptor_set = mAllocator->allocate(gDescriptorSetLayout, 0, 0, 1);
+		VkDescriptorSet descriptor_set = mAllocator->allocate(mDescriptorSetLayout, 0, 0, 1);
 
 		// Update description set
 		VkDescriptorImageInfo desc_image[1] = {};
-		desc_image[0].sampler = gSampler;
+		desc_image[0].sampler = mSampler;
 		desc_image[0].imageView = texture.getHandle().getView();
 		desc_image[0].imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
@@ -827,8 +827,8 @@ namespace nap
 		{
 			// Destroy vulkan resources
 			ImGui_ImplVulkan_Shutdown();
-			destroyDeviceObjects(*mRenderService);
-			destroyFontDescriptorPool(*mRenderService);
+			destroyDeviceObjects(*mRenderService, mSampler, mDescriptorSetLayout);
+			destroyFontDescriptorPool(*mRenderService, mDescriptorPool);
 			mAllocator.reset(nullptr);
 		}
 
@@ -947,10 +947,10 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 
 		// Create descriptor set pool for ImGUI to use, capped at 1 set, used by font texture
-		createFontDescriptorPool(*mRenderService);
+		createFontDescriptorPool(*mRenderService, mDescriptorPool);
 
 		// Create all required vulkan resources
-		createDeviceObjects(*mRenderService);
+		createDeviceObjects(*mRenderService, mSampler, mDescriptorSetLayout);
 
 		// Create description set allocator for displaying custom NAP textures in ImGUI
 		mAllocator = std::make_unique<DescriptorSetAllocator>(mRenderService->getDevice());
@@ -967,7 +967,7 @@ namespace nap
 		init_info.QueueFamily = mRenderService->getQueueIndex();
 		init_info.Queue = mRenderService->getQueue();
 		init_info.PipelineCache = VK_NULL_HANDLE;
-		init_info.DescriptorPool = gDescriptorPool;
+		init_info.DescriptorPool = mDescriptorPool;
 		init_info.Allocator = VK_NULL_HANDLE;
 		init_info.MinImageCount = mRenderService->getMaxFramesInFlight();
 		init_info.ImageCount = mRenderService->getMaxFramesInFlight();

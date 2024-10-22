@@ -453,8 +453,6 @@ namespace nap
 
 		// Everything related to ImGUI
 		RenderService* mRenderService = nullptr;
-		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;
-		std::unique_ptr<DescriptorSetAllocator> mAllocator;
 		std::unordered_map<RenderWindow*, std::unique_ptr<GUIContext>> mContexts;
 		std::unique_ptr<ImFontAtlas> mFontAtlas = nullptr;
 		std::unique_ptr<ImGuiStyle> mStyle = nullptr;
@@ -467,5 +465,12 @@ namespace nap
 
 		// Icons
 		std::unordered_map<std::string, std::unique_ptr<Icon>> mIcons;
+
+		// Vulkan data associated with ImGUI
+		std::unique_ptr<DescriptorSetAllocator> mAllocator;								///< GUI Descriptor set allocator
+		VkDescriptorPool mDescriptorPool = VK_NULL_HANDLE;								///< GUI Pool used by font texture
+		VkDescriptorSetLayout mDescriptorSetLayout = VK_NULL_HANDLE;					///< GUI texture layout description 
+		VkSampler mSampler = VK_NULL_HANDLE;											///< GUI Texture binding
+		mutable std::unordered_map<const Texture2D*, VkDescriptorSet> mDescriptors;		///< Cached GUI texture descriptors
 	};
 }
