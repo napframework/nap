@@ -311,8 +311,8 @@ namespace napkin
 			int sx, sy;
 			const auto& qt_mouse_event = static_cast<const QMouseEvent&>(qtEvent);
 			SDL_GetWindowSize(window, &sx, &sy);
-			int px = static_cast<int>(qt_mouse_event.localPos().x());
-			int py = sy - 1 - static_cast<int>(qt_mouse_event.localPos().y());
+			int px = static_cast<int>(qt_mouse_event.position().x());
+			int py = sy - 1 - static_cast<int>(qt_mouse_event.position().y());
 			int rx = ioPrevious.x() >= 0 ? px - ioPrevious.x() : 0;
 			int ry = ioPrevious.y() >= 0 ? py - ioPrevious.y() : 0;
 

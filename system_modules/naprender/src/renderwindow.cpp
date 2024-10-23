@@ -962,8 +962,8 @@ namespace nap
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
 		{
+			nap::Logger::info("Window resize event: %.4d x %.4d", resized_event->mX, resized_event->mY);
 			setSize({ resized_event->mX, resized_event->mY });
-			mRecreateSwapchain = true;
 		}
 	}
 
