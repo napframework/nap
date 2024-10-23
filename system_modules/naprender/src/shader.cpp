@@ -267,7 +267,7 @@ public:
 		auto absolute_path = nap::utility::findFileInDirectories(headerName, { shader_search_paths });
 		if (absolute_path.empty())
         {
-            NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to find shader include file with name `%s` when parsing shader `%s`", headerName, includerName).c_str());
+            nap::Logger::warn("Failed to find shader include file with name `%s` when parsing shader `%s`", headerName, includerName);
             return nullptr;
         }
 
@@ -283,7 +283,7 @@ public:
 	// specified IncludeResult.
 	virtual void releaseInclude(glslang::TShader::Includer::IncludeResult* includer) override
 	{
-        // This will result in a shader parse error later
+        // glslang will raise a shader parse error if the include result is not released
 		if (includer != &mResults.top())
             return;
 
