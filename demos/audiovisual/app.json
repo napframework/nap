@@ -1,0 +1,15 @@
+{
+    "Type": "nap::ProjectInfo",
+    "mID": "ProjectInfo",
+    "Title": "audiovisual",
+    "Version": "0.1.0",
+    "RequiredModules": [
+        "napapp",
+        "napcameracontrol",
+        "napparametergui",
+        "napaudiovisual"
+    ],
+    "Data": "data/objects.json",
+    "ServiceConfig": "",
+    "PathMapping": "cache/path_mapping.json"
+}
