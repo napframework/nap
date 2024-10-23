@@ -35,7 +35,7 @@ namespace napkin
 		native_window->setSurfaceType(QSurface::VulkanSurface);
 
 		// Create QWidget window container (without parent)
-		auto* container = QWidget::createWindowContainer(native_window, nullptr);
+		auto* container = QWidget::createWindowContainer(native_window);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
 
