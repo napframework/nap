@@ -961,7 +961,10 @@ namespace nap
 	{
 		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
 		if (resized_event != nullptr)
+		{
+			setSize({ resized_event->mX, resized_event->mY });
 			mRecreateSwapchain = true;
+		}
 	}
 
 

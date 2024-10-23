@@ -107,6 +107,14 @@ namespace napkin
 				event->accept();
 				return true;
 			}
+			case QEvent::Resize:
+			{
+				auto ptr = mConverter.translateWindowEvent(*event);
+				if (ptr != nullptr)
+					mApplet.sendEvent(std::move(ptr));
+				event->accept();
+				return true;
+			}
 			default:
 			{
 				break;

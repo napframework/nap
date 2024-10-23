@@ -7,6 +7,7 @@
 // External includes
 #include <QEvent>
 #include <inputevent.h>
+#include <windowevent.h>
 #include <SDL_video.h>
 #include <QPoint>
 
@@ -81,6 +82,22 @@ namespace napkin
 		* @return a nap pointer event, nullptr if the event could not be translated
 		*/
 		nap::InputEventPtr translateMouseEvent(const QEvent& qtEvent);
+
+		/**
+		* Utility function that checks if the Qt event is a window event
+		* @param qtEvent the qt event to verify
+		* @return if the event is a window input event
+		*/
+		bool isWindowEvent(const QEvent& qtEvent) const;
+
+		/**
+		* Utility function to translate a Qt event into a NAP window event.
+		* This call assumes that the given Qt event can be translated into a NAP window event!
+		* Use isMouseEvent() to verify if the events are compatible.
+		* @param qtEvent the qt window event to translate
+		* @return a nap pointer event, nullptr if the event could not be translated
+		*/
+		nap::WindowEventPtr translateWindowEvent(const QEvent& qtEvent);
 
 	private:
 		SDL_Window* mWindow = nullptr;		///< SDL window handle

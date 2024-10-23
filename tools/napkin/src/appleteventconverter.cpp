@@ -175,12 +175,12 @@ namespace napkin
 	using QtKeyMap = std::unordered_map<nap::uint32, nap::rtti::TypeInfo>;
 	static const QtKeyMap& getQtKeyMap()
 	{
-		static const QtKeyMap key_map =
+		static const QtKeyMap qt_key_map =
 		{
 			{ QEvent::KeyPress,			RTTI_OF(nap::KeyPressEvent)			},
 			{ QEvent::KeyRelease,		RTTI_OF(nap::KeyReleaseEvent)	}
 		};
-		return key_map;
+		return qt_key_map;
 	}
 
 
@@ -188,14 +188,28 @@ namespace napkin
 	using QtMouseMap = std::unordered_map<nap::uint32, nap::rtti::TypeInfo>;
 	static const QtMouseMap& getQtMouseMap()
 	{
-		static const QtMouseMap sdl_mouse_map =
+		static const QtMouseMap qt_mouse_map =
 		{
 			{ QEvent::MouseButtonPress,		RTTI_OF(nap::PointerPressEvent) },
 			{ QEvent::MouseButtonRelease,	RTTI_OF(nap::PointerReleaseEvent) },
 			{ QEvent::MouseMove,			RTTI_OF(nap::PointerMoveEvent) },
 			{ QEvent::Wheel,				RTTI_OF(nap::MouseWheelEvent)}
 		};
-		return sdl_mouse_map;
+		return qt_mouse_map;
+	}
+
+
+	// Binds a specific Qt mouse event to a pointer event type
+	using QtMouseMap = std::unordered_map<nap::uint32, nap::rtti::TypeInfo>;
+	static const QtMouseMap& getQtWindowMap()
+	{
+		static const QtMouseMap qt_window_map =
+		{
+			{ QEvent::Resize,				RTTI_OF(nap::WindowResizedEvent) },
+			{ QEvent::Show,					RTTI_OF(nap::WindowShownEvent) },
+			{ QEvent::Hide,					RTTI_OF(nap::WindowHiddenEvent) }
+		};
+		return qt_window_map;
 	}
 
 
@@ -318,6 +332,32 @@ namespace napkin
 	}
 
 
+	static nap::WindowEvent* translateQtWindowEvent(const QEvent& qtEvent, SDL_Window* window, const nap::rtti::TypeInfo& eventType)
+	{
+		// Get window id
+		int window_id = SDL_GetWindowID(window);
+
+		// Create event based on qt mouse event type
+		nap::WindowEvent* window_event = nullptr;
+
+		switch (qtEvent.type())
+		{
+			case QEvent::Resize:
+			{
+				const auto& resize_event = static_cast<const QResizeEvent&>(qtEvent);
+				int d1 = static_cast<int>(resize_event.size().width());
+				int d2 = static_cast<int>(resize_event.size().height());
+				return window_event = eventType.create<nap::WindowEvent>({ d1, d2, window_id });
+			}
+			default:
+			{
+				window_event = eventType.create<nap::WindowEvent>({ window_id });
+			}
+		}
+		return window_event;
+	}
+
+
 	//////////////////////////////////////////////////////////////////////////
 
 
@@ -389,5 +429,24 @@ namespace napkin
 
 		nap::InputEvent* mouse_event = translateQtMouseEvent(qtEvent, mWindow, mLocation, mouse_it->second);
 		return nap::InputEventPtr(mouse_event);
+	}
+
+
+	bool AppletEventConverter::isWindowEvent(const QEvent& qtEvent) const
+	{
+		const auto& map = getQtWindowMap();
+		return map.find(qtEvent.type()) != map.end();
+	}
+
+
+	nap::WindowEventPtr AppletEventConverter::translateWindowEvent(const QEvent& qtEvent)
+	{
+		const auto& map = getQtWindowMap();
+		auto window_it = map.find(qtEvent.type());
+		if (window_it == map.end())
+			return nullptr;
+
+		nap::WindowEvent* window_event = translateQtWindowEvent(qtEvent, mWindow, window_it->second);
+		return nap::WindowEventPtr(window_event);
 	}
 }
