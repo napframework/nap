@@ -35,9 +35,13 @@ namespace napkin
 		native_window->setSurfaceType(QSurface::VulkanSurface);
 
 		// Create QWidget window container (without parent)
-		auto* container = QWidget::createWindowContainer(native_window);
+		auto* container = QWidget::createWindowContainer(native_window, parent,
+			Qt::Widget | Qt::FramelessWindowHint | Qt::BypassWindowManagerHint);
 		container->setFocusPolicy(Qt::StrongFocus);
 		container->setMouseTracking(true);
+		container->setMinimumSize({ 256,256 });
+		container->setAutoFillBackground(false);
+		container->setAttribute(Qt::WA_NoSystemBackground, true);
 
 		// Create an SDL window from QT handle ID
 		auto id = container->winId(); assert(id != 0);
@@ -67,7 +71,6 @@ namespace napkin
 		mContainer(container), mWindow(window), mApplet(applet), mConverter(window)
 	{
 		mContainer->installEventFilter(this);
-		mContainer->setParent(parent);
 	}
 
 
@@ -77,7 +80,11 @@ namespace napkin
 		assert(obj == mContainer);
 		switch (event->type())
 		{
+			// TODO: Figure out why we need to handle these events explicitly ->
+			/// Without the window is available but drawn (composited) incorrect in Qt
 			case QEvent::Show:
+			case QEvent::FocusIn:
+			case QEvent::FocusOut:
 			{
 				return true;
 			}

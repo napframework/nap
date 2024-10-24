@@ -41,12 +41,12 @@ namespace napkin
 		/**
 		 * @return QT window container
 		 */
-		QWidget& getContainer()							{ assert(mContainer != nullptr); return *mContainer; }
+		QWidget& getWidget()							{ assert(mContainer != nullptr); return *mContainer; }
 
 		/**
 		 * @return QT window container
 		 */
-		const QWidget& getContainer() const				{ assert(mContainer != nullptr); return *mContainer; }
+		const QWidget& getWidget() const				{ assert(mContainer != nullptr); return *mContainer; }
 
 	protected:
 		// Handle shown event

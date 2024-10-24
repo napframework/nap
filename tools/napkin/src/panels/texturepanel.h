@@ -58,3 +58,4 @@ namespace napkin
 		void init(const nap::ProjectInfo& info);
 	};
 }
+
