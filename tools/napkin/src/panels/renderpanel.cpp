@@ -98,20 +98,16 @@ namespace napkin
 			case QEvent::KeyRelease:
 			{
 				auto ptr = mConverter.translateInputEvent(*event);
-				if (ptr != nullptr)
-					mApplet.sendEvent(std::move(ptr));
+				assert(ptr !=nullptr);
+				mApplet.sendEvent(std::move(ptr));
 				event->accept();
 				return true;
 			}
 			case QEvent::Resize:
 			{
+				// Resize window
 				auto resize_event = static_cast<QResizeEvent*>(event);
 				nap::SDL::setWindowSize(mWindow, { resize_event->size().width(), resize_event->size().height()});
-
-				auto ptr = mConverter.translateWindowEvent(*event);
-				assert(ptr != nullptr);
-				mApplet.sendEvent(std::move(ptr));
-				event->accept();
 				return true;
 			}
 			default:
