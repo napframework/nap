@@ -177,7 +177,7 @@ namespace napkin
 					nap::utility::ErrorState error;
 					auto* api_event = static_cast<nap::APIEvent*>(event_ref.release());
 					if (!api_service->sendEvent(nap::APIEventPtr(api_event), &error))
-						nap::Logger::info(error.toString());
+						nap::Logger::error(error.toString());
 				}
 
 				// Always remove item!
