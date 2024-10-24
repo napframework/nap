@@ -58,7 +58,6 @@ namespace napkin
 		PreviewAppletRunner		mRunner;				//< Application that is run
 		QVBoxLayout				mLayout;				//< Widget layout
 		bool					mInitialized;			//< If the panel is initialized
-		nap::APIService*		mAPIService = nullptr;	//< The applet api service
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);

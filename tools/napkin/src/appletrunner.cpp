@@ -4,6 +4,8 @@
 
 #include "appletrunner.h"
 #include "imguiservice.h"
+#include "apiservice.h"
+#include "apievent.h"
 
 namespace napkin
 {
@@ -101,7 +103,9 @@ namespace napkin
 		double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
 		nap::Milliseconds wm(static_cast<int>(wd));
 		std::queue<nap::EventPtr> event_queue;
+
 		auto* gui_service = mApplet->getCore().getService<nap::IMGuiService>();
+		auto* api_service = mApplet->getCore().getService<nap::APIService>();
 
 		mCore.start();
 		std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
@@ -123,6 +127,8 @@ namespace napkin
 			while (!event_queue.empty())
 			{
 				auto& event_ref = event_queue.front();
+
+				// Input (mouse, keyboard etc.) event
 				if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
 				{
 					// Allow gui service to process input
@@ -155,11 +161,26 @@ namespace napkin
 					mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
 				}
 
+				// Window event
 				else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
 				{
 					auto* window_event = static_cast<nap::WindowEvent*>(event_ref.release());
 					mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(window_event));
 				}
+
+				// API event
+				else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::APIEvent)))
+				{
+					NAP_ASSERT_MSG(api_service != nullptr,
+						"Sending API message without API functionality enabled in Applet")
+
+					nap::utility::ErrorState error;
+					auto* api_event = static_cast<nap::APIEvent*>(event_ref.release());
+					if (!api_service->sendEvent(nap::APIEventPtr(api_event), &error))
+						nap::Logger::info(error.toString());
+				}
+
+				// Always remove item!
 				event_queue.pop();
 			}
 

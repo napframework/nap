@@ -57,7 +57,6 @@ namespace napkin
 			return;
 
 		// Hook up our widgets
-		mAPIService = mRunner.getCore().getService<nap::APIService>();
 		mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &PreviewPanel::textChanged);
 
 		// Install layout
@@ -71,12 +70,8 @@ namespace napkin
 
 	void PreviewPanel::textChanged(const QString& text)
 	{
-		assert(mAPIService != nullptr);
 		nap::APIEventPtr set_text_event = std::make_unique<nap::APIEvent>("PreviewSetText");
 		set_text_event->addArgument<nap::APIString>("text", text.toStdString());
-
-		nap::utility::ErrorState error;
-		if (!mAPIService->sendEvent(std::move(set_text_event), &error))
-			nap::Logger::error(error.toString());
+		mRunner.sendEvent(std::move(set_text_event));
 	}
 }
