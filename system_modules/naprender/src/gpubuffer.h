@@ -476,6 +476,7 @@ namespace nap
 	using GPUBufferVec2			= TypedGPUBufferNumeric<glm::vec2>;
 	using GPUBufferVec3			= TypedGPUBufferNumeric<glm::vec3>;
 	using GPUBufferVec4			= TypedGPUBufferNumeric<glm::vec4>;
+	using GPUBufferIVec4		= TypedGPUBufferNumeric<glm::ivec4>;
 	using GPUBufferMat4			= TypedGPUBufferNumeric<glm::mat4>;
 
 	// Vertex GPU buffers
@@ -485,7 +486,7 @@ namespace nap
 	using VertexBufferVec2		= VertexBuffer<glm::vec2>;
 	using VertexBufferVec3		= VertexBuffer<glm::vec3>;
 	using VertexBufferVec4		= VertexBuffer<glm::vec4>;
-
+	using VertexBufferIVec4		= VertexBuffer<glm::ivec4>;
 
 	//////////////////////////////////////////////////////////////////////////
 	// Template Definitions
