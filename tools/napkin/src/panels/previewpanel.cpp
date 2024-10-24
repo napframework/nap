@@ -61,7 +61,6 @@ namespace napkin
 		mSpinbox.connect(&mSpinbox, &QSpinBox::valueChanged, this, &PreviewPanel::freqChanged);
 
 		// Create child widget layout
-		assert(mMasterLayout.layout() == nullptr);
 		mControlLayout.addWidget(&mLineEdit);
 		mControlLayout.addWidget(&mSpinbox, 0, Qt::AlignRight);
 		mControlLayout.setContentsMargins(0, 8, 0, 0);
@@ -85,7 +84,7 @@ namespace napkin
 
 	void PreviewPanel::freqChanged(int freq)
 	{
-		assert(freq > 0);
+		assert(freq >= 0);
 		mRunner.setFrequency(static_cast<nap::uint>(freq));
 	}
 }

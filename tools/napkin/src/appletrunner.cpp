@@ -21,7 +21,9 @@ namespace napkin
 	{
 		if (mThread.joinable())
 		{
+			// Notify thread we're done!
 			mAbort = true;
+			mProcessCondition.notify_one();
 			mThread.join();
 			return::napkin::applet::exitcode::success;
 		}
@@ -109,35 +111,41 @@ namespace napkin
 
 		// Run until abort
 		mCore.start();
-		while (!mAbort)
+		while (true)
 		{
-			// Wait until ready for processing
-			std::unique_lock<std::mutex> lock(mProcessMutex);
-
-			// Compute wait time
-			nap::Milliseconds wmss(mFrequency > 0 ? 1000 / mFrequency : 0);
-			if (wmss.count() == 0)
+			// Thread safe section!
+			// Wait until ready for processing -> unlocks when exiting this block
 			{
-				// Wait indefinitely until event is received or frequency is positive
-				mProcessCondition.wait(lock, [this]
-					{
-						return !mEventQueue.empty() || mFrequency > 0;
-					});
-			}
-			else
-			{
-				// Wait until a event is received or x amount of time has passed
-				mProcessCondition.wait_for(lock, wmss, [this]
-					{
-						return !mEventQueue.empty();
-					}
-				);
-			}
+				// Compute wait time
+				std::unique_lock<std::mutex> lock(mProcessMutex);
+				nap::Milliseconds wmss(mFrequency > 0 ? 1000 / mFrequency : 0);
+				if (wmss.count() == 0)
+				{
+					// Wait indefinitely until event is received or frequency is positive
+					mProcessCondition.wait(lock, [this]
+						{
+							return !mEventQueue.empty() || mFrequency > 0 || mAbort;
+						});
+				}
+				else
+				{
+					// Wait until a event is received or x amount of time has passed
+					mProcessCondition.wait_for(lock, wmss, [this]
+						{
+							return !mEventQueue.empty() || mAbort;
+						}
+					);
+				}
 
-			// Trade and unlock for further processing
-			assert(event_queue.empty());
-			event_queue.swap(mEventQueue);
-			lock.unlock();
+				// Bail if we're told to stop (unlocks)
+				if (mAbort) {
+					return;
+				}
+
+				// Trade events and unlock for further processing
+				assert(event_queue.empty());
+				event_queue.swap(mEventQueue);
+			}
 
 			// Forward input to running app
 			while (!event_queue.empty())
