@@ -32,16 +32,22 @@ public:
 			CmdLine							command					("FBXConverter");
 			ValueArg<std::string>			output_directory		("o", "outdir", "Output directory to convert to (absolute or relative path)", true, "", "path_to_output_directory");
 			SwitchArg						force_convert			("f", "force", "Force the files to be converter, even if nothing has changed");
+			SwitchArg						compute_convert			("c", "compute", "Convert vec3 attributes to vec4 enabling compute-friendly 16-byte data alignment");
+			SwitchArg						no_tangents				("t", "notangents", "Do not compute tangents and bitangents");
 			UnlabeledMultiArg<std::string>	files					("files", "List of .fbx files to convert", true, "list_of_fbx_files");
 
 			command.add(output_directory);
 			command.add(force_convert);
+			command.add(compute_convert);
+			command.add(no_tangents);
 			command.add(files);
 
 			command.parse(argc, argv);
 
 			commandLine.mOutputDirectory = nap::utility::getAbsolutePath(output_directory.getValue());
 			commandLine.mFilesToConvert = files.getValue();
+			commandLine.mComputeConvert = compute_convert.getValue();
+			commandLine.mNoTangents = no_tangents.getValue();
 			commandLine.mForceConvert = force_convert.getValue();
 		}
 		catch (ArgException& e)
@@ -55,5 +61,7 @@ public:
 
 	std::string					mOutputDirectory;
 	std::vector<std::string>	mFilesToConvert;
+	bool						mComputeConvert;
+	bool						mNoTangents;
 	bool						mForceConvert;
 };
