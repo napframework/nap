@@ -13,6 +13,8 @@
 #include <entity.h>
 #include <imagefromfile.h>
 #include <imguiservice.h>
+#include <apisignature.h>
+#include <apievent.h>
 
 // Local includes
 #include "../applet.h"
@@ -82,8 +84,14 @@ namespace nap
 		ObjectPtr<EntityInstance>	mWorldEntity = nullptr;				//< Pointer to the entity that holds the sphere
 		ObjectPtr<EntityInstance>	mPerspectiveCamEntity = nullptr;	//< Pointer to the entity that holds the perspective camera
 		ObjectPtr<EntityInstance>	mOrthographicCamEntity = nullptr;	//< Pointer to the entity with an orthographic camera
+		ObjectPtr<EntityInstance>	mAPIEntity = nullptr;				//< Pointer to the api entity
 		ObjectPtr<ImageFromFile>	mWorldTexture = nullptr;			//< Pointer to the world texture
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
+
+		ObjectPtr<APISignature>		mAPISignature = nullptr;			//< Pointer to the api text signature
+
+		void onTextChanged(const nap::APIEvent& apiEvent);
+		nap::Slot<const nap::APIEvent&> mTextChangedSlot = { this, &RenderPreviewApp::onTextChanged };
 
 		RGBColorFloat mColorOne;										//< First sphere blend color
 		RGBColorFloat mColorTwo;										//< Second sphere blend color

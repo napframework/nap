@@ -2,6 +2,20 @@
     "Objects": [
         {
             "Type": "nap::Entity",
+            "mID": "PreviewAPI",
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "PreviewAPIComponent",
+                    "Signatures": [
+                        "PreviewSetText"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "PreviewOrthographicCamera",
             "Components": [
                 {
@@ -253,6 +267,30 @@
             "Font": "fonts/Manrope-Light.otf"
         },
         {
+            "Type": "nap::RenderWindow",
+            "mID": "AppletWindow",
+            "Borderless": false,
+            "Resizable": true,
+            "Visible": false,
+            "SampleShading": true,
+            "Title": "Window 1",
+            "Width": 1280,
+            "Height": 720,
+            "Mode": "Immediate",
+            "ClearColor": {
+                "Values": [
+                    0.0,
+                    0.0,
+                    0.0,
+                    1.0
+                ]
+            },
+            "Samples": "Four",
+            "AdditionalSwapImages": 1,
+            "RestoreSize": false,
+            "RestorePosition": false
+        },
+        {
             "Type": "nap::ResourceGroup",
             "mID": "PreviewRendering",
             "Members": [
@@ -349,28 +387,23 @@
             ]
         },
         {
-            "Type": "nap::RenderWindow",
-            "mID": "AppletWindow",
-            "Borderless": false,
-            "Resizable": true,
-            "Visible": false,
-            "SampleShading": true,
-            "Title": "Window 1",
-            "Width": 1280,
-            "Height": 720,
-            "Mode": "Immediate",
-            "ClearColor": {
-                "Values": [
-                    0.0,
-                    0.0,
-                    0.0,
-                    1.0
-                ]
-            },
-            "Samples": "Four",
-            "AdditionalSwapImages": 1,
-            "RestoreSize": false,
-            "RestorePosition": false
+            "Type": "nap::ResourceGroup",
+            "mID": "PreviewSignatures",
+            "Members": [
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "PreviewSetText",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "APIString",
+                            "Name": "text",
+                            "Value": ""
+                        }
+                    ]
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Scene",
@@ -390,6 +423,10 @@
                 },
                 {
                     "Entity": "PreviewOrthographicCamera",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "PreviewAPI",
                     "InstanceProperties": []
                 }
             ]

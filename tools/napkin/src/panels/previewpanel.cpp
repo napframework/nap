@@ -4,6 +4,7 @@
 
 #include "previewpanel.h"
 #include "../appcontext.h"
+#include <apiservice.h>
 
 namespace napkin
 {
@@ -47,18 +48,35 @@ namespace napkin
 			return;
 		}
 
-		// Initializing the applet (core, services & application)
+		// Initialize and run the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		auto init_future = mRunner.start(preview_app, 60);
 
-		// Wait for applet initialization to finish 
-		if (init_future.get())
-		{
-			// Install window into this widget
-			assert(layout() == nullptr);
-			mLayout.setContentsMargins(0, 0, 0, 0);
-			mLayout.addWidget(&mPanel->getWidget());
-			setLayout(&mLayout);
-		}
+		// Don't install layout if initialization fails
+		if (!init_future.get())
+			return;
+
+		// Hook up our widgets
+		mAPIService = mRunner.getCore().getService<nap::APIService>();
+		mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &PreviewPanel::textChanged);
+
+		// Install layout
+		assert(layout() == nullptr);
+		mLayout.setContentsMargins(0, 0, 0, 0);
+		mLayout.addWidget(&mLineEdit);
+		mLayout.addWidget(&mPanel->getWidget());
+		setLayout(&mLayout);
+	}
+
+
+	void PreviewPanel::textChanged(const QString& text)
+	{
+		assert(mAPIService != nullptr);
+		nap::APIEventPtr set_text_event = std::make_unique<nap::APIEvent>("PreviewSetText");
+		set_text_event->addArgument<nap::APIString>("text", text.toStdString());
+
+		nap::utility::ErrorState error;
+		if (!mAPIService->sendEvent(std::move(set_text_event), &error))
+			nap::Logger::error(error.toString());
 	}
 }

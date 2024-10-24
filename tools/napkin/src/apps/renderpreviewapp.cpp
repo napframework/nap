@@ -9,6 +9,7 @@
 #include <perspcameracomponent.h>
 #include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
+#include <apicomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderPreviewApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -41,6 +42,11 @@ namespace nap
 		if (!error.check(mRenderWindow != nullptr, "Missing 'AppletWindow'"))
 			return false;
 
+		// API Signature
+		mAPISignature = mResourceManager->findObject<APISignature>("PreviewSetText");
+		if (!error.check(mAPISignature != nullptr, "Missing 'PreviewSetText' api signature"))
+			return false;
+
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("PreviewScene");
 		if (!error.check(scene != nullptr, "Missing 'PreviewScene'"))
@@ -48,21 +54,34 @@ namespace nap
 
 		// Fetch world and text
 		mWorldEntity = scene->findEntity("PreviewWorld");
-		if (!error.check(mWorldEntity != nullptr, "Missing 'PreviewWorldEntity'"))
+		if (!error.check(mWorldEntity != nullptr, "Missing 'PreviewWorld' Entity"))
 			return false;
 
 		mTextEntity = scene->findEntity("PreviewText");
-		if (!error.check(mTextEntity != nullptr, "Missing 'PreviewTextEntity'"))
+		if (!error.check(mTextEntity != nullptr, "Missing 'PreviewText' Entity"))
 			return false;
 
 		// Fetch the two different cameras
 		mPerspectiveCamEntity = scene->findEntity("PreviewPerspectiveCamera");
-		if (!error.check(mPerspectiveCamEntity != nullptr, "Missing 'PreviewPerspectiveCamera'"))
+		if (!error.check(mPerspectiveCamEntity != nullptr, "Missing 'PreviewPerspectiveCamera' entity"))
 			return false;
 
 		mOrthographicCamEntity = scene->findEntity("PreviewOrthographicCamera");
-		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'PreviewOrthographicCamera'"))
+		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'PreviewOrthographicCamera' entity"))
 			return false;
+
+		// API Handling
+		mAPIEntity = scene->findEntity("PreviewAPI");
+		if (!error.check(mAPIEntity != nullptr, "Missing 'PreviewAPI' entity"))
+			return false;
+
+		// Register text change callback
+		auto* api_component = mAPIEntity->findComponent<nap::APIComponentInstance>();
+		if (!error.check(api_component != nullptr, "Missing APIComponent"))
+			return false;
+
+		auto& api_comp = mAPIEntity->getComponent<nap::APIComponentInstance>();
+		api_comp.registerCallback(*mAPISignature, mTextChangedSlot);
 
 		// Sample default color values from loaded color palette
 		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
@@ -192,4 +211,13 @@ namespace nap
 		return 0;
 	}
 
+	void RenderPreviewApp::onTextChanged(const nap::APIEvent& apiEvent)
+	{
+		std::string new_text = apiEvent.getArgument(0)->asString();
+		auto& text_comp = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+
+		nap::utility::ErrorState error;
+		if (!text_comp.setText(new_text, error))
+			nap::Logger::error(error.toString());
+	}
 }

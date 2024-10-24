@@ -9,6 +9,10 @@
 #include "apps/renderpreviewapp.h"
 #include "../appletrunner.h"
 
+// External includes
+#include <QLineEdit>
+#include <apiservice.h>
+
 namespace napkin
 {
 	// The applet this panel runs & embeds
@@ -49,12 +53,19 @@ namespace napkin
 		void panelShown(napkin::RenderPanel& panel);
 
 	private:
-		RenderPanel*			mPanel = nullptr;	//< NAP compatible Qt render window
-		PreviewAppletRunner		mRunner;			//< Application that is run
-		QVBoxLayout				mLayout;			//< Widget layout
-		bool					mInitialized;		//< If the panel is initialized
+		QLineEdit				mLineEdit;
+		RenderPanel*			mPanel = nullptr;		//< NAP compatible Qt render window
+		PreviewAppletRunner		mRunner;				//< Application that is run
+		QVBoxLayout				mLayout;				//< Widget layout
+		bool					mInitialized;			//< If the panel is initialized
+		nap::APIService*		mAPIService = nullptr;	//< The applet api service
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);
+
+		// Called when the line edit text changes
+		void textChanged(const QString& text);
 	};
 }
+
+
