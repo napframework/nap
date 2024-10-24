@@ -45,9 +45,6 @@ namespace napkin
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
-		// Called when the embedded render panel is made visible
-		void panelShown(napkin::RenderPanel& panel);
-
 	private:
 		RenderPanel*			mPanel = nullptr;	//< NAP compatible Qt render window
 		TextureAppletRunner		mRunner;			//< Application that is run

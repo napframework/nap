@@ -45,7 +45,10 @@ namespace napkin
 	class AppletRunner
 	{
 	public:
-		// Default constructor
+		/**
+		 * Creates the runner for the given applet type
+		 * @param appletType the type of applet to create and run
+		 */
 		AppletRunner(nap::rtti::TypeInfo appletType);
 
 		/**
@@ -61,20 +64,25 @@ namespace napkin
 		AppletRunner& operator=(AppletRunner&&) = delete;
 
 		/**
-		 * Initializes and runs the applet a-synchronous.
-		 * Initialization and processing happens on the same thread!
+		 * Initializes and runs the applet a-synchronous on it's own thread.
 		 * @param projectFilename full path to the project to run
-		 * @param process frequency (hz)
-		 * @param syncTask task to wait for (sync with) after initialization
+		 * @param frequency update frequency in hz
 		 * @return if initialization succeeded or not
 		 */
 		std::future<bool> start(const std::string& projectFilename, nap::uint frequency);
 
-		/**
+		/** 
 		 * Sends an event to the app for processing, thread safe
-		 * @param events the events to send
+		 * @param event the event to send
 		 */
 		void sendEvent(nap::EventPtr event);
+
+		/**
+		 * Sets the application update frequency in hz.
+		 * A frequency of 0 stalls the app indefinitely until an event is received
+		 * @param frequency update frequency in hz
+		 */
+		void setFrequency(nap::uint frequency);
 
 		/**
 		 * @return if the applet is running
@@ -86,16 +94,6 @@ namespace napkin
 		 * @return application exit code
 		 */
 		nap::uint8 abort();
-
-		/**
-		 * @return the applet
-		 */
-		napkin::Applet& getApplet()											{ assert(mApplet != nullptr); return *mApplet; }
-
-		/**
-		 * @return the applet 
-		 */
-		const napkin::Applet& getApplet() const								{ assert(mApplet != nullptr); return *mApplet; }
 
 		/**
 		 * @return core
@@ -110,7 +108,7 @@ namespace napkin
 		std::mutex					mProcessMutex;							///< Process related mutex
 		std::condition_variable		mProcessCondition;						///< Process condition variable
 		std::atomic<bool>			mAbort = { false };						///< Aborts the application from running
-		std::atomic<nap::uint>		mFrequency = 60;						///< Processing frequency (hz)
+		nap::uint					mFrequency = 60;						///< Processing frequency (hz)
 		std::queue<nap::EventPtr>	mEventQueue;							///< Events to forward to the running app
 		std::thread					mThread;								///< Running thread
 		std::promise<bool>			mInitPromise;							///< If runner initialized correctly
@@ -126,7 +124,7 @@ namespace napkin
 		/**
 		 * Runs the applet until stopped
 		 */
-		void runApplet(nap::uint frequency);
+		void runApplet();
 	};
 
 

@@ -12,6 +12,12 @@ namespace napkin
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &PreviewPanel::init);
+
+		// Setup control widgets
+		mSpinbox.setRange(0, 120);
+		mSpinbox.setValue(60);
+		mSpinbox.setMinimumWidth(120);
+		mSpinbox.setSuffix(" hz");
 	}
 
 
@@ -25,12 +31,6 @@ namespace napkin
 	{
 		mRunner.abort();
 		return QWidget::closeEvent(event);
-	}
-
-
-	void PreviewPanel::panelShown(napkin::RenderPanel& panel)
-	{
-		assert(mPanel != nullptr);
 	}
 
 
@@ -50,7 +50,7 @@ namespace napkin
 
 		// Initialize and run the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		auto init_future = mRunner.start(preview_app, 60);
+		auto init_future = mRunner.start(preview_app, mSpinbox.value());
 
 		// Don't install layout if initialization fails
 		if (!init_future.get())
@@ -58,13 +58,20 @@ namespace napkin
 
 		// Hook up our widgets
 		mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &PreviewPanel::textChanged);
+		mSpinbox.connect(&mSpinbox, &QSpinBox::valueChanged, this, &PreviewPanel::freqChanged);
+
+		// Create child widget layout
+		assert(mMasterLayout.layout() == nullptr);
+		mControlLayout.addWidget(&mLineEdit);
+		mControlLayout.addWidget(&mSpinbox, 0, Qt::AlignRight);
+		mControlLayout.setContentsMargins(0, 8, 0, 0);
 
 		// Install layout
 		assert(layout() == nullptr);
-		mLayout.setContentsMargins(0, 0, 0, 0);
-		mLayout.addWidget(&mLineEdit);
-		mLayout.addWidget(&mPanel->getWidget());
-		setLayout(&mLayout);
+		mMasterLayout.setContentsMargins(0, 0, 0, 0);
+		mMasterLayout.addLayout(&mControlLayout);
+		mMasterLayout.addWidget(&mPanel->getWidget());
+		setLayout(&mMasterLayout);
 	}
 
 
@@ -73,5 +80,12 @@ namespace napkin
 		nap::APIEventPtr set_text_event = std::make_unique<nap::APIEvent>("PreviewSetText");
 		set_text_event->addArgument<nap::APIString>("text", text.toStdString());
 		mRunner.sendEvent(std::move(set_text_event));
+	}
+
+
+	void PreviewPanel::freqChanged(int freq)
+	{
+		assert(freq > 0);
+		mRunner.setFrequency(static_cast<nap::uint>(freq));
 	}
 }

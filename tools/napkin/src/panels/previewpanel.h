@@ -11,6 +11,7 @@
 
 // External includes
 #include <QLineEdit>
+#include <QSpinBox>
 #include <apiservice.h>
 
 namespace napkin
@@ -49,14 +50,13 @@ namespace napkin
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
-		// Called when the embedded render panel is made visible
-		void panelShown(napkin::RenderPanel& panel);
-
 	private:
 		QLineEdit				mLineEdit;
+		QSpinBox				mSpinbox;
 		RenderPanel*			mPanel = nullptr;		//< NAP compatible Qt render window
 		PreviewAppletRunner		mRunner;				//< Application that is run
-		QVBoxLayout				mLayout;				//< Widget layout
+		QVBoxLayout				mMasterLayout;			//< Master widget layout
+		QHBoxLayout				mControlLayout;			//< Control widget layout
 		bool					mInitialized;			//< If the panel is initialized
 
 		// Creates the app and links the window
@@ -64,6 +64,9 @@ namespace napkin
 
 		// Called when the line edit text changes
 		void textChanged(const QString& text);
+
+		// Called when the update frequency changes
+		void freqChanged(int freq);
 	};
 }
 

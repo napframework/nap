@@ -27,12 +27,6 @@ namespace napkin
 	}
 
 
-	void TexturePanel::panelShown(napkin::RenderPanel& panel)
-	{
-		assert(mPanel != nullptr);
-	}
-
-
 	void TexturePanel::init(const nap::ProjectInfo& info)
 	{
 		// Signals completion setup resources gui thread

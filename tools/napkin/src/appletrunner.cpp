@@ -32,7 +32,8 @@ namespace napkin
 	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency)
 	{
 		// Create and run task
-		mThread = std::thread([projectFilename, frequency, this]() mutable
+		mFrequency = frequency; assert(!running());
+		mThread = std::thread([projectFilename, this]() mutable
 		{
 			// Initialize engine and application
 			nap::utility::ErrorState error;
@@ -48,7 +49,7 @@ namespace napkin
 			mInitPromise.set_value(true);
 
 			// Start running on success
-			runApplet(frequency);
+			runApplet();
 
 			// Always clear services
 			mServices = nullptr;
@@ -98,25 +99,40 @@ namespace napkin
 	}
 
 
-	void AppletRunner::runApplet(nap::uint frequency)
+	void AppletRunner::runApplet()
 	{
-		double wd = 1000.0 / static_cast<double>(nap::math::clamp<nap::uint>(frequency, 1, 1000));
-		nap::Milliseconds wm(static_cast<int>(wd));
-		std::queue<nap::EventPtr> event_queue;
-
 		auto* gui_service = mApplet->getCore().getService<nap::IMGuiService>();
 		auto* api_service = mApplet->getCore().getService<nap::APIService>();
-
-		mCore.start();
+	
+		std::queue<nap::EventPtr> event_queue;
 		std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
+
+		// Run until abort
+		mCore.start();
 		while (!mAbort)
 		{
+			// Wait until ready for processing
 			std::unique_lock<std::mutex> lock(mProcessMutex);
-			mProcessCondition.wait_for(lock, wm, [this]
-				{
-					return !mEventQueue.empty();
-				}
-			);
+
+			// Compute wait time
+			nap::Milliseconds wmss(mFrequency > 0 ? 1000 / mFrequency : 0);
+			if (wmss.count() == 0)
+			{
+				// Wait indefinitely until event is received or frequency is positive
+				mProcessCondition.wait(lock, [this]
+					{
+						return !mEventQueue.empty() || mFrequency > 0;
+					});
+			}
+			else
+			{
+				// Wait until a event is received or x amount of time has passed
+				mProcessCondition.wait_for(lock, wmss, [this]
+					{
+						return !mEventQueue.empty();
+					}
+				);
+			}
 
 			// Trade and unlock for further processing
 			assert(event_queue.empty());
@@ -199,6 +215,17 @@ namespace napkin
 		{
 			std::lock_guard lk(mProcessMutex);
 			mEventQueue.emplace(std::move(event));
+		}
+		mProcessCondition.notify_one();
+	}
+
+
+	void AppletRunner::setFrequency(nap::uint frequency)
+	{
+		// Swap and notify handling thread
+		{
+			std::lock_guard lk(mProcessMutex);
+			mFrequency = frequency;
 		}
 		mProcessCondition.notify_one();
 	}
