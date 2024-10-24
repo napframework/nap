@@ -8,6 +8,7 @@
 #include "../appletrunner.h"
 
 // External includes
+#include <qcolorspace.h>
 #include <QSurfaceFormat>
 #include <QLayout>
 #include <QResizeEvent>
@@ -30,7 +31,7 @@ namespace napkin
 
 		// Setup QT format (TODO: Use system preferences)
 		QSurfaceFormat format;
-		format.setColorSpace(QSurfaceFormat::sRGBColorSpace);
+		format.setColorSpace(QColorSpace(QColorSpace::SRgb));
 		native_window->setFormat(format);
 		native_window->setSurfaceType(QSurface::VulkanSurface);
 
@@ -52,6 +53,7 @@ namespace napkin
 		auto sdl_window = SDL_CreateWindowFrom((void*)id);
 		if (!error.check(sdl_window != nullptr, "Failed to create window from handle: %s", nap::SDL::getSDLError().c_str()))
 		{
+			container->setParent(nullptr);
 			delete container;
 			return nullptr;
 		}
@@ -103,9 +105,12 @@ namespace napkin
 			}
 			case QEvent::Resize:
 			{
+				auto resize_event = static_cast<QResizeEvent*>(event);
+				nap::SDL::setWindowSize(mWindow, { resize_event->size().width(), resize_event->size().height()});
+
 				auto ptr = mConverter.translateWindowEvent(*event);
-				if (ptr != nullptr)
-					mApplet.sendEvent(std::move(ptr));
+				assert(ptr != nullptr);
+				mApplet.sendEvent(std::move(ptr));
 				event->accept();
 				return true;
 			}

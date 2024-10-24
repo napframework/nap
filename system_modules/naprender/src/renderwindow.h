@@ -351,10 +351,5 @@ namespace nap
 		 * @return if the swapchain extent is higher than zero in both axis
 		 */
 		bool validSwapchainExtent() const;
-
-		/**
-		 * Checks if the event is a window resize event and updates size accordingly.
-		 */
-		void handleEvent(const Event& event);
 	};
 }

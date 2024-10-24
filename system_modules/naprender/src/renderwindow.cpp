@@ -568,9 +568,6 @@ namespace nap
 		if (!mRenderService->addWindow(*this, errorState))
 			return false;
 
-		// We want to respond to resize events for this window
-		mWindowEvent.connect(std::bind(&RenderWindow::handleEvent, this, std::placeholders::_1));
-
 		// Show if requested
 		if (mVisible)
 			this->show();
@@ -954,17 +951,6 @@ namespace nap
 	bool RenderWindow::validSwapchainExtent() const
 	{
 		return mSwapchainExtent.width > 0 && mSwapchainExtent.height > 0;
-	}
-
-
-	void RenderWindow::handleEvent(const Event& event)
-	{
-		const WindowResizedEvent* resized_event = rtti_cast<const WindowResizedEvent>(&event);
-		if (resized_event != nullptr)
-		{
-			nap::Logger::info("Window resize event: %.4d x %.4d", resized_event->mX, resized_event->mY);
-			setSize({ resized_event->mX, resized_event->mY });
-		}
 	}
 
 
