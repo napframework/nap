@@ -57,7 +57,7 @@ namespace napkin
 			// Install window into this widget
 			assert(layout() == nullptr);
 			mLayout.setContentsMargins(0, 0, 0, 0);
-			mLayout.addWidget(mPanel);
+			mLayout.addWidget(&mPanel->getContainer());
 			setLayout(&mLayout);
 		}
 	}

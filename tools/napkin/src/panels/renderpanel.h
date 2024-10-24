@@ -21,7 +21,7 @@ namespace napkin
 	/**
 	 * Creates and binds a QT widget container to a NAP render window.
 	 */
-	class RenderPanel : public QWidget
+	class RenderPanel : public QObject
 	{
 		Q_OBJECT
 	public:
@@ -47,11 +47,6 @@ namespace napkin
 		 * @return QT window container
 		 */
 		const QWidget& getContainer() const				{ assert(mContainer != nullptr); return *mContainer; }
-
-		/**
-		 * Called when the panel is shown
-		 */
-		void showEvent(QShowEvent* event) override;
 
 	protected:
 		// Handle shown event

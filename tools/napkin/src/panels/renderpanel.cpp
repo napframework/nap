@@ -64,23 +64,10 @@ namespace napkin
 
 
 	RenderPanel::RenderPanel(QWidget* container, SDL_Window* window, QWidget* parent, AppletRunner& applet) :
-		QWidget(parent), mContainer(container), mWindow(window), mApplet(applet), mConverter(window)
+		mContainer(container), mWindow(window), mApplet(applet), mConverter(window)
 	{
-		mContainer->setParent(this);
 		mContainer->installEventFilter(this);
-		this->setFocusPolicy(Qt::FocusPolicy::StrongFocus);
-	}
-
-
-	void RenderPanel::showEvent(QShowEvent* event)
-	{
-		// Add layout when shown
-		if (layout() == nullptr)
-		{		
-			mLayout.setContentsMargins(0, 0, 0, 0);
-			mLayout.addWidget(mContainer);
-			setLayout(&mLayout);
-		}
+		mContainer->setParent(parent);
 	}
 
 
