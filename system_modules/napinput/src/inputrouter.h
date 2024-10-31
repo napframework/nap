@@ -77,8 +77,8 @@ namespace nap
 
 	/**
 	 * Allows you to define a default input router as a component in json
-	 * When instantiated this component holds a default input router that can be
-	 * used to forward events to a selection of entities
+	 * When instantiated this component creates a default input router that can be
+	 * used to forward input events to a selection of entities
 	 */
 	class NAPAPI DefaultInputRouterComponent : public Component
 	{
@@ -88,8 +88,8 @@ namespace nap
 
 
 	/**
-	 * Instance part of the default input router component
-	 * Use the input router to forward input events to a selection of entities
+	 * Instance part of the default input router component.
+	 * Use the input router to forward input events to a selection of entities.
 	 */
 	class NAPAPI DefaultInputRouterComponentInstance : public ComponentInstance
 	{
@@ -98,8 +98,7 @@ namespace nap
 	public:
 		DefaultInputRouterComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)
-		{
-		}
+		{ }
 
 		DefaultInputRouter mInputRouter;		// Default input router
 	};

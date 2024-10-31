@@ -7,9 +7,6 @@
 
 namespace nap
 {
-
 	WebSocketConnection::WebSocketConnection(wspp::ConnectionHandle connection) : mConnection(connection)
-	{
-	}
-
+	{ }
 }

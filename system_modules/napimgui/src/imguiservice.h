@@ -31,10 +31,10 @@ namespace nap
 	/**
 	 * All available (default) icons: managed by the IMGuiService and guaranteed to exist.
 	 * Use these names as identifier to look up a specific icon inside a module or application.
-	 * 
+	 *
 	 * To consider: If this method of identification causes naming conflicts in the future,
 	 * consider introducing explicit icon classes or coupling icons to modules instead.
-	 * This will increase binary size but prevents name clashes if a module loads 
+	 * This will increase binary size but prevents name clashes if a module loads
 	 * icons with duplicate names, which currently is not allowed.
 	 */
 	namespace icon
@@ -151,14 +151,14 @@ namespace nap
 		gui::Style mStyle;												///< Property: 'Style' Configurable style elements
 		virtual rtti::TypeInfo getServiceType() const override	{ return RTTI_OF(IMGuiService); }
 	};
-	 
+
 
 	/**
 	 * This service manages the global ImGui state.
 	 * Call draw() inside a window render pass to draw the GUI to screen.
 	 * Call selectWindow() to select the window subsequent ImGUI calls apply to.
 	 * Explicit window selection is only necessary when there is more than 1 window.
-	 * 
+	 *
 	 * Only call selectWindow() on application update, not when rendering the GUI to screen.
 	 * The service automatically creates a new GUI frame before application update.
 	 */
@@ -184,7 +184,7 @@ namespace nap
 		 *		mRenderWindowOne->endRendering();
 		 *		mRenderService->endRecording();
 		 *	}
-		 * 
+		 *
 		 *	// Draw gui window 2
 		 *	if (mRenderService->beginRecording(*mRenderWindowTwo))
 		 *	{
@@ -227,7 +227,7 @@ namespace nap
 
 		/**
 		 * Returns the ImGUI context associated with the given window id.
-		 * @param window the render window id
+		 * @param windowID the render window id
 		 * @return ImGUI context for the given window, nullptr if it doesn't exist.
 		 */
 		ImGuiContext* findContext(int windowID);
@@ -273,8 +273,8 @@ namespace nap
 
 		/**
 		 * Returns a texture handle that can be used to display a Vulkan texture inside ImGUI.
-		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.		 
-		 * Internally the handles are cached, it is therefore fine to call this function every frame. 
+		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.
+		 * Internally the handles are cached, it is therefore fine to call this function every frame.
 		 * Keep in mind that a handle (descriptor set) is created for every unique texture.
 		 *
 		 * ~~~~~{.cpp}
@@ -288,7 +288,7 @@ namespace nap
 
 		/**
 		 * Returns an icon with the given name and extension.
-		 * Note that the icon must exist. Only ask for icons with their 
+		 * Note that the icon must exist. Only ask for icons with their
 		 * names explicitly declared in code, for example: 'icon::save'
 		 * ~~~~~{.cpp}
 		 *	if (ImGui::ImageButton(gui_service.getIcon(icon::ok)))
@@ -305,10 +305,10 @@ namespace nap
 		 * Create and add an icon to the default set of icons.
 		 * The system looks for the icon in the data search paths of the module.
 		 * On success call getIcon() to retrieve and draw the icon.
-		 * 
+		 *
 		 * Call this function on initialization of your service and make sure your icon names are unique.
 		 * Duplicates are not allowed!
-		 * 
+		 *
 		 * ~~~~~{.cpp}
 		 *	const auto& icon_names = icon::sequencer::get();
 		 *	for (const auto& icon_name : icon_names)
@@ -317,7 +317,7 @@ namespace nap
 		 *			return false;
 		 *	}
 		 * ~~~~~
-		 * 
+		 *
 		 * @param name the name of the icon, including extension
 		 * @param module the module that points to the icon
 		 * @param error contains the error message if the load operations fails

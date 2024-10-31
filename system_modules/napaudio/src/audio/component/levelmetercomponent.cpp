@@ -12,17 +12,14 @@
 #include <audio/service/audioservice.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent)
-		RTTI_PROPERTY("Input", &nap::audio::LevelMeterComponent::mInput, nap::rtti::EPropertyMetaData::Required)
-		RTTI_PROPERTY("AnalysisWindowSize", &nap::audio::LevelMeterComponent::mAnalysisWindowSize,
-		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("MeterType", &nap::audio::LevelMeterComponent::mMeterType, nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("FilterInput", &nap::audio::LevelMeterComponent::mFilterInput,
-		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("CenterFrequency", &nap::audio::LevelMeterComponent::mCenterFrequency,
-		              nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("BandWidth", &nap::audio::LevelMeterComponent::mBandWidth, nap::rtti::EPropertyMetaData::Default)
-		RTTI_PROPERTY("Channel", &nap::audio::LevelMeterComponent::mChannel, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::audio::LevelMeterComponent, "Measures the amplitude level of the audio signal")
+		RTTI_PROPERTY("Input", &nap::audio::LevelMeterComponent::mInput, nap::rtti::EPropertyMetaData::Required, "Audio component to analyze")
+		RTTI_PROPERTY("AnalysisWindowSize", &nap::audio::LevelMeterComponent::mAnalysisWindowSize, nap::rtti::EPropertyMetaData::Default, "Size of the analysis window in ms")
+		RTTI_PROPERTY("MeterType", &nap::audio::LevelMeterComponent::mMeterType, nap::rtti::EPropertyMetaData::Default, "Used analysis method: Root mean square (RMS) or peak amplitude (PEAK)")
+		RTTI_PROPERTY("FilterInput", &nap::audio::LevelMeterComponent::mFilterInput, nap::rtti::EPropertyMetaData::Default, "Filter input before analysis")
+		RTTI_PROPERTY("CenterFrequency", &nap::audio::LevelMeterComponent::mCenterFrequency, nap::rtti::EPropertyMetaData::Default, "Filter frequency band (hz)")
+		RTTI_PROPERTY("BandWidth", &nap::audio::LevelMeterComponent::mBandWidth, nap::rtti::EPropertyMetaData::Default, "Filter frequency band width (hz)")
+		RTTI_PROPERTY("Channel", &nap::audio::LevelMeterComponent::mChannel, nap::rtti::EPropertyMetaData::Default, "Input channel to analyze")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterComponentInstance)

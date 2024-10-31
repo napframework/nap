@@ -3,7 +3,10 @@
     "mID": "ModuleInfo",
     "RequiredModules": [
         "napasio",
-        "napscene"
+        "napscene",
+        "napopenssl"
     ],
-    "WindowsDllSearchPaths": []
+    "WindowsDllSearchPaths": [
+        "{ROOT}/system_modules/napopenssl/thirdparty/openssl/msvc/{BUILD_ARCH}/libs"
+    ]
 }

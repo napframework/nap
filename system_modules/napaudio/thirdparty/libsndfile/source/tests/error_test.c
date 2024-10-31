@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2018 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU General Public License as published by
@@ -21,13 +21,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <errno.h>
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
-#endif
-
-#if OS_IS_WIN32
-#include <windows.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include <sndfile.h>
@@ -176,6 +175,45 @@ bad_wav_test (const char * filename)
 } /* bad_wav_test */
 
 static void
+wav_list_recover_test (const char * filename)
+{	SNDFILE		*sndfile ;
+	SF_INFO		sfinfo ;
+
+	FILE		*file ;
+	const char	data [] =
+		"RIFF" "J\000\000\000"
+		"WAVE" "fmt " "\020\000\000\000" "\001\000\001\000D\254\000\000\210X\001\000\002\000\020\000"
+		"LIST" "\014\000\000\000" "test" "\010\000\000\000" "1234" /* test is 4 bytes short inside LIST container */
+		"data" "\004\000\000\000" "abcd" ;
+
+	print_test_name (__func__, filename) ;
+
+	if ((file = fopen (filename, "w")) == NULL)
+	{	printf ("\n\nLine %d : fopen returned NULL.\n", __LINE__) ;
+		exit (1) ;
+		} ;
+
+	exit_if_true (fwrite (data, sizeof (data) - 1, 1, file) != 1, "\n\nLine %d : fwrite failed.\n", __LINE__) ;
+	fclose (file) ;
+
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
+	sndfile = sf_open (filename, SFM_READ, &sfinfo) ;
+
+	if (!sndfile)
+	{	printf ("\n\nLine %d : expected recovery from bogus LIST content.\n", __LINE__) ;
+		exit (1) ;
+		} ;
+
+	if (sfinfo.frames != 2)
+	{	printf ("\n\nLine %d : Should have read data chunk with 2 stereo frames, got %ld.\n\n", __LINE__, (long)sfinfo.frames) ;
+		exit (1) ;
+		} ;
+
+	unlink (filename) ;
+	puts ("ok") ;
+} /* wav_list_recover_test */
+
+static void
 error_close_test (void)
 {	static short buffer [SHORT_BUFFER] ;
 	const char	*filename = "error_close.wav" ;
@@ -210,19 +248,10 @@ error_close_test (void)
 
 	if (sf_close (sndfile) == 0)
 	{
-#if OS_IS_WIN32
-		OSVERSIONINFOEX osvi ;
-
-		memset (&osvi, 0, sizeof (OSVERSIONINFOEX)) ;
-		osvi.dwOSVersionInfoSize = sizeof (OSVERSIONINFOEX) ;
-
-		if (GetVersionEx ((OSVERSIONINFO *) &osvi))
-		{	printf ("\n\nLine %d : sf_close should not have returned zero.\n", __LINE__) ;
-			printf ("\nHowever, this is a known bug in version %d.%d of windows so we'll ignore it.\n\n",
-					(int) osvi.dwMajorVersion, (int) osvi.dwMinorVersion) ;
-			} ;
-#else
 		printf ("\n\nLine %d : sf_close should not have returned zero.\n", __LINE__) ;
+#if OS_IS_WIN32
+		printf ("\nHowever, this is a known bug on windows platform so we'll ignore it.\n\n") ;
+#else
 		exit (1) ;
 #endif
 		} ;
@@ -230,6 +259,40 @@ error_close_test (void)
 	unlink (filename) ;
 	puts ("ok") ;
 } /* error_close_test */
+
+static void
+unrecognised_test (void)
+{	const char	*filename = "unrecognised.bin" ;
+	SNDFILE		*sndfile ;
+	SF_INFO		sfinfo ;
+	FILE		*file ;
+	int			k ;
+
+	print_test_name (__func__, filename) ;
+
+	file = fopen (filename, "wb") ;
+	exit_if_true (file == NULL,
+		"\n\nLine %d : fopen ('%s') failed : %s\n", __LINE__, filename, strerror (errno)
+		) ;
+	fputs ("Unrecognised file", file) ;
+	fclose (file) ;
+
+	memset (&sfinfo, 0, sizeof (sfinfo)) ;
+	sndfile = sf_open (filename, SFM_READ, &sfinfo) ;
+
+	exit_if_true (sndfile != NULL,
+		"\n\nLine %d : SNDFILE* pointer (%p) should be NULL.\n", __LINE__, (void *) sndfile
+		) ;
+
+	k = sf_error (sndfile) ;
+	exit_if_true (k != SF_ERR_UNRECOGNISED_FORMAT,
+		"\n\nLine %d : error (%d) should have been SF_ERR_UNRECOGNISED_FORMAT (%d).\n",
+		__LINE__, k, SF_ERR_UNRECOGNISED_FORMAT
+		) ;
+
+	unlink (filename) ;
+	puts ("ok") ;
+} /* unrecognised_test */
 
 int
 main (void)
@@ -242,6 +305,9 @@ main (void)
 	no_file_test ("no_file.wav") ;
 	zero_length_test ("zero_length.wav") ;
 	bad_wav_test ("bad_wav.wav") ;
+	wav_list_recover_test ("list_recover.wav") ;
+
+	unrecognised_test () ;
 
 	return 0 ;
 } /* main */

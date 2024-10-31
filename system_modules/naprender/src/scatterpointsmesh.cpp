@@ -12,11 +12,11 @@
 #include <nap/core.h>
 
 // nap::scatterpointsmesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ScatterPointsMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ScatterPointsMesh, "Randomly distributes a certain amount of points (vertices) over the surface of a mesh")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",			&nap::ScatterPointsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ReferenceMesh",	&nap::ScatterPointsMesh::mReferenceMesh,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("PointCount",		&nap::ScatterPointsMesh::mNumberOfPoints,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::ScatterPointsMesh::mUsage,			nap::rtti::EPropertyMetaData::Default,	"If the mesh is static or updated at runtime")
+	RTTI_PROPERTY("ReferenceMesh",	&nap::ScatterPointsMesh::mReferenceMesh,	nap::rtti::EPropertyMetaData::Required,	"Mesh to distribute the points on")
+	RTTI_PROPERTY("PointCount",		&nap::ScatterPointsMesh::mNumberOfPoints,	nap::rtti::EPropertyMetaData::Default,	"Total number of points to distribute")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

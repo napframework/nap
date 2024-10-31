@@ -80,7 +80,7 @@ namespace nap
 		/**
 		 * Enables or disables normalization. Normalized text is centered around the origin with approx -0.5 / 0.5 bounds
 		 * The normalization factor is based on reference text which can be updated by calling: computeNormalizationFactor()
-		 * Calling computeNormalizationFactor() ensures that the size of the letters don't change size at runtime.
+		 * Calling computeNormalizationFactor() ensures that the size of the letters doesn't change size at runtime.
 		 * @param enable disable or enable normalization
 		 */
 		void normalizeText(bool enable)													{ mNormalize = enable; }

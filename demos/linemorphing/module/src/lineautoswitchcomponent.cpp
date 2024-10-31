@@ -12,7 +12,7 @@
 #include <functional>
 #include <numeric>
 
-RTTI_BEGIN_CLASS(nap::LineAutoSwitchComponent)
+RTTI_BEGIN_CLASS(nap::LineAutoSwitchComponent, "Automatically select a different line when blend operation completes")
 	RTTI_PROPERTY("SelectionComponentOne",	&nap::LineAutoSwitchComponent::mSelectionComponentOne,	nap::rtti::EPropertyMetaData::Required, "Link to the first line selector")
 	RTTI_PROPERTY("SelectionComponentTwo",	&nap::LineAutoSwitchComponent::mSelectionComponentTwo,	nap::rtti::EPropertyMetaData::Required, "Link to the second line selector")
 	RTTI_PROPERTY("BlendComponent",			&nap::LineAutoSwitchComponent::mBlendComponent,			nap::rtti::EPropertyMetaData::Required, "Link to the component that blends between the first and second line selector")

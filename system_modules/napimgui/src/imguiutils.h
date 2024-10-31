@@ -9,7 +9,7 @@
 #include "imguiicon.h"
 
 // External Includes
-#include <texture2d.h>
+#include <texture.h>
 #include <utility/dllexport.h>
 #include <rtti/typeinfo.h>
 
@@ -23,7 +23,7 @@ namespace ImGui
 	/**
 	 * Displays a NAP 2D texture as an IMGUI image
 	 * @param texture the texture to display in IMGUI
-	 * @param size display size of the texture 
+	 * @param size display size of the texture
 	 * @param uv0 the min uv coordinates, defaults to lower left corner
 	 * @param uv1 the max uv coordinates, defaults to upper right corner
 	 * @param tint_col used to tint the displayed texture
@@ -57,7 +57,7 @@ namespace ImGui
 	 * @param icon icon to apply to the button
 	 * @param text optional overlay text, when null icon name is shown
 	 * @param tooltip_offset offset tooltip needs to have in x and y axis
-	 * @param bg_color button backgound color
+	 * @param bg_col button backgound color
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
@@ -77,7 +77,7 @@ namespace ImGui
 	 * @param text optional overlay text, when null icon name is shown
 	 * @param tooltip_offset offset tooltip in x and y
 	 * @param frame_padding image frame padding
-	 * @param bg_color button backgound color
+	 * @param bg_col button backgound color
 	 * @param tint_col button tint color
 	 * @return if the button is pressed
 	 */
@@ -93,7 +93,7 @@ namespace ImGui
 	/**
 	 * Displays all members of an rtti defined enumeration type inside a combo box.
 	 * Call asserts if the provided type is not an enumeration object.
-	 *  
+	 *
 	 * ~~~~~{.cpp}
 	 *	if(ImGui::Combo("Type Selection", &item, RTTI_OF(nap::ETweenEasing));
 	 *	{

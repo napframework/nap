@@ -449,5 +449,47 @@ namespace nap
 			for (const rtti::TypeInfo& derived_type : baseType.get_derived_classes())
 				getDerivedTypesRecursive(derived_type, types);
 		}
+
+
+		bool hasDescription(const rtti::Property& property)
+		{
+			return property.get_metadata("description").is_valid();
+		}
+
+
+		const char* getDescription(const rtti::Property& property)
+		{
+			const rtti::Variant& meta_data = property.get_metadata("description");
+			return meta_data.is_valid() ? meta_data.convert<const char*>() : nullptr;
+		}
+
+
+		bool hasDescription(const rtti::TypeInfo& type)
+		{
+			return getDescription(type) != nullptr;
+		}
+
+
+		const char* getDescription(const rtti::TypeInfo& type)
+		{
+			// Find description for given type
+			auto range = type.get_methods(rttr::filter_item::static_item | rttr::filter_item::public_access);
+			const rttr::method* description_method = nullptr;
+			for (const auto& method : range)
+			{
+				if (method.get_name() == nap::rtti::method::description)
+					description_method = &method;
+			}
+
+			// Invoke description when found
+			if(description_method != nullptr)
+				return description_method->invoke(rttr::instance()).convert<const char*>();
+
+			// Not available -> search base types.
+			// The `get_methods()` call 'should' include base types but it doesn't -> rttr bug?
+			// Appears that base types are only included when the function is defined for every type in the chain!
+			auto base_types = type.get_base_classes();
+			return base_types.empty() ? nullptr : getDescription(*base_types.crbegin());
+		}
 	}
 }

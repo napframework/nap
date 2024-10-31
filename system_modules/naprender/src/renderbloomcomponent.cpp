@@ -11,6 +11,7 @@
 #include "uniforminstance.h"
 #include "renderglobals.h"
 #include "blurshader.h"
+#include "textureutils.h"
 
 // External Includes
 #include <entity.h>
@@ -20,11 +21,11 @@
 #include <orthocameracomponent.h>
 
 // nap::RenderBloomComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderBloomComponent)
-	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Kernel",						&nap::RenderBloomComponent::mKernel,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OutputTexture",				&nap::RenderBloomComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::RenderBloomComponent, "Applies a bloom effect to a texture")
+	RTTI_PROPERTY("PassCount",					&nap::RenderBloomComponent::mPassCount,					nap::rtti::EPropertyMetaData::Default,	"Number of combined horizontal / vertical passes")
+	RTTI_PROPERTY("Kernel",						&nap::RenderBloomComponent::mKernel,					nap::rtti::EPropertyMetaData::Default,	"The blur kernel")
+	RTTI_PROPERTY("InputTexture",				&nap::RenderBloomComponent::mInputTexture,				nap::rtti::EPropertyMetaData::Required,	"The texture to apply the effect to")
+	RTTI_PROPERTY("OutputTexture",				&nap::RenderBloomComponent::mOutputTexture,				nap::rtti::EPropertyMetaData::Required, "The texture the effect is applied to")
 RTTI_END_CLASS
 
 // nap::RenderBloomComponentInstance run time class definition 
@@ -54,50 +55,6 @@ static void computeModelMatrix(const nap::IRenderTarget& target, glm::mat4& outM
 
 namespace nap
 {
-	/**
-	 * Transition image to a new layout using an existing image barrier.
-	 */
-	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image, VkImageMemoryBarrier& barrier,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount)
-	{
-		barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
-		barrier.oldLayout = oldLayout;
-		barrier.newLayout = newLayout;
-		barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
-		barrier.image = image;
-		barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		barrier.subresourceRange.baseMipLevel = mipLevel;
-		barrier.subresourceRange.levelCount = mipLevelCount;
-		barrier.subresourceRange.baseArrayLayer = 0;
-		barrier.subresourceRange.layerCount = 1;
-		barrier.srcAccessMask = srcAccessMask;
-		barrier.dstAccessMask = dstAccessMask;
-		vkCmdPipelineBarrier(commandBuffer, srcStage, dstStage, 0, 0, nullptr, 0, nullptr, 1, &barrier);
-	}
-
-
-	/**
-	 * Transition image to a new layout using an image barrier.
-	 */
-	static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
-		VkImageLayout oldLayout, VkImageLayout newLayout,
-		VkAccessFlags srcAccessMask, VkAccessFlags dstAccessMask,
-		VkPipelineStageFlags srcStage, VkPipelineStageFlags dstStage,
-		uint32 mipLevel, uint32 mipLevelCount)
-	{
-		VkImageMemoryBarrier barrier = {};
-		transitionImageLayout(commandBuffer, image, barrier,
-			oldLayout, newLayout,
-			srcAccessMask, dstAccessMask,
-			srcStage, dstStage,
-			mipLevel, mipLevelCount);
-	}
-
-
 	RenderBloomComponentInstance::RenderBloomComponentInstance(EntityInstance& entity, Component& resource) :
 		RenderableComponentInstance(entity, resource),
 		mPlane(*entity.getCore())
@@ -130,8 +87,8 @@ namespace nap
 				auto tex = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTexture2D>();
 				tex->mWidth = resource->mInputTexture->getWidth() / math::power<int>(2, pass_idx+1);
 				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
-				tex->mFormat = resource->mInputTexture->mFormat;
-				tex->mUsage = ETextureUsage::Static;
+				tex->mColorFormat = resource->mInputTexture->mColorFormat;
+				tex->mUsage = Texture::EUsage::Static;
 				if (!tex->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize internal render texture", tex->mID.c_str());
@@ -256,7 +213,7 @@ namespace nap
 		auto& initial_texture = *mBloomRTs.front()[TARGET_A]->mColorTexture;
 
 		// Blit the input texture to the smaller size RT
-		blit(command_buffer, *mInputTexture, initial_texture);
+		utility::blit(command_buffer, *mInputTexture, initial_texture);
 
 		int pass_count = 0;
 		for (auto& bloom_target : mBloomRTs)
@@ -284,7 +241,7 @@ namespace nap
 			if (pass_count+1 < mBloomRTs.size())
 			{
 				auto& blit_dst = *mBloomRTs[pass_count + 1][TARGET_A]->mColorTexture;
-				blit(command_buffer, *bloom_target[TARGET_A]->mColorTexture, blit_dst);
+				utility::blit(command_buffer, *bloom_target[TARGET_A]->mColorTexture, blit_dst);
 				++pass_count;
 			}
 		}
@@ -294,7 +251,7 @@ namespace nap
 		auto& final_texture = *mBloomRTs.back()[TARGET_A]->mColorTexture;
 
 		// Blit to output, potentially resizing the texture another time
-		blit(command_buffer, final_texture, *mOutputTexture);
+		utility::blit(command_buffer, final_texture, *mOutputTexture);
 	}
 
 
@@ -335,68 +292,6 @@ namespace nap
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
-	}
-
-
-	void RenderBloomComponentInstance::blit(VkCommandBuffer commandBuffer, nap::Texture2D& srcTexture, nap::Texture2D& dstTexture)
-	{
-		// Transition to transfer src
-		VkImageLayout src_tex_layout = srcTexture.getHandle().getLayout();
-		if (src_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL)
-		{
-			transitionImageLayout(commandBuffer, srcTexture.getHandle().getImage(),
-				src_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_READ_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-				0, 1);
-		}
-
-		// Transition to transfer dst
-		VkImageLayout dst_tex_layout = dstTexture.getHandle().getLayout();
-		if (dst_tex_layout != VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL)
-		{
-			transitionImageLayout(commandBuffer, dstTexture.getHandle().getImage(),
-				dst_tex_layout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-				VK_ACCESS_SHADER_READ_BIT, VK_ACCESS_TRANSFER_WRITE_BIT,
-				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
-				0, 1);
-		}
-
-		// Create blit structure
-		VkImageBlit blit{};
-		blit.srcOffsets[0] = { 0, 0, 0 };
-		blit.srcOffsets[1] = { srcTexture.getWidth(), srcTexture.getHeight(), 1 };
-		blit.srcSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.srcSubresource.mipLevel = 0;
-		blit.srcSubresource.baseArrayLayer = 0;
-		blit.srcSubresource.layerCount = 1;
-		blit.dstOffsets[0] = { 0, 0, 0 };
-		blit.dstOffsets[1] = { dstTexture.getWidth(), dstTexture.getHeight(), 1 };
-
-		blit.dstSubresource.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		blit.dstSubresource.mipLevel = 0;
-		blit.dstSubresource.baseArrayLayer = 0;
-		blit.dstSubresource.layerCount = 1;
-
-		// Blit to output
-		vkCmdBlitImage(commandBuffer,
-			srcTexture.getHandle().getImage(), VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
-			dstTexture.getHandle().getImage(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-			1, &blit, VK_FILTER_LINEAR);
-
-		// Transition to shader read
-		transitionImageLayout(commandBuffer, srcTexture.getHandle().getImage(),
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_READ_BIT, VK_ACCESS_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0, 1);
-
-		// Transition to shader read
-		transitionImageLayout(commandBuffer, dstTexture.getHandle().getImage(),
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-			VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT,
-			VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
-			0, 1);
 	}
 
 

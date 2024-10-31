@@ -19,10 +19,10 @@
 #include <nap/assert.h>
 
 // nap::renderabletextcomponent run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent)
-	RTTI_PROPERTY("Text",				&nap::RenderableTextComponent::mText,						nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Font",				&nap::RenderableTextComponent::mFont,						nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("TextColor",			&nap::RenderableTextComponent::mColor,						nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableTextComponent, "Draws text")
+	RTTI_PROPERTY("Text",		&nap::RenderableTextComponent::mText,	nap::rtti::EPropertyMetaData::Default,	"Initial text input")
+	RTTI_PROPERTY("Font",		&nap::RenderableTextComponent::mFont,	nap::rtti::EPropertyMetaData::Required,	"Text font")
+	RTTI_PROPERTY("TextColor",	&nap::RenderableTextComponent::mColor,	nap::rtti::EPropertyMetaData::Default,	"Text color")
 RTTI_END_CLASS
 
 // nap::renderabletextcomponentInstance run time class definition 

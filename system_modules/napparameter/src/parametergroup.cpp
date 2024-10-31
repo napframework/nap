@@ -6,7 +6,7 @@
 
 // For backwards compatibility reasons, override the the default 'Members' and 'Children' property names
 // of the 'nap::ParameterGroup' to the property names introduced before the arrival of the generic nap::Group<T>.
-RTTI_BEGIN_CLASS(nap::ParameterGroup)
+RTTI_BEGIN_CLASS(nap::ParameterGroup, "Groups together a set of 'nap::Parameter' objects")
 	RTTI_PROPERTY(nap::group::parameter::members,	&nap::ParameterGroup::mMembers,		nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)
 	RTTI_PROPERTY(nap::group::parameter::children,	&nap::ParameterGroup::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)
 RTTI_END_CLASS

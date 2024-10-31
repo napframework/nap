@@ -15,10 +15,10 @@
 #include <apiutils.h>
 
 // nap::websocketapiserver run time class definition
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalWebSocketServer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalWebSocketServer, "Sends and receives portal events")
 	RTTI_CONSTRUCTOR(nap::PortalService&)
-	RTTI_PROPERTY("SendWebSocketEvents",	&nap::PortalWebSocketServer::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Verbose",				&nap::PortalWebSocketServer::mVerbose,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("SendWebSocketEvents",	&nap::PortalWebSocketServer::mSendWebSocketEvents,	nap::rtti::EPropertyMetaData::Default, "Also create and send events to the underlying websocket service, next to portal service")
+	RTTI_PROPERTY("Verbose",				&nap::PortalWebSocketServer::mVerbose,				nap::rtti::EPropertyMetaData::Default, "Log connection updates")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -177,7 +177,7 @@ namespace nap
 		outEvents.swap(mPortalEvents);
 
 		// Clear current queue
-		std::queue<PortalEventPtr> empty_queue;;
+		std::queue<PortalEventPtr> empty_queue;
 		mPortalEvents.swap(empty_queue);
 	}
 }

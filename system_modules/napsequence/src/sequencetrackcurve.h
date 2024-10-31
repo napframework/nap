@@ -22,11 +22,7 @@ namespace nap
      */
     class NAPAPI BaseSequenceTrackCurve : public SequenceTrack
     {
-    RTTI_ENABLE(SequenceTrack)
-    public:
-        virtual ~BaseSequenceTrackCurve()
-        {
-        };
+		RTTI_ENABLE(SequenceTrack)
     };
 
     /**

@@ -16,19 +16,19 @@ RTTI_BEGIN_ENUM(nap::EOrthoCameraMode)
 	RTTI_ENUM_VALUE(nap::EOrthoCameraMode::Custom,				"Custom")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::OrthoCameraProperties)
-	RTTI_PROPERTY("Mode",				&nap::OrthoCameraProperties::mMode,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RightPlane",			&nap::OrthoCameraProperties::mRightPlane,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("TopPlane",			&nap::OrthoCameraProperties::mTopPlane,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("BottomPlane",		&nap::OrthoCameraProperties::mBottomPlane,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("NearClippingPlane",	&nap::OrthoCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ClipRect",			&nap::OrthoCameraProperties::mClipRect,				nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OrthoCameraProperties, "Orthographic camera properties")
+	RTTI_PROPERTY("Mode",				&nap::OrthoCameraProperties::mMode,					nap::rtti::EPropertyMetaData::Default, "Camera space operation mode")
+	RTTI_PROPERTY("LeftPlane",			&nap::OrthoCameraProperties::mLeftPlane,			nap::rtti::EPropertyMetaData::Default, "Left plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("RightPlane",			&nap::OrthoCameraProperties::mRightPlane,			nap::rtti::EPropertyMetaData::Default, "Right plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("TopPlane",			&nap::OrthoCameraProperties::mTopPlane,				nap::rtti::EPropertyMetaData::Default, "Top plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("BottomPlane",		&nap::OrthoCameraProperties::mBottomPlane,			nap::rtti::EPropertyMetaData::Default, "Bottom plane coordinates, used with 'CorrectAspectRatio' or 'Custom' mode")
+	RTTI_PROPERTY("NearClippingPlane",	&nap::OrthoCameraProperties::mNearClippingPlane,	nap::rtti::EPropertyMetaData::Default, "Camera near clipping plane")
+	RTTI_PROPERTY("FarClippingPlane",	&nap::OrthoCameraProperties::mFarClippingPlane,		nap::rtti::EPropertyMetaData::Default, "Camera far clipping plane")
+	RTTI_PROPERTY("ClipRect",			&nap::OrthoCameraProperties::mClipRect,				nap::rtti::EPropertyMetaData::Default, "Normalized camera view cropping (clip) rectangle")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::OrthoCameraComponent)
-	RTTI_PROPERTY("Properties",			&nap::OrthoCameraComponent::mProperties,			nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OrthoCameraComponent, "Creates an orthographic camera projection and view matrix")
+	RTTI_PROPERTY("Properties",			&nap::OrthoCameraComponent::mProperties,			nap::rtti::EPropertyMetaData::Default, "Orthographic camera properties")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrthoCameraComponentInstance)
@@ -65,8 +65,7 @@ namespace nap
 	// Hook up attribute changes
 	OrthoCameraComponentInstance::OrthoCameraComponentInstance(EntityInstance& entity, Component& resource) :
 		CameraComponentInstance(entity, resource)
-	{
-	}
+	{ }
 
 
 	bool OrthoCameraComponentInstance::init(utility::ErrorState& errorState)
@@ -139,18 +138,19 @@ namespace nap
 				case EOrthoCameraMode::PixelSpace:
 				{
 					// In this mode we use the render target size to set the planes.
-					glm::vec2 render_target_size = getRenderTargetSize();
+					const glm::vec2& rt_size = getRenderTargetSize();
 					rect =
 					{
-						{ prop.mClipRect.getMin().x * render_target_size.x, prop.mClipRect.getMin().y * render_target_size.y },
-						{ prop.mClipRect.getMax().x * render_target_size.x, prop.mClipRect.getMax().y * render_target_size.y }
+						{ prop.mClipRect.getMin().x * rt_size.x, prop.mClipRect.getMin().y * rt_size.y },
+						{ prop.mClipRect.getMax().x * rt_size.x, prop.mClipRect.getMax().y * rt_size.y }
 					};
 					break;
 				}
 				case EOrthoCameraMode::CorrectAspectRatio:
 				{
 					// In this mode, we scale the top and bottom planes based on the aspect ratio
-					float aspect_ratio = getRenderTargetSize().y / getRenderTargetSize().x;
+					const glm::vec2& rt_size = getRenderTargetSize();
+					float aspect_ratio = rt_size.y / rt_size.x;
 					rect =
 					{
 						{ prop.mClipRect.getMin().x * prop.mLeftPlane, prop.mClipRect.getMin().y * prop.mBottomPlane * aspect_ratio },
@@ -197,9 +197,14 @@ namespace nap
 	}
 
 
-	void OrthoCameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	float OrthoCameraComponentInstance::getNearClippingPlane() const
 	{
-		components.emplace_back(RTTI_OF(TransformComponent));
+		return mProperties.mNearClippingPlane;
 	}
 
+
+	float OrthoCameraComponentInstance::getFarClippingPlane() const
+	{
+		return mProperties.mFarClippingPlane;
+	}
 }

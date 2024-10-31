@@ -8,12 +8,12 @@
 // External includes
 #include <glm/gtc/epsilon.hpp>
 
-RTTI_BEGIN_CLASS(nap::math::Rect)
-	RTTI_CONSTRUCTOR(float, float, float, float)
+RTTI_BEGIN_STRUCT(nap::math::Rect)
+	RTTI_VALUE_CONSTRUCTOR(float, float, float, float)
 	RTTI_CONSTRUCTOR(glm::vec2, glm::vec2)
 	RTTI_PROPERTY("Min", &nap::math::Rect::mMinPosition, nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Max", &nap::math::Rect::mMaxPosition, nap::rtti::EPropertyMetaData::Required)
-RTTI_END_CLASS
+RTTI_END_STRUCT
 
 namespace nap
 {

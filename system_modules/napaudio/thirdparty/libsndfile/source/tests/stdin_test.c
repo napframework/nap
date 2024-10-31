@@ -25,6 +25,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include <sndfile.h>
@@ -149,7 +151,7 @@ stdin_test	(int typemajor, int count)
 	else
 		memset (&sfinfo, 0, sizeof (sfinfo)) ;
 
-	if ((file = sf_open_fd (STDIN_FILENO, SFM_READ, &sfinfo, SF_TRUE)) == NULL)
+	if ((file = sf_open_fd (fileno (stdin), SFM_READ, &sfinfo, SF_TRUE)) == NULL)
 	{	fprintf (stderr, "sf_open_fd failed with error : ") ;
 		puts (sf_strerror (NULL)) ;
 		dump_log_buffer (NULL) ;
@@ -183,7 +185,7 @@ stdin_test	(int typemajor, int count)
 		} ;
 
 	total = 0 ;
-	while ((k = sf_read_short (file, data + total, BUFFER_LEN - total)) > 0)
+	while ((k = (int) sf_read_short (file, data + total, BUFFER_LEN - total)) > 0)
 		total += k ;
 
 	if (total != count)

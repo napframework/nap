@@ -10,9 +10,9 @@
 #include <utility>
 
 // nap::ArtNetReceiver run time class definition
-RTTI_BEGIN_CLASS(nap::ArtNetReceiver)
-	RTTI_PROPERTY("IP Address", &nap::ArtNetReceiver::mIpAddress, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port", &nap::ArtNetReceiver::mPort, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ArtNetReceiver, "Receives and parses Artnet messages")
+	RTTI_PROPERTY("IP Address", &nap::ArtNetReceiver::mIpAddress,	nap::rtti::EPropertyMetaData::Default, "The IP address of the interface to use, empty defaults to first available one")
+	RTTI_PROPERTY("Port",		&nap::ArtNetReceiver::mPort,		nap::rtti::EPropertyMetaData::Default, "The port that is opened and used to receive messages")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

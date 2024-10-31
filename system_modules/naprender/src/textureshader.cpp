@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::TextureShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TextureShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TextureShader, "Shader program that renders an object using a texture")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

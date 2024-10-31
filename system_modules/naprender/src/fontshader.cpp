@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::FontShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FontShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::FontShader, "Shader that renders text")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

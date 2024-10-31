@@ -17,7 +17,7 @@ namespace nap
 	class RenderService;
 
 	/**
-	 * Randomly distributes x amount of points over the surface of a mesh
+	 * Randomly distributes a certain amount of points over the surface of a mesh
 	 * The result is a new mesh that does not contain any triangles, only points as vertices
 	 * The uv, color and normal attributes are copied over from the reference mesh if available!
 	 */

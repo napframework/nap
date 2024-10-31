@@ -20,7 +20,7 @@ namespace nap
 
 		// Forward declarations
 		class AudioService;
-		
+
 		/**
 		 * Node to measure the amplitude level of an audio signal.
 		 * Can be used for VU meters or envelope followers for example.
@@ -35,9 +35,9 @@ namespace nap
 			};
 
 			/**
-			 * @param audioService: the NAP audio service.
+			 * @param nodeManager: the node manager
 			 * @param analysisWindowSize: the time window in milliseconds that will be used to generate one single output value. Also the period that corresponds to the analysis frequency.
-			 * @param rootProcess: indicates that the node is registered as root process with the @AudioNodeManager and is processed automatically.
+			 * @param rootProcess: indicates that the node is registered as root process with the AudioNodeManager and is processed automatically.
 			 */
 			LevelMeterNode(NodeManager& nodeManager, TimeValue analysisWindowSize = 10, bool rootProcess = true);
 
@@ -60,16 +60,17 @@ namespace nap
       		void sampleRateChanged(float sampleRate) override;
 
 		private:
-			float calculateRms(); // Calculates output value out of one buffer of data using root mean square algorithm
-			float
-			calculatePeak(); // Calculates output value out of one buffer of data by determining the maximum amplitude of the buffer.
-
-			SampleBuffer mBuffer; // Buffer being analyzed
-			float mValue = 0; // Calculated output level value
 			int mIndex = 0; // Current write index of the buffer being analyzed.
 			Type mType = Type::RMS; // Algorithm currently being used to calculate the output level value from one buffer.
-			DirtyFlag mDirty;
 			TimeValue mAnalysisWindowSize = 0.f;
+			int mWindowSizeInSamples = 0;
+			std::atomic<float> mValue = 0.f; // Calculated output level value
+			
+			SampleBuffer mSquaredBuffer;
+			float mSquaredSum = 0.f;
+			
+			float mPeak = 0.f;
+			float mPeakTemp = 0.f;
 
 			bool mRootProcess = false;
 		};

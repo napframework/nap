@@ -14,12 +14,12 @@
 #include <nap/logger.h>
 #include <thread>
 
-RTTI_BEGIN_CLASS(nap::UDPClient)
-	RTTI_PROPERTY("Endpoint",                   &nap::UDPClient::mEndpoint,                     nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Broadcast",					&nap::UDPClient::mBroadcast,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port",						&nap::UDPClient::mPort,							nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MaxQueueSize",				&nap::UDPClient::mMaxPacketQueueSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UDPClient::mStopOnMaxQueueSizeExceeded,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::UDPClient, "Sends UDP Packets to an endpoint")
+	RTTI_PROPERTY("Broadcast",					&nap::UDPClient::mBroadcast,					nap::rtti::EPropertyMetaData::Default,	"Transmit to all connected hosts")
+	RTTI_PROPERTY("Endpoint",                   &nap::UDPClient::mEndpoint,                     nap::rtti::EPropertyMetaData::Default,	"The ip address to bind to")
+	RTTI_PROPERTY("Port",						&nap::UDPClient::mPort,							nap::rtti::EPropertyMetaData::Default,	"The port to bind to")
+	RTTI_PROPERTY("MaxQueueSize",				&nap::UDPClient::mMaxPacketQueueSize,			nap::rtti::EPropertyMetaData::Default,	"Maximum packet queue size")
+	RTTI_PROPERTY("StopOnMaxQueueSizeExceeded", &nap::UDPClient::mStopOnMaxQueueSizeExceeded,	nap::rtti::EPropertyMetaData::Default,	"Do not add packet when max queue size is exceeded")
 RTTI_END_CLASS
 
 using asio::ip::address;

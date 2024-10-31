@@ -14,7 +14,7 @@
 #include <nap/logger.h>
 
 // nap::videomesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoMeshFromFile, "Loads a .mesh file from disk and adds vertex displacement attributes")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY_FILELINK("Path", &nap::VideoMeshFromFile::mPath, nap::rtti::EPropertyMetaData::Required, nap::rtti::EPropertyFileType::Mesh, "Path to the .mesh file on disk")
 RTTI_END_CLASS
@@ -26,8 +26,7 @@ namespace nap
 {
 	VideoMeshFromFile::VideoMeshFromFile(Core& core) :
 		mRenderService(core.getService<RenderService>())
-	{
-	}
+	{ }
 
 
 	bool VideoMeshFromFile::init(utility::ErrorState& errorState)

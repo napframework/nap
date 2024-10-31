@@ -26,7 +26,7 @@ RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderableMeshComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
-	//RTTI_FUNCTION("getMaterialInstance", &nap::RenderableMeshComponentInstance::getMaterialInstance)
+	RTTI_FUNCTION(nap::material::instance::getOrCreateMaterial, &nap::RenderableMeshComponentInstance::getOrCreateMaterial)
 RTTI_END_CLASS
 
 namespace nap
@@ -38,8 +38,7 @@ namespace nap
 
 
 	RenderableMeshComponentInstance::RenderableMeshComponentInstance(EntityInstance& entity, Component& resource) :
-		RenderableComponentInstance(entity, resource),
-		mRenderService(entity.getCore()->getService<nap::RenderService>())
+		RenderableComponentInstance(entity, resource)
 	{ }
 
 
@@ -199,6 +198,7 @@ namespace nap
 
 	MaterialInstance& RenderableMeshComponentInstance::getMaterialInstance()
 	{
+		assert(mRenderableMesh.isValid());
 		return mRenderableMesh.getMaterialInstance();
 	}
 } 

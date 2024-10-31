@@ -19,7 +19,7 @@ namespace nap
 	/**
 	 * This mesh builds a line structure based on the vertices of another mesh
 	 * The line structure represents the normals of the reference mesh and can be drawn to screen. 
-	 * The mesh itself carries multiple attributes of which 'position' and 'típ' are default.
+	 * The mesh itself carries multiple attributes of which 'position' and 'tÃ­p' are default.
 	 * Use the tip vertex attribute to identify the bottom / top part of the vertex.
 	 * the tip value = 1 at the beginning of the normal line and 0 at the end.
 	 * This resource also copies the color, normal and uv channels as attributes to both points of the normal line.

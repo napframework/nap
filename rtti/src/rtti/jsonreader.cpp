@@ -159,7 +159,7 @@ namespace nap
 					else
 					{
 						// Otherwise make sure the property is not required
-						if (!errorState.check(!is_required || (is_object_id && isEmbeddedObject), "Required property '%s' not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+						if (!errorState.check(!is_required || (is_object_id && isEmbeddedObject), "Required property '%s' not found in object '%s' of type %s", property.get_name().data(), rootObject->mID.c_str(), object_type.get_name().data()))
 							return false;
 					}
 
@@ -224,7 +224,7 @@ namespace nap
 					}
 
 					// If the target is empty (i.e. null pointer), but the property is required, throw an error
-					if (!errorState.check((is_required && !target_id.empty()) || (!is_required), "Required property '%s' not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+					if (!errorState.check((is_required && !target_id.empty()) || (!is_required), "Required property '%s' not found in object '%s' of type %s", property.get_name().data(), rootObject->mID.c_str(), object_type.get_name().data()))
 						return false;
 
 					// Add to list of unresolved pointers

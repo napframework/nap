@@ -5,7 +5,13 @@
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<title>NAP WebSocket Client Demo</title>
 
-	<link href="https://fonts.googleapis.com/css?family=Montserrat:400" rel="stylesheet">
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@200..800&display=swap" rel="stylesheet">
+
+	<link rel="preconnect" href="https://fonts.googleapis.com">
+	<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+	<link href="https://fonts.googleapis.com/css2?family=Roboto+Mono:ital,wght@0,100..700;1,100..700&display=swap" rel="stylesheet">
 
 	<script language="javascript" type="text/javascript">
 		// Websocket url, change to server web-socket address!
@@ -177,12 +183,12 @@
 			if(connected)
 			{
 				status_header.innerHTML = "connected"
-				status_header.style.color = "#C86969"
+				status_header.style.color = "#D6FFA3"
 				return
 			}
 
 			status_header.innerHTML = "disconnected"
-			status_header.style.color = "#5D5E73"
+			status_header.style.color = "#FF5050"
 		}
 
 		function writeToBox(message)
@@ -214,34 +220,56 @@
 	</script>
 
 	<style>
+		:root {
+  			--white: #FFFFFF;
+  			--gray-light: #CDCDC3;
+  			--gray-medium: #8D8B84;
+  			--gray-dark: #2D2D2D;
+  			--black: #000000;
+		}
+
+
 		::selection {
-			color: #8B8CA0;
-			background: #8B8CA0;
+			color: var(--white);
+			background: var(--gray-medium);
 		}
 
 		body {
-			background-color: #2D2E42;
-			color: #8B8CA0;
+			background-color: var(--gray-dark);
+			color: var(--white);
+			font-weight: 300;
+			font-family: "Manrope", sans-serif;
+  			font-optical-sizing: auto;
+  			font-style: normal;
+  			letter-spacing: 0.05em;
 		}
 
-		h1, label, p{
-			font-family: 'Montserrat', sans-serif;
-			font-weight: 400;
+		h1 {
+			font-weight: 500;
 		}
 
 		textarea {
-			background-color: #111426;
-			border: 1px solid #8B8CA0;
-			color: #8B8CA0;
+			background-color: var(--black);
+			border: none;
+			color: var(--white);
 			max-width: 640px;
 			width: 100%;
+			padding: 8px;
+		}
+
+		pre {
+			background-color: var(--black);
+			max-width: 640px;
+			padding: 8px;
 		}
 
 		input {
-			background-color: #111426;
-			border: 1px solid #8B8CA0;
-			color: #8B8CA0;
+			background-color: var(--black);
+			border: none;
+			color: var(--white);
 			max-width: 640px;
+			font-family: "Manrope", sans-serif;
+			letter-spacing: 0.05em;
 		}
 
 		input:focus,
@@ -249,51 +277,74 @@
 			outline: none;
 		}
 
-		.header img {
-			float: left;
-			height: 80px;
-			width: 80px;
-			margin-right: 16px;
+		.header {
 			margin-bottom: 16px;
+			display: flex;
+  			align-items: center;
 		}
 
-		.header h1 {
-			margin-bottom: 0;
+		.header img {
+			float: left;
+			height: 64px;
+			width: 64px;
+			margin-right: 16px;
 		}
 
 		.input {
 			clear: both;
 		}
 
-		#status_header {
-			margin-top: 0;
+		.return {
+			margin-top: 32px;
 		}
 
-		pre {
-			background-color: #1a1e31;
-			max-width: 640px;
+		.mono {
+			font-family: "Roboto Mono", monospace;
+  			font-optical-sizing: auto;
+  			font-weight: normal;
+  			font-style: normal;
+  			font-size: 12px;
+  			letter-spacing: normal;
+		}
+
+		#status_header {
+			text-transform: uppercase;
+			font-weight: 500;
+		}
+
+		#input_field {
+			margin-left: 8px;
+			padding: 1px;
+			border: 1px solid var(--gray-medium);
+		}
+
+		#refresh {
+			font-size: 12px;
 		}
 	</style>
 </head>
 <body>
 	<div class="header">
-		<img src="logo.png" />
+		<img src="nap_tech_icon_white.svg" />
 		<h1>WebSocket Client Demo</h2>
-		<p id="status_header"></p>
 	</div>
 
 	<div class="input">
-		<label for="name">Send</label>
+		<p id="status_header"></p>
+		<label>Send</label>
 		<input type="text" id="input_field" name="name" size="30" oninput="doSend()" />
 	</div>
 
-	<p>Refresh page to reconnect</p>
-	<textarea name="message" id="textbox" rows="20"></textarea>
+	<div class="log">
+		<p id="refresh">Refresh page to reconnect</p>
+		<textarea name="message" id="textbox" class="mono" rows="20"></textarea>
+	</div>
 
-	<p>Server Request</p>
-	<pre id="request_p"></pre>
-
-	<p>Server Response</p>
-	<pre id="response_p"></pre>
+	<div class="return">
+		<p>Server Request</p>
+		<pre id="request_p" class="mono"></pre>
+		<p>Server Response</p>
+		<pre id="response_p" class="mono"></pre>
+	</div>
 </body>
 </html>

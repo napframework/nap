@@ -9,7 +9,7 @@
 
 using namespace std;
 
-RTTI_BEGIN_CLASS(nap::Entity)
+RTTI_BEGIN_CLASS(nap::Entity, "General purpose object")
 	RTTI_PROPERTY(nap::Entity::componentsPropertyName(), &nap::Entity::mComponents, nap::rtti::EPropertyMetaData::Embedded)
 	RTTI_PROPERTY(nap::Entity::childrenPropertyName(), &nap::Entity::mChildren, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
@@ -24,8 +24,7 @@ namespace nap
 {
 	EntityInstance::EntityInstance(Core& core, const Entity* entity) :
 		mCore(&core), mResource(entity)
-	{
-	}
+	{ }
 
 
 	bool EntityInstance::init(Scene& scene, EntityCreationParameters& entityCreationParams, utility::ErrorState& errorState)
@@ -189,5 +188,4 @@ namespace nap
 	{
 		return findComponent(type) != nullptr;
 	}
-
 }

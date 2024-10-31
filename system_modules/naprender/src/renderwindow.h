@@ -275,7 +275,7 @@ namespace nap
 		ERasterizationSamples	mRequestedSamples	= ERasterizationSamples::Four;		///< Property: 'Samples' The number of samples used during Rasterization. For even better results enable 'SampleShading'.
 		int						mAddedSwapImages	= 1;								///< Property: 'AdditionalSwapImages' number of additional swapchain images to create, added to minimum specified by hardware.
 		bool					mRestorePosition	= true;								///< Property: 'RestorePosition' if window position is restored from previous session
-		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session
+		bool					mRestoreSize		= true;								///< Property: 'RestoreSize' if window size is restored from previous session	
 
 	private:
 		RenderService*					mRenderService	= nullptr;
@@ -316,11 +316,6 @@ namespace nap
 		 * Ends the recording operation, submits the queue and asks for presentation.
 		 */
 		void endRecording();
-		
-		/**
-		 * Checks if the event is a window resize event and updates size accordingly.
-		 */
-		void handleEvent(const Event& event);
 
 		/**
 		 * Obtain the surface properties that are required for the creation of the swap chain 
@@ -350,5 +345,10 @@ namespace nap
 		 * @return if the swapchain extent is higher than zero in both axis
 		 */
 		bool validSwapchainExtent() const;
+
+		/**
+		 * Checks if the event is a window resize event and updates size accordingly.
+		 */
+		void handleEvent(const Event& event);
 	};
 }

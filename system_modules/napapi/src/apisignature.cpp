@@ -5,8 +5,8 @@
 #include "apisignature.h"
 
 // nap::apisignature run time class definition 
-RTTI_BEGIN_CLASS(nap::APISignature)
-	RTTI_PROPERTY("Arguments",  &nap::APISignature::mArguments, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded)
+RTTI_BEGIN_CLASS(nap::APISignature, "Interface of an API method")
+	RTTI_PROPERTY("Arguments",  &nap::APISignature::mArguments, nap::rtti::EPropertyMetaData::Default | nap::rtti::EPropertyMetaData::Embedded, "Method input argument values")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

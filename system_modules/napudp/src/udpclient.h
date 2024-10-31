@@ -60,7 +60,7 @@ namespace nap
 	protected:
         /**
          * Starts the UDP client and creates the socket
-         * @param error contains error information
+         * @param errorState contains error information
          * @return true on success
          */
         bool onStart(utility::ErrorState& errorState) override final;

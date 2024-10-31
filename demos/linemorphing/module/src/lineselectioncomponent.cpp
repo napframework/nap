@@ -10,7 +10,7 @@
 #include <entity.h>
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS(nap::LineSelectionComponent)
+RTTI_BEGIN_CLASS(nap::LineSelectionComponent, "Selection of lines to choose from")
 	RTTI_PROPERTY("Lines", &nap::LineSelectionComponent::mLines, nap::rtti::EPropertyMetaData::Required, "List of available poly lines")
 	RTTI_PROPERTY("Index", &nap::LineSelectionComponent::mIndex, nap::rtti::EPropertyMetaData::Required, "Initial line selection index")
 RTTI_END_CLASS

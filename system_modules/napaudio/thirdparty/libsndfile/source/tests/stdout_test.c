@@ -25,6 +25,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include <sndfile.h>
@@ -153,7 +155,7 @@ stdout_test	(int typemajor, int count)
 
 	while (total < count)
 	{	this_write = (count - total > 1024) ? 1024 : count - total ;
-		if ((k = sf_write_short (file, data + total, this_write)) != this_write)
+		if ((k = (int) sf_write_short (file, data + total, this_write)) != this_write)
 		{	fprintf (stderr, "sf_write_short # %d failed with short write (%d -> %d)\n", count, this_write, k) ;
 			exit (1) ;
 			} ;

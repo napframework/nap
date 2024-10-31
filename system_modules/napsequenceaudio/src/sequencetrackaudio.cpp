@@ -8,9 +8,8 @@
 // external includes
 #include <nap/resourceptr.h>
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackAudio)
+RTTI_BEGIN_CLASS(nap::SequenceTrackAudio, "Audio sequencer track")
 RTTI_END_CLASS
 
 namespace nap
-{
-}
+{ }

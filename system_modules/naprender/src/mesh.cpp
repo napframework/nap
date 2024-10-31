@@ -4,9 +4,9 @@
 
 // Local Includes
 #include "mesh.h"
-#include "meshutils.h"
 #include "renderservice.h"
 #include "gpubuffer.h"
+#include "meshutils.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>

@@ -23,6 +23,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include <string.h>
@@ -46,6 +48,7 @@ static void test_write_or_die	(SF_PRIVATE *psf, void *data, sf_count_t bytes, sf
 static void test_read_or_die	(SF_PRIVATE *psf, void *data, sf_count_t bytes, sf_count_t items, sf_count_t new_position, int linenum) ;
 static void test_equal_or_die	(int *array1, int *array2, int len, int linenum) ;
 static void test_seek_or_die (SF_PRIVATE *psf, sf_count_t offset, int whence, sf_count_t new_position, int linenum) ;
+static void test_tell_or_die	(SF_PRIVATE *psf, sf_count_t expected_position, int linenum) ;
 
 
 
@@ -70,7 +73,7 @@ file_open_test (const char *filename)
 		} ;
 
 	psf->file.mode = SFM_READ ;
-	snprintf (psf->file.path.c, sizeof (psf->file.path.c), "%s", filename) ;
+	snprintf (psf->file.path, sizeof (psf->file.path), "%s", filename) ;
 
 	/* Test that open for read fails if the file doesn't exist. */
 	error = psf_fopen (psf) ;
@@ -88,7 +91,7 @@ file_open_test (const char *filename)
 
 	test_close_or_die (psf, __LINE__) ;
 
-	unlink (psf->file.path.c) ;
+	unlink (psf->file.path) ;
 
 	/* Test file open in read/write mode for a non-existant file. */
 	psf->file.mode = SFM_RDWR ;
@@ -102,7 +105,7 @@ file_open_test (const char *filename)
 
 	test_close_or_die (psf, __LINE__) ;
 
-	unlink (psf->file.path.c) ;
+	unlink (psf->file.path) ;
 	puts ("ok") ;
 } /* file_open_test */
 
@@ -123,7 +126,7 @@ file_read_write_test (const char *filename)
 
 	memset (&sf_data, 0, sizeof (sf_data)) ;
 	psf = &sf_data ;
-	snprintf (psf->file.path.c, sizeof (psf->file.path.c), "%s", filename) ;
+	snprintf (psf->file.path, sizeof (psf->file.path), "%s", filename) ;
 
 	/* Test file open in write mode. */
 	psf->file.mode = SFM_WRITE ;
@@ -279,7 +282,7 @@ file_truncate_test (const char *filename)
 	memset (buffer, 0xEE, sizeof (buffer)) ;
 
 	psf = &sf_data ;
-	snprintf (psf->file.path.c, sizeof (psf->file.path.c), "%s", filename) ;
+	snprintf (psf->file.path, sizeof (psf->file.path), "%s", filename) ;
 
 	/*
 	** Open the file write mode, write 0xEE data and then extend the file
@@ -299,13 +302,13 @@ file_truncate_test (const char *filename)
 
 	for (k = 0 ; k < SIGNED_SIZEOF (buffer) / 2 ; k++)
 		if (buffer [k] != 0xEE)
-		{	printf ("\n\nLine %d : buffer [%d] = %d (should be 0xEE)\n\n", __LINE__, k, buffer [k]) ;
+		{	printf ("\n\nLine %d : buffer [%d] = %hhu (should be 0xEE)\n\n", __LINE__, k, buffer [k]) ;
 			exit (1) ;
 			} ;
 
 	for (k = SIGNED_SIZEOF (buffer) / 2 ; k < SIGNED_SIZEOF (buffer) ; k++)
 		if (buffer [k] != 0)
-		{	printf ("\n\nLine %d : buffer [%d] = %d (should be 0)\n\n", __LINE__, k, buffer [k]) ;
+		{	printf ("\n\nLine %d : buffer [%d] = %hhu (should be 0)\n\n", __LINE__, k, buffer [k]) ;
 			exit (1) ;
 			} ;
 
@@ -323,6 +326,42 @@ file_truncate_test (const char *filename)
 
 	puts ("ok") ;
 } /* file_truncate_test */
+
+static void
+file_seek_with_offset_test (const char *filename)
+{	SF_PRIVATE sf_data, *psf ;
+	sf_count_t real_end ;
+	const size_t fileoffset = 64 ;
+
+	print_test_name ("Testing seek with offset") ;
+
+	/* Open the file created by the previous test for reading. */
+	memset (&sf_data, 0, sizeof (sf_data)) ;
+	psf = &sf_data ;
+	psf->file.mode = SFM_READ ;
+	snprintf (psf->file.path, sizeof (psf->file.path), "%s", filename) ;
+	test_open_or_die (psf, __LINE__) ;
+
+	/* Gather basic info before setting offset. */
+	real_end = psf_fseek (psf, 0, SEEK_END) ;
+	test_tell_or_die (psf, real_end, __LINE__) ;
+
+	/* Set the fileoffset (usually in a real system this is due to an id3 tag). */
+	psf->fileoffset = fileoffset ;
+
+	/* Check tell respects offset. */
+	test_tell_or_die (psf, real_end - fileoffset, __LINE__) ;
+
+	/* Check seeking works as expected. */
+	test_seek_or_die (psf, 0, SEEK_SET, 0, __LINE__) ;
+	test_seek_or_die (psf, 0, SEEK_CUR, 0, __LINE__) ;
+	test_seek_or_die (psf, 0, SEEK_CUR, 0, __LINE__) ;
+	test_seek_or_die (psf, 0, SEEK_END, real_end - fileoffset, __LINE__) ;
+
+	test_close_or_die (psf, __LINE__) ;
+
+	puts ("ok") ;
+} /* file_seek_with_offset_test */
 
 /*==============================================================================
 ** Testing helper functions.
@@ -403,6 +442,20 @@ test_seek_or_die (SF_PRIVATE *psf, sf_count_t offset, int whence, sf_count_t new
 } /* test_seek_or_die */
 
 static void
+test_tell_or_die	(SF_PRIVATE *psf, sf_count_t expected_position, int linenum)
+{
+	sf_count_t retval ;
+
+	retval = psf_ftell (psf) ;
+
+	if (retval != expected_position)
+	{	printf ("\n\nLine %d: psf_ftell() failed. Position reported as %" PRId64 " (should be %" PRId64 ").\n\n",
+			linenum, retval, expected_position) ;
+		exit (1) ;
+		} ;
+}
+
+static void
 test_equal_or_die	(int *array1, int *array2, int len, int linenum)
 {	int k ;
 
@@ -431,6 +484,7 @@ test_file_io (void)
 
 	file_open_test	(filename) ;
 	file_read_write_test	(filename) ;
+	file_seek_with_offset_test (filename) ;
 	file_truncate_test (filename) ;
 
 	unlink (filename) ;

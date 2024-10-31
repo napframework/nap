@@ -151,14 +151,7 @@ int main(int argc, char* argv[])
 	// nap::Core is declared in AppContext
 	QApplication::setOrganizationName("nap-labs");
 	QApplication::setApplicationName("napkin");
-	QApplication::setApplicationVersion("0.5");
-	QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-	QCoreApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
-	// Set scale factor policy using environment variable instead of in code.
-	// Allows editor to scale using fractional scaling values in Qt 5.14+ whilst 
-	// maintaining compatibility with older versions of Qt (< 5.14)
-	napkin::setEnv("QT_SCALE_FACTOR_ROUNDING_POLICY", "PassThrough");
+	QApplication::setApplicationVersion("0.8");
 
 	// Configure settings
 	initializeSettings();
@@ -185,11 +178,16 @@ int main(int argc, char* argv[])
 	// Handle command line instructions
 	bool exit_after_load = parseCommandline(app, ctx);
 
-	// Create main window and show, this loads a project if set
+	// Create main window and show -> loads a project if set
+	// Disable font hinting -> doesn't do font rendering any good
 	app.setWindowIcon(QIcon(napkin::QRC_ICONS_NAP_ICON));
 	std::unique_ptr<napkin::MainWindow> w = std::make_unique<napkin::MainWindow>();
+	QFont applied_font = w->font();
+	applied_font.setHintingPreference(QFont::PreferNoHinting);
+	w->setFont(applied_font);
 	w->show();
 	splash.finish(w.get());
+
 
 	// Initialize return code.
 	// Informs the test environment if the NAP project loaded successfully.

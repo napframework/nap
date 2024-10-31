@@ -6,6 +6,7 @@
 
 // Local Includes
 #include "samplerdeclaration.h"
+#include "materialcommon.h"
 
 // External Includes
 #include <rtti/objectptr.h>
@@ -17,6 +18,7 @@ namespace nap
 {
 	// Forward Declares
 	class Texture2D;
+	class TextureCube;
 	class SamplerInstance;
 	class RenderService;
 
@@ -34,6 +36,7 @@ namespace nap
 		Nearest = 0,				///< Nearest sampling
 		Linear						///< Linear sampling
 	};
+
 
 	/**
 	 *	Supported sampler wrap modes
@@ -59,6 +62,20 @@ namespace nap
 	};
 
 
+	/**
+	 * Supported predefined sampler border colors
+	 */
+	enum class EBorderColor : uint32
+	{
+		FloatTransparentBlack = 0,	///< Float transparent black
+		IntTransparentBlack,		///< Integer transparent black
+		FloatOpaqueBlack,			///< Float opaque black
+		IntOpaqueBlack,				///< Integer opaque black, sampler default
+		FloatOpaqueWhite,			///< Float opaque white
+		IntOpaqueWhite				///< Integer opaque white
+	};
+
+
 	//////////////////////////////////////////////////////////////////////////
 	// Sampler
 	//////////////////////////////////////////////////////////////////////////
@@ -77,8 +94,13 @@ namespace nap
 		EFilterMode			mMaxFilter				= EFilterMode::Linear;					///< Property: 'MaxFilter' maximizing filter	
 		EFilterMode			mMipMapMode				= EFilterMode::Linear;					///< Property: 'MipMapMode' mip map mode
 		EAddressMode		mAddressModeVertical	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeVertical' vertical address mode
-		EAddressMode		mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal'	horizontal address mode
+		EAddressMode		mAddressModeHorizontal	= EAddressMode::ClampToEdge;			///< Property: 'AddressModeHorizontal' horizontal address mode
 		EAnisotropicSamples	mMaxAnisotropy			= EAnisotropicSamples::Default;			///< Property: 'AnisotropicSamples' max number of anisotropic filter samples
+		EBorderColor		mBorderColor			= EBorderColor::IntOpaqueBlack;			///< Property: 'BorderColor' border color used for texture lookups
+		EDepthCompareMode	mCompareMode			= EDepthCompareMode::LessOrEqual;		///< Property: 'DepthCompareMode' specifies the comparison operator to apply to sampled data
+		bool				mEnableCompare			= false;								///< Property: 'EnableCompare' enables texture compare operations for this sampler
+		float				mLodBias				= 0.0f;									///< Property: 'LodBias' bias value that is added to the LOD level
+		uint32				mMinLodLevel			= 0;									///< Property: 'MinLodLevel' minimum considered LOD, > 0 = exclude highest lod
 		uint32				mMaxLodLevel			= 1000;									///< Property: 'MaxLodLevel' max number of considered LODs, 0 = only consider highest lod
 	};
 
@@ -101,7 +123,29 @@ namespace nap
 		RTTI_ENABLE(Sampler)
 	public:
 		Sampler2D() = default;
-		rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Property: 'Texture' the texture to bind
+		mutable rtti::ObjectPtr<Texture2D> mTexture = nullptr;		///< Property: 'Texture' the texture to bind
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCube
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Cube sampler resource. Assigns a single 2D texture to a shader.
+	 * Applies filtering and transformations to compute the final color that is retrieved from a texture.
+	 * myshader.frag example:
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform samplerCube inTexture;		//< Texture
+	 * ~~~~~
+	 */
+	class NAPAPI SamplerCube : public Sampler
+	{
+		RTTI_ENABLE(Sampler)
+	public:
+		SamplerCube() = default;
+		mutable rtti::ObjectPtr<TextureCube> mTextureCube;			///< Property: 'Texture' the texture to bind
 	};
 
 
@@ -118,12 +162,16 @@ namespace nap
 
 	public:
 		/**
-		* Retrieve the number of elements in this array
-		* @return The number of elements in this array
-		*/
+		 * Retrieve the number of elements in this array
+		 * @return The number of elements in this array
+		 */
 		virtual int getNumElements() const = 0;
 	};
 
+
+	//////////////////////////////////////////////////////////////////////////
+	// Sampler2DArray
+	//////////////////////////////////////////////////////////////////////////
 
 	/**
 	 * 2D sampler array resource. Assigns multiple textures to a shader as an array.
@@ -149,5 +197,36 @@ namespace nap
 		virtual int getNumElements() const override				{ return mTextures.size(); }
 
 		std::vector<rtti::ObjectPtr<Texture2D>> mTextures;		///< Property: 'Textures' textures to bind, must be of the same length as the shader declaration.
+	};
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeArray
+	//////////////////////////////////////////////////////////////////////////
+
+	/**
+	 * Cube sampler array resource. Assigns multiple textures to a shader as an array.
+	 * Note that number of textures must match the number of inputs on the shader.
+	 * myshader.frag example:
+	 *
+	 * ~~~~~{.cpp}
+	 * uniform samplerCube textures[20];		//< array of 20 textures
+	 * ~~~~~
+	 */
+	class NAPAPI SamplerCubeArray : public SamplerArray
+	{
+		RTTI_ENABLE(SamplerArray)
+	public:
+
+		SamplerCubeArray() = default;
+		SamplerCubeArray(int inSize) :
+			mTextures(inSize) { }
+
+		/**
+		 * @return The number of elements in this array
+		 */
+		virtual int getNumElements() const override { return mTextures.size(); }
+
+		std::vector<rtti::ObjectPtr<TextureCube>> mTextures;	///< Property: 'Textures' textures to bind, must be of the same length as the shader declaration.
 	};
 }

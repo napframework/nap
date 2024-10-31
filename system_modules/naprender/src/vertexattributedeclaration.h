@@ -15,7 +15,7 @@ namespace nap
 	/**
 	* Represents an Vulkan vertex shader attribute
 	*/
-	class VertexAttributeDeclaration
+	class VertexAttributeDeclaration final
 	{
 	public:
 		// Constructor

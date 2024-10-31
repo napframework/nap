@@ -1,0 +1,14 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+// NAP Shader include file
+
+// Material structs
+struct BlinnPhongMaterial
+{
+	vec3	ambient;				//< Ambient
+	vec3	diffuse;				//< Diffuse
+	vec3	specular;				//< Specular
+	float	shininess;				//< Shininess
+};

@@ -190,3 +190,12 @@ nap::qt::StringModel::StringModel(Entries&& items)
 		appendRow(new Item(std::move(item)));
 	}
 }
+
+
+void nap::qt::StringModel::sort(Entries& ioEntries, bool reverseSort)
+{
+	std::sort(ioEntries.begin(), ioEntries.end(), [reverseSort](const auto& a, const auto& b)
+		{
+			return reverseSort ? b.mText < a.mText : a.mText < b.mText;
+		});
+}

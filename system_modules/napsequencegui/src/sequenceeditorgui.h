@@ -53,12 +53,10 @@ namespace nap
          */
         virtual void show(bool newWindow = true);
 
-
         /**
          * @return sequence editor gui service
          */
         SequenceGUIService& getService() { return mService; }
-
 
         // properties
         ResourcePtr<RenderWindow> mRenderWindow = nullptr;
@@ -85,6 +83,7 @@ namespace nap
     public:
         /**
          * Constructor
+         * @param service sequence gui service handle
          * @param editor reference to editor
          * @param id id of the GUI resource, used to push ID by IMGUI
          * @param renderWindow the render window
@@ -133,8 +132,8 @@ namespace nap
 
         /**
          * Draw lines of markers
-         * @param sequencePlayer reference to sequenceplayer
          * @param sequence reference to sequence
+         * @param player reference to sequenceplayer
          */
         void drawMarkerLines(const Sequence& sequence, SequencePlayer& player) const;
 
@@ -204,6 +203,21 @@ namespace nap
         void handleSaveClipboardPopup();
 
         /**
+         * undo last action
+         */
+        void handleUndo();
+
+        /*
+         * redo last action
+         */
+        void handleRedo();
+
+        /**
+         * history popup
+         */
+        void handleHistoryPopup();
+
+        /**
          * registers handlers for actions
          * @param actionType the action type to register a handler function for
          * @param action the handler function
@@ -211,6 +225,8 @@ namespace nap
         void registerActionHandler(const rttr::type& actionType, const std::function<void()>& action);
 
     protected:
+        void handleHotKeys();
+
         void registerActionHandlers();
 
         // reference to editor

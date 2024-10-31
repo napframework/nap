@@ -44,6 +44,9 @@ namespace nap
                 assert(isAction<T>());
                 return static_cast<T *>(this);
             }
+
+            // bool that tells the gui to take a snapshot of the current state
+            bool mTakeSnapshot = true;
         };
 
         // shortcut to unique ptr of action class
@@ -90,7 +93,6 @@ namespace nap
             explicit TrackAction(std::string trackID) : mTrackID(std::move(trackID))
             {}
 
-
             std::string mTrackID;
         };
 
@@ -106,14 +108,17 @@ namespace nap
              * Constructor
              * @param trackId trackID of segment being dragged
              * @param segmentID segmentID of segment being dragged
+             * @param newDuration segment duration
+             * @param moveNextSegments if true, move next segments according to new duration
              */
-            DraggingSegment(std::string trackId, std::string segmentID, double newDuration)
-                : TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mNewDuration(newDuration)
+            DraggingSegment(std::string trackId, std::string segmentID, double newDuration, bool moveNextSegments)
+                : TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mNewDuration(newDuration), mMoveNextSegments(moveNextSegments)
             {}
 
 
             std::string mSegmentID;
             double mNewDuration;
+            bool mMoveNextSegments = false;
         };
 
 
@@ -128,14 +133,17 @@ namespace nap
             * Constructor
             * @param trackId id of track being dragged
             * @param segmentID id of segment being dragged
+            * @param startDuration drag start point
+            * @param moveNextSegments if true, move next segments according to new duration
             */
-            StartDraggingSegment(std::string trackId, std::string segmentID, double startDuration)
-                : TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mStartDuration(startDuration)
+            StartDraggingSegment(std::string trackId, std::string segmentID, double startDuration, bool moveNextSegments)
+                : TrackAction(std::move(trackId)), mSegmentID(std::move(segmentID)), mStartDuration(startDuration), mMoveNextSegments(moveNextSegments)
             {}
 
 
             std::string mSegmentID;
             double mStartDuration;
+            bool mMoveNextSegments = false;
         };
 
 
@@ -451,7 +459,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              */
             HoveringTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId))
             {}
@@ -466,7 +474,7 @@ namespace nap
         public:
             /**
              * Constructor
-             * @param trackID track id of the track holding the segment being edited
+             * @param trackId track id of the track holding the segment being edited
              */
             DraggingTrackExtensionHandler(std::string trackId) : TrackAction(std::move(trackId))
             {}
@@ -509,8 +517,8 @@ namespace nap
         };
 
         /**
-        *
-        */
+         * Track Options Popup
+         */
         class TrackOptionsPopup : public TrackAction
         {
         RTTI_ENABLE(TrackAction)
@@ -525,6 +533,43 @@ namespace nap
             ImVec2 mPos;
             // scroll at the moment of opening, popup closes when the user scrolls within the sequence editor gui
             float mScrollY = 0.0f;
+        };
+
+
+        /**
+         * Action that tells the gui to open history popup
+         */
+        class NAPAPI OpenHistoryPopup : public Action
+        {
+        RTTI_ENABLE(Action)
+        };
+
+        /**
+         * Action that tells the gui its inside the history popup
+         */
+        class NAPAPI SelectHistoryPopup : public Action
+        {
+        RTTI_ENABLE(Action)
+        };
+
+        /**
+         * Action that tells the gui to perform an undo
+         */
+        class PerformUndo : public Action
+        {
+        RTTI_ENABLE(Action)
+        public:
+            PerformUndo(){}
+        };
+
+        /**
+         * Action that tells the gui to perform a redo
+         */
+        class PerformRedo : public Action
+        {
+        RTTI_ENABLE(Action)
+        public:
+            PerformRedo(){}
         };
     }
 }

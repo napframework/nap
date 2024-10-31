@@ -34,7 +34,7 @@ namespace nap
 		 *
 		 * @param value The value to set
 		 */
-		void setValue(T value);
+		virtual void setValue(T value);
 
 		/**
 		 * Sets the min/max range of this parameter to the specified values.
@@ -60,6 +60,7 @@ namespace nap
 
 	using ParameterFloat	= ParameterNumeric<float>;
 	using ParameterInt		= ParameterNumeric<int>;
+	using ParameterUInt		= ParameterNumeric<uint>;
 	using ParameterByte		= ParameterNumeric<uint8_t>;
 	using ParameterDouble	= ParameterNumeric<double>;
 	using ParameterLong		= ParameterNumeric<int64_t>;
@@ -100,7 +101,7 @@ namespace nap
 }
 
 /**
- * Helper macro that can be used to define the RTTI for a numeric (vector) parameter type
+ * Helper macro that can be used to define the RTTI for a numeric parameter type
  */
 #define DEFINE_NUMERIC_PARAMETER(Type)																		\
 	RTTI_BEGIN_CLASS(Type)																					\

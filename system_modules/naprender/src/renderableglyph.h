@@ -6,7 +6,7 @@
 
 // External Includes
 #include <glyph.h>
-#include <texture2d.h>
+#include <texture.h>
 
 namespace nap
 {

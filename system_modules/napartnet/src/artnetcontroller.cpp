@@ -21,25 +21,24 @@ RTTI_BEGIN_ENUM(nap::EArtnetMode)
 	RTTI_ENUM_VALUE(nap::EArtnetMode::Unicast,	 "Unicast")
 RTTI_END_ENUM
 
-RTTI_BEGIN_CLASS(nap::ArtNetController)
-	RTTI_PROPERTY("Subnet",			&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Universe",		&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("IP Address",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("WaitTime",		&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Frequency",		&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Mode",			&nap::ArtNetController::mMode,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("UnicastLimit",	&nap::ArtNetController::mUnicastLimit,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Verbose",		&nap::ArtNetController::mVerbose,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Timeout",		&nap::ArtNetController::mReadTimeout,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("ChannelCount",	&nap::ArtNetController::mChannelCount,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ArtNetController, "ArtNet controller node")
+	RTTI_PROPERTY("Subnet",			&nap::ArtNetController::mSubnet,			nap::rtti::EPropertyMetaData::Required, "Artnet subnet, 0 to 15")
+	RTTI_PROPERTY("Universe",		&nap::ArtNetController::mUniverse,			nap::rtti::EPropertyMetaData::Required, "Artnet universe, 0 to 15")
+	RTTI_PROPERTY("IP Address",		&nap::ArtNetController::mIpAddress,			nap::rtti::EPropertyMetaData::Default,	"Controller IP Address, when empty the first available ethernet adapter is chosen")
+	RTTI_PROPERTY("WaitTime",		&nap::ArtNetController::mWaitTime,			nap::rtti::EPropertyMetaData::Default,	"Number of seconds before the control data is sent, regardless of changes")
+	RTTI_PROPERTY("Frequency",		&nap::ArtNetController::mUpdateFrequency,	nap::rtti::EPropertyMetaData::Default,	"Refresh rate, the default is 44hz (Artnet max)")
+	RTTI_PROPERTY("Mode",			&nap::ArtNetController::mMode,				nap::rtti::EPropertyMetaData::Default,	"Node message mode, Broadcast or Unicast")
+	RTTI_PROPERTY("UnicastLimit",	&nap::ArtNetController::mUnicastLimit,		nap::rtti::EPropertyMetaData::Default,	"Allowed number of unicast nodes before switching to broadcast mode")
+	RTTI_PROPERTY("Verbose",		&nap::ArtNetController::mVerbose,			nap::rtti::EPropertyMetaData::Default,	"Print Artnet network traffic information to the console")
+	RTTI_PROPERTY("Timeout",		&nap::ArtNetController::mReadTimeout,		nap::rtti::EPropertyMetaData::Default,	"Poll node network read timeout in seconds, only used when mode is set to Unicast")
+	RTTI_PROPERTY("ChannelCount",	&nap::ArtNetController::mChannelCount,		nap::rtti::EPropertyMetaData::Default,	"The amount of channels sent with each data packet, must be between 2 and 512")
 RTTI_END_CLASS
 
 namespace nap
 {
 	ArtNetController::ArtNetController(ArtNetService& service) :
 		mService(&service)
-	{
-	}
+	{ }
  
 
 	bool ArtNetController::start(nap::utility::ErrorState& errorState)

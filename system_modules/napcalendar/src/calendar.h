@@ -19,12 +19,12 @@ namespace nap
 {
 	class CalendarInstance;
 	using CalendarItemList = std::vector<nap::ResourcePtr<CalendarItem>>;
-	inline constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
+	constexpr const char* calendarDirectory = "calendar";		///< Directory where all calendars are stored
 
 	/**
 	 * Base class of all Calendar types.
 	 * Acts as an interface to the underlying calendar instance.
-	 * Every derived class must create and return a calendar instance. 
+	 * Every derived class must create and return a calendar instance.
 	 * Use the nap::CalendarComponent to receive a notification when an event starts and ends.
 	 */
 	class NAPAPI ICalendar : public Resource
@@ -57,9 +57,9 @@ namespace nap
 	/**
 	 * Simple serializable calendar resource that manages a set of calendar items.
 	 * Call getInstance() to inspect, create, load and save the calendar.
-	 * 
+	 *
 	 * The instance is created on initialization and is constructed using the
-	 * set of 'Items' defined by this resource. If a calendar with the same ID 
+	 * set of 'Items' defined by this resource. If a calendar with the same ID
 	 * exists on disk (saved previously) it is loaded instead.
 	 *
 	 * Use the nap::CalendarComponent to receive a notification when an event starts and ends.
@@ -164,13 +164,11 @@ namespace nap
 		void getItems(std::vector<T*>& outItems) const;
 
 		/**
-		 * Adds an item to this calendar. 
+		 * Adds an item to this calendar.
 		 * This call does not initialize the item for you.
 		 * The new item must be initialized and valid.
 		 * Ownership is transferred.
 		 * @param item the item to add
-		 * @param error contains the error if initialization fails
-		 * @return if the item is added
 		 */
 		void addItem(std::unique_ptr<CalendarItem> item);
 
@@ -204,7 +202,7 @@ namespace nap
 
 		/**
 		 * Find a calendar item by ID
-		 * @param calendar item unique ID
+		 * @param id item unique ID
 		 * @return calendar item if found, nullptr otherwise
 		 */
 		CalendarItem* findByID(const std::string& id);
@@ -216,15 +214,15 @@ namespace nap
 		 *	UniqueCalendarItem* item = calendar.findItem<UniqueCalendarItem>("9032091")
 		 * ~~~~~
 		 *
-		 * @param calendar item unique ID
+		 * @param id item unique ID
 		 * @return calendar item of type T if found, nullptr otherwise
 		 */
 		template<typename T>
 		T* findByID(const std::string& id)						{ return rtti_cast<T>(this->findByID(id)); }
-		
+
 		/**
 		 * Find a calendar item by title, case sensitive.
-		 * @param calendar item title
+		 * @param title item title
 		 * @return calendar item if found, nullptr otherwise
 		 */
 		CalendarItem* findByTitle(const std::string& title);
@@ -236,7 +234,7 @@ namespace nap
 		 *	UniqueCalendarItem* item = calendar.findItem<UniqueCalendarItem>("birthday")
 		 * ~~~~~
 		 *
-		 * @param calendar item title
+		 * @param title item title
 		 * @return calendar item of type T if found, nullptr otherwise
 		 */
 		template<typename T>

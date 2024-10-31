@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2016 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -134,7 +134,7 @@ svx_read_header	(SF_PRIVATE *psf)
 	int				filetype = 0, parsestage = 0, done = 0 ;
 	int 			bytecount = 0, channels ;
 
-	if (psf->filelength > SF_PLATFORM_S64 (0xffffffff))
+	if (psf->filelength > 0xFFFFFFFFLL)
 		psf_log_printf (psf, "Warning : filelength > 0xffffffff. This is bad!!!!\n") ;
 
 	memset (&vhdr, 0, sizeof (vhdr)) ;
@@ -240,12 +240,12 @@ svx_read_header	(SF_PRIVATE *psf)
 
 					psf_log_printf (psf, " %M : %u\n", marker, chunk_size) ;
 
-					if (strlen (psf->file.name.c) != chunk_size)
-					{	if (chunk_size > sizeof (psf->file.name.c) - 1)
+					if (strlen (psf->file.name) != chunk_size)
+					{	if (chunk_size > sizeof (psf->file.name) - 1)
 							return SFE_SVX_BAD_NAME_LENGTH ;
 
-						psf_binheader_readf (psf, "b", psf->file.name.c, chunk_size) ;
-						psf->file.name.c [chunk_size] = 0 ;
+						psf_binheader_readf (psf, "b", psf->file.name, chunk_size) ;
+						psf->file.name [chunk_size] = 0 ;
 						}
 					else
 						psf_binheader_readf (psf, "j", chunk_size) ;
@@ -307,7 +307,8 @@ svx_read_header	(SF_PRIVATE *psf)
 					if ((chunk_size = psf_ftell (psf)) & 0x03)
 					{	psf_log_printf (psf, "  Unknown chunk marker at position %d. Resynching.\n", chunk_size - 4) ;
 
-						psf_binheader_readf (psf, "j", -3) ;
+						chunk_size = chunk_size & 3 ;
+						psf_binheader_readf (psf, "j", 4 - chunk_size) ;
 						break ;
 						} ;
 					psf_log_printf (psf, "*** Unknown chunk marker (%X) at position %D. Exiting parser.\n", marker, psf_ftell (psf) - 8) ;
@@ -362,29 +363,29 @@ svx_write_header (SF_PRIVATE *psf, int calc_length)
 	psf_fseek (psf, 0, SEEK_SET) ;
 
 	/* FORM marker and FORM size. */
-	psf_binheader_writef (psf, "Etm8", FORM_MARKER, (psf->filelength < 8) ?
-			psf->filelength * 0 : psf->filelength - 8) ;
+	psf_binheader_writef (psf, "Etm8", BHWm (FORM_MARKER), BHW8 ((psf->filelength < 8) ?
+			psf->filelength * 0 : psf->filelength - 8)) ;
 
-	psf_binheader_writef (psf, "m", (psf->bytewidth == 1) ? SVX8_MARKER : SV16_MARKER) ;
+	psf_binheader_writef (psf, "m", BHWm ((psf->bytewidth == 1) ? SVX8_MARKER : SV16_MARKER)) ;
 
 	/* VHDR chunk. */
-	psf_binheader_writef (psf, "Em4", VHDR_MARKER, sizeof (VHDR_CHUNK)) ;
+	psf_binheader_writef (psf, "Em4", BHWm (VHDR_MARKER), BHW4 (sizeof (VHDR_CHUNK))) ;
 	/* VHDR : oneShotHiSamples, repeatHiSamples, samplesPerHiCycle */
-	psf_binheader_writef (psf, "E444", psf->sf.frames, 0, 0) ;
+	psf_binheader_writef (psf, "E444", BHW4 (psf->sf.frames), BHW4 (0), BHW4 (0)) ;
 	/* VHDR : samplesPerSec, octave, compression */
-	psf_binheader_writef (psf, "E211", psf->sf.samplerate, 1, 0) ;
+	psf_binheader_writef (psf, "E211", BHW2 (psf->sf.samplerate), BHW1 (1), BHW1 (0)) ;
 	/* VHDR : volume */
-	psf_binheader_writef (psf, "E4", (psf->bytewidth == 1) ? 0xFF : 0xFFFF) ;
+	psf_binheader_writef (psf, "E4", BHW4 ((psf->bytewidth == 1) ? 0xFF : 0xFFFF)) ;
 
 	if (psf->sf.channels == 2)
-		psf_binheader_writef (psf, "Em44", CHAN_MARKER, 4, 6) ;
+		psf_binheader_writef (psf, "Em44", BHWm (CHAN_MARKER), BHW4 (4), BHW4 (6)) ;
 
 	/* Filename and annotation strings. */
-	psf_binheader_writef (psf, "Emsms", NAME_MARKER, psf->file.name.c, ANNO_MARKER, annotation) ;
+	psf_binheader_writef (psf, "Emsms", BHWm (NAME_MARKER), BHWs (psf->file.name), BHWm (ANNO_MARKER), BHWs (annotation)) ;
 
 	/* BODY marker and size. */
-	psf_binheader_writef (psf, "Etm8", BODY_MARKER, (psf->datalength < 0) ?
-			psf->datalength * 0 : psf->datalength) ;
+	psf_binheader_writef (psf, "Etm8", BHWm (BODY_MARKER), BHW8 ((psf->datalength < 0) ?
+			psf->datalength * 0 : psf->datalength)) ;
 
 	psf_fwrite (psf->header.ptr, psf->header.indx, 1, psf) ;
 

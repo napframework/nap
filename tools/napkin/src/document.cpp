@@ -17,15 +17,19 @@
 #include <nap/timer.h>
 #include <entityptr.h>
 #include <componentptr.h>
+#include <materialinstance.h>
 
 using namespace napkin;
 using namespace nap::rtti;
 
 namespace id
 {
-	static constexpr const char separator = '_';
-	static constexpr const int count = 6;
-	static constexpr const int ssize = count + 2;
+	static constexpr char slash = '/';
+	static constexpr char child = ':';
+	static constexpr char uuids = '_';
+	static constexpr int count = 6;
+	static constexpr int ssize = count + 2;
+	static constexpr std::array<char, 8> invalid = { slash,child,'.','[',']',',','\\',';' };
 }
 
 
@@ -211,6 +215,11 @@ nap::IGroup* napkin::Document::getGroup(const nap::rtti::Object& object, int& ou
 
 void napkin::Document::patchLinks(const std::string& oldID, const std::string& newID)
 {
+#ifndef NDEBUG
+	for (const auto c : id::invalid)
+		assert(newID.find(c) == std::string::npos);
+#endif // !NDEBUG
+
 	// Iterate over the properties of a component or component ptr override.
 	// Find component and entity pointers that reference the old object and patch accordingly.
 	auto objects = getObjects({ RTTI_OF(nap::Component), RTTI_OF(nap::ComponentPtrInstancePropertyValue), RTTI_OF(nap::Scene) });
@@ -231,9 +240,17 @@ void napkin::Document::patchLinks(const std::string& oldID, const std::string& n
 
 nap::rtti::Object* napkin::Document::duplicateObject(const nap::rtti::Object& src, const PropertyPath& parent)
 {
-	// Duplicate and add object
+	// Deep copy object and all child properties
 	auto* parent_obj = parent.getObject();
-	auto* duplicate = duplicateObject(src, parent_obj); assert(duplicate != nullptr);
+	auto duplicate_instance = deepCopyInstance(&src, parent_obj);
+	if (!duplicate_instance.is_valid())
+		return nullptr;
+
+	// Extract object
+	assert(duplicate_instance.get_type().is_pointer());
+	assert(duplicate_instance.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
+	auto duplicate = duplicate_instance.convert<nap::rtti::Object*>();
+	assert(duplicate != nullptr);
 
 	// Add duplicate to parent
 	if (duplicate != nullptr && parent_obj != nullptr)
@@ -307,13 +324,24 @@ void napkin::Document::patchLinks(nap::rtti::Object* object, const std::string& 
 	auto index = object_path.find(oldID);
 	while (index != std::string::npos)
 	{
-		auto end_index = index + oldID.size();
-		if (end_index >= object_path.size() ||
-			object_path[end_index] == '/' ||
-			object_path[end_index] == ':')
-			break;
+		// When not at the beginning, ensure previous character is path separator
+		if (index > 0 && object_path[index - 1] != id::slash)
+		{
+			// Keep searching
+			index = object_path.find(oldID, index + oldID.size());
+			continue;
+		}
 
-		index = object_path.find(oldID, index + 1);
+		// When not at the end, ensure next character is child or path separator
+		auto end_idx = index + oldID.size();
+		if (end_idx < object_path.size() &&
+			object_path[end_idx] != id::slash && object_path[end_idx] != id::child)
+		{
+			// Keep searching
+			index = object_path.find(oldID, end_idx);
+			continue;
+		}
+		break;
 	}
 
 	// No match
@@ -352,7 +380,17 @@ const std::string& Document::setObjectName(nap::rtti::Object& object, const std:
 	if (name.empty())
 		return object.mID;
 
-	// Get name
+	// Ensure name doesn't include invalid characters
+	for (const auto c : id::invalid)
+	{
+		if (name.find(c) != std::string::npos)
+		{
+			nap::Logger::error("Unsupported character '%c' in new name: %s", c, name.c_str());
+			return object.mID;
+		}
+	}
+
+	// Ensure name is unique
 	auto new_name = getUniqueID(name, object, appenUUID);
 	if (new_name == object.mID)
 		return object.mID;
@@ -467,8 +505,8 @@ std::string Document::getUniqueID(const std::string& suggestedName, const nap::r
 	while (scene_object != nullptr && scene_object != &object)
 	{
 		object_id = useUUID ?
-			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::separator, createUUID().c_str()) :
-			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::separator, i++);
+			nap::utility::stringFormat("%s%c%s", suggestedName.c_str(), id::uuids, createUUID().c_str()) :
+			nap::utility::stringFormat("%s%c%02d", suggestedName.c_str(), id::uuids, i++);
 		scene_object = getObject(object_id);
 	}
 	return object_id;
@@ -1083,28 +1121,96 @@ void napkin::Document::reparentObject(nap::rtti::Object& object, const PropertyP
 }
 
 
-nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::rtti::Object* parent)
+/**
+ * Different types of embedded properties
+ */
+enum class EPropertyType : nap::uint8
 {
-	// Make sure we can create the object
-	Factory& factory = mCore.getResourceManager()->getFactory();
-	if (!factory.canCreate(src.get_type()))
+	None					= 0,		///< Regular property
+	EmbeddedPointer			= 1,		///< Embedded pointer object
+	EmbeddedPointerArray	= 2,		///< List of embedded pointer objects
+	NestedEmbeddedPointer	= 3			///< Compound with nested embedded pointer (very unusual)
+};
+
+
+/**
+ * Returns the deep copy property type
+ */
+static EPropertyType getPropertyType(const nap::rtti::Property& property)
+{
+	// Embedded object
+	if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
 	{
-		nap::Logger::error("Cannot create object of type: %s", src.get_type().get_name().data());
-		return nullptr;
+		return property.is_array() ?
+			EPropertyType::EmbeddedPointerArray : EPropertyType::EmbeddedPointer;
 	}
 
-	// Create the object
-	nap::rtti::Object* target = factory.create(src.get_type()); assert(target != nullptr);
+	// Recursively find embedded objects in children
+	auto properties = property.get_type().get_properties();
+	for (const auto& nested_property : properties)
+	{
+		if (getPropertyType(nested_property) != EPropertyType::None)
+			return EPropertyType::NestedEmbeddedPointer;
+	}
 
-	// Give it a new name
-	auto parts = nap::utility::splitString(src.mID, id::separator); assert(!parts.empty());
-	target->mID = getUniqueID(parts.front(), *target, true);
+	// Not an embedded property
+	return EPropertyType::None;
+}
 
-	// Add to managed object list
-	mObjects.emplace(std::make_pair(target->mID, target));
-	
+
+nap::rtti::Variant Document::deepCopyInstance(const nap::rtti::Variant& src, nap::rtti::Object* parent)
+{
+	// We can only duplicate rtti::Object* or 'structs' -> because the variant doesn't expose derived pointer types.
+	// Therefore make sure we are dealing with an rtti::Object* or copy constructable struct.
+	nap::rtti::TypeInfo instance_type = src.get_type();
+	if (instance_type.is_pointer())
+	{
+		if (!instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
+		{
+			auto msg = nap::utility::stringFormat("Encountered invalid pointer type: %s", instance_type.get_name().data());
+			nap::Logger::error(msg); NAP_ASSERT_MSG(false, msg.c_str());
+			return nap::rtti::Variant();
+		}
+		instance_type = src.get_value<nap::rtti::Object*>()->get_type().get_raw_type();
+	}
+
+	// We can't deep copy wrapper types (resource ptr etc.)
+	assert(!instance_type.is_wrapper());
+
+	// Create the new instance of object, new or copy constructed, depending on constructor type!
+	Factory& factory = mCore.getResourceManager()->getFactory();
+	nap::rtti::Variant new_instance = factory.canCreate(instance_type) ?
+		factory.create(instance_type) : src.get_type().create();
+
+	// Bail if creation fails
+	if (!new_instance.is_valid())
+	{
+		auto msg = nap::utility::stringFormat("Unable to create object of type: %s", instance_type.get_name().data());
+		nap::Logger::error(msg); NAP_ASSERT_MSG(false, msg.c_str());
+		return nap::rtti::Variant();
+	}
+
+	// When copying a nap object we must give it a unique ID and add it to our list of managed objects
+	nap::rtti::Object* obj_instance = nullptr;
+	if (instance_type.is_derived_from(RTTI_OF(nap::rtti::Object)))
+	{
+		// Give unique ID
+		assert(src.get_type().is_pointer());
+		nap::rtti::Object* src_obj = src.convert<nap::rtti::Object*>(); assert(src_obj != nullptr);
+		auto parts = nap::utility::splitString(src_obj->mID, id::uuids); assert(!parts.empty());
+
+		obj_instance = new_instance.convert<nap::rtti::Object*>(); assert(obj_instance != nullptr);
+		obj_instance->mID = getUniqueID(parts.front(), *obj_instance, true);
+
+		// Add to managed object list
+		mObjects.emplace(obj_instance->mID, obj_instance);
+	}
+
+	// Keep parent when object to copy is not a nap rtti object
+	nap::rtti::Object* parent_obj = obj_instance != nullptr ? obj_instance : parent;
+
 	// Copy properties
-	auto properties = src.get_type().get_properties();
+	auto properties = instance_type.get_properties();
 	for (const auto& property : properties)
 	{
 		// Skip ID
@@ -1112,26 +1218,26 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 			continue;
 
 		// Get value (by copy)
-		nap::rtti::Variant src_value = property.get_value(src);
-		 
-		// Check if it's an embedded pointer or embedded pointer array ->
-		// In that case we need to duplicate the embedded object and set that
-		if (nap::rtti::hasFlag(property, EPropertyMetaData::Embedded))
+		nap::rtti::Variant value = property.get_value(src);
+
+		// Check if it's an embedded pointer property ->
+		// In that case we need to deep copy the embedded rtti object and set that.
+		switch (getPropertyType(property))
 		{
-			// Regular embedded pointer -> duplicate and set
-			if (!property.is_array())
+			case EPropertyType::EmbeddedPointer:
 			{
-				assert(src_value.get_type().is_wrapper() && src_value.get_type().get_wrapped_type().is_pointer());
-				auto variant = src_value.extract_wrapped_value();
+				assert(value.get_type().is_wrapper() && value.get_type().get_wrapped_type().is_pointer());
+				auto variant = value.extract_wrapped_value();
 				assert(variant.get_type().is_derived_from(RTTI_OF(nap::rtti::Object)));
 				auto src_obj = variant.get_value<nap::rtti::Object*>();
-				src_value = src_obj != nullptr ? duplicateObject(*src_obj, target) : src_value;
+				value = src_obj != nullptr ? deepCopyInstance(src_obj, parent_obj) : value;
+				break;
 			}
-			else
+			case EPropertyType::EmbeddedPointerArray:
 			{
 				// Iterate over array, duplicate entries and set
-				auto array_view  = src_value.create_array_view();
-				auto array_type =  array_view.get_rank_type(array_view.get_rank());
+				auto array_view = value.create_array_view();
+				auto array_type = array_view.get_rank_type(array_view.get_rank());
 				assert(array_type.is_wrapper() && array_type.get_wrapped_type().is_pointer());
 				for (auto i = 0; i < array_view.get_size(); i++)
 				{
@@ -1142,24 +1248,40 @@ nap::rtti::Object* Document::duplicateObject(const nap::rtti::Object& src, nap::
 					auto src_array_obj = variant.get_value<nap::rtti::Object*>();
 
 					// Duplicate & set
-					nap::rtti::Object* obj_handle = src_array_obj != nullptr ? 
-						duplicateObject(*src_array_obj, target) : nullptr;
+					nap::rtti::Object* obj_handle = nullptr;
+					if (src_array_obj != nullptr)
+					{
+						auto new_instance = deepCopyInstance(src_array_obj, parent_obj);
+						obj_handle = new_instance.convert<nap::rtti::Object*>();
+					}
 					array_view.set_value(i, obj_handle);
 				}
+				break;
+			}
+			case EPropertyType::NestedEmbeddedPointer:
+			{
+				value = deepCopyInstance(value, parent_obj);
+				break;
+			}
+			default:
+			{
+				break;
 			}
 		}
 
-		// Copy value if available
-		if (!property.set_value(target, src_value))
+		// Set copied value
+		if (!property.set_value(new_instance, value))
 		{
-			NAP_ASSERT_MSG(false, nap::utility::stringFormat("Failed to copy: %s",
-				property.get_name().data()).c_str());
+			auto msg = nap::utility::stringFormat("Failed to copy: %s", property.get_name().data());
+			nap::Logger::error(msg); NAP_ASSERT_MSG(false, msg.c_str());
 		}
 	}
 
 	// Notify listeners object has been added and return
-	objectAdded(target, parent);
-	return target;
+	if(obj_instance != nullptr)
+		objectAdded(obj_instance, parent);
+
+	return new_instance;
 }
 
 

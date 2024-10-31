@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::heightnormals run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightNormals)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightNormals, "Creates a perpendicular line for every vertex (normal) in a height mesh")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

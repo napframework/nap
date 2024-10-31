@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::ConstantShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ConstantShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ConstantShader, "Simple shader that applies a color and alpha value")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

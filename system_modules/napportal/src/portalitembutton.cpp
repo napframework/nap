@@ -9,8 +9,8 @@
 // External Includes
 #include <apivalue.h>
 
-RTTI_BEGIN_CLASS(nap::PortalItemButton)
-	RTTI_PROPERTY("Parameter", &nap::PortalItemButton::mParameter, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::PortalItemButton, "Portal button item")
+	RTTI_PROPERTY("Parameter", &nap::PortalItemButton::mParameter, nap::rtti::EPropertyMetaData::Required, "Button parameter")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

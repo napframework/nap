@@ -49,13 +49,14 @@ namespace nap
 		 * @return if initialization was successful
 		 */
 		virtual bool init(utility::ErrorState& error)					{ return true; }
-
+		
 		/**
 		 * Update your application. This is called after
 		 * calling update for all registered services but before render
 		 * @param deltaTime the time in seconds between calls
 		 */
 		virtual void update(double deltaTime)							{ }
+
 
 		/**
 		 * Render your application. This is called after update at the end of the loop

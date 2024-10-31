@@ -21,7 +21,6 @@ namespace nap
 	enum class ECameraMode : uint8_t
 	{
 		None						= 0x00,
-
 		FirstPerson					= 0x01,		// Perspective free camera
 		Orbit						= 0x02,		// Perspective orbit camera
 		OrthographicTop				= 0x04,		// Orthographic camera (top-view)
@@ -34,14 +33,8 @@ namespace nap
 		Orthographic = OrthographicTop | OrthographicBottom | OrthographicLeft | OrthographicRight | OrthographicFront | OrthographicBack
 	};
 
-	inline ECameraMode operator&(ECameraMode a, ECameraMode b)
-	{
-		return static_cast<ECameraMode>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b));
-	}
-	inline ECameraMode operator|(ECameraMode a, ECameraMode b)
-	{
-		return static_cast<ECameraMode>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b));
-	}
+	inline ECameraMode operator&(ECameraMode a, ECameraMode b)	{ return static_cast<ECameraMode>(static_cast<uint8_t>(a) & static_cast<uint8_t>(b)); }
+	inline ECameraMode operator|(ECameraMode a, ECameraMode b)	{ return static_cast<ECameraMode>(static_cast<uint8_t>(a) | static_cast<uint8_t>(b)); }
 
 
 	/**

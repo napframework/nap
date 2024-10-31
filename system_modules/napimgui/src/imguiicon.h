@@ -10,7 +10,7 @@
 // External Includes
 #include <rtti/rtti.h>
 #include <nap/resource.h>
-#include <texture2d.h>
+#include <texture.h>
 
 namespace nap
 {

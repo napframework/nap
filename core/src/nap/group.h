@@ -97,15 +97,14 @@ namespace nap
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Attempts to find a member in this group with the given ID. 
+		 * Attempts to find a member in this group with the given ID.
 		 * @param id member ID
-		 * @param attempt to find member in child groups as well
 		 * @return member with the given ID, nullptr if not found
 		 */
 		rtti::ObjectPtr<T> findObject(const std::string& id) const;
 
 		/**
-		 * Attempts to find a member in this group and all child groups with the given ID. 
+		 * Attempts to find a member in this group and all child groups with the given ID.
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found
 		 */
@@ -117,7 +116,7 @@ namespace nap
 		 *~~~~~{.cpp}
 		 * auto window = mGroup->findObject<nap::RenderWindow>("Window0");
 		 *~~~~~
-		 * 
+		 *
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
@@ -126,11 +125,11 @@ namespace nap
 
 		/**
 		 * Attempts to find a member in this group, and all child groups, with the given ID as type M.
-		 * 
+		 *
 		 *~~~~~{.cpp}
 		 * auto window = mGroup->findObjectRecursive<nap::RenderWindow>("Window0");
 		 *~~~~~
-		 * 
+		 *
 		 * @param id member ID
 		 * @return member with the given ID, nullptr if not found or not of the given type
 		 */
@@ -212,14 +211,30 @@ namespace nap
 }
 
 
-/**
- * Use this macro to register your own group.
- * ~~~~~{.cpp}
- * DEFINE_GROUP(nap::ResourceGroup)
- * ~~~~~ 
- */
-#define DEFINE_GROUP(Type)																																\
+//////////////////////////////////////////////////////////////////////////
+// Group registration
+//////////////////////////////////////////////////////////////////////////
+
+// Backwards compatible -> registration without description
+#define DEFINE_GROUP_1(Type)																															\
 	RTTI_BEGIN_CLASS(Type)																																\
 		RTTI_PROPERTY(nap::group::members,	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
 		RTTI_PROPERTY(nap::group::children,	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
 	RTTI_END_CLASS
+
+// Group registration with description
+#define DEFINE_GROUP_2(Type, ObjectType)																												\
+	RTTI_BEGIN_CLASS(Type, "Groups together a set of '"#ObjectType"' objects")																			\
+		RTTI_PROPERTY(nap::group::members,	&Type::mMembers,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
+		RTTI_PROPERTY(nap::group::children,	&Type::mChildren,	nap::rtti::EPropertyMetaData::Embedded | nap::rtti::EPropertyMetaData::ReadOnly)		\
+	RTTI_END_CLASS
+
+#define GET_DEFINE_GROUP_MACRO(_1,_2,NAME,...) NAME
+
+/**
+ * Use this macro to register your own group.
+ * ~~~~~{.cpp}
+ * DEFINE_GROUP(nap::ResourceGroup, nap::Resource)
+ * ~~~~~
+ */
+#define DEFINE_GROUP(...) GET_DEFINE_GROUP_MACRO(__VA_ARGS__, DEFINE_GROUP_2, DEFINE_GROUP_1)(__VA_ARGS__)

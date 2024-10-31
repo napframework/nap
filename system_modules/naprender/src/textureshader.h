@@ -9,11 +9,11 @@ namespace nap
 	class Core;
 	class RenderService;
 
-	// Video shader sampler names 
+	// Video shader sampler names
 	namespace uniform
 	{
 		namespace texture
-		{	
+		{
 			namespace sampler
 			{
 				inline constexpr const char* colorTexture = "colorTexture";		///< Name of the color texture sampler
@@ -30,7 +30,7 @@ namespace nap
 	 *
 	 * The texture shader exposes the following shader variables:
 	 *
-	 * ~~~~~{.vert}
+	 * ~~~~{.vert}
 	 *		uniform UBO
 	 *		{
 	 *			uniform vec3 color;

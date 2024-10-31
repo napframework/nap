@@ -18,7 +18,7 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     /**
-     * SequenceServiceAudio registers all necessary factory functions for napsequenceaudio to SequenceService
+     *  Registers all required factory functions for sequenced audio in the sequence service.
      */
     class NAPAPI SequenceServiceAudio final : public Service
     {
@@ -28,11 +28,6 @@ namespace nap
          * Constructor
          */
         SequenceServiceAudio(ServiceConfiguration* configuration);
-
-        /**
-         * Deconstructor
-         */
-        ~SequenceServiceAudio() override;
 
     protected:
         /**

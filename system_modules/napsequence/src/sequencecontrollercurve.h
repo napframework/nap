@@ -37,9 +37,18 @@ namespace nap {
          * @param trackID the id of the track
          * @param segmentID the id of the segment we need to edit
          * @param duration the new duration
+         * @param adjustFollowingSegments if true, following segments will be moved
          * @return new duration of segment
           */
-        double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration);
+         double segmentDurationChange(const std::string& trackID, const std::string& segmentID, float duration, bool adjustFollowingSegments);
+
+         /**
+          * Sets the segment locked property
+          * @param trackID the track id
+          * @param segmentID the segment id
+          * @param locked the locked value
+          */
+         void setSegmentLocked(const std::string& trackID, const std::string& segmentID, bool locked);
 
         /**
          * adds a new curve track of type T ( float, vec2, vec3, vec4 )
@@ -113,9 +122,9 @@ namespace nap {
 
         /**
          * changes curvetype ( linear or bezier )
-         * @param trackID the trackID
-         * @param segmentID the segmentID
+         * @param segment the segment
          * @param type the new curve type
+         * @param curveIndex index of the curve
          */
         template<typename T>
         void changeCurveType(SequenceTrackSegment& segment, math::ECurveInterp type, int curveIndex);
@@ -157,6 +166,14 @@ namespace nap {
         void changeCurveType(const std::string& trackID, const std::string& segmentID, math::ECurveInterp type,
                              int curveIndex);
 
+        /**
+        * changes the color of a curve segment
+        * @param trackID the trackID
+        * @param segmentID the segmentID
+        * @param newColor the new color
+        */
+        void changeSegmentColor(const std::string& trackID, const std::string& segmentID, const RGBAColorFloat& newColor);
+
     protected:
         /**
          * updates curve segments values to be continuous ( segment 1 end value == segment 2 start value etc )
@@ -176,15 +193,14 @@ namespace nap {
 
         /**
          * changes tangent of curve point. Tangents are always aligned
-         * @paramt type of curve track
+         * @param segment the segment
          * @param trackID the trackID
-         * @param segmentID the segmentID
          * @param pointIndex the point index
          * @param curveIndex the curve index
          * @param tanType in or out tangent
          * @param time offset for new time
          * @param value offset for new value
-         * @param bool if true, tangents have been flipped
+         * @return if tangents have been flipped
          */
         template<typename T>
         bool changeTanPoint(SequenceTrackSegment& segment, const std::string& trackID, int pointIndex, int curveIndex,
@@ -192,9 +208,7 @@ namespace nap {
 
         /**
          * changes a curvepoint value and time / position
-         * @paramt type of curve track
-         * @param trackID the trackID
-         * @param segmentID the segmentID
+         * @param segment the segmentID
          * @param pointIndex the point index
          * @param curveIndex the curve index
          * @param time offset for new time
@@ -208,9 +222,7 @@ namespace nap {
 
         /**
          * deletes point from curve
-         * @paramt type of curve track
-         * @param trackID the trackID
-         * @param segmentID the segmentID
+         * @param segment the segmentID
          * @param index the point index
          * @param curveIndex the curveIndex
          */
@@ -219,9 +231,7 @@ namespace nap {
 
         /**
          * insert point in curve of segment
-         * @paramt type of curve track
-         * @param trackID the track id
-         * @param segmentID the segment id
+         * @param segment the segment id
          * @param pos the position at which to insert the curvepoint in curve ( range 0-1 )
          * @param curveIndex the index of the curve
          */
@@ -230,14 +240,14 @@ namespace nap {
 
         /**
          * changes start or end value of segment of type T
-         * @param trackID the track id
-         * @param segmentID id of segment
-         * @param amount the amount that the value needs to change
+         * @param track the track id
+         * @param segment id of segment
+         * @param newValue new value
          * @param curveIndex the curve index of the value
          * @param valueType the segment value type ( first or last value )
          */
         template<typename T>
-        void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex,sequencecurveenums::ESegmentValueTypes valueType);
+        void changeCurveSegmentValue(SequenceTrack& track, SequenceTrackSegment& segment, float newValue, int curveIndex, sequencecurveenums::ESegmentValueTypes valueType);
 
         // map for updating segments
         std::unordered_map<rttr::type, std::function<void(SequenceTrack&)>> mUpdateSegmentFunctionMap;

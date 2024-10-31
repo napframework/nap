@@ -22,9 +22,9 @@ namespace nap
 	 */
 	struct NAPAPI RotateProperties
 	{
-		glm::vec3	mAxis	= {0.0f, 1.0f, 0.0f};	///< Property: 'Axis' Rotation axis
-		float		mSpeed	= 1.0f;					///< Property: 'Speed' Rotation speed (seconds)
-		float		mOffset	= 0.0f;					///< Property: 'Offset' Rotation offset in seconds
+		glm::vec3	mAxis	= {0.0f, 1.0f, 0.0f};	///< Property: 'Axis' Rotation axis (x, y, z)
+		float		mSpeed	= 1.0f;					///< Property: 'Speed' Rotation speed in seconds, where 1 second = 360*
+		float		mOffset	= 0.0f;					///< Property: 'Offset' Rotation offset in seconds, where 1 second = 360*
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -44,15 +44,16 @@ namespace nap
 		DECLARE_COMPONENT(RotateComponent, RotateComponentInstance)
 	public:
 		/**
-		* Uses transform to rotate itself in the world.
-		*/
+		 * Uses transform to rotate itself in the world.
+		 */
 		void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override
 		{
 			components.push_back(RTTI_OF(TransformComponent));
 		}
 
 	public:
-		RotateProperties mProperties;
+		RotateProperties mProperties;			///< Property: 'Properties' Rotation settings
+		bool mEnabled = true;					///< Property: 'Enabled' If rotation is enabled
 	};
 
 	//////////////////////////////////////////////////////////////////////////
@@ -89,36 +90,49 @@ namespace nap
 		void reset();
 
 		/**
+		 * Enable or disable the rotation
+		 */
+		void enable(bool enable)									{ mEnabled = enable; }
+
+		/**
+		 * @return whether the component is enabled
+		 */
+		bool isEnabled() const										{ return mEnabled; }
+
+		/*
 		 * Sets the rotation speed
 		 * @param speed rotation speed in seconds
 		 */
-		void setSpeed(float speed)								{ mProperties.mSpeed = speed; }
+		void setSpeed(float speed)									{ mProperties.mSpeed = speed; }
 
 		/**
 		 * @return the rotation speed in seconds
 		 */
-		float getSpeed() const									{ return mProperties.mSpeed; }
+		float getSpeed() const										{ return mProperties.mSpeed; }
 
 		/**
 		 * Sets the rotation axis
 		 * @param axis rotation axis
 		 */
-		void setAxis(const glm::vec3& axis)						{ mProperties.mAxis = axis; }
+		void setAxis(const glm::vec3& axis)							{ mProperties.mAxis = axis; }
 
 		/**
 		 * @return the rotation axis
 		 */
-		glm::vec3 getAxis() const								{ return mProperties.mAxis; }
+		glm::vec3 getAxis() const									{ return mProperties.mAxis; }
 
 		// Rotation properties
 		RotateProperties mProperties;
 
 	private:
 		// Store pointer to transform, set during init
-		nap::TransformComponentInstance* mTransform;
+		nap::TransformComponentInstance* mTransform = nullptr;
 
 		// Local elapsed time
 		double mElapsedTime = 0.0;
+
+		// Enable flag
+		bool mEnabled = true;
 
 		// Initial Rotation value
 		glm::quat mInitialRotate = glm::quat();

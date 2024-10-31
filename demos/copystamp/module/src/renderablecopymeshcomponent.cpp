@@ -13,7 +13,7 @@
 #include <renderglobals.h>
 
 // nap::renderablecopymeshcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent)
+RTTI_BEGIN_CLASS(nap::RenderableCopyMeshComponent, "Draws a randomly selected mesh at every vertex of the target mesh")
 	RTTI_PROPERTY("Orient",				&nap::RenderableCopyMeshComponent::mOrient,						nap::rtti::EPropertyMetaData::Default,	"If the models should face the normal")
 	RTTI_PROPERTY("Scale",				&nap::RenderableCopyMeshComponent::mScale,						nap::rtti::EPropertyMetaData::Default,  "Scale of the copied meshes")
 	RTTI_PROPERTY("RotationSpeed",		&nap::RenderableCopyMeshComponent::mRotationSpeed,				nap::rtti::EPropertyMetaData::Default,  "Speed of rotation")

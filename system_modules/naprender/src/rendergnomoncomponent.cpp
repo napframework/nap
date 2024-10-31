@@ -11,10 +11,10 @@
 #include <nap/logger.h>
 
 // nap::rendergnomoncomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::RenderGnomonComponent)
-	RTTI_PROPERTY("Gnomon",		&nap::RenderGnomonComponent::mMesh,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LineWidth",	&nap::RenderGnomonComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",	&nap::RenderGnomonComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::RenderGnomonComponent, "Renders a Gnomon orientation mesh")
+	RTTI_PROPERTY("Gnomon",		&nap::RenderGnomonComponent::mMesh,			nap::rtti::EPropertyMetaData::Required, "Gnomon orientation mesh")
+	RTTI_PROPERTY("LineWidth",	&nap::RenderGnomonComponent::mLineWidth,	nap::rtti::EPropertyMetaData::Default,	"Width the of lines")
+	RTTI_PROPERTY("DepthMode",	&nap::RenderGnomonComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default,	"Depth buffer read-write mode")
 RTTI_END_CLASS
 
 // nap::rendergnomoncomponentInstance run time class definition 
@@ -55,7 +55,7 @@ namespace nap
 		mRenderService = getEntityInstance()->getCore()->getService<RenderService>();
 		assert(mRenderService != nullptr);
 
-		// Get video material
+		// Get gnomon material
 		Material* gnomon_material = mRenderService->getOrCreateMaterial<GnomonShader>(errorState);
 		if (!errorState.check(gnomon_material != nullptr, "%s: unable to get or create gnomon material", resource->mID.c_str()))
 			return false;
@@ -73,8 +73,8 @@ namespace nap
 		// If the struct is found, we expect the matrices with those names to be there
 		// Ensure the mvp struct is available
 		mMVPStruct = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
-		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform MVP struct: %s in material: %s",
-			this->mID.c_str(), uniform::mvpStruct, mMaterialInstance.getMaterial().mID.c_str()))
+		if (!errorState.check(mMVPStruct != nullptr, "%s: Unable to find uniform MVP struct: %s in shader: %s",
+			this->mID.c_str(), uniform::mvpStruct, RTTI_OF(GnomonShader).get_name().data()))
 			return false;
 
 		// Get all matrices

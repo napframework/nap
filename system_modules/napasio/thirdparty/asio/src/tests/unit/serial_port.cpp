@@ -2,7 +2,7 @@
 // serial_port.cpp
 // ~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2018 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2023 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 // Copyright (c) 2008 Rep Invariant Systems, Inc. (info@repinvariant.com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
@@ -60,6 +60,7 @@ void test()
   try
   {
     io_context ioc;
+    const io_context::executor_type ioc_ex = ioc.get_executor();
     char mutable_char_buffer[128] = "";
     const char const_char_buffer[128] = "";
     serial_port::baud_rate serial_port_option;
@@ -71,10 +72,22 @@ void test()
     serial_port port1(ioc);
     serial_port port2(ioc, "null");
     serial_port::native_handle_type native_port1 = port1.native_handle();
+#if defined(ASIO_MSVC) && (_MSC_VER < 1910)
+    // Skip this on older MSVC due to mysterious ambiguous overload errors.
+#else
     serial_port port3(ioc, native_port1);
+#endif
+
+    serial_port port4(ioc_ex);
+    serial_port port5(ioc_ex, "null");
+    serial_port::native_handle_type native_port2 = port1.native_handle();
+    serial_port port6(ioc_ex, native_port2);
 
 #if defined(ASIO_HAS_MOVE)
-    serial_port port4(std::move(port3));
+    serial_port port7(std::move(port6));
+
+    basic_serial_port<io_context::executor_type> port8(ioc);
+    serial_port port9(std::move(port8));
 #endif // defined(ASIO_HAS_MOVE)
 
     // basic_serial_port operators.
@@ -82,6 +95,7 @@ void test()
 #if defined(ASIO_HAS_MOVE)
     port1 = serial_port(ioc);
     port1 = std::move(port2);
+    port1 = std::move(port8);
 #endif // defined(ASIO_HAS_MOVE)
 
     // basic_io_object functions.
@@ -89,30 +103,22 @@ void test()
     serial_port::executor_type ex = port1.get_executor();
     (void)ex;
 
-#if !defined(ASIO_NO_DEPRECATED)
-    io_context& ioc_ref = port1.get_io_context();
-    (void)ioc_ref;
-
-    io_context& ioc_ref2 = port1.get_io_service();
-    (void)ioc_ref2;
-#endif // !defined(ASIO_NO_DEPRECATED)
-
     // basic_serial_port functions.
 
     serial_port::lowest_layer_type& lowest_layer = port1.lowest_layer();
     (void)lowest_layer;
 
-    const serial_port& port5 = port1;
-    const serial_port::lowest_layer_type& lowest_layer2 = port5.lowest_layer();
+    const serial_port& port10 = port1;
+    const serial_port::lowest_layer_type& lowest_layer2 = port10.lowest_layer();
     (void)lowest_layer2;
 
     port1.open("null");
     port1.open("null", ec);
 
-    serial_port::native_handle_type native_port2 = port1.native_handle();
-    port1.assign(native_port2);
     serial_port::native_handle_type native_port3 = port1.native_handle();
-    port1.assign(native_port3, ec);
+    port1.assign(native_port3);
+    serial_port::native_handle_type native_port4 = port1.native_handle();
+    port1.assign(native_port4, ec);
 
     bool is_open = port1.is_open();
     (void)is_open;
@@ -120,8 +126,8 @@ void test()
     port1.close();
     port1.close(ec);
 
-    serial_port::native_handle_type native_port4 = port1.native_handle();
-    (void)native_port4;
+    serial_port::native_handle_type native_port5 = port1.native_handle();
+    (void)native_port5;
 
     port1.cancel();
     port1.cancel(ec);
@@ -167,5 +173,5 @@ void test()
 ASIO_TEST_SUITE
 (
   "serial_port",
-  ASIO_TEST_CASE(serial_port_compile::test)
+  ASIO_COMPILE_TEST_CASE(serial_port_compile::test)
 )

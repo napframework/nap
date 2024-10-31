@@ -9,9 +9,9 @@
 // External Includes
 #include <array>
 
-RTTI_BEGIN_CLASS(nap::PortalItemOperationalCalendar)
-	RTTI_PROPERTY("Name",		&nap::PortalItemOperationalCalendar::mName,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Calendar",	&nap::PortalItemOperationalCalendar::mCalendar, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::PortalItemOperationalCalendar, "Operational calendar portal item")
+	RTTI_PROPERTY("Name",		&nap::PortalItemOperationalCalendar::mName,		nap::rtti::EPropertyMetaData::Required, "Calendar name")
+	RTTI_PROPERTY("Calendar",	&nap::PortalItemOperationalCalendar::mCalendar, nap::rtti::EPropertyMetaData::Required, "Calendar resource")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

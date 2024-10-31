@@ -4,16 +4,34 @@
 
 // Local Includes
 #include "cameracomponent.h"
+#include "transformcomponent.h"
 
 // External Includes
 #include <glm/gtc/matrix_transform.hpp>
 #include <nap/logger.h>
+
+RTTI_BEGIN_CLASS(nap::CameraComponent)
+RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraComponentInstance)
 RTTI_END_CLASS
 
 namespace nap
 {
+	//////////////////////////////////////////////////////////////////////////
+	// CameraComponent
+	//////////////////////////////////////////////////////////////////////////
+
+	void CameraComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	{
+		components.push_back(RTTI_OF(TransformComponent));
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// CameraComponentInstance
+	//////////////////////////////////////////////////////////////////////////
+
 	CameraComponentInstance::CameraComponentInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)
 	{

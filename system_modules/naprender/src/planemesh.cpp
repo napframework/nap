@@ -13,16 +13,16 @@
 #include <nap/core.h>
 #include <nap/numeric.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PlaneMesh, "A grid of x rows and columns, arranged along the X-Y axis in a rectangular pattern")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",			&nap::PlaneMesh::mUsage,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",		&nap::PlaneMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",	&nap::PlaneMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Size",			&nap::PlaneMesh::mSize,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",		&nap::PlaneMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",			&nap::PlaneMesh::mColor,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rows",			&nap::PlaneMesh::mRows,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Columns",		&nap::PlaneMesh::mColumns,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Usage",			&nap::PlaneMesh::mUsage,		nap::rtti::EPropertyMetaData::Default, "If the mesh is static or updated at runtime")
+	RTTI_PROPERTY("CullMode",		&nap::PlaneMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default, "Triangle cull mode: front, back, none..")
+	RTTI_PROPERTY("PolygonMode",	&nap::PlaneMesh::mPolygonMode,	nap::rtti::EPropertyMetaData::Default, "Polygon draw mode (fill, line, points etc..)")
+	RTTI_PROPERTY("Size",			&nap::PlaneMesh::mSize,			nap::rtti::EPropertyMetaData::Default, "Plane size")
+	RTTI_PROPERTY("Position",		&nap::PlaneMesh::mPosition,		nap::rtti::EPropertyMetaData::Default, "Plane position")
+	RTTI_PROPERTY("Color",			&nap::PlaneMesh::mColor,		nap::rtti::EPropertyMetaData::Default, "Plane vertex color")
+	RTTI_PROPERTY("Rows",			&nap::PlaneMesh::mRows,			nap::rtti::EPropertyMetaData::Default, "Number of rows")
+	RTTI_PROPERTY("Columns",		&nap::PlaneMesh::mColumns,		nap::rtti::EPropertyMetaData::Default, "Number of columns")
 RTTI_END_CLASS
  
 namespace nap

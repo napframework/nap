@@ -28,6 +28,8 @@
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 
 #include <sndfile.h>
@@ -39,6 +41,8 @@
 #define	DATA_LENGTH			(1 << 12)
 
 #define	SILLY_WRITE_COUNT	(234)
+
+static const char WRT_TEST_PREFIX[] = "wrt" ;
 
 [+ FOR data_type
 +]static void	pcm_test_[+ (get "type_name") +] (const char *str, int format, int long_file_ok) ;
@@ -444,6 +448,7 @@ pcm_test_[+ (get "type_name") +] (const char *filename, int format, int long_fil
 	/* Sd2 files cannot be opened from an existing file descriptor. */
 	allow_fd = ((format & SF_FORMAT_TYPEMASK) == SF_FORMAT_SD2) ? SF_FALSE : SF_TRUE ;
 
+	get_unique_test_name (&filename, WRT_TEST_PREFIX) ;
 	print_test_name ("pcm_test_[+ (get "type_name") +]", filename) ;
 
 	sfinfo.samplerate	= 44100 ;
@@ -851,7 +856,7 @@ mono_rdwr_[+ (get "type_name") +]_test (const char *filename, int format, int lo
 		create_short_file (filename) ;
 
 		/* Opening a already existing short file (ie invalid header) RDWR is disallowed.
-		** If this returns a valif pointer sf_open() screwed up.
+		** If this returns a valid pointer sf_open() screwed up.
 		*/
 		if ((file = sf_open (filename, SFM_RDWR, &sfinfo)))
 		{	printf ("\n\nLine %d: sf_open should (SFM_RDWR) have failed but didn't.\n", __LINE__) ;
@@ -1006,6 +1011,7 @@ empty_file_test (const char *filename, int format)
 	/* Sd2 files cannot be opened from an existing file descriptor. */
 	allow_fd = ((format & SF_FORMAT_TYPEMASK) == SF_FORMAT_SD2) ? SF_FALSE : SF_TRUE ;
 
+	get_unique_test_name (&filename, WRT_TEST_PREFIX) ;
 	print_test_name ("empty_file_test", filename) ;
 
 	unlink (filename) ;

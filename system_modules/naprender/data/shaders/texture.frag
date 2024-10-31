@@ -6,8 +6,8 @@
 
 uniform UBO
 {
-	uniform vec3 color;
-	uniform float alpha;
+	vec3 color;
+	float alpha;
 } ubo;
 
 in vec3 pass_Uvs;

@@ -15,7 +15,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::IWebSocketServer)
 RTTI_END_CLASS
 
 // nap::websocketserver run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServer)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketServer, "Receives and responds to client messages over a websocket")
 	RTTI_CONSTRUCTOR(nap::WebSocketService&)
 RTTI_END_CLASS
 
@@ -28,9 +28,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	IWebSocketServer::IWebSocketServer(WebSocketService& service) : WebSocketInterface(service)
-	{
-
-	}
+	{ }
 
 
 	bool IWebSocketServer::init(utility::ErrorState& errorState)
@@ -54,9 +52,7 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	WebSocketServer::WebSocketServer(WebSocketService& service) : IWebSocketServer(service)
-	{
-
-	}
+	{ }
 
 
 	bool WebSocketServer::send(const WebSocketConnection& connection, void const* payload, int length, EWebSocketOPCode code, nap::utility::ErrorState& error)

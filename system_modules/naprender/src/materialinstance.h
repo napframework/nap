@@ -19,15 +19,17 @@
 namespace nap
 {
 	class Material;
-	class Renderer;
+	class RenderService;
 	struct DescriptorSet;
 	class DescriptorSetCache;
 
-	// Common property names
-	namespace materialinstanceresource
+	namespace material
 	{
-		constexpr const char* materialr	= "Material";
-		constexpr const char* materialc	= "ComputeMaterial";
+		namespace instance
+		{
+			// RTTI get or create material function
+			constexpr const char* getOrCreateMaterial = "getOrCreateMaterial";
+		}
 	}
 
 	/**
@@ -40,6 +42,7 @@ namespace nap
 		std::vector<ResourcePtr<UniformStruct>>		mUniforms;										///< Property: "Uniforms" uniform structs to override
 		std::vector<ResourcePtr<Sampler>>			mSamplers;										///< Property: "Samplers" samplers that you're overriding
 		std::vector<ResourcePtr<BufferBinding>>		mBuffers;										///< Property: "Buffers" buffer bindings to override
+		std::vector<ResourcePtr<ShaderConstant>>	mConstants;										///< Property: "Constants" shader constants to override
 
 		/**
 		 * @return material property
@@ -66,12 +69,14 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
-		MaterialInstanceResource() :
-			BaseMaterialInstanceResource(materialinstanceresource::materialr)	{}
+		static constexpr const char* matProperty = "Material";
 
-		ResourcePtr<Material>							mMaterial;										///< Property: "Material" source material
-		EBlendMode										mBlendMode = EBlendMode::NotSet;				///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
-		EDepthMode										mDepthMode = EDepthMode::NotSet;				///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
+		MaterialInstanceResource() :
+			BaseMaterialInstanceResource(matProperty)	{}
+
+		ResourcePtr<Material>						mMaterial;											///< Property: "Material" Source material
+		EBlendMode									mBlendMode = EBlendMode::NotSet;					///< Property: "BlendMode" Blend mode override. Uses source material blend mode by default
+		EDepthMode									mDepthMode = EDepthMode::NotSet;					///< Property: "DepthMode" Depth mode override. Uses source material depth mode by default
 	};
 
 	/**
@@ -82,10 +87,12 @@ namespace nap
 	{
 		RTTI_ENABLE(BaseMaterialInstanceResource)
 	public:
-		ComputeMaterialInstanceResource() :
-			BaseMaterialInstanceResource(materialinstanceresource::materialc)	{}
+		static constexpr const char* matProperty = "ComputeMaterial";
 
-		ResourcePtr<ComputeMaterial>				mComputeMaterial;								///< Property: "ComputeMaterial" source material
+		ComputeMaterialInstanceResource() :
+			BaseMaterialInstanceResource(matProperty)	{}
+
+		ResourcePtr<ComputeMaterial>				mComputeMaterial;									///< Property: "ComputeMaterial" source material
 	};
 
 	/**
@@ -94,6 +101,7 @@ namespace nap
 	class NAPAPI BaseMaterialInstance : public UniformContainer
 	{
 		RTTI_ENABLE(UniformContainer)
+		friend class RenderService;
 	public:
 		/**
 		 * Gets or creates a uniform struct (ubo) for this material instance.
@@ -106,9 +114,9 @@ namespace nap
 		virtual UniformStructInstance* getOrCreateUniform(const std::string& name);
 
 		/**
-		 * Gets or creates a nap::BufferBindingInstance of type T for this material instance.
-		 * This means that the buffer binding returned is only applicable to this instance.
-		 * In order to change a buffer binding so that its value is shared among MaterialInstances, use getMaterial().getBinding().
+		 * Gets or creates a nap::BufferBindingInstance of type T for this material.
+		 * The binding can be used to set the buffer of type T at runtime.
+		 * The returned binding is only applicable to this instance.
 		 * This function will assert if the name of the binding does not match the type that you are trying to create.
 		 *
 		 * ~~~~~{.cpp}
@@ -122,9 +130,9 @@ namespace nap
 		T* getOrCreateBuffer(const std::string& name);
 
 		/**
-		 * Gets or creates a buffer binding isntance for this material instance.
-		 * This means that the buffer binding returned is only applicable to this instance.
-		 * In order to change a buffer binding so that its value is shared among MaterialInstances, use getMaterial().getBinding().
+		 * Gets or creates a buffer binding instance for this material.
+		 * The binding can be used to set any buffer of type 'BufferBindingInstance' at runtime.
+		 * The returned buffer binding is only applicable to this instance.
 		 *
 		 * @param name: the name of the buffer binding as declared in the shader.
 		 * @return buffer binding that was found or created, nullptr if not available.
@@ -135,28 +143,55 @@ namespace nap
 		 * Gets or creates a nap::SamplerInstance of type T for this material instance.
 		 * This means that the sampler returned is only applicable to this instance.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the sampler does not match the type that you are trying to create.
 		 *
 		 * ~~~~~{.cpp}
 		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>("inTexture");
 		 * ~~~~~
 		 *
 		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 * @return nap::SamplerInstance of type T, nullptr when sampler declaration doesn't exist or of incorrect type
 		 */
 		template<class T>
 		T* getOrCreateSampler(const std::string& name);
 
 		/**
-		 * Gets or creates a nap::SamplerInstance for this material instance.
-		 * This means that the sampler returned is only applicable to this instance.
+		 * Gets or creates a nap::SamplerInstance for this material, which can be set at runtime.
+		 * The returned sampler is only applicable to this instance.
 		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
-		 * This function will assert if the name of the uniform does not match the type that you are trying to create.
 		 *
 		 * @param name: the name of the sampler declared in the shader.
-		 * @return nap::SamplerInstance of type T, nullptr if not available.
+		 * @return the sampler instance, nullptr when sampler declaration doesn't exist
 		 */
-		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name); }
+		SamplerInstance* getOrCreateSampler(const std::string& name)		{ return getOrCreateSamplerInternal(name, nullptr); }
+
+		/**
+		 * Get or creates a nap::SamplerInstance of type T for this material, which can be set at runtime.
+		 * The instance is initialized against the provided resource and only applicable to this instance.
+		 *
+		 * Note that the resource type must match the instance type! The function asserts otherwise.
+		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
+		 *
+		 * ~~~~~{.cpp}
+		 * material_instance->getOrCreateSampler<nap::Sampler2DInstance>(samplerResource);
+		 * ~~~~~
+		 * 
+		 * @param resource: the resource to get the instance for
+		 * @return the sampler instance of type T, nullptr when sampler declaration doesn't exist
+		 */
+		template<class T>
+		T* getOrCreateSampler(const Sampler& resource);
+
+		/**
+		 * Get or creates a nap::SamplerInstance for this material, which can be set at runtime.
+		 * The instance is initialized against the provided resource and only applicable to this instance.
+		 *
+		 * Note that the resource type must match the instance type! The function asserts otherwise.
+		 * In order to change a sampler so that its value is shared among MaterialInstances, use getMaterial().findSampler().
+		 *
+		 * @param resource: the resource to get the instance for
+		 * @return the sampler instance, nullptr when sampler declaration doesn't exist or of incorrect type
+		 */
+		SamplerInstance* getOrCreateSampler(const Sampler& resource)		{ return getOrCreateSamplerInternal(resource.mName, &resource); }
 
 		/**
 		 * @return base material that this instance is overriding
@@ -189,7 +224,7 @@ namespace nap
 		void rebuildUBO(UniformBufferObject& ubo, UniformStructInstance* overrideStruct);
 
 		void onUniformCreated();
-		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance);
+		void onSamplerChanged(int imageStartIndex, SamplerInstance& samplerInstance, int imageArrayIndex);
 		void onBufferChanged(int storageBufferIndex, BufferBindingInstance& bindingInstance);
 
 		void updateBuffers(const DescriptorSet& descriptorSet);
@@ -197,10 +232,22 @@ namespace nap
 
 		void updateSamplers(const DescriptorSet& descriptorSet);
 		bool initSamplers(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
-		void addImageInfo(const Texture2D& texture2D, VkSampler sampler);
+		void addImageInfo(const Texture& texture, VkSampler sampler);
+
+		bool initConstants(BaseMaterialInstanceResource& resource, utility::ErrorState& errorState);
 
 		BufferBindingInstance* getOrCreateBufferInternal(const std::string& name);
-		SamplerInstance* getOrCreateSamplerInternal(const std::string& name);
+		SamplerInstance* getOrCreateSamplerInternal(const std::string& name, const Sampler* sampler);
+
+		/**
+		 * @return a map that groups shader constant ids by shader stage. Used for creating vulkan pipelines.
+		 */
+		const ShaderStageConstantMap& getShaderStageConstantMap() const		{ return mShaderStageConstantMap; }
+
+		/**
+		 * @return the shader constant hash for quick distinction of constant data in material instances
+		 */
+		ShaderConstantHash getConstantHash() const							{ return mConstantHash; }
 
 	protected:
 		VkDevice								mDevice = nullptr;						// Vulkan device
@@ -216,6 +263,9 @@ namespace nap
 
 		std::vector<VkWriteDescriptorSet>		mSamplerWriteDescriptorSets;			// List of sampler descriptors, used to update Descriptor Sets
 		std::vector<VkDescriptorImageInfo>		mSamplerDescriptors;					// List of sampler images, used to update Descriptor Sets.
+
+		ShaderStageConstantMap					mShaderStageConstantMap;				// Reference of all shader constants per shader stage, generated on materialinstance init
+		ShaderConstantHash						mConstantHash;							// Shader constant hash used to create a pipeline key
 
 		bool									mUniformsCreated = false;				// Set when a uniform instance is created in between draws
 	};
@@ -331,6 +381,11 @@ namespace nap
 		 */
 		const ComputeMaterial& getMaterial() const										{ return static_cast<const ComputeMaterial&>(*BaseMaterialInstance::getMaterial()); }
 
+		/**
+		 * @return the workgroup size
+		 */
+		glm::uvec3 getWorkGroupSize() const;
+
 	private:
 		ComputeMaterialInstanceResource*		mResource;								// Resource this instance is associated with
 	};
@@ -349,6 +404,12 @@ namespace nap
 	template<class T>
 	T* BaseMaterialInstance::getOrCreateSampler(const std::string& name)
 	{
-		return rtti_cast<T>(getOrCreateSamplerInternal(name));
+		return rtti_cast<T>(getOrCreateSamplerInternal(name, nullptr));
+	}
+
+	template<class T>
+	T* BaseMaterialInstance::getOrCreateSampler(const Sampler& resource)
+	{
+		return rtti_cast<T>(getOrCreateSamplerInternal(resource.mName, &resource));
 	}
 }

@@ -1,5 +1,5 @@
 /*
-** Copyright (C) 1999-2017 Erik de Castro Lopo <erikd@mega-nerd.com>
+** Copyright (C) 1999-2019 Erik de Castro Lopo <erikd@mega-nerd.com>
 **
 ** This program is free software; you can redistribute it and/or modify
 ** it under the terms of the GNU Lesser General Public License as published by
@@ -18,10 +18,13 @@
 
 #include <config.h>
 
+#include <limits.h>
 #include <stdarg.h>
 #include <string.h>
 #if HAVE_UNISTD_H
 #include <unistd.h>
+#else
+#include "sf_unistd.h"
 #endif
 #include <ctype.h>
 #include <math.h>
@@ -33,7 +36,7 @@
 #include "sfendian.h"
 #include "common.h"
 
-#define	INITAL_HEADER_SIZE	256
+#define	INITIAL_HEADER_SIZE	256
 
 /* Allocate and initialize the SF_PRIVATE struct. */
 SF_PRIVATE *
@@ -43,11 +46,11 @@ psf_allocate (void)
 	if ((psf = calloc (1, sizeof (SF_PRIVATE))) == NULL)
 		return	NULL ;
 
-	if ((psf->header.ptr = calloc (1, INITAL_HEADER_SIZE)) == NULL)
+	if ((psf->header.ptr = calloc (1, INITIAL_HEADER_SIZE)) == NULL)
 	{	free (psf) ;
 		return	NULL ;
 		} ;
-	psf->header.len = INITAL_HEADER_SIZE ;
+	psf->header.len = INITIAL_HEADER_SIZE ;
 
 	return psf ;
 } /* psf_allocate */
@@ -55,13 +58,13 @@ psf_allocate (void)
 static int
 psf_bump_header_allocation (SF_PRIVATE * psf, sf_count_t needed)
 {
-	sf_count_t newlen, smallest = INITAL_HEADER_SIZE ;
+	sf_count_t newlen, smallest = INITIAL_HEADER_SIZE ;
 	void * ptr ;
 
 	newlen = (needed > psf->header.len) ? 2 * SF_MAX (needed, smallest) : 2 * psf->header.len ;
 
 	if (newlen > 100 * 1024)
-	{	psf_log_printf (psf, "Request for header allocation of %D denined.\n", newlen) ;
+	{	psf_log_printf (psf, "Request for header allocation of %D denied.\n", newlen) ;
 		return 1 ;
 		}
 
@@ -70,6 +73,10 @@ psf_bump_header_allocation (SF_PRIVATE * psf, sf_count_t needed)
 		psf->error = SFE_MALLOC_FAILED ;
 		return 1 ;
 		} ;
+
+	/* Always zero-out new header memory to avoid un-initializer memory accesses. */
+	if (newlen > psf->header.len)
+		memset ((char *) ptr + psf->header.len, 0, newlen - psf->header.len) ;
 
 	psf->header.ptr = ptr ;
 	psf->header.len = newlen ;
@@ -97,8 +104,8 @@ log_putchar (SF_PRIVATE *psf, char ch)
 void
 psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 {	va_list		ap ;
-	uint32_t	u ;
-	int			d, tens, shift, width, width_specifier, left_align, slen ;
+	uint32_t	u, tens ;
+	int			d, shift, width, width_specifier, left_align, slen, precision ;
 	char		c, *strptr, istr [5], lead_char, sign_char ;
 
 	va_start (ap, format) ;
@@ -147,6 +154,12 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 		while ((c = *format++) && isdigit (c))
 			width_specifier = width_specifier * 10 + (c - '0') ;
 
+		precision = 0 ;
+		if (c == '.')
+		{	while ((c = *format++) && isdigit (c))
+				precision = precision * 10 + (c - '0') ;
+			} ;
+
 		switch (c)
 		{	case 0 : /* NULL character. */
 					va_end (ap) ;
@@ -156,12 +169,15 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 					strptr = va_arg (ap, char *) ;
 					if (strptr == NULL)
 						break ;
-					slen = strlen (strptr) ;
+					if (precision > 0)
+						slen = strnlen (strptr, precision) ;
+					else
+						slen = strlen (strptr) ;
 					width_specifier = width_specifier >= slen ? width_specifier - slen : 0 ;
 					if (left_align == SF_FALSE)
 						while (width_specifier -- > 0)
 							log_putchar (psf, ' ') ;
-					while (*strptr)
+					while (slen--)
 						log_putchar (psf, *strptr++) ;
 					while (width_specifier -- > 0)
 						log_putchar (psf, ' ') ;
@@ -171,15 +187,19 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 					d = va_arg (ap, int) ;
 
 					if (d < 0)
-					{	d = -d ;
-						sign_char = '-' ;
+					{	sign_char = '-' ;
 						if (lead_char != '0' && left_align == SF_FALSE)
 							width_specifier -- ;
-						} ;
+
+						u = - ((unsigned) d) ;
+						}
+					else
+					{	u = (unsigned) d ;
+						}
 
 					tens = 1 ;
 					width = 1 ;
-					while (d / tens >= 10)
+					while (u / tens >= 10)
 					{	tens *= 10 ;
 						width ++ ;
 						} ;
@@ -209,8 +229,8 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 							log_putchar (psf, lead_char) ;
 
 					while (tens > 0)
-					{	log_putchar (psf, '0' + d / tens) ;
-						d %= tens ;
+					{	log_putchar (psf, '0' + u / tens) ;
+						u %= tens ;
 						tens /= 10 ;
 						} ;
 
@@ -219,7 +239,8 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 					break ;
 
 			case 'D': /* sf_count_t */
-					{	sf_count_t		D, Tens ;
+					{	sf_count_t	D ;
+						uint64_t	U, Tens ;
 
 						D = va_arg (ap, sf_count_t) ;
 
@@ -229,13 +250,19 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 							log_putchar (psf, '0') ;
 							break ;
 							}
-						if (D < 0)
-						{	log_putchar (psf, '-') ;
-							D = -D ;
-							} ;
+						else
+						{	if (D < 0)
+							{	log_putchar (psf, '-') ;
+								U = - ((uint64_t) D) ;
+								}
+							else
+							{	U = (uint64_t) D ;
+								}
+							}
+
 						Tens = 1 ;
 						width = 1 ;
-						while (D / Tens >= 10)
+						while (U / Tens >= 10)
 						{	Tens *= 10 ;
 							width ++ ;
 							} ;
@@ -246,8 +273,8 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 							} ;
 
 						while (Tens > 0)
-						{	log_putchar (psf, '0' + D / Tens) ;
-							D %= Tens ;
+						{	log_putchar (psf, '0' + U / Tens) ;
+							U %= Tens ;
 							Tens /= 10 ;
 							} ;
 						} ;
@@ -349,7 +376,7 @@ psf_log_printf (SF_PRIVATE *psf, const char *format, ...)
 					strptr = istr ;
 					while (*strptr)
 					{	c = *strptr++ ;
-						log_putchar (psf, c) ;
+						log_putchar (psf, psf_isprint (c) ? c : '.') ;
 						} ;
 					break ;
 
@@ -378,6 +405,9 @@ psf_asciiheader_printf (SF_PRIVATE *psf, const char *format, ...)
 {	va_list	argptr ;
 	int		maxlen ;
 	char	*start ;
+
+	if (! format)
+		return ;
 
 	maxlen = strlen ((char*) psf->header.ptr) ;
 	start	= ((char*) psf->header.ptr) + maxlen ;
@@ -511,35 +541,29 @@ header_put_le_int (SF_PRIVATE *psf, int x)
 	psf->header.ptr [psf->header.indx++] = (x >> 24) ;
 } /* header_put_le_int */
 
-#if (SIZEOF_SF_COUNT_T == 8)
-
 static inline void
 header_put_be_8byte (SF_PRIVATE *psf, sf_count_t x)
 {	psf->header.ptr [psf->header.indx++] = (x >> 56) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 48) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 40) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 32) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 24) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 16) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 8) ;
-	psf->header.ptr [psf->header.indx++] = x ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 48) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 40) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 32) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 24) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 16) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 8) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) x ;
 } /* header_put_be_8byte */
 
 static inline void
 header_put_le_8byte (SF_PRIVATE *psf, sf_count_t x)
-{	psf->header.ptr [psf->header.indx++] = x ;
-	psf->header.ptr [psf->header.indx++] = (x >> 8) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 16) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 24) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 32) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 40) ;
-	psf->header.ptr [psf->header.indx++] = (x >> 48) ;
+{	psf->header.ptr [psf->header.indx++] = (unsigned char) x ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 8) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 16) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 24) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 32) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 40) ;
+	psf->header.ptr [psf->header.indx++] = (unsigned char) (x >> 48) ;
 	psf->header.ptr [psf->header.indx++] = (x >> 56) ;
 } /* header_put_le_8byte */
-
-#else
-#error "SIZEOF_SF_COUNT_T != 8"
-#endif
 
 int
 psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
@@ -552,16 +576,17 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 	void			*bindata ;
 	size_t			size ;
 	char			c, *strptr ;
-	int				count = 0, trunc_8to4 ;
+	int				count = 0, trunc_8to4 = SF_FALSE ;
 
-	trunc_8to4 = SF_FALSE ;
+	if (! format)
+		return psf_ftell (psf) ;
 
 	va_start (argptr, format) ;
 
 	while ((c = *format++))
 	{
 		if (psf->header.indx + 16 >= psf->header.len && psf_bump_header_allocation (psf, 16))
-			return count ;
+			break ;
 
 		switch (c)
 		{	case ' ' : /* Do nothing. Just used to space out format string. */
@@ -675,16 +700,16 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					/* Write a C string (guaranteed to have a zero terminator). */
 					strptr = va_arg (argptr, char *) ;
 					size = strlen (strptr) + 1 ;
-					size += (size & 1) ;
 
-					if (psf->header.indx + (sf_count_t) size >= psf->header.len && psf_bump_header_allocation (psf, 16))
-						return count ;
+					if (psf->header.indx + 4 + (sf_count_t) size + (sf_count_t) (size & 1) > psf->header.len && psf_bump_header_allocation (psf, 4 + size + (size & 1)))
+						break ;
 
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
-						header_put_be_int (psf, size) ;
+						header_put_be_int (psf, size + (size & 1)) ;
 					else
-						header_put_le_int (psf, size) ;
+						header_put_le_int (psf, size + (size & 1)) ;
 					memcpy (&(psf->header.ptr [psf->header.indx]), strptr, size) ;
+					size += (size & 1) ;
 					psf->header.indx += size ;
 					psf->header.ptr [psf->header.indx - 1] = 0 ;
 					count += 4 + size ;
@@ -697,16 +722,15 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					*/
 					strptr = va_arg (argptr, char *) ;
 					size = strlen (strptr) ;
-					if (psf->header.indx + (sf_count_t) size > psf->header.len && psf_bump_header_allocation (psf, size))
-						return count ;
+					if (psf->header.indx + 4 + (sf_count_t) size + (sf_count_t) (size & 1) > psf->header.len && psf_bump_header_allocation (psf, 4 + size + (size & 1)))
+						break ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						header_put_be_int (psf, size) ;
 					else
 						header_put_le_int (psf, size) ;
-					memcpy (&(psf->header.ptr [psf->header.indx]), strptr, size + 1) ;
+					memcpy (&(psf->header.ptr [psf->header.indx]), strptr, size + (size & 1)) ;
 					size += (size & 1) ;
 					psf->header.indx += size ;
-					psf->header.ptr [psf->header.indx] = 0 ;
 					count += 4 + size ;
 					break ;
 
@@ -718,8 +742,8 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					size = (size & 1) ? size : size + 1 ;
 					size = (size > 254) ? 254 : size ;
 
-					if (psf->header.indx + (sf_count_t) size > psf->header.len && psf_bump_header_allocation (psf, size))
-						return count ;
+					if (psf->header.indx + 1 + (sf_count_t) size > psf->header.len && psf_bump_header_allocation (psf, 1 + size))
+						break ;
 
 					header_put_byte (psf, size) ;
 					memcpy (&(psf->header.ptr [psf->header.indx]), strptr, size) ;
@@ -732,7 +756,7 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					size	= va_arg (argptr, size_t) ;
 
 					if (psf->header.indx + (sf_count_t) size > psf->header.len && psf_bump_header_allocation (psf, size))
-						return count ;
+						break ;
 
 					memcpy (&(psf->header.ptr [psf->header.indx]), bindata, size) ;
 					psf->header.indx += size ;
@@ -743,7 +767,7 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					size = va_arg (argptr, size_t) ;
 
 					if (psf->header.indx + (sf_count_t) size > psf->header.len && psf_bump_header_allocation (psf, size))
-						return count ;
+						break ;
 
 					count += size ;
 					while (size)
@@ -764,7 +788,7 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					size = va_arg (argptr, size_t) ;
 
 					if (psf->header.indx + (sf_count_t) size > psf->header.len && psf_bump_header_allocation (psf, size))
-						return count ;
+						break ;
 
 					psf->header.indx += size ;
 					count += size ;
@@ -774,7 +798,7 @@ psf_binheader_writef (SF_PRIVATE *psf, const char *format, ...)
 					size = va_arg (argptr, size_t) ;
 
 					if ((sf_count_t) size >= psf->header.len && psf_bump_header_allocation (psf, size))
-						return count ;
+						break ;
 
 					psf->header.indx = size ;
 					break ;
@@ -868,6 +892,7 @@ header_seek (SF_PRIVATE *psf, sf_count_t position, int whence)
 				psf_bump_header_allocation (psf, position) ;
 			if (position > psf->header.len)
 			{	/* Too much header to cache so just seek instead. */
+				psf->header.indx = psf->header.end = 0 ;
 				psf_fseek (psf, position, whence) ;
 				return ;
 				} ;
@@ -895,8 +920,22 @@ header_seek (SF_PRIVATE *psf, sf_count_t position, int whence)
 
 			if (psf->header.indx + position > psf->header.len)
 			{	/* Need to jump this without caching it. */
+				position -= (psf->header.end - psf->header.indx) ;
 				psf->header.indx = psf->header.end ;
-				psf_fseek (psf, position, SEEK_CUR) ;
+				if (psf->is_pipe)
+				{
+					/* seeking is not supported on pipe input, so we read instead */
+					size_t skip = position ;
+					while (skip)
+					{	char junk [16 * 1024] ;
+						size_t to_skip = SF_MIN (skip, sizeof (junk)) ;
+						psf_fread (junk, 1, to_skip, psf) ;
+						skip -= to_skip ;
+						}
+					}
+				else
+				{	psf_fseek (psf, position, SEEK_CUR) ;
+					}
 				break ;
 				} ;
 
@@ -944,7 +983,7 @@ int
 psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 {	va_list			argptr ;
 	sf_count_t		*countptr, countdata ;
-	unsigned char	*ucptr, sixteen_bytes [16] ;
+	unsigned char	*ucptr, sixteen_bytes [16] = { 0 } ;
 	unsigned int 	*intptr, intdata ;
 	unsigned short	*shortptr ;
 	char			*charptr ;
@@ -952,6 +991,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 	double			*doubleptr ;
 	char			c ;
 	int				byte_count = 0, count = 0 ;
+	int				read_bytes = 0 ;
 
 	if (! format)
 		return psf_ftell (psf) ;
@@ -960,8 +1000,9 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 
 	while ((c = *format++))
 	{
+		read_bytes = 0 ;
 		if (psf->header.indx + 16 >= psf->header.len && psf_bump_header_allocation (psf, 16))
-			return count ;
+			break ;
 
 		switch (c)
 		{	case 'e' : /* All conversions are now from LE to host. */
@@ -976,7 +1017,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 					intptr = va_arg (argptr, unsigned int*) ;
 					*intptr = 0 ;
 					ucptr = (unsigned char*) intptr ;
-					byte_count += header_read (psf, ucptr, sizeof (int)) ;
+					read_bytes = header_read (psf, ucptr, sizeof (int)) ;
 					*intptr = GET_MARKER (ucptr) ;
 					break ;
 
@@ -984,7 +1025,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 					intptr = va_arg (argptr, unsigned int*) ;
 					*intptr = 0 ;
 					ucptr = (unsigned char*) intptr ;
-					byte_count += header_read (psf, sixteen_bytes, sizeof (sixteen_bytes)) ;
+					read_bytes = header_read (psf, sixteen_bytes, sizeof (sixteen_bytes)) ;
 					{	int k ;
 						intdata = 0 ;
 						for (k = 0 ; k < 16 ; k++)
@@ -996,14 +1037,14 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 			case '1' :
 					charptr = va_arg (argptr, char*) ;
 					*charptr = 0 ;
-					byte_count += header_read (psf, charptr, sizeof (char)) ;
+					read_bytes = header_read (psf, charptr, sizeof (char)) ;
 					break ;
 
 			case '2' : /* 2 byte value with the current endian-ness */
 					shortptr = va_arg (argptr, unsigned short*) ;
 					*shortptr = 0 ;
 					ucptr = (unsigned char*) shortptr ;
-					byte_count += header_read (psf, ucptr, sizeof (short)) ;
+					read_bytes = header_read (psf, ucptr, sizeof (short)) ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						*shortptr = GET_BE_SHORT (ucptr) ;
 					else
@@ -1013,7 +1054,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 			case '3' : /* 3 byte value with the current endian-ness */
 					intptr = va_arg (argptr, unsigned int*) ;
 					*intptr = 0 ;
-					byte_count += header_read (psf, sixteen_bytes, 3) ;
+					read_bytes = header_read (psf, sixteen_bytes, 3) ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						*intptr = GET_BE_3BYTE (sixteen_bytes) ;
 					else
@@ -1024,7 +1065,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 					intptr = va_arg (argptr, unsigned int*) ;
 					*intptr = 0 ;
 					ucptr = (unsigned char*) intptr ;
-					byte_count += header_read (psf, ucptr, sizeof (int)) ;
+					read_bytes = header_read (psf, ucptr, sizeof (int)) ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						*intptr = psf_get_be32 (ucptr, 0) ;
 					else
@@ -1034,7 +1075,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 			case '8' : /* 8 byte value with the current endian-ness */
 					countptr = va_arg (argptr, sf_count_t *) ;
 					*countptr = 0 ;
-					byte_count += header_read (psf, sixteen_bytes, 8) ;
+					read_bytes = header_read (psf, sixteen_bytes, 8) ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						countdata = psf_get_be64 (sixteen_bytes, 0) ;
 					else
@@ -1045,7 +1086,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 			case 'f' : /* Float conversion */
 					floatptr = va_arg (argptr, float *) ;
 					*floatptr = 0.0 ;
-					byte_count += header_read (psf, floatptr, sizeof (float)) ;
+					read_bytes = header_read (psf, floatptr, sizeof (float)) ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						*floatptr = float32_be_read ((unsigned char*) floatptr) ;
 					else
@@ -1055,7 +1096,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 			case 'd' : /* double conversion */
 					doubleptr = va_arg (argptr, double *) ;
 					*doubleptr = 0.0 ;
-					byte_count += header_read (psf, doubleptr, sizeof (double)) ;
+					read_bytes = header_read (psf, doubleptr, sizeof (double)) ;
 					if (psf->rwf_endian == SF_ENDIAN_BIG)
 						*doubleptr = double64_be_read ((unsigned char*) doubleptr) ;
 					else
@@ -1079,7 +1120,7 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 					charptr = va_arg (argptr, char*) ;
 					count = va_arg (argptr, size_t) ;
 					memset (charptr, 0, count) ;
-					byte_count += header_read (psf, charptr, count) ;
+					read_bytes = header_read (psf, charptr, count) ;
 					break ;
 
 			case 'G' :
@@ -1088,9 +1129,9 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 					memset (charptr, 0, count) ;
 
 					if (psf->header.indx + count >= psf->header.len && psf_bump_header_allocation (psf, count))
-						return 0 ;
+						break ;
 
-					byte_count += header_gets (psf, charptr, count) ;
+					read_bytes = header_gets (psf, charptr, count) ;
 					break ;
 
 			case 'z' :
@@ -1114,7 +1155,11 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 			case 'j' :	/* Seek to position from current position. */
 					count = va_arg (argptr, size_t) ;
 					header_seek (psf, count, SEEK_CUR) ;
-					byte_count += count ;
+					read_bytes = count ;
+					break ;
+
+			case '!' : /* Clear buffer, forcing re-read. */
+					psf->header.end = psf->header.indx = 0 ;
 					break ;
 
 			default :
@@ -1122,7 +1167,16 @@ psf_binheader_readf (SF_PRIVATE *psf, char const *format, ...)
 				psf->error = SFE_INTERNAL ;
 				break ;
 			} ;
+
+		if (read_bytes > 0 && byte_count > (INT_MAX - read_bytes))
+		{	psf_log_printf (psf, "Header size exceeds INT_MAX. Aborting.", c) ;
+			psf->error = SFE_INTERNAL ;
+			break ;
+		} else
+		{	byte_count += read_bytes ;
 		} ;
+
+		} ;	/*end while*/
 
 	va_end (argptr) ;
 
@@ -1211,6 +1265,37 @@ psf_log_SF_INFO (SF_PRIVATE *psf)
 /*========================================================================================
 */
 
+int
+psf_isprint (int ch)
+{	return (ch >= ' ' && ch <= '~') ;
+} /* psf_isprint */
+
+void
+psf_strlcat (char *dest, size_t n, const char *src)
+{	strncat (dest, src, n - strlen (dest) - 1) ;
+	dest [n - 1] = 0 ;
+} /* psf_strlcat */
+
+void
+psf_strlcpy (char *dest, size_t n, const char *src)
+{	strncpy (dest, src, n - 1) ;
+	dest [n - 1] = 0 ;
+} /* psf_strlcpy */
+
+/*========================================================================================
+*/
+
+void *
+psf_memdup (const void *src, size_t n)
+{	if (src == NULL)
+		return NULL ;
+
+	void * mem = calloc (1, n & 3 ? n + 4 - (n & 3) : n) ;
+	if (mem != NULL)
+		memcpy (mem, src, n) ;
+	return mem ;
+} /* psf_memdup */
+
 void*
 psf_memset (void *s, int c, sf_count_t len)
 {	char	*ptr ;
@@ -1236,24 +1321,38 @@ psf_memset (void *s, int c, sf_count_t len)
 ** bodgy something up instead.
 */
 
+#ifdef _MSC_VER
 typedef SF_CUES_VAR (0) SF_CUES_0 ;
+#else
+typedef SF_CUES_VAR () SF_CUES_0 ;
+#endif
 
+/* calculate size of SF_CUES struct given number of cues */
 #define SF_CUES_VAR_SIZE(count)	(sizeof (SF_CUES_0) + count * sizeof (SF_CUE_POINT))
+
+/* calculate number of cues in SF_CUES struct given data size */
+#define SF_CUES_COUNT(datasize) (((datasize) - sizeof (uint32_t)) / sizeof (SF_CUE_POINT))
 
 SF_CUES *
 psf_cues_alloc (uint32_t cue_count)
 {	SF_CUES *pcues = calloc (1, SF_CUES_VAR_SIZE (cue_count)) ;
-
-	pcues->cue_count = cue_count ;
+	if (pcues)
+	{	pcues->cue_count = cue_count ;
+		} ;
 	return pcues ;
 } /* psf_cues_alloc */
 
 SF_CUES *
-psf_cues_dup (const void * ptr)
+psf_cues_dup (const void * ptr, size_t datasize)
 {	const SF_CUES *pcues = ptr ;
-	SF_CUES *pnew = psf_cues_alloc (pcues->cue_count) ;
+	SF_CUES *pnew = NULL ;
 
-	memcpy (pnew, pcues, SF_CUES_VAR_SIZE (pcues->cue_count)) ;
+	if (pcues->cue_count <= SF_CUES_COUNT (datasize))
+	{	/* check that passed-in datasize is consistent with cue_count in passed-in SF_CUES struct */
+		pnew = psf_cues_alloc (pcues->cue_count) ;
+		memcpy (pnew, pcues, SF_CUES_VAR_SIZE (pcues->cue_count)) ;
+	}
+
 	return pnew ;
 } /* psf_cues_dup */
 
@@ -1261,7 +1360,7 @@ void
 psf_get_cues (SF_PRIVATE * psf, void * data, size_t datasize)
 {
 	if (psf->cues)
-	{	uint32_t cue_count = (datasize - sizeof (uint32_t)) / sizeof (SF_CUE_POINT) ;
+	{	uint32_t cue_count = SF_CUES_COUNT (datasize) ;
 
 		cue_count = SF_MIN (cue_count, psf->cues->cue_count) ;
 		memcpy (data, psf->cues, SF_CUES_VAR_SIZE (cue_count)) ;
@@ -1508,6 +1607,7 @@ str_of_major_format (int format)
 		CASE_NAME (SF_FORMAT_CAF) ;
 		CASE_NAME (SF_FORMAT_WVE) ;
 		CASE_NAME (SF_FORMAT_OGG) ;
+		CASE_NAME (SF_FORMAT_MPEG) ;
 		default :
 			break ;
 		} ;
@@ -1531,6 +1631,9 @@ str_of_minor_format (int format)
 		CASE_NAME (SF_FORMAT_MS_ADPCM) ;
 		CASE_NAME (SF_FORMAT_GSM610) ;
 		CASE_NAME (SF_FORMAT_VOX_ADPCM) ;
+		CASE_NAME (SF_FORMAT_NMS_ADPCM_16) ;
+		CASE_NAME (SF_FORMAT_NMS_ADPCM_24) ;
+		CASE_NAME (SF_FORMAT_NMS_ADPCM_32) ;
 		CASE_NAME (SF_FORMAT_G721_32) ;
 		CASE_NAME (SF_FORMAT_G723_24) ;
 		CASE_NAME (SF_FORMAT_G723_40) ;
@@ -1541,6 +1644,9 @@ str_of_minor_format (int format)
 		CASE_NAME (SF_FORMAT_DPCM_8) ;
 		CASE_NAME (SF_FORMAT_DPCM_16) ;
 		CASE_NAME (SF_FORMAT_VORBIS) ;
+		CASE_NAME (SF_FORMAT_MPEG_LAYER_I) ;
+		CASE_NAME (SF_FORMAT_MPEG_LAYER_II) ;
+		CASE_NAME (SF_FORMAT_MPEG_LAYER_III) ;
 		default :
 			break ;
 		} ;
@@ -1584,8 +1690,8 @@ psf_f2s_array (const float *src, short *dest, int count, int normalize)
 {	float 			normfact ;
 
 	normfact = normalize ? (1.0 * 0x7FFF) : 1.0 ;
-	while (--count >= 0)
-		dest [count] = lrintf (src [count] * normfact) ;
+	for (int i = 0 ; i < count ; i++)
+		dest [i] = psf_lrintf (src [i] * normfact) ;
 
 	return ;
 } /* psf_f2s_array */
@@ -1596,18 +1702,18 @@ psf_f2s_clip_array (const float *src, short *dest, int count, int normalize)
 
 	normfact = normalize ? (1.0 * 0x8000) : 1.0 ;
 
-	while (--count >= 0)
-	{	scaled_value = src [count] * normfact ;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFF))
-		{	dest [count] = 0x7FFF ;
+	for (int i = 0 ; i < count ; i++)
+	{	scaled_value = src [i] * normfact ;
+		if (scaled_value >= (1.0 * 0x7FFF))
+		{	dest [i] = 0x7FFF ;
 			continue ;
 			} ;
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x1000))
-		{	dest [count] = 0x8000 ;
+		if (scaled_value <= (-8.0 * 0x1000))
+		{	dest [i] = -0x7FFF - 1 ;
 			continue ;
 			} ;
 
-		dest [count] = lrintf (scaled_value) ;
+		dest [i] = psf_lrintf (scaled_value) ;
 		} ;
 
 	return ;
@@ -1618,8 +1724,8 @@ psf_d2s_array (const double *src, short *dest, int count, int normalize)
 {	double 			normfact ;
 
 	normfact = normalize ? (1.0 * 0x7FFF) : 1.0 ;
-	while (--count >= 0)
-		dest [count] = lrint (src [count] * normfact) ;
+	for (int i = 0 ; i < count ; i++)
+		dest [i] = psf_lrint (src [i] * normfact) ;
 
 	return ;
 } /* psf_f2s_array */
@@ -1630,18 +1736,18 @@ psf_d2s_clip_array (const double *src, short *dest, int count, int normalize)
 
 	normfact = normalize ? (1.0 * 0x8000) : 1.0 ;
 
-	while (--count >= 0)
-	{	scaled_value = src [count] * normfact ;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFF))
-		{	dest [count] = 0x7FFF ;
+	for (int i = 0 ; i < count ; i++)
+	{	scaled_value = src [i] * normfact ;
+		if (scaled_value >= (1.0 * 0x7FFF))
+		{	dest [i] = 0x7FFF ;
 			continue ;
 			} ;
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x1000))
-		{	dest [count] = 0x8000 ;
+		if (scaled_value <= (-8.0 * 0x1000))
+		{	dest [i] = -0x7FFF - 1 ;
 			continue ;
 			} ;
 
-		dest [count] = lrint (scaled_value) ;
+		dest [i] = psf_lrint (scaled_value) ;
 		} ;
 
 	return ;
@@ -1653,8 +1759,8 @@ psf_f2i_array (const float *src, int *dest, int count, int normalize)
 {	float 			normfact ;
 
 	normfact = normalize ? (1.0 * 0x7FFFFFFF) : 1.0 ;
-	while (--count >= 0)
-		dest [count] = lrintf (src [count] * normfact) ;
+	for (int i = 0 ; i < count ; i++)
+		dest [i] = psf_lrintf (src [i] * normfact) ;
 
 	return ;
 } /* psf_f2i_array */
@@ -1665,18 +1771,18 @@ psf_f2i_clip_array (const float *src, int *dest, int count, int normalize)
 
 	normfact = normalize ? (8.0 * 0x10000000) : 1.0 ;
 
-	while (--count >= 0)
-	{	scaled_value = src [count] * normfact ;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-		{	dest [count] = 0x7FFFFFFF ;
+	for (int i = 0 ; i < count ; i++)
+	{	scaled_value = src [i] * normfact ;
+		if (scaled_value >= (1.0 * 0x7FFFFFFF))
+		{	dest [i] = 0x7FFFFFFF ;
 			continue ;
 			} ;
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-		{	dest [count] = 0x80000000 ;
+		if (scaled_value <= (-8.0 * 0x10000000))
+		{	dest [i] = 0x80000000 ;
 			continue ;
 			} ;
 
-		dest [count] = lrintf (scaled_value) ;
+		dest [i] = psf_lrintf (scaled_value) ;
 		} ;
 
 	return ;
@@ -1684,11 +1790,11 @@ psf_f2i_clip_array (const float *src, int *dest, int count, int normalize)
 
 void
 psf_d2i_array (const double *src, int *dest, int count, int normalize)
-{	double 			normfact ;
+{	double			normfact ;
 
 	normfact = normalize ? (1.0 * 0x7FFFFFFF) : 1.0 ;
-	while (--count >= 0)
-		dest [count] = lrint (src [count] * normfact) ;
+	for (int i = 0 ; i < count ; i++)
+		dest [i] = psf_lrint (src [i] * normfact) ;
 
 	return ;
 } /* psf_f2i_array */
@@ -1699,18 +1805,18 @@ psf_d2i_clip_array (const double *src, int *dest, int count, int normalize)
 
 	normfact = normalize ? (8.0 * 0x10000000) : 1.0 ;
 
-	while (--count >= 0)
-	{	scaled_value = src [count] * normfact ;
-		if (CPU_CLIPS_POSITIVE == 0 && scaled_value >= (1.0 * 0x7FFFFFFF))
-		{	dest [count] = 0x7FFFFFFF ;
+	for (int i = 0 ; i < count ; i++)
+	{	scaled_value = src [i] * normfact ;
+		if (scaled_value >= (1.0 * 0x7FFFFFFF))
+		{	dest [i] = 0x7FFFFFFF ;
 			continue ;
 			} ;
-		if (CPU_CLIPS_NEGATIVE == 0 && scaled_value <= (-8.0 * 0x10000000))
-		{	dest [count] = 0x80000000 ;
+		if (scaled_value <= (-8.0 * 0x10000000))
+		{	dest [i] = 0x80000000 ;
 			continue ;
 			} ;
 
-		dest [count] = lrint (scaled_value) ;
+		dest [i] = psf_lrint (scaled_value) ;
 		} ;
 
 	return ;

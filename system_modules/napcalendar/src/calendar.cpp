@@ -18,10 +18,10 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ICalendar)
 RTTI_END_CLASS
 
 // nap::calendar run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Calendar)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Calendar, "Simple calendar that holds a set of calendar items")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Items",			&nap::Calendar::mItems,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded)
-	RTTI_PROPERTY("AllowFailure",	&nap::Calendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Items",			&nap::Calendar::mItems,			nap::rtti::EPropertyMetaData::Required | nap::rtti::EPropertyMetaData::Embedded, "Calendar items")
+	RTTI_PROPERTY("AllowFailure",	&nap::Calendar::mAllowFailure,	nap::rtti::EPropertyMetaData::Default, "Continue when loading a calendar from disk fails")
 RTTI_END_CLASS
 
 // calendar instance run time class definition

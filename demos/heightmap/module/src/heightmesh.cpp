@@ -11,7 +11,7 @@
 #include <renderglobals.h>
 
 // nap::heightmesh run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::HeightMesh, "Height displacement mesh")
 	RTTI_CONSTRUCTOR(nap::Core&)
 	RTTI_PROPERTY("Heightmap",	&nap::HeightMesh::mHeightmap,	nap::rtti::EPropertyMetaData::Required, "Height map image")
 	RTTI_PROPERTY("Height",		&nap::HeightMesh::mHeight,		nap::rtti::EPropertyMetaData::Required, "Max mesh elevation level with a pixel value of 1")

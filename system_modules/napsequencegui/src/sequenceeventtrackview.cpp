@@ -138,9 +138,7 @@ namespace nap
                         double time = mState.mMouseCursorTime;
 
                         //
-                        mState.mAction = createAction<InsertEventSegmentPopup>(
-                            track.mID,
-                            time);
+                        mState.mAction = createAction<InsertEventSegmentPopup>(track.mID, time);
                     }
                 }
             }
@@ -230,6 +228,9 @@ namespace nap
                     auto it = mSegmentViews.find(type);
                     assert(it != mSegmentViews.end()); // type not found
 
+                    // take snapshot
+                    getEditor().takeSnapshot(action->get_type());
+
                     it->second->insertSegment(getEditor().getController<SequenceControllerEvent>(), action->mTrackID, action->mTime);
                     ImGui::CloseCurrentPopup();
                     mState.mAction = createAction<None>();
@@ -244,6 +245,9 @@ namespace nap
             {
                 if(ImGui::ImageButton(mService.getGui().getIcon(icon::paste)))
                 {
+                    // take snapshot
+                    getEditor().takeSnapshot(action->get_type());
+
                     // call appropriate paste method
                     utility::ErrorState error_state;
                     if(!pasteEventsFromClipboard(action->mTrackID, action->mTime, error_state))
@@ -361,7 +365,8 @@ namespace nap
                 {
                     if(ImGui::IsMouseDown(0))
                     {
-                        mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mStartTime);
+                        bool move_next_segment = ImGui::GetIO().KeyCtrl;
+                        mState.mAction = createAction<DraggingSegment>(track.mID, segment.mID, segment.mStartTime, move_next_segment);
                     }
                 }
             }
@@ -555,6 +560,8 @@ namespace nap
 
             if(ImGui::ImageButton(mService.getGui().getIcon(icon::del)))
             {
+                getEditor().takeSnapshot(action->get_type());
+
                 auto &controller = getEditor().getController<SequenceControllerEvent>();
                 controller.deleteSegment(action->mTrackID, action->mSegmentID);
 
@@ -690,6 +697,9 @@ namespace nap
         // get curve controller
         auto &event_controller = getEditor().getController<SequenceControllerEvent>();
 
+        // take snapshot
+        getEditor().takeSnapshot(action->get_type());
+
         // call function to controller
         event_controller.assignNewOutputID(action->mTrackID, action->mOutputID);
 
@@ -712,6 +722,13 @@ namespace nap
             // get editor & controller
             auto &editor = getEditor();
             auto &event_controller = editor.getController<SequenceControllerEvent>();
+
+            // take snapshot
+            if(action->mTakeSnapshot)
+            {
+                action->mTakeSnapshot = false;
+                editor.takeSnapshot(action->get_type());
+            }
 
             // change start time of segment
             event_controller.segmentEventStartTimeChange(action->mTrackID, action->mSegmentID, action->mNewDuration);
@@ -771,6 +788,9 @@ namespace nap
                     {
                         if(mState.mClipboard->load(preset_files[load_action->mSelectedPresetIndex], error_state))
                         {
+                            // take snapshot
+                            getEditor().takeSnapshot(load_action->get_type());
+
                             if(pasteEventsFromClipboard(load_action->mTrackID, load_action->mTime, error_state))
                             {
                                 mState.mAction = createAction<None>();
@@ -820,7 +840,7 @@ namespace nap
     //////////////////////////////////////////////////////////////////////////
 
     template<>
-    void SequenceEventTrackSegmentView<std::string>::handleEditPopupContent(sequenceguiactions::Action& action)
+    bool SequenceEventTrackSegmentView<std::string>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<std::string>>();
         auto &message = static_cast<std::string &>(edit_action->mValue);
@@ -828,10 +848,14 @@ namespace nap
         char buffer[256];
         strcpy(buffer, message.c_str());
 
+        bool edit = false;
         if(ImGui::InputText("message", buffer, 256))
         {
+            edit = true;
             message = std::string(buffer);
         }
+
+        return edit;
     }
 
 
@@ -852,12 +876,12 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<float>::handleEditPopupContent(sequenceguiactions::Action& action)
+    bool SequenceEventTrackSegmentView<float>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *editAction = action.getDerived<sequenceguiactions::EditingEventSegment<float>>();
         auto &value = static_cast<float &>(editAction->mValue);
 
-        ImGui::InputFloat("Value", &value);
+        return ImGui::InputFloat("Value", &value);
     }
 
 
@@ -882,12 +906,12 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<int>::handleEditPopupContent(sequenceguiactions::Action& action)
+    bool SequenceEventTrackSegmentView<int>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<int>>();
         int &value = static_cast<int &>(edit_action->mValue);
 
-        ImGui::InputInt("Value", &value);
+        return ImGui::InputInt("Value", &value);
     }
 
 
@@ -914,11 +938,11 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<glm::vec2>::handleEditPopupContent(sequenceguiactions::Action& action)
+    bool SequenceEventTrackSegmentView<glm::vec2>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<glm::vec2>>();
         auto &value = static_cast<glm::vec2 &>(edit_action->mValue);
-        ImGui::InputFloat2("Value", &value.x);
+        return ImGui::InputFloat2("Value", &value.x);
     }
 
 
@@ -938,12 +962,12 @@ namespace nap
 
 
     template<>
-    void SequenceEventTrackSegmentView<glm::vec3>::handleEditPopupContent(sequenceguiactions::Action& action)
+    bool SequenceEventTrackSegmentView<glm::vec3>::handleEditPopupContent(sequenceguiactions::Action& action)
     {
         auto *edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<glm::vec3>>();
         auto &value = static_cast<glm::vec3 &>(edit_action->mValue);
 
-        ImGui::InputFloat3("Value", &value.x);
+        return ImGui::InputFloat3("Value", &value.x);
     }
 
 
@@ -964,12 +988,12 @@ namespace nap
 
 
 	template<>
-	void SequenceEventTrackSegmentView<glm::vec4>::handleEditPopupContent(sequenceguiactions::Action& action)
+	bool SequenceEventTrackSegmentView<glm::vec4>::handleEditPopupContent(sequenceguiactions::Action& action)
 	{
 		auto* edit_action = action.getDerived<sequenceguiactions::EditingEventSegment<glm::vec4>>();
 		auto& value = static_cast<glm::vec4&>(edit_action->mValue);
 
-		ImGui::InputFloat4("Value", &value.x);
+		return ImGui::InputFloat4("Value", &value.x);
 	}
 
 

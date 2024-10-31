@@ -40,7 +40,7 @@ namespace nap
 
         /**
          * Initialization
-         * @param error contains error information
+         * @param errorState contains error information
          * @return true on success
          */
 		virtual bool init(utility::ErrorState& errorState) override final;

@@ -7,7 +7,7 @@
 
 #include <nap/logger.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPAdapter)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::UDPAdapter, "UDP connection socket")
 	RTTI_PROPERTY("Thread", &nap::UDPAdapter::mThread, nap::rtti::EPropertyMetaData::Required)
     RTTI_PROPERTY("AllowFailure", &nap::UDPAdapter::mAllowFailure, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

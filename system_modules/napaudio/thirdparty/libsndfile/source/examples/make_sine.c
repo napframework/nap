@@ -55,8 +55,8 @@ main (void)
 	int	*buffer ;
 
 	if (! (buffer = malloc (2 * SAMPLE_COUNT * sizeof (int))))
-	{	printf ("Malloc failed.\n") ;
-		exit (0) ;
+	{	printf ("Error : Malloc failed.\n") ;
+		return 1 ;
 		} ;
 
 	memset (&sfinfo, 0, sizeof (sfinfo)) ;
@@ -74,17 +74,19 @@ main (void)
 
 	if (sfinfo.channels == 1)
 	{	for (k = 0 ; k < SAMPLE_COUNT ; k++)
-			buffer [k] = AMPLITUDE * sin (LEFT_FREQ * 2 * k * M_PI) ;
+			buffer [k] = (int) (AMPLITUDE * sin (LEFT_FREQ * 2 * k * M_PI)) ;
 		}
 	else if (sfinfo.channels == 2)
 	{	for (k = 0 ; k < SAMPLE_COUNT ; k++)
-		{	buffer [2 * k] = AMPLITUDE * sin (LEFT_FREQ * 2 * k * M_PI) ;
-			buffer [2 * k + 1] = AMPLITUDE * sin (RIGHT_FREQ * 2 * k * M_PI) ;
+		{	buffer [2 * k] = (int) (AMPLITUDE * sin (LEFT_FREQ * 2 * k * M_PI)) ;
+			buffer [2 * k + 1] = (int) (AMPLITUDE * sin (RIGHT_FREQ * 2 * k * M_PI)) ;
 			} ;
 		}
 	else
-	{	printf ("makesine can only generate mono or stereo files.\n") ;
-		exit (1) ;
+	{	printf ("Error : make_sine can only generate mono or stereo files.\n") ;
+		sf_close (file) ;
+		free (buffer) ;
+		return 1 ;
 		} ;
 
 	if (sf_write_int (file, buffer, sfinfo.channels * SAMPLE_COUNT) !=

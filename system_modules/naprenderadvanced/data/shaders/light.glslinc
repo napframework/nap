@@ -1,0 +1,75 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+// NAP Shader include file
+
+// Light structure for all lights. Not all types use all members.
+struct Light
+{
+	vec3 origin;
+	vec3 direction;
+	vec3 color;
+	float intensity;
+	float attenuation;
+	float angle;
+	float falloff;
+	uint flags;
+};
+
+// Light types
+const uint LIGHT_CUSTOM			= 0;
+const uint LIGHT_DIRECTIONAL	= 1;
+const uint LIGHT_POINT			= 2;
+const uint LIGHT_SPOT			= 3;
+
+// Returns whether the light is enabled
+bool isLightEnabled(uint flags)
+{
+	return (flags & 0x1) > 0;
+}
+
+// Returns whether shadows are enabled
+bool isShadowEnabled(uint flags)
+{
+	return (flags & 0x02) > 0;
+}
+
+// Returns whether shadows are supported
+bool isShadowSupported(uint flags)
+{
+	return (flags & 0x04) > 0;
+}
+
+// Returns the light type of the specified light flag
+uint getLightType(uint flags)
+{
+	return (flags >> 8) & 0xff;
+}
+
+
+// Returns an incidence value of a light and surface
+// @return incidence value [0.0 - 1.0], -1.0 if the light type is not supported
+float getSurfaceIncidence(Light light, vec3 surfaceNormal, vec3 surfacePosition)
+{
+	switch (getLightType(light.flags))
+	{
+		case LIGHT_DIRECTIONAL:
+		{
+			return max(dot(surfaceNormal, -light.direction), 0.0);
+		}
+		case LIGHT_POINT:
+		case LIGHT_SPOT:
+		{
+			vec3 inv_light_direction = normalize(light.origin - surfacePosition);
+			return max(dot(surfaceNormal, inv_light_direction), 0.0);
+		}
+
+		// Light type not supported
+		case LIGHT_CUSTOM:
+		default:
+		{
+			return -1.0;
+		}
+	}
+}

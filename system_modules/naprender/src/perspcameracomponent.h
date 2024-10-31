@@ -17,31 +17,25 @@ namespace nap
 	/**
 	 * Perspective camera properties.
 	 */
-	struct NAPAPI PerpCameraProperties
+	struct NAPAPI PerspCameraProperties
 	{
-		float mFieldOfView			= 50.0f;				///< Property: "FieldOfView" perspective camera field of view
-		float mNearClippingPlane	= 1.0f;					///< Property: "NearClippingPlane" camera near clipping plane
-		float mFarClippingPlane		= 1000.0f;				///< Property: "FarClippingPlane" camera far clipping plane
-		glm::ivec2 mGridDimensions	= glm::ivec2(1, 1);		///< Property: "GridDimensions" of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
-		glm::ivec2 mGridLocation	= glm::ivec2(0, 0);		///< Property: "GridLocation" the 2 dimensional index in the split projection dimensions
+		float mFieldOfView				= 50.0f;		///< Property: "FieldOfView" perspective camera field of view
+		float mNearClippingPlane		= 1.0f;			///< Property: "NearClippingPlane" camera near clipping plane
+		float mFarClippingPlane			= 1000.0f;		///< Property: "FarClippingPlane" camera far clipping plane
+		glm::ivec2 mGridDimensions		= { 1, 1 };		///< Property: "GridDimensions" of 'split projection' grid. Default is single dimension, meaning a single screen, which is a regular symmetric perspective projection
+		glm::ivec2 mGridLocation		= { 0, 0 };		///< Property: "GridLocation" the 2 dimensional index in the split projection dimensions
 	};
 	
 
 	/**
 	 * Perspective camera component resource. Holds static data as read from file.
 	 */
-	class NAPAPI PerspCameraComponent : public Component
+	class NAPAPI PerspCameraComponent : public CameraComponent
 	{
-		RTTI_ENABLE(Component)
+		RTTI_ENABLE(CameraComponent)
 		DECLARE_COMPONENT(PerspCameraComponent, PerspCameraComponentInstance)
-
-		/**
-		 * The perspective camera needs on a transform to calculate it's view matrix
-		 */
-		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
-
 	public:
-		PerpCameraProperties mProperties;	///< Property: 'Properties' the perspective camera settings
+		PerspCameraProperties mProperties;				///< Property: 'Properties' the perspective camera settings
 	};
 
 
@@ -110,21 +104,31 @@ namespace nap
 		/**
 		 * @return camera near clipping plane
 		 */
-		float getNearClippingPlane() const;
+		virtual float getNearClippingPlane() const override;
 
 		/**
 		 * @return camera far clipping plane
 		 */
-		float getFarClippingPlane() const;
+		virtual float getFarClippingPlane() const override;
 
 		/**
 		 * Returns the matrix that is used to transform a 3d scene in to a 2d projection by the renderer.
 		 * Vulkan uses a coordinate system where (-1, -1) is in the top left quadrant, instead of the bottom left quadrant.
 		 * Use this matrix, instead of the one returned by getProjectionMatrix(), when an ortographic projection matrix is required as shader input.
-		*  For all regular (CPU) related orthographic calculations, use getProjectionMatrix().
+		 * For all regular (CPU) related orthographic calculations, use getProjectionMatrix().
 		 * @return the projection matrix used by the renderer
 		 */
 		virtual const glm::mat4& getRenderProjectionMatrix() const override;
+
+		/**
+		 * @return the perspective camera properties
+		 */
+		PerspCameraProperties getProperties() const;
+
+		/**
+		 * Sets the camera instance properties
+		 */
+		void setProperties(const PerspCameraProperties& props);
 
 	private:
 
@@ -142,7 +146,7 @@ namespace nap
 		mutable glm::mat4x4				mProjectionMatrix;						// The composed projection matrix
 		mutable glm::mat4x4				mRenderProjectionMatrix;				// The composed projection matrix used by the renderer
 		mutable bool					mDirty = true;							// If the projection matrix needs to be recalculated
-		PerpCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
+		PerspCameraProperties			mProperties;							// These properties are copied from the resource to the instance. When these are changed, only the instance is affected
 		TransformComponentInstance*		mTransformComponent;					// Cached transform component
 
 		bool							mPerpendicularRenderProjection = true;	// Whether the render projection matrix should be projected onto a perpendicular surface

@@ -96,7 +96,7 @@ namespace nap
 		 * @param id unique id of the object to find.
 		 * @return the object, nullptr if not found.
 		 */
-		const rtti::ObjectPtr<rtti::Object> findObject(const std::string& id);
+		rtti::ObjectPtr<rtti::Object> findObject(const std::string& id) const;
 
 		/**
 		 * Find an object of type T. Returns null if not found.
@@ -112,7 +112,7 @@ namespace nap
 		 * @return the object of type T, nullptr if not found.
 		 */
 		template<class T>
-		const rtti::ObjectPtr<T> findObject(const std::string& id) { return rtti::ObjectPtr<T>(findObject(id)); }
+		rtti::ObjectPtr<T> findObject(const std::string& id) const { return rtti::ObjectPtr<T>(findObject(id)); }
 
 		/**
 		 * Get all objects of a particular type.
@@ -126,14 +126,14 @@ namespace nap
 		 * @param type object type to create.
 		 * @return newly created object.
 		 */
-		const rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
+		rtti::ObjectPtr<rtti::Object> createObject(const rtti::TypeInfo& type);
 
 		/**
 		 * Creates an object of type T and adds it to the manager.
 		 * @return the newly created object.
 		 */
 		template<typename T>
-		const rtti::ObjectPtr<T> createObject() { return rtti::ObjectPtr<T>(createObject(RTTI_OF(T))); }
+		rtti::ObjectPtr<T> createObject() { return rtti::ObjectPtr<T>(createObject(RTTI_OF(T))); }
 
 		/**
 		* Function that runs the file monitor to check for changes. If changes are found in files that were loaded by the manager,
@@ -233,6 +233,7 @@ namespace nap
 		std::unique_ptr<CoreFactory>		mFactory = nullptr;				// Responsible for creating objects when de-serializing
 		Core&								mCore;							// Core
 	};
+
 
 	template<class T>
 	std::vector<rtti::ObjectPtr<T>> ResourceManager::getObjects() const

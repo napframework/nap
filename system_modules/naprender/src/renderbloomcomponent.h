@@ -121,15 +121,6 @@ namespace nap
 		UniformVec2Instance*		mTextureSizeUniform = nullptr;		///< Texture size uniform of the blur material
 
 		/**
-		 * Pushes a full-size blit to the command buffer. Must be called inside a render pass, in onDraw(). Assumes no mip-maps.
-		 * The layouts of srcTexture and dstTexture are transferred to SHADER_READ after the blit operation.
-		 * @param commandBuffer the command buffer to push the blit operation to
-		 * @param srcTexture the source texture
-		 * @param dstTexture the destination texture
-		 */
-		void blit(VkCommandBuffer commandBuffer, nap::Texture2D& srcTexture, nap::Texture2D& dstTexture);
-
-		/**
 		 * Checks if the uniform is available on the source material and creates it if so
 		 * @return the uniform, nullptr if not available.
 		 */

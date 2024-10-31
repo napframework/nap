@@ -97,7 +97,7 @@ namespace nap
 		ResourcePtr<ParameterFloat> mSpecularIntensityParam;			///< Property: "SpecularIntensity" Specular intensity
 		ResourcePtr<ParameterFloat> mMateColorRateParam;				///< Property: "MateColor" Maximum rate of mates for blending boid diffuse colors
 
-		ComponentPtr<TransformComponent> mTargetTransformComponent;		///< Property: "TargetTransformComponent" Camera that we're controlling
+		std::vector<ComponentPtr<TransformComponent>> mTargetTransforms; ///< Property: "TargetTransforms" List of boid targets
 	};
 
 
@@ -172,9 +172,6 @@ namespace nap
 		uint getNumBoids() const;
 
 	private:
-		void updateRenderMaterial();
-		void updateComputeMaterial(ComputeComponentInstance* comp);
-
 		FlockingSystemComponent*					mResource = nullptr;
 		RenderService*								mRenderService = nullptr;
 
@@ -182,10 +179,70 @@ namespace nap
 		double										mDeltaTime = 0.0;
 		double										mElapsedTime = 0.0;
 
-		std::vector<ComputeComponentInstance*>		mComputeInstances;					//< Compute instances found in the entity
-		ComputeComponentInstance*					mCurrentComputeInstance = nullptr;	//< The current compute instance
-		int											mComputeInstanceIndex = 0;			//< Current compute instance index
+		ComputeComponentInstance*					mComputeInstance = nullptr;
 
-		ComponentInstancePtr<TransformComponent>	mTargetTransformComponent = { this, &FlockingSystemComponent::mTargetTransformComponent };
+		BufferBindingStructInstance*				mBindingIn = nullptr;
+		BufferBindingStructInstance*				mBindingOut = nullptr;
+		StructBuffer*								mBoidBufferInput = nullptr;
+		StructBuffer*								mBoidBufferOutput = nullptr;
+
+		BufferBindingStructInstance*				mRenderStorageBinding = nullptr;
+
+		UniformVec3ArrayInstance*					mTargetsUniform = nullptr;
+		UniformUIntInstance*						mTargetCountUniform = nullptr;
+
+		std::unique_ptr<ParameterFloat>				mElapsedTimeParam;
+		std::unique_ptr<ParameterFloat>				mDeltaTimeParam;
+
+		std::vector<ComponentInstancePtr<TransformComponent>> mTargetTransforms = initComponentInstancePtr(this, &FlockingSystemComponent::mTargetTransforms);
+
+		// Parameters
+		Slot<float>	mElapsedTimeChangedSlot;
+		Slot<float>	mDeltaTimeChangedSlot;
+		Slot<bool> mRandomColorChangedSlot;
+		Slot<float>	mBoidSizeChangedSlot;
+		Slot<float>	mFresnelScaleChangedSlot;
+		Slot<float>	mFresnelPowerChangedSlot;
+		Slot<float>	mViewRadiusChangedSlot;
+		Slot<float>	mAvoidRadiusChangedSlot;
+		Slot<float>	mMinSpeedChangedSlot;
+		Slot<float>	mMaxSpeedChangedSlot;
+		Slot<float>	mTargetWeightChangedSlot;
+		Slot<float>	mAlignmentWeightChangedSlot;
+		Slot<float>	mCohesionWeightChangedSlot;
+		Slot<float>	mSeparationWeightChangedSlot;
+		Slot<float>	mBoundsRadiusChangedSlot;
+
+		Slot<glm::vec3> mLightPositionChangedSlot;
+		Slot<float> mLightIntensityChangedSlot;
+		Slot<RGBColorFloat> mDiffuseColorChangedSlot;
+		Slot<RGBColorFloat> mDiffuseColorExChangedSlot;
+		Slot<RGBColorFloat> mLightColorChangedSlot;
+		Slot<RGBColorFloat> mHaloColorChangedSlot;
+		Slot<RGBColorFloat> mSpecularColorChangedSlot;
+		Slot<float> mShininessChangedSlot;
+		Slot<float> mAmbientIntensityChangedSlot;
+		Slot<float> mDiffuseIntensityChangedSlot;
+		Slot<float> mSpecularIntensityChangedSlot;
+		Slot<float> mMateColorRateChangedSlot;
+
+		template<typename T>
+		void onUniformValueUpdate(T value, TypedUniformValueInstance<T>* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
+
+		void onUniformRGBColorUpdate(RGBColorFloat value, UniformVec3Instance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value.toVec3());
+		}
+
+		void onUniformBoolUpdate(bool value, UniformUIntInstance* uniformInstance)
+		{
+			assert(uniformInstance != nullptr);
+			uniformInstance->setValue(value);
+		}
 	};
 }

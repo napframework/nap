@@ -9,7 +9,7 @@
 #include <oscinputcomponent.h>
 
 // Register OSC Handler Component
-RTTI_BEGIN_CLASS(nap::OscHandlerComponent)
+RTTI_BEGIN_CLASS(nap::OscHandlerComponent, "Converts incoming osc messages to a string and stores them")
 RTTI_END_CLASS
 
 // Register OSC Handler Component Instance

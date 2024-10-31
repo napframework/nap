@@ -5,10 +5,9 @@
 // local includeso
 #include "sequencetracksegment.h"
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackSegment)
-        RTTI_PROPERTY("Label", &nap::SequenceTrackSegment::mLabel, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Start Time", &nap::SequenceTrackSegment::mStartTime, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Duration", &nap::SequenceTrackSegment::mDuration, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::SequenceTrackSegment, "Part of a track")
+        RTTI_PROPERTY("Label", &nap::SequenceTrackSegment::mLabel, nap::rtti::EPropertyMetaData::Default, "Segment name")
+        RTTI_PROPERTY("Start Time", &nap::SequenceTrackSegment::mStartTime, nap::rtti::EPropertyMetaData::Default, "Segment start time")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
@@ -18,11 +17,6 @@ namespace nap
 {
     bool SequenceTrackSegment::init(utility::ErrorState& errorState)
     {
-        if(!Resource::init(errorState))
-        {
-            return false;
-        }
-
-        return true;
+		return Resource::init(errorState);
     }
 }

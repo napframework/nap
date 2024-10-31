@@ -134,13 +134,13 @@ namespace nap
 		uint8				mSubnet = 0;									///< Property: 'Subnet' range from 0 - 15
 		uint8				mUniverse = 0;									///< Property: 'Universe' range from 0 - 15
 		int					mUpdateFrequency = artnet::refreshRate;			///< Property: 'Frequency' artnet refresh rate, the default is the maximum refresh rate
-		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is send regardless of changes
+		float				mWaitTime = 2.0f;								///< Property: 'WaitTime' number of seconds before the control data is sent regardless of changes
 		EArtnetMode			mMode = EArtnetMode::Broadcast;					///< Property: 'Mode' artnet message mode, Broadcast or Unicast
 		int					mUnicastLimit = 10;								///< Property: 'UnicastLimit' allowed number of unicast nodes before switching to broadcast mode. Only has effect when mode = Unicast
 		bool				mVerbose = false;								///< Property: 'Verbose' prints artnet network traffic information to the console
 		float				mReadTimeout = 2.0f;							///< Property: 'Timeout' poll network node read timeout, only used when mode is set to Unicast
 		std::string			mIpAddress = "";								///< Property: 'IP Address' this controller's IP Address, when left empty the first available ethernet adapter is chosen.
-		uint16				mChannelCount = 512;							///< Property: 'ChannelCount' the amount of channels sent with each data packet, must be between 2 and 512
+		uint16				mChannelCount = 512;							///< Property: 'ChannelCount' the amount of channels included in each packet, must be between 2 and 512
 
 	private:
 

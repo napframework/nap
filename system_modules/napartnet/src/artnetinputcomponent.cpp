@@ -9,11 +9,11 @@
 // External includes
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::ArtNetInputComponent)
-	RTTI_PROPERTY("Net", &nap::ArtNetInputComponent::mNet, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("SubNet", &nap::ArtNetInputComponent::mSubNet, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Universe", &nap::ArtNetInputComponent::mUniverse, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Receive All", &nap::ArtNetInputComponent::mReceiveAll, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ArtNetInputComponent, "Receives Artnet DMX packets")
+	RTTI_PROPERTY("Net",			&nap::ArtNetInputComponent::mNet,			nap::rtti::EPropertyMetaData::Default,	"The Artnet net")
+	RTTI_PROPERTY("SubNet",			&nap::ArtNetInputComponent::mSubNet,		nap::rtti::EPropertyMetaData::Default,	"The Artnet subnet")
+	RTTI_PROPERTY("Universe",		&nap::ArtNetInputComponent::mUniverse,		nap::rtti::EPropertyMetaData::Default,	"The Artnet universe")
+	RTTI_PROPERTY("Receive All",	&nap::ArtNetInputComponent::mReceiveAll,	nap::rtti::EPropertyMetaData::Default,	"When enabled all Artnet packets are forwarded")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ArtNetInputComponentInstance)

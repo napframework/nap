@@ -10,7 +10,7 @@
 #include <inputrouter.h>
 #include <entity.h>
 
-RTTI_BEGIN_CLASS(nap::DefaultInputRouterComponent)
+RTTI_BEGIN_CLASS(nap::DefaultInputRouterComponent, "Creates a default input router, used to forward input events to a selection of entities")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::DefaultInputRouterComponentInstance)

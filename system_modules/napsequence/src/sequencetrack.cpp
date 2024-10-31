@@ -9,11 +9,11 @@
 // external includes
 #include <nap/resourceptr.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceTrack)
-        RTTI_PROPERTY("Segments", &nap::SequenceTrack::mSegments, nap::rtti::EPropertyMetaData::Embedded)
-        RTTI_PROPERTY("Output ID", &nap::SequenceTrack::mAssignedOutputID, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Name", &nap::SequenceTrack::mName, nap::rtti::EPropertyMetaData::Default)
-        RTTI_PROPERTY("Height", &nap::SequenceTrack::mTrackHeight, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequenceTrack, "Single track of a sequence")
+        RTTI_PROPERTY("Segments", &nap::SequenceTrack::mSegments, nap::rtti::EPropertyMetaData::Embedded, "Track segments")
+        RTTI_PROPERTY("Output ID", &nap::SequenceTrack::mAssignedOutputID, nap::rtti::EPropertyMetaData::Default, "Output identifier")
+        RTTI_PROPERTY("Name", &nap::SequenceTrack::mName, nap::rtti::EPropertyMetaData::Default, "Track name")
+        RTTI_PROPERTY("Height", &nap::SequenceTrack::mTrackHeight, nap::rtti::EPropertyMetaData::Default, "Track height")
 RTTI_END_CLASS
 
 namespace nap

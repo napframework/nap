@@ -11,8 +11,8 @@
 #include <nap/core.h>
 
 // nap::websocketcomponent run time class definition 
-RTTI_BEGIN_CLASS(nap::WebSocketComponent)
-	RTTI_PROPERTY("Interface", &nap::WebSocketComponent::mInterface, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::WebSocketComponent, "Receives web-socket client and server events")
+	RTTI_PROPERTY("Interface", &nap::WebSocketComponent::mInterface, nap::rtti::EPropertyMetaData::Required, "The websocket client / server this component listens to for events")
 RTTI_END_CLASS
 
 // nap::websocketcomponentInstance run time class definition 

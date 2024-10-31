@@ -11,7 +11,7 @@ RUN \
   wget --progress=bar:force:noscroll http://files.portaudio.com/archives/${package_archive} && \
   tar -xf ${package_archive} && \
   cd ${package_dir} && \
-  ./configure --prefix=${inst_dir} && \
+  ./configure --prefix=${inst_dir} --without-jack --without-oss && \
   make -j `nproc` && \
   make -j `nproc` install && \
   cp LICENSE.txt ${inst_dir}/ && \

@@ -50,7 +50,7 @@ namespace nap
 		/**
 		 * @return all queued events. Queue is not cleared.
 		 */
-		EventPtrConstIterator GetEvents() const { return EventPtrConstIterator(mWindowEvents); }
+		EventPtrConstIterator getEvents() const { return EventPtrConstIterator(mWindowEvents); }
 
 		/*
 		* Subscribe to this signal to respond to any events broad-casted by processEvents.

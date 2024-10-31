@@ -4,10 +4,14 @@
 
 #pragma once
 
+// Local Includes
+#include "mesh.h"
+#include "box.h"
+#include "triangleiterator.h"
+#include "renderglobals.h"
+
+// External Includes
 #include <utility/dllexport.h>
-#include <mesh.h>
-#include <box.h>
-#include <triangleiterator.h>
 
 namespace nap
 {
@@ -43,6 +47,7 @@ namespace nap
 		* Note that this function only works for meshes that are of type: TRIANGLES, TRIANGLE_STRIP or TRIANGLE_FAN
 		* This call asserts when the triangle number is out of bounds, the mesh has no indices or the draw mode is not of type triangle
 		* @param mesh the mesh to get the indices from
+		* @param drawMode mesh topology
 		* @param number the triangle number to get the for
 		* @param indices the new indices
 		* @return if the triangle indices are valid
@@ -53,28 +58,23 @@ namespace nap
 		* Computes the bounding box of a mesh using its associated position data.
 		* Note that indices are not considered. This call loops over all available
 		* points regardless of whether if they're drawn or not
+		* @tparam the data type of the position attribute
 		* @param mesh the mesh to get the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		void NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, nap::math::Box& outBox);
-
-		/**
-		* Computes the bounding box of a mesh using its associated position data
-		* Note that indices are not considered. This call loops over all available
-		* points regardless of whether they're drawn or not
-		* @param mesh the mesh to get the bounding box for
-		* @return the computed bounding box
-		*/
-		math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh);
+		template <typename T>
+		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
 
 		/**
 		* Computes the bounding box of a single shape within a mesh using its associated position data.
 		* Note that the given shape must be part of the mesh.
+		* @tparam the data type of the position attribute
 		* @param mesh the mesh that contains position data
 		* @param shape the shape to compute the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		math::Box NAPAPI computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape);
+		template <typename T>
+		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
 
 		/**
 		* Automatically re-computes all the normals of a mesh
@@ -163,10 +163,52 @@ namespace nap
 		//////////////////////////////////////////////////////////////////////////
 		// Template Definitions
 		//////////////////////////////////////////////////////////////////////////
+
 		template<typename T>
 		T interpolateVertexAttr(const TriangleData<T>& vertexValues, const glm::vec3& coords)
 		{
 			return (vertexValues.first() * (1.0f - coords.x - coords.y)) + (vertexValues.second() * coords.x) + (vertexValues.third() * coords.y);
+		}
+
+		template <typename T>
+		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
+		{
+			glm::vec3 min(math::max<float>());
+			glm::vec3 max(math::min<float>());
+
+			const nap::VertexAttribute<T>& positions = mesh.getAttribute<T>(vertexid::position);
+			for (const auto& point : positions.getData())
+			{
+				if (point.x < min.x) { min.x = point.x; }
+				if (point.x > max.x) { max.x = point.x; }
+				if (point.y < min.y) { min.y = point.y; }
+				if (point.y > max.y) { max.y = point.y; }
+				if (point.z < min.z) { min.z = point.z; }
+				if (point.z > max.z) { max.z = point.z; }
+			}
+			outBox.mMinCoordinates = min;
+			outBox.mMaxCoordinates = max;
+		}
+
+		template <typename T>
+		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox)
+		{
+			glm::vec3 min(math::max<float>());
+			glm::vec3 max(math::min<float>());
+
+			const nap::VertexAttribute<T>& positions = mesh.getAttribute<T>(vertexid::position);
+			for (unsigned int i : shape.getIndices())
+			{
+				const auto& point = positions[i];
+				if (point.x < min.x) { min.x = point.x; }
+				if (point.x > max.x) { max.x = point.x; }
+				if (point.y < min.y) { min.y = point.y; }
+				if (point.y > max.y) { max.y = point.y; }
+				if (point.z < min.z) { min.z = point.z; }
+				if (point.z > max.z) { max.z = point.z; }
+			}
+			outBox.mMinCoordinates = min;
+			outBox.mMaxCoordinates = max;
 		}
 	}
 }

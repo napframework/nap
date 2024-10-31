@@ -218,71 +218,6 @@ namespace nap
 			return (current_flags & (uint8_t)flags) != 0;
 		}
 
-
-		/**
-		 * Finds method recursively in class and its base classes. Note: this should normally work through the regular rttr::get_method function,
-		 * but this does not seem to work properly. This function is used as a workaround until we solve the issue.
-		 */
-		inline rttr::method findMethodRecursive(const rtti::TypeInfo& type, const std::string& methodName)
-		{
-			for (const rtti::TypeInfo& base : type.get_base_classes())
-			{
-				rttr::method result = findMethodRecursive(base, methodName);
-				if (result.is_valid())
-					return result;
-			}
-			return type.get_method(methodName);
-		}
-
-
-		/**
-		 * Checks if a description is provided for the given property.
-		 * @return if a description is provided for the given property.
-		 */
-		inline bool hasDescription(const rtti::Property& property)
-		{
-			return property.get_metadata("description").is_valid();
-		}
-
-		/**
-		 * Returns the description of a property.
-		 * @return property description, nullptr when not defined.
-		 */
-		inline const char* getDescription(const rtti::Property& property)
-		{
-			const rtti::Variant& meta_data = property.get_metadata("description");
-			return meta_data.is_valid() ? meta_data.convert<const char*>() : nullptr;
-		}
-
-		/**
-		 * Checks if a description is provided for the given type, including base types.
-		 * @return if a description is provided for the given type.
-		 */
-		inline bool hasDescription(const rtti::TypeInfo& type)
-		{	
-			auto description_method = type.get_method(rtti::method::description);
-			return description_method.is_valid();
-		}
-
-		/**
-		 * Returns the description of a type, including base types.
-		 * @return type description, nullptr when not defined.
-		 */
-		inline const char* getDescription(const rtti::TypeInfo& type)
-		{
-			const rttr::method* description_method = nullptr;
-			auto range = type.get_methods(rttr::filter_item::static_item | rttr::filter_item::public_access);
-			for (const auto& method : range)
-			{
-				if (method.get_name() == nap::rtti::method::description)
-					description_method = &method;
-			}
-
-			// Description available in actual or base class
-			return description_method != nullptr ?
-				description_method->invoke(rttr::instance()).convert<const char*>() : nullptr;
-		}
-
 		/**
 		 * Helper function to check whether a property is associated with a specific type of file
 		 * @return if the property is a specific type of file
@@ -290,31 +225,44 @@ namespace nap
 		inline bool isFileType(const rtti::Property &property, EPropertyFileType filetype)
 		{
 			const rtti::Variant& meta_data = property.get_metadata("filetype");
-			if (!meta_data.is_valid())
-				return false;
-
-			uint8_t current_type = meta_data.convert<uint8_t>();
-			return current_type == (uint8_t)filetype;
+			return meta_data.is_valid() ?
+				meta_data.convert<uint8_t>() == (uint8_t)filetype : false;
 		}
 
-
 		/**
-		* Selects whether the type check should be an exact type match or whether
-		* the type should be derived from the given type.
-		*/
+		 * Selects whether the type check should be an exact type match or whether
+		 * the type should be derived from the given type.
+		 */
 		enum class ETypeCheck : uint8_t
 		{
 			EXACT_MATCH,				///< The type needs to be of the exact same kind
 			IS_DERIVED_FROM				///< The type is derived from the specified type
 		};
 
-
 		/**
-		* Helper function to check whether two types match, based on a comparison mode
-		*/
+		 * Helper function to check whether two types match, based on a comparison mode
+		 */
 		inline bool isTypeMatch(const rtti::TypeInfo& typeA, const rtti::TypeInfo& typeB, ETypeCheck typeCheck)
 		{
 			return typeCheck == ETypeCheck::EXACT_MATCH ? typeA == typeB : typeA.is_derived_from(typeB);
+		}
+
+		/**
+		 * Finds method recursively in class and its base classes.
+		 * Note that if a function is defined twice the base class gets priority.
+		 * 
+		 * Note: this should normally work through the regular rttr::get_method function,
+		 * but this does not seem to work properly. This function is used as a workaround until we solve the issue.
+		 */
+		inline rttr::method findMethodRecursive(const rtti::TypeInfo& type, const std::string& methodName)
+		{
+			for (const rtti::TypeInfo& base : type.get_base_classes())
+			{
+				auto result = base.get_method(methodName);
+				if (result.is_valid())
+					return result;
+			}
+			return type.get_method(methodName);
 		}
 	}
 

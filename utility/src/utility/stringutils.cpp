@@ -8,6 +8,7 @@
 // Std Includes
 #include <regex>
 #include <cctype>
+#include <string.h>
 
 namespace nap
 {

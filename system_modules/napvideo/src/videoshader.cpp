@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::VideoShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::VideoShader, "Converts YUV video, output by the video player, into RGB")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

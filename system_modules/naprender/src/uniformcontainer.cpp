@@ -4,7 +4,7 @@
 
 // Local Includes
 #include "uniformcontainer.h"
-#include "texture2d.h"
+#include "texture.h"
 
 // External Includes
 #include <rtti/rttiutilities.h>
@@ -18,19 +18,10 @@ RTTI_END_CLASS
 
 namespace nap
 {
-	UniformStructInstance* UniformContainer::findUniform(const std::string& name)
+	UniformStructInstance* UniformContainer::findUniform(const std::string& name) const
 	{
 		for (auto& instance : mUniformRootStructs)
 			if (instance->getDeclaration().mName == name)
-				return instance.get();
-		return nullptr;
-	}
-
-
-	BufferBindingInstance* UniformContainer::findBinding(const std::string& name)
-	{
-		for (auto& instance : mBindingInstances)
-			if (instance->getBindingName() == name)
 				return instance.get();
 		return nullptr;
 	}
@@ -45,19 +36,21 @@ namespace nap
 	}
 
 
-	UniformStructInstance& UniformContainer::getUniform(const std::string& name)
+	BufferBindingInstance* UniformContainer::findBinding(const std::string& name) const
 	{
-		UniformStructInstance* instance = findUniform(name);
-		assert(instance != nullptr);
-		return *instance;
+		for (auto& instance : mBindingInstances)
+			if (instance->getBindingName() == name)
+				return instance.get();
+		return nullptr;
 	}
 
 
-	BufferBindingInstance& UniformContainer::getBinding(const std::string& name)
+	ShaderConstantInstance* UniformContainer::findConstant(const std::string& name) const
 	{
-		BufferBindingInstance* instance = findBinding(name);
-		assert(instance != nullptr);
-		return *instance;
+		for (auto& constant : mConstantInstances)
+			if (constant->getDeclaration().mName == name)
+				return constant.get();
+		return nullptr;
 	}
 
 
@@ -70,6 +63,12 @@ namespace nap
 	SamplerInstance& UniformContainer::addSamplerInstance(std::unique_ptr<SamplerInstance> instance)
 	{
 		return *mSamplerInstances.emplace_back(std::move(instance));
+	}
+
+
+	ShaderConstantInstance& UniformContainer::addConstantInstance(std::unique_ptr<ShaderConstantInstance> instance)
+	{
+		return *mConstantInstances.emplace_back(std::move(instance));
 	}
 
 

@@ -1,0 +1,193 @@
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+// NAP shader include file
+// All sorts of helpful utilities
+
+const float EPSILON 		= 0.00001;
+const float PI 				= 3.14159265359;
+const float TWO_PI 			= PI*2.0;
+
+const vec4 QUAT_IDENTITY 	= { 0.0, 0.0, 0.0, 1.0 };
+const vec3 FORWARD 			= { 0.0, 0.0, 1.0 };
+const vec3 UP 				= { 0.0, 1.0, 0.0 };
+const vec3 RIGHT 			= { 1.0, 0.0, 0.0 };
+
+
+// Compute luminance value from weighted color channels
+float luminance(vec3 color)
+{
+	return 0.299 * color.r + 0.587 * color.g + 0.114 * color.b;
+}
+
+
+// Maps one range to another
+float map(float value, float min1, float max1, float min2, float max2)
+{
+	return min2 + (value - min1) * (max2 - min2) / (max1 - min1);
+}
+
+
+// Maps x [0, 1] to [min, max]
+float map(float x, float min, float max)
+{
+	return min + x * (max - min);
+}
+
+
+// Maps x [min, max] to [0, 1]
+float map01(float x, float min, float max)
+{
+	return (x - min) / (max - min);
+}
+
+
+// Clamps value between 0.0 and 1.0
+float saturate(float value)
+{
+	return max(0.0, min(1.0, value));
+}
+
+
+// Multiply two quaternions -> qa * qb
+// @param v: the vector to rotate
+// @param q: the quaternion used to rotate v
+vec4 mulQuat(const vec4 qa, const vec4 qb)
+{ 
+	return normalize(vec4(
+		qb.xyz * qa.w + qa.xyz * qb.w + cross(qa.xyz, qb.xyz),
+		qa.w * qb.w - dot(qa.xyz, qb.xyz)
+	));
+}
+
+
+// Rotate vector v with quaterion q -> q * v
+// @param v: the vector to rotate
+// @param q: the quaternion used to rotate v
+vec3 rotate(const vec3 v, const vec4 q)
+{
+	float l1 = dot(q.xyz, q.xyz);
+	return v * (q.w * q.w - l1) + q.xyz * (dot(v, q.xyz) * 2.0) + cross(q.xyz, v) * (q.w * 2.0);
+}
+
+
+// Returns a quaternion describing a rotation from orig to dest
+// @param orig: the source vector
+// @param dest: the target vector
+vec4 rotationQuat(const vec3 orig, const vec3 dest)
+{
+	float cos_theta = dot(orig, dest);
+	if (cos_theta >= 1.0-EPSILON)
+		return QUAT_IDENTITY;
+
+	vec3 rot_axis = cross(orig, dest);
+	float s = sqrt((1.0+cos_theta)*2.0);
+	float invs = 1.0 / s;
+
+	return vec4(
+		rot_axis.x * invs,
+		rot_axis.y * invs,
+		rot_axis.z * invs,
+		s * 0.5
+	);
+}
+
+
+// Translation matrix
+mat4 translate(vec3 d)
+{
+	return mat4(
+		1.0, 0.0, 0.0, 0.0,
+		0.0, 1.0, 0.0, 0.0,
+		0.0, 0.0, 1.0, 0.0,
+		d.x, d.y, d.z, 1.0
+	);
+}
+
+
+// Rotation matrix
+mat4 rotationMatrix(vec3 axis, float angle)
+{
+	axis = normalize(axis);
+	float s = sin(angle);
+	float c = cos(angle);
+	float oc = 1.0 - c;
+	
+	return transpose(mat4(
+		oc * axis.x * axis.x + c,           oc * axis.x * axis.y - axis.z * s,  oc * axis.z * axis.x + axis.y * s,  0.0,
+		oc * axis.x * axis.y + axis.z * s,  oc * axis.y * axis.y + c,           oc * axis.y * axis.z - axis.x * s,  0.0,
+		oc * axis.z * axis.x - axis.y * s,  oc * axis.y * axis.z + axis.x * s,  oc * axis.z * axis.z + c,           0.0,
+		0.0,                                0.0,                                0.0,                                1.0
+	));
+}
+
+
+// Returns the translation component of the matrix
+vec3 extractPosition(mat4 matrix)
+{
+	return vec3(matrix[3][0], matrix[3][1], matrix[3][2]);
+}
+
+
+// Returns true if v is a zero-vector, otherwise false
+// @param v: the vector to evaluate
+bool isZero(const vec3 v)
+{
+	float valid = 1.0;
+
+	valid *= step(-EPSILON, v.x) * (1.0 - step(EPSILON, v.x));
+	valid *= step(-EPSILON, v.y) * (1.0 - step(EPSILON, v.y));
+	valid *= step(-EPSILON, v.z) * (1.0 - step(EPSILON, v.z));
+
+	return bool(valid);
+}
+
+
+// Returns a zero vector instead of nan if v cannot be normalized, otherwise normalizes v
+// @param v: the vector to normalize
+vec3 safeNormalize(const vec3 v)
+{
+	return !isZero(v) ? normalize(v) : vec3(0.0);
+}
+
+
+// Clamps the magnitude of v between min and max
+// @param v: the vector to clamp
+// @param min: the minimum magnitude
+// @param max: the maximum magnitude
+vec3 clampMagnitude(const vec3 v, const float min, const float max)
+{
+	return (length(v) > max) ? (normalize(v) * max) : (length(v) < min) ? (normalize(v) * min) : v;
+}
+
+
+// Source: https://www.iquilezles.org/www/articles/intersectors/intersectors.htm
+// @param orig: the ray origin
+// @param dir: the ray direction
+// @param center: the sphere center
+// @param radius: the sphere radius
+float raySphere(const vec3 orig, const vec3 dir, const vec3 center, const float radius)
+{
+	vec3 oc = orig - center;
+	float b = dot(oc, dir);
+	float c = dot(oc, oc) - radius*radius;
+	float h = b*b - c;
+
+	if (h < 0.0)
+		return -1.0; // no intersection
+	
+	//return -b - sqrt(h);			// Outside
+	return -b - sign(c) * sqrt(h);	// Inside and outside
+}
+
+
+// Line starting from point a to b
+vec3 nearestPointOnLineSegment(vec3 position, vec3 a, vec3 b) 
+{
+	vec3 ba = b - a; 
+	float t = dot(position - a, ba) / dot(ba, ba);
+	vec3 closest = mix(a, b, clamp(t, 0.0, 1.0));
+	return closest;
+}
+

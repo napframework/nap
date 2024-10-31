@@ -17,12 +17,12 @@ namespace nap
 	class InputComponentInstance;
 
 	/**
-	 * The resource class for the InputComponent.
+	 * Base class for all input components that receive input events.
 	 */
 	class InputComponent : public Component
 	{
 		RTTI_ENABLE(Component)
-			DECLARE_COMPONENT(InputComponent, InputComponentInstance)
+		DECLARE_COMPONENT(InputComponent, InputComponentInstance)
 	};
 
 
@@ -54,7 +54,7 @@ namespace nap
 	class KeyInputComponentInstance;
 
 	/**
-	 * Resource class for KeyInputComponent.
+	 * Input component that receives keyboard press and release events. 
 	 */
 	class NAPAPI KeyInputComponent : public InputComponent
 	{
@@ -64,8 +64,8 @@ namespace nap
 
 
 	/**
-	 * Input component for press/release key events.
-	 * Register to the various signals to receive keyboard events
+	 * Input component that receives keyboard press and release events.
+	 * Register to the various signals to receive key events.
 	 */
 	class NAPAPI KeyInputComponentInstance : public InputComponentInstance
 	{
@@ -93,7 +93,7 @@ namespace nap
 	class PointerInputComponentInstance;
 
 	/**
-	 * Resource class for PointerInputComponent.
+	 * Input component that receives mouse events.
 	 */
 	class NAPAPI PointerInputComponent : public InputComponent
 	{
@@ -103,7 +103,7 @@ namespace nap
 
 
 	/**
-	 * Input component for mouse events.
+	 * Input component that receives mouse events
 	 * Register to the various signals to receive mouse events
 	 */
 	class NAPAPI PointerInputComponentInstance : public InputComponentInstance
@@ -132,6 +132,7 @@ namespace nap
 	class TouchInputComponentInstance;
 
 	/**
+	 * Input component that receives touch input events. 
 	 * Resource class for TouchInputComponent.
 	 */
 	class NAPAPI TouchInputComponent : public InputComponent

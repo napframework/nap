@@ -76,7 +76,7 @@ namespace nap
 		}
 
 
-		void  setTriangleIndices(MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices)
+		void setTriangleIndices(MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices)
 		{
 			// Copy triangle index over
 			std::vector<uint32>& mesh_indices = mesh.getIndices();
@@ -117,54 +117,6 @@ namespace nap
 				assert(false);
 				break;
 			}
-		}
-
-
-		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
-		{
-			glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
-			glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
-
-			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(vertexid::position);
-			for (const auto& point : positions.getData())
-			{
-				if (point.x < min.x) { min.x = point.x; }
-				if (point.x > max.x) { max.x = point.x; }
-				if (point.y < min.y) { min.y = point.y; }
-				if (point.y > max.y) { max.y = point.y; }
-				if (point.z < min.z) { min.z = point.z; }
-				if (point.z > max.z) { max.z = point.z; }
-			}
-			outBox.mMinCoordinates = min;
-			outBox.mMaxCoordinates = max;
-		}
-
-
-		nap::math::Box computeBoundingBox(const MeshInstance& mesh)
-		{
-			math::Box box;
-			computeBoundingBox(mesh, box);
-			return box;
-		}
-
-
-		math::Box computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape)
-		{
-			glm::vec3 min = { nap::math::max<float>(), nap::math::max<float>(), nap::math::max<float>() };
-			glm::vec3 max = { nap::math::min<float>(), nap::math::min<float>(), nap::math::min<float>() };
-
-			const nap::VertexAttribute<glm::vec3>& positions = mesh.getAttribute<glm::vec3>(vertexid::position);
-			for (unsigned int i : shape.getIndices())
-			{
-				const glm::vec3& point = positions[i];
-				if (point.x < min.x) { min.x = point.x; }
-				if (point.x > max.x) { max.x = point.x; }
-				if (point.y < min.y) { min.y = point.y; }
-				if (point.y > max.y) { max.y = point.y; }
-				if (point.z < min.z) { min.z = point.z; }
-				if (point.z > max.z) { max.z = point.z; }
-			}
-			return math::Box(min, max);
 		}
 
 

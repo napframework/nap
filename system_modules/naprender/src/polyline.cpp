@@ -13,42 +13,42 @@
 #include <glm/gtx/rotate_vector.hpp>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS(nap::PolyLineProperties)
-	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Usage",		&nap::PolyLineProperties::mUsage,	nap::rtti::EPropertyMetaData::Default)	
+RTTI_BEGIN_CLASS(nap::PolyLineProperties, "Polygon line properties")
+	RTTI_PROPERTY("Color",		&nap::PolyLineProperties::mColor,	nap::rtti::EPropertyMetaData::Default, "Vertex color")
+	RTTI_PROPERTY("Usage",		&nap::PolyLineProperties::mUsage,	nap::rtti::EPropertyMetaData::Default, "If the mesh is static or updated at runtime")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PolyLine)
-	RTTI_PROPERTY("Properties",	&nap::PolyLine::mLineProperties,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Properties",	&nap::PolyLine::mLineProperties,	nap::rtti::EPropertyMetaData::Default, "Line properties")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Line)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Line, "Single polygon line")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Start",		&nap::Line::mStart,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("End",		&nap::Line::mEnd,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Closed",		&nap::Line::mClosed,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Vertices",	&nap::Line::mVertexCount,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Start",		&nap::Line::mStart,			nap::rtti::EPropertyMetaData::Default, "Line start position")
+	RTTI_PROPERTY("End",		&nap::Line::mEnd,			nap::rtti::EPropertyMetaData::Default, "Line end position")
+	RTTI_PROPERTY("Closed",		&nap::Line::mClosed,		nap::rtti::EPropertyMetaData::Default, "Connect the last vertex to the first vertex")
+	RTTI_PROPERTY("Vertices",	&nap::Line::mVertexCount,	nap::rtti::EPropertyMetaData::Default, "Total number of vertices")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Rectangle)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Rectangle, "Rectangular polygon line positioned along the X-Y axis")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Dimensions", &nap::Rectangle::mDimensions,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Dimensions", &nap::Rectangle::mDimensions,	nap::rtti::EPropertyMetaData::Default, "The width and height of the rectangle")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Circle)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Circle, "Circular polygon line positioned along the X-Y axis")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Segments",	&nap::Circle::mSegments,	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Radius",		&nap::Circle::mRadius,		nap::rtti::EPropertyMetaData::Default, "Circle radius")
+	RTTI_PROPERTY("Segments",	&nap::Circle::mSegments,	nap::rtti::EPropertyMetaData::Default, "Total number of vertices")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Hexagon)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Hexagon, "Hexagon polygon line positioned along the X-Y axis")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,		nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Radius",		&nap::Hexagon::mRadius,		nap::rtti::EPropertyMetaData::Default, "Hexagon radius")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleLine)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TriangleLine, "Triangle polygon line positioned along the X-Y axis")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Radius",		&nap::TriangleLine::mRadius, nap::rtti::EPropertyMetaData::Default, "Triangle radius")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

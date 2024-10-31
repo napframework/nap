@@ -114,7 +114,7 @@ QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 
 void FilterTreeView::onFilterChanged(const QString& text)
 {
-    mProxyModel.setFilterRegularExpression(text);
+	mProxyModel.setFilterRegularExpression(text);
 	mProxyModel.clearExemptions();
 }
 

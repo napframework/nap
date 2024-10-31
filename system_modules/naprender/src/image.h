@@ -4,7 +4,7 @@
 
 #pragma once
 
-#include <texture2d.h>
+#include <texture.h>
 #include <bitmap.h>
 
 namespace nap

@@ -15,9 +15,9 @@ namespace nap
 	// Globals
 	namespace projectinfo
 	{
-		inline constexpr const char iniDirectory[] = ".ini";	///< .ini directory, holds files used to (re)-store module specific settings in between sessions
-		inline constexpr const char iniExtension[] = ".ini";	///< .ini file extension, used to (re)-store module specific settings in between sessions
-		inline constexpr const char dataDir[] = "data";			///< Default data directory
+		constexpr const char* iniDirectory = ".ini";	///< .ini directory, holds files used to (re)-store module specific settings in between sessions
+		constexpr const char* iniExtension = ".ini";	///< .ini file extension, used to (re)-store module specific settings in between sessions
+		constexpr const char* dataDir = "data";			///< Default data directory
 	}
 
 	/**

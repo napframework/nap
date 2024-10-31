@@ -9,8 +9,8 @@ RTTI_DEFINE_BASE(nap::SamplerInstance)
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler2DInstance)
 	RTTI_CONSTRUCTOR(nap::RenderService&, const nap::SamplerDeclaration&, const nap::Sampler2D*, const nap::SamplerChangedCallback&)
-	RTTI_FUNCTION("setTexture", &nap::Sampler2DInstance::setTexture)
-	RTTI_FUNCTION("hasTexture", &nap::Sampler2DInstance::hasTexture)
+	RTTI_FUNCTION("setTexture",		&nap::Sampler2DInstance::setTexture)
+	RTTI_FUNCTION("hasTexture",		&nap::Sampler2DInstance::hasTexture)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler2DArrayInstance)
@@ -18,6 +18,18 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::Sampler2DArrayInstance)
 	RTTI_FUNCTION("setTexture",		&nap::Sampler2DArrayInstance::setTexture)
 	RTTI_FUNCTION("hasTexture",		&nap::Sampler2DArrayInstance::hasTexture)
 	RTTI_FUNCTION("getNumElements",	&nap::Sampler2DArrayInstance::getNumElements)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SamplerCubeInstance)
+	RTTI_CONSTRUCTOR(nap::RenderService&, const nap::SamplerDeclaration&, const nap::SamplerCube*, const nap::SamplerChangedCallback&)
+	RTTI_FUNCTION("setTexture",		&nap::SamplerCubeInstance::setTexture)
+	RTTI_FUNCTION("hasTexture",		&nap::SamplerCubeInstance::hasTexture)
+RTTI_END_CLASS
+
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SamplerCubeArrayInstance)
+	RTTI_CONSTRUCTOR(nap::RenderService&, const nap::SamplerDeclaration&, const nap::SamplerCubeArray*, const nap::SamplerChangedCallback&)
+	RTTI_FUNCTION("setTexture",		&nap::SamplerCubeArrayInstance::setTexture)
+	RTTI_FUNCTION("hasTexture",		&nap::SamplerCubeArrayInstance::hasTexture)
 RTTI_END_CLASS
 
 namespace nap
@@ -75,6 +87,36 @@ namespace nap
 	}
 
 
+	/**
+	 * @return depth compare operation
+	 */
+	static VkCompareOp getDepthCompareOp(EDepthCompareMode compareMode)
+	{
+		switch (compareMode)
+		{
+		case EDepthCompareMode::Never:
+			return VK_COMPARE_OP_NEVER;
+		case EDepthCompareMode::Less:
+			return VK_COMPARE_OP_LESS;
+		case EDepthCompareMode::Equal:
+			return VK_COMPARE_OP_EQUAL;
+		case EDepthCompareMode::LessOrEqual:
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		case EDepthCompareMode::Greater:
+			return VK_COMPARE_OP_GREATER;
+		case EDepthCompareMode::NotEqual:
+			return VK_COMPARE_OP_NOT_EQUAL;
+		case EDepthCompareMode::GreaterOrEqual:
+			return VK_COMPARE_OP_GREATER_OR_EQUAL;
+		case EDepthCompareMode::Always:
+			return VK_COMPARE_OP_ALWAYS;
+		default:
+			assert(false);
+			return VK_COMPARE_OP_LESS_OR_EQUAL;
+		}
+	}
+
+
 	static float getAnisotropicSamples(const Sampler* sampler, const nap::RenderService& renderer)
 	{
 		// If there is no sampler or setting is derived from system default, use the global setting
@@ -121,15 +163,28 @@ namespace nap
 		samplerInfo.maxAnisotropy			= getAnisotropicSamples(mSampler, *mRenderService);
 		samplerInfo.borderColor				= VK_BORDER_COLOR_INT_OPAQUE_BLACK;
 		samplerInfo.unnormalizedCoordinates = VK_FALSE;
-		samplerInfo.compareEnable			= VK_FALSE;
-		samplerInfo.compareOp				= VK_COMPARE_OP_ALWAYS;
+		samplerInfo.compareEnable			= mSampler == nullptr ? VK_FALSE : mSampler->mEnableCompare ? VK_TRUE : VK_FALSE;
+		samplerInfo.compareOp				= mSampler == nullptr ? VK_COMPARE_OP_LESS_OR_EQUAL : getDepthCompareOp(mSampler->mCompareMode);
 		samplerInfo.mipmapMode				= mSampler == nullptr ? VK_SAMPLER_MIPMAP_MODE_LINEAR : getMipMapMode(mSampler->mMipMapMode);
-		samplerInfo.minLod					= 0.0f;
+		samplerInfo.minLod					= mSampler == nullptr ? 0.0f : static_cast<float>(mSampler->mMinLodLevel);
 		samplerInfo.maxLod					= mSampler == nullptr ? VK_LOD_CLAMP_NONE : static_cast<float>(mSampler->mMaxLodLevel);
-		samplerInfo.mipLodBias				= 0.0f;
-
+		samplerInfo.mipLodBias				= mSampler == nullptr ? 0.0f : mSampler->mLodBias;
+		
 		return errorState.check(vkCreateSampler(mRenderService->getDevice(), &samplerInfo, nullptr, &mVulkanSampler) == VK_SUCCESS, "Could not initialize sampler");
 	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	SamplerArrayInstance::SamplerArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler* sampler, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(renderService, declaration, sampler, samplerChangedCallback)
+	{ }
+
+
+	SamplerArrayInstance::~SamplerArrayInstance()
+	{ }
 
 
 	//////////////////////////////////////////////////////////////////////////
@@ -144,16 +199,23 @@ namespace nap
 	}
 
 
-	void Sampler2DInstance::onTextureChanged(const Texture2D&)
+	void Sampler2DInstance::setTexture(Texture2D& texture)
 	{
+		if (mTexture2D != nullptr)
+			mTexture2D->textureDestroyed.disconnect(textureDestroyedSlot);
+
+		mTexture2D = &texture;
+		mTexture2D->textureDestroyed.connect(textureDestroyedSlot);
+
 		raiseChanged();
 	}
 
 
-	void Sampler2DInstance::setTexture(Texture2D& texture)
+	void Sampler2DInstance::onTextureDestroyed()
 	{
-		mTexture2D = &texture;
-		raiseChanged();
+		// Texture is different from the resource, dangling reference inbound. Solve by resetting to an empty texture.
+		nap::Logger::warn("Sampler instance pointing to texture '%s' that is about to be destroyed.", mTexture2D->mID.c_str());
+		setTexture(mRenderService->getErrorTexture2D());
 	}
 
 	
@@ -162,17 +224,89 @@ namespace nap
 	//////////////////////////////////////////////////////////////////////////
 
 	Sampler2DArrayInstance::Sampler2DArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const Sampler2DArray* sampler2DArray, const SamplerChangedCallback& samplerChangedCallback) :
-		SamplerInstance(renderService, declaration, sampler2DArray, samplerChangedCallback)
+		SamplerArrayInstance(renderService, declaration, sampler2DArray, samplerChangedCallback)
 	{
 		if (sampler2DArray != nullptr)
+		{
+			assert(sampler2DArray->mTextures.size() <= declaration.mNumElements);
 			mTextures = sampler2DArray->mTextures;
+		}
+
+		// Ensure we create array entries for all textures
+		mTextures.reserve(declaration.mNumElements);
+		uint count = mTextures.size();
+		for (uint i = count; i < declaration.mNumElements; i++)
+			mTextures.emplace_back();
 	}
 
 
 	void Sampler2DArrayInstance::setTexture(int index, Texture2D& texture)
 	{
 		assert(index < mTextures.size());
+		assert(index < mDeclaration->mNumElements);
 		mTextures[index] = &texture;
+		raiseChanged(index);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	SamplerCubeInstance::SamplerCubeInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCube* samplerCube, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerInstance(renderService, declaration, samplerCube, samplerChangedCallback)
+	{
+		if (samplerCube != nullptr)
+			mTextureCube = samplerCube->mTextureCube;
+	}
+
+
+	void SamplerCubeInstance::setTexture(TextureCube& textureCube)
+	{
+		if (mTextureCube != nullptr)
+			mTextureCube->textureDestroyed.disconnect(textureDestroyedSlot);
+
+		mTextureCube = &textureCube;
+		mTextureCube->textureDestroyed.connect(textureDestroyedSlot);
+
 		raiseChanged();
+	}
+
+
+	void SamplerCubeInstance::onTextureDestroyed()
+	{
+		// Texture is different from the resource, dangling reference inbound. Solve by resetting to an empty texture.
+		nap::Logger::warn("Sampler instance pointing to texture '%s' that is about to be destroyed.", mTextureCube->mID.c_str());
+		setTexture(mRenderService->getErrorTextureCube());
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// SamplerCubeArrayInstance
+	//////////////////////////////////////////////////////////////////////////
+
+	SamplerCubeArrayInstance::SamplerCubeArrayInstance(RenderService& renderService, const SamplerDeclaration& declaration, const SamplerCubeArray* samplerCubeArray, const SamplerChangedCallback& samplerChangedCallback) :
+		SamplerArrayInstance(renderService, declaration, samplerCubeArray, samplerChangedCallback)
+	{
+		if (samplerCubeArray != nullptr)
+		{
+			assert(samplerCubeArray->mTextures.size() <= declaration.mNumElements);
+			mTextures = samplerCubeArray->mTextures;
+		}
+
+		// Ensure we create array entries for all textures
+		mTextures.reserve(declaration.mNumElements);
+		uint count = mTextures.size();
+		for (uint i = count; i < declaration.mNumElements; i++)
+			mTextures.emplace_back();
+	}
+
+
+	void SamplerCubeArrayInstance::setTexture(int index, TextureCube& textureCube)
+	{
+		assert(index < mTextures.size());
+		assert(index < mDeclaration->mNumElements);
+		mTextures[index] = &textureCube;
+		raiseChanged(index);
 	}
 }

@@ -64,7 +64,7 @@ namespace nap
 
 		/**
 		 * Fills a preallocated buffer using the specified struct buffer descriptor.
-		 * @param numElements the number of elements to fill
+		 * @param descriptor buffer fill description handle
 		 * @param data pointer to the preallocated data
 		 * @param errorState contains the error if the buffer cannot be filled
 		 */
@@ -100,7 +100,7 @@ namespace nap
 						return resolved->mFillPolicy.get();
 
 					// Names match but types do not
-					assert(false); 
+					assert(false);
 					return nullptr;
 				}
 			}

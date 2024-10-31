@@ -10,10 +10,15 @@
 #include <utility/dllexport.h>
 #include <cameracomponent.h>
 
+// Local includes
+#include "rendertag.h"
+#include "renderlayer.h"
+
 namespace nap
 {
 	// Forward declares
 	class RenderableComponentInstance;
+	class RenderService;
 
 	/**
 	 * Resource part of the render-able component. 
@@ -27,7 +32,9 @@ namespace nap
 		DECLARE_COMPONENT(RenderableComponent, RenderableComponentInstance)
 
 	public:
-		bool mVisible = true;	///< Property: 'Visible' if this object is rendered to target by the render service 
+		bool mVisible = true;								///< Property: 'Visible' if this object is rendered to target by the render service.
+		ResourcePtr<RenderLayer> mLayer;					///< Property: 'Layer' the render layer assigned to this component 
+		std::vector<ResourcePtr<RenderTag>> mTags;			///< Property: 'Tags' List of tags specifying the category this render component belongs to.
 	};
 
 
@@ -41,12 +48,12 @@ namespace nap
 		RTTI_ENABLE(ComponentInstance)
 
 	public:
-		RenderableComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)
-		{}
+		RenderableComponentInstance(EntityInstance& entity, Component& resource);
 
 		/**
-		 * Make sure to this in derived classes
+		 * Initializes this component for rendering.
+		 * Make sure to always call this in derived classes!
+		 * @param errorState the message when initialization fails
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
@@ -72,6 +79,38 @@ namespace nap
 		bool isVisible() const														{ return mVisible; }
 
 		/**
+		 * @return the list of tags
+		 */
+		const std::vector<ResourcePtr<RenderTag>>& getTags() const					{ return getComponent<RenderableComponent>()->mTags; }
+
+		/**
+		 * @return the render mask
+		 */
+		RenderMask getMask() const													{ return mRenderMask; }
+
+		/**
+		 * Returns if this component can be rendered with (includes) the given mask.
+		 * The component can be rendered when included in the other mask or when no mask is provided.
+		 * @param otherMask the inclusion mask
+		 * @return if this component can be rendered with (includes) the given mask.
+		 */
+		bool includesMask(RenderMask otherMask)										{ return (mRenderMask == mask::none) || ((mRenderMask & otherMask) > 0); }
+
+		/**
+		 * Returns the rank of this component in the render chain, defaults to 0 (front) if no layer is assigned.
+		 * The rank controls the order in which components are rendered, where 0 is the front and the last index is the back.
+		 * @return the rank index in the render chain, 0 (front) if no layer is assigned
+		 */
+		int getRank() const;
+
+		/**
+		 * Returns the layer assigned to this component.
+		 * Every layer is assigned a rank which controls the order in which components are rendered, where 0 is the front and the last index is the back.
+		 * @return the render layer, nullptr if no layer is given
+		 */
+		const RenderLayer* getLayer() const { return mRenderLayer; }
+
+		/**
 		 * Called by the Render Service. By default every camera type is supported
 		 * If your renderable component doesn't support a specific camera return false
 		 * In that case the object won't be rendered.
@@ -91,7 +130,11 @@ namespace nap
 		 */
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) = 0;
 
+		RenderService* mRenderService = nullptr;
+
 	private:
-		bool mVisible = true;			///< If this object should be drawn or not
+		bool mVisible = true;							///< If this object should be drawn or not
+		RenderLayer* mRenderLayer = nullptr;			///< The render layer
+		RenderMask mRenderMask = mask::none;			///< The render mask
 	};
 }

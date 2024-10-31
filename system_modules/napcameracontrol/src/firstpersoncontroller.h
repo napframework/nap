@@ -24,7 +24,7 @@ namespace nap
 
 	/**
 	 * Resource part of the first person controller.
-	 * The controller applies first-person movement to the entity it is attached to.
+	 * Applies first-person movement to the (camera) entity it is attached to.
 	 * Hold left mouse to activate. WASD to move, QE to move up and down, mouse to rotate.
 	 * Requires a nap::KeyInputComponent and nap::TransformComponent to be present on the same entity.
 	 */
@@ -47,7 +47,7 @@ namespace nap
 
 	/**
 	 * Instance part of the first person controller.
-	 * The controller applies first-person movement to the entity it is attached to.
+	 * The controller applies first-person movement to the (camera) entity it is attached to.
 	 * Hold left mouse to activate. WASD to move, QE to move up and down, mouse to rotate.
 	 * Requires a nap::KeyInputComponent and nap::TransformComponent to be present on the same entity.
 	 */

@@ -30,6 +30,8 @@
 ** ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 
+#include	"sfconfig.h"
+
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
@@ -37,7 +39,11 @@
 #include	<ctype.h>
 #include	<math.h>
 #include	<errno.h>
+#if HAVE_UNISTD_H
 #include	<unistd.h>
+#else
+#include	"sf_unistd.h"
+#endif
 #include	<fcntl.h>
 #include	<sys/stat.h>
 #include	<sys/types.h>
@@ -49,6 +55,12 @@
 #define	BUFFER_LEN		(1 << 16)
 
 #define	NOT(x)			(! (x))
+
+#ifndef _WIN32
+typedef off_t sf_off_t ;
+#else
+typedef long long sf_off_t ;
+#endif
 
 
 static void usage_exit (const char *progname) ;
@@ -68,8 +80,8 @@ main (int argc, char *argv [])
 /*==============================================================================
 */
 
-static void lseek_or_die (int fd, off_t offset, int whence) ;
-static sf_count_t get_file_length (int fd, const char * name) ;
+static void lseek_or_die (int fd, sf_off_t offset, int whence) ;
+static sf_off_t get_file_length (int fd, const char * name) ;
 static sf_count_t find_data_offset (int fd, int format) ;
 static void copy_data (int fd, SNDFILE * sndfile, int readsize) ;
 
@@ -157,7 +169,7 @@ salvage_file (const char * broken_wav, const char * fixed_w64)
 	read_size *= sfinfo.channels ;
 
 	if ((sndfile = sf_open (fixed_w64, SFM_WRITE, &sfinfo)) == NULL)
-	{	printf ("sf_open ('%s') failed : %s\n", broken_wav, sf_strerror (NULL)) ;
+	{	printf ("sf_open ('%s') failed : %s\n", fixed_w64, sf_strerror (NULL)) ;
 		exit (1) ;
 		} ;
 
@@ -174,9 +186,13 @@ salvage_file (const char * broken_wav, const char * fixed_w64)
 */
 
 static void
-lseek_or_die (int fd, off_t offset, int whence)
+lseek_or_die (int fd, sf_off_t offset, int whence)
 {
+#ifndef _WIN32
 	if (lseek (fd, offset, whence) < 0)
+#else
+	if (_lseeki64 (fd, offset, whence) < 0)
+#endif
 	{	printf ("lseek failed : %s\n", strerror (errno)) ;
 		exit (1) ;
 		} ;
@@ -185,9 +201,14 @@ lseek_or_die (int fd, off_t offset, int whence)
 } /* lseek_or_die */
 
 
-static sf_count_t
+static sf_off_t
 get_file_length (int fd, const char * name)
-{	struct stat sbuf ;
+{
+#ifndef _WIN32
+	struct stat sbuf ;
+#else
+	struct _stat64 sbuf ;
+#endif
 
 	if (sizeof (sbuf.st_size) != 8)
 	{	puts ("Error : sizeof (sbuf.st_size) != 8. Was program compiled with\n"
@@ -195,7 +216,11 @@ get_file_length (int fd, const char * name)
 		exit (1) ;
 		} ;
 
+#ifndef _WIN32
 	if (fstat (fd, &sbuf) != 0)
+#else
+	if (_fstat64 (fd, &sbuf) != 0)
+#endif
 	{	printf ("Error : fstat ('%s') failed : %s\n", name, strerror (errno)) ;
 		exit (1) ;
 		} ;
@@ -227,7 +252,7 @@ find_data_offset (int fd, int format)
 			exit (1) ;
 		} ;
 
-	slen = strlen (target) ;
+	slen = (int) strlen (target) ;
 
 	lseek_or_die (fd, 0, SEEK_SET) ;
 

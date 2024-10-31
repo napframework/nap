@@ -30,13 +30,22 @@ namespace nap
 		RenderableMesh() = default;
 
 		// Copy constructor
-		RenderableMesh(const RenderableMesh& rhs);
+		RenderableMesh(const RenderableMesh& rhs)								{ this->copy(rhs); }
 
 		// Copy assignment operator
-		RenderableMesh& operator=(const RenderableMesh& rhs);
+		RenderableMesh& operator=(const RenderableMesh& rhs)					{ this->copy(rhs); return *this; }
+
+		// Move constructor
+		RenderableMesh(RenderableMesh&& other)									{ this->move(std::move(other)); }
+
+		// Move assignment operator
+		RenderableMesh& operator=(RenderableMesh&& other)						{ this->move(std::move(other)); return *this; }
 
 		// Object is similar when sharing mesh / material combination
-		bool operator==(const RenderableMesh& rhs) const;
+		bool operator==(const RenderableMesh& rhs) const						{ return mMaterialInstance == rhs.mMaterialInstance && mMesh == rhs.mMesh; }
+
+		// Object is different when not sharing mesh / material combination
+		bool operator!=(const RenderableMesh& rhs) const						{ return !(rhs == *this); }
 
 		/**
 		* @return whether the material and mesh form a valid combination. The combination is valid when the vertex attributes
@@ -64,13 +73,22 @@ namespace nap
 		 */
 		const MaterialInstance& getMaterialInstance() const						{ return *mMaterialInstance; }
 
+		/**
+		 * @return A list of the Vulkan vertex buffers, updates the internal buffer cache.
+		 */
 		const std::vector<VkBuffer>& getVertexBuffers();
+
+		/**
+		 * @return A list of the Vulkan vertex buffer offsets
+		 */
 		const std::vector<VkDeviceSize>& getVertexBufferOffsets() const			{ return mVertexBufferOffsets; }
 
 		/**
-		 * 
+		 * Returns the vertex buffer binding index of the given mesh attribute, asserts and returs -1 if not found.
+		 * @param meshVertexAttributeID the vertex attribute buffer name
+		 * @return the vertex buffer binding index of the given mesh attribute
 		 */
-		int getVertexBufferBindingIndex(std::string meshVertexAttributeID) const;
+		int getVertexBufferBindingIndex(const std::string& meshVertexAttributeID) const;
 
 	protected:
 		/**
@@ -81,7 +99,9 @@ namespace nap
 		RenderableMesh(IMesh& mesh, MaterialInstance& materialInstance);
 
 	private:
-		void onVertexBufferDataChanged();
+		void onVertexBufferDataChanged()										{ mVertexBuffersDirty = true; }
+		void move(RenderableMesh&& other);
+		void copy(const RenderableMesh& rhs);
 
 	private:
 		MaterialInstance*			mMaterialInstance = nullptr;	///< Material instance

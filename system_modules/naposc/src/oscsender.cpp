@@ -11,10 +11,10 @@
 #include <osc/OscOutboundPacketStream.h>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::OSCSender)
-	RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BufferScale", &nap::OSCSender::mBufferScale, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OSCSender, "Sends OSC messages over the network")
+	RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default, "Target machine IP address")
+	RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Required, "Target machine port")
+	RTTI_PROPERTY("BufferScale", &nap::OSCSender::mBufferScale, nap::rtti::EPropertyMetaData::Default, "Scale factor applied to OSC message buffer")
 RTTI_END_CLASS
 
 // Max size in bytes of an OSC message

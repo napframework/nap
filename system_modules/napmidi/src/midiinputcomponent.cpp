@@ -12,17 +12,17 @@
 #include "midiservice.h"
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::MidiInputComponent)
-    RTTI_PROPERTY("Ports", &nap::MidiInputComponent::mPorts, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Channels", &nap::MidiInputComponent::mChannels, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Numbers", &nap::MidiInputComponent::mNumbers, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("NoteOn", &nap::MidiInputComponent::mNoteOn, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("NoteOff", &nap::MidiInputComponent::mNoteOff, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("Aftertouch", &nap::MidiInputComponent::mAfterTouch, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("ControlChange", &nap::MidiInputComponent::mControlChange, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("ProgramChange", &nap::MidiInputComponent::mProgramChange, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("ChannelPressure", &nap::MidiInputComponent::mChannelPressure, nap::rtti::EPropertyMetaData::Default)
-    RTTI_PROPERTY("PitchBend", &nap::MidiInputComponent::mPitchBend, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::MidiInputComponent, "Filters and forwards incoming midi messages")
+    RTTI_PROPERTY("Ports",	&nap::MidiInputComponent::mPorts, nap::rtti::EPropertyMetaData::Default, "Ports to listen to, empty = all ports")
+    RTTI_PROPERTY("Channels", &nap::MidiInputComponent::mChannels, nap::rtti::EPropertyMetaData::Default, "Midi channels to listen to, empty = all channels")
+    RTTI_PROPERTY("Numbers", &nap::MidiInputComponent::mNumbers, nap::rtti::EPropertyMetaData::Default, "What number bytes (cc numbers) to listen to, empty = all numbers")
+    RTTI_PROPERTY("NoteOn", &nap::MidiInputComponent::mNoteOn, nap::rtti::EPropertyMetaData::Default, "Forward note on events")
+    RTTI_PROPERTY("NoteOff", &nap::MidiInputComponent::mNoteOff, nap::rtti::EPropertyMetaData::Default, "Forward note off events")
+    RTTI_PROPERTY("Aftertouch", &nap::MidiInputComponent::mAfterTouch, nap::rtti::EPropertyMetaData::Default, "Forward after touch events")
+    RTTI_PROPERTY("ControlChange", &nap::MidiInputComponent::mControlChange, nap::rtti::EPropertyMetaData::Default, "Forward control change events")
+    RTTI_PROPERTY("ProgramChange", &nap::MidiInputComponent::mProgramChange, nap::rtti::EPropertyMetaData::Default, "Forward program change events")
+    RTTI_PROPERTY("ChannelPressure", &nap::MidiInputComponent::mChannelPressure, nap::rtti::EPropertyMetaData::Default, "Forward channel pressure events")
+    RTTI_PROPERTY("PitchBend", &nap::MidiInputComponent::mPitchBend, nap::rtti::EPropertyMetaData::Default, "Forward pitch bend events")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::MidiInputComponentInstance)

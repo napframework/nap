@@ -11,9 +11,9 @@
 #include <glm/gtc/matrix_transform.hpp>
 
 // nap::Renderable3DTextComponent run time class definition 
-RTTI_BEGIN_CLASS(nap::Renderable3DTextComponent)
-	RTTI_PROPERTY("Normalize",	&nap::Renderable3DTextComponent::mNormalize,	nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("DepthMode",	&nap::Renderable3DTextComponent::mDepthMode,	nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::Renderable3DTextComponent, "Renders text at a specific location in the world")
+	RTTI_PROPERTY("Normalize", &nap::Renderable3DTextComponent::mNormalize, nap::rtti::EPropertyMetaData::Default, "Render text at the origin with normalized bounds (-0.5,0.5)")
+	RTTI_PROPERTY("DepthMode", &nap::Renderable3DTextComponent::mDepthMode, nap::rtti::EPropertyMetaData::Default, "Depth blend mode")
 RTTI_END_CLASS
 
 // nap::Renderable3DTextComponentInstance run time class definition 

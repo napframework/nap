@@ -24,6 +24,7 @@ namespace nap
     public:
         /**
          * Constructor
+         * @param service sequence gui service handle
          * @param view reference to editor view
          * @param state reference to editor state
          */
@@ -246,7 +247,6 @@ namespace nap
 
         /**
          * pastes current clipboard as new segments at given time
-         * @tparam T the segment type
          * @param trackId the track id of the track to insert into
          * @param time the time at which to create new segment
          * @param errorState contains any errors
@@ -257,8 +257,7 @@ namespace nap
 
         /**
          * pastes content of clipboard segment into another segment
-         * @tparam T the segment type
-         * @param trackId the track id of the track to insert into
+         * @param trackID the track id of the track to insert into
          * @param segmentID the segment id of the segment to replace
          */
         template<typename T>

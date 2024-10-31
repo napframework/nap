@@ -15,16 +15,16 @@
 #include <cmath>
 #include <nap/core.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SphereMesh)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SphereMesh, "3D spherical mesh")
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_PROPERTY("Usage",			&nap::SphereMesh::mUsage,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("CullMode",		&nap::SphereMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PolygonMode",	&nap::SphereMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Radius",			&nap::SphereMesh::mRadius,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Rings",			&nap::SphereMesh::mRings,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Sectors",		&nap::SphereMesh::mSectors,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Color",			&nap::SphereMesh::mColor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Position",		&nap::SphereMesh::mPosition,		nap::rtti::EPropertyMetaData::Default)	
+	RTTI_PROPERTY("Usage",			&nap::SphereMesh::mUsage,			nap::rtti::EPropertyMetaData::Default,	"If the mesh is static or updated at runtime")
+	RTTI_PROPERTY("CullMode",		&nap::SphereMesh::mCullMode,		nap::rtti::EPropertyMetaData::Default,  "Triangle cull mode: front, back, etc..")
+	RTTI_PROPERTY("PolygonMode",	&nap::SphereMesh::mPolygonMode,		nap::rtti::EPropertyMetaData::Default,	"Polygon draw mode (fill, point, line, etc..)")
+	RTTI_PROPERTY("Radius",			&nap::SphereMesh::mRadius,			nap::rtti::EPropertyMetaData::Default,	"Radius of the sphere")
+	RTTI_PROPERTY("Rings",			&nap::SphereMesh::mRings,			nap::rtti::EPropertyMetaData::Default,	"Number of rings")
+	RTTI_PROPERTY("Sectors",		&nap::SphereMesh::mSectors,			nap::rtti::EPropertyMetaData::Default,	"Number of sectors")
+	RTTI_PROPERTY("Color",			&nap::SphereMesh::mColor,			nap::rtti::EPropertyMetaData::Default,	"Sphere vertex color")
+	RTTI_PROPERTY("Position",		&nap::SphereMesh::mPosition,		nap::rtti::EPropertyMetaData::Default,	"Sphere position")
 RTTI_END_CLASS
 
 namespace nap

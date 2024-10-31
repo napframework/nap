@@ -8,6 +8,6 @@ Name: Python
 Description: Python library
 Requires: 
 Version: 3.6
-Libs.private: -lpthread -ldl  -lutil
+Libs.private: -ldl 
 Libs: -L${libdir} -lpython3.6m
 Cflags: -I${includedir}/python3.6m

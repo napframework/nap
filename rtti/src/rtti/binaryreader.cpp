@@ -279,7 +279,7 @@ namespace nap
 					stream.readString(target);
 
 					// If the target is empty (i.e. null pointer), but the property is required, throw an error
-					if (!errorState.check((metadata.mIsRequired && !target.empty()) || (!metadata.mIsRequired), "Required property %s not found in object of type %s", property.get_name().data(), object_type.get_name().data()))
+					if (!errorState.check((metadata.mIsRequired && !target.empty()) || (!metadata.mIsRequired), "Required property '%s' not found in object '%s' of type %s", property.get_name().data(), object->mID.c_str(), object_type.get_name().data()))
 						return false;
 
 					// Add to list of unresolved pointers

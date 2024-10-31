@@ -78,7 +78,11 @@ function(add_import_library target_name implib dll include_dir)
 #            if(NOT ${EXIT_CODE} EQUAL 0)
 #                message(FATAL_ERROR "Failed to set RPATH on ${library_name} using install_name_tool -id.")
 #            endif()
+
+            # Codesign the library with an ad hoc sign
+            execute_process(COMMAND codesign --force -s - ${dll})
         else ()
+            # Set so name or rpath for linux
             execute_process(COMMAND patchelf --set-soname
                     ${library_name}
                     ${dll}

@@ -13,6 +13,8 @@ namespace nap
 	// Forward Declares
 	class Shader;
 	class ComputeShader;
+	class MaterialInstance;
+	class ComputeMaterialInstance;
 
 	/**
 	 * Key associated with a specific Vulkan graphics pipeline. 
@@ -30,6 +32,7 @@ namespace nap
 			EDrawMode drawMode,
 			EDepthMode depthMode,
 			EBlendMode blendMode,
+			ShaderConstantHash constantHash,
 			ECullWindingOrder cullWindingOrder,
 			VkFormat colorFormat,
 			VkFormat depthFormat,
@@ -53,6 +56,7 @@ namespace nap
 		bool					mSampleShading = false;
 		ECullMode				mCullMode = ECullMode::Back;
 		EPolygonMode			mPolygonMode = EPolygonMode::Fill;
+		ShaderConstantHash		mConstantHash = 0;
 	};
 
 
@@ -66,11 +70,12 @@ namespace nap
 		/**
 		 * Creates the key based on the provided arguments.
 		 */
-		ComputePipelineKey(const ComputeShader& shader);
+		ComputePipelineKey(const ComputeShader& computeShader, ShaderConstantHash constantHash);
 
 		bool operator==(const ComputePipelineKey& rhs) const;
 
-		const ComputeShader* mShader = nullptr;
+		const ComputeShader*	mShader = nullptr;
+		ShaderConstantHash		mConstantHash = 0;
 	};
 }
 
@@ -98,7 +103,8 @@ namespace std
 			size_t sample_shading_hash	= hash<size_t>{}((size_t)key.mSampleShading);
 			size_t cull_mode_hash		= hash<size_t>{}((size_t)key.mCullMode);
 			size_t poly_mode_hash		= hash<size_t>{}((size_t)key.mPolygonMode);
-			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash ^ cull_mode_hash ^ poly_mode_hash;
+			size_t constant_hash		= hash<size_t>{}((size_t)key.mConstantHash);
+			return shader_hash ^ draw_mode_hash ^ depth_mode_hash ^ blend_mode_hash ^ cull_winding_hash ^ color_format_hash ^ depth_format_hash ^ sample_count_hash ^ sample_shading_hash ^ cull_mode_hash ^ poly_mode_hash ^ constant_hash;
 		}
 	};
 
@@ -109,7 +115,8 @@ namespace std
 		size_t operator()(const nap::ComputePipelineKey& key) const
 		{
 			size_t shader_hash = hash<size_t>{}((size_t)key.mShader);
-			return shader_hash;
+			size_t constant_hash = hash<size_t>{}((size_t)key.mConstantHash);
+			return shader_hash ^ constant_hash;
 		}
 	};
 }

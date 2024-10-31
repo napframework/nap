@@ -6,7 +6,7 @@
 #include "objectptr.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::rtti::Object)
-	RTTI_PROPERTY(nap::rtti::sIDPropertyName, &nap::rtti::Object::mID, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY(nap::rtti::sIDPropertyName, &nap::rtti::Object::mID, nap::rtti::EPropertyMetaData::Required, "Unique Object ID")
 RTTI_END_CLASS
 
 namespace nap

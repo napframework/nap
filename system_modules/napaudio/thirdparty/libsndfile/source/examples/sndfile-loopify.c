@@ -44,15 +44,7 @@
 
 #include <sndfile.h>
 
-#include "common.h"
-
 #define BUFFER_LEN		(1 << 14)
-
-
-typedef	struct
-{	char	*infilename, *outfilename ;
-	SF_INFO	infileinfo, outfileinfo ;
-} OptionData ;
 
 const char * program_name (const char * argv0) ;
 static void sfe_copy_data_int (SNDFILE *outfile, SNDFILE *infile, int channels) ;
@@ -107,6 +99,7 @@ main (int argc, char * argv [])
 	/* Open the output file. */
 	if ((outfile = sf_open (outfilename, SFM_WRITE, &out_sfinfo)) == NULL)
 	{	printf ("Not able to open output file %s : %s\n", outfilename, sf_strerror (NULL)) ;
+		sf_close (infile) ;
 		return 1 ;
 		} ;
 
@@ -145,7 +138,7 @@ sfe_copy_data_int (SNDFILE *outfile, SNDFILE *infile, int channels)
 	readcount = frames ;
 
 	while (readcount > 0)
-	{	readcount = sf_readf_int (infile, data, frames) ;
+	{	readcount = (int) sf_readf_int (infile, data, frames) ;
 		sf_writef_int (outfile, data, readcount) ;
 		} ;
 

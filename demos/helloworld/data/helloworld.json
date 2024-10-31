@@ -109,13 +109,13 @@
                     "MovementSpeed": 0.032999999821186069,
                     "RotateSpeed": 0.0032999999821186067,
                     "PerspCameraComponent": "PerspCameraComponent",
+                    "LimitZoomDistance": false,
+                    "MinimumZoomDistance": 0.5,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
                         "z": 0.0
-                    },
-                    "MinimumZoomDistance": 0.5,
-                    "LimitZoomDistance": false
+                    }
                 }
             ],
             "Children": []
@@ -128,6 +128,8 @@
                     "Type": "nap::Renderable2DTextComponent",
                     "mID": "nap::RenderableTextComponent",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Text": "Hi there! Welcome to NAP",
                     "Font": "Font",
                     "TextColor": {
@@ -179,11 +181,14 @@
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "nap::RenderableMeshComponent",
                     "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
                     "Mesh": "WorldMesh",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
                         "Buffers": [],
+                        "Constants": [],
                         "Material": "WorldMaterial",
                         "BlendMode": "NotSet",
                         "DepthMode": "NotSet"
@@ -225,6 +230,7 @@
                 {
                     "Type": "nap::RotateComponent",
                     "mID": "nap::RotateComponent",
+                    "Enabled": true,
                     "Properties": {
                         "Axis": {
                             "x": 0.0,
@@ -278,7 +284,8 @@
                     "Type": "nap::ShaderFromFile",
                     "mID": "WorldShader",
                     "VertShader": "shaders/helloworld/world.vert",
-                    "FragShader": "shaders/helloworld/world.frag"
+                    "FragShader": "shaders/helloworld/world.frag",
+                    "RestrictModuleIncludes": false
                 },
                 {
                     "Type": "nap::SphereMesh",
@@ -317,12 +324,18 @@
                             "MipMapMode": "Linear",
                             "AddressModeVertical": "ClampToEdge",
                             "AddressModeHorizontal": "ClampToEdge",
+                            "MinLodLevel": 0,
                             "MaxLodLevel": 1000,
+                            "LodBias": 0.0,
                             "AnisotropicSamples": "Default",
+                            "BorderColor": "IntOpaqueBlack",
+                            "CompareMode": "LessOrEqual",
+                            "EnableCompare": false,
                             "Texture": "WorldTexture"
                         }
                     ],
                     "Buffers": [],
+                    "Constants": [],
                     "Shader": "WorldShader",
                     "VertexAttributeBindings": [
                         {

@@ -37,7 +37,8 @@ class sdist(sdist_add_defaults, orig.sdist):
 
     negative_opt = {}
 
-    READMES = 'README', 'README.rst', 'README.txt'
+    README_EXTENSIONS = ['', '.rst', '.txt', '.md']
+    READMES = tuple('README{0}'.format(ext) for ext in README_EXTENSIONS)
 
     def run(self):
         self.run_command('egg_info')
@@ -49,13 +50,6 @@ class sdist(sdist_add_defaults, orig.sdist):
         # Run sub commands
         for cmd_name in self.get_sub_commands():
             self.run_command(cmd_name)
-
-        # Call check_metadata only if no 'check' command
-        # (distutils <= 2.6)
-        import distutils.command
-
-        if 'check' not in distutils.command.__all__:
-            self.check_metadata()
 
         self.make_distribution()
 
@@ -142,9 +136,13 @@ class sdist(sdist_add_defaults, orig.sdist):
                                           for filename in filenames])
 
     def _add_defaults_data_files(self):
-        """
-        Don't add any data files, but why?
-        """
+        try:
+            if six.PY2:
+                sdist_add_defaults._add_defaults_data_files(self)
+            else:
+                super()._add_defaults_data_files()
+        except TypeError:
+            log.warn("data_files contains unexpected objects")
 
     def check_readme(self):
         for f in self.READMES:

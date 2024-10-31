@@ -66,7 +66,7 @@ namespace nap
 		RGBAColorFloat	mColor			= { 1.0f, 1.0f, 1.0f, 1.0f };		///< Property: 'Color' color of the plane
 		uint			mRows			= 1;								///< Property: 'Rows' number of rows
 		uint			mColumns		= 1;								///< Property: 'Columns' number of columns
-		EMemoryUsage	mUsage			= EMemoryUsage::Static;			///< Property: 'Usage' If the plane is uploaded once or frequently updated.
+		EMemoryUsage	mUsage			= EMemoryUsage::Static;				///< Property: 'Usage' If the plane is uploaded once or frequently updated.
 		ECullMode		mCullMode		= ECullMode::None;					///< Property: 'CullMode' Plane cull mode, defaults to no culling
 		EPolygonMode	mPolygonMode	= EPolygonMode::Fill;				///< Property: 'PolygonMode' Polygon rasterization mode (fill, line, points) 
 

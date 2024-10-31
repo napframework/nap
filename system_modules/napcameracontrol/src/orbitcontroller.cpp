@@ -16,13 +16,13 @@
 #include <glm/gtx/matrix_decompose.hpp>
 #include "glm/gtx/orthonormalize.hpp"
 
-RTTI_BEGIN_CLASS(nap::OrbitController)
-	RTTI_PROPERTY("MovementSpeed",			&nap::OrbitController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("LookAtPosition",			&nap::OrbitController::mLookAtPos,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("MinimumZoomDistance",	&nap::OrbitController::mMinZoomDistance,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("LimitZoomDistance",		&nap::OrbitController::mLimitZoomDistance,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::OrbitController, "Rotates a camera around a target point")
+	RTTI_PROPERTY("MovementSpeed",			&nap::OrbitController::mMovementSpeed,			nap::rtti::EPropertyMetaData::Default,		"Movement speed, units per second")
+	RTTI_PROPERTY("RotateSpeed",			&nap::OrbitController::mRotateSpeed,			nap::rtti::EPropertyMetaData::Default,		"Rotation speed, angle")
+	RTTI_PROPERTY("PerspCameraComponent",	&nap::OrbitController::mPerspCameraComponent,	nap::rtti::EPropertyMetaData::Required,		"Camera to control")
+	RTTI_PROPERTY("LimitZoomDistance",		&nap::OrbitController::mLimitZoomDistance,		nap::rtti::EPropertyMetaData::Default,		"Limit the camera from moving past the look-at position")
+	RTTI_PROPERTY("MinimumZoomDistance",	&nap::OrbitController::mMinZoomDistance,		nap::rtti::EPropertyMetaData::Default,		"Minimum distance from camera to look-at position")
+	RTTI_PROPERTY("LookAtPosition",			&nap::OrbitController::mLookAtPos,				nap::rtti::EPropertyMetaData::Default,		"Initial look-at position")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::OrbitControllerInstance)
@@ -33,8 +33,7 @@ namespace nap
 {
 	OrbitControllerInstance::OrbitControllerInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)
-	{
-	}
+	{ }
 
 
 	bool OrbitControllerInstance::init(utility::ErrorState& errorState)

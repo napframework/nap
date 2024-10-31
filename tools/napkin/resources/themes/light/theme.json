@@ -30,8 +30,8 @@
   },
   "fonts":
   {
-    "font1": "Manrope",
-    "font2": "Manrope"
+    "regularFont": "Manrope",
+    "monoFont": "Inconsolata"
   },
   "icons":
   {

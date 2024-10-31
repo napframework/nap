@@ -14,7 +14,7 @@
 #include <renderservice.h>
 #include <renderglobals.h>
 
-RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent)
+RTTI_BEGIN_CLASS(nap::ParticleEmitterComponent, "Emits particles and creates a dynamic mesh that can be rendered")
 	RTTI_PROPERTY("SpawnRate",				&nap::ParticleEmitterComponent::mSpawnRate,					nap::rtti::EPropertyMetaData::Default, "Amount of particles to spawn every second")
 	RTTI_PROPERTY("LifeTime",				&nap::ParticleEmitterComponent::mLifeTime,					nap::rtti::EPropertyMetaData::Default, "How many seconds a particle lives")
 	RTTI_PROPERTY("Position",				&nap::ParticleEmitterComponent::mPosition,					nap::rtti::EPropertyMetaData::Default, "Particle spawn position")

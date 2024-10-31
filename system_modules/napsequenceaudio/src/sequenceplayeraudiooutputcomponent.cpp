@@ -15,8 +15,8 @@
 #include <audio/component/audiocomponentbase.h>
 
 // RTTI
-RTTI_BEGIN_CLASS(nap::audio::SequencePlayerAudioOutputComponent)
-    RTTI_PROPERTY("Sequence Player Audio Output", &nap::audio::SequencePlayerAudioOutputComponent::mSequencePlayerAudioOutput, nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::audio::SequencePlayerAudioOutputComponent, "Routes output from a sequence player audio output and exposes it to other audio components")
+    RTTI_PROPERTY("Sequence Player Audio Output", &nap::audio::SequencePlayerAudioOutputComponent::mSequencePlayerAudioOutput, nap::rtti::EPropertyMetaData::Required, "Sequence player audio output")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::SequencePlayerAudioOutputComponentInstance)

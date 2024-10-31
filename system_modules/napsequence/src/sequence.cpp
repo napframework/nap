@@ -5,15 +5,14 @@
 // local includes
 #include "sequence.h"
 
-RTTI_BEGIN_CLASS(nap::Sequence)
-        RTTI_PROPERTY("Sequence Tracks", &nap::Sequence::mTracks, nap::rtti::EPropertyMetaData::Embedded)
-        RTTI_PROPERTY("Sequence Markers", &nap::Sequence::mMarkers, nap::rtti::EPropertyMetaData::Embedded)
-        RTTI_PROPERTY("Duration", &nap::Sequence::mDuration, nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::Sequence, "Sequence information")
+        RTTI_PROPERTY("Sequence Tracks", &nap::Sequence::mTracks, nap::rtti::EPropertyMetaData::Embedded, "Tracks of the sequence")
+        RTTI_PROPERTY("Sequence Markers", &nap::Sequence::mMarkers, nap::rtti::EPropertyMetaData::Embedded, "Markers in the sequence")
+        RTTI_PROPERTY("Duration", &nap::Sequence::mDuration, nap::rtti::EPropertyMetaData::Default, "Duration of the sequence in seconds")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
 
 
 namespace nap
-{
-}
+{ }

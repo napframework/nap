@@ -5,10 +5,10 @@
 #include "parameterblendgroup.h"
 
 // nap::ParameterBlendGroup run time class definition 
-RTTI_BEGIN_CLASS(nap::ParameterBlendGroup)
-	RTTI_PROPERTY("Parameters",		&nap::ParameterBlendGroup::mParameters,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RootGroup",		&nap::ParameterBlendGroup::mRootGroup,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("BlendAll",		&nap::ParameterBlendGroup::mBlendAll,		nap::rtti::EPropertyMetaData::Default)
+RTTI_BEGIN_CLASS(nap::ParameterBlendGroup, "Group of parameters that can be blended over time by using ParameterBlendComponent")
+	RTTI_PROPERTY("Parameters",		&nap::ParameterBlendGroup::mParameters,		nap::rtti::EPropertyMetaData::Required,	"List of parameters to blend")
+	RTTI_PROPERTY("RootGroup",		&nap::ParameterBlendGroup::mRootGroup,		nap::rtti::EPropertyMetaData::Required,	"The group, including sub-groups, the parameters belong to")
+	RTTI_PROPERTY("BlendAll",		&nap::ParameterBlendGroup::mBlendAll,		nap::rtti::EPropertyMetaData::Default,	"Add all parameters, including children, from the root group")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

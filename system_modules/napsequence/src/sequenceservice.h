@@ -58,8 +58,8 @@ namespace nap
         /**
          * can be used to register a default creation method to the factory. When createDefaultSequence is called, it will iterate trough the given outputs and
          * create a SequenceTrack that fits the output. Whenever we create a new type of output, we should also add a way to create a default track
-         * @param type the type information of the sequence output
-         * @param method the factory method
+         * @param outputType the type information of the sequence output
+         * @param func the factory method
          * @return true on successful creation
          */
         bool registerDefaultTrackCreatorForOutput(rtti::TypeInfo outputType,
@@ -101,7 +101,7 @@ namespace nap
 
         /**
          * registers adapter factory method for specific track type
-         * @param type the type of track that is associated with the factory method
+         * @param typeInfo the type of track that is associated with the factory method
          * @param factory the factory method
          * @return true if registration is successful
          */

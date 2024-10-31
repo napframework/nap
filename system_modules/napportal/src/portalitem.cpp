@@ -6,7 +6,7 @@
 #include "portalitem.h"
 
  // nap::PortalItem run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalItem)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PortalItem, "Single item (e.g. slider, toggle, button) in a NAP portal")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

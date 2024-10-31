@@ -6,11 +6,11 @@
 
 // Local Includes
 #include "publickey.h"
-#include "signingscheme.h"
- 
+
  // External Includes
 #include <nap/service.h>
 #include <nap/datetime.h>
+#include <signingscheme.h>
 
 namespace nap
 {

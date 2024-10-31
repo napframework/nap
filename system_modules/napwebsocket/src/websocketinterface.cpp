@@ -6,7 +6,7 @@
 #include "websocketservice.h"
 
 // nap::websocketinterface run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketInterface)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::WebSocketInterface, "Websocket client or server")
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////

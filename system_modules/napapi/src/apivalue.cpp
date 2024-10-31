@@ -5,72 +5,72 @@
 #include "apivalue.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::APIBaseValue)
-	RTTI_PROPERTY("Name", &nap::APIBaseValue::mName, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Name", &nap::APIBaseValue::mName, nap::rtti::EPropertyMetaData::Required, "Value name")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIFloat)
+RTTI_BEGIN_CLASS(nap::APIFloat, "Float value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const float&)
-	RTTI_PROPERTY("Value", &nap::APIFloat::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIFloat::mValue, nap::rtti::EPropertyMetaData::Default, "Float value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIBool)
+RTTI_BEGIN_CLASS(nap::APIBool, "Bool value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const bool&)
-	RTTI_PROPERTY("Value", &nap::APIBool::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIBool::mValue, nap::rtti::EPropertyMetaData::Default, "Bool value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIInt)
+RTTI_BEGIN_CLASS(nap::APIInt, "Integer value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const int&)
-	RTTI_PROPERTY("Value", &nap::APIInt::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIInt::mValue, nap::rtti::EPropertyMetaData::Default, "Integer value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIChar)
+RTTI_BEGIN_CLASS(nap::APIChar, "Char value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const char&)
-	RTTI_PROPERTY("Value", &nap::APIChar::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIChar::mValue, nap::rtti::EPropertyMetaData::Default, "Char value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIString)
+RTTI_BEGIN_CLASS(nap::APIString, "String value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const std::string&)
-	RTTI_PROPERTY("Value", &nap::APIString::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIString::mValue, nap::rtti::EPropertyMetaData::Default, "String value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIDouble)
+RTTI_BEGIN_CLASS(nap::APIDouble, "Double value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const double&)
-	RTTI_PROPERTY("Value", &nap::APIDouble::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIDouble::mValue, nap::rtti::EPropertyMetaData::Default, "Double value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APILong)
+RTTI_BEGIN_CLASS(nap::APILong, "Long value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const long&)
-	RTTI_PROPERTY("Value", &nap::APILong::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APILong::mValue, nap::rtti::EPropertyMetaData::Default, "Long value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIByte)
+RTTI_BEGIN_CLASS(nap::APIByte, "Byte value that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const uint8_t&)
-	RTTI_PROPERTY("Value", &nap::APIByte::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIByte::mValue, nap::rtti::EPropertyMetaData::Default, "Byte value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIFloatArray)
+RTTI_BEGIN_CLASS(nap::APIFloatArray, "Float array that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const std::vector<float>&)
-	RTTI_PROPERTY("Value", &nap::APIFloatArray::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIFloatArray::mValue, nap::rtti::EPropertyMetaData::Default, "Float array value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIIntArray)
+RTTI_BEGIN_CLASS(nap::APIIntArray, "Integer array that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const std::vector<int>&)
-	RTTI_PROPERTY("Value", &nap::APIIntArray::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIIntArray::mValue, nap::rtti::EPropertyMetaData::Default, "Integer array value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APICharArray)
+RTTI_BEGIN_CLASS(nap::APICharArray, "Char array that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const std::vector<char>&)
-	RTTI_PROPERTY("Value", &nap::APICharArray::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APICharArray::mValue, nap::rtti::EPropertyMetaData::Default, "Char array value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIStringArray)
+RTTI_BEGIN_CLASS(nap::APIStringArray, "String array that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const std::vector<std::string>&)
-	RTTI_PROPERTY("Value", &nap::APIStringArray::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIStringArray::mValue, nap::rtti::EPropertyMetaData::Default, "String array value")
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::APIByteArray)
+RTTI_BEGIN_CLASS(nap::APIByteArray, "Byte array that is sent or received")
 	RTTI_CONSTRUCTOR(const std::string&, const std::vector<uint8_t>&)
-	RTTI_PROPERTY("Value", &nap::APIByteArray::mValue, nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Value", &nap::APIByteArray::mValue, nap::rtti::EPropertyMetaData::Default, "Byte array value")
 RTTI_END_CLASS
 
 namespace nap

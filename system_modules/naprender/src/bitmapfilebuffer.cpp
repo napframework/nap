@@ -204,9 +204,31 @@ namespace nap
 
 		// Get color type
 		FREE_IMAGE_COLOR_TYPE fi_bitmap_color_type = FreeImage_GetColorType(fi_bitmap);
+
+		// Convert RGB to RGBA
 		if (fi_bitmap_color_type == FIC_RGB)
 		{
-			FIBITMAP* converted_bitmap = FreeImage_ConvertTo32Bits(fi_bitmap);
+			FIBITMAP* converted_bitmap = nullptr;
+			switch (data_type)
+			{
+			case ESurfaceDataType::BYTE:
+				converted_bitmap = FreeImage_ConvertTo32Bits(fi_bitmap);
+				break;
+			case ESurfaceDataType::USHORT:
+				converted_bitmap = FreeImage_ConvertToRGBA16(fi_bitmap);
+				break;
+			case ESurfaceDataType::FLOAT:
+				converted_bitmap = FreeImage_ConvertToRGBAF(fi_bitmap);
+				break;
+			default:
+				errorState.fail("Can't load bitmap from file; unknown pixel format");
+				FreeImage_Unload(fi_bitmap);
+				return false;
+			}
+
+			if (!errorState.check(converted_bitmap != NULL, "Failed to convert RGB image to RGBA bitmap"))
+				return false;
+
 			FreeImage_Unload(fi_bitmap);
 			fi_bitmap = converted_bitmap;
 			fi_bitmap_color_type = FIC_RGBALPHA;
@@ -215,7 +237,7 @@ namespace nap
 		// If we're dealing with an rgb or rgba map and a bitmap
 		// The endian of the loaded free image map becomes important
 		// If so we might have to swap the red and blue channels regarding the internal color representation
-		bool swap = (fi_bitmap_type == FREE_IMAGE_TYPE::FIT_BITMAP && FI_RGBA_RED == 2);
+		bool swap_ra = (fi_bitmap_type == FREE_IMAGE_TYPE::FIT_BITMAP && FI_RGBA_RED == 2);
 
 		ESurfaceChannels channels;
 		switch (fi_bitmap_color_type)
@@ -224,7 +246,7 @@ namespace nap
 			channels = ESurfaceChannels::R;
 			break;
 		case FIC_RGBALPHA:
-			channels = swap ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
+			channels = swap_ra ? ESurfaceChannels::BGRA : ESurfaceChannels::RGBA;
 			break;
 		default:
 			errorState.fail("Can't load bitmap from file; unknown pixel format");

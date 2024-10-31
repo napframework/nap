@@ -10,8 +10,8 @@
 #include <entity.h>
 #include <mathutils.h>
 
-RTTI_BEGIN_CLASS(nap::CameraController)
-	RTTI_PROPERTY("LookAtTarget",	&nap::CameraController::mLookAtTarget,	nap::rtti::EPropertyMetaData::Required)
+RTTI_BEGIN_CLASS(nap::CameraController, "Switches between various camera controllers")
+	RTTI_PROPERTY("LookAtTarget", &nap::CameraController::mLookAtTarget, nap::rtti::EPropertyMetaData::Required, "Object to look at, used by the orbit and ortho controller")
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::CameraControllerInstance)
@@ -22,8 +22,7 @@ namespace nap
 {
 	CameraControllerInstance::CameraControllerInstance(EntityInstance& entity, Component& resource) :
 		ComponentInstance(entity, resource)
-	{
-	}
+	{ }
 
 
 	bool CameraControllerInstance::init(utility::ErrorState& errorState)

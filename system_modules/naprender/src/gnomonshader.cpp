@@ -10,7 +10,7 @@
 #include <nap/core.h>
 
 // nap::GnomonShader run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GnomonShader)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::GnomonShader, "Shader that renders the gnomon")
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 

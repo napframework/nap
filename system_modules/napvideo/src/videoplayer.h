@@ -12,7 +12,7 @@
 #include <nap/device.h>
 #include <nap/resourceptr.h>
 #include <nap/numeric.h>
-#include <texture2d.h>
+#include <texture.h>
 
 namespace nap
 {
@@ -114,8 +114,9 @@ namespace nap
 		/**
 	 	 * Starts playback of the current video at the given offset in seconds.
 		 * @param startTime The offset in seconds to start the video at.
+		 * @param clearTextures if the old textures should be cleared before starting playback.
 		 */
-		void play(double startTime = 0.0);
+		void play(double startTime = 0.0, bool clearTextures = true);
 
 		/**
 		 * Stops playback of the current video.

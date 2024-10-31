@@ -3,56 +3,16 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
+#include <fstream>
 #include "commandline.h"
 
-// Required for cryptopp library on windows
-#ifdef _WIN32 
-	#include <dll.h>
-#endif
-#include <rsa.h>
-#include <hex.h>
-#include <randpool.h>
-#include <files.h>
-
-/**
- * Generates a public / private RSA key pair.
- * @param keyLength number of bits
- * @param privFilename private key filename
- * @param pubFilename public key filename
- * @param seed random seed
- */
-bool GenerateRSAKey(unsigned int keyLength, const std::string& privFilename, const std::string& pubFilename, const std::string& seed)
-{
-	try
-	{
-		// DEREncode() changed to Save() at Issue 569.
-		CryptoPP::RandomPool randPool;
-		randPool.IncorporateEntropy((unsigned char*)seed.data(), seed.size());
-
-		CryptoPP::RSAES_OAEP_SHA_Decryptor priv(randPool, keyLength);
-		CryptoPP::HexEncoder privFile(new CryptoPP::FileSink(privFilename.c_str()));
-		priv.AccessMaterial().Save(privFile);
-		privFile.MessageEnd();
-
-		CryptoPP::RSAES_OAEP_SHA_Encryptor pub(priv);
-		CryptoPP::HexEncoder pubFile(new CryptoPP::FileSink(pubFilename.c_str()));
-		pub.AccessMaterial().Save(pubFile);
-		pubFile.MessageEnd();
-	}
-	catch (const std::exception& e)
-	{
-		std::cerr << e.what() << std::endl << "Unable to save keys" << std::endl;
-		return false;
-	}
-	return true;
-}
-
+#include "opensslapi.h"
 
 /**
  * Generates a unique public / private RSA key. 
  * Input arguments: 
  * -o	output directory, required and must exist
- * -s	key seed, for example the name of the app
+ * -b   number of bits, defaults to 4096
  * -n	key name, defaults to 'key'
  * Returns 0 on success, -1 on failure
  *
@@ -77,8 +37,24 @@ int main(int argc, char* argv[])
 	pri_loc << commandLine.mOutputDirectory << "/" << commandLine.mKeyName << ".private";
 
 	// Generate
-	if (!GenerateRSAKey(1024, pri_loc.str(), pub_loc.str(), commandLine.mSeed))
-		return -1;
+    std::string private_key;
+    std::string public_key;
+	if (!nap::openssl::generateRSAKey(commandLine.mBits, private_key, public_key))
+    {
+        std::cout << "Failed to generate keys" << std::endl;
+        return -1;
+    }
+
+    // Save public key
+    std::ofstream pub_file(pub_loc.str());
+    pub_file << public_key;
+    pub_file.close();
+
+    // Save private key
+    std::ofstream priv_file(pri_loc.str());
+    priv_file << private_key;
+    priv_file.close();
+
 
 	std::cout << "Successfully generated keys: " << std::endl;
 	std::cout << "Public:    " << pub_loc.str()  << std::endl;
@@ -86,4 +62,4 @@ int main(int argc, char* argv[])
 
 	// All good
 	return 0;
-} 
+}

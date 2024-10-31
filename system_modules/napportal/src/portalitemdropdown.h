@@ -24,7 +24,7 @@ namespace nap
 
         /**
          * Subscribes to the parameter changed signal
-         * @param error contains the error message when initialization fails
+         * @param errorState contains the error message when initialization fails
          * @return if initialization succeeded.
          */
         bool init(utility::ErrorState& errorState) override;

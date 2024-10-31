@@ -3,7 +3,7 @@
 #include <nap/core.h>
 #include <audio/service/audioservice.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioClock)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::SequencePlayerAudioClock, "Updates a sequence using the audio thread")
 RTTI_END_CLASS
 
 namespace nap

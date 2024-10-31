@@ -78,14 +78,6 @@ namespace napkin
 	nap::rtti::Object* showObjectSelector(QWidget* parent, const std::vector<nap::rtti::Object*>& objects);
 
 	/**
-	 * Display a selection dialog with all available objects, filtered by type T
-	 * @param parent The parent widget to attach to.
-	 * @param objects The objects to select from
-	 * @return The selected object or nullptr if no object was selected
-	 */
-	nap::rtti::TypeInfo showMaterialSelector(QWidget* parent, const PropertyPath& prop, std::string& outName);
-
-	/**
 	 * Show a dialog box containing the given properties and a custom message.
 	 * @param parent The parent widget to attach the dialog to
 	 * @param props The properties to display in the dialog

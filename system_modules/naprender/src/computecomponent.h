@@ -38,8 +38,9 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(ComputeComponent, ComputeComponentInstance)
 	public:
-		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property 'ComputeMaterialInstance' The compute material instance resource
-		uint								mInvocations = 1;					///< Property 'Invocations' The number of compute shader invocations per dispatch
+		ComputeMaterialInstanceResource		mComputeMaterialInstanceResource;	///< Property: 'ComputeMaterialInstance' The compute material instance resource
+		uint								mInvocations = 1;					///< Property: 'Invocations' The number of compute shader invocations per dispatch
+		bool								mEnabled = true;					///< Property: 'Enabled' if this component is enabled for computation
 	};
 
 
@@ -85,14 +86,25 @@ namespace nap
 		void compute(VkCommandBuffer commandBuffer, uint numInvocations);
 
 		/**
+		 * Toggles whether this component is enabled.
+		 * @param enable if this object should be enabled or not
+		 */
+		void enable(bool enable)										{ mEnabled = enable; }
+
+		/**
+		 * @return if the object is enabled for computation
+		 */
+		bool isEnabled() const											{ return mEnabled; }
+
+		/**
 		 * @return compute program.
 		 */
-		ComputeMaterialInstance& getMaterialInstance() 			{ return mComputeMaterialInstance; }
+		ComputeMaterialInstance& getMaterialInstance() 					{ return mComputeMaterialInstance; }
 
 		/**
 		 * @return the local workgroup size
 		 */
-		glm::u32vec3 getWorkGroupSize() const							{ return mComputeMaterialInstance.getMaterial().getShader().getWorkGroupSize(); }
+		glm::uvec3 getWorkGroupSize() const								{ return mComputeMaterialInstance.getWorkGroupSize(); }
 
 		/**
 		 * Sets the number of compute shader invocations for this instance
@@ -124,5 +136,6 @@ namespace nap
 		RenderService*						mRenderService = nullptr;
 		ComputeMaterialInstance				mComputeMaterialInstance;
 		uint								mInvocations = 1;
+		bool								mEnabled = true;
 	};
 }

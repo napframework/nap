@@ -9,24 +9,24 @@
 // external includes
 #include <nap/resourceptr.h>
 
-RTTI_DEFINE_BASE(nap::BaseSequenceTrackCurve)
+RTTI_DEFINE_BASE(nap::BaseSequenceTrackCurve, "Sequenced bezier curve")
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackCurveFloat)
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurveFloat, "1 dimensional sequenced bezier curve")
         RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurveFloat::mMinimum, nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurveFloat::mMaximum, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackCurveVec2)
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurveVec2, "2 dimensional sequenced bezier curve")
         RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurveVec2::mMinimum, nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurveVec2::mMaximum, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackCurveVec3)
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurveVec3, "3 dimensional sequenced bezier curve")
         RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurveVec3::mMinimum, nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurveVec3::mMaximum, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
-RTTI_BEGIN_CLASS(nap::SequenceTrackCurveVec4)
+RTTI_BEGIN_CLASS(nap::SequenceTrackCurveVec4, "4 dimensional sequenced bezier curve")
         RTTI_PROPERTY("Minimum", &nap::SequenceTrackCurveVec4::mMinimum, nap::rtti::EPropertyMetaData::Default)
         RTTI_PROPERTY("Maximum", &nap::SequenceTrackCurveVec4::mMaximum, nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS

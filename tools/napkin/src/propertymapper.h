@@ -10,6 +10,7 @@
 // External Includes
 #include <material.h>
 #include <materialinstance.h>
+#include <qwidget.h>
 
 #include <QWidget>
 
@@ -83,6 +84,10 @@ namespace napkin
 		// Buffer bindings
 		const nap::BufferObjectDeclaration* selectBufferDeclaration(const nap::BufferObjectDeclarationList& list, QWidget* parent);
 		void addBufferBinding(const nap::BufferObjectDeclaration& declaration, const PropertyPath& propPath);
+
+		// Constant binding
+		const nap::ShaderConstantDeclaration* selectConstantDeclaration(QWidget* parent);
+		void addConstantBinding(const nap::ShaderConstantDeclaration& declaration, const PropertyPath& propPath);
 
 		// Vertex bindings
 		const nap::VertexAttributeDeclaration* selectVertexAttrDeclaration(QWidget* parent);

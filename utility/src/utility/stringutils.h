@@ -163,12 +163,12 @@ namespace nap
 		/**
 		 * Formats a string based on the incoming arguments
 		 * example: utility::stringFormat("%s contains %d number of items", object.name().c_str(), i)
-		 * @param format the string to format
+		 * @param msg the string to format
 		 * @param args the arguments to replace
 		 * @return the formatted string
 		 */
 		template <typename... Args>
-		static std::string stringFormat(const char*, Args&&... args);
+		static std::string stringFormat(const char* msg, Args&&... args);
 
 		/**
 		 * Replace all occurrences of the provided keys with their associated values in the given subject string.
@@ -218,9 +218,9 @@ namespace nap
 		 * @param replace The replacement string
 		 */
 		void replaceAllInstances(std::string& inString, const std::string& find, const std::string& replace);
-		
+
 		/**
-		 * Replace all instances of a string with a replacement string. 
+		 * Replace all instances of a string with a replacement string.
 		 * @param inString The input string to search in
 		 * @param find The string to replace
 		 * @param replace The replacement string

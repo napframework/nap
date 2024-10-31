@@ -2,7 +2,7 @@
 // generic/raw_protocol.cpp
 // ~~~~~~~~~~~~~~~~~~~~~~~~
 //
-// Copyright (c) 2003-2018 Christopher M. Kohlhoff (chris at kohlhoff dot com)
+// Copyright (c) 2003-2023 Christopher M. Kohlhoff (chris at kohlhoff dot com)
 //
 // Distributed under the Boost Software License, Version 1.0. (See accompanying
 // file LICENSE_1_0.txt or copy at http://www.boost.org/LICENSE_1_0.txt)
@@ -20,6 +20,7 @@
 #include "asio/io_context.hpp"
 #include "asio/ip/icmp.hpp"
 #include "../unit_test.hpp"
+#include "../archetypes/async_result.hpp"
 
 #if defined(__cplusplus_cli) || defined(__cplusplus_winrt)
 # define generic cpp_generic
@@ -65,6 +66,7 @@ void test()
     socket_base::message_flags in_flags = 0;
     socket_base::send_buffer_size socket_option;
     socket_base::bytes_readable io_control_command;
+    archetypes::immediate_handler immediate;
     asio::error_code ec;
 
     // basic_raw_socket constructors.
@@ -96,14 +98,6 @@ void test()
 
     rp::socket::executor_type ex = socket1.get_executor();
     (void)ex;
-
-#if !defined(ASIO_NO_DEPRECATED)
-    io_context& ioc_ref = socket1.get_io_context();
-    (void)ioc_ref;
-
-    io_context& ioc_ref2 = socket1.get_io_service();
-    (void)ioc_ref2;
-#endif // !defined(ASIO_NO_DEPRECATED)
 
     // basic_socket functions.
 
@@ -151,6 +145,7 @@ void test()
     socket1.connect(rp::endpoint(), ec);
 
     socket1.async_connect(rp::endpoint(), connect_handler);
+    socket1.async_connect(rp::endpoint(), immediate);
 
     socket1.set_option(socket_option);
     socket1.set_option(socket_option, ec);
@@ -162,10 +157,14 @@ void test()
     socket1.io_control(io_control_command, ec);
 
     rp::endpoint endpoint1 = socket1.local_endpoint();
+    (void)endpoint1;
     rp::endpoint endpoint2 = socket1.local_endpoint(ec);
+    (void)endpoint2;
 
     rp::endpoint endpoint3 = socket1.remote_endpoint();
+    (void)endpoint3;
     rp::endpoint endpoint4 = socket1.remote_endpoint(ec);
+    (void)endpoint4;
 
     socket1.shutdown(socket_base::shutdown_both);
     socket1.shutdown(socket_base::shutdown_both, ec);
@@ -188,6 +187,12 @@ void test()
     socket1.async_send(buffer(mutable_char_buffer), in_flags, send_handler);
     socket1.async_send(buffer(const_char_buffer), in_flags, send_handler);
     socket1.async_send(null_buffers(), in_flags, send_handler);
+    socket1.async_send(buffer(mutable_char_buffer), immediate);
+    socket1.async_send(buffer(const_char_buffer), immediate);
+    socket1.async_send(null_buffers(), immediate);
+    socket1.async_send(buffer(mutable_char_buffer), in_flags, immediate);
+    socket1.async_send(buffer(const_char_buffer), in_flags, immediate);
+    socket1.async_send(null_buffers(), in_flags, immediate);
 
     socket1.send_to(buffer(mutable_char_buffer),
         rp::endpoint());
@@ -220,6 +225,18 @@ void test()
         rp::endpoint(), in_flags, send_handler);
     socket1.async_send_to(null_buffers(),
         rp::endpoint(), in_flags, send_handler);
+    socket1.async_send_to(buffer(mutable_char_buffer),
+        rp::endpoint(), immediate);
+    socket1.async_send_to(buffer(const_char_buffer),
+        rp::endpoint(), immediate);
+    socket1.async_send_to(null_buffers(),
+        rp::endpoint(), immediate);
+    socket1.async_send_to(buffer(mutable_char_buffer),
+        rp::endpoint(), in_flags, immediate);
+    socket1.async_send_to(buffer(const_char_buffer),
+        rp::endpoint(), in_flags, immediate);
+    socket1.async_send_to(null_buffers(),
+        rp::endpoint(), in_flags, immediate);
 
     socket1.receive(buffer(mutable_char_buffer));
     socket1.receive(null_buffers());
@@ -233,6 +250,11 @@ void test()
     socket1.async_receive(buffer(mutable_char_buffer), in_flags,
         receive_handler);
     socket1.async_receive(null_buffers(), in_flags, receive_handler);
+    socket1.async_receive(buffer(mutable_char_buffer), immediate);
+    socket1.async_receive(null_buffers(), immediate);
+    socket1.async_receive(buffer(mutable_char_buffer), in_flags,
+        immediate);
+    socket1.async_receive(null_buffers(), in_flags, immediate);
 
     rp::endpoint endpoint;
     socket1.receive_from(buffer(mutable_char_buffer), endpoint);
@@ -250,6 +272,14 @@ void test()
         endpoint, in_flags, receive_handler);
     socket1.async_receive_from(null_buffers(),
         endpoint, in_flags, receive_handler);
+    socket1.async_receive_from(buffer(mutable_char_buffer),
+        endpoint, immediate);
+    socket1.async_receive_from(null_buffers(),
+        endpoint, immediate);
+    socket1.async_receive_from(buffer(mutable_char_buffer),
+        endpoint, in_flags, immediate);
+    socket1.async_receive_from(null_buffers(),
+        endpoint, in_flags, immediate);
   }
   catch (std::exception&)
   {
@@ -263,5 +293,5 @@ void test()
 ASIO_TEST_SUITE
 (
   "generic/raw_protocol",
-  ASIO_TEST_CASE(generic_raw_protocol_socket_compile::test)
+  ASIO_COMPILE_TEST_CASE(generic_raw_protocol_socket_compile::test)
 )

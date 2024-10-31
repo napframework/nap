@@ -18,7 +18,7 @@
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ResourceManager)
 	RTTI_CONSTRUCTOR(nap::Core&)
-	RTTI_FUNCTION("findObject", (const nap::rtti::ObjectPtr<nap::rtti::Object> (nap::ResourceManager::*)(const std::string&))&nap::ResourceManager::findObject)
+	RTTI_FUNCTION("findObject", (nap::rtti::ObjectPtr<nap::rtti::Object>(nap::ResourceManager::*)(const std::string&) const)&nap::ResourceManager::findObject)
 RTTI_END_CLASS
 
 namespace nap
@@ -462,6 +462,7 @@ namespace nap
 		return true;
 	}
 
+
 	ResourceManager::EFileModified ResourceManager::isFileModified(const std::string& modifiedFile)
 	{
 		// Get file time
@@ -499,13 +500,11 @@ namespace nap
 	}
 
 
-	const rtti::ObjectPtr<Object> ResourceManager::findObject(const std::string& id)
+	rtti::ObjectPtr<Object> ResourceManager::findObject(const std::string& id) const
 	{
 		const auto& it = mObjects.find(id);
-		
 		if (it != mObjects.end())
 			return rtti::ObjectPtr<Object>(it->second.get());
-		
 		return nullptr;
 	}
 
@@ -544,7 +543,7 @@ namespace nap
 	}
 
 
-	const rtti::ObjectPtr<Object> ResourceManager::createObject(const rtti::TypeInfo& type)
+	rtti::ObjectPtr<Object> ResourceManager::createObject(const rtti::TypeInfo& type)
 	{
 		if (!type.is_derived_from(RTTI_OF(Object)))
 		{
