@@ -60,6 +60,9 @@ namespace nap
 
 		void AudioService::onAudioCallback(float** inputBuffer, float** outputBuffer, unsigned long framesPerBuffer)
 		{
+			// Lock the mutex used to lock the audio thread.
+			std::lock_guard<std::mutex> lock(mMutex);
+
 			// process the node manager
 			mNodeManager.process(inputBuffer, outputBuffer, framesPerBuffer);
 			
