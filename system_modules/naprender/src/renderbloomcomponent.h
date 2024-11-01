@@ -95,12 +95,14 @@ namespace nap
 		virtual void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
 
 	private:
-		using DoubleBufferedRenderTarget = std::array<rtti::ObjectPtr<RenderTarget>, 2>;
+		using DoubleBufferedRenderTexture2D = std::array<std::unique_ptr<RenderTexture2D>, 2>;
+		using DoubleBufferedRenderTarget = std::array<std::unique_ptr<RenderTarget>, 2>;
 
 		RenderService*				mRenderService = nullptr;			///< Render service
 		RenderTexture2D*			mInputTexture = nullptr;			///< Reference to the input texture
 		RenderTexture2D*			mOutputTexture = nullptr;			///< Reference to the output texture
 		
+		std::vector<DoubleBufferedRenderTexture2D> mBloomTextures;		///< Internally managed render textures
 		std::vector<DoubleBufferedRenderTarget> mBloomRTs;				///< Internally managed render targets
 
 		MaterialInstanceResource	mMaterialInstanceResource;			///< Instance of the material, used to override uniforms for this instance
