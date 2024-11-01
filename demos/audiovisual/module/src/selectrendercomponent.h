@@ -6,10 +6,9 @@
 
 // External includes
 #include <component.h>
-#include <mesh.h>
-#include <renderablemesh.h>
+#include <componentptr.h>
 #include <nap/resourceptr.h>
-#include <renderablemeshcomponent.h>
+#include <rendercomponent.h>
 #include <parameternumeric.h>
 
 namespace nap
@@ -24,7 +23,7 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(SelectRenderComponent, SelectRenderComponentInstance)
 	public:
-		std::vector<ComponentPtr<RenderableMeshComponent>> mRenderComponents;			///< Property: "RenderComponents" link to render components
+		std::vector<ComponentPtr<RenderableComponent>> mRenderComponents;				///< Property: "RenderComponents" link to render components
 		ResourcePtr<ParameterInt> mIndex;												///< Property: "Index" current index
 	};
 
@@ -67,7 +66,7 @@ namespace nap
 		void onIndexChanged(int index);
 		nap::Slot<int> mIndexChangedSlot = { this, &SelectRenderComponentInstance::onIndexChanged };
 
-		std::vector<ComponentInstancePtr<RenderableMeshComponent>> mRenderComponents = initComponentInstancePtr(this, &SelectRenderComponent::mRenderComponents);
+		std::vector<ComponentInstancePtr<RenderableComponent>> mRenderComponents = initComponentInstancePtr(this, &SelectRenderComponent::mRenderComponents);
 
 		ParameterInt* mIndexParam = nullptr;
 		int mIndex = 0;									//< Current index

@@ -8,23 +8,26 @@
 #include <entity.h>
 #include <computecomponent.h>
 #include <renderglobals.h>
-#include <planemeshvec4.h>
 #include <mesh.h>
 
 // nap::RenderAudioRoadComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::RenderAudioRoadComponent)
-	RTTI_PROPERTY("AudioRoadComponent",		&nap::RenderAudioRoadComponent::mAudioRoadComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("Ambient",				&nap::RenderAudioRoadComponent::mAmbient,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Diffuse",				&nap::RenderAudioRoadComponent::mDiffuse,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Specular",				&nap::RenderAudioRoadComponent::mSpecular,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("FresnelColor",			&nap::RenderAudioRoadComponent::mFresnelColor,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Fresnel",				&nap::RenderAudioRoadComponent::mFresnel,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Shininess",				&nap::RenderAudioRoadComponent::mShininess,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Alpha",					&nap::RenderAudioRoadComponent::mAlpha,					nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Highlight",				&nap::RenderAudioRoadComponent::mHighlight,				nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("HighlightLength",		&nap::RenderAudioRoadComponent::mHighlightLength,		nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Reflection",				&nap::RenderAudioRoadComponent::mReflection,			nap::rtti::EPropertyMetaData::Default)
-	RTTI_PROPERTY("Environment",			&nap::RenderAudioRoadComponent::mEnvironment,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Mesh", 						&nap::RenderAudioRoadComponent::mMesh, 						nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("AudioRoadComponent", 		&nap::RenderAudioRoadComponent::mAudioRoad, 				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MaterialInstanceResource", 	&nap::RenderAudioRoadComponent::mMaterialInstanceResource, 	nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("ClipRect", 					&nap::RenderAudioRoadComponent::mClipRect, 					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("LineWidth", 					&nap::RenderAudioRoadComponent::mLineWidth, 				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Ambient",					&nap::RenderAudioRoadComponent::mAmbient,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Diffuse",					&nap::RenderAudioRoadComponent::mDiffuse,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Specular",					&nap::RenderAudioRoadComponent::mSpecular,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("FresnelColor",				&nap::RenderAudioRoadComponent::mFresnelColor,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Fresnel",					&nap::RenderAudioRoadComponent::mFresnel,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Shininess",					&nap::RenderAudioRoadComponent::mShininess,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Alpha",						&nap::RenderAudioRoadComponent::mAlpha,						nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Highlight",					&nap::RenderAudioRoadComponent::mHighlight,					nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("HighlightLength",			&nap::RenderAudioRoadComponent::mHighlightLength,			nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Reflection",					&nap::RenderAudioRoadComponent::mReflection,				nap::rtti::EPropertyMetaData::Default)
+	RTTI_PROPERTY("Environment",				&nap::RenderAudioRoadComponent::mEnvironment,				nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 // nap::RenderAudioRoadComponentInstance run time class definition 
@@ -39,20 +42,53 @@ namespace nap
 {
 	bool RenderAudioRoadComponentInstance::init(utility::ErrorState& errorState)
 	{
+		if (!RenderableComponentInstance::init(errorState))
+			return false;
+
 		// Fetch resource
 		mResource = getComponent<RenderAudioRoadComponent>();
 
-		// Force vec4 plane mesh
-		if (!errorState.check(mResource->mMesh.get()->get_type() == RTTI_OF(PlaneMeshVec4), "Mesh must be of type `nap::PlaneMeshVec4`"))
+		// Get vec4 plane mesh
+		mMesh = mResource->mMesh.get();
+
+		if (!mMaterialInstance.init(*mRenderService, mResource->mMaterialInstanceResource, errorState))
 			return false;
 
-		if (!RenderableMeshComponentInstance::init(errorState))
+		mRenderableMesh = mRenderService->createRenderableMesh(*mMesh, mMaterialInstance, errorState);
+		if (!errorState.check(mRenderableMesh.isValid(), "%s: unable to create renderable mesh", mID.c_str()))
 			return false;
+
+		// Ensure there is a transform component
+		mTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
+		if (!errorState.check(mTransform != nullptr, "%s: missing transform component", mID.c_str()))
+			return false;
+
+		// Copy cliprect. Any modifications are done per instance
+		mClipRect = mResource->mClipRect;
+
+		// Copy line width, ensure it's supported
+		mLineWidth = mResource->mLineWidth;
+		if (mLineWidth > 1.0f && !mRenderService->getWideLinesSupported())
+		{
+			nap::Logger::warn("Unsupported line width: %.02f", mLineWidth);
+			mLineWidth = 1.0f;
+		}
+
+		// Cache MVP Uniforms
+		auto* mvp = mMaterialInstance.getOrCreateUniform(uniform::mvpStruct);
+		if (mvp != nullptr)
+		{
+			mModelMatUniform 		= mvp->getOrCreateUniform<UniformMat4Instance>(uniform::modelMatrix);
+			mViewMatUniform 		= mvp->getOrCreateUniform<UniformMat4Instance>(uniform::viewMatrix);
+			mProjectMatUniform 		= mvp->getOrCreateUniform<UniformMat4Instance>(uniform::projectionMatrix);
+			mNormalMatrixUniform 	= mvp->getOrCreateUniform<UniformMat4Instance>(uniform::normalMatrix);
+			mCameraWorldPosUniform 	= mvp->getOrCreateUniform<UniformVec3Instance>(uniform::cameraPosition);
+		}
 
 		/**
 		 * Assume BlinnPhongShader material interface
 		 */
-		auto* uni = getMaterialInstance().getOrCreateUniform("UBO");
+		auto* uni = mMaterialInstance.getOrCreateUniform("UBO");
 		if (!errorState.check(uni != nullptr, "Missing uniform struct with name `UBO`"))
 			return false;
 
@@ -165,21 +201,20 @@ namespace nap
 			mViewMatUniform->setValue(viewMatrix);
 
 		if (mModelMatUniform != nullptr)
-			mModelMatUniform->setValue(mTransformComponent->getGlobalTransform());
+			mModelMatUniform->setValue(mTransform->getGlobalTransform());
 
 		if (mNormalMatrixUniform != nullptr)
-			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransformComponent->getGlobalTransform())));
+			mNormalMatrixUniform->setValue(glm::transpose(glm::inverse(mTransform->getGlobalTransform())));
 
 		if (mCameraWorldPosUniform != nullptr)
 			mCameraWorldPosUniform->setValue(math::extractPosition(glm::inverse(viewMatrix)));
 
 		// Acquire new / unique descriptor set before rendering
-		MaterialInstance& mat_instance = getMaterialInstance();
-		const DescriptorSet& descriptor_set = mat_instance.update();
+		const auto& descriptor_set = mMaterialInstance.update();
 
 		// Fetch and bind pipeline
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mat_instance, error_state);
+		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 
 		// Bind shader descriptors
@@ -188,7 +223,7 @@ namespace nap
 		// Bind vertex buffers
 		{
 			// Copy the ordered vector of VkBuffers from the renderable mesh
-			std::vector<VkBuffer> vertex_buffers = mRenderableMesh.getVertexBuffers();
+			auto vertex_buffers = mRenderableMesh.getVertexBuffers();
 
 			// Override position vertex attribute buffer with storage buffer.
 			// We do this by first fetching the internal buffer binding index of the position vertex attribute.
@@ -205,7 +240,7 @@ namespace nap
 				vertex_buffers[normal_attr_binding_idx] = mAudioRoadComponent->getNormalBuffer().getBuffer();
 
 			// Get offsets
-			const std::vector<VkDeviceSize>& offsets = mRenderableMesh.getVertexBufferOffsets();
+			const auto& offsets = mRenderableMesh.getVertexBufferOffsets();
 
 			// Bind buffers
 			// The shader will now use the storage buffer updated by the compute shader as a vertex buffer when rendering the current mesh.
@@ -228,11 +263,11 @@ namespace nap
 		vkCmdSetLineWidth(commandBuffer, mLineWidth);
 
 		// Draw meshes
-		MeshInstance& mesh_instance = getMeshInstance();
-		GPUMesh& mesh = mesh_instance.getGPUMesh();
+		const auto& mesh_instance = mMesh->getMeshInstance();
+		const auto& mesh = mesh_instance.getGPUMesh();
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const auto& index_buffer = mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}

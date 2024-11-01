@@ -131,8 +131,6 @@ namespace nap
 		UniformVec3Instance* mTangentUniform = nullptr;
 		UniformVec3Instance* mUpUniform = nullptr;
 
-		std::unique_ptr<IMesh> mWireFrameCopyMesh;
-
 		std::array<std::unique_ptr<VertexBufferVec4>, 2> mPositionBuffers;
 		std::array<std::unique_ptr<VertexBufferVec4>, 2> mNormalBuffers;
 

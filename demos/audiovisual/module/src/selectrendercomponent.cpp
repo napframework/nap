@@ -6,7 +6,6 @@
 
 // External Includes
 #include <entity.h>
-#include <renderablemeshcomponent.h>
 #include <mathutils.h>
 
 // nap::SelectRenderComponent run time class definition 
@@ -27,8 +26,12 @@ namespace nap
 {
 	bool SelectRenderComponentInstance::init(utility::ErrorState& errorState)
 	{
+		// Ensure there is at least one render component
+		if (!errorState.check(!mRenderComponents.empty(), "No render components specified"))
+			return false;
+
 		// Copy over meshes
-		nap::SelectRenderComponent* resource = getComponent<SelectRenderComponent>();
+		auto* resource = getComponent<SelectRenderComponent>();
 
 		// Select the mesh to display based on resource index
 		mIndexParam = resource->mIndex.get();

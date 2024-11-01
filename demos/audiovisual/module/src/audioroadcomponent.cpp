@@ -12,7 +12,6 @@
 #include <mesh.h>
 #include <glm/gtc/quaternion.hpp>
 #include <glm/gtc/noise.hpp>
-#include <glm/gtx/vec_swizzle.hpp>
 
 // nap::AudioRoadComponent run time class definition 
 RTTI_BEGIN_CLASS(nap::AudioRoadComponent)
@@ -55,10 +54,10 @@ namespace nap
 		mResource = getComponent<AudioRoadComponent>();
 
 		auto& mesh_instance = mResource->mReferenceMesh->getMeshInstance();
-		GPUMesh& gpu_mesh = mesh_instance.getGPUMesh();
+		auto& gpu_mesh = mesh_instance.getGPUMesh();
 
 		// Create double buffered copy of the position attribute
-		for (uint i = 0; i < mPositionBuffers.size(); i++)
+		for (auto& position_buffer : mPositionBuffers)
 		{
 			auto buffer = std::make_unique<VertexBufferVec4>(*getEntityInstance()->getCore(), EMemoryUsage::Static, true);
 			buffer->mCount = gpu_mesh.findVertexBuffer(vertexid::position)->getCount();
@@ -70,11 +69,11 @@ namespace nap
 			if (!buffer->setData(reference_attribute->getData(), errorState))
 				return false;
 
-			mPositionBuffers[i] = std::move(buffer);
+			position_buffer = std::move(buffer);
 		}
 
 		// Create double buffered copy of the normal attribute
-		for (uint i = 0; i < mNormalBuffers.size(); i++)
+		for (auto& normal_buffer : mNormalBuffers)
 		{
 			auto buffer = std::make_unique<VertexBufferVec4>(*getEntityInstance()->getCore(), EMemoryUsage::Static, true);
 			buffer->mCount = gpu_mesh.findVertexBuffer(vertexid::normal)->getCount();
@@ -86,7 +85,7 @@ namespace nap
 			if (!buffer->setData(reference_attribute->getData(), errorState))
 				return false;
 
-			mNormalBuffers[i] = std::move(buffer);
+			normal_buffer = std::move(buffer);
 		}
 
 		// Compute Populate
@@ -220,12 +219,12 @@ namespace nap
 
 	void AudioRoadComponentInstance::update(double deltaTime)
 	{
-		float delta_time = static_cast<float>(deltaTime);
+		auto delta_time = static_cast<float>(deltaTime);
 		mElapsedTime += delta_time * mResource->mNoiseSpeed->mValue;
 		mElapsedTimeUniform->setValue(mElapsedTime);
 
-		uint cur_idx = mFrameIndex % static_cast<uint>(mPositionBuffers.size());
-		uint prev_idx = (mFrameIndex + 1) % static_cast<uint>(mPositionBuffers.size());
+		auto cur_idx = mFrameIndex % static_cast<uint>(mPositionBuffers.size());
+		auto prev_idx = (mFrameIndex + 1) % static_cast<uint>(mPositionBuffers.size());
 
 		auto& cur_spectrum = mSpectra[cur_idx];
 		cur_spectrum = mFFT->getFFTBuffer().getAmplitudeSpectrum();
@@ -241,17 +240,17 @@ namespace nap
 		mFluxUniform->setValue(mFluxMeasurement->getFlux());
 		mFluxAccumulator += delta_time * mResource->mSwerveSpeed->mValue;
 
-		float max_angle = glm::half_pi<float>() * mResource->mSwerveIntensity->mValue;
-		float roll_noise = glm::simplex<float>(glm::vec3(mFluxAccumulator, 0.0f, 0.0f));
-		float roll_theta = max_angle * roll_noise;
+		auto max_angle = glm::half_pi<float>() * mResource->mSwerveIntensity->mValue;
+		auto roll_noise = glm::simplex<float>(glm::vec3(mFluxAccumulator, 0.0f, 0.0f));
+		auto roll_theta = max_angle * roll_noise;
 		auto roll = glm::rotate(glm::identity<glm::quat>(), roll_theta, sPlaneForward);
 
-		float pitch_noise = glm::simplex<float>(glm::vec3(0.0f, mFluxAccumulator, 0.0f));
-		float pitch_theta = max_angle * pitch_noise;
+		auto pitch_noise = glm::simplex<float>(glm::vec3(0.0f, mFluxAccumulator, 0.0f));
+		auto pitch_theta = max_angle * pitch_noise;
 		auto pitch = glm::rotate(glm::identity<glm::quat>(), pitch_theta, sPlaneRight);
 
-		float yaw_noise = glm::simplex<float>(glm::vec3(0.0f, 0.0f, mFluxAccumulator));
-		float yaw_theta = max_angle * yaw_noise;
+		auto yaw_noise = glm::simplex<float>(glm::vec3(0.0f, 0.0f, mFluxAccumulator));
+		auto yaw_theta = max_angle * yaw_noise;
 		auto yaw = glm::rotate(glm::identity<glm::quat>(), yaw_theta, -sPlaneUp);
 
 		auto composite = roll * pitch * yaw;
@@ -270,25 +269,25 @@ namespace nap
 
 		if (mResource->mCamera != nullptr)
 		{
-			float height = mResource->mCameraFloatHeight != nullptr ? mResource->mCameraFloatHeight->mValue : 1.0f;
-			float distance = mResource->mCameraFollowDistance != nullptr ? mResource->mCameraFollowDistance->mValue : 1.0f;
+			auto height = mResource->mCameraFloatHeight != nullptr ? mResource->mCameraFloatHeight->mValue : 1.0f;
+			auto distance = mResource->mCameraFollowDistance != nullptr ? mResource->mCameraFollowDistance->mValue : 1.0f;
 			
-			glm::vec3 follow_origin = mOrigin + mUp * height - mDirection * distance;
-			const glm::vec3& new_translate = mCameraTranslationSmoother.update(follow_origin, delta_time);
+			auto follow_origin = mOrigin + mUp * height - mDirection * distance;
+			const auto& new_translate = mCameraTranslationSmoother.update(follow_origin, delta_time);
 
 			auto& camera_transform = mCamera->getEntityInstance()->getComponent<TransformComponentInstance>();
 			camera_transform.setTranslate(new_translate);
 
-			float focus_theta = glm::atan(height/distance);
-			float cam_pitch_theta = pitch_theta - focus_theta;
+			auto focus_theta = glm::atan(height/distance);
+			auto cam_pitch_theta = pitch_theta - focus_theta;
 			cam_pitch_theta = mCameraPitchSmoother.update(cam_pitch_theta, delta_time);
-			glm::quat cam_pitch = glm::rotate(glm::identity<glm::quat>(), cam_pitch_theta, math::X_AXIS);
+			auto cam_pitch = glm::rotate(glm::identity<glm::quat>(), cam_pitch_theta, math::X_AXIS);
 
-			float cam_roll_theta = mCameraRollSmoother.update(roll_theta, delta_time);
-			glm::quat cam_roll = glm::rotate(glm::identity<glm::quat>(), cam_roll_theta, math::Z_AXIS);
+			auto cam_roll_theta = mCameraRollSmoother.update(roll_theta, delta_time);
+			auto cam_roll = glm::rotate(glm::identity<glm::quat>(), cam_roll_theta, math::Z_AXIS);
 
-			float cam_yaw_theta = mCameraYawSmoother.update(yaw_theta, delta_time);
-			glm::quat cam_yaw = glm::rotate(glm::identity<glm::quat>(), cam_yaw_theta, math::Y_AXIS);
+			auto cam_yaw_theta = mCameraYawSmoother.update(yaw_theta, delta_time);
+			auto cam_yaw = glm::rotate(glm::identity<glm::quat>(), cam_yaw_theta, math::Y_AXIS);
 
 			camera_transform.setRotate(mCameraToMeshReferenceFrame * cam_roll * cam_pitch * cam_yaw);
 		}

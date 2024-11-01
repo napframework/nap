@@ -1,32 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::BoxMesh",
-            "mID": "BoxMesh",
-            "Usage": "Static",
-            "CullMode": "None",
-            "PolygonMode": "Line",
-            "Size": {
-                "x": 2.5,
-                "y": 2.5,
-                "z": 1.0
-            },
-            "Position": {
-                "x": 0.0,
-                "y": 0.0,
-                "z": -0.5
-            },
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
-            },
-            "FlipNormals": false
-        },
-        {
             "Type": "nap::ConstantShader",
             "mID": "ConstantShader"
         },
@@ -139,103 +113,13 @@
                     ],
                     "Layer": "RenderLayer_Default",
                     "Mesh": "PlaneMeshVec4",
-                    "MaterialInstance": {
-                        "Uniforms": [
-                            {
-                                "Type": "nap::UniformStruct",
-                                "mID": "UBO_b816a14c",
-                                "Name": "UBO",
-                                "Uniforms": [
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "alpha_39b3deaf",
-                                        "Name": "alpha",
-                                        "Value": 0.75
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "highlight_5f42882e",
-                                        "Name": "highlight",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 1.0,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "diffuse_770400a6",
-                                        "Name": "diffuse",
-                                        "Value": {
-                                            "x": 0.1599999964237213,
-                                            "y": 0.36000001430511477,
-                                            "z": 1.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "specular_fc138815",
-                                        "Name": "specular",
-                                        "Value": {
-                                            "x": 0.5,
-                                            "y": 0.20000000298023225,
-                                            "z": 0.8999999761581421
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "fresnelColor_12cc54f9",
-                                        "Name": "fresnelColor",
-                                        "Value": {
-                                            "x": 0.5,
-                                            "y": 0.10000000149011612,
-                                            "z": 0.699999988079071
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec3",
-                                        "mID": "ambient_53a743bf",
-                                        "Name": "ambient",
-                                        "Value": {
-                                            "x": 0.07500000298023224,
-                                            "y": 0.0,
-                                            "z": 0.05000000074505806
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformVec2",
-                                        "mID": "fresnel_6706e3ad",
-                                        "Name": "fresnel",
-                                        "Value": {
-                                            "x": 1.0,
-                                            "y": 4.0
-                                        }
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "shininess_bf8dfe86",
-                                        "Name": "shininess",
-                                        "Value": 48.0
-                                    },
-                                    {
-                                        "Type": "nap::UniformUInt",
-                                        "mID": "environment_d492281c",
-                                        "Name": "environment",
-                                        "Value": 1
-                                    },
-                                    {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "reflection_dcb9e297",
-                                        "Name": "reflection",
-                                        "Value": 0.6499999761581421
-                                    }
-                                ]
-                            }
-                        ],
+                    "AudioRoadComponent": "./AudioRoad",
+                    "MaterialInstanceResource": {
+                        "Uniforms": [],
                         "Samplers": [
                             {
                                 "Type": "nap::SamplerCube",
-                                "mID": "environmentMap_5b5dfa99",
+                                "mID": "environmentMap",
                                 "Name": "environmentMap",
                                 "MinFilter": "Linear",
                                 "MaxFilter": "Linear",
@@ -258,7 +142,6 @@
                         "BlendMode": "Opaque",
                         "DepthMode": "ReadWrite"
                     },
-                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -269,7 +152,7 @@
                             "y": 0.0
                         }
                     },
-                    "AudioRoadComponent": "./AudioRoad",
+                    "LineWidth": 1.0,
                     "Ambient": "Ambient",
                     "Diffuse": "Diffuse",
                     "Specular": "Specular",
@@ -426,28 +309,29 @@
                     ],
                     "Layer": "RenderLayer_Wireframe",
                     "Mesh": "PlaneMeshVec4WireFrame",
-                    "MaterialInstance": {
+                    "AudioRoadComponent": "./AudioRoad",
+                    "MaterialInstanceResource": {
                         "Uniforms": [
                             {
                                 "Type": "nap::UniformStruct",
-                                "mID": "UBO_3f0967a6",
+                                "mID": "UBO",
                                 "Name": "UBO",
                                 "Uniforms": [
                                     {
-                                        "Type": "nap::UniformFloat",
-                                        "mID": "alpha_53883b87",
-                                        "Name": "alpha",
-                                        "Value": 0.10000000149011612
-                                    },
-                                    {
                                         "Type": "nap::UniformVec3",
-                                        "mID": "color_6ad2d405",
+                                        "mID": "color",
                                         "Name": "color",
                                         "Value": {
                                             "x": 0.1599999964237213,
-                                            "y": 0.36000001430511477,
+                                            "y": 0.36000001430511475,
                                             "z": 1.0
                                         }
+                                    },
+                                    {
+                                        "Type": "nap::UniformFloat",
+                                        "mID": "alpha",
+                                        "Name": "alpha",
+                                        "Value": 0.10000000149011612
                                     }
                                 ]
                             }
@@ -459,7 +343,6 @@
                         "BlendMode": "AlphaBlend",
                         "DepthMode": "ReadOnly"
                     },
-                    "LineWidth": 1.0,
                     "ClipRect": {
                         "Min": {
                             "x": 0.0,
@@ -470,7 +353,7 @@
                             "y": 0.0
                         }
                     },
-                    "AudioRoadComponent": "./AudioRoad",
+                    "LineWidth": 1.0,
                     "Ambient": "",
                     "Diffuse": "",
                     "Specular": "",
@@ -1094,7 +977,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "NoiseScaleParam",
                             "Name": "NoiseScale",
-                            "Value": 0.33000001311302187,
+                            "Value": 0.33000001311302185,
                             "Minimum": 0.0,
                             "Maximum": 2.0
                         },
@@ -1143,7 +1026,7 @@
                             "Name": "Ambient",
                             "Value": {
                                 "Values": [
-                                    0.07058823853731156,
+                                    0.07058823853731155,
                                     0.0,
                                     0.05098039284348488
                                 ]
@@ -1155,7 +1038,7 @@
                             "Name": "Diffuse",
                             "Value": {
                                 "Values": [
-                                    0.14901961386203767,
+                                    0.14901961386203766,
                                     0.3607843220233917,
                                     1.0
                                 ]
@@ -1168,7 +1051,7 @@
                             "Value": {
                                 "Values": [
                                     0.501960813999176,
-                                    0.20000000298023225,
+                                    0.20000000298023224,
                                     0.9019607901573181
                                 ]
                             }
@@ -1266,7 +1149,7 @@
                             "Type": "nap::ParameterFloat",
                             "mID": "FocusDistanceParam",
                             "Name": "FocusDistance",
-                            "Value": 1.0099999904632569,
+                            "Value": 1.0099999904632568,
                             "Minimum": 0.5,
                             "Maximum": 1.25
                         },
@@ -1481,7 +1364,7 @@
                     "PolygonMode": "Fill",
                     "Size": {
                         "x": 1.0,
-                        "y": 1.0
+                        "y": 2.0
                     },
                     "Position": {
                         "x": 0.0,
@@ -1643,7 +1526,7 @@
             "Usage": "Static",
             "CullMode": "None",
             "PolygonMode": "Point",
-            "Radius": 1.2000000476837159,
+            "Radius": 1.2000000476837158,
             "Rings": 50,
             "Sectors": 50,
             "Color": {
@@ -1658,26 +1541,6 @@
                 "x": 0.0,
                 "y": 0.0,
                 "z": 0.0
-            }
-        },
-        {
-            "Type": "nap::TorusMesh",
-            "mID": "TorusMesh",
-            "Radius": 0.75,
-            "TubeRadius": 0.25,
-            "Segments": 32,
-            "TubeSegments": 16,
-            "AngleOffset": 0.0,
-            "Usage": "Static",
-            "PolygonMode": "Line",
-            "CullMode": "None",
-            "Color": {
-                "Values": [
-                    1.0,
-                    1.0,
-                    1.0,
-                    1.0
-                ]
             }
         },
         {
