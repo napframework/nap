@@ -255,9 +255,10 @@ namespace nap
 		glm::ivec2 size = getBufferSize();
 		const RGBAColorFloat& clear_color = mSnapshot->mClearColor;
 
-		std::array<VkClearValue, 2> clearValues = {};
+		std::array<VkClearValue, 3> clearValues = {};
 		clearValues[0].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };
 		clearValues[1].depthStencil = { 1.0f, 0 };
+		clearValues[2].color = { clear_color[0], clear_color[1], clear_color[2], clear_color[3] };
 
 		// Setup render pass
 		VkRenderPassBeginInfo renderPassInfo = {};

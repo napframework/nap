@@ -967,9 +967,10 @@ namespace nap
 		render_pass_info.renderArea.extent = mSwapchainExtent;
 
 		// Clear color
-		std::array<VkClearValue, 2> clear_values = {};
+		std::array<VkClearValue, 3> clear_values = {};
 		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		clear_values[1].depthStencil = { 1.0f, 0 };
+		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 		render_pass_info.clearValueCount = static_cast<uint32_t>(clear_values.size());
 		render_pass_info.pClearValues = clear_values.data();
 
