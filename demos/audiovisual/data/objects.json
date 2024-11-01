@@ -692,7 +692,8 @@
                     "mID": "RenderStars",
                     "Visible": true,
                     "Tags": [
-                        "RenderTag_Unlit"
+                        "RenderTag_Unlit",
+                        "RenderTag_Environment"
                     ],
                     "Layer": "RenderLayer_Background",
                     "Mesh": "ScatterStars",
@@ -1225,6 +1226,11 @@
                     "Type": "nap::RenderTag",
                     "mID": "RenderTag_Unlit",
                     "Name": "Unlit"
+                },
+                {
+                    "Type": "nap::RenderTag",
+                    "mID": "RenderTag_Environment",
+                    "Name": "Environment"
                 }
             ],
             "Children": []

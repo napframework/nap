@@ -276,7 +276,8 @@ namespace nap
 			const auto& new_translate = mCameraTranslationSmoother.update(follow_origin, delta_time);
 
 			auto& camera_transform = mCamera->getEntityInstance()->getComponent<TransformComponentInstance>();
-			camera_transform.setTranslate(new_translate);
+			const auto up_offset = mUp * 0.1f; // Move the camera up a bit to reduce clipping into the plane
+			camera_transform.setTranslate(new_translate + up_offset);
 
 			auto focus_theta = glm::atan(height/distance);
 			auto cam_pitch_theta = pitch_theta - focus_theta;

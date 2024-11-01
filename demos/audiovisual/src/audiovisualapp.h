@@ -50,10 +50,10 @@ namespace nap
 		
 		/**
 		 * Initialize all the services and app specific data structures
-		 * @param error contains the error code when initialization fails
+		 * @param errorState contains the errorState code when initialization fails
 		 * @return if initialization succeeded
 		*/
-		bool init(utility::ErrorState& error) override;
+		bool init(utility::ErrorState& errorState) override;
 		
 		/**
 		 * Update is called every frame, before render.
@@ -85,6 +85,9 @@ namespace nap
 		virtual int shutdown() override;
 
 	private:
+		bool preRenderCubeMap(utility::ErrorState& errorState);
+		void reload();
+
 		ResourceManager*			mResourceManager = nullptr;			///< Manages all the loaded data
 		RenderService*				mRenderService = nullptr;			///< Render Service that handles render calls
 		RenderAdvancedService*		mRenderAdvancedService = nullptr;	///< Render Advanced Service
@@ -102,9 +105,8 @@ namespace nap
 		ObjectPtr<EntityInstance>	mRenderCameraEntity = nullptr;		///< Holds components for additional rendering operations
 
 		RenderMask					mLitRenderMask = 0;
-		bool						mFirstFrame = true;
 		bool						mHideGUI = false;
 
-		Slot<> mReloadSlot = { [this]() -> void { mFirstFrame = true; } };
+		Slot<> mReloadSlot = { [this]() -> void { reload(); } };
 	};
 }
