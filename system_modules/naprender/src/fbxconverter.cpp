@@ -83,7 +83,7 @@ namespace nap
 
 		// Load file
 		const aiScene* scene = importer->ReadFile(fbxPath,
-		  	(noTangents ? aiProcess_CalcTangentSpace : 0x0) |
+		  	(!noTangents ? aiProcess_CalcTangentSpace : 0x0) |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType |
 			aiProcess_JoinIdenticalVertices
