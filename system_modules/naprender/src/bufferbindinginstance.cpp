@@ -53,11 +53,11 @@ namespace nap
 	template<typename INSTANCE_TYPE, typename RESOURCE_TYPE, typename DECLARATION_TYPE>
 	std::unique_ptr<INSTANCE_TYPE> BufferBindingInstance::createBufferBindingInstance(const std::string& bindingName, const DECLARATION_TYPE& declaration, const BufferBinding* binding, BufferBindingChangedCallback bufferChangedCallback, utility::ErrorState& errorState)
 	{
-		std::unique_ptr<INSTANCE_TYPE> result = std::make_unique<INSTANCE_TYPE>(bindingName, declaration, bufferChangedCallback);
+		auto result = std::make_unique<INSTANCE_TYPE>(bindingName, declaration, bufferChangedCallback);
 		if (binding != nullptr)
 		{
-			const RESOURCE_TYPE* typed_resource = rtti_cast<const RESOURCE_TYPE>(binding);
-			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader"))
+			const auto* typed_resource = rtti_cast<const RESOURCE_TYPE>(binding);
+			if (!errorState.check(typed_resource != nullptr, "Encountered type mismatch between uniform in material and uniform in shader (%s)", declaration.mName.c_str()))
 				return nullptr;
 
 			result->mBuffer = typed_resource->mBuffer.get();

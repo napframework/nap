@@ -279,14 +279,15 @@ bool AppContext::saveDocumentAs(const QString& filename)
 
 std::string AppContext::documentToString() const
 {
-	ObjectList ser_objects;
 	const auto& doc_objects = getDocument()->getObjects();
+	ObjectList ser_objects;
+	ser_objects.reserve(doc_objects.size());
 	for (auto& obj : doc_objects)
 	{
+		// TODO: Instance property filtering shouldn't be required here?
+		// Why are instance properties (nap::RootEntity::mInstanceProperties) not embedded?
 		if (!obj.second->get_type().is_derived_from<nap::InstancePropertyValue>())
-		{
 			ser_objects.emplace_back(obj.second.get());
-		}
 	}
 
 	JSONWriter writer; ErrorState err;

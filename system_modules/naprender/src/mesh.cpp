@@ -102,12 +102,15 @@ namespace nap
 
 			else if (mesh_attribute->get_type() == RTTI_OF(Vec2VertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<glm::vec2>(mesh_attribute->mAttributeID);
-
+			
 			else if (mesh_attribute->get_type() == RTTI_OF(Vec3VertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<glm::vec3>(mesh_attribute->mAttributeID);
 
 			else if (mesh_attribute->get_type() == RTTI_OF(Vec4VertexAttribute))
 				buffer = &mGPUMesh->addVertexBuffer<glm::vec4>(mesh_attribute->mAttributeID);
+			
+			else if (mesh_attribute->get_type() == RTTI_OF(IVec4VertexAttribute))
+				buffer = &mGPUMesh->addVertexBuffer<glm::ivec4>(mesh_attribute->mAttributeID);
 
 			else
 			{

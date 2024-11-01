@@ -37,7 +37,7 @@ namespace nap
 
 			nap::ComponentPtr<AudioComponentBase> mInput; ///< property: 'Input' The component whose audio output will be measured.
 			TimeValue mAnalysisWindowSize = 10; ///< property: 'AnalysisWindowSize' Size of an analysis window in milliseconds.
-			LevelMeterNode::Type mMeterType = LevelMeterNode::Type::RMS; ///< property: 'MeterType' Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window.
+			LevelMeterNode::EType mMeterType = LevelMeterNode::EType::RMS; ///< property: 'MeterType' Type of analysis to be used: RMS for root mean square, PEAK for the peak of the analysis window.
 			bool mFilterInput = false; ///< If set to true the input signal will be filtered before being measured.
 			ControllerValue mCenterFrequency = 10000.f; ///< property: 'CenterFrequency' Center frequency of the frequency band that will be analyzed. Only has effect when mFilterInput = true.
 			ControllerValue mBandWidth = 10000.f; ///< property: 'BandWidth' Width in Hz of the frequency band that will be analyzed. Only has effect when mFilterInput = true.

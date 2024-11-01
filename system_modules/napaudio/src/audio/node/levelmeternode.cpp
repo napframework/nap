@@ -7,9 +7,9 @@
 #include <audio/core/audionodemanager.h>
 #include <cmath>
 
-RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::Type)
-	RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::Type::RMS, "RMS"),
-	RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::Type::PEAK, "Peak")
+RTTI_BEGIN_ENUM(nap::audio::LevelMeterNode::EType)
+	RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::EType::RMS, "RMS"),
+	RTTI_ENUM_VALUE(nap::audio::LevelMeterNode::EType::PEAK, "Peak")
 RTTI_END_ENUM
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audio::LevelMeterNode)
@@ -42,7 +42,7 @@ namespace nap
 
 		float LevelMeterNode::getLevel()
 		{
-			return mValue.load();
+			return mType == EType::RMS ? std::sqrt(mValue.load()) : mValue.load();
 		}
 
 
@@ -55,7 +55,7 @@ namespace nap
             
 			switch (mType)
 			{
-				case PEAK:
+				case EType::PEAK:
 					for (auto& sample : *inputBuffer)
 					{
 						// keep track of peak, sample by sample
