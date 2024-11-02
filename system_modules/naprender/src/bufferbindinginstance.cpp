@@ -135,14 +135,6 @@ namespace nap
 		if (declaration_type == RTTI_OF(ShaderVariableStructBufferDeclaration))
 		{
 			const auto& struct_buffer_declaration = static_cast<const ShaderVariableStructBufferDeclaration&>(buffer_declaration);
-//			if (binding != nullptr)
-//			{
-//				// Verify count
-//				if (!errorState.check(binding->getCount() == struct_buffer_declaration.mNumElements,
-//					"Encountered mismatch in array elements between array in material and array in shader"))
-//					return nullptr;
-//			}
-
 			return createBufferBindingInstance<BufferBindingStructInstance, BufferBindingStruct, ShaderVariableStructBufferDeclaration>(
 				binding_name, struct_buffer_declaration, binding, bufferChangedCallback, errorState);
 		}
@@ -151,14 +143,6 @@ namespace nap
 		if (declaration_type == RTTI_OF(ShaderVariableValueArrayDeclaration))
 		{
 			const auto* value_array_declaration = rtti_cast<const ShaderVariableValueArrayDeclaration>(&buffer_declaration);
-//			if (binding != nullptr)
-//			{
-//				// Verify count
-//				if (!errorState.check(binding->getCount() == value_array_declaration->mNumElements,
-//					"Encountered mismatch in array elements between array in material and array in shader"))
-//					return nullptr;
-//			}
-
 			if (value_array_declaration->mElementType == EShaderVariableValueType::UInt)
 			{
 				return createBufferBindingInstance<BufferBindingUIntInstance, BufferBindingUInt, ShaderVariableValueArrayDeclaration>(
