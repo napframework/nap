@@ -38,7 +38,7 @@ namespace nap
 	 * 1024 x 256 vertices (and therefore 1023 x 255 cells). Please be aware that changing the resolution of this grid
 	 * currently requires the element counts of several resources to be recomputed.
 	 */
-	class audiovisualApp : public App
+	class AudioVisualApp : public App
 	{
 		RTTI_ENABLE(App)
 	public:
@@ -46,7 +46,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		audiovisualApp(nap::Core& core) : App(core) { }
+		AudioVisualApp(nap::Core& core) : App(core) { }
 		
 		/**
 		 * Initialize all the services and app specific data structures

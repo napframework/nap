@@ -8,17 +8,14 @@
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
-#include <rendergnomoncomponent.h>
 #include <perspcameracomponent.h>
-#include <orthocameracomponent.h>
-#include <renderablemeshcomponent.h>
 #include <computecomponent.h>
 #include <parametergui.h>
 #include <depthsorter.h>
 #include <renderdofcomponent.h>
 #include <rendertotexturecomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::audiovisualApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioVisualApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -28,7 +25,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool audiovisualApp::init(utility::ErrorState& errorState)
+	bool AudioVisualApp::init(utility::ErrorState& errorState)
 	{
 		// Retrieve services
 		mRenderService			= getCore().getService<RenderService>();
@@ -87,7 +84,7 @@ namespace nap
 	}
 
 
-	bool audiovisualApp::preRenderCubeMap(utility::ErrorState& errorState)
+	bool AudioVisualApp::preRenderCubeMap(utility::ErrorState& errorState)
 	{
 		auto cube_map = mResourceManager->findObject<CubeRenderTarget>("CubeRenderTarget");
 		if (!errorState.check(cube_map != nullptr, "unable to find cube render target with name: %s", "CubeRenderTarget"))
@@ -111,7 +108,7 @@ namespace nap
 	}
 
 
-	void audiovisualApp::reload()
+	void AudioVisualApp::reload()
 	{
 		utility::ErrorState error_state;
 		if (!preRenderCubeMap(error_state))
@@ -120,7 +117,7 @@ namespace nap
 
 
 	// Update app
-	void audiovisualApp::update(double deltaTime)
+	void AudioVisualApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -140,7 +137,7 @@ namespace nap
 	
 	
 	// Render app
-	void audiovisualApp::render()
+	void AudioVisualApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -210,13 +207,13 @@ namespace nap
 	}
 	
 
-	void audiovisualApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void AudioVisualApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void audiovisualApp::inputMessageReceived(InputEventPtr inputEvent)
+	void AudioVisualApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -238,7 +235,7 @@ namespace nap
 	}
 
 	
-	int audiovisualApp::shutdown()
+	int AudioVisualApp::shutdown()
 	{
 		return 0;
 	}
