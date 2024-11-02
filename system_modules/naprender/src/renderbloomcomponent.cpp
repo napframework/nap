@@ -209,48 +209,46 @@ namespace nap
 		const auto command_buffer = mRenderService->getCurrentCommandBuffer();
 		const glm::mat4 identity_matrix = {};
 
-		// Index into a double-buffered render target
-		auto& initial_texture = *mBloomRTs.front()[0]->mColorTexture;
-
 		// Blit the input texture to the smaller size RT
+		auto& initial_texture = *mBloomRTs.front().front()->mColorTexture;
 		utility::blit(command_buffer, *mInputTexture, initial_texture);
 
 		int pass_count = 0;
 		for (auto& target : mBloomRTs)
 		{
 			const auto proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(
-				0.0f, static_cast<float>(target[0]->getBufferSize().x),
-				0.0f, static_cast<float>(target[0]->getBufferSize().y));
+				0.0f, static_cast<float>(target.front()->getBufferSize().x),
+				0.0f, static_cast<float>(target.front()->getBufferSize().y));
 
 			// Horizontal
-			mColorTextureSampler->setTexture(*target[0]->mColorTexture);
+			mColorTextureSampler->setTexture(*target.front()->mColorTexture);
 			mDirectionUniform->setValue({ 1.0f, 0.0f });
-			mTextureSizeUniform->setValue(target[0]->mColorTexture->getSize());
+			mTextureSizeUniform->setValue(target.front()->mColorTexture->getSize());
 
-			target[1]->beginRendering();
-			onDraw(*target[1], command_buffer, identity_matrix, proj_matrix);
-			target[1]->endRendering();
+			target.back()->beginRendering();
+			onDraw(*target.back(), command_buffer, identity_matrix, proj_matrix);
+			target.back()->endRendering();
 
 			// Vertical
-			mColorTextureSampler->setTexture(*target[1]->mColorTexture);
+			mColorTextureSampler->setTexture(*target.back()->mColorTexture);
 			mDirectionUniform->setValue({ 0.0f, 1.0f });
 
-			target[0]->beginRendering();
-			onDraw(*target[0], command_buffer, identity_matrix, proj_matrix);
-			target[0]->endRendering();
+			target.front()->beginRendering();
+			onDraw(*target.front(), command_buffer, identity_matrix, proj_matrix);
+			target.front()->endRendering();
 
 			// Blit the input texture to the smaller size RT
 			if (pass_count+1 < mBloomRTs.size())
 			{
-				auto& blit_dst = *mBloomRTs[pass_count + 1][0]->mColorTexture;
-				utility::blit(command_buffer, *target[0]->mColorTexture, blit_dst);
+				auto& blit_dst = *mBloomRTs[pass_count+1].front()->mColorTexture;
+				utility::blit(command_buffer, *target.front()->mColorTexture, blit_dst);
 				++pass_count;
 			}
 		}
 
 		// Get a reference to the bloom result
 		// The size of this texture equals { input_width / 2 ^ PassCount, input_height / 2 ^ PassCount }
-		auto& final_texture = *mBloomRTs.back()[0]->mColorTexture;
+		auto& final_texture = *mBloomRTs.back().front()->mColorTexture;
 
 		// Blit to output, potentially resizing the texture another time
 		utility::blit(command_buffer, final_texture, *mOutputTexture);
