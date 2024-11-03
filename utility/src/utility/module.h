@@ -62,4 +62,18 @@ namespace nap
 					moduleService															\
 				};																			\
 			}
+
+	/**
+	 * Returns module description handle if available.
+	 * The handle is only available when building a nap library, not an executable.
+	 * @return module description handle if available.
+	 */
+	inline const nap::ModuleDescriptor* getDescriptor()
+	{
+#ifdef NAP_SHARED_LIBRARY
+		return &nap::descriptor;
+#else
+		return nullptr;
+#endif // NAP_SHARED_LIBRARY
+	}
 }

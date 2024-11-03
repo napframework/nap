@@ -332,16 +332,6 @@ namespace nap
 			return std::is_lvalue_reference<Return>();
 		}
 	}
-
-	/**
-	 * Module description pointer -> resolved at link time for every NAP shared library.
-	 * This descriptor is used to identify the module a NAP object belongs to (originates from).
-	 */
-#ifdef NAP_SHARED_LIBRARY
-	static const ModuleDescriptor* moduleDescriptorHandle = &nap::descriptor;
-#else
-	static const ModuleDescriptor* moduleDescriptorHandle = nullptr;
-#endif // NAP_SHARED_LIBRARY
 }
 
 
@@ -398,13 +388,12 @@ namespace nap
 	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static const nap::ModuleDescriptor* getModuleDescription()	{ return nap::moduleDescriptorHandle; }		\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
-			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescription);
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &nap::getDescriptor);
 #endif // NAP_ENABLE_PYTHON
 
 
@@ -434,14 +423,13 @@ namespace nap
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		static const char* getTypeDescription()		{ return Description; }										\
-		static const nap::ModuleDescriptor* getModuleDescription()	{ return nap::moduleDescriptorHandle; }		\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
 			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);						\
-			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescription);					
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &nap::getDescriptor);					
 #endif // NAP_ENABLE_PYTHON
 
 // Selector
