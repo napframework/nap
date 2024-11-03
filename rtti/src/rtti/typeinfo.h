@@ -420,7 +420,7 @@ namespace nap
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
 		static const char* getTypeDescription()		{ return Description; }										\
-		static const char* getModuleDescription()	{ return nap::descriptor.mID; }								\
+		static const nap::ModuleDescriptor* getModuleDescription()	{ return &nap::descriptor; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
