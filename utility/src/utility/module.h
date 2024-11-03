@@ -22,8 +22,15 @@ namespace nap
 		const char*			mService;		// The service associated with the module
 	};
 
+	// Forward declare module descriptor
+	extern "C" 
+	{
+		extern NAPAPI ModuleDescriptor descriptor;
+	}
+
 	/**
-	 * Macro used to define (and on windows, export) the descriptor for a particular module. Should appear exactly once in the source for a module, in a cpp.
+	 * Macro used to define (and on windows, export) the descriptor for a particular module.
+	 * Should appear exactly once in the source for a module, in a cpp.
 	 */
 	#define NAP_MODULE(moduleID, moduleVersion)											\
 		extern "C"																		\
@@ -38,7 +45,8 @@ namespace nap
 		}
 
 	/**
-	 * Macro used to define (and on windows, export) the descriptor for a particular module with a service. Should appear exactly once in the source for a module, in a cpp.
+	 * Macro used to define (and on windows, export) the descriptor for a particular module with a service.
+	 * Should appear exactly once in the source for a module, in a cpp.
 	 */
 	#define NAP_SERVICE_MODULE(moduleID, moduleVersion, moduleService)						\
 			extern "C"																		\
