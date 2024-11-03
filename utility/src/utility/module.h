@@ -22,10 +22,13 @@ namespace nap
 		const char*			mService;		// The service associated with the module
 	};
 
-	// Forward declare module descriptor
+	/**
+	 * Module descriptor declaration.
+	 * Must be defined exactly once per module in a .cpp file using the NAP_MODULE or NAP_SERVICE_MODULE macro below.
+	 */
 	extern "C" 
 	{
-		extern NAPAPI ModuleDescriptor descriptor;
+		extern ModuleDescriptor descriptor;
 	}
 
 	/**
