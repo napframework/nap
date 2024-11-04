@@ -10,7 +10,7 @@
 // External includes
 #include <string>
 
-#ifdef MODULE_NAME
+#ifdef NAP_SHARED_LIBRARY
 	#define NAP_MODULE_PASTER(x,y) x ## y
 	#define NAP_MODULE_EVALUATOR(x,y)  NAP_MODULE_PASTER(x,y)
 	#define NAP_MODULE_DECLARATION NAP_MODULE_EVALUATOR(MODULE_NAME, _descriptor)
@@ -46,7 +46,7 @@ namespace nap
 	extern "C" 
 	{
 #ifdef NAP_MODULE_DECLARATION
-		extern nap::ModuleDescriptor NAP_MODULE_SYMBOL_NAME;
+		extern nap::ModuleDescriptor NAP_MODULE_DECLARATION;
 #endif // NAP_MODULE_DECLARATION
 	}
 
@@ -81,18 +81,4 @@ namespace nap
 					moduleService															\
 				};																			\
 			}
-
-	/**
-	 * Returns module description handle if available.
-	 * The handle is only available when building a nap library, not an executable.
-	 * @return module description handle if available.
-	 */
-	inline const nap::ModuleDescriptor* getDescriptor()
-	{
-#ifdef NAP_MODULE_SYMBOL_NAME
-		return &NAP_MODULE_DECLARATION;
-#else
-		return nullptr;
-#endif
-	}
 }
