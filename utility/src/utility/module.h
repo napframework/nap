@@ -10,22 +10,10 @@
 // External includes
 #include <string>
 
-#ifdef NAP_SHARED_LIBRARY
-	#define NAP_MODULE_PASTER(x,y) x ## y
-	#define NAP_MODULE_EVALUATOR(x,y)  NAP_MODULE_PASTER(x,y)
-	#define NAP_MODULE_DECLARATION NAP_MODULE_EVALUATOR(MODULE_NAME, _descriptor)
-#endif // MODULE_NAME
-
 namespace nap
 {
-    constexpr int moduleAPIVersion = 1;						///< Current  module API version
-	constexpr const char* coreModuleName = "napcore";		///< Core module name id
-
-	/**
-	 * Returns the shared library module descriptor symbol name
-	 * @return module descriptor symbol name
-	 */
-	inline std::string getModuleSymbolName(const std::string& moduleName) { return moduleName + "_descriptor"; }
+	constexpr int moduleAPIVersion = 1;						///< Current  module API version
+	constexpr const char* moduleCoreName = "napcore";		///< Core module name id
 
 	/**
 	 * Struct used to describe a particular module to the system. Contains the API version that the module was built against, which is used for forwards/backwards compatibility.
@@ -33,23 +21,32 @@ namespace nap
 	 */
 	struct ModuleDescriptor
 	{
-		int					mAPIVersion;	// The version of the module API this module was built against. Must be the first member.
-		const char*			mID;			// The ID (name) of the module
-		const char*			mVersion;		// The version of the module
-		const char*			mService;		// The service associated with the module
+		int			mAPIVersion;	// The version of the module API this module was built against. Must be the first member.
+		const char* mID;			// The ID (name) of the module
+		const char* mVersion;		// The version of the module
+		const char* mService;		// The service associated with the module
 	};
 
 	/**
-	 * Module descriptor declaration.
-	 * Must be defined exactly once per module in a .cpp file using the NAP_MODULE or NAP_SERVICE_MODULE macro below.
+	 * Returns the shared library module descriptor symbol name
+	 * @return module descriptor symbol name
 	 */
-	extern "C" 
-	{
-#ifdef NAP_MODULE_DECLARATION
-		extern nap::ModuleDescriptor NAP_MODULE_DECLARATION;
-#endif // NAP_MODULE_DECLARATION
-	}
+	inline std::string getModuleSymbolName(const std::string& moduleName) { return moduleName + "_descriptor"; }
+}
 
+
+//////////////////////////////////////////////////////////////////////////
+// Macros
+//////////////////////////////////////////////////////////////////////////
+
+#ifdef NAP_SHARED_LIBRARY
+	#define NAP_MODULE_PASTER(x,y) x ## y
+	#define NAP_MODULE_EVALUATOR(x,y)  NAP_MODULE_PASTER(x,y)
+	#define NAP_MODULE_DECLARATION NAP_MODULE_EVALUATOR(MODULE_NAME, _descriptor)
+#endif // NAP_SHARED_LIBRARY
+
+namespace nap
+{
 	/**
 	 * Macro used to define (and on windows, export) the descriptor for a particular module.
 	 * Should appear exactly once in the source for a module, in a cpp.
@@ -81,4 +78,16 @@ namespace nap
 					moduleService															\
 				};																			\
 			}
+
+	/**
+	 * Module descriptor declaration.
+	 * Must be defined exactly once per module in a .cpp file using the NAP_MODULE or NAP_SERVICE_MODULE macros above.
+	 */
+	extern "C" 
+	{
+	#ifdef NAP_MODULE_DECLARATION
+		extern nap::ModuleDescriptor NAP_MODULE_DECLARATION;
+	#endif // NAP_MODULE_DECLARATION
+	}
 }
+

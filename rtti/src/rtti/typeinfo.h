@@ -429,8 +429,8 @@ namespace nap
 #define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static const char* getTypeDescription()			{ return Description; }									\
-		static nap::ModuleDescriptor* getModuleDescriptor()	{ return nap::moduleDeclarationHandle; }			\
+		static const char* getTypeDescription()					{ return Description; }							\
+		static nap::ModuleDescriptor* getModuleDescriptor()		{ return nap::moduleDeclarationHandle; }		\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
