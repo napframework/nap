@@ -8,7 +8,8 @@
 
 namespace nap
 {
-    inline constexpr int moduleAPIVersion = 1;      ///< Current  module API version
+    constexpr int moduleAPIVersion = 1;						///< Current  module API version
+	constexpr const char* coreModuleName = "napcore";		///< Core module name id
 
 	/**
 	 * Struct used to describe a particular module to the system. Contains the API version that the module was built against, which is used for forwards/backwards compatibility.

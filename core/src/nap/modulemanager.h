@@ -116,7 +116,7 @@ namespace nap
 		/**
 		 * @return All currently loaded modules
 		 */
-		std::vector<nap::Module*> getModules() const;
+		const std::vector<std::unique_ptr<Module>>& getModules() const { return mModules; }
 
 		/**
 		 * Find a loaded module by its name as defined in its descriptor file

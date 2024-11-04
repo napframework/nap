@@ -18,7 +18,7 @@
 
 namespace nap
 {
-	ModuleManager::ModuleManager(nap::Core& core) :
+	ModuleManager::ModuleManager(nap::Core& core) : 
 		mCore(core)
 	{
 		initModules();
@@ -31,16 +31,6 @@ namespace nap
 			if (!sourceModule(projectInfo, moduleName, err))
 				return false;
 		return true;
-	}
-
-
-	std::vector<nap::Module*> ModuleManager::getModules() const
-	{
-		std::vector<nap::Module*> mods;
-		mods.reserve(mModules.size());
-		for (const auto& m : mModules)
-			mods.emplace_back(m.get());
-		return mods;
 	}
 
 

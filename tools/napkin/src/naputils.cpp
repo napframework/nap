@@ -226,13 +226,30 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 	nap::rtti::Factory& factory = core.getResourceManager()->getFactory();
 	std::vector<rttr::type> derived_classes;
 
-	auto rootType = RTTI_OF(nap::rtti::Object);
-	nap::rtti::getDerivedTypesRecursive(rootType, derived_classes);
+	// TODO: It's possible to directly compare module descriptor pointers instead of names
+	// For that to work we need to add the napcore module descriptor when initializing NAP
+	const auto& project_modules = core.getModuleManager().getModules();
+	std::unordered_set<std::string> module_names = { nap::coreModuleName };
+	module_names.reserve(project_modules.size() + module_names.size());
+	for (const auto& module : project_modules)
+		module_names.emplace(module->getName());
+
+	auto root_type = RTTI_OF(nap::rtti::Object);
+	nap::rtti::getDerivedTypesRecursive(root_type, derived_classes);
 	for (const rttr::type& derived : derived_classes)
 	{
+		// Ensure the object can be created
 		if (!factory.canCreate(derived))
 			continue;
 
+		// Filter out objects that are not included in the project ->
+		// This includes items from libraries linked in napkin (render, camera etc..) but not the user project.
+		const auto* module_desc = nap::rtti::getModuleDescription(derived);
+		assert(module_desc != nullptr);
+		if(module_names.find(module_desc->mID) == module_names.end())
+			continue;
+
+		// Check user preference
 		if (predicate != nullptr && !predicate(derived))
 			continue;
 
