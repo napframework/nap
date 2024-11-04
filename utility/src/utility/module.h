@@ -4,12 +4,28 @@
 
 #pragma once
 
+// Local includes
 #include "dllexport.h"
+
+// External includes
+#include <string>
+
+#ifdef MODULE_NAME
+	#define NAP_MODULE_PASTER(x,y) x ## y
+	#define NAP_MODULE_EVALUATOR(x,y)  NAP_MODULE_PASTER(x,y)
+	#define NAP_MODULE_DECLARATION NAP_MODULE_EVALUATOR(MODULE_NAME, _descriptor)
+#endif // MODULE_NAME
 
 namespace nap
 {
     constexpr int moduleAPIVersion = 1;						///< Current  module API version
 	constexpr const char* coreModuleName = "napcore";		///< Core module name id
+
+	/**
+	 * Returns the shared library module descriptor symbol name
+	 * @return module descriptor symbol name
+	 */
+	inline std::string getModuleSymbolName(const std::string& moduleName) { return moduleName + "_descriptor"; }
 
 	/**
 	 * Struct used to describe a particular module to the system. Contains the API version that the module was built against, which is used for forwards/backwards compatibility.
@@ -29,7 +45,9 @@ namespace nap
 	 */
 	extern "C" 
 	{
-		extern ModuleDescriptor descriptor;
+#ifdef NAP_MODULE_DECLARATION
+		extern nap::ModuleDescriptor NAP_MODULE_SYMBOL_NAME;
+#endif // NAP_MODULE_DECLARATION
 	}
 
 	/**
@@ -39,7 +57,7 @@ namespace nap
 	#define NAP_MODULE(moduleID, moduleVersion)											\
 		extern "C"																		\
 		{																				\
-			NAPAPI nap::ModuleDescriptor descriptor =									\
+			NAPAPI nap::ModuleDescriptor NAP_MODULE_DECLARATION =						\
 			{																			\
 				nap::moduleAPIVersion,								                    \
 				moduleID,																\
@@ -55,7 +73,7 @@ namespace nap
 	#define NAP_SERVICE_MODULE(moduleID, moduleVersion, moduleService)						\
 			extern "C"																		\
 			{																				\
-				NAPAPI nap::ModuleDescriptor descriptor =									\
+				NAPAPI nap::ModuleDescriptor NAP_MODULE_DECLARATION =						\
 				{																			\
 					nap::moduleAPIVersion,								                    \
 					moduleID,																\
@@ -71,10 +89,10 @@ namespace nap
 	 */
 	inline const nap::ModuleDescriptor* getDescriptor()
 	{
-#ifdef NAP_SHARED_LIBRARY
-		return &nap::descriptor;
+#ifdef NAP_MODULE_SYMBOL_NAME
+		return &NAP_MODULE_DECLARATION;
 #else
 		return nullptr;
-#endif // NAP_SHARED_LIBRARY
+#endif
 	}
 }

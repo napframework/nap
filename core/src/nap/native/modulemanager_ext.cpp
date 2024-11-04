@@ -6,6 +6,7 @@
 #include <nap/modulemanager.h>
 #include <nap/logger.h>
 #include <nap/module.h>
+#include <utility/module.h>
 #include <nap/core.h>
 
 // External Includes
@@ -116,7 +117,7 @@ namespace nap
 
 		// Find descriptor. If the descriptor wasn't found in the dll,
 		// assume it's not actually a nap module and unload it again.
-		auto descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, "descriptor");
+		auto descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, nap::getModuleSymbolName(moduleName).c_str());
 		if (!descriptor)
 		{
 			unloadModule(module_handle);
@@ -160,3 +161,4 @@ namespace nap
 		return true;
 	}
 }
+
