@@ -117,7 +117,7 @@ namespace nap
 
 		// Find descriptor. If the descriptor wasn't found in the dll,
 		// assume it's not actually a nap module and unload it again.
-		auto descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, nap::getModuleSymbolName(moduleName).c_str());
+		auto descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, nap::getModuleDescriptorSymbolName(moduleName).c_str());
 		if (!descriptor)
 		{
 			unloadModule(module_handle);

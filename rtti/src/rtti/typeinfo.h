@@ -332,12 +332,6 @@ namespace nap
 			return std::is_lvalue_reference<Return>();
 		}
 	}
-
-#ifdef NAP_MODULE_DECLARATION
-	static nap::ModuleDescriptor* moduleDeclarationHandle = &NAP_MODULE_DECLARATION;
-#else
-	static nap::ModuleDescriptor* moduleDeclarationHandle = nullptr;
-#endif // NAP_MODULE_DECLARATION
 }
 
 
@@ -394,7 +388,7 @@ namespace nap
 	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static nap::ModuleDescriptor* getModuleDescriptor() { return nap::moduleDeclarationHandle; }			\
+		static nap::ModuleDescriptor* getModuleDescriptor() { return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
@@ -429,8 +423,8 @@ namespace nap
 #define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static const char* getTypeDescription()					{ return Description; }							\
-		static nap::ModuleDescriptor* getModuleDescriptor()		{ return nap::moduleDeclarationHandle; }		\
+		static const char* getTypeDescription()				{ return Description; }								\
+		static nap::ModuleDescriptor* getModuleDescriptor()	{ return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
