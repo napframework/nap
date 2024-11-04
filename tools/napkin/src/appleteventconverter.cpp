@@ -294,8 +294,8 @@ namespace napkin
 			int sx, sy;
 			const auto& qt_mouse_event = static_cast<const QMouseEvent&>(qtEvent);
 			SDL_GetWindowSize(window, &sx, &sy);
-			int px = qt_mouse_event.localPos().x();
-			int py = sy - 1 - qt_mouse_event.localPos().y();
+			int px = qt_mouse_event.position().x();
+			int py = sy - 1 - qt_mouse_event.position().y();
 			nap::PointerEvent::ESource source = nap::PointerEvent::ESource::Mouse;
 			mouse_event = eventType.create<nap::InputEvent>(
 				{
