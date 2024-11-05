@@ -41,11 +41,17 @@ namespace nap
 				QString mText = "";		///< The text to display
 				QString mTooltip;		///< The tooltip to display
 
-				// Add (move) child into this entry
-				void addChild(Entry&& child) { mChildren.emplace_back(std::move(child)); }
+				// Reparent child to this entry
+				void addChild(Entry&& child)	{ mChildren.emplace_back(std::move(child)); }
+
+				// Add an icon to this entry
+				void addIcon(QIcon&& icon)		{ mIcon = std::move(icon); }
 
 				// All children
 				Entries mChildren;
+
+				// Icon
+				QIcon mIcon;
 			};
 
 			/**

@@ -151,29 +151,33 @@ QVariant StringModel::data(const QModelIndex& index, int role) const
 	switch (role)
 	{
 	case Qt::DisplayRole:
-		{
-			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
-			assert(string_item != nullptr);
-			return string_item->mEntry.mText;
-		}
+	{
+		return static_cast<StringModel::Item*>(itemFromIndex(index))->mEntry.mText;
+	}
 	case Qt::FontRole:
 	{
-		auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
-		if (string_item->hasChildren())
+		auto* item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		if (item->hasChildren())
 		{
-			QFont font(string_item->font());
+			QFont font(item->font());
 			font.setBold(true);
 			return font;
 		}
 		return QStandardItemModel::data(index, role);
 	}
+	case Qt::DecorationRole:
+	{
+		auto* item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		return item->mEntry.mIcon.isNull() ?
+			QStandardItemModel::data(index, role) :
+			item->mEntry.mIcon;
+	}
 	case Qt::ToolTipRole:
-		{
-			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
-			assert(string_item != nullptr);
-			return string_item->mEntry.mTooltip.isNull() ? QStandardItemModel::data(index, role) :
-				string_item->mEntry.mTooltip;
-		}
+	{
+		auto* item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		return item->mEntry.mTooltip.isNull() ? QStandardItemModel::data(index, role) :
+			item->mEntry.mTooltip;
+	}
 	default:
 		return QStandardItemModel::data(index, role);
 	}

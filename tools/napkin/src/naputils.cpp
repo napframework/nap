@@ -186,6 +186,7 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 {
 	using namespace nap::qt;
 	std::unordered_map<std::string, StringModel::Entry> module_entries;
+	const auto& resource_factory = AppContext::get().getResourceFactory();
 
 	// Create entry groups filtered on module
 	for (const auto& t : getTypes(predicate))
@@ -195,16 +196,26 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		assert(mod_desc != nullptr);
 
 		// Find or create module related entry
-		auto it = module_entries.find(mod_desc->mID); 
-		StringModel::Entry* module_entry = it != module_entries.end() ? module_entry = &it->second :
-			&module_entries.emplace(mod_desc->mID, StringModel::Entry(mod_desc->mID)).first->second;
+		auto it = module_entries.find(mod_desc->mID);
+		StringModel::Entry* module_entry = nullptr;
+		if (it == module_entries.end())
+		{
+			module_entry = &module_entries.emplace(mod_desc->mID, StringModel::Entry(mod_desc->mID)).first->second;
+			module_entry->addIcon(resource_factory.getIcon(QRC_ICONS_MODULE));
+		}
+		else
+		{
+			module_entry = &it->second;
+		}
 
-		// Get type description and add child to module entry
 		const char* type_desc = nap::rtti::getDescription(t);
-		module_entry->addChild(type_desc != nullptr ?
+		StringModel::Entry type_entry = type_desc != nullptr ?
 			StringModel::Entry(QString(t.get_name().data()), QString(type_desc)) :
-			StringModel::Entry(StringModel::Entry(t.get_name().data()))
-		);
+			StringModel::Entry(StringModel::Entry(t.get_name().data()));
+
+		// Add icon and add
+		type_entry.addIcon(resource_factory.getIcon(t));
+		module_entry->addChild(std::move(type_entry));
 	}
 
 	// Move into list
