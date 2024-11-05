@@ -20,22 +20,25 @@ FilterTreeView::FilterTreeView(QTreeView* treeview)
 	mTreeView = new QTreeView(this);
 	mTreeView->setParent(this);
 	mTreeView->setSortingEnabled(false);
+	mTreeView->setFocusPolicy(Qt::StrongFocus);
 
+	mProxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
+	mProxyModel.setFilterKeyColumn(-1); // Filter all columns
+	mTreeView->setModel(&mProxyModel);
+
+	mLineEditFilter.setPlaceholderText("filter...");
+	mLineEditFilter.setClearButtonEnabled(true);
+	mLineEditFilter.setFocusPolicy(Qt::StrongFocus);
+
+	mLayout.addWidget(&mLineEditFilter);
+	mLayout.addWidget(mTreeView);
 	mLayout.setContentsMargins(0, 0, 0, 0);
 	mLayout.setSpacing(0);
 	setLayout(&mLayout);
 
-	mProxyModel.setFilterCaseSensitivity(Qt::CaseInsensitive);
-	mProxyModel.setFilterKeyColumn(-1); // Filter all columns
-
-	mLineEditFilter.setPlaceholderText("filter...");
-	mLineEditFilter.setClearButtonEnabled(true);
-	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
-	mLayout.addWidget(&mLineEditFilter);
-	mTreeView->setModel(&mProxyModel);
-	mLayout.addWidget(mTreeView);
 	setContextMenuPolicy(Qt::CustomContextMenu);
 
+	connect(&mLineEditFilter, &QLineEdit::textChanged, this, &FilterTreeView::onFilterChanged);
 	connect(this, &QWidget::customContextMenuRequested, this, &FilterTreeView::onCustomContextMenuRequested);
 	connect(mTreeView, &QTreeView::doubleClicked, this, &FilterTreeView::doubleClicked);
 }

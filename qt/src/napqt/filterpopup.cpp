@@ -88,7 +88,7 @@ void FilterPopup::keyPressEvent(QKeyEvent* event)
 
 void FilterPopup::showEvent(QShowEvent* event)
 {
-	QWidget::showEvent(event);
+	QMenu::showEvent(event);
 	mFilterTree.getLineEdit().setFocus();
 }
 
