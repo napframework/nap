@@ -495,9 +495,14 @@ namespace nap
 
 		const nap::ModuleDescriptor* getModuleDescription(const rtti::TypeInfo& type)
 		{
-			// Find module description for given type
+			// Find module description for given type -> module descriptions are stacked, therefore start with latest registered one
 			auto range = type.get_methods(rttr::filter_item::static_item | rttr::filter_item::public_access);
-			return range.empty() ? nullptr : range.rbegin()->invoke(rttr::instance()).convert<const nap::ModuleDescriptor*>();
+			for (auto it = range.rbegin(); it != range.rend(); it++)
+			{
+				if (it->get_name() == nap::rtti::method::moduleDescription)
+					return it->invoke(rttr::instance()).convert<const nap::ModuleDescriptor*>();
+			}
+			return nullptr;
 		}
 	}
 }

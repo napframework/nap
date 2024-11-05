@@ -185,21 +185,37 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
 	using namespace nap::qt;
-	StringModel::Entries names;
+	std::unordered_map<std::string, StringModel::Entry> module_entries;
+
+	// Create entry groups filtered on module
 	for (const auto& t : getTypes(predicate))
 	{
+		// Get module description
+		const auto* mod_desc = nap::rtti::getModuleDescription(t);
+		assert(mod_desc != nullptr);
+
+		// Find or create module related entry
+		auto it = module_entries.find(mod_desc->mID); 
+		StringModel::Entry* module_entry = it != module_entries.end() ? module_entry = &it->second :
+			&module_entries.emplace(mod_desc->mID, StringModel::Entry(mod_desc->mID)).first->second;
+
+		// Get type description and add child to module entry
 		const char* type_desc = nap::rtti::getDescription(t);
-		if (type_desc != nullptr)
-		{
-			names << StringModel::Entry(QString(t.get_name().data()), QString(type_desc));
-			continue;
-		}
-		names << QString(t.get_name().data());
+		module_entry->addChild(type_desc != nullptr ?
+			StringModel::Entry(QString(t.get_name().data()), QString(type_desc)) :
+			StringModel::Entry(StringModel::Entry(t.get_name().data()))
+		);
 	}
 
-	// Sort and select
-	StringModel::sort(names);
-	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(names)).toStdString();
+	// Move into list
+	StringModel::Entries module_items;
+	module_items.reserve(module_entries.size());
+	for(auto& entry : module_entries)
+		module_items.emplace_back(std::move(entry.second));
+
+	// Move into model and let user select
+	StringModel::sort(module_items);
+	auto selectedName = nap::qt::FilterPopup::show(parent, std::move(module_items)).toStdString();
 	return selectedName.empty() ? nap::rtti::TypeInfo::empty() : nap::rtti::TypeInfo::get_by_name(selectedName.c_str());
 }
 
@@ -207,8 +223,8 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 std::vector<rttr::type> napkin::getComponentTypes()
 {
 	std::vector<rttr::type> ret;
-	nap::rtti::TypeInfo rootType = RTTI_OF(nap::Component);
-	for (const nap::rtti::TypeInfo& derived : rootType.get_derived_classes())
+	nap::rtti::TypeInfo root_type = RTTI_OF(nap::Component);
+	for (const nap::rtti::TypeInfo& derived : root_type.get_derived_classes())
 	{
 		if (derived.can_create_instance())
 			ret.emplace_back(derived);
@@ -244,8 +260,7 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 
 		// Filter out objects that are not included in the project ->
 		// This includes items from libraries linked in napkin (render, camera etc..) but not the user project.
-		const auto* module_desc = nap::rtti::getModuleDescription(derived);
-		assert(module_desc != nullptr);
+		const auto* module_desc = nap::rtti::getModuleDescription(derived); assert(module_desc != nullptr);
 		if(module_names.find(module_desc->mID) == module_names.end())
 			continue;
 

@@ -15,12 +15,16 @@ namespace nap
 	namespace qt
 	{
 		/**
-		 * Simple text model with tooltip.
+		 * Simple text model with tooltip, supports nested entries
 		 * Replacement for QStringListModel, which doesn't support tooltips.
 		 */
 		class StringModel final : public QStandardItemModel
 		{
 		public:
+
+			struct Entry;
+			using Entries = QList<Entry>;
+
 			/**
 			 * Single text model item entry with optional tooltip
 			 */
@@ -36,8 +40,13 @@ namespace nap
 
 				QString mText = "";		///< The text to display
 				QString mTooltip;		///< The tooltip to display
+
+				// Add (move) child into this entry
+				void addChild(Entry&& child) { mChildren.emplace_back(std::move(child)); }
+
+				// All children
+				Entries mChildren;
 			};
-			using Entries = QList<Entry>;
 
 			/**
 			 * Single text model item, wraps an entry
@@ -45,7 +54,7 @@ namespace nap
 			class Item final : public QStandardItem
 			{
 			public:
-				Item(Entry&& entry) : QStandardItem(entry.mText), mEntry(std::move(entry)) { }
+				Item(Entry&& entry);
 				Entry mEntry;
 			};
 
@@ -99,7 +108,6 @@ namespace nap
 			void showEvent(QShowEvent* event) override;
 
 		private:
-			void moveSelection(int d);
 			void accept();
 			void computeSize();
 
@@ -113,3 +121,21 @@ namespace nap
 	} // namespace qt
 
 } // namespace nap
+
+
+//////////////////////////////////////////////////////////////////////////
+// Hashes
+//////////////////////////////////////////////////////////////////////////
+
+namespace std
+{
+	// Makes the entry hash-able for std containers
+	template <>
+	struct hash<nap::qt::StringModel::Entry>
+	{
+		size_t operator()(const nap::qt::StringModel::Entry& v) const
+		{
+			return std::hash<std::string>()(v.mText.toStdString());
+		}
+	};
+}

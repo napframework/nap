@@ -18,22 +18,19 @@ FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMen
 	mLayout.setSpacing(0);
 	mLayout.setAlignment(Qt::AlignTop);
 
-	auto& tree = mFilterTree.getTreeView();
-	tree.setRootIsDecorated(false);
-	tree.setHeaderHidden(true);
-	tree.setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
-
-	mLayout.addWidget(&mFilterTree);
-	mLayout.activate();
-
-	auto& model = mFilterTree.getProxyModel();
-	connect(&model, &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
-	connect(&model, &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
-	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this] (auto index) { accept(); });
-
 	mModel = std::make_unique<StringModel>(std::move(entries));
 	mFilterTree.setModel(mModel.get());
-	computeSize();
+	mFilterTree.getTreeView().setHeaderHidden(true);
+	mFilterTree.getTreeView().setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	mLayout.addWidget(&mFilterTree);
+
+	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
+	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
+	connect(&mFilterTree.getTreeView(), &QTreeView::expanded, [this](const QModelIndex& index) {computeSize(); });
+	connect(&mFilterTree.getTreeView(), &QTreeView::collapsed, [this](const QModelIndex& index) {computeSize(); });
+	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this](auto index) { accept(); });
+
+	mFilterTree.getTreeView().expandAll();
 }
 
 
@@ -77,27 +74,15 @@ void FilterPopup::keyPressEvent(QKeyEvent* event)
 {
 	switch (event->key())
 	{
-		case Qt::Key_Down:
-		{
-			moveSelection(1);
-			event->accept();
-			return;
-		}
-		case Qt::Key_Up:
-		{
-			moveSelection(-1);
-			event->accept();
-			return;
-		}
 		case Qt::Key_Enter:
 		case Qt::Key_Return:
 		{
 			event->accept();
 			accept();
+			return;
 		}
-		default:
-			QMenu::keyPressEvent(event);
 	}
+	QMenu::keyPressEvent(event);
 }
 
 
@@ -105,18 +90,6 @@ void FilterPopup::showEvent(QShowEvent* event)
 {
 	QWidget::showEvent(event);
 	mFilterTree.getLineEdit().setFocus();
-}
-
-
-void FilterPopup::moveSelection(int d)
-{
-	auto& tree = mFilterTree.getTreeView();
-	int row = tree.currentIndex().row();
-	int nextRow = qMax(0, qMin(row + d, mFilterTree.getProxyModel().rowCount() - 1));
-	if (row == nextRow)
-		return;
-
-	tree.setCurrentIndex(mFilterTree.getProxyModel().index(nextRow, 0));
 }
 
 
@@ -129,6 +102,29 @@ void FilterPopup::accept()
 }
 
 
+// Returns the last visible item in the tree view or invalid model index if not found any.
+static QModelIndex lastVisibleItem(QTreeView* view, const QModelIndex& index = QModelIndex())
+{
+	QAbstractItemModel* model = view->model();
+	int rowCount = model->rowCount(index);
+	if (rowCount > 0) {
+		// Find the last item in this level of hierarchy.
+		QModelIndex lastIndex = model->index(rowCount - 1, 0, index);
+		if (model->hasChildren(lastIndex) && view->isExpanded(lastIndex)) {
+			// There is even deeper hierarchy. Drill down with recursion.
+			return lastVisibleItem(view, lastIndex);
+		}
+		else {
+			// Test the last item in the tree.
+			return lastIndex;
+		}
+	}
+	else {
+		return QModelIndex();
+	}
+}
+
+
 void FilterPopup::computeSize()
 {
 	// Update layout
@@ -136,25 +132,15 @@ void FilterPopup::computeSize()
 
 	// Ensure there is always something selected
 	auto& model = mFilterTree.getProxyModel();
-	auto& tree = *qobject_cast<FilterTree_*>(&mFilterTree.getTreeView());
+	auto& tree = mFilterTree.getTreeView();
 	if (!tree.currentIndex().isValid())
 		tree.setCurrentIndex(model.index(0, 0));
 
 	// Adjust size based on contents
 	int height = mFilterTree.getLineEdit().sizeHint().height();
-	int rowCount = model.rowCount();
-	if (rowCount > 0)
-	{
-		QItemSelection selection;
-		selection.select(model.index(0, 0), model.index(rowCount-1, 0));
-		auto rect = tree.visualRectFor(selection);
-		height += rect.height();
-	}
-	else
-	{
-		height *= 2;
-	}
+	auto vis_rect = mFilterTree.getVisibleRect();
 
+	height += vis_rect.isValid() ? vis_rect.height() : height * 2;
 	setFixedSize(300, qMin(height, 500));
 	adjustSize();
 }
@@ -170,6 +156,17 @@ QVariant StringModel::data(const QModelIndex& index, int role) const
 			assert(string_item != nullptr);
 			return string_item->mEntry.mText;
 		}
+	case Qt::FontRole:
+	{
+		auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
+		if (string_item->hasChildren())
+		{
+			QFont font(string_item->font());
+			font.setBold(true);
+			return font;
+		}
+		return QStandardItemModel::data(index, role);
+	}
 	case Qt::ToolTipRole:
 		{
 			auto* string_item = static_cast<StringModel::Item*>(itemFromIndex(index));
@@ -183,19 +180,35 @@ QVariant StringModel::data(const QModelIndex& index, int role) const
 }
 
 
-nap::qt::StringModel::StringModel(Entries&& items)
+nap::qt::StringModel::StringModel(Entries&& entries)
 {
-	for (auto& item : items)
+	for (auto& entry : entries)
 	{
-		appendRow(new Item(std::move(item)));
+		appendRow(new Item(std::move(entry)));
 	}
 }
 
 
 void nap::qt::StringModel::sort(Entries& ioEntries, bool reverseSort)
 {
+	// Sort list
 	std::sort(ioEntries.begin(), ioEntries.end(), [reverseSort](const auto& a, const auto& b)
 		{
 			return reverseSort ? b.mText < a.mText : a.mText < b.mText;
 		});
+
+	// Recursively sort children
+	for (auto& entry : ioEntries)
+		StringModel::sort(entry.mChildren);
+}
+
+
+nap::qt::StringModel::Item::Item(Entry&& entry) : QStandardItem(entry.mText), mEntry(std::move(entry))
+{
+	// Add children
+	for (auto& child_entry : mEntry.mChildren)
+		appendRow(new StringModel::Item(std::move(child_entry)));
+
+	// Clear invalidated children
+	mEntry.mChildren.clear();
 }

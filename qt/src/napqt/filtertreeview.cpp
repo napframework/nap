@@ -15,21 +15,9 @@
 
 using namespace nap::qt;
 
-FilterTree_::FilterTree_(QWidget* parent) : QTreeView(parent)
-{
-}
-
-QRect FilterTree_::visualRectFor(const QItemSelection& selection) const
-{
-	return QTreeView::visualRegionForSelection(selection).boundingRect();
-}
-
 FilterTreeView::FilterTreeView(QTreeView* treeview)
 {
-	if (treeview == nullptr)
-		treeview = new FilterTree_(this);
-
-	mTreeView = treeview;
+	mTreeView = new QTreeView(this);
 	mTreeView->setParent(this);
 	mTreeView->setSortingEnabled(false);
 
@@ -150,5 +138,33 @@ void nap::qt::FilterTreeView::disableSorting()
 void nap::qt::FilterTreeView::expand(const QStandardItem& item) const
 {
 	mTreeView->expand(getProxyModel().mapFromSource(item.index()));
+}
+
+
+QModelIndex nap::qt::FilterTreeView::getLastVisibleItemIndex(const QModelIndex& index) const
+{
+	int row_count = mProxyModel.rowCount(index);
+	if (row_count > 0)
+	{
+		// Find the last item in this level of hierarchy.
+		int col_count = mProxyModel.columnCount(index) - 1;
+		QModelIndex last_idx = mProxyModel.index(row_count - 1, col_count, index);
+		return mProxyModel.hasChildren(last_idx) && mTreeView->isExpanded(last_idx) ?
+			getLastVisibleItemIndex(last_idx) : last_idx;
+	}
+	return QModelIndex();
+}
+
+
+QRect nap::qt::FilterTreeView::getVisibleRect() const
+{
+	auto last_idx = getLastVisibleItemIndex();
+	if (!last_idx.isValid())
+		return QRect();
+
+	auto last_rect = mTreeView->visualRect(last_idx);
+	auto firs_rect = mTreeView->visualRect(mTreeView->model()->index(0, 0));
+
+	return { firs_rect.topLeft(), last_rect.bottomRight() };
 }
 
