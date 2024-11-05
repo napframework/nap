@@ -63,13 +63,13 @@ namespace napkin
 		// Create child widget layout
 		mControlLayout.addWidget(&mLineEdit);
 		mControlLayout.addWidget(&mSpinbox, 0, Qt::AlignRight);
-		mControlLayout.setContentsMargins(0, 8, 0, 0);
+		mControlLayout.setContentsMargins(0, 0, 0, 0);
 
 		// Install layout
 		assert(layout() == nullptr);
 		mMasterLayout.setContentsMargins(0, 0, 0, 0);
-		mMasterLayout.addLayout(&mControlLayout);
 		mMasterLayout.addWidget(&mPanel->getWidget());
+		mMasterLayout.addLayout(&mControlLayout);
 		setLayout(&mMasterLayout);
 	}
 
