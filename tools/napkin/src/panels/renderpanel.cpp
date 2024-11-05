@@ -87,6 +87,7 @@ namespace napkin
 			case QEvent::Show:
 			case QEvent::FocusIn:
 			case QEvent::FocusOut:
+			case QEvent::Paint:
 			{
 				return true;
 			}

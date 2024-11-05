@@ -229,7 +229,7 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 	// TODO: It's possible to directly compare module descriptor pointers instead of names
 	// For that to work we need to add the napcore module descriptor when initializing NAP
 	const auto& project_modules = core.getModuleManager().getModules();
-	std::unordered_set<std::string> module_names = { nap::coreModuleName };
+	std::unordered_set<std::string> module_names = { nap::moduleCoreName };
 	module_names.reserve(project_modules.size() + module_names.size());
 	for (const auto& module : project_modules)
 		module_names.emplace(module->getName());

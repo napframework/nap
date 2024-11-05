@@ -388,12 +388,13 @@ namespace nap
 	#define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_1(Type)														\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
+		static nap::ModuleDescriptor* getModuleDescriptor() { return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
-			rtti_class_type.method(nap::rtti::method::moduleDescription, &nap::getDescriptor);
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescriptor);
 #endif // NAP_ENABLE_PYTHON
 
 
@@ -422,14 +423,15 @@ namespace nap
 #define RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR_2(Type, Description)											\
 	UNIQUE_REGISTRATION_NAMESPACE(__COUNTER__)																	\
 	{																											\
-		static const char* getTypeDescription()		{ return Description; }										\
+		static const char* getTypeDescription()				{ return Description; }								\
+		static nap::ModuleDescriptor* getModuleDescriptor()	{ return NAP_MODULE_DESCIPTOR_HANDLE; }				\
 		RTTR_REGISTRATION																						\
 		{																										\
 			using namespace rttr;																				\
 			std::string rtti_class_type_name = #Type;															\
 			registration::class_<Type> rtti_class_type(#Type);													\
 			rtti_class_type.method(nap::rtti::method::description, &getTypeDescription);						\
-			rtti_class_type.method(nap::rtti::method::moduleDescription, &nap::getDescriptor);					
+			rtti_class_type.method(nap::rtti::method::moduleDescription, &getModuleDescriptor);					
 #endif // NAP_ENABLE_PYTHON
 
 // Selector
