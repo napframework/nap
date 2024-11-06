@@ -185,7 +185,7 @@ nap::rtti::Object* napkin::showObjectSelector(QWidget* parent, const std::vector
 nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicate& predicate)
 {
 	using namespace nap::qt;
-	std::unordered_map<std::string, StringModel::Entry> module_entries;
+	std::unordered_map<const nap::ModuleDescriptor*, StringModel::Entry> module_entries;
 	const auto& resource_factory = AppContext::get().getResourceFactory();
 
 	// Create entry groups filtered on module
@@ -196,11 +196,11 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 		assert(mod_desc != nullptr);
 
 		// Find or create module related entry
-		auto it = module_entries.find(mod_desc->mID);
+		auto it = module_entries.find(mod_desc);
 		StringModel::Entry* module_entry = nullptr;
 		if (it == module_entries.end())
 		{
-			module_entry = &module_entries.emplace(mod_desc->mID, StringModel::Entry(mod_desc->mID)).first->second;
+			module_entry = &module_entries.emplace(mod_desc, StringModel::Entry(mod_desc->mID)).first->second;
 			module_entry->addIcon(resource_factory.getIcon(QRC_ICONS_MODULE));
 		}
 		else
