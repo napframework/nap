@@ -13,16 +13,20 @@ using namespace nap::qt;
 
 FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMenu(parent)
 {
-	setLayout(&mLayout);
-	mLayout.setContentsMargins(0, 0, 0, 0);
-	mLayout.setSpacing(0);
-	mLayout.setAlignment(Qt::AlignTop);
-
+	// Create model
 	mModel = std::make_unique<StringModel>(std::move(entries));
 	mFilterTree.setModel(mModel.get());
 	mFilterTree.getTreeView().setHeaderHidden(true);
 	mFilterTree.getTreeView().setVerticalScrollMode(QAbstractItemView::ScrollPerPixel);
+	mFilterTree.getTreeView().setRootIsDecorated(mModel->nested());
+
+	// Install layout
+	setLayout(&mLayout);
+	mLayout.setContentsMargins(0, 0, 0, 0);
+	mLayout.setSpacing(0);
+	mLayout.setAlignment(Qt::AlignTop);
 	mLayout.addWidget(&mFilterTree);
+	mLayout.activate();
 
 	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
 	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
@@ -102,29 +106,6 @@ void FilterPopup::accept()
 }
 
 
-// Returns the last visible item in the tree view or invalid model index if not found any.
-static QModelIndex lastVisibleItem(QTreeView* view, const QModelIndex& index = QModelIndex())
-{
-	QAbstractItemModel* model = view->model();
-	int rowCount = model->rowCount(index);
-	if (rowCount > 0) {
-		// Find the last item in this level of hierarchy.
-		QModelIndex lastIndex = model->index(rowCount - 1, 0, index);
-		if (model->hasChildren(lastIndex) && view->isExpanded(lastIndex)) {
-			// There is even deeper hierarchy. Drill down with recursion.
-			return lastVisibleItem(view, lastIndex);
-		}
-		else {
-			// Test the last item in the tree.
-			return lastIndex;
-		}
-	}
-	else {
-		return QModelIndex();
-	}
-}
-
-
 void FilterPopup::computeSize()
 {
 	// Update layout
@@ -137,11 +118,12 @@ void FilterPopup::computeSize()
 		tree.setCurrentIndex(model.index(0, 0));
 
 	// Adjust size based on contents
-	int height = mFilterTree.getLineEdit().sizeHint().height();
 	auto vis_rect = mFilterTree.getVisibleRect();
-
+	int width = mModel->nested() ? 350 : 300;
+	int height = mFilterTree.getLineEdit().sizeHint().height();
 	height += vis_rect.isValid() ? vis_rect.height() : height * 2;
-	setFixedSize(300, qMin(height, 500));
+	height = qMin(height, 500);
+	setFixedSize(width, height);
 	adjustSize();
 }
 
@@ -188,6 +170,8 @@ nap::qt::StringModel::StringModel(Entries&& entries)
 {
 	for (auto& entry : entries)
 	{
+		if (!entry.mChildren.empty())
+			mNested = true;
 		appendRow(new Item(std::move(entry)));
 	}
 }

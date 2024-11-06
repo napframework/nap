@@ -18,7 +18,6 @@ using namespace nap::qt;
 FilterTreeView::FilterTreeView(QTreeView* treeview)
 {
 	mTreeView = new QTreeView(this);
-	mTreeView->setParent(this);
 	mTreeView->setSortingEnabled(false);
 	mTreeView->setFocusPolicy(Qt::StrongFocus);
 
@@ -165,9 +164,10 @@ QRect nap::qt::FilterTreeView::getVisibleRect() const
 	if (!last_idx.isValid())
 		return QRect();
 
-	auto last_rect = mTreeView->visualRect(last_idx);
-	auto firs_rect = mTreeView->visualRect(mTreeView->model()->index(0, 0));
-
-	return { firs_rect.topLeft(), last_rect.bottomRight() };
+	// Construct and return visible rect based on top left and bottom right index
+	return {
+		mTreeView->visualRect(mTreeView->model()->index(0, 0)).topLeft(),
+		mTreeView->visualRect(last_idx).bottomRight()
+	};
 }
 

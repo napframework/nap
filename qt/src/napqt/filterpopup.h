@@ -65,6 +65,12 @@ namespace nap
 			};
 
 			/**
+			 * Move Constructor
+			 * @param items movable item data
+			 */
+			StringModel(Entries&& items);
+
+			/**
 			 * Returns text or tooltip data
 			 */
 			virtual QVariant data(const QModelIndex& index, int role) const override;
@@ -77,10 +83,12 @@ namespace nap
 			static void sort(Entries& ioEntries, bool reverseSort = false);
 
 			/**
-			 * Move Constructor
-			 * @param items movable item data
+			 * @return if this model contains nested items
 			 */
-			StringModel(Entries&& items);
+			bool nested() const { return mNested; }
+
+		private:
+			bool mNested = false;
 		};
 
 
