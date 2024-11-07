@@ -9,7 +9,6 @@ import webbrowser
 
 REQUIRED_WINDOWS_VERSION = '10.0'
 VS_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE'
-REQUIRED_VS_VERSION = "2019"
 REQUIRED_QT_VERSION = '6.7.2'
 
 def call(cmd, provide_exit_code=False):
