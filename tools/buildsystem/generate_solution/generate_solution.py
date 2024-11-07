@@ -9,7 +9,7 @@ import shutil
 LINUX_BUILD_DIR = 'build'
 MACOS_BUILD_DIR = 'Xcode'
 MSVC_BUILD_DIR = 'msvc64'
-DEFAULT_LINUX_BUILD_TYPE = 'Release'
+DEFAULT_BUILD_TYPE = 'Release'
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
 from nap_shared import get_cmake_path, get_nap_root
@@ -23,21 +23,22 @@ def getBuildDirectory(forced_path, default_dir, clean):
     return build_dir
 
 
-def generate(forced_path, enable_python, additional_dirs, linux_build_type, clean):
+def listGenerators():
+    cmake = get_cmake_path()
+    cmd = '%s --help' % cmake
+    call(cmd, shell=True)
+
+
+def generate(forced_path, enable_python, additional_dirs, build_type, clean, generator):
     cmake = get_cmake_path()
     nap_root = get_nap_root()
+    build_dir = getBuildDirectory(forced_path, MSVC_BUILD_DIR, clean)        
 
-    if platform.startswith('linux'):
-        build_dir = getBuildDirectory(forced_path, LINUX_BUILD_DIR, clean)
-        build_type = linux_build_type.lower().capitalize()
-        call(['%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, build_type, enable_python, additional_dirs)], shell=True)
-    elif platform == 'darwin':
-        build_dir = getBuildDirectory(forced_path, MACOS_BUILD_DIR, clean)
-        call(['%s -H%s -B%s -G Xcode -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, enable_python, additional_dirs)], shell=True)
+    if generator is None:
+        cmd = '%s -H%s -B%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, enable_python, additional_dirs)
     else:
-        build_dir = getBuildDirectory(forced_path, MSVC_BUILD_DIR, clean)
-        cmd = '%s -H%s -B%s -G "Visual Studio 16 2019" -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, enable_python, additional_dirs)
-        call(cmd, shell=True)
+        cmd = '%s -H%s -B%s -G\"%s\" -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, generator, enable_python, additional_dirs)
+    call(cmd, shell=True)
 
 
 if __name__ == '__main__':
@@ -46,7 +47,7 @@ if __name__ == '__main__':
         type=str,
         default=None,
         action='store',
-        help="Force custom build path",
+        help="Use custom build path instead of system default",
         metavar="'dir'")
 
     parser.add_argument('-c', '--clean',
@@ -54,13 +55,26 @@ if __name__ == '__main__':
         action='store_true',
         help="Clear build directory before generating solution")
 
-    if platform.startswith('linux'):
-        parser.add_argument('-t', '--linux-build-type',
-            type=str,
-            default=DEFAULT_LINUX_BUILD_TYPE,
-            action='store', nargs='?',
-            choices=['release', 'debug'],
-            help="Linux build type, default: %s" % DEFAULT_LINUX_BUILD_TYPE.lower())
+    parser.add_argument('-l', '--list',
+        default = False,
+        action='store_true',
+        help="List available CMake solution generators on this platform"
+        )
+
+    parser.add_argument('-g', '--generator',
+        type=str,
+        default=None,
+        help="CMake solution generator to use, add '-l' to print a list of compatible generators",
+        action='store',
+        metavar="'CMake Generator'"
+        )
+
+    parser.add_argument('-t', '--build-type',
+        type=str,
+        default=DEFAULT_BUILD_TYPE,
+        action='store', nargs='?',
+        choices=['Release', 'Debug'],
+        help="Build type for single solution generators such as Makefile, default: {0}".format(DEFAULT_BUILD_TYPE))
 
     parser.add_argument('-p', '--enable-python', action="store_true",
         help="Enable python integration using pybind (deprecated)")
@@ -74,11 +88,13 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
+    # Print list of available generators and return
+    if args.list:
+        listGenerators()
+        sys.exit()
+ 
     # Convert additional sub directories to CMake list type
     additional_dirs = ';'.join(args.additional_dirs)
 
-    # Get linux build type
-    linux_build_type = args.linux_build_type if platform.startswith('linux') else None
-
     # Generate solution
-    generate(args.build_path, int(args.enable_python), additional_dirs, linux_build_type, args.clean)
+    generate(args.build_path, int(args.enable_python), additional_dirs, args.build_type, args.clean, args.generator)
