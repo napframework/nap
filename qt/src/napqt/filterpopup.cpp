@@ -28,13 +28,15 @@ FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMen
 	mLayout.addWidget(&mFilterTree);
 	mLayout.activate();
 
+	mFilterTree.getTreeView().expandAll();
+
 	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
 	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
 	connect(&mFilterTree.getTreeView(), &QTreeView::expanded, [this](const QModelIndex& index) {computeSize(); });
 	connect(&mFilterTree.getTreeView(), &QTreeView::collapsed, [this](const QModelIndex& index) {computeSize(); });
 	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this](auto index) { accept(); });
 
-	mFilterTree.getTreeView().expandAll();
+	computeSize();
 }
 
 
@@ -123,8 +125,8 @@ void FilterPopup::computeSize()
 	int height = mFilterTree.getLineEdit().sizeHint().height();
 	height += vis_rect.isValid() ? vis_rect.height() : height * 2;
 	height = qMin(height, 500);
-	setFixedSize(width, height);
-	adjustSize();
+	setMinimumSize(width, height);
+	resize(width, height);
 }
 
 
@@ -194,6 +196,7 @@ void nap::qt::StringModel::sort(Entries& ioEntries, bool reverseSort)
 nap::qt::StringModel::Item::Item(Entry&& entry) : QStandardItem(entry.mText), mEntry(std::move(entry))
 {
 	// Add children
+	setEditable(false);
 	for (auto& child_entry : mEntry.mChildren)
 		appendRow(new StringModel::Item(std::move(child_entry)));
 
