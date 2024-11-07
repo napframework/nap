@@ -1,45 +1,6 @@
 {
     "Objects": [
         {
-            "Type": "nap::ConstantShader",
-            "mID": "ConstantShader"
-        },
-        {
-            "Type": "nap::Entity",
-            "mID": "RenderEntity",
-            "Components": [
-                {
-                    "Type": "nap::RenderableMeshComponent",
-                    "mID": "RenderableMeshComponent",
-                    "Visible": true,
-                    "Tags": [],
-                    "Layer": "",
-                    "Mesh": "",
-                    "MaterialInstance": {
-                        "Uniforms": [],
-                        "Samplers": [],
-                        "Buffers": [],
-                        "Constants": [],
-                        "Material": "",
-                        "BlendMode": "NotSet",
-                        "DepthMode": "NotSet"
-                    },
-                    "LineWidth": 1.0,
-                    "ClipRect": {
-                        "Min": {
-                            "x": 0.0,
-                            "y": 0.0
-                        },
-                        "Max": {
-                            "x": 0.0,
-                            "y": 0.0
-                        }
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
             "Type": "nap::Entity",
             "mID": "main",
             "Components": [
@@ -72,18 +33,6 @@
                 }
             ],
             "Children": []
-        },
-        {
-            "Type": "nap::Material",
-            "mID": "Material",
-            "Uniforms": [],
-            "Samplers": [],
-            "Buffers": [],
-            "Constants": [],
-            "Shader": "ConstantShader",
-            "VertexAttributeBindings": [],
-            "BlendMode": "Opaque",
-            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::MidiInputPort",
