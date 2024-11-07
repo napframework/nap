@@ -43,6 +43,7 @@ namespace napkin
 		container->setMinimumSize({ 256,256 });
 		container->setAutoFillBackground(false);
 		container->setAttribute(Qt::WA_NoSystemBackground, true);
+		container->setAttribute(Qt::WA_UpdatesDisabled, true);
 
 		// Create an SDL window from QT handle ID
 		auto id = container->winId(); assert(id != 0);
@@ -83,14 +84,16 @@ namespace napkin
 		switch (event->type())
 		{
 			// TODO: Figure out why we need to handle these events explicitly ->
-			/// Without the window is available but drawn (composited) incorrect in Qt
+			// Without the window is available but drawn (composited) incorrect in Qt (White background)
 			case QEvent::Show:
 			case QEvent::FocusIn:
 			case QEvent::FocusOut:
 			case QEvent::Paint:
-			{
-				return true;
-			}
+			case QEvent::ParentChange:
+			case QEvent::WindowActivate:
+			case QEvent::WindowDeactivate:
+			case QEvent::ShowToParent:
+			case QEvent::HideToParent:
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
 			case QEvent::MouseMove:
