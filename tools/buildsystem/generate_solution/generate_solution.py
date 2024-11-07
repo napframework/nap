@@ -15,9 +15,9 @@ sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
 from nap_shared import get_cmake_path, get_nap_root
 
 def getBuildDirectory(forced_path, clean):
-    build_loc = MSVC_BUILD_DIR
-    if platform.startswith('linux'):
-        build_loc = LINUX_BUILD_DIR
+    build_loc = LINUX_BUILD_DIR
+    if platform.startswith('win32'):
+        build_loc = MSVC_BUILD_DIR
     elif platform.startswith('darwin'):
         build_loc = MACOS_BUILD_DIR
 
