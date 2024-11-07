@@ -11,7 +11,7 @@
 using namespace nap::qt;
 
 
-FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMenu(parent)
+FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QDialog(parent)
 {
 	// Create model
 	mModel = std::make_unique<StringModel>(std::move(entries));
@@ -30,7 +30,7 @@ FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMen
 
 	// Ensure widget size is re-computed when sorting ends
 	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this](auto index) { accept(); });
-	connect(&mFilterTree, &FilterTreeView::sortingEnded, [this]() { computeSize(); });
+	connect(&mFilterTree, &FilterTreeView::sortingEnded, [this]() { mFilterTree.getTreeView().expandAll(); });
 	computeSize();
 }
 
@@ -45,6 +45,7 @@ QString FilterPopup::show(QWidget* parent, StringModel::Entries&& entries, QPoin
 {
 	// Create popup
 	FilterPopup popup(std::move(entries), parent);
+	popup.setWindowFlags(Qt::Popup);
 
 	// Ensure popup is within display bounds
 	QRect geo = QGuiApplication::screenAt(pos)->geometry();
@@ -66,7 +67,8 @@ QString FilterPopup::show(QWidget* parent, StringModel::Entries&& entries, QPoin
 	}
 
 	// Show
-	popup.exec(f_pos);
+	popup.move(f_pos);
+	popup.exec();
 	return popup.mChoice;
 }
 
@@ -83,13 +85,13 @@ void FilterPopup::keyPressEvent(QKeyEvent* event)
 			return;
 		}
 	}
-	QMenu::keyPressEvent(event);
+	QDialog::keyPressEvent(event);
 }
 
 
 void FilterPopup::showEvent(QShowEvent* event)
 {
-	QMenu::showEvent(event);
+	QDialog::showEvent(event);
 	mFilterTree.getLineEdit().setFocus();
 }
 

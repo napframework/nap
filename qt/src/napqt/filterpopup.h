@@ -95,7 +95,7 @@ namespace nap
 		/**
 		 * A popup of selectable string items that can be filtered
 		 */
-		class FilterPopup : public QMenu
+		class FilterPopup : public QDialog
 		{
 		private:
 			// Construct popup with items (from entries) to select from
