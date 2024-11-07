@@ -14,9 +14,14 @@ DEFAULT_BUILD_TYPE = 'Release'
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
 from nap_shared import get_cmake_path, get_nap_root
 
-def getBuildDirectory(forced_path, default_dir, clean):
-    nap_root = get_nap_root()
-    build_dir = forced_path if forced_path else os.path.join(nap_root, default_dir)
+def getBuildDirectory(forced_path, clean):
+    build_loc = MSVC_BUILD_DIR
+    if platform.startswith('linux'): 
+        build_loc = LINUX_BUILD_DIR
+    elif platform.startswith('darwin'): 
+        build_loc = MACOS_BUILD_DIR
+        
+    build_dir = forced_path if forced_path else os.path.join(get_nap_root(), build_loc)
     if clean and os.path.exists(build_dir):
         print("Clearing: {}".format(build_dir))
         shutil.rmtree(build_dir)
@@ -32,7 +37,7 @@ def listGenerators():
 def generate(forced_path, enable_python, additional_dirs, build_type, clean, generator):
     cmake = get_cmake_path()
     nap_root = get_nap_root()
-    build_dir = getBuildDirectory(forced_path, MSVC_BUILD_DIR, clean)        
+    build_dir = getBuildDirectory(forced_path, clean)        
 
     if generator is None:
         cmd = '%s -H%s -B%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, enable_python, additional_dirs)
