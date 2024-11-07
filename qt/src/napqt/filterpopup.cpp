@@ -28,14 +28,9 @@ FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QMen
 	mLayout.addWidget(&mFilterTree);
 	mLayout.activate();
 
-	mFilterTree.getTreeView().expandAll();
-
-	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsRemoved, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
-	connect(&mFilterTree.getProxyModel(), &QSortFilterProxyModel::rowsInserted, [this](const QModelIndex& parent, int first, int last) { computeSize(); });
-	connect(&mFilterTree.getTreeView(), &QTreeView::expanded, [this](const QModelIndex& index) {computeSize(); });
-	connect(&mFilterTree.getTreeView(), &QTreeView::collapsed, [this](const QModelIndex& index) {computeSize(); });
+	// Ensure widget size is re-computed when sorting ends
 	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this](auto index) { accept(); });
-
+	connect(&mFilterTree, &FilterTreeView::sortingEnded, [this]() { computeSize(); });
 	computeSize();
 }
 
@@ -111,7 +106,7 @@ void FilterPopup::accept()
 void FilterPopup::computeSize()
 {
 	// Update layout
-	mLayout.update();
+	mFilterTree.getTreeView().expandAll();
 
 	// Ensure there is always something selected
 	auto& model = mFilterTree.getProxyModel();

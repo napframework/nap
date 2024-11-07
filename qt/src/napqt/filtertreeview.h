@@ -136,6 +136,8 @@ namespace nap
 
 		Q_SIGNALS:
 			void doubleClicked(const QModelIndex& idx);
+			void sortingStarted();
+			void sortingEnded();
 
 		protected:
 			/**

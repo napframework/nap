@@ -94,6 +94,9 @@ namespace napkin
 			case QEvent::WindowDeactivate:
 			case QEvent::ShowToParent:
 			case QEvent::HideToParent:
+			{
+				return true;
+			}
 			case QEvent::MouseButtonPress:
 			case QEvent::MouseButtonRelease:
 			case QEvent::MouseMove:

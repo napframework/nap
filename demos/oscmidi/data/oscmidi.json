@@ -1,6 +1,45 @@
 {
     "Objects": [
         {
+            "Type": "nap::ConstantShader",
+            "mID": "ConstantShader"
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "RenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "RenderableMeshComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Entity",
             "mID": "main",
             "Components": [
@@ -10,7 +49,13 @@
                     "Ports": [],
                     "Channels": [],
                     "Numbers": [],
-                    "Types": []
+                    "NoteOn": true,
+                    "NoteOff": true,
+                    "Aftertouch": true,
+                    "ControlChange": true,
+                    "ProgramChange": true,
+                    "ChannelPressure": true,
+                    "PitchBend": true
                 },
                 {
                     "Type": "nap::MidiHandlerComponent",
@@ -27,6 +72,18 @@
                 }
             ],
             "Children": []
+        },
+        {
+            "Type": "nap::Material",
+            "mID": "Material",
+            "Uniforms": [],
+            "Samplers": [],
+            "Buffers": [],
+            "Constants": [],
+            "Shader": "ConstantShader",
+            "VertexAttributeBindings": [],
+            "BlendMode": "Opaque",
+            "DepthMode": "InheritFromBlendMode"
         },
         {
             "Type": "nap::MidiInputPort",
@@ -68,7 +125,9 @@
                 ]
             },
             "Samples": "Four",
-            "AdditionalSwapImages": 1
+            "AdditionalSwapImages": 1,
+            "RestoreSize": true,
+            "RestorePosition": true
         },
         {
             "Type": "nap::Scene",
