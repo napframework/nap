@@ -8,8 +8,9 @@ import sys
 import webbrowser
 
 REQUIRED_WINDOWS_VERSION = '10.0'
-VS_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE'
+VS_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE\\CurVer'
 REQUIRED_QT_VERSION = '6.7.2'
+REQUIRED_VS_VERSION = 16.0
 
 def call(cmd, provide_exit_code=False):
     """Execute command and return stdout"""
@@ -66,16 +67,28 @@ def check_windows_version():
 def check_visual_studio_installed():
     """Check if Visual Studio is installed"""
 
-    return_code = call('reg query "%s"' % VS_INSTALLED_REG_KEY, True)
+    # Get visual studio version value from registy
+    (out, return_code) = call_with_returncode('reg query "%s"' % VS_INSTALLED_REG_KEY)
     visual_studio_installed = return_code == 0
     log_test_success('for Visual Studio', visual_studio_installed)
-    return visual_studio_installed    
+    
+    # Try to extract version
+    vs_version = False;
+    try:
+        default_version = float(out.split(".DTE.")[-1])
+        vs_version = default_version >= REQUIRED_VS_VERSION
+    except Exception as e:
+        print("\nWarning: unable to fetch Visual Studio version: \n\t'{}'\n".format(e))
+
+    # Ensure version >= requred version
+    log_test_success('Visual Studio version (default) >= {0}'.format(REQUIRED_VS_VERSION), vs_version)
+    return visual_studio_installed and vs_version
 
 def handle_missing_vs():
     """If we don't have Visual Studio, help install it"""
 
     # Show different help depending on whether they already have an older version installed.
-    print("\nVisual Studio is required. The Community Edition can be downloaded for free from https://www.visualstudio.com")
+    print("\nVisual Studio {0}+ is required. The Community Edition can be downloaded for free from https://www.visualstudio.com".format(REQUIRED_VS_VERSION))
 
     # Offer to open download page
     open_vs_download = read_yes_no("Open download page?")
