@@ -16,11 +16,11 @@ from nap_shared import get_cmake_path, get_nap_root
 
 def getBuildDirectory(forced_path, clean):
     build_loc = MSVC_BUILD_DIR
-    if platform.startswith('linux'): 
+    if platform.startswith('linux'):
         build_loc = LINUX_BUILD_DIR
-    elif platform.startswith('darwin'): 
+    elif platform.startswith('darwin'):
         build_loc = MACOS_BUILD_DIR
-        
+
     build_dir = forced_path if forced_path else os.path.join(get_nap_root(), build_loc)
     if clean and os.path.exists(build_dir):
         print("Clearing: {}".format(build_dir))
