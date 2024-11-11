@@ -41,9 +41,9 @@ def generate(forced_path, enable_python, additional_dirs, build_type, clean, gen
     build_dir = get_build_directory(forced_path, clean)        
 
     if generator is None:
-        cmd = '%s -H%s -B%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, enable_python, additional_dirs)
+        cmd = '%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, build_type, enable_python, additional_dirs)
     else:
-        cmd = '%s -H%s -B%s -G\"%s\" -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, generator, enable_python, additional_dirs)
+        cmd = '%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -G\"%s\" -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, build_type, generator, enable_python, additional_dirs)
     call(cmd, shell=True)
 
 
