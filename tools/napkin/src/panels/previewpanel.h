@@ -6,7 +6,7 @@
 
 // Local includes
 #include "renderpanel.h"
-#include "apps/renderpreviewapp.h"
+#include "applets/renderpreviewapplet.h"
 #include "../appletrunner.h"
 
 // External includes
@@ -17,7 +17,7 @@
 namespace napkin
 {
 	// The applet this panel runs & embeds
-	using PreviewAppletRunner = TypedAppletRunner<nap::RenderPreviewApp>;
+	using PreviewAppletRunner = TypedAppletRunner<nap::RenderPreviewApplet> ;
 
 	/**
 	 * Allows for previewing material and meshes

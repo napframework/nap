@@ -1,4 +1,4 @@
-#include "renderpreviewapp.h"
+#include "renderpreviewapplet.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -11,7 +11,7 @@
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderPreviewApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderPreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -21,7 +21,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool RenderPreviewApp::init(utility::ErrorState& error)
+	bool RenderPreviewApplet::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService = getCore().getService<nap::RenderService>();
@@ -94,7 +94,7 @@ namespace nap
 	
 	
 	// Update app
-	void RenderPreviewApp::update(double deltaTime)
+	void RenderPreviewApplet::update(double deltaTime)
 	{
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
 		nap::DefaultInputRouter input_router;
@@ -136,7 +136,7 @@ namespace nap
 	
 	
 	// Render app
-	void RenderPreviewApp::render()
+	void RenderPreviewApplet::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -186,13 +186,13 @@ namespace nap
 	}
 	
 
-	void RenderPreviewApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void RenderPreviewApplet::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void RenderPreviewApp::inputMessageReceived(InputEventPtr inputEvent)
+	void RenderPreviewApplet::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -206,12 +206,12 @@ namespace nap
 	}
 
 	
-	int RenderPreviewApp::shutdown()
+	int RenderPreviewApplet::shutdown()
 	{
 		return 0;
 	}
 
-	void RenderPreviewApp::onTextChanged(const nap::APIEvent& apiEvent)
+	void RenderPreviewApplet::onTextChanged(const nap::APIEvent& apiEvent)
 	{
 		std::string new_text = apiEvent.getArgument(0)->asString();
 		auto& text_comp = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();

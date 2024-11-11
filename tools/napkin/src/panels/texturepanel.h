@@ -6,13 +6,13 @@
 
 // Local includes
 #include "renderpanel.h"
-#include "apps/texturepreviewapp.h"
+#include "applets/texturepreviewapplet.h"
 #include "../appletrunner.h"
 
 namespace napkin
 {
 	// The applet this panel runs & embeds
-	using TextureAppletRunner = TypedAppletRunner<nap::TexturePreviewApp>;
+	using TextureAppletRunner = TypedAppletRunner<nap::TexturePreviewApplet>;
 
 	/**
 	 * Allows for previewing material and meshes

@@ -1,4 +1,4 @@
-#include "texturepreviewapp.h"
+#include "texturepreviewapplet.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -10,7 +10,7 @@
 #include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -20,7 +20,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool TexturePreviewApp::init(utility::ErrorState& error)
+	bool TexturePreviewApplet::init(utility::ErrorState& error)
 	{
 		// Retrieve services
 		mRenderService = getCore().getService<nap::RenderService>();
@@ -75,7 +75,7 @@ namespace nap
 	
 	
 	// Update app
-	void TexturePreviewApp::update(double deltaTime)
+	void TexturePreviewApplet::update(double deltaTime)
 	{
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
 		nap::DefaultInputRouter input_router;
@@ -115,7 +115,7 @@ namespace nap
 	
 	
 	// Render app
-	void TexturePreviewApp::render()
+	void TexturePreviewApplet::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -166,13 +166,13 @@ namespace nap
 	}
 	
 
-	void TexturePreviewApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void TexturePreviewApplet::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void TexturePreviewApp::inputMessageReceived(InputEventPtr inputEvent)
+	void TexturePreviewApplet::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -186,7 +186,7 @@ namespace nap
 	}
 
 	
-	int TexturePreviewApp::shutdown()
+	int TexturePreviewApplet::shutdown()
 	{
 		return 0;
 	}
