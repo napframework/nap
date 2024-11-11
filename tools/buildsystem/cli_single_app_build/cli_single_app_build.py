@@ -70,10 +70,6 @@ class SingleAppBuilder:
             self.build_packaged_framework_app(app_name, build_type)
 
     def build_source_context_app(self, app_name, build_type):
-        if build_type is None:
-            build_type = DEFAULT_BUILD_TYPE
-        else:
-            build_type = build_type.capitalize()
 
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
@@ -94,7 +90,7 @@ class SingleAppBuilder:
 
         # Generate solution
         if platform.startswith('linux'):
-            rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type.lower()])
+            rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type])
         elif platform == 'darwin':
             rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir])
         else:
@@ -138,11 +134,6 @@ class SingleAppBuilder:
         # ensuring that the right build type will be generated for Napkin on Linux.
         generate_solution = build_type != None or not os.path.exists(build_dir)
 
-        if build_type is None:
-            build_type = DEFAULT_BUILD_TYPE
-        else:
-            build_type = build_type.capitalize()
-
         if generate_solution:
             cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
             if sys.platform.startswith('linux'):
@@ -167,8 +158,8 @@ class SingleAppBuilder:
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument("APP_NAME", type=str, help="The app name")
-    parser.add_argument('-t', '--build-type', type=str.lower, default=None,
-            choices=['release', 'debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE.lower())
+    parser.add_argument('-t', '--build-type', type=str, default=DEFAULT_BUILD_TYPE,
+            choices=['Release', 'Debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE)
     args = parser.parse_args()
 
     b = SingleAppBuilder()

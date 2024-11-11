@@ -42,7 +42,7 @@ def main(target, clean_build, build_type, enable_python):
     # Get arguments to generate solution
     solution_args = []
     if platform.startswith('linux'):
-        solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type.lower()]
+        solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type]
     elif platform == 'darwin':
         solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir]
     else:
@@ -56,13 +56,12 @@ def main(target, clean_build, build_type, enable_python):
     rc = call(nap_root, solution_args, True)
         
     # Build
-    build_config = build_type.capitalize()
     if platform.startswith('linux'):
         # Linux
         call(build_dir, ['make', target, '-j%s' % cpu_count()])
     elif platform == 'darwin':
         # macOS
-        cmd = ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', build_config]
+        cmd = ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', build_type]
         if target == 'all':
             cmd.append('-alltargets')
         else:
@@ -73,7 +72,7 @@ def main(target, clean_build, build_type, enable_python):
         cmake = get_cmake_path()
         nap_root = get_nap_root()
         cmake = get_cmake_path()
-        cmd = [cmake, '--build', build_dir, '--config', build_config]
+        cmd = [cmake, '--build', build_dir, '--config', build_type]
         if target != 'all':
             cmd.extend(['--target', target])
         call(nap_root, cmd)
@@ -82,8 +81,8 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name (default='all')", default="all", nargs="?")
-    parser.add_argument('-t', '--build-type', type=str.lower, default=DEFAULT_BUILD_TYPE,
-            choices=['release', 'debug'], help="Build configuration (default=%s)" % DEFAULT_BUILD_TYPE.lower())
+    parser.add_argument('-t', '--build-type', type=str, default=DEFAULT_BUILD_TYPE,
+            choices=['Release', 'Debug'], help="Build configuration (default=%s)" % DEFAULT_BUILD_TYPE)
     parser.add_argument('-c', '--clean', default=False, action="store_true", help="Clean before build")
     parser.add_argument('-p', '--enable-python', action="store_true", help="Enable Python integration using pybind (deprecated)")
 
