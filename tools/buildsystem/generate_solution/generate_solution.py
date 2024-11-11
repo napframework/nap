@@ -14,12 +14,13 @@ DEFAULT_BUILD_TYPE = 'Release'
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
 from nap_shared import get_cmake_path, get_nap_root
 
-def getBuildDirectory(forced_path, clean):
-    build_loc = LINUX_BUILD_DIR
-    if platform.startswith('win32'):
-        build_loc = MSVC_BUILD_DIR
+def get_build_directory(forced_path, clean):
+    if platform.startswith('linux'):
+        build_loc = LINUX_BUILD_DIR
     elif platform.startswith('darwin'):
         build_loc = MACOS_BUILD_DIR
+    else:
+        build_loc = MSVC_BUILD_DIR
 
     build_dir = forced_path if forced_path else os.path.join(get_nap_root(), build_loc)
     if clean and os.path.exists(build_dir):
@@ -28,7 +29,7 @@ def getBuildDirectory(forced_path, clean):
     return build_dir
 
 
-def listGenerators():
+def list_generators():
     cmake = get_cmake_path()
     cmd = '%s --help' % cmake
     call(cmd, shell=True)
@@ -37,7 +38,7 @@ def listGenerators():
 def generate(forced_path, enable_python, additional_dirs, build_type, clean, generator):
     cmake = get_cmake_path()
     nap_root = get_nap_root()
-    build_dir = getBuildDirectory(forced_path, clean)        
+    build_dir = get_build_directory(forced_path, clean)        
 
     if generator is None:
         cmd = '%s -H%s -B%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, enable_python, additional_dirs)
@@ -95,7 +96,7 @@ if __name__ == '__main__':
 
     # Print list of available generators and return
     if args.list:
-        listGenerators()
+        list_generators()
         sys.exit()
  
     # Convert additional sub directories to CMake list type
