@@ -38,12 +38,23 @@ def list_generators():
 def generate(forced_path, enable_python, additional_dirs, build_type, clean, generator):
     cmake = get_cmake_path()
     nap_root = get_nap_root()
-    build_dir = get_build_directory(forced_path, clean)        
+    
+    # Get platform specific build directory
+    build_dir = get_build_directory(forced_path, clean)
 
-    if generator is None:
-        cmd = '%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, build_type, enable_python, additional_dirs)
-    else:
-        cmd = '%s -H%s -B%s -DCMAKE_BUILD_TYPE=%s -G\"%s\" -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (cmake, nap_root, build_dir, build_type, generator, enable_python, additional_dirs)
+    # Cmake generate command
+    cmd = '%s -H%s -B%s' % (cmake, nap_root, build_dir)
+
+    # Add generator if selected
+    if generator is not None:
+        cmd += ' -G\"%s\"' % generator
+
+    # Add build config if selected or default
+    if build_type is not None:
+        cmd += ' -DCMAKE_BUILD_TYPE=%s' % build_type
+
+    # Add NAP specific options
+    cmd += ' -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (enable_python, additional_dirs)
     call(cmd, shell=True)
 
 
@@ -77,7 +88,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=DEFAULT_BUILD_TYPE,
+        default=None,
         action='store', nargs='?',
         choices=['Release', 'Debug'],
         help="Build type for single solution generators such as Makefile, default: {0}".format(DEFAULT_BUILD_TYPE))
@@ -102,5 +113,11 @@ if __name__ == '__main__':
     # Convert additional sub directories to CMake list type
     additional_dirs = ';'.join(args.additional_dirs)
 
+    # Select system default build type if build_type is not provided
+    # On linux the default is make -> single generator, on windows it's visual studio -> multi-generator
+    build_type = args.build_type
+    if platform.startswith('linux') and build_type is None:
+        build_type = DEFAULT_BUILD_TYPE
+
     # Generate solution
-    generate(args.build_path, int(args.enable_python), additional_dirs, args.build_type, args.clean, args.generator)
+    generate(args.build_path, int(args.enable_python), additional_dirs, build_type, args.clean, args.generator)

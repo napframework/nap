@@ -17,8 +17,11 @@ def build_app_by_dir(app_path, build_type, pause_on_failed_build):
     # Determine our Python interpreter location
     python = get_python_path()
 
+    # Create command to call
     cmd = [python, script_path, app_name]
     cmd.append('--build-type=%s' % build_type)
+
+    # Run
     exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
@@ -33,12 +36,17 @@ def build_app_by_dir(app_path, build_type, pause_on_failed_build):
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='build')
     parser.add_argument("APP_PATH", type=str, help=argparse.SUPPRESS)
-    parser.add_argument('-t', '--build-type', type=str, default=DEFAULT_BUILD_TYPE,
-                        choices=['Release', 'Debug'], help="Build type (default=%s)" % DEFAULT_BUILD_TYPE)
+    parser.add_argument('-t', '--build-type',
+        type=str,
+        default=DEFAULT_BUILD_TYPE,
+        action='store', nargs='?',
+        choices=['Release', 'Debug'],
+        help="Build type for single solution generators such as Makefile, default: {0}".format(DEFAULT_BUILD_TYPE))
 
     if not sys.platform.startswith('linux'):
-        parser.add_argument("-np", "--no-pause", action="store_true",
-                            help="Don't pause afterwards on failed build")
+        parser.add_argument("-np", "--no-pause", 
+            action="store_true",
+            help="Don't pause afterwards on failed build")
     args = parser.parse_args()
 
     pause = False
