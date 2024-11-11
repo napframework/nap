@@ -41,7 +41,7 @@ if __name__ == '__main__':
         default=DEFAULT_BUILD_TYPE,
         action='store', nargs='?',
         choices=['Release', 'Debug'],
-        help="Build type for single solution generators such as Makefile, default: {0}".format(DEFAULT_BUILD_TYPE))
+        help="Build type, default: {0}".format(DEFAULT_BUILD_TYPE))
 
     if not sys.platform.startswith('linux'):
         parser.add_argument("-np", "--no-pause", 
