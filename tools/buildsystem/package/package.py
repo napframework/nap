@@ -12,7 +12,7 @@ from sys import platform
 from enum import Enum
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root, get_build_arch, BuildType, Platform
+from nap_shared import get_cmake_path, get_nap_root, get_build_arch, BuildType, Platform, get_default_generator
 
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
@@ -221,6 +221,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
         call(WORKING_DIR, [get_cmake_path(),
                            '-H.',
                            '-B%s' % build_dir_for_type,
+                           '-G%s' % get_default_generator(),
                            '-DNAP_PACKAGED_BUILD=1',
                            '-DCMAKE_BUILD_TYPE=%s' % build_type,
                            '-DINCLUDE_DOCS=%s' % int(include_docs),
@@ -256,7 +257,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     call(WORKING_DIR, [get_cmake_path(),
                        '-H.',
                        '-B%s' % BUILD_DIR,
-                       '-G', 'Xcode',
+                       '-G%s' % get_default_generator(),
                        '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,
@@ -300,7 +301,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
     call(WORKING_DIR, [get_cmake_path(),
                        '-H.',
                        '-B%s' % BUILD_DIR,
-                       '-G', 'Visual Studio 16 2019',
+                       '-G%s' % get_default_generator(),
                        '-DNAP_PACKAGED_BUILD=1',
                        '-DINCLUDE_DOCS=%s' % int(include_docs),
                        '-DBUILD_TIMESTAMP=%s' % timestamp,

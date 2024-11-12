@@ -62,6 +62,12 @@ def call_except_on_failure(cwd, cmd):
         raise Exception(proc.returncode)
     return out
 
+def call(cwd, cmd):
+    """Execute command and return stdout and returncode"""
+    proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, cwd=cwd)
+    (out, _) = proc.communicate()
+    return (out.strip().decode('utf-8'), proc.returncode)
+
 def get_default_build_dir_name():
     """Return platform specific build directory name"""
     if Platform.get() == Platform.Linux:
@@ -76,6 +82,25 @@ def get_default_build_dir():
     """Return absolute path to default CMAKE build directory"""
     return os.path.join(get_nap_root(), get_default_build_dir_name())
 
+def get_visual_studio_generator():
+    """Check if Visual Studio is installed"""
+
+    # Get visual studio version value from registy
+    vs_reg_min = 'Visual Studio 16 2019'
+    try:
+        vs_reg_key = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE\\CurVer'
+        vs_reg_val = call('.', 'reg query "%s"' % vs_reg_key)[0]
+        vs_reg_ver = float(vs_reg_val.split(".DTE.")[-1])
+        if vs_reg_ver >= 17.0:
+            return 'Visual Studio 17 2022'
+        if vs_reg_ver >= 16.0:
+            return 'Visual Studio 16 2019'
+        else:
+            raise Exception("Unsupported Visual Studio version: {}".format(vs_reg_ver))
+    except Exception as e:
+        print("Warning: Unable to determine Visual Studio version\n\tReverting to system default: {}".format(vs_reg_min))
+        return vs_reg_min
+
 def get_default_generator():
     """Return platform specific generator, empty if platform not supported"""
     user_pref = os.environ.get('CMAKE_GENERATOR')
@@ -87,7 +112,7 @@ def get_default_generator():
     if Platform.get() == Platform.macOS:
         return "Xcode"
     if Platform.get() == Platform.Windows:
-        return "Visual Studio 16 2019"
+        return get_visual_studio_generator()
 
     print("Warning! Unable to determine default generator for platform: {}"
         .format(platform))
