@@ -12,7 +12,7 @@ from sys import platform
 from enum import Enum
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root, get_build_arch
+from nap_shared import get_cmake_path, get_nap_root, get_build_arch, BuildType, Platform
 
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
@@ -22,7 +22,6 @@ PACKAGING_DIR = 'packaging_staging'
 ARCHIVING_DIR = 'archiving'
 APPS_SOURCE_DIR = 'apps'
 APPS_DEST_DIR = 'apps'
-BUILD_TYPES = ('Release', 'Debug')
 APPLY_PERMISSIONS_BATCHFILE = 'apply_executable_permissions.cmd'
 
 ERROR_PACKAGE_EXISTS = 1
@@ -111,7 +110,7 @@ def package(zip_release,
         sub_dirs = ';'.join(additional_dirs)
 
         # Do the packaging
-        if platform.startswith('linux'):
+        if Platform.get() == Platform.Linux:
             package_path = package_for_linux(package_basename,
                                              timestamp,
                                              git_revision,
@@ -124,7 +123,7 @@ def package(zip_release,
                                              sub_dirs,
                                              enable_python
                                              )
-        elif platform == 'darwin':
+        elif Platform.get() == Platform.macOS:
             package_path = package_for_macos(package_basename,
                                              timestamp,
                                              git_revision,
@@ -137,7 +136,7 @@ def package(zip_release,
                                              sub_dirs,
                                              enable_python
                                              )
-        else:
+        elif Platform.get() == Platform.Windows:
             package_path = package_for_win64(package_basename,
                                              timestamp,
                                              git_revision,
@@ -150,6 +149,9 @@ def package(zip_release,
                                              sub_dirs,
                                              enable_python
                                              )
+        else:
+            print("Error: Unsupported platform")
+            sys.exit(ERROR_BAD_INPUT)
 
     # Archive source
     if archive_source:
@@ -170,8 +172,8 @@ def clean_the_build():
     """Clean the build"""
 
     print("Cleaning...")
-    if platform.startswith('linux'):
-        for build_type in BUILD_TYPES:
+    if Platform.get() == Platform.Linux:
+        for build_type in BuildType.to_list():
             build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
             if os.path.exists(build_dir_for_type):
                 print("Clean removing %s" % os.path.abspath(build_dir_for_type))
@@ -193,7 +195,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
 
     # Add extension if zipping
     if zip_release:
-        if platform.startswith('linux'):
+        if Platform.get() == Platform.Linux:
             package_path += '.tar.bz2'
         else:
             package_path += '.zip'
@@ -214,7 +216,7 @@ def check_for_existing_package(package_path, zip_release, remove=False):
 def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for Linux"""
 
-    for build_type in BUILD_TYPES:
+    for build_type in BuildType.to_list():
         build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
         call(WORKING_DIR, [get_cmake_path(),
                            '-H.',
@@ -267,7 +269,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
 
     # Build & install to packaging dir
     d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
-    for build_type in BUILD_TYPES:
+    for build_type in BuildType.to_list():
         call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
 
     # Remove unwanted files (eg. .DS_Store)
@@ -310,7 +312,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
                        ])
 
     # Build & install to packaging dir
-    for build_type in BUILD_TYPES:
+    for build_type in BuildType.to_list():
         call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
     # Remove all Naivi apps but the requested one
@@ -424,15 +426,18 @@ def remove_all_apps_but_specified(single_app_to_include):
             remove_directory_exit_on_failure(path, 'unwanted internal app')
 
 def archive_source_archive_directory(source_directory):
-    if platform.startswith('linux'):
+    if Platform.get() == Platform.Linux:
         package_filename_with_ext = create_linux_tar_bz2(source_directory)
         shutil.rmtree(source_directory)
-    elif platform == 'darwin':
+    elif Platform.get() == Platform.macOS:
         package_filename_with_ext = create_macos_zip(source_directory)
         shutil.rmtree(source_directory)
-    else:
+    elif Platform.get() == Platform.Windows:
         (package_filename_with_ext, _) = create_win64_zip(source_directory)
         shutil.rmtree(ARCHIVING_DIR)
+    else:
+        print("Error: unsupported platform")
+        exit(ERROR_BAD_INPUT)
 
     print("Source archived to %s" % os.path.abspath(package_filename_with_ext))
 
@@ -440,12 +445,15 @@ def build_package_basename(timestamp, label):
     """Build the name of our package and populate our JSON build info file"""
 
     # Do the packaging
-    if platform.startswith('linux'):
+    if Platform.get() == Platform.Linux:
         platform_name = 'Linux'
-    elif platform == 'darwin':
+    elif Platform.get() == Platform.macOS:
         platform_name = 'macOS'
-    else:
+    elif Platform.get() == Platform.Windows:
         platform_name = 'Win64'
+    else:
+        print("Error: Unsupported platform")
+        sys.exit(ERROR_BAD_INPUT)
 
     # Fetch version from version.cmake
     (version_unparsed, _) = call(WORKING_DIR, [get_cmake_path(), '-P', 'cmake/version.cmake'], True)
@@ -471,7 +479,7 @@ def build_package_basename(timestamp, label):
 
 def get_architecture():
     """Retrieve architecture identifier"""
-    if platform.startswith('linux'):
+    if Platform.get() == Platform.Linux:
         v = get_build_arch()
     else:
         v = 'x86_64'
@@ -512,7 +520,7 @@ def check_existing_source_archive(source_archive_basename, zip_source_archive, o
     # Check final zipped filename
     output_path = os.path.join(os.path.pardir, source_archive_basename)
     if zip_source_archive:
-        if platform.startswith('linux'):
+        if Platform.get() == Platform.Linux:
             output_path += '.tar.bz2'
         else:
             output_path += '.zip'

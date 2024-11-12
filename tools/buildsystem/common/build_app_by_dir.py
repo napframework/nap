@@ -7,8 +7,6 @@ import sys
 
 from nap_shared import read_console_char, get_python_path, get_nap_root, BuildType
 
-DEFAULT_BUILD_TYPE = 'Release'
-
 def build_app_by_dir(app_path, build_type, pause_on_failed_build):
     app_name = os.path.basename(os.path.abspath(app_path.strip('\\')))
     nap_root = get_nap_root()
@@ -38,7 +36,7 @@ if __name__ == '__main__':
     parser.add_argument("APP_PATH", type=str, help=argparse.SUPPRESS)
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=None,
+        default=BuildType.get_default(),
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type, default: {0}".format(BuildType.get_default()))
