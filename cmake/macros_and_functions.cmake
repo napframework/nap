@@ -1,6 +1,9 @@
 # Bootstrap our build environment, setting up architecture, flags, policies, etc used across both NAP
 # build contexts
 macro(bootstrap_environment)
+    # Show selected generator
+    message(STATUS "Generator: ${CMAKE_GENERATOR}")
+
     # Enforce GCC on Linux for now (when doing packaging build at least)
     if(UNIX AND NOT APPLE)
         if(NOT NAP_BUILD_CONTEXT MATCHES "source" OR DEFINED NAP_PACKAGED_BUILD)

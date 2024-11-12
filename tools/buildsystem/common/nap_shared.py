@@ -1,17 +1,56 @@
 from collections import OrderedDict
 import json
 import os
+from sys import platform
 from platform import machine
+from enum import Enum
 from subprocess import Popen, run, PIPE
+from sys import platform
 import sys
 
 PROJECT_INFO_FILENAME = 'app.json'
 MODULE_INFO_FILENAME = 'module.json'
 SOLUTION_INFO_FILENAME = 'solution_info.json'
 
+DEFAULT_BUILD_DIR = 'build'
+LINUX_BUILD_DIR = DEFAULT_BUILD_DIR
+MACOS_BUILD_DIR = 'Xcode'
+MSVC_BUILD_DIR = 'msvc64'
+
 # Keys for entries in app.json and module.json
 CFG_KEY_DEPENDENCIES = 'Dependencies'
 CFG_KEY_MODULES = 'Modules'
+
+class Platform(Enum):
+    """Platform Enum"""
+    Windows = 1,
+    macOS   = 2,
+    Linux   = 3,
+    Unknown = 4
+
+    """The current platform"""
+    @staticmethod
+    def get():
+        if platform.startswith('linux'):
+            return Platform.Linux
+        if platform.startswith('win32'):
+            return Platform.Windows
+        if platform.startswith('darwin'):
+            return Platform.macOS
+        return Platform.Unknown
+
+class BuildType(Enum):
+    """Build type Enum"""
+    Debug   = 1,
+    Release = 2
+
+    @staticmethod
+    def get_default():
+        return BuildType.Release.name
+
+    @staticmethod
+    def to_list():
+        return [BuildType.Debug.name, BuildType.Release.name]
 
 def call_except_on_failure(cwd, cmd):
     """Run command, raising exception on failure"""
@@ -22,6 +61,37 @@ def call_except_on_failure(cwd, cmd):
     if proc.returncode != 0:
         raise Exception(proc.returncode)
     return out
+
+def get_default_build_dir_name():
+    """Return platform specific build directory name"""
+    if Platform.get() == Platform.Linux:
+        return LINUX_BUILD_DIR
+    if Platform.get() == Platform.macOS:
+        return MACOS_BUILD_DIR
+    if Platform.get() == Platform.Windows:
+        return MSVC_BUILD_DIR
+    return DEFAULT_BUILD_DIR
+
+def get_default_build_dir():
+    """Return absolute path to default CMAKE build directory"""
+    return os.path.join(get_nap_root(), get_default_build_dir_name())
+
+def get_default_generator():
+    """Return platform specific generator, empty if platform not supported"""
+    user_pref = os.environ.get('CMAKE_GENERATOR')
+    if user_pref is not None:
+        return str(user_pref)
+
+    if Platform.get() == Platform.Linux:
+        return "Unix Makefiles"
+    if Platform.get() == Platform.macOS:
+        return "Xcode"
+    if Platform.get() == Platform.Windows:
+        return "Visual Studio 16 2019"
+
+    print("Warning! Unable to determine default generator for platform: {}"
+        .format(platform))
+    return "Unix Makefiles"
 
 def find_user_module(module_name):
     """Locate module specified by name"""

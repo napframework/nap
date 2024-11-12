@@ -9,12 +9,9 @@ import sys
 import argparse
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root
+from nap_shared import get_cmake_path, get_nap_root, BuildType, Platform, get_default_build_dir
 
-LINUX_BUILD_DIR = 'build'
-MACOS_BUILD_DIR = 'Xcode'
-MSVC_BUILD_DIR = 'msvc64'
-DEFAULT_BUILD_TYPE = 'Release'
+ERROR_CONFIGURE = 2
 
 def call(cwd, cmd, shell=False):
     print('Dir: %s' % cwd)
@@ -25,50 +22,42 @@ def call(cwd, cmd, shell=False):
         sys.exit(proc.returncode)
 
 def main(target, clean_build, build_type, enable_python):
-    build_dir = None
-    if platform.startswith('linux'):
-        build_dir = LINUX_BUILD_DIR
-    elif platform == 'darwin':
-        build_dir = MACOS_BUILD_DIR
-    else:
-        build_dir = MSVC_BUILD_DIR
-    nap_root = get_nap_root()
-    build_dir = os.path.join(nap_root, build_dir)
-
     # Clear build directory when a clean build is required
+    build_dir = get_default_build_dir()
     if clean_build and os.path.exists(build_dir):
         shutil.rmtree(build_dir)
 
     # Get arguments to generate solution
     solution_args = []
-    if platform.startswith('linux'):
+    if Platform.get() == Platform.Linux:
         solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type]
-    elif platform == 'darwin':
+    elif Platform.get() == Platform.macOS:
         solution_args = ['./generate_solution.sh', '--build-path=%s' % build_dir]
-    else:
+    elif Platform.get() == Platform.Windows:
         solution_args = ['generate_solution.bat', '--build-path=%s' % build_dir]
+    else:
+        print("Error: Unsupported target platform")
+        sys.exit(ERROR_CONFIGURE)
 
     # Enable python if requested 
     if enable_python:
         solution_args.append('-p')
     
     # Generate solution
+    nap_root = get_nap_root()
     rc = call(nap_root, solution_args, True)
         
     # Build
-    if platform.startswith('linux'):
-        # Linux
+    if Platform.get() == Platform.Linux:
         call(build_dir, ['make', target, '-j%s' % cpu_count()])
-    elif platform == 'darwin':
-        # macOS
+    elif Platform.get() == Platform.macOS:
         cmd = ['xcodebuild', '-project', 'NAP.xcodeproj', '-configuration', build_type]
         if target == 'all':
             cmd.append('-alltargets')
         else:
             cmd.extend(['-target', target])
         call(build_dir, cmd)
-    else:
-        # Windows
+    elif Platform.get() == Platform.Windows:
         cmake = get_cmake_path()
         nap_root = get_nap_root()
         cmake = get_cmake_path()
@@ -81,12 +70,13 @@ if __name__ == '__main__':
 
     parser = argparse.ArgumentParser()
     parser.add_argument("PROJECT_NAME", type=str, help="The project name (default='all')", default="all", nargs="?")
+    
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=DEFAULT_BUILD_TYPE,
+        default=BuildType.get_default(),
         action='store', nargs='?',
-        choices=['Release', 'Debug'],
-        help="Build type for single solution generators such as Makefile, default: {0}".format(DEFAULT_BUILD_TYPE))
+        choices=BuildType.to_list(),
+        help="Build type, default: {0}".format(BuildType.get_default()))
     
     parser.add_argument('-c', '--clean', 
         default=False, 

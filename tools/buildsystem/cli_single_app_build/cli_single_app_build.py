@@ -9,14 +9,7 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_python_path, get_nap_root
-
-LINUX_BUILD_DIR = 'build'
-MACOS_BUILD_DIR = 'Xcode'
-MSVC_BUILD_DIR = 'msvc64'
-THIRDPARTY = 'thirdparty'
-
-DEFAULT_BUILD_TYPE = 'Release'
+from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -28,8 +21,6 @@ class SingleAppBuilder:
         pass
 
     def call(self, cwd, cmd, shell=False):
-#       print('Dir: %s' % cwd)
-#       print('Command: %s' % ' '.join(cmd))
         proc = subprocess.Popen(cmd, cwd=cwd, shell=shell)
         proc.communicate()
         return proc.returncode
@@ -70,7 +61,6 @@ class SingleAppBuilder:
             self.build_packaged_framework_app(app_name, build_type)
 
     def build_source_context_app(self, app_name, build_type):
-
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
         from nap_shared import find_app
@@ -79,37 +69,26 @@ class SingleAppBuilder:
             print("Error: Can't find app %s" % app_name)
             sys.exit(ERROR_CANT_LOCATE_APP)
 
-        build_dir = None
-        if platform.startswith('linux'):
-            build_dir = LINUX_BUILD_DIR
-        elif platform == 'darwin':
-            build_dir = MACOS_BUILD_DIR
-        else:
-            build_dir = MSVC_BUILD_DIR
-        build_dir = os.path.join(self.__nap_root, build_dir)
-
         # Generate solution
-        if platform.startswith('linux'):
+        rc = 1
+        build_dir = os.path.join(self.__nap_root, get_default_build_dir_name())
+        if Platform.get() == Platform.Linux:
             rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type])
-        elif platform == 'darwin':
+        elif Platform.get() == Platform.macOS:
             rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir])
-        else:
+        elif Platform.get() == Platform.Windows:
             rc = self.call(self.__nap_root, ['generate_solution.bat', '--build-path=%s' % build_dir], True)
 
         if rc != 0:
             print("Error: Failed to configure app")
             sys.exit(ERROR_CONFIGURE)
 
-        if platform.startswith('linux'):
-            # Linux
+        if Platform.get() == Platform.Linux:
             self.call(build_dir, ['make', app_name, '-j%s' % cpu_count()])
-        elif platform == 'darwin':
-            # macOS
+        elif Platform.get() == Platform.macOS:
             self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', app_name, '-configuration', build_type])
-        else:
-            # Windows
-            cmake = get_cmake_path()
-            self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', app_name, '--config', build_type])
+        elif Platform.get() == Platform.Windows:
+            self.call(self.__nap_root, [get_cmake_path(), '--build', build_dir, '--target', app_name, '--config', build_type])
 
     def build_packaged_framework_app(self, app_name, build_type):
         # Late import to handle different operating contexts
@@ -120,23 +99,15 @@ class SingleAppBuilder:
             print("Error: Can't find app %s" % app_name)
             sys.exit(ERROR_CANT_LOCATE_APP)
 
-        build_dir = None
-        if platform.startswith('linux'):
-            build_dir = LINUX_BUILD_DIR
-        elif platform == 'darwin':
-            build_dir = MACOS_BUILD_DIR.lower()
-        else:
-            build_dir = MSVC_BUILD_DIR
-        build_dir = os.path.join(app_path, build_dir)
-
         # Only explicitly regenerate the solution if it doesn't already exist or a build type has
         # been specified. Provides quicker CLI build times if regeneration not required while
         # ensuring that the right build type will be generated for Napkin on Linux.
+        build_dir = os.path.join(app_path, get_default_build_dir_name())
         generate_solution = build_type != None or not os.path.exists(build_dir)
 
         if generate_solution:
             cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
-            if sys.platform.startswith('linux'):
+            if Platform.get() == Platform.Linux:
                 cmd.append(build_type)
             else:
                 cmd.append('--no-show')
@@ -144,26 +115,26 @@ class SingleAppBuilder:
                 print("Error: Solution generation failed")
                 sys.exit(ERROR_CONFIGURE)
 
-        if platform.startswith('linux'):
-            # Linux
+        if Platform.get() == Platform.Linux:
             self.call(build_dir, ['make', app_name, '-j%s' % cpu_count()])
-        elif platform == 'darwin':
-            # macOS
+        elif Platform.get() == Platform.macOS:
             self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % app_name, '-configuration', build_type])
-        else:
-            # Windows
-            cmake = get_cmake_path()
-            self.call(self.__nap_root, [cmake, '--build', build_dir, '--target', app_name, '--config', build_type], True)
+        elif Platform.get() == Platform.Windows:
+            self.call(self.__nap_root, [get_cmake_path(), '--build', build_dir, '--target', app_name, '--config', build_type], True)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("APP_NAME", type=str, help="The app name")
+
+    parser.add_argument("APP_NAME", 
+        type=str, 
+        help="The app name")
+
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=DEFAULT_BUILD_TYPE,
+        default=BuildType.get_default(),
         action='store', nargs='?',
-        choices=['Release', 'Debug'],
-        help="Build type, default: {0}".format(DEFAULT_BUILD_TYPE))
+        choices=BuildType.to_list(),
+        help="Build type, default: {0}".format(BuildType.get_default()))
     args = parser.parse_args()
 
     b = SingleAppBuilder()
