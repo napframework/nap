@@ -458,6 +458,7 @@ macro(set_source_build_configuration)
         # Loop over each configuration for multi-configuration systems
         foreach(OUTPUTCONFIG ${CMAKE_CONFIGURATION_TYPES})
             set(BUILD_CONF ${OUTPUTCONFIG}-${ARCH})
+            message(STATUS "Build Configuration: ${BUILD_CONF}")
 
             # Separate our outputs for packaging and non packaging (due to differing behaviour in core, plus speeds up
             # builds when working in packaging and non-packaging at the same time)
@@ -498,11 +499,11 @@ macro(set_source_build_configuration)
 
         add_compile_definitions(NAP_BUILD_CONF=${BUILD_CONF})
         add_compile_definitions(NAP_BUILD_TYPE=${CMAKE_BUILD_TYPE})
+        message(STATUS "Build Configuration: ${BUILD_CONF}")
     endif()
     add_compile_definitions(NAP_BUILD_ARCH=${ARCH})
     add_compile_definitions(NAP_BUILD_COMPILER=${CMAKE_CXX_COMPILER_ID})
     message(STATUS "Architecture: ${ARCH}" )
-    message(STATUS "Build Configuration: ${BUILD_CONF}")
 endmacro()
 
 # Set a default build type if none was specified (single-configuration generators only, ie. Linux)

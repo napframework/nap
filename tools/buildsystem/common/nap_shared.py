@@ -41,8 +41,8 @@ class Platform(Enum):
 
 class BuildType(Enum):
     """Build type Enum"""
-    Debug   = 1,
-    Release = 2
+    Release = 0,
+    Debug   = 1
 
     @staticmethod
     def get_default():
@@ -50,7 +50,7 @@ class BuildType(Enum):
 
     @staticmethod
     def to_list():
-        return [BuildType.Debug.name, BuildType.Release.name]
+        return [BuildType.Release.name, BuildType.Debug.name]
 
 def call_except_on_failure(cwd, cmd):
     """Run command, raising exception on failure"""

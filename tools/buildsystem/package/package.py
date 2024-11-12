@@ -217,6 +217,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
     """Package NAP platform release for Linux"""
 
     for build_type in BuildType.to_list():
+        print("\nCurrent packaging config: {0}".format(build_type))
         build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
         call(WORKING_DIR, [get_cmake_path(),
                            '-H.',
@@ -271,6 +272,7 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
     # Build & install to packaging dir
     d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
     for build_type in BuildType.to_list():
+        print("\nCurrent packaging config: {0}".format(build_type))
         call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
 
     # Remove unwanted files (eg. .DS_Store)
@@ -314,6 +316,7 @@ def package_for_win64(package_basename, timestamp, git_revision, build_label, ov
 
     # Build & install to packaging dir
     for build_type in BuildType.to_list():
+        print("\nCurrent packaging config: {0}".format(build_type))
         call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
 
     # Remove all Naivi apps but the requested one
