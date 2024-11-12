@@ -1,10 +1,8 @@
 #!/usr/bin/env python3
 import os
-from platform import machine
 from multiprocessing import cpu_count
 import shutil
 import subprocess
-from sys import platform
 import sys
 import argparse
 

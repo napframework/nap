@@ -2,9 +2,7 @@
 import argparse
 import os
 import subprocess
-from platform import machine
 from multiprocessing import cpu_count
-from sys import platform
 import sys
 import shutil
 

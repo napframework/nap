@@ -28,10 +28,9 @@ def generate(forced_path, enable_python, additional_dirs, build_type, clean):
     build_dir = get_build_directory(forced_path, clean)
 
     # Cmake generate command
-    cmd = '%s -H%s -B%s' % (cmake, nap_root, build_dir)
-
-    # Add generator 
-    cmd += ' -G\"%s\"' % get_default_generator()
+    cmd = '%s -H%s -B%s -G\"%s\"' % (cmake, nap_root, 
+        build_dir, 
+        get_default_generator())
 
     # Add build config if selected or default
     if build_type:
