@@ -114,9 +114,8 @@ def get_default_generator():
     if Platform.get() == Platform.Windows:
         return get_visual_studio_generator()
 
-    print("Warning! Unable to determine default generator for platform: {}"
-        .format(platform))
-    return "Unix Makefiles"
+    raise Exception("Unable to determine default generator for platform: {}".
+        format(platform))
 
 def find_user_module(module_name):
     """Locate module specified by name"""
