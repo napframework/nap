@@ -43,16 +43,12 @@ if __name__ == '__main__':
         choices=['Release', 'Debug'],
         help="Build type, default: {0}".format(DEFAULT_BUILD_TYPE))
 
-    if not sys.platform.startswith('linux'):
-        parser.add_argument("-np", "--no-pause", 
-            action="store_true",
-            help="Don't pause afterwards on failed build")
-    args = parser.parse_args()
+    parser.add_argument("-np", "--no-pause", 
+        action="store_true",
+        help="Don't pause afterwards on failed build")
 
-    pause = False
-    if not sys.platform.startswith('linux') and not args.no_pause:
-        pause = True
-    exit_code = build_app_by_dir(args.APP_PATH, args.build_type, pause)
+    args = parser.parse_args()
+    exit_code = build_app_by_dir(args.APP_PATH, args.build_type, not args.no_pause)
 
     # Expose exit code
     sys.exit(exit_code)

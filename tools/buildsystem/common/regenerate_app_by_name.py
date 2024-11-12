@@ -71,10 +71,8 @@ if __name__ == '__main__':
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
-
     parser.add_argument("-ns", "--no-show", 
         action="store_true",
-        default=False,
         help="Don't show the generated solution")
 
     # Parse arguments

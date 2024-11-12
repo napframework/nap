@@ -37,21 +37,22 @@ def package_app_by_dir(app_path, include_napkin, zip_package, show, pause_on_pac
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog='package')
     parser.add_argument("APP_PATH", type=str, help=argparse.SUPPRESS)
-    parser.add_argument("-ns", "--no-show", action="store_true",
-                        help="Don't show the generated package")
-    parser.add_argument("-nn", "--no-napkin", action="store_true",
-                        help="Don't include napkin")
-    parser.add_argument("-nz", "--no-zip", action="store_true",
-                        help="Don't zip package")
-    if not sys.platform.startswith('linux'):
-        parser.add_argument("-np", "--no-pause", action="store_true",
-                            help="Don't pause afterwards")
+    parser.add_argument("-ns", "--no-show", 
+        action="store_true",
+        help="Don't show the generated package")
+    parser.add_argument("-nn", "--no-napkin", 
+        action="store_true",
+        help="Don't include napkin")
+    parser.add_argument("-nz", "--no-zip", 
+        action="store_true",
+        help="Don't zip package")
+    parser.add_argument("-np", "--no-pause", 
+        action="store_true", 
+        help="Don't pause afterwards")
     args = parser.parse_args()
 
-    pause_on_package = False
-    if not sys.platform.startswith('linux') and not args.no_pause:
-        pause_on_package = True
-    exit_code = package_app_by_dir(args.APP_PATH, not args.no_napkin, not args.no_zip, not args.no_show, pause_on_package)
+    # Package app
+    exit_code = package_app_by_dir(args.APP_PATH, not args.no_napkin, not args.no_zip, not args.no_show, not args.no_pause)
 
     # Expose exit code
     sys.exit(exit_code)
