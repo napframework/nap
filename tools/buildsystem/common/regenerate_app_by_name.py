@@ -12,14 +12,6 @@ ERROR_MISSING_MODULE = 1
 ERROR_INVALID_BUILD_TYPE = 2
 ERROR_CONFIGURE_FAILURE = 3
 
-# Platform-specific build directories
-if sys.platform == 'darwin':
-    BUILD_DIR = 'xcode'
-elif sys.platform == 'win32':
-    BUILD_DIR = 'msvc64'
-else:
-    BUILD_DIR = 'build'
-
 def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_solution):
     # Find the app
     (app_path, app_name) = find_app(search_app_name)
@@ -47,13 +39,13 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
 
     # Show generated solution on supported platforms
     if show_solution and Platform.get() == Platform.Windows:
-        msvc_solution_path = os.path.join(app_path, BUILD_DIR, '%s.sln' % app_name)
+        msvc_solution_path = os.path.join(app_path, build_dir, '%s.sln' % app_name)
         call(r'explorer /select,"%s"' % msvc_solution_path)
     elif show_solution and Platform.get() == Platform.macOS:
-        xcode_solution_path = os.path.join(app_path, BUILD_DIR, '%s.xcodeproj' % app_name)
+        xcode_solution_path = os.path.join(app_path, build_dir, '%s.xcodeproj' % app_name)
         call(["open", "-R", xcode_solution_path])
 
-    print("Solution generated in %s" % os.path.relpath(os.path.join(app_path, BUILD_DIR)))
+    print("Solution generated in %s" % os.path.relpath(os.path.join(app_path, build_dir)))
     return 0
 
 def cmake_reconfigure_app_source(build_type):
@@ -82,7 +74,7 @@ if __name__ == '__main__':
 
     parser.add_argument("-ns", "--no-show", 
         action="store_true",
-        default=False
+        default=False,
         help="Don't show the generated solution")
 
     # Parse arguments
