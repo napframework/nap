@@ -4,7 +4,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name
+from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_default_generator
 
 # Exit codes
 ERROR_MISSING_APP = 1

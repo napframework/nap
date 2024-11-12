@@ -5,7 +5,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_app, get_cmake_path, get_build_context, get_nap_root, get_python_path
+from nap_shared import find_app, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_default_generator
 
 # Exit codes
 ERROR_MISSING_MODULE = 1
@@ -26,41 +26,35 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
     if app_path is None:
         return ERROR_MISSING_MODULE
 
-    cmake = get_cmake_path()
-    if sys.platform.startswith('linux'):
-        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-DCMAKE_BUILD_TYPE=%s' % build_type], cwd=app_path)
+    # Create cmake command
+    build_dir = get_default_build_dir_name()
+    cmd = '%s -H. -B%s -G\"%s\"' % (get_cmake_path(), build_dir, get_default_generator())
 
-        # Show in Nautilus?
-        # Seems a bit pointless if we're not opening it in an IDE from the file browser
-        # if show_solution:
-        #     call(["nautilus -s %s > /dev/null 2>&1 &" % BUILD_DIR], shell=True)
+    # Add build config if selected or default
+    if build_type:
+        cmd += ' -DCMAKE_BUILD_TYPE=%s' % build_type
 
-    elif sys.platform == 'darwin':
-        exit_code = call([cmake, '-H.', '-B%s' % BUILD_DIR, '-G', 'Xcode'], cwd=app_path)
-
-        # Show in Finder
-        if exit_code == 0 and show_solution:
-            xcode_solution_path = os.path.join(app_path, BUILD_DIR, '%s.xcodeproj' % app_name)
-            call(["open", "-R", xcode_solution_path])
-    else:
-        # Create dir if it doesn't exist
-        full_build_dir = os.path.join(app_path, BUILD_DIR)
+    # Create dir if it doesn't exist (Windows only)
+    if Platform.get() == Platform.Windows:
+        full_build_dir = os.path.join(app_path, build_dir)
         if not os.path.exists(full_build_dir):
             os.makedirs(full_build_dir)
 
-        # Generate project
-        exit_code = call([cmake, '-H.','-B%s' % BUILD_DIR,'-G', 'Visual Studio 16 2019'], cwd=app_path)
+    # Run solution generation -> bail on failure
+    exit_code = call(cmd, cwd=app_path)
+    if exit_code != 0:
+        return ERROR_CONFIGURE_FAILURE
 
-        # Show in Explorer
-        if exit_code == 0 and show_solution:
-            msvc_solution_path = os.path.join(app_path, BUILD_DIR, '%s.sln' % app_name)
-            call(r'explorer /select,"%s"' % msvc_solution_path)
+    # Show generated solution on supported platforms
+    if show_solution and Platform.get() == Platform.Windows:
+        msvc_solution_path = os.path.join(app_path, BUILD_DIR, '%s.sln' % app_name)
+        call(r'explorer /select,"%s"' % msvc_solution_path)
+    elif show_solution and Platform.get() == Platform.macOS:
+        xcode_solution_path = os.path.join(app_path, BUILD_DIR, '%s.xcodeproj' % app_name)
+        call(["open", "-R", xcode_solution_path])
 
-    if exit_code == 0:
-        print("Solution generated in %s" % os.path.relpath(os.path.join(app_path, BUILD_DIR)))
-        return 0
-    else:
-        return(ERROR_CONFIGURE_FAILURE)
+    print("Solution generated in %s" % os.path.relpath(os.path.join(app_path, BUILD_DIR)))
+    return 0
 
 def cmake_reconfigure_app_source(build_type):
     nap_root = get_nap_root()
@@ -71,42 +65,38 @@ def cmake_reconfigure_app_source(build_type):
 
     # Build our command
     cmd = [python, script_path]
-    if sys.platform.startswith('linux'):
+    if build_type:
         cmd.append('-t')
         cmd.append(build_type.lower())
     return call(cmd)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("APP_NAME", type=str,
-                        help="The app to regenerate")
-    if sys.platform.startswith('linux'):
-        parser.add_argument('BUILD_TYPE', nargs='?', default='Release')
-    else:
-        parser.add_argument("-ns", "--no-show", action="store_true",
-                            help="Don't show the generated solution")
+    parser.add_argument("APP_NAME", type=str, help="The app to regenerate")    
+    parser.add_argument('-t', '--build-type',
+        type=str,
+        default=None,
+        action='store', nargs='?',
+        choices=BuildType.to_list(),
+        help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
+
+    parser.add_argument("-ns", "--no-show", 
+        action="store_true",
+        default=False
+        help="Don't show the generated solution")
+
+    # Parse arguments
     args = parser.parse_args()
 
-    # If we're on Linux and we've specified a build type let's grab that, otherwise
-    # default to release
-    if sys.platform.startswith('linux'):
-        build_type = args.BUILD_TYPE.lower()
-        if build_type == 'debug':
-            build_type = 'Debug'
-        elif build_type == 'release':
-            build_type = 'Release'
-        else:
-            print("Error: Invalid build type '%s' (valid types are release and debug)" % build_type)
-            sys.exit(ERROR_INVALID_BUILD_TYPE)
+    # Get build type for Linux
+    build_type = args.build_type
+    if Platform.get() == Platform.Linux and build_type is None:
+        build_type = BuildType.get_default()
 
-        print("Using build type '%s'" % build_type)
-        show_solution = False
-    else:
-        build_type = None
-        show_solution = not args.no_show
-
-    if get_build_context() == 'framework_release':
-        exit_code = cmake_reconfigure_app_framework_release(args.APP_NAME, build_type, show_solution)
+    build_ctx = get_build_context()
+    if build_ctx == 'framework_release':
+        exit_code = cmake_reconfigure_app_framework_release(args.APP_NAME, build_type, not args.no_show)
     else:
         exit_code = cmake_reconfigure_app_source(build_type)
+
     sys.exit(exit_code)
