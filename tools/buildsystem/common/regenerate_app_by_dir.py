@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys
 
-from nap_shared import read_console_char, get_python_path
+from nap_shared import read_console_char, get_python_path, BuildType, Platform
 
 def regenerate_app_by_dir(app_path, suppress_showing_solution, build_type, pause_on_failure):
     app_name = os.path.basename(app_path.strip('\\'))

@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys
 
-from nap_shared import read_console_char, get_python_path, get_nap_root
+from nap_shared import read_console_char, get_python_path, get_nap_root, BuildType
 
 DEFAULT_BUILD_TYPE = 'Release'
 
@@ -38,10 +38,10 @@ if __name__ == '__main__':
     parser.add_argument("APP_PATH", type=str, help=argparse.SUPPRESS)
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=DEFAULT_BUILD_TYPE,
+        default=None,
         action='store', nargs='?',
-        choices=['Release', 'Debug'],
-        help="Build type, default: {0}".format(DEFAULT_BUILD_TYPE))
+        choices=BuildType.to_list(),
+        help="Build type, default: {0}".format(BuildType.get_default()))
 
     parser.add_argument("-np", "--no-pause", 
         action="store_true",
