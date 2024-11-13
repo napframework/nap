@@ -10,7 +10,7 @@ from sys import platform
 import sys
 import shutil
 
-from nap_shared import find_app, call_except_on_failure, get_cmake_path, Platform, BuildType, get_default_generator
+from nap_shared import find_app, call_except_on_failure, get_cmake_path, Platform, BuildType, get_system_generator
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
@@ -56,7 +56,7 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
 
     # Construct cmake generation cmd
     cmake = get_cmake_path()
-    genex = get_default_generator()
+    genex = str(get_system_generator())
     gen_cmd = [cmake, '-H%s' % app_path,
                 '-B%s' % build_dir_name,
                 '-G%s' % genex,

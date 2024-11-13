@@ -6,7 +6,7 @@ import sys
 import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root, get_default_build_dir, get_default_generator, BuildType, Platform
+from nap_shared import get_cmake_path, get_nap_root, get_default_build_dir, get_system_generator, BuildType, Platform
 
 def get_build_directory(forced_path, clean):
     build_dir = forced_path if forced_path else get_default_build_dir()
@@ -29,7 +29,7 @@ def generate(forced_path, enable_python, additional_dirs, build_type, clean):
     cmd = ['%s' % cmake,
                 '-H%s' % nap_root,
                 '-B%s' % build_dir,
-                '-G%s' % get_default_generator()]
+                '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
     if build_type:
@@ -77,10 +77,9 @@ if __name__ == '__main__':
     # Convert additional sub directories to CMake list type
     additional_dirs = ';'.join(args.additional_dirs)
 
-    # Select system default build type if build_type is not provided
-    # On linux the default is make -> single generator, on windows it's visual studio -> multi-generator
+    # Force build type selection when generator is single
     build_type = args.build_type
-    if Platform.get() == Platform.Linux and build_type is None:
+    if not build_type and get_system_generator().is_single():
         build_type = BuildType.get_default()
 
     # Generate solution

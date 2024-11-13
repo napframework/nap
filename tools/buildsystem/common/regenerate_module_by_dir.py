@@ -5,7 +5,7 @@ import os
 from subprocess import call
 import sys 
 
-from nap_shared import read_console_char, get_python_path, BuildType, Platform
+from nap_shared import read_console_char, get_python_path, BuildType, Platform, get_system_generator
 
 def regenerate_module_by_dir(module_path, build_type):
     module_name = os.path.basename(module_path.strip('\\'))
@@ -39,8 +39,10 @@ if __name__ == '__main__':
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
     
     args = parser.parse_args()
+
+    # Force build type selection when generator is single
     build_type = args.build_type
-    if Platform.get() == Platform.Linux and build_type is None:
+    if not build_type and get_system_generator().is_single():
         build_type = BuildType.get_default()
 
     exit_code = regenerate_module_by_dir(args.MODULE_PATH, build_type)

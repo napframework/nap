@@ -5,7 +5,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_app, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_default_generator
+from nap_shared import find_app, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_system_generator
 
 # Exit codes
 ERROR_MISSING_MODULE = 1
@@ -21,7 +21,7 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
     # Create cmake command
     build_dir = get_default_build_dir_name()
     cmake = get_cmake_path()
-    cmd = [cmake, '-H.', '-B%s' % build_dir, '-G%s' % get_default_generator()]
+    cmd = [cmake, '-H.', '-B%s' % build_dir, '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
     if build_type:
@@ -79,9 +79,9 @@ if __name__ == '__main__':
     # Parse arguments
     args = parser.parse_args()
 
-    # Get build type for Linux
+    # Force build type selection when generator is single solution
     build_type = args.build_type
-    if Platform.get() == Platform.Linux and build_type is None:
+    if not build_type and get_system_generator().is_single():
         build_type = BuildType.get_default()
 
     build_ctx = get_build_context()

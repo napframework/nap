@@ -52,6 +52,23 @@ class BuildType(Enum):
     def to_list():
         return [BuildType.Release.name, BuildType.Debug.name]
 
+class Generator:
+    """Generator wrapper"""
+    def __init__(self, generator_name, multi_config = False):
+        self.name = generator_name
+        self.multi_config = multi_config
+
+    def __str__(self):
+        return self.name
+
+    def is_multi(self):
+        """Return if this is a multi-config generator"""
+        return self.multi_config
+
+    def is_single(self):
+        """Return if this is a single config generator"""
+        return not self.multi_config
+
 def call_except_on_failure(cwd, cmd):
     """Run command, raising exception on failure"""
     # print('dir: %s' % cwd)
@@ -101,18 +118,18 @@ def get_visual_studio_generator():
         print("Warning: Unable to determine Visual Studio version\n\tReverting to system default: {}".format(vs_reg_min))
         return vs_reg_min
 
-def get_default_generator():
+def get_system_generator():
     """Return platform specific generator, empty if platform not supported"""
     user_pref = os.environ.get('CMAKE_GENERATOR')
     if user_pref is not None:
-        return str(user_pref)
+        return Generator(user_pref, False)
 
     if Platform.get() == Platform.Linux:
-        return "Unix Makefiles"
+        return Generator("Unix Makefiles", False)
     if Platform.get() == Platform.macOS:
-        return "Xcode"
+        return Generator("Xcode", True)
     if Platform.get() == Platform.Windows:
-        return get_visual_studio_generator()
+        return Generator(get_visual_studio_generator(), True)
 
     raise Exception("Unable to determine default generator for platform: {}".
         format(platform))

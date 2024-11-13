@@ -4,7 +4,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_default_generator
+from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_system_generator
 
 # Exit codes
 ERROR_MISSING_APP = 1
@@ -27,7 +27,7 @@ def update_module_framework_release(module_name, build_type):
     cmd = ['%s' % get_cmake_path(),
                 '-H.',
                 '-B%s' % get_default_build_dir_name(),
-                '-G%s' % get_default_generator()]
+                '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
     if build_type:
@@ -72,7 +72,9 @@ if __name__ == '__main__':
     # On linux the default is make -> single generator, on windows it's visual studio -> multi-generator
     args = parser.parse_args()
     build_type = args.build_type
-    if Platform.get() == Platform.Linux and build_type is None:
+
+    # Force build type selection when generator is single
+    if not build_type and get_system_generator().is_single():
         build_type = BuildType.get_default()
 
     if get_build_context() == 'framework_release':
