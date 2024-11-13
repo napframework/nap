@@ -46,8 +46,6 @@ class SingleAppBuilder:
             self.__python = get_python_path()
 
     def build(self, app_name, build_type):
-        if not build_type is None:
-            build_type = build_type.lower().capitalize()
 
         # Determine environment, adapt for Source and Framework Release contexts
         self.determine_environment()
@@ -105,10 +103,9 @@ class SingleAppBuilder:
 
         if generate_solution:
             cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
-            if Platform.get() == Platform.Linux:
-                cmd.append(build_type)
-            else:
-                cmd.append('--no-show')
+            cmd.append('-t')
+            cmd.append(build_type)
+            cmd.append('--no-show')
             if self.call(self.__nap_root, cmd) != 0:
                 print("Error: Solution generation failed")
                 sys.exit(ERROR_CONFIGURE)

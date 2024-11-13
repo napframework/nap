@@ -20,11 +20,12 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
 
     # Create cmake command
     build_dir = get_default_build_dir_name()
-    cmd = '%s -H. -B%s -G\"%s\"' % (get_cmake_path(), build_dir, get_default_generator())
+    cmake = get_cmake_path()
+    cmd = [cmake, '-H.', '-B%s' % build_dir, '-G%s' % get_default_generator()]
 
     # Add build config if selected or default
     if build_type:
-        cmd += ' -DCMAKE_BUILD_TYPE=%s' % build_type
+        cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Create dir if it doesn't exist (Windows only)
     if Platform.get() == Platform.Windows:

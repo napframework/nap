@@ -15,18 +15,13 @@ def build_app_by_dir(app_path, build_type, pause_on_failed_build):
     # Determine our Python interpreter location
     python = get_python_path()
 
-    # Create command to call
-    cmd = [python, script_path, app_name]
-    cmd.append('--build-type=%s' % build_type)
-
-    # Run
+    # Create and run command to call
+    cmd = [python, script_path, app_name, '-t', build_type]
     exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
     if exit_code != 0 and pause_on_failed_build:
         print("Press key to close...")
-
-        # Read a char from console
         read_console_char()
 
     return exit_code
