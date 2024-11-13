@@ -24,13 +24,14 @@ def update_module_framework_release(module_name, build_type):
 
     # Cmake generate command
     build_dir = get_default_build_dir_name()
-    cmd = '%s -H. -B%s -G\"%s\"' % (get_cmake_path(), 
-        get_default_build_dir_name(), 
-        get_default_generator())
+    cmd = ['%s' % get_cmake_path(),
+                '-H.',
+                '-B%s' % get_default_build_dir_name(),
+                '-G%s' % get_default_generator()]
 
     # Add build config if selected or default
     if build_type:
-        cmd += ' -DCMAKE_BUILD_TYPE=%s' % build_type
+        cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Generate solution for individual platforms
     exit_code = call(cmd, cwd=module_path)
