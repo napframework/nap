@@ -51,7 +51,7 @@ def update_module_source(build_type):
     cmd = [python, script_path]
     if build_type:
         cmd.append('-t')
-        cmd.append(build_type.lower())
+        cmd.append(build_type)
 
     # Call solution generation
     return call(cmd)

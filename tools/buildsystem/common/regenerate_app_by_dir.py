@@ -16,9 +16,11 @@ def regenerate_app_by_dir(app_path, suppress_showing_solution, build_type, pause
     python = get_python_path()
 
     cmd = [python, script_path, app_name]
+
     # Add our build type for Linux
     if build_type != None:
-        cmd.append(linux_build_type)
+        cmd.append('-t')
+        cmd.append(build_type)
     
     # If we don't want to show the solution and we weren't not on Linux specify that
     if suppress_showing_solution:

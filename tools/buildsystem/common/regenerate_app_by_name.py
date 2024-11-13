@@ -59,7 +59,7 @@ def cmake_reconfigure_app_source(build_type):
     cmd = [python, script_path]
     if build_type:
         cmd.append('-t')
-        cmd.append(build_type.lower())
+        cmd.append(build_type)
     return call(cmd)
 
 if __name__ == '__main__':
