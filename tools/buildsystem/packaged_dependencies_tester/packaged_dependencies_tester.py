@@ -11,25 +11,25 @@ from multiprocessing import cpu_count
 import os
 from platform import machine
 import re
-from subprocess import call, Popen, PIPE, check_output, TimeoutExpired, run
+from subprocess import Popen, PIPE, TimeoutExpired, run
 import shlex
 import shutil
-import signal
-import sys
 import time
 import sys
 
+# Import utilities
+sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
+from nap_shared import BuildType
+
 # How long to wait for the process to run. This should be long enough that we're sure
 # it will have completed initialisation.
-WAIT_SECONDS_FOR_PROCESS_HEALTH = 6
-if sys.platform.startswith('linux') and not machine() == 'x86_64':
-    WAIT_SECONDS_FOR_PROCESS_HEALTH = 30
+WAIT_SECONDS_FOR_PROCESS_HEALTH = 10
 
 # Name for app created from template
 TEMPLATE_APP_NAME = 'TemplateApp'
 
 # Build type for build apps
-APP_BUILD_TYPE = 'Release'
+APP_BUILD_TYPE = BuildType.Release.name
 
 # Directory to iterate for testing
 DEFAULT_TESTING_APPS_DIR = 'demos'
@@ -2383,7 +2383,7 @@ def perform_test_run(nap_framework_path,
     os.chdir(os.path.join(nap_framework_full_path, testing_apps_dir))
 
     # Configure and build a demo as other build type
-    other_build_type = 'Debug' if APP_BUILD_TYPE.lower() == 'release' else 'Release'
+    other_build_type = BuildType.Debug.name if APP_BUILD_TYPE == BuildType.Release.name else BuildType.Release.name
     phase += 1
     print("============ Phase #%s - Building demo as %s ============" % (phase, other_build_type.lower()))
     os.chdir(os.path.join(nap_framework_full_path, testing_apps_dir))
