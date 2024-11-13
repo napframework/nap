@@ -784,10 +784,7 @@ def regenerate_cwd_app(build_type=APP_BUILD_TYPE):
 
     # Build command
     script = get_platform_scriptpath('regenerate')
-    if is_linux():
-        cmd = f'{script} %s' % build_type
-    else:
-        cmd = f'{script} -ns -np'
+    cmd = f'{script} -ns -np -t %s' % build_type
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
@@ -873,9 +870,7 @@ def package_cwd_app_with_napkin(app_name, root_output_dir, timestamp):
 
     # Build command
     script = get_platform_scriptpath('package')
-    cmd = f'{script} -nz -ns'
-    if not is_linux():
-        cmd = '%s -np' % cmd
+    cmd = f'{script} -nz -ns -np'
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
@@ -1167,9 +1162,7 @@ def package_demo_without_napkin(demo_results, root_output_dir, timestamp):
 
     # Build command
     script = get_platform_scriptpath('package')
-    cmd = f'{script} -nn -nz -ns'
-    if not is_linux():
-        cmd = f'{cmd} -np'
+    cmd = f'{script} -nn -nz -ns -np'
 
     # Run
     (returncode, stdout, stderr) = call_capturing_output(cmd)
