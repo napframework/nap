@@ -1,7 +1,6 @@
 from collections import OrderedDict
 import json
 import os
-from sys import platform
 from platform import machine
 from enum import Enum
 from subprocess import Popen, run, PIPE
