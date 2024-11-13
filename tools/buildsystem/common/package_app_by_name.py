@@ -56,19 +56,20 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
 
     # Construct cmake generation cmd
     cmake = get_cmake_path()
-    gen_cmd = '%s -H%s -B%s -G\"%s\" -DPACKAGE_NAPKIN=%s -DNAP_PACKAGED_APP_BUILD=1' % (cmake, 
-        app_path, 
-        build_dir_name, 
-        get_default_generator(),
-        int(include_napkin))
+    genex = get_default_generator()
+    gen_cmd = [cmake, '-H%s' % app_path,
+                '-B%s' % build_dir_name,
+                '-G%s' % genex,
+                '-DPACKAGE_NAPKIN=%s' % int(include_napkin),
+                '-DNAP_PACKAGED_APP_BUILD=1']
 
     # Ensure we build a release build on Linux
     if Platform.get() == Platform.Linux:
-        gen_cmd += ' -DCMAKE_BUILD_TYPE=%s' % BuildType.Release.name
+        gen_cmd.append('-DCMAKE_BUILD_TYPE=%s' % BuildType.Release.name)
 
     # Select binary package directory on Windows
     elif Platform.get() == Platform.Windows:
-        gen_cmd += ' -DAPP_PACKAGE_BIN_DIR=%s' % local_bin_dir_name
+        gen_cmd.append('-DAPP_PACKAGE_BIN_DIR=%s' % local_bin_dir_name)
 
     # Generate solution
     call_except_on_failure(WORKING_DIR, gen_cmd)
