@@ -7,6 +7,7 @@ from enum import Enum
 from subprocess import Popen, run, PIPE
 from sys import platform
 import sys
+from math import floor
 
 PROJECT_INFO_FILENAME = 'app.json'
 MODULE_INFO_FILENAME = 'module.json'
@@ -103,20 +104,20 @@ def get_visual_studio_generator():
     """Check if Visual Studio is installed"""
 
     # Get visual studio version value from registy
-    vs_reg_min = 'Visual Studio 16 2019'
+    vs_reg_def = 'Visual Studio 16 2019'
     try:
-        vs_reg_key = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE\\CurVer'
-        vs_reg_val = call('.', 'reg query "%s"' % vs_reg_key)[0]
-        vs_reg_ver = float(vs_reg_val.split(".DTE.")[-1])
-        if vs_reg_ver >= 17.0:
+        proc = Popen('reg query "HKEY_CLASSES_ROOT\\VisualStudio.DTE\\CurVer"', stdout=PIPE, stderr=PIPE, shell=True)
+        vs_reg_val = proc.communicate()[0].strip().decode('utf-8')
+        vs_reg_ver = floor(float(vs_reg_val.split(".DTE.")[-1]))
+        if vs_reg_ver == 17:
             return 'Visual Studio 17 2022'
-        if vs_reg_ver >= 16.0:
+        if vs_reg_ver == 16:
             return 'Visual Studio 16 2019'
         else:
             raise Exception("Unsupported Visual Studio version: {}".format(vs_reg_ver))
     except Exception as e:
-        print("Warning: Unable to determine Visual Studio version\n\tReverting to system default: {}".format(vs_reg_min))
-        return vs_reg_min
+        print("Warning: Unable to determine Visual Studio version\n\tReverting to system default: {}".format(vs_reg_def))
+        return vs_reg_def
 
 def get_system_generator():
     """Return platform specific generator, empty if platform not supported"""
