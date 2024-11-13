@@ -23,23 +23,22 @@ def list_generators():
 def generate(forced_path, enable_python, additional_dirs, build_type, clean):
     cmake = get_cmake_path()
     nap_root = get_nap_root()
-    
+
     # Get platform specific build directory
     build_dir = get_build_directory(forced_path, clean)
-
-    # Cmake generate command
-    cmd = '%s -H%s -B%s -G\"%s\"' % (cmake, nap_root, 
-        build_dir, 
-        get_default_generator())
+    cmd = ['%s' % cmake,
+                '-H%s' % nap_root,
+                '-B%s' % build_dir,
+                '-G%s' % get_default_generator()]
 
     # Add build config if selected or default
     if build_type:
-        cmd += ' -DCMAKE_BUILD_TYPE=%s' % build_type
+        cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Add NAP specific options
-    cmd += ' -DNAP_ENABLE_PYTHON=%s -DADDITIONAL_SUB_DIRECTORIES=%s' % (enable_python, additional_dirs)
-    call(cmd, shell=True)
-
+    cmd.append('-DNAP_ENABLE_PYTHON=%s' % enable_python)
+    cmd.append('-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs)
+    call(cmd, cwd=nap_root)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
