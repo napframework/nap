@@ -116,7 +116,7 @@ def package(zip_release,
             build_label,
             include_docs,
             include_debug_symbols,
-            additional_dirs,
+            sub_dirs,
             enable_python
         )
 
