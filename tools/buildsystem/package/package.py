@@ -132,17 +132,20 @@ def package(zip_release,
     if overwrite:
         check_for_existing_package(package_basename, zip_release, True)
 
-    # Create archive
-    if zip_release:
-        if Platform.get() == Platform.Linux:
-            archive_framework_to_linux_tar_bz2(package_basename)
-        if Platform.get() == Platform.macOS:
-            archive_framework_to_macos_zip(package_basename)
-        if Platform.get() == Platform.Windows:
-            archive_framework_to_win64_zip(package_basename)
-        raise Exception("Unsupported platform")
-    else:
+    # Don't zip
+    if not zip_release:
         archive_to_timestamped_dir(package_basename)
+        return
+
+    # Zip
+    if Platform.get() == Platform.Linux:
+        archive_framework_to_linux_tar_bz2(package_basename)
+    elif Platform.get() == Platform.macOS:
+        archive_framework_to_macos_zip(package_basename)
+    elif Platform.get() == Platform.Windows:
+        archive_framework_to_win64_zip(package_basename)
+    else:
+        raise Exception("Unsupported platform")
 
 def remove_directory_exit_on_failure(path, use):
     try:
