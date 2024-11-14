@@ -6,7 +6,7 @@ from multiprocessing import cpu_count
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType, get_system_generator, find_app
+from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, get_default_build_dir, Platform, BuildType, get_system_generator, find_app, max_build_parallelization
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -64,20 +64,23 @@ class SingleAppBuilder:
             sys.exit(ERROR_CANT_LOCATE_APP)
 
         # Create solution generation cmd
-        build_dir = os.path.join(self.__nap_root, get_default_build_dir_name())
-        gen_cmd = ['./generate_solution.%s' % ('bat' if Platform.get() == Platform.Windows else 'sh'), '--build-path=%s' % build_dir]
-        gen_cmd.extend(['-t', build_type])
+        build_dir = get_default_build_dir()
+        if Platform.get() == Platform.Windows:
+            gen_cmd = ['{0}\\generate_solution.bat'.format(self.__nap_root)]
+        else:
+            gen_cmd = ['./generate_solution.sh']
 
         # Generate solution
+        gen_cmd.extend(['--build-path=%s' % build_dir, '-t', build_type])
         if self.call(self.__nap_root, gen_cmd) != 0:
             print("Error: Failed to configure app")
             sys.exit(ERROR_CONFIGURE)
 
         # Build solution
-        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '-j', str(cpu_count())]
+        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name]
         if not get_system_generator().is_single():
-            build_cmd.extend(['--config', 'build_type'])
-        self.call(self.__nap_root, build_cmd)
+            build_cmd.extend(['--config', build_type])
+        self.call(self.__nap_root, max_build_parallelization(build_cmd))
 
     def build_packaged_framework_app(self, app_name, build_type):
         # Late import to handle different operating contexts
@@ -98,10 +101,10 @@ class SingleAppBuilder:
                 sys.exit(ERROR_CONFIGURE)
 
         # Build solution
-        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '-j', str(cpu_count())]
+        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name]
         if not get_system_generator().is_single():
             build_cmd.extend(['--config', build_type])
-        self.call(self.__nap_root, build_cmd)
+        self.call(self.__nap_root, max_build_parallelization(build_cmd))
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

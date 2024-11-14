@@ -10,7 +10,7 @@ from sys import platform
 import sys
 import shutil
 
-from nap_shared import find_app, call_except_on_failure, get_cmake_path, Platform, BuildType, get_system_generator
+from nap_shared import find_app, call_except_on_failure, get_cmake_path, Platform, BuildType, get_system_generator, max_build_parallelization
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
@@ -78,7 +78,7 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
     build_cmd = [cmake, '--build', '.', '--target', 'install', '-j', str(cpu_count())]
     if not get_system_generator().is_single():
         build_cmd.extend(['--config', BuildType.Release.name])
-    call_except_on_failure(build_dir_name, build_cmd)
+    call_except_on_failure(build_dir_name, max_build_parallelization(build_cmd))
 
     if Platform.get() == Platform.Linux:
         # Create archive

@@ -12,7 +12,7 @@ from sys import platform
 from enum import Enum
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_nap_root, get_build_arch, BuildType, Platform, get_system_generator
+from nap_shared import get_cmake_path, get_nap_root, get_build_arch, BuildType, Platform, get_system_generator, max_build_parallelization
 
 WORKING_DIR = '.'
 BUILD_DIR = 'packaging_build'
@@ -225,7 +225,8 @@ def package_single_stage(timestamp, git_revision, build_label, include_docs, inc
                            '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                            ])
         # Build
-        call(WORKING_DIR, [get_cmake_path(), '--build', build_dir_for_type, '--target', 'install', '-j', str(cpu_count())])
+        call(WORKING_DIR, 
+            max_build_parallelization([get_cmake_path(), '--build', build_dir_for_type, '--target', 'install']))
 
 def package_multi_stage(timestamp, git_revision, build_label, include_docs, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for Windows"""
@@ -252,7 +253,8 @@ def package_multi_stage(timestamp, git_revision, build_label, include_docs, incl
     # Build & install to packaging dir
     for build_type in BuildType.to_list():
         print("\nCurrent packaging config: {0}".format(build_type))
-        call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type, '-j', str(cpu_count())])
+        call(WORKING_DIR, 
+            max_build_parallelization([get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type]))
 
 def archive_framework_to_linux_tar_bz2(package_basename):
     """Create build archive to bzipped tarball on Linux"""

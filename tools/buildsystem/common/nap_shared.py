@@ -7,6 +7,7 @@ from subprocess import Popen, run, PIPE
 from sys import platform
 import sys
 from math import floor
+from multiprocessing import cpu_count
 
 PROJECT_INFO_FILENAME = 'app.json'
 MODULE_INFO_FILENAME = 'module.json'
@@ -127,6 +128,13 @@ def get_system_generator():
 
     raise Exception("Unable to determine default generator for platform: {}".
         format(platform))
+
+def max_build_parallelization(build_args):
+    """Add compiler specifici arguments to common cmake build arguments to max cpu core count"""
+    build_args.extend(['--parallel', str(cpu_count())])
+    if str(get_system_generator()).startswith("Visual Studio"):
+        build_args.extend(['--', '/p:CL_MPcount={}'.format(str(cpu_count()))])
+    return build_args
 
 def find_user_module(module_name):
     """Locate module specified by name"""
