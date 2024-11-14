@@ -79,12 +79,6 @@ def call_except_on_failure(cwd, cmd):
         raise Exception(proc.returncode)
     return out
 
-def call(cwd, cmd):
-    """Execute command and return stdout and returncode"""
-    proc = Popen(cmd, stdout=PIPE, stderr=PIPE, shell=True, cwd=cwd)
-    (out, _) = proc.communicate()
-    return (out.strip().decode('utf-8'), proc.returncode)
-
 def get_default_build_dir_name():
     """Return platform specific build directory name"""
     if Platform.get() == Platform.Linux:
