@@ -100,7 +100,7 @@ class SingleAppBuilder:
         # Build solution
         build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '-j', str(cpu_count())]
         if not get_system_generator().is_single():
-            build_cmd.extend(['--config', 'build_type'])
+            build_cmd.extend(['--config', build_type])
         self.call(self.__nap_root, build_cmd)
 
 if __name__ == '__main__':
