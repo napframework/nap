@@ -11,7 +11,6 @@ function(target_link_import_library target library)
         set(library_path ${library_path_debug})
     endif()
     get_filename_component(library_file_name ${library_path} NAME)
-    message(STATUS ${library_file_name})
 
     get_target_property(include_dir ${library} INCLUDE_DIRECTORIES)
     get_target_property(library_type ${library} TYPE)
