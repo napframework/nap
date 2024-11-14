@@ -15,13 +15,9 @@ def regenerate_app_by_dir(app_path, suppress_showing_solution, build_type, pause
     # Determine our Python interpreter location
     python = get_python_path()
 
-    cmd = [python, script_path, app_name]
+    # Create cmd to call
+    cmd = [python, script_path, app_name, '-t', build_type]
 
-    # Add our build type for Linux
-    if build_type != None:
-        cmd.append('-t')
-        cmd.append(build_type)
-    
     # If we don't want to show the solution and we weren't not on Linux specify that
     if suppress_showing_solution:
         cmd.append('--no-show')
@@ -30,8 +26,6 @@ def regenerate_app_by_dir(app_path, suppress_showing_solution, build_type, pause
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
     if exit_code != 0 and pause_on_failure:
         print("Press key to close...")
-
-        # Read a char from console
         read_console_char()
 
     return exit_code
@@ -42,7 +36,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=None,
+        default=BuildType.get_default(),
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
@@ -54,13 +48,8 @@ if __name__ == '__main__':
         help="Don't pause afterwards on failed generation")
     args = parser.parse_args()
 
-    # Get build type for Linux
-    build_type = args.build_type
-    if Platform.get() == Platform.Linux and build_type is None:
-        build_type = BuildType.get_default()
-
     # Regenerate app
-    exit_code = regenerate_app_by_dir(args.APP_PATH, args.no_show, build_type, not args.no_pause)
+    exit_code = regenerate_app_by_dir(args.APP_PATH, args.no_show, args.build_type, not args.no_pause)
 
     # Expose exit code
     sys.exit(exit_code)

@@ -23,7 +23,7 @@ def cmake_reconfigure_app_framework_release(search_app_name, build_type, show_so
     cmd = [cmake, '-H.', '-B%s' % build_dir, '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
-    if build_type:
+    if get_system_generator().is_single():
         cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Create dir if it doesn't exist (Windows only)
@@ -57,7 +57,7 @@ def cmake_reconfigure_app_source(build_type):
 
     # Build our command
     cmd = [python, script_path]
-    if build_type and get_system_generator().is_single():
+    if get_system_generator().is_single():
         cmd.extend(['-t', build_type])
     return call(cmd)
 
@@ -66,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument("APP_NAME", type=str, help="The app to regenerate")    
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=None,
+        default=BuildType.get_default(),
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
@@ -79,11 +79,7 @@ if __name__ == '__main__':
 
     # Force build type selection when generator is single solution
     build_type = args.build_type
-    if not build_type and get_system_generator().is_single():
-        build_type = BuildType.get_default()
-
-    build_ctx = get_build_context()
-    if build_ctx == 'framework_release':
+    if get_build_context() == 'framework_release':
         exit_code = cmake_reconfigure_app_framework_release(args.APP_NAME, build_type, not args.no_show)
     else:
         exit_code = cmake_reconfigure_app_source(build_type)

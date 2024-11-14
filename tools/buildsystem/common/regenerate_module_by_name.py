@@ -30,7 +30,7 @@ def update_module_framework_release(module_name, build_type):
                 '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
-    if build_type and get_system_generator().is_single():
+    if get_system_generator().is_single():
         cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Generate solution for individual platforms
@@ -63,7 +63,7 @@ if __name__ == '__main__':
     parser.add_argument("MODULE_NAME", type=str, help="The module to regenerate")
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=None,
+        default=BuildType.get_default(),
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
@@ -72,10 +72,6 @@ if __name__ == '__main__':
     # On linux the default is make -> single generator, on windows it's visual studio -> multi-generator
     args = parser.parse_args()
     build_type = args.build_type
-
-    # Force build type selection when generator is single
-    if not build_type and get_system_generator().is_single():
-        build_type = BuildType.get_default()
 
     if get_build_context() == 'framework_release':
         exit_code = update_module_framework_release(args.MODULE_NAME, build_type)

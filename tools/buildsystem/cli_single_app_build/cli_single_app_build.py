@@ -6,7 +6,7 @@ from multiprocessing import cpu_count
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType, get_system_generator
+from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType, get_system_generator, find_app
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -58,7 +58,6 @@ class SingleAppBuilder:
     def build_source_context_app(self, app_name, build_type):
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
-        from nap_shared import find_app
         (app_path, app_name) = find_app(app_name, False, True)
         if app_path is None:
             print("Error: Can't find app %s" % app_name)
@@ -67,10 +66,7 @@ class SingleAppBuilder:
         # Create solution generation cmd
         build_dir = os.path.join(self.__nap_root, get_default_build_dir_name())
         gen_cmd = ['./generate_solution.%s' % ('bat' if Platform.get() == Platform.Windows else 'sh'), '--build-path=%s' % build_dir]
-
-        # Add build type if generator is single
-        if get_system_generator().is_single():
-            gen_cmd.extend(['-t', build_type])
+        gen_cmd.extend(['-t', build_type])
 
         # Generate solution
         if self.call(self.__nap_root, gen_cmd) != 0:
@@ -78,7 +74,7 @@ class SingleAppBuilder:
             sys.exit(ERROR_CONFIGURE)
 
         # Build solution
-        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '--config', build_type, '-j', str(cpu_count())]
+        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '-j', str(cpu_count())]
         if not get_system_generator().is_single():
             build_cmd.extend(['--config', 'build_type'])
         self.call(self.__nap_root, build_cmd)
@@ -86,7 +82,6 @@ class SingleAppBuilder:
     def build_packaged_framework_app(self, app_name, build_type):
         # Late import to handle different operating contexts
         sys.path.append(os.path.join(self.__nap_root, 'tools', 'buildsystem', 'common'))
-        from nap_shared import find_app
         (app_path, app_name) = find_app(app_name, False, True)
         if app_path is None:
             print("Error: Can't find app %s" % app_name)
@@ -96,11 +91,8 @@ class SingleAppBuilder:
         # been specified. Provides quicker CLI build times if regeneration not required while
         # ensuring that the right build type will be generated for Napkin on Linux.
         build_dir = os.path.join(app_path, get_default_build_dir_name())
-        generate_solution = build_type != None or not os.path.exists(build_dir)
-
-        if generate_solution:
-            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py',
-                    app_name, '-t', build_type, '--no-show']
+        if not os.path.exists(build_dir):
+            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name, '-t', build_type, '--no-show']
             if self.call(self.__nap_root, cmd) != 0:
                 print("Error: Solution generation failed")
                 sys.exit(ERROR_CONFIGURE)

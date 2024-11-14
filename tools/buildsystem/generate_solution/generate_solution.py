@@ -32,7 +32,7 @@ def generate(forced_path, enable_python, additional_dirs, build_type, clean):
                 '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
-    if build_type and get_system_generator().is_single():
+    if get_system_generator().is_single():
         cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Add NAP specific options
@@ -56,7 +56,7 @@ if __name__ == '__main__':
 
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=None,
+        default=BuildType.get_default(),
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
@@ -77,10 +77,5 @@ if __name__ == '__main__':
     # Convert additional sub directories to CMake list type
     additional_dirs = ';'.join(args.additional_dirs)
 
-    # Force build type selection when generator is single
-    build_type = args.build_type
-    if not build_type and get_system_generator().is_single():
-        build_type = BuildType.get_default()
-
     # Generate solution
-    generate(args.build_path, int(args.enable_python), additional_dirs, build_type, args.clean)
+    generate(args.build_path, int(args.enable_python), additional_dirs, args.build_type, args.clean)

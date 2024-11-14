@@ -16,9 +16,7 @@ def regenerate_module_by_dir(module_path, build_type):
     python = get_python_path()
 
     # Create command
-    cmd = [python, script_path, module_name] 
-    if build_type:
-        cmd.append(build_type)
+    cmd = [python, script_path, module_name, '-t', build_type]
     exit_code = call(cmd)
 
     # Pause to display output in case we're running from Windows Explorer / macOS Finder
@@ -33,17 +31,12 @@ if __name__ == '__main__':
     parser.add_argument("MODULE_PATH", type=str, help=argparse.SUPPRESS)
     parser.add_argument('-t', '--build-type',
         type=str,
-        default=None,
+        default=BuildType.get_default(),
         action='store', nargs='?',
         choices=BuildType.to_list(),
         help="Build type for single solution generators such as Makefile, default: {0}".format(BuildType.get_default()))
-    
+
+    # Parse and generate
     args = parser.parse_args()
-
-    # Force build type selection when generator is single
-    build_type = args.build_type
-    if not build_type and get_system_generator().is_single():
-        build_type = BuildType.get_default()
-
-    exit_code = regenerate_module_by_dir(args.MODULE_PATH, build_type)
+    exit_code = regenerate_module_by_dir(args.MODULE_PATH, args.build_type)
     sys.exit(exit_code)
