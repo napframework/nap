@@ -49,10 +49,7 @@ def update_module_source(build_type):
     python = get_python_path()
 
     # Build our command
-    cmd = [python, script_path]
-    if build_type:
-        cmd.append('-t')
-        cmd.append(build_type)
+    cmd = [python, script_path, '-t', build_type]
 
     # Call solution generation
     return call(cmd)
