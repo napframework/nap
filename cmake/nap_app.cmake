@@ -121,7 +121,11 @@ string(JSON data_file_path GET ${app_json} Data)
 set(absolute_data_file_path ${CMAKE_CURRENT_SOURCE_DIR}/${data_file_path})
 string(JSON build_app_json SET ${app_json} "Data" \"${absolute_data_file_path}\")
 string(JSON build_app_json SET ${build_app_json} "PathMapping" \"app_install_data/${PROJECT_NAME}/${path_mapping_filename}\")
-string(JSON build_app_json SET ${build_app_json} "ServiceConfig" \"app_install_data/${PROJECT_NAME}/${config_filename}\")
+if (NOT "${config_path}" STREQUAL "")
+    string(JSON build_app_json SET ${build_app_json} "ServiceConfig" \"app_install_data/${PROJECT_NAME}/${config_filename}\")
+else()
+    string(JSON build_app_json SET ${build_app_json} "ServiceConfig" \"\")
+endif()
 file(WRITE ${cache_dir}/build_app.json ${build_app_json})
 
 # Copy the patched App.json from cache to bin for running apps from source
