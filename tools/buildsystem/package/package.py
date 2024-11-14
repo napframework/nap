@@ -95,8 +95,6 @@ def package(zip_release,
             check_existing_source_archive(source_archive_basename, archive_source_zipped)
 
     if not archive_source_only:
-        print("Packaging...")
-
         # Remove old packaging path if it exists
         if os.path.exists(PACKAGING_DIR):
             remove_directory_exit_on_failure(PACKAGING_DIR, 'old packaging staging area')
@@ -109,57 +107,56 @@ def package(zip_release,
         # Convert additional sub directories to CMake list type
         sub_dirs = ';'.join(additional_dirs)
 
-        # Do the packaging
-        if Platform.get() == Platform.Linux:
-            package_path = package_for_linux(package_basename,
-                                             timestamp,
-                                             git_revision,
-                                             build_label_out,
-                                             overwrite,
-                                             single_app_to_include,
-                                             include_docs,
-                                             zip_release,
-                                             include_debug_symbols,
-                                             sub_dirs,
-                                             enable_python
-                                             )
-        elif Platform.get() == Platform.macOS:
-            package_path = package_for_macos(package_basename,
-                                             timestamp,
-                                             git_revision,
-                                             build_label_out,
-                                             overwrite,
-                                             single_app_to_include,
-                                             include_docs,
-                                             zip_release,
-                                             include_debug_symbols,
-                                             sub_dirs,
-                                             enable_python
-                                             )
-        elif Platform.get() == Platform.Windows:
-            package_path = package_for_win64(package_basename,
-                                             timestamp,
-                                             git_revision,
-                                             build_label_out,
-                                             overwrite,
-                                             single_app_to_include,
-                                             include_docs,
-                                             zip_release,
-                                             include_debug_symbols,
-                                             sub_dirs,
-                                             enable_python
-                                             )
+        # Generate and package
+        print("Packaging...")
+        if get_system_generator().is_single():
+            package_single_stage(package_basename,
+                timestamp,
+                git_revision,
+                build_label_out,
+                include_docs,
+                include_debug_symbols,
+                sub_dirs,
+                enable_python
+            )
         else:
-            print("Error: Unsupported platform")
-            sys.exit(ERROR_BAD_INPUT)
+            package_multi_stage(package_basename,
+                timestamp,
+                git_revision,
+                build_label,
+                include_docs,
+                include_debug_symbols,
+                additional_dirs,
+                enable_python
+            )
+
+        if Platform.get() == Platform.macOS:
+            # Remove unwanted files (eg. .DS_Store)
+            call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
+
+        # Remove all Naivi apps but the requested one
+        if single_app_to_include is not None:
+            remove_all_apps_but_specified(single_app_to_include)
+
+        # If requested, overwrite any existing package
+        if overwrite:
+            check_for_existing_package(package_basename, zip_release, True)
+
+        # Create archive
+        if zip_release:
+            if Platform.get() == Platform.Linux:
+                archive_framework_to_linux_tar_bz2(package_basename)
+            if Platform.get() == Platform.macOS:
+                archive_framework_to_macos_zip(package_basename)
+            if Platform.get() == Platform.Windows:
+                archive_framework_to_win64_zip(package_basename)
+            raise Exception("Unsupported platform")
+        else:
+            archive_to_timestamped_dir(package_basename)
 
     # Archive source
     if archive_source:
         create_source_archive(source_archive_basename, archive_source_zipped, build_label_out, timestamp, git_revision, overwrite)
-
-        # Make main package path visible
-        if not archive_source_only:
-            print("Release packaged to %s" % package_path)
 
 def remove_directory_exit_on_failure(path, use):
     try:
@@ -212,13 +209,18 @@ def check_for_existing_package(package_path, zip_release, remove=False):
             print("Error: Existing package found: %s" % os.path.abspath(package_path))
             sys.exit(ERROR_PACKAGE_EXISTS)
 
-
-def package_for_linux(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
+def package_single_stage(package_basename, timestamp, git_revision, build_label, include_docs, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for Linux"""
 
     for build_type in BuildType.to_list():
         print("\nCurrent packaging config: {0}".format(build_type))
         build_dir_for_type = "%s_%s" % (BUILD_DIR, build_type.lower())
+
+        # Create build dir if it doesn't exist
+        if Platform.get() == Platform.Windows and not os.path.exists(build_dir_for_type):
+            os.makedirs(build_dir_for_type)
+
+        # Generate solution
         call(WORKING_DIR, [get_cmake_path(),
                            '-H.',
                            '-B%s' % build_dir_for_type,
@@ -233,26 +235,15 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
                            '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
                            '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
                            ])
+        # Build
+        call(WORKING_DIR, [get_cmake_path(), '--build', build_dir_for_type, '--target', 'install', '-j', str(cpu_count())])
 
-        d = '%s/%s' % (WORKING_DIR, build_dir_for_type)
-        call(d, ['make', 'all', 'install', '-j%s' % cpu_count()])
+def package_multi_stage(package_basename, timestamp, git_revision, build_label, include_docs, include_debug_symbols, additional_dirs, enable_python):
+    """Package NAP platform release for Windows"""
 
-    # Remove all Naivi apps but the requested one
-    if single_app_to_include is not None:
-        remove_all_apps_but_specified(single_app_to_include)
-
-    # If requested, overwrite any existing package
-    if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)
-
-    # Create archive
-    if zip_release:
-        return archive_framework_to_linux_tar_bz2(package_basename)
-    else:
-        return archive_to_timestamped_dir(package_basename)
-
-def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
-    """Package NAP platform release for macOS"""
+    # Create build dir if it doesn't exist
+    if Platform.get() == Platform.Windows and not os.path.exists(BUILD_DIR):
+        os.makedirs(BUILD_DIR)
 
     # Generate solution
     call(WORKING_DIR, [get_cmake_path(),
@@ -270,68 +261,9 @@ def package_for_macos(package_basename, timestamp, git_revision, build_label, ov
                        ])
 
     # Build & install to packaging dir
-    d = '%s/%s' % (WORKING_DIR, BUILD_DIR)
     for build_type in BuildType.to_list():
         print("\nCurrent packaging config: {0}".format(build_type))
-        call(d, ['xcodebuild', '-configuration', build_type, '-target', 'install', '-jobs', str(cpu_count())])
-
-    # Remove unwanted files (eg. .DS_Store)
-    call(PACKAGING_DIR, ['find', '.', '-name', '.DS_Store', '-type', 'f', '-delete'])
-
-    # Remove all Naivi apps but the requested one
-    if single_app_to_include is not None:
-        remove_all_apps_but_specified(single_app_to_include)
-
-    # If requested, overwrite any existing package
-    if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)
-
-    # Create archive
-    if zip_release:
-        return archive_framework_to_macos_zip(package_basename)
-    else:
-        return archive_to_timestamped_dir(package_basename)
-
-def package_for_win64(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
-    """Package NAP platform release for Windows"""
-
-    # Create build dir if it doesn't exist
-    if not os.path.exists(BUILD_DIR):
-        os.makedirs(BUILD_DIR)
-
-    # Generate app
-    call(WORKING_DIR, [get_cmake_path(),
-                       '-H.',
-                       '-B%s' % BUILD_DIR,
-                       '-G%s' % str(get_system_generator()),
-                       '-DNAP_PACKAGED_BUILD=1',
-                       '-DINCLUDE_DOCS=%s' % int(include_docs),
-                       '-DBUILD_TIMESTAMP=%s' % timestamp,
-                       '-DBUILD_GIT_REVISION=%s' % git_revision,
-                       '-DBUILD_LABEL=%s' % build_label,
-                       '-DINCLUDE_DEBUG_SYMBOLS=%s' % int(include_debug_symbols),
-                       '-DADDITIONAL_SUB_DIRECTORIES=%s' % additional_dirs,
-                       '-DNAP_ENABLE_PYTHON=%s' % int(enable_python)
-                       ])
-
-    # Build & install to packaging dir
-    for build_type in BuildType.to_list():
-        print("\nCurrent packaging config: {0}".format(build_type))
-        call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type])
-
-    # Remove all Naivi apps but the requested one
-    if single_app_to_include is not None:
-        remove_all_apps_but_specified(single_app_to_include)
-
-    # If requested, overwrite any existing package
-    if overwrite:
-        check_for_existing_package(package_basename, zip_release, True)
-
-    # Create archive
-    if zip_release:
-        return archive_framework_to_win64_zip(package_basename)
-    else:
-        return archive_to_timestamped_dir(package_basename)
+        call(WORKING_DIR, [get_cmake_path(), '--build', BUILD_DIR, '--target', 'install', '--config', build_type, '-j', str(cpu_count())])
 
 def archive_framework_to_linux_tar_bz2(package_basename):
     """Create build archive to bzipped tarball on Linux"""
