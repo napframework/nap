@@ -15,11 +15,6 @@ def get_build_directory(forced_path, clean):
         shutil.rmtree(build_dir)
     return build_dir
 
-def list_generators():
-    cmake = get_cmake_path()
-    cmd = '%s --help' % cmake
-    call(cmd, shell=True)
-
 def generate(forced_path, enable_python, additional_dirs, build_type, clean):
     cmake = get_cmake_path()
     nap_root = get_nap_root()
