@@ -6,7 +6,7 @@ from multiprocessing import cpu_count
 import sys
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, get_default_build_dir, Platform, BuildType, get_system_generator, find_app, max_build_parallelization
+from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType, get_system_generator, find_app, max_build_parallelization
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -64,7 +64,7 @@ class SingleAppBuilder:
             sys.exit(ERROR_CANT_LOCATE_APP)
 
         # Create solution generation cmd
-        build_dir = get_default_build_dir()
+        build_dir = os.path.join(self.__nap_root, get_default_build_dir_name())
         if Platform.get() == Platform.Windows:
             gen_cmd = ['{0}\\generate_solution.bat'.format(self.__nap_root)]
         else:
