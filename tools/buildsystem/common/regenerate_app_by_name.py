@@ -3,8 +3,7 @@
 import argparse
 import sys
 import os
-from subprocess import Popen, call
-
+from subprocess import call
 from nap_shared import find_app, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_system_generator
 
 # Exit codes
@@ -58,9 +57,8 @@ def cmake_reconfigure_app_source(build_type):
 
     # Build our command
     cmd = [python, script_path]
-    if build_type:
-        cmd.append('-t')
-        cmd.append(build_type)
+    if build_type and get_system_generator().is_single():
+        cmd.extend(['-t', build_type])
     return call(cmd)
 
 if __name__ == '__main__':

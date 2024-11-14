@@ -32,7 +32,7 @@ def generate(forced_path, enable_python, additional_dirs, build_type, clean):
                 '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
-    if build_type:
+    if build_type and get_system_generator().is_single():
         cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Add NAP specific options

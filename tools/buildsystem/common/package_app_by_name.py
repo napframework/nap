@@ -63,8 +63,8 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
                 '-DPACKAGE_NAPKIN=%s' % int(include_napkin),
                 '-DNAP_PACKAGED_APP_BUILD=1']
 
-    # Ensure we build a release build on Linux
-    if Platform.get() == Platform.Linux:
+    # Ensure we build release when using a single solution generator
+    if get_system_generator().is_single():
         gen_cmd.append('-DCMAKE_BUILD_TYPE=%s' % BuildType.Release.name)
 
     # Select binary package directory on Windows
@@ -74,10 +74,13 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
     # Generate solution
     call_except_on_failure(WORKING_DIR, gen_cmd)
 
-    if Platform.get() == Platform.Linux:
-        # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
+    # Build Solution
+    build_cmd = [cmake, '--build', '.', '--target', 'install', '-j', str(cpu_count())]
+    if not get_system_generator().is_single():
+        build_cmd.extend(['--config', BuildType.Release.name])
+    call_except_on_failure(build_dir_name, build_cmd)
 
+    if Platform.get() == Platform.Linux:
         # Create archive
         if zip_package:
             packaged_to = archive_to_linux_tar_bz2(timestamp, bin_dir, app_full_name, app_version)
@@ -97,9 +100,6 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
             # call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
 
     elif Platform.get() == Platform.macOS:
-        # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, ['xcodebuild', '-configuration', BuildType.Release.name, '-target', 'install'])
-
         # Create archive
         if zip_package:
             packaged_to = archive_to_macos_zip(timestamp, bin_dir, app_full_name, app_version)
@@ -111,9 +111,6 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
             call(["open", "-R", packaged_to])
 
     elif Platform.get() == Platform.Windows:
-        # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, [cmake, '--build', '.', '--target', 'install', '--config', BuildType.Release.name])
-
         # Remove pdbs for distribution
         for root, dirs, files in os.walk(local_bin_dir_name):
             for file in files:

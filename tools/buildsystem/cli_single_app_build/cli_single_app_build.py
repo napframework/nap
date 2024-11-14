@@ -4,10 +4,9 @@ import os
 import subprocess
 from multiprocessing import cpu_count
 import sys
-import shutil
 
 sys.path.append(os.path.join(os.path.dirname(__file__), os.pardir, 'common'))
-from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType
+from nap_shared import get_cmake_path, get_python_path, get_default_build_dir_name, Platform, BuildType, get_system_generator
 
 ERROR_CANT_LOCATE_NAP = 1
 ERROR_CONFIGURE = 2
@@ -65,26 +64,24 @@ class SingleAppBuilder:
             print("Error: Can't find app %s" % app_name)
             sys.exit(ERROR_CANT_LOCATE_APP)
 
-        # Generate solution
-        rc = 1
+        # Create solution generation cmd
         build_dir = os.path.join(self.__nap_root, get_default_build_dir_name())
-        if Platform.get() == Platform.Linux:
-            rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir, '-t', build_type])
-        elif Platform.get() == Platform.macOS:
-            rc = self.call(self.__nap_root, ['./generate_solution.sh', '--build-path=%s' % build_dir])
-        elif Platform.get() == Platform.Windows:
-            rc = self.call(self.__nap_root, ['generate_solution.bat', '--build-path=%s' % build_dir], True)
+        gen_cmd = ['./generate_solution.%s' % ('bat' if Platform.get() == Platform.Windows else 'sh'), '--build-path=%s' % build_dir]
 
-        if rc != 0:
+        # Add build type if generator is single
+        if get_system_generator().is_single():
+            gen_cmd.extend(['-t', build_type])
+
+        # Generate solution
+        if self.call(self.__nap_root, gen_cmd) != 0:
             print("Error: Failed to configure app")
             sys.exit(ERROR_CONFIGURE)
 
-        if Platform.get() == Platform.Linux:
-            self.call(build_dir, ['make', app_name, '-j%s' % cpu_count()])
-        elif Platform.get() == Platform.macOS:
-            self.call(build_dir, ['xcodebuild', '-project', 'NAP.xcodeproj', '-target', app_name, '-configuration', build_type])
-        elif Platform.get() == Platform.Windows:
-            self.call(self.__nap_root, [get_cmake_path(), '--build', build_dir, '--target', app_name, '--config', build_type])
+        # Build solution
+        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '--config', build_type, '-j', str(cpu_count())]
+        if not get_system_generator().is_single():
+            build_cmd.extend(['--config', 'build_type'])
+        self.call(self.__nap_root, build_cmd)
 
     def build_packaged_framework_app(self, app_name, build_type):
         # Late import to handle different operating contexts
@@ -102,20 +99,17 @@ class SingleAppBuilder:
         generate_solution = build_type != None or not os.path.exists(build_dir)
 
         if generate_solution:
-            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
-            cmd.append('-t')
-            cmd.append(build_type)
-            cmd.append('--no-show')
+            cmd = [self.__python, './tools/buildsystem/common/regenerate_app_by_name.py',
+                    app_name, '-t', build_type, '--no-show']
             if self.call(self.__nap_root, cmd) != 0:
                 print("Error: Solution generation failed")
                 sys.exit(ERROR_CONFIGURE)
 
-        if Platform.get() == Platform.Linux:
-            self.call(build_dir, ['make', app_name, '-j%s' % cpu_count()])
-        elif Platform.get() == Platform.macOS:
-            self.call(build_dir, ['xcodebuild', '-project', '%s.xcodeproj' % app_name, '-configuration', build_type])
-        elif Platform.get() == Platform.Windows:
-            self.call(self.__nap_root, [get_cmake_path(), '--build', build_dir, '--target', app_name, '--config', build_type], True)
+        # Build solution
+        build_cmd = [get_cmake_path(), '--build', build_dir, '--target', app_name, '-j', str(cpu_count())]
+        if not get_system_generator().is_single():
+            build_cmd.extend(['--config', 'build_type'])
+        self.call(self.__nap_root, build_cmd)
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()

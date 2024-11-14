@@ -254,7 +254,7 @@ def package_for_linux(package_basename, timestamp, git_revision, build_label, ov
 def package_for_macos(package_basename, timestamp, git_revision, build_label, overwrite, single_app_to_include, include_docs, zip_release, include_debug_symbols, additional_dirs, enable_python):
     """Package NAP platform release for macOS"""
 
-    # Generate app
+    # Generate solution
     call(WORKING_DIR, [get_cmake_path(),
                        '-H.',
                        '-B%s' % BUILD_DIR,

@@ -4,7 +4,7 @@ import sys
 import os
 from subprocess import Popen, call
 
-from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, Platform, get_default_build_dir_name, get_system_generator
+from nap_shared import find_user_module, get_cmake_path, get_build_context, get_nap_root, get_python_path, BuildType, get_default_build_dir_name, get_system_generator
 
 # Exit codes
 ERROR_MISSING_APP = 1
@@ -30,7 +30,7 @@ def update_module_framework_release(module_name, build_type):
                 '-G%s' % str(get_system_generator())]
 
     # Add build config if selected or default
-    if build_type:
+    if build_type and get_system_generator().is_single():
         cmd.append('-DCMAKE_BUILD_TYPE=%s' % build_type)
 
     # Generate solution for individual platforms
