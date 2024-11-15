@@ -19,6 +19,7 @@ RTTI_BEGIN_CLASS(nap::PathMapping)
 	RTTI_PROPERTY("NapkinExeToRoot",		&nap::PathMapping::mNapkinExeToRoot,		nap::rtti::EPropertyMetaData::Default)
 	RTTI_PROPERTY("ModulePaths",			&nap::PathMapping::mModulePaths,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("BuildPath",              &nap::PathMapping::mBuildPath,              nap::rtti::EPropertyMetaData::Required)
+    RTTI_PROPERTY("DataPath",               &nap::PathMapping::mDataPath,              nap::rtti::EPropertyMetaData::Default)
 RTTI_END_CLASS
 
 RTTI_BEGIN_CLASS(nap::ProjectInfo)
@@ -96,17 +97,29 @@ namespace nap
 	std::string ProjectInfo::getDataFile() const
 	{
 		if (mDefaultData.empty()) return {};
-		return utility::joinPath({getProjectDir(), mDefaultData});
+
+        if (utility::fileExists(mDefaultData))
+            return utility::getAbsolutePath(mDefaultData);
+
+        auto dataPathNextToProject = utility::joinPath({getProjectDir(), mDefaultData});
+        if (utility::fileExists(dataPathNextToProject))
+            return dataPathNextToProject;
+
+        if (!mPathMapping->mDataPath.empty())
+        {
+            auto mappedDataPath = utility::joinPath({mPathMapping->mDataPath, mDefaultData});
+            if (utility::fileExists(mappedDataPath))
+                return mappedDataPath;
+        }
+
+        return "";
 	}
 
 
 	std::string ProjectInfo::getDataDirectory() const
 	{
-		return utility::joinPath(
-			{
-				getProjectDir(),
-				getDataFile().empty() ? projectinfo::dataDir : utility::getFileDir(mDefaultData)
-			});
+        const auto& dataFile = getDataFile();
+		return dataFile.empty() ? projectinfo::dataDir : utility::getFileDir(dataFile);
 	}
 
 
@@ -206,6 +219,9 @@ namespace nap
 
 		// Resolve build output
 		patchPath(mPathMapping->mBuildPath);
+
+        // Resolve data path
+        patchPath(mPathMapping->mDataPath);
 
 		// Resolve service config
 		patchPath(mServiceConfigFilename);

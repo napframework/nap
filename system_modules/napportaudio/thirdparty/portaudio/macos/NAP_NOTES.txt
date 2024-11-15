@@ -5,4 +5,4 @@ make install
 
 Post build:
 
-install_name_tool -id @rpath/libportaudio.2.dylib osx/lib/libportaudio.2.dylib
+install_name_tool -id @rpath/libportaudio.19.8.dylib osx/lib/libportaudio.19.8.dylib

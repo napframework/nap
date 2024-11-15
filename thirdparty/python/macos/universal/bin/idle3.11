@@ -1,0 +1,5 @@
+#!/Users/stijn/Downloads/Python-3.11.8/osx-instal/bin/python3.11
+
+from idlelib.pyshell import main
+if __name__ == '__main__':
+    main()

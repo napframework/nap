@@ -22,7 +22,7 @@ if(WIN32)
 elseif(APPLE)
     find_path(SPIRVCROSS_DIR
           NAMES include/spirv_cross/spirv.h
-          HINTS ${spirv_search_dir}/macos/x86_64
+          HINTS ${spirv_search_dir}/macos/${ARCH}
           )
 
     # Release core lib

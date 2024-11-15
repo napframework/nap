@@ -4,7 +4,6 @@
     "RequiredModules": [
         "naprender",
         "napaudio",
-        "napvideo",
         "napscene",
         "napcameracontrol",
         "napparameter"
