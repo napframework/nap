@@ -10,7 +10,4 @@ if(WIN32)
     target_compile_definitions(${PROJECT_NAME} PUBLIC WIN32_LEAN_AND_MEAN _WIN32_WINNT=0x0A00)
 endif()
 
-# Package asio into platform release
-set(dest_dir system_modules/${PROJECT_NAME}/thirdparty/asio)
-install(FILES ${ASIO_LICENSE_FILES} DESTINATION ${dest_dir})
-install(DIRECTORY ${ASIO_INCLUDE_DIR} DESTINATION ${dest_dir})
+add_license(asio ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/asio/LICENSE_1_1.txt)
