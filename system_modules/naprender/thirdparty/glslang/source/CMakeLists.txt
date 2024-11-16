@@ -34,6 +34,8 @@
 # increase to 3.1 once all major distributions
 # include a version of CMake >= 3.1
 cmake_minimum_required(VERSION 2.8.12)
+set(CMAKE_OSX_DEPLOYMENT_TARGET 10.15)
+
 if (POLICY CMP0048)
   cmake_policy(SET CMP0048 NEW)
 endif()

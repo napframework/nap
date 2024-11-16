@@ -372,10 +372,13 @@ namespace nap
 	{
 #ifdef _WIN32
 		const std::string platformPrefix = "msvc";
+        const std::string version = "3.6";
 #elif defined(__APPLE__)
 		const std::string platformPrefix = "macos";
+        const std::string version = "3.11";
 #else // __unix__
 		const std::string platformPrefix = "linux";
+        const std::string version = "3.6";
 #endif
 
 #ifdef NAP_PACKAGED_BUILD
@@ -400,16 +403,42 @@ namespace nap
 			_putenv_s("PYTHONPATH", pythonHome.c_str());
 		}
 #else
-        // Check for packaged app modules dir
-        const std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python3.6"});
-        if (utility::dirExists(packagedAppPythonPath)) {
-            setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
-        }
-        else {
-            // set PYTHONHOME for thirdparty location within NAP source
-            const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", platformPrefix, sBuildArch});
-            setenv("PYTHONHOME", pythonHome.c_str(), 1);
-        }
+		if (packagedBuild)
+		{
+			// Check for packaged app modules dir
+			std::string packagedAppPythonPath = utility::joinPath({mProjectInfo->getProjectDir(), "lib", "python" + version});
+			if (utility::dirExists(packagedAppPythonPath)) {
+				setenv("PYTHONHOME", mProjectInfo->getProjectDir().c_str(), 1);
+			}
+			else {
+#ifdef __APPLE__
+                // Check for app bundle directory structure
+			    std::string appBundleResourcesPath = utility::joinPath({mProjectInfo->getProjectDir(), "..", "Resources"});
+                packagedAppPythonPath = utility::joinPath({appBundleResourcesPath, "lib", "python" + version});
+			    if (utility::dirExists(packagedAppPythonPath))
+			    {
+                    Logger::info("Python home: %s", appBundleResourcesPath.c_str());
+                    setenv("PYTHONHOME", appBundleResourcesPath.c_str(), 1);
+                }
+			    else {
+                    // Set PYTHONHOME to thirdparty location within packaged NAP release
+                    const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", platformPrefix, sBuildArch});
+                    Logger::info("Python home: %s", pythonHome.c_str());
+                    setenv("PYTHONHOME", pythonHome.c_str(), 1);
+                }
+#else
+                // Set PYTHONHOME to thirdparty location within packaged NAP release
+                const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python"});
+                Logger::info("Python home: %s", pythonHome.c_str());
+                setenv("PYTHONHOME", pythonHome.c_str(), 1);
+#endif
+			}
+		}
+		else {
+			// set PYTHONHOME for thirdparty location inside NAP source
+			const std::string pythonHome = utility::joinPath({mProjectInfo->getNAPRootDir(), "thirdparty", "python", platformPrefix, sBuildArch});
+			setenv("PYTHONHOME", pythonHome.c_str(), 1);
+		}
 #endif
 	}
 
@@ -438,7 +467,7 @@ namespace nap
 			getResourceManager()->getFactory(),
 			err);
 
-		if (!err.check(mProjectInfo != nullptr, 
+		if (!err.check(mProjectInfo != nullptr,
 			"Failed to load project from file: %s", projectFilename.c_str()))
 			return false;
 
@@ -450,7 +479,7 @@ namespace nap
 		}
 
 		// Notify project info is loaded
-		nap::Logger::info("Loading project '%s' ver. %s (%s)", 
+		nap::Logger::info("Loading project '%s' ver. %s (%s)",
 						  mProjectInfo->mTitle.c_str(),
 						  mProjectInfo->mVersion.c_str(), mProjectInfo->getProjectDir().c_str());
 		return true;
@@ -500,9 +529,9 @@ namespace nap
 
     bool Core::writeConfigFile(const std::string& path, utility::ErrorState& errorState, bool linkToProjectInfo)
     {
-		// Services and project not available when engine not initialized
-		if(!errorState.check(isInitialized(), "NAP not initialized"))
-			return false;
+        // Services and project not available when engine not initialized
+        if(!errorState.check(isInitialized(), "NAP not initialized"))
+            return false;
 
         // Write all available service configurations to a vector
         std::vector<rtti::Object*> objects;
@@ -519,20 +548,20 @@ namespace nap
         }
 
         // Serialize the configurations to json
-		rtti::JSONWriter writer;
+        rtti::JSONWriter writer;
         if (!serializeObjects(objects, writer, errorState))
-			return false;
+            return false;
 
-		std::string json = writer.GetJSON();
+        std::string json = writer.GetJSON();
         auto absolutePath = utility::joinPath({ getProjectInfo()->getProjectDir(), path });
         utility::writeStringToFile(absolutePath, json);
         nap::Logger::info("Wrote configuration to: %s", path.c_str());
 
-		// Link the config file to the project info
+        // Link the config file to the project info
         if (linkToProjectInfo)
         {
             // Serialize the project info to the project.json file.
-			mProjectInfo->mServiceConfigFilename = path;
+            mProjectInfo->mServiceConfigFilename = path;
             std::string projectInfoFilePath;
             if (!findProjectInfoFile(projectInfoFilePath))
             {
@@ -544,7 +573,7 @@ namespace nap
             if (!serializeObject(*mProjectInfo, writer, errorState))
                 return false;
 
-			std::string json = writer.GetJSON();
+            std::string json = writer.GetJSON();
             utility::writeStringToFile(projectInfoFilePath, json);
             nap::Logger::info("Wrote project info to: %s", projectInfoFilePath.c_str());
         }

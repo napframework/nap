@@ -18,12 +18,9 @@ namespace nap
     {
         // Build Vulkan ICD path environment variable. We're currently blatting this blindly, which
         // won't do any harm, even if the project isn't using graphics.
-        std::vector<std::string> paths({
-            nap::utility::stringFormat("{ROOT}/system_modules/naprender/thirdparty/vulkansdk/macos/x86_64/share/vulkan/icd.d/%s", moltenvk_icd),
-            nap::utility::stringFormat("{ROOT}/lib/%s", moltenvk_icd)
-        });
-        
-        // Path the paths
+        std::vector<std::string> paths;
+        for (auto& modulePath : mProjectInfo->mPathMapping->mModulePaths)
+            paths.emplace_back(nap::utility::joinPath({ modulePath, moltenvk_icd }));
         mProjectInfo->patchPaths(paths);
 
         // Set environment variable

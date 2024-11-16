@@ -98,7 +98,7 @@ else()
         find_path(
                 GLSLANG_DIR
                 NAMES include/glslang/Public/ShaderLang.h
-                HINTS ${glslang_search_dir}/macos/x86_64
+                HINTS ${glslang_search_dir}/macos/${ARCH}
         )
     elseif(UNIX)
         # Root dir

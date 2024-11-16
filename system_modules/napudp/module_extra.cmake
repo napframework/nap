@@ -1,5 +1,3 @@
-if(NAP_BUILD_CONTEXT MATCHES "source")
-    if(NOT WIN32)
-        target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
-    endif()
+if(NOT WIN32)
+    target_compile_definitions(${PROJECT_NAME} PUBLIC HAVE_CONFIG_H)
 endif()

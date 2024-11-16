@@ -12,6 +12,8 @@
 #include <materialinstance.h>
 #include <qwidget.h>
 
+#include <QWidget>
+
 namespace napkin
 {
 	/**

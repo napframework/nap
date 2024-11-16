@@ -1,7 +1,13 @@
 Built from SDL2-2.0.12.tar.gz
  
 Configure flags:
+
+For native binary:
 ./configure --prefix=`pwd`/osx/install --without-x --enable-static=no
+
+For universal binary:
+CC=$PWD/build-scripts/clang-fat.sh ./configure --prefix=`pwd`/osx/install --without-x --enable-static=no
+
 
 Afterwards:
 install_name_tool -id @rpath/libSDL2-2.0.0.dylib libSDL2-2.0.0.dylib
