@@ -67,7 +67,7 @@ def create_app_module(search_app_name, update_app_json, generate_solution, show_
             python = get_python_path()
 
             cmd = [python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
-            if not show_solution and not sys.platform.startswith('linux'):
+            if not show_solution:
                 cmd.append('--no-show')
             if call(cmd, cwd=nap_root) != 0:
                 print("Solution generation failed")
@@ -77,22 +77,23 @@ def create_app_module(search_app_name, update_app_json, generate_solution, show_
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("APP_NAME", type=str,
-                        help="The app name")
-    parser.add_argument("-nu", "--no-update-app", action="store_true",
-                        help="Don't update the app.json")
-    parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't regenerate the solution for the updated app")
-    if not sys.platform.startswith('linux'):
-        parser.add_argument("-ns", "--no-show", action="store_true",
-                            help="Don't show the regenerated solution")
+    parser.add_argument("APP_NAME", 
+        type=str,
+        help="The app name")
+    parser.add_argument("-nu", "--no-update-app", 
+        action="store_true",
+        help="Don't update the app.json")
+    parser.add_argument("-ng", "--no-generate", 
+        action="store_true",
+        help="Don't regenerate the solution for the updated app")
+    parser.add_argument("-ns", "--no-show", 
+        action="store_true",
+        help="Don't show the regenerated solution")  
 
     args = parser.parse_args()
 
     app_name = args.APP_NAME
-
     update_app_json = not args.no_update_app
     regenerate_app = update_app_json and not args.no_generate
-    show_solution = not sys.platform.startswith('linux') and not args.no_show
-    exit_code = create_app_module(app_name, update_app_json, regenerate_app, show_solution)
+    exit_code = create_app_module(app_name, update_app_json, regenerate_app, not args.no_show)
     sys.exit(exit_code)
