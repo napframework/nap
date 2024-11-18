@@ -24,7 +24,7 @@ WAIT_SECONDS_FOR_PROCESS_HEALTH = 5
 DEFAULT_TESTING_APPS_DIR = 'demos'
 
 # Default build type for Napkin
-DEFAULT_BUILD_TYPE = 'release'
+DEFAULT_BUILD_TYPE = 'Release'
 
 # Main app structure filename
 APP_FILENAME = 'app.json'
