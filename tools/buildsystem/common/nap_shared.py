@@ -2,16 +2,73 @@ from collections import OrderedDict
 import json
 import os
 from platform import machine
+from enum import Enum
 from subprocess import Popen, run, PIPE
+from sys import platform
 import sys
+from math import floor
+from multiprocessing import cpu_count
 
 PROJECT_INFO_FILENAME = 'app.json'
 MODULE_INFO_FILENAME = 'module.json'
 SOLUTION_INFO_FILENAME = 'solution_info.json'
 
+DEFAULT_BUILD_DIR = 'build'
+LINUX_BUILD_DIR = DEFAULT_BUILD_DIR
+MACOS_BUILD_DIR = 'Xcode'
+MSVC_BUILD_DIR = 'msvc64'
+
 # Keys for entries in app.json and module.json
 CFG_KEY_DEPENDENCIES = 'Dependencies'
 CFG_KEY_MODULES = 'Modules'
+
+class Platform(Enum):
+    """Platform Enum"""
+    Windows = 1,
+    macOS   = 2,
+    Linux   = 3,
+    Unknown = 4
+
+    """The current platform"""
+    @staticmethod
+    def get():
+        if platform.startswith('linux'):
+            return Platform.Linux
+        if platform.startswith('win32'):
+            return Platform.Windows
+        if platform.startswith('darwin'):
+            return Platform.macOS
+        return Platform.Unknown
+
+class BuildType(Enum):
+    """Build type Enum"""
+    Release = 0,
+    Debug   = 1
+
+    @staticmethod
+    def get_default():
+        return BuildType.Release.name
+
+    @staticmethod
+    def to_list():
+        return [BuildType.Release.name, BuildType.Debug.name]
+
+class Generator:
+    """Generator wrapper"""
+    def __init__(self, generator_name, multi_config = False):
+        self.name = generator_name
+        self.multi_config = multi_config
+
+    def __str__(self):
+        return self.name
+
+    def is_multi(self):
+        """Return if this is a multi-config generator"""
+        return self.multi_config
+
+    def is_single(self):
+        """Return if this is a single config generator"""
+        return not self.multi_config
 
 def call_except_on_failure(cwd, cmd):
     """Run command, raising exception on failure"""
@@ -22,6 +79,62 @@ def call_except_on_failure(cwd, cmd):
     if proc.returncode != 0:
         raise Exception(proc.returncode)
     return out
+
+def get_default_build_dir_name():
+    """Return platform specific build directory name"""
+    if Platform.get() == Platform.Linux:
+        return LINUX_BUILD_DIR
+    if Platform.get() == Platform.macOS:
+        return MACOS_BUILD_DIR
+    if Platform.get() == Platform.Windows:
+        return MSVC_BUILD_DIR
+    return DEFAULT_BUILD_DIR
+
+def get_default_build_dir():
+    """Return absolute path to default CMAKE build directory"""
+    return os.path.join(get_nap_root(), get_default_build_dir_name())
+
+def get_visual_studio_generator():
+    """Check if Visual Studio is installed"""
+
+    # Get visual studio version value from registy
+    vs_reg_def = 'Visual Studio 16 2019'
+    try:
+        proc = Popen('reg query "HKEY_CLASSES_ROOT\\VisualStudio.DTE\\CurVer"', stdout=PIPE, stderr=PIPE, shell=True)
+        vs_reg_val = proc.communicate()[0].strip().decode('utf-8')
+        vs_reg_ver = floor(float(vs_reg_val.split(".DTE.")[-1]))
+        if vs_reg_ver == 17:
+            return 'Visual Studio 17 2022'
+        if vs_reg_ver == 16:
+            return 'Visual Studio 16 2019'
+        else:
+            raise Exception("Unsupported Visual Studio version: {}".format(vs_reg_ver))
+    except Exception as e:
+        print("Warning: Unable to determine Visual Studio version\n\tReverting to system default: {}".format(vs_reg_def))
+        return vs_reg_def
+
+def get_system_generator():
+    """Return platform specific generator, empty if platform not supported"""
+    user_pref = os.environ.get('CMAKE_GENERATOR')
+    if user_pref is not None:
+        return Generator(user_pref, False)
+
+    if Platform.get() == Platform.Linux:
+        return Generator("Unix Makefiles", False)
+    if Platform.get() == Platform.macOS:
+        return Generator("Xcode", True)
+    if Platform.get() == Platform.Windows:
+        return Generator(get_visual_studio_generator(), True)
+
+    raise Exception("Unable to determine default generator for platform: {}".
+        format(platform))
+
+def max_build_parallelization(build_args):
+    """Add compiler specifici arguments to common cmake build arguments to max cpu core count"""
+    build_args.extend(['--parallel', str(cpu_count())])
+    if str(get_system_generator()).startswith("Visual Studio"):
+        build_args.extend(['--', '/p:CL_MPcount={}'.format(str(cpu_count()))])
+    return build_args
 
 def find_user_module(module_name):
     """Locate module specified by name"""
