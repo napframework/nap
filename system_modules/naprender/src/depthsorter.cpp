@@ -18,15 +18,13 @@ namespace nap
 		if (!mat_method.is_valid())
 			return nullptr;
 
-		// Make sure return type is material instance
+		// Make sure it's a material instance pointer
 		auto mat_return_type = mat_method.get_return_type();
-		if (!mat_return_type.is_pointer() && mat_return_type.is_derived_from(RTTI_OF(MaterialInstance)))
+		if (!mat_return_type.is_derived_from(RTTI_OF(MaterialInstance)) || !mat_return_type.is_pointer())
 			return nullptr;
 
 		// Get material instance
-		auto mat_result = mat_method.invoke(component);
-		assert(mat_result.is_valid() && mat_result.get_type().is_pointer() && mat_result.get_type().is_derived_from(RTTI_OF(MaterialInstance)));
-
+		auto mat_result = mat_method.invoke(component); assert(mat_result.is_valid());
 		return mat_result.get_value<MaterialInstance*>();
 	}
 

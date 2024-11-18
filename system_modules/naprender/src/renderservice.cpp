@@ -1538,6 +1538,8 @@ namespace nap
 				}
 			}
 		}
+
+		// Apply mask
 		render_comps = filterObjects(render_comps, renderMask);
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
@@ -1576,6 +1578,8 @@ namespace nap
 			if (comp->isVisible() && comp->isSupported(camera))
 				render_comps.emplace_back(comp);
 		}
+
+		// Apply mask
 		render_comps = filterObjects(render_comps, renderMask);
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
@@ -1608,6 +1612,8 @@ namespace nap
 			if (comp->isVisible())
 				render_comps.emplace_back(comp);
 		}
+
+		// Apply mask
 		render_comps = filterObjects(comps, renderMask);
 
 		// Sort objects to render
