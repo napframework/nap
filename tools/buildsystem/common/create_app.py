@@ -82,7 +82,7 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
         python = get_python_path()
 
         cmd = [python, './tools/buildsystem/common/regenerate_app_by_name.py', app_name]
-        if not show_solution and not sys.platform.startswith('linux'):
+        if not show_solution:
             cmd.append('--no-show')
         if call(cmd, cwd=nap_root) != 0:
             eprint("Solution generation failed")
@@ -92,15 +92,19 @@ def create_app(app_name, module_list, with_module, generate_solution, show_solut
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("APP_NAME", type=str,
-                        help="The app name (eg. MyAppName)")
-    parser.add_argument("-nm", "--no-module", action="store_true",
-                        help="Don't include an app module")
-    parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't generate the solution for the created app")
-    if not sys.platform.startswith('linux'):
-        parser.add_argument("-ns", "--no-show", action="store_true",
-                            help="Don't show the generated solution")
+    parser.add_argument("APP_NAME", 
+        type=str,
+        help="The app name (eg. MyAppName)")
+    parser.add_argument("-nm", "--no-module", 
+        action="store_true",
+        help="Don't include an app module")
+    parser.add_argument("-ng", "--no-generate", 
+        action="store_true",
+        help="Don't generate the solution for the created app")
+    parser.add_argument("-ns", "--no-show", 
+        action="store_true",
+        help="Don't show the generated solution", 
+        default=False)
     args = parser.parse_args()
 
     app_name = args.APP_NAME
@@ -110,6 +114,6 @@ if __name__ == '__main__':
         eprint("Error: App name includes invalid characters. Letters (ASCII), numbers, underscores and dashes are accepted.")
         sys.exit(ERROR_INVALID_INPUT)
 
-    show_solution = not sys.platform.startswith('linux') and not args.no_show
-    exit_code = create_app(app_name, DEFAULT_MODULE_LIST, not args.no_module, not args.no_generate, show_solution)
+    # Create app
+    exit_code = create_app(app_name, DEFAULT_MODULE_LIST, not args.no_module, not args.no_generate, not args.no_show)
     sys.exit(exit_code)
