@@ -37,7 +37,7 @@ namespace nap
 	template<class T>
 	static VertexAttribute<T>& CreateAttribute(Mesh& mesh, const std::string& id, std::vector<std::unique_ptr<BaseVertexAttribute>>& storage)
 	{
-		std::unique_ptr<VertexAttribute<T>> new_attribute = std::make_unique<VertexAttribute<T>>();
+		auto new_attribute = std::make_unique<VertexAttribute<T>>();
 		new_attribute->mAttributeID = id;
 
 		assert(!mesh.mID.empty());
@@ -48,18 +48,46 @@ namespace nap
 		return static_cast<VertexAttribute<T>&>(*mesh.mProperties.mAttributes[mesh.mProperties.mAttributes.size() - 1]);
 	}
 
+	template<class T>
+	static void CreateAttributeData(Mesh& mesh, const aiVector3D* fbxAttribute, uint numVertices, const std::string& id, std::vector<std::unique_ptr<BaseVertexAttribute>>& storage);
 
-	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState)
+	template<>
+	void CreateAttributeData<glm::vec3>(Mesh& mesh, const aiVector3D* fbxAttribute, uint numVertices, const std::string& id, std::vector<std::unique_ptr<BaseVertexAttribute>>& storage)
+	{
+		auto& attribute = CreateAttribute<glm::vec3>(mesh, id, storage);
+		attribute.reserve(numVertices);
+		for (uint vertex = 0; vertex < numVertices; vertex++)
+		{
+			auto* current_id = &fbxAttribute[vertex];
+			attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+		}
+	}
+
+	template<>
+	void CreateAttributeData<glm::vec4>(Mesh& mesh, const aiVector3D* fbxAttribute, uint numVertices, const std::string& id, std::vector<std::unique_ptr<BaseVertexAttribute>>& storage)
+	{
+		auto& attribute = CreateAttribute<glm::vec4>(mesh, id, storage);
+		attribute.reserve(numVertices);
+		for (uint vertex = 0; vertex < numVertices; vertex++)
+		{
+			auto* current_id = &fbxAttribute[vertex];
+			attribute.addData(glm::vec4(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z), 0.0f));
+		}
+	}
+
+
+	bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, bool convertCompute, bool noTangents, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState)
 	{
 		// Create importer
 		std::unique_ptr<Assimp::Importer> importer = std::make_unique<Assimp::Importer>();
 
 		// Load file
 		const aiScene* scene = importer->ReadFile(fbxPath,
-			aiProcess_CalcTangentSpace |
+		  	(!noTangents ? aiProcess_CalcTangentSpace : 0x0) |
 			aiProcess_Triangulate |
 			aiProcess_SortByPType |
-			aiProcess_JoinIdenticalVertices);
+			aiProcess_JoinIdenticalVertices
+		);
 
 		if (!errorState.check(scene != nullptr, "Unable to read %s", fbxPath.c_str()))
 			return false;
@@ -72,7 +100,7 @@ namespace nap
 			return false;
 
 		// Create meshes for every contained mesh
-		for (unsigned int i = 0; i < scene->mNumMeshes; i++)
+		for (uint i = 0; i < scene->mNumMeshes; i++)
 		{
 			// Get assimp mesh
 			aiMesh* fbx_mesh = scene->mMeshes[i];
@@ -108,69 +136,55 @@ namespace nap
 			if (!errorState.check(fbx_mesh->mNumVertices != 0, "Encountered mesh with no vertices"))
 				return false;
 
-			mesh_data.mProperties.mNumVertices = fbx_mesh->mNumVertices;
+			const uint num_verts = fbx_mesh->mNumVertices;
+			mesh_data.mProperties.mNumVertices = num_verts;
 			mesh_data.mProperties.mDrawMode = EDrawMode::Triangles;
 
 			std::vector<std::unique_ptr<BaseVertexAttribute>> vertex_attribute_storage;
 
-			// Copy vertex data			
-			VertexAttribute<glm::vec3>& position_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::position, vertex_attribute_storage);
-			position_attribute.reserve(fbx_mesh->mNumVertices);
-			for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
+			if (!convertCompute)
 			{
-				aiVector3D* current_id = &(fbx_mesh->mVertices[vertex]);
-				position_attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
-			}
+				// Copy vertex data
+				CreateAttributeData<glm::vec3>(mesh_data, fbx_mesh->mVertices, num_verts, vertexid::position, vertex_attribute_storage);
 
-			// Copy normals
-			if (fbx_mesh->HasNormals())
-			{
-				VertexAttribute<glm::vec3>& normal_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::normal, vertex_attribute_storage);
-				normal_attribute.reserve(fbx_mesh->mNumVertices);
-				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
+				// Copy normals
+				if (fbx_mesh->HasNormals())
+					CreateAttributeData<glm::vec3>(mesh_data, fbx_mesh->mNormals, num_verts, vertexid::normal, vertex_attribute_storage);
+
+				// Copy tangents
+				if (fbx_mesh->HasTangentsAndBitangents())
 				{
-					aiVector3D* current_id = &(fbx_mesh->mNormals[vertex]);
-					normal_attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
+					CreateAttributeData<glm::vec3>(mesh_data, fbx_mesh->mTangents, num_verts, vertexid::tangent, vertex_attribute_storage);
+					CreateAttributeData<glm::vec3>(mesh_data, fbx_mesh->mBitangents, num_verts, vertexid::bitangent, vertex_attribute_storage);
 				}
-			}
 
-			// Copy tangents
-			if (fbx_mesh->HasTangentsAndBitangents())
+				// Copy all uv data channels
+				for (int uv_channel = 0; uv_channel < fbx_mesh->GetNumUVChannels(); uv_channel++)
+					CreateAttributeData<glm::vec3>(mesh_data, fbx_mesh->mTextureCoords[uv_channel], num_verts, vertexid::getUVName(uv_channel), vertex_attribute_storage);
+			}
+			else
 			{
-				VertexAttribute<glm::vec3>& tangent_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::tangent, vertex_attribute_storage);
-				VertexAttribute<glm::vec3>& bitangent_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::bitangent, vertex_attribute_storage);
-				tangent_attribute.reserve(fbx_mesh->mNumVertices);
-				bitangent_attribute.reserve(fbx_mesh->mNumVertices);
-				
-				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
+				// Copy vertex data
+				CreateAttributeData<glm::vec4>(mesh_data, fbx_mesh->mVertices, num_verts, vertexid::position, vertex_attribute_storage);
+
+				// Copy normals
+				if (fbx_mesh->HasNormals())
+					CreateAttributeData<glm::vec4>(mesh_data, fbx_mesh->mNormals, num_verts, vertexid::normal, vertex_attribute_storage);
+
+				// Copy tangents
+				if (fbx_mesh->HasTangentsAndBitangents())
 				{
-					aiVector3D* current_id_t = &(fbx_mesh->mTangents[vertex]);
-					tangent_attribute.addData(glm::vec3(static_cast<float>(current_id_t->x), static_cast<float>(current_id_t->y), static_cast<float>(current_id_t->z)));
-					
-					aiVector3D* current_id_bt = &(fbx_mesh->mBitangents[vertex]);
-					bitangent_attribute.addData(glm::vec3(static_cast<float>(current_id_bt->x), static_cast<float>(current_id_bt->y), static_cast<float>(current_id_bt->z)));
+					CreateAttributeData<glm::vec4>(mesh_data, fbx_mesh->mTangents, num_verts, vertexid::tangent, vertex_attribute_storage);
+					CreateAttributeData<glm::vec4>(mesh_data, fbx_mesh->mBitangents, num_verts, vertexid::bitangent, vertex_attribute_storage);
 				}
+
+				// Copy all uv data channels
+				for (int uv_channel = 0; uv_channel < fbx_mesh->GetNumUVChannels(); uv_channel++)
+					CreateAttributeData<glm::vec4>(mesh_data, fbx_mesh->mTextureCoords[uv_channel], num_verts, vertexid::getUVName(uv_channel), vertex_attribute_storage);
 			}
-
-			// Copy all uv data channels
-			for (unsigned int uv_channel = 0; uv_channel < fbx_mesh->GetNumUVChannels(); uv_channel++)
-			{
-				aiVector3D* uv_channel_data = fbx_mesh->mTextureCoords[uv_channel];
-
-				VertexAttribute<glm::vec3>& uv_attribute = CreateAttribute<glm::vec3>(mesh_data, vertexid::getUVName(uv_channel), vertex_attribute_storage);
-				uv_attribute.reserve(fbx_mesh->mNumVertices);
-
-				// Copy uv data channel
-				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
-				{
-					aiVector3D* current_id = &(uv_channel_data[vertex]);
-					uv_attribute.addData(glm::vec3(static_cast<float>(current_id->x), static_cast<float>(current_id->y), static_cast<float>(current_id->z)));
-				}
-			}
-
 
 			// Copy all color data channels
-			for (unsigned int color_channel = 0; color_channel < fbx_mesh->GetNumColorChannels(); color_channel++)
+			for (uint color_channel = 0; color_channel < fbx_mesh->GetNumColorChannels(); color_channel++)
 			{
 				aiColor4D* color_channel_data = fbx_mesh->mColors[color_channel];
 
@@ -178,7 +192,7 @@ namespace nap
 				color_attribute.reserve(fbx_mesh->mNumVertices);
 
 				// Copy color data channel
-				for (unsigned int vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
+				for (uint vertex = 0; vertex < fbx_mesh->mNumVertices; vertex++)
 				{
 					aiColor4D* current_id = &(color_channel_data[vertex]);
 					color_attribute.addData(glm::vec4(static_cast<float>(current_id->r), static_cast<float>(current_id->g), static_cast<float>(current_id->b), static_cast<float>(current_id->a)));
@@ -253,7 +267,7 @@ namespace nap
 		// meshes, this can be supported later by adding it. This could be the case if we are doing dynamic geometry based on a binary mesh where we keep the source mesh for reference.
 		std::unique_ptr<MeshInstance> mesh_instance = std::make_unique<MeshInstance>(renderService);
 		mesh_instance->copyMeshProperties(mesh->mProperties);
+
 		return mesh_instance;
 	}
-
 }
