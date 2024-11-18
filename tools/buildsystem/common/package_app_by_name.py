@@ -10,14 +10,13 @@ from sys import platform
 import sys
 import shutil
 
-from nap_shared import find_app, call_except_on_failure, get_cmake_path
+from nap_shared import find_app, call_except_on_failure, get_cmake_path, Platform, BuildType, get_system_generator, max_build_parallelization
 
 WORKING_DIR = '.'
 PACKAGING_DIR = 'packaging'
 ARCHIVING_DIR = 'archiving'
 BUILDINFO_FILE = 'build_info.json'
 APP_INFO_FILE = 'app.json'
-PACKAGED_BUILD_TYPE = 'Release'
 
 # Exit codes
 ERROR_BAD_INPUT = 1
@@ -35,6 +34,10 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
     if app_version is None:
         return ERROR_INVALID_APP_JSON
 
+    # Bail if platform is not supported
+    if Platform.get() == Platform.Unknown:
+        return ERROR_BAD_INPUT
+
     print("Packaging %s v%s" % (app_full_name, app_version))
 
     # Build directory names
@@ -44,7 +47,6 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
     local_bin_dir_name = 'bin_package'
     bin_dir = os.path.join(app_path, local_bin_dir_name)
     build_dir_name = os.path.join(app_path, 'build_package')
-    cmake = get_cmake_path()
 
     # Remove old packaging path if it exists
     if os.path.exists(bin_dir):
@@ -52,18 +54,33 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
     if os.path.exists(build_dir_name):
         shutil.rmtree(build_dir_name, True)
 
-    if platform.startswith('linux'):
-        # Generate makefiles
-        call_except_on_failure(WORKING_DIR, [cmake,
-                              '-H%s' % app_path,
-                              '-B%s' % build_dir_name,
-                              '-DNAP_PACKAGED_APP_BUILD=1',
-                              '-DCMAKE_BUILD_TYPE=%s' % PACKAGED_BUILD_TYPE,
-                              '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
+    # Construct cmake generation cmd
+    cmake = get_cmake_path()
+    genex = str(get_system_generator())
+    gen_cmd = [cmake, '-H%s' % app_path,
+                '-B%s' % build_dir_name,
+                '-G%s' % genex,
+                '-DPACKAGE_NAPKIN=%s' % int(include_napkin),
+                '-DNAP_PACKAGED_APP_BUILD=1']
 
-        # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, ['make', 'all', 'install', '-j%s' % cpu_count()])
+    # Ensure we build release when using a single solution generator
+    if get_system_generator().is_single():
+        gen_cmd.append('-DCMAKE_BUILD_TYPE=%s' % BuildType.Release.name)
 
+    # Select binary package directory on Windows
+    elif Platform.get() == Platform.Windows:
+        gen_cmd.append('-DAPP_PACKAGE_BIN_DIR=%s' % local_bin_dir_name)
+
+    # Generate solution
+    call_except_on_failure(WORKING_DIR, gen_cmd)
+
+    # Build Solution
+    build_cmd = [cmake, '--build', '.', '--target', 'install', '-j', str(cpu_count())]
+    if not get_system_generator().is_single():
+        build_cmd.extend(['--config', BuildType.Release.name])
+    call_except_on_failure(build_dir_name, max_build_parallelization(build_cmd))
+
+    if Platform.get() == Platform.Linux:
         # Create archive
         if zip_package:
             packaged_to = archive_to_linux_tar_bz2(timestamp, bin_dir, app_full_name, app_version)
@@ -82,18 +99,7 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
             call([show_command], shell=True)
             # call(["nautilus -s %s > /dev/null 2>&1 &" % packaged_to], shell=True)
 
-    elif platform == 'darwin':
-        # Generate project
-        call_except_on_failure(WORKING_DIR, [cmake,
-                               '-H%s' % app_path,
-                               '-B%s' % build_dir_name,
-                               '-G', 'Xcode',
-                               '-DNAP_PACKAGED_APP_BUILD=1',
-                               '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
-
-        # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, ['xcodebuild', '-configuration', PACKAGED_BUILD_TYPE, '-target', 'install'])
-
+    elif Platform.get() == Platform.macOS:
         # Create archive
         if zip_package:
             packaged_to = archive_to_macos_zip(timestamp, bin_dir, app_full_name, app_version)
@@ -103,19 +109,8 @@ def package_app(search_app_name, show_created_package, include_napkin, zip_packa
         # Show in Finder
         if show_created_package:
             call(["open", "-R", packaged_to])
-    else:
-        # Generate project
-        call_except_on_failure(WORKING_DIR, [cmake,
-                           '-H%s' % app_path,
-                           '-B%s' % build_dir_name,
-                           '-G', 'Visual Studio 16 2019',
-                           '-DNAP_PACKAGED_APP_BUILD=1',
-                           '-DAPP_PACKAGE_BIN_DIR=%s' % local_bin_dir_name,
-                           '-DPACKAGE_NAPKIN=%s' % int(include_napkin)])
 
-        # Build & install to packaging dir
-        call_except_on_failure(build_dir_name, [cmake, '--build', '.', '--target', 'install', '--config', PACKAGED_BUILD_TYPE])
-
+    elif Platform.get() == Platform.Windows:
         # Remove pdbs for distribution
         for root, dirs, files in os.walk(local_bin_dir_name):
             for file in files:
@@ -286,14 +281,18 @@ def populate_build_info_into_app(app_package_path, timestamp):
 # Main
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("APP_NAME", type=str,
-                        help="The app to package")
-    parser.add_argument("-ns", "--no-show", action="store_true",
-                        help="Don't show the generated package")
-    parser.add_argument("-nn", "--no-napkin", action="store_true",
-                        help="Don't include napkin")
-    parser.add_argument("-nz", "--no-zip", action="store_true",
-                        help="Don't zip package")
+    parser.add_argument("APP_NAME", 
+        type=str,
+        help="The app to package")
+    parser.add_argument("-ns", "--no-show", 
+        action="store_true",
+        help="Don't show the generated package")
+    parser.add_argument("-nn", "--no-napkin", 
+        action="store_true",
+        help="Don't include napkin")
+    parser.add_argument("-nz", "--no-zip", 
+        action="store_true",
+        help="Don't zip package")
     args = parser.parse_args()
 
     # Package our build
