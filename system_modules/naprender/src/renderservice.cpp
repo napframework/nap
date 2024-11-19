@@ -1521,7 +1521,7 @@ namespace nap
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const SortFunction& sortFunction, RenderMask renderMask)
 	{
 		// Get all render-able components
-		// Only gather renderable components that can be rendered using the given caera
+		// Only gather visible renderable components that can be rendered using the given caera
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		std::vector<nap::RenderableComponentInstance*> entity_render_comps;
 		for (Scene* scene : mSceneService->getScenes())
@@ -1533,14 +1533,31 @@ namespace nap
 				render_comps.reserve(render_comps.size() + entity_render_comps.size());
 				for (const auto& comp : entity_render_comps) 
 				{
-					if (comp->isSupported(camera) && comp->includesMask(renderMask))
+					if (comp->isVisible() && comp->isSupported(camera))
 						render_comps.emplace_back(comp);
 				}
 			}
 		}
 
-		// Render these objects
-		renderObjects(renderTarget, camera, render_comps, sortFunction);
+		// Apply mask
+		render_comps = filterObjects(render_comps, renderMask);
+
+		// Before we render, we always set aspect ratio. This avoids overly complex
+		// responding to various changes in render target sizes.
+		camera.setRenderTargetSize(renderTarget.getBufferSize());
+
+		// Extract camera projection matrix
+		const auto& projection_matrix = camera.getRenderProjectionMatrix();
+
+		// Extract view matrix
+		auto view_matrix = camera.getViewMatrix();
+
+		// Sort objects to render
+		sortFunction(render_comps, view_matrix);
+
+		// Draw components
+		for (auto& comp : render_comps)
+			comp->draw(renderTarget, mCurrentCommandBuffer, view_matrix, projection_matrix);
 	}
 
 
@@ -1552,25 +1569,35 @@ namespace nap
 
 	void RenderService::renderObjects(IRenderTarget& renderTarget, CameraComponentInstance& camera, const std::vector<RenderableComponentInstance*>& comps, const SortFunction& sortFunction, RenderMask renderMask)
 	{
-		// Only gather renderable components that can be rendered using the given camera and mask
+		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired
+
+		// Only gather visible renderable components that can be rendered using the given camera and mask
 		std::vector<nap::RenderableComponentInstance*> render_comps;
 		for (const auto& comp : comps)
 		{
-			if (comp->isSupported(camera) && comp->includesMask(renderMask))
+			if (comp->isVisible() && comp->isSupported(camera))
 				render_comps.emplace_back(comp);
 		}
+
+		// Apply mask
+		render_comps = filterObjects(render_comps, renderMask);
 
 		// Before we render, we always set aspect ratio. This avoids overly complex
 		// responding to various changes in render target sizes.
 		camera.setRenderTargetSize(renderTarget.getBufferSize());
 
 		// Extract camera projection matrix
-		const glm::mat4& projection_matrix = camera.getRenderProjectionMatrix();
+		const auto& projection_matrix = camera.getRenderProjectionMatrix();
 
 		// Extract view matrix
-		glm::mat4x4 view_matrix = camera.getViewMatrix();
+		auto view_matrix = camera.getViewMatrix();
 
-		renderObjects(renderTarget, projection_matrix, view_matrix, render_comps, sortFunction);
+		// Sort objects to render
+		sortFunction(render_comps, view_matrix);
+
+		// Draw components
+		for (auto& comp : render_comps)
+			comp->draw(renderTarget, mCurrentCommandBuffer, view_matrix, projection_matrix);
 	}
 
 
@@ -1578,8 +1605,16 @@ namespace nap
 	{
 		assert(mCurrentCommandBuffer != VK_NULL_HANDLE);	// BeginRendering is not called if this assert is fired
 
-		// Only gather renderable components that can be rendered using the given mask
-		auto render_comps = filterObjects(comps, renderMask);
+		// Only gather visible renderable components that can be rendered using the given camera and mask
+		std::vector<nap::RenderableComponentInstance*> render_comps;
+		for (const auto& comp : comps)
+		{
+			if (comp->isVisible())
+				render_comps.emplace_back(comp);
+		}
+
+		// Apply mask
+		render_comps = filterObjects(comps, renderMask);
 
 		// Sort objects to render
 		sortFunction(render_comps, view);
@@ -1602,6 +1637,9 @@ namespace nap
 
 	std::vector<RenderableComponentInstance*> RenderService::filterObjects(const std::vector<RenderableComponentInstance*>& comps, RenderMask renderMask)
 	{
+		if (renderMask == mask::all)
+			return comps;
+
 		// Only gather renderable components that can be rendered using the given mask
 		std::vector<RenderableComponentInstance*> render_comps;
 		render_comps.reserve(comps.size());
