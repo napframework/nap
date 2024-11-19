@@ -105,7 +105,11 @@ namespace napkin
 		bool eventFilter(QObject* obj, QEvent* ev) override;
 
 	Q_SIGNALS:
-		void selectionChanged(QList<PropertyPath> obj);
+		// Occurs when object selection changes
+		void selectionChanged(QList<PropertyPath> path);
+
+		// Occurs when a staging (load) command is requested
+		void stageRequested(const PropertyPath& path, const napkin::StageOption& selectedOption);
 
 	private:
 		/**

@@ -18,6 +18,7 @@ void MainWindow::bindSignals()
 	connect(ctx, &AppContext::documentOpened, this, &MainWindow::onDocumentOpened);
 	connect(ctx, &AppContext::documentChanged, this, &MainWindow::onDocumentChanged);
 	connect(&mResourcePanel, &ResourcePanel::selectionChanged, this, &MainWindow::onResourceSelectionChanged);
+	connect(&mResourcePanel, &ResourcePanel::stageRequested, this, &MainWindow::onStageRequested);
 	connect(&mScenePanel, &ScenePanel::selectionChanged, this, &MainWindow::onSceneSelectionChanged);
 	connect(&mServiceConfigPanel, &ServiceConfigPanel::selectionChanged, this, &MainWindow::onServiceConfigChanged);
 	connect(&mInstPropPanel, &InstancePropPanel::selectComponentRequested, this, &MainWindow::onSceneComponentSelectionRequested);
@@ -374,6 +375,22 @@ void napkin::MainWindow::addToolstrip()
 	const auto& h_actions = mActionModel.getGroup(action::groups::help);
 	for (const auto& action : h_actions)
 		mToolbar->addAction(action);
+}
+
+
+void MainWindow::onStageRequested(const PropertyPath& path, const StageOption& selection)
+{
+	if (mTexturePreviewPanel.toOption() == selection)
+	{
+		nap::Logger::info("Loading %s in %s", path.toString().c_str(), selection.mWidgetName.c_str());
+		return;
+	}
+
+	if (mRenderPreviewPanel.toOption() == selection)
+	{
+		nap::Logger::info("Loading %s in %s", path.toString().c_str(), selection.mWidgetName.c_str());
+		return;
+	}
 }
 
 

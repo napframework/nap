@@ -451,19 +451,4 @@ namespace napkin
 		void perform() override;
 		QUrl mAddress;
 	};
-
-
-	/**
-	 * Stage (load) object in widget action.
-	 */
-	class StageAction : public Action
-	{
-	public:
-		explicit StageAction(QObject* parent, const StageOption& stageOption, nap::rtti::Object& object);
-
-	private:
-		void perform() override;
-		StageOption mStageOption;
-		nap::rtti::Object& mObject;
-	};
 }

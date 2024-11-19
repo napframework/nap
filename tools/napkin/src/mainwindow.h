@@ -117,6 +117,11 @@ namespace napkin
 		void onResourceSelectionChanged(QList<PropertyPath> paths);
 
 		/**
+		 * Occurs when a stage (load) request is issued
+		 */
+		void onStageRequested(const PropertyPath& path, const StageOption& selection);
+
+		/**
 		 * Handled when the scenepanel's selection changes
 		 * @param paths The paths that have been selected
 		 */

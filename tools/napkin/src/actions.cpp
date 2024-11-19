@@ -1006,15 +1006,3 @@ void napkin::OpenURLAction::perform()
 {
 	QDesktopServices::openUrl(mAddress);
 }
-
-
-StageAction::StageAction(QObject* parent, const napkin::StageOption& stageOption, nap::rtti::Object& object) :
-	Action(parent, nap::utility::stringFormat("Load in '%s'", stageOption.mDisplayName.c_str()).c_str(), QRC_ICONS_URL),
-	mObject(object), mStageOption(stageOption)
-{ }
-
-
-void StageAction::perform()
-{
-	nap::Logger::info("Load %s in %s", mObject.mID.c_str(), mStageOption.mWidgetName.c_str());
-}

@@ -257,7 +257,7 @@ namespace napkin
 		ThemeManager& getThemeManager();
 
 		/**
-		 * @param command THe command to be executed on the current document
+		 * @param command The command to be executed on the current document
 		 */
 		void executeCommand(QUndoCommand* cmd);
 
