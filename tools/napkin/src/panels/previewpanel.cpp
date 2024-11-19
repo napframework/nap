@@ -76,7 +76,7 @@ namespace napkin
 
 	void PreviewPanel::textChanged(const QString& text)
 	{
-		nap::APIEventPtr set_text_event = std::make_unique<nap::APIEvent>("PreviewSetText");
+		nap::APIEventPtr set_text_event = std::make_unique<nap::APIEvent>("SetText");
 		set_text_event->addArgument<nap::APIString>("text", text.toStdString());
 		mRunner.sendEvent(std::move(set_text_event));
 	}

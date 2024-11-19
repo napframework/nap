@@ -31,44 +31,19 @@ namespace nap
 		// Get resource manager
 		mResourceManager = getCore().getResourceManager();
 
-		// Extract loaded resources
-		mWorldTexture = mResourceManager->findObject<nap::ImageFromFile>("TexWorldTexture");
-		if (!error.check(mWorldTexture != nullptr, "Missing 'TexWorldTexture'"))
-			return false;
-
 		// Fetch render window
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("AppletWindow");
-		if (!error.check(mRenderWindow != nullptr, "Missing 'AppletWindow'"))
+		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
+		if (!error.check(mRenderWindow != nullptr, "Missing 'Window'"))
 			return false;
 
 		// Get the resource that manages all the entities
-		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("TexScene");
-		if (!error.check(scene != nullptr, "Missing 'TexScene'"))
+		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
+		if (!error.check(scene != nullptr, "Missing 'Scene'"))
 			return false;
 
-		// Fetch world and text
-		mWorldEntity = scene->findEntity("TexWorld");
-		if (!error.check(mWorldEntity != nullptr, "Missing 'TexWorld'"))
+		mTextEntity = scene->findEntity("Text");
+		if (!error.check(mTextEntity != nullptr, "Missing 'Text'"))
 			return false;
-
-		mTextEntity = scene->findEntity("TexText");
-		if (!error.check(mTextEntity != nullptr, "Missing 'TexText'"))
-			return false;
-
-		// Fetch the two different cameras
-		mPerspectiveCamEntity = scene->findEntity("TexPerspectiveCamera");
-		if (!error.check(mPerspectiveCamEntity != nullptr, "Missing 'TexPerspectiveCamera'"))
-			return false;
-
-		mOrthographicCamEntity = scene->findEntity("TexOrthographicCamera");
-		if (!error.check(mOrthographicCamEntity != nullptr, "Missing 'TexOrthographicCamera'"))
-			return false;
-
-		// Sample default color values from loaded color palette
-		mColorTwo = mGuiService->getPalette().mHighlightColor1.convert<RGBColorFloat>();
-		mColorOne = { mColorTwo[0] * 0.9f, mColorTwo[1] * 0.9f, mColorTwo[2] };
-		mHaloColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
-		mTextColor = mGuiService->getPalette().mFront4Color.convert<RGBColorFloat>();
 
 		return true;
 	}
@@ -80,37 +55,20 @@ namespace nap
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
 		nap::DefaultInputRouter input_router;
 
-		// Now forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mPerspectiveCamEntity.get() };
-		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
-
-		// Push the current color selection to the shader.
-		nap::RenderableMeshComponentInstance& renderer = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		auto ubo = renderer.getMaterialInstance().getOrCreateUniform("UBO");
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorOne")->setValue(mColorOne);
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("colorTwo")->setValue(mColorTwo);
-		ubo->getOrCreateUniform<nap::UniformVec3Instance>("haloColor")->setValue(mHaloColor);
-
 		// Setup GUI
-		ImGui::Begin("Controls");
-		ImGui::Text(getCurrentDateTime().toString().c_str());
-		ImGui::TextColored(mGuiService->getPalette().mHighlightColor2, "left mouse button to rotate, right mouse button to zoom");
-		ImGui::Text(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
-		ImGui::Text(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
-
-		// Colors
-		if (ImGui::CollapsingHeader("Colors"))
+		ImGui::BeginMainMenuBar();
+		if (ImGui::BeginMenu("File"))
 		{
-			ImGui::ColorEdit3("Color One", mColorOne.getData());
-			ImGui::ColorEdit3("Color Two", mColorTwo.getData());
-			ImGui::ColorEdit3("Halo Color", mHaloColor.getData());
-			ImGui::ColorEdit3("Text Color", mTextColor.getData());
+			ImGui::MenuItem("Open...");
+			ImGui::EndMenu();
 		}
-		ImGui::End();
-
-		// Push text color
-		auto& text_comp = mTextEntity->getComponent<Renderable2DTextComponentInstance>();
-		text_comp.setColor(mTextColor);
+		if (ImGui::BeginMenu("Info"))
+		{
+			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
+			ImGui::MenuItem(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
+			ImGui::EndMenu();
+		}
+		ImGui::EndMainMenuBar();
 	}
 	
 	
@@ -131,23 +89,10 @@ namespace nap
 			// Begin the render pass
 			render_window.beginRendering();
 
-			// Find the world and add as an object to render
-			std::vector<nap::RenderableComponentInstance*> components_to_render;
-			nap::RenderableMeshComponentInstance& renderable_world = mWorldEntity->getComponent<nap::RenderableMeshComponentInstance>();
-			components_to_render.emplace_back(&renderable_world);
-
-			// Find the perspective camera
-			nap::PerspCameraComponentInstance& persp_camera = mPerspectiveCamEntity->getComponent<nap::PerspCameraComponentInstance>();
-
-			// Render the world with the right camera directly to screen
-			mRenderService->renderObjects(render_window, persp_camera, components_to_render);
-
 			// Locate component that can render text to screen
 			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
 
 			// Center text and render it using the given draw call, 
-			// alternatively you can use an orthographic camera to render the text, similar to how the 3D mesh is rendered:  
-			// mRenderService::renderObjects(*mRenderWindow, ortho_camera, components_to_render);
 			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
 			render_text.draw(render_window);
 
@@ -174,14 +119,6 @@ namespace nap
 	
 	void TexturePreviewApplet::inputMessageReceived(InputEventPtr inputEvent)
 	{
-		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
-		{
-			// If we pressed escape, quit the loop
-			nap::KeyPressEvent* press_event = static_cast<nap::KeyPressEvent*>(inputEvent.get());
-			if (press_event->mKey == nap::EKeyCode::KEY_ESCAPE)
-				quit();
-		}
-		// Add event, so it can be forwarded on update
 		mInputService->addEvent(std::move(inputEvent));
 	}
 

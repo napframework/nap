@@ -238,4 +238,3 @@ namespace napkin
 		mProcessCondition.notify_one();
 	}
 }
-
