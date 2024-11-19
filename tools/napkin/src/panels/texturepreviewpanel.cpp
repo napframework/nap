@@ -2,32 +2,32 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "texturepanel.h"
+#include "texturepreviewpanel.h"
 #include "../appcontext.h"
 
 namespace napkin
 {
-	TexturePanel::TexturePanel()
+	TexturePreviewPanel::TexturePreviewPanel()
 	{
 		// Create render resources on project load
-		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePanel::init);
+		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);
 	}
 
 
-	TexturePanel::~TexturePanel()
+	TexturePreviewPanel::~TexturePreviewPanel()
 	{	
 		mRunner.abort();
 	}
 
 
-	void TexturePanel::closeEvent(QCloseEvent* event)
+	void TexturePreviewPanel::closeEvent(QCloseEvent* event)
 	{
 		mRunner.abort();
 		return QWidget::closeEvent(event);
 	}
 
 
-	void TexturePanel::init(const nap::ProjectInfo& info)
+	void TexturePreviewPanel::init(const nap::ProjectInfo& info)
 	{
 		// Signals completion setup resources gui thread
 		assert(mPanel == nullptr);

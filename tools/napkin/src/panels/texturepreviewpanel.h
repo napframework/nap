@@ -17,7 +17,7 @@ namespace napkin
 	/**
 	 * Allows for previewing material and meshes
 	 */
-	class TexturePanel : public QWidget
+	class TexturePreviewPanel : public QWidget
 	{
 		Q_OBJECT
 	public:
@@ -25,10 +25,10 @@ namespace napkin
 		static constexpr const char* app = "/resources/apps/texturepreview/app.json";
 
 		// Creates the surface and adds it to this widget
-		TexturePanel();
+		TexturePreviewPanel();
 
 		// Ensures applet stops running
-		~TexturePanel();
+		~TexturePreviewPanel();
 
 		/**
 		 * @return if the preview applet is initialized

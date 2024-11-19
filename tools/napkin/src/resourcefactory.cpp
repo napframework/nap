@@ -148,3 +148,4 @@ const napkin::FileType& napkin::ResourceFactory::getFiletype(const nap::rtti::Pr
 	}
 	return file_types[0];
 }
+

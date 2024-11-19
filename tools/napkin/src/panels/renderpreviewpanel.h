@@ -22,7 +22,7 @@ namespace napkin
 	/**
 	 * Allows for previewing material and meshes
 	 */
-	class PreviewPanel : public QWidget
+	class RenderPreviewPanel : public QWidget
 	{
 		Q_OBJECT
 	public:
@@ -30,10 +30,10 @@ namespace napkin
 		static constexpr const char* app = "/resources/apps/renderpreview/app.json";
 
 		// Creates the surface and adds it to this widget
-		PreviewPanel();
+		RenderPreviewPanel();
 
 		// Ensures applet stops running
-		~PreviewPanel();
+		~RenderPreviewPanel();
 
 		/**
 		 * @return if the preview applet is initialized
@@ -69,5 +69,3 @@ namespace napkin
 		void freqChanged(int freq);
 	};
 }
-
-

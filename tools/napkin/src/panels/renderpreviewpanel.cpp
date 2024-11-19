@@ -2,16 +2,16 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "previewpanel.h"
+#include "renderpreviewpanel.h"
 #include "../appcontext.h"
 #include <apiservice.h>
 
 namespace napkin
 {
-	PreviewPanel::PreviewPanel()
+	RenderPreviewPanel::RenderPreviewPanel()
 	{
 		// Create render resources on project load
-		connect(&AppContext::get(), &AppContext::projectLoaded, this, &PreviewPanel::init);
+		connect(&AppContext::get(), &AppContext::projectLoaded, this, &RenderPreviewPanel::init);
 
 		// Setup control widgets
 		mSpinbox.setRange(0, 120);
@@ -21,20 +21,20 @@ namespace napkin
 	}
 
 
-	PreviewPanel::~PreviewPanel()
+	RenderPreviewPanel::~RenderPreviewPanel()
 	{	
 		mRunner.abort();
 	}
 
 
-	void PreviewPanel::closeEvent(QCloseEvent* event)
+	void RenderPreviewPanel::closeEvent(QCloseEvent* event)
 	{
 		mRunner.abort();
 		return QWidget::closeEvent(event);
 	}
 
 
-	void PreviewPanel::init(const nap::ProjectInfo& info)
+	void RenderPreviewPanel::init(const nap::ProjectInfo& info)
 	{
 		// Signals completion setup resources gui thread
 		assert(mPanel == nullptr);
@@ -57,8 +57,8 @@ namespace napkin
 			return;
 
 		// Hook up our widgets
-		mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &PreviewPanel::textChanged);
-		mSpinbox.connect(&mSpinbox, &QSpinBox::valueChanged, this, &PreviewPanel::freqChanged);
+		mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &RenderPreviewPanel::textChanged);
+		mSpinbox.connect(&mSpinbox, &QSpinBox::valueChanged, this, &RenderPreviewPanel::freqChanged);
 
 		// Create child widget layout
 		mControlLayout.addWidget(&mLineEdit);
@@ -74,7 +74,7 @@ namespace napkin
 	}
 
 
-	void PreviewPanel::textChanged(const QString& text)
+	void RenderPreviewPanel::textChanged(const QString& text)
 	{
 		nap::APIEventPtr set_text_event = std::make_unique<nap::APIEvent>("SetText");
 		set_text_event->addArgument<nap::APIString>("text", text.toStdString());
@@ -82,7 +82,7 @@ namespace napkin
 	}
 
 
-	void PreviewPanel::freqChanged(int freq)
+	void RenderPreviewPanel::freqChanged(int freq)
 	{
 		assert(freq >= 0);
 		mRunner.setFrequency(static_cast<nap::uint>(freq));
