@@ -84,6 +84,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
 
 void MainWindow::addDocks()
 {
+	// Add widgets to individual docks
 	addDock("AppRunner", &mAppRunnerPanel);
 	addDock("Resources", &mResourcePanel);
 	addDock("Scene", &mScenePanel);
@@ -95,6 +96,13 @@ void MainWindow::addDocks()
 	addDock("Curve", &mCurvePanel);
 	addDock(QString::fromStdString(mRenderPreviewPanel.getDisplayName()), &mRenderPreviewPanel);
 	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
+
+	// Register resource load options ->
+	// Tells the resource panel which widget edit options (preview, etc.) are available for specific types.
+	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
+	mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
+
+	// Add menu
 	menuBar()->addMenu(getWindowMenu());
 }
 
@@ -183,7 +191,6 @@ MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 	configureMenu();
 	addToolstrip();
 	addDocks();
-	registerStagingOptions();
 
 	enableProjectDependentActions(AppContext::get().getProjectLoaded());
 	bindSignals();
@@ -336,13 +343,6 @@ void MainWindow::onDocked(QDockWidget *dockWidget)
 AppContext& MainWindow::getContext() const
 {
 	return AppContext::get();
-}
-
-
-void MainWindow::registerStagingOptions()
-{
-	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
-	mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
 }
 
 

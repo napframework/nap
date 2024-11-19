@@ -74,11 +74,6 @@ namespace napkin
 		void addDocks();
 
 		/**
-		 * Register staging widgets
-		 */
-		void registerStagingOptions();
-
-		/**
 		 * Add the menu bar
 		 */
 		void addToolstrip();
