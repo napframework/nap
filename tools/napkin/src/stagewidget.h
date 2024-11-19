@@ -7,7 +7,8 @@
 namespace napkin
 {
 	/**
-	 * Loose coupling between a set of types and compatible StageWidget.
+	 * Loose coupling between a set of types and compatible widget.
+	 * Every option binds a set of types to a compatible widget that can load, display and interact with them.
 	 */
 	struct StageOption
 	{
