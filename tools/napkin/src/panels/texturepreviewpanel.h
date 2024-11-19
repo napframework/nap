@@ -8,6 +8,10 @@
 #include "renderpanel.h"
 #include "applets/texturepreviewapplet.h"
 #include "../appletrunner.h"
+#include "../stagewidget.h"
+
+// External includes
+#include <rendertexture2d.h>
 
 namespace napkin
 {
@@ -17,7 +21,7 @@ namespace napkin
 	/**
 	 * Allows for previewing material and meshes
 	 */
-	class TexturePreviewPanel : public QWidget
+	class TexturePreviewPanel : public StageWidget
 	{
 		Q_OBJECT
 	public:
@@ -25,7 +29,7 @@ namespace napkin
 		static constexpr const char* app = "/resources/apps/texturepreview/app.json";
 
 		// Creates the surface and adds it to this widget
-		TexturePreviewPanel();
+		TexturePreviewPanel(QWidget* parent = nullptr);
 
 		// Ensures applet stops running
 		~TexturePreviewPanel();
@@ -33,12 +37,22 @@ namespace napkin
 		/**
 		 * @return if the preview applet is initialized
 		 */
-		bool initialized() const				{ return mPanel != nullptr; }
+		bool initialized() const						{ return mPanel != nullptr; }
 
 		/**
 		 * @return if the applet is running
 		 */
-		bool running() const					{ return mRunner.running(); }
+		bool running() const							{ return mRunner.running(); }
+
+		/**
+		 * @return types compatible with the texture preview widget
+		 */
+		virtual std::vector<nap::rtti::TypeInfo> getTypes() const override { return { RTTI_OF(nap::Texture2D) }; }
+
+		/**
+		 * @return display name
+		 */
+		virtual QString getDisplayName() const override { return "Texture Preview"; }
 
 	protected:
 

@@ -7,7 +7,7 @@
 
 namespace napkin
 {
-	TexturePreviewPanel::TexturePreviewPanel()
+	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget(parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);

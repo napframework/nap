@@ -76,15 +76,13 @@ void MainWindow::closeEvent(QCloseEvent* event)
 	}
 
 	// TODO: Close signal is not emitted 
-	mPreviewPanel.close();
-	mTexturePanel.close();
+	mRenderPreviewPanel.close();
+	mTexturePreviewPanel.close();
 	BaseWindow::closeEvent(event);
 }
 
 void MainWindow::addDocks()
 {
-//	addDock("History", &mHistoryPanel);
-//	addDock("Path Browser", &mPathBrowser);
 	addDock("AppRunner", &mAppRunnerPanel);
 	addDock("Resources", &mResourcePanel);
 	addDock("Scene", &mScenePanel);
@@ -94,8 +92,8 @@ void MainWindow::addDocks()
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
-	addDock("3D Preview", &mPreviewPanel);
-	addDock("Texture Preview", &mTexturePanel);
+	addDock(mRenderPreviewPanel.getDisplayName(), &mRenderPreviewPanel);
+	addDock(mTexturePreviewPanel.getDisplayName(), &mTexturePreviewPanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 
@@ -184,6 +182,7 @@ MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
 	configureMenu();
 	addToolstrip();
 	addDocks();
+	registerStagingOptions();
 
 	enableProjectDependentActions(AppContext::get().getProjectLoaded());
 	bindSignals();
@@ -336,6 +335,13 @@ void MainWindow::onDocked(QDockWidget *dockWidget)
 AppContext& MainWindow::getContext() const
 {
 	return AppContext::get();
+}
+
+
+void MainWindow::registerStagingOptions()
+{
+	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
+	mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
 }
 
 

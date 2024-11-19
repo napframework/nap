@@ -123,6 +123,13 @@ napkin::ResourcePanel::ResourcePanel()
 }
 
 
+void ResourcePanel::registerStageOption(StageOption&& stageOption)
+{
+	auto it = mStageOptions.emplace(std::move(stageOption));
+	assert(it.second);
+}
+
+
 void napkin::ResourceModel::populate()
 {
 	auto doc = AppContext::get().getDocument();
@@ -192,6 +199,20 @@ static void addMoveAction(const PropertyPath& container, nap::rtti::Object& obje
 
 void napkin::ResourcePanel::createMenuCallbacks()
 {
+	// Option to preview object in compatible widget
+	mMenuController.addOption<ObjectItem>([this](auto& item, auto& menu)
+	{
+		auto object_item = static_cast<ObjectItem*>(&item);
+		for (const auto& stage_option : mStageOptions)
+		{
+			if (stage_option.isCompatible(object_item->getObject().get_type()))
+			{
+				menu.addAction(new StageAction(&menu, stage_option, object_item->getObject()));
+				continue;
+			}
+		}
+	});
+
 	// Move child entity up or down
 	mMenuController.addOption<EntityItem>([](auto& item, auto& menu)
 	{

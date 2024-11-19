@@ -33,6 +33,7 @@ namespace napkin
 	/**
 	 * The AppContext (currently a singleton) holds the 'globally' kept application state. 
 	 * All authored objects reside here.
+	 * 
 	 * It has signals to notify the other application components of global state changes such as data file access and
 	 * provides the client with convenience methods that may change the application state.
 	 *

@@ -8,6 +8,7 @@
 #include "actions.h"
 #include "menuoptioncontroller.h"
 #include "thememanager.h"
+#include "stagewidget.h"
 
 // External includes
 #include <standarditemsobject.h>
@@ -87,6 +88,13 @@ namespace napkin
 		 */
 		nap::qt::FilterTreeView& treeView() { return mTreeView; }
 
+		/**
+		 * Register staging option for preview purposes.
+		 * The registered widget will be made available as a preview option for all associated types.
+		 * @param stageOption preview option to register
+		 */
+		void registerStageOption(StageOption&& stageOption);
+
 	protected:
         /**
          * Filters out and handles certain events prior to child widget
@@ -122,7 +130,7 @@ namespace napkin
 		void onFileOpened(const QString& filename);
 
 		/**
-		* Called just before the current document is closed
+		 * Called just before the current document is closed
 		 * @param filename the name of the document
 		 */
 		void onFileClosing(const QString& filename);
@@ -143,11 +151,6 @@ namespace napkin
 		 * Called when a new item is added to an entity
 		 */
 		void onChildAddedToEntity(EntityItem& entity, ObjectItem& item);
-
-		/**
-		 * Called when the index of a child under a parent changes
-		 */
-		void onEntityIndexChanged(EntityItem& parent, ObjectItem& itemA, ObjectItem& itemB);
 
 		/**
 		 * Called when a child index changes
@@ -174,9 +177,10 @@ namespace napkin
 		void emitSelectionChanged();
 		void onProjectLoaded(const nap::ProjectInfo& projectInfo);
 
-		QVBoxLayout mLayout;							// Layout
-		ResourceModel mModel;							// Model
-		nap::qt::FilterTreeView mTreeView;				// Treeview
-		MenuOptionController<RTTIItem> mMenuController;	// Menu option controller
+		QVBoxLayout mLayout;								// Layout
+		ResourceModel mModel;								// Model
+		nap::qt::FilterTreeView mTreeView;					// Treeview
+		MenuOptionController<RTTIItem> mMenuController;		// Menu option controller
+		std::unordered_set<StageOption> mStageOptions;	// All staging widgets
 	};
 }

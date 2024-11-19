@@ -8,11 +8,14 @@
 #include "renderpanel.h"
 #include "applets/renderpreviewapplet.h"
 #include "../appletrunner.h"
+#include "../stagewidget.h"
 
 // External includes
 #include <QLineEdit>
 #include <QSpinBox>
 #include <apiservice.h>
+#include <mesh.h>
+#include <material.h>
 
 namespace napkin
 {
@@ -22,7 +25,7 @@ namespace napkin
 	/**
 	 * Allows for previewing material and meshes
 	 */
-	class RenderPreviewPanel : public QWidget
+	class RenderPreviewPanel : public StageWidget
 	{
 		Q_OBJECT
 	public:
@@ -30,7 +33,7 @@ namespace napkin
 		static constexpr const char* app = "/resources/apps/renderpreview/app.json";
 
 		// Creates the surface and adds it to this widget
-		RenderPreviewPanel();
+		RenderPreviewPanel(QWidget* parent = nullptr);
 
 		// Ensures applet stops running
 		~RenderPreviewPanel();
@@ -38,12 +41,22 @@ namespace napkin
 		/**
 		 * @return if the preview applet is initialized
 		 */
-		bool initialized() const				{ return mPanel != nullptr; }
+		bool initialized() const									{ return mPanel != nullptr; }
 
 		/**
 		 * @return if the applet is running
 		 */
-		bool running() const					{ return mRunner.running(); }
+		bool running() const										{ return mRunner.running(); }
+
+		/**
+		 * @return preview types
+		 */
+		std::vector<nap::rtti::TypeInfo> getTypes() const override	{ return { RTTI_OF(nap::IMesh), RTTI_OF(nap::Material) }; }
+
+		/**
+		 * @return display name
+		 */
+		virtual QString getDisplayName() const override				{ return "3D Preview"; }
 
 	protected:
 

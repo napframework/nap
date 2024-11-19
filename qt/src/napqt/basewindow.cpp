@@ -15,15 +15,15 @@ BaseWindow::BaseWindow()
 	mWindowMenu = new QMenu("Panels");
 }
 
-QDockWidget* BaseWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area)
+QDockWidget* BaseWindow::addDock(const QString& dockName, QWidget* widget, Qt::DockWidgetArea area)
 {
 	QDockWidget* dock = new QDockWidget(this);
-	dock->setObjectName(name);
+	dock->setObjectName(dockName);
 	dock->setWidget(widget);
-	dock->setWindowTitle(name);
+	dock->setWindowTitle(dockName);
 
 	if (widget->objectName().isEmpty())
-		widget->setObjectName(QString("%1_Widget").arg(name));
+		widget->setObjectName(QString("%1_Widget").arg(dockName));
 
 	mWindowMenu->addAction(dock->toggleViewAction());
 	addDockWidget(area, dock);

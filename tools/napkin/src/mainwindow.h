@@ -74,6 +74,11 @@ namespace napkin
 		void addDocks();
 
 		/**
+		 * Register staging widgets
+		 */
+		void registerStagingOptions();
+
+		/**
 		 * Add the menu bar
 		 */
 		void addToolstrip();
@@ -186,8 +191,8 @@ namespace napkin
 		AppRunnerPanel mAppRunnerPanel;
 		CurvePanel mCurvePanel;
 		ScenePanel mScenePanel;
-		RenderPreviewPanel mPreviewPanel;
-		TexturePreviewPanel mTexturePanel;
+		RenderPreviewPanel mRenderPreviewPanel;
+		TexturePreviewPanel mTexturePreviewPanel;
 		ServiceConfigPanel mServiceConfigPanel;
 
 		ThemeSelectionMenu mThemeMenu;
