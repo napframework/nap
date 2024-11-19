@@ -69,7 +69,7 @@ Currently, whether working with the packaged framework release or against the fr
 
 **x86**
 ```
-x86-64: Windows 10 & 11, Visual Studio (v16 & v17) - MSVC
+x86-64: Windows 10 & 11, Visual Studio (2019 & 2022) - MSVC
 x86-64: Ubuntu Linux LTS (v22.04 & v24.04) - GCC
 ```
 **ARM**
