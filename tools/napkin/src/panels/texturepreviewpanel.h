@@ -44,16 +44,6 @@ namespace napkin
 		 */
 		bool running() const							{ return mRunner.running(); }
 
-		/**
-		 * @return types compatible with the texture preview widget
-		 */
-		virtual std::vector<nap::rtti::TypeInfo> getTypes() const override { return { RTTI_OF(nap::Texture2D) }; }
-
-		/**
-		 * @return display name
-		 */
-		virtual QString getDisplayName() const override { return "Texture Preview"; }
-
 	protected:
 
 		// Called by the main window when the widget is closed

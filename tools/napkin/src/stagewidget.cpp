@@ -11,11 +11,4 @@ namespace napkin
 		}
 		return false;
 	}
-
-
-	napkin::StageOption StageWidget::toOption() const
-	{
-		return StageOption(objectName().toStdString(),
-			getDisplayName().toStdString(), getTypes());
-	}
 }

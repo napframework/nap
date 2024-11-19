@@ -8,7 +8,8 @@
 
 namespace napkin
 {
-	RenderPreviewPanel::RenderPreviewPanel(QWidget* parent) : StageWidget(parent)
+	RenderPreviewPanel::RenderPreviewPanel(QWidget * parent) : StageWidget("3D Preview",
+		{ RTTI_OF(nap::IMesh), RTTI_OF(nap::Material) }, parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &RenderPreviewPanel::init);

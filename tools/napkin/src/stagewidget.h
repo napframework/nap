@@ -7,8 +7,8 @@
 namespace napkin
 {
 	/**
-	 * Loose coupling between a set of types and compatible widget.
-	 * Every option binds a set of types to a compatible widget that can load, display and interact with them.
+	 * Loose coupling between a set of types and compatible stage widget.
+	 * An option binds a set of resource types to a widget that can handle them.
 	 */
 	struct StageOption
 	{
@@ -20,11 +20,11 @@ namespace napkin
 		 * @param displayName widget display name
 		 * @param types list of compatible types
 		 */
-		StageOption(const std::string&& widgetName, const std::string&& displayName, const Types& types) :
+		StageOption(const std::string& widgetName, const std::string& displayName, const Types& types) :
 			mWidgetName(widgetName), mDisplayName(displayName), mTypes(types) { }
 
-		std::string mDisplayName;	///< Display name
-		std::string mWidgetName;	///< Unique stage widget name
+		std::string mDisplayName;	///< Widget display name
+		std::string mWidgetName;	///< Widget object name
 		Types mTypes;				///< Available preview types
 
 		/**
@@ -53,24 +53,28 @@ namespace napkin
 	{
 		Q_OBJECT
 	public:
-		StageWidget(QWidget* parent = nullptr) : QWidget(parent)		{ }
-
 		/**
-		 * Override in derived classes: returns the accepted nap object types for this staging widget. 
-		 * @return accepted NAP preview types
+		 * @param displayName widget display name
+		 * @param types compatible types
+		 * @param parent widget parent
 		 */
-		virtual std::vector<nap::rtti::TypeInfo> getTypes() const = 0;
-
-		/**
-		 * @return Display name
-		 */
-		virtual QString getDisplayName() const = 0;
+		StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent = nullptr) : QWidget(parent),
+			mDisplayName(displayName), mTypes(types)		{ }
 
 		/**
 		 * Converts this staging widget into an option that can be used to find and load matching types. 
 		 * @return Staging option
 		 */
-		StageOption toOption() const;
+		StageOption toOption() const					{ return StageOption(objectName().toStdString(), mDisplayName, mTypes); }
+
+		/**
+		 * @return Widget display name
+		 */
+		std::string getDisplayName() const				{ return mDisplayName; }
+
+	private:
+		std::string mDisplayName;
+		StageOption::Types mTypes;
 	};
 }
 

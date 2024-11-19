@@ -48,18 +48,7 @@ namespace napkin
 		 */
 		bool running() const										{ return mRunner.running(); }
 
-		/**
-		 * @return preview types
-		 */
-		std::vector<nap::rtti::TypeInfo> getTypes() const override	{ return { RTTI_OF(nap::IMesh), RTTI_OF(nap::Material) }; }
-
-		/**
-		 * @return display name
-		 */
-		virtual QString getDisplayName() const override				{ return "3D Preview"; }
-
 	protected:
-
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 

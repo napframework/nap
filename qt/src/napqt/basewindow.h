@@ -29,17 +29,12 @@ namespace nap
 			/**
 			 * Destructor
 			 */
-			virtual ~BaseWindow()
-			{
-			}
+			virtual ~BaseWindow()	{ }
 
 			/**
 			 * @return The QMenu that contains the list of available widgets
 			 */
-			QMenu* getWindowMenu()
-			{
-				return mWindowMenu;
-			}
+			QMenu* getWindowMenu()	{ return mWindowMenu; }
 
 			/**
 			 * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar

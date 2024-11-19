@@ -93,8 +93,8 @@ void MainWindow::addDocks()
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
-	addDock(mRenderPreviewPanel.getDisplayName(), &mRenderPreviewPanel);
-	addDock(mTexturePreviewPanel.getDisplayName(), &mTexturePreviewPanel);
+	addDock(QString::fromStdString(mRenderPreviewPanel.getDisplayName()), &mRenderPreviewPanel);
+	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
 	menuBar()->addMenu(getWindowMenu());
 }
 
