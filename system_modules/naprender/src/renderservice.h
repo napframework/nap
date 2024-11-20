@@ -984,7 +984,7 @@ namespace nap
 		 * 2 is therefore a good number, where 3 offers only, in most situations, a slight increase in performance.
 		 * This however greatly depends on the application GPU and CPU load.
 		 */
-		int getMaxFramesInFlight() const											{ return 2; }
+		constexpr int getMaxFramesInFlight() const									{ return 2; }
 
 		/**
 		 * Returns the physical device properties for the requested Vulkan format.

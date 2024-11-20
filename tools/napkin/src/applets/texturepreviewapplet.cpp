@@ -20,34 +20,33 @@ RTTI_END_CLASS
 namespace nap 
 {
 	/**
-	 * Utility function that fits and centers a plane in a window
+	 * Utility function that fits and centers a plane in a render target
 	 */
-	static void centerPlane(nap::IRenderTarget& window, nap::TransformComponentInstance& planeTransform)
+	static void centerPlane(const nap::IRenderTarget& target, const nap::Texture2D& texture, nap::TransformComponentInstance& outTransform)
 	{
-		glm::ivec2 pixel_size = window.getBufferSize();
-		float window_width = pixel_size.x;
-		float window_heigh = pixel_size.y;
+		glm::vec2 buf_size = target.getBufferSize();
+		glm::vec2 tex_size = texture.getSize();
+		glm::vec2 tex_scale;
 
-		// Scale of plane is smallest variant of window size
-		float scale = 0.0f;
-		glm::ivec2 offset(0.0f, 0.0f);
-		if (window_width > window_heigh)
+		// Wider
+		if (tex_size.x > tex_size.y)
 		{
-			scale = window_heigh;
-			offset.x = (window_width - window_heigh) / 2.0f;
+			// How to scale uniform plane
+			float ratio = tex_size.y / tex_size.x;
+			tex_scale.x = buf_size.x;
+			tex_scale.y = buf_size.x * ratio;
 		}
+		// Taller
 		else
 		{
-			scale = window_width;
-			offset.y = (window_heigh - scale) / 2.0f;
+			float ratio = tex_size.x / tex_size.y;
+			tex_scale.x = buf_size.y * ratio;
+			tex_scale.y = buf_size.y;
 		}
 
-		float pos_x = (scale / 2.0f) + offset.x;
-		float pos_y = (scale / 2.0f) + offset.y;
-
-		// Push position values to transform
-		planeTransform.setTranslate(glm::vec3(pos_x, pos_y, 0.0f));
-		planeTransform.setScale(glm::vec3(scale, scale, 1.0f));
+		glm::vec2 tex_pos = { buf_size.x / 2.0, buf_size.y / 2.0 };
+		outTransform.setTranslate(glm::vec3(tex_pos, 0.0f));
+		outTransform.setScale(glm::vec3(tex_scale, 1.0f));
 	}
 
 
@@ -126,8 +125,15 @@ namespace nap
 		}
 		ImGui::EndMainMenuBar();
 
-		// Center plane
-		centerPlane(*mRenderWindow, mTextureEntity->getComponent<TransformComponentInstance>());
+		// Set texture and center plane
+		if (mActiveTexture != nullptr)
+		{
+			auto& render_comp = mTextureEntity->getComponent<nap::RenderableMeshComponentInstance>();
+			auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
+			assert(sampler != nullptr);
+			sampler->setTexture(*mActiveTexture);
+			centerPlane(*mRenderWindow, sampler->getTexture(), mTextureEntity->getComponent<TransformComponentInstance>());
+		}
 	}
 	
 	
@@ -147,14 +153,19 @@ namespace nap
 			render_window.beginRendering();
 
 			// Get 2D texture and draw
-			auto& ortho_cam = mOrthoEntity->getComponent<OrthoCameraComponentInstance>();
-			auto& tex2d_com = mTextureEntity->getComponent<RenderableMeshComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
-
-			// Locate component that can render text to screen
-			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
-			render_text.draw(render_window);
+			if (mActiveTexture != nullptr)
+			{
+				auto& ortho_cam = mOrthoEntity->getComponent<OrthoCameraComponentInstance>();
+				auto& tex2d_com = mTextureEntity->getComponent<RenderableMeshComponentInstance>();
+				mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
+			}
+			else
+			{
+				// Otherwise notify user we can select a texture
+				Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+				render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
+				render_text.draw(render_window);
+			}
 
 			// Render gui to screen
 			mGuiService->draw();
@@ -185,7 +196,7 @@ namespace nap
 	
 	int TexturePreviewApplet::shutdown()
 	{
-		mTexture.reset(nullptr);
+		mActiveTexture.reset(nullptr);
 		return 0;
 	}
 
@@ -218,13 +229,13 @@ namespace nap
 
 		// Init texture
 		if (!result.mReadObjects[0]->init(error))
+		{
 			nap::Logger::error(error.toString());
+			return;
+		}
 
 		// Store and set
-		mTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
-		auto& render_comp = mTextureEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
-		assert(sampler != nullptr);
-		sampler->setTexture(*mTexture);
+		mActiveTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
 	}
 }
+

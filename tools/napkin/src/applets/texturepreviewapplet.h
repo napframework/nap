@@ -94,6 +94,6 @@ namespace nap
 		void onLoadRequested(const nap::APIEvent& apiEvent);			//< Loads a texture from JSON
 		nap::Slot<const nap::APIEvent&> mLoadRequestedSlot = { this, &TexturePreviewApplet::onLoadRequested };
 
-		std::unique_ptr<Texture2D>	mTexture = nullptr;					//< The loaded texture
+		std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;
 	};
 }
