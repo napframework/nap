@@ -22,9 +22,9 @@ namespace nap
 	/**
 	 * Utility function that fits and centers a plane in a render target
 	 */
-	static void centerPlane(const nap::IRenderTarget& target, const nap::Texture2D& texture, nap::TransformComponentInstance& outTransform)
+	static void centerPlane(const glm::vec2& targetSize, const nap::Texture2D& texture, nap::TransformComponentInstance& outTransform)
 	{
-		glm::vec2 buf_size = target.getBufferSize();
+		glm::vec2 buf_size = targetSize;
 		glm::vec2 tex_size = texture.getSize();
 		glm::vec2 tex_scale;
 
@@ -112,9 +112,10 @@ namespace nap
 
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
-		if (ImGui::BeginMenu("File"))
+		int bar_height = ImGui::GetWindowHeight();
+		if (ImGui::BeginMenu("Background"))
 		{
-			ImGui::MenuItem("Open...");
+			ImGui::ColorPicker4("Color", mClearColor.getData());	
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Info"))
@@ -132,7 +133,8 @@ namespace nap
 			auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
 			assert(sampler != nullptr);
 			sampler->setTexture(*mActiveTexture);
-			centerPlane(*mRenderWindow, sampler->getTexture(), mTextureEntity->getComponent<TransformComponentInstance>());
+			centerPlane({ mRenderWindow->getWidth(), mRenderWindow->getHeightPixels() - bar_height },
+				sampler->getTexture(), mTextureEntity->getComponent<TransformComponentInstance>());
 		}
 	}
 	
@@ -147,6 +149,7 @@ namespace nap
 
 		// Begin recording the render commands for the main render window
 		nap::RenderWindow& render_window = *mRenderWindow;
+		render_window.setClearColor(mClearColor);
 		if (mRenderService->beginRecording(render_window))
 		{
 			// Begin the render pass

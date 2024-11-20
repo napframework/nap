@@ -95,5 +95,6 @@ namespace nap
 		nap::Slot<const nap::APIEvent&> mLoadRequestedSlot = { this, &TexturePreviewApplet::onLoadRequested };
 
 		std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;
+		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };
 	};
 }
