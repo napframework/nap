@@ -86,12 +86,14 @@ namespace nap
 
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance>	mAPIEntity = nullptr;				//< Pointer to the api entity
+		ObjectPtr<EntityInstance>	mTextureEntity = nullptr;			//< Pointer to the texture entity
+		ObjectPtr<EntityInstance>	mOrthoEntity = nullptr;				//< Pointer to the ortho camera
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
 
 		ObjectPtr<APISignature>		mLoadSignature = nullptr;			//< Pointer to the api text signature
 		void onLoadRequested(const nap::APIEvent& apiEvent);			//< Loads a texture from JSON
 		nap::Slot<const nap::APIEvent&> mLoadRequestedSlot = { this, &TexturePreviewApplet::onLoadRequested };
 
-		std::unique_ptr<Texture> mTexture = nullptr;							//< The loaded texture
+		std::unique_ptr<Texture2D>	mTexture = nullptr;					//< The loaded texture
 	};
 }

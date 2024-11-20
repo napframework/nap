@@ -11,6 +11,7 @@
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
 #include <rtti/jsonreader.h>
+#include <textureshader.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -18,6 +19,38 @@ RTTI_END_CLASS
 
 namespace nap 
 {
+	/**
+	 * Utility function that fits and centers a plane in a window
+	 */
+	static void centerPlane(nap::IRenderTarget& window, nap::TransformComponentInstance& planeTransform)
+	{
+		glm::ivec2 pixel_size = window.getBufferSize();
+		float window_width = pixel_size.x;
+		float window_heigh = pixel_size.y;
+
+		// Scale of plane is smallest variant of window size
+		float scale = 0.0f;
+		glm::ivec2 offset(0.0f, 0.0f);
+		if (window_width > window_heigh)
+		{
+			scale = window_heigh;
+			offset.x = (window_width - window_heigh) / 2.0f;
+		}
+		else
+		{
+			scale = window_width;
+			offset.y = (window_heigh - scale) / 2.0f;
+		}
+
+		float pos_x = (scale / 2.0f) + offset.x;
+		float pos_y = (scale / 2.0f) + offset.y;
+
+		// Push position values to transform
+		planeTransform.setTranslate(glm::vec3(pos_x, pos_y, 0.0f));
+		planeTransform.setScale(glm::vec3(scale, scale, 1.0f));
+	}
+
+
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
@@ -48,12 +81,20 @@ namespace nap
 		if (!error.check(scene != nullptr, "Missing 'Scene'"))
 			return false;
 
-		mTextEntity = scene->findEntity("Text");
-		if (!error.check(mTextEntity != nullptr, "Missing 'Text' entity"))
+		mTextEntity = scene->findEntity("TextEntity");
+		if (!error.check(mTextEntity != nullptr, "Missing 'TextEntity'"))
 			return false;
 
-		mAPIEntity = scene->findEntity("API");
-		if (!error.check(mAPIEntity != nullptr, "Missing 'API' entity"))
+		mAPIEntity = scene->findEntity("APIEntity");
+		if (!error.check(mAPIEntity != nullptr, "Missing 'APIEntity'"))
+			return false;
+
+		mTextureEntity = scene->findEntity("2DTextureEntity");
+		if (!error.check(mTextureEntity != nullptr, "Missing '2DTextureEntity'"))
+			return false;
+
+		mOrthoEntity = scene->findEntity("OrthoCameraEntity");
+		if (!error.check(mOrthoEntity != nullptr, "Missing 'OrthoCameraEntity'"))
 			return false;
 
 		// Register load callback
@@ -84,6 +125,9 @@ namespace nap
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
+
+		// Center plane
+		centerPlane(*mRenderWindow, mTextureEntity->getComponent<TransformComponentInstance>());
 	}
 	
 	
@@ -97,17 +141,18 @@ namespace nap
 
 		// Begin recording the render commands for the main render window
 		nap::RenderWindow& render_window = *mRenderWindow;
-		//render_window.setClearColor(RGBAColorFloat(1.0f, 1.0f, 0.0f, 1.0f));
-
 		if (mRenderService->beginRecording(render_window))
 		{
 			// Begin the render pass
 			render_window.beginRendering();
 
+			// Get 2D texture and draw
+			auto& ortho_cam = mOrthoEntity->getComponent<OrthoCameraComponentInstance>();
+			auto& tex2d_com = mTextureEntity->getComponent<RenderableMeshComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
+
 			// Locate component that can render text to screen
 			Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-
-			// Center text and render it using the given draw call, 
 			render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
 			render_text.draw(render_window);
 
@@ -161,7 +206,7 @@ namespace nap
 		}
 
 		// Ensure there's at least 1 object and it's of type texture
-		if (result.mReadObjects.size() == 0 || !result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture)))
+		if (result.mReadObjects.size() == 0 || !result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)))
 		{
 			nap::Logger::error("%s cmd failed: invalid payload", loadCmd1);
 			return;
@@ -175,7 +220,11 @@ namespace nap
 		if (!result.mReadObjects[0]->init(error))
 			nap::Logger::error(error.toString());
 
-		// Set
-		mTexture.reset(static_cast<Texture*>(result.mReadObjects[0].release()));
+		// Store and set
+		mTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
+		auto& render_comp = mTextureEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
+		assert(sampler != nullptr);
+		sampler->setTexture(*mTexture);
 	}
 }

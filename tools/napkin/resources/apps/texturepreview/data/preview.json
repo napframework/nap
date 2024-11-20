@@ -2,7 +2,64 @@
     "Objects": [
         {
             "Type": "nap::Entity",
-            "mID": "API",
+            "mID": "2DTextureEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DTextureTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 32.0,
+                            "y": 32.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 64.0,
+                            "y": 64.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "2DTextureRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "UniformPlaneMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "2DTextureMaterial",
+                        "BlendMode": "AlphaBlend",
+                        "DepthMode": "InheritFromBlendMode"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "APIEntity",
             "Components": [
                 {
                     "Type": "nap::APIComponent",
@@ -16,7 +73,59 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "Text",
+            "mID": "OrthoCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "OrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "OrthoCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 5.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "TextEntity",
             "Components": [
                 {
                     "Type": "nap::Renderable2DTextComponent",
@@ -101,6 +210,125 @@
         },
         {
             "Type": "nap::ResourceGroup",
+            "mID": "Rendering",
+            "Members": [],
+            "Children": [
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Materials",
+                    "Members": [
+                        {
+                            "Type": "nap::TextureShader",
+                            "mID": "2DTextureShader"
+                        },
+                        {
+                            "Type": "nap::Material",
+                            "mID": "2DTextureMaterial",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "UBO_eeaee4",
+                                    "Name": "UBO",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "color_7a3f71",
+                                            "Name": "color",
+                                            "Value": {
+                                                "x": 1.0,
+                                                "y": 1.0,
+                                                "z": 1.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformFloat",
+                                            "mID": "alpha_6c7b08",
+                                            "Name": "alpha",
+                                            "Value": 1.0
+                                        }
+                                    ]
+                                }
+                            ],
+                            "Samplers": [
+                                {
+                                    "Type": "nap::Sampler2D",
+                                    "mID": "colorTexture",
+                                    "Name": "colorTexture",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MinLodLevel": 0,
+                                    "MaxLodLevel": 1000,
+                                    "LodBias": 0.0,
+                                    "AnisotropicSamples": "Default",
+                                    "BorderColor": "IntOpaqueBlack",
+                                    "CompareMode": "LessOrEqual",
+                                    "EnableCompare": false,
+                                    "Texture": "DefaultImage"
+                                }
+                            ],
+                            "Buffers": [],
+                            "Constants": [],
+                            "Shader": "2DTextureShader",
+                            "VertexAttributeBindings": [],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Meshes",
+                    "Members": [
+                        {
+                            "Type": "nap::PlaneMesh",
+                            "mID": "UniformPlaneMesh",
+                            "Usage": "Static",
+                            "CullMode": "None",
+                            "PolygonMode": "Fill",
+                            "Size": {
+                                "x": 1.0,
+                                "y": 1.0
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Rows": 1,
+                            "Columns": 1
+                        }
+                    ],
+                    "Children": []
+                },
+                {
+                    "Type": "nap::ResourceGroup",
+                    "mID": "Textures",
+                    "Members": [
+                        {
+                            "Type": "nap::ImageFromFile",
+                            "mID": "DefaultImage",
+                            "Usage": "Static",
+                            "ImagePath": "test_texture.jpg",
+                            "GenerateLods": true
+                        }
+                    ],
+                    "Children": []
+                }
+            ]
+        },
+        {
+            "Type": "nap::ResourceGroup",
             "mID": "Signatures",
             "Members": [
                 {
@@ -123,11 +351,19 @@
             "mID": "Scene",
             "Entities": [
                 {
-                    "Entity": "Text",
+                    "Entity": "TextEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "API",
+                    "Entity": "APIEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "OrthoCameraEntity",
+                    "InstanceProperties": []
+                },
+                {
+                    "Entity": "2DTextureEntity",
                     "InstanceProperties": []
                 }
             ]
