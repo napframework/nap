@@ -113,6 +113,8 @@ namespace napkin
 
 		/**
 		 * Occurs when a stage (load) request is issued
+		 * @param path the path to load
+		 * @param selection the selected widget
 		 */
 		void onStageRequested(const PropertyPath& path, const StageOption& selection);
 

@@ -1,5 +1,9 @@
 #pragma once
 
+// Local includes
+#include "propertypath.h"
+
+// External includes
 #include <QWidget>
 #include <QList>
 #include <rtti/typeinfo.h>
@@ -72,9 +76,20 @@ namespace napkin
 		 */
 		std::string getDisplayName() const				{ return mDisplayName; }
 
+		/**
+		 * Set path to load, note that the past must be validated as an option
+		 * @param path the path to load
+		 */
+		void setPath(const PropertyPath& path)			{ mPath = path; loadPath(path); }
+
+	protected:
+		// Implement in derived classes to load validated path
+		virtual void loadPath(const PropertyPath& path) = 0;
+
 	private:
 		std::string mDisplayName;
 		StageOption::Types mTypes;
+		PropertyPath mPath;
 	};
 }
 

@@ -52,6 +52,8 @@ namespace napkin
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
+		virtual void loadPath(const PropertyPath& path) override;
+
 	private:
 		QLineEdit				mLineEdit;
 		QSpinBox				mSpinbox;

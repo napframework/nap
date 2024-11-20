@@ -98,7 +98,7 @@ void MainWindow::addDocks()
 	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
 
 	// Register resource load options ->
-	// Tells the resource panel which widget edit options (preview, etc.) are available for specific types.
+	// Tells the resource panel which widgets (preview, etc.) are available to handle specific types.
 	mResourcePanel.registerStageOption(mTexturePreviewPanel.toOption());
 	mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
 
@@ -380,16 +380,11 @@ void napkin::MainWindow::addToolstrip()
 
 void MainWindow::onStageRequested(const PropertyPath& path, const StageOption& selection)
 {
-	if (mTexturePreviewPanel.toOption() == selection)
+	auto* stage_widget = findChild<StageWidget*>(QString::fromStdString(selection.mWidgetName));
+	if (stage_widget != nullptr)
 	{
-		nap::Logger::info("Loading %s in %s", path.toString().c_str(), selection.mWidgetName.c_str());
-		return;
-	}
-
-	if (mRenderPreviewPanel.toOption() == selection)
-	{
-		nap::Logger::info("Loading %s in %s", path.toString().c_str(), selection.mWidgetName.c_str());
-		return;
+		nap::Logger::info("Setting '%s' in '%s'", path.toString().c_str(), selection.mWidgetName.c_str());
+		stage_widget->setPath(path);
 	}
 }
 

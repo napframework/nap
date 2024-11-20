@@ -28,6 +28,12 @@ namespace napkin
 	}
 
 
+	void TexturePreviewPanel::loadPath(const PropertyPath& path)
+	{
+
+	}
+
+
 	void TexturePreviewPanel::init(const nap::ProjectInfo& info)
 	{
 		// Signals completion setup resources gui thread

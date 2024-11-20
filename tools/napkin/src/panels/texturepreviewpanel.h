@@ -49,6 +49,9 @@ namespace napkin
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
+		// Loads the texture
+		virtual void loadPath(const PropertyPath& path) override;
+
 	private:
 		RenderPanel*			mPanel = nullptr;	//< NAP compatible Qt render window
 		TextureAppletRunner		mRunner;			//< Application that is run
