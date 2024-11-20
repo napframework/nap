@@ -9,6 +9,8 @@
 #include <perspcameracomponent.h>
 #include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
+#include <apicomponent.h>
+#include <rtti/jsonreader.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -36,14 +38,27 @@ namespace nap
 		if (!error.check(mRenderWindow != nullptr, "Missing 'Window'"))
 			return false;
 
+		// API Signature
+		mLoadSignature = mResourceManager->findObject<APISignature>(loadCmd1);
+		if (!error.check(mLoadSignature != nullptr, "Missing 'SetText' api signature"))
+			return false;
+
 		// Get the resource that manages all the entities
 		ObjectPtr<Scene> scene = mResourceManager->findObject<Scene>("Scene");
 		if (!error.check(scene != nullptr, "Missing 'Scene'"))
 			return false;
 
 		mTextEntity = scene->findEntity("Text");
-		if (!error.check(mTextEntity != nullptr, "Missing 'Text'"))
+		if (!error.check(mTextEntity != nullptr, "Missing 'Text' entity"))
 			return false;
+
+		mAPIEntity = scene->findEntity("API");
+		if (!error.check(mAPIEntity != nullptr, "Missing 'API' entity"))
+			return false;
+
+		// Register load callback
+		auto& api_comp = mAPIEntity->getComponent<nap::APIComponentInstance>();
+		api_comp.registerCallback(*mLoadSignature, mLoadRequestedSlot);
 
 		return true;
 	}
@@ -126,5 +141,35 @@ namespace nap
 	int TexturePreviewApplet::shutdown()
 	{
 		return 0;
+	}
+
+
+	void TexturePreviewApplet::onLoadRequested(const nap::APIEvent& apiEvent)
+	{
+		auto* data_arg = apiEvent.getArgumentByName(loadArg1);
+		assert(data_arg != nullptr);
+
+		// De-serialize JSON
+		nap::utility::ErrorState error; nap::DeserializeResult result;
+		if (!rtti::deserializeJSON(data_arg->asString(), EPropertyValidationMode::DisallowMissingProperties,
+			EPointerPropertyMode::OnlyRawPointers, getCore().getResourceManager()->getFactory(), result, error))
+		{
+			error.fail("%s cmd failed", loadCmd1);
+			nap::Logger::error(error.toString());
+			return;
+		}
+
+		// Ensure there's at least 1 object and it's of type texture
+		if (result.mReadObjects.size() == 0 ||
+			result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture)))
+		{
+			nap::Logger::error("%s cmd failed: invalid payload", loadCmd1);
+			return;
+		}
+
+		// Warn if there's more than 1 object and store
+		if (result.mReadObjects.size() > 1)
+			nap::Logger::warn("%s cmd holds multiple objects, selecting first one...", loadCmd1);
+		mTexture.reset(static_cast<Texture*>(result.mReadObjects[0].release()));
 	}
 }

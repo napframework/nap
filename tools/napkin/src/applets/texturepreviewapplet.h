@@ -13,6 +13,7 @@
 #include <entity.h>
 #include <imagefromfile.h>
 #include <imguiservice.h>
+#include <apievent.h>
 
 // Local includes
 #include "../applet.h"
@@ -28,6 +29,11 @@ namespace nap
 	{
 		RTTI_ENABLE(napkin::Applet)
 	public:
+
+		// Signature callback names and arguments
+		static constexpr const char* loadCmd1 = "LoadTexture";
+		static constexpr const char* loadArg1 = "data";
+
 		/**
 		 * Constructor
 		 * @param core instance of the NAP core system
@@ -79,6 +85,13 @@ namespace nap
 		ObjectPtr<Scene>			mScene = nullptr;					///< Pointer to the main scene
 
 		ObjectPtr<EntityInstance>	mTextEntity = nullptr;				//< Pointer to the entity that can display text
+		ObjectPtr<EntityInstance>	mAPIEntity = nullptr;				//< Pointer to the api entity
 		ObjectPtr<RenderWindow>		mRenderWindow = nullptr;			//< Pointer to the render window
+
+		ObjectPtr<APISignature>		mLoadSignature = nullptr;			//< Pointer to the api text signature
+		void onLoadRequested(const nap::APIEvent& apiEvent);			//< Loads a texture from JSON
+		nap::Slot<const nap::APIEvent&> mLoadRequestedSlot = { this, &TexturePreviewApplet::onLoadRequested };
+
+		std::unique_ptr<Texture> mTexture = nullptr;							//< The loaded texture
 	};
 }

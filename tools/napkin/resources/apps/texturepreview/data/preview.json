@@ -2,6 +2,20 @@
     "Objects": [
         {
             "Type": "nap::Entity",
+            "mID": "API",
+            "Components": [
+                {
+                    "Type": "nap::APIComponent",
+                    "mID": "APIComponent",
+                    "Signatures": [
+                        "LoadTexture"
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "Text",
             "Components": [
                 {
@@ -54,58 +68,6 @@
             "Children": []
         },
         {
-            "Type": "nap::Entity",
-            "mID": "TextCamera",
-            "Components": [
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "TexOrthoCameraComponent",
-                    "Properties": {
-                        "Mode": "PixelSpace",
-                        "LeftPlane": 0.0,
-                        "RightPlane": 100.0,
-                        "TopPlane": 100.0,
-                        "BottomPlane": 0.0,
-                        "NearClippingPlane": 0.0,
-                        "FarClippingPlane": 2.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "TexOrthoCameraTransformComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 1.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                }
-            ],
-            "Children": []
-        },
-        {
             "Type": "nap::Font",
             "mID": "Font",
             "Properties": {
@@ -138,6 +100,25 @@
             "RestorePosition": false
         },
         {
+            "Type": "nap::ResourceGroup",
+            "mID": "Signatures",
+            "Members": [
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "LoadTexture",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "APIString",
+                            "Name": "data",
+                            "Value": ""
+                        }
+                    ]
+                }
+            ],
+            "Children": []
+        },
+        {
             "Type": "nap::Scene",
             "mID": "Scene",
             "Entities": [
@@ -146,7 +127,7 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "TextCamera",
+                    "Entity": "API",
                     "InstanceProperties": []
                 }
             ]

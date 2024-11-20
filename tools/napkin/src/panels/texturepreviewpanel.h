@@ -49,7 +49,7 @@ namespace napkin
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
-		// Loads the texture
+		// Loads the texture -> path must point to type Texture2D
 		virtual void loadPath(const PropertyPath& path) override;
 
 	private:

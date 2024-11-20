@@ -5,10 +5,12 @@
 #include "texturepreviewpanel.h"
 #include "../appcontext.h"
 
+#include <rtti/jsonwriter.h>
+
 namespace napkin
 {
 	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget("Texture Preview",
-		{ RTTI_OF(nap::Texture2D) }, parent)
+		{ RTTI_OF(nap::Texture) }, parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);
@@ -30,7 +32,20 @@ namespace napkin
 
 	void TexturePreviewPanel::loadPath(const PropertyPath& path)
 	{
+		// Serialize to JSON
+		nap::rtti::JSONWriter writer;
+		nap::rtti::ObjectList list = { path.getObject() };
+		nap::utility::ErrorState error;
+		if (!serializeObjects(list, writer, error))
+		{
+			nap::Logger::error(error.toString());
+			return;
+		}
 
+		// Send as command to applet
+		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(nap::TexturePreviewApplet::loadCmd1);
+		load_tex_event->addArgument<nap::APIString>(nap::TexturePreviewApplet::loadArg1, writer.GetJSON());
+		mRunner.sendEvent(std::move(load_tex_event));
 	}
 
 
