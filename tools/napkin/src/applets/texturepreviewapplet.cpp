@@ -140,6 +140,7 @@ namespace nap
 	
 	int TexturePreviewApplet::shutdown()
 	{
+		mTexture.reset(nullptr);
 		return 0;
 	}
 
@@ -160,8 +161,7 @@ namespace nap
 		}
 
 		// Ensure there's at least 1 object and it's of type texture
-		if (result.mReadObjects.size() == 0 ||
-			result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture)))
+		if (result.mReadObjects.size() == 0 || !result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture)))
 		{
 			nap::Logger::error("%s cmd failed: invalid payload", loadCmd1);
 			return;
@@ -169,7 +169,13 @@ namespace nap
 
 		// Warn if there's more than 1 object and store
 		if (result.mReadObjects.size() > 1)
-			nap::Logger::warn("%s cmd holds multiple objects, selecting first one...", loadCmd1);
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", loadCmd1);
+
+		// Init texture
+		if (!result.mReadObjects[0]->init(error))
+			nap::Logger::error(error.toString());
+
+		// Set
 		mTexture.reset(static_cast<Texture*>(result.mReadObjects[0].release()));
 	}
 }

@@ -138,7 +138,14 @@ namespace napkin
 				}
 
 				// Bail if we're told to stop (unlocks)
-				if (mAbort) {
+				if (mAbort)
+				{
+					auto code = mApplet->shutdown();
+					if (code != applet::exitcode::success)
+					{
+						nap::Logger::error("Applet '%s' failed to shut down gracefully, exit code: %d",
+							mApplet->get_type().get_name().data());
+					}
 					return;
 				}
 
