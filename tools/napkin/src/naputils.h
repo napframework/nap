@@ -54,29 +54,31 @@ namespace napkin
 	 * TODO: A NAP project should not depend on the cwd to resolve / load relative data!!
 	 * Instead make use of a thread local variable or use the data directory, as resolved by the project on initialization.
 	 */
-	class CWD final
+	class CWDHandle final
 	{
 	public:
 		/**
 		 * Lock, cache and change working directory to new working directory
 		 * @param newDirectory new temporary working directory
 		 */
-		CWD(const std::string& newDirectory);
+		CWDHandle(const std::string& newDirectory);
 
 		/**
 		 * Restore cached working directory and release lock
 		 */
-		~CWD();
+		~CWDHandle();
 
-		// Move and copy are not allowed
-		CWD(CWD&) = delete;
-		CWD& operator=(const CWD&) = delete;
-		CWD(CWD&& other) = delete;
-		CWD& operator=(CWD&& other) = delete;
+		// Copy is not allowed
+		CWDHandle(CWDHandle&) = delete;
+		CWDHandle& operator=(const CWDHandle&) = delete;
+
+		// Move is allowed
+		CWDHandle(CWDHandle&& other);
+		CWDHandle& operator=(CWDHandle&& other);
 
 	private:
 		std::string mPrevious;
-		std::lock_guard<std::mutex> mLock;	///< Mutex lock
+		std::unique_lock<std::mutex> mLock;	///< Mutex lock
 		static std::mutex mMutex;			///< Shared mutex
 	};
 

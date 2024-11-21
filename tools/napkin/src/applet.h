@@ -4,6 +4,9 @@
 
 #pragma once
 
+// Local includes
+#include "naputils.h"
+
 // External includes
 #include <app.h>
 #include <renderwindow.h>
@@ -58,11 +61,15 @@ namespace napkin
 
 	protected:
 		/**
-		 * @return absolute path to the data directory loaded in Napkin
+		 * Switches data directory to the project one being edited in napkin.
+		 * The current working directory is active until the handle falls out of scope.
+		 * 
+		 * Allows for data to be de-serialized relative to that directory, instead of ours.
+		 * @return Current working directory handle
 		 */
-		std::string getWorkingDir() { assert(mEditorInfo != nullptr); return mEditorInfo->getDataDirectory(); }
+		napkin::CWDHandle switchWorkingDir() { assert(mEditorInfo != nullptr); return napkin::CWDHandle(mEditorInfo->getDataDirectory()); }
 
-	private:
-		std::unique_ptr<nap::ProjectInfo> mEditorInfo = nullptr;	///< Project currently loaded in napkin
+	private: 
+		std::unique_ptr<nap::ProjectInfo> mEditorInfo = nullptr;	///< Project currently loaded in napkin (provided by applet runner)
 	};
 }

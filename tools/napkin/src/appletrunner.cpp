@@ -7,6 +7,7 @@
 #include "apiservice.h"
 #include "apievent.h"
 #include "appcontext.h"
+#include "naputils.h"
 
 namespace napkin
 {
@@ -76,22 +77,19 @@ namespace napkin
 		if (service_handle == nullptr)
 			return false;
 
-		// Change current working directory to directory that contains the data file
-		// TODO: Remove! setting cwd is not thread safe - make thread local or resolve local
-		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
-		nap::utility::changeDir(data_dir);
-		nap::Logger::info("%s working directory: %s", mCore.getProjectInfo()->mTitle.c_str(), data_dir.c_str());
-
 		// Ensure project data is available
 		if (!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
 			mCore.getProjectInfo()->getProjectDir().c_str()))
 			return false;
 
-		// Load project data
-		std::string data_file = nap::utility::getFileName(mCore.getProjectInfo()->getDataFile());
-		nap::Logger::info("Loading data: %s", data_file.c_str());
-		if (!error.check(mCore.getResourceManager()->loadFile(data_file, error), "Failed to load data: %s", data_file.c_str()))
-			return false;
+		// Change current working directory to directory that contains the data file and load
+		{
+			napkin::CWDHandle cwd(mCore.getProjectInfo()->getDataDirectory());
+			std::string data_file = nap::utility::getFileName(mCore.getProjectInfo()->getDataFile());
+			nap::Logger::info("Loading data: %s", data_file.c_str());
+			if (!error.check(mCore.getResourceManager()->loadFile(data_file, error), "Failed to load data: %s", data_file.c_str()))
+				return false;
+		}
 
 		// Initialize application
 		mApplet->mEditorInfo = std::move(AppContext::get().getProjectInfo()->clone());

@@ -30,16 +30,29 @@ using namespace napkin;
 RTTI_DEFINE_BASE(napkin::RTTITypeItem)
 
 // App global definition of cwd mutex
-std::mutex napkin::CWD::mMutex;
-CWD::CWD(const std::string& newDirectory) : mLock(mMutex)
+std::mutex napkin::CWDHandle::mMutex;
+CWDHandle::CWDHandle(const std::string& newDirectory) : mLock(mMutex)
 {
 	mPrevious = nap::utility::getCWD();
 	nap::utility::changeDir(newDirectory);
 }
 
-CWD::~CWD()
+CWDHandle::~CWDHandle()
 {
 	nap::utility::changeDir(mPrevious);
+}
+
+napkin::CWDHandle& CWDHandle::operator=(CWDHandle&& other)
+{
+	this->mPrevious = std::move(other.mPrevious);
+	this->mLock = std::move(other.mLock);
+	return *this;
+}
+
+CWDHandle::CWDHandle(CWDHandle&& other)
+{
+	this->mPrevious = std::move(other.mPrevious);
+	this->mLock = std::move(other.mLock);
 }
 
 std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
@@ -418,7 +431,7 @@ bool napkin::loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::
 
 	// Change working directory for compilation -> restored when destroyed
 	assert(core.isInitialized());
-	napkin::CWD cwd(core.getProjectInfo()->getDataDirectory());
+	napkin::CWDHandle cwd(core.getProjectInfo()->getDataDirectory());
 
 	// Clear and load
 	shader.clear();

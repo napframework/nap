@@ -231,12 +231,14 @@ namespace nap
 		if (result.mReadObjects.size() > 1)
 			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", loadCmd1);
 
-		// Init texture
-		napkin::CWD cwd(getWorkingDir());
-		if (!result.mReadObjects[0]->init(error))
+		// Init texture relative to project working directory
 		{
-			nap::Logger::error(error.toString());
-			return;
+			napkin::CWDHandle cwd_handle = switchWorkingDir();
+			if (!result.mReadObjects[0]->init(error))
+			{
+				nap::Logger::error(error.toString());
+				return;
+			}
 		}
 
 		// Store and set
