@@ -67,15 +67,15 @@ namespace napkin
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		auto init_future = mRunner.start(preview_app, 60);
 
-		// Wait for applet initialization to finish
-		if (init_future.get())
-		{
-			// Install window into this widget
-			assert(layout() == nullptr);
-			mLayout.setContentsMargins(0, 0, 0, 0);
-			mLayout.addWidget(&mPanel->getWidget());
-			setLayout(&mLayout);
-		}
+		// Don't install layout if initialization fails
+		if (!init_future.get())
+			return;
+
+		// Install window into this widget
+		assert(layout() == nullptr);
+		mLayout.setContentsMargins(0, 0, 0, 0);
+		mLayout.addWidget(&mPanel->getWidget());
+		setLayout(&mLayout);
 	}
 }
 
