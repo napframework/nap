@@ -22,31 +22,31 @@ namespace nap
 	/**
 	 * Utility function that fits and centers a plane in a render target
 	 */
-	static void centerPlane(const glm::vec2& targetSize, const nap::Texture2D& texture, nap::TransformComponentInstance& outTransform)
+	static void frameTexture(const glm::vec2& targetSize, const nap::Texture2D& texture, nap::TransformComponentInstance& outTransform)
 	{
+		// Compute current frame ratios (buffer & texture)
 		glm::vec2 buf_size = targetSize;
 		glm::vec2 tex_size = texture.getSize();
-		glm::vec2 tex_scale;
+		glm::vec2 tar_scale;
 
-		// Wider
-		if (tex_size.x > tex_size.y)
+		// Texture wider (ratio) -> horizontal leading
+		glm::vec2 ratios = { buf_size.y / buf_size.x, tex_size.y / tex_size.x };
+		if (ratios.x > ratios.y)
 		{
-			// How to scale uniform plane
-			float ratio = tex_size.y / tex_size.x;
-			tex_scale.x = buf_size.x;
-			tex_scale.y = buf_size.x * ratio;
+			tar_scale.x = buf_size.x;
+			tar_scale.y = buf_size.x * ratios.y;
 		}
-		// Taller
+		// Texture taller (ratio) -> vertical leading
 		else
 		{
-			float ratio = tex_size.x / tex_size.y;
-			tex_scale.x = buf_size.y * ratio;
-			tex_scale.y = buf_size.y;
+			tar_scale.x = buf_size.y / ratios.y;
+			tar_scale.y = buf_size.y;
 		}
 
-		glm::vec2 tex_pos = { buf_size.x / 2.0, buf_size.y / 2.0 };
+		// Compute 2D (XY) position and update transform
+		glm::vec2 tex_pos = { buf_size.x * 0.5f, buf_size.y * 0.5f };
 		outTransform.setTranslate(glm::vec3(tex_pos, 0.0f));
-		outTransform.setScale(glm::vec3(tex_scale, 1.0f));
+		outTransform.setScale(glm::vec3(tar_scale, 1.0f));
 	}
 
 
@@ -133,7 +133,7 @@ namespace nap
 			auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
 			assert(sampler != nullptr);
 			sampler->setTexture(*mActiveTexture);
-			centerPlane({ mRenderWindow->getWidth(), mRenderWindow->getHeightPixels() - bar_height },
+			frameTexture({ mRenderWindow->getWidth(), mRenderWindow->getHeightPixels() - bar_height },
 				sampler->getTexture(), mTextureEntity->getComponent<TransformComponentInstance>());
 		}
 	}
