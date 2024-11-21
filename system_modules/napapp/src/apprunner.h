@@ -168,6 +168,7 @@ namespace nap
 			return false;
 #endif
 		// Change current working directory to directory that contains the data file
+		// TODO: Remove! setting cwd is not thread safe - make thread local or resolve local
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
 		utility::changeDir(data_dir);
 		nap::Logger::info("Current working directory: % s", data_dir.c_str());

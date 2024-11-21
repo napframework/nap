@@ -67,7 +67,7 @@ namespace napkin
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		auto init_future = mRunner.start(preview_app, 60);
 
-		// Wait for applet initialization to finish 
+		// Wait for applet initialization to finish
 		if (init_future.get())
 		{
 			// Install window into this widget
@@ -78,4 +78,5 @@ namespace napkin
 		}
 	}
 }
+
 

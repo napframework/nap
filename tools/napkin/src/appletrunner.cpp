@@ -6,6 +6,7 @@
 #include "imguiservice.h"
 #include "apiservice.h"
 #include "apievent.h"
+#include "appcontext.h"
 
 namespace napkin
 {
@@ -76,9 +77,10 @@ namespace napkin
 			return false;
 
 		// Change current working directory to directory that contains the data file
+		// TODO: Remove! setting cwd is not thread safe - make thread local or resolve local
 		std::string data_dir = mCore.getProjectInfo()->getDataDirectory();
 		nap::utility::changeDir(data_dir);
-		nap::Logger::info("Current working directory: % s", data_dir.c_str());
+		nap::Logger::info("%s working directory: %s", mCore.getProjectInfo()->mTitle.c_str(), data_dir.c_str());
 
 		// Ensure project data is available
 		if (!error.check(!mCore.getProjectInfo()->mDefaultData.empty(), "Missing project data, %s 'Data' field is empty",
@@ -92,11 +94,13 @@ namespace napkin
 			return false;
 
 		// Initialize application
+		mApplet->mEditorInfo = std::move(AppContext::get().getProjectInfo()->clone());
 		if (!error.check(mApplet->init(error), "Unable to initialize applet"))
 			return false;
 
 		// Store services
 		mServices = std::move(service_handle);
+
 		return true;
 	}
 

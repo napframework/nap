@@ -92,6 +92,9 @@ namespace nap
 		// Ensure our current working directory is where the executable is.
 		// Works around issues with the current working directory not being set as
 		// expected when apps are launched directly from macOS Finder and probably other things too.
+		// 
+		// TODO: Is this still required? If not REMOVE!
+		// TODO: Setting cwd is not thread safe - make thread local or resolve local
 		nap::utility::changeDir(nap::utility::getExecutableDir());
 
 		// Setup our Python environment

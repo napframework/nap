@@ -66,6 +66,7 @@ namespace napkin
 		/**
 		 * Initializes and runs the applet a-synchronous on it's own thread.
 		 * @param projectFilename full path to the project to run
+		 * @param workingDirectory the current project working directory
 		 * @param frequency update frequency in hz
 		 * @return if initialization succeeded or not
 		 */

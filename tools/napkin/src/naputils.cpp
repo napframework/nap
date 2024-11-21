@@ -29,6 +29,19 @@ using namespace napkin;
 
 RTTI_DEFINE_BASE(napkin::RTTITypeItem)
 
+// App global definition of cwd mutex
+std::mutex napkin::CWD::mMutex;
+CWD::CWD(const std::string& newDirectory) : mLock(mMutex)
+{
+	mPrevious = nap::utility::getCWD();
+	nap::utility::changeDir(newDirectory);
+}
+
+CWD::~CWD()
+{
+	nap::utility::changeDir(mPrevious);
+}
+
 std::vector<rttr::type> napkin::getImmediateDerivedTypes(const rttr::type& type)
 {
 	// Cycle over all derived types. This includes all derived types,
@@ -403,16 +416,13 @@ bool napkin::loadShader(nap::BaseShader& shader, nap::Core& core, nap::utility::
 	if (!AppContext::get().canRender())
 		return false;
 
-	// Change working directory for compilation
-	auto cwd = nap::utility::getCWD();
+	// Change working directory for compilation -> restored when destroyed
 	assert(core.isInitialized());
-	nap::utility::changeDir(core.getProjectInfo()->getDataDirectory());
+	napkin::CWD cwd(core.getProjectInfo()->getDataDirectory());
 
 	// Clear and load
 	shader.clear();
-	bool success = shader.init(error);
-	nap::utility::changeDir(cwd);
-	return success;
+	return shader.init(error);
 }
 
 

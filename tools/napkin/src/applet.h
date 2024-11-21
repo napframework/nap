@@ -13,7 +13,7 @@
 namespace napkin
 {
 	// Forward declares
-	class RenderPanel;
+	class AppletRunner;
 
 	/**
 	 * Creates a NAP render window from a QT window handle
@@ -52,8 +52,17 @@ namespace napkin
 	class Applet : public nap::App
 	{
 		RTTI_ENABLE(nap::App)
-		friend class napkin::RenderPanel;
+		friend class napkin::AppletRunner;
 	public:
 		Applet(nap::Core& core) : nap::App(core)	{ }
+
+	protected:
+		/**
+		 * @return absolute path to the data directory loaded in Napkin
+		 */
+		std::string getWorkingDir() { assert(mEditorInfo != nullptr); return mEditorInfo->getDataDirectory(); }
+
+	private:
+		std::unique_ptr<nap::ProjectInfo> mEditorInfo = nullptr;	///< Project currently loaded in napkin
 	};
 }

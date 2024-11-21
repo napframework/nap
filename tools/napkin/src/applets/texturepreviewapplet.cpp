@@ -12,6 +12,7 @@
 #include <apicomponent.h>
 #include <rtti/jsonreader.h>
 #include <textureshader.h>
+#include <naputils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -231,6 +232,7 @@ namespace nap
 			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", loadCmd1);
 
 		// Init texture
+		napkin::CWD cwd(getWorkingDir());
 		if (!result.mReadObjects[0]->init(error))
 		{
 			nap::Logger::error(error.toString());

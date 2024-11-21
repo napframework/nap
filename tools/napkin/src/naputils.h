@@ -13,14 +13,16 @@
 #include <rtti/rtti.h>
 #include <rtti/deserializeresult.h>
 #include <rtti/rttiutilities.h>
+#include <utility/fileutils.h>
 #include <napqt/qtutils.h>
 #include <shader.h>
+#include <mutex>
 
 namespace napkin
 {
 	/**
-	* An item that displays an RTTI Type
-	*/
+	 * An item that displays an RTTI Type
+	 */
 	class RTTITypeItem : public RTTIItem
 	{
 		Q_OBJECT
@@ -33,13 +35,51 @@ namespace napkin
 
 
 	/**
-	* Flat list of objects
-	*/
+	 * Flat list of objects
+	 */
 	class FlatObjectModel : public QStandardItemModel
 	{
 	public:
 		FlatObjectModel(const std::vector<nap::rtti::Object*> objects);
 	};
+
+
+	/**
+	 * Utility class that changes and locks the current working directory until destroyed.
+	 * On destruction the previous current working directory is unlocked and restored.
+	 *
+	 * This allows different threads to temporarily change the current working directory without running into race conditions.
+	 * For example: When thread B changes the working directory whilst thread A depends on it for loading a set of resources.
+	 *
+	 * TODO: A NAP project should not depend on the cwd to resolve / load relative data!!
+	 * Instead make use of a thread local variable or use the data directory, as resolved by the project on initialization.
+	 */
+	class CWD final
+	{
+	public:
+		/**
+		 * Lock, cache and change working directory to new working directory
+		 * @param newDirectory new temporary working directory
+		 */
+		CWD(const std::string& newDirectory);
+
+		/**
+		 * Restore cached working directory and release lock
+		 */
+		~CWD();
+
+		// Move and copy are not allowed
+		CWD(CWD&) = delete;
+		CWD& operator=(const CWD&) = delete;
+		CWD(CWD&& other) = delete;
+		CWD& operator=(CWD&& other) = delete;
+
+	private:
+		std::string mPrevious;
+		std::lock_guard<std::mutex> mLock;	///< Mutex lock
+		static std::mutex mMutex;			///< Shared mutex
+	};
+
 
 	using TypePredicate = std::function<bool(const rttr::type& type)>;
 
