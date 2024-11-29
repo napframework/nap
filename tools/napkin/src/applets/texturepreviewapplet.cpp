@@ -13,6 +13,7 @@
 #include <rtti/jsonreader.h>
 #include <textureshader.h>
 #include <naputils.h>
+#include <vulkan/vk_enum_string_helper.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -111,7 +112,7 @@ namespace nap
 
 		return true;
 	}
-	
+
 	
 	// Update app
 	void TexturePreviewApplet::update(double deltaTime)
@@ -131,7 +132,25 @@ namespace nap
 			ImGui::ColorPicker4("Color", mClearColor.getData());	
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Info"))
+		if (ImGui::BeginMenu("Details", mActiveTexture != nullptr))
+		{
+			ImGui::PushID(&mActiveTexture);
+			texDetail("Width", utility::stringFormat("%d", mActiveTexture->getWidth()), "texel(s)");
+			texDetail("Height", utility::stringFormat("%d", mActiveTexture->getHeight()), "texel(s)");
+			texDetail("Channels", RTTI_OF(nap::ESurfaceChannels), mActiveTexture->getDescriptor().getChannels());
+			texDetail("No. Channels", utility::stringFormat("%d", mActiveTexture->getDescriptor().getNumChannels()));
+			texDetail("Surface type", RTTI_OF(nap::ESurfaceDataType), mActiveTexture->getDescriptor().getDataType());
+			texDetail("Channel size", utility::stringFormat("%d", mActiveTexture->getDescriptor().getChannelSize()), "byte(s)");
+			texDetail("Pixel size", utility::stringFormat("%d", mActiveTexture->getDescriptor().getBytesPerPixel()), "byte(s)");
+			texDetail("Surface size", utility::stringFormat("%d", mActiveTexture->getDescriptor().getSizeInBytes()), "byte(s)");
+			texDetail("Pitch", utility::stringFormat("%d", mActiveTexture->getDescriptor().getPitch()), "byte(s)");
+			texDetail("Layers", utility::stringFormat("%d", mActiveTexture->getLayerCount()));
+			texDetail("Mip levels", utility::stringFormat("%d", mActiveTexture->getMipLevels()));
+			texDetail("Format", utility::stringFormat(string_VkFormat(mActiveTexture->getFormat())));
+			ImGui::PopID();
+			ImGui::EndMenu();
+		}
+		if (ImGui::BeginMenu("Applet"))
 		{
 			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
 			ImGui::MenuItem(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
@@ -261,6 +280,28 @@ namespace nap
 	void TexturePreviewApplet::onClearRequested(const nap::APIEvent& apiEvent)
 	{
 		mActiveTexture.reset(nullptr);
+	}
+
+
+	void TexturePreviewApplet::texDetail(std::string&& label, std::string&& value, std::string&& appendix)
+	{
+		static constexpr float xoff = 125.0f;
+		static constexpr float yoff = xoff * 2.0f;
+		ImGui::TextColored(mGuiService->getPalette().mFront3Color, label.c_str());
+		ImGui::SameLine(xoff);
+		ImGui::Text(value.c_str());
+		if (!appendix.empty())
+		{
+			ImGui::SameLine(yoff);
+			ImGui::TextColored(mGuiService->getPalette().mFront1Color, appendix.c_str());
+		}
+	}
+
+
+	void TexturePreviewApplet::texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument)
+	{
+		assert(enumerator.is_enumeration());
+		texDetail(label.c_str(), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }
 

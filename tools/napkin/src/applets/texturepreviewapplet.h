@@ -101,5 +101,8 @@ namespace nap
 
 		std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
+
+		void texDetail(std::string&& label, std::string&& value, std::string&& appendix = "");
+		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
 	};
 }
