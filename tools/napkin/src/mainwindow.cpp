@@ -383,8 +383,17 @@ void MainWindow::onStageRequested(const PropertyPath& path, const StageOption& s
 	auto* stage_widget = findChild<StageWidget*>(QString::fromStdString(selection.mWidgetName));
 	if (stage_widget != nullptr)
 	{
-		nap::Logger::info("Setting '%s' in '%s'", path.toString().c_str(), selection.mWidgetName.c_str());
+		// Set path
 		stage_widget->setPath(path);
+
+		// Show and raise in docked widget
+		auto* dock_widget =  qobject_cast<QDockWidget*>(stage_widget->parent());
+		if (dock_widget != nullptr)
+		{
+			dock_widget->show();
+			dock_widget->activateWindow();
+			dock_widget->raise();
+		}
 	}
 }
 

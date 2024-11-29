@@ -111,6 +111,10 @@ namespace nap
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
 		nap::DefaultInputRouter input_router;
 
+		// Now forward all input events associated with the first window to the listening components
+		std::vector<nap::EntityInstance*> entities = { mOrthoEntity.get() };
+		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
+
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
 		int bar_height = ImGui::GetWindowHeight();
