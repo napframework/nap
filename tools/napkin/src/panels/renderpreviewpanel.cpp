@@ -41,6 +41,12 @@ namespace napkin
 	}
 
 
+	void RenderPreviewPanel::clearPath()
+	{
+
+	}
+
+
 	void RenderPreviewPanel::init(const nap::ProjectInfo& info)
 	{
 		// Signals completion setup resources gui thread

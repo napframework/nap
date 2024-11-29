@@ -52,7 +52,11 @@ namespace napkin
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;
 
+		// Loads the resource
 		virtual void loadPath(const PropertyPath& path) override;
+
+		// Clears the resource
+		virtual void clearPath() override;
 
 	private:
 		QLineEdit				mLineEdit;

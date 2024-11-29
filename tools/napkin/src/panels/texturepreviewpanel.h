@@ -52,6 +52,9 @@ namespace napkin
 		// Loads the texture -> path must point to type Texture2D
 		virtual void loadPath(const PropertyPath& path) override;
 
+		// Clears the texture
+		virtual void clearPath() override;
+
 	private:
 		RenderPanel*			mPanel = nullptr;	//< NAP compatible Qt render window
 		TextureAppletRunner		mRunner;			//< Application that is run

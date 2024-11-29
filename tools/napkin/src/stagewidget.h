@@ -62,8 +62,7 @@ namespace napkin
 		 * @param types compatible types
 		 * @param parent widget parent
 		 */
-		StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent = nullptr) : QWidget(parent),
-			mDisplayName(displayName), mTypes(types)		{ }
+		StageWidget(std::string&& displayName, StageOption::Types&& types, QWidget* parent = nullptr);
 
 		/**
 		 * Converts this staging widget into an option that can be used to find and load matching types. 
@@ -80,16 +79,25 @@ namespace napkin
 		 * Set path to load, note that the past must be validated as an option
 		 * @param path the path to load
 		 */
-		void setPath(const PropertyPath& path)			{ mPath = path; loadPath(path); }
+		void setPath(const PropertyPath& path);
 
 	protected:
 		// Implement in derived classes to load validated path
 		virtual void loadPath(const PropertyPath& path) = 0;
 
+		// Implement in derived classes to clear path
+		virtual void clearPath() = 0;
+
 	private:
 		std::string mDisplayName;
 		StageOption::Types mTypes;
-		PropertyPath mPath;
+		nap::rtti::Object* mObject = nullptr;
+
+		// Reloads if property changes of staged object
+		void onPropertyValueChanged(const PropertyPath& path);
+
+		// Clears if object is removed
+		void onObjectRemoved(nap::rtti::Object* object);
 	};
 }
 

@@ -71,9 +71,14 @@ namespace nap
 		if (!error.check(mRenderWindow != nullptr, "Missing 'Window'"))
 			return false;
 
-		// API Signature
-		mLoadSignature = mResourceManager->findObject<APISignature>(loadCmd1);
-		if (!error.check(mLoadSignature != nullptr, "Missing 'SetText' api signature"))
+		// Load API Signature
+		mLoadSignature = mResourceManager->findObject<APISignature>(loadCmd);
+		if (!error.check(mLoadSignature != nullptr, "Missing '%s' api signature", loadCmd))
+			return false;
+
+		// Clear API Signature
+		mClearSignature = mResourceManager->findObject<APISignature>(clearCmd);
+		if (!error.check(mClearSignature != nullptr, "Missing '%s' api signature", clearCmd))
 			return false;
 
 		// Get the resource that manages all the entities
@@ -100,6 +105,9 @@ namespace nap
 		// Register load callback
 		auto& api_comp = mAPIEntity->getComponent<nap::APIComponentInstance>();
 		api_comp.registerCallback(*mLoadSignature, mLoadRequestedSlot);
+
+		// Register clear callback
+		api_comp.registerCallback(*mClearSignature, mClearRequestedSlot);
 
 		return true;
 	}
@@ -219,7 +227,7 @@ namespace nap
 		if (!rtti::deserializeJSON(data_arg->asString(), EPropertyValidationMode::DisallowMissingProperties,
 			EPointerPropertyMode::OnlyRawPointers, getCore().getResourceManager()->getFactory(), result, error))
 		{
-			error.fail("%s cmd failed", loadCmd1);
+			error.fail("%s cmd failed", loadCmd);
 			nap::Logger::error(error.toString());
 			return;
 		}
@@ -227,13 +235,13 @@ namespace nap
 		// Ensure there's at least 1 object and it's of type texture
 		if (result.mReadObjects.size() == 0 || !result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)))
 		{
-			nap::Logger::error("%s cmd failed: invalid payload", loadCmd1);
+			nap::Logger::error("%s cmd failed: invalid payload", loadCmd);
 			return;
 		}
 
 		// Warn if there's more than 1 object and store
 		if (result.mReadObjects.size() > 1)
-			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", loadCmd1);
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", loadCmd);
 
 		// Init texture relative to project working directory
 		{
@@ -247,6 +255,12 @@ namespace nap
 
 		// Store and set
 		mActiveTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
+	}
+
+
+	void TexturePreviewApplet::onClearRequested(const nap::APIEvent& apiEvent)
+	{
+		mActiveTexture.reset(nullptr);
 	}
 }
 

@@ -65,7 +65,8 @@
                     "Type": "nap::APIComponent",
                     "mID": "APIComponent",
                     "Signatures": [
-                        "LoadTexture"
+                        "LoadTexture",
+                        "ClearTexture"
                     ]
                 }
             ],
@@ -342,6 +343,11 @@
                             "Value": ""
                         }
                     ]
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "ClearTexture",
+                    "Arguments": []
                 }
             ],
             "Children": []
