@@ -14,6 +14,7 @@
 #include <textureshader.h>
 #include <naputils.h>
 #include <vulkan/vk_enum_string_helper.h>
+#include <pancontroller.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -21,37 +22,6 @@ RTTI_END_CLASS
 
 namespace nap 
 {
-	/**
-	 * Utility function that fits and centers a plane in a render target
-	 */
-	static void frameTexture(const glm::vec2& targetSize, const nap::Texture2D& texture, nap::TransformComponentInstance& outTransform)
-	{
-		// Compute current frame ratios (buffer & texture)
-		glm::vec2 buf_size = targetSize;
-		glm::vec2 tex_size = texture.getSize();
-		glm::vec2 tar_scale;
-
-		// Texture wider (ratio) -> horizontal leading
-		glm::vec2 ratios = { buf_size.y / buf_size.x, tex_size.y / tex_size.x };
-		if (ratios.x > ratios.y)
-		{
-			tar_scale.x = buf_size.x;
-			tar_scale.y = buf_size.x * ratios.y;
-		}
-		// Texture taller (ratio) -> vertical leading
-		else
-		{
-			tar_scale.x = buf_size.y / ratios.y;
-			tar_scale.y = buf_size.y;
-		}
-
-		// Compute 2D (XY) position and update transform
-		glm::vec2 tex_pos = { buf_size.x * 0.5f, buf_size.y * 0.5f };
-		outTransform.setTranslate(glm::vec3(tex_pos, 0.0f));
-		outTransform.setScale(glm::vec3(tar_scale, 1.0f));
-	}
-
-
 	/**
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
@@ -158,15 +128,12 @@ namespace nap
 		}
 		ImGui::EndMainMenuBar();
 
-		// Set texture and center plane
+		// Always frame texture
 		if (mActiveTexture != nullptr)
 		{
-			auto& render_comp = mTextureEntity->getComponent<nap::RenderableMeshComponentInstance>();
-			auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
-			assert(sampler != nullptr);
-			sampler->setTexture(*mActiveTexture);
-			frameTexture({ mRenderWindow->getWidth(), mRenderWindow->getHeightPixels() - bar_height },
-				sampler->getTexture(), mTextureEntity->getComponent<TransformComponentInstance>());
+			assert(mActiveTexture != nullptr);
+			auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
+			pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
 		}
 	}
 	
@@ -274,6 +241,12 @@ namespace nap
 
 		// Store and set
 		mActiveTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
+
+		// Set and frame texture
+		auto& render_comp = mTextureEntity->getComponent<nap::RenderableMeshComponentInstance>();
+		auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
+		assert(sampler != nullptr);
+		sampler->setTexture(*mActiveTexture);
 	}
 
 

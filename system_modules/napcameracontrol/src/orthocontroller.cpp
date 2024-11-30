@@ -27,7 +27,7 @@ namespace nap
 	void OrthoController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.push_back(RTTI_OF(TransformComponent));
-		components.push_back(RTTI_OF(KeyInputComponent));
+		components.push_back(RTTI_OF(PointerInputComponent));
 	}
 
 
@@ -42,7 +42,7 @@ namespace nap
 	{
 		// TransformComponent is required to move the entity
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
+		if (!errorState.check(mTransformComponent != nullptr, "%s: missing TransformComponent", mID.c_str()))
 			return false;
 
 		PointerInputComponentInstance* pointer_component = getEntityInstance()->findComponent<PointerInputComponentInstance>();

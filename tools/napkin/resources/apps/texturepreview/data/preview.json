@@ -120,6 +120,15 @@
                         },
                         "UniformScale": 1.0
                     }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "OrthoCameraPointerInputComponent"
+                },
+                {
+                    "Type": "nap::PanController",
+                    "mID": "OrthoCameraPanController",
+                    "RenderWindow": "Window"
                 }
             ],
             "Children": []
