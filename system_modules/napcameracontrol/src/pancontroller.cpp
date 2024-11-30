@@ -53,10 +53,12 @@ namespace nap
 		pointer_component->moved.connect(std::bind(&PanControllerInstance::onMouseMove, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&PanControllerInstance::onMouseUp, this, std::placeholders::_1));
 
-		// Orthographic camera mode = pixels
+		// Setup our orthographic camera
 		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::PixelSpace);
-		mOriginalTranslate = mTransformComponent->getTranslate();
-
+		auto props = mOrthoCameraComponent->getProperties();
+		props.mNearClippingPlane = 1.0f;
+		props.mFarClippingPlane  = 1.0f + defaultCameraPosition.z;
+		mOrthoCameraComponent->setProperties(props);
 
 		return true;
 	}
@@ -104,7 +106,7 @@ namespace nap
 
 	void PanControllerInstance::reset()
 	{
-		mTransformComponent->setTranslate(mOriginalTranslate);
+		mTransformComponent->setTranslate(defaultCameraPosition);
 	}
 
 

@@ -19,7 +19,6 @@ namespace nap
 		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(PanController, PanControllerInstance)
 	public:
-
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
 		 * @param components the components this object depends on
@@ -54,7 +53,8 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * Scales and positions texture to perfectly fit in current frame
+		 * Scales and positions a texture to perfectly fit in the given window, excluding pan and zoom levels
+		 * The transform must be applied to a uniform 1m2 plane to position it correctly in this frame.
 		 * @param texture the texture to fit
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -62,7 +62,8 @@ namespace nap
 		void frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
 		/**
-		 * Scales and positions texture to perfectly fit in current frame
+		 * Scales and positions a texture to perfectly fit in the given window, excluding pan and zoom levels.
+		 * The transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
 		 * @param textureSize size of the texture
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -75,6 +76,9 @@ namespace nap
 		void reset();
 
 	private:
+		// Default orthographic camera and texture (plane) position
+		static constexpr glm::vec3 defaultCameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
+
 		/**
 		 * Handler for mouse down events
 		 */
@@ -102,6 +106,5 @@ namespace nap
 		bool mPan  = false;
 		bool mZoom = false;
 		glm::vec2 mClickPosition;
-		glm::vec3 mOriginalTranslate;
 	};
 }
