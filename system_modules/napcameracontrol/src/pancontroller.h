@@ -69,6 +69,11 @@ namespace nap
 		 */
 		void frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
+		/**
+		 * Resets the camera pan and zoom level to system default
+		 */
+		void reset();
+
 	private:
 		/**
 		 * Handler for mouse down events
@@ -76,17 +81,27 @@ namespace nap
 		void onMouseDown(const PointerPressEvent& pointerPressEvent);
 
 		/**
-		* Handler for mouse up events
-		*/
+		 * Handler for mouse up events
+		 */
 		void onMouseUp(const PointerReleaseEvent& pointerReleaseEvent);
 
 		/**
-		* Handler for mouse move events
-		*/
+		 * Handler for mouse move events
+		 */
 		void onMouseMove(const PointerMoveEvent& pointerMoveEvent);
+
+		/**
+		 * Handle panning
+		 */
+		void panCamera(const PointerMoveEvent& pointerMoveEvent);
 
 		TransformComponentInstance* mTransformComponent = nullptr;
 		OrthoCameraComponentInstance* mOrthoCameraComponent = nullptr;
-		RenderWindow* mRenderTarget = nullptr;
+		RenderWindow* mWindow = nullptr;
+
+		bool mPan  = false;
+		bool mZoom = false;
+		glm::vec2 mClickPosition;
+		glm::vec3 mOriginalTranslate;
 	};
 }

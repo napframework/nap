@@ -46,7 +46,7 @@ namespace nap
 
 		// Render target
 		auto* resource = getComponent<PanController>();
-		mRenderTarget = resource->mRenderWindow.get();
+		mWindow = resource->mRenderWindow.get();
 
 		// Handle pointer input
 		pointer_component->pressed.connect(std::bind(&PanControllerInstance::onMouseDown, this, std::placeholders::_1));
@@ -55,6 +55,8 @@ namespace nap
 
 		// Orthographic camera mode = pixels
 		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::PixelSpace);
+		mOriginalTranslate = mTransformComponent->getTranslate();
+
 
 		return true;
 	}
@@ -66,10 +68,16 @@ namespace nap
 	}
 
 
+	void PanControllerInstance::frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale)
+	{
+		frameTexture(texture.getSize(), ioTextureTransform, scale);
+	}
+
+
 	void PanControllerInstance::frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale)
 	{
 		// Compute current frame ratios (buffer & texture)
-		glm::vec2 buf_size = mRenderTarget->getBufferSize();
+		glm::vec2 buf_size = mWindow->getBufferSize();
 		glm::vec2 tex_size = textureSize;
 		glm::vec2 tar_scale;
 
@@ -94,27 +102,71 @@ namespace nap
 	}
 
 
-	void PanControllerInstance::frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale)
+	void PanControllerInstance::reset()
 	{
-		frameTexture(texture.getSize(), ioTextureTransform, scale);
+		mTransformComponent->setTranslate(mOriginalTranslate);
 	}
 
 
 	void PanControllerInstance::onMouseDown(const PointerPressEvent& pointerPressEvent)
 	{
-		
+		assert(pointerPressEvent.mWindow == mWindow->getNumber());
+		switch (pointerPressEvent.mButton)
+		{
+			case nap::PointerClickEvent::EButton::LEFT:
+			{
+				mClickPosition = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mPan = true;
+				break;
+			}
+			case nap::PointerClickEvent::EButton::RIGHT:
+			{
+				mClickPosition = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mZoom = true;
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
 	}
 
 
 	void PanControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
-
+		assert(pointerReleaseEvent.mWindow == mWindow->getNumber());
+		switch (pointerReleaseEvent.mButton)
+		{
+			case nap::PointerClickEvent::EButton::LEFT:
+			{
+				mPan = false;
+				break;
+			}
+			case nap::PointerClickEvent::EButton::RIGHT:
+			{
+				mZoom = false;
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
 	}
 
 
 	void PanControllerInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
 	{
-
+		assert(pointerMoveEvent.mWindow == mWindow->getNumber());
+		if (mPan)
+			panCamera(pointerMoveEvent);
 	}
 
+
+	void PanControllerInstance::panCamera(const PointerMoveEvent& pointerMoveEvent)
+	{
+		glm::vec3 rel_change = { pointerMoveEvent.mRelX, pointerMoveEvent.mRelY, 0.0f };
+		mTransformComponent->setTranslate(mTransformComponent->getTranslate()  - rel_change);
+	}
 }

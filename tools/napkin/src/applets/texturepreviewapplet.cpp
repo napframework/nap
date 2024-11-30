@@ -247,6 +247,9 @@ namespace nap
 		auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
 		assert(sampler != nullptr);
 		sampler->setTexture(*mActiveTexture);
+
+		// Reset pan & zoom controls
+		mOrthoEntity->getComponent<PanControllerInstance>().reset();
 	}
 
 
