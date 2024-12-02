@@ -54,7 +54,7 @@ namespace nap
 
 	void OSCSender::stop()
 	{
-        if(mSocket==nullptr)
+        if(mSocket!=nullptr)
             mSocket.reset(nullptr);
     }
 
