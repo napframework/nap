@@ -63,7 +63,7 @@ namespace nap
 		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::PixelSpace);
 		auto props = mOrthoCameraComponent->getProperties();
 		props.mNearClippingPlane = 1.0f;
-		props.mFarClippingPlane  = 1.0f + defaultCameraPosition.z;
+		props.mFarClippingPlane  = 1.0f + cameraPosition.z;
 		mOrthoCameraComponent->setProperties(props);
 
 		// Copy zoom speed
@@ -114,9 +114,10 @@ namespace nap
 
 	void PanControllerInstance::reset()
 	{
-		mTransformComponent->setTranslate(defaultCameraPosition);
+		mTransformComponent->setTranslate(cameraPosition);
 		mTransformComponent->setUniformScale(1.0f);
 		mTransformComponent->setScale({ 1.0f, 1.0f, 1.0f });
+		mCurrentZoomLevel = 1.0f;
 	}
 
 
@@ -127,17 +128,16 @@ namespace nap
 		{
 			case nap::PointerClickEvent::EButton::LEFT:
 			{
-				mWindowCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
-				mXFormCoordinates  = mTransformComponent->getTranslate();
-				mXFormScale = mTransformComponent->getScale();
+				mClickCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mXFormCoordinates = mTransformComponent->getTranslate();
 				mPan = true;
 				break;
 			}
 			case nap::PointerClickEvent::EButton::RIGHT:
 			{
-				mWindowCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
-				mXFormCoordinates  = mTransformComponent->getTranslate();
-				mXFormScale = mTransformComponent->getScale();
+				mClickCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mXFormCoordinates = mTransformComponent->getTranslate();
+				mClickZoomLevel = mCurrentZoomLevel;
 				mZoom = true;
 				break;
 			}
@@ -176,12 +176,12 @@ namespace nap
 	{
 		assert(pointerMoveEvent.mWindow == mWindow->getNumber());
 		if (mPan)
-			panCamera(mWindowCoordinates,
+			panCamera(mClickCoordinates,
 				{ pointerMoveEvent.mX, pointerMoveEvent.mY }, {pointerMoveEvent.mRelX, pointerMoveEvent.mRelY}
 			);
 		if (mZoom)
 		{
-			zoomCamera(mWindowCoordinates,
+			zoomCamera(mClickCoordinates,
 				{ pointerMoveEvent.mX, pointerMoveEvent.mY }, { pointerMoveEvent.mRelX, pointerMoveEvent.mRelY }
 			);
 		}
@@ -196,24 +196,20 @@ namespace nap
 
 	void PanControllerInstance::zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
 	{
-		float scale = glm::dot({ 1.0f, 0.0f }, clickPosition - position) * mZoomSpeed;
-		zoom(scale);
+		float amount = glm::dot({ 1.0f, 0.0f }, clickPosition - position) * mZoomSpeed;
+		zoom(amount);
 	}
 
 
 	void PanControllerInstance::transform(glm::vec2&& transform)
 	{
-		mTransformComponent->setTranslate(mXFormCoordinates - glm::vec3(transform, 0.0f));
+		mTransformComponent->setTranslate(mXFormCoordinates - (glm::vec3(transform * mCurrentZoomLevel, 0.0f)));
 	}
 
 
 	void PanControllerInstance::zoom(float amount)
 	{
-		glm::vec2 new_scale = { mXFormScale.x + amount, mXFormScale.y + amount };
-		new_scale = glm::clamp(new_scale,
-			{ maxZoomLevels.x, maxZoomLevels.x },
-			{maxZoomLevels.y, maxZoomLevels.y}
-		);
-		mTransformComponent->setScale(glm::vec3(new_scale, mXFormScale.z));
+		mCurrentZoomLevel = glm::clamp(mClickZoomLevel + amount, zoomLevels.x, zoomLevels.y);
+		mTransformComponent->setScale({ mCurrentZoomLevel, mCurrentZoomLevel, 1.0f });
 	}
 }

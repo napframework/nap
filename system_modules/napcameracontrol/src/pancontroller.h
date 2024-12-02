@@ -82,8 +82,8 @@ namespace nap
 
 	private:
 		// Default orthographic camera and texture (plane) position
-		static constexpr glm::vec3 defaultCameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
-		static constexpr glm::vec2 maxZoomLevels = glm::vec2(math::epsilon<float>(), 10.0f);
+		static constexpr glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
+		static constexpr glm::vec2 zoomLevels = glm::vec2(math::epsilon<float>(), 10.0f);
 
 		/**
 		 * Handler for mouse down events
@@ -126,9 +126,11 @@ namespace nap
 
 		bool mPan  = false;
 		bool mZoom = false;
-		glm::vec2 mWindowCoordinates;		///< Window click coordinates
+		glm::vec2 mClickCoordinates;		///< Window click coordinates
 		glm::vec3 mXFormCoordinates;		///< Camera transform click coordinates
-		glm::vec3 mXFormScale;				///< Camera scale
+		float mCurrentZoomLevel = 1.0f;		///< Current zoom level
+		float mClickZoomLevel = 1.0f;		///< Zoom level when mouse clicked
+
 		float mZoomSpeed = 0.01f;			///< Camera zoom speed
 	};
 }
