@@ -54,14 +54,14 @@ namespace nap
 
 	void OSCSender::stop()
 	{
-        if(mSocket!=nullptr)
+        if(mSocket==nullptr)
             mSocket.reset(nullptr);
     }
 
 
 	bool OSCSender::send(const OSCEvent& oscEvent)
 	{
-        if(mSocket!=nullptr)
+        if(mSocket==nullptr)
             return false;
 
 		std::size_t buffer_size = oscEvent.getSize();
@@ -88,7 +88,7 @@ namespace nap
 
 	void OSCSender::sendQueuedEvents()
 	{
-        if(!mSocket)
+        if(mSocket== nullptr)
             return;
 
 		if(mEventQueue.empty())
@@ -149,7 +149,7 @@ namespace nap
 
 	void OSCSender::addEvent(OSCEventPtr oscEvent)
 	{
-        if(mSocket!=nullptr)
+        if(mSocket==nullptr)
             return;
 
 		mEventQueueDataSize += (oscEvent->getSize());
