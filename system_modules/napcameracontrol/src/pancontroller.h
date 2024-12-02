@@ -30,6 +30,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		nap::ResourcePtr<RenderWindow> mRenderWindow = nullptr;		///< Property: 'Window' The window that displays the texture
+		float mZoomSpeed = 0.01f;									///< Property: "ZoomSpeed" The speed with which to zoom
 	};
 
 
@@ -82,6 +83,7 @@ namespace nap
 	private:
 		// Default orthographic camera and texture (plane) position
 		static constexpr glm::vec3 defaultCameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
+		static constexpr glm::vec2 maxZoomLevels = glm::vec2(math::epsilon<float>(), 10.0f);
 
 		/**
 		 * Handler for mouse down events
@@ -101,7 +103,22 @@ namespace nap
 		/**
 		 * Handle panning
 		 */
-		void panCamera(const PointerMoveEvent& pointerMoveEvent);
+		void panCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement);
+
+		/**
+		 * Handle zooming
+		 */
+		void zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement);
+
+		/**
+		 * Apply transform
+		 */
+		void transform(glm::vec2&& transform);
+
+		/**
+		 * Apply zoom
+		 */
+		void zoom(float amount);
 
 		TransformComponentInstance* mTransformComponent = nullptr;
 		OrthoCameraComponentInstance* mOrthoCameraComponent = nullptr;
@@ -109,6 +126,9 @@ namespace nap
 
 		bool mPan  = false;
 		bool mZoom = false;
-		glm::vec2 mClickPosition;
+		glm::vec2 mWindowCoordinates;		///< Window click coordinates
+		glm::vec3 mXFormCoordinates;		///< Camera transform click coordinates
+		glm::vec3 mXFormScale;				///< Camera scale
+		float mZoomSpeed = 0.01f;			///< Camera zoom speed
 	};
 }

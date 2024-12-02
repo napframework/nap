@@ -11,7 +11,8 @@
 
 // nap::pancontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::PanController)
-	RTTI_PROPERTY("RenderWindow", &nap::PanController::mRenderWindow, nap::rtti::EPropertyMetaData::Required, "Window that displays the texture")
+	RTTI_PROPERTY("RenderWindow",	&nap::PanController::mRenderWindow, nap::rtti::EPropertyMetaData::Required, "Window that displays the texture")
+	RTTI_PROPERTY("ZoomSpeed",		&nap::PanController::mZoomSpeed,	nap::rtti::EPropertyMetaData::Default,	"Zoom speed")
 RTTI_END_CLASS
 
 // nap::pancontrollerInstance run time class definition 
@@ -65,6 +66,8 @@ namespace nap
 		props.mFarClippingPlane  = 1.0f + defaultCameraPosition.z;
 		mOrthoCameraComponent->setProperties(props);
 
+		// Copy zoom speed
+		mZoomSpeed = math::max<float>(math::epsilon<float>(), resource->mZoomSpeed);
 		return true;
 	}
 
@@ -112,6 +115,8 @@ namespace nap
 	void PanControllerInstance::reset()
 	{
 		mTransformComponent->setTranslate(defaultCameraPosition);
+		mTransformComponent->setUniformScale(1.0f);
+		mTransformComponent->setScale({ 1.0f, 1.0f, 1.0f });
 	}
 
 
@@ -122,13 +127,17 @@ namespace nap
 		{
 			case nap::PointerClickEvent::EButton::LEFT:
 			{
-				mClickPosition = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mWindowCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mXFormCoordinates  = mTransformComponent->getTranslate();
+				mXFormScale = mTransformComponent->getScale();
 				mPan = true;
 				break;
 			}
 			case nap::PointerClickEvent::EButton::RIGHT:
 			{
-				mClickPosition = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mWindowCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
+				mXFormCoordinates  = mTransformComponent->getTranslate();
+				mXFormScale = mTransformComponent->getScale();
 				mZoom = true;
 				break;
 			}
@@ -167,13 +176,44 @@ namespace nap
 	{
 		assert(pointerMoveEvent.mWindow == mWindow->getNumber());
 		if (mPan)
-			panCamera(pointerMoveEvent);
+			panCamera(mWindowCoordinates,
+				{ pointerMoveEvent.mX, pointerMoveEvent.mY }, {pointerMoveEvent.mRelX, pointerMoveEvent.mRelY}
+			);
+		if (mZoom)
+		{
+			zoomCamera(mWindowCoordinates,
+				{ pointerMoveEvent.mX, pointerMoveEvent.mY }, { pointerMoveEvent.mRelX, pointerMoveEvent.mRelY }
+			);
+		}
 	}
 
 
-	void PanControllerInstance::panCamera(const PointerMoveEvent& pointerMoveEvent)
+	void PanControllerInstance::panCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
 	{
-		glm::vec3 rel_change = { pointerMoveEvent.mRelX, pointerMoveEvent.mRelY, 0.0f };
-		mTransformComponent->setTranslate(mTransformComponent->getTranslate()  - rel_change);
+		transform(position - clickPosition);
+	}
+
+
+	void PanControllerInstance::zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
+	{
+		float scale = glm::dot({ 1.0f, 0.0f }, clickPosition - position) * mZoomSpeed;
+		zoom(scale);
+	}
+
+
+	void PanControllerInstance::transform(glm::vec2&& transform)
+	{
+		mTransformComponent->setTranslate(mXFormCoordinates - glm::vec3(transform, 0.0f));
+	}
+
+
+	void PanControllerInstance::zoom(float amount)
+	{
+		glm::vec2 new_scale = { mXFormScale.x + amount, mXFormScale.y + amount };
+		new_scale = glm::clamp(new_scale,
+			{ maxZoomLevels.x, maxZoomLevels.x },
+			{maxZoomLevels.y, maxZoomLevels.y}
+		);
+		mTransformComponent->setScale(glm::vec3(new_scale, mXFormScale.z));
 	}
 }
