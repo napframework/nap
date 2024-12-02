@@ -61,7 +61,7 @@ namespace nap
 
 	bool OSCSender::send(const OSCEvent& oscEvent)
 	{
-        if(!mSocket)
+        if(mSocket!=nullptr)
             return false;
 
 		std::size_t buffer_size = oscEvent.getSize();
@@ -71,7 +71,7 @@ namespace nap
 
 		// Grow the buffer based on the number of bytes that need allocation
 		// Always allocate more than the bare minimum, that's why we multiply by 2.
-		if (mBuffer.size() < buffer_size)
+		if(mBuffer.size() < buffer_size)
 			mBuffer.resize(buffer_size);
 
 		// Create packet
@@ -103,7 +103,7 @@ namespace nap
 		buffer_size += sizeof(osc::BundleTerminator);
 
 		// Grow the buffer based on the number of bytes that need allocation
-		if (mBuffer.size() < buffer_size)
+		if(mBuffer.size() < buffer_size)
 			mBuffer.resize(buffer_size);
 
 		// Create packet, grow buffer if necessary
@@ -149,7 +149,7 @@ namespace nap
 
 	void OSCSender::addEvent(OSCEventPtr oscEvent)
 	{
-        if(!mSocket)
+        if(mSocket!=nullptr)
             return;
 
 		mEventQueueDataSize += (oscEvent->getSize());
