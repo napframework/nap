@@ -132,6 +132,5 @@ namespace nap
 		float mClickZoomLevel = 1.0f;		///< Zoom level when mouse clicked
 
 		float mZoomSpeed = 0.01f;			///< Camera zoom speed
-		nap::OrthoCameraProperties mCameraProps;
 	};
 }

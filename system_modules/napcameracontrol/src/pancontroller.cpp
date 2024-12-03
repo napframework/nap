@@ -60,10 +60,11 @@ namespace nap
 		pointer_component->released.connect(std::bind(&PanControllerInstance::onMouseUp, this, std::placeholders::_1));
 
 		// Setup our orthographic camera
-		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::Custom);
-		mCameraProps = mOrthoCameraComponent->getProperties();
-		mCameraProps.mNearClippingPlane = 1.0f;
-		mCameraProps.mFarClippingPlane  = 1.0f + cameraPosition.z;
+		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::PixelSpace);
+		auto props = mOrthoCameraComponent->getProperties();
+		props.mNearClippingPlane = 1.0f;
+		props.mFarClippingPlane  = 1.0f + cameraPosition.z;
+		mOrthoCameraComponent->setProperties(props);
 
 		// Copy zoom speed
 		mZoomSpeed = math::max<float>(math::epsilon<float>(), resource->mZoomSpeed);
@@ -73,13 +74,7 @@ namespace nap
 
 	void PanControllerInstance::update(double deltaTime)
 	{
-		// Update ortho camera view planes
-		glm::vec2 buf_size = glm::vec2(mWindow->getBufferSize()) * 0.5f;
-		mCameraProps.mLeftPlane  = -buf_size.x;
-		mCameraProps.mRightPlane = buf_size.x;
-		mCameraProps.mBottomPlane = -buf_size.y;
-		mCameraProps.mTopPlane = buf_size.y;
-		mOrthoCameraComponent->setProperties(mCameraProps);
+
 	}
 
 
@@ -112,7 +107,7 @@ namespace nap
 
 		// Compute 2D (XY) position and update transform
 		glm::vec2 tex_pos = { buf_size.x * 0.5f, buf_size.y * 0.5f };
-		ioTextureTransform.setTranslate(glm::vec3(0.0f,0.0f,0.0f));
+		ioTextureTransform.setTranslate(glm::vec3(tex_pos, 0.0f));
 		ioTextureTransform.setScale(glm::vec3(tar_scale * scale, 1.0f));
 	}
 
