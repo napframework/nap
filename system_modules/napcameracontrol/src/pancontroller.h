@@ -30,7 +30,7 @@ namespace nap
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
 
 		nap::ResourcePtr<RenderWindow> mRenderWindow = nullptr;		///< Property: 'Window' The window that displays the texture
-		float mZoomSpeed = 0.01f;									///< Property: "ZoomSpeed" The speed with which to zoom
+		float mZoomSpeed = 1.0f;									///< Property: "ZoomSpeed" The speed with which to zoom
 	};
 
 
@@ -59,7 +59,8 @@ namespace nap
 
 		/**
 		 * Scales and positions a texture to perfectly fit in the given window, excluding pan and zoom levels
-		 * The transform must be applied to a uniform 1m2 plane to position it correctly in this frame.
+		 * The adjusted transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
+		 * Note that this call does *not* reset the current zoom and pan levels, call reset() if you want the camera planes to match the current window.
 		 * @param texture the texture to fit
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -67,8 +68,9 @@ namespace nap
 		void frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
 		/**
-		 * Scales and positions a texture to perfectly fit in the given window, excluding pan and zoom levels.
-		 * The transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
+		 * Scales and positions a texture to perfectly fit in the window.
+		 * The adjusted transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
+		 * Note that this call does *not* reset the current zoom and pan levels, call reset() if you want the camera planes to match the current window.
 		 * @param textureSize size of the texture
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -76,13 +78,21 @@ namespace nap
 		void frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
 		/**
-		 * Resets the camera pan and zoom level to system default
+		 * Resets the planes to match size of the window, clearing all zoom and pan settings.
+		 * You probably want to call this after you frame a texture to reset all zoom and pan controls.
 		 */
 		void reset();
 
+		/**
+		 * Returns the current zoom level,
+		 * where 0 = completely zoomed in, 1 = framed in window and anything higher is zoomed out. 
+		 * @return current zoom level.
+		 */
+		float getZoomLevel() const;
+
 	private:
 		// Default orthographic camera and texture (plane) position
-		static constexpr glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
+		static constexpr glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 1.0f);
 		static constexpr glm::vec2 zoomLevels = glm::vec2(math::epsilon<float>(), 10.0f);
 
 		/**
@@ -115,11 +125,6 @@ namespace nap
 		 */
 		void transform(glm::vec2&& transform);
 
-		/**
-		 * Apply zoom
-		 */
-		void zoom(float amount);
-
 		TransformComponentInstance* mTransformComponent = nullptr;
 		OrthoCameraComponentInstance* mOrthoCameraComponent = nullptr;
 		RenderWindow* mWindow = nullptr;
@@ -128,9 +133,8 @@ namespace nap
 		bool mZoom = false;
 		glm::vec2 mClickCoordinates;		///< Window click coordinates
 		glm::vec3 mXFormCoordinates;		///< Camera transform click coordinates
-		float mCurrentZoomLevel = 1.0f;		///< Current zoom level
-		float mClickZoomLevel = 1.0f;		///< Zoom level when mouse clicked
 
-		float mZoomSpeed = 0.01f;			///< Camera zoom speed
+		float mZoomSpeed = 1.0f;			///< Camera zoom speed
+		nap::OrthoCameraProperties mCameraProperties;
 	};
 }

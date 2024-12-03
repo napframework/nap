@@ -107,4 +107,3 @@ namespace nap
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
 	};
 }
-

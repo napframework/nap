@@ -11,16 +11,14 @@
 
 // nap::pancontroller run time class definition 
 RTTI_BEGIN_CLASS(nap::PanController)
-	RTTI_PROPERTY("RenderWindow",	&nap::PanController::mRenderWindow, nap::rtti::EPropertyMetaData::Required, "Window that displays the texture")
-	RTTI_PROPERTY("ZoomSpeed",		&nap::PanController::mZoomSpeed,	nap::rtti::EPropertyMetaData::Default,	"Zoom speed")
+RTTI_PROPERTY("RenderWindow", &nap::PanController::mRenderWindow, nap::rtti::EPropertyMetaData::Required, "Window that displays the texture")
+RTTI_PROPERTY("ZoomSpeed", &nap::PanController::mZoomSpeed, nap::rtti::EPropertyMetaData::Default, "Zoom speed")
 RTTI_END_CLASS
 
 // nap::pancontrollerInstance run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PanControllerInstance)
-	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
-
-//////////////////////////////////////////////////////////////////////////
 
 
 namespace nap
@@ -60,11 +58,10 @@ namespace nap
 		pointer_component->released.connect(std::bind(&PanControllerInstance::onMouseUp, this, std::placeholders::_1));
 
 		// Setup our orthographic camera
-		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::PixelSpace);
-		auto props = mOrthoCameraComponent->getProperties();
-		props.mNearClippingPlane = 1.0f;
-		props.mFarClippingPlane  = 1.0f + cameraPosition.z;
-		mOrthoCameraComponent->setProperties(props);
+		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::Custom);
+		mCameraProperties = mOrthoCameraComponent->getProperties();
+		mCameraProperties.mNearClippingPlane = 1.0f;
+		mCameraProperties.mFarClippingPlane  = 1.0f + cameraPosition.z;
 
 		// Copy zoom speed
 		mZoomSpeed = math::max<float>(math::epsilon<float>(), resource->mZoomSpeed);
@@ -74,7 +71,13 @@ namespace nap
 
 	void PanControllerInstance::update(double deltaTime)
 	{
+		// Ensure camera planes are not distorted
+		float window_ratio = mWindow->getRatio();
+		if (math::abs<float>(window_ratio - mCameraProperties.getRatio()) > math::epsilon<float>())
+			mCameraProperties.adjust(window_ratio);
 
+		// Always update camera planes -> prevents us from having to deal with specific events (resize etc.)
+		mOrthoCameraComponent->setProperties(mCameraProperties);
 	}
 
 
@@ -117,7 +120,20 @@ namespace nap
 		mTransformComponent->setTranslate(cameraPosition);
 		mTransformComponent->setUniformScale(1.0f);
 		mTransformComponent->setScale({ 1.0f, 1.0f, 1.0f });
-		mCurrentZoomLevel = 1.0f;
+
+		// Reset camera planes
+		glm::vec2 buffer_size = mWindow->getBufferSize();
+		mCameraProperties.mLeftPlane = 0.0f;
+		mCameraProperties.mRightPlane = buffer_size.x;
+		mCameraProperties.mBottomPlane = 0.0f;
+		mCameraProperties.mTopPlane = buffer_size.y;
+	}
+
+
+	float PanControllerInstance::getZoomLevel() const
+	{
+		return mCameraProperties.getWidth() /
+			static_cast<float>(mWindow->getBufferSize().x);
 	}
 
 
@@ -137,7 +153,6 @@ namespace nap
 			{
 				mClickCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
 				mXFormCoordinates = mTransformComponent->getTranslate();
-				mClickZoomLevel = mCurrentZoomLevel;
 				mZoom = true;
 				break;
 			}
@@ -196,20 +211,27 @@ namespace nap
 
 	void PanControllerInstance::zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
 	{
-		float amount = glm::dot({ 1.0f, 0.0f }, clickPosition - position) * mZoomSpeed;
-		zoom(amount);
+		// Compute amount to zoom in or out
+		glm::vec2 buffer_size = mWindow->getBufferSize();
+		float amount = glm::dot({ 1.0f, 0.0f }, relMovement) * mZoomSpeed * getZoomLevel();
+		glm::vec2 zoom = { amount, amount * mWindow->getRatio() };
+
+		// Compute new plane offsets based on click weight (normalized distribution)
+		// Allows us to zoom into a specific coordinate, instead of the center
+		glm::vec2 click_weight = clickPosition / buffer_size;
+		glm::vec2 x_offset = { zoom.x * click_weight.x, -(zoom.x * (1.0f - click_weight.x)) };
+		glm::vec2 y_offset = { zoom.y * click_weight.y, -(zoom.y * (1.0f - click_weight.y)) };
+
+		// Set new planes
+		mCameraProperties.mLeftPlane += x_offset.x;
+		mCameraProperties.mRightPlane += x_offset.y;
+		mCameraProperties.mBottomPlane += y_offset.x;
+		mCameraProperties.mTopPlane += y_offset.y;
 	}
 
 
 	void PanControllerInstance::transform(glm::vec2&& transform)
 	{
-		mTransformComponent->setTranslate(mXFormCoordinates - (glm::vec3(transform * mCurrentZoomLevel, 0.0f)));
-	}
-
-
-	void PanControllerInstance::zoom(float amount)
-	{
-		mCurrentZoomLevel = glm::clamp(mClickZoomLevel + amount, zoomLevels.x, zoomLevels.y);
-		mTransformComponent->setScale({ mCurrentZoomLevel, mCurrentZoomLevel, 1.0f });
+		mTransformComponent->setTranslate(mXFormCoordinates - (glm::vec3(transform * getZoomLevel(), 0.0f)));
 	}
 }

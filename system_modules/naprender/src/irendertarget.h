@@ -75,5 +75,12 @@ namespace nap
 		 * @return if sample based shading is enabled
 		 */
 		virtual bool getSampleShadingEnabled() const = 0;
+
+		/**
+		 * Returns buffer ratio, height over width 
+		 * @return the buffer ratio, height over width
+		 */
+		inline float getRatio()	{ return static_cast<float>(getBufferSize().y) / static_cast<float>(getBufferSize().x); }
 	};
 }
+

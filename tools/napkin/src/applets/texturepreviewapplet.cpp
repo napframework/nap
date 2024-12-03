@@ -127,14 +127,6 @@ namespace nap
 			ImGui::EndMenu();
 		}
 		ImGui::EndMainMenuBar();
-
-		// Always frame texture
-		if (mActiveTexture != nullptr)
-		{
-			assert(mActiveTexture != nullptr);
-			auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
-			pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
-		}
 	}
 	
 	
@@ -249,7 +241,9 @@ namespace nap
 		sampler->setTexture(*mActiveTexture);
 
 		// Reset pan & zoom controls
-		mOrthoEntity->getComponent<PanControllerInstance>().reset();
+		auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
+		pan_controller.reset();
+		pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
 	}
 
 
