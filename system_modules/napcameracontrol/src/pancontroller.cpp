@@ -57,27 +57,26 @@ namespace nap
 		pointer_component->moved.connect(std::bind(&PanControllerInstance::onMouseMove, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&PanControllerInstance::onMouseUp, this, std::placeholders::_1));
 
-		// Setup our orthographic camera
-		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::Custom);
-		mCameraProperties = mOrthoCameraComponent->getProperties();
-		mCameraProperties.mNearClippingPlane = 1.0f;
-		mCameraProperties.mFarClippingPlane  = 1.0f + cameraPosition.z;
-
 		// Copy zoom speed
 		mZoomSpeed = math::max<float>(math::epsilon<float>(), resource->mZoomSpeed);
+
+		// Setup our orthographic camera (always pushed on update)
+		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::Custom);
+		mCameraProperties = mOrthoCameraComponent->getProperties();
+
 		return true;
 	}
 
 
 	void PanControllerInstance::update(double deltaTime)
 	{
-		// Ensure camera planes are not distorted
+		// Ensure camera planes are not distorted -> prevents us from having to deal with resize events
 		float window_ratio = mWindow->getRatio();
 		if (math::abs<float>(window_ratio - mCameraProperties.getRatio()) > math::epsilon<float>())
+		{
 			mCameraProperties.adjust(window_ratio);
-
-		// Always update camera planes -> prevents us from having to deal with specific events (resize etc.)
-		mOrthoCameraComponent->setProperties(mCameraProperties);
+			mOrthoCameraComponent->setProperties(mCameraProperties);
+		}
 	}
 
 
@@ -117,16 +116,16 @@ namespace nap
 
 	void PanControllerInstance::reset()
 	{
-		mTransformComponent->setTranslate(cameraPosition);
-		mTransformComponent->setUniformScale(1.0f);
-		mTransformComponent->setScale({ 1.0f, 1.0f, 1.0f });
-
 		// Reset camera planes
 		glm::vec2 buffer_size = mWindow->getBufferSize();
 		mCameraProperties.mLeftPlane = 0.0f;
 		mCameraProperties.mRightPlane = buffer_size.x;
 		mCameraProperties.mBottomPlane = 0.0f;
 		mCameraProperties.mTopPlane = buffer_size.y;
+		mOrthoCameraComponent->setProperties(mCameraProperties);
+
+		// Reset camera position
+		mTransformComponent->setTranslate(cameraPosition);
 	}
 
 
@@ -227,5 +226,6 @@ namespace nap
 		mCameraProperties.mRightPlane += x_offset.y;
 		mCameraProperties.mBottomPlane += y_offset.x;
 		mCameraProperties.mTopPlane += y_offset.y;
+		mOrthoCameraComponent->setProperties(mCameraProperties);
 	}
 }

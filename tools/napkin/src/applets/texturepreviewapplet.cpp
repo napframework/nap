@@ -15,6 +15,7 @@
 #include <naputils.h>
 #include <vulkan/vk_enum_string_helper.h>
 #include <pancontroller.h>
+#include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -96,7 +97,8 @@ namespace nap
 
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
-		int bar_height = ImGui::GetWindowHeight();
+		float bar_height = ImGui::GetWindowHeight();
+		float ico_height = bar_height * 0.66f;
 		if (ImGui::BeginMenu("Background"))
 		{
 			ImGui::ColorPicker4("Color", mClearColor.getData());	
@@ -126,6 +128,12 @@ namespace nap
 			ImGui::MenuItem(utility::stringFormat("Frametime: %.02fms", deltaTime * 1000.0).c_str());
 			ImGui::EndMenu();
 		}
+
+		// Add frame icon
+		if(mActiveTexture != nullptr &&
+			ImGui::ImageButton(mGuiService->getIcon(nap::icon::reload), { ico_height, ico_height }, "Frame"))
+			frameTexture();
+
 		ImGui::EndMainMenuBar();
 	}
 	
@@ -245,9 +253,7 @@ namespace nap
 		assert(frame != nullptr);
 		if (frame->asBool())
 		{
-			auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
-			pan_controller.reset();
-			pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
+			frameTexture();
 		}
 	}
 
@@ -278,4 +284,15 @@ namespace nap
 		assert(enumerator.is_enumeration());
 		texDetail(label.c_str(), enumerator.get_enumeration().value_to_name(argument).data());
 	}
+
+
+	void TexturePreviewApplet::frameTexture()
+	{
+		// Position texture and reset controller
+		assert(mActiveTexture != nullptr);
+		auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
+		pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
+		pan_controller.reset();
+	}
 }
+
