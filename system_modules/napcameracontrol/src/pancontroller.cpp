@@ -145,14 +145,12 @@ namespace nap
 			case nap::PointerClickEvent::EButton::LEFT:
 			{
 				mClickCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
-				mXFormCoordinates = mTransformComponent->getTranslate();
 				mPan = true;
 				break;
 			}
 			case nap::PointerClickEvent::EButton::RIGHT:
 			{
 				mClickCoordinates = { pointerPressEvent.mX, pointerPressEvent.mY };
-				mXFormCoordinates = mTransformComponent->getTranslate();
 				mZoom = true;
 				break;
 			}
@@ -205,7 +203,9 @@ namespace nap
 
 	void PanControllerInstance::panCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
 	{
-		transform(position - clickPosition);
+		glm::vec2 translate = relMovement * getZoomLevel();
+		glm::vec3 xform = mTransformComponent->getTranslate();
+		mTransformComponent->setTranslate(xform - glm::vec3(translate, 0.0f));
 	}
 
 
@@ -227,11 +227,5 @@ namespace nap
 		mCameraProperties.mRightPlane += x_offset.y;
 		mCameraProperties.mBottomPlane += y_offset.x;
 		mCameraProperties.mTopPlane += y_offset.y;
-	}
-
-
-	void PanControllerInstance::transform(glm::vec2&& transform)
-	{
-		mTransformComponent->setTranslate(mXFormCoordinates - (glm::vec3(transform * getZoomLevel(), 0.0f)));
 	}
 }

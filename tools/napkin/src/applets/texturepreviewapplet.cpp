@@ -242,8 +242,8 @@ namespace nap
 
 		// Reset pan & zoom controls
 		auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
-		pan_controller.reset();
 		pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
+		pan_controller.reset();
 	}
 
 
@@ -274,4 +274,3 @@ namespace nap
 		texDetail(label.c_str(), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }
-

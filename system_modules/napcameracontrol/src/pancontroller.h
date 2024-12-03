@@ -120,21 +120,14 @@ namespace nap
 		 */
 		void zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement);
 
-		/**
-		 * Apply transform
-		 */
-		void transform(glm::vec2&& transform);
-
 		TransformComponentInstance* mTransformComponent = nullptr;
 		OrthoCameraComponentInstance* mOrthoCameraComponent = nullptr;
 		RenderWindow* mWindow = nullptr;
 
-		bool mPan  = false;
-		bool mZoom = false;
-		glm::vec2 mClickCoordinates;		///< Window click coordinates
-		glm::vec3 mXFormCoordinates;		///< Camera transform click coordinates
-
-		float mZoomSpeed = 1.0f;			///< Camera zoom speed
-		nap::OrthoCameraProperties mCameraProperties;
+		bool mPan = false;								///< If we're currently panning
+		bool mZoom = false;								///< If we're currently zooming
+		glm::vec2 mClickCoordinates;					///< Last known window click coordinates
+		float mZoomSpeed = 1.0f;						///< Camera zoom speed
+		nap::OrthoCameraProperties mCameraProperties;	///< Computed camera projection settings
 	};
 }
