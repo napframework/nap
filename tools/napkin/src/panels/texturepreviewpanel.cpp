@@ -45,7 +45,12 @@ namespace napkin
 		// Send as command to applet
 		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(nap::TexturePreviewApplet::loadCmd);
 		load_tex_event->addArgument<nap::APIString>(nap::TexturePreviewApplet::loadArg1, writer.GetJSON());
+		load_tex_event->addArgument<nap::APIBool>(nap::TexturePreviewApplet::loadArg2,
+			mLoadedObject != path.getObject());
 		mRunner.sendEvent(std::move(load_tex_event));
+
+		// Cache so we know if we need to re-frame if it's new
+		mLoadedObject = path.getObject();
 	}
 
 

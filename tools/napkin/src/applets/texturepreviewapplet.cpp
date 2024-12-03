@@ -240,10 +240,15 @@ namespace nap
 		assert(sampler != nullptr);
 		sampler->setTexture(*mActiveTexture);
 
-		// Reset pan & zoom controls
-		auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
-		pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
-		pan_controller.reset();
+		// Reset pan & zoom controls if requested
+		auto* frame = apiEvent.getArgumentByName(loadArg2);
+		assert(frame != nullptr);
+		if (frame->asBool())
+		{
+			auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
+			pan_controller.reset();
+			pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
+		}
 	}
 
 

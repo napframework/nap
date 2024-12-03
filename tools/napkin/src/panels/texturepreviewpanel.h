@@ -56,13 +56,15 @@ namespace napkin
 		virtual void clearPath() override;
 
 	private:
-		RenderPanel*			mPanel = nullptr;	//< NAP compatible Qt render window
-		TextureAppletRunner		mRunner;			//< Application that is run
-		QVBoxLayout				mLayout;			//< Widget layout
-		bool					mInitialized;		//< If the panel is initialized
+		RenderPanel*			mPanel = nullptr;			//< NAP compatible Qt render window
+		TextureAppletRunner		mRunner;					//< Application that is run
+		QVBoxLayout				mLayout;					//< Widget layout
+		bool					mInitialized;				//< If the panel is initialized
+		nap::rtti::Object*		mLoadedObject = nullptr;	//< Current loaded path
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);
 	};
 }
+
 

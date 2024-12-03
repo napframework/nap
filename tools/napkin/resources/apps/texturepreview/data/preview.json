@@ -128,7 +128,8 @@
                 {
                     "Type": "nap::PanController",
                     "mID": "OrthoCameraPanController",
-                    "RenderWindow": "Window"
+                    "RenderWindow": "Window",
+                    "ZoomSpeed": 1.0
                 }
             ],
             "Children": []
@@ -350,6 +351,12 @@
                             "mID": "APIString",
                             "Name": "data",
                             "Value": ""
+                        },
+                        {
+                            "Type": "nap::APIBool",
+                            "mID": "APIBool",
+                            "Name": "frame",
+                            "Value": true
                         }
                     ]
                 },

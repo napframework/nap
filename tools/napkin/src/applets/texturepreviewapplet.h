@@ -33,6 +33,7 @@ namespace nap
 		// Signature callback names and arguments
 		static constexpr const char* loadCmd = "LoadTexture";
 		static constexpr const char* loadArg1 = "data";
+		static constexpr const char* loadArg2 = "frame";
 		static constexpr const char* clearCmd = "ClearTexture";
 
 		/**

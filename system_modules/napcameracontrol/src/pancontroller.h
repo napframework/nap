@@ -16,7 +16,19 @@ namespace nap
 	class PanControllerInstance;
 
 	/**
-	 * 2D texture pan and zoom orthographic camera controller 
+	 * 2D texture pan and zoom camera controller.
+	 *
+	 * Allows for freely moving around and zooming into a 2D texture using an orthographic camera.
+	 * Use the 'frameTexture' function in combination with 'reset' to scale and position your texture so that it fits the window perfectly.
+	 *
+	 * This component updates the projection and transform matrix of an orthographic camera, based on pointer input events.
+	 * It therefore requires the following components to be present on the same entity.
+	 *
+	 * - a nap::Transform component
+	 * - a nap::PointerInputComponent
+	 * - a nap::OrthoCameraComponent
+	 *
+	 * For the component to properly work it can't have any parent transforms, if so the result is undefined.
 	 */
 	class NAPAPI PanController : public Component
 	{
@@ -35,7 +47,19 @@ namespace nap
 
 
 	/**
-	 * 2D texture pan and zoom orthographic camera controller 
+	 * 2D texture pan and zoom camera controller.
+	 *
+	 * Allows for freely moving around and zooming into a 2D texture using an orthographic camera.
+	 * Use the 'frameTexture' function in combination with 'reset' to scale and position your texture so that it fits the window perfectly.
+	 *
+	 * This component updates the projection and transform matrix of an orthographic camera, based on pointer input events.
+	 * It therefore requires the following components to be present on the same entity.
+	 *
+	 * - a nap::Transform component
+	 * - a nap::PointerInputComponent
+	 * - a nap::OrthoCameraComponent
+	 *
+	 * For the component to properly work it can't have any parent transforms, if so the result is undefined.
 	 */
 	class NAPAPI PanControllerInstance : public ComponentInstance
 	{
@@ -92,8 +116,7 @@ namespace nap
 
 	private:
 		// Default orthographic camera and texture (plane) position
-		static constexpr glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 1.0f);
-		static constexpr glm::vec2 zoomLevels = glm::vec2(math::epsilon<float>(), 10.0f);
+		static constexpr glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);
 
 		/**
 		 * Handler for mouse down events
