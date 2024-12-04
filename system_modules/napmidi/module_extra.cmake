@@ -11,6 +11,9 @@ if (NAP_ENABLE_RTMIDI)
 
     add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rtmidi)
     target_link_import_library(${PROJECT_NAME} rtmidi)
+    if (WIN32)
+        target_link_libraries(${PROJECT_NAME} winmm)
+    endif()
 
     add_license(rtmidi ${CMAKE_CURRENT_SOURCE_DIR}/thirdparty/rtmidi/source/README.md)
 endif()

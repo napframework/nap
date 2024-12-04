@@ -12,7 +12,7 @@ else()
 endif()
 
 if(WIN32)
-    set(staticlib ${lib_dir}/Release/${PROJECT_NAME}.lib)
+    set(staticlib ${lib_dir}/${CMAKE_BUILD_TYPE}/${PROJECT_NAME}.lib)
     add_static_import_library(${PROJECT_NAME} ${staticlib} ${include_dir})
 else ()
     set(implib ${lib_dir}/${implib_prefix}${PROJECT_NAME}${implib_suffix})
