@@ -14,7 +14,7 @@
 #include <textureshader.h>
 #include <naputils.h>
 #include <vulkan/vk_enum_string_helper.h>
-#include <pancontroller.h>
+#include <zoompancontroller.h>
 #include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
@@ -290,9 +290,7 @@ namespace nap
 	{
 		// Position texture and reset controller
 		assert(mActiveTexture != nullptr);
-		auto& pan_controller = mOrthoEntity->getComponent<PanControllerInstance>();
+		auto& pan_controller = mOrthoEntity->getComponent<ZoomPanControllerInstance>();
 		pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
-		pan_controller.reset();
 	}
 }
-

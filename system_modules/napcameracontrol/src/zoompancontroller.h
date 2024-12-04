@@ -13,13 +13,13 @@
 
 namespace nap
 {
-	class PanControllerInstance;
+	class ZoomPanControllerInstance;
 
 	/**
-	 * 2D texture pan and zoom camera controller.
+	 * 2D texture zoom and pan camera controller.
 	 *
 	 * Allows for freely moving around and zooming into a 2D texture using an orthographic camera.
-	 * Use the 'frameTexture' function in combination with 'reset' to scale and position your texture so that it fits the window perfectly.
+	 * Use the 'frameTexture' function to adjust the scale and position of your texture, ensuring it fits perfectly in the viewport.
 	 *
 	 * This component updates the projection and transform matrix of an orthographic camera, based on pointer input events.
 	 * It therefore requires the following components to be present on the same entity.
@@ -28,12 +28,19 @@ namespace nap
 	 * - a nap::PointerInputComponent
 	 * - a nap::OrthoCameraComponent
 	 *
-	 * For the component to properly work it can't have any parent transforms, if so the result is undefined.
+	 * After calling 'frameTexture':
+	 *     - The texture is placed at a depth of (z)0.
+	 *     - The camera is placed at (xy)0 at a depth of (z)5.
+	 *     - The camera planes will match the size of the viewport.
+	 *     - The near and far clipping planes are setup to capture the framed texture.
+	 *
+	 * Not calling 'frameTexture' allows you to use your own texture scale and orthographic camera settings.
+	 * Note that for the component to work properly it can't have any parent transform, if it does the the result is undefined.
 	 */
-	class NAPAPI PanController : public Component
+	class NAPAPI ZoomPanController : public Component
 	{
 		RTTI_ENABLE(Component)
-		DECLARE_COMPONENT(PanController, PanControllerInstance)
+		DECLARE_COMPONENT(ZoomPanController, ZoomPanControllerInstance)
 	public:
 		/**
 		 * Get a list of all component types that this component is dependent on (i.e. must be initialized before this one)
@@ -47,10 +54,10 @@ namespace nap
 
 
 	/**
-	 * 2D texture pan and zoom camera controller.
+	 * 2D texture zoom and pan camera controller.
 	 *
 	 * Allows for freely moving around and zooming into a 2D texture using an orthographic camera.
-	 * Use the 'frameTexture' function in combination with 'reset' to scale and position your texture so that it fits the window perfectly.
+	 * Use the 'frameTexture' function to adjust the scale and position of your texture, ensuring it fits perfectly in the viewport.
 	 *
 	 * This component updates the projection and transform matrix of an orthographic camera, based on pointer input events.
 	 * It therefore requires the following components to be present on the same entity.
@@ -59,13 +66,20 @@ namespace nap
 	 * - a nap::PointerInputComponent
 	 * - a nap::OrthoCameraComponent
 	 *
-	 * For the component to properly work it can't have any parent transforms, if so the result is undefined.
+	 * After calling 'frameTexture':
+	 *     - The texture is placed at a depth of (z)0.
+	 *     - The camera is placed at (xy)0 at a depth of (z)5.
+	 *     - The camera planes will match the size of the viewport.
+	 *     - The near and far clipping planes are setup to capture the framed texture.
+	 *
+	 * Not calling 'frameTexture' allows you to use your own texture scale and orthographic camera settings.
+	 * Note that for the component to work properly it can't have any parent transform, if it does the the result is undefined.
 	 */
-	class NAPAPI PanControllerInstance : public ComponentInstance
+	class NAPAPI ZoomPanControllerInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(ComponentInstance)
 	public:
-		PanControllerInstance(EntityInstance& entity, Component& resource) :
+		ZoomPanControllerInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
@@ -84,7 +98,7 @@ namespace nap
 		/**
 		 * Scales and positions a texture to perfectly fit in the given window, excluding pan and zoom levels
 		 * The adjusted transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
-		 * Note that this call does *not* reset the current zoom and pan levels, call reset() if you want the camera planes to match the current window.
+		 * Note that this call resets the current zoom and pan levels.
 		 * @param texture the texture to fit
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -94,7 +108,7 @@ namespace nap
 		/**
 		 * Scales and positions a texture to perfectly fit in the window.
 		 * The adjusted transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
-		 * Note that this call does *not* reset the current zoom and pan levels, call reset() if you want the camera planes to match the current window.
+		 * Note that this call resets the current zoom and pan levels.
 		 * @param textureSize size of the texture
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -102,8 +116,7 @@ namespace nap
 		void frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
 		/**
-		 * Resets the planes to match size of the window, clearing all zoom and pan settings.
-		 * You probably want to call this after you frame a texture to reset all zoom and pan controls.
+		 * Resets the planes to match size of the window.
 		 */
 		void reset();
 
@@ -145,7 +158,7 @@ namespace nap
 
 		TransformComponentInstance* mTransformComponent = nullptr;
 		OrthoCameraComponentInstance* mOrthoCameraComponent = nullptr;
-		RenderWindow* mWindow = nullptr;
+		RenderWindow* mViewport = nullptr;
 
 		bool mPan = false;								///< If we're currently panning
 		bool mZoom = false;								///< If we're currently zooming

@@ -126,10 +126,10 @@
                     "mID": "OrthoCameraPointerInputComponent"
                 },
                 {
-                    "Type": "nap::PanController",
+                    "Type": "nap::ZoomPanController",
                     "mID": "OrthoCameraPanController",
                     "RenderWindow": "Window",
-                    "ZoomSpeed": 1.0
+                    "ZoomSpeed": 2.0
                 }
             ],
             "Children": []

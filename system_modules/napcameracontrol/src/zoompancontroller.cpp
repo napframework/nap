@@ -3,27 +3,27 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
-#include "pancontroller.h"
+#include "zoompancontroller.h"
 
 // External includes
 #include <entity.h>
 #include <inputcomponent.h>
 
 // nap::pancontroller run time class definition 
-RTTI_BEGIN_CLASS(nap::PanController)
-RTTI_PROPERTY("RenderWindow", &nap::PanController::mRenderWindow, nap::rtti::EPropertyMetaData::Required, "Window that displays the texture")
-RTTI_PROPERTY("ZoomSpeed", &nap::PanController::mZoomSpeed, nap::rtti::EPropertyMetaData::Default, "Zoom speed")
+RTTI_BEGIN_CLASS(nap::ZoomPanController)
+RTTI_PROPERTY("RenderWindow", &nap::ZoomPanController::mRenderWindow, nap::rtti::EPropertyMetaData::Required, "Window that displays the texture")
+RTTI_PROPERTY("ZoomSpeed", &nap::ZoomPanController::mZoomSpeed, nap::rtti::EPropertyMetaData::Default, "Zoom speed")
 RTTI_END_CLASS
 
 // nap::pancontrollerInstance run time class definition 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::PanControllerInstance)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::ZoomPanControllerInstance)
 RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
 RTTI_END_CLASS
 
 
 namespace nap
 {
-	void PanController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
+	void ZoomPanController::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(TransformComponent));
 		components.emplace_back(RTTI_OF(PointerInputComponent));
@@ -31,7 +31,7 @@ namespace nap
 	}
 
 
-	bool PanControllerInstance::init(utility::ErrorState& errorState)
+	bool ZoomPanControllerInstance::init(utility::ErrorState& errorState)
 	{
 		// TransformComponent is required to move the entity
 		mTransformComponent = getEntityInstance()->findComponent<TransformComponentInstance>();
@@ -49,13 +49,13 @@ namespace nap
 			return false;
 
 		// Render target
-		auto* resource = getComponent<PanController>();
-		mWindow = resource->mRenderWindow.get();
+		auto* resource = getComponent<ZoomPanController>();
+		mViewport = resource->mRenderWindow.get();
 
 		// Handle pointer input
-		pointer_component->pressed.connect(std::bind(&PanControllerInstance::onMouseDown, this, std::placeholders::_1));
-		pointer_component->moved.connect(std::bind(&PanControllerInstance::onMouseMove, this, std::placeholders::_1));
-		pointer_component->released.connect(std::bind(&PanControllerInstance::onMouseUp, this, std::placeholders::_1));
+		pointer_component->pressed.connect(std::bind(&ZoomPanControllerInstance::onMouseDown, this, std::placeholders::_1));
+		pointer_component->moved.connect(std::bind(&ZoomPanControllerInstance::onMouseMove, this, std::placeholders::_1));
+		pointer_component->released.connect(std::bind(&ZoomPanControllerInstance::onMouseUp, this, std::placeholders::_1));
 
 		// Copy zoom speed
 		mZoomSpeed = math::max<float>(math::epsilon<float>(), resource->mZoomSpeed);
@@ -64,14 +64,17 @@ namespace nap
 		mOrthoCameraComponent->setMode(nap::EOrthoCameraMode::Custom);
 		mCameraProperties = mOrthoCameraComponent->getProperties();
 
+		// Reset viewport
+		reset();
+
 		return true;
 	}
 
 
-	void PanControllerInstance::update(double deltaTime)
+	void ZoomPanControllerInstance::update(double deltaTime)
 	{
 		// Ensure camera planes are not distorted -> prevents us from having to deal with resize events
-		float window_ratio = mWindow->getRatio();
+		float window_ratio = mViewport->getRatio();
 		if (math::abs<float>(window_ratio - mCameraProperties.getRatio()) > math::epsilon<float>())
 		{
 			mCameraProperties.adjust(window_ratio);
@@ -80,16 +83,16 @@ namespace nap
 	}
 
 
-	void PanControllerInstance::frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale)
+	void ZoomPanControllerInstance::frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale)
 	{
 		frameTexture(texture.getSize(), ioTextureTransform, scale);
 	}
 
 
-	void PanControllerInstance::frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale)
+	void ZoomPanControllerInstance::frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale)
 	{
 		// Compute current frame ratios (buffer & texture)
-		glm::vec2 buf_size = mWindow->getBufferSize();
+		glm::vec2 buf_size = mViewport->getBufferSize();
 		glm::vec2 tex_size = textureSize;
 		glm::vec2 tar_scale;
 
@@ -111,34 +114,39 @@ namespace nap
 		glm::vec2 tex_pos = { buf_size.x * 0.5f, buf_size.y * 0.5f };
 		ioTextureTransform.setTranslate(glm::vec3(tex_pos, 0.0f));
 		ioTextureTransform.setScale(glm::vec3(tar_scale * scale, 1.0f));
+
+		// Setup the camera planes and clear camera position
+		mCameraProperties.mNearClippingPlane = 1.0f;
+		mCameraProperties.mFarClippingPlane = 1.0f + cameraPosition.z;
+		mTransformComponent->setTranslate(cameraPosition);
+
+		// Reset the viewport
+		reset();
 	}
 
 
-	void PanControllerInstance::reset()
+	void ZoomPanControllerInstance::reset()
 	{
-		// Reset camera planes
-		glm::vec2 buffer_size = mWindow->getBufferSize();
+		// Initialize camera properties to match viewport and allow for capturing a (framed) texture.
+		glm::vec2 buffer_size = mViewport->getBufferSize();
 		mCameraProperties.mLeftPlane = 0.0f;
 		mCameraProperties.mRightPlane = buffer_size.x;
 		mCameraProperties.mBottomPlane = 0.0f;
 		mCameraProperties.mTopPlane = buffer_size.y;
 		mOrthoCameraComponent->setProperties(mCameraProperties);
-
-		// Reset camera position
-		mTransformComponent->setTranslate(cameraPosition);
 	}
 
 
-	float PanControllerInstance::getZoomLevel() const
+	float ZoomPanControllerInstance::getZoomLevel() const
 	{
 		return mCameraProperties.getWidth() /
-			static_cast<float>(mWindow->getBufferSize().x);
+			static_cast<float>(mViewport->getBufferSize().x);
 	}
 
 
-	void PanControllerInstance::onMouseDown(const PointerPressEvent& pointerPressEvent)
+	void ZoomPanControllerInstance::onMouseDown(const PointerPressEvent& pointerPressEvent)
 	{
-		assert(pointerPressEvent.mWindow == mWindow->getNumber());
+		assert(pointerPressEvent.mWindow == mViewport->getNumber());
 		switch (pointerPressEvent.mButton)
 		{
 			case nap::PointerClickEvent::EButton::LEFT:
@@ -161,9 +169,9 @@ namespace nap
 	}
 
 
-	void PanControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
+	void ZoomPanControllerInstance::onMouseUp(const PointerReleaseEvent& pointerReleaseEvent)
 	{
-		assert(pointerReleaseEvent.mWindow == mWindow->getNumber());
+		assert(pointerReleaseEvent.mWindow == mViewport->getNumber());
 		switch (pointerReleaseEvent.mButton)
 		{
 			case nap::PointerClickEvent::EButton::LEFT:
@@ -184,9 +192,9 @@ namespace nap
 	}
 
 
-	void PanControllerInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
+	void ZoomPanControllerInstance::onMouseMove(const PointerMoveEvent& pointerMoveEvent)
 	{
-		assert(pointerMoveEvent.mWindow == mWindow->getNumber());
+		assert(pointerMoveEvent.mWindow == mViewport->getNumber());
 		if (mPan)
 			panCamera(mClickCoordinates,
 				{ pointerMoveEvent.mX, pointerMoveEvent.mY }, {pointerMoveEvent.mRelX, pointerMoveEvent.mRelY}
@@ -200,7 +208,7 @@ namespace nap
 	}
 
 
-	void PanControllerInstance::panCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
+	void ZoomPanControllerInstance::panCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
 	{
 		glm::vec2 translate = relMovement * getZoomLevel();
 		glm::vec3 xform = mTransformComponent->getTranslate();
@@ -208,12 +216,12 @@ namespace nap
 	}
 
 
-	void PanControllerInstance::zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
+	void ZoomPanControllerInstance::zoomCamera(const glm::vec2& clickPosition, glm::vec2&& position, glm::vec2&& relMovement)
 	{
 		// Compute amount to zoom in or out
-		glm::vec2 buffer_size = mWindow->getBufferSize();
+		glm::vec2 buffer_size = mViewport->getBufferSize();
 		float amount = glm::dot({ 1.0f, 0.0f }, relMovement) * mZoomSpeed * getZoomLevel();
-		glm::vec2 zoom = { amount, amount * mWindow->getRatio() };
+		glm::vec2 zoom = { amount, amount * mViewport->getRatio() };
 
 		// Compute new plane offsets based on click weight (normalized distribution)
 		// Allows us to zoom into a specific coordinate, instead of the center
