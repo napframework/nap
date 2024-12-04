@@ -1,15 +1,19 @@
 project(napkin)
 nap_qt_pre()
 
-file(GLOB_RECURSE SOURCES src/*.cpp)
-file(GLOB_RECURSE HEADERS src/*.h)
+# Get additional resources
 file(GLOB_RECURSE RESOURCES resources/*.qrc)
-
 if (MSVC)
     set(RESOURCES ${RESOURCES} resources/resources.rc)
 endif()
 
-add_executable(${PROJECT_NAME} ${SOURCES} ${UI_HEADERS} ${HEADERS} ${RESOURCES})
+# Create target + resources
+add_executable(${PROJECT_NAME} ${RESOURCES})
+
+# Add source code groups
+add_source_dir("applets" "src/applets")
+add_source_dir("panels" "src/panels")
+add_source_dir("napkin" "src")
 
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
