@@ -297,8 +297,8 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 
 		// Filter out objects that are not included in the project ->
 		// This includes items from libraries linked in napkin (render, camera etc..) but not the user project.
-		const auto* module_desc = nap::rtti::getModuleDescription(derived); assert(module_desc != nullptr);
-		if(module_names.find(module_desc->mID) == module_names.end())
+		const auto* module_desc = nap::rtti::getModuleDescription(derived);
+		if(module_desc == nullptr || module_names.find(module_desc->mID) == module_names.end())
 			continue;
 
 		// Check user preference

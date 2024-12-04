@@ -500,7 +500,12 @@ namespace nap
 			for (auto it = range.rbegin(); it != range.rend(); it++)
 			{
 				if (it->get_name() == nap::rtti::method::moduleDescription)
-					return it->invoke(rttr::instance()).convert<const nap::ModuleDescriptor*>();
+				{
+					rttr::variant return_var = it->invoke(rttr::instance());
+					assert(return_var.is_valid());
+					return return_var.can_convert<const nap::ModuleDescriptor*>() ?
+						return_var.convert<const nap::ModuleDescriptor*>() : nullptr;
+				}
 			}
 			return nullptr;
 		}
