@@ -219,14 +219,14 @@ nap::rtti::TypeInfo napkin::showTypeSelector(QWidget* parent, const TypePredicat
 	{
 		// Get module description
 		const auto* mod_desc = nap::rtti::getModuleDescription(t);
-		assert(mod_desc != nullptr);
 
 		// Find or create module related entry
 		auto it = module_entries.find(mod_desc);
 		StringModel::Entry* module_entry = nullptr;
 		if (it == module_entries.end())
 		{
-			module_entry = &module_entries.emplace(mod_desc, StringModel::Entry(mod_desc->mID)).first->second;
+			auto ins = module_entries.emplace(mod_desc, StringModel::Entry(mod_desc != nullptr ? mod_desc->mID : "unknown"));
+			module_entry = &ins.first->second;
 			module_entry->addIcon(resource_factory.getIcon(QRC_ICONS_MODULE));
 		}
 		else
@@ -297,9 +297,15 @@ std::vector<rttr::type> napkin::getTypes(TypePredicate predicate)
 
 		// Filter out objects that are not included in the project ->
 		// This includes items from libraries linked in napkin (render, camera etc..) but not the user project.
+		//
+		// Note that we do allow unknown module descriptions when 'NAP_DEV' is defined.
+		// Which enables us to create and author Napkin Applet resources in Napkin itself ...
+		// I know, very meta, but then in a good way (thanks for ruining that word FOREVER zak mark)
 		const auto* module_desc = nap::rtti::getModuleDescription(derived);
-		if(module_desc == nullptr || module_names.find(module_desc->mID) == module_names.end())
+#ifndef NAP_DEV
+		if (module_desc == nullptr || module_names.find(module_desc->mID) == module_names.end())
 			continue;
+#endif // NAP_DEV
 
 		// Check user preference
 		if (predicate != nullptr && !predicate(derived))

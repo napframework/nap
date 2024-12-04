@@ -15,6 +15,10 @@ add_source_dir("applets" "src/applets")
 add_source_dir("panels" "src/panels")
 add_source_dir("napkin" "src")
 
+# Uncomment this to work on applets inside napkin
+# This means the napkin applet components and resources are available to Napkin!
+target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_DEV)
+
 if(MSVC OR APPLE)
     if(NOT DEFINED NAP_PACKAGED_BUILD)
         set_target_properties(${PROJECT_NAME} PROPERTIES RUNTIME_OUTPUT_DIRECTORY_RELEASE ${NAP_ROOT}/bin/$<CONFIG>-${ARCH}/napkin)
