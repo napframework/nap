@@ -96,19 +96,37 @@ namespace nap
 		virtual void update(double deltaTime) override;
 
 		/**
-		 * Scales and positions a texture to perfectly fit in the given window, excluding pan and zoom levels
-		 * The adjusted transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
-		 * Note that this call resets the current zoom and pan levels.
-		 * @param texture the texture to fit
+		 * Scales and positions a texture to perfectly fit in the viewport.
+		 * The adjusted transform can be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
+		 * The current zoom and pan levels are reset and the camera position, viewport, and
+		 * clipping planes are adjusted to capture the texture:
+		 * 
+		 *     - The texture is placed at a depth of (z)0, with dimensions adjusted to fit in the current viewport.
+		 *     - The camera is placed at (xy)0 at a depth of (z)5.
+		 *     - The camera planes will match the size of the viewport.
+		 *     - The near and far clipping planes are setup to include the framed texture.
+		 *
+		 * Avoid calling this function if you need to manually control the orthographic camera.
+		 *
+		 * @param textureSize size of the texture
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
 		 */
 		void frameTexture(const Texture2D& texture, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
 		/**
-		 * Scales and positions a texture to perfectly fit in the window.
-		 * The adjusted transform must be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
-		 * Note that this call resets the current zoom and pan levels.
+		 * Scales and positions a texture to perfectly fit in the viewport.
+		 * The adjusted transform can be applied to a uniform 1m2 (default) plane to position it correctly in this frame.
+		 * The current zoom and pan levels are reset and the camera position, viewport, and
+		 * clipping planes are adjusted to capture the texture:
+		 *
+		 *     - The texture is placed at a depth of (z)0, with dimensions adjusted to fit in the current viewport.
+		 *     - The camera is placed at (xy)0 at a depth of (z)5.
+		 *     - The camera planes will match the size of the viewport.
+		 *     - The near and far clipping planes are setup to include the framed texture.
+		 *
+		 * Avoid calling this function if you need to manually control the orthographic camera.
+		 * 
 		 * @param textureSize size of the texture
 		 * @param ioTextureTransform the texture transform to update
 		 * @param scale multiplication factor, defaults to 1 (perfect fit)
@@ -116,7 +134,7 @@ namespace nap
 		void frameTexture(const glm::vec2& textureSize, nap::TransformComponentInstance& ioTextureTransform, float scale = 1.0f);
 
 		/**
-		 * Resets the planes to match size of the window.
+		 * Updates the camera planes to match size of the viewport.
 		 */
 		void reset();
 
