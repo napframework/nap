@@ -122,7 +122,8 @@ namespace nap
 				icon::remove,
 				icon::add,
 				icon::change,
-				icon::subtract
+				icon::subtract,
+				icon::frame
 			};
 			return map;
 		}

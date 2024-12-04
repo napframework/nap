@@ -98,7 +98,7 @@ namespace nap
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
 		float bar_height = ImGui::GetWindowHeight();
-		float ico_height = bar_height * 0.66f;
+		float ico_height = bar_height * 0.7f;
 		if (ImGui::BeginMenu("Background"))
 		{
 			ImGui::ColorPicker4("Color", mClearColor.getData());	
@@ -131,7 +131,7 @@ namespace nap
 
 		// Add frame icon
 		if(mActiveTexture != nullptr &&
-			ImGui::ImageButton(mGuiService->getIcon(nap::icon::reload), { ico_height, ico_height }, "Frame"))
+			ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
 			frameTexture();
 
 		ImGui::EndMainMenuBar();

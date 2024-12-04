@@ -61,6 +61,7 @@ namespace nap
 		inline constexpr const char* add		= "add.png";
 		inline constexpr const char* change		= "change.png";
         inline constexpr const char* subtract	= "subtract.png";
+		inline constexpr const char* frame		= "frame.png";
 	}
 
 
