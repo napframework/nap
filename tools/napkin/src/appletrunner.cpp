@@ -175,12 +175,15 @@ namespace napkin
 						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyEvent)) && 
 							gui_service->isCapturingKeyboard(gui_ctx))
 						{
-							// Forward the keyboard event
+							// Convert keyboard event into utf8 character and queue in the gui
+							// TODO: we can store UTF info directly in the key press event, both QT and SDL
+							// support the conversion of a key press into a utf character.
+							// This bypasses us having to translate all the utf charachters and support of various keyboards
 							if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 							{
 								auto* key_press_event = static_cast<nap::KeyPressEvent*>(event_ref.get());
-								gui_service->addInputCharachter(gui_ctx,
-									nap::toUtf8(key_press_event->mKey, key_press_event->mModifier));
+								nap::uint utf_char = nap::toUtf8(key_press_event->mKey, key_press_event->mModifier);
+								gui_service->addInputCharachter(gui_ctx, utf_char);
 							}
 							event_queue.pop();
 							continue;

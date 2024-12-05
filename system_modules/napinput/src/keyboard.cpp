@@ -88,7 +88,7 @@ namespace nap
 		// Bail if code isn't available
 		auto uni_it = utf8Map.find(key);
 		if (uni_it == utf8Map.end())
-			return 0;
+			return 0x00; // NULL
 
 		// Offset when shift is active
 		nap::uint code = uni_it->second;
