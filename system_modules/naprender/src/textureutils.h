@@ -50,7 +50,7 @@ namespace nap
 		void NAPAPI createMipmaps(VkCommandBuffer buffer, VkImage image, VkFormat imageFormat, VkImageLayout targetLayout, VkImageAspectFlags aspect, uint32 texWidth, uint32 texHeight, uint32 mipLevels, uint layer, uint layerCount);
 
 		/**
-		 * Pushes a full-size blit to the command buffer. Must be called inside a render pass, in onDraw().
+		 * Pushes a full-size color blit to the command buffer. Must be called inside a render pass, in onDraw().
 		 * Assumes a color texture without mip-maps. The layouts of srcTexture and dstTexture are
 		 * transferred to SHADER_READ after the blit operation.
 		 * @param commandBuffer the command buffer to push the blit operation to
@@ -58,5 +58,16 @@ namespace nap
 		 * @param dstTexture the destination texture
 		 */
 		void NAPAPI blit(VkCommandBuffer commandBuffer, const Texture2D& srcTexture, const Texture2D& dstTexture);
+
+		/**
+		 * Pushes a full-size color copy to the command buffer. Must be called inside a render pass, in onDraw().
+		 * Assumes a color texture without mip-maps. The layouts of srcTexture and dstTexture are
+		 * transferred to SHADER_READ after the blit operation. Asserts the src and dest texture
+		 * are exactly the same size and format.
+		 * @param commandBuffer the command buffer to push the blit operation to
+		 * @param srcTexture the source texture
+		 * @param dstTexture the destination texture
+		 */
+		void NAPAPI copy(VkCommandBuffer commandBuffer, const Texture2D& srcTexture, const Texture2D& dstTexture);
 	}
 }

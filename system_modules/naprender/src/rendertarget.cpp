@@ -91,7 +91,7 @@ namespace nap
 		mHasDepthTexture = mDepthTexture != nullptr;
 
 		// Set framebuffer size
-		glm::ivec2 size = mColorTexture->getSize();
+		const auto size = mColorTexture->getSize();
 		VkExtent2D framebuffer_size = { (uint32)size.x, (uint32)size.y };
 
 		// Store as attachments
@@ -168,10 +168,11 @@ namespace nap
 
 	void RenderTarget::beginRendering()
 	{
-		glm::ivec2 size = mColorTexture->getSize();
-		std::array<VkClearValue, 2> clearValues = {};
-		clearValues[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
-		clearValues[1].depthStencil = { 1.0f, 0 };
+		const auto size = mColorTexture->getSize();
+		std::array<VkClearValue, 3> clear_values = {};
+		clear_values[0].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
+		clear_values[1].depthStencil = { 1.0f, 0 };
+		clear_values[2].color = { mClearColor[0], mClearColor[1], mClearColor[2], mClearColor[3] };
 
 		// Setup render pass
 		VkRenderPassBeginInfo renderPassInfo = {};
@@ -179,9 +180,9 @@ namespace nap
 		renderPassInfo.renderPass = mRenderPass;
 		renderPassInfo.framebuffer = mFramebuffer;
 		renderPassInfo.renderArea.offset = { 0, 0 };
-		renderPassInfo.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };;
-		renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
-		renderPassInfo.pClearValues = clearValues.data();
+		renderPassInfo.renderArea.extent = { static_cast<uint>(size.x), static_cast<uint>(size.y) };
+		renderPassInfo.clearValueCount = static_cast<uint>(clear_values.size());
+		renderPassInfo.pClearValues = clear_values.data();
 
 		// Begin render pass
 		vkCmdBeginRenderPass(mRenderService->getCurrentCommandBuffer(), &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
