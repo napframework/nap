@@ -468,6 +468,7 @@ namespace nap
             auto* view_matrix_array = shadow_struct->getOrCreateUniform<UniformMat4ArrayInstance>(uniform::shadow::lightViewProjectionMatrix); assert(view_matrix_array != nullptr);
             auto* near_far_array = shadow_struct->getOrCreateUniform<UniformVec2ArrayInstance>(uniform::shadow::nearFar); assert(near_far_array != nullptr);
             auto* strength_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::strength); assert(strength_array != nullptr);
+            auto* spread_array = shadow_struct->getOrCreateUniform<UniformFloatArrayInstance>(uniform::shadow::spread); assert(spread_array != nullptr);
 			auto* shadow_flags = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::flags); assert(shadow_flags != nullptr);
             auto* light_count = shadow_struct->getOrCreateUniform<UniformUIntInstance>(uniform::shadow::count); assert(light_count != nullptr);
 
@@ -493,6 +494,7 @@ namespace nap
                     glm::vec2 near_far = { light->getCamera().getNearClippingPlane(), light->getCamera().getFarClippingPlane() };
                     near_far_array->setValue(near_far, light_index);
                     strength_array->setValue(light->getShadowStrength(), light_index);
+                    spread_array->setValue(light->getShadowSpread(), light_index);
 
                     // Fetch flags
                     auto it_flags = mLightFlagsMap.find(light);
