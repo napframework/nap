@@ -75,6 +75,11 @@ namespace nap
 		KeyPressEvent(EKeyCode inKey, uint8 inMod, int window) : 
 			KeyEvent(inKey, inMod, window) 
 		{ }
+
+		/** 
+		 * @return the key as utf8 character, 0x00 if the key can't be converted
+		 */
+		nap::uint toUtf8() const { return nap::toUtf8(mKey, mModifier); }
 	};
 
 

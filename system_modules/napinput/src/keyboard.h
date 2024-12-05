@@ -266,7 +266,9 @@ namespace nap
 	};
 
 	/**
-	 * Convert a nap key to UTF-8 character.
+	 * Convert a nap key press to UTF-8 character.
+	 * Note that only the most common (roman) keys are supported.
+	 * 
 	 * @param key the key to convert
 	 * @param mod key modifier (bitmask including shift, ctrl etc..)
 	 * @return utf character code, 0x00 if key can't be converted.

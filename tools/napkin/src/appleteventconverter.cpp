@@ -226,7 +226,6 @@ namespace napkin
 	 */
 	static nap::EKeyCode toNapKeyCode(Qt::Key key)
 	{
-		nap::Logger::info("Key: %d", key);
 		auto pos = getQtKeyCodeMap().find(key);
 		return pos != getQtKeyCodeMap().end() ? pos->second :
 			nap::EKeyCode::KEY_UNKNOWN;
