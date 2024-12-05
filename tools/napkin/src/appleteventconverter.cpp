@@ -21,6 +21,7 @@ namespace napkin
 	{
 		static const QtKeyCodeMap key_code_map =
 		{
+			{ Qt::Key::Key_Enter,					nap::EKeyCode::KEY_KP_ENTER},
 			{ Qt::Key::Key_Return,					nap::EKeyCode::KEY_RETURN },
 			{ Qt::Key::Key_Escape,					nap::EKeyCode::KEY_ESCAPE },
 			{ Qt::Key::Key_Backspace,				nap::EKeyCode::KEY_BACKSPACE },
