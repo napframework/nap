@@ -54,6 +54,12 @@ namespace nap
 			{ EKeyCode::KEY_QUESTION,		0x3F },
 			{ EKeyCode::KEY_AT,				0x40 },
 			{ EKeyCode::KEY_AT,				0x40 },
+			{ EKeyCode::KEY_LEFTBRACKET,	0x5B },
+			{ EKeyCode::KEY_BACKSLASH,		0x5C },
+			{ EKeyCode::KEY_RIGHTBRACKET,	0x5D },
+			{ EKeyCode::KEY_CARET,			0x5E },
+			{ EKeyCode::KEY_UNDERSCORE,		0x5F },
+			{ EKeyCode::KEY_BACKQUOTE,		0x60 },
 			{ EKeyCode::KEY_a,				0x61 },
 			{ EKeyCode::KEY_b,				0x62 },
 			{ EKeyCode::KEY_c,				0x63 },
@@ -82,7 +88,8 @@ namespace nap
 			{ EKeyCode::KEY_z,				0x7A },
 			{ EKeyCode::KEY_KP_LEFTBRACE,	0x7B },
 			{ EKeyCode::KEY_KP_VERTICALBAR,	0x7C },
-			{ EKeyCode::KEY_TILDE,			0x7D }
+			{ EKeyCode::KEY_KP_RIGHTBRACE,	0x7D },
+			{ EKeyCode::KEY_TILDE,			0x7E }
 		};
 
 		// Bail if code isn't available

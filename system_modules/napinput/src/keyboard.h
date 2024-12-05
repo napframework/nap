@@ -266,9 +266,10 @@ namespace nap
 	};
 
 	/**
-	 * Convert a nap key together with modifier to utf-8 character.
+	 * Convert a nap key to UTF-8 character.
 	 * @param key the key to convert
 	 * @param mod key modifier (bitmask including shift, ctrl etc..)
+	 * @return utf character code, 0x00 if key can't be converted.
 	 */
 	nap::uint NAPAPI toUtf8(nap::EKeyCode key, nap::uint8 mod);
 }

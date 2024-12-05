@@ -21,6 +21,10 @@ namespace napkin
 	{
 		static const QtKeyCodeMap key_code_map =
 		{
+			{ Qt::Key::Key_AsciiCircum,				nap::EKeyCode::KEY_CARET },
+			{ Qt::Key::Key_AsciiTilde,				nap::EKeyCode::KEY_TILDE},
+			{ Qt::Key::Key_QuoteLeft,				nap::EKeyCode::KEY_BACKQUOTE},
+			{ Qt::Key::Key_Apostrophe,				nap::EKeyCode::KEY_QUOTE},
 			{ Qt::Key::Key_Enter,					nap::EKeyCode::KEY_KP_ENTER},
 			{ Qt::Key::Key_Return,					nap::EKeyCode::KEY_RETURN },
 			{ Qt::Key::Key_Escape,					nap::EKeyCode::KEY_ESCAPE },
@@ -28,7 +32,6 @@ namespace napkin
 			{ Qt::Key::Key_Tab,						nap::EKeyCode::KEY_TAB },
 			{ Qt::Key::Key_Space,					nap::EKeyCode::KEY_SPACE },
 			{ Qt::Key::Key_Exclam,					nap::EKeyCode::KEY_EXCLAIM },
-			{ Qt::Key::Key_Ampersand,				nap::EKeyCode::KEY_QUOTE },
 			{ Qt::Key::Key_QuoteDbl,				nap::EKeyCode::KEY_QUOTEDBL },
 			{ Qt::Key::Key_Percent,					nap::EKeyCode::KEY_PERCENT },
 			{ Qt::Key::Key_Dollar,					nap::EKeyCode::KEY_DOLLAR },
@@ -223,6 +226,7 @@ namespace napkin
 	 */
 	static nap::EKeyCode toNapKeyCode(Qt::Key key)
 	{
+		nap::Logger::info("Key: %d", key);
 		auto pos = getQtKeyCodeMap().find(key);
 		return pos != getQtKeyCodeMap().end() ? pos->second :
 			nap::EKeyCode::KEY_UNKNOWN;
