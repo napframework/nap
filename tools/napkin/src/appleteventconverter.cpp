@@ -228,6 +228,19 @@ namespace napkin
 	}
 
 
+	/**
+	 * Helper function to convert an SDL KeyCode to nap KeyCode
+	 */
+	static nap::uint8 toNapKeyModifier(const Qt::KeyboardModifiers& mods)
+	{
+		nap::uint8 nap_key_mod = 0;
+		nap_key_mod |= mods.testFlag(Qt::ShiftModifier)	? static_cast<nap::uint8>(nap::EKeyModifier::Shift) : 0;
+		nap_key_mod |= mods.testFlag(Qt::AltModifier) ?	static_cast<nap::uint8>(nap::EKeyModifier::Alt) : 0;
+		nap_key_mod |= mods.testFlag(Qt::ControlModifier) ?	static_cast<nap::uint8>(nap::EKeyModifier::Control) : 0;
+		return nap_key_mod;
+	}
+
+
 	static nap::InputEvent* translateQtKeyEvent(const QEvent& qtEvent, SDL_Window* window, const nap::rtti::TypeInfo& eventType)
 	{
 		nap::InputEvent* key_event = nullptr;
@@ -240,7 +253,9 @@ namespace napkin
 			const auto& qt_key_event = static_cast<const QKeyEvent&>(qtEvent);
 			key_event = eventType.create<nap::InputEvent>(
 				{
-					toNapKeyCode(static_cast<Qt::Key>(qt_key_event.key())), wid
+					toNapKeyCode(static_cast<Qt::Key>(qt_key_event.key())),
+					toNapKeyModifier(qt_key_event.modifiers()),
+					wid
 				});
 			break;
 		}

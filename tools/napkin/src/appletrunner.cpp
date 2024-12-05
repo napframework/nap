@@ -172,9 +172,16 @@ namespace napkin
 					if (gui_ctx != nullptr)
 					{
 						// Gui is capturing this keyboard event
-						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyEvent)) &&
+						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyEvent)) && 
 							gui_service->isCapturingKeyboard(gui_ctx))
 						{
+							// Forward the keyboard event
+							if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+							{
+								auto* key_press_event = static_cast<nap::KeyPressEvent*>(event_ref.get());
+								gui_service->addInputCharachter(gui_ctx,
+									nap::toUtf8(key_press_event->mKey, key_press_event->mModifier));
+							}
 							event_queue.pop();
 							continue;
 						}

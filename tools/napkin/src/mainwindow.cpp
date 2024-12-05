@@ -438,4 +438,3 @@ void napkin::MainWindow::enableProjectDependentActions(bool enable)
 		}
 	}
 }
-

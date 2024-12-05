@@ -15,8 +15,8 @@ add_source_dir("applets" "src/applets")
 add_source_dir("panels" "src/panels")
 add_source_dir("napkin" "src")
 
-# Uncomment this to work on applets inside napkin
-# This means the napkin applet components and resources are available to Napkin!
+# Uncomment 'NAP_DEV' to enable working on applets within Napkin! 
+# This will make applet specific resources and components accessible and editable in Napkin.
 target_compile_definitions(${PROJECT_NAME} PRIVATE NAP_DEV)
 
 if(MSVC OR APPLE)

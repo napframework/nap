@@ -676,6 +676,14 @@ namespace nap
 	}
 
 
+	void IMGuiService::addInputCharachter(ImGuiContext* context, nap::uint character)
+	{
+		ImGui::SetCurrentContext(context);
+		ImGuiIO& io = ImGui::GetIO();
+		io.AddInputCharacter(character);
+	}
+
+
 	ImTextureID IMGuiService::getTextureHandle(const nap::Texture2D& texture) const
 	{
 		// Check if the texture has been requested before

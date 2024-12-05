@@ -273,6 +273,13 @@ namespace nap
 		bool isCapturingMouse(ImGuiContext* context);
 
 		/**
+		 * Add unicode input character.
+		 * @param context the gui context
+		 * @param character the unicode character to add
+		 */
+		void addInputCharachter(ImGuiContext* context, nap::uint character);
+
+		/**
 		 * Returns a texture handle that can be used to display a Vulkan texture inside ImGUI.
 		 * Alternatively, use the ImGUI::Image(nap::Texture2D&, ...) utility function, to immediately display a texture instead.
 		 * Internally the handles are cached, it is therefore fine to call this function every frame.
