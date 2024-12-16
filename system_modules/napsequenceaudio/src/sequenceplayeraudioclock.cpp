@@ -27,12 +27,6 @@ namespace nap
     }
 
 
-    void SequencePlayerAudioClock::onDestroy()
-    {
-        stop();
-    }
-
-
     void SequencePlayerAudioClock::stop()
     {
         mAudioClockProcess->disconnectUpdateSlot(mUpdateSlot);

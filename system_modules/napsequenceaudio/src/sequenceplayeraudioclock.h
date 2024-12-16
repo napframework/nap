@@ -35,11 +35,6 @@ namespace nap
         SequencePlayerAudioClock& operator =(const SequencePlayerAudioClock&) = delete;
 
         /**
-         * onDestroy calls stop disconnecting update slot from created SequencePlayerAudioClockProcess
-         */
-        void onDestroy() override;
-
-        /**
          * Called on start of the sequence player
          * @param updateSlot
          */
