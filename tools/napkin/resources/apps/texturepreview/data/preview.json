@@ -74,6 +74,11 @@
                         "LoadTexture",
                         "ClearTexture"
                     ]
+                },
+                {
+                    "Type": "napkin::LoadTextureComponent",
+                    "mID": "LoadTextureComponent",
+                    "Frame2DTextureComponent": "../2DTextureEntity/Frame2DTextureComponent"
                 }
             ],
             "Children": []

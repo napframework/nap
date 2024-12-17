@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 #include <component.h>
@@ -8,22 +12,21 @@
 
 namespace napkin
 {
+	using namespace nap;
 	class Frame2DTextureComponentInstance;
 
 	/**
 	 * Binds and frames a 2D texture in the viewport
 	 */
-	class Frame2DTextureComponent : public nap::Component
+	class Frame2DTextureComponent : public Component
 	{
-		RTTI_ENABLE(nap::Component)
+		RTTI_ENABLE(Component)
 		DECLARE_COMPONENT(Frame2DTextureComponent, Frame2DTextureComponentInstance)
-
 	public:
 
 		// Properties
-		nap::ComponentPtr<nap::ZoomPanController> mZoomPanController = nullptr;			///< Property: 'ZoomPanController' the ortho camera zoom & pan controller
-		nap::ResourcePtr<nap::Texture2D> mFallbackTexture = nullptr;					///< Property: 'FallbackTexture' the default fallback texture
-
+		ComponentPtr<nap::ZoomPanController> mZoomPanController = nullptr;		///< Property: 'ZoomPanController' the ortho camera zoom & pan controller
+		ResourcePtr<nap::Texture2D> mFallbackTexture = nullptr;					///< Property: 'FallbackTexture' the default fallback texture
 
 		// Requires texture transform
 		virtual void getDependentComponents(std::vector<nap::rtti::TypeInfo>& components) const override;
@@ -33,11 +36,11 @@ namespace napkin
 	/**
 	 * Binds and frames a 2D texture in the viewport
 	 */
-	class Frame2DTextureComponentInstance : public nap::ComponentInstance
+	class Frame2DTextureComponentInstance : public ComponentInstance
 	{
 		RTTI_ENABLE(nap::ComponentInstance)
 	public:
-		Frame2DTextureComponentInstance(nap::EntityInstance& entity, nap::Component& resource) :
+		Frame2DTextureComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
 		/**
@@ -45,20 +48,14 @@ namespace napkin
 		 * @param errorState error if initialization fails
 		 * @return if it initialized successfully
 		 */
-		virtual bool init(nap::utility::ErrorState& errorState) override;
-
-		/**
-		 * update appletcomponentInstance. This is called by NAP core automatically
-		 * @param deltaTime time in between frames in seconds
-		 */
-		virtual void update(double deltaTime) override;
+		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
 		 * Bind a 2D texture
 		 * @param texture the texture to bind
 		 * @param frame if the texture is framed in the window
 		 */
-		void bind(nap::Texture2D& texture);
+		void bind(Texture2D& texture);
 
 		/**
 		 * Scales and positions current texture to perfectly fit in the viewport.
@@ -71,13 +68,13 @@ namespace napkin
 		void clear();
 
 		// Resolved zoom & pan controller
-		nap::ComponentInstancePtr<nap::ZoomPanController> mZoomPanController = { this, &Frame2DTextureComponent::mZoomPanController };
+		ComponentInstancePtr<nap::ZoomPanController> mZoomPanController = { this, &Frame2DTextureComponent::mZoomPanController };
 
 	private:
-		nap::Texture2D* mSelectedTexture = nullptr;
-		nap::Texture2D* mTextureFallback = nullptr;
-		nap::Sampler2DInstance* mSampler = nullptr;
-		nap::TransformComponentInstance* mTextureTransform = nullptr;
-		nap::RenderableMeshComponentInstance* mTextureRenderer = nullptr;
+		Texture2D* mSelectedTexture = nullptr;
+		Texture2D* mTextureFallback = nullptr;
+		Sampler2DInstance* mSampler = nullptr;
+		TransformComponentInstance* mTextureTransform = nullptr;
+		RenderableMeshComponentInstance* mTextureRenderer = nullptr;
 	};
 }

@@ -69,6 +69,11 @@ namespace napkin
 		 */
 		napkin::CWDHandle switchWorkingDir() { assert(mEditorInfo != nullptr); return napkin::CWDHandle(mEditorInfo->getDataDirectory()); }
 
+		/**
+		 * @return project loaded in editor
+		 */
+		const nap::ProjectInfo& getEditorInfo() const { assert(mEditorInfo != nullptr); return *mEditorInfo; }
+
 	private: 
 		std::unique_ptr<nap::ProjectInfo> mEditorInfo = nullptr;	///< Project currently loaded in napkin (provided by applet runner)
 	};

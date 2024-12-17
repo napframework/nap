@@ -1,29 +1,25 @@
-#include "texturepreviewapplet.h"
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "frame2dtexturecomponent.h"
+#include "texturepreviewapplet.h"
+#include "loadtexturecomponent.h"
 
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
 #include <orthocameracomponent.h>
-#include <rendergnomoncomponent.h>
-#include <perspcameracomponent.h>
 #include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
-#include <rtti/jsonreader.h>
-#include <textureshader.h>
-#include <naputils.h>
 #include <vulkan/vk_enum_string_helper.h>
 #include <imguiutils.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
-
-static bool showControls = false;
 
 namespace napkin
 {
@@ -43,18 +39,8 @@ namespace napkin
 		mResourceManager = getCore().getResourceManager();
 
 		// Fetch render window
-		mRenderWindow = mResourceManager->findObject<nap::RenderWindow>("Window");
+		mRenderWindow = mResourceManager->findObject<RenderWindow>("Window");
 		if (!error.check(mRenderWindow != nullptr, "Missing 'Window'"))
-			return false;
-
-		// Load API Signature
-		mLoadSignature = mResourceManager->findObject<APISignature>(loadCmd);
-		if (!error.check(mLoadSignature != nullptr, "Missing '%s' api signature", loadCmd))
-			return false;
-
-		// Clear API Signature
-		mClearSignature = mResourceManager->findObject<APISignature>(clearCmd);
-		if (!error.check(mClearSignature != nullptr, "Missing '%s' api signature", clearCmd))
 			return false;
 
 		// Get the resource that manages all the entities
@@ -78,12 +64,13 @@ namespace napkin
 		if (!error.check(mOrthoEntity != nullptr, "Missing 'OrthoCameraEntity'"))
 			return false;
 
-		// Register load callback
-		auto& api_comp = mAPIEntity->getComponent<nap::APIComponentInstance>();
-		api_comp.registerCallback(*mLoadSignature, mLoadRequestedSlot);
+		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
+		if (!error.check(load_tex_comp != nullptr, "Missing 'LoadTextureComponent'"))
+			return false;
 
-		// Register clear callback
-		api_comp.registerCallback(*mClearSignature, mClearRequestedSlot);
+		// Set data directory to resolve texture load cmds against
+		// TODO: This should be available to the component directly, exposed as an extension to core...
+		load_tex_comp->mProjectDataDirectory = getEditorInfo().getDataDirectory();
 
 		return true;
 	}
@@ -99,6 +86,9 @@ namespace napkin
 		std::vector<nap::EntityInstance*> entities = { mOrthoEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
+		// Get texture
+		auto* loaded_texture = mAPIEntity->getComponent<LoadTextureComponentInstance>().getTexture();
+
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
 		float bar_height = ImGui::GetWindowHeight();
@@ -108,27 +98,27 @@ namespace napkin
 			ImGui::ColorPicker4("Color", mClearColor.getData());	
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Details", mActiveTexture != nullptr))
+		if (ImGui::BeginMenu("Details", loaded_texture != nullptr))
 		{
-			ImGui::PushID(&mActiveTexture);
-			texDetail("Width", utility::stringFormat("%d", mActiveTexture->getWidth()), "texel(s)");
-			texDetail("Height", utility::stringFormat("%d", mActiveTexture->getHeight()), "texel(s)");
-			texDetail("Channels", RTTI_OF(nap::ESurfaceChannels), mActiveTexture->getDescriptor().getChannels());
-			texDetail("No. Channels", utility::stringFormat("%d", mActiveTexture->getDescriptor().getNumChannels()));
-			texDetail("Surface type", RTTI_OF(nap::ESurfaceDataType), mActiveTexture->getDescriptor().getDataType());
-			texDetail("Channel size", utility::stringFormat("%d", mActiveTexture->getDescriptor().getChannelSize()), "byte(s)");
-			texDetail("Pixel size", utility::stringFormat("%d", mActiveTexture->getDescriptor().getBytesPerPixel()), "byte(s)");
-			texDetail("Surface size", utility::stringFormat("%d", mActiveTexture->getDescriptor().getSizeInBytes()), "byte(s)");
-			texDetail("Pitch", utility::stringFormat("%d", mActiveTexture->getDescriptor().getPitch()), "byte(s)");
-			texDetail("Layers", utility::stringFormat("%d", mActiveTexture->getLayerCount()));
-			texDetail("Mip levels", utility::stringFormat("%d", mActiveTexture->getMipLevels()));
-			texDetail("Format", utility::stringFormat(string_VkFormat(mActiveTexture->getFormat())));
+			ImGui::PushID(loaded_texture);
+			texDetail("Width", utility::stringFormat("%d", loaded_texture->getWidth()), "texel(s)");
+			texDetail("Height", utility::stringFormat("%d", loaded_texture->getHeight()), "texel(s)");
+			texDetail("Channels", RTTI_OF(nap::ESurfaceChannels), loaded_texture->getDescriptor().getChannels());
+			texDetail("No. Channels", utility::stringFormat("%d", loaded_texture->getDescriptor().getNumChannels()));
+			texDetail("Surface type", RTTI_OF(nap::ESurfaceDataType), loaded_texture->getDescriptor().getDataType());
+			texDetail("Channel size", utility::stringFormat("%d", loaded_texture->getDescriptor().getChannelSize()), "byte(s)");
+			texDetail("Pixel size", utility::stringFormat("%d", loaded_texture->getDescriptor().getBytesPerPixel()), "byte(s)");
+			texDetail("Surface size", utility::stringFormat("%d", loaded_texture->getDescriptor().getSizeInBytes()), "byte(s)");
+			texDetail("Pitch", utility::stringFormat("%d", loaded_texture->getDescriptor().getPitch()), "byte(s)");
+			texDetail("Layers", utility::stringFormat("%d", loaded_texture->getLayerCount()));
+			texDetail("Mip levels", utility::stringFormat("%d", loaded_texture->getMipLevels()));
+			texDetail("Format", utility::stringFormat(string_VkFormat(loaded_texture->getFormat())));
 			ImGui::PopID();
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Controls", mActiveTexture != nullptr))
+		if (ImGui::BeginMenu("Controls", loaded_texture != nullptr))
 		{
-			ImGui::PushID(&mActiveTexture);
+			ImGui::PushID(loaded_texture);
 			static float scale;
 			ImGui::SliderFloat("UV Scale", &scale, 0.0f, 10.0f, "%.3f", 2.0f);
 			ImGui::PopID();
@@ -142,13 +132,12 @@ namespace napkin
 		}
 
 		// Add frame icon
-		if (mActiveTexture != nullptr &&
+		if (loaded_texture != nullptr &&
 			ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
 		{
 			auto& frame_2d_comp = m2DTextureEntity->getComponent<napkin::Frame2DTextureComponentInstance>();
 			frame_2d_comp.frame();
 		}
-
 		ImGui::EndMainMenuBar();
 	}
 	
@@ -170,7 +159,7 @@ namespace napkin
 			render_window.beginRendering();
 
 			// Get 2D texture and draw
-			if (mActiveTexture != nullptr)
+			if (mAPIEntity->getComponent<LoadTextureComponentInstance>().hasTexture())
 			{
 				auto& ortho_cam = mOrthoEntity->getComponent<OrthoCameraComponentInstance>();
 				auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
@@ -210,70 +199,6 @@ namespace napkin
 		mInputService->addEvent(std::move(inputEvent));
 	}
 
-	
-	int TexturePreviewApplet::shutdown()
-	{
-		mActiveTexture.reset(nullptr);
-		return 0;
-	}
-
-
-	void TexturePreviewApplet::onLoadRequested(const nap::APIEvent& apiEvent)
-	{
-		auto* data_arg = apiEvent.getArgumentByName(loadArg1);
-		assert(data_arg != nullptr);
-
-		// De-serialize JSON
-		utility::ErrorState error; rtti::DeserializeResult result;
-		if (!rtti::deserializeJSON(data_arg->asString(), EPropertyValidationMode::DisallowMissingProperties,
-			EPointerPropertyMode::OnlyRawPointers, getCore().getResourceManager()->getFactory(), result, error))
-		{
-			error.fail("%s cmd failed", loadCmd);
-			nap::Logger::error(error.toString());
-			return;
-		}
-
-		// Ensure there's at least 1 object and it's of type texture
-		if (result.mReadObjects.size() == 0 || !result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)))
-		{
-			nap::Logger::error("%s cmd failed: invalid payload", loadCmd);
-			return;
-		}
-
-		// Warn if there's more than 1 object and store
-		if (result.mReadObjects.size() > 1)
-			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", loadCmd);
-
-		// Init texture relative to project working directory
-		{
-			napkin::CWDHandle cwd_handle = switchWorkingDir();
-			if (!result.mReadObjects[0]->init(error))
-			{
-				nap::Logger::error(error.toString());
-				return;
-			}
-		}
-
-		// Store
-		mActiveTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
-
-		// Bind
-		auto& frame_tex_comp = m2DTextureEntity->getComponent<napkin::Frame2DTextureComponentInstance>();
-		frame_tex_comp.bind(*mActiveTexture);
-
-		// Reset pan & zoom controls if requested
-		auto* frame_cmd = apiEvent.getArgumentByName(loadArg2);
-		assert(frame_cmd != nullptr);
-		if (frame_cmd->asBool())
-			frame_tex_comp.frame();
-	}
-
-
-	void TexturePreviewApplet::onClearRequested(const nap::APIEvent& apiEvent)
-	{
-		mActiveTexture.reset(nullptr);
-	}
-
 
 	void TexturePreviewApplet::texDetail(std::string&& label, std::string&& value, std::string&& appendix)
 	{
@@ -296,4 +221,3 @@ namespace napkin
 		texDetail(label.c_str(), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }
-

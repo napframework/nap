@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #include "frame2dtexturecomponent.h"
 
 // External Includes
@@ -20,7 +24,7 @@ RTTI_END_CLASS
 
 namespace napkin
 {
-	void Frame2DTextureComponent::getDependentComponents(std::vector<nap::rtti::TypeInfo>& components) const
+	void Frame2DTextureComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
 	{
 		components.emplace_back(RTTI_OF(nap::TransformComponent));
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
@@ -28,21 +32,21 @@ namespace napkin
 
 
 
-	bool Frame2DTextureComponentInstance::init(nap::utility::ErrorState& errorState)
+	bool Frame2DTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// 2D texture transformation
-		mTextureTransform = getEntityInstance()->findComponent<nap::TransformComponentInstance>();
+		mTextureTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
 		if (!errorState.check(mTextureTransform != nullptr, "Missing 2D texture transform component"))
 			return false;
 
 		// 2D texture renderer
-		mTextureRenderer = getEntityInstance()->findComponent<nap::RenderableMeshComponentInstance>();
+		mTextureRenderer = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
 		if (!errorState.check(mTextureTransform != nullptr, "Missing 2D texture render component"))
 			return false;
 
 		// 2D texture sampler input
 		auto& mat_instance = mTextureRenderer->getMaterialInstance();
-		mSampler = mat_instance.getOrCreateSampler<nap::Sampler2DInstance>(nap::uniform::texture::sampler::colorTexture);
+		mSampler = mat_instance.getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
 		if (!errorState.check(mSampler != nullptr, "Missing 2D texture sampler input '%s'",
 			nap::uniform::texture::sampler::colorTexture))
 			return false;
@@ -57,13 +61,7 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::update(double deltaTime)
-	{
-
-	}
-
-
-	void Frame2DTextureComponentInstance::bind(nap::Texture2D& texture)
+	void Frame2DTextureComponentInstance::bind(Texture2D& texture)
 	{
 		// Move texture into ours
 		mSelectedTexture = &texture;
@@ -86,4 +84,3 @@ namespace napkin
 		bind(*mTextureFallback);
 	}
 }
-

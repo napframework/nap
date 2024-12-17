@@ -2,9 +2,11 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local includes
 #include "texturepreviewpanel.h"
 #include "../appcontext.h"
 
+// External includes
 #include <rtti/jsonwriter.h>
 
 namespace napkin
@@ -43,9 +45,9 @@ namespace napkin
 		}
 
 		// Send as command to applet
-		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(TexturePreviewApplet::loadCmd);
-		load_tex_event->addArgument<nap::APIString>(TexturePreviewApplet::loadArg1, writer.GetJSON());
-		load_tex_event->addArgument<nap::APIBool>(TexturePreviewApplet::loadArg2,
+		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadCmd);
+		load_tex_event->addArgument<nap::APIString>(LoadTextureComponent::loadArg1, writer.GetJSON());
+		load_tex_event->addArgument<nap::APIBool>(LoadTextureComponent::loadArg2,
 			mLoadedObject != path.getObject());
 		mRunner.sendEvent(std::move(load_tex_event));
 
@@ -57,7 +59,7 @@ namespace napkin
 	void TexturePreviewPanel::clearPath()
 	{
 		// Send clear command to applet
-		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(TexturePreviewApplet::clearCmd);
+		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::clearCmd);
 		mRunner.sendEvent(std::move(clear_tex_event));
 	}
 

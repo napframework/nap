@@ -1,3 +1,7 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 #pragma once
 
 // Core includes
@@ -11,9 +15,7 @@
 #include <scene.h>
 #include <renderwindow.h>
 #include <entity.h>
-#include <imagefromfile.h>
 #include <imguiservice.h>
-#include <apievent.h>
 
 // Local includes
 #include "../applet.h"
@@ -30,13 +32,6 @@ namespace napkin
 	{
 		RTTI_ENABLE(napkin::Applet)
 	public:
-
-		// Signature callback names and arguments
-		static constexpr const char* loadCmd = "LoadTexture";
-		static constexpr const char* loadArg1 = "data";
-		static constexpr const char* loadArg2 = "frame";
-		static constexpr const char* clearCmd = "ClearTexture";
-
 		/**
 		 * Constructor
 		 * @param core instance of the NAP core system
@@ -72,12 +67,6 @@ namespace napkin
 		 * @param inputEvent the input event that occurred
 		 */
 		void inputMessageReceived(InputEventPtr inputEvent) override;
-		
-		/**
-		 * Called when the app is shutting down after quit() has been invoked
-		 * @return the application exit code, this is returned when the main loop is exited
-		 */
-		virtual int shutdown() override;
 
 	private:
 		ResourceManager*  mResourceManager = nullptr;					//< Manages all the loaded data
@@ -91,19 +80,10 @@ namespace napkin
 		ObjectPtr<EntityInstance> mAPIEntity = nullptr;					//< Pointer to the api entity
 		ObjectPtr<EntityInstance> m2DTextureEntity = nullptr;				//< Pointer to the texture entity
 		ObjectPtr<EntityInstance> mOrthoEntity = nullptr;				//< Pointer to the ortho camera
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointer to the render window
+		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointer to the render window;
 
-		void onLoadRequested(const nap::APIEvent& apiEvent);			//< Loads a texture from JSON
-		ObjectPtr<APISignature> mLoadSignature = nullptr;				//< Pointer to the api text signature cmd
-		nap::Slot<const nap::APIEvent&> mLoadRequestedSlot = { this, &TexturePreviewApplet::onLoadRequested };
-
-		void onClearRequested(const nap::APIEvent& apiEvent);			//< Clears texture
-		ObjectPtr<APISignature> mClearSignature = nullptr;				//< Pointer to the api clear signature cmd
-		nap::Slot<const nap::APIEvent&> mClearRequestedSlot = { this, &TexturePreviewApplet::onClearRequested };
-
-		std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
+		//std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
-		bool mTextureChanged = false;									//< If the texture changed
 
 		void texDetail(std::string&& label, std::string&& value, std::string&& appendix = "");
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
