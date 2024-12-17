@@ -11,14 +11,19 @@
 namespace nap
 {
 	/**
+	 * Keyboard modification key bit-mask
+	 */
+	using KeyModifier = nap::uint8;
+
+	/**
 	 * Keyboard modification keys
 	 */
-	enum class EKeyModifier : uint8
+	enum class EKeyModifier : KeyModifier
 	{
-		None	= 0,
-		Shift	= 2,
-		Control = 4,
-		Alt		= 8
+		None	= 0x00,
+		Shift	= 0x02,
+		Control = 0x04,
+		Alt		= 0x08
 	};
 
 	/**
@@ -273,5 +278,5 @@ namespace nap
 	 * @param mod key modifier (bitmask including shift, ctrl etc..)
 	 * @return utf character code, 0x00 if key can't be converted.
 	 */
-	nap::uint NAPAPI toUtf8(nap::EKeyCode key, nap::uint8 mod);
+	nap::uint NAPAPI toUtf8(nap::EKeyCode key, KeyModifier mod);
 }

@@ -7,9 +7,9 @@
 
 namespace nap
 {
-	nap::uint toUtf8(EKeyCode key, uint8 mod)
+	nap::uint toUtf8(EKeyCode key, KeyModifier mod)
 	{
-		static const std::unordered_map<EKeyCode, nap::uint8> utf8Map =
+		static const std::unordered_map<EKeyCode, KeyModifier> utf8Map =
 		{
 			{ EKeyCode::KEY_SPACE,			0x20 },
 			{ EKeyCode::KEY_EXCLAIM,		0x21 },

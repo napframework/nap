@@ -56,12 +56,12 @@ namespace nap
 	{
 		RTTI_ENABLE(WindowInputEvent)
 	public:
-		KeyEvent(EKeyCode inKey, uint8 inMod, int window) : WindowInputEvent(window),
+		KeyEvent(EKeyCode inKey, KeyModifier inMod, int window) : WindowInputEvent(window),
 			mKey(inKey), mModifier(inMod)
 		{ }
 		
 		EKeyCode mKey;				///< Associated Key
-		uint8 mModifier;			///< Modifier key bitmask (shift, ctrl etc.)
+		KeyModifier mModifier;		///< Modifier key bit-mask (shift, ctrl etc.)
 	};
 
 
@@ -72,7 +72,7 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyPressEvent(EKeyCode inKey, uint8 inMod, int window) : 
+		KeyPressEvent(EKeyCode inKey, KeyModifier inMod, int window) :
 			KeyEvent(inKey, inMod, window) 
 		{ }
 
@@ -90,7 +90,7 @@ namespace nap
 	{
 		RTTI_ENABLE(KeyEvent)
 	public:
-		KeyReleaseEvent(EKeyCode inKey, uint8 inMod, int window) :
+		KeyReleaseEvent(EKeyCode inKey, KeyModifier inMod, int window) :
 			KeyEvent(inKey, inMod, window) 
 		{ }
 	};
