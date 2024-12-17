@@ -20,7 +20,7 @@
 namespace napkin
 {
 	// The applet this panel runs & embeds
-	using PreviewAppletRunner = TypedAppletRunner<nap::RenderPreviewApplet> ;
+	using PreviewAppletRunner = TypedAppletRunner<RenderPreviewApplet> ;
 
 	/**
 	 * Allows for previewing material and meshes

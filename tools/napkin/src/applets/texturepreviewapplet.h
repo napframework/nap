@@ -18,9 +18,10 @@
 // Local includes
 #include "../applet.h"
 
-namespace nap
+namespace napkin
 {
-	using namespace rtti;
+	using namespace nap;
+	using namespace nap::rtti;
 
 	/**
 	 * Main application that is called from within the main loop
@@ -40,7 +41,7 @@ namespace nap
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		TexturePreviewApplet(nap::Core& core) : napkin::Applet(core) { }
+		TexturePreviewApplet(Core& core) : napkin::Applet(core) { }
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -88,7 +89,7 @@ namespace nap
 
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance> mAPIEntity = nullptr;					//< Pointer to the api entity
-		ObjectPtr<EntityInstance> mTextureEntity = nullptr;				//< Pointer to the texture entity
+		ObjectPtr<EntityInstance> m2DTextureEntity = nullptr;				//< Pointer to the texture entity
 		ObjectPtr<EntityInstance> mOrthoEntity = nullptr;				//< Pointer to the ortho camera
 		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointer to the render window
 
@@ -106,7 +107,6 @@ namespace nap
 
 		void texDetail(std::string&& label, std::string&& value, std::string&& appendix = "");
 		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
-		void frameTexture();
 	};
 }
 

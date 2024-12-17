@@ -11,11 +11,11 @@
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderPreviewApplet)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::RenderPreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-namespace nap 
+namespace napkin 
 {
 	/**
 	 * Initialize all the resources and instances used for drawing

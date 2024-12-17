@@ -64,4 +64,3 @@ namespace napkin
 		AppletEventConverter	mConverter;
 	};
 }
-

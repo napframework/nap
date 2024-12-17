@@ -53,6 +53,12 @@
                             "y": 0.0
                         }
                     }
+                },
+                {
+                    "Type": "napkin::Frame2DTextureComponent",
+                    "mID": "Frame2DTextureComponent",
+                    "ZoomPanController": "../OrthoCameraEntity/OrthoCameraPanController",
+                    "FallbackTexture": "FallbackImage"
                 }
             ],
             "Children": []
@@ -144,7 +150,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Text": "Select Texture",
+                    "Text": "Load Texture",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
@@ -277,7 +283,7 @@
                                     "BorderColor": "IntOpaqueBlack",
                                     "CompareMode": "LessOrEqual",
                                     "EnableCompare": false,
-                                    "Texture": "DefaultImage"
+                                    "Texture": "FallbackImage"
                                 }
                             ],
                             "Buffers": [],
@@ -328,7 +334,7 @@
                     "Members": [
                         {
                             "Type": "nap::ImageFromFile",
-                            "mID": "DefaultImage",
+                            "mID": "FallbackImage",
                             "Usage": "Static",
                             "ImagePath": "test_texture.jpg",
                             "GenerateLods": true

@@ -1,5 +1,8 @@
 #include "texturepreviewapplet.h"
 
+// Local Includes
+#include "frame2dtexturecomponent.h"
+
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/logger.h>
@@ -14,14 +17,15 @@
 #include <textureshader.h>
 #include <naputils.h>
 #include <vulkan/vk_enum_string_helper.h>
-#include <zoompancontroller.h>
 #include <imguiutils.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::TexturePreviewApplet)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
-namespace nap 
+static bool showControls = false;
+
+namespace napkin
 {
 	/**
 	 * Initialize all the resources and instances used for drawing
@@ -66,8 +70,8 @@ namespace nap
 		if (!error.check(mAPIEntity != nullptr, "Missing 'APIEntity'"))
 			return false;
 
-		mTextureEntity = scene->findEntity("2DTextureEntity");
-		if (!error.check(mTextureEntity != nullptr, "Missing '2DTextureEntity'"))
+		m2DTextureEntity = scene->findEntity("2DTextureEntity");
+		if (!error.check(m2DTextureEntity != nullptr, "Missing '2DTextureEntity'"))
 			return false;
 
 		mOrthoEntity = scene->findEntity("OrthoCameraEntity");
@@ -122,6 +126,14 @@ namespace nap
 			ImGui::PopID();
 			ImGui::EndMenu();
 		}
+		if (ImGui::BeginMenu("Controls", mActiveTexture != nullptr))
+		{
+			ImGui::PushID(&mActiveTexture);
+			static float scale;
+			ImGui::SliderFloat("UV Scale", &scale, 0.0f, 10.0f, "%.3f", 2.0f);
+			ImGui::PopID();
+			ImGui::EndMenu();
+		}
 		if (ImGui::BeginMenu("Applet"))
 		{
 			ImGui::MenuItem(utility::stringFormat("Framerate: %.02f", getCore().getFramerate()).c_str());
@@ -130,9 +142,12 @@ namespace nap
 		}
 
 		// Add frame icon
-		if(mActiveTexture != nullptr &&
+		if (mActiveTexture != nullptr &&
 			ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
-			frameTexture();
+		{
+			auto& frame_2d_comp = m2DTextureEntity->getComponent<napkin::Frame2DTextureComponentInstance>();
+			frame_2d_comp.frame();
+		}
 
 		ImGui::EndMainMenuBar();
 	}
@@ -158,7 +173,7 @@ namespace nap
 			if (mActiveTexture != nullptr)
 			{
 				auto& ortho_cam = mOrthoEntity->getComponent<OrthoCameraComponentInstance>();
-				auto& tex2d_com = mTextureEntity->getComponent<RenderableMeshComponentInstance>();
+				auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
 				mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
 			}
 			else
@@ -209,7 +224,7 @@ namespace nap
 		assert(data_arg != nullptr);
 
 		// De-serialize JSON
-		nap::utility::ErrorState error; nap::DeserializeResult result;
+		utility::ErrorState error; rtti::DeserializeResult result;
 		if (!rtti::deserializeJSON(data_arg->asString(), EPropertyValidationMode::DisallowMissingProperties,
 			EPointerPropertyMode::OnlyRawPointers, getCore().getResourceManager()->getFactory(), result, error))
 		{
@@ -239,22 +254,18 @@ namespace nap
 			}
 		}
 
-		// Store and set
+		// Store
 		mActiveTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
 
-		// Set and frame texture
-		auto& render_comp = mTextureEntity->getComponent<nap::RenderableMeshComponentInstance>();
-		auto* sampler = render_comp.getMaterialInstance().getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
-		assert(sampler != nullptr);
-		sampler->setTexture(*mActiveTexture);
+		// Bind
+		auto& frame_tex_comp = m2DTextureEntity->getComponent<napkin::Frame2DTextureComponentInstance>();
+		frame_tex_comp.bind(*mActiveTexture);
 
 		// Reset pan & zoom controls if requested
-		auto* frame = apiEvent.getArgumentByName(loadArg2);
-		assert(frame != nullptr);
-		if (frame->asBool())
-		{
-			frameTexture();
-		}
+		auto* frame_cmd = apiEvent.getArgumentByName(loadArg2);
+		assert(frame_cmd != nullptr);
+		if (frame_cmd->asBool())
+			frame_tex_comp.frame();
 	}
 
 
@@ -284,13 +295,5 @@ namespace nap
 		assert(enumerator.is_enumeration());
 		texDetail(label.c_str(), enumerator.get_enumeration().value_to_name(argument).data());
 	}
-
-
-	void TexturePreviewApplet::frameTexture()
-	{
-		// Position texture and reset controller
-		assert(mActiveTexture != nullptr);
-		auto& pan_controller = mOrthoEntity->getComponent<ZoomPanControllerInstance>();
-		pan_controller.frameTexture(*mActiveTexture, mTextureEntity->getComponent<TransformComponentInstance>(), 0.9f);
-	}
 }
+

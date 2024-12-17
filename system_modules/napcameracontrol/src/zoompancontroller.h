@@ -145,6 +145,11 @@ namespace nap
 		 */
 		float getZoomLevel() const;
 
+		/**
+		 * @return orthographic camera
+		 */
+		nap::OrthoCameraComponentInstance& getCamera()				{ return *mOrthoCameraComponent; }
+
 	private:
 		// Default orthographic camera and texture (plane) position
 		static constexpr glm::vec3 cameraPosition = glm::vec3(0.0f, 0.0f, 5.0f);

@@ -19,9 +19,10 @@
 // Local includes
 #include "../applet.h"
 
-namespace nap
+namespace napkin
 {
-	using namespace rtti;
+	using namespace nap;
+	using namespace nap::rtti;
 
 	/**
 	 * Main application that is called from within the main loop
@@ -89,6 +90,6 @@ namespace nap
 		ObjectPtr<APISignature>		mAPISignature = nullptr;			//< Pointer to the api text signature
 
 		void onTextChanged(const nap::APIEvent& apiEvent);
-		nap::Slot<const nap::APIEvent&> mTextChangedSlot = { this, &RenderPreviewApplet::onTextChanged };
+		Slot<const nap::APIEvent&> mTextChangedSlot = { this, &RenderPreviewApplet::onTextChanged };
 	};
 }

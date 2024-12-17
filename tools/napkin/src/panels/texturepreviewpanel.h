@@ -16,7 +16,7 @@
 namespace napkin
 {
 	// The applet this panel runs & embeds
-	using TextureAppletRunner = TypedAppletRunner<nap::TexturePreviewApplet>;
+	using TextureAppletRunner = TypedAppletRunner<TexturePreviewApplet>;
 
 	/**
 	 * Allows for previewing material and meshes

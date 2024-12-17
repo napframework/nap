@@ -43,9 +43,9 @@ namespace napkin
 		}
 
 		// Send as command to applet
-		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(nap::TexturePreviewApplet::loadCmd);
-		load_tex_event->addArgument<nap::APIString>(nap::TexturePreviewApplet::loadArg1, writer.GetJSON());
-		load_tex_event->addArgument<nap::APIBool>(nap::TexturePreviewApplet::loadArg2,
+		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(TexturePreviewApplet::loadCmd);
+		load_tex_event->addArgument<nap::APIString>(TexturePreviewApplet::loadArg1, writer.GetJSON());
+		load_tex_event->addArgument<nap::APIBool>(TexturePreviewApplet::loadArg2,
 			mLoadedObject != path.getObject());
 		mRunner.sendEvent(std::move(load_tex_event));
 
@@ -57,7 +57,7 @@ namespace napkin
 	void TexturePreviewPanel::clearPath()
 	{
 		// Send clear command to applet
-		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(nap::TexturePreviewApplet::clearCmd);
+		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(TexturePreviewApplet::clearCmd);
 		mRunner.sendEvent(std::move(clear_tex_event));
 	}
 

@@ -144,7 +144,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Text": "Select Mesh or Material",
+                    "Text": "Load Mesh or Material",
                     "Font": "Font",
                     "TextColor": {
                         "Values": [
