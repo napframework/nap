@@ -89,17 +89,25 @@ namespace napkin
 	void TexturePreviewApplet::update(double deltaTime)
 	{
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
-		nap::DefaultInputRouter input_router;
+		static nap::DefaultInputRouter input_router;
 
-		// Forward all input events associated with the first window to the selected camera
+		// Forward all input events associated with the first window to the in-use camera
 		std::vector<nap::EntityInstance*> entities;
 		auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
-		if (tex_controller.hasTexture())
+		switch (tex_controller.getType())
 		{
-			entities.emplace_back(tex_controller.getType().is_derived_from(RTTI_OF(Texture2D)) ?
-				m2DOrthoCameraEntity.get() : mCubePerspCameraEntity.get());
+			case LoadTextureComponentInstance::EType::Texture2D:
+				mInputService->processWindowEvents(*mRenderWindow, input_router, { m2DOrthoCameraEntity.get() });
+				break;
+			case LoadTextureComponentInstance::EType::Cubemap:
+				mInputService->processWindowEvents(*mRenderWindow, input_router, { mCubePerspCameraEntity.get() });
+				break;
+			case LoadTextureComponentInstance::EType::None:
+				break;
+			default:
+				assert(false);
+				break;
 		}
-		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
@@ -115,6 +123,7 @@ namespace napkin
 		if (ImGui::BeginMenu("Details", loaded_tex != nullptr))
 		{
 			ImGui::PushID(loaded_tex);
+			texDetail("Identifier", loaded_tex->mID);
 			texDetail("Plane Width", utility::stringFormat("%d", loaded_tex->getDescriptor().getWidth()), "texel(s)");
 			texDetail("Plane Height", utility::stringFormat("%d", loaded_tex->getDescriptor().getHeight()), "texel(s)");
 			texDetail("Channels", RTTI_OF(nap::ESurfaceChannels), loaded_tex->getDescriptor().getChannels());
@@ -146,12 +155,10 @@ namespace napkin
 		}
 
 		// Add frame icon
-		if (loaded_tex != nullptr &&
+		if (loaded_tex != nullptr && 
 			ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
-		{
-			auto& frame_2d_comp = m2DTextureEntity->getComponent<napkin::Frame2DTextureComponentInstance>();
-			frame_2d_comp.frame();
-		}
+			tex_controller.frame();
+
 		ImGui::EndMainMenuBar();
 	}
 	
@@ -183,27 +190,37 @@ namespace napkin
 
 			// Draw 2D texture or cubemap based on loaded type
 			auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
-			if (tex_controller.hasTexture())
+			switch (tex_controller.getType())
 			{
-				if (tex_controller.getType().is_derived_from(RTTI_OF(nap::Texture2D)))
+				case LoadTextureComponentInstance::EType::Texture2D:
 				{
+					// Draw texture using zoom-pan control
 					auto& ortho_2d_cam = m2DOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 					auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
 					mRenderService->renderObjects(*mRenderWindow, ortho_2d_cam, { &tex2d_com });
+					break;
 				}
-				else
+				case LoadTextureComponentInstance::EType::Cubemap:
 				{
+					// Draw cubemap using orbit control
 					auto& persp_cube_cam = mCubePerspCameraEntity->getComponent<PerspCameraComponentInstance>();
 					auto& sky_com = mCubeTextureEntity->getComponent<RenderableComponentInstance>();
 					mRenderService->renderObjects(*mRenderWindow, persp_cube_cam, { &sky_com });
+					break;
 				}
-			}
-			else
-			{
-				// Otherwise notify user we can select a texture
-				Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-				render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
-				render_text.draw(render_window);
+				case LoadTextureComponentInstance::EType::None:
+				{
+					// Otherwise notify user we can select a texture
+					Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+					render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
+					render_text.draw(render_window);
+					break;
+				}
+				default:
+				{
+					assert(false);
+					break;
+				}
 			}
 
 			// Render gui to screen
@@ -233,7 +250,7 @@ namespace napkin
 	}
 
 
-	void TexturePreviewApplet::texDetail(std::string&& label, std::string&& value, std::string&& appendix)
+	void TexturePreviewApplet::texDetail(std::string&&label, const std::string& value, std::string&& appendix)
 	{
 		static constexpr float xoff = 125.0f;
 		static constexpr float yoff = xoff * 2.0f;
@@ -251,6 +268,6 @@ namespace napkin
 	void TexturePreviewApplet::texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument)
 	{
 		assert(enumerator.is_enumeration());
-		texDetail(label.c_str(), enumerator.get_enumeration().value_to_name(argument).data());
+		texDetail(std::move(label), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }

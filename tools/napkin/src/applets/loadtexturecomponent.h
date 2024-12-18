@@ -12,6 +12,7 @@
 #include <apicomponent.h>
 #include <componentptr.h>
 #include <renderskyboxcomponent.h>
+#include <orbitcontroller.h>
 
 namespace napkin
 {
@@ -37,6 +38,7 @@ namespace napkin
 		// Properties
 		nap::ComponentPtr<Frame2DTextureComponent> mFrame2DTextureComponent;	///< Property: 'Frame2DTextureComponent' The component that binds and frames the 2D texture
 		nap::ComponentPtr<RenderSkyBoxComponent> mSkyboxComponent;				///< Property: 'SkyboxComponent' The component that renders the skybox
+		nap::ComponentPtr<OrbitController> mSkyboxController;					///< Property: 'SkyboxController' The skybox camera controller
 
 		// Requires an api component
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
@@ -52,10 +54,19 @@ namespace napkin
 		RTTI_ENABLE(ComponentInstance)
 	public:
 
+		// Current loaded type
+		enum class EType: uint8
+		{
+			None		= 0,
+			Texture2D	= 1,
+			Cubemap		= 2
+		};
+
 		// Constructor
 		LoadTextureComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)					{ }
 
+		// Destructor
 		virtual ~LoadTextureComponentInstance() override;
 
 		// Init
@@ -72,16 +83,24 @@ namespace napkin
 		nap::Texture* getTexture() const						{ return mActiveTexture; }
 
 		/**
-		 * Current loaded texture type, either of type Texture2D or TextureCube 
-		 * @return loaded texture type, invalid when no texture is loaded
+		 * Current loaded texture type
+		 * @return loaded texture type, none when no texture is loaded
 		 */
-		rtti::TypeInfo getType()								{ return hasTexture() ? mActiveTexture->get_type() : rtti::TypeInfo::empty(); }
+		LoadTextureComponentInstance::EType getType();
+
+		/**
+		 * Frames current selection
+		 */
+		void frame();
 
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
 
 		// The resolved skybox component
 		ComponentInstancePtr<RenderSkyBoxComponent> mSkyboxComponent = { this, &LoadTextureComponent::mSkyboxComponent };
+
+		// The resolved skybox controller
+		ComponentInstancePtr<OrbitController> mSkyboxController = { this, &LoadTextureComponent::mSkyboxController };
 
 	private:
 		void onLoadRequested(const nap::APIEvent& apiEvent);					//< Loads a texture from JSON

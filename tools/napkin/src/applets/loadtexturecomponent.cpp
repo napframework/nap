@@ -11,12 +11,12 @@
 #include <rtti/jsonreader.h>
 #include <nap/core.h>
 #include <nap/logger.h>
-#include <texture.h>
 
 // nap::loadtexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::LoadTextureComponent)
 	RTTI_PROPERTY("Frame2DTextureComponent",	&napkin::LoadTextureComponent::mFrame2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SkyboxComponent",			&napkin::LoadTextureComponent::mSkyboxComponent,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkyboxController",			&napkin::LoadTextureComponent::mSkyboxController,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::loadtexturecomponentInstance run time class definition 
@@ -67,6 +67,35 @@ namespace napkin
 	}
 
 
+	LoadTextureComponentInstance::EType LoadTextureComponentInstance::getType()
+	{
+		return mActiveTexture == nullptr ? EType::None :
+			mActiveTexture->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) ? EType::Texture2D : EType::Cubemap;
+	}
+
+
+	void LoadTextureComponentInstance::frame()
+	{
+		switch (getType())
+		{
+			case EType::Texture2D:
+			{
+				mFrame2DTextureComponent->frame();
+				break;
+			}
+			case EType::Cubemap:
+			{
+				mSkyboxController->enable({ 0.0f, 0.0f, 5.0f }, { 0.0f, 0.0f, 0.0f });
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+
+
 	void LoadTextureComponentInstance::onLoadRequested(const nap::APIEvent& apiEvent)
 	{
 		auto* data_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadArg1);
@@ -113,17 +142,11 @@ namespace napkin
 			}
 		}
 
-		// Check if we need to reset pan & zoom controls if requested
-		auto* frame_cmd = apiEvent.getArgumentByName(LoadTextureComponent::loadArg2);
-		assert(frame_cmd != nullptr);
-		auto frame_selection = frame_cmd->asBool();
-
-		// Bind to 2D panner or skybox
+		// Select and bind as active texture
 		if (result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(Texture2D)))
 		{
 			mLoaded2DTexture = rtti_cast<nap::Texture2D>(result.mReadObjects[0]);
 			mFrame2DTextureComponent->bind(*mLoaded2DTexture);
-			if (frame_selection) { mFrame2DTextureComponent->frame(); }
 			mActiveTexture = mLoaded2DTexture.get();
 		}
 		else
@@ -137,6 +160,12 @@ namespace napkin
 			mSkyboxComponent->setTexture(*mLoadedCubeTexture);
 			mActiveTexture = mLoadedCubeTexture.get();
 		}
+
+		// Check if we need to reset camera if requested
+		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadArg2);
+		assert(frame_arg != nullptr);
+		if (frame_arg->asBool())
+			frame();
 	}
 
 
@@ -145,3 +174,4 @@ namespace napkin
 		mActiveTexture = nullptr;
 	}
 }
+

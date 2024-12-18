@@ -150,7 +150,8 @@
                     "Type": "napkin::LoadTextureComponent",
                     "mID": "LoadTextureComponent",
                     "Frame2DTextureComponent": "../2DEntity/2DTextureEntity/2DTextureFrameComponent",
-                    "SkyboxComponent": "../CubeEntity/CubeTextureEntity/CubeTextureRenderComponent"
+                    "SkyboxComponent": "../CubeEntity/CubeTextureEntity/CubeTextureRenderComponent",
+                    "SkyboxController": "../CubeEntity/CubePerspCameraEntity/CubePerspCameraOrbitComponent"
                 }
             ],
             "Children": []
