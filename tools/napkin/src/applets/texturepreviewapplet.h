@@ -74,13 +74,22 @@ namespace napkin
 		SceneService* mSceneService = nullptr;							//< Manages all the objects in the scene
 		InputService* mInputService = nullptr;							//< Input service for processing input
 		IMGuiService* mGuiService = nullptr;							//< Manages gui related update / draw calls
-		ObjectPtr<Scene> mScene = nullptr;								//< Pointer to the main scene
 
+		// Resources
+		ObjectPtr<Scene> mScene = nullptr;								//< Pointer to the main scene
+		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointer to the render window;
+
+		// Entities
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance> mAPIEntity = nullptr;					//< Pointer to the api entity
-		ObjectPtr<EntityInstance> m2DTextureEntity = nullptr;				//< Pointer to the texture entity
-		ObjectPtr<EntityInstance> m2DOrthoEntity = nullptr;				//< Pointer to the ortho camera
-		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointer to the render window;
+
+		// 2DTexture
+		ObjectPtr<EntityInstance> m2DTextureEntity = nullptr;			//< Pointer to the texture entity
+		ObjectPtr<EntityInstance> m2DOrthoCameraEntity = nullptr;		//< Pointer to the ortho camera
+
+		// Cubemap
+		ObjectPtr<EntityInstance> mCubeTextureEntity = nullptr;			//< Pointer to the cube texture entity
+		ObjectPtr<EntityInstance> mCubePerspCameraEntity = nullptr;		//< Pointer to the cube persp camera entity
 
 		//std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color

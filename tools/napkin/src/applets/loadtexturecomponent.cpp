@@ -15,7 +15,8 @@
 
 // nap::loadtexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::LoadTextureComponent)
-	RTTI_PROPERTY("Frame2DTextureComponent", &napkin::LoadTextureComponent::mFrame2DTextureComponent, nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("Frame2DTextureComponent",	&napkin::LoadTextureComponent::mFrame2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkyboxComponent",			&napkin::LoadTextureComponent::mSkyboxComponent,			nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::loadtexturecomponentInstance run time class definition 

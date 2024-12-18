@@ -149,7 +149,8 @@
                 {
                     "Type": "napkin::LoadTextureComponent",
                     "mID": "LoadTextureComponent",
-                    "Frame2DTextureComponent": "../2DEntity/2DTextureEntity/2DTextureFrameComponent"
+                    "Frame2DTextureComponent": "../2DEntity/2DTextureEntity/2DTextureFrameComponent",
+                    "SkyboxComponent": "../CubeEntity/CubeTextureEntity/CubeTextureRenderComponent"
                 }
             ],
             "Children": []
@@ -172,7 +173,7 @@
                     "mID": "CubePerspCameraComponent",
                     "Properties": {
                         "FieldOfView": 60.0,
-                        "NearClippingPlane": 0.10000000149011612,
+                        "NearClippingPlane": 1.0,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
                             "x": 1,
@@ -191,7 +192,7 @@
                         "Translate": {
                             "x": 0.0,
                             "y": 0.0,
-                            "z": 5.0
+                            "z": 3.0
                         },
                         "Rotate": {
                             "x": 0.0,
@@ -213,8 +214,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "CubePerspCameraOrbitComponent",
-                    "MovementSpeed": 0.004999999888241291,
-                    "RotateSpeed": 0.0010000001639127731,
+                    "MovementSpeed": 0.009999999776482582,
+                    "RotateSpeed": 0.0020000000949949026,
                     "PerspCameraComponent": "./CubePerspCameraComponent",
                     "LimitZoomDistance": true,
                     "MinimumZoomDistance": 1.5,
@@ -250,7 +251,7 @@
                             "y": 1.0,
                             "z": 1.0
                         },
-                        "UniformScale": 1.0
+                        "UniformScale": 1000.0
                     }
                 },
                 {
@@ -259,7 +260,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "BlendMode": "Opaque",
+                    "BlendMode": "AlphaBlend",
                     "CubeTexture": "FallbackCubeTexture",
                     "Color": {
                         "Values": [
@@ -475,8 +476,8 @@
                         {
                             "Type": "nap::CubeMapFromFile",
                             "mID": "FallbackCubeTexture",
-                            "Width": 256,
-                            "Height": 256,
+                            "Width": 512,
+                            "Height": 512,
                             "Format": "RGBA8",
                             "ColorSpace": "Linear",
                             "ClearColor": {

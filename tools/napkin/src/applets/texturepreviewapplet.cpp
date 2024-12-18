@@ -16,6 +16,7 @@
 #include <apicomponent.h>
 #include <vulkan/vk_enum_string_helper.h>
 #include <imguiutils.h>
+#include <perspcameracomponent.h>
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -48,6 +49,7 @@ namespace napkin
 		if (!error.check(scene != nullptr, "Missing 'Scene'"))
 			return false;
 
+		// Fetch entities
 		mTextEntity = scene->findEntity("TextEntity");
 		if (!error.check(mTextEntity != nullptr, "Missing 'TextEntity'"))
 			return false;
@@ -60,16 +62,23 @@ namespace napkin
 		if (!error.check(m2DTextureEntity != nullptr, "Missing '2DTextureEntity'"))
 			return false;
 
-		m2DOrthoEntity = scene->findEntity("2DOrthoCameraEntity");
-		if (!error.check(m2DOrthoEntity != nullptr, "Missing 'OrthoCameraEntity'"))
+		m2DOrthoCameraEntity = scene->findEntity("2DOrthoCameraEntity");
+		if (!error.check(m2DOrthoCameraEntity != nullptr, "Missing 'OrthoCameraEntity'"))
 			return false;
 
-		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
-		if (!error.check(load_tex_comp != nullptr, "Missing 'LoadTextureComponent'"))
+		mCubePerspCameraEntity = scene->findEntity("CubePerspCameraEntity");
+		if (!error.check(mCubePerspCameraEntity != nullptr, "Missing 'CubePerspCameraEntity'"))
+			return false;
+
+		mCubeTextureEntity = scene->findEntity("CubeTextureEntity");
+		if (!error.check(mCubePerspCameraEntity != nullptr, "Missing 'CubeTextureEntity'"))
 			return false;
 
 		// Set data directory to resolve texture load cmds against
 		// TODO: This should be available to the component directly, exposed as an extension to core...
+		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
+		if (!error.check(load_tex_comp != nullptr, "Missing 'LoadTextureComponent'"))
+			return false;
 		load_tex_comp->mProjectDataDirectory = getEditorInfo().getDataDirectory();
 
 		return true;
@@ -83,7 +92,7 @@ namespace napkin
 		nap::DefaultInputRouter input_router;
 
 		// Now forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { m2DOrthoEntity.get() };
+		std::vector<nap::EntityInstance*> entities = { m2DOrthoCameraEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Get texture
@@ -150,6 +159,15 @@ namespace napkin
 		// Multiple frames are in flight at the same time, but if the graphics load is heavy the system might wait here to ensure resources are available.
 		mRenderService->beginFrame();
 
+		// Our scene contains a `nap::CubeMapFromFile` which must be pre-rendered in a headless render pass. This only needs to happen once, and there
+		// are no other objects that require headless rendering each frame. Therefore, `isHeadlessCommandQueued` should only be true in the first frame
+		// of rendering and record pre-render operations for our cube map resources.
+		if (mRenderService->isHeadlessCommandQueued())
+		{
+			if (mRenderService->beginHeadlessRecording())
+				mRenderService->endHeadlessRecording();
+		}
+
 		// Begin recording the render commands for the main render window
 		nap::RenderWindow& render_window = *mRenderWindow;
 		render_window.setClearColor(mClearColor);
@@ -158,10 +176,22 @@ namespace napkin
 			// Begin the render pass
 			render_window.beginRendering();
 
+			// Get components to render
+			/*
+			std::vector<RenderableComponentInstance*> render_comps =
+			{
+				&mCubeTextureEntity->getComponent<RenderableComponentInstance>()
+			};
+
+			// Render
+			auto& perspective_camera = mCubePerspCameraEntity->getComponent<PerspCameraComponentInstance>();
+			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
+			*/
+
 			// Get 2D texture and draw
 			if (mAPIEntity->getComponent<LoadTextureComponentInstance>().hasTexture())
 			{
-				auto& ortho_cam = m2DOrthoEntity->getComponent<OrthoCameraComponentInstance>();
+				auto& ortho_cam = m2DOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
 				auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
 				mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
 			}

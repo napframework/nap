@@ -11,6 +11,7 @@
 #include <component.h>
 #include <apicomponent.h>
 #include <componentptr.h>
+#include <renderskyboxcomponent.h>
 
 namespace napkin
 {
@@ -34,7 +35,8 @@ namespace napkin
 		static constexpr const char* clearCmd = "ClearTexture";
 
 		// Properties
-		nap::ComponentPtr<Frame2DTextureComponent> mFrame2DTextureComponent; ///< Property: 'Frame2DTextureComponent' The component that binds and frames the 2D texture
+		nap::ComponentPtr<Frame2DTextureComponent> mFrame2DTextureComponent;	///< Property: 'Frame2DTextureComponent' The component that binds and frames the 2D texture
+		nap::ComponentPtr<RenderSkyBoxComponent> mSkyboxComponent;				///< Property: 'SkyboxComponent' The component that renders the skybox
 
 		// Requires an api component
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
@@ -69,6 +71,9 @@ namespace napkin
 
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
+
+		// The resolved skybox component
+		ComponentInstancePtr<RenderSkyBoxComponent> mSkyboxComponent = { this, &LoadTextureComponent::mSkyboxComponent };
 
 	private:
 		void onLoadRequested(const nap::APIEvent& apiEvent);					//< Loads a texture from JSON
