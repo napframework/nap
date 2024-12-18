@@ -56,6 +56,8 @@ namespace napkin
 		LoadTextureComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)					{ }
 
+		virtual ~LoadTextureComponentInstance() override;
+
 		// Init
 		virtual bool init(utility::ErrorState& errorState) override;
 

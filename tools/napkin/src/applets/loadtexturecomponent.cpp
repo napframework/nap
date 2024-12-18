@@ -35,6 +35,16 @@ namespace napkin
 	}
 
 
+	LoadTextureComponentInstance::~LoadTextureComponentInstance()
+	{
+		if (mLoadedCubeTexture != nullptr)
+			mLoadedCubeTexture->onDestroy();
+
+		mLoadedCubeTexture.reset(nullptr);
+		mLoaded2DTexture.reset(nullptr);
+	}
+
+
 	bool LoadTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mAPIComponent = getEntityInstance()->findComponent<APIComponentInstance>();
