@@ -74,9 +74,17 @@ namespace napkin
 		}
 
 		// Ensure there's at least 1 object and it's of type texture
-		if (result.mReadObjects.size() == 0 || !result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)))
+		if (result.mReadObjects.size() == 0)
 		{
 			nap::Logger::error("%s cmd failed: invalid payload", LoadTextureComponent::loadCmd);
+			return;
+		}
+
+		// Ensure type is Texture2D or Cubemap
+		if (!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) &&
+			!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::TextureCube)))
+		{
+			nap::Logger::error("%s cmd failed: unsupported texture type", LoadTextureComponent::loadCmd);
 			return;
 		}
 
@@ -95,23 +103,35 @@ namespace napkin
 			}
 		}
 
-		// Store
-		mActiveTexture.reset(static_cast<Texture2D*>(result.mReadObjects[0].release()));
-
-		// Bind
-		mFrame2DTextureComponent->bind(*mActiveTexture);
-
-		// Reset pan & zoom controls if requested
+		// Check if we need to reset pan & zoom controls if requested
 		auto* frame_cmd = apiEvent.getArgumentByName(LoadTextureComponent::loadArg2);
 		assert(frame_cmd != nullptr);
-		if (frame_cmd->asBool())
-			mFrame2DTextureComponent->frame();
+		auto frame_selection = frame_cmd->asBool();
+
+		// Bind to 2D panner or skybox
+		if (result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(Texture2D)))
+		{
+			mLoaded2DTexture = rtti_cast<nap::Texture2D>(result.mReadObjects[0]);
+			mFrame2DTextureComponent->bind(*mLoaded2DTexture);
+			if (frame_selection) { mFrame2DTextureComponent->frame(); }
+			mActiveTexture = mLoaded2DTexture.get();
+		}
+		else
+		{
+			// Explicitly destroy resource
+			if (mLoadedCubeTexture != nullptr)
+				mLoadedCubeTexture->onDestroy();
+
+			mLoadedCubeTexture = rtti_cast<nap::TextureCube>(result.mReadObjects[0]);
+			assert(mLoadedCubeTexture != nullptr);
+			mSkyboxComponent->setTexture(*mLoadedCubeTexture);
+			mActiveTexture = mLoadedCubeTexture.get();
+		}
 	}
 
 
 	void LoadTextureComponentInstance::onClearRequested(const nap::APIEvent& apiEvent)
 	{
-		mFrame2DTextureComponent->clear();
-		mActiveTexture.reset(nullptr);
+		mActiveTexture = nullptr;
 	}
 }

@@ -91,12 +91,15 @@ namespace napkin
 		// Create an input router, the default one forwards messages to mouse and keyboard input components
 		nap::DefaultInputRouter input_router;
 
-		// Now forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { m2DOrthoCameraEntity.get() };
+		// Forward all input events associated with the first window to the selected camera
+		std::vector<nap::EntityInstance*> entities;
+		auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
+		if (tex_controller.hasTexture())
+		{
+			entities.emplace_back(tex_controller.getType().is_derived_from(RTTI_OF(Texture2D)) ?
+				m2DOrthoCameraEntity.get() : mCubePerspCameraEntity.get());
+		}
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
-
-		// Get texture
-		auto* loaded_texture = mAPIEntity->getComponent<LoadTextureComponentInstance>().getTexture();
 
 		// Setup GUI
 		ImGui::BeginMainMenuBar();
@@ -107,27 +110,29 @@ namespace napkin
 			ImGui::ColorPicker4("Color", mClearColor.getData());	
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Details", loaded_texture != nullptr))
+
+		auto* loaded_tex = tex_controller.getTexture();
+		if (ImGui::BeginMenu("Details", loaded_tex != nullptr))
 		{
-			ImGui::PushID(loaded_texture);
-			texDetail("Width", utility::stringFormat("%d", loaded_texture->getWidth()), "texel(s)");
-			texDetail("Height", utility::stringFormat("%d", loaded_texture->getHeight()), "texel(s)");
-			texDetail("Channels", RTTI_OF(nap::ESurfaceChannels), loaded_texture->getDescriptor().getChannels());
-			texDetail("No. Channels", utility::stringFormat("%d", loaded_texture->getDescriptor().getNumChannels()));
-			texDetail("Surface type", RTTI_OF(nap::ESurfaceDataType), loaded_texture->getDescriptor().getDataType());
-			texDetail("Channel size", utility::stringFormat("%d", loaded_texture->getDescriptor().getChannelSize()), "byte(s)");
-			texDetail("Pixel size", utility::stringFormat("%d", loaded_texture->getDescriptor().getBytesPerPixel()), "byte(s)");
-			texDetail("Surface size", utility::stringFormat("%d", loaded_texture->getDescriptor().getSizeInBytes()), "byte(s)");
-			texDetail("Pitch", utility::stringFormat("%d", loaded_texture->getDescriptor().getPitch()), "byte(s)");
-			texDetail("Layers", utility::stringFormat("%d", loaded_texture->getLayerCount()));
-			texDetail("Mip levels", utility::stringFormat("%d", loaded_texture->getMipLevels()));
-			texDetail("Format", utility::stringFormat(string_VkFormat(loaded_texture->getFormat())));
+			ImGui::PushID(loaded_tex);
+			texDetail("Plane Width", utility::stringFormat("%d", loaded_tex->getDescriptor().getWidth()), "texel(s)");
+			texDetail("Plane Height", utility::stringFormat("%d", loaded_tex->getDescriptor().getHeight()), "texel(s)");
+			texDetail("Channels", RTTI_OF(nap::ESurfaceChannels), loaded_tex->getDescriptor().getChannels());
+			texDetail("No. Channels", utility::stringFormat("%d", loaded_tex->getDescriptor().getNumChannels()));
+			texDetail("Surface type", RTTI_OF(nap::ESurfaceDataType), loaded_tex->getDescriptor().getDataType());
+			texDetail("Channel size", utility::stringFormat("%d", loaded_tex->getDescriptor().getChannelSize()), "byte(s)");
+			texDetail("Pixel size", utility::stringFormat("%d", loaded_tex->getDescriptor().getBytesPerPixel()), "byte(s)");
+			texDetail("Surface size", utility::stringFormat("%d", loaded_tex->getDescriptor().getSizeInBytes()), "byte(s)");
+			texDetail("Pitch", utility::stringFormat("%d", loaded_tex->getDescriptor().getPitch()), "byte(s)");
+			texDetail("Layers", utility::stringFormat("%d", loaded_tex->getLayerCount()));
+			texDetail("Mip levels", utility::stringFormat("%d", loaded_tex->getMipLevels()));
+			texDetail("Format", utility::stringFormat(string_VkFormat(loaded_tex->getFormat())));
 			ImGui::PopID();
 			ImGui::EndMenu();
 		}
-		if (ImGui::BeginMenu("Controls", loaded_texture != nullptr))
+		if (ImGui::BeginMenu("Controls", loaded_tex != nullptr))
 		{
-			ImGui::PushID(loaded_texture);
+			ImGui::PushID(loaded_tex);
 			static float scale;
 			ImGui::SliderFloat("UV Scale", &scale, 0.0f, 10.0f, "%.3f", 2.0f);
 			ImGui::PopID();
@@ -141,7 +146,7 @@ namespace napkin
 		}
 
 		// Add frame icon
-		if (loaded_texture != nullptr &&
+		if (loaded_tex != nullptr &&
 			ImGui::ImageButton(mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
 		{
 			auto& frame_2d_comp = m2DTextureEntity->getComponent<napkin::Frame2DTextureComponentInstance>();
@@ -176,24 +181,22 @@ namespace napkin
 			// Begin the render pass
 			render_window.beginRendering();
 
-			// Get components to render
-			/*
-			std::vector<RenderableComponentInstance*> render_comps =
+			// Draw 2D texture or cubemap based on loaded type
+			auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
+			if (tex_controller.hasTexture())
 			{
-				&mCubeTextureEntity->getComponent<RenderableComponentInstance>()
-			};
-
-			// Render
-			auto& perspective_camera = mCubePerspCameraEntity->getComponent<PerspCameraComponentInstance>();
-			mRenderService->renderObjects(*mRenderWindow, perspective_camera, render_comps);
-			*/
-
-			// Get 2D texture and draw
-			if (mAPIEntity->getComponent<LoadTextureComponentInstance>().hasTexture())
-			{
-				auto& ortho_cam = m2DOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
-				auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
-				mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
+				if (tex_controller.getType().is_derived_from(RTTI_OF(nap::Texture2D)))
+				{
+					auto& ortho_2d_cam = m2DOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
+					auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
+					mRenderService->renderObjects(*mRenderWindow, ortho_2d_cam, { &tex2d_com });
+				}
+				else
+				{
+					auto& persp_cube_cam = mCubePerspCameraEntity->getComponent<PerspCameraComponentInstance>();
+					auto& sky_com = mCubeTextureEntity->getComponent<RenderableComponentInstance>();
+					mRenderService->renderObjects(*mRenderWindow, persp_cube_cam, { &sky_com });
+				}
 			}
 			else
 			{

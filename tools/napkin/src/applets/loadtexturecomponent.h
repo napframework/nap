@@ -20,7 +20,7 @@ namespace napkin
 	class LoadTextureComponentInstance;
 
 	/**
-	 * Deserializes and loads a texture from an API command received from Napkin.
+	 * Loads and sets a texture from an API command received from Napkin.
 	 */
 	class LoadTextureComponent : public Component
 	{
@@ -44,7 +44,7 @@ namespace napkin
 
 
 	/**
-	 * Deserializes and loads a texture from an API command received from Napkin.
+	 * Loads and sets a texture from an API command received from Napkin.
 	 */
 	class LoadTextureComponentInstance : public ComponentInstance
 	{
@@ -67,7 +67,13 @@ namespace napkin
 		/**
 		 * @return current loaded texture, nullptr if no texture is loaded
 		 */
-		nap::Texture2D* getTexture() const						{ return mActiveTexture.get(); }
+		nap::Texture* getTexture() const						{ return mActiveTexture; }
+
+		/**
+		 * Current loaded texture type, either of type Texture2D or TextureCube 
+		 * @return loaded texture type, invalid when no texture is loaded
+		 */
+		rtti::TypeInfo getType()								{ return hasTexture() ? mActiveTexture->get_type() : rtti::TypeInfo::empty(); }
 
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
@@ -83,8 +89,11 @@ namespace napkin
 		nap::Slot<const nap::APIEvent&> mClearRequestedSlot = { this, &LoadTextureComponentInstance::onClearRequested };
 
 		nap::APIComponentInstance* mAPIComponent = nullptr;						//< Pointer to the api component
-		std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;				//< Current active loaded texture
 		std::string mProjectDataDirectory;										//< Data directory to resolve texture load cmds against
+
+		std::unique_ptr<nap::Texture2D> mLoaded2DTexture = nullptr;				//< Current active loaded 2D texture
+		std::unique_ptr<nap::TextureCube> mLoadedCubeTexture = nullptr;			//< Current active loaded Cube texture
+		nap::Texture* mActiveTexture = nullptr;									//< Selected active texture handle
 	};
 }
 
