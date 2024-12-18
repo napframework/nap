@@ -2,6 +2,77 @@
     "Objects": [
         {
             "Type": "nap::Entity",
+            "mID": "2DEntity",
+            "Components": [],
+            "Children": [
+                "2DTextureEntity",
+                "2DOrthoCameraEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DOrthoCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::OrthoCameraComponent",
+                    "mID": "2DOrthoCameraComponent",
+                    "Properties": {
+                        "Mode": "PixelSpace",
+                        "LeftPlane": 0.0,
+                        "RightPlane": 100.0,
+                        "TopPlane": 100.0,
+                        "BottomPlane": 0.0,
+                        "NearClippingPlane": 1.0,
+                        "FarClippingPlane": 1000.0,
+                        "ClipRect": {
+                            "Min": {
+                                "x": 0.0,
+                                "y": 0.0
+                            },
+                            "Max": {
+                                "x": 1.0,
+                                "y": 1.0
+                            }
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DOrthoCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 5.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "2DOrthoCameraPointerInputComponent"
+                },
+                {
+                    "Type": "nap::ZoomPanController",
+                    "mID": "2DOrthoCameraPanController",
+                    "RenderWindow": "Window",
+                    "ZoomSpeed": 2.0
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
             "mID": "2DTextureEntity",
             "Components": [
                 {
@@ -56,8 +127,8 @@
                 },
                 {
                     "Type": "napkin::Frame2DTextureComponent",
-                    "mID": "Frame2DTextureComponent",
-                    "ZoomPanController": "../OrthoCameraEntity/OrthoCameraPanController",
+                    "mID": "2DTextureFrameComponent",
+                    "ZoomPanController": "../2DOrthoCameraEntity/2DOrthoCameraPanController",
                     "FallbackTexture": "FallbackImage"
                 }
             ],
@@ -78,71 +149,23 @@
                 {
                     "Type": "napkin::LoadTextureComponent",
                     "mID": "LoadTextureComponent",
-                    "Frame2DTextureComponent": "../2DTextureEntity/Frame2DTextureComponent"
+                    "Frame2DTextureComponent": "../2DEntity/2DTextureEntity/2DTextureFrameComponent"
                 }
             ],
             "Children": []
         },
         {
             "Type": "nap::Entity",
-            "mID": "OrthoCameraEntity",
-            "Components": [
-                {
-                    "Type": "nap::OrthoCameraComponent",
-                    "mID": "OrthoCameraComponent",
-                    "Properties": {
-                        "Mode": "PixelSpace",
-                        "LeftPlane": 0.0,
-                        "RightPlane": 100.0,
-                        "TopPlane": 100.0,
-                        "BottomPlane": 0.0,
-                        "NearClippingPlane": 1.0,
-                        "FarClippingPlane": 1000.0,
-                        "ClipRect": {
-                            "Min": {
-                                "x": 0.0,
-                                "y": 0.0
-                            },
-                            "Max": {
-                                "x": 1.0,
-                                "y": 1.0
-                            }
-                        }
-                    }
-                },
-                {
-                    "Type": "nap::TransformComponent",
-                    "mID": "OrthoCameraTransformComponent",
-                    "Properties": {
-                        "Translate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 5.0
-                        },
-                        "Rotate": {
-                            "x": 0.0,
-                            "y": 0.0,
-                            "z": 0.0
-                        },
-                        "Scale": {
-                            "x": 1.0,
-                            "y": 1.0,
-                            "z": 1.0
-                        },
-                        "UniformScale": 1.0
-                    }
-                },
-                {
-                    "Type": "nap::PointerInputComponent",
-                    "mID": "OrthoCameraPointerInputComponent"
-                },
-                {
-                    "Type": "nap::ZoomPanController",
-                    "mID": "OrthoCameraPanController",
-                    "RenderWindow": "Window",
-                    "ZoomSpeed": 2.0
-                }
-            ],
+            "mID": "CubeEntity",
+            "Components": [],
+            "Children": [
+                "CubePerspCameraEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubePerspCameraEntity",
+            "Components": [],
             "Children": []
         },
         {
@@ -392,11 +415,11 @@
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "OrthoCameraEntity",
+                    "Entity": "2DEntity",
                     "InstanceProperties": []
                 },
                 {
-                    "Entity": "2DTextureEntity",
+                    "Entity": "CubeEntity",
                     "InstanceProperties": []
                 }
             ]

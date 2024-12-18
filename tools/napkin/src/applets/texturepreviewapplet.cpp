@@ -60,8 +60,8 @@ namespace napkin
 		if (!error.check(m2DTextureEntity != nullptr, "Missing '2DTextureEntity'"))
 			return false;
 
-		mOrthoEntity = scene->findEntity("OrthoCameraEntity");
-		if (!error.check(mOrthoEntity != nullptr, "Missing 'OrthoCameraEntity'"))
+		m2DOrthoEntity = scene->findEntity("2DOrthoCameraEntity");
+		if (!error.check(m2DOrthoEntity != nullptr, "Missing 'OrthoCameraEntity'"))
 			return false;
 
 		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
@@ -83,7 +83,7 @@ namespace napkin
 		nap::DefaultInputRouter input_router;
 
 		// Now forward all input events associated with the first window to the listening components
-		std::vector<nap::EntityInstance*> entities = { mOrthoEntity.get() };
+		std::vector<nap::EntityInstance*> entities = { m2DOrthoEntity.get() };
 		mInputService->processWindowEvents(*mRenderWindow, input_router, entities);
 
 		// Get texture
@@ -161,7 +161,7 @@ namespace napkin
 			// Get 2D texture and draw
 			if (mAPIEntity->getComponent<LoadTextureComponentInstance>().hasTexture())
 			{
-				auto& ortho_cam = mOrthoEntity->getComponent<OrthoCameraComponentInstance>();
+				auto& ortho_cam = m2DOrthoEntity->getComponent<OrthoCameraComponentInstance>();
 				auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
 				mRenderService->renderObjects(*mRenderWindow, ortho_cam, { &tex2d_com });
 			}

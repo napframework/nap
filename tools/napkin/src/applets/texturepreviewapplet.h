@@ -79,7 +79,7 @@ namespace napkin
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance> mAPIEntity = nullptr;					//< Pointer to the api entity
 		ObjectPtr<EntityInstance> m2DTextureEntity = nullptr;				//< Pointer to the texture entity
-		ObjectPtr<EntityInstance> mOrthoEntity = nullptr;				//< Pointer to the ortho camera
+		ObjectPtr<EntityInstance> m2DOrthoEntity = nullptr;				//< Pointer to the ortho camera
 		ObjectPtr<RenderWindow> mRenderWindow = nullptr;				//< Pointer to the render window;
 
 		//std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
