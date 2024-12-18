@@ -60,8 +60,8 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		int					mWidth = 0;										///< Property: 'Width' width of a cube face texture in texels
-		int					mHeight = 0;									///< Property: 'Height' of a cube face texture in texels
+		int					mWidth = 256;									///< Property: 'Width' width of a cube face texture in texels
+		int					mHeight = 256;									///< Property: 'Height' of a cube face texture in texels
 		EColorSpace			mColorSpace = EColorSpace::Linear;				///< Property: 'ColorSpace' texture color space
 		EFormat				mColorFormat = EFormat::RGBA8;					///< Property: 'ColorFormat' color texture format
 		RGBAColorFloat		mClearColor = { 0.0f, 0.0f, 0.0f, 0.0f };		///< Property: 'ClearColor' color selection used for clearing the texture

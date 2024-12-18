@@ -129,7 +129,7 @@
                     "Type": "napkin::Frame2DTextureComponent",
                     "mID": "2DTextureFrameComponent",
                     "ZoomPanController": "../2DOrthoCameraEntity/2DOrthoCameraPanController",
-                    "FallbackTexture": "FallbackImage"
+                    "FallbackTexture": "Fallback2DTexture"
                 }
             ],
             "Children": []
@@ -159,13 +159,118 @@
             "mID": "CubeEntity",
             "Components": [],
             "Children": [
-                "CubePerspCameraEntity"
+                "CubePerspCameraEntity",
+                "CubeTextureEntity"
             ]
         },
         {
             "Type": "nap::Entity",
             "mID": "CubePerspCameraEntity",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "CubePerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.10000000149011612,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubePerspCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 5.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "CubePerspCameraInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "CubePerspCameraOrbitComponent",
+                    "MovementSpeed": 0.004999999888241291,
+                    "RotateSpeed": 0.0010000001639127731,
+                    "PerspCameraComponent": "./CubePerspCameraComponent",
+                    "LimitZoomDistance": true,
+                    "MinimumZoomDistance": 1.5,
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeTextureEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubeTextureTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderSkyBoxComponent",
+                    "mID": "CubeTextureRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "BlendMode": "Opaque",
+                    "CubeTexture": "FallbackCubeTexture",
+                    "Color": {
+                        "Values": [
+                            1.0,
+                            1.0,
+                            1.0
+                        ]
+                    },
+                    "Opacity": 1.0
+                }
+            ],
             "Children": []
         },
         {
@@ -311,7 +416,7 @@
                                     "BorderColor": "IntOpaqueBlack",
                                     "CompareMode": "LessOrEqual",
                                     "EnableCompare": false,
-                                    "Texture": "FallbackImage"
+                                    "Texture": "Fallback2DTexture"
                                 }
                             ],
                             "Buffers": [],
@@ -362,10 +467,29 @@
                     "Members": [
                         {
                             "Type": "nap::ImageFromFile",
-                            "mID": "FallbackImage",
+                            "mID": "Fallback2DTexture",
                             "Usage": "Static",
-                            "ImagePath": "test_texture.jpg",
-                            "GenerateLods": true
+                            "ImagePath": "fallback_2d_texture.jpg",
+                            "GenerateLods": false
+                        },
+                        {
+                            "Type": "nap::CubeMapFromFile",
+                            "mID": "FallbackCubeTexture",
+                            "Width": 256,
+                            "Height": 256,
+                            "Format": "RGBA8",
+                            "ColorSpace": "Linear",
+                            "ClearColor": {
+                                "Values": [
+                                    0.0,
+                                    0.0,
+                                    0.0,
+                                    0.0
+                                ]
+                            },
+                            "ImagePath": "fallback_cube_texture.jpg",
+                            "SampleShading": false,
+                            "GenerateLODs": false
                         }
                     ],
                     "Children": []

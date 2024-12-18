@@ -9,7 +9,8 @@
         "napsdlinput",
         "naprender",
         "napimgui",
-        "napapi"
+        "napapi",
+        "naprenderadvanced"
     ],
     "Data": "data/preview.json",
     "ServiceConfig": "",
