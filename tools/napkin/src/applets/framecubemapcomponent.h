@@ -10,6 +10,7 @@
 #include <orbitcontroller.h>
 #include <renderablemeshcomponent.h>
 #include <renderskyboxcomponent.h>
+#include <mesh.h>
 
 namespace napkin
 {
@@ -30,6 +31,7 @@ namespace napkin
 		nap::ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' the cubemap camera orbit controller
 		nap::ComponentPtr<RenderableMeshComponent> mRenderMeshComponent;	///< Property: 'MeshComponent' the reflective render mesh component
 		ResourcePtr<nap::TextureCube> mFallbackTexture = nullptr;			///< Property: 'FallbackTexture' the default fallback texture
+		std::vector<nap::ResourcePtr<IMesh>> mMeshes;						///< Property: 'Meshes' all assignable reflective meshes
 	};
 
 
@@ -71,13 +73,28 @@ namespace napkin
 		 * Sets the cubemap opacity
 		 * @param opacity new texture opacity
 		 */
-		void setOpacity(float opacity)				{ assert(mOpacity != nullptr); mSkyboxComponent->setOpacity(opacity); }
+		void setOpacity(float opacity)											{ assert(mOpacity != nullptr); mSkyboxComponent->setOpacity(opacity); }
 
 		/**
 		 * Returns the cubemap opacity
 		 * @param opacity new texture opacity
 		 */
-		float getOpacity() const					{ assert(mOpacity != nullptr); return mSkyboxComponent->getOpacity(); }
+		float getOpacity() const												{ assert(mOpacity != nullptr); return mSkyboxComponent->getOpacity(); }
+
+		/**
+		 * @return current mesh index
+		 */
+		int getMeshIndex() const												{ return mMeshIndex; }
+
+		/**
+		 * @return set current mesh index
+		 */
+		void setMeshIndex(int index);
+
+		/**
+		 * @return all the available meshes
+		 */
+		const std::vector<RenderableMesh>& getMeshes() const					{ return mMeshes; }
 
 		// Orbit controller link
 		ComponentInstancePtr<OrbitController> mOrbitController = { this, &FrameCubemapComponent::mOrbitController };
@@ -93,5 +110,11 @@ namespace napkin
 
 		// Reflective cube sampler
 		SamplerCubeInstance* mReflectiveCubeSampler = nullptr;
+
+		//< All meshes to select from
+		std::vector<RenderableMesh> mMeshes;
+
+		// Mesh idx
+		int mMeshIndex = 0;
 	};
 }

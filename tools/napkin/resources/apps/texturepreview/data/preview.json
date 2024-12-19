@@ -103,7 +103,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Mesh": "UniformPlaneMesh",
+                    "Mesh": "Plane",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -165,7 +165,13 @@
                     "SkyboxComponent": "./CubeTextureEntity/CubeTextureRenderComponent",
                     "OrbitController": "./CubePerspCameraEntity/CubePerspCameraOrbitComponent",
                     "RenderMeshComponent": "./CubeMeshEntity/CubeMeshRenderComponent",
-                    "FallbackTexture": "FallbackCubeTexture"
+                    "FallbackTexture": "FallbackCubeTexture",
+                    "Meshes": [
+                        "Torus",
+                        "Sphere",
+                        "Box",
+                        "Plane"
+                    ]
                 }
             ],
             "Children": [
@@ -206,7 +212,7 @@
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",
-                    "Mesh": "TorusMesh",
+                    "Mesh": "Torus",
                     "MaterialInstance": {
                         "Uniforms": [],
                         "Samplers": [],
@@ -568,7 +574,7 @@
                     "Members": [
                         {
                             "Type": "nap::PlaneMesh",
-                            "mID": "UniformPlaneMesh",
+                            "mID": "Plane",
                             "Usage": "Static",
                             "CullMode": "None",
                             "PolygonMode": "Fill",
@@ -593,7 +599,7 @@
                         },
                         {
                             "Type": "nap::TorusMesh",
-                            "mID": "TorusMesh",
+                            "mID": "Torus",
                             "Radius": 0.75,
                             "TubeRadius": 0.25,
                             "Segments": 64,
@@ -610,6 +616,55 @@
                                     1.0
                                 ]
                             }
+                        },
+                        {
+                            "Type": "nap::SphereMesh",
+                            "mID": "Sphere",
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill",
+                            "Radius": 1.0,
+                            "Rings": 50,
+                            "Sectors": 50,
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            }
+                        },
+                        {
+                            "Type": "nap::BoxMesh",
+                            "mID": "Box",
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill",
+                            "Size": {
+                                "x": 1.0,
+                                "y": 1.0,
+                                "z": 1.0
+                            },
+                            "Position": {
+                                "x": 0.0,
+                                "y": 0.0,
+                                "z": 0.0
+                            },
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            },
+                            "FlipNormals": false
                         }
                     ],
                     "Children": []

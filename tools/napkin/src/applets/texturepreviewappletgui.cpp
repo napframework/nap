@@ -52,9 +52,44 @@ namespace napkin
 		}
 		if (ImGui::BeginMenu("Controls", loaded_tex != nullptr))
 		{
-			float opacity = tex_controller.getOpacity();
-			if (ImGui::SliderFloat("Opacity", &opacity, 0.0f, 1.0f))
-				tex_controller.setOpacity(opacity);
+			switch (tex_controller.getType())
+			{
+				case LoadTextureComponentInstance::EType::Cubemap:
+				{
+					// Mesh visibility
+					auto& render_mesh_comp = *tex_controller.mFrameCubeComponent->mRenderMeshComponent;
+					bool visible = render_mesh_comp.isVisible();
+					if (ImGui::Checkbox("Show Mesh", &visible))
+						render_mesh_comp.setVisible(!render_mesh_comp.isVisible());
+
+					const auto& meshes = tex_controller.mFrameCubeComponent->getMeshes();
+					std::vector<const char*> labels; labels.reserve(meshes.size());
+					for (const auto& mesh : meshes)
+						labels.emplace_back(mesh.getMesh().mID.c_str());
+
+					// Add mesh combo selection
+					int current_idx = tex_controller.mFrameCubeComponent->getMeshIndex();
+					if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+						tex_controller.mFrameCubeComponent->setMeshIndex(current_idx);
+
+					// Skybox opacity
+					float opacity = tex_controller.getOpacity();
+					if (ImGui::SliderFloat("Skybox Opacity", &opacity, 0.0f, 1.0f))
+						tex_controller.setOpacity(opacity);
+
+					break;
+				}
+				case LoadTextureComponentInstance::EType::Texture2D:
+				{
+					// Texture opacity
+					float opacity = tex_controller.getOpacity();
+					if (ImGui::SliderFloat("Texture Opacity", &opacity, 0.0f, 1.0f))
+						tex_controller.setOpacity(opacity);
+					break;
+				}
+				default:
+					break;
+			}
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Applet"))
@@ -101,3 +136,4 @@ namespace napkin
 		texDetail(std::move(label), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }
+
