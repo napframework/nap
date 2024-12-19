@@ -18,8 +18,14 @@ namespace napkin
 		// Select applet window
 		mApplet.mGuiService->selectWindow(mApplet.mRenderWindow);
 
+		// Fetch loaded texture
+		auto& tex_controller = mApplet.mAPIEntity->getComponent<LoadTextureComponentInstance>();
+		auto* loaded_tex = tex_controller.getTexture();
+
 		// Setup GUI for window
 		ImGui::BeginMainMenuBar();
+		ImGui::PushID(loaded_tex);
+
 		float bar_height = ImGui::GetWindowHeight();
 		float ico_height = bar_height * 0.7f;
 		if (ImGui::BeginMenu("Background"))
@@ -27,12 +33,8 @@ namespace napkin
 			ImGui::ColorPicker4("Color", mApplet.mClearColor.getData());
 			ImGui::EndMenu();
 		}
-
-		auto& tex_controller = mApplet.mAPIEntity->getComponent<LoadTextureComponentInstance>();
-		auto* loaded_tex = tex_controller.getTexture();
 		if (ImGui::BeginMenu("Details", loaded_tex != nullptr))
 		{
-			ImGui::PushID(loaded_tex);
 			texDetail("Identifier", loaded_tex->mID);
 			texDetail("Plane Width", utility::stringFormat("%d", loaded_tex->getDescriptor().getWidth()), "texel(s)");
 			texDetail("Plane Height", utility::stringFormat("%d", loaded_tex->getDescriptor().getHeight()), "texel(s)");
@@ -46,15 +48,13 @@ namespace napkin
 			texDetail("Layers", utility::stringFormat("%d", loaded_tex->getLayerCount()));
 			texDetail("Mip levels", utility::stringFormat("%d", loaded_tex->getMipLevels()));
 			texDetail("Format", utility::stringFormat(string_VkFormat(loaded_tex->getFormat())));
-			ImGui::PopID();
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Controls", loaded_tex != nullptr))
 		{
-			ImGui::PushID(loaded_tex);
-			static float scale;
-			ImGui::SliderFloat("UV Scale", &scale, 0.0f, 10.0f, "%.3f", 2.0f);
-			ImGui::PopID();
+			float opacity = tex_controller.getOpacity();
+			if (ImGui::SliderFloat("Opacity", &opacity, 0.0f, 1.0f))
+				tex_controller.setOpacity(opacity);
 			ImGui::EndMenu();
 		}
 		if (ImGui::BeginMenu("Applet"))
@@ -69,6 +69,7 @@ namespace napkin
 			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
 			tex_controller.frame();
 
+		ImGui::PopID();
 		ImGui::EndMainMenuBar();
 	}
 

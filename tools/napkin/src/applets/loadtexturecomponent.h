@@ -86,12 +86,22 @@ namespace napkin
 		 * Current loaded texture type
 		 * @return loaded texture type, none when no texture is loaded
 		 */
-		LoadTextureComponentInstance::EType getType();
+		LoadTextureComponentInstance::EType getType() const;
 
 		/**
 		 * Frames current selection
 		 */
 		void frame();
+
+		/**
+		 * Set alpha of current selection
+		 */
+		void setOpacity(float alpha);
+
+		/**
+		 * Get alpha of current selection
+		 */
+		float getOpacity() const;
 
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };

@@ -67,7 +67,7 @@ namespace napkin
 	}
 
 
-	LoadTextureComponentInstance::EType LoadTextureComponentInstance::getType()
+	LoadTextureComponentInstance::EType LoadTextureComponentInstance::getType() const
 	{
 		return mActiveTexture == nullptr ? EType::None :
 			mActiveTexture->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) ? EType::Texture2D : EType::Cubemap;
@@ -86,6 +86,44 @@ namespace napkin
 			case EType::Cubemap:
 			{
 				mSkyboxController->enable({ 0.0f, 0.0f, 5.0f }, { 0.0f, 0.0f, 0.0f });
+				mSkyboxComponent->setOpacity(1.0f);
+				break;
+			}
+			default:
+			{
+				break;
+			}
+		}
+	}
+
+
+	float LoadTextureComponentInstance::getOpacity() const
+	{
+		switch (getType())
+		{
+			case EType::Texture2D:
+				return mFrame2DTextureComponent->getOpacity();
+			case EType::Cubemap:
+				return mSkyboxComponent->getOpacity();
+			default:
+				break;
+		}
+		return 1.0f;
+	}
+
+
+	void LoadTextureComponentInstance::setOpacity(float alpha)
+	{
+		switch (getType())
+		{
+			case EType::Texture2D:
+			{
+				mFrame2DTextureComponent->setOpacity(alpha);
+				break;
+			}
+			case EType::Cubemap:
+			{
+				mSkyboxComponent->setOpacity(alpha);
 				break;
 			}
 			default:

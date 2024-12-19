@@ -51,6 +51,16 @@ namespace napkin
 			nap::uniform::texture::sampler::colorTexture))
 			return false;
 
+		// UBO
+		auto* ubo_instance = mat_instance.getOrCreateUniform(uniform::texture::uboStruct);
+		if (!errorState.check(ubo_instance != nullptr, "Missing 2D texture uniform '%s'", uniform::texture::uboStruct))
+			return false;
+
+		// Opacity
+		mOpacity = ubo_instance->getOrCreateUniform<UniformFloatInstance>(uniform::texture::alpha);
+		if (!errorState.check(mOpacity != nullptr, "Missing 2D texture uniform '%s'", uniform::texture::alpha))
+			return false;
+
 		// Texture to use when selection is cleared
 		mTextureFallback = getComponent<Frame2DTextureComponent>()->mFallbackTexture.get();
 
@@ -75,7 +85,8 @@ namespace napkin
 	void Frame2DTextureComponentInstance::frame()
 	{
 		assert(mSampler->hasTexture());
-		mZoomPanController->frameTexture(mSampler->getTexture(), *mTextureTransform);	
+		mZoomPanController->frameTexture(mSampler->getTexture(), *mTextureTransform);
+		mOpacity->setValue(1.0f);
 	}
 
 

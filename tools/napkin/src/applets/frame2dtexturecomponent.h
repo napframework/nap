@@ -9,6 +9,7 @@
 #include <zoompancontroller.h>
 #include <componentptr.h>
 #include <renderablemeshcomponent.h>
+#include <uniforminstance.h>
 
 namespace napkin
 {
@@ -67,6 +68,18 @@ namespace napkin
 		 */
 		void clear();
 
+		/**
+		 * Sets the texture opacity
+		 * @param opacity new texture opacity
+		 */
+		void setOpacity(float opacity)				{ assert(mOpacity != nullptr); mOpacity->setValue(opacity); }
+
+		/**
+		 * Returns the texture opacity
+		 * @param opacity new texture opacity
+		 */
+		float getOpacity() const					{ assert(mOpacity != nullptr); return mOpacity->getValue(); }
+
 		// Resolved zoom & pan controller
 		ComponentInstancePtr<nap::ZoomPanController> mZoomPanController = { this, &Frame2DTextureComponent::mZoomPanController };
 
@@ -74,6 +87,7 @@ namespace napkin
 		Texture2D* mSelectedTexture = nullptr;
 		Texture2D* mTextureFallback = nullptr;
 		Sampler2DInstance* mSampler = nullptr;
+		UniformFloatInstance* mOpacity = nullptr;
 		TransformComponentInstance* mTextureTransform = nullptr;
 		RenderableMeshComponentInstance* mTextureRenderer = nullptr;
 	};
