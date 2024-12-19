@@ -55,6 +55,9 @@ namespace napkin
 
 		// Fetch and bind texture fallback
 		mTextureFallback = getComponent<FrameCubemapComponent>()->mFallbackTexture.get();
+
+		// Setup
+		setMeshIndex(0);
 		bind(*mTextureFallback);
 
 		return true;

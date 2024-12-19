@@ -136,4 +136,3 @@ namespace napkin
 		texDetail(std::move(label), enumerator.get_enumeration().value_to_name(argument).data());
 	}
 }
-

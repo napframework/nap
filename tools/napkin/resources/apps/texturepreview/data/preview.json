@@ -167,8 +167,10 @@
                     "RenderMeshComponent": "./CubeMeshEntity/CubeMeshRenderComponent",
                     "FallbackTexture": "FallbackCubeTexture",
                     "Meshes": [
-                        "Torus",
                         "Sphere",
+                        "Torus",
+                        "Toy",
+                        "Lucy",
                         "Box",
                         "Plane"
                     ]
@@ -246,7 +248,7 @@
                     "mID": "CubePerspCameraComponent",
                     "Properties": {
                         "FieldOfView": 60.0,
-                        "NearClippingPlane": 1.0,
+                        "NearClippingPlane": 0.25,
                         "FarClippingPlane": 1000.0,
                         "GridDimensions": {
                             "x": 1,
@@ -291,7 +293,7 @@
                     "RotateSpeed": 0.0020000000949949026,
                     "PerspCameraComponent": "./CubePerspCameraComponent",
                     "LimitZoomDistance": true,
-                    "MinimumZoomDistance": 1.5,
+                    "MinimumZoomDistance": 1.0,
                     "LookAtPosition": {
                         "x": 0.0,
                         "y": 0.0,
@@ -665,6 +667,28 @@
                                 ]
                             },
                             "FlipNormals": false
+                        },
+                        {
+                            "Type": "nap::GeometryFromFile",
+                            "mID": "Lucy",
+                            "Path": "lucy.obj",
+                            "GenerateNormals": false,
+                            "CalculateTangents": false,
+                            "NormalSmoothingAngle": 60.0,
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill"
+                        },
+                        {
+                            "Type": "nap::GeometryFromFile",
+                            "mID": "Toy",
+                            "Path": "toy.obj",
+                            "GenerateNormals": false,
+                            "CalculateTangents": false,
+                            "NormalSmoothingAngle": 60.0,
+                            "Usage": "Static",
+                            "CullMode": "Back",
+                            "PolygonMode": "Fill"
                         }
                     ],
                     "Children": []
