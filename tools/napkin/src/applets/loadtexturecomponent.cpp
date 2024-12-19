@@ -85,7 +85,7 @@ namespace napkin
 			}
 			case EType::Cubemap:
 			{
-				mSkyboxController->enable({ 0.0f, 0.0f, 5.0f }, { 0.0f, 0.0f, 0.0f });
+				mSkyboxController->enable({ 0.0f, 0.0f, 3.0f }, { 0.0f,0.0f,0.0f });
 				mSkyboxComponent->setOpacity(1.0f);
 				break;
 			}

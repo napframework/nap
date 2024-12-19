@@ -78,6 +78,10 @@ namespace napkin
 		if (!error.check(mCubePerspCameraEntity != nullptr, "Missing 'CubeTextureEntity'"))
 			return false;
 
+		mCubeMeshEntity = scene->findEntity("CubeMeshEntity");
+		if (!error.check(mCubeMeshEntity != nullptr, "Missing 'CubeMeshEntity'"))
+			return false;
+
 		// Set data directory to resolve texture load cmds against
 		// TODO: This should be available to the component directly, exposed as an extension to core...
 		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
@@ -160,7 +164,9 @@ namespace napkin
 					// Draw cubemap using orbit control
 					auto& persp_cube_cam = mCubePerspCameraEntity->getComponent<PerspCameraComponentInstance>();
 					auto& sky_com = mCubeTextureEntity->getComponent<RenderableComponentInstance>();
+					auto& mes_com = mCubeMeshEntity->getComponent<RenderableComponentInstance>();
 					mRenderService->renderObjects(*mRenderWindow, persp_cube_cam, { &sky_com });
+					mRenderService->renderObjects(*mRenderWindow, persp_cube_cam, { &mes_com });
 					break;
 				}
 				case LoadTextureComponentInstance::EType::None:

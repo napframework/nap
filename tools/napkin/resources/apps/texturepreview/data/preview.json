@@ -162,8 +162,66 @@
             "Components": [],
             "Children": [
                 "CubePerspCameraEntity",
-                "CubeTextureEntity"
+                "CubeTextureEntity",
+                "CubeMeshEntity"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeMeshEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubeMeshTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "CubeMeshRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "TorusMesh",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "CubeReflectionMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -427,6 +485,71 @@
                             "VertexAttributeBindings": [],
                             "BlendMode": "Opaque",
                             "DepthMode": "InheritFromBlendMode"
+                        },
+                        {
+                            "Type": "nap::ShaderFromFile",
+                            "mID": "CubeReflectionShader",
+                            "VertShader": "shaders/reflection.vert",
+                            "FragShader": "shaders/reflection.frag",
+                            "RestrictModuleIncludes": false
+                        },
+                        {
+                            "Type": "nap::Material",
+                            "mID": "CubeReflectionMaterial",
+                            "Uniforms": [
+                                {
+                                    "Type": "nap::UniformStruct",
+                                    "mID": "UBO",
+                                    "Name": "UBO",
+                                    "Uniforms": [
+                                        {
+                                            "Type": "nap::UniformVec3",
+                                            "mID": "color",
+                                            "Name": "color",
+                                            "Value": {
+                                                "x": 1.0,
+                                                "y": 1.0,
+                                                "z": 1.0
+                                            }
+                                        },
+                                        {
+                                            "Type": "nap::UniformVec2",
+                                            "mID": "fresnel",
+                                            "Name": "fresnel",
+                                            "Value": {
+                                                "x": 0.75,
+                                                "y": 4.0
+                                            }
+                                        }
+                                    ]
+                                }
+                            ],
+                            "Samplers": [
+                                {
+                                    "Type": "nap::SamplerCube",
+                                    "mID": "environmentMap",
+                                    "Name": "environmentMap",
+                                    "MinFilter": "Linear",
+                                    "MaxFilter": "Linear",
+                                    "MipMapMode": "Linear",
+                                    "AddressModeVertical": "ClampToEdge",
+                                    "AddressModeHorizontal": "ClampToEdge",
+                                    "MinLodLevel": 0,
+                                    "MaxLodLevel": 1000,
+                                    "LodBias": 0.0,
+                                    "AnisotropicSamples": "Default",
+                                    "BorderColor": "IntOpaqueBlack",
+                                    "CompareMode": "LessOrEqual",
+                                    "EnableCompare": false,
+                                    "Texture": "FallbackCubeTexture"
+                                }
+                            ],
+                            "Buffers": [],
+                            "Constants": [],
+                            "Shader": "CubeReflectionShader",
+                            "VertexAttributeBindings": [],
+                            "BlendMode": "Opaque",
+                            "DepthMode": "InheritFromBlendMode"
                         }
                     ],
                     "Children": []
@@ -459,6 +582,26 @@
                             },
                             "Rows": 1,
                             "Columns": 1
+                        },
+                        {
+                            "Type": "nap::TorusMesh",
+                            "mID": "TorusMesh",
+                            "Radius": 0.75,
+                            "TubeRadius": 0.25,
+                            "Segments": 64,
+                            "TubeSegments": 64,
+                            "AngleOffset": 0.0,
+                            "Usage": "Static",
+                            "PolygonMode": "Fill",
+                            "CullMode": "Back",
+                            "Color": {
+                                "Values": [
+                                    1.0,
+                                    1.0,
+                                    1.0,
+                                    1.0
+                                ]
+                            }
                         }
                     ],
                     "Children": []

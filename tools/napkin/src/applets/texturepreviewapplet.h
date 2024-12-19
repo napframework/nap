@@ -91,6 +91,7 @@ namespace napkin
 
 		// Cubemap
 		ObjectPtr<EntityInstance> mCubeTextureEntity = nullptr;			//< Pointer to the cube texture entity
+		ObjectPtr<EntityInstance> mCubeMeshEntity = nullptr;			//< Pointer to the cube mesh entity
 		ObjectPtr<EntityInstance> mCubePerspCameraEntity = nullptr;		//< Pointer to the cube persp camera entity
 
 		//std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture

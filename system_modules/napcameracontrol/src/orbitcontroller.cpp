@@ -64,22 +64,23 @@ namespace nap
 
 	void OrbitControllerInstance::enable(const glm::vec3& cameraPos, const glm::vec3& lookAtPos)
 	{
-		// Construct a lookat matrix. Note that if this is currently called when facing up or downward, the
-		// camera may flip around the y axis. Currently this is only called when starting orbit so it isn't
-		// much of a problem, but if it is, we need to find another way of constructing a lookat camera.
-		glm::vec3 up{ 0.0f, 1.0f, 0.0f };
-		glm::mat4 rotation = glm::lookAt(cameraPos, lookAtPos, up);
-		rotation = glm::inverse(rotation);
-		mTransformComponent->setRotate(rotation);
-		mLookAtPos = lookAtPos;
-		mEnabled = true;
+		mTransformComponent->setTranslate(cameraPos);
+		enable(lookAtPos);
 	}
 
 
 	void OrbitControllerInstance::enable(const glm::vec3& lookAtPos)
 	{
-		const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
-		enable(translate, lookAtPos);
+		// Construct a lookat matrix. Note that if this is currently called when facing up or downward, the
+		// camera may flip around the y axis. Currently this is only called when starting orbit so it isn't
+		// much of a problem, but if it is, we need to find another way of constructing a lookat camera.
+		const glm::vec3& current_pos = mTransformComponent->getLocalTransform()[3];
+		static const glm::vec3 up(0.0f, 1.0f, 0.0f);
+		glm::mat4 rotation = glm::lookAt(current_pos, lookAtPos, up);
+		rotation = glm::inverse(rotation);
+		mTransformComponent->setRotate(rotation);
+		mLookAtPos = lookAtPos;
+		mEnabled = true;
 	}
 
 
