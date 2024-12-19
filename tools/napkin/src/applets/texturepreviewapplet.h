@@ -24,19 +24,21 @@ namespace napkin
 {
 	using namespace nap;
 	using namespace nap::rtti;
+	class TexturePreviewAppletGUI;
 
 	/**
 	 * Main application that is called from within the main loop
 	 */
 	class TexturePreviewApplet : public napkin::Applet
 	{
+		friend class TexturePreviewAppletGUI;
 		RTTI_ENABLE(napkin::Applet)
 	public:
 		/**
 		 * Constructor
 		 * @param core instance of the NAP core system
 		 */
-		TexturePreviewApplet(Core& core) : napkin::Applet(core) { }
+		TexturePreviewApplet(Core& core);
 		
 		/**
 		 * Initialize all the services and app specific data structures
@@ -94,8 +96,8 @@ namespace napkin
 		//std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
 
-		void texDetail(std::string&& label, const std::string& value, std::string&& appendix = "");
-		void texDetail(std::string&& label, rtti::TypeInfo enumerator, rtti::Variant argument);
+		// Applet gui
+		std::unique_ptr<TexturePreviewAppletGUI> mGui;					//< Applet gui
 	};
 }
 
