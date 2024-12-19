@@ -15,8 +15,7 @@
 // nap::loadtexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::LoadTextureComponent)
 	RTTI_PROPERTY("Frame2DTextureComponent",	&napkin::LoadTextureComponent::mFrame2DTextureComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SkyboxComponent",			&napkin::LoadTextureComponent::mSkyboxComponent,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SkyboxController",			&napkin::LoadTextureComponent::mSkyboxController,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("FrameCubemapComponent",		&napkin::LoadTextureComponent::mFrameCubemapComponent,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
 // nap::loadtexturecomponentInstance run time class definition 
@@ -64,73 +63,6 @@ namespace napkin
 		mAPIComponent->registerCallback(*clear_sig, mClearRequestedSlot);
 
 		return true;
-	}
-
-
-	LoadTextureComponentInstance::EType LoadTextureComponentInstance::getType() const
-	{
-		return mActiveTexture == nullptr ? EType::None :
-			mActiveTexture->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) ? EType::Texture2D : EType::Cubemap;
-	}
-
-
-	void LoadTextureComponentInstance::frame()
-	{
-		switch (getType())
-		{
-			case EType::Texture2D:
-			{
-				mFrame2DTextureComponent->frame();
-				break;
-			}
-			case EType::Cubemap:
-			{
-				mSkyboxController->enable({ 0.0f, 0.0f, 3.0f }, { 0.0f,0.0f,0.0f });
-				mSkyboxComponent->setOpacity(1.0f);
-				break;
-			}
-			default:
-			{
-				break;
-			}
-		}
-	}
-
-
-	float LoadTextureComponentInstance::getOpacity() const
-	{
-		switch (getType())
-		{
-			case EType::Texture2D:
-				return mFrame2DTextureComponent->getOpacity();
-			case EType::Cubemap:
-				return mSkyboxComponent->getOpacity();
-			default:
-				break;
-		}
-		return 1.0f;
-	}
-
-
-	void LoadTextureComponentInstance::setOpacity(float alpha)
-	{
-		switch (getType())
-		{
-			case EType::Texture2D:
-			{
-				mFrame2DTextureComponent->setOpacity(alpha);
-				break;
-			}
-			case EType::Cubemap:
-			{
-				mSkyboxComponent->setOpacity(alpha);
-				break;
-			}
-			default:
-			{
-				break;
-			}
-		}
 	}
 
 
@@ -189,13 +121,13 @@ namespace napkin
 		}
 		else
 		{
-			// Explicitly destroy resource
+			// Explicitly destroy resource -> unregisters itself with the service
 			if (mLoadedCubeTexture != nullptr)
 				mLoadedCubeTexture->onDestroy();
 
 			mLoadedCubeTexture = rtti_cast<nap::TextureCube>(result.mReadObjects[0]);
 			assert(mLoadedCubeTexture != nullptr);
-			mSkyboxComponent->setTexture(*mLoadedCubeTexture);
+			mFrameCubeComponent->bind(*mLoadedCubeTexture);
 			mActiveTexture = mLoadedCubeTexture.get();
 		}
 
@@ -207,9 +139,62 @@ namespace napkin
 	}
 
 
+	LoadTextureComponentInstance::EType LoadTextureComponentInstance::getType() const
+	{
+		return mActiveTexture == nullptr ? EType::None :
+			mActiveTexture->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) ? EType::Texture2D : EType::Cubemap;
+	}
+
+
+	void LoadTextureComponentInstance::frame()
+	{
+		switch (getType())
+		{
+			case EType::Texture2D:
+				mFrame2DTextureComponent->frame();
+				break;
+			case EType::Cubemap:
+				mFrameCubeComponent->frame();
+				break;
+			default:
+				break;
+		}
+	}
+
+
+	float LoadTextureComponentInstance::getOpacity() const
+	{
+		switch (getType())
+		{
+			case EType::Texture2D:
+				return mFrame2DTextureComponent->getOpacity();
+			case EType::Cubemap:
+				return mFrameCubeComponent->getOpacity();
+			default:
+				break;
+		}
+		return 1.0f;
+	}
+
+
+	void LoadTextureComponentInstance::setOpacity(float alpha)
+	{
+		switch (getType())
+		{
+			case EType::Texture2D:
+				mFrame2DTextureComponent->setOpacity(alpha);
+				break;
+			case EType::Cubemap:
+				mFrameCubeComponent->setOpacity(alpha);
+				break;
+			default:
+				break;
+		}
+	}
+
+
 	void LoadTextureComponentInstance::onClearRequested(const nap::APIEvent& apiEvent)
 	{
 		mActiveTexture = nullptr;
 	}
 }
-

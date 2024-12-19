@@ -150,8 +150,7 @@
                     "Type": "napkin::LoadTextureComponent",
                     "mID": "LoadTextureComponent",
                     "Frame2DTextureComponent": "../2DEntity/2DTextureEntity/2DTextureFrameComponent",
-                    "SkyboxComponent": "../CubeEntity/CubeTextureEntity/CubeTextureRenderComponent",
-                    "SkyboxController": "../CubeEntity/CubePerspCameraEntity/CubePerspCameraOrbitComponent"
+                    "FrameCubemapComponent": "../CubeEntity/CubeFrameComponent"
                 }
             ],
             "Children": []
@@ -159,7 +158,16 @@
         {
             "Type": "nap::Entity",
             "mID": "CubeEntity",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "napkin::FrameCubemapComponent",
+                    "mID": "CubeFrameComponent",
+                    "SkyboxComponent": "./CubeTextureEntity/CubeTextureRenderComponent",
+                    "OrbitController": "./CubePerspCameraEntity/CubePerspCameraOrbitComponent",
+                    "RenderMeshComponent": "./CubeMeshEntity/CubeMeshRenderComponent",
+                    "FallbackTexture": "FallbackCubeTexture"
+                }
+            ],
             "Children": [
                 "CubePerspCameraEntity",
                 "CubeTextureEntity",

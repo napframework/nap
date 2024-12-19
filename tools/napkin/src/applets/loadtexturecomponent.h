@@ -6,6 +6,7 @@
 
 // Local includes
 #include "frame2dtexturecomponent.h"
+#include "framecubemapcomponent.h"
 
 // External includes
 #include <component.h>
@@ -37,8 +38,7 @@ namespace napkin
 
 		// Properties
 		nap::ComponentPtr<Frame2DTextureComponent> mFrame2DTextureComponent;	///< Property: 'Frame2DTextureComponent' The component that binds and frames the 2D texture
-		nap::ComponentPtr<RenderSkyBoxComponent> mSkyboxComponent;				///< Property: 'SkyboxComponent' The component that renders the skybox
-		nap::ComponentPtr<OrbitController> mSkyboxController;					///< Property: 'SkyboxController' The skybox camera controller
+		nap::ComponentPtr<FrameCubemapComponent> mFrameCubemapComponent;		///< Property: 'FrameCubemapComponent' The component that binds and frames the cubemap
 
 		// Requires an api component
 		virtual void getDependentComponents(std::vector<rtti::TypeInfo>& components) const override;
@@ -106,11 +106,8 @@ namespace napkin
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
 
-		// The resolved skybox component
-		ComponentInstancePtr<RenderSkyBoxComponent> mSkyboxComponent = { this, &LoadTextureComponent::mSkyboxComponent };
-
-		// The resolved skybox controller
-		ComponentInstancePtr<OrbitController> mSkyboxController = { this, &LoadTextureComponent::mSkyboxController };
+		// The resolved cubemap frame component
+		ComponentInstancePtr<FrameCubemapComponent> mFrameCubeComponent = { this, &LoadTextureComponent::mFrameCubemapComponent };
 
 	private:
 		void onLoadRequested(const nap::APIEvent& apiEvent);					//< Loads a texture from JSON
