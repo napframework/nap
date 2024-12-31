@@ -73,13 +73,13 @@ namespace napkin
 		 * Sets the cubemap opacity
 		 * @param opacity new texture opacity
 		 */
-		void setOpacity(float opacity)											{ assert(mOpacity != nullptr); mSkyboxComponent->setOpacity(opacity); }
+		void setOpacity(float opacity)											{ mSkyboxComponent->setOpacity(opacity); }
 
 		/**
 		 * Returns the cubemap opacity
 		 * @param opacity new texture opacity
 		 */
-		float getOpacity() const												{ assert(mOpacity != nullptr); return mSkyboxComponent->getOpacity(); }
+		float getOpacity() const												{ return mSkyboxComponent->getOpacity(); }
 
 		/**
 		 * @return current mesh index
