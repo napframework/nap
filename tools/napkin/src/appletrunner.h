@@ -79,12 +79,12 @@ namespace napkin
 		bool active() const												{ return mThread.joinable(); }
 
 		/**
-		 * Interrupts applet process loop until run is called.
+		 * Interrupts the applet process loop until run is called.
 		 * Only call this function when the applet is in an active state!
-		 * You can use the future to synchronize (wait) until the process loop paused.
-		 * @return if the process loop halted, triggered after processing current frame
+		 * You can use the future to synchronize (wait) until the process loop is suspended.
+		 * @return if the process is suspended
 		 */
-		std::shared_future<bool> pause();
+		std::shared_future<bool> suspend();
 
 		/**
 		 * Resume applet process loop.

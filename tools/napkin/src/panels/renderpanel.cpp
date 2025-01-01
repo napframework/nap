@@ -96,7 +96,7 @@ namespace napkin
 				if (mApplet.active())
 				{
 					// Wait for the applet to pause before hiding (and potentially destroying) the window
-					auto future_pause = mApplet.pause();
+					auto future_pause = mApplet.suspend();
 					auto paused = future_pause.get();
 					NAP_ASSERT_MSG(paused, "Applet still running");
 				}

@@ -109,7 +109,7 @@ namespace napkin
 	}
 
 
-	std::shared_future<bool> AppletRunner::pause()
+	std::shared_future<bool> AppletRunner::suspend()
 	{
 		// Create a promise that the applet will be suspended -> notify the listener when that occurs using the returned future.
 		// Note that it is possible that a different thread calls run before the thread is suspended,
@@ -137,6 +137,82 @@ namespace napkin
 	}
 
 
+	static void processEvents(std::queue<nap::EventPtr>& eventQueue, napkin::Applet& applet, nap::IMGuiService* guiService, nap::APIService* apiService)
+	{
+		// Forward input to running app
+		while (!eventQueue.empty())
+		{
+			auto& event_ref = eventQueue.front();
+
+			// Input (mouse, keyboard etc.) event
+			if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
+			{
+				// Allow gui service to process input
+				auto* gui_ctx = guiService != nullptr ?
+					guiService->processInputEvent(static_cast<nap::InputEvent&>(*event_ref)) : nullptr;
+
+				// Skip forwarding event if processed (captured) by gui
+				if (gui_ctx != nullptr)
+				{
+					// Gui is capturing this keyboard event
+					if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyEvent)) &&
+						guiService->isCapturingKeyboard(gui_ctx))
+					{
+						// Convert keyboard event into utf8 character and queue in the gui.
+						// We explicitly forward them here because the QT process takes ownership of the keyboard.
+						//
+						// TODO: we can (should?) store the utf char encoding directly in the key press event, both QT and SDL
+						// support conversion of a key event into a utf character, allowing us to bypass the nap key mapping.
+						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
+						{
+							auto utf_char = static_cast<const nap::KeyPressEvent&>(*event_ref).toUtf8();
+							if (utf_char != 0x00)
+								guiService->addInputCharachter(gui_ctx, utf_char);
+						}
+						eventQueue.pop();
+						continue;
+					}
+
+					// Gui is capturing this mouse event
+					if ((event_ref->get_type().is_derived_from(RTTI_OF(nap::PointerEvent)) ||
+						event_ref->get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent))) &&
+						guiService->isCapturingMouse(gui_ctx))
+					{
+						eventQueue.pop();
+						continue;
+					}
+				}
+
+				// Gui not available or capturing -> forward to app
+				auto* input_event = static_cast<nap::InputEvent*>(event_ref.release());
+				applet.inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
+			}
+
+			// Window event
+			else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
+			{
+				auto* window_event = static_cast<nap::WindowEvent*>(event_ref.release());
+				applet.windowMessageReceived(std::unique_ptr<nap::WindowEvent>(window_event));
+			}
+
+			// API event
+			else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::APIEvent)))
+			{
+				NAP_ASSERT_MSG(apiService != nullptr,
+					"Sending API message without API functionality enabled in Applet")
+
+					nap::utility::ErrorState error;
+				auto* api_event = static_cast<nap::APIEvent*>(event_ref.release());
+				if (!apiService->sendEvent(nap::APIEventPtr(api_event), &error))
+					nap::Logger::error(error.toString());
+			}
+
+			// Always remove item!
+			eventQueue.pop();
+		}
+	}
+
+
 	void AppletRunner::runApplet()
 	{
 		auto* gui_service = mApplet->getCore().getService<nap::IMGuiService>();
@@ -157,15 +233,15 @@ namespace napkin
 				if (wmss.count() == 0)
 				{
 					// Wait indefinitely until event is received or frequency is positive.
-					// We also proceed if a request to suspend or abort is received.
+					// We also proceed if a request to suspend operation or abort is received.
 					mProcessCondition.wait(lock, [this] {
 							return mFrequency > 0 || !mEventQueue.empty() || mSuspendPromise != nullptr || mAbort;
 						});
 				}
 				else
 				{
-					// Wait until a event is received or x amount of time has passed
-					// We also proceed if a request to suspend or abort is received
+					// Wait until a event is received or x amount of time has passed.
+					// We also proceed if a request to suspend operation or abort is received
 					mProcessCondition.wait_for(lock, wmss, [this] {
 							return !mEventQueue.empty() || mAbort || mSuspendPromise != nullptr;
 						}
@@ -205,77 +281,8 @@ namespace napkin
 				event_queue.swap(mEventQueue);
 			}
 
-			// Forward input to running app
-			while (!event_queue.empty())
-			{
-				auto& event_ref = event_queue.front();
-
-				// Input (mouse, keyboard etc.) event
-				if (event_ref->get_type().is_derived_from(RTTI_OF(nap::InputEvent)))
-				{
-					// Allow gui service to process input
-					auto* gui_ctx = gui_service != nullptr ?
-						gui_service->processInputEvent(static_cast<nap::InputEvent&>(*event_ref)) : nullptr;
-
-					// Skip forwarding event if processed (captured) by gui
-					if (gui_ctx != nullptr)
-					{
-						// Gui is capturing this keyboard event
-						if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyEvent)) && 
-							gui_service->isCapturingKeyboard(gui_ctx))
-						{
-							// Convert keyboard event into utf8 character and queue in the gui.
-							// We explicitly forward them here because the QT process takes ownership of the keyboard.
-							//
-							// TODO: we can (should?) store the utf char encoding directly in the key press event, both QT and SDL
-							// support conversion of a key event into a utf character, allowing us to bypass the nap key mapping.
-							if (event_ref->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
-							{
-								auto utf_char = static_cast<const nap::KeyPressEvent&>(*event_ref).toUtf8();
-								if(utf_char != 0x00)
-									gui_service->addInputCharachter(gui_ctx, utf_char);
-							}
-							event_queue.pop();
-							continue;
-						}
-
-						// Gui is capturing this mouse event
-						if ((event_ref->get_type().is_derived_from(RTTI_OF(nap::PointerEvent)) ||
-							event_ref->get_type().is_derived_from(RTTI_OF(nap::MouseWheelEvent))) &&
-							gui_service->isCapturingMouse(gui_ctx))
-						{
-							event_queue.pop();
-							continue;
-						}
-					}
-
-					// Gui not available or capturing -> forward to app
-					auto* input_event = static_cast<nap::InputEvent*>(event_ref.release());
-					mApplet->inputMessageReceived(std::unique_ptr<nap::InputEvent>(input_event));
-				}
-
-				// Window event
-				else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::WindowEvent)))
-				{
-					auto* window_event = static_cast<nap::WindowEvent*>(event_ref.release());
-					mApplet->windowMessageReceived(std::unique_ptr<nap::WindowEvent>(window_event));
-				}
-
-				// API event
-				else if (event_ref->get_type().is_derived_from(RTTI_OF(nap::APIEvent)))
-				{
-					NAP_ASSERT_MSG(api_service != nullptr,
-						"Sending API message without API functionality enabled in Applet")
-
-					nap::utility::ErrorState error;
-					auto* api_event = static_cast<nap::APIEvent*>(event_ref.release());
-					if (!api_service->sendEvent(nap::APIEventPtr(api_event), &error))
-						nap::Logger::error(error.toString());
-				}
-
-				// Always remove item!
-				event_queue.pop();
-			}
+			// Forward events to running app
+			processEvents(event_queue, *mApplet, gui_service, api_service);
 
 			// Update core and application
 			mCore.update(update_call);
