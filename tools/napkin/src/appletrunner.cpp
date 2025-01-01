@@ -111,32 +111,27 @@ namespace napkin
 
 	std::shared_future<bool> AppletRunner::pause()
 	{
+		// Create a promise that the applet will be suspended -> notify the listener when that occurs using the returned future.
+		// Note that it is possible that a different thread calls run before the thread is suspended,
+		// which continues execution and could break the promise.
+		// The promise therefore returns IF the thread actually suspended and is always called, regardless of inter-frame changes.
 		{
 			assert(active());
 			std::unique_lock<std::mutex> lock(mProcessMutex);
-			if (mPausePromise == nullptr)
-				mPausePromise = std::make_unique<std::promise<bool>>();
+			mSuspend = true;
+			if (mSuspendPromise == nullptr)
+				mSuspendPromise = std::make_unique<std::promise<bool>>();
 		}
 		mProcessCondition.notify_one();
-		return mPausePromise->get_future();
-	}
-
-
-	bool AppletRunner::paused() const
-	{
-		{
-			std::unique_lock<std::mutex> lock(mProcessMutex);
-			return mPausePromise != nullptr;
-		}
+		return mSuspendPromise->get_future();
 	}
 
 
 	void AppletRunner::run()
 	{
 		{
-			assert(active());
 			std::unique_lock<std::mutex> lock(mProcessMutex);
-			mPausePromise.reset(nullptr);
+			mSuspend = false;
 		}
 		mProcessCondition.notify_one();
 	}
@@ -161,34 +156,38 @@ namespace napkin
 				nap::Milliseconds wmss(mFrequency > 0 ? 1000 / mFrequency : 0);
 				if (wmss.count() == 0)
 				{
-					// Wait indefinitely until event is received or frequency is positive
-					mProcessCondition.wait(lock, [this]
-						{
-							return mAbort || mFrequency > 0 || !mEventQueue.empty() || mPausePromise != nullptr;
+					// Wait indefinitely until event is received or frequency is positive.
+					// We also proceed if a request to suspend or abort is received.
+					mProcessCondition.wait(lock, [this] {
+							return mFrequency > 0 || !mEventQueue.empty() || mSuspendPromise != nullptr || mAbort;
 						});
 				}
 				else
 				{
 					// Wait until a event is received or x amount of time has passed
-					mProcessCondition.wait_for(lock, wmss, [this]
-						{
-							return mAbort || !mEventQueue.empty() || mPausePromise != nullptr;
+					// We also proceed if a request to suspend or abort is received
+					mProcessCondition.wait_for(lock, wmss, [this] {
+							return !mEventQueue.empty() || mAbort || mSuspendPromise != nullptr;
 						}
 					);
 				}
 
-				// Pause if requested & notify potential listeners we paused
-				if (mPausePromise != nullptr)
+				// Handle applet suspension:
+				// This one is a tad tricky because the user could call run() between suspension and waiting for the suspension to occur using the returned future.
+				// Although this sequence isn't likely it can't be ruled out, especially from multiple threads. We therefore must
+				// always handle the suspension promise and notify the user if it remains suspended or continues operation, for that
+				// we track an addition suspended boolean that can be flipped regardless of a previous suspension request.
+				// This prevents the app from throwing an exception when the future is invalidated because the promise has been broken (removed).
+				if (mSuspendPromise != nullptr)
 				{
-					mPausePromise->set_value(true);
-					mProcessCondition.wait(lock, [this]
-						{
-							return mPausePromise == nullptr || mAbort;
+					mSuspendPromise->set_value(mSuspend);
+					mSuspendPromise.reset(nullptr);
+					mProcessCondition.wait(lock, [this] {
+							return !mSuspend || mAbort;
 						});
-					mPausePromise.reset(nullptr);
 				}
 
-				// Bail if we're told to stop (unlocks)
+				// Bail if we're told to stop (unlocks the handle)
 				if (mAbort)
 				{
 					auto code = mApplet->shutdown();

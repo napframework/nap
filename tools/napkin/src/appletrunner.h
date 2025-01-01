@@ -80,7 +80,7 @@ namespace napkin
 
 		/**
 		 * Interrupts applet process loop until run is called.
-		 * Only call this function when the applet is in an active state.
+		 * Only call this function when the applet is in an active state!
 		 * You can use the future to synchronize (wait) until the process loop paused.
 		 * @return if the process loop halted, triggered after processing current frame
 		 */
@@ -90,11 +90,6 @@ namespace napkin
 		 * Resume applet process loop.
 		 */
 		void run();
-
-		/**
-		 * @return if the applet process loop is suspended (paused).
-		 */
-		bool paused() const;
 
 		/** 
 		 * Sends an event to the app for processing, thread safe
@@ -131,7 +126,8 @@ namespace napkin
 		nap::uint					mFrequency = 60;						///< Processing frequency (hz)
 		std::queue<nap::EventPtr>	mEventQueue;							///< Events to forward to the running app
 		std::thread					mThread;								///< Running thread
-		std::unique_ptr<std::promise<bool>> mPausePromise = nullptr;		///< If applet is in a paused state
+		bool						mSuspend = false;						///< If the applet is paused
+		std::unique_ptr<std::promise<bool>> mSuspendPromise = nullptr;		///< If the applet is requested to be suspended
 
 		/**
 		 * Initializes the engine and the application.
