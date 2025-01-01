@@ -86,15 +86,19 @@ namespace napkin
 			// TODO: Figure out why we need to handle these events explicitly ->
 			// Without the window is available but drawn (composited) incorrect in Qt (White background)
 			case QEvent::Show:
-			case QEvent::FocusIn:
-			case QEvent::FocusOut:
-			case QEvent::Paint:
-			case QEvent::ParentChange:
-			case QEvent::WindowActivate:
-			case QEvent::WindowDeactivate:
-			case QEvent::ShowToParent:
-			case QEvent::HideToParent:
 			{
+				if (mApplet.active())
+					mApplet.run();
+				return true;	
+			}
+			case QEvent::Hide:
+			{
+				if (mApplet.active())
+				{
+					// Wait for the applet to pause before hiding (and potentially destroying) the window
+					auto paused = mApplet.pause();
+					paused.wait();
+				}
 				return true;
 			}
 			case QEvent::MouseButtonPress:
@@ -105,7 +109,7 @@ namespace napkin
 			case QEvent::KeyRelease:
 			{
 				auto ptr = mConverter.translateInputEvent(*event);
-				assert(ptr !=nullptr);
+				assert(ptr != nullptr);
 				mApplet.sendEvent(std::move(ptr));
 				event->accept();
 				return true;
@@ -114,7 +118,18 @@ namespace napkin
 			{
 				// Resize window
 				auto resize_event = static_cast<QResizeEvent*>(event);
-				nap::SDL::setWindowSize(mWindow, { resize_event->size().width(), resize_event->size().height()});
+				nap::SDL::setWindowSize(mWindow, { resize_event->size().width(), resize_event->size().height() });
+				return true;
+			}
+			case QEvent::FocusIn:
+			case QEvent::FocusOut:
+			case QEvent::Paint:
+			case QEvent::ParentChange:
+			case QEvent::WindowActivate:
+			case QEvent::WindowDeactivate:
+			case QEvent::ShowToParent:
+			case QEvent::HideToParent:
+			{
 				return true;
 			}
 			default:

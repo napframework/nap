@@ -28,8 +28,7 @@ namespace napkin
 
 	/**
 	 * Utility class that runs a napkin::Applet until Applet::quit() is called or
-	 * AppletRunner::abort(). The APP template argument should be derived from
-	 * nap::BaseApp, HANDLER should be of type nap::BaseAppEventHandler()
+	 * AppletRunner::abort().
 	 *
 	 * This class is different from a regular AppRunner because it is thread safe, ie:
 	 * It can be run in a separate thread, offering an interface to communicate with the app
@@ -65,12 +64,37 @@ namespace napkin
 
 		/**
 		 * Initializes and runs the applet a-synchronous on it's own thread.
+		 * Use the future to synchronize (wait) until initialized succeeded or failed.
 		 * @param projectFilename full path to the project to run
-		 * @param workingDirectory the current project working directory
 		 * @param frequency update frequency in hz
 		 * @return if initialization succeeded or not
 		 */
 		std::future<bool> start(const std::string& projectFilename, nap::uint frequency);
+
+		/**
+		 * Returns if the applet launched on a separate thread and is in an active state.
+		 * Note that paused applets are still considered active.
+		 * @return if the applet launched and is in an active state.
+		 */
+		bool active() const												{ return mThread.joinable(); }
+
+		/**
+		 * Interrupts applet process loop until run is called.
+		 * Only call this function when the applet is in an active state.
+		 * You can use the future to synchronize (wait) until the process loop paused.
+		 * @return if the process loop halted, triggered after processing current frame
+		 */
+		std::shared_future<bool> pause();
+
+		/**
+		 * Resume applet process loop.
+		 */
+		void run();
+
+		/**
+		 * @return if the applet process loop is suspended (paused).
+		 */
+		bool paused() const;
 
 		/** 
 		 * Sends an event to the app for processing, thread safe
@@ -84,11 +108,6 @@ namespace napkin
 		 * @param frequency update frequency in hz
 		 */
 		void setFrequency(nap::uint frequency);
-
-		/**
-		 * @return if the applet is running
-		 */
-		bool running() const												{ return mThread.joinable(); }
 
 		/**
 		 * Aborts and waits for the application to stop running
@@ -106,13 +125,13 @@ namespace napkin
 		nap::Core::ServicesHandle mServices = nullptr;						/// Initialized services
 		std::unique_ptr<napkin::Applet> mApplet;							/// Applet to run
 
-		std::mutex					mProcessMutex;							///< Process related mutex
+		mutable std::mutex			mProcessMutex;							///< Process related mutex
 		std::condition_variable		mProcessCondition;						///< Process condition variable
-		std::atomic<bool>			mAbort = { false };						///< Aborts the application from running
+		bool						mAbort = false;							///< Aborts the application from running
 		nap::uint					mFrequency = 60;						///< Processing frequency (hz)
 		std::queue<nap::EventPtr>	mEventQueue;							///< Events to forward to the running app
 		std::thread					mThread;								///< Running thread
-		std::promise<bool>			mInitPromise;							///< If runner initialized correctly
+		std::unique_ptr<std::promise<bool>> mPausePromise = nullptr;		///< If applet is in a paused state
 
 		/**
 		 * Initializes the engine and the application.

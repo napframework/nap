@@ -43,11 +43,6 @@ namespace napkin
 		 */
 		bool initialized() const									{ return mPanel != nullptr; }
 
-		/**
-		 * @return if the applet is running
-		 */
-		bool running() const										{ return mRunner.running(); }
-
 	protected:
 		// Called by the main window when the widget is closed
 		virtual void closeEvent(QCloseEvent* event) override;

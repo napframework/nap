@@ -36,8 +36,14 @@ namespace napkin
 	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency)
 	{
 		// Create and run task
-		mFrequency = frequency; assert(!running());
-		mThread = std::thread([projectFilename, this]() mutable
+		assert(!active());
+		mFrequency = frequency; 
+
+		// Create the promise used to signal initialization
+		std::promise<bool> init_promise;
+		auto init_future = init_promise.get_future();
+
+		mThread = std::thread([projectFilename, initPromise = std::move(init_promise), this]() mutable
 		{
 			// Initialize engine and application
 			nap::utility::ErrorState error;
@@ -45,12 +51,12 @@ namespace napkin
 			{
 				// Notify waiting thread init failed
 				nap::Logger::error(error.toString());
-				mInitPromise.set_value(false);
+				initPromise.set_value(false);
 				return;
 			}
 
 			// Notify waiting thread init succeeded
-			mInitPromise.set_value(true);
+			initPromise.set_value(true);
 
 			// Start running on success
 			runApplet();
@@ -60,7 +66,7 @@ namespace napkin
 		});
 
 		// Allows the calling thread to wait for (sync) with the applet
-		return mInitPromise.get_future();
+		return init_future;
 	}
 
 
@@ -103,6 +109,39 @@ namespace napkin
 	}
 
 
+	std::shared_future<bool> AppletRunner::pause()
+	{
+		{
+			assert(active());
+			std::unique_lock<std::mutex> lock(mProcessMutex);
+			if (mPausePromise == nullptr)
+				mPausePromise = std::make_unique<std::promise<bool>>();
+		}
+		mProcessCondition.notify_one();
+		return mPausePromise->get_future();
+	}
+
+
+	bool AppletRunner::paused() const
+	{
+		{
+			std::unique_lock<std::mutex> lock(mProcessMutex);
+			return mPausePromise != nullptr;
+		}
+	}
+
+
+	void AppletRunner::run()
+	{
+		{
+			assert(active());
+			std::unique_lock<std::mutex> lock(mProcessMutex);
+			mPausePromise.reset(nullptr);
+		}
+		mProcessCondition.notify_one();
+	}
+
+
 	void AppletRunner::runApplet()
 	{
 		auto* gui_service = mApplet->getCore().getService<nap::IMGuiService>();
@@ -115,10 +154,9 @@ namespace napkin
 		mCore.start();
 		while (true)
 		{
-			// Thread safe section!
+			// Thread safe section! 
 			// Wait until ready for processing -> unlocks when exiting this block
 			{
-				// Compute wait time
 				std::unique_lock<std::mutex> lock(mProcessMutex);
 				nap::Milliseconds wmss(mFrequency > 0 ? 1000 / mFrequency : 0);
 				if (wmss.count() == 0)
@@ -126,7 +164,7 @@ namespace napkin
 					// Wait indefinitely until event is received or frequency is positive
 					mProcessCondition.wait(lock, [this]
 						{
-							return !mEventQueue.empty() || mFrequency > 0 || mAbort;
+							return mAbort || mFrequency > 0 || !mEventQueue.empty() || mPausePromise != nullptr;
 						});
 				}
 				else
@@ -134,9 +172,20 @@ namespace napkin
 					// Wait until a event is received or x amount of time has passed
 					mProcessCondition.wait_for(lock, wmss, [this]
 						{
-							return !mEventQueue.empty() || mAbort;
+							return mAbort || !mEventQueue.empty() || mPausePromise != nullptr;
 						}
 					);
+				}
+
+				// Pause if requested & notify potential listeners we paused
+				if (mPausePromise != nullptr)
+				{
+					mPausePromise->set_value(true);
+					mProcessCondition.wait(lock, [this]
+						{
+							return mPausePromise == nullptr || mAbort;
+						});
+					mPausePromise.reset(nullptr);
 				}
 
 				// Bail if we're told to stop (unlocks)
@@ -148,6 +197,7 @@ namespace napkin
 						nap::Logger::error("Applet '%s' failed to shut down gracefully, exit code: %d",
 							mApplet->get_type().get_name().data());
 					}
+					mAbort = false;
 					return;
 				}
 
