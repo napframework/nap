@@ -357,9 +357,7 @@ void AppContext::restoreUI()
 
 	// Let the ui come up before loading all the recent file and initializing core
 	if (getProjectInfo() == nullptr && mOpenRecentProjectAtStartup)
-	{
 		openRecentProject();
-	}
 }
 
 

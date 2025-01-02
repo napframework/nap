@@ -4,18 +4,16 @@
 
 #pragma once
 
+// External Includes
 #include <QStatusBar>
 #include <QTimer>
 #include <QToolBar>
-
-#include <napqt/basewindow.h>
 #include <napqt/errordialog.h>
-#include <panels/pathbrowserpanel.h>
 
+// Local includes
 #include "actionmodel.h"
 #include "appcontext.h"
 #include "themeselectionmenu.h"
-
 #include "panels/apprunnerpanel.h"
 #include "panels/historypanel.h"
 #include "panels/inspectorpanel.h"
@@ -28,6 +26,7 @@
 #include "panels/serviceconfigpanel.h"
 #include "panels/renderpreviewpanel.h"
 #include "panels/texturepreviewpanel.h"
+#include "panels/pathbrowserpanel.h"
 
 namespace napkin
 {
@@ -35,7 +34,7 @@ namespace napkin
 	 * The main application window. It will spawn and keep all the application's panels.
 	 * Our application's data is managed by AppContext.
 	 */
-	class MainWindow : public nap::qt::BaseWindow
+	class MainWindow : public QMainWindow
 	{
 		Q_OBJECT
 	public:
@@ -181,6 +180,21 @@ namespace napkin
 		 */
 		AppContext& getContext() const;
 
+		/**
+		 * Add a QWidget to this window, display it as a dockwidget and add a toggle menuitem to the menubar
+		 * @param name The name and title of the specified widget.
+		 * @param widget The widget to be added as a dockwidget.
+		 * @param area The initial area to stick the the dock into.
+		 */
+		 QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
+
+		/**
+		 * Watches and synchronizes installed dock widget events.
+		 * @param watched the dock widget being watched
+		 * @param event that occurred. 
+		 */
+		virtual bool eventFilter(QObject* watched, QEvent* event) override;
+
 	private:
 		bool mShown = false;
 		ActionModel mActionModel;
@@ -203,6 +217,7 @@ namespace napkin
 		QMenu mConfigMenu;
 		QMenu mCreateMenu;
 		QMenu mHelpMenu;
+		QMenu mPanelsMenu;
 		QMenu mRecentProjectsMenu;
 		nap::qt::ErrorDialog mErrorDialog;
 		QStatusBar mStatusBar;

@@ -27,8 +27,7 @@ namespace napkin
 	}
 
 	/**
-	 * Utility class that runs a napkin::Applet until Applet::quit() is called or
-	 * AppletRunner::abort().
+	 * Utility class that runs a napkin::Applet until Applet::quit() is called or AppletRunner::abort().
 	 *
 	 * This class is different from a regular AppRunner because it is thread safe, ie:
 	 * It can be run in a separate thread, offering an interface to communicate with the app

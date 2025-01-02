@@ -6,9 +6,18 @@
 
 #include <QMessageBox>
 #include <QCloseEvent>
-#include <fcurve.h>
 #include <QtDebug>
+#include <QDockWidget>
+#include <QMenuBar>
+#include <fcurve.h>
 #include <utility/fileutils.h>
+#include <napqt/autosettings.h>
+
+namespace napkin
+{
+	constexpr const char* dockWidgetFormat = "%1_Widget";
+	constexpr const char* dockActionFormat = "%1_Action";
+}
 
 using namespace napkin;
 
@@ -46,16 +55,17 @@ void MainWindow::unbindSignals()
 
 void MainWindow::showEvent(QShowEvent* event)
 {
-	BaseWindow::showEvent(event);
+	// Restore settings
+	QMainWindow::showEvent(event);
 	if (!mShown)
 	{
+		qt::AutoSettings::get().restore(*this);
 		QSettings settings;
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 		getContext().restoreUI();
 		rebuildRecentMenu();
 		mShown = true;
 	}
-
 	connect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress, Qt::UniqueConnection);
 }
 
@@ -64,7 +74,7 @@ void napkin::MainWindow::hideEvent(QHideEvent* event)
 {
 	mProgressDialog.reset(nullptr);
 	disconnect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress);
-	BaseWindow::hideEvent(event);
+	QMainWindow::hideEvent(event);
 }
 
 
@@ -76,15 +86,17 @@ void MainWindow::closeEvent(QCloseEvent* event)
 		return;
 	}
 
-	// TODO: Close signal is not emitted 
 	mRenderPreviewPanel.close();
 	mTexturePreviewPanel.close();
-	BaseWindow::closeEvent(event);
+	qt::AutoSettings::get().store(*this);
+	QMainWindow::closeEvent(event);
 }
+
 
 void MainWindow::addDocks()
 {
 	// Add widgets to individual docks
+	mPanelsMenu.setTitle("Panels");
 	addDock("AppRunner", &mAppRunnerPanel);
 	addDock("Resources", &mResourcePanel);
 	addDock("Scene", &mScenePanel);
@@ -103,7 +115,7 @@ void MainWindow::addDocks()
 	mResourcePanel.registerStageOption(mRenderPreviewPanel.toOption());
 
 	// Add menu
-	menuBar()->addMenu(getWindowMenu());
+	menuBar()->addMenu(&mPanelsMenu);
 }
 
 
@@ -155,7 +167,7 @@ void MainWindow::configureMenu()
 	menuBar()->addMenu(&mHelpMenu);
 
 	// Panels
-	menuBar()->addMenu(getWindowMenu());
+	menuBar()->addMenu(&mPanelsMenu);
 }
 
 
@@ -185,8 +197,10 @@ void MainWindow::updateWindowTitle()
 }
 
 
-MainWindow::MainWindow() : BaseWindow(), mErrorDialog(this)
+MainWindow::MainWindow() : mErrorDialog(this)
 {
+	setWindowTitle(QApplication::applicationName());
+	setDockNestingEnabled(true);
 	setStatusBar(&mStatusBar);
 	configureMenu();
 	addToolstrip();
@@ -319,6 +333,7 @@ bool MainWindow::confirmSaveCurrentFile()
 	return result == QMessageBox::No;
 }
 
+
 void MainWindow::rebuildRecentMenu()
 {
 	mRecentProjectsMenu.clear();
@@ -348,7 +363,7 @@ AppContext& MainWindow::getContext() const
 
 void napkin::MainWindow::addToolstrip()
 {
-	mToolbar = this->addToolBar("Toolbar");
+	mToolbar = addToolBar("Toolbar");
     mToolbar->setObjectName("MainToolbar");
 	mToolbar->setToolButtonStyle(Qt::ToolButtonStyle::ToolButtonIconOnly);
 	mToolbar->setMovable(false);
@@ -438,3 +453,81 @@ void napkin::MainWindow::enableProjectDependentActions(bool enable)
 		}
 	}
 }
+
+
+QDockWidget* MainWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area /*= Qt::TopDockWidgetArea*/)
+{
+	// Create dock widget
+	QDockWidget* dock_widget = new QDockWidget(this);
+	dock_widget->setObjectName(name);
+	dock_widget->setWidget(widget);
+	dock_widget->setWindowTitle(name);
+
+	// Set object name
+	if (widget->objectName().isEmpty())
+		widget->setObjectName(QString(dockWidgetFormat).arg(name));
+
+	// Disable closing of docks -> prevents accidental destruction of assigned NAP window when closing a 'floating' applet.
+	// We do want to support floating docks, but we don't want the window accidentally destroyed,
+	// instead we explicitly hide and show the dock, which prevents the destruction of the window when floating.
+	// TODO: Handle applet window destruction of floating docks.
+	auto dock_features = dock_widget->features();
+	dock_features &= ~(1U << (int)QDockWidget::DockWidgetClosable-1);
+	dock_widget->setFeatures(dock_features);
+
+	// Add visibility toggle to panels menu item
+	auto* vis_action = new QAction(name, dock_widget);
+	vis_action->setObjectName(QString(dockActionFormat).arg(dock_widget->objectName()));
+	vis_action->setCheckable(true);
+	connect(vis_action, &QAction::toggled, [dock_widget](bool checked) {
+		dock_widget->setVisible(checked);
+		}
+	);
+
+	// Add action to panels menu
+	mPanelsMenu.addAction(vis_action);
+
+	// Install listener, add dock and return
+	dock_widget->installEventFilter(this);
+	addDockWidget(area, dock_widget);
+	return dock_widget;
+}
+
+
+bool MainWindow::eventFilter(QObject* watched, QEvent* event)
+{
+	auto* dock_widget = qobject_cast<QDockWidget*>(watched);
+	if (dock_widget == nullptr)
+		return false;
+
+	switch(event->type())
+	{
+		case QEvent::Hide:
+		{
+			// Find toggle action associated with dock widget
+			auto* child = findChild<QAction*>(QString(dockActionFormat).arg(dock_widget->objectName()),
+				Qt::FindChildrenRecursively);
+
+			// Sync state -> required on startup and intermediate loads
+			if (child != nullptr)
+				child->setChecked(false);
+			break;
+		}
+		case QEvent::Show:
+		{
+			// Find toggle action associated with dock widget
+			auto* child = findChild<QAction*>(QString(dockActionFormat).arg(dock_widget->objectName()),
+				Qt::FindChildrenRecursively);
+
+			// Sync state -> required on startup and intermediate loads
+			if (child != nullptr)
+				child->setChecked(true);
+
+			// Raise to front
+			dock_widget->raise();
+			break;
+		}
+	}
+	return false;
+}
+

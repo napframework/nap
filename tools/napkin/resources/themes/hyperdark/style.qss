@@ -97,14 +97,13 @@ QDockWidget::close-button,QDockWidget::float-button{
   border:none;
 }
 
-QDockWidget::close-button{
+QDockWidget::float-button {
   right:3px;
 }
 
-QDockWidget::float-button{
+QDockWidget::close-button {
   right:18px;
 }
-
 
 QDockWidget::title {
     text-align: left;
