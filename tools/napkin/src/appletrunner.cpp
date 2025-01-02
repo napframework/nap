@@ -109,31 +109,44 @@ namespace napkin
 	}
 
 
-	std::shared_future<bool> AppletRunner::suspend()
+	std::future<bool> AppletRunner::suspend()
 	{
-		// Create a promise that the applet will be suspended -> notify the listener when that occurs using the returned future.
-		// Note that it is possible that a different thread calls run before the thread is suspended,
-		// which continues execution and could break the promise.
-		// The promise therefore returns IF the thread actually suspended and is always called, regardless of inter-frame changes.
+		// Can't suspend -> invalid future
+		std::future<bool> future_suspend;
+		bool valid = future_suspend.valid();
+		if (!active())
+			return future_suspend;
+
+		// Thread safe block
 		{
-			assert(active());
 			std::unique_lock<std::mutex> lock(mProcessMutex);
 			mSuspend = true;
 			if (mSuspendPromise == nullptr)
+			{
 				mSuspendPromise = std::make_unique<std::promise<bool>>();
+				future_suspend = mSuspendPromise->get_future();
+			}
 		}
-		mProcessCondition.notify_one();
-		return mSuspendPromise->get_future();
+
+		// Notify all listeners to suspend if future is valid
+		if(future_suspend.valid())
+			mProcessCondition.notify_one();
+
+		// Return future suspension or invalid
+		return future_suspend;
 	}
 
 
 	void AppletRunner::run()
 	{
+		if (active())
 		{
-			std::unique_lock<std::mutex> lock(mProcessMutex);
-			mSuspend = false;
+			{
+				std::unique_lock<std::mutex> lock(mProcessMutex);
+				mSuspend = false;
+			}
+			mProcessCondition.notify_one();
 		}
-		mProcessCondition.notify_one();
 	}
 
 
@@ -257,10 +270,10 @@ namespace napkin
 				if (mSuspendPromise != nullptr)
 				{
 					mSuspendPromise->set_value(mSuspend);
-					mSuspendPromise.reset(nullptr);
 					mProcessCondition.wait(lock, [this] {
 							return !mSuspend || mAbort;
 						});
+					mSuspendPromise.reset(nullptr);
 				}
 
 				// Bail if we're told to stop (unlocks the handle)

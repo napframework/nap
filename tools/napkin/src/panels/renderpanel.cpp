@@ -87,19 +87,15 @@ namespace napkin
 			// Without the window is available but drawn (composited) incorrect in Qt (White background)
 			case QEvent::Show:
 			{
-				if (mApplet.active())
-					mApplet.run();
+				mApplet.run();
 				return true;	
 			}
 			case QEvent::Hide:
 			{
-				if (mApplet.active())
-				{
-					// Wait for the applet to pause before hiding (and potentially destroying) the window
-					auto future_pause = mApplet.suspend();
-					auto paused = future_pause.get();
-					NAP_ASSERT_MSG(paused, "Applet still running");
-				}
+				// Wait for the applet to pause before hiding (and potentially destroying) the window
+				auto future_suspend = mApplet.suspend();
+				if (future_suspend.valid())
+					future_suspend.wait_for(nap::Seconds(5));
 				return true;
 			}
 			case QEvent::MouseButtonPress:

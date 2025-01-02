@@ -80,11 +80,11 @@ namespace napkin
 
 		/**
 		 * Interrupts the applet process loop until run is called.
-		 * Only call this function when the applet is in an active state!
 		 * You can use the future to synchronize (wait) until the process loop is suspended.
-		 * @return if the process is suspended
+		 * Note that the returned future is invalid when the applet is not active or already suspended.
+		 * @return future suspension, invalid when inactive or already suspended
 		 */
-		std::shared_future<bool> suspend();
+		std::future<bool> suspend();
 
 		/**
 		 * Resume applet process loop.
@@ -128,6 +128,7 @@ namespace napkin
 		std::thread					mThread;								///< Running thread
 		bool						mSuspend = false;						///< If the applet is paused
 		std::unique_ptr<std::promise<bool>> mSuspendPromise = nullptr;		///< If the applet is requested to be suspended
+		std::shared_future<bool>	mSuspendFuture;
 
 		/**
 		 * Initializes the engine and the application.
