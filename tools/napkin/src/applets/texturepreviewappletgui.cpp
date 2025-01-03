@@ -77,6 +77,12 @@ namespace napkin
 					if (ImGui::SliderFloat("Skybox Opacity", &opacity, 0.0f, 1.0f))
 						tex_controller.setOpacity(opacity);
 
+					// Mesh rotation (TODO: Make generic)
+					auto& rotate_comp = mApplet.mCubeMeshEntity->getComponent<RotateComponentInstance>();
+					float rotate_speed = rotate_comp.getSpeed();
+					if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f))
+						rotate_comp.setSpeed(rotate_speed);
+
 					break;
 				}
 				case LoadTextureComponentInstance::EType::Texture2D:
@@ -102,7 +108,13 @@ namespace napkin
 		// Add frame icon
 		if (loaded_tex != nullptr &&
 			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
+		{
+			// Frame & reset rotation (TODO: Make generic)
 			tex_controller.frame();
+			auto& rotate_comp = mApplet.mCubeMeshEntity->getComponent<RotateComponentInstance>();
+			rotate_comp.reset();
+			rotate_comp.setSpeed(0.0f);
+		}
 
 		ImGui::PopID();
 		ImGui::EndMainMenuBar();

@@ -10,6 +10,7 @@
 #include <orbitcontroller.h>
 #include <renderablemeshcomponent.h>
 #include <renderskyboxcomponent.h>
+#include <rotatecomponent.h>
 #include <mesh.h>
 
 namespace napkin
@@ -30,6 +31,7 @@ namespace napkin
 		nap::ComponentPtr<RenderSkyBoxComponent> mSkyBoxComponent;			///< Property: 'SkyboxComponent' the render skybox component
 		nap::ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' the cubemap camera orbit controller
 		nap::ComponentPtr<RenderableMeshComponent> mRenderMeshComponent;	///< Property: 'MeshComponent' the reflective render mesh component
+		nap::ComponentPtr<RotateComponent> mRotateComponent;				///< Property: 'RotateComponent' the rotate component
 		ResourcePtr<nap::TextureCube> mFallbackTexture = nullptr;			///< Property: 'FallbackTexture' the default fallback texture
 		std::vector<nap::ResourcePtr<IMesh>> mMeshes;						///< Property: 'Meshes' all assignable reflective meshes
 	};
@@ -82,6 +84,18 @@ namespace napkin
 		float getOpacity() const												{ return mSkyboxComponent->getOpacity(); }
 
 		/**
+		 * Sets rotation
+		 * @param rotation speed in seconds
+		 */
+		void setRotation(float speed)											{ mRotateComponent->setSpeed(speed); }
+
+		/**
+		 * Gets rotation
+		 * @return rotation speed in seconds
+		 */
+		float getRotation(float speed) const									{ mRotateComponent->getSpeed(); }
+
+		/**
 		 * @return current mesh index
 		 */
 		int getMeshIndex() const												{ return mMeshIndex; }
@@ -104,6 +118,9 @@ namespace napkin
 
 		// Skybox component link
 		ComponentInstancePtr<RenderSkyBoxComponent> mSkyboxComponent = { this, &FrameCubemapComponent::mSkyBoxComponent };
+
+		// Rotate component link
+		ComponentInstancePtr<RotateComponent> mRotateComponent = { this, &FrameCubemapComponent::mRotateComponent };
 
 		// Fallback texture
 		TextureCube* mTextureFallback = nullptr;

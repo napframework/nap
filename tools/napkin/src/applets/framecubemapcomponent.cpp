@@ -14,6 +14,7 @@ RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
 	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyBoxComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mOrbitController,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mRenderMeshComponent,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mRotateComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",		&napkin::FrameCubemapComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Meshes",					&napkin::FrameCubemapComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -80,7 +81,8 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::clear()
 	{
-		
+		mSkyboxComponent->setTexture(*mTextureFallback);
+		mReflectiveCubeSampler->setTexture(*mTextureFallback);
 	}
 
 
