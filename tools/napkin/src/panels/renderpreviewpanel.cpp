@@ -63,7 +63,7 @@ namespace napkin
 
 		// Initialize and run the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		auto init_future = mRunner.start(preview_app, mSpinbox.value());
+		auto init_future = mRunner.start(preview_app, mSpinbox.value(), true);
 
 		// Don't install layout if initialization fails
 		if (!init_future.get())

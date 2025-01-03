@@ -213,6 +213,8 @@ void LogPanelWidgetStorer::store(const LogPanel& widget, const QString& key, QSe
 {
 	s.setValue(key + "_LOGLEVEL", widget.getLevelIndex(widget.getCurrentLevel()));
 }
+
+
 void LogPanelWidgetStorer::restore(LogPanel& widget, const QString& key, const QSettings& s) const
 {
 	const auto levels = nap::Logger::getLevels();

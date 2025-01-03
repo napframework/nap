@@ -33,7 +33,7 @@ namespace napkin
 	}
 
 
-	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency)
+	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency, bool suspend)
 	{
 		// Create and run task
 		assert(!active());
@@ -43,7 +43,7 @@ namespace napkin
 		std::promise<bool> init_promise;
 		auto init_future = init_promise.get_future();
 
-		mThread = std::thread([projectFilename, initPromise = std::move(init_promise), this]() mutable
+		mThread = std::thread([projectFilename, initPromise = std::move(init_promise), suspend, this]() mutable
 		{
 			// Initialize engine and application
 			nap::utility::ErrorState error;
@@ -54,6 +54,10 @@ namespace napkin
 				initPromise.set_value(false);
 				return;
 			}
+
+			// Suspend running until run is called
+			if (suspend)
+				this->suspend();
 
 			// Notify waiting thread init succeeded
 			initPromise.set_value(true);
@@ -111,13 +115,14 @@ namespace napkin
 
 	std::future<bool> AppletRunner::suspend()
 	{
-		// Can't suspend -> invalid future
+		// Invalid future suspend when not active
 		std::future<bool> future_suspend;
 		bool valid = future_suspend.valid();
 		if (!active())
 			return future_suspend;
 
-		// Thread safe block
+		// Thread safe block -> create promise to suspend if not requested already.
+		// It is the responsibility of the calling thread to wait() if the future is valid
 		{
 			std::unique_lock<std::mutex> lock(mProcessMutex);
 			mSuspend = true;
@@ -269,16 +274,19 @@ namespace napkin
 				// This prevents the app from throwing an exception when the future is invalidated because the promise has been broken (removed).
 				if (mSuspendPromise != nullptr)
 				{
+					nap::Logger::debug("Suspending: %s", mApplet->get_type().get_name().data());
 					mSuspendPromise->set_value(mSuspend);
 					mProcessCondition.wait(lock, [this] {
 							return !mSuspend || mAbort;
 						});
+					nap::Logger::debug("Resuming: %s", mApplet->get_type().get_name().data());
 					mSuspendPromise.reset(nullptr);
 				}
 
 				// Bail if we're told to stop (unlocks the handle)
 				if (mAbort)
 				{
+					nap::Logger::debug("Aborting: %s", mApplet->get_type().get_name().data());
 					auto code = mApplet->shutdown();
 					if (code != applet::exitcode::success)
 					{

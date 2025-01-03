@@ -27,18 +27,13 @@ namespace napkin
 	}
 
 	/**
-	 * Utility class that runs a napkin::Applet until Applet::quit() is called or AppletRunner::abort().
+	 * Utility class that runs a napkin::Applet on a seperate thread until AppletRunner::abort() is called.
+	 * This class is different from a regular AppRunner because it is thread safe,
+	 * and uses api events to send messages to and receive messages from the running application.
 	 *
-	 * This class is different from a regular AppRunner because it is thread safe, ie:
-	 * It can be run in a separate thread, offering an interface to communicate with the app
-	 * using api events.
-	 * 
-	 * When creating an AppletRunner with those two template arguments the app is created
-	 * and invoked at the right time based on core and it's associated services.
-	 * Note that the AppRunner owns the app and handler.
-	 *
-	 * On start() the runner initializes nap::Core, together with all available services and
-	 * loads the application data. If everything succeeds the app loop is started.
+	 * On start() the runner initializes nap::Core, together with all requested services and loads the application data.
+	 * If initialization succeeds the application process loop is started until suspend() or abort() is called.
+	 * If the runner is started in suspended mode the application loop won't start until run() is called.
 	 */
 	class AppletRunner
 	{
@@ -65,10 +60,11 @@ namespace napkin
 		 * Initializes and runs the applet a-synchronous on it's own thread.
 		 * Use the future to synchronize (wait) until initialized succeeded or failed.
 		 * @param projectFilename full path to the project to run
-		 * @param frequency update frequency in hz
+		 * @param frequency update frequency in hertz
+		 * @param suspend process loop from running after successful initialization
 		 * @return if initialization succeeded or not
 		 */
-		std::future<bool> start(const std::string& projectFilename, nap::uint frequency);
+		std::future<bool> start(const std::string& projectFilename, nap::uint frequency, bool suspend);
 
 		/**
 		 * Returns if the applet launched on a separate thread and is in an active state.
@@ -125,9 +121,8 @@ namespace napkin
 		nap::uint					mFrequency = 60;						///< Processing frequency (hz)
 		std::queue<nap::EventPtr>	mEventQueue;							///< Events to forward to the running app
 		std::thread					mThread;								///< Running thread
-		bool						mSuspend = false;						///< If the applet is paused
+		bool						mSuspend = false;						///< If the applet is suspended from running
 		std::unique_ptr<std::promise<bool>> mSuspendPromise = nullptr;		///< If the applet is requested to be suspended
-		std::shared_future<bool>	mSuspendFuture;
 
 		/**
 		 * Initializes the engine and the application.
