@@ -671,7 +671,7 @@
                         {
                             "Type": "nap::GeometryFromFile",
                             "mID": "Lucy",
-                            "Path": "lucy.obj",
+                            "Path": "lucy.fbx",
                             "GenerateNormals": false,
                             "CalculateTangents": false,
                             "NormalSmoothingAngle": 60.0,
@@ -682,7 +682,7 @@
                         {
                             "Type": "nap::GeometryFromFile",
                             "mID": "Toy",
-                            "Path": "toy.obj",
+                            "Path": "toy.fbx",
                             "GenerateNormals": false,
                             "CalculateTangents": false,
                             "NormalSmoothingAngle": 60.0,
