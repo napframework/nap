@@ -79,7 +79,7 @@ namespace napkin
 
 					// Mesh rotation (TODO: Make generic)
 					float rotate_speed = tex_controller.getRotate();
-					if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f))
+					if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f, "%.3f", 2.0f))
 						tex_controller.setRotate(rotate_speed);
 
 					break;

@@ -3,7 +3,16 @@
         {
             "Type": "nap::Entity",
             "mID": "2DEntity",
-            "Components": [],
+            "Components": [
+                {
+                    "Type": "napkin::Frame2DTextureComponent",
+                    "mID": "Frame2DTextureComponent",
+                    "ZoomPanController": "./2DOrthoCameraEntity/2DOrthoCameraPanController",
+                    "PlaneTransform": "./2DTextureEntity/2DTextureTransformComponent",
+                    "PlaneRenderer": "./2DTextureEntity/2DTextureRenderComponent",
+                    "FallbackTexture": "Fallback2DTexture"
+                }
+            ],
             "Children": [
                 "2DTextureEntity",
                 "2DOrthoCameraEntity"
@@ -124,12 +133,6 @@
                             "y": 0.0
                         }
                     }
-                },
-                {
-                    "Type": "napkin::Frame2DTextureComponent",
-                    "mID": "2DTextureFrameComponent",
-                    "ZoomPanController": "../2DOrthoCameraEntity/2DOrthoCameraPanController",
-                    "FallbackTexture": "Fallback2DTexture"
                 }
             ],
             "Children": []
@@ -149,7 +152,7 @@
                 {
                     "Type": "napkin::LoadTextureComponent",
                     "mID": "LoadTextureComponent",
-                    "Frame2DTextureComponent": "../2DEntity/2DTextureEntity/2DTextureFrameComponent",
+                    "Frame2DTextureComponent": "../2DEntity/Frame2DTextureComponent",
                     "FrameCubemapComponent": "../CubeEntity/CubeFrameComponent"
                 }
             ],

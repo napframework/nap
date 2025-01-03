@@ -11,6 +11,8 @@
 // nap::appletcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::Frame2DTextureComponent)
 	RTTI_PROPERTY("ZoomPanController",	&napkin::Frame2DTextureComponent::mZoomPanController,	nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneTransform",		&napkin::Frame2DTextureComponent::mPlaneTransform,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneRenderer",		&napkin::Frame2DTextureComponent::mPlaneRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",	&napkin::Frame2DTextureComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
 
@@ -30,21 +32,10 @@ namespace napkin
 		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
 	}
 
-
 	bool Frame2DTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
-		// 2D texture transformation
-		mTextureTransform = getEntityInstance()->findComponent<TransformComponentInstance>();
-		if (!errorState.check(mTextureTransform != nullptr, "Missing 2D texture transform component"))
-			return false;
-
-		// 2D texture renderer
-		mTextureRenderer = getEntityInstance()->findComponent<RenderableMeshComponentInstance>();
-		if (!errorState.check(mTextureTransform != nullptr, "Missing 2D texture render component"))
-			return false;
-
 		// 2D texture sampler input
-		auto& mat_instance = mTextureRenderer->getMaterialInstance();
+		auto& mat_instance = mPlaneRenderer->getMaterialInstance();
 		mSampler = mat_instance.getOrCreateSampler<Sampler2DInstance>(uniform::texture::sampler::colorTexture);
 		if (!errorState.check(mSampler != nullptr, "Missing 2D texture sampler input '%s'",
 			nap::uniform::texture::sampler::colorTexture))
@@ -84,7 +75,7 @@ namespace napkin
 	void Frame2DTextureComponentInstance::frame()
 	{
 		assert(mSampler->hasTexture());
-		mZoomPanController->frameTexture(mSampler->getTexture(), *mTextureTransform);
+		mZoomPanController->frameTexture(mSampler->getTexture(), *mPlaneTransform);
 		mOpacity->setValue(1.0f);
 	}
 

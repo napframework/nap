@@ -26,8 +26,10 @@ namespace napkin
 	public:
 
 		// Properties
-		ComponentPtr<nap::ZoomPanController> mZoomPanController = nullptr;		///< Property: 'ZoomPanController' the ortho camera zoom & pan controller
-		ResourcePtr<nap::Texture2D> mFallbackTexture = nullptr;					///< Property: 'FallbackTexture' the default fallback texture
+		ComponentPtr<ZoomPanController> mZoomPanController;				///< Property: 'ZoomPanController' the ortho camera zoom & pan controller
+		ComponentPtr<TransformComponent> mPlaneTransform;				///< Property: 'PlaneTransform' the 2D texture plane transform component
+		ComponentPtr<RenderableMeshComponent> mPlaneRenderer;			///< Property: 'PlaneMeshComponent' the 2D texture render component
+		ResourcePtr<Texture2D> mFallbackTexture;						///< Property: 'FallbackTexture' the default fallback texture
 
 		// Requires texture transform
 		virtual void getDependentComponents(std::vector<nap::rtti::TypeInfo>& components) const override;
@@ -83,12 +85,16 @@ namespace napkin
 		// Resolved zoom & pan controller
 		ComponentInstancePtr<nap::ZoomPanController> mZoomPanController = { this, &Frame2DTextureComponent::mZoomPanController };
 
+		// Resolved plane transform
+		ComponentInstancePtr<TransformComponent> mPlaneTransform = { this, &Frame2DTextureComponent::mPlaneTransform };
+
+		// Resolved plane renderer
+		ComponentInstancePtr<RenderableMeshComponent> mPlaneRenderer = { this, &Frame2DTextureComponent::mPlaneRenderer };
+
 	private:
 		Texture2D* mSelectedTexture = nullptr;
 		Texture2D* mTextureFallback = nullptr;
 		Sampler2DInstance* mSampler = nullptr;
 		UniformFloatInstance* mOpacity = nullptr;
-		TransformComponentInstance* mTextureTransform = nullptr;
-		RenderableMeshComponentInstance* mTextureRenderer = nullptr;
 	};
 }
