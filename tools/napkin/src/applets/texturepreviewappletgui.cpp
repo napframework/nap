@@ -78,10 +78,9 @@ namespace napkin
 						tex_controller.setOpacity(opacity);
 
 					// Mesh rotation (TODO: Make generic)
-					auto& rotate_comp = mApplet.mCubeMeshEntity->getComponent<RotateComponentInstance>();
-					float rotate_speed = rotate_comp.getSpeed();
+					float rotate_speed = tex_controller.getRotate();
 					if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f))
-						rotate_comp.setSpeed(rotate_speed);
+						tex_controller.setRotate(rotate_speed);
 
 					break;
 				}
@@ -109,11 +108,8 @@ namespace napkin
 		if (loaded_tex != nullptr &&
 			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
 		{
-			// Frame & reset rotation (TODO: Make generic)
+			// Frame object & reset rotation
 			tex_controller.frame();
-			auto& rotate_comp = mApplet.mCubeMeshEntity->getComponent<RotateComponentInstance>();
-			rotate_comp.reset();
-			rotate_comp.setSpeed(0.0f);
 		}
 
 		ImGui::PopID();

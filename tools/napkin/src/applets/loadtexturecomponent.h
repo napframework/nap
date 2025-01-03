@@ -103,6 +103,16 @@ namespace napkin
 		 */
 		float getOpacity() const;
 
+		/**
+		 * Set rotation speed (s) of current selection
+		 */
+		void setRotate(float alpha);
+
+		/**
+		 * Get rotation speed (s) of current selection
+		 */
+		float getRotate() const;
+
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
 

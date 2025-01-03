@@ -76,6 +76,8 @@ namespace napkin
 	{
 		mOrbitController->enable({ 0.0f, 0.0f, 3.0f }, { 0.0f, 0.0f, 0.0f });
 		mSkyboxComponent->setOpacity(1.0f);
+		mRotateComponent->reset();
+		mRotateComponent->setSpeed(0.0f);
 	}
 
 

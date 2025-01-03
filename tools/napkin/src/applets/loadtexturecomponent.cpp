@@ -171,9 +171,20 @@ namespace napkin
 			case EType::Cubemap:
 				return mFrameCubeComponent->getOpacity();
 			default:
-				break;
+				return 1.0f;
 		}
-		return 1.0f;
+	}
+
+
+	float LoadTextureComponentInstance::getRotate() const
+	{
+		switch (getType())
+		{
+		case EType::Cubemap:
+			return mFrameCubeComponent->getRotation();
+		default:
+			return 0.0f;
+		}
 	}
 
 
@@ -189,6 +200,20 @@ namespace napkin
 				break;
 			default:
 				break;
+		}
+	}
+
+
+	void LoadTextureComponentInstance::setRotate(float speed)
+	{
+		switch (getType())
+		{
+			case EType::Cubemap:
+				mFrameCubeComponent->setRotation(speed);
+				break;
+			default:
+				break;
+
 		}
 	}
 

@@ -31,7 +31,6 @@ namespace napkin
 	}
 
 
-
 	bool Frame2DTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// 2D texture transformation

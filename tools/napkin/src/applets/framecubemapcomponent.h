@@ -93,7 +93,7 @@ namespace napkin
 		 * Gets rotation
 		 * @return rotation speed in seconds
 		 */
-		float getRotation(float speed) const									{ mRotateComponent->getSpeed(); }
+		float getRotation() const												{ return mRotateComponent->getSpeed(); }
 
 		/**
 		 * @return current mesh index
