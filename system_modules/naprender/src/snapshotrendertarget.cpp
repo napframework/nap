@@ -215,8 +215,9 @@ namespace nap
 			framebuffer_info.renderPass = mRenderPass;
 
 			// Bind textures as attachments
-			for (int i = 0; i < num_cells; i++) {
-				std::array<VkImageView, 2> attachments{ mSnapshot->mColorTextures[i]->getHandle().getView(), mDepthImage.getView() };
+			for (int i = 0; i < num_cells; i++)
+            {
+				std::array<VkImageView, 2> attachments{ std::as_const(*mSnapshot->mColorTextures[i]).getHandle().getView(), mDepthImage.getView() };
 				framebuffer_info.pAttachments = attachments.data();
 
 				// Create framebuffer
@@ -237,8 +238,9 @@ namespace nap
 			framebuffer_info.attachmentCount = 3;
 			framebuffer_info.renderPass = mRenderPass;
 
-			for (int i = 0; i < num_cells; i++) {
-				std::array<VkImageView, 3> attachments{ mColorImage.getView(), mDepthImage.getView(), mSnapshot->mColorTextures[i]->getHandle().getView() };
+			for (int i = 0; i < num_cells; i++)
+            {
+				std::array<VkImageView, 3> attachments{ mColorImage.getView(), mDepthImage.getView(), std::as_const(*mSnapshot->mColorTextures[i]).getHandle().getView() };
 				framebuffer_info.pAttachments = attachments.data();
 
 				// Create a framebuffer that links the cell target texture to the appropriate resolved color attachment
@@ -294,6 +296,10 @@ namespace nap
 	void SnapshotRenderTarget::endRendering()
 	{
 		vkCmdEndRenderPass(mRenderService->getCurrentCommandBuffer());
+
+        // Sync image data with render pass final layout
+        for (auto& tex : mSnapshot->mColorTextures)
+            tex->syncLayout();
 	}
 
 

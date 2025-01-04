@@ -158,8 +158,8 @@ namespace nap
 		// We transition the layout of the depth attachment from UNDEFINED to DEPTH_STENCIL_ATTACHMENT_OPTIMAL, once in the first pass
 		if (mIsFirstPass)
 		{
-			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(), mDepthImage.mImage,
-				mDepthImage.mCurrentLayout, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
+                mDepthImage, VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
 				VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT | VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT,
 				VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT | VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
@@ -254,6 +254,9 @@ namespace nap
 			endRendering();
 		}
 
+        // Sync image data with render pass final layout
+        mCubeTexture->syncLayout();
+
 		// Update mip maps
 		if (mUpdateLODs && mCubeTexture->getMipLevels() > 1)
 		{
@@ -262,14 +265,14 @@ namespace nap
 			VkImageAspectFlags aspect = is_depth ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
 
 			// Layout transition to TRANSFER_DST to setup the mip map blit operation
-			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle().getImage(),
-				VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+			utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
+                mCubeTexture->getHandle(), VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 				VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_TRANSFER_READ_BIT,
 				VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT,
 				0, mCubeTexture->getMipLevels(),
 				0, TextureCube::layerCount, VK_IMAGE_ASPECT_COLOR_BIT);
 
-			utility::createMipmaps(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle().getImage(),
+			utility::createMipmaps(mRenderService->getCurrentCommandBuffer(), mCubeTexture->getHandle(),
 				mCubeTexture->getFormat(), VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL, aspect,
 				mCubeTexture->getWidth(), mCubeTexture->getHeight(), mCubeTexture->getMipLevels(), 0, TextureCube::layerCount
 			);

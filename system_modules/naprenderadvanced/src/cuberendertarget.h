@@ -191,7 +191,7 @@ namespace nap
 		RenderTextureCube::EFormat				mColorFormat = RenderTextureCube::EFormat::RGBA8;			///< Property: 'ColorFormat' the cube texture color format.
 		DepthRenderTextureCube::EDepthFormat	mDepthFormat = DepthRenderTextureCube::EDepthFormat::D16;	///< Property: 'DepthFormat' the cube texture depth format.
 
-		ResourcePtr<TextureCube>				mCubeTexture;												///< Property: 'CubeTexture' cube texture to render to.
+		ResourcePtr<RenderTextureCube>			mCubeTexture;												///< Property: 'CubeTexture' cube texture to render to.
 
 	private:
 		/**
