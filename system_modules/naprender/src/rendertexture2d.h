@@ -23,7 +23,9 @@ namespace nap
 	 */
 	class NAPAPI RenderTexture2D : public Texture2D
 	{
-		RTTI_ENABLE(Texture2D)
+        friend class RenderTarget;
+
+        RTTI_ENABLE(Texture2D)
 	public:
 		/**
 		 * All supported render texture 2D formats.
@@ -48,10 +50,10 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return Vulkan GPU data handle, including image and view.
-		 */
-		virtual const ImageData& getHandle() const override { return mImageData; }
+        /**
+         * Updates image layout to the target layout after a render pass.
+         */
+        void syncLayout();
 
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels
@@ -68,7 +70,6 @@ namespace nap
 	 */
 	class NAPAPI DepthRenderTexture2D : public Texture2D
 	{
-		friend class DepthRenderTarget;
 		RTTI_ENABLE(Texture2D)
 	public:
 		/**
@@ -89,10 +90,10 @@ namespace nap
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
-		/**
-		 * @return Vulkan GPU data handle, including image and view.
-		 */
-		virtual const ImageData& getHandle() const override { return mImageData; }
+        /**
+         * Updates image layout to the target layout after a render pass.
+         */
+        void syncLayout();
 
 		int					mWidth = 0;										///< Property: 'Width' width of the texture in texels
 		int					mHeight = 0;									///< Property: 'Height' of the texture in texels

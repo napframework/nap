@@ -130,8 +130,8 @@ namespace nap
 
 		// Get image ready for clear, applied to all mipmap layers
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
-			getHandle().mCurrentLayout,		VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                    VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask,						dstMask,
 			srcStage,						dstStage,
 			0,								getMipLevels(),
@@ -151,15 +151,12 @@ namespace nap
 		}
 
 		// Transition image layout
-		utility::transitionImageLayout(commandBuffer, getHandle().mImage,
-			VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                            getTargetLayout(),
 			VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0,										getMipLevels(),
 			aspect);
-
-		// We store the last image layout, which is used as input for a subsequent upload
-		getHandle().mCurrentLayout = getTargetLayout();
 	}
 
 
@@ -355,8 +352,8 @@ namespace nap
 
 		// Get image ready for copy, applied to all mipmap layers
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-			mImageData.mCurrentLayout, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),        VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
 			srcMask,			dstMask,
 			srcStage,			dstStage,
 			0,					mMipLevels,
@@ -368,20 +365,17 @@ namespace nap
 		// Generate mip maps, if we do that we don't have to transition the image layout anymore, this is handled by createMipmaps.
 		if (mMipLevels > 1)
 		{
-			utility::createMipmaps(commandBuffer, mImageData.mImage, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
+			utility::createMipmaps(commandBuffer, mImageData, mFormat, getTargetLayout(), aspect, mDescriptor.mWidth, mDescriptor.mHeight, mMipLevels);
 		}
 		else
 		{
-			utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-				VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,	getTargetLayout(),
+			utility::transitionImageLayout(commandBuffer,
+                getHandle(),                            getTargetLayout(),
 				VK_ACCESS_TRANSFER_WRITE_BIT,			VK_ACCESS_SHADER_READ_BIT,
 				VK_PIPELINE_STAGE_TRANSFER_BIT,			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 				0,										1,
 				aspect);
 		}
-
-		// We store the last image layout, which is used as input for a subsequent upload
-		mImageData.mCurrentLayout = getTargetLayout();
 
 		// Destroy staging buffer when usage is static
 		// This queues the vulkan staging resource for destruction, executed by the render service at the appropriate time.
@@ -409,8 +403,8 @@ namespace nap
 
 		// Transition for copy
 		VkImageAspectFlags aspect = mDescriptor.getChannels() == ESurfaceChannels::D ? VK_IMAGE_ASPECT_DEPTH_BIT : VK_IMAGE_ASPECT_COLOR_BIT;
-		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-			VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,	VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                                VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,
 			VK_ACCESS_SHADER_WRITE_BIT,					VK_ACCESS_TRANSFER_READ_BIT,
 			VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,		VK_PIPELINE_STAGE_TRANSFER_BIT,
 			0,											1,
@@ -420,8 +414,8 @@ namespace nap
 		copyImageToBuffer(commandBuffer, mImageData.mImage, buffer.mBuffer, aspect, mDescriptor.mWidth, mDescriptor.mHeight);
 		
 		// Transition back to shader usage
-		utility::transitionImageLayout(commandBuffer, mImageData.mImage,
-			VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL,		VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+		utility::transitionImageLayout(commandBuffer,
+            getHandle(),                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
 			VK_ACCESS_TRANSFER_READ_BIT,				VK_ACCESS_SHADER_WRITE_BIT,
 			VK_PIPELINE_STAGE_TRANSFER_BIT,				VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT,
 			0,											1,
