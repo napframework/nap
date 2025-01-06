@@ -574,7 +574,7 @@ static bool addShaderVariablesRecursive(nap::ShaderVariableStructDeclaration& pa
 
 	for (int index = 0; index < type.member_types.size(); ++index)
 	{
-		auto member_type = compiler.get_type(type.member_types[index]);
+		spirv_cross::SPIRType member_type = compiler.get_type(type.member_types[index]);
 		auto member_size = compiler.get_declared_struct_member_size(type, index);
 
 		auto name = compiler.get_member_name(type.self, index);

@@ -72,8 +72,7 @@ namespace nap
 	static const ShaderVariableDeclaration& getBufferDeclaration(const BufferObjectDeclaration& declaration)
 	{
 		// If a buffer object declaration is passed, we can safely acquire the actual buffer declaration from it
-		const auto* buffer_object_declaration = rtti_cast<const BufferObjectDeclaration>(&declaration);
-		return buffer_object_declaration->getBufferDeclaration();
+		return declaration.getBufferDeclaration();
 	}
 
 
