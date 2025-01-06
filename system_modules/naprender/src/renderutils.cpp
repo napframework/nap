@@ -32,12 +32,21 @@ namespace nap
             VkAttachmentDescription color_attachment = {};
             color_attachment.format = colorFormat;
             color_attachment.samples = samples;
-            color_attachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            color_attachment.storeOp = multi_sample ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
             color_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
             color_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            color_attachment.initialLayout = clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-            color_attachment.finalLayout = !multi_sample ? targetLayout : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			color_attachment.loadOp = clear ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+			color_attachment.initialLayout = clear ? VK_IMAGE_LAYOUT_UNDEFINED : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+			if (!multi_sample)
+			{
+				color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+				color_attachment.finalLayout = targetLayout;
+			}
+			else
+			{
+				color_attachment.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+				color_attachment.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			}
 
             VkAttachmentDescription depth_attachment = {};
             depth_attachment.format = depthFormat;
@@ -97,31 +106,28 @@ namespace nap
                 return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create render pass");
             }
 
-                // Multi-sample render pass
-            else
-            {
-                VkAttachmentDescription resolve_attachment{};
-                resolve_attachment.format = colorFormat;
-                resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
-                resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-                resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-                resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-                resolve_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-                resolve_attachment.finalLayout = targetLayout;
+			// Multi-sample render pass
+			VkAttachmentDescription resolve_attachment = {};
+			resolve_attachment.format = colorFormat;
+			resolve_attachment.samples = VK_SAMPLE_COUNT_1_BIT;
+			resolve_attachment.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			resolve_attachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+			resolve_attachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+			resolve_attachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+			resolve_attachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+			resolve_attachment.finalLayout = targetLayout;
 
-                VkAttachmentReference resolve_attachment_ref{};
-                resolve_attachment_ref.attachment = 2;
-                resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+			VkAttachmentReference resolve_attachment_ref = {};
+			resolve_attachment_ref.attachment = 2;
+			resolve_attachment_ref.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-                subpass.pResolveAttachments = &resolve_attachment_ref;
+			subpass.pResolveAttachments = &resolve_attachment_ref;
 
-                std::array<VkAttachmentDescription, 3> attachments = { color_attachment, depth_attachment, resolve_attachment };
-                renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
-                renderpass_info.pAttachments = attachments.data();
+			std::array<VkAttachmentDescription, 3> attachments = { color_attachment, depth_attachment, resolve_attachment };
+			renderpass_info.attachmentCount = static_cast<uint32_t>(attachments.size());
+			renderpass_info.pAttachments = attachments.data();
 
-                return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
-            }
+			return errorState.check(vkCreateRenderPass(device, &renderpass_info, nullptr, &renderPass) == VK_SUCCESS, "Failed to create multi-sample render pass");
         }
 
 

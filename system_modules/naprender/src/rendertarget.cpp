@@ -19,7 +19,7 @@ RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderTarget, "Color and Depth text
 	RTTI_PROPERTY("SampleShading",			&nap::RenderTarget::mSampleShading,			nap::rtti::EPropertyMetaData::Default,	"Reduces texture aliasing at higher computational cost")
 	RTTI_PROPERTY("Samples",				&nap::RenderTarget::mRequestedSamples,		nap::rtti::EPropertyMetaData::Default,	"Number of MSAA samples to use")
 	RTTI_PROPERTY("ClearColor",				&nap::RenderTarget::mClearColor,			nap::rtti::EPropertyMetaData::Default,	"Initial clear value")
-	RTTI_PROPERTY("Clear",					&nap::RenderTarget::mClear,					nap::rtti::EPropertyMetaData::Default,	"Whether to clear the render target, currently works for single-sample targets only")
+	RTTI_PROPERTY("Clear",					&nap::RenderTarget::mClear,					nap::rtti::EPropertyMetaData::Default,	"Whether to clear the render target")
 RTTI_END_CLASS
 
 namespace nap
@@ -171,18 +171,40 @@ namespace nap
 
 	void RenderTarget::beginRendering()
 	{
-        // Transition image layout to color attachment optimal only when clear is disabled
-        if (!mClear)
+        // Transition target texture image layout to color attachment optimal only when clear is disabled
+		// We would otherwise violate the Vulkan spec when using LOAD_OP_LOAD in the render pass
+		if (!mClear)
         {
-            // This operation requires a non-const image data handle
-            // The image layout must be updated to color attachment as not to violate the Vulkan spec when using LOAD_OP_LOAD in the render pass
-            auto& image_data = mColorTexture->getHandle();
-            utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
-                image_data, VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
-                0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
-                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
-                0, mColorTexture->getMipLevels(),
-                VK_IMAGE_ASPECT_COLOR_BIT);
+			if (mRasterizationSamples == VK_SAMPLE_COUNT_1_BIT)
+			{
+				// When MSAA is disabled, transition the color texture layout
+				// This operation requires a non-const image data handle
+				utility::transitionImageLayout(mRenderService->getCurrentCommandBuffer(),
+					mColorTexture->getHandle(), VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL,
+					0, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT,
+					VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT,
+					0, mColorTexture->getMipLevels(),
+					VK_IMAGE_ASPECT_COLOR_BIT);
+			}
+			else
+			{
+				// When MSAA is enabled, transition the color image
+				VkImageMemoryBarrier barrier = {};
+				barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+				barrier.oldLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+				barrier.newLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+				barrier.image = mColorImage.getImage();
+				barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+				barrier.subresourceRange.baseMipLevel = 0;
+				barrier.subresourceRange.levelCount = 1;
+				barrier.subresourceRange.baseArrayLayer = 0;
+				barrier.subresourceRange.layerCount = 1;
+				barrier.srcAccessMask = 0;
+				barrier.dstAccessMask = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+				vkCmdPipelineBarrier(mRenderService->getCurrentCommandBuffer(), VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, 0, 0, nullptr, 0, nullptr, 1, &barrier);
+			}
         }
 
 		const auto size = mColorTexture->getSize();
