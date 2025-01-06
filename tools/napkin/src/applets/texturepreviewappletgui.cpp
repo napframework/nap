@@ -33,6 +33,7 @@ namespace napkin
 			ImGui::ColorPicker4("Color", mApplet.mClearColor.getData());
 			ImGui::EndMenu();
 		}
+
 		if (ImGui::BeginMenu("Details", loaded_tex != nullptr))
 		{
 			texDetail("Identifier", loaded_tex->mID);
@@ -50,46 +51,19 @@ namespace napkin
 			texDetail("Format", utility::stringFormat(string_VkFormat(loaded_tex->getFormat())));
 			ImGui::EndMenu();
 		}
+
 		if (ImGui::BeginMenu("Controls", loaded_tex != nullptr))
 		{
 			switch (tex_controller.getType())
 			{
 				case LoadTextureComponentInstance::EType::Cubemap:
 				{
-					// Mesh visibility
-					auto& render_mesh_comp = *tex_controller.mFrameCubeComponent->mRenderMeshComponent;
-					bool visible = render_mesh_comp.isVisible();
-					if (ImGui::Checkbox("Show Mesh", &visible))
-						render_mesh_comp.setVisible(!render_mesh_comp.isVisible());
-
-					const auto& meshes = tex_controller.mFrameCubeComponent->getMeshes();
-					std::vector<const char*> labels; labels.reserve(meshes.size());
-					for (const auto& mesh : meshes)
-						labels.emplace_back(mesh.getMesh().mID.c_str());
-
-					// Add mesh combo selection
-					int current_idx = tex_controller.mFrameCubeComponent->getMeshIndex();
-					if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
-						tex_controller.mFrameCubeComponent->setMeshIndex(current_idx);
-
-					// Skybox opacity
-					float opacity = tex_controller.getOpacity();
-					if (ImGui::SliderFloat("Skybox Opacity", &opacity, 0.0f, 1.0f))
-						tex_controller.setOpacity(opacity);
-
-					// Mesh rotation (TODO: Make generic)
-					float rotate_speed = tex_controller.getRotate();
-					if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f, "%.3f", 2.0f))
-						tex_controller.setRotate(rotate_speed);
-
+					updateTextureCube(tex_controller);
 					break;
 				}
 				case LoadTextureComponentInstance::EType::Texture2D:
 				{
-					// Texture opacity
-					float opacity = tex_controller.getOpacity();
-					if (ImGui::SliderFloat("Texture Opacity", &opacity, 0.0f, 1.0f))
-						tex_controller.setOpacity(opacity);
+					updateTexture2D(tex_controller);
 					break;
 				}
 				default:
@@ -142,5 +116,81 @@ namespace napkin
 	{
 		assert(enumerator.is_enumeration());
 		texDetail(std::move(label), enumerator.get_enumeration().value_to_name(argument).data());
+	}
+
+
+	void TexturePreviewAppletGUI::updateTexture2D(LoadTextureComponentInstance& controller)
+	{
+		// Show and set display mode
+		static const std::array<const char*, 2> mode_labels = { "Zoom & Pan", "3D Mesh" };
+		int display_idx = static_cast<int>(controller.mFrame2DTextureComponent->getMode());
+		if (ImGui::Combo("Display Mode", &display_idx, mode_labels.data(), mode_labels.size()))
+			controller.mFrame2DTextureComponent->setMode(
+				static_cast<Frame2DTextureComponentInstance::EMode>(display_idx)
+			);
+
+		// Update based on selected 2D texture display mode
+		switch (static_cast<Frame2DTextureComponentInstance::EMode>(display_idx))
+		{
+			case Frame2DTextureComponentInstance::EMode::Plane:
+			{
+				// Texture opacity
+				float opacity = controller.getOpacity();
+				if (ImGui::SliderFloat("Texture Opacity", &opacity, 0.0f, 1.0f))
+					controller.setOpacity(opacity);
+				break;
+			}
+			case Frame2DTextureComponentInstance::EMode::Mesh:
+			{
+				// Mesh selection labels
+				const auto& meshes = controller.mFrame2DTextureComponent->getMeshes();
+				std::vector<const char*> labels; labels.reserve(meshes.size());
+				for (const auto& mesh : meshes)
+					labels.emplace_back(mesh.getMesh().mID.c_str());
+
+				// Add mesh combo selection
+				int current_idx = controller.mFrame2DTextureComponent->getMeshIndex();
+				if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+					controller.mFrame2DTextureComponent->setMeshIndex(current_idx);
+
+				// Mesh rotation
+				float rotate_speed = controller.getRotate();
+				if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f, "%.3f", 2.0f))
+					controller.setRotate(rotate_speed);
+				break;
+			}
+		default:
+			break;
+		}
+	}
+
+
+	void TexturePreviewAppletGUI::updateTextureCube(LoadTextureComponentInstance& controller)
+	{
+		// Mesh visibility
+		auto& render_mesh_comp = *controller.mFrameCubeComponent->mRenderMeshComponent;
+		bool visible = render_mesh_comp.isVisible();
+		if (ImGui::Checkbox("Show Mesh", &visible))
+			render_mesh_comp.setVisible(!render_mesh_comp.isVisible());
+
+		const auto& meshes = controller.mFrameCubeComponent->getMeshes();
+		std::vector<const char*> labels; labels.reserve(meshes.size());
+		for (const auto& mesh : meshes)
+			labels.emplace_back(mesh.getMesh().mID.c_str());
+
+		// Add mesh combo selection
+		int current_idx = controller.mFrameCubeComponent->getMeshIndex();
+		if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+			controller.mFrameCubeComponent->setMeshIndex(current_idx);
+
+		// Skybox opacity
+		float opacity = controller.getOpacity();
+		if (ImGui::SliderFloat("Skybox Opacity", &opacity, 0.0f, 1.0f))
+			controller.setOpacity(opacity);
+
+		// Mesh rotation
+		float rotate_speed = controller.getRotate();
+		if (ImGui::SliderFloat("Rotation Speed", &rotate_speed, 0.0f, 1.0f, "%.3f", 2.0f))
+			controller.setRotate(rotate_speed);
 	}
 }

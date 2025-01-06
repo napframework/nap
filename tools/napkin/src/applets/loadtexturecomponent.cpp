@@ -157,6 +157,7 @@ namespace napkin
 				mFrameCubeComponent->frame();
 				break;
 			default:
+				assert(false);
 				break;
 		}
 	}
@@ -171,6 +172,7 @@ namespace napkin
 			case EType::Cubemap:
 				return mFrameCubeComponent->getOpacity();
 			default:
+				assert(false);
 				return 1.0f;
 		}
 	}
@@ -182,8 +184,47 @@ namespace napkin
 		{
 		case EType::Cubemap:
 			return mFrameCubeComponent->getRotation();
+		case EType::Texture2D:
+			return mFrame2DTextureComponent->getRotation();
 		default:
+			assert(false);
 			return 0.0f;
+		}
+	}
+
+
+	void LoadTextureComponentInstance::processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window)
+	{
+		switch (getType())
+		{
+		case EType::Texture2D:
+			mFrame2DTextureComponent->processWindowEvents(inputService, window);
+			break;
+		case EType::Cubemap:
+			mFrameCubeComponent->processWindowEvents(inputService, window);
+			break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
+	void LoadTextureComponentInstance::draw(RenderService& renderService, RenderWindow& window)
+	{
+		switch (getType())
+		{
+		case EType::Texture2D:
+			mFrame2DTextureComponent->draw(renderService, window);
+			break;
+		case EType::Cubemap:
+			mFrameCubeComponent->draw(renderService, window);
+			break;
+		case EType::None:
+			break;
+		default:
+			assert(false);
+			break;
 		}
 	}
 
@@ -199,6 +240,7 @@ namespace napkin
 				mFrameCubeComponent->setOpacity(alpha);
 				break;
 			default:
+				assert(false);
 				break;
 		}
 	}
@@ -211,7 +253,11 @@ namespace napkin
 			case EType::Cubemap:
 				mFrameCubeComponent->setRotation(speed);
 				break;
+			case EType::Texture2D:
+				mFrame2DTextureComponent->setRotation(speed);
+				break;
 			default:
+				assert(false);
 				break;
 
 		}

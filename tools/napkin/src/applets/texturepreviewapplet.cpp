@@ -5,17 +5,14 @@
 // Local Includes
 #include "texturepreviewapplet.h"
 #include "loadtexturecomponent.h"
+#include "texturepreviewappletgui.h"
 
 // External Includes
 #include <utility/fileutils.h>
 #include <nap/logger.h>
 #include <inputrouter.h>
-#include <orthocameracomponent.h>
-#include <renderablemeshcomponent.h>
 #include <renderable2dtextcomponent.h>
 #include <apicomponent.h>
-#include <perspcameracomponent.h>
-#include "texturepreviewappletgui.h"
 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(napkin::TexturePreviewApplet)
 	RTTI_CONSTRUCTOR(nap::Core&)
@@ -62,34 +59,6 @@ namespace napkin
 		if (!error.check(mAPIEntity != nullptr, "Missing 'APIEntity'"))
 			return false;
 
-		m2DPlaneTextureEntity = scene->findEntity("2DPlaneTextureEntity");
-		if (!error.check(m2DPlaneTextureEntity != nullptr, "Missing '2DPlaneTextureEntity'"))
-			return false;
-
-		m2DOrthoCameraEntity = scene->findEntity("2DOrthoCameraEntity");
-		if (!error.check(m2DOrthoCameraEntity != nullptr, "Missing '2DOrthoCameraEntity'"))
-			return false;
-
-		m2DMeshTextureEntity = scene->findEntity("2DMeshTextureEntity");
-		if (!error.check(m2DMeshTextureEntity != nullptr, "Missing '2DMeshTextureEntity'"))
-			return false;
-
-		m2DPerspCameraEntity = scene->findEntity("2DPerspCameraEntity");
-		if (!error.check(m2DPerspCameraEntity != nullptr, "Missing '2DPerspCameraEntity'"))
-			return false;
-
-		mCubePerspCameraEntity = scene->findEntity("CubePerspCameraEntity");
-		if (!error.check(mCubePerspCameraEntity != nullptr, "Missing 'CubePerspCameraEntity'"))
-			return false;
-
-		mCubeTextureEntity = scene->findEntity("CubeTextureEntity");
-		if (!error.check(mCubePerspCameraEntity != nullptr, "Missing 'CubeTextureEntity'"))
-			return false;
-
-		mCubeMeshEntity = scene->findEntity("CubeMeshEntity");
-		if (!error.check(mCubeMeshEntity != nullptr, "Missing 'CubeMeshEntity'"))
-			return false;
-
 		// Set data directory to resolve texture load cmds against
 		// TODO: This should be available to the component directly, exposed as an extension to core...
 		auto* load_tex_comp = mAPIEntity->findComponent<LoadTextureComponentInstance>();
@@ -104,26 +73,9 @@ namespace napkin
 	// Update app
 	void TexturePreviewApplet::update(double deltaTime)
 	{
-		// Create an input router, the default one forwards messages to mouse and keyboard input components
-		static nap::DefaultInputRouter input_router;
-
-		// Forward all input events associated with the first window to the in-use camera
-		std::vector<nap::EntityInstance*> entities;
+		// Forward all input events to the current controlling texture component
 		auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
-		switch (tex_controller.getType())
-		{
-			case LoadTextureComponentInstance::EType::Texture2D:
-				mInputService->processWindowEvents(*mRenderWindow, input_router, { m2DOrthoCameraEntity.get() });
-				break;
-			case LoadTextureComponentInstance::EType::Cubemap:
-				mInputService->processWindowEvents(*mRenderWindow, input_router, { mCubePerspCameraEntity.get() });
-				break;
-			case LoadTextureComponentInstance::EType::None:
-				break;
-			default:
-				assert(false);
-				break;
-		}
+		tex_controller.processWindowEvents(*mInputService, *mRenderWindow);
 
 		// update (create) gui
 		mGui->update(deltaTime);
@@ -157,39 +109,14 @@ namespace napkin
 
 			// Draw 2D texture or cubemap based on loaded type
 			auto& tex_controller = mAPIEntity->getComponent<LoadTextureComponentInstance>();
-			switch (tex_controller.getType())
+			if (tex_controller.getType() != LoadTextureComponentInstance::EType::None)
+				tex_controller.draw(*mRenderService, *mRenderWindow);
+			else
 			{
-				case LoadTextureComponentInstance::EType::Texture2D:
-				{
-					// Draw texture using zoom-pan control
-					auto& ortho_2d_cam = m2DOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
-					auto& tex2d_com = m2DPlaneTextureEntity->getComponent<RenderableMeshComponentInstance>();
-					mRenderService->renderObjects(*mRenderWindow, ortho_2d_cam, { &tex2d_com });
-					break;
-				}
-				case LoadTextureComponentInstance::EType::Cubemap:
-				{
-					// Draw cubemap using orbit control
-					auto& persp_cube_cam = mCubePerspCameraEntity->getComponent<PerspCameraComponentInstance>();
-					auto& sky_com = mCubeTextureEntity->getComponent<RenderableComponentInstance>();
-					auto& mes_com = mCubeMeshEntity->getComponent<RenderableComponentInstance>();
-					mRenderService->renderObjects(*mRenderWindow, persp_cube_cam, { &sky_com });
-					mRenderService->renderObjects(*mRenderWindow, persp_cube_cam, { &mes_com });
-					break;
-				}
-				case LoadTextureComponentInstance::EType::None:
-				{
-					// Otherwise notify user we can select a texture
-					Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
-					render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
-					render_text.draw(render_window);
-					break;
-				}
-				default:
-				{
-					assert(false);
-					break;
-				}
+				// Otherwise notify user we can select a texture
+				Renderable2DTextComponentInstance& render_text = mTextEntity->getComponent<nap::Renderable2DTextComponentInstance>();
+				render_text.setLocation({ render_window.getWidthPixels() / 2, render_window.getHeightPixels() / 2 });
+				render_text.draw(render_window);
 			}
 
 			// Render gui to screen

@@ -7,14 +7,19 @@
 // External Includes
 #include <entity.h>
 #include <textureshader.h>
+#include <inputservice.h>
+#include <inputrouter.h>
 
 // nap::appletcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::Frame2DTextureComponent)
 	RTTI_PROPERTY("ZoomPanController",		&napkin::Frame2DTextureComponent::mZoomPanController,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PlaneTransform",			&napkin::Frame2DTextureComponent::mPlaneTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("PlaneRenderer",			&napkin::Frame2DTextureComponent::mPlaneRenderer,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("PlaneCamera",			&napkin::Frame2DTextureComponent::mPlaneCamera,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshRenderer",			&napkin::Frame2DTextureComponent::mMeshRenderer,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("MeshRotateComponent",	&napkin::Frame2DTextureComponent::mRotateComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshCamera",				&napkin::Frame2DTextureComponent::mMeshCamera,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRotate",				&napkin::Frame2DTextureComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshOrbit",				&napkin::Frame2DTextureComponent::mMeshOrbit,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",		&napkin::Frame2DTextureComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Meshes",					&napkin::Frame2DTextureComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -29,16 +34,10 @@ RTTI_END_CLASS
 
 namespace napkin
 {
-	void Frame2DTextureComponent::getDependentComponents(std::vector<rtti::TypeInfo>& components) const
-	{
-		components.emplace_back(RTTI_OF(nap::TransformComponent));
-		components.emplace_back(RTTI_OF(nap::RenderableMeshComponent));
-	}
-
 	bool Frame2DTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
 		//////////////////////////////////////////////////////////////////////////
-		// Orthographic Plane
+		// Orthographic Zoom & Pan Plane
 		//////////////////////////////////////////////////////////////////////////
 
 		// 2D texture sampler input
@@ -59,7 +58,7 @@ namespace napkin
 			return false;
 
 		//////////////////////////////////////////////////////////////////////////
-		// Mesh
+		// Perspective Mesh
 		//////////////////////////////////////////////////////////////////////////
 
 		// Create a link between the material and mesh for every mesh you can select from
@@ -86,16 +85,8 @@ namespace napkin
 			nap::uniform::texture::sampler::colorTexture))
 			return false;
 
-		// UBO
-		ubo_instance = mesh_mat_instance.getOrCreateUniform(uniform::texture::uboStruct);
-		if (!errorState.check(ubo_instance != nullptr, "Missing 2D texture uniform '%s'", uniform::texture::uboStruct))
-			return false;
-
-		// Opacity
-		mMeshOpacity = ubo_instance->getOrCreateUniform<UniformFloatInstance>(uniform::texture::alpha);
-		if (!errorState.check(mMeshOpacity != nullptr, "Missing 2D texture uniform '%s'", uniform::texture::alpha))
-			return false;
-
+		//////////////////////////////////////////////////////////////////////////
+		// Rest...
 		//////////////////////////////////////////////////////////////////////////
 
 		// Texture to use when selection is cleared
@@ -115,7 +106,7 @@ namespace napkin
 
 		// Bind texture to plane and mesh shader
 		assert(mPlaneSampler != nullptr);
-		mPlaneSampler->setTexture(*mSelectedTexture);
+		mPlaneSampler->setTexture(*mSelectedTexture); 
 		assert(mMeshSampler != nullptr);
 		mMeshSampler->setTexture(*mSelectedTexture);
 	}
@@ -123,10 +114,15 @@ namespace napkin
 
 	void Frame2DTextureComponentInstance::frame()
 	{
+		// 2D
 		assert(mPlaneSampler->hasTexture());
 		mZoomPanController->frameTexture(mPlaneSampler->getTexture(), *mPlaneTransform);
 		mPlaneOpacity->setValue(1.0f);
-		mMeshOpacity->setValue(1.0f);
+
+		// Mesh
+		mMeshOrbit->enable({ 0.0f, 0.0f, 3.0f }, { 0.0f, 0.0f, 0.0f });
+		mMeshRotate->reset();
+		mMeshRotate->setSpeed(0.0f);
 	}
 
 
@@ -144,10 +140,6 @@ namespace napkin
 			assert(mPlaneOpacity != nullptr);
 			mPlaneOpacity->setValue(opacity);
 			break;
-		case EMode::Mesh:
-			assert(mMeshOpacity != nullptr);
-			mMeshOpacity->setValue(opacity);
-			break;
 		default:
 			assert(false);
 			break;
@@ -163,9 +155,6 @@ namespace napkin
 			assert(mPlaneOpacity != nullptr);
 			return mPlaneOpacity->getValue();
 			break;
-		case EMode::Mesh:
-			assert(mMeshOpacity != nullptr);
-			return mMeshOpacity->getValue();
 		default:
 			assert(false);
 			break;
@@ -178,5 +167,40 @@ namespace napkin
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
+	}
+
+
+	void Frame2DTextureComponentInstance::processWindowEvents(InputService& inputService, RenderWindow& window)
+	{
+		static nap::DefaultInputRouter input_router;
+		switch (mMode)
+		{
+		case napkin::Frame2DTextureComponentInstance::EMode::Plane:
+			inputService.processWindowEvents(window, input_router, { mPlaneCamera->getEntityInstance() });
+			break;
+		case napkin::Frame2DTextureComponentInstance::EMode::Mesh:
+			inputService.processWindowEvents(window, input_router, { mMeshCamera->getEntityInstance() });
+			break;
+		default:
+			assert(false);
+			break;
+		}
+	}
+
+
+	void Frame2DTextureComponentInstance::draw(RenderService& renderService, RenderWindow& window)
+	{
+		switch (mMode)
+		{
+		case napkin::Frame2DTextureComponentInstance::EMode::Plane:
+			renderService.renderObjects(window, *mPlaneCamera, { mPlaneRenderer.get() });
+			break;
+		case napkin::Frame2DTextureComponentInstance::EMode::Mesh:
+			renderService.renderObjects(window, *mMeshCamera, { mMeshRenderer.get() });
+			break;
+		default:
+			assert(false);
+			break;
+		}
 	}
 }

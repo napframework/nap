@@ -85,17 +85,6 @@ namespace napkin
 		ObjectPtr<EntityInstance> mTextEntity = nullptr;				//< Pointer to the entity that can display text
 		ObjectPtr<EntityInstance> mAPIEntity = nullptr;					//< Pointer to the api entity
 
-		// 2DTexture
-		ObjectPtr<EntityInstance> m2DPlaneTextureEntity = nullptr;		//< Pointer to the 2D plane texture entity
-		ObjectPtr<EntityInstance> m2DOrthoCameraEntity = nullptr;		//< Pointer to the 2D plane ortho camera
-		ObjectPtr<EntityInstance> m2DMeshTextureEntity = nullptr;		//< Pointer to the 2D plane mesh entity
-		ObjectPtr<EntityInstance> m2DPerspCameraEntity = nullptr;		//< Pointer to the 2D plane persp camera 
-
-		// Cubemap
-		ObjectPtr<EntityInstance> mCubeTextureEntity = nullptr;			//< Pointer to the cube texture entity
-		ObjectPtr<EntityInstance> mCubeMeshEntity = nullptr;			//< Pointer to the cube mesh entity
-		ObjectPtr<EntityInstance> mCubePerspCameraEntity = nullptr;		//< Pointer to the cube persp camera entity
-
 		//std::unique_ptr<nap::Texture2D> mActiveTexture = nullptr;		//< Current active texture
 		RGBAColorFloat mClearColor = { 0.0f, 0.0f, 0.0f, 1.0f };		//< Current clear color
 

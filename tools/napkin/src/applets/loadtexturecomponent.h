@@ -113,6 +113,20 @@ namespace napkin
 		 */
 		float getRotate() const;
 
+		/**
+		 * Process window events
+		 * @param inputService the nap input service that holds the events
+		 * @param window the window that received the events
+		 */
+		void processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window);
+
+		/**
+		 * Draw current selection to given window
+		 * @param renderService the render service to use
+		 * @param window the window to render selection to
+		 */
+		void draw(RenderService& renderService, RenderWindow& window);
+
 		// The resolved 2d texture frame component
 		ComponentInstancePtr<Frame2DTextureComponent> mFrame2DTextureComponent = { this, &LoadTextureComponent::mFrame2DTextureComponent };
 

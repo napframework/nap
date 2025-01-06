@@ -8,10 +8,12 @@
 #include <entity.h>
 #include <renderskyboxcomponent.h>
 #include <mathutils.h>
+#include <inputrouter.h>
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
 	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyBoxComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("CameraComponent",		&napkin::FrameCubemapComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mOrbitController,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mRenderMeshComponent,	nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mRotateComponent,		nap::rtti::EPropertyMetaData::Required)
@@ -92,6 +94,21 @@ namespace napkin
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mRenderMeshComponent->setMesh(mMeshes[mMeshIndex]);
+	}
+
+
+	void FrameCubemapComponentInstance::processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window)
+	{
+		static DefaultInputRouter input_router;
+		inputService.processWindowEvents(window, input_router, { mCameraComponent->getEntityInstance() });
+	}
+
+
+	void FrameCubemapComponentInstance::draw(RenderService& renderService, RenderWindow& window)
+	{
+		// First draw skybox, then reflective mesh
+		renderService.renderObjects(window, *mCameraComponent,  { mSkyboxComponent.get() });
+		renderService.renderObjects(window, *mCameraComponent,  { mRenderMeshComponent.get() });
 	}
 }
 

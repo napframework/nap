@@ -12,6 +12,8 @@
 #include <renderskyboxcomponent.h>
 #include <rotatecomponent.h>
 #include <mesh.h>
+#include <inputservice.h>
+#include <renderservice.h>
 
 namespace napkin
 {
@@ -30,9 +32,10 @@ namespace napkin
 		// Properties
 		nap::ComponentPtr<RenderSkyBoxComponent> mSkyBoxComponent;			///< Property: 'SkyboxComponent' the render skybox component
 		nap::ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' the cubemap camera orbit controller
+		nap::ComponentPtr<PerspCameraComponent> mCameraComponent;			///< Property: 'CameraComponent' the cubemap perspective camera
 		nap::ComponentPtr<RenderableMeshComponent> mRenderMeshComponent;	///< Property: 'MeshComponent' the reflective render mesh component
 		nap::ComponentPtr<RotateComponent> mRotateComponent;				///< Property: 'RotateComponent' the rotate component
-		ResourcePtr<nap::TextureCube> mFallbackTexture = nullptr;			///< Property: 'FallbackTexture' the default fallback texture
+		ResourcePtr<nap::TextureCube> mFallbackTexture = nullptr;			///< Property: 'FallbackTexture' the default fall-back texture
 		std::vector<nap::ResourcePtr<IMesh>> mMeshes;						///< Property: 'Meshes' all assignable reflective meshes
 	};
 
@@ -109,6 +112,23 @@ namespace napkin
 		 * @return all the available meshes
 		 */
 		const std::vector<RenderableMesh>& getMeshes() const					{ return mMeshes; }
+
+		/**
+		 * Process received window events (mouse etc.)
+		 * @param inputService the service collecting input events
+		 * @param window the render window
+		 */
+		void processWindowEvents(nap::InputService& inputService, nap::RenderWindow& window);
+
+		/**
+		 * Draws current cubemap and reflective mesh
+		 * @param renderService service to use
+		 * @param window window to render to
+		 */
+		void draw(RenderService& renderService, RenderWindow& window);
+
+		// Perspective camera component link
+		ComponentInstancePtr<PerspCameraComponent> mCameraComponent = { this, &FrameCubemapComponent::mCameraComponent };
 
 		// Orbit controller link
 		ComponentInstancePtr<OrbitController> mOrbitController = { this, &FrameCubemapComponent::mOrbitController };
