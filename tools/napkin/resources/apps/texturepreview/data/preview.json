@@ -7,16 +7,106 @@
                 {
                     "Type": "napkin::Frame2DTextureComponent",
                     "mID": "Frame2DTextureComponent",
-                    "ZoomPanController": "./2DOrthoCameraEntity/2DOrthoCameraPanController",
-                    "PlaneTransform": "./2DTextureEntity/2DTextureTransformComponent",
-                    "PlaneRenderer": "./2DTextureEntity/2DTextureRenderComponent",
-                    "FallbackTexture": "Fallback2DTexture"
+                    "ZoomPanController": "./2DPlaneEntity/2DOrthoCameraEntity/2DOrthoCameraPanController",
+                    "PlaneTransform": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneTransformComponent",
+                    "PlaneRenderer": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneRenderComponent",
+                    "MeshRenderer": "./2DMeshEntity/2DMeshTextureEntity/2DMeshRenderComponent",
+                    "MeshRotateComponent": "./2DMeshEntity/2DMeshTextureEntity/2DMeshRotateComponent",
+                    "FallbackTexture": "Fallback2DTexture",
+                    "Meshes": [
+                        "Sphere",
+                        "Sphere",
+                        "Lucy",
+                        "Toy",
+                        "Box",
+                        "Plane"
+                    ]
                 }
             ],
             "Children": [
-                "2DTextureEntity",
-                "2DOrthoCameraEntity"
+                "2DPlaneEntity",
+                "2DMeshEntity"
             ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DMeshEntity",
+            "Components": [],
+            "Children": [
+                "2DPerspCameraEntity",
+                "2DMeshTextureEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DMeshTextureEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DMeshTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::RenderableMeshComponent",
+                    "mID": "2DMeshRenderComponent",
+                    "Visible": true,
+                    "Tags": [],
+                    "Layer": "",
+                    "Mesh": "Torus",
+                    "MaterialInstance": {
+                        "Uniforms": [],
+                        "Samplers": [],
+                        "Buffers": [],
+                        "Constants": [],
+                        "Material": "2DTextureMaterial",
+                        "BlendMode": "NotSet",
+                        "DepthMode": "NotSet"
+                    },
+                    "LineWidth": 1.0,
+                    "ClipRect": {
+                        "Min": {
+                            "x": 0.0,
+                            "y": 0.0
+                        },
+                        "Max": {
+                            "x": 0.0,
+                            "y": 0.0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::RotateComponent",
+                    "mID": "2DMeshRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.0,
+                        "Offset": 0.0
+                    }
+                }
+            ],
+            "Children": []
         },
         {
             "Type": "nap::Entity",
@@ -82,11 +172,84 @@
         },
         {
             "Type": "nap::Entity",
-            "mID": "2DTextureEntity",
+            "mID": "2DPerspCameraEntity",
+            "Components": [
+                {
+                    "Type": "nap::PerspCameraComponent",
+                    "mID": "2DPerspCameraComponent",
+                    "Properties": {
+                        "FieldOfView": 60.0,
+                        "NearClippingPlane": 0.25,
+                        "FarClippingPlane": 1000.0,
+                        "GridDimensions": {
+                            "x": 1,
+                            "y": 1
+                        },
+                        "GridLocation": {
+                            "x": 0,
+                            "y": 0
+                        }
+                    }
+                },
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DPerspCameraTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 3.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
+                    "Type": "nap::PointerInputComponent",
+                    "mID": "2DPerspCameraInputComponent"
+                },
+                {
+                    "Type": "nap::OrbitController",
+                    "mID": "2DPerspCameraOrbitComponent",
+                    "MovementSpeed": 0.5,
+                    "RotateSpeed": 0.004999999888241291,
+                    "PerspCameraComponent": "./2DPerspCameraComponent",
+                    "LimitZoomDistance": true,
+                    "MinimumZoomDistance": 1.0,
+                    "LookAtPosition": {
+                        "x": 0.0,
+                        "y": 0.0,
+                        "z": 0.0
+                    }
+                }
+            ],
+            "Children": []
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DPlaneEntity",
+            "Components": [],
+            "Children": [
+                "2DPlaneTextureEntity",
+                "2DOrthoCameraEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DPlaneTextureEntity",
             "Components": [
                 {
                     "Type": "nap::TransformComponent",
-                    "mID": "2DTextureTransformComponent",
+                    "mID": "2DPlaneTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 32.0,
@@ -108,7 +271,7 @@
                 },
                 {
                     "Type": "nap::RenderableMeshComponent",
-                    "mID": "2DTextureRenderComponent",
+                    "mID": "2DPlaneRenderComponent",
                     "Visible": true,
                     "Tags": [],
                     "Layer": "",

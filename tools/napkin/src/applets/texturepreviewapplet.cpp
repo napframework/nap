@@ -62,12 +62,20 @@ namespace napkin
 		if (!error.check(mAPIEntity != nullptr, "Missing 'APIEntity'"))
 			return false;
 
-		m2DTextureEntity = scene->findEntity("2DTextureEntity");
-		if (!error.check(m2DTextureEntity != nullptr, "Missing '2DTextureEntity'"))
+		m2DPlaneTextureEntity = scene->findEntity("2DPlaneTextureEntity");
+		if (!error.check(m2DPlaneTextureEntity != nullptr, "Missing '2DPlaneTextureEntity'"))
 			return false;
 
 		m2DOrthoCameraEntity = scene->findEntity("2DOrthoCameraEntity");
-		if (!error.check(m2DOrthoCameraEntity != nullptr, "Missing 'OrthoCameraEntity'"))
+		if (!error.check(m2DOrthoCameraEntity != nullptr, "Missing '2DOrthoCameraEntity'"))
+			return false;
+
+		m2DMeshTextureEntity = scene->findEntity("2DMeshTextureEntity");
+		if (!error.check(m2DMeshTextureEntity != nullptr, "Missing '2DMeshTextureEntity'"))
+			return false;
+
+		m2DPerspCameraEntity = scene->findEntity("2DPerspCameraEntity");
+		if (!error.check(m2DPerspCameraEntity != nullptr, "Missing '2DPerspCameraEntity'"))
 			return false;
 
 		mCubePerspCameraEntity = scene->findEntity("CubePerspCameraEntity");
@@ -155,7 +163,7 @@ namespace napkin
 				{
 					// Draw texture using zoom-pan control
 					auto& ortho_2d_cam = m2DOrthoCameraEntity->getComponent<OrthoCameraComponentInstance>();
-					auto& tex2d_com = m2DTextureEntity->getComponent<RenderableMeshComponentInstance>();
+					auto& tex2d_com = m2DPlaneTextureEntity->getComponent<RenderableMeshComponentInstance>();
 					mRenderService->renderObjects(*mRenderWindow, ortho_2d_cam, { &tex2d_com });
 					break;
 				}

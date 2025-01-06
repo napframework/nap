@@ -94,3 +94,4 @@ namespace napkin
 		mRenderMeshComponent->setMesh(mMeshes[mMeshIndex]);
 	}
 }
+
