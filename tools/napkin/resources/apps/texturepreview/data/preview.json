@@ -18,10 +18,8 @@
                     "FallbackTexture": "Fallback2DTexture",
                     "Meshes": [
                         "Sphere",
-                        "Torus",
-                        "Lucy",
-                        "Toy",
                         "Box",
+                        "Torus",
                         "Plane"
                     ]
                 }
