@@ -30,10 +30,16 @@ namespace napkin
 		DECLARE_COMPONENT(LoadTextureComponent, LoadTextureComponentInstance)
 	public:
 
-		// Signature callback names and arguments
-		static constexpr const char* loadCmd = "LoadTexture";
-		static constexpr const char* loadArg1 = "data";
-		static constexpr const char* loadArg2 = "frame";
+		// Load texture cmd & args
+		static constexpr const char* loadTextureCmd = "LoadTexture";
+		static constexpr const char* loadTextureArg1 = "data";
+		static constexpr const char* loadTextureArg2 = "frame";
+
+		// Load mesh cmd & args
+		static constexpr const char* loadMeshCmd = "LoadMesh";
+		static constexpr const char* loadMeshArg1 = "data";
+
+		// Clear selection args
 		static constexpr const char* clearCmd = "ClearTexture";
 
 		// Properties
@@ -134,17 +140,24 @@ namespace napkin
 		ComponentInstancePtr<FrameCubemapComponent> mFrameCubeComponent = { this, &LoadTextureComponent::mFrameCubemapComponent };
 
 	private:
-		void onLoadRequested(const nap::APIEvent& apiEvent);					//< Loads a texture from JSON
-		nap::Slot<const nap::APIEvent&> mLoadRequestedSlot = { this, &LoadTextureComponentInstance::onLoadRequested };
+		void loadTexture(const nap::APIEvent& apiEvent);						//< Loads a texture from JSON
+		nap::Slot<const nap::APIEvent&> mTextureLoadRequested =					{ this, &LoadTextureComponentInstance::loadTexture };
 
-		void onClearRequested(const nap::APIEvent& apiEvent);					//< Clears texture
-		nap::Slot<const nap::APIEvent&> mClearRequestedSlot = { this, &LoadTextureComponentInstance::onClearRequested };
+		void loadMesh(const nap::APIEvent& apiEvent);							//< Loads a mesh from JSON
+		nap::Slot<const nap::APIEvent&> mMeshLoadRequested =					{ this, &LoadTextureComponentInstance::loadMesh };
+		
+		void clear(const nap::APIEvent& apiEvent);								//< Clears texture
+		nap::Slot<const nap::APIEvent&> mClearRequestedSlot = { this, &LoadTextureComponentInstance::clear };
 
 		nap::APIComponentInstance* mAPIComponent = nullptr;						//< Pointer to the api component
 		std::string mProjectDataDirectory;										//< Data directory to resolve texture load cmds against
 
+		// De-serialized data -> owned by this component
 		std::unique_ptr<nap::Texture2D> mLoaded2DTexture = nullptr;				//< Current active loaded 2D texture
+		std::unique_ptr<nap::IMesh> mLoaded2DMesh = nullptr;					//< Current loaded custom 2D mesh
 		std::unique_ptr<nap::TextureCube> mLoadedCubeTexture = nullptr;			//< Current active loaded Cube texture
+		std::unique_ptr<nap::IMesh> mLoadedCubeMesh = nullptr;					//< Current active loaded Cube mesh
+
 		nap::Texture* mActiveTexture = nullptr;									//< Selected active texture handle
 	};
 }

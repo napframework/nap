@@ -114,6 +114,19 @@ namespace napkin
 		const std::vector<RenderableMesh>& getMeshes() const					{ return mMeshes; }
 
 		/**
+		 * @return if there is a custom mesh
+		 */
+		bool hasCustomMesh() const;
+
+		/**
+		 * Set and select custom mesh
+		 * @param mesh to set
+		 * @param error contains the error when the match can't be set and selected
+		 * @return if the custom has been set and selected
+		 */
+		bool setCustomMesh(IMesh& mesh, utility::ErrorState& error);
+
+		/**
 		 * Process received window events (mouse etc.)
 		 * @param inputService the service collecting input events
 		 * @param window the render window

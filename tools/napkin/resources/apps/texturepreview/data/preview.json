@@ -310,7 +310,8 @@
                     "mID": "APIComponent",
                     "Signatures": [
                         "LoadTexture",
-                        "ClearTexture"
+                        "ClearTexture",
+                        "LoadMesh"
                     ]
                 },
                 {
@@ -921,13 +922,13 @@
                     "Arguments": [
                         {
                             "Type": "nap::APIString",
-                            "mID": "APIString",
+                            "mID": "textureDataArg",
                             "Name": "data",
                             "Value": ""
                         },
                         {
                             "Type": "nap::APIBool",
-                            "mID": "APIBool",
+                            "mID": "textureClearArg",
                             "Name": "frame",
                             "Value": true
                         }
@@ -937,6 +938,18 @@
                     "Type": "nap::APISignature",
                     "mID": "ClearTexture",
                     "Arguments": []
+                },
+                {
+                    "Type": "nap::APISignature",
+                    "mID": "LoadMesh",
+                    "Arguments": [
+                        {
+                            "Type": "nap::APIString",
+                            "mID": "meshDataArg",
+                            "Name": "data",
+                            "Value": ""
+                        }
+                    ]
                 }
             ],
             "Children": []

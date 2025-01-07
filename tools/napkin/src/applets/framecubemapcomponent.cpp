@@ -9,6 +9,7 @@
 #include <renderskyboxcomponent.h>
 #include <mathutils.h>
 #include <inputrouter.h>
+#include <renderglobals.h>
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
@@ -94,6 +95,35 @@ namespace napkin
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mRenderMeshComponent->setMesh(mMeshes[mMeshIndex]);
+	}
+
+
+	bool FrameCubemapComponentInstance::hasCustomMesh() const
+	{
+		return mMeshes.size() > getComponent<FrameCubemapComponent>()->mMeshes.size();
+	}
+
+
+	bool FrameCubemapComponentInstance::setCustomMesh(IMesh& mesh, utility::ErrorState& error)
+	{
+		// Catch most obvious explicit error -> missing uv attribute
+		if (!error.check(mesh.getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) != nullptr,
+			"Unable to bind texture, '%s' has no % s vertex attribute", mesh.mID.c_str(), vertexid::normal))
+			return false;
+
+		// Try and create a render-able mesh
+		RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(mesh, error);
+		if (!render_mesh.isValid())
+			return false;
+
+		// Pop and add
+		if (hasCustomMesh())
+			mMeshes.pop_back();
+		mMeshes.emplace_back(render_mesh);
+
+		// Select
+		setMeshIndex(mMeshes.size() - 1);
+		return true;
 	}
 
 

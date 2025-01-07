@@ -137,6 +137,19 @@ namespace napkin
 		float getRotation() const								{ return mMeshRotate->getSpeed(); }
 
 		/**
+		 * Set and select custom mesh
+		 * @param mesh to set
+		 * @param error contains the error when the match can't be set and selected
+		 * @return if the custom has been set and selected
+		 */
+		bool setCustomMesh(IMesh& mesh, utility::ErrorState& error);
+
+		/**
+		 * @return if there is a custom mesh
+		 */
+		bool hasCustomMesh() const;
+
+		/**
 		 * Process window events
 		 */
 		void processWindowEvents(InputService& inputService, RenderWindow& window);

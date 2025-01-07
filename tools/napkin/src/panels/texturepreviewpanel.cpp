@@ -12,7 +12,7 @@
 namespace napkin
 {
 	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget("Texture Preview",
-		{ RTTI_OF(nap::Texture) }, parent)
+		{ RTTI_OF(nap::Texture), RTTI_OF(nap::IMesh)}, parent)
 	{
 		// Create render resources on project load
 		connect(&AppContext::get(), &AppContext::projectLoaded, this, &TexturePreviewPanel::init);
@@ -44,15 +44,26 @@ namespace napkin
 			return;
 		}
 
-		// Send as command to applet
-		nap::APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadCmd);
-		load_tex_event->addArgument<nap::APIString>(LoadTextureComponent::loadArg1, writer.GetJSON());
-		load_tex_event->addArgument<nap::APIBool>(LoadTextureComponent::loadArg2,
-			mLoadedObject != path.getObject());
-		mRunner.sendEvent(std::move(load_tex_event));
+		// Send event
+		nap::APIEventPtr load_event = nullptr;
+		if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Texture)))
+		{
+			// Create load event
+			bool frame = mLoadedTexture != path.getObject();
+			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadTextureCmd);
+			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadTextureArg1, writer.GetJSON());
+			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame);
 
-		// Cache so we know if we need to re-frame if it's new
-		mLoadedObject = path.getObject();
+			// Cache so we know if we need to re-frame if it's new
+			mLoadedTexture = path.getObject();
+		}
+		else
+		{
+			assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IMesh)));
+			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadMeshCmd);
+			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
+		}
+		mRunner.sendEvent(std::move(load_event));
 	}
 
 

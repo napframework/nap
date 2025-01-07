@@ -11,6 +11,7 @@
 #include <rtti/jsonreader.h>
 #include <nap/core.h>
 #include <nap/logger.h>
+#include <renderglobals.h>
 
 // nap::loadtexturecomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::LoadTextureComponent)
@@ -50,25 +51,30 @@ namespace napkin
 		if (!errorState.check(mAPIComponent != nullptr, "Missing API component"))
 			return false;
 
-		const auto* load_sig = mAPIComponent->findSignature(LoadTextureComponent::loadCmd);
-		if (!errorState.check(load_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::loadCmd))
+		const auto* load_texture_sig = mAPIComponent->findSignature(LoadTextureComponent::loadTextureCmd);
+		if (!errorState.check(load_texture_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::loadTextureCmd))
 			return false;
 
 		const auto* clear_sig = mAPIComponent->findSignature(LoadTextureComponent::clearCmd);
 		if (!errorState.check(clear_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::clearCmd))
 			return false;
 
+		const auto* load_mesh_sig = mAPIComponent->findSignature(LoadTextureComponent::loadMeshCmd);
+		if (!errorState.check(load_mesh_sig != nullptr, "Missing '%s' cmd signature", LoadTextureComponent::loadMeshCmd))
+			return false;
+
 		// Register api cmd listeners
-		mAPIComponent->registerCallback(*load_sig, mLoadRequestedSlot);
+		mAPIComponent->registerCallback(*load_texture_sig, mTextureLoadRequested);
+		mAPIComponent->registerCallback(*load_mesh_sig, mMeshLoadRequested);
 		mAPIComponent->registerCallback(*clear_sig, mClearRequestedSlot);
 
 		return true;
 	}
 
 
-	void LoadTextureComponentInstance::onLoadRequested(const nap::APIEvent& apiEvent)
+	void LoadTextureComponentInstance::loadTexture(const nap::APIEvent& apiEvent)
 	{
-		auto* data_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadArg1);
+		auto* data_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadTextureArg1);
 		assert(data_arg != nullptr);
 
 		// De-serialize JSON
@@ -77,7 +83,7 @@ namespace napkin
 		if (!rtti::deserializeJSON(data_arg->asString(), rtti::EPropertyValidationMode::DisallowMissingProperties,
 			rtti::EPointerPropertyMode::OnlyRawPointers, core.getResourceManager()->getFactory(), result, error))
 		{
-			error.fail("%s cmd failed", LoadTextureComponent::loadCmd);
+			error.fail("%s cmd failed", LoadTextureComponent::loadTextureCmd);
 			nap::Logger::error(error.toString());
 			return;
 		}
@@ -85,7 +91,7 @@ namespace napkin
 		// Ensure there's at least 1 object and it's of type texture
 		if (result.mReadObjects.size() == 0)
 		{
-			nap::Logger::error("%s cmd failed: invalid payload", LoadTextureComponent::loadCmd);
+			nap::Logger::error("%s cmd failed: invalid payload", LoadTextureComponent::loadTextureCmd);
 			return;
 		}
 
@@ -93,13 +99,13 @@ namespace napkin
 		if (!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) &&
 			!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::TextureCube)))
 		{
-			nap::Logger::error("%s cmd failed: unsupported texture type", LoadTextureComponent::loadCmd);
+			nap::Logger::error("%s cmd failed: unsupported texture type", LoadTextureComponent::loadTextureCmd);
 			return;
 		}
 
 		// Warn if there's more than 1 object and store
 		if (result.mReadObjects.size() > 1)
-			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", LoadTextureComponent::loadCmd);
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", LoadTextureComponent::loadTextureCmd);
 
 		// Init texture relative to project data directory (thread-safe)
 		{
@@ -107,7 +113,7 @@ namespace napkin
 			napkin::CWDHandle cwd_handle(mProjectDataDirectory);
 			if (!result.mReadObjects[0]->init(error))
 			{
-				nap::Logger::error(error.toString());
+				nap::Logger::error(error.toString().c_str());
 				return;
 			}
 		}
@@ -131,11 +137,91 @@ namespace napkin
 			mActiveTexture = mLoadedCubeTexture.get();
 		}
 
-		// Check if we need to reset camera if requested
-		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadArg2);
+		// Check if we need to re-frame camera if requested
+		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadTextureArg2);
 		assert(frame_arg != nullptr);
 		if (frame_arg->asBool())
 			frame();
+	}
+
+
+	void LoadTextureComponentInstance::loadMesh(const nap::APIEvent& apiEvent)
+	{
+		// Bail if no texture is loaded
+		if (getType() == EType::None)
+		{
+			nap::Logger::warn("%s cmd failed: can't assign mesh, no texture loaded", LoadTextureComponent::loadMeshCmd);
+			return;
+		}
+
+		// Get mesh data
+		auto* data_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadMeshArg1);
+		assert(data_arg != nullptr);
+
+		// De-serialize mesh
+		nap::Core& core = *getEntityInstance()->getCore();
+		utility::ErrorState error; rtti::DeserializeResult result;
+		if (!rtti::deserializeJSON(data_arg->asString(), rtti::EPropertyValidationMode::DisallowMissingProperties,
+			rtti::EPointerPropertyMode::OnlyRawPointers, core.getResourceManager()->getFactory(), result, error))
+		{
+			error.fail("%s cmd failed", LoadTextureComponent::loadMeshCmd);
+			nap::Logger::error(error.toString());
+			return;
+		}
+
+		// Ensure type is a mesh
+		if (!result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(nap::IMesh)))
+		{
+			nap::Logger::error("%s cmd failed: unsupported type", LoadTextureComponent::loadMeshCmd);
+			return;
+		}
+
+		// Warn if there's more than 1 object and store
+		if (result.mReadObjects.size() > 1)
+			nap::Logger::warn("%s cmd holds multiple objects, initializing first one...", LoadTextureComponent::loadMeshCmd);
+
+		// Init mesh relative to project data directory (thread-safe)
+		{
+			assert(!mProjectDataDirectory.empty());
+			napkin::CWDHandle cwd_handle(mProjectDataDirectory);
+			if (!result.mReadObjects[0]->init(error))
+			{
+				nap::Logger::error(error.toString().c_str());
+				return;
+			}
+		}
+
+		// Select and set mesh based on selected type
+		auto new_mesh = rtti_cast<nap::IMesh>(result.mReadObjects[0]);
+		switch (getType())
+		{
+			case EType::Texture2D:
+			{
+				// Make sure the mesh has a uv channel to bind to
+				if (!mFrame2DTextureComponent->setCustomMesh(*new_mesh, error))
+				{
+					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
+					break;
+				}
+				mLoaded2DMesh = std::move(new_mesh);
+				break;
+			}
+			case EType::Cubemap:
+			{
+				if (!mFrameCubeComponent->setCustomMesh(*new_mesh, error))
+				{
+					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
+					break;
+				}
+				mLoadedCubeMesh = std::move(new_mesh);
+				break;
+			}
+			default:
+			{
+				assert(false);
+				break;
+			}
+		}
 	}
 
 
@@ -259,12 +345,11 @@ namespace napkin
 			default:
 				assert(false);
 				break;
-
 		}
 	}
 
 
-	void LoadTextureComponentInstance::onClearRequested(const nap::APIEvent& apiEvent)
+	void LoadTextureComponentInstance::clear(const nap::APIEvent& apiEvent)
 	{
 		mActiveTexture = nullptr;
 	}
