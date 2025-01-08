@@ -32,6 +32,15 @@ RTTI_END_CLASS
 
 namespace napkin
 {
+	FrameCubemapComponentInstance::~FrameCubemapComponentInstance()
+	{
+		// Explicitly destroy resource -> unregisters itself with the service
+		// TODO: This should happen automatic when texture is destroyed when manually created
+		if (mTexture != nullptr)
+			mTexture->onDestroy();
+		mTexture.reset(nullptr);
+	}
+
 
 	bool FrameCubemapComponentInstance::init(utility::ErrorState& errorState)
 	{
@@ -68,6 +77,45 @@ namespace napkin
 	}
 
 
+	void FrameCubemapComponentInstance::load(std::unique_ptr<TextureCube> texure)
+	{
+		// Bind new texture
+		bind(*texure);
+
+		// Explicitly destroy resource -> unregisters itself with the service
+		// TODO: This should happen automatic when texture is destroyed when manually created
+		if (mTexture != nullptr)
+			mTexture->onDestroy();
+
+		// Replace active texture
+		mTexture = std::move(texure);
+	}
+
+
+	bool FrameCubemapComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
+	{
+		// Catch most obvious explicit error -> missing uv attribute
+		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) != nullptr,
+			"Unable to bind texture, '%s' has no % s vertex attribute", mesh->mID.c_str(), vertexid::normal))
+			return false;
+
+		// Try and create a render-able mesh
+		RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(*mesh, error);
+		if (!render_mesh.isValid())
+			return false;
+
+		// Pop and add
+		if (hasMeshLoaded())
+			mMeshes.pop_back();
+		mMeshes.emplace_back(render_mesh);
+		mMesh = std::move(mesh);
+
+		// Select
+		setMeshIndex(mMeshes.size() - 1);
+		return true;
+	}
+
+
 	void FrameCubemapComponentInstance::bind(TextureCube& texture)
 	{
 		mSkyboxComponent->setTexture(texture);
@@ -86,8 +134,13 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::clear()
 	{
-		mSkyboxComponent->setTexture(*mTextureFallback);
-		mReflectiveCubeSampler->setTexture(*mTextureFallback);
+		bind(*mTextureFallback);
+	}
+
+
+	const nap::TextureCube& FrameCubemapComponentInstance::getTexture() const
+	{
+		return mSkyboxComponent->getTexture();
 	}
 
 
@@ -98,32 +151,9 @@ namespace napkin
 	}
 
 
-	bool FrameCubemapComponentInstance::hasCustomMesh() const
+	bool FrameCubemapComponentInstance::hasMeshLoaded() const
 	{
-		return mMeshes.size() > getComponent<FrameCubemapComponent>()->mMeshes.size();
-	}
-
-
-	bool FrameCubemapComponentInstance::setCustomMesh(IMesh& mesh, utility::ErrorState& error)
-	{
-		// Catch most obvious explicit error -> missing uv attribute
-		if (!error.check(mesh.getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) != nullptr,
-			"Unable to bind texture, '%s' has no % s vertex attribute", mesh.mID.c_str(), vertexid::normal))
-			return false;
-
-		// Try and create a render-able mesh
-		RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(mesh, error);
-		if (!render_mesh.isValid())
-			return false;
-
-		// Pop and add
-		if (hasCustomMesh())
-			mMeshes.pop_back();
-		mMeshes.emplace_back(render_mesh);
-
-		// Select
-		setMeshIndex(mMeshes.size() - 1);
-		return true;
+		return mMesh != nullptr;
 	}
 
 
@@ -141,4 +171,3 @@ namespace napkin
 		renderService.renderObjects(window, *mCameraComponent,  { mRenderMeshComponent.get() });
 	}
 }
-

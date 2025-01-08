@@ -72,27 +72,19 @@ namespace napkin
 		LoadTextureComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)					{ }
 
-		// Destructor
-		virtual ~LoadTextureComponentInstance() override;
-
 		// Init
 		virtual bool init(utility::ErrorState& errorState) override;
-
-		/**
-		 * @return if this component loaded a texture
-		 */
-		bool hasTexture() const									{ return mActiveTexture != nullptr; }
-
-		/**
-		 * @return current loaded texture, nullptr if no texture is loaded
-		 */
-		nap::Texture* getTexture() const						{ return mActiveTexture; }
 
 		/**
 		 * Current loaded texture type
 		 * @return loaded texture type, none when no texture is loaded
 		 */
-		LoadTextureComponentInstance::EType getType() const;
+		LoadTextureComponentInstance::EType getType() const { return mSelectedType; }
+
+		/**
+		 * @return current selected and loaded texture, nullptr if no texture is loaded
+		 */
+		const Texture* getTexture() const;
 
 		/**
 		 * Frames current selection
@@ -147,18 +139,12 @@ namespace napkin
 		nap::Slot<const nap::APIEvent&> mMeshLoadRequested =					{ this, &LoadTextureComponentInstance::loadMesh };
 		
 		void clear(const nap::APIEvent& apiEvent);								//< Clears texture
-		nap::Slot<const nap::APIEvent&> mClearRequestedSlot = { this, &LoadTextureComponentInstance::clear };
+		nap::Slot<const nap::APIEvent&> mClearRequestedSlot =					{ this, &LoadTextureComponentInstance::clear };
 
 		nap::APIComponentInstance* mAPIComponent = nullptr;						//< Pointer to the api component
 		std::string mProjectDataDirectory;										//< Data directory to resolve texture load cmds against
 
-		// De-serialized data -> owned by this component
-		std::unique_ptr<nap::Texture2D> mLoaded2DTexture = nullptr;				//< Current active loaded 2D texture
-		std::unique_ptr<nap::IMesh> mLoaded2DMesh = nullptr;					//< Current loaded custom 2D mesh
-		std::unique_ptr<nap::TextureCube> mLoadedCubeTexture = nullptr;			//< Current active loaded Cube texture
-		std::unique_ptr<nap::IMesh> mLoadedCubeMesh = nullptr;					//< Current active loaded Cube mesh
-
-		nap::Texture* mActiveTexture = nullptr;									//< Selected active texture handle
+		// Current selected type
+		EType mSelectedType = EType::None;
 	};
 }
-

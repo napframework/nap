@@ -51,7 +51,6 @@ namespace napkin
 	{
 		RTTI_ENABLE(nap::ComponentInstance)
 	public:
-
 		// Display mode
 		enum class EMode : uint8
 		{
@@ -59,8 +58,12 @@ namespace napkin
 			Mesh	= 1			///< Perspective mesh projection (sphere, cube etc..)
 		};
 
+		// Constructor
 		Frame2DTextureComponentInstance(EntityInstance& entity, Component& resource) :
-			ComponentInstance(entity, resource)									{ }
+			ComponentInstance(entity, resource)					{ }
+
+		// Destructor
+		virtual ~Frame2DTextureComponentInstance()				{ mTexture.reset(nullptr); }
 
 		/**
 		 * Initialize this component
@@ -70,11 +73,27 @@ namespace napkin
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Bind a 2D texture
-		 * @param texture the texture to bind
-		 * @param frame if the texture is framed in the window
+		 * Loads and binds a 2D texture.
+		 * Ownership is transferred to this component
+		 * @param texture to load
 		 */
-		void bind(Texture2D& texture);
+		void load(std::unique_ptr<Texture2D> texure);
+
+		/**
+		 * Loads and selects a 3D mesh.
+		 * Ownership is transferred to this component.
+		 * Note that the load fails when the mesh is incompatible with texture material,
+		 * in that case the mesh is immediately destroyed.
+		 * @param mesh the mesh to load and select
+		 * @param error contains the error if loading fails
+		 * @return if the mesh is loaded and selected
+		 */
+		bool load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error);
+
+		/**
+		 * @return if there is a custom mesh
+		 */
+		bool hasMeshLoaded() const								{ return mMesh != nullptr; }
 
 		/**
 		 * Scales and positions current texture to perfectly fit in the viewport.
@@ -84,7 +103,13 @@ namespace napkin
 		/**
 		 * Reverts to fall-back texture
 		 */
-		void clear();
+		void clear()											{ bind(*mTextureFallback); }
+
+		/**
+		 * Current assigned texture, either the fall-back or loaded texture
+		 * @return current assigned texture
+		 */
+		const Texture2D& getTexture() const;
 
 		/**
 		 * @return current projection mode
@@ -137,19 +162,6 @@ namespace napkin
 		float getRotation() const								{ return mMeshRotate->getSpeed(); }
 
 		/**
-		 * Set and select custom mesh
-		 * @param mesh to set
-		 * @param error contains the error when the match can't be set and selected
-		 * @return if the custom has been set and selected
-		 */
-		bool setCustomMesh(IMesh& mesh, utility::ErrorState& error);
-
-		/**
-		 * @return if there is a custom mesh
-		 */
-		bool hasCustomMesh() const;
-
-		/**
 		 * Process window events
 		 */
 		void processWindowEvents(InputService& inputService, RenderWindow& window);
@@ -186,7 +198,15 @@ namespace napkin
 		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &Frame2DTextureComponent::mMeshOrbit };
 
 	private:
-		Texture2D* mSelectedTexture = nullptr;
+
+		/**
+		 * Bind a 2D texture
+		 * @param texture the texture to bind
+		 */
+		void bind(Texture2D& texture);
+
+		std::unique_ptr<Texture2D> mTexture;
+		std::unique_ptr<IMesh> mMesh;
 		Texture2D* mTextureFallback = nullptr;
 		Sampler2DInstance* mPlaneSampler = nullptr;
 		UniformFloatInstance* mPlaneOpacity = nullptr;

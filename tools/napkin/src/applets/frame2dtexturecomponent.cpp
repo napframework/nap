@@ -100,16 +100,44 @@ namespace napkin
 	}
 
 
+	void Frame2DTextureComponentInstance::load(std::unique_ptr<Texture2D> texure)
+	{
+		bind(*texure);
+		mTexture = std::move(texure);
+	}
+
+
+	bool Frame2DTextureComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
+	{
+		// Catch most obvious explicit error -> missing uv attribute
+		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::uv) != nullptr,
+			"Unable to bind texture, '%s' has no % s vertex attribute", mesh->mID.c_str(), vertexid::uv))
+			return false;
+
+		// Try and create a render-able mesh
+		RenderableMesh render_mesh = mMeshRenderer->createRenderableMesh(*mesh, error);
+		if (!render_mesh.isValid())
+			return false;
+
+		// Replace custom mesh
+		if (hasMeshLoaded())
+			mMeshes.pop_back();
+		mMeshes.emplace_back(render_mesh); 
+		mMesh = std::move(mesh);
+
+		// Select
+		setMeshIndex(mMeshes.size() - 1);
+		return true;
+	}
+
+
 	void Frame2DTextureComponentInstance::bind(Texture2D& texture)
 	{
-		// Move texture into ours
-		mSelectedTexture = &texture;
-
 		// Bind texture to plane and mesh shader
 		assert(mPlaneSampler != nullptr);
-		mPlaneSampler->setTexture(*mSelectedTexture); 
+		mPlaneSampler->setTexture(texture); 
 		assert(mMeshSampler != nullptr);
-		mMeshSampler->setTexture(*mSelectedTexture);
+		mMeshSampler->setTexture(texture);
 	}
 
 
@@ -127,9 +155,10 @@ namespace napkin
 	}
 
 
-	void Frame2DTextureComponentInstance::clear()
+	const Texture2D& Frame2DTextureComponentInstance::getTexture() const
 	{
-		bind(*mTextureFallback);
+		assert(mPlaneSampler != nullptr && mPlaneSampler->hasTexture());
+		return mPlaneSampler->getTexture();
 	}
 
 
@@ -168,35 +197,6 @@ namespace napkin
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
-	}
-
-
-	bool Frame2DTextureComponentInstance::setCustomMesh(IMesh& mesh, utility::ErrorState& error)
-	{
-		// Catch most obvious explicit error -> missing uv attribute
-		if (!error.check(mesh.getMeshInstance().findAttribute<glm::vec3>(vertexid::uv) != nullptr,
-			"Unable to bind texture, '%s' has no % s vertex attribute", mesh.mID.c_str(), vertexid::uv))
-			return false;
-
-		// Try and create a render-able mesh
-		RenderableMesh render_mesh = mMeshRenderer->createRenderableMesh(mesh, error);
-		if (!render_mesh.isValid())
-			return false;
-
-		// Pop and add
-		if (hasCustomMesh())
-			mMeshes.pop_back();
-		mMeshes.emplace_back(render_mesh);
-
-		// Select
-		setMeshIndex(mMeshes.size() - 1);
-		return true;
-	}
-
-
-	bool Frame2DTextureComponentInstance::hasCustomMesh() const
-	{
-		return mMeshes.size() > getComponent<Frame2DTextureComponent>()->mMeshes.size();
 	}
 
 

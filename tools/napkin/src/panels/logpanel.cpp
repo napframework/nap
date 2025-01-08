@@ -43,31 +43,28 @@ LogModel::LogModel() : QStandardItemModel()
 
 void LogModel::onLog(nap::LogMessage msg)
 {
-	auto levelname = QString::fromStdString(msg.level().name());
-	auto logtext = QString::fromStdString(msg.text());
-
+	auto level_name = QString::fromStdString(msg.level().name());
+	auto log_text = QString::fromStdString(msg.text());
 
 	QRegularExpression re("([a-z]+:(\\/\\/)[^\\s&^'&^\"]+)");
-	auto levelitem = new LevelItem(msg);
-	levelitem->setEditable(false);
-	auto textitem = new LogTextItem(msg);
-	textitem->setToolTip(logtext);
-	textitem->setEditable(false);
+	auto level_item = new LevelItem(msg);
+	level_item->setEditable(false);
+	auto text_item = new LogTextItem(msg);
+	text_item->setToolTip(log_text);
+	text_item->setEditable(false);
 
 	auto match = re.match(QString::fromStdString(msg.text()));
 	if (match.hasMatch())
 	{
-		textitem->setLink(match.captured(1));
-		auto font = textitem->font();
+		text_item->setLink(match.captured(1));
+		auto font = text_item->font();
 		font.setUnderline(true);
-		textitem->setFont(font);
+		text_item->setFont(font);
 	}
 
-	appendRow({levelitem, textitem});
-
-	// Keep maximum amount of rows
-	while (rowCount() > mMaxRows)
-		removeRow(0);
+	// Add and limit
+	appendRow({level_item, text_item});
+	removeRows(0, nap::math::max<int>(rowCount() - mMaxRows, 0));
 }
 
 

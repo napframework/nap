@@ -50,19 +50,32 @@ namespace napkin
 		FrameCubemapComponentInstance(EntityInstance& entity, Component& resource) :
 			ComponentInstance(entity, resource)									{ }
 
+		virtual ~FrameCubemapComponentInstance();
+
 		/**
-		 * Initialize this compnent
+		 * Initialize this component
 		 * @param errorState the error message when initialization fails
 		 * @return if the component initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * Bind a Cubemap texture
-		 * @param texture the texture to bind
-		 * @param frame if the texture is framed in the window
+		 * Loads and binds a cubemap texture.
+		 * Ownership is transferred to this component
+		 * @param texture to load
 		 */
-		void bind(TextureCube& texture);
+		void load(std::unique_ptr<TextureCube> texure);
+
+		/**
+		 * Loads and selects a 3D reflective mesh.
+		 * Ownership is transferred to this component.
+		 * Note that the load fails when the mesh is incompatible with the material,
+		 * in that case the mesh is immediately destroyed.
+		 * @param mesh the mesh to load and select
+		 * @param error contains the error if loading fails
+		 * @return if the mesh is loaded and selected
+		 */
+		bool load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error);
 
 		/**
 		 * Scales and positions current texture to perfectly fit in the viewport.
@@ -73,6 +86,12 @@ namespace napkin
 		 * Reverts to fall-back texture
 		 */
 		void clear();
+
+		/**
+		 * Current assigned texture, either the fall-back or loaded texture
+		 * @return current assigned texture
+		 */
+		const TextureCube& getTexture() const;
 
 		/**
 		 * Sets the cubemap opacity
@@ -114,17 +133,9 @@ namespace napkin
 		const std::vector<RenderableMesh>& getMeshes() const					{ return mMeshes; }
 
 		/**
-		 * @return if there is a custom mesh
+		 * @return if there is a custom mesh loaded and selectable
 		 */
-		bool hasCustomMesh() const;
-
-		/**
-		 * Set and select custom mesh
-		 * @param mesh to set
-		 * @param error contains the error when the match can't be set and selected
-		 * @return if the custom has been set and selected
-		 */
-		bool setCustomMesh(IMesh& mesh, utility::ErrorState& error);
+		bool hasMeshLoaded() const;
 
 		/**
 		 * Process received window events (mouse etc.)
@@ -155,16 +166,13 @@ namespace napkin
 		// Rotate component link
 		ComponentInstancePtr<RotateComponent> mRotateComponent = { this, &FrameCubemapComponent::mRotateComponent };
 
-		// Fallback texture
-		TextureCube* mTextureFallback = nullptr;
-
-		// Reflective cube sampler
-		SamplerCubeInstance* mReflectiveCubeSampler = nullptr;
-
-		//< All meshes to select from
-		std::vector<RenderableMesh> mMeshes;
-
-		// Mesh idx
-		int mMeshIndex = 0;
+	private:
+		TextureCube* mTextureFallback = nullptr;					//< Fall-back texture (managed by resource manager)
+		std::unique_ptr<nap::TextureCube> mTexture = nullptr;		//< Current active loaded Cube texture
+		std::unique_ptr<nap::IMesh> mMesh = nullptr;				//< Current active loaded Cube mesh
+		SamplerCubeInstance* mReflectiveCubeSampler = nullptr;		//< Reflective cube sampler
+		std::vector<RenderableMesh> mMeshes;						//< All meshes to select from
+		int mMeshIndex = 0;											//< Selected mesh index
+		void bind(TextureCube& texture);							//< Binds a cubemap texture
 	};
 }

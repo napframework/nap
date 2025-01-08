@@ -35,16 +35,6 @@ namespace napkin
 	}
 
 
-	LoadTextureComponentInstance::~LoadTextureComponentInstance()
-	{
-		if (mLoadedCubeTexture != nullptr)
-			mLoadedCubeTexture->onDestroy();
-
-		mLoadedCubeTexture.reset(nullptr);
-		mLoaded2DTexture.reset(nullptr);
-	}
-
-
 	bool LoadTextureComponentInstance::init(utility::ErrorState& errorState)
 	{
 		mAPIComponent = getEntityInstance()->findComponent<APIComponentInstance>();
@@ -121,20 +111,16 @@ namespace napkin
 		// Select and bind as active texture
 		if (result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(Texture2D)))
 		{
-			mLoaded2DTexture = rtti_cast<nap::Texture2D>(result.mReadObjects[0]);
-			mFrame2DTextureComponent->bind(*mLoaded2DTexture);
-			mActiveTexture = mLoaded2DTexture.get();
+			std::unique_ptr<Texture2D> tex = rtti_cast<Texture2D>(result.mReadObjects[0]);
+			mFrame2DTextureComponent->load(std::move(tex));
+			mSelectedType = EType::Texture2D;
 		}
 		else
 		{
-			// Explicitly destroy resource -> unregisters itself with the service
-			if (mLoadedCubeTexture != nullptr)
-				mLoadedCubeTexture->onDestroy();
-
-			mLoadedCubeTexture = rtti_cast<nap::TextureCube>(result.mReadObjects[0]);
-			assert(mLoadedCubeTexture != nullptr);
-			mFrameCubeComponent->bind(*mLoadedCubeTexture);
-			mActiveTexture = mLoadedCubeTexture.get();
+			std::unique_ptr<TextureCube> tex = rtti_cast<TextureCube>(result.mReadObjects[0]);
+			assert(tex != nullptr);
+			mFrameCubeComponent->load(std::move(tex));
+			mSelectedType = EType::Cubemap;
 		}
 
 		// Check if we need to re-frame camera if requested
@@ -198,22 +184,20 @@ namespace napkin
 			case EType::Texture2D:
 			{
 				// Make sure the mesh has a uv channel to bind to
-				if (!mFrame2DTextureComponent->setCustomMesh(*new_mesh, error))
+				if (!mFrame2DTextureComponent->load(std::move(new_mesh), error))
 				{
 					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
 					break;
 				}
-				mLoaded2DMesh = std::move(new_mesh);
 				break;
 			}
 			case EType::Cubemap:
 			{
-				if (!mFrameCubeComponent->setCustomMesh(*new_mesh, error))
+				if (!mFrameCubeComponent->load(std::move(new_mesh), error))
 				{
 					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
 					break;
 				}
-				mLoadedCubeMesh = std::move(new_mesh);
 				break;
 			}
 			default:
@@ -225,10 +209,24 @@ namespace napkin
 	}
 
 
-	LoadTextureComponentInstance::EType LoadTextureComponentInstance::getType() const
+	const nap::Texture* LoadTextureComponentInstance::getTexture() const
 	{
-		return mActiveTexture == nullptr ? EType::None :
-			mActiveTexture->get_type().is_derived_from(RTTI_OF(nap::Texture2D)) ? EType::Texture2D : EType::Cubemap;
+		switch (getType())
+		{
+		case EType::Texture2D:
+			return &mFrame2DTextureComponent->getTexture();
+			break;
+		case EType::Cubemap:
+			return &mFrameCubeComponent->getTexture();
+			break;
+		case EType::None:
+			return nullptr;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+		return nullptr;
 	}
 
 
@@ -351,6 +349,6 @@ namespace napkin
 
 	void LoadTextureComponentInstance::clear(const nap::APIEvent& apiEvent)
 	{
-		mActiveTexture = nullptr;
+		mSelectedType = EType::None;
 	}
 }
