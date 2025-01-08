@@ -24,7 +24,6 @@ namespace napkin
 
 		// Setup GUI for window
 		ImGui::BeginMainMenuBar();
-		ImGui::PushID(loaded_tex);
 
 		float bar_height = ImGui::GetWindowHeight();
 		float ico_height = bar_height * 0.7f;
@@ -34,8 +33,9 @@ namespace napkin
 			ImGui::EndMenu();
 		}
 
-		if (ImGui::BeginMenu("Details", loaded_tex != nullptr))
+		if (ImGui::BeginMenu("Texture", loaded_tex != nullptr))
 		{
+			ImGui::PushID(loaded_tex);
 			texDetail("Identifier", loaded_tex->mID);
 			texDetail("Plane Width", utility::stringFormat("%d", loaded_tex->getDescriptor().getWidth()), "texel(s)");
 			texDetail("Plane Height", utility::stringFormat("%d", loaded_tex->getDescriptor().getHeight()), "texel(s)");
@@ -49,6 +49,32 @@ namespace napkin
 			texDetail("Layers", utility::stringFormat("%d", loaded_tex->getLayerCount()));
 			texDetail("Mip levels", utility::stringFormat("%d", loaded_tex->getMipLevels()));
 			texDetail("Format", utility::stringFormat(string_VkFormat(loaded_tex->getFormat())));
+			ImGui::PopID();
+			ImGui::EndMenu();
+		}
+
+		if (ImGui::BeginMenu("Mesh", loaded_tex != nullptr))
+		{
+			auto* mesh = tex_controller.getMesh(); assert(mesh != nullptr);
+			const auto& mesh_instance = mesh->getMeshInstance();
+			ImGui::PushID(mesh);
+			texDetail("Identifier", mesh->mID);
+			texDetail("Vertices", utility::stringFormat("%d", mesh_instance.getNumVertices()));
+			texDetail("Shapes", utility::stringFormat("%d", mesh_instance.getNumShapes()));
+			texDetail("Cull Mode", RTTI_OF(ECullMode), mesh_instance.getCullMode());
+			texDetail("Draw Mode", RTTI_OF(EDrawMode), mesh_instance.getDrawMode());
+			texDetail("Polygon Mode ", RTTI_OF(EPolygonMode), mesh_instance.getPolygonMode());
+			texDetail("Usage", RTTI_OF(EMemoryUsage), mesh_instance.getUsage());
+			texDetail("Attributes", utility::stringFormat("%d", mesh_instance.getAttributes().size()));
+			for (auto i = 0; i < mesh_instance.getAttributes().size(); i++)
+			{
+				auto& attr = *mesh_instance.getAttributes()[i];
+				ImGui::PushID(&attr);
+				texDetail(utility::stringFormat("\t%d", i), attr.mAttributeID, string_VkFormat(attr.getFormat()));
+				ImGui::PopID();
+			}
+
+			ImGui::PopID();
 			ImGui::EndMenu();
 		}
 
@@ -85,8 +111,6 @@ namespace napkin
 			// Frame object & reset rotation
 			tex_controller.frame();
 		}
-
-		ImGui::PopID();
 		ImGui::EndMainMenuBar();
 	}
 
@@ -194,3 +218,4 @@ namespace napkin
 			controller.setRotate(rotate_speed);
 	}
 }
+

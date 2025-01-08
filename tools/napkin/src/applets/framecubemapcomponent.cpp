@@ -151,6 +151,13 @@ namespace napkin
 	}
 
 
+	const IMesh& FrameCubemapComponentInstance::getMesh()
+	{
+		assert(mMeshes.size() > mMeshIndex);
+		return mMeshes[mMeshIndex].getMesh();
+	}
+
+
 	bool FrameCubemapComponentInstance::hasMeshLoaded() const
 	{
 		return mMesh != nullptr;

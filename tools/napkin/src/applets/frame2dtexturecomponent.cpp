@@ -127,6 +127,8 @@ namespace napkin
 
 		// Select
 		setMeshIndex(mMeshes.size() - 1);
+		setMode(EMode::Mesh);
+
 		return true;
 	}
 
@@ -197,6 +199,14 @@ namespace napkin
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
+	}
+
+
+	const IMesh& Frame2DTextureComponentInstance::getMesh()
+	{
+		assert(mMeshes.size() > mMeshIndex);
+		return mMode == EMode::Plane ? mPlaneRenderer->getMesh() :
+			mMeshes[mMeshIndex].getMesh();
 	}
 
 

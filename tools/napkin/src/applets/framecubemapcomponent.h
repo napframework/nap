@@ -133,6 +133,11 @@ namespace napkin
 		const std::vector<RenderableMesh>& getMeshes() const					{ return mMeshes; }
 
 		/**
+		 * @return current selected mesh
+		 */
+		const IMesh& getMesh();
+
+		/**
 		 * @return if there is a custom mesh loaded and selectable
 		 */
 		bool hasMeshLoaded() const;

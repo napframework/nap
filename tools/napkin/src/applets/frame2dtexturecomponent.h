@@ -145,6 +145,11 @@ namespace napkin
 		void setMeshIndex(int index);
 
 		/**
+		 * @return current selected mesh
+		 */
+		const IMesh& getMesh();
+
+		/**
 		 * @return all the available meshes
 		 */
 		const std::vector<RenderableMesh>& getMeshes() const	{ return mMeshes; }

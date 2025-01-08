@@ -230,6 +230,27 @@ namespace napkin
 	}
 
 
+	const IMesh* LoadTextureComponentInstance::getMesh() const
+	{
+		switch (getType())
+		{
+		case EType::Texture2D:
+			return &mFrame2DTextureComponent->getMesh();
+			break;
+		case EType::Cubemap:
+			return &mFrameCubeComponent->getMesh();
+			break;
+		case EType::None:
+			return nullptr;
+			break;
+		default:
+			assert(false);
+			break;
+		}
+		return nullptr;
+	}
+
+
 	void LoadTextureComponentInstance::frame()
 	{
 		switch (getType())

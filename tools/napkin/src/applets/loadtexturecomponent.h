@@ -87,6 +87,11 @@ namespace napkin
 		const Texture* getTexture() const;
 
 		/**
+		 * @return current selected mesh, nullptr if no mesh is selected
+		 */
+		const IMesh* getMesh() const;
+
+		/**
 		 * Frames current selection
 		 */
 		void frame();
