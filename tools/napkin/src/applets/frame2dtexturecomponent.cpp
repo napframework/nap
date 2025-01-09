@@ -10,6 +10,7 @@
 #include <inputservice.h>
 #include <inputrouter.h>
 #include <renderglobals.h>
+#include <meshutils.h>
 
 // nap::appletcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::Frame2DTextureComponent)
@@ -68,9 +69,18 @@ namespace napkin
 		Frame2DTextureComponent* resource = getComponent<Frame2DTextureComponent>();
 		for (auto& mesh : resource->mMeshes)
 		{
+			// Create mesh / material combo
 			RenderableMesh render_mesh = mMeshRenderer->createRenderableMesh(*mesh, errorState);
 			if (!render_mesh.isValid())
 				return false;
+
+			// Find position attr
+			if (!errorState.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position) != nullptr,
+				"%s: missing '%s' (vec3) vertex attribute", mesh->mID.c_str(), vertexid::position))
+				return false;
+
+			// Add bounds and meshes
+			mBounds.emplace_back(utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance()));
 			mMeshes.emplace_back(render_mesh);
 		}
 
@@ -121,8 +131,14 @@ namespace napkin
 
 		// Replace custom mesh
 		if (hasMeshLoaded())
+		{
 			mMeshes.pop_back();
-		mMeshes.emplace_back(render_mesh); 
+			mBounds.pop_back();
+		}
+
+		// Add renderable mesh, bbox and cache
+		mMeshes.emplace_back(render_mesh);
+		mBounds.emplace_back(utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance()));
 		mMesh = std::move(mesh);
 
 		// Select
@@ -151,7 +167,11 @@ namespace napkin
 		mPlaneOpacity->setValue(1.0f);
 
 		// Mesh
-		mMeshOrbit->enable({ 0.0f, 0.0f, 3.0f }, { 0.0f, 0.0f, 0.0f });
+		const auto& bounds = getBounds();
+		auto center = bounds.getCenter();
+		glm::vec3 camera = { 0.0f, center.y, bounds.getMax().z + 2.0f };
+
+		mMeshOrbit->enable(camera, center);
 		mMeshRotate->reset();
 		mMeshRotate->setSpeed(0.0f);
 	}

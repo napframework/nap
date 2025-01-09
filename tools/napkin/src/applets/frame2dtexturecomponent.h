@@ -15,6 +15,7 @@
 #include <perspcameracomponent.h>
 #include <renderservice.h>
 #include <orbitcontroller.h>
+#include <box.h>
 
 namespace napkin
 {
@@ -145,6 +146,11 @@ namespace napkin
 		void setMeshIndex(int index);
 
 		/**
+		 * @return selected mesh bounds
+		 */
+		const math::Box& getBounds() const						{ assert(mMeshIndex < mBounds.size()); return mBounds[mMeshIndex]; }
+
+		/**
 		 * @return current selected mesh
 		 */
 		const IMesh& getMesh();
@@ -217,6 +223,7 @@ namespace napkin
 		UniformFloatInstance* mPlaneOpacity = nullptr;
 		Sampler2DInstance* mMeshSampler = nullptr;
 		std::vector<RenderableMesh> mMeshes;
+		std::vector<math::Box> mBounds;
 		int mMeshIndex = 0;
 		EMode mMode = EMode::Plane;
 	};

@@ -224,7 +224,7 @@
                     "MovementSpeed": 0.009999999776482582,
                     "RotateSpeed": 0.0020000000949949026,
                     "PerspCameraComponent": "./2DPerspCameraComponent",
-                    "LimitZoomDistance": true,
+                    "LimitZoomDistance": false,
                     "MinimumZoomDistance": 1.0,
                     "LookAtPosition": {
                         "x": 0.0,
@@ -476,7 +476,7 @@
                     "MovementSpeed": 0.009999999776482582,
                     "RotateSpeed": 0.0020000000949949026,
                     "PerspCameraComponent": "./CubePerspCameraComponent",
-                    "LimitZoomDistance": true,
+                    "LimitZoomDistance": false,
                     "MinimumZoomDistance": 1.0,
                     "LookAtPosition": {
                         "x": 0.0,

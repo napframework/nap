@@ -308,6 +308,8 @@ namespace napkin
 		case EType::Cubemap:
 			mFrameCubeComponent->processWindowEvents(inputService, window);
 			break;
+		case EType::None:
+			break;
 		default:
 			assert(false);
 			break;

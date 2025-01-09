@@ -58,22 +58,33 @@ namespace nap
 		* Computes the bounding box of a mesh using its associated position data.
 		* Note that indices are not considered. This call loops over all available
 		* points regardless of whether if they're drawn or not
-		* @tparam the data type of the position attribute
+		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
 		* @param mesh the mesh to get the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
 
 		/**
+		 * Computes the bounding box of a mesh using its associated position data.
+		 * Note that indices are not considered. This call loops over all available
+		 * points regardless of whether if they're drawn or not
+		 * @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
+		 * @param mesh the mesh to get the bounding box for
+		 * @return the bounding box
+		 */
+		template<typename T>
+		math::Box computeBoundingBox(const MeshInstance& mesh);
+		 
+		/**
 		* Computes the bounding box of a single shape within a mesh using its associated position data.
 		* Note that the given shape must be part of the mesh.
-		* @tparam the data type of the position attribute
+		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
 		* @param mesh the mesh that contains position data
 		* @param shape the shape to compute the bounding box for
 		* @param outBox the computed bounding box
 		*/
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
 
 		/**
@@ -170,7 +181,7 @@ namespace nap
 			return (vertexValues.first() * (1.0f - coords.x - coords.y)) + (vertexValues.second() * coords.x) + (vertexValues.third() * coords.y);
 		}
 
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox)
 		{
 			glm::vec3 min(math::max<float>());
@@ -190,7 +201,7 @@ namespace nap
 			outBox.mMaxCoordinates = max;
 		}
 
-		template <typename T>
+		template<typename T>
 		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox)
 		{
 			glm::vec3 min(math::max<float>());
@@ -209,6 +220,14 @@ namespace nap
 			}
 			outBox.mMinCoordinates = min;
 			outBox.mMaxCoordinates = max;
+		}
+
+		template<typename T>
+		nap::math::Box computeBoundingBox(const MeshInstance& mesh)
+		{
+			math::Box mesh_bounds;
+			computeBoundingBox<T>(mesh, mesh_bounds);
+			return mesh_bounds;
 		}
 	}
 }

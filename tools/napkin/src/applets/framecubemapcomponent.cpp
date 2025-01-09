@@ -10,6 +10,7 @@
 #include <mathutils.h>
 #include <inputrouter.h>
 #include <renderglobals.h>
+#include <meshutils.h>
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
@@ -56,10 +57,19 @@ namespace napkin
 		FrameCubemapComponent* resource = getComponent<FrameCubemapComponent>();
 		for (auto& mesh : resource->mMeshes)
 		{
+			// Create mesh / material combo
 			RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(*mesh, errorState);
 			if (!render_mesh.isValid())
 				return false;
-			mMeshes.emplace_back(render_mesh);
+
+			// Find position attr
+			if (!errorState.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position) != nullptr,
+				"%s: missing '%s' (vec3) vertex attribute", mesh->mID.c_str(), vertexid::position))
+				return false;
+
+			// Add bounds and meshes
+			mBounds.emplace_back(utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance()));
+			mMeshes.emplace_back(std::move(render_mesh));
 		}
 
 		// Make sure we have some meshes
@@ -96,7 +106,12 @@ namespace napkin
 	{
 		// Catch most obvious explicit error -> missing uv attribute
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) != nullptr,
-			"Unable to bind texture, '%s' has no % s vertex attribute", mesh->mID.c_str(), vertexid::normal))
+			"Unable to bind texture, '%s' has no %s vec3 vertex attribute", mesh->mID.c_str(), vertexid::normal))
+			return false;
+
+		// Catch most obvious explicit error -> missing pos attribute
+		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position) != nullptr,
+			"Unable to bind texture, '%s' has no %s vec3 vertex attribute", mesh->mID.c_str(), vertexid::position))
 			return false;
 
 		// Try and create a render-able mesh
@@ -106,8 +121,14 @@ namespace napkin
 
 		// Pop and add
 		if (hasMeshLoaded())
+		{
 			mMeshes.pop_back();
-		mMeshes.emplace_back(render_mesh);
+			mBounds.pop_back();
+		}
+
+		// Add renderable mesh, bbox and cache
+ 		mMeshes.emplace_back(std::move(render_mesh));
+		mBounds.emplace_back(utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance()));
 		mMesh = std::move(mesh);
 
 		// Select
@@ -125,7 +146,11 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::frame()
 	{
-		mOrbitController->enable({ 0.0f, 0.0f, 3.0f }, { 0.0f, 0.0f, 0.0f });
+		const auto& bounds = getBounds();
+		auto center = bounds.getCenter();
+		glm::vec3 camera = { 0.0f, center.y, bounds.getMax().z + 2.0f };
+
+		mOrbitController->enable(camera, center);
 		mSkyboxComponent->setOpacity(1.0f);
 		mRotateComponent->reset();
 		mRotateComponent->setSpeed(0.0f);
@@ -178,3 +203,4 @@ namespace napkin
 		renderService.renderObjects(window, *mCameraComponent,  { mRenderMeshComponent.get() });
 	}
 }
+

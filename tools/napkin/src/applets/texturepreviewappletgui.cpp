@@ -70,7 +70,8 @@ namespace napkin
 			{
 				auto& attr = *mesh_instance.getAttributes()[i];
 				ImGui::PushID(&attr);
-				texDetail(utility::stringFormat("\t%d", i), attr.mAttributeID, string_VkFormat(attr.getFormat()));
+				texDetail(utility::stringFormat("\t%d", i), attr.mAttributeID,
+					nap::utility::stripNamespace(attr.getElementType().get_name().data()));
 				ImGui::PopID();
 			}
 

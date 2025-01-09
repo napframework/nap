@@ -118,9 +118,7 @@ namespace nap
 			std::regex re("([^:]+)$");
 			std::regex_iterator<std::string::const_iterator> rit(str.begin(), str.end(), re);
 			std::regex_iterator<std::string::const_iterator> rend;
-			if (rit != rend)
-				return rit->str();
-			return str;
+			return rit != rend ? rit->str() : str;
 		}
 
 

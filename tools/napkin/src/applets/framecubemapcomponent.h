@@ -128,6 +128,11 @@ namespace napkin
 		void setMeshIndex(int index);
 
 		/**
+		 * @return selected mesh bounds
+		 */
+		const math::Box& getBounds() const										{ assert(mMeshIndex < mBounds.size()); return mBounds[mMeshIndex]; }
+
+		/**
 		 * @return all the available meshes
 		 */
 		const std::vector<RenderableMesh>& getMeshes() const					{ return mMeshes; }
@@ -177,6 +182,7 @@ namespace napkin
 		std::unique_ptr<nap::IMesh> mMesh = nullptr;				//< Current active loaded Cube mesh
 		SamplerCubeInstance* mReflectiveCubeSampler = nullptr;		//< Reflective cube sampler
 		std::vector<RenderableMesh> mMeshes;						//< All meshes to select from
+		std::vector<math::Box> mBounds;								//< All mesh bounding boxes
 		int mMeshIndex = 0;											//< Selected mesh index
 		void bind(TextureCube& texture);							//< Binds a cubemap texture
 	};
