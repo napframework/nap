@@ -928,7 +928,7 @@
                         },
                         {
                             "Type": "nap::APIBool",
-                            "mID": "textureClearArg",
+                            "mID": "textureFrameArg",
                             "Name": "frame",
                             "Value": true
                         }
@@ -948,6 +948,12 @@
                             "mID": "meshDataArg",
                             "Name": "data",
                             "Value": ""
+                        },
+                        {
+                            "Type": "nap::APIBool",
+                            "mID": "meshFrameArg",
+                            "Name": "frame",
+                            "Value": false
                         }
                     ]
                 }

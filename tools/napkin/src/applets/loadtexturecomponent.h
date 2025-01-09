@@ -38,6 +38,7 @@ namespace napkin
 		// Load mesh cmd & args
 		static constexpr const char* loadMeshCmd = "LoadMesh";
 		static constexpr const char* loadMeshArg1 = "data";
+		static constexpr const char* loadMeshArg2 = "frame";
 
 		// Clear selection args
 		static constexpr const char* clearCmd = "ClearTexture";

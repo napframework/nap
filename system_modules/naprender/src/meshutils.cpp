@@ -282,5 +282,13 @@ namespace nap
 			r[0] = 1.0f - r[1] - r[2];
 			return r;
 		}
+
+
+		float computeCameraDistance(const glm::vec2& dimensions, float fov)
+		{
+			auto s = dimensions[0] > dimensions[1] ? dimensions[0] : dimensions[1];
+			auto a = math::radians(fov);
+			return (s / a) / glm::tan(a / 2.0f);
+		}
 	}
 }

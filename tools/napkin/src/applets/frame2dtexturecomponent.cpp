@@ -166,11 +166,14 @@ namespace napkin
 		mZoomPanController->frameTexture(mPlaneSampler->getTexture(), *mPlaneTransform);
 		mPlaneOpacity->setValue(1.0f);
 
-		// Mesh
+		// Compute mesh camera distance using bounds
 		const auto& bounds = getBounds();
-		auto center = bounds.getCenter();
-		glm::vec3 camera = { 0.0f, center.y, bounds.getMax().z + 2.0f };
+		float cam_dist = utility::computeCameraDistance({ bounds.getWidth(), bounds.getHeight() },
+			mMeshCamera->getFieldOfView());
 
+		// Mesh
+		auto center = bounds.getCenter();
+		glm::vec3 camera = { 0.0f, center.y, cam_dist };
 		mMeshOrbit->enable(camera, center);
 		mMeshRotate->reset();
 		mMeshRotate->setSpeed(0.0f);

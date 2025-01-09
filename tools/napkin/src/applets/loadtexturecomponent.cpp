@@ -177,27 +177,43 @@ namespace napkin
 			}
 		}
 
+		// Check if we need to re-frame camera if requested
+		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadMeshArg2);
+		assert(frame_arg != nullptr);
+
 		// Select and set mesh based on selected type
 		auto new_mesh = rtti_cast<nap::IMesh>(result.mReadObjects[0]);
 		switch (getType())
 		{
 			case EType::Texture2D:
 			{
-				// Make sure the mesh has a uv channel to bind to
-				if (!mFrame2DTextureComponent->load(std::move(new_mesh), error))
+				// Load user mesh into 2D texture visualizer
+				// TODO: Mesh is always selected when loaded but only framed when considered new (different object)
+				// TODO: This is wrong when the user intermittently changes mesh index, causing the camera look-at position to reflect previous mesh.
+				// TODO: FIX: Don't select the item when mesh is not new
+				if (mFrame2DTextureComponent->load(std::move(new_mesh), error))
 				{
-					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
+					// Frame on success
+					if (frame_arg->asBool())
+						mFrame2DTextureComponent->frame();
 					break;
 				}
+				nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
 				break;
 			}
 			case EType::Cubemap:
 			{
-				if (!mFrameCubeComponent->load(std::move(new_mesh), error))
+				// Load user mesh into cubemap visualizer
+				// TODO: Mesh is always selected when loaded but only framed when considered new (different object)
+				// TODO: This is wrong when the user intermittently changes mesh index, causing the camera look-at position to reflect previous mesh.
+				// TODO: FIX: Don't select the item when mesh is not new
+				if (mFrameCubeComponent->load(std::move(new_mesh), error))
 				{
-					nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
+					if (frame_arg->asBool())
+						mFrameCubeComponent->frame();
 					break;
 				}
+				nap::Logger::error("%s cmd failed: %s", LoadTextureComponent::loadMeshCmd, error.toString().c_str());
 				break;
 			}
 			default:
@@ -206,6 +222,9 @@ namespace napkin
 				break;
 			}
 		}
+
+		if (frame_arg->asBool())
+			frame();
 	}
 
 

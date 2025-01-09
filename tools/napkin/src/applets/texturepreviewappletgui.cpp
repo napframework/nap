@@ -107,7 +107,7 @@ namespace napkin
 
 		// Add frame icon
 		if (loaded_tex != nullptr &&
-			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame"))
+			ImGui::ImageButton(mApplet.mGuiService->getIcon(nap::icon::frame), { ico_height, ico_height }, "Frame Selection"))
 		{
 			// Frame object & reset rotation
 			tex_controller.frame();
@@ -150,9 +150,11 @@ namespace napkin
 		static const std::array<const char*, 2> mode_labels = { "Zoom & Pan", "3D Mesh" };
 		int display_idx = static_cast<int>(controller.mFrame2DTextureComponent->getMode());
 		if (ImGui::Combo("Display Mode", &display_idx, mode_labels.data(), mode_labels.size()))
-			controller.mFrame2DTextureComponent->setMode(
-				static_cast<Frame2DTextureComponentInstance::EMode>(display_idx)
-			);
+		{
+			auto display_mode = static_cast<Frame2DTextureComponentInstance::EMode>(display_idx);
+			controller.mFrame2DTextureComponent->setMode(display_mode);
+			controller.frame();
+		}
 
 		// Update based on selected 2D texture display mode
 		switch (static_cast<Frame2DTextureComponentInstance::EMode>(display_idx))
@@ -176,7 +178,10 @@ namespace napkin
 				// Add mesh combo selection
 				int current_idx = controller.mFrame2DTextureComponent->getMeshIndex();
 				if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+				{
 					controller.mFrame2DTextureComponent->setMeshIndex(current_idx);
+					controller.frame();
+				}
 
 				// Mesh rotation
 				float rotate_speed = controller.getRotate();
@@ -206,7 +211,10 @@ namespace napkin
 		// Add mesh combo selection
 		int current_idx = controller.mFrameCubeComponent->getMeshIndex();
 		if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+		{
 			controller.mFrameCubeComponent->setMeshIndex(current_idx);
+			controller.frame();
+		}
 
 		// Skybox opacity
 		float opacity = controller.getOpacity();

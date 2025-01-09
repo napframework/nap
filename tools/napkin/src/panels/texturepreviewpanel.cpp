@@ -53,15 +53,16 @@ namespace napkin
 			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadTextureCmd);
 			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadTextureArg1, writer.GetJSON());
 			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame);
-
-			// Cache so we know if we need to re-frame if it's new
 			mLoadedTexture = path.getObject();
 		}
 		else
 		{
+			bool frame = mLoadedMesh != path.getObject();
 			assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IMesh)));
 			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadMeshCmd);
 			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
+			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame);
+			mLoadedMesh = path.getObject();
 		}
 		mRunner.sendEvent(std::move(load_event));
 	}

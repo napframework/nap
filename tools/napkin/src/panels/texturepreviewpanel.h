@@ -56,7 +56,8 @@ namespace napkin
 		TextureAppletRunner		mRunner;					//< Application that is run
 		QVBoxLayout				mLayout;					//< Widget layout
 		bool					mInitialized;				//< If the panel is initialized
-		nap::rtti::Object*		mLoadedTexture = nullptr;	//< Current loaded path
+		nap::rtti::Object*		mLoadedTexture = nullptr;	//< Current loaded texture
+		nap::rtti::Object*		mLoadedMesh = nullptr;		//< Current loaded mesh
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);

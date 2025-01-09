@@ -146,10 +146,14 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::frame()
 	{
+		// Compute camera distance using bounds
 		const auto& bounds = getBounds();
-		auto center = bounds.getCenter();
-		glm::vec3 camera = { 0.0f, center.y, bounds.getMax().z + 2.0f };
+		float cam_dist = utility::computeCameraDistance({ bounds.getWidth(), bounds.getHeight() },
+			mCameraComponent->getFieldOfView());
 
+		// Setup camera
+		auto center = bounds.getCenter();
+		glm::vec3 camera = { 0.0f, center.y, cam_dist };
 		mOrbitController->enable(camera, center);
 		mSkyboxComponent->setOpacity(1.0f);
 		mRotateComponent->reset();
@@ -203,4 +207,3 @@ namespace napkin
 		renderService.renderObjects(window, *mCameraComponent,  { mRenderMeshComponent.get() });
 	}
 }
-
