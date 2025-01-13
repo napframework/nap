@@ -931,7 +931,7 @@
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "CameraFloatHeightParameter",
-                    "Name": "CameraFloatHeight",
+                    "Name": "Camera Float Height",
                     "Value": 0.5,
                     "Minimum": 0.0,
                     "Maximum": 2.0
@@ -939,7 +939,7 @@
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "CameraFollowDistanceParameter",
-                    "Name": "CameraFollowDistance",
+                    "Name": "Camera Follow Distance",
                     "Value": 1.0,
                     "Minimum": 0.0,
                     "Maximum": 2.0
@@ -947,7 +947,7 @@
                 {
                     "Type": "nap::ParameterFloat",
                     "mID": "HighlightLengthParameter",
-                    "Name": "HighlightLength",
+                    "Name": "Highlight Length",
                     "Value": 0.125,
                     "Minimum": 0.0,
                     "Maximum": 1.0
@@ -961,7 +961,7 @@
                         {
                             "Type": "nap::ParameterInt",
                             "mID": "RenderIndexParam",
-                            "Name": "RenderIndex",
+                            "Name": "Render Index",
                             "Value": 1,
                             "Minimum": 0,
                             "Maximum": 1
@@ -969,7 +969,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "NoiseSpeedParam",
-                            "Name": "NoiseSpeed",
+                            "Name": "Noise Speed",
                             "Value": 0.5,
                             "Minimum": 0.0,
                             "Maximum": 1.0
@@ -977,7 +977,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "NoiseScaleParam",
-                            "Name": "NoiseScale",
+                            "Name": "Noise Scale",
                             "Value": 0.33000001311302185,
                             "Minimum": 0.0,
                             "Maximum": 2.0
@@ -985,7 +985,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "NoiseStrengthParam",
-                            "Name": "NoiseStrength",
+                            "Name": "Noise Strength",
                             "Value": 0.4000000059604645,
                             "Minimum": 0.0,
                             "Maximum": 1.0
@@ -993,7 +993,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "SwerveSpeedParam",
-                            "Name": "",
+                            "Name": "Swerve Speed",
                             "Value": 0.5,
                             "Minimum": 0.0,
                             "Maximum": 2.0
@@ -1001,7 +1001,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "SwerveIntensityParameter",
-                            "Name": "SwerveIntensity",
+                            "Name": "Swerve Intensity",
                             "Value": 0.5,
                             "Minimum": 0.0,
                             "Maximum": 1.0
@@ -1009,7 +1009,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "BumpAmountParameter",
-                            "Name": "BumpAmount",
+                            "Name": "Bump Amount",
                             "Value": 2.0,
                             "Minimum": 0.0,
                             "Maximum": 5.0
@@ -1094,7 +1094,7 @@
                         {
                             "Type": "nap::ParameterRGBColorFloat",
                             "mID": "FresnelColor",
-                            "Name": "FresnelColor",
+                            "Name": "Fresnel Color",
                             "Value": {
                                 "Values": [
                                     0.501960813999176,
@@ -1133,7 +1133,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "FocalLengthParam",
-                            "Name": "FocalLength",
+                            "Name": "Focal Length",
                             "Value": 0.5,
                             "Minimum": 0.5,
                             "Maximum": 1.0
@@ -1141,7 +1141,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "FocusPowerParam",
-                            "Name": "FocusPower",
+                            "Name": "Focus Power",
                             "Value": 2.0,
                             "Minimum": 1.0,
                             "Maximum": 4.0
@@ -1149,7 +1149,7 @@
                         {
                             "Type": "nap::ParameterFloat",
                             "mID": "FocusDistanceParam",
-                            "Name": "FocusDistance",
+                            "Name": "Focus Distance",
                             "Value": 1.0099999904632568,
                             "Minimum": 0.5,
                             "Maximum": 1.25

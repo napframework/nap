@@ -108,33 +108,50 @@ namespace nap
 		mPhase.resize(mBinCount);
 	}
 
+
 	FFTBuffer::~FFTBuffer() {}
 
 
 	void FFTBuffer::supply(const std::vector<float>& samples)
 	{
-		// Copy samples
+		// Try to lock and copy the audio buffer for FFT analysis.
+		// This prevents the audio thread from stalling when the analysis thread is working on a (previous) set at the same time.
+		// We do however attempt to store it for the most up to date, accurate image.
+		std::unique_lock<std::mutex> lock(mSampleBufferMutex, std::defer_lock);
+		if (lock.try_lock())
 		{
-			std::lock_guard<std::mutex> lock(mSampleBufferMutex);
 			mSampleBufferA = samples;
+			mSampleData = true;
 		}
-
-		// TODO: Use notification to transform data on different thread!
-		mDirty = true;
 	}
 
 
 	void FFTBuffer::transform()
 	{
-		if (!mDirty)
-			return;
-
-		// Move original samples into sample storage
+		// Check if there's something to consume -> atomic dirty check first to minimize overhead
+		// Note that we could use a try_lock construction for both producer and consumer threads,
+		// But it's safer to always transform available sample data, instead of potentially not consuming *any* data.
+		if (mSampleData.load())
 		{
-			std::lock_guard<std::mutex> lock(mSampleBufferMutex);
-			mSampleBufferB = std::move(mSampleBufferA);
+			// Lock when available and swap buffer memory locations -> making the previously transformed buffer available for storage.
+			{
+				std::lock_guard<std::mutex> lock(mSampleBufferMutex);
+				std::swap(mSampleBufferA, mSampleBufferB);
+				mSampleData = false;
+			}
+			createImage();
 		}
+	}
 
+
+	uint FFTBuffer::getDataSize()
+	{
+		return mContext->getSize();
+	}
+
+
+	void FFTBuffer::createImage()
+	{
 		// Create formatted buffer
 		const uint data_size = mContext->getSize();
 		const uint data_bytes = data_size * sizeof(float);
@@ -199,27 +216,5 @@ namespace nap
 			mAmplitude[i] = std::abs(cpx_norm);
 			mPhase[i] = std::arg(cpx_norm);
 		}
-
-		mDirty = false;
-	}
-
-
-	const std::vector<float>& FFTBuffer::getAmplitudeSpectrum()
-	{
-		transform();
-		return mAmplitude;
-	}
-
-
-	const std::vector<float>& FFTBuffer::getPhaseSpectrum()
-	{
-		transform();
-		return mPhase;
-	}
-
-
-	uint FFTBuffer::getDataSize()
-	{
-		return mContext->getSize();
 	}
 }

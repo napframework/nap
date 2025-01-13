@@ -37,8 +37,8 @@ namespace nap
 		};
 
 		/**
-		 * @param dataSize
-		 * @param overlap
+		 * @param dataSize FFT buffer size
+		 * @param overlap FFT buffer overlap
 		 */
 		FFTBuffer(uint dataSize, EOverlap overlap = EOverlap::One);
 
@@ -49,11 +49,6 @@ namespace nap
 		 * Update the internal sample buffer to perform FFT on. This funtion is thread-safe.
 		 */
 		void supply(const std::vector<float>& samples);
-
-		/**
-		 * Performs FFT and updates amplitudes and phases. This funtion is thread-safe.
-		 */
-		void transform();
 
 		/**
 		 * @return the number of FFT bins
@@ -68,14 +63,18 @@ namespace nap
 		/**
 		 * @return normalized magnitudes (rho)
 		 */
-		const AmplitudeSpectrum& getAmplitudeSpectrum();
+		const AmplitudeSpectrum& getAmplitudeSpectrum()				{ transform(); return mAmplitude; }
 
 		/**
 		 * @return normalized phase angles (theta)
 		 */
-		const PhaseSpectrum& getPhaseSpectrum();
+		const PhaseSpectrum& getPhaseSpectrum()						{ transform(); return mPhase; }
 
 	private:
+
+		void transform();											//< Transform sample data into FFT image (thread safe)
+		void createImage();											//< Construct FFT image
+
 		class KissContext;
 		std::unique_ptr<KissContext> mContext;
 
@@ -101,7 +100,6 @@ namespace nap
 
 		EOverlap mOverlap;											//< The number of audio buffer overlaps for FFT analysis (hops)
 		uint mHopSize;												//< The number of bins of a single hop
-
-		std::atomic<bool> mDirty = { false };										//< Amplitudes dirty checking flag, prevents redundant FFT analyses 
+		std::atomic<bool> mSampleData = { false };					//< Amplitudes dirty checking flag, prevents redundant FFT analyses 
 	};
 }
