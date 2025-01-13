@@ -158,10 +158,13 @@ if(MSVC)
     # there for running Napkin against source from its own directory)
     install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release-${ARCH}/napkin
             DESTINATION tools/
+            CONFIGURATIONS Release 
             PATTERN "*.pdb" EXCLUDE)
 
     if(PACKAGE_PDBS)
-        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> DESTINATION tools/napkin)
+        install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> 
+            DESTINATION tools/napkin 
+            CONFIGURATIONS Release)
     endif()
 
 else()

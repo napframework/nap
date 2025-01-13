@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from distutils.version import LooseVersion
 from msvcrt import getch
 import os
 import shutil
@@ -8,11 +7,9 @@ import sys
 import webbrowser
 
 REQUIRED_WINDOWS_VERSION = '10.0'
-VS_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE.16.0'
-REQUIRED_VS_VERSION = "2019"
+VS_INSTALLED_REG_KEY = 'HKEY_CLASSES_ROOT\\VisualStudio.DTE\\CurVer'
 REQUIRED_QT_VERSION = '6.7.2'
-VS_VERSION_REG_QUERY = 'HKEY_LOCAL_MACHINE\\SOFTWARE\\WOW6432Node\\Microsoft\\DevDiv\\vs\\Servicing\\16.0\\devenv /v UpdateVersion'
-REQUIRED_PATCH_VERSION = 25420
+REQUIRED_VS_VERSION = 16.0
 
 def call(cmd, provide_exit_code=False):
     """Execute command and return stdout"""
@@ -69,33 +66,34 @@ def check_windows_version():
 def check_visual_studio_installed():
     """Check if Visual Studio is installed"""
 
-    return_code = call('reg query "%s"' % VS_INSTALLED_REG_KEY, True)
-
+    # Get visual studio version value from registy
+    (out, return_code) = call_with_returncode('reg query "%s"' % VS_INSTALLED_REG_KEY)
     visual_studio_installed = return_code == 0
-    log_test_success('for Visual Studio {0}'.format(REQUIRED_VS_VERSION), visual_studio_installed)
-    return visual_studio_installed    
+    log_test_success('for Visual Studio', visual_studio_installed)
     
-def check_visual_studio_has_update():
-    """Check Visual Studio version"""
+    # Try to extract version
+    vs_version = False;
+    try:
+        default_version = float(out.split(".DTE.")[-1])
+        vs_version = default_version >= REQUIRED_VS_VERSION
+    except Exception as e:
+        print("\nWarning: unable to fetch Visual Studio version: \n\t'{}'\n".format(e))
 
-    ver_output = call('reg query %s' % VS_VERSION_REG_QUERY)
-    version = ver_output.strip("'").split()[-1]
-    (_, minor, patch) = version.split('.')
-    version_ok = int(minor) == 0 and int(patch) >= REQUIRED_PATCH_VERSION
-    log_test_success('Visual Studio Update', version_ok)
-    return version_ok
+    # Ensure version >= requred version
+    log_test_success('Visual Studio version (default) >= {0}'.format(REQUIRED_VS_VERSION), vs_version)
+    return visual_studio_installed and vs_version
 
 def handle_missing_vs():
     """If we don't have Visual Studio, help install it"""
 
     # Show different help depending on whether they already have an older version installed.
-    print("\nVisual Studio {0} is required. The Community Edition can be downloaded for free from https://www.visualstudio.com".format(REQUIRED_VS_VERSION))
+    print("\nVisual Studio {0}+ is required. The Community Edition can be downloaded for free from https://www.visualstudio.com".format(REQUIRED_VS_VERSION))
 
     # Offer to open download page
     open_vs_download = read_yes_no("Open download page?")
     if open_vs_download:
         webbrowser.open('https://www.visualstudio.com')
-    print("\nPlease re-run check_build_environment after you have installed Visual Studio {0}".format(REQUIRED_VS_VERSION))        
+    print("\nPlease re-run check_build_environment after you have installed Visual Studio")        
 
 def check_qt_env_var():
     """Check Qt env. var. for source user"""
@@ -132,7 +130,7 @@ def check_qt_version():
     
     # OK is version matching required version
     if not qt_found_version is None:
-        qt_version_ok = LooseVersion(qt_found_version) == LooseVersion(REQUIRED_QT_VERSION)
+        qt_version_ok = str(qt_found_version) == str(REQUIRED_QT_VERSION)
     
     # Cleanup
     if os.path.exists(temp_build_dir):

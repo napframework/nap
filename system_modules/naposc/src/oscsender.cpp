@@ -15,6 +15,7 @@ RTTI_BEGIN_CLASS(nap::OSCSender, "Sends OSC messages over the network")
 	RTTI_PROPERTY("IpAddress", &nap::OSCSender::mIPAddress, nap::rtti::EPropertyMetaData::Default, "Target machine IP address")
 	RTTI_PROPERTY("Port", &nap::OSCSender::mPort, nap::rtti::EPropertyMetaData::Required, "Target machine port")
 	RTTI_PROPERTY("BufferScale", &nap::OSCSender::mBufferScale, nap::rtti::EPropertyMetaData::Default, "Scale factor applied to OSC message buffer")
+    RTTI_PROPERTY("AllowFailure", &nap::OSCSender::mAllowFailure, nap::rtti::EPropertyMetaData::Default, "Successful initialization even if UDP socket can not be created")
 RTTI_END_CLASS
 
 // Max size in bytes of an OSC message
@@ -31,9 +32,21 @@ namespace nap
 		char hostIpAddress[IpEndpointName::ADDRESS_STRING_LENGTH];
 		host.AddressAsString(hostIpAddress);
 
-		// Create socket
-		mSocket = std::make_unique<UdpTransmitSocket>(host);
-		nap::Logger::info("Started OSC output connection, ip: %s, port: %d", hostIpAddress, mPort);
+		// Try to create the socket
+        mSocket = nullptr;
+        try
+        {
+            mSocket = std::make_unique<UdpTransmitSocket>(host);
+            nap::Logger::info("Started OSC output connection, ip: %s, port: %d", hostIpAddress, mPort);
+        }catch (const std::exception& e)
+        {
+            // Exception can be thrown in constructor of UdpTransmitSocket, caught here
+            // If we allow failure, log the error, otherwise return false and fail initialization
+            if(!errorState.check(mAllowFailure, "Failed to start OSC output connection, ip: %s, port: %d, error: %s", hostIpAddress, mPort, e.what()))
+                return false;
+
+            nap::Logger::error("Failed to start OSC output connection, ip: %s, port: %d, error: %s", hostIpAddress, mPort, e.what());
+        }
 
 		return true;
 	}
@@ -41,12 +54,16 @@ namespace nap
 
 	void OSCSender::stop()
 	{
-		mSocket.reset(nullptr);
-	}
+        if(mSocket!=nullptr)
+            mSocket.reset(nullptr);
+    }
 
 
 	bool OSCSender::send(const OSCEvent& oscEvent)
 	{
+        if(mSocket==nullptr)
+            return false;
+
 		std::size_t buffer_size = oscEvent.getSize();
 		buffer_size *= math::max<int>(mBufferScale, 1);
 		buffer_size += sizeof(osc::BeginMessage);
@@ -54,7 +71,7 @@ namespace nap
 
 		// Grow the buffer based on the number of bytes that need allocation
 		// Always allocate more than the bare minimum, that's why we multiply by 2.
-		if (mBuffer.size() < buffer_size)
+		if(mBuffer.size() < buffer_size)
 			mBuffer.resize(buffer_size);
 
 		// Create packet
@@ -71,7 +88,10 @@ namespace nap
 
 	void OSCSender::sendQueuedEvents()
 	{
-		if (mEventQueue.empty())
+        if(mSocket== nullptr)
+            return;
+
+		if(mEventQueue.empty())
 			return;
 
 		// Create the buffer
@@ -83,7 +103,7 @@ namespace nap
 		buffer_size += sizeof(osc::BundleTerminator);
 
 		// Grow the buffer based on the number of bytes that need allocation
-		if (mBuffer.size() < buffer_size)
+		if(mBuffer.size() < buffer_size)
 			mBuffer.resize(buffer_size);
 
 		// Create packet, grow buffer if necessary
@@ -93,7 +113,7 @@ namespace nap
 		packet << osc::BeginBundle();
 
 		// Add all events
-		while (!(mEventQueue.empty()))
+		while(!(mEventQueue.empty()))
 		{
 			writeToPacket(*(mEventQueue.front().get()), packet);
 			mEventQueue.pop();
@@ -117,7 +137,7 @@ namespace nap
 		outPacket << osc::BeginMessage(oscEvent.getAddress().c_str());
 
 		// Add every argument
-		for (const auto& arg : oscEvent.getArguments())
+		for(const auto& arg : oscEvent.getArguments())
 		{
 			arg->add(outPacket);
 		}
@@ -129,6 +149,9 @@ namespace nap
 
 	void OSCSender::addEvent(OSCEventPtr oscEvent)
 	{
+        if(mSocket==nullptr)
+            return;
+
 		mEventQueueDataSize += (oscEvent->getSize());
 		mEventQueue.emplace(std::move(oscEvent));
 	}

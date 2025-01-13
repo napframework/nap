@@ -35,11 +35,13 @@ namespace nap
 	 * @param fbxPath The FBX file to convert
 	 * @param outputDirectory Absolute or relative directory that the converted files should be placed in
 	 * @param convertOptions Options for the convert
+	 * @param convertCompute Convert vec3 attributes to vec4 enabling compute-friendly 16-byte data alignment
+	 * @param noTangents Do not generate tangents and bitangents
 	 * @param convertedFiles List of files that were converted from the FBX
 	 * @param errorState The error state
 	 * @return Whether the conversion succeeded or not
 	 */
-	NAPAPI bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState);
+	NAPAPI bool convertFBX(const std::string& fbxPath, const std::string& outputDirectory, EFBXConversionOptions convertOptions, bool convertCompute, bool noTangents, std::vector<std::string>& convertedFiles, utility::ErrorState& errorState);
 
 	/**
 	 * Load a mesh from the specified mesh. The mesh is expected to be our own mesh format as converted by convertFBX

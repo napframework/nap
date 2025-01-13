@@ -60,15 +60,16 @@ def create_module(module_name, generate_solution):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("MODULE_NAME", type=str,
-                        help="The module name (eg. napMyModuleName)")
-    parser.add_argument("-ng", "--no-generate", action="store_true",
-                        help="Don't generate the solution for the created module")
+    parser.add_argument("MODULE_NAME", 
+        type=str,
+        help="The module name (eg. napMyModuleName)")
+    parser.add_argument("-ng", "--no-generate", 
+        action="store_true",
+        help="Don't generate the solution for the created module")
     args = parser.parse_args()
 
-    module_name = args.MODULE_NAME
-
     # Remove any nap prefix
+    module_name = args.MODULE_NAME
     if module_name.startswith('nap'):
         module_name = module_name[3:]
 
