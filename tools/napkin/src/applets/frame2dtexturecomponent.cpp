@@ -168,12 +168,12 @@ namespace napkin
 
 		// Compute mesh camera distance using bounds
 		const auto& bounds = getBounds();
-		float cam_dist = utility::computeCameraDistance({ bounds.getWidth(), bounds.getHeight() },
+		float cam_offset = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
 			mMeshCamera->getFieldOfView());
 
 		// Mesh
 		auto center = bounds.getCenter();
-		glm::vec3 camera = { 0.0f, center.y, cam_dist };
+		glm::vec3 camera = { center.x, center.y, center.z + cam_offset };
 		mMeshOrbit->enable(camera, center);
 		mMeshRotate->reset();
 		mMeshRotate->setSpeed(0.0f);
@@ -267,3 +267,4 @@ namespace napkin
 		}
 	}
 }
+

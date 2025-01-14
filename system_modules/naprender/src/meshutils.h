@@ -55,7 +55,7 @@ namespace nap
 		void NAPAPI setTriangleIndices(nap::MeshShape& mesh, EDrawMode drawMode, int number, const std::array<int, 3>& indices);
 
 		/**
-		* Computes the bounding box of a mesh using its associated position data.
+		* Computes the bounding box of a mesh using its associated position data of type T.
 		* Note that indices are not considered. This call loops over all available
 		* points regardless of whether if they're drawn or not
 		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
@@ -66,7 +66,7 @@ namespace nap
 		void computeBoundingBox(const MeshInstance& mesh, math::Box& outBox);
 
 		/**
-		 * Computes the bounding box of a mesh using its associated position data.
+		 * Computes the bounding box of a mesh using its associated position data of type T.
 		 * Note that indices are not considered. This call loops over all available
 		 * points regardless of whether if they're drawn or not
 		 * @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
@@ -77,7 +77,7 @@ namespace nap
 		math::Box computeBoundingBox(const MeshInstance& mesh);
 		 
 		/**
-		* Computes the bounding box of a single shape within a mesh using its associated position data.
+		* Computes the bounding box of a single shape within a mesh using its associated position data of type T.
 		* Note that the given shape must be part of the mesh.
 		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
 		* @param mesh the mesh that contains position data
@@ -88,7 +88,7 @@ namespace nap
 		void computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape, math::Box& outBox);
 
 	   /**
-		* Computes the bounding box of a single shape within a mesh using its associated position data.
+		* Computes the bounding box of a single shape within a mesh using its associated position data of type T.
 		* Note that the given shape must be part of the mesh.
 		* @tparam the data type of the position attribute (glm::vec3 or glm::vec4)
 		* @param mesh the mesh that contains position data
@@ -97,6 +97,13 @@ namespace nap
 		*/
 		template<typename T>
 		math::Box computeBoundingBox(const nap::MeshInstance& mesh, const nap::MeshShape& shape);
+
+		/**
+		 * Computes the radius of a sphere to fit the given bounding box.
+		 * @param box the bounding box
+		 * @return sphere radius
+		 */
+		float NAPAPI computeBoundingSphere(const math::Box& box);
 
 		/**
 		* Automatically re-computes all the normals of a mesh
@@ -179,6 +186,14 @@ namespace nap
 		 * @return required distance of camera to fit plane
 		 */
 		float NAPAPI computeCameraDistance(const glm::vec2& planeDimensions, float cameraFOV);
+
+		/**
+		 * Compute camera distance to fit sphere with given radius.
+		 * @param radius the radius of the sphere
+		 * @param cameraFOV perspective camera field of view, (angle) in degrees
+		 * @return required distance of camera to fit sphere
+		 */
+		float NAPAPI computeCameraDistance(float radius, float cameraFOV);
 
 		/**
 		* Interpolates triangle vertex values based on barycentric u and v coordinates

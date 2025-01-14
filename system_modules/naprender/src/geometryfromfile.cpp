@@ -109,7 +109,7 @@ namespace nap
 		const aiScene* ai_scene = importer.ReadFile(mPath, flags);
 
 		// Ensure the file was read
-		if (!errorState.check(ai_scene != nullptr, "Unable to load %s", mPath.c_str()))
+		if (!errorState.check(ai_scene != nullptr, "Unable to load '%s'", mPath.c_str()))
 			return false;
 
 		// Used to figure out what data to extract
