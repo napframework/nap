@@ -11,6 +11,24 @@ namespace nap
 	// Static
 	//////////////////////////////////////////////////////////////////////////
 
+	static MaterialInstance* findMaterialInstance(const RenderableComponentInstance& component)
+	{
+		// Find get or create material instance method
+		auto mat_method = rtti::findMethodRecursive(component.get_type(), material::instance::getOrCreateMaterial);
+		if (!mat_method.is_valid())
+			return nullptr;
+
+		// Make sure it's a material instance pointer
+		auto mat_return_type = mat_method.get_return_type();
+		if (!mat_return_type.is_derived_from(RTTI_OF(MaterialInstance)) || !mat_return_type.is_pointer())
+			return nullptr;
+
+		// Get material instance
+		auto mat_result = mat_method.invoke(component); assert(mat_result.is_valid());
+		return mat_result.get_value<MaterialInstance*>();
+	}
+
+
 	static void sortSubsetByDepth(std::vector<RenderableComponentInstance*>& outComps, const std::vector<RenderableComponentInstance*>& subsetComps, const glm::mat4& viewMatrix)
 	{
 		// Split into front to back and back to front meshes
@@ -19,13 +37,12 @@ namespace nap
 		std::vector<RenderableComponentInstance*> back_to_front;
 		back_to_front.reserve(subsetComps.size());
 
-		for (RenderableComponentInstance* component : subsetComps)
+		for (auto* component : subsetComps)
 		{
-			RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-			if (renderable_mesh != nullptr)
+			auto* mat_instance = findMaterialInstance(*component);
+			if (mat_instance != nullptr)
 			{
-				RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				auto blend_mode = mat_instance->getBlendMode();
 				if (blend_mode == EBlendMode::AlphaBlend)
 					back_to_front.emplace_back(component);
 				else
@@ -59,13 +76,12 @@ namespace nap
 		std::vector<RenderableComponentInstance*> back_to_front;
 		back_to_front.reserve(subsetComps.size());
 
-		for (RenderableComponentInstance* component : subsetComps)
+		for (auto* component : subsetComps)
 		{
-			RenderableMeshComponentInstance* renderable_mesh = rtti_cast<RenderableMeshComponentInstance>(component);
-			if (renderable_mesh != nullptr)
+			auto* mat_instance = findMaterialInstance(*component);
+			if (mat_instance != nullptr)
 			{
-				RenderableMeshComponentInstance* renderable_mesh = static_cast<RenderableMeshComponentInstance*>(component);
-				EBlendMode blend_mode = renderable_mesh->getMaterialInstance().getBlendMode();
+				EBlendMode blend_mode = mat_instance->getBlendMode();
 				if (blend_mode == EBlendMode::AlphaBlend)
 					back_to_front.emplace_back(component);
 				else
@@ -103,14 +119,14 @@ namespace nap
 	bool DepthComparer::operator()(const ComponentInstance* objectA, const ComponentInstance* objectB)
 	{
 		// Get the transform of objectA in view space
-		const EntityInstance& entity_a = *objectA->getEntityInstance();
-		const TransformComponentInstance& transform_a = entity_a.getComponent<TransformComponentInstance>();
-		const glm::mat4 view_space_a = mViewMatrix * transform_a.getGlobalTransform();
+		const auto& entity_a = *objectA->getEntityInstance();
+		const auto& transform_a = entity_a.getComponent<TransformComponentInstance>();
+		const auto view_space_a = mViewMatrix * transform_a.getGlobalTransform();
 
 		// Get the transform of objectB in view space
-		const EntityInstance& entity_b = *objectB->getEntityInstance();
-		const TransformComponentInstance& transform_b = entity_b.getComponent<TransformComponentInstance>();
-		const glm::mat4 view_space_b = mViewMatrix * transform_b.getGlobalTransform();
+		const auto& entity_b = *objectB->getEntityInstance();
+		const auto& transform_b = entity_b.getComponent<TransformComponentInstance>();
+		const auto view_space_b = mViewMatrix * transform_b.getGlobalTransform();
 
 		// Get the z-component (i.e. depth) of both entities
 		float a_z = view_space_a[3].z;
@@ -132,13 +148,13 @@ namespace nap
 	bool ZComparer::operator()(const ComponentInstance* objectA, const ComponentInstance* objectB)
 	{
 		// Get the transform of objectA in view space
-		const EntityInstance& entity_a = *objectA->getEntityInstance();
-		const TransformComponentInstance& transform_a = entity_a.getComponent<TransformComponentInstance>();
+		const auto& entity_a = *objectA->getEntityInstance();
+		const auto& transform_a = entity_a.getComponent<TransformComponentInstance>();
 		const auto& translate_a = math::extractPosition(transform_a.getGlobalTransform());
 
 		// Get the transform of objectB in view space
-		const EntityInstance& entity_b = *objectB->getEntityInstance();
-		const TransformComponentInstance& transform_b = entity_b.getComponent<TransformComponentInstance>();
+		const auto& entity_b = *objectB->getEntityInstance();
+		const auto& transform_b = entity_b.getComponent<TransformComponentInstance>();
 		const auto& translate_b = math::extractPosition(transform_b.getGlobalTransform());
 
 		// Compare

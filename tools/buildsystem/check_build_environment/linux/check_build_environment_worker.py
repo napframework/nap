@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-from distutils.version import LooseVersion
 import json
 import os
 from platform import machine
@@ -145,7 +144,7 @@ def check_qt_version():
 
     # OK is version matching required version
     if not qt_found_version is None:
-        qt_version_ok = LooseVersion(qt_found_version) == LooseVersion(REQUIRED_QT_VERSION)
+        qt_version_ok = str(qt_found_version) == str(REQUIRED_QT_VERSION)
 
     # Cleanup
     if os.path.exists(temp_build_dir):

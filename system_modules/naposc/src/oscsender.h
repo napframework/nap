@@ -45,6 +45,7 @@ namespace nap
 		std::string mIPAddress = "127.0.0.1";	///< Property: 'IpAddress' target machine ip address
 		int mPort = 8000;			            ///< Property: 'Port' target machine port
 		int mBufferScale = 2;					///< Property: 'Scale' scale factor applied to OSC message buffer.
+		bool mAllowFailure = false;             ///< Property: 'AllowFailure' if true, the sender will not fail to init if it fails to create the UDPTransmitSocket on init
 
 
 		/**
