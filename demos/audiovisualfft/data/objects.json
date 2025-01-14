@@ -46,8 +46,7 @@
                     "mID": "AudioPlayback",
                     "Buffer": "AudioFile",
                     "ChannelRouting": [
-                        0,
-                        1
+                        0
                     ],
                     "Gain": 1.0,
                     "StereoPanning": 0.5,
@@ -64,7 +63,7 @@
                     "Input": "./AudioPlayback",
                     "Routing": [
                         0,
-                        1
+                        0
                     ]
                 },
                 {
@@ -956,7 +955,7 @@
             "Groups": [
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "MeshParameters",
+                    "mID": "Mesh",
                     "Parameters": [
                         {
                             "Type": "nap::ParameterInt",
@@ -1019,7 +1018,7 @@
                 },
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "MaterialParameters",
+                    "mID": "Material",
                     "Parameters": [
                         {
                             "Type": "nap::ParameterRGBColorFloat",
@@ -1128,7 +1127,7 @@
                 },
                 {
                     "Type": "nap::ParameterGroup",
-                    "mID": "DOFParameters",
+                    "mID": "DOF",
                     "Parameters": [
                         {
                             "Type": "nap::ParameterFloat",

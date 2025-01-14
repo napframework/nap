@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include "audiovisualapp.h"
+#include "audiovisualfftapp.h"
 
 // Nap includes
 #include <nap/core.h>
@@ -18,7 +18,7 @@ int main(int argc, char *argv[])
 	nap::Core core;
 
 	// Create app runner
-	nap::AppRunner<nap::AudioVisualApp, nap::GUIAppEventHandler> app_runner(core);
+	nap::AppRunner<nap::AudioVisualFFTApp, nap::GUIAppEventHandler> app_runner(core);
 
 	// Start
 	nap::utility::ErrorState error;

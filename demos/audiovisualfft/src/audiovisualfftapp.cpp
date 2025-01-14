@@ -2,7 +2,7 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
-#include "audiovisualapp.h"
+#include "audiovisualfftapp.h"
 
 // External Includes
 #include <utility/fileutils.h>
@@ -15,7 +15,7 @@
 #include <renderdofcomponent.h>
 #include <rendertotexturecomponent.h>
 
-RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioVisualApp)
+RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::AudioVisualFFTApp)
 	RTTI_CONSTRUCTOR(nap::Core&)
 RTTI_END_CLASS
 
@@ -25,7 +25,7 @@ namespace nap
 	 * Initialize all the resources and instances used for drawing
 	 * slowly migrating all functionality to NAP
 	 */
-	bool AudioVisualApp::init(utility::ErrorState& errorState)
+	bool AudioVisualFFTApp::init(utility::ErrorState& errorState)
 	{
 		// Retrieve services
 		mRenderService			= getCore().getService<RenderService>();
@@ -84,7 +84,7 @@ namespace nap
 	}
 
 
-	bool AudioVisualApp::preRenderCubeMap(utility::ErrorState& errorState)
+	bool AudioVisualFFTApp::preRenderCubeMap(utility::ErrorState& errorState)
 	{
 		auto cube_map = mResourceManager->findObject<CubeRenderTarget>("CubeRenderTarget");
 		if (!errorState.check(cube_map != nullptr, "unable to find cube render target with name: %s", "CubeRenderTarget"))
@@ -108,7 +108,7 @@ namespace nap
 	}
 
 
-	void AudioVisualApp::reload()
+	void AudioVisualFFTApp::reload()
 	{
 		utility::ErrorState error_state;
 		if (!preRenderCubeMap(error_state))
@@ -117,7 +117,7 @@ namespace nap
 
 
 	// Update app
-	void AudioVisualApp::update(double deltaTime)
+	void AudioVisualFFTApp::update(double deltaTime)
 	{
 		// Use a default input router to forward input events (recursively) to all input components in the default scene
 		nap::DefaultInputRouter input_router(true);
@@ -132,12 +132,13 @@ namespace nap
 		for (const auto& gui : mResourceManager->getObjects<ParameterGUI>())
 			gui->show(false);
 
+		ImGui::Text("Music: Hang by Breek (www.breek.me)");
 		ImGui::End();
 	}
 	
 	
 	// Render app
-	void AudioVisualApp::render()
+	void AudioVisualFFTApp::render()
 	{
 		// Signal the beginning of a new frame, allowing it to be recorded.
 		// The system might wait until all commands that were previously associated with the new frame have been processed on the GPU.
@@ -207,13 +208,13 @@ namespace nap
 	}
 	
 
-	void AudioVisualApp::windowMessageReceived(WindowEventPtr windowEvent)
+	void AudioVisualFFTApp::windowMessageReceived(WindowEventPtr windowEvent)
 	{
 		mRenderService->addEvent(std::move(windowEvent));
 	}
 	
 	
-	void AudioVisualApp::inputMessageReceived(InputEventPtr inputEvent)
+	void AudioVisualFFTApp::inputMessageReceived(InputEventPtr inputEvent)
 	{
 		if (inputEvent->get_type().is_derived_from(RTTI_OF(nap::KeyPressEvent)))
 		{
@@ -235,7 +236,7 @@ namespace nap
 	}
 
 	
-	int AudioVisualApp::shutdown()
+	int AudioVisualFFTApp::shutdown()
 	{
 		return 0;
 	}

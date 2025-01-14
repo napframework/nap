@@ -1,13 +1,13 @@
 {
     "Type": "nap::ProjectInfo",
     "mID": "ProjectInfo",
-    "Title": "audiovisual",
+    "Title": "audiovisualfft",
     "Version": "0.1.0",
     "RequiredModules": [
         "napapp",
         "napcameracontrol",
         "napparametergui",
-        "napaudiovisual"
+        "napaudiovisualfft"
     ],
     "Data": "data/objects.json",
     "ServiceConfig": "",

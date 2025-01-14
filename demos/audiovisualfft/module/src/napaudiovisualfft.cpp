@@ -4,4 +4,4 @@
 
 #include "utility/module.h"
 
-NAP_MODULE("napaudiovisual", "0.1.0")
+NAP_MODULE("napaudiovisualfft", "0.1.0")
