@@ -15,6 +15,7 @@
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
 	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyBoxComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkboxTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraComponent",		&napkin::FrameCubemapComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mOrbitController,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mRenderMeshComponent,	nap::rtti::EPropertyMetaData::Required)
@@ -151,17 +152,31 @@ namespace napkin
 	{
 		// Compute camera distance using bounds -> Use a bounding sphere to capture every axis, regardless of orientation
 		const auto& bounds = getBounds();
-		float cam_offset = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
-			mCameraComponent->getFieldOfView()) + bounds.getDepth() / 2.0f;
+		float cam_distance = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
+			mCameraComponent->getFieldOfView());
 
-		// Setup camera
+		nap::Logger::info("Mesh: %s, Camera distance: %.2f", mRenderMeshComponent->getMesh().mID.c_str(), cam_distance);
+
+		// Setup orbit controller
 		auto center = bounds.getCenter();
-		glm::vec3 camera = { center.x, center.y, center.z + cam_offset };
+		glm::vec3 camera_pos = { center.x, center.y, center.z + (bounds.getDepth() / 2.0f) + cam_distance };
+		mOrbitController->enable(camera_pos, center);
 		mOrbitController->setMovementSpeed(bounds.getDiagonal() * mSpeedReference);
-		mOrbitController->enable(camera, center);
 		mSkyboxComponent->setOpacity(1.0f);
 		mRotateComponent->reset();
 		mRotateComponent->setSpeed(0.0f);
+
+		// Orient skybox
+		float sky_scale = math::max<float>(1000.0f, bounds.getDiagonal() * 1000.0f);
+		mSkyboxTransform->setTranslate(bounds.getCenter());
+		mSkyboxTransform->setUniformScale(sky_scale);
+
+		// Compute camera clip planes and set
+		// TODO: Parent skybox to camera to reduce far clip size
+		auto props = mCameraComponent->getProperties();
+		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.15f);
+		props.mFarClippingPlane = sky_scale;
+		mCameraComponent->setProperties(props);
 	}
 
 

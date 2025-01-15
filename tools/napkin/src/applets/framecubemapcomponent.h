@@ -31,6 +31,7 @@ namespace napkin
 	public:
 		// Properties
 		nap::ComponentPtr<RenderSkyBoxComponent> mSkyBoxComponent;			///< Property: 'SkyboxComponent' the render skybox component
+		nap::ComponentPtr<TransformComponent> mSkboxTransform;				///< Property: 'SkyboxTransform' the skybox transform component
 		nap::ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' the cubemap camera orbit controller
 		nap::ComponentPtr<PerspCameraComponent> mCameraComponent;			///< Property: 'CameraComponent' the cubemap perspective camera
 		nap::ComponentPtr<RenderableMeshComponent> mRenderMeshComponent;	///< Property: 'MeshComponent' the reflective render mesh component
@@ -175,6 +176,9 @@ namespace napkin
 		// Rotate component link
 		ComponentInstancePtr<RotateComponent> mRotateComponent = { this, &FrameCubemapComponent::mRotateComponent };
 
+		// Skybox transform link
+		ComponentInstancePtr<TransformComponent> mSkyboxTransform = { this, &FrameCubemapComponent::mSkboxTransform };
+
 	private:
 		TextureCube* mTextureFallback = nullptr;					//< Fall-back texture (managed by resource manager)
 		std::unique_ptr<nap::TextureCube> mTexture = nullptr;		//< Current active loaded Cube texture
@@ -187,3 +191,4 @@ namespace napkin
 		void bind(TextureCube& texture);							//< Binds a cubemap texture
 	};
 }
+

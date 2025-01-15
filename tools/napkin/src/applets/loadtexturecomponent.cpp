@@ -194,8 +194,8 @@ namespace napkin
 				// Select and frame when requested
 				auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadMeshArg2);
 				if (frame_arg->asBool())
-
 				{
+					mFrame2DTextureComponent->setMode(Frame2DTextureComponentInstance::EMode::Mesh);
 					mFrame2DTextureComponent->setMeshIndex(idx);
 					mFrame2DTextureComponent->frame();
 				}

@@ -144,10 +144,6 @@ namespace napkin
 		mBounds.emplace_back(utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance()));
 		mMesh = std::move(mesh);
 
-		// Select
-		setMeshIndex(mMeshes.size() - 1);
-		setMode(EMode::Mesh);
-
 		// Bind for rendering if selected
 		setMeshIndex(getMeshIndex());
 		return mMeshes.size() - 1;
@@ -173,16 +169,22 @@ namespace napkin
 
 		// Compute mesh camera distance using bounds
 		const auto& bounds = getBounds();
-		float cam_offset = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
-			mMeshCamera->getFieldOfView()) + bounds.getDepth() / 2.0f;
+		float cam_distance = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
+			mMeshCamera->getFieldOfView());
 
 		// Mesh
 		auto center = bounds.getCenter();
-		glm::vec3 camera = { center.x, center.y, center.z + cam_offset };
+		glm::vec3 camera = { center.x, center.y, center.z + (bounds.getDepth() / 2.0f) + cam_distance };
 		mMeshOrbit->enable(camera, center);
 		mMeshOrbit->setMovementSpeed(mSpeedReference * bounds.getDiagonal());
 		mMeshRotate->reset();
 		mMeshRotate->setSpeed(0.0f);
+
+		// Compute mesh camera clip planes and set
+		auto props = mMeshCamera->getProperties();
+		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
+		props.mFarClippingPlane = math::max<float>(1.0f, bounds.getDiagonal() * 100.0f);
+		mMeshCamera->setProperties(props);
 	}
 
 
