@@ -21,6 +21,7 @@ RTTI_BEGIN_CLASS(napkin::Frame2DTextureComponent)
 	RTTI_PROPERTY("MeshRenderer",			&napkin::Frame2DTextureComponent::mMeshRenderer,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshCamera",				&napkin::Frame2DTextureComponent::mMeshCamera,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshRotate",				&napkin::Frame2DTextureComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshTransform",			&napkin::Frame2DTextureComponent::mMeshTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshOrbit",				&napkin::Frame2DTextureComponent::mMeshOrbit,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",		&napkin::Frame2DTextureComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Meshes",					&napkin::Frame2DTextureComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
@@ -162,7 +163,7 @@ namespace napkin
 
 	void Frame2DTextureComponentInstance::frame()
 	{
-		// 2D
+		// 2D Projection
 		assert(mPlaneSampler->hasTexture());
 		mZoomPanController->frameTexture(mPlaneSampler->getTexture(), *mPlaneTransform);
 		mPlaneOpacity->setValue(1.0f);
@@ -172,19 +173,22 @@ namespace napkin
 		float cam_distance = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
 			mMeshCamera->getFieldOfView());
 
-		// Mesh
-		auto center = bounds.getCenter();
-		glm::vec3 camera = { center.x, center.y, center.z + (bounds.getDepth() / 2.0f) + cam_distance };
-		mMeshOrbit->enable(camera, center);
+		// Setup camera orbit controller
+		glm::vec3 camera_pos = { 0.0f, 0.0f, (bounds.getDepth() / 2.0f) + cam_distance };
+		mMeshOrbit->enable(camera_pos, {0.0f, 0.0f, 0.0f});
 		mMeshOrbit->setMovementSpeed(mSpeedReference * bounds.getDiagonal());
-		mMeshRotate->reset();
-		mMeshRotate->setSpeed(0.0f);
 
 		// Compute mesh camera clip planes and set
 		auto props = mMeshCamera->getProperties();
 		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
 		props.mFarClippingPlane = math::max<float>(1.0f, bounds.getDiagonal() * 100.0f);
 		mMeshCamera->setProperties(props);
+
+		// Scale and center everything -> move mesh to center
+		auto mesh_center = bounds.getCenter();
+		mMeshTransform->setTranslate(-bounds.getCenter());
+		mMeshRotate->reset();
+		mMeshRotate->setSpeed(0.0f);
 	}
 
 

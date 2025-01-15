@@ -38,7 +38,8 @@ namespace napkin
 		ComponentPtr<OrthoCameraComponent> mPlaneCamera;				///< Property: 'PlaneCamera' the 2D plane orthographic camera
 		ComponentPtr<RenderableMeshComponent> mMeshRenderer;			///< Property: 'MeshRenderer' the 2D texture mesh render component
 		ComponentPtr<PerspCameraComponent> mMeshCamera;					///< Property: 'MeshCamera' the 2D texture mesh camera
-		ComponentPtr<RotateComponent> mMeshRotate;						///< Property: 'RotateComponent' the rotate component
+		ComponentPtr<RotateComponent> mMeshRotate;						///< Property: 'MeshRotate' the rotate component
+		ComponentPtr<TransformComponent> mMeshTransform;				///< Property: 'MeshTransform' the mesh transform component
 		ComponentPtr<OrbitController> mMeshOrbit;						///< Property: 'MeshOrbit' the mesh orbit controller
 		ResourcePtr<Texture2D> mFallbackTexture;						///< Property: 'FallbackTexture' the default fall-back texture
 		std::vector<nap::ResourcePtr<IMesh>> mMeshes;					///< Property: 'Meshes' all assignable uv meshes
@@ -206,6 +207,9 @@ namespace napkin
 
 		// Resolved mesh orbit component
 		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &Frame2DTextureComponent::mMeshOrbit };
+
+		// Resolved mesh transform component
+		ComponentInstancePtr<TransformComponent> mMeshTransform = { this, &Frame2DTextureComponent::mMeshTransform };
 
 	private:
 

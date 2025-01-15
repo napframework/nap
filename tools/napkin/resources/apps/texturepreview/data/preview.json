@@ -11,9 +11,10 @@
                     "PlaneTransform": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneTransformComponent",
                     "PlaneRenderer": "./2DPlaneEntity/2DPlaneTextureEntity/2DPlaneRenderComponent",
                     "PlaneCamera": "./2DPlaneEntity/2DOrthoCameraEntity/2DOrthoCameraComponent",
-                    "MeshRenderer": "./2DMeshEntity/2DMeshTextureEntity/2DMeshRenderComponent",
+                    "MeshRenderer": "./2DMeshEntity/2DMeshTextureEntity/2DMeshTextureRenderEntity/2DMeshRenderComponent",
                     "MeshCamera": "./2DMeshEntity/2DPerspCameraEntity/2DPerspCameraComponent",
                     "MeshRotate": "./2DMeshEntity/2DMeshTextureEntity/2DMeshRotateComponent",
+                    "MeshTransform": "./2DMeshEntity/2DMeshTextureEntity/2DMeshTextureRenderEntity/2DMeshGeoTransformComponent",
                     "MeshOrbit": "./2DMeshEntity/2DPerspCameraEntity/2DPerspCameraOrbitComponent",
                     "FallbackTexture": "Fallback2DTexture",
                     "Meshes": [
@@ -65,6 +66,51 @@
                     }
                 },
                 {
+                    "Type": "nap::RotateComponent",
+                    "mID": "2DMeshRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.0,
+                        "Offset": 0.0
+                    }
+                }
+            ],
+            "Children": [
+                "2DMeshTextureRenderEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "2DMeshTextureRenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "2DMeshGeoTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                },
+                {
                     "Type": "nap::RenderableMeshComponent",
                     "mID": "2DMeshRenderComponent",
                     "Visible": true,
@@ -90,20 +136,6 @@
                             "x": 0.0,
                             "y": 0.0
                         }
-                    }
-                },
-                {
-                    "Type": "nap::RotateComponent",
-                    "mID": "2DMeshRotateComponent",
-                    "Enabled": true,
-                    "Properties": {
-                        "Axis": {
-                            "x": 0.0,
-                            "y": 1.0,
-                            "z": 0.0
-                        },
-                        "Speed": 0.0,
-                        "Offset": 0.0
                     }
                 }
             ],
@@ -334,8 +366,9 @@
                     "SkboxTransform": "./CubeTextureEntity/CubeTextureTransformComponent",
                     "CameraComponent": "./CubePerspCameraEntity/CubePerspCameraComponent",
                     "OrbitController": "./CubePerspCameraEntity/CubePerspCameraOrbitComponent",
-                    "RenderMeshComponent": "./CubeMeshEntity/CubeMeshRenderComponent",
+                    "RenderMeshComponent": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshRenderComponent",
                     "RotateComponent": "./CubeMeshEntity/CubeMeshRotateComponent",
+                    "MeshTransform": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshGeoTransformComponent",
                     "FallbackTexture": "FallbackCubeTexture",
                     "Meshes": [
                         "Sphere",
@@ -358,8 +391,53 @@
             "mID": "CubeMeshEntity",
             "Components": [
                 {
+                    "Type": "nap::RotateComponent",
+                    "mID": "CubeMeshRotateComponent",
+                    "Enabled": true,
+                    "Properties": {
+                        "Axis": {
+                            "x": 0.0,
+                            "y": 1.0,
+                            "z": 0.0
+                        },
+                        "Speed": 0.0,
+                        "Offset": 0.0
+                    }
+                },
+                {
                     "Type": "nap::TransformComponent",
                     "mID": "CubeMeshTransformComponent",
+                    "Properties": {
+                        "Translate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Rotate": {
+                            "x": 0.0,
+                            "y": 0.0,
+                            "z": 0.0
+                        },
+                        "Scale": {
+                            "x": 1.0,
+                            "y": 1.0,
+                            "z": 1.0
+                        },
+                        "UniformScale": 1.0
+                    }
+                }
+            ],
+            "Children": [
+                "CubeMeshRenderEntity"
+            ]
+        },
+        {
+            "Type": "nap::Entity",
+            "mID": "CubeMeshRenderEntity",
+            "Components": [
+                {
+                    "Type": "nap::TransformComponent",
+                    "mID": "CubeMeshGeoTransformComponent",
                     "Properties": {
                         "Translate": {
                             "x": 0.0,
@@ -405,20 +483,6 @@
                             "x": 0.0,
                             "y": 0.0
                         }
-                    }
-                },
-                {
-                    "Type": "nap::RotateComponent",
-                    "mID": "CubeMeshRotateComponent",
-                    "Enabled": true,
-                    "Properties": {
-                        "Axis": {
-                            "x": 0.0,
-                            "y": 1.0,
-                            "z": 0.0
-                        },
-                        "Speed": 0.0,
-                        "Offset": 0.0
                     }
                 }
             ],

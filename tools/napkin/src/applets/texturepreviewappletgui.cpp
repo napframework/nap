@@ -198,7 +198,7 @@ namespace napkin
 	void TexturePreviewAppletGUI::updateTextureCube(LoadTextureComponentInstance& controller)
 	{
 		// Mesh visibility
-		auto& render_mesh_comp = *controller.mFrameCubeComponent->mRenderMeshComponent;
+		auto& render_mesh_comp = *controller.mFrameCubeComponent->mMeshRenderer;
 		bool visible = render_mesh_comp.isVisible();
 		if (ImGui::Checkbox("Show Mesh", &visible))
 			render_mesh_comp.setVisible(!render_mesh_comp.isVisible());

@@ -14,12 +14,13 @@
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
-	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyBoxComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyBoxRender,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkboxTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraComponent",		&napkin::FrameCubemapComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mOrbitController,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mRenderMeshComponent,	nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mRotateComponent,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mMeshRenderer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mMeshRotator,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshTransform",			&napkin::FrameCubemapComponent::mMeshTransform,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",		&napkin::FrameCubemapComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Meshes",					&napkin::FrameCubemapComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
 RTTI_END_CLASS
@@ -47,7 +48,7 @@ namespace napkin
 	bool FrameCubemapComponentInstance::init(utility::ErrorState& errorState)
 	{
 		// Fetch reflective mesh cubemap sampler input
-		mReflectiveCubeSampler = mRenderMeshComponent->getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>("environmentMap");
+		mReflectiveCubeSampler = mMeshRenderer->getMaterialInstance().getOrCreateSampler<SamplerCubeInstance>("environmentMap");
 		if (!errorState.check(mReflectiveCubeSampler != nullptr, "Missing cube sampler input '%s'", "environmentMap"))
 			return false;
 
@@ -59,7 +60,7 @@ namespace napkin
 		for (auto& mesh : resource->mMeshes)
 		{
 			// Create mesh / material combo
-			RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(*mesh, errorState);
+			RenderableMesh render_mesh = mMeshRenderer->createRenderableMesh(*mesh, errorState);
 			if (!render_mesh.isValid())
 				return false;
 
@@ -119,7 +120,7 @@ namespace napkin
 			return -1;
 
 		// Try and create a render-able mesh
-		RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(*mesh, error);
+		RenderableMesh render_mesh = mMeshRenderer->createRenderableMesh(*mesh, error);
 		if (!render_mesh.isValid())
 			return -1;
 
@@ -143,7 +144,7 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::bind(TextureCube& texture)
 	{
-		mSkyboxComponent->setTexture(texture);
+		mSkyBoxRenderer->setTexture(texture);
 		mReflectiveCubeSampler->setTexture(texture);
 	}
 
@@ -155,28 +156,27 @@ namespace napkin
 		float cam_distance = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
 			mCameraComponent->getFieldOfView());
 
-		nap::Logger::info("Mesh: %s, Camera distance: %.2f", mRenderMeshComponent->getMesh().mID.c_str(), cam_distance);
-
-		// Setup orbit controller
-		auto center = bounds.getCenter();
-		glm::vec3 camera_pos = { center.x, center.y, center.z + (bounds.getDepth() / 2.0f) + cam_distance };
-		mOrbitController->enable(camera_pos, center);
+		// Setup camera orbit controller
+		glm::vec3 camera_pos = { 0.0f, 0.0f, bounds.getDepth() / 2.0f + cam_distance };
+		mOrbitController->enable(camera_pos, {0.0f, 0.0f, 0.0f});
 		mOrbitController->setMovementSpeed(bounds.getDiagonal() * mSpeedReference);
-		mSkyboxComponent->setOpacity(1.0f);
-		mRotateComponent->reset();
-		mRotateComponent->setSpeed(0.0f);
 
-		// Orient skybox
-		float sky_scale = math::max<float>(1000.0f, bounds.getDiagonal() * 1000.0f);
-		mSkyboxTransform->setTranslate(bounds.getCenter());
-		mSkyboxTransform->setUniformScale(sky_scale);
-
-		// Compute camera clip planes and set
+		// Compute camera clip planes
 		// TODO: Parent skybox to camera to reduce far clip size
+		float sky_scale = math::max<float>(1000.0f, bounds.getDiagonal() * 1000.0f);
 		auto props = mCameraComponent->getProperties();
 		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.15f);
 		props.mFarClippingPlane = sky_scale;
 		mCameraComponent->setProperties(props);
+
+		// Scale and center everything
+		auto mesh_center = bounds.getCenter();
+		mSkyboxTransform->setTranslate({ 0.0f, 0.0f, 0.0f });
+		mSkyboxTransform->setUniformScale(sky_scale);
+		mMeshTransform->setTranslate(-mesh_center);
+		mMeshRotator->reset();
+		mMeshRotator->setSpeed(0.0f);
+		mSkyBoxRenderer->setOpacity(1.0f);
 	}
 
 
@@ -188,14 +188,14 @@ namespace napkin
 
 	const nap::TextureCube& FrameCubemapComponentInstance::getTexture() const
 	{
-		return mSkyboxComponent->getTexture();
+		return mSkyBoxRenderer->getTexture();
 	}
 
 
 	void FrameCubemapComponentInstance::setMeshIndex(int index)
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
-		mRenderMeshComponent->setMesh(mMeshes[mMeshIndex]);
+		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
 	}
 
 
@@ -222,7 +222,8 @@ namespace napkin
 	void FrameCubemapComponentInstance::draw(RenderService& renderService, RenderWindow& window)
 	{
 		// First draw skybox, then reflective mesh
-		renderService.renderObjects(window, *mCameraComponent,  { mSkyboxComponent.get() });
-		renderService.renderObjects(window, *mCameraComponent,  { mRenderMeshComponent.get() });
+		renderService.renderObjects(window, *mCameraComponent,  { mSkyBoxRenderer.get() });
+		renderService.renderObjects(window, *mCameraComponent,  { mMeshRenderer.get() });
 	}
 }
+
