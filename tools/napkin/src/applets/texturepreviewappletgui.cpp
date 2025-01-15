@@ -177,7 +177,7 @@ namespace napkin
 
 				// Add mesh combo selection
 				int current_idx = controller.mFrame2DTextureComponent->getMeshIndex();
-				if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+				if (ImGui::Combo("Preview Mesh", &current_idx, labels.data(), meshes.size()))
 				{
 					controller.mFrame2DTextureComponent->setMeshIndex(current_idx);
 					controller.frame();
@@ -210,7 +210,7 @@ namespace napkin
 
 		// Add mesh combo selection
 		int current_idx = controller.mFrameCubeComponent->getMeshIndex();
-		if (ImGui::Combo("Mesh Selection", &current_idx, labels.data(), meshes.size()))
+		if (ImGui::Combo("Preview Mesh", &current_idx, labels.data(), meshes.size()))
 		{
 			controller.mFrameCubeComponent->setMeshIndex(current_idx);
 			controller.frame();

@@ -14,12 +14,12 @@
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
-	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyBoxRender,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkboxTransform,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyRenderer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkyTransform,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraComponent",		&napkin::FrameCubemapComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mOrbitController,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mMeshOrbit,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mMeshRenderer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mMeshRotator,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshTransform",			&napkin::FrameCubemapComponent::mMeshTransform,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",		&napkin::FrameCubemapComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Meshes",					&napkin::FrameCubemapComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
@@ -82,7 +82,7 @@ namespace napkin
 		mTextureFallback = getComponent<FrameCubemapComponent>()->mFallbackTexture.get();
 
 		// Fetch normalized rotation speed
-		mSpeedReference = mOrbitController->getMovementSpeed();
+		mSpeedReference = mMeshOrbit->getMovementSpeed();
 
 		// Setup
 		setMeshIndex(0);
@@ -144,7 +144,7 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::bind(TextureCube& texture)
 	{
-		mSkyBoxRenderer->setTexture(texture);
+		mSkyRenderer->setTexture(texture);
 		mReflectiveCubeSampler->setTexture(texture);
 	}
 
@@ -158,8 +158,8 @@ namespace napkin
 
 		// Setup camera orbit controller
 		glm::vec3 camera_pos = { 0.0f, 0.0f, bounds.getDepth() / 2.0f + cam_distance };
-		mOrbitController->enable(camera_pos, {0.0f, 0.0f, 0.0f});
-		mOrbitController->setMovementSpeed(bounds.getDiagonal() * mSpeedReference);
+		mMeshOrbit->enable(camera_pos, {0.0f, 0.0f, 0.0f});
+		mMeshOrbit->setMovementSpeed(bounds.getDiagonal() * mSpeedReference);
 
 		// Compute camera clip planes
 		// TODO: Parent skybox to camera to reduce far clip size
@@ -171,12 +171,12 @@ namespace napkin
 
 		// Scale and center everything
 		auto mesh_center = bounds.getCenter();
-		mSkyboxTransform->setTranslate({ 0.0f, 0.0f, 0.0f });
-		mSkyboxTransform->setUniformScale(sky_scale);
+		mSkyTransform->setTranslate({ 0.0f, 0.0f, 0.0f });
+		mSkyTransform->setUniformScale(sky_scale);
 		mMeshTransform->setTranslate(-mesh_center);
-		mMeshRotator->reset();
-		mMeshRotator->setSpeed(0.0f);
-		mSkyBoxRenderer->setOpacity(1.0f);
+		mMeshRotate->reset();
+		mMeshRotate->setSpeed(0.0f);
+		mSkyRenderer->setOpacity(1.0f);
 	}
 
 
@@ -188,7 +188,7 @@ namespace napkin
 
 	const nap::TextureCube& FrameCubemapComponentInstance::getTexture() const
 	{
-		return mSkyBoxRenderer->getTexture();
+		return mSkyRenderer->getTexture();
 	}
 
 
@@ -222,7 +222,7 @@ namespace napkin
 	void FrameCubemapComponentInstance::draw(RenderService& renderService, RenderWindow& window)
 	{
 		// First draw skybox, then reflective mesh
-		renderService.renderObjects(window, *mCameraComponent,  { mSkyBoxRenderer.get() });
+		renderService.renderObjects(window, *mCameraComponent,  { mSkyRenderer.get() });
 		renderService.renderObjects(window, *mCameraComponent,  { mMeshRenderer.get() });
 	}
 }

@@ -30,12 +30,12 @@ namespace napkin
 
 	public:
 		// Properties
-		nap::ComponentPtr<RenderSkyBoxComponent> mSkyBoxRender;				///< Property: 'SkyboxComponent' the render skybox component
-		nap::ComponentPtr<TransformComponent> mSkboxTransform;				///< Property: 'SkyboxTransform' the skybox transform component
-		nap::ComponentPtr<OrbitController> mOrbitController;				///< Property: 'OrbitController' the cubemap camera orbit controller
+		nap::ComponentPtr<RenderSkyBoxComponent> mSkyRenderer;				///< Property: 'SkyboxComponent' the render skybox component
+		nap::ComponentPtr<TransformComponent> mSkyTransform;				///< Property: 'SkyboxTransform' the skybox transform component
+		nap::ComponentPtr<OrbitController> mMeshOrbit;						///< Property: 'OrbitController' the cubemap camera orbit controller
 		nap::ComponentPtr<PerspCameraComponent> mCameraComponent;			///< Property: 'CameraComponent' the cubemap perspective camera
 		nap::ComponentPtr<RenderableMeshComponent> mMeshRenderer;			///< Property: 'MeshComponent' the reflective render mesh component
-		nap::ComponentPtr<RotateComponent> mMeshRotator;					///< Property: 'RotateComponent' the rotate component
+		nap::ComponentPtr<RotateComponent> mMeshRotate;						///< Property: 'RotateComponent' the rotate component
 		nap::ComponentPtr<TransformComponent> mMeshTransform;				///< Property: 'MeshTransform' the transform of the mesh
 		ResourcePtr<nap::TextureCube> mFallbackTexture = nullptr;			///< Property: 'FallbackTexture' the default fall-back texture
 		std::vector<nap::ResourcePtr<IMesh>> mMeshes;						///< Property: 'Meshes' all assignable reflective meshes
@@ -98,25 +98,25 @@ namespace napkin
 		 * Sets the cubemap opacity
 		 * @param opacity new texture opacity
 		 */
-		void setOpacity(float opacity)											{ mSkyBoxRenderer->setOpacity(opacity); }
+		void setOpacity(float opacity)											{ mSkyRenderer->setOpacity(opacity); }
 
 		/**
 		 * Returns the cubemap opacity
 		 * @param opacity new texture opacity
 		 */
-		float getOpacity() const												{ return mSkyBoxRenderer->getOpacity(); }
+		float getOpacity() const												{ return mSkyRenderer->getOpacity(); }
 
 		/**
 		 * Sets rotation
 		 * @param rotation speed in seconds
 		 */
-		void setRotation(float speed)											{ mMeshRotator->setSpeed(speed); }
+		void setRotation(float speed)											{ mMeshRotate->setSpeed(speed); }
 
 		/**
 		 * Gets rotation
 		 * @return rotation speed in seconds
 		 */
-		float getRotation() const												{ return mMeshRotator->getSpeed(); }
+		float getRotation() const												{ return mMeshRotate->getSpeed(); }
 
 		/**
 		 * @return current mesh index
@@ -166,19 +166,19 @@ namespace napkin
 		ComponentInstancePtr<PerspCameraComponent> mCameraComponent = { this, &FrameCubemapComponent::mCameraComponent };
 
 		// Orbit controller link
-		ComponentInstancePtr<OrbitController> mOrbitController = { this, &FrameCubemapComponent::mOrbitController };
+		ComponentInstancePtr<OrbitController> mMeshOrbit = { this, &FrameCubemapComponent::mMeshOrbit };
 
 		// Render mesh component link
 		ComponentInstancePtr<RenderableMeshComponent> mMeshRenderer = { this, &FrameCubemapComponent::mMeshRenderer };
 
 		// Skybox component link
-		ComponentInstancePtr<RenderSkyBoxComponent> mSkyBoxRenderer = { this, &FrameCubemapComponent::mSkyBoxRender };
+		ComponentInstancePtr<RenderSkyBoxComponent> mSkyRenderer = { this, &FrameCubemapComponent::mSkyRenderer };
 
 		// Rotate component link
-		ComponentInstancePtr<RotateComponent> mMeshRotator = { this, &FrameCubemapComponent::mMeshRotator };
+		ComponentInstancePtr<RotateComponent> mMeshRotate = { this, &FrameCubemapComponent::mMeshRotate };
 
 		// Skybox transform link
-		ComponentInstancePtr<TransformComponent> mSkyboxTransform = { this, &FrameCubemapComponent::mSkboxTransform };
+		ComponentInstancePtr<TransformComponent> mSkyTransform = { this, &FrameCubemapComponent::mSkyTransform };
 
 		// Mesh transform link
 		ComponentInstancePtr<TransformComponent> mMeshTransform = { this, &FrameCubemapComponent::mMeshTransform };
