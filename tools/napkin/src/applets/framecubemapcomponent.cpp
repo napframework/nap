@@ -14,12 +14,12 @@
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
-	RTTI_PROPERTY("SkyboxComponent",		&napkin::FrameCubemapComponent::mSkyRenderer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkyTransform,		nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkyboxRenderer",			&napkin::FrameCubemapComponent::mSkyRenderer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("SkboxTransform",			&napkin::FrameCubemapComponent::mSkyTransform,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("CameraComponent",		&napkin::FrameCubemapComponent::mCameraComponent,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("OrbitController",		&napkin::FrameCubemapComponent::mMeshOrbit,		nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RenderMeshComponent",	&napkin::FrameCubemapComponent::mMeshRenderer,			nap::rtti::EPropertyMetaData::Required)
-	RTTI_PROPERTY("RotateComponent",		&napkin::FrameCubemapComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshOrbit",				&napkin::FrameCubemapComponent::mMeshOrbit,				nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRenderer",			&napkin::FrameCubemapComponent::mMeshRenderer,			nap::rtti::EPropertyMetaData::Required)
+	RTTI_PROPERTY("MeshRotate",				&napkin::FrameCubemapComponent::mMeshRotate,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("MeshTransform",			&napkin::FrameCubemapComponent::mMeshTransform,			nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("FallbackTexture",		&napkin::FrameCubemapComponent::mFallbackTexture,		nap::rtti::EPropertyMetaData::Required)
 	RTTI_PROPERTY("Meshes",					&napkin::FrameCubemapComponent::mMeshes,				nap::rtti::EPropertyMetaData::Required)
@@ -226,4 +226,3 @@ namespace napkin
 		renderService.renderObjects(window, *mCameraComponent,  { mMeshRenderer.get() });
 	}
 }
-

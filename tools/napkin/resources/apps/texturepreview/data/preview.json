@@ -362,12 +362,12 @@
                 {
                     "Type": "napkin::FrameCubemapComponent",
                     "mID": "CubeFrameComponent",
-                    "SkyboxComponent": "./CubeTextureEntity/CubeTextureRenderComponent",
+                    "SkyboxRenderer": "./CubeTextureEntity/CubeTextureRenderComponent",
                     "SkboxTransform": "./CubeTextureEntity/CubeTextureTransformComponent",
                     "CameraComponent": "./CubePerspCameraEntity/CubePerspCameraComponent",
-                    "OrbitController": "./CubePerspCameraEntity/CubePerspCameraOrbitComponent",
-                    "RenderMeshComponent": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshRenderComponent",
-                    "RotateComponent": "./CubeMeshEntity/CubeMeshRotateComponent",
+                    "MeshOrbit": "./CubePerspCameraEntity/CubePerspCameraOrbitComponent",
+                    "MeshRenderer": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshRenderComponent",
+                    "MeshRotate": "./CubeMeshEntity/CubeMeshRotateComponent",
                     "MeshTransform": "./CubeMeshEntity/CubeMeshRenderEntity/CubeMeshGeoTransformComponent",
                     "FallbackTexture": "FallbackCubeTexture",
                     "Meshes": [

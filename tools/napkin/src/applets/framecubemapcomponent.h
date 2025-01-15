@@ -30,12 +30,12 @@ namespace napkin
 
 	public:
 		// Properties
-		nap::ComponentPtr<RenderSkyBoxComponent> mSkyRenderer;				///< Property: 'SkyboxComponent' the render skybox component
+		nap::ComponentPtr<RenderSkyBoxComponent> mSkyRenderer;				///< Property: 'SkyboxRenderer' the render skybox component
 		nap::ComponentPtr<TransformComponent> mSkyTransform;				///< Property: 'SkyboxTransform' the skybox transform component
-		nap::ComponentPtr<OrbitController> mMeshOrbit;						///< Property: 'OrbitController' the cubemap camera orbit controller
+		nap::ComponentPtr<OrbitController> mMeshOrbit;						///< Property: 'MeshOrbit' the cubemap camera orbit controller
 		nap::ComponentPtr<PerspCameraComponent> mCameraComponent;			///< Property: 'CameraComponent' the cubemap perspective camera
-		nap::ComponentPtr<RenderableMeshComponent> mMeshRenderer;			///< Property: 'MeshComponent' the reflective render mesh component
-		nap::ComponentPtr<RotateComponent> mMeshRotate;						///< Property: 'RotateComponent' the rotate component
+		nap::ComponentPtr<RenderableMeshComponent> mMeshRenderer;			///< Property: 'MeshRenderer' the reflective render mesh component
+		nap::ComponentPtr<RotateComponent> mMeshRotate;						///< Property: 'MeshRotate' the rotate component
 		nap::ComponentPtr<TransformComponent> mMeshTransform;				///< Property: 'MeshTransform' the transform of the mesh
 		ResourcePtr<nap::TextureCube> mFallbackTexture = nullptr;			///< Property: 'FallbackTexture' the default fall-back texture
 		std::vector<nap::ResourcePtr<IMesh>> mMeshes;						///< Property: 'Meshes' all assignable reflective meshes
