@@ -47,11 +47,17 @@ namespace nap
 		if (!errorState.check(mTransformComponent != nullptr, "%s: missing transform component", mID.c_str()))
 			return false;
 
+		// Listent to mouse related events
 		pointer_component->pressed.connect(std::bind(&OrbitControllerInstance::onMouseDown, this, std::placeholders::_1));
 		pointer_component->moved.connect(std::bind(&OrbitControllerInstance::onMouseMove, this, std::placeholders::_1));
 		pointer_component->released.connect(std::bind(&OrbitControllerInstance::onMouseUp, this, std::placeholders::_1));
 
-		enable(getComponent<OrbitController>()->mLookAtPos);
+		// Copy settings and enable
+		auto* resource = getComponent<OrbitController>();
+		mMovementSpeed = resource->mMovementSpeed;
+		mRotateSpeed = resource->mRotateSpeed;
+		enable(resource->mLookAtPos);
+
 		return true;
 	}
 
@@ -121,8 +127,8 @@ namespace nap
 		if (mMode == EMode::Rotating)
 		{
 			// We are using the relative movement of the mouse to update the camera
-			float yaw = -(pointerMoveEvent.mRelX)  * resource->mRotateSpeed;
-			float pitch = pointerMoveEvent.mRelY * resource->mRotateSpeed;
+			float yaw = -(pointerMoveEvent.mRelX) * mRotateSpeed;
+			float pitch = pointerMoveEvent.mRelY * mRotateSpeed;
 
 			// We need to rotate around the target point. We always first rotate around the local X axis (pitch), and then
 			// we rotate around the y axis (yaw).
@@ -145,16 +151,18 @@ namespace nap
 		}
 		else if (mMode == EMode::Zooming)
 		{
+			// Zooming should work on both x and y axes.
+			// TODO: ZOOMING is not resolution independent right now
+			// TODO: HighDPI displays will scale different than regular onces, even though physical distance is the same!
+			// TODO: We should compensate for that by fetching and using the current window zoom level.
 			int pointer_move = pointerMoveEvent.mRelX;
-			// Zooming should work on both x and y axes
 			if (abs(pointerMoveEvent.mRelY) > abs(pointerMoveEvent.mRelX))
 				pointer_move = pointerMoveEvent.mRelY;
 
 			// Increase/decrease distance to target
-			float distance = pointer_move * getComponent<OrbitController>()->mMovementSpeed;
+			float distance = pointer_move * mMovementSpeed;
 			const glm::vec3& direction = mTransformComponent->getLocalTransform()[2];
 			const glm::vec3& translate = mTransformComponent->getLocalTransform()[3];
-
 			glm::vec3 new_translate = translate - direction * distance;
 
 			// Limit the zoom distance
@@ -172,7 +180,6 @@ namespace nap
 				if (glm::length(mLookAtPos - new_translate) < resource->mMinZoomDistance)
 					new_translate = -lookdir_prevframe * resource->mMinZoomDistance;
 			}
-
 			mTransformComponent->setTranslate(new_translate);
 		}
 	}

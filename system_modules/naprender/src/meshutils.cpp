@@ -122,8 +122,7 @@ namespace nap
 
 		float computeBoundingSphere(const math::Box& box)
 		{
-			auto dim = box.getDimensions() / 2.0f;
-			return std::sqrt(dim.x * dim.x + dim.y * dim.y + dim.z * dim.z);
+			return glm::distance(box.getMin(), box.getCenter());
 		}
 
 

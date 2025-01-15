@@ -103,6 +103,9 @@ namespace napkin
 		// Texture to use when selection is cleared
 		mTextureFallback = getComponent<Frame2DTextureComponent>()->mFallbackTexture.get();
 
+		// Reference orbit move speed
+		mSpeedReference = mMeshOrbit->getMovementSpeed();
+
 		// Bind fall-back texture
 		bind(*mTextureFallback);
 
@@ -117,17 +120,17 @@ namespace napkin
 	}
 
 
-	bool Frame2DTextureComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
+	int Frame2DTextureComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
 	{
 		// Catch most obvious explicit error -> missing uv attribute
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::uv) != nullptr,
 			"Unable to bind texture, '%s' has no % s vertex attribute", mesh->mID.c_str(), vertexid::uv))
-			return false;
+			return -1;
 
 		// Try and create a render-able mesh
 		RenderableMesh render_mesh = mMeshRenderer->createRenderableMesh(*mesh, error);
 		if (!render_mesh.isValid())
-			return false;
+			return -1;
 
 		// Replace custom mesh
 		if (hasMeshLoaded())
@@ -145,7 +148,9 @@ namespace napkin
 		setMeshIndex(mMeshes.size() - 1);
 		setMode(EMode::Mesh);
 
-		return true;
+		// Bind for rendering if selected
+		setMeshIndex(getMeshIndex());
+		return mMeshes.size() - 1;
 	}
 
 
@@ -169,12 +174,13 @@ namespace napkin
 		// Compute mesh camera distance using bounds
 		const auto& bounds = getBounds();
 		float cam_offset = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
-			mMeshCamera->getFieldOfView());
+			mMeshCamera->getFieldOfView()) + bounds.getDepth() / 2.0f;
 
 		// Mesh
 		auto center = bounds.getCenter();
 		glm::vec3 camera = { center.x, center.y, center.z + cam_offset };
 		mMeshOrbit->enable(camera, center);
+		mMeshOrbit->setMovementSpeed(mSpeedReference * bounds.getDiagonal());
 		mMeshRotate->reset();
 		mMeshRotate->setSpeed(0.0f);
 	}

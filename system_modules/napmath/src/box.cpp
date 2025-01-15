@@ -61,6 +61,12 @@ namespace nap
 		}
 
 
+		float Box::getDiagonal() const
+		{
+			return glm::distance(mMinCoordinates, mMaxCoordinates);
+		}
+
+
 		bool Box::inside(const glm::vec3& point) const
 		{
 			// Ensure bounds are accurate, ie: min max are not flipped

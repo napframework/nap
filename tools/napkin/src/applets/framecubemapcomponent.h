@@ -67,15 +67,14 @@ namespace napkin
 		void load(std::unique_ptr<TextureCube> texure);
 
 		/**
-		 * Loads and selects a 3D reflective mesh.
-		 * Ownership is transferred to this component.
+		 * Loads a 3D reflective mesh, ownership is transferred to this component.
 		 * Note that the load fails when the mesh is incompatible with the material,
 		 * in that case the mesh is immediately destroyed.
 		 * @param mesh the mesh to load and select
 		 * @param error contains the error if loading fails
-		 * @return if the mesh is loaded and selected
+		 * @return assigned index of the loaded mesh, -1 if mesh can't be loaded
 		 */
-		bool load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error);
+		int load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error);
 
 		/**
 		 * Scales and positions current texture to perfectly fit in the viewport.
@@ -184,6 +183,7 @@ namespace napkin
 		std::vector<RenderableMesh> mMeshes;						//< All meshes to select from
 		std::vector<math::Box> mBounds;								//< All mesh bounding boxes
 		int mMeshIndex = 0;											//< Selected mesh index
+		float mSpeedReference = 0.0f;								//< Orbit move speed
 		void bind(TextureCube& texture);							//< Binds a cubemap texture
 	};
 }

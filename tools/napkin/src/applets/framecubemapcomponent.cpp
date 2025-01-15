@@ -79,6 +79,9 @@ namespace napkin
 		// Fetch and bind texture fallback
 		mTextureFallback = getComponent<FrameCubemapComponent>()->mFallbackTexture.get();
 
+		// Fetch normalized rotation speed
+		mSpeedReference = mOrbitController->getMovementSpeed();
+
 		// Setup
 		setMeshIndex(0);
 		bind(*mTextureFallback);
@@ -102,22 +105,22 @@ namespace napkin
 	}
 
 
-	bool FrameCubemapComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
+	int FrameCubemapComponentInstance::load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error)
 	{
 		// Catch most obvious explicit error -> missing uv attribute
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::normal) != nullptr,
 			"Unable to bind texture, '%s' has no %s vec3 vertex attribute", mesh->mID.c_str(), vertexid::normal))
-			return false;
+			return -1;
 
 		// Catch most obvious explicit error -> missing pos attribute
 		if (!error.check(mesh->getMeshInstance().findAttribute<glm::vec3>(vertexid::position) != nullptr,
 			"Unable to bind texture, '%s' has no %s vec3 vertex attribute", mesh->mID.c_str(), vertexid::position))
-			return false;
+			return -1;
 
 		// Try and create a render-able mesh
 		RenderableMesh render_mesh = mRenderMeshComponent->createRenderableMesh(*mesh, error);
 		if (!render_mesh.isValid())
-			return false;
+			return -1;
 
 		// Pop and add
 		if (hasMeshLoaded())
@@ -131,9 +134,9 @@ namespace napkin
 		mBounds.emplace_back(utility::computeBoundingBox<glm::vec3>(mesh->getMeshInstance()));
 		mMesh = std::move(mesh);
 
-		// Select
-		setMeshIndex(mMeshes.size() - 1);
-		return true;
+		// Bind item for rendering if selected
+		setMeshIndex(getMeshIndex());
+		return mMeshes.size() - 1;
 	}
 
 
@@ -146,14 +149,15 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::frame()
 	{
-		// Compute camera distance using bounds
+		// Compute camera distance using bounds -> Use a bounding sphere to capture every axis, regardless of orientation
 		const auto& bounds = getBounds();
 		float cam_offset = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
-			mCameraComponent->getFieldOfView());
+			mCameraComponent->getFieldOfView()) + bounds.getDepth() / 2.0f;
 
 		// Setup camera
 		auto center = bounds.getCenter();
 		glm::vec3 camera = { center.x, center.y, center.z + cam_offset };
+		mOrbitController->setMovementSpeed(bounds.getDiagonal() * mSpeedReference);
 		mOrbitController->enable(camera, center);
 		mSkyboxComponent->setOpacity(1.0f);
 		mRotateComponent->reset();
@@ -207,4 +211,3 @@ namespace napkin
 		renderService.renderObjects(window, *mCameraComponent,  { mRenderMeshComponent.get() });
 	}
 }
-

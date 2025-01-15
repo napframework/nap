@@ -81,15 +81,14 @@ namespace napkin
 		void load(std::unique_ptr<Texture2D> texure);
 
 		/**
-		 * Loads and selects a 3D mesh.
-		 * Ownership is transferred to this component.
+		 * Loads a 3D mesh, ownership is transferred to this component.
 		 * Note that the load fails when the mesh is incompatible with texture material,
 		 * in that case the mesh is immediately destroyed.
 		 * @param mesh the mesh to load and select
 		 * @param error contains the error if loading fails
 		 * @return if the mesh is loaded and selected
 		 */
-		bool load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error);
+		int load(std::unique_ptr<IMesh> mesh, utility::ErrorState& error);
 
 		/**
 		 * @return if there is a custom mesh
@@ -226,5 +225,6 @@ namespace napkin
 		std::vector<math::Box> mBounds;
 		int mMeshIndex = 0;
 		EMode mMode = EMode::Plane;
+		float mSpeedReference = 0.0f;
 	};
 }

@@ -221,8 +221,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "2DPerspCameraOrbitComponent",
-                    "MovementSpeed": 0.009999999776482582,
-                    "RotateSpeed": 0.0020000000949949026,
+                    "MovementSpeed": 0.003,
+                    "RotateSpeed": 0.00225,
                     "PerspCameraComponent": "./2DPerspCameraComponent",
                     "LimitZoomDistance": false,
                     "MinimumZoomDistance": 1.0,
@@ -473,8 +473,8 @@
                 {
                     "Type": "nap::OrbitController",
                     "mID": "CubePerspCameraOrbitComponent",
-                    "MovementSpeed": 0.009999999776482582,
-                    "RotateSpeed": 0.0020000000949949026,
+                    "MovementSpeed": 0.003,
+                    "RotateSpeed": 0.00225,
                     "PerspCameraComponent": "./CubePerspCameraComponent",
                     "LimitZoomDistance": false,
                     "MinimumZoomDistance": 1.0,
