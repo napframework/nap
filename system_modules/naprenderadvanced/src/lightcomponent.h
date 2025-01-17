@@ -157,7 +157,7 @@ namespace nap
 		RGBColorFloat mColor = {1.0f, 1.0f, 1.0f};				///< Property: 'Color' The light color
 		float mIntensity = 1.0f;								///< Property: 'Intensity' The light intensity
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
-		float mShadowSpread = 5.0f;								///< Property: 'ShadowSpread' The spread radius of the shadow samples.
+		float mShadowSpread = 2.0f;								///< Property: 'ShadowSpread' The spread radius of the shadow samples.
 		Locator mLocator;										///< Property: 'Locator' Locator settings
 	};
 
@@ -398,7 +398,7 @@ namespace nap
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
 		float mShadowStrength							= 1.0f;
-		float mShadowSpread								= 5.0f;
+		float mShadowSpread								= 2.0f;
 		uint mShadowMapSize								= 512;
 
 	private:
