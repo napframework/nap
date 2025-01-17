@@ -11,6 +11,7 @@
 #include <inputrouter.h>
 #include <renderglobals.h>
 #include <meshutils.h>
+#include <spheremesh.h>
 
 // nap::framecubemapcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::FrameCubemapComponent)
@@ -151,10 +152,13 @@ namespace napkin
 
 	void FrameCubemapComponentInstance::frame()
 	{
-		// Compute camera distance using bounds -> Use a bounding sphere to capture every axis, regardless of orientation
-		const auto& bounds = getBounds();
-		float cam_distance = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
-			mCameraComponent->getFieldOfView());
+		// Get object radius -> bounding-sphere or radius of sphere
+		auto bounds = getBounds();
+		float obj_radius = getMesh().get_type().is_derived_from(RTTI_OF(nap::SphereMesh)) ?
+			static_cast<const SphereMesh&>(getMesh()).mRadius : utility::computeBoundingSphere(bounds);
+
+		// Compute camera distance using object bounding radius
+		float cam_distance = utility::computeCameraDistance(obj_radius, mCameraComponent->getFieldOfView());
 
 		// Setup camera orbit controller
 		glm::vec3 camera_pos = { 0.0f, 0.0f, bounds.getDepth() / 2.0f + cam_distance };

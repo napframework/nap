@@ -11,6 +11,7 @@
 #include <inputrouter.h>
 #include <renderglobals.h>
 #include <meshutils.h>
+#include <spheremesh.h>
 
 // nap::appletcomponent run time class definition 
 RTTI_BEGIN_CLASS(napkin::Frame2DTextureComponent)
@@ -168,10 +169,13 @@ namespace napkin
 		mZoomPanController->frameTexture(mPlaneSampler->getTexture(), *mPlaneTransform);
 		mPlaneOpacity->setValue(1.0f);
 
+		// Get object radius -> bounding-sphere or radius of sphere
+		auto bounds = getBounds();
+		float obj_radius = getMesh().get_type().is_derived_from(RTTI_OF(nap::SphereMesh)) ?
+			static_cast<const SphereMesh&>(getMesh()).mRadius : utility::computeBoundingSphere(bounds);
+
 		// Compute mesh camera distance using bounds
-		const auto& bounds = getBounds();
-		float cam_distance = utility::computeCameraDistance(utility::computeBoundingSphere(bounds),
-			mMeshCamera->getFieldOfView());
+		float cam_distance = utility::computeCameraDistance(obj_radius, mMeshCamera->getFieldOfView());
 
 		// Setup camera orbit controller
 		glm::vec3 camera_pos = { 0.0f, 0.0f, (bounds.getDepth() / 2.0f) + cam_distance };
