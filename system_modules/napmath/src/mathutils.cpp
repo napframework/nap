@@ -123,6 +123,28 @@ namespace nap
 		}
 
 
+        template<typename T>
+        T smoothDamp(T currentValue, T targetValue, T& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
+        {
+            const T dt = math::max<T>(math::epsilon<T>(), deltaTime);
+            const T smooth_time = math::max<T>(math::epsilon<T>(), smoothTime);
+
+            auto omega = T(2.0) / smooth_time;
+            auto x = omega * dt;
+            auto exp = T(1.0) / (T(1.0) + x + T(0.48) * x * x + T(0.235) * x * x * x);
+
+            auto delta_value = currentValue - targetValue;
+            if (maxSpeed < math::max<float>())
+            {
+                auto delta_max = smoothTime * maxSpeed;
+                delta_value = math::clamp<T>(delta_value, -delta_max, T(delta_max));
+            }
+            auto vel = (currentVelocity + omega * delta_value) * dt;
+            currentVelocity = (currentVelocity - omega * vel) * exp;
+            return targetValue + (delta_value + vel) * exp;
+        }
+
+
 		template<>
 		void smooth(float& currentValue, const float& targetValue, float& currentVelocity, float deltaTime, float smoothTime, float maxSpeed)
 		{
