@@ -55,6 +55,7 @@ namespace napkin
 
 		if (ImGui::BeginMenu("Mesh", loaded_tex != nullptr))
 		{
+			// Mesh attributes
 			auto* mesh = tex_controller.getMesh(); assert(mesh != nullptr);
 			const auto& mesh_instance = mesh->getMeshInstance();
 			ImGui::PushID(mesh);
@@ -65,6 +66,8 @@ namespace napkin
 			texDetail("Draw Mode", RTTI_OF(EDrawMode), mesh_instance.getDrawMode());
 			texDetail("Polygon Mode ", RTTI_OF(EPolygonMode), mesh_instance.getPolygonMode());
 			texDetail("Usage", RTTI_OF(EMemoryUsage), mesh_instance.getUsage());
+
+			// Vertex attributes
 			texDetail("Attributes", utility::stringFormat("%d", mesh_instance.getAttributes().size()));
 			for (auto i = 0; i < mesh_instance.getAttributes().size(); i++)
 			{
@@ -74,6 +77,23 @@ namespace napkin
 					nap::utility::stripNamespace(attr.getElementType().get_name().data()));
 				ImGui::PopID();
 			}
+
+			// Mesh bound dimensions
+			const auto& bounds = tex_controller.getMeshBounds();
+			texDetail("Bounds", "");
+			texDetail("\tWidth", utility::stringFormat("%.1f", bounds.getWidth()), "unit(s)");
+			texDetail("\tHeight", utility::stringFormat("%.1f", bounds.getHeight()), "unit(s)");
+			texDetail("\tDepth", utility::stringFormat("%.1f", bounds.getDepth()), "unit(s)");
+
+			// Mesh bound coordinates
+			static constexpr const float cutoff = 0.01;
+			static constexpr const glm::vec3 zero = { 0.0f, 0.0f, 0.0f };
+			auto min = glm::length(bounds.getMin()) < cutoff ? zero : bounds.getMin();
+			auto max = glm::length(bounds.getMax()) < cutoff ? zero : bounds.getMax();
+			auto cen = glm::length(bounds.getCenter()) < cutoff ? zero : bounds.getCenter();
+			texDetail("\tMin", utility::stringFormat("%.1f, %.1f, %.1f", min.x, min.y, min.z));
+			texDetail("\tMax", utility::stringFormat("%.1f, %.1f, %.1f", max.x, max.y, max.z));
+			texDetail("\tCenter", utility::stringFormat("%.1f, %.1f, %.1f", cen.x, cen.y, cen.z));
 
 			ImGui::PopID();
 			ImGui::EndMenu();

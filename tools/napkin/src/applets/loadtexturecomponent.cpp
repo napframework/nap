@@ -271,6 +271,23 @@ namespace napkin
 	}
 
 
+	const math::Box& LoadTextureComponentInstance::getMeshBounds() const
+	{	
+		switch (getType())
+		{
+		case EType::Texture2D:
+			return mFrame2DTextureComponent->getBounds();
+		case EType::Cubemap:
+			return mFrameCubeComponent->getBounds();
+		default:
+			assert(false);
+			break;
+		}
+		const static math::Box invalid = { 0, 0, 0 };
+		return invalid;
+	}
+
+
 	void LoadTextureComponentInstance::frame()
 	{
 		switch (getType())

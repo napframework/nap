@@ -93,6 +93,11 @@ namespace napkin
 		const IMesh* getMesh() const;
 
 		/**
+		 * @return current mesh bounds
+		 */
+		const math::Box& getMeshBounds() const;
+
+		/**
 		 * Frames current selection
 		 */
 		void frame();

@@ -165,7 +165,7 @@ namespace napkin
 		// TODO: Parent skybox to camera to reduce far clip size
 		float sky_scale = math::max<float>(1000.0f, bounds.getDiagonal() * 1000.0f);
 		auto props = mCameraComponent->getProperties();
-		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.15f);
+		props.mNearClippingPlane = math::max<float>(0.001f, cam_distance * 0.1f);
 		props.mFarClippingPlane = sky_scale;
 		mCameraComponent->setProperties(props);
 
