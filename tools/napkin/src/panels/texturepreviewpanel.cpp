@@ -44,26 +44,31 @@ namespace napkin
 			return;
 		}
 
+		// TODO: The applet has multiple meshes and textures but we currently only check if the last used reference has changed.
+		// TODO: We should introduce a system that allows for multiple objects to be tracked and handled appropriately.
+		// TODO: For example: Load Texture, Load Mesh, Change Texture Property -> texture change not propagated because active object is Mesh.
+		// TODO: To fix this we should differentiate between property and load changes.
+		// Check if we need to re-frame the object in the viewport
+		bool frame_obj = mObject != path.getObject();
+
 		// Send event
 		nap::APIEventPtr load_event = nullptr;
 		if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Texture)))
 		{
 			// Create load event
-			bool frame = mLoadedTexture != path.getObject();
 			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadTextureCmd);
 			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadTextureArg1, writer.GetJSON());
-			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame);
-			mLoadedTexture = path.getObject();
+			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame_obj);
 		}
 		else
 		{
-			bool frame = mLoadedMesh != path.getObject();
 			assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IMesh)));
 			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadMeshCmd);
 			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
-			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame);
-			mLoadedMesh = path.getObject();
+			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame_obj);
+			mObject = path.getObject();
 		}
+		mObject = path.getObject();
 		mRunner.sendEvent(std::move(load_event));
 	}
 

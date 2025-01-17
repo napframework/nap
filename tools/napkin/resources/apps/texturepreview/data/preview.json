@@ -119,7 +119,26 @@
                     "Mesh": "Torus",
                     "MaterialInstance": {
                         "Uniforms": [],
-                        "Samplers": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "colorTexture_a373a2",
+                                "Name": "colorTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "Repeat",
+                                "AddressModeHorizontal": "Repeat",
+                                "MinLodLevel": 0,
+                                "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "Fallback2DTexture"
+                            }
+                        ],
                         "Buffers": [],
                         "Constants": [],
                         "Material": "2DTextureMaterial",
@@ -311,12 +330,31 @@
                     "Mesh": "Plane",
                     "MaterialInstance": {
                         "Uniforms": [],
-                        "Samplers": [],
+                        "Samplers": [
+                            {
+                                "Type": "nap::Sampler2D",
+                                "mID": "colorTexture_5916e7",
+                                "Name": "colorTexture",
+                                "MinFilter": "Linear",
+                                "MaxFilter": "Linear",
+                                "MipMapMode": "Linear",
+                                "AddressModeVertical": "ClampToEdge",
+                                "AddressModeHorizontal": "ClampToEdge",
+                                "MinLodLevel": 0,
+                                "MaxLodLevel": 1000,
+                                "LodBias": 0.0,
+                                "AnisotropicSamples": "Default",
+                                "BorderColor": "IntOpaqueBlack",
+                                "CompareMode": "LessOrEqual",
+                                "EnableCompare": false,
+                                "Texture": "Fallback2DTexture"
+                            }
+                        ],
                         "Buffers": [],
                         "Constants": [],
                         "Material": "2DTextureMaterial",
                         "BlendMode": "AlphaBlend",
-                        "DepthMode": "InheritFromBlendMode"
+                        "DepthMode": "NoReadWrite"
                     },
                     "LineWidth": 1.0,
                     "ClipRect": {
@@ -724,26 +762,7 @@
                                     ]
                                 }
                             ],
-                            "Samplers": [
-                                {
-                                    "Type": "nap::Sampler2D",
-                                    "mID": "colorTexture",
-                                    "Name": "colorTexture",
-                                    "MinFilter": "Linear",
-                                    "MaxFilter": "Linear",
-                                    "MipMapMode": "Linear",
-                                    "AddressModeVertical": "ClampToEdge",
-                                    "AddressModeHorizontal": "ClampToEdge",
-                                    "MinLodLevel": 0,
-                                    "MaxLodLevel": 1000,
-                                    "LodBias": 0.0,
-                                    "AnisotropicSamples": "Default",
-                                    "BorderColor": "IntOpaqueBlack",
-                                    "CompareMode": "LessOrEqual",
-                                    "EnableCompare": false,
-                                    "Texture": "Fallback2DTexture"
-                                }
-                            ],
+                            "Samplers": [],
                             "Buffers": [],
                             "Constants": [],
                             "Shader": "2DTextureShader",

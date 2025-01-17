@@ -108,12 +108,21 @@ namespace napkin
 			}
 		}
 
+		// Check if we need to re-frame camera if requested
+		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadTextureArg2);
+		assert(frame_arg != nullptr);
+
 		// Select and bind as active texture
 		if (result.mReadObjects[0]->get_type().is_derived_from(RTTI_OF(Texture2D)))
 		{
 			std::unique_ptr<Texture2D> tex = rtti_cast<Texture2D>(result.mReadObjects[0]);
 			mFrame2DTextureComponent->load(std::move(tex));
 			mSelectedType = EType::Texture2D;
+			if(frame_arg->asBool())
+			{
+				mFrame2DTextureComponent->setMode(Frame2DTextureComponentInstance::EMode::Plane);
+				mFrame2DTextureComponent->frame();
+			}
 		}
 		else
 		{
@@ -121,13 +130,9 @@ namespace napkin
 			assert(tex != nullptr);
 			mFrameCubeComponent->load(std::move(tex));
 			mSelectedType = EType::Cubemap;
+			if (frame_arg->asBool())
+				mFrameCubeComponent->frame();
 		}
-
-		// Check if we need to re-frame camera if requested
-		auto* frame_arg = apiEvent.getArgumentByName(LoadTextureComponent::loadTextureArg2);
-		assert(frame_arg != nullptr);
-		if (frame_arg->asBool())
-			frame();
 	}
 
 
