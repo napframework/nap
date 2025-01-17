@@ -42,11 +42,9 @@ RTTI_END_CLASS
 static void computeModelMatrix(const nap::IRenderTarget& target, glm::mat4& outMatrix)
 {
 	// Transform to middle of target
-	glm::ivec2 tex_size = target.getBufferSize();
-	outMatrix = glm::translate(glm::mat4(), glm::vec3(
-		tex_size.x / 2.0f,
-		tex_size.y / 2.0f,
-		0.0f));
+	auto tex_size = target.getBufferSize();
+	auto tex_center = glm::vec3(tex_size.x * 0.5f, tex_size.y * 0.5f, 0.0f);
+	outMatrix = glm::translate(glm::identity<glm::mat4>(), tex_center);
 
 	// Scale to fit target
 	outMatrix = glm::scale(outMatrix, glm::vec3(tex_size.x, tex_size.y, 1.0f));
@@ -67,7 +65,7 @@ namespace nap
 			return false;
 
 		// Get resource
-		RenderBloomComponent* resource = getComponent<RenderBloomComponent>();
+		auto* resource = getComponent<RenderBloomComponent>();
 
 		// Verify pass count
 		if (!errorState.check(resource->mPassCount > 0, "Property 'PassCount' must be higher than zero"))
@@ -77,14 +75,19 @@ namespace nap
 		mInputTexture = resource->mInputTexture.get();
 		mOutputTexture = resource->mOutputTexture.get();
 
+		mBloomRTs.reserve(resource->mPassCount);
+		mBloomTextures.reserve(resource->mPassCount);
+
 		// Initialize double-buffered bloom render targets
 		for (int pass_idx = 0; pass_idx < resource->mPassCount; pass_idx++)
 		{
-			DoubleBufferedRenderTarget& bloom_target = mBloomRTs.emplace_back();
+			auto& bloom_target = mBloomRTs.emplace_back();
+			auto& bloom_texture = mBloomTextures.emplace_back();
 
 			for (int target_idx = 0; target_idx < 2; target_idx++)
 			{
-				auto tex = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTexture2D>();
+				auto& tex = bloom_texture[target_idx];
+				tex = std::make_unique<RenderTexture2D>(*getEntityInstance()->getCore());
 				tex->mWidth = resource->mInputTexture->getWidth() / math::power<int>(2, pass_idx+1);
 				tex->mHeight = resource->mInputTexture->getHeight() / math::power<int>(2, pass_idx+1);
 				tex->mColorFormat = resource->mInputTexture->mColorFormat;
@@ -95,18 +98,18 @@ namespace nap
 					return false;
 				}
 
-				auto target = getEntityInstance()->getCore()->getResourceManager()->createObject<RenderTarget>();
-				target->mColorTexture = tex;
+				auto& target = bloom_target[target_idx];
+				target = std::make_unique<RenderTarget>(*getEntityInstance()->getCore());
+				target->mColorTexture = tex.get();
 				target->mClearColor = resource->mInputTexture->mClearColor;
 				target->mSampleShading = false;
 				target->mRequestedSamples = ERasterizationSamples::One;
+
 				if (!target->init(errorState))
 				{
 					errorState.fail("%s: Failed to initialize internal render target", target->mID.c_str());
 					return false;
 				}
-
-				bloom_target[target_idx] = target;
 			}
 		}
 
@@ -173,7 +176,7 @@ namespace nap
 		mViewMatrixUniform = ensureUniform(uniform::viewMatrix, *mMVPStruct, view_error);
 
 		// Get UBO struct
-		UniformStructInstance* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::blur::uboStruct);
+		auto* ubo_struct = mMaterialInstance.getOrCreateUniform(uniform::blur::uboStruct);
 		if (!errorState.check(ubo_struct != nullptr, "%s: Unable to find uniform UBO struct: %s in material: %s", this->mID.c_str(), uniform::blur::uboStruct, mMaterialInstance.getMaterial().mID.c_str()))
 			return false;
 
@@ -203,52 +206,49 @@ namespace nap
 
 	void RenderBloomComponentInstance::draw()
 	{
-		// Indices into a double-buffered render target
-		const uint TARGET_A = 0;
-		const uint TARGET_B = 1;
-
-		const VkCommandBuffer command_buffer = mRenderService->getCurrentCommandBuffer();
+		const auto command_buffer = mRenderService->getCurrentCommandBuffer();
 		const glm::mat4 identity_matrix = {};
 
-		auto& initial_texture = *mBloomRTs.front()[TARGET_A]->mColorTexture;
-
 		// Blit the input texture to the smaller size RT
+		auto& initial_texture = *mBloomRTs.front().front()->mColorTexture;
 		utility::blit(command_buffer, *mInputTexture, initial_texture);
 
 		int pass_count = 0;
-		for (auto& bloom_target : mBloomRTs)
+		for (auto& target : mBloomRTs)
 		{
-			glm::mat4 proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(0.0f, (float)bloom_target[0]->getBufferSize().x, 0.0f, (float)bloom_target[0]->getBufferSize().y);
+			const auto proj_matrix = OrthoCameraComponentInstance::createRenderProjectionMatrix(
+				0.0f, static_cast<float>(target.front()->getBufferSize().x),
+				0.0f, static_cast<float>(target.front()->getBufferSize().y));
 
 			// Horizontal
-			mColorTextureSampler->setTexture(*bloom_target[TARGET_A]->mColorTexture);
+			mColorTextureSampler->setTexture(*target.front()->mColorTexture);
 			mDirectionUniform->setValue({ 1.0f, 0.0f });
-			mTextureSizeUniform->setValue(bloom_target[TARGET_A]->mColorTexture->getSize());
+			mTextureSizeUniform->setValue(target.front()->mColorTexture->getSize());
 
-			bloom_target[TARGET_B]->beginRendering();
-			onDraw(*bloom_target[TARGET_B], command_buffer, identity_matrix, proj_matrix);
-			bloom_target[TARGET_B]->endRendering();
+			target.back()->beginRendering();
+			onDraw(*target.back(), command_buffer, identity_matrix, proj_matrix);
+			target.back()->endRendering();
 
 			// Vertical
-			mColorTextureSampler->setTexture(*bloom_target[TARGET_B]->mColorTexture);
+			mColorTextureSampler->setTexture(*target.back()->mColorTexture);
 			mDirectionUniform->setValue({ 0.0f, 1.0f });
 
-			bloom_target[TARGET_A]->beginRendering();
-			onDraw(*bloom_target[TARGET_A], command_buffer, identity_matrix, proj_matrix);
-			bloom_target[TARGET_A]->endRendering();
+			target.front()->beginRendering();
+			onDraw(*target.front(), command_buffer, identity_matrix, proj_matrix);
+			target.front()->endRendering();
 
 			// Blit the input texture to the smaller size RT
 			if (pass_count+1 < mBloomRTs.size())
 			{
-				auto& blit_dst = *mBloomRTs[pass_count + 1][TARGET_A]->mColorTexture;
-				utility::blit(command_buffer, *bloom_target[TARGET_A]->mColorTexture, blit_dst);
+				auto& blit_dst = *mBloomRTs[pass_count+1].front()->mColorTexture;
+				utility::blit(command_buffer, *target.front()->mColorTexture, blit_dst);
 				++pass_count;
 			}
 		}
 
 		// Get a reference to the bloom result
 		// The size of this texture equals { input_width / 2 ^ PassCount, input_height / 2 ^ PassCount }
-		auto& final_texture = *mBloomRTs.back()[TARGET_A]->mColorTexture;
+		auto& final_texture = *mBloomRTs.back().front()->mColorTexture;
 
 		// Blit to output, potentially resizing the texture another time
 		utility::blit(command_buffer, final_texture, *mOutputTexture);
@@ -269,26 +269,26 @@ namespace nap
 			mViewMatrixUniform->setValue(viewMatrix);
 
 		// Get valid descriptor set
-		const DescriptorSet& descriptor_set = mMaterialInstance.update();
+		const auto& descriptor_set = mMaterialInstance.update();
 
 		// Gather draw info
-		const MeshInstance& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
-		const GPUMesh& mesh = mesh_instance.getGPUMesh();
+		const auto& mesh_instance = mRenderableMesh.getMesh().getMeshInstance();
+		const auto& mesh = mesh_instance.getGPUMesh();
 
 		// Get pipeline to to render with
 		utility::ErrorState error_state;
-		RenderService::Pipeline pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
+		auto pipeline = mRenderService->getOrCreatePipeline(renderTarget, mRenderableMesh.getMesh(), mMaterialInstance, error_state);
 		vkCmdBindPipeline(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mPipeline);
 		vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline.mLayout, 0, 1, &descriptor_set.mSet, 0, nullptr);
 
 		// Bind buffers and draw
-		const std::vector<VkBuffer>& vertexBuffers = mRenderableMesh.getVertexBuffers();
-		const std::vector<VkDeviceSize>& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
+		const auto& vertexBuffers = mRenderableMesh.getVertexBuffers();
+		const auto& vertexBufferOffsets = mRenderableMesh.getVertexBufferOffsets();
 
 		vkCmdBindVertexBuffers(commandBuffer, 0, vertexBuffers.size(), vertexBuffers.data(), vertexBufferOffsets.data());
 		for (int index = 0; index < mesh_instance.getNumShapes(); ++index)
 		{
-			const IndexBuffer& index_buffer = mesh.getIndexBuffer(index);
+			const auto& index_buffer = mesh.getIndexBuffer(index);
 			vkCmdBindIndexBuffer(commandBuffer, index_buffer.getBuffer(), 0, VK_INDEX_TYPE_UINT32);
 			vkCmdDrawIndexed(commandBuffer, index_buffer.getCount(), 1, 0, 0, 0);
 		}
@@ -298,7 +298,7 @@ namespace nap
 	UniformMat4Instance* RenderBloomComponentInstance::ensureUniform(const std::string& uniformName, nap::UniformStructInstance& mvpStruct, utility::ErrorState& error)
 	{
 		// Get matrix binding
-		UniformMat4Instance* found_mat = mvpStruct.getOrCreateUniform<UniformMat4Instance>(uniformName);
+		auto* found_mat = mvpStruct.getOrCreateUniform<UniformMat4Instance>(uniformName);
 		if (!error.check(found_mat != nullptr, "%s: unable to find uniform: %s in material: %s", this->mID.c_str(), uniformName.c_str(), mMaterialInstance.getMaterial().mID.c_str()))
 			return nullptr;
 
