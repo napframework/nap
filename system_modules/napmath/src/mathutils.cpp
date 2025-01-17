@@ -95,7 +95,6 @@ namespace nap
 		}
 
 
-
 		template<>
 		double lerp<double>(const double& start, const double& end, float percent)
 		{
@@ -103,18 +102,17 @@ namespace nap
 		}
 
 
-
 		template<>
 		double power<double>(double value, double exp)
 		{
-			return pow(value, exp);
+			return std::pow(value, exp);
 		}
 
 
 		template<>
 		float power<float>(float value, float exp)
 		{
-			return pow(value, exp);
+			return std::pow(value, exp);
 		}
 
 
