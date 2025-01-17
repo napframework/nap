@@ -136,21 +136,39 @@ void LogPanel::onDoubleClicked(const QModelIndex& index)
 void LogPanel::onRowsAboutToBeInserted(const QModelIndex& parent, int first, int last)
 {
 	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
-	wasMaxScroll = scrollBar->value() == scrollBar->maximum();
+	mScrolledToBottom = scrollBar->value() == scrollBar->maximum();
 }
 
 
 void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
 {
-	auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
-	if (wasMaxScroll)
+	// Extract lvl item
+	auto lvl_idx = mTreeView.getModel()->index(last, 0, parent);
+	auto qt_item = mTreeView.getModel()->itemFromIndex(lvl_idx);
+	auto* lvl_item = qitem_cast<LogEntryItem*>(qt_item);
+	assert(lvl_item != nullptr);
+
+	// Check if message is of importance
+	bool scroll_to_bottom = mScrolledToBottom;
+	int cutoff_lvl = nap::math::max<int>(getCurrentLevel().level(), nap::Logger::warnLevel().level());
+	if (lvl_item->getMessage().level().level() >= cutoff_lvl)
 	{
-		QTimer::singleShot(0, [scrollBar]()
+		// Notify listeners we've received a potential important msg
+		importantMessageReceived(lvl_item->getMessage());
+		scroll_to_bottom = true;
+	}
+
+	// Scroll to bottom to reveal message if of importance or maxed
+	if (scroll_to_bottom)
+	{
+		auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
+		QTimer::singleShot(0, [scrollBar]() 
 		{
 			scrollBar->setValue(scrollBar->maximum());
 		});
 	}
 }
+
 
 
 void LogPanel::showEvent(QShowEvent* event)
@@ -202,7 +220,7 @@ int LogPanel::getLevelIndex(const nap::LogLevel& level) const
 
 void napkin::LogPanel::themeChanged(const Theme& theme)
 {
-		theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::mono);
+	theme.changeWidgetFont(mTreeView.getTreeView(), napkin::theme::font::mono);
 }
 
 

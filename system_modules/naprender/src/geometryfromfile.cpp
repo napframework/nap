@@ -82,6 +82,10 @@ namespace nap
 
 	bool GeometryFromFile::init(utility::ErrorState& errorState)
 	{
+		// Ensure we have a path
+		if (!errorState.check(!mPath.empty(), "Unable to load '%s': Path is empty", mID.c_str()))
+			return false;
+
 		// Load our mesh
 		nap::Logger::info("Loading geometry: %s", mPath.c_str());
 

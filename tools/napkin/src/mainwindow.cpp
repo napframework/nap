@@ -101,13 +101,19 @@ void MainWindow::addDocks()
 	addDock("Resources", &mResourcePanel);
 	addDock("Scene", &mScenePanel);
 	addDock("Inspector", &mInspectorPanel);
-	addDock("Log", &mLogPanel);
 	addDock("Configuration", &mServiceConfigPanel);
 	addDock("Instance Properties", &mInstPropPanel);
 	addDock("Modules", &mModulePanel);
 	addDock("Curve", &mCurvePanel);
 	addDock(QString::fromStdString(mRenderPreviewPanel.getDisplayName()), &mRenderPreviewPanel);
 	addDock(QString::fromStdString(mTexturePreviewPanel.getDisplayName()), &mTexturePreviewPanel);
+
+	// Add logger -> raise when it receives an important message
+	auto* log_dock = addDock("Log", &mLogPanel);
+	connect(&mLogPanel, &LogPanel::importantMessageReceived, this, [log_dock] {
+		log_dock->raise();
+		}
+	);
 
 	// Register resource load options ->
 	// Tells the resource panel which widgets (preview, etc.) are available to handle specific types.
