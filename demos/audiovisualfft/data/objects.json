@@ -35,22 +35,15 @@
             "mID": "AudioEntity",
             "Components": [
                 {
-                    "Type": "nap::FFTAudioNodeComponent",
-                    "mID": "FFTAudioNode",
-                    "Input": "./AudioPlayback",
-                    "Overlaps": "Five",
-                    "Channel": 0
-                },
-                {
                     "Type": "nap::audio::PlaybackComponent",
                     "mID": "AudioPlayback",
                     "Buffer": "AudioFile",
                     "ChannelRouting": [
-                        0
+                        0, 1
                     ],
                     "Gain": 1.0,
                     "StereoPanning": 0.5,
-                    "AutoPlay": true,
+                    "AutoPlay": false,
                     "StartPosition": 17000.0,
                     "Duration": 0.0,
                     "FadeInTime": 0.0,
@@ -63,8 +56,15 @@
                     "Input": "./AudioPlayback",
                     "Routing": [
                         0,
-                        0
+                        1
                     ]
+                },
+                {
+                    "Type": "nap::FFTAudioNodeComponent",
+                    "mID": "FFTAudioNode",
+                    "Input": "./AudioPlayback",
+                    "Overlaps": "Five",
+                    "Channel": 0
                 },
                 {
                     "Type": "nap::FluxMeasurementComponent",
