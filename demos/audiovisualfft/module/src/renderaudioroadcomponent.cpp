@@ -33,6 +33,7 @@ RTTI_END_CLASS
 // nap::RenderAudioRoadComponentInstance run time class definition 
 RTTI_BEGIN_CLASS_NO_DEFAULT_CONSTRUCTOR(nap::RenderAudioRoadComponentInstance)
 	RTTI_CONSTRUCTOR(nap::EntityInstance&, nap::Component&)
+	RTTI_FUNCTION(nap::material::instance::getOrCreateMaterial, &nap::RenderAudioRoadComponentInstance::getOrCreateMaterial)
 RTTI_END_CLASS
 
 //////////////////////////////////////////////////////////////////////////
