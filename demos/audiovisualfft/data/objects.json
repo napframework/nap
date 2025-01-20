@@ -43,7 +43,7 @@
                     ],
                     "Gain": 1.0,
                     "StereoPanning": 0.5,
-                    "AutoPlay": false,
+                    "AutoPlay": true,
                     "StartPosition": 17000.0,
                     "Duration": 0.0,
                     "FadeInTime": 0.0,

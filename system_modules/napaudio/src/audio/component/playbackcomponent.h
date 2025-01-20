@@ -175,9 +175,10 @@ namespace nap
 			TimeValue mDuration = 0;
 			TimeValue mCurrentPlayingTime = 0;
 			std::vector<int> mChannelRouting;
-			
+			bool mAutoPlay = false;
+
 			bool mPlaying = false;  // Indicates wether the component is currently playing
-			
+
 			PlaybackComponent* mResource = nullptr; // The component's resource
 			NodeManager* mNodeManager = nullptr; // The audio node manager this component's audio nodes are managed by
 			AudioService* mAudioService = nullptr;
