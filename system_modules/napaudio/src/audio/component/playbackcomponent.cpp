@@ -55,7 +55,6 @@ namespace nap
 			mFadeInTime = mResource->mFadeInTime;
 			mFadeOutTime = mResource->mFadeOutTime;
 			mPitch = mResource->mPitch;
-			mAutoPlay = mResource->mAutoPlay;
 			
 			mAudioService = getEntityInstance()->getCore()->getService<AudioService>();
 			mNodeManager = &mAudioService->getNodeManager();
@@ -98,18 +97,15 @@ namespace nap
 				mGainControls.emplace_back(std::move(gainControl));
 			}
 			
+			if (mResource->mAutoPlay)
+				start(mResource->mStartPosition, mResource->mDuration);
+			
 			return true;
 		}
 		
 		
 		void PlaybackComponentInstance::update(double deltaTime)
 		{
-			if (mAutoPlay)
-			{
-				start(mResource->mStartPosition, mResource->mDuration);
-				mAutoPlay = false;
-			}
-
 			if (mPlaying)
 			{
 				mCurrentPlayingTime += deltaTime * 1000.f;

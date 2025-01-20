@@ -80,6 +80,15 @@ namespace nap
 		// Connect reload slot
 		mResourceManager->mPostResourcesLoadedSignal.connect(mReloadSlot);
 
+		// Start audio file playback
+		auto audioEntity = mScene->findEntity("AudioEntity");
+		if (!errorState.check(audioEntity != nullptr, "unable to find entity with name: %s", "AudioEntity"))
+			return false;
+		auto playbackComponent = audioEntity->findComponent<audio::PlaybackComponentInstance>();
+		if (!errorState.check(playbackComponent != nullptr, "unable to find PlaybackComponentInstance"))
+			return false;
+		playbackComponent->start();
+
 		// All done!
 		return true;
 	}
