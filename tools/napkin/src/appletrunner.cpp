@@ -2,15 +2,22 @@
  * License, v. 2.0. If a copy of the MPL was not distributed with this
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
+// Local includes
 #include "appletrunner.h"
-#include "imguiservice.h"
-#include "apiservice.h"
-#include "apievent.h"
-#include "appcontext.h"
-#include "naputils.h"
+
+// External includes
+#include <imguiservice.h>
+#include <apiservice.h>
+#include <apievent.h>
+#include <appcontext.h>
+#include <naputils.h>
+#include <mathutils.h>
+#include <chrono>
 
 namespace napkin
 {
+	using namespace std::chrono;
+
 	AppletRunner::AppletRunner(nap::rtti::TypeInfo appletType)
 	{
 		assert(appletType.is_derived_from(RTTI_OF(napkin::Applet)));
@@ -33,11 +40,10 @@ namespace napkin
 	}
 
 
-	std::future<bool> AppletRunner::start(const std::string& projectFilename, nap::uint frequency, bool suspend)
+	std::future<bool> AppletRunner::start(const std::string& projectFilename, bool suspend)
 	{
 		// Create and run task
 		assert(!active());
-		mFrequency = frequency; 
 
 		// Create the promise used to signal initialization
 		std::promise<bool> init_promise;
@@ -239,6 +245,10 @@ namespace napkin
 		std::queue<nap::EventPtr> event_queue;
 		std::function<void(double)> update_call = std::bind(&Applet::update, mApplet.get(), std::placeholders::_1);
 
+		// Create frame timer - offset to ensure it doesn't wait
+		nap::SteadyTimer frame_timer;
+		frame_timer.start(nap::SteadyClock::now() - nap::Seconds(1));
+
 		// Run until abort
 		mCore.start();
 		while (true)
@@ -247,8 +257,7 @@ namespace napkin
 			// Wait until ready for processing -> unlocks when exiting this block
 			{
 				std::unique_lock<std::mutex> lock(mProcessMutex);
-				nap::Milliseconds wmss(mFrequency > 0 ? 1000 / mFrequency : 0);
-				if (wmss.count() == 0)
+				if (mFrequency == 0)
 				{
 					// Wait indefinitely until event is received or frequency is positive.
 					// We also proceed if a request to suspend operation or abort is received.
@@ -260,7 +269,8 @@ namespace napkin
 				{
 					// Wait until a event is received or x amount of time has passed.
 					// We also proceed if a request to suspend operation or abort is received
-					mProcessCondition.wait_for(lock, wmss, [this] {
+					double wtd = nap::math::max<double>(mFrameTarget - frame_timer.getElapsedTime(), 0.0);
+					mProcessCondition.wait_for(lock, duration_cast<nap::Milliseconds>(duration<double>(wtd)), [this] {
 							return !mEventQueue.empty() || mAbort || mSuspendPromise != nullptr;
 						}
 					);
@@ -274,19 +284,16 @@ namespace napkin
 				// This prevents the app from throwing an exception when the future is invalidated because the promise has been broken (removed).
 				if (mSuspendPromise != nullptr)
 				{
-					nap::Logger::debug("Suspending: %s", mApplet->get_type().get_name().data());
 					mSuspendPromise->set_value(mSuspend);
 					mProcessCondition.wait(lock, [this] {
 							return !mSuspend || mAbort;
 						});
-					nap::Logger::debug("Resuming: %s", mApplet->get_type().get_name().data());
 					mSuspendPromise.reset(nullptr);
 				}
 
 				// Bail if we're told to stop (unlocks the handle)
 				if (mAbort)
 				{
-					nap::Logger::debug("Aborting: %s", mApplet->get_type().get_name().data());
 					auto code = mApplet->shutdown();
 					if (code != applet::exitcode::success)
 					{
@@ -301,6 +308,9 @@ namespace napkin
 				assert(event_queue.empty());
 				event_queue.swap(mEventQueue);
 			}
+
+			// Reset timer 
+			frame_timer.reset();
 
 			// Forward events to running app
 			processEvents(event_queue, *mApplet, gui_service, api_service);
@@ -331,7 +341,9 @@ namespace napkin
 		{
 			std::lock_guard lk(mProcessMutex);
 			mFrequency = frequency;
+			mFrameTarget = frequency > 0 ? 1.0 / static_cast<double>(frequency) : 0;
 		}
 		mProcessCondition.notify_one();
 	}
 }
+

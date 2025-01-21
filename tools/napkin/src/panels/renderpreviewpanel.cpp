@@ -16,7 +16,7 @@ namespace napkin
 
 		// Setup control widgets
 		mSpinbox.setRange(0, 120);
-		mSpinbox.setValue(60);
+		mSpinbox.setValue(applet::timing::hz);
 		mSpinbox.setMinimumWidth(120);
 		mSpinbox.setSuffix(" hz");
 	}
@@ -62,8 +62,9 @@ namespace napkin
 		}
 
 		// Initialize and run the applet (core, services & application)
+		mRunner.setFrequency(mSpinbox.value());
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		auto init_future = mRunner.start(preview_app, mSpinbox.value(), true);
+		auto init_future = mRunner.start(preview_app, true);
 
 		// Don't install layout if initialization fails
 		if (!init_future.get())

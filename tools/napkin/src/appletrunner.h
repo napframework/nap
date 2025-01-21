@@ -21,8 +21,14 @@ namespace napkin
 	{
 		namespace exitcode
 		{
-			constexpr nap::uint8 success		= 0;
-			constexpr nap::uint8 invalid		= 2;
+			constexpr nap::uint8 success	= 0;
+			constexpr nap::uint8 invalid	= 2;
+		}
+
+		namespace timing
+		{
+			constexpr nap::uint hz	= 60;				///< Default applet target process frequency
+			constexpr double frame	= 1.0 / hz;			///< Default applet target frame time
 		}
 	}
 
@@ -64,7 +70,7 @@ namespace napkin
 		 * @param suspend process loop from running after successful initialization
 		 * @return if initialization succeeded or not
 		 */
-		std::future<bool> start(const std::string& projectFilename, nap::uint frequency, bool suspend);
+		std::future<bool> start(const std::string& projectFilename, bool suspend);
 
 		/**
 		 * Returns if the applet launched on a separate thread and is in an active state.
@@ -118,7 +124,8 @@ namespace napkin
 		mutable std::mutex			mProcessMutex;							///< Process related mutex
 		std::condition_variable		mProcessCondition;						///< Process condition variable
 		bool						mAbort = false;							///< Aborts the application from running
-		nap::uint					mFrequency = 60;						///< Processing frequency (hz)
+		nap::uint					mFrequency = applet::timing::hz;		///< Target frame process frequency (hz)
+		double						mFrameTarget = applet::timing::frame;	///< Target frame process time in seconds
 		std::queue<nap::EventPtr>	mEventQueue;							///< Events to forward to the running app
 		std::thread					mThread;								///< Running thread
 		bool						mSuspend = false;						///< If the applet is suspended from running
