@@ -46,26 +46,26 @@ void initializeSettings()
 	QSettings::setPath(QSettings::IniFormat, QSettings::UserScope, exeDir);
 	QSettings::setDefaultFormat(QSettings::IniFormat);
 
-	auto userSettingsFilename = QSettings().fileName();
-	if (!QFileInfo::exists(userSettingsFilename))
+	auto user_settings_filename = QSettings().fileName();
+	if (!QFileInfo::exists(user_settings_filename))
 	{
-		auto settingsDir = QFileInfo(userSettingsFilename).dir();
+		auto settingsDir = QFileInfo(user_settings_filename).dir();
 		if (!settingsDir.exists())
 		{
 			settingsDir.mkpath(".");
 		}
 
-		auto defaultSettingsFilename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
-		if (!QFileInfo::exists(defaultSettingsFilename))
+		auto default_settings_filename = QString("%1/%2").arg(exeDir, napkin::DEFAULT_SETTINGS_FILE);
+		if (!QFileInfo::exists(default_settings_filename))
 		{
-			nap::Logger::error("File not found: %s", defaultSettingsFilename.toStdString().c_str());
+			nap::Logger::error("File not found: %s", default_settings_filename.toStdString().c_str());
 		}
 
-		if (!QFile::copy(defaultSettingsFilename, userSettingsFilename))
+		if (!QFile::copy(default_settings_filename, user_settings_filename))
 		{
 			nap::Logger::error("Failed to copy %s to %s", 
-				defaultSettingsFilename.toStdString().c_str(),
-				userSettingsFilename.toStdString().c_str());
+				default_settings_filename.toStdString().c_str(),
+				user_settings_filename.toStdString().c_str());
 		}
 	}
 }
