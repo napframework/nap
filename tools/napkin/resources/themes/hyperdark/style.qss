@@ -290,3 +290,8 @@ QDoubleSpinBox::down-button
     margin-right: 2px;
     border-image: url(:/icons/spin_down.png);
 }
+
+QSizeGrip 
+{
+    background: @status;
+}

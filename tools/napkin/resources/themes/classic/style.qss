@@ -193,7 +193,7 @@ QTabBar:tab::!selected {
 }
 
 QStatusBar {
-    color: @front3;
+    color: @front4;
     background: @status;
     font-family: "@monoFont";
 }
@@ -291,4 +291,9 @@ QDoubleSpinBox::down-button
     width: 12px;
     margin-right: 2px;
     border-image: url(:/icons/spin_down.png);
+}
+
+QSizeGrip 
+{
+    background: @status;
 }
