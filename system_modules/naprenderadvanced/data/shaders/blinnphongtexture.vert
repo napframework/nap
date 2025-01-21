@@ -30,6 +30,7 @@ uniform shadow
 	mat4 lightViewProjectionMatrix[MAX_LIGHTS];
 	vec2 nearFar[MAX_LIGHTS];
 	float strength[MAX_LIGHTS];
+	float spread[MAX_LIGHTS];
 	uint flags;
 	uint count;
 } sdw;

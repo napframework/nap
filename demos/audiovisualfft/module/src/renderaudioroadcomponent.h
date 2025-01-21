@@ -53,17 +53,22 @@ namespace nap
 				RenderableComponentInstance(entity, resource) { }
 
 		/**
-		 * Initialize RenderAudioRoadComponentInstance based on the RenderAudioRoadComponent resource
-		 * @param entityCreationParams when dynamically creating entities on initialization, add them to this this list.
-		 * @param errorState should hold the error message when initialization fails
-		 * @return if the RenderAudioRoadComponentInstance is initialized successfully
+		 * Initialize RenderAudioRoadComponentInstance
+		 * @param errorState error if initialization fails
+		 * @return if the RenderAudioRoadComponentInstance initialized successfully
 		 */
 		virtual bool init(utility::ErrorState& errorState) override;
 
 		/**
-		 * 
+		 * Renders the road
 		 */
 		void onDraw(IRenderTarget& renderTarget, VkCommandBuffer commandBuffer, const glm::mat4& viewMatrix, const glm::mat4& projectionMatrix) override;
+
+		/**
+		 * Returns the shader interface used to render the road.
+		 * @return material handle
+		 */
+		MaterialInstance* getOrCreateMaterial() { return &mMaterialInstance; }
 
 		ComponentInstancePtr<AudioRoadComponent> mAudioRoadComponent = { this, &RenderAudioRoadComponent::mAudioRoad };
 
