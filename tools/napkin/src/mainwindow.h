@@ -176,6 +176,11 @@ namespace napkin
 		void rebuildRecentMenu();
 
 		/**
+		 * Synchronize dock toggle actions
+		 */
+		void rebuildDockMenu();
+
+		/**
 		 * @return The application context, providing access to the application's content state
 		 */
 		AppContext& getContext() const;
@@ -187,13 +192,6 @@ namespace napkin
 		 * @param area The initial area to stick the the dock into.
 		 */
 		 QDockWidget* addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area = Qt::TopDockWidgetArea);
-
-		/**
-		 * Watches and synchronizes installed dock widget events.
-		 * @param watched the dock widget being watched
-		 * @param event that occurred. 
-		 */
-		virtual bool eventFilter(QObject* watched, QEvent* event) override;
 
 	private:
 		bool mShown = false;

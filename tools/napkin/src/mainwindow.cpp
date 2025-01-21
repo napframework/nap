@@ -64,6 +64,7 @@ void MainWindow::showEvent(QShowEvent* event)
 		nap::Logger::debug("Using settings file: %s", settings.fileName().toStdString().c_str());
 		getContext().restoreUI();
 		rebuildRecentMenu();
+		rebuildDockMenu();
 		mShown = true;
 	}
 	connect(&getContext(), &AppContext::progressChanged, this, &MainWindow::onProgress, Qt::UniqueConnection);
@@ -461,6 +462,33 @@ void napkin::MainWindow::enableProjectDependentActions(bool enable)
 }
 
 
+void MainWindow::rebuildDockMenu()
+{
+	// Add a menu option to toggle the visibility of all registered docks
+	auto docks = findChildren<QDockWidget*>(Qt::FindChildrenRecursively);
+	for (const auto& dock : docks)
+	{
+		// Create action and sync state
+		auto* vis_action = new QAction(dock->windowTitle(), dock);
+		vis_action->setObjectName(QString(dockActionFormat).arg(dock->objectName()));
+		vis_action->setCheckable(true);
+		vis_action->setChecked(dock->isVisible());
+
+		// Hide or show dock when toggled
+		connect(vis_action, &QAction::toggled, [dock](bool checked)
+			{
+				dock->setVisible(checked);
+				if (checked)
+					dock->raise();
+			}
+		);
+
+		// Add action to panels menu
+		mPanelsMenu.addAction(vis_action);
+	}
+}
+
+
 QDockWidget* MainWindow::addDock(const QString& name, QWidget* widget, Qt::DockWidgetArea area /*= Qt::TopDockWidgetArea*/)
 {
 	// Create dock widget
@@ -481,59 +509,8 @@ QDockWidget* MainWindow::addDock(const QString& name, QWidget* widget, Qt::DockW
 	dock_features &= ~(1U << (int)QDockWidget::DockWidgetClosable-1);
 	dock_widget->setFeatures(dock_features);
 
-	// Add visibility toggle to panels menu item
-	auto* vis_action = new QAction(name, dock_widget);
-	vis_action->setObjectName(QString(dockActionFormat).arg(dock_widget->objectName()));
-	vis_action->setCheckable(true);
-	connect(vis_action, &QAction::toggled, [dock_widget](bool checked) {
-		dock_widget->setVisible(checked);
-		}
-	);
-
-	// Add action to panels menu
-	mPanelsMenu.addAction(vis_action);
-
-	// Install listener, add dock and return
-	dock_widget->installEventFilter(this);
+	// Add dock and return
 	addDockWidget(area, dock_widget);
 	return dock_widget;
-}
-
-
-bool MainWindow::eventFilter(QObject* watched, QEvent* event)
-{
-	auto* dock_widget = qobject_cast<QDockWidget*>(watched);
-	if (dock_widget == nullptr)
-		return false;
-
-	switch(event->type())
-	{
-		case QEvent::Hide:
-		{
-			// Find toggle action associated with dock widget
-			auto* child = findChild<QAction*>(QString(dockActionFormat).arg(dock_widget->objectName()),
-				Qt::FindChildrenRecursively);
-
-			// Sync state -> required on startup and intermediate loads
-			if (child != nullptr)
-				child->setChecked(false);
-			break;
-		}
-		case QEvent::Show:
-		{
-			// Find toggle action associated with dock widget
-			auto* child = findChild<QAction*>(QString(dockActionFormat).arg(dock_widget->objectName()),
-				Qt::FindChildrenRecursively);
-
-			// Sync state -> required on startup and intermediate loads
-			if (child != nullptr)
-				child->setChecked(true);
-
-			// Raise to front
-			dock_widget->raise();
-			break;
-		}
-	}
-	return false;
 }
 
