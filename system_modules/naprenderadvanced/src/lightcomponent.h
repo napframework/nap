@@ -67,6 +67,7 @@ namespace nap
 			inline constexpr const char* lightViewProjectionMatrix = "lightViewProjectionMatrix";
             inline constexpr const char* nearFar = "nearFar";
             inline constexpr const char* strength = "strength";
+            inline constexpr const char* spread = "spread";
             inline constexpr const char* flags = "flags";
 			inline constexpr const char* count = "count";
 		}
@@ -156,6 +157,7 @@ namespace nap
 		RGBColorFloat mColor = {1.0f, 1.0f, 1.0f};				///< Property: 'Color' The light color
 		float mIntensity = 1.0f;								///< Property: 'Intensity' The light intensity
 		float mShadowStrength = 1.0f;							///< Property: 'ShadowStrength' The amount of light the shadow consumes.
+		float mShadowSpread = 2.0f;								///< Property: 'ShadowSpread' The spread radius of the shadow samples.
 		Locator mLocator;										///< Property: 'Locator' Locator settings
 	};
 
@@ -292,6 +294,16 @@ namespace nap
 		virtual void setShadowStrength(float strength)						{ mShadowStrength = strength; }
 
 		/**
+		 * @return the shadow strength
+		 */
+		virtual float getShadowSpread() const								{ return mShadowSpread; }
+
+		/**
+		 * Sets the shadow strength
+		 */
+		virtual void setShadowSpread(float spread)							{ mShadowSpread = spread; }
+
+		/**
 		 * @return the light color
 		 */
 		virtual const RGBColorFloat& getColor() const						{ return mColor; }
@@ -386,6 +398,7 @@ namespace nap
 		bool mIsEnabled									= true;
 		bool mIsShadowEnabled							= false;
 		float mShadowStrength							= 1.0f;
+		float mShadowSpread								= 2.0f;
 		uint mShadowMapSize								= 512;
 
 	private:
