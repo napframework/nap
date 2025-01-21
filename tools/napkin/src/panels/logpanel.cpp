@@ -149,24 +149,23 @@ void LogPanel::onRowInserted(const QModelIndex &parent, int first, int last)
 	assert(lvl_item != nullptr);
 
 	// Check if message is of importance
-	bool scroll_to_bottom = mScrolledToBottom;
 	int cutoff_lvl = nap::math::max<int>(getCurrentLevel().level(), nap::Logger::warnLevel().level());
-	if (lvl_item->getMessage().level().level() >= cutoff_lvl)
-	{
-		// Notify listeners we've received a potential important msg
-		importantMessageReceived(lvl_item->getMessage());
-		scroll_to_bottom = true;
-	}
+	bool important_msg = lvl_item->getMessage().level().level() >= cutoff_lvl;
+	bool scroll = mScrolledToBottom || important_msg;
 
-	// Scroll to bottom to reveal message if of importance or maxed
-	if (scroll_to_bottom)
+	// Scroll to bottom
+	if (scroll)
 	{
 		auto scrollBar = mTreeView.getTreeView().verticalScrollBar();
-		QTimer::singleShot(0, [scrollBar]() 
-		{
-			scrollBar->setValue(scrollBar->maximum());
-		});
+		QTimer::singleShot(0, [scrollBar]()
+			{
+				scrollBar->setValue(scrollBar->maximum());
+			});
 	}
+
+	// Notify
+	if (important_msg)
+		importantMessageReceived(lvl_item->getMessage());
 }
 
 
