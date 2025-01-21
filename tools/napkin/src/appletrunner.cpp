@@ -271,7 +271,7 @@ namespace napkin
 					// We also proceed if a request to suspend operation or abort is received
 					double wtd = nap::math::max<double>(mFrameTarget - frame_timer.getElapsedTime(), 0.0);
 					mProcessCondition.wait_for(lock, duration_cast<nap::Milliseconds>(duration<double>(wtd)), [this] {
-							return !mEventQueue.empty() || mAbort || mSuspendPromise != nullptr;
+							return !mEventQueue.empty() || mSuspendPromise != nullptr || mAbort;
 						}
 					);
 				}
@@ -326,12 +326,15 @@ namespace napkin
 
 	void AppletRunner::sendEvent(nap::EventPtr event)
 	{
-		// Swap and notify handling thread
+		if (active())
 		{
-			std::lock_guard lk(mProcessMutex);
-			mEventQueue.emplace(std::move(event));
+			// Add and notify thread when not suspended
+			{
+				std::lock_guard lk(mProcessMutex);
+				mEventQueue.emplace(std::move(event));
+			}
+			mProcessCondition.notify_one();
 		}
-		mProcessCondition.notify_one();
 	}
 
 
