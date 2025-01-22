@@ -30,7 +30,7 @@ namespace napkin
 		Q_OBJECT
 	public:
 		// App to load (relative to executable)
-		static constexpr const char* app = "/resources/apps/renderpreview/app.json";
+		static constexpr const char* app = "/resources/applets/renderpreview/app.json";
 
 		// Creates the surface and adds it to this widget
 		RenderPreviewPanel(QWidget* parent = nullptr);
@@ -72,3 +72,4 @@ namespace napkin
 		void freqChanged(int freq);
 	};
 }
+

@@ -27,7 +27,7 @@ namespace napkin
 		Q_OBJECT
 	public:
 		// App to load (relative to executable)
-		static constexpr const char* app = "/resources/apps/texturepreview/app.json";
+		static constexpr const char* app = "/resources/applets/texturepreview/app.json";
 
 		// Creates the surface and adds it to this widget
 		TexturePreviewPanel(QWidget* parent = nullptr);
