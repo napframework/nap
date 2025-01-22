@@ -27,7 +27,18 @@ namespace napkin
 	class TexturePreviewAppletGUI;
 
 	/**
-	 * Main application that is called from within the main loop
+	 * 2DTexture and Cubemap preview application.
+	 * 
+	 * Allows users to load and visualize various texture types in both 2D and 3D.
+	 * The application offers a range of preview options, including:
+	 *
+	 *	- 2D Plane
+	 *  - Mesh
+	 *	- Custom Mesh
+	 *  - Reflection
+	 *  - Skybox
+	 * 
+	 * And various combinations of the above.
 	 */
 	class TexturePreviewApplet : public napkin::Applet
 	{
