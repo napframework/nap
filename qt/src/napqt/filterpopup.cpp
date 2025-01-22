@@ -31,6 +31,10 @@ FilterPopup::FilterPopup(StringModel::Entries&& entries, QWidget* parent) : QDia
 	// Ensure widget size is re-computed when sorting ends
 	connect(&mFilterTree, &FilterTreeView::doubleClicked, [this](auto index) { accept(); });
 	connect(&mFilterTree, &FilterTreeView::sortingEnded, [this]() { mFilterTree.getTreeView().expandAll(); });
+
+	// Handle key up and down for item selection
+	mFilterTree.getLineEdit().installEventFilter(this);
+
 	computeSize();
 }
 
@@ -124,6 +128,25 @@ void FilterPopup::computeSize()
 	height = qMin(height, 500);
 	setMinimumSize(width, height);
 	resize(width, height);
+}
+
+
+bool FilterPopup::eventFilter(QObject* watched, QEvent* event)
+{
+	// Only handle key-presses
+	if (event->type() == QEvent::KeyPress)
+	{
+		// Cast and handle
+		assert(qobject_cast<QLineEdit*>(watched) != nullptr);
+		switch (static_cast<QKeyEvent*>(event)->key())
+		{
+		case Qt::Key_Down:
+		case Qt::Key_Up:
+			focusNextChild();
+			return true;
+		}
+	}
+	return false;
 }
 
 

@@ -120,6 +120,7 @@ namespace nap
 		protected:
 			void keyPressEvent(QKeyEvent* event) override;
 			void showEvent(QShowEvent* event) override;
+			virtual bool eventFilter(QObject* watched, QEvent* event) override;
 
 		private:
 			void accept();

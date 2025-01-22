@@ -78,7 +78,7 @@ void FilterTreeView::select(const QStandardItem* item, bool expand)
 
 QStandardItem* FilterTreeView::getSelectedItem()
 {
-	for (auto idx : getSelectedIndexes())
+	for (const auto& idx : getSelectedIndexes())
 		return getModel()->itemFromIndex(idx);
 	return nullptr;
 }
@@ -87,7 +87,7 @@ QStandardItem* FilterTreeView::getSelectedItem()
 QList<QStandardItem*> FilterTreeView::getSelectedItems() const
 {
 	QList<QStandardItem*> ret;
-	for (auto idx : getSelectedIndexes())
+	for (const auto& idx : getSelectedIndexes())
 		ret.append(getModel()->itemFromIndex(idx));
 	return ret;
 }
@@ -96,7 +96,7 @@ QList<QStandardItem*> FilterTreeView::getSelectedItems() const
 QList<QModelIndex> FilterTreeView::getSelectedIndexes() const
 {
 	QList<QModelIndex> ret;
-	for (auto idx : getSelectionModel()->selectedRows())
+	for (const auto& idx : getSelectionModel()->selectedRows())
 		ret.append(mProxyModel.mapToSource(idx));
 	return ret;
 }
