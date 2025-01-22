@@ -108,6 +108,9 @@ namespace napkin
 		// Reference orbit move speed
 		mSpeedReference = mMeshOrbit->getMovementSpeed();
 
+		// Plane bounds
+		mPlaneBounds = utility::computeBoundingBox<glm::vec3>(mPlaneRenderer->getMesh().getMeshInstance());
+
 		// Bind fall-back texture
 		bind(*mTextureFallback);
 
@@ -238,6 +241,13 @@ namespace napkin
 	{
 		mMeshIndex = math::clamp<int>(index, 0, mMeshes.size() - 1);
 		mMeshRenderer->setMesh(mMeshes[mMeshIndex]);
+	}
+
+
+	const nap::math::Box& Frame2DTextureComponentInstance::getBounds() const
+	{
+		return mMode == EMode::Plane ? mPlaneBounds :
+			mBounds[mMeshIndex];
 	}
 
 

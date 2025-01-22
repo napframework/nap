@@ -148,7 +148,7 @@ namespace napkin
 		/**
 		 * @return selected mesh bounds
 		 */
-		const math::Box& getBounds() const						{ assert(mMeshIndex < mBounds.size()); return mBounds[mMeshIndex]; }
+		const math::Box& getBounds() const;
 
 		/**
 		 * @return current selected mesh
@@ -227,6 +227,7 @@ namespace napkin
 		Sampler2DInstance* mMeshSampler = nullptr;
 		std::vector<RenderableMesh> mMeshes;
 		std::vector<math::Box> mBounds;
+		math::Box mPlaneBounds;
 		int mMeshIndex = 0;
 		EMode mMode = EMode::Plane;
 		float mSpeedReference = 0.0f;
