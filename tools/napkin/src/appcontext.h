@@ -9,7 +9,7 @@
 #include "document.h"
 #include "resourcefactory.h"
 #include "serviceconfig.h"
-#include "appleteventloop.h"
+#include "appletsdleventsink.h"
 
 #include <vector>
 #include <QApplication>
@@ -238,7 +238,7 @@ namespace napkin
 		/**
 		 * Returns the applet process loop, nullptr if project not loaded
 		 */
-		AppletEventLoop* getEventLoop() const;
+		AppletSDLEventSink* getEventLoop() const;
 
 		/**
 		 * Convenience method to retrieve this QApplication's instance.
@@ -500,7 +500,7 @@ namespace napkin
 		ResourceFactory mResourceFactory;											// Le resource factory
 		bool mOpenRecentProjectAtStartup = true;									// Whether to load recent project at startup
 		nap::RenderService* mRenderService = nullptr;								// The render service (if available)
-		std::unique_ptr<napkin::AppletEventLoop> mAppletEventLoop = nullptr;				// The SDL applet event loop
+		std::unique_ptr<napkin::AppletSDLEventSink> mAppletEventLoop = nullptr;				// The SDL applet event loop
 		std::unique_ptr<nap::ProjectInfo> mProjectInfo = nullptr;					// Clone of core project info
 		std::unique_ptr<Document> mDocument = nullptr; 								// Keep objects here
 		QString mCurrentFilename;													// The currently opened file

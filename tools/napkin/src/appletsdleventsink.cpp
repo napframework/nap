@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local includes
-#include "appleteventloop.h"
+#include "appletsdleventsink.h"
 #include "applet.h"
 
 // External includes
@@ -17,7 +17,7 @@
 
 namespace napkin
 {
-	AppletEventLoop::AppletEventLoop(nap::uint frequency) :
+	AppletSDLEventSink::AppletSDLEventSink(nap::uint frequency) :
 		mFrequency(nap::math::min<nap::uint>(frequency, 1))
 	{
 		// SDL event loop must run on the QT GUI thread
@@ -30,9 +30,15 @@ namespace napkin
 
 		// Initialize SDL video subsystem
 		nap::utility::ErrorState error;
+		if (!nap::SDL::initVideo(error))
+		{
+			nap::Logger::error(error.toString());
+			return;
+		}
+
 		if (nap::SDL::initVideo(error))
 		{
-			connect(&mTimer, &QTimer::timeout, this, &AppletEventLoop::pollEvent);
+			connect(&mTimer, &QTimer::timeout, this, &AppletSDLEventSink::flushEvents);
 			int ms_poll = static_cast<int>(1000.0 / static_cast<double>(frequency));
 			mTimer.start(ms_poll);
 		}
@@ -40,17 +46,28 @@ namespace napkin
 		{
 			nap::Logger::error(error.toString());
 		}
+
+		// Disable interfering events
+		SDL_EventState(SDL_DISPLAYEVENT, SDL_IGNORE);
+		SDL_EventState(SDL_WINDOWEVENT, SDL_IGNORE);
+		SDL_EventState(SDL_SYSWMEVENT, SDL_IGNORE);
+		SDL_EventState(SDL_KEYDOWN, SDL_IGNORE);
+		SDL_EventState(SDL_KEYUP, SDL_IGNORE);
+		SDL_EventState(SDL_MOUSEMOTION, SDL_IGNORE);
+		SDL_EventState(SDL_MOUSEBUTTONDOWN, SDL_IGNORE);
+		SDL_EventState(SDL_MOUSEBUTTONUP, SDL_IGNORE);
+		SDL_EventState(SDL_MOUSEWHEEL, SDL_IGNORE);
 	}
 
 	
-	AppletEventLoop::~AppletEventLoop()
+	AppletSDLEventSink::~AppletSDLEventSink()
 	{
 		nap::SDL::shutdownVideo();
 	}
 
 
 
-	void AppletEventLoop::pollEvent()
+	void AppletSDLEventSink::flushEvents()
 	{
 		// Flush everything -> events are forward by the individual render panels
 		// TODO: Remove SDL when using applets

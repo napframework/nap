@@ -161,7 +161,7 @@ const nap::ProjectInfo* AppContext::loadProject(const QString& projectFilename)
 
 	// Create and start SDL app event handler for NAP applets
 	// Also initializes the video subsystem
-	mAppletEventLoop = std::make_unique<AppletEventLoop>(125);
+	mAppletEventLoop = std::make_unique<AppletSDLEventSink>(1);
 
 	// Load document (data file)
 	addRecentlyOpenedProject(project_file_name);
@@ -522,7 +522,7 @@ nap::RenderService* napkin::AppContext::getRenderService() const
 }
 
 
-napkin::AppletEventLoop* napkin::AppContext::getEventLoop() const
+napkin::AppletSDLEventSink* napkin::AppContext::getEventLoop() const
 {
 	return mAppletEventLoop.get();
 }

@@ -23,24 +23,24 @@ namespace napkin
 	class Applet;
 
 	/**
-	 * Initializes the various required SDL subsystems for NAP (notably video) and polls events.
-	 * This class MUST be created and running on the GUI (main) QT thread.
-	 * The events are forwarded (thread safe) to the various NAP applets running in Napkin.
+	 * Initializes the various required SDL subsystems for NAP (notably video) and disables SDL events.
+	 * Applets intercept and transform QT events into NAP events, eliminating the need for SDL events entirely.
+	 * This class MUST be created exactly once and running on the GUI (main) QT thread.
 	 */
-	class AppletEventLoop : public QObject
+	class AppletSDLEventSink : public QObject
 	{
 		Q_OBJECT
 	public:
 		/**
-		 * Creates the event loop that polls SDL for events at the given frequency.
-		 * @param poll frequency (hz)
+		 * Initializes the video subsystem and creates the SDL event sink
+		 * @param event flush frequency (hz)
 		 */
-		AppletEventLoop(nap::uint frequency);
+		AppletSDLEventSink(nap::uint frequency);
 
 		/**
 		 * Shuts down the event loop and closes video subsystem
 		 */
-		virtual ~AppletEventLoop();
+		virtual ~AppletSDLEventSink();
 
 	private:
 		nap::uint mFrequency = 60;
@@ -48,6 +48,6 @@ namespace napkin
 		napkin::AppletRunner* mRunner = nullptr;
 		std::unique_ptr<nap::SDLEventConverter> mEventConverter = nullptr;
 
-		void pollEvent();
+		void flushEvents();
 	};
 }
