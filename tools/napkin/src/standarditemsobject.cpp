@@ -461,7 +461,7 @@ int ObjectItem::nameIndex(const ObjectItem& childItem) const
 }
 
 
-void ObjectItem::onPropertyValueChanged(PropertyPath path)
+void ObjectItem::onPropertyValueChanged(const PropertyPath& path)
 {
 	if (path.getObject() == mObject)
 		refresh();

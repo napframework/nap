@@ -418,7 +418,7 @@ namespace napkin
 		 * @param object The object that has the changed property
 		 * @param path The path to the property that has changed
 		 */
-		void propertyValueChanged(const PropertyPath path);
+		void propertyValueChanged(const PropertyPath& path);
 
 		/**
 		 * Qt Signal
