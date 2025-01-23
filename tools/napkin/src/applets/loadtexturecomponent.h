@@ -22,7 +22,7 @@ namespace napkin
 	class LoadTextureComponentInstance;
 
 	/**
-	 * Loads and sets a texture from an API command received from Napkin.
+	 * Loads and sets a texture or mesh from an API command received from Napkin.
 	 */
 	class LoadTextureComponent : public Component
 	{
@@ -53,7 +53,7 @@ namespace napkin
 
 
 	/**
-	 * Loads and sets a texture from an API command received from Napkin.
+	 * Loads and sets a texture or mesh from an API command received from Napkin.
 	 */
 	class LoadTextureComponentInstance : public ComponentInstance
 	{

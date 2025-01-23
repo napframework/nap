@@ -20,13 +20,23 @@ namespace napkin
 	using TextureAppletRunner = TypedAppletRunner<TexturePreviewApplet>;
 
 	/**
-	 * Allows for previewing material and meshes
+	 * Texture2D & Cubemap texture preview panel.
+	 * 
+	 * This panel hosts a NAP applet that utilizes the NAP render engine to preview textures.
+	 * It supports both 2D textures and cube-maps, along with the option to assign custom meshes for preview purposes.
+	 * The most recently loaded object is tracked for changes, and is automatically uploaded when a modification is detected.
+	 * 
+	 * Note that the applet runs on a separate thread, independent from Napkin.
+	 * Communication is handled through API events, thread safe.
+	 *
+	 * The applet is started and added to the layout when a project is opened and initialization succeeds.
+	 * If initialization fails the applet is not made visible -> see log for details.
 	 */
 	class TexturePreviewPanel : public StageWidget
 	{
 		Q_OBJECT
 	public:
-		// App to load (relative to executable)
+		// App to load (relative to napkin executable)
 		static constexpr const char* app = "/resources/applets/texturepreview/app.json";
 
 		// Creates the surface and adds it to this widget
