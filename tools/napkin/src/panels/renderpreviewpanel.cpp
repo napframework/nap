@@ -35,15 +35,9 @@ namespace napkin
 	}
 
 
-	void RenderPreviewPanel::loadPath(const PropertyPath& path)
+	bool RenderPreviewPanel::onLoadPath(const PropertyPath& path, nap::utility::ErrorState& error)
 	{
-
-	}
-
-
-	void RenderPreviewPanel::clearPath()
-	{
-
+		return true;
 	}
 
 

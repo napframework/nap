@@ -402,20 +402,27 @@ void napkin::MainWindow::addToolstrip()
 
 void MainWindow::onStageRequested(const PropertyPath& path, const StageOption& selection)
 {
+	// Fetch stage widget
 	auto* stage_widget = findChild<StageWidget*>(QString::fromStdString(selection.mWidgetName));
-	if (stage_widget != nullptr)
-	{
-		// Set path
-		stage_widget->setPath(path);
+	if (stage_widget == nullptr)
+		return;
 
-		// Show and raise in docked widget
-		auto* dock_widget =  qobject_cast<QDockWidget*>(stage_widget->parent());
-		if (dock_widget != nullptr)
-		{
-			dock_widget->show();
-			dock_widget->activateWindow();
-			dock_widget->raise();
-		}
+	// Try to load path
+	utility::ErrorState error;
+	if (!stage_widget->loadPath(path, error))
+	{
+		nap::Logger::error("Unable to load path: %s", path.toString().c_str());
+		nap::Logger::error(error.toString());
+		return;
+	}
+
+	// Show and raise in docked widget
+	auto* dock_widget = qobject_cast<QDockWidget*>(stage_widget->parent());
+	if (dock_widget != nullptr)
+	{
+		dock_widget->show();
+		dock_widget->activateWindow();
+		dock_widget->raise();
 	}
 }
 

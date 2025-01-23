@@ -48,10 +48,7 @@ namespace napkin
 		virtual void closeEvent(QCloseEvent* event) override;
 
 		// Loads the resource
-		virtual void loadPath(const PropertyPath& path) override;
-
-		// Clears the resource
-		virtual void clearPath() override;
+		virtual bool onLoadPath(const PropertyPath& path, nap::utility::ErrorState& error) override;
 
 	private:
 		QLineEdit				mLineEdit;

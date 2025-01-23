@@ -46,20 +46,33 @@ namespace napkin
 		virtual void closeEvent(QCloseEvent* event) override;
 
 		// Loads the texture -> path must point to type Texture2D
-		virtual void loadPath(const PropertyPath& path) override;
-
-		// Clears the texture
-		virtual void clearPath() override;
+		virtual bool onLoadPath(const PropertyPath& path, utility::ErrorState& error) override;
 
 	private:
 		RenderPanel*			mPanel = nullptr;			//< NAP compatible Qt render window
 		TextureAppletRunner		mRunner;					//< Application that is run
 		QVBoxLayout				mLayout;					//< Widget layout
 		bool					mInitialized;				//< If the panel is initialized
-		nap::rtti::Object*		mObject = nullptr;			//< Current selected object
+		nap::Texture*			mLoadedTexture = nullptr;	//< Current texture
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);
+
+		// Load a texture
+		bool loadTexture(const PropertyPath& path, bool frame, nap::utility::ErrorState& error);
+
+		// Load a mesh
+		bool loadMesh(const PropertyPath& path, bool frame, nap::utility::ErrorState& error);
+
+		// When a property value changes
+		void propertyValueChanged(const PropertyPath& path);
+
+		// When an object is removed
+		void objectRemoved(nap::rtti::Object* object);
+
+		// Returns the load function for the given object
+		using Loader = std::function<bool(const PropertyPath&, bool, nap::utility::ErrorState&)>;
+		Loader findLoader(const PropertyPath& path);
 	};
 }
 

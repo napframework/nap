@@ -25,68 +25,12 @@ namespace napkin
 	}
 
 
-	void TexturePreviewPanel::closeEvent(QCloseEvent* event)
-	{
-		mRunner.abort();
-		return QWidget::closeEvent(event);
-	}
-
-
-	void TexturePreviewPanel::loadPath(const PropertyPath& path)
-	{
-		// Serialize to JSON
-		nap::rtti::JSONWriter writer;
-		nap::rtti::ObjectList list = { path.getObject() };
-		nap::utility::ErrorState error;
-		if (!serializeObjects(list, writer, error))
-		{
-			nap::Logger::error(error.toString());
-			return;
-		}
-
-		// TODO: The applet has multiple meshes and textures but we currently only check if the last used reference has changed.
-		// TODO: We should introduce a system that allows for multiple objects to be tracked and handled appropriately.
-		// TODO: For example: Load Texture, Load Mesh, Change Texture Property -> texture change not propagated because active object is Mesh.
-		// TODO: To fix this we should differentiate between property and load changes.
-		// Check if we need to re-frame the object in the viewport
-		bool frame_obj = mObject != path.getObject();
-
-		// Send event
-		nap::APIEventPtr load_event = nullptr;
-		if (path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Texture)))
-		{
-			// Create load event
-			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadTextureCmd);
-			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadTextureArg1, writer.GetJSON());
-			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame_obj);
-		}
-		else
-		{
-			assert(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IMesh)));
-			load_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadMeshCmd);
-			load_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
-			load_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame_obj);
-			mObject = path.getObject();
-		}
-		mObject = path.getObject();
-		mRunner.sendEvent(std::move(load_event));
-	}
-
-
-	void TexturePreviewPanel::clearPath()
-	{
-		// Send clear command to applet
-		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::clearCmd);
-		mRunner.sendEvent(std::move(clear_tex_event));
-	}
-
-
 	void TexturePreviewPanel::init(const nap::ProjectInfo& info)
 	{
-		// Signals completion setup resources gui thread
+		// Should only be initialized once, after the project is loaded
 		assert(mPanel == nullptr);
 
-		// Create the window
+		// Create the nap compatible render window
 		nap::utility::ErrorState error;
 		mPanel = RenderPanel::create(mRunner, this, error);
 		if (mPanel == nullptr)
@@ -99,6 +43,10 @@ namespace napkin
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
 		auto init_future = mRunner.start(preview_app, true);
 
+		// Listen to property changes
+		connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &TexturePreviewPanel::propertyValueChanged);
+		connect(&AppContext::get(), &AppContext::objectRemoved, this, &TexturePreviewPanel::objectRemoved);
+
 		// Don't install layout if initialization fails
 		if (!init_future.get())
 			return;
@@ -109,6 +57,106 @@ namespace napkin
 		mLayout.addWidget(&mPanel->getWidget());
 		setLayout(&mLayout);
 	}
+
+
+	void TexturePreviewPanel::closeEvent(QCloseEvent* event)
+	{
+		mRunner.abort();
+		return QWidget::closeEvent(event);
+	}
+
+
+	bool TexturePreviewPanel::onLoadPath(const PropertyPath& path, utility::ErrorState& error)
+	{
+		// Find load function
+		auto load = findLoader(path);
+		if (!error.check(load != nullptr,
+			"Unable to find loader for '%s'", path.getObject()->mID.c_str()))
+			return false;
+
+		// Attempt to load
+		return load(path, true, error);
+	}
+
+
+	bool TexturePreviewPanel::loadTexture(const PropertyPath& path, bool frame, nap::utility::ErrorState& error)
+	{
+		// Serialize to JSON
+		nap::rtti::JSONWriter writer;
+		nap::rtti::ObjectList list = { path.getObject() };
+		if (!serializeObjects(list, writer, error))
+			return false;
+
+		// Create load event
+		APIEventPtr load_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadTextureCmd);
+		load_tex_event->addArgument<nap::APIString>(LoadTextureComponent::loadTextureArg1, writer.GetJSON());
+		load_tex_event->addArgument<nap::APIBool>(LoadTextureComponent::loadTextureArg2, frame);
+		mRunner.sendEvent(std::move(load_tex_event));
+
+		// Store for property changes
+		mLoadedTexture = rtti_cast<Texture>(path.getObject());
+		assert(mLoadedTexture != nullptr);
+		return true;
+	}
+
+
+	bool TexturePreviewPanel::loadMesh(const PropertyPath& path, bool frame, nap::utility::ErrorState& error)
+	{
+		// Bail if no texture is loaded
+		if (!error.check(mLoadedTexture != nullptr, "%s cmd failed: can't assign mesh, no texture loaded",
+			LoadTextureComponent::loadMeshCmd))
+			return false;
+
+		// Serialize to JSON
+		nap::rtti::JSONWriter writer;
+		nap::rtti::ObjectList list = { path.getObject() };
+		if (!serializeObjects(list, writer, error))
+			return false;
+
+		APIEventPtr load_mesh_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::loadMeshCmd);
+		load_mesh_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
+		load_mesh_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame);
+		mRunner.sendEvent(std::move(load_mesh_event));
+		return true;
+	}
+
+
+	void TexturePreviewPanel::propertyValueChanged(const PropertyPath& path)
+	{
+		// Bail if texture or mesh isn't loaded
+		assert(path.isValid());
+		if (path.getObject() != mLoadedTexture)
+			return;
+
+		// Fetch loader and load
+		auto loader = findLoader(path); assert(loader != nullptr);
+		utility::ErrorState error;
+		if (!loader(path, false, error))
+			nap::Logger::error(error.toString());
+	}
+
+
+	void TexturePreviewPanel::objectRemoved(nap::rtti::Object* object)
+	{
+		if (object == mLoadedTexture)
+		{
+			// Send clear command to applet
+			nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::clearCmd);
+			mRunner.sendEvent(std::move(clear_tex_event));
+			mLoadedTexture = nullptr;
+		}
+	}
+
+
+	TexturePreviewPanel::Loader TexturePreviewPanel::findLoader(const PropertyPath& path)
+	{
+		using namespace std::placeholders;
+		if(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::Texture)))
+			return std::bind(&TexturePreviewPanel::loadTexture, this, _1, _2, _3);
+
+		if(path.getObject()->get_type().is_derived_from(RTTI_OF(nap::IMesh)))
+			return std::bind(&TexturePreviewPanel::loadMesh, this, _1, _2, _3);
+
+		return nullptr;
+	}
 }
-
-
