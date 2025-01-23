@@ -11,7 +11,10 @@
 
 namespace napkin
 {
-	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget("Texture Preview",
+	// Widget name
+	static constexpr const char* sPanelName = "Texture Preview";
+
+	TexturePreviewPanel::TexturePreviewPanel(QWidget* parent) : StageWidget(sPanelName,
 		{ RTTI_OF(nap::Texture), RTTI_OF(nap::IMesh)}, parent)
 	{
 		// Create render resources on project load
@@ -41,22 +44,31 @@ namespace napkin
 
 		// Initializing the applet (core, services & application)
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		auto init_future = mRunner.start(preview_app, true);
+		assert(!mFutureInit.valid());
+		mFutureInit = mRunner.start(preview_app, true);
 
-		// Listen to property changes
-		connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &TexturePreviewPanel::propertyValueChanged);
-		connect(&AppContext::get(), &AppContext::objectRemoved, this, &TexturePreviewPanel::objectRemoved);
-		connect(&AppContext::get(), &AppContext::documentClosing, this, &TexturePreviewPanel::documentClosing);
+		// Let the applet initialize on it's own thread -> install next frame
+		QTimer::singleShot(0, [this]()
+			{
+				// Wait until initialized and bail on failure
+				assert(mFutureInit.valid());
+				if (!mFutureInit.get())
+				{
+					nap::Logger::error("'%s' initialization failed, check the log for more details", sPanelName);
+					return;
+				}
 
-		// Don't install layout if initialization fails
-		if (!init_future.get())
-			return;
+				// Install window into this widget
+				assert(layout() == nullptr);
+				mLayout.setContentsMargins(0, 0, 0, 0);
+				mLayout.addWidget(&mPanel->getWidget());
+				setLayout(&mLayout);
 
-		// Install window into this widget
-		assert(layout() == nullptr);
-		mLayout.setContentsMargins(0, 0, 0, 0);
-		mLayout.addWidget(&mPanel->getWidget());
-		setLayout(&mLayout);
+				// Listen to property changes
+				connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &TexturePreviewPanel::propertyValueChanged);
+				connect(&AppContext::get(), &AppContext::objectRemoved, this, &TexturePreviewPanel::objectRemoved);
+				connect(&AppContext::get(), &AppContext::documentClosing, this, &TexturePreviewPanel::documentClosing);
+			});
 	}
 
 

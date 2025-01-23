@@ -15,18 +15,23 @@
 #include <rapidjson/document.h>
 #include <rapidjson/error/en.h>
 #include <fstream>
+#include <mutex>
 
 namespace nap
 {
+	static std::mutex moduleMutex;
+
 	ModuleManager::ModuleManager(nap::Core& core) : 
 		mCore(core)
 	{
+		std::lock_guard<std::mutex> lock(moduleMutex);
 		initModules();
 	}
 
 
 	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
 	{
+		std::lock_guard<std::mutex> lock(moduleMutex);
 		for (const std::string& moduleName : projectInfo.mRequiredModules)
 			if (!sourceModule(projectInfo, moduleName, err))
 				return false;

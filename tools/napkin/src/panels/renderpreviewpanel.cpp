@@ -8,7 +8,9 @@
 
 namespace napkin
 {
-	RenderPreviewPanel::RenderPreviewPanel(QWidget * parent) : StageWidget("3D Preview",
+	static constexpr const char* sPanelName = "3D Preview";
+
+	RenderPreviewPanel::RenderPreviewPanel(QWidget * parent) : StageWidget(sPanelName,
 		{ RTTI_OF(nap::IMesh), RTTI_OF(nap::Material) }, parent)
 	{
 		// Create render resources on project load
@@ -58,27 +60,34 @@ namespace napkin
 		// Initialize and run the applet (core, services & application)
 		mRunner.setFrequency(mSpinbox.value());
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
-		auto init_future = mRunner.start(preview_app, true);
+		mInitFuture = mRunner.start(preview_app, true);
 
-		// Don't install layout if initialization fails
-		if (!init_future.get())
-			return;
+		// Let the applet initialize on it's own thread -> install next frame
+		QTimer::singleShot(0, [this]()
+			{
+				// Wait until initialized and bail on failure
+				if (!mInitFuture.get())
+				{
+					nap::Logger::error("'%s' initialization failed, check the log for more details", sPanelName);
+					return;
+				}
 
-		// Hook up our widgets
-		mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &RenderPreviewPanel::textChanged);
-		mSpinbox.connect(&mSpinbox, &QSpinBox::valueChanged, this, &RenderPreviewPanel::freqChanged);
+				// Hook up our widgets
+				mLineEdit.connect(&mLineEdit, &QLineEdit::textChanged, this, &RenderPreviewPanel::textChanged);
+				mSpinbox.connect(&mSpinbox, &QSpinBox::valueChanged, this, &RenderPreviewPanel::freqChanged);
 
-		// Create child widget layout
-		mControlLayout.addWidget(&mLineEdit);
-		mControlLayout.addWidget(&mSpinbox, 0, Qt::AlignRight);
-		mControlLayout.setContentsMargins(0, 0, 0, 0);
+				// Create child widget layout
+				mControlLayout.addWidget(&mLineEdit);
+				mControlLayout.addWidget(&mSpinbox, 0, Qt::AlignRight);
+				mControlLayout.setContentsMargins(0, 0, 0, 0);
 
-		// Install layout
-		assert(layout() == nullptr);
-		mMasterLayout.setContentsMargins(0, 0, 0, 0);
-		mMasterLayout.addWidget(&mPanel->getWidget());
-		mMasterLayout.addLayout(&mControlLayout);
-		setLayout(&mMasterLayout);
+				// Install layout
+				assert(layout() == nullptr);
+				mMasterLayout.setContentsMargins(0, 0, 0, 0);
+				mMasterLayout.addWidget(&mPanel->getWidget());
+				mMasterLayout.addLayout(&mControlLayout);
+				setLayout(&mMasterLayout);
+			});
 	}
 
 

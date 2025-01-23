@@ -65,6 +65,7 @@ namespace napkin
 		bool					mInitialized;				//< If the panel is initialized
 		nap::Texture*			mLoadedTexture = nullptr;	//< Current texture
 		nap::rtti::Object*		mTrackedObject = nullptr;	//< Mesh or texture last loaded
+		std::future<bool>		mFutureInit;
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);

@@ -58,6 +58,7 @@ namespace napkin
 		QVBoxLayout				mMasterLayout;			//< Master widget layout
 		QHBoxLayout				mControlLayout;			//< Control widget layout
 		bool					mInitialized;			//< If the panel is initialized
+		std::future<bool>		mInitFuture;
 
 		// Creates the app and links the window
 		void init(const nap::ProjectInfo& info);
