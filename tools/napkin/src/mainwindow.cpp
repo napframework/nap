@@ -225,7 +225,7 @@ MainWindow::~MainWindow()
 }
 
 
-void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
+void MainWindow::onResourceSelectionChanged(const QList<PropertyPath>& paths)
 {
 	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
 	sceneTreeSelection->blockSignals(true);
@@ -251,7 +251,7 @@ void MainWindow::onResourceSelectionChanged(QList<PropertyPath> paths)
 	}
 }
 
-void MainWindow::onSceneSelectionChanged(QList<PropertyPath> paths)
+void MainWindow::onSceneSelectionChanged(const QList<PropertyPath>& paths)
 {
 	auto resTreeSelection = mResourcePanel.treeView().getTreeView().selectionModel();
 	resTreeSelection->blockSignals(true);
@@ -278,7 +278,7 @@ void MainWindow::onDocumentOpened(const QString& filename)
 	rebuildRecentMenu();
 }
 
-void MainWindow::onLog(nap::LogMessage msg)
+void MainWindow::onLog(const nap::LogMessage& msg)
 {
 	statusBar()->showMessage(QString::fromStdString(msg.text()));
 
@@ -427,7 +427,7 @@ void MainWindow::onStageRequested(const PropertyPath& path, const StageOption& s
 }
 
 
-void napkin::MainWindow::onServiceConfigChanged(QList<PropertyPath> paths)
+void napkin::MainWindow::onServiceConfigChanged(const QList<PropertyPath>& paths)
 {
 	auto sceneTreeSelection = mScenePanel.treeView().getTreeView().selectionModel();
 	sceneTreeSelection->blockSignals(true);

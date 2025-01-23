@@ -70,7 +70,7 @@ namespace napkin
 		ServiceConfigPanel();
 
 	Q_SIGNALS:
-		void selectionChanged(QList<PropertyPath> configs);
+		void selectionChanged(const QList<PropertyPath>& configs);
 
 	private:
 		void onSelectionChanged(const QItemSelection& selected, const QItemSelection& deselected);

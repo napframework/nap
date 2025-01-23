@@ -106,7 +106,7 @@ namespace napkin
 
 	Q_SIGNALS:
 		// Occurs when object selection changes
-		void selectionChanged(QList<PropertyPath> path);
+		void selectionChanged(const QList<PropertyPath>& path);
 
 		// Occurs when a staging (load) command is requested
 		void stageRequested(const PropertyPath& path, const napkin::StageOption& selectedOption);

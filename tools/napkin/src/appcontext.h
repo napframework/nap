@@ -305,8 +305,7 @@ namespace napkin
 		 * Fired when the global selection has changed.
 		 * TODO: This will need to be changed into a multi-level/hierarchical selection context
 		 */
-		void selectionChanged(QList<nap::rtti::Object*> obj);
-
+		void selectionChanged(const QList<nap::rtti::Object*>& obj);
 
 		/**
 		 * Qt Signal

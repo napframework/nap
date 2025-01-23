@@ -108,7 +108,7 @@ namespace napkin
 		 * Called when the selection changes
 		 * @param paths The newly selected objects
 		 */
-		void onResourceSelectionChanged(QList<PropertyPath> paths);
+		void onResourceSelectionChanged(const QList<PropertyPath>& paths);
 
 		/**
 		 * Occurs when a stage (load) request is issued
@@ -121,12 +121,12 @@ namespace napkin
 		 * Handled when the scenepanel's selection changes
 		 * @param paths The paths that have been selected
 		 */
-		void onSceneSelectionChanged(QList<PropertyPath> paths);
+		void onSceneSelectionChanged(const QList<PropertyPath>& paths);
 
 		/**
 		 * Handled when the service config panel selection changes
 		 */
-		void onServiceConfigChanged(QList<PropertyPath> paths);
+		void onServiceConfigChanged(const QList<PropertyPath>& paths);
 
 		/**
 		 * Handled when a scene component selection was requested
@@ -137,7 +137,7 @@ namespace napkin
 		 * Receive messages from the logger
 		 * @param msg The log message being emitted
 		 */
-		void onLog(nap::LogMessage msg);
+		void onLog(const nap::LogMessage& msg);
 
 		/**
 		 * Called when an application-wide blocking operation started, progresses or finishes
