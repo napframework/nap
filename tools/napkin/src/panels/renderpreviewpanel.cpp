@@ -60,12 +60,14 @@ namespace napkin
 		// Initialize and run the applet (core, services & application)
 		mRunner.setFrequency(mSpinbox.value());
 		auto preview_app = nap::utility::forceSeparator(nap::utility::getExecutableDir() + app);
+		assert(!mInitFuture.valid());
 		mInitFuture = mRunner.start(preview_app, true);
 
 		// Let the applet initialize on it's own thread -> install next frame
 		QTimer::singleShot(0, [this]()
 			{
 				// Wait until initialized and bail on failure
+				assert(mInitFuture.valid());
 				if (!mInitFuture.get())
 				{
 					nap::Logger::error("'%s' initialization failed, check the log for more details", sPanelName);
