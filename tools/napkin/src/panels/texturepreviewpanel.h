@@ -64,11 +64,17 @@ namespace napkin
 		// Load a mesh
 		bool loadMesh(const PropertyPath& path, bool frame, nap::utility::ErrorState& error);
 
+		// Clear selection
+		void clear();
+
 		// When a property value changes
 		void propertyValueChanged(const PropertyPath& path);
 
 		// When an object is removed
 		void objectRemoved(nap::rtti::Object* object);
+
+		// When document is closing
+		void documentClosing(const QString& doc);
 
 		// Returns the load function for the given object
 		using Loader = std::function<bool(const PropertyPath&, bool, nap::utility::ErrorState&)>;

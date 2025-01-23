@@ -46,6 +46,7 @@ namespace napkin
 		// Listen to property changes
 		connect(&AppContext::get(), &AppContext::propertyValueChanged, this, &TexturePreviewPanel::propertyValueChanged);
 		connect(&AppContext::get(), &AppContext::objectRemoved, this, &TexturePreviewPanel::objectRemoved);
+		connect(&AppContext::get(), &AppContext::documentClosing, this, &TexturePreviewPanel::documentClosing);
 
 		// Don't install layout if initialization fails
 		if (!init_future.get())
@@ -121,6 +122,15 @@ namespace napkin
 	}
 
 
+	void TexturePreviewPanel::clear()
+	{
+		// Send clear command to applet
+		nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::clearCmd);
+		mRunner.sendEvent(std::move(clear_tex_event));
+		mLoadedTexture = nullptr;
+	}
+
+
 	void TexturePreviewPanel::propertyValueChanged(const PropertyPath& path)
 	{
 		// Bail if texture or mesh isn't loaded
@@ -139,12 +149,13 @@ namespace napkin
 	void TexturePreviewPanel::objectRemoved(nap::rtti::Object* object)
 	{
 		if (object == mLoadedTexture)
-		{
-			// Send clear command to applet
-			nap::APIEventPtr clear_tex_event = std::make_unique<nap::APIEvent>(LoadTextureComponent::clearCmd);
-			mRunner.sendEvent(std::move(clear_tex_event));
-			mLoadedTexture = nullptr;
-		}
+			clear();
+	}
+
+
+	void TexturePreviewPanel::documentClosing(const QString& doc)
+	{
+		clear();
 	}
 
 
