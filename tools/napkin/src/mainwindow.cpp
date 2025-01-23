@@ -272,7 +272,7 @@ void MainWindow::onSceneComponentSelectionRequested(nap::RootEntity* rootEntity,
 	mScenePanel.select(rootEntity, path);
 }
 
-void MainWindow::onDocumentOpened(const QString filename)
+void MainWindow::onDocumentOpened(const QString& filename)
 {
 	onDocumentChanged();
 	rebuildRecentMenu();

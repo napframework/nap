@@ -96,7 +96,7 @@ namespace napkin
 		 * Called when a document is opened
 		 * @param filename The filename of the newly opened document
 		 */
-		void onDocumentOpened(const QString filename);
+		void onDocumentOpened(const QString& filename);
 
 		/**
 		 * Called when a file has been opened

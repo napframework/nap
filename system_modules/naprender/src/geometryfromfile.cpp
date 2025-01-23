@@ -225,7 +225,6 @@ namespace nap
 			const std::string& mesh_name = mesh_names[i];
 
 			// Reserve space for attributes to add
-			nap::Logger::info("Loading mesh: %s", mesh_name.c_str());
 			uint ai_vert_count = mesh->mNumVertices;
 
 			// Copy vertex data

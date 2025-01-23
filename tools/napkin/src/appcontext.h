@@ -312,28 +312,28 @@ namespace napkin
 		 * Qt Signal
 		 * Fired when another property must be selected
 		 */
-		void propertySelectionChanged(PropertyPath prop);
+		void propertySelectionChanged(const PropertyPath& prop);
 
 		/**
 		 * Qt Signal
 		 * Fired after a file has been opened and its objects made available.
 		 * @param filename Name of the file that was opened
 		 */
-		void documentOpened(QString filename);
+		void documentOpened(const QString& filename);
 
 		/**
 		* Qt Signal
 		* Fired after a file has been closed and its objects are destructed
 		* @param filename Name of the file that was opened
 		*/
-		void documentClosing(QString doc);
+		void documentClosing(const QString& doc);
 
 		/**
 		 * Qt Signal
 		 * Fires after a document has finished saving.
 		 * @param filename The file the data was saved to.
 		 */
-		void documentSaved(QString filename);
+		void documentSaved(const QString& filename);
 
 		/**
 		 * Qt Signal
@@ -449,7 +449,7 @@ namespace napkin
 		 * Will be used to relay thread-unsafe nap::Logger calls onto the Qt UI thread
 		 * @param msg The log message being handled
 		 */
-		void logMessage(nap::LogMessage msg);
+		void logMessage(const nap::LogMessage& msg);
 
 		/**
 		 * Shows a progress dialog based on given fraction and message.
@@ -469,7 +469,7 @@ namespace napkin
 		 * Qt Signal
 		 * Emits this signal when service configuration file is about to change
 		 */
-		void serviceConfigurationClosing(QString file);
+		void serviceConfigurationClosing(const QString& file);
 
 	private:
 		/**
