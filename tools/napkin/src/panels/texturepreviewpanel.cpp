@@ -97,6 +97,7 @@ namespace napkin
 		// Store for property changes
 		mLoadedTexture = rtti_cast<Texture>(path.getObject());
 		assert(mLoadedTexture != nullptr);
+		mTrackedObject = mLoadedTexture;
 		return true;
 	}
 
@@ -118,6 +119,7 @@ namespace napkin
 		load_mesh_event->addArgument<nap::APIString>(LoadTextureComponent::loadMeshArg1, writer.GetJSON());
 		load_mesh_event->addArgument<nap::APIBool>(LoadTextureComponent::loadMeshArg2, frame);
 		mRunner.sendEvent(std::move(load_mesh_event));
+		mTrackedObject = path.getObject();
 		return true;
 	}
 
@@ -135,7 +137,7 @@ namespace napkin
 	{
 		// Bail if texture or mesh isn't loaded
 		assert(path.isValid());
-		if (path.getObject() != mLoadedTexture)
+		if (path.getObject() != mTrackedObject)
 			return;
 
 		// Fetch loader and load
