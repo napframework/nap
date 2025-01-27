@@ -22,6 +22,17 @@ QVariant napkin::ModuleItem::data(int role) const
 	{
 	case Qt::DecorationRole:
 		return AppContext::get().getResourceFactory().getIcon(QRC_ICONS_MODULE);
+	case Qt::ToolTipRole:
+	{
+		std::string desc = nap::utility::stringFormat("%s, version %d", mModule.getName().c_str(), mModule.getDescriptor().mAPIVersion);
+		desc.append(nap::utility::stringFormat("\n%s", mModule.getInformation().getFilename().c_str()));
+		if (mModule.getServiceType().is_valid())
+		{
+			std::string stn = mModule.getServiceType().get_name().data();
+			desc.append(nap::utility::stringFormat("\n%s", stn.c_str()));
+		}
+		return QString::fromStdString(desc);
+	}
 	default:
 		return QStandardItem::data(role);
 	}
