@@ -3,7 +3,7 @@
  * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
 
 // Local Includes
-#include <nap/modulemanager.h>
+#include <nap/modulecache.h>
 #include <nap/logger.h>
 #include <nap/module.h>
 #include <utility/module.h>
@@ -52,17 +52,17 @@ namespace nap
 	}
 
 
-	bool ModuleManager::sourceModule(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
+	nap::Module* ModuleCache::sourceModule(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
 	{
 		// Only load module once
 		if (findModule(moduleName) != nullptr)
-			return true;
+			return nullptr;
 
 		// Attempt to find the module files first
 		std::string moduleFile;
 		std::string moduleJson;
 		if (!findModuleFiles(project, moduleName, moduleFile, moduleJson, err))
-			return false;
+			return nullptr;
 
 		// Load module json
 		auto modinfo = rtti::getObjectFromJSONFile<nap::ModuleInfo>(
@@ -73,7 +73,7 @@ namespace nap
 
 		if (!err.check(modinfo != nullptr, "Failed to read %s from %s",
 			RTTI_OF(nap::ModuleInfo).get_name().data(),  moduleJson.c_str()))
-			return false;
+			return nullptr;
 
 		// Store useful references so we can backtrack if necessary
 		modinfo->mFilename = moduleFile;
@@ -101,7 +101,7 @@ namespace nap
 				continue;
 
 			if (!sourceModule(project, modName, err))
-				return false;
+				return nullptr;
 		}
 
 		// Load module binary
@@ -112,7 +112,7 @@ namespace nap
 			auto resolved = utility::getAbsolutePath(moduleFile);
 			err.fail("Failed to load module '%s' (resolved as %s): %s",
                 utility::forceSeparator(moduleFile).c_str(), resolved.c_str(), loadModuleError.c_str());
-			return false;
+			return nullptr;
 		}
 
 		// Find descriptor. If the descriptor wasn't found in the dll,
@@ -121,7 +121,7 @@ namespace nap
 		if (!descriptor)
 		{
 			unloadModule(module_handle);
-			return false;
+			return nullptr;
 		}
 
 		// Verify module version
@@ -132,7 +132,7 @@ namespace nap
 				descriptor->mAPIVersion,
 				nap::moduleAPIVersion);
 			unloadModule(module_handle);
-			return false;
+			return nullptr;
 		}
 
 		// Try to load service if one is defined
@@ -157,8 +157,8 @@ namespace nap
 		module->mHandle = module_handle;
 		module->mService = service;
 		nap::Logger::debug("Module loaded: %s", module->mDescriptor->mID);
-		mModules.emplace_back(std::move(module));
-		return true;
+		auto& it = mModules.emplace_back(std::move(module));
+		return it.get();
 	}
 }
 

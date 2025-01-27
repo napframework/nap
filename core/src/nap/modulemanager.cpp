@@ -69,10 +69,4 @@ namespace nap
 			UnloadModule(module.mHandle);
 		*/
 	}
-
-
-	std::string Module::findAsset(const std::string& name) const
-	{
-		return utility::findFileInDirectories(name, this->getInformation().mDataSearchPaths);
-	}
 }
