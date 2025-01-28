@@ -73,8 +73,8 @@ namespace napkin
 		CWDHandle& operator=(const CWDHandle&) = delete;
 
 		// Move is allowed
-		CWDHandle(CWDHandle&& other);
-		CWDHandle& operator=(CWDHandle&& other);
+		CWDHandle(CWDHandle&& other) noexcept;
+		CWDHandle& operator=(CWDHandle&& other) noexcept;
 
 	private:
 		std::string mPrevious;

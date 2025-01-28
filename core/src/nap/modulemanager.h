@@ -27,21 +27,12 @@ namespace nap
 		friend class Core;
 	public:
 		// Constructor
-		ModuleManager(Core& core);
-
-		// Destructor
-		~ModuleManager();
+		ModuleManager() = default;
 
 		// Copy is not allowed
 		ModuleManager(ModuleManager&) = delete;
-
-		// Copy assignment is not allowed
 		ModuleManager& operator=(const ModuleManager&) = delete;
-
-		// Move is not allowed
 		ModuleManager(ModuleManager&&) = delete;
-		
-		// Move assignment is not allowed
 		ModuleManager& operator=(ModuleManager&&) = delete;
 
 		/**
@@ -53,9 +44,9 @@ namespace nap
 		bool loadModules(const ProjectInfo& projectInfo, utility::ErrorState& error);
 
 		/**
-		 * @return All currently loaded modules
-		 */
-		const std::vector<std::unique_ptr<Module>>& getModules() const { return mModules; }
+         * @return All currently loaded modules
+         */
+        const std::vector<const Module*>& getModules() const { return mModules; }
 
 		/**
 		 * Find a loaded module by its name as defined in its descriptor file
@@ -79,6 +70,7 @@ namespace nap
 		const Module* findModule() const	{ return findModule(RTTI_OF(T)); }
 
 	private:
-		Core& 								 			mCore;		// Core
+		std::vector<const nap::Module*> mModules;	///< All sourced nap project modules
+
 	};
 }

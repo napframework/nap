@@ -42,14 +42,14 @@ CWDHandle::~CWDHandle()
 	nap::utility::changeDir(mPrevious);
 }
 
-napkin::CWDHandle& CWDHandle::operator=(CWDHandle&& other)
+napkin::CWDHandle& CWDHandle::operator=(CWDHandle&& other) noexcept
 {
 	this->mPrevious = std::move(other.mPrevious);
 	this->mLock = std::move(other.mLock);
 	return *this;
 }
 
-CWDHandle::CWDHandle(CWDHandle&& other)
+CWDHandle::CWDHandle(CWDHandle&& other) noexcept
 {
 	this->mPrevious = std::move(other.mPrevious);
 	this->mLock = std::move(other.mLock);

@@ -40,7 +40,7 @@ namespace nap
 		// Initialize timer
 		mTimer.reset();
 		mResourceManager = std::make_unique<ResourceManager>(*this);
-		mModuleManager = std::make_unique<ModuleManager>(*this);
+		mModuleManager = std::make_unique<ModuleManager>();
 	}
 
 

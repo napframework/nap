@@ -7,7 +7,6 @@
 #include "logger.h"
 #include "service.h"
 #include "module.h"
-#include <nap/core.h>
 
 // External Includes
 #include <utility/fileutils.h>
@@ -19,22 +18,45 @@
 
 namespace nap
 {
-	static std::mutex moduleMutex;
-
-	ModuleManager::ModuleManager(nap::Core& core) : 
-		mCore(core)
+	static bool includeModule(const nap::Module* sourced, std::vector<const Module*>& ioResult)
 	{
-		std::lock_guard<std::mutex> lock(moduleMutex);
-		initModules();
+		// Find sourced module in list
+		auto loaded = std::find_if(ioResult.begin(), ioResult.end(), [&sourced](const auto& it) {
+			return it == sourced;
+		});
+
+		// Add when not included
+		if (loaded == ioResult.end())
+		{
+			ioResult.emplace_back(sourced);
+			return true;
+		}
+		return false;
 	}
 
 
 	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
 	{
-		std::lock_guard<std::mutex> lock(moduleMutex);
-		for (const std::string& moduleName : projectInfo.mRequiredModules)
-			if (!sourceModule(projectInfo, moduleName, err))
-				return false;
+		std::vector<const nap::Module*> sourced_modules;
+		{
+			ModuleCache::Handle cache = ModuleCache::getHandle();
+			for (const std::string& moduleName : projectInfo.mRequiredModules)
+			{
+				const auto* module = cache.sourceModule(projectInfo, moduleName, err);
+				if (module == nullptr)
+					return false;
+
+				for (const auto& child : module->getDependencies())
+					includeModule(child, sourced_modules);
+
+				if(!includeModule(module, sourced_modules))
+					nap::Logger::warn("Module '%s' is already included and can be removed as a requirement from '%s'",
+						module->getName().c_str(), projectInfo.mTitle.c_str());
+			}
+		}
+
+		// Move modules
+		mModules = std::move(sourced_modules);
 		return true;
 	}
 
@@ -42,9 +64,9 @@ namespace nap
 	const Module* ModuleManager::findModule(const std::string& moduleName) const
 	{
 		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
-			return it->mName == moduleName;
+			return it->getName() == moduleName;
 		});
-		return found_it == mModules.end() ? nullptr : (*found_it).get();
+		return found_it == mModules.end() ? nullptr : *found_it;
 	}
 
 
@@ -53,20 +75,7 @@ namespace nap
 		auto found_it = std::find_if(mModules.begin(), mModules.end(), [&](const auto& it) {
 			return it->getServiceType() == serviceType;
 			});
-		return found_it == mModules.end() ? nullptr : (*found_it).get();
-	}
-
-
-	ModuleManager::~ModuleManager()
-	{
-		/*  Commented out for now because unloading modules can cause crashes in RTTR; during shutdown it will try
-			to access RTTI types registered by potentially unloaded modules and crash because the pointers are no longer valid.
-			
-			This should probably be fixed in RTTR itself, but I'm not sure how yet. For now I've disabled the unloading of modules, 
-			since this only happens during shutdown and modules will be unloaded then anyway.
-		
-		for (Module& module : mRequiredModules)
-			UnloadModule(module.mHandle);
-		*/
+		return found_it == mModules.end() ? nullptr : *found_it;
 	}
 }
+

@@ -52,11 +52,29 @@ namespace nap
 	}
 
 
-	nap::Module* ModuleCache::sourceModule(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
+	static bool addDependency(std::vector<const nap::Module*>& dependencies, const nap::Module* candidate)
 	{
-		// Only load module once
-		if (findModule(moduleName) != nullptr)
-			return nullptr;
+		// Check if candidate isn't loaded already
+		auto loaded = std::find_if(dependencies.begin(), dependencies.end(), [&candidate](const auto& it) {
+				return it == candidate;
+			});
+
+		// Insert when not available
+		if (loaded == dependencies.end()) 
+		{
+			dependencies.emplace_back(candidate);
+			return true;
+		}
+		return false;
+	}
+
+
+	const nap::Module* ModuleCache::sourceModule(const ProjectInfo& project, const std::string& moduleName, utility::ErrorState& err)
+	{
+		// Return already cached module when already sourced
+		const auto* cached_module = findModule(moduleName);
+		if (cached_module != nullptr)
+			return cached_module;
 
 		// Attempt to find the module files first
 		std::string moduleFile;
@@ -65,15 +83,16 @@ namespace nap
 			return nullptr;
 
 		// Load module json
+		nap::rtti::Factory factory;
 		auto modinfo = rtti::getObjectFromJSONFile<nap::ModuleInfo>(
 			moduleJson,
 			rtti::EPropertyValidationMode::AllowMissingProperties,
-			mCore.getResourceManager()->getFactory(),
+			factory,
 			err);
 
 		if (!err.check(modinfo != nullptr, "Failed to read %s from %s",
 			RTTI_OF(nap::ModuleInfo).get_name().data(),  moduleJson.c_str()))
-			return nullptr;
+			return false;
 
 		// Store useful references so we can backtrack if necessary
 		modinfo->mFilename = moduleFile;
@@ -93,15 +112,23 @@ namespace nap
 				{"MODULE_DIR", file_dir}
 			});
 
-		// Load module dependencies first
+		// Recursively load module dependencies first
+		std::vector<const nap::Module*> module_deps;
 		for (const auto& modName : modinfo->mRequiredModules)
 		{
-			// Skip already loaded modules
-			if (findModule(modName))
-				continue;
-
-			if (!sourceModule(project, modName, err))
+			const auto* cached_module = sourceModule(project, modName, err);
+			if (cached_module == nullptr)
 				return nullptr;
+
+			// Add all cached child module dependencies
+			module_deps.reserve(module_deps.size() + cached_module->mDependencies.size() + 1);
+			for (const auto& child : cached_module->mDependencies)
+				addDependency(module_deps, child);
+
+			// Add direct module dependency
+			if (!addDependency(module_deps, cached_module))
+				nap::Logger::warn("Module '%s' is already included and can be removed as a requirement from '%s'",
+					cached_module->getName().c_str(), moduleName.c_str());
 		}
 
 		// Load module binary
@@ -144,7 +171,7 @@ namespace nap
 			{
 				err.fail("Module %s service descriptor %s is not a service", moduleFile.c_str(), descriptor->mService);
 				unloadModule(module_handle);
-				return false;
+				return nullptr;
 			}
 			service = stype;
 		}
@@ -156,6 +183,8 @@ namespace nap
 		module->mInfo = std::move(modinfo);
 		module->mHandle = module_handle;
 		module->mService = service;
+		module->mDependencies = module_deps;
+
 		nap::Logger::debug("Module loaded: %s", module->mDescriptor->mID);
 		auto& it = mModules.emplace_back(std::move(module));
 		return it.get();
