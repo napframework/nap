@@ -11,21 +11,54 @@
 
 namespace nap
 {
-	// Local to unit
-	static ModuleCache	sModuleCache;
-	static std::mutex	sModuleCacheMutex;
-	ModuleCache::Handle::Handle() : mLock(sModuleCacheMutex),
-		mCache(&sModuleCache)
+	//////////////////////////////////////////////////////////////////////////
+	// Module
+	//////////////////////////////////////////////////////////////////////////
+
+	std::string Module::findAsset(const std::string& name) const
+	{
+		return utility::findFileInDirectories(name, this->getInformation().mDataSearchPaths);
+	}
+
+
+	//////////////////////////////////////////////////////////////////////////
+	// Module Cache
+	//////////////////////////////////////////////////////////////////////////
+
+	ModuleCache::Handle::Handle(nap::ModuleCache& cache, std::mutex& mutex) : mLock(mutex),
+		mCache(&cache)
 	{ }
+
+
+	ModuleCache::Handle::Handle(Handle&& other) noexcept
+	{
+		mLock = std::move(other.mLock);
+		mCache = std::move(other.mCache);
+	}
+
+
+	nap::ModuleCache::Handle& ModuleCache::Handle::operator=(Handle&& other) noexcept
+	{
+		mLock = std::move(other.mLock);
+		mCache = std::move(other.mCache);
+		return *this;
+	}
 
 
 	nap::ModuleCache::Handle ModuleCache::getHandle()
 	{
-		static std::once_flag module_cache_flag;
-		std::call_once(module_cache_flag, [&]() {
+		// Create unique cache, local to unit
+		static ModuleCache cache;
+		static std::mutex mutex;
+		static std::once_flag init_flag;
+
+		// Platform specific initialization
+		std::call_once(init_flag, [&]() {
 				initModules();
 			});
-		return ModuleCache::Handle();
+
+		// Create cache handle, lock and return
+		return ModuleCache::Handle(cache, mutex);
 	}
 
 
@@ -35,12 +68,6 @@ namespace nap
 			return it->mName == moduleName;
 			});
 		return found_it == mModules.end() ? nullptr : found_it->get();
-	}
-
-
-	std::string Module::findAsset(const std::string& name) const
-	{
-		return utility::findFileInDirectories(name, this->getInformation().mDataSearchPaths);
 	}
 
 
