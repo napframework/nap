@@ -34,6 +34,8 @@
 
 #include <map>
 #include <sys/types.h>
+#include <vector>
+#include <unordered_map>
 
 namespace FW
 {
@@ -71,6 +73,13 @@ namespace FW
 		void handleAction(WatchStruct* watch, const String& filename, unsigned long action);
 
 	private:
+		/**
+		 * Utility function to list all subdirectories of a given directory
+		 * @param directoryPath absolute path of root directory
+		 * @param dirs vector filled with absolute paths of subdirectories
+		 */
+		void listSubdirectories(const std::string &directoryPath, std::vector<std::string>& dirs);
+
 		/// Map of WatchID to WatchStruct pointers
 		WatchMap mWatches;
 		/// The last watchid
@@ -81,6 +90,10 @@ namespace FW
 		struct timeval mTimeOut;
 		/// File descriptor set
 		fd_set mDescriptorSet;
+
+        /// Stores watches for subdirectories that were added with addWatch with the recursive option set to true
+        /// The key is the watchid of the root watch
+        std::unordered_map<WatchID, std::vector<WatchID>> mSubDirWatches;
 
 	};//end FileWatcherLinux
 
