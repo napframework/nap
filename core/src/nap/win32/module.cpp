@@ -89,21 +89,30 @@ namespace nap
 
 	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
 	{
-		// Temporarily set search paths for this module's dependencies
-		std::vector<DLL_DIRECTORY_COOKIE> searchPathCookies;
-		if (modInfo.getProjectInfo().isEditorMode())
-			searchPathCookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
-
 		auto modulefile = utility::getAbsolutePath(modulePath);
-
 		if (!utility::fileExists(modulefile))
 		{
-			errorString = "File not found";
+			errorString = nap::utility::stringFormat("Library doesn't exist: %s", modulefile.c_str());
 			return nullptr;
 		}
 
-		// Load our module
-		void* result = LoadLibraryExA(modulefile.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+		// Construct library search path
+		std::vector search_paths = { nap::utility::getFileDir(modulefile) };
+		search_paths.reserve(search_paths.size() + modInfo.mLibSearchPaths.size());
+
+		// Add module search paths for dependencies
+		std::vector<DLL_DIRECTORY_COOKIE> searchPathCookies;
+		if (modInfo.getProjectInfo().isEditorMode())
+			search_paths.insert(search_paths.end(), modInfo.mLibSearchPaths.begin(), modInfo.mLibSearchPaths.end());
+
+		// Temporarily set search paths for this module's dependencies
+		searchPathCookies = addDLLSearchPaths(search_paths);
+
+		// Load our module -> note that we search on file name instead of full path.
+		// This allows the loader to return an already loaded module, speeding up the entire sourcing process
+		// for both applications, the editor and applets.
+		auto module_file_name = nap::utility::getFileName(modulefile);
+		void* result = LoadLibraryExA(module_file_name.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 
 		// If we failed to load the module, get the error string
 		if (result == nullptr)

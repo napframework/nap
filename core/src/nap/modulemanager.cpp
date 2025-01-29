@@ -37,22 +37,28 @@ namespace nap
 
 	bool ModuleManager::loadModules(const ProjectInfo& projectInfo, utility::ErrorState& err)
 	{
+		// Get unique handle to access the module cache (locks)
 		std::vector<const nap::Module*> sourced_modules;
+		ModuleCache::Handle cache = ModuleCache::getHandle();
+
+		// Load all project modules, including dependencies, thread safe
+		for (const std::string& mod_name : projectInfo.mRequiredModules)
 		{
-			ModuleCache::Handle cache = ModuleCache::getHandle();
-			for (const std::string& moduleName : projectInfo.mRequiredModules)
-			{
-				const auto* module = cache.sourceModule(projectInfo, moduleName, err);
-				if (module == nullptr)
-					return false;
+			// Try to source the module: loads it if not available, otherwise retrieves it from the cache
+			const auto* proj_module = cache.sourceModule(projectInfo, mod_name, err);
+			if (proj_module == nullptr)
+				return false;
 
-				for (const auto& child : module->getDependencies())
-					includeModule(child, sourced_modules);
+			// Add all module dependencies
+			const auto& module_deps = proj_module->getDependencies();
+			sourced_modules.reserve(sourced_modules.size() + module_deps.size() + 1);
+			for (const auto& child : module_deps)
+				includeModule(child, sourced_modules);
 
-				if(!includeModule(module, sourced_modules))
-					nap::Logger::warn("Module '%s' is already included and can be removed as a requirement from '%s'",
-						module->getName().c_str(), projectInfo.mTitle.c_str());
-			}
+			// Add module
+			if (!includeModule(proj_module, sourced_modules))
+				nap::Logger::warn("Module '%s' is already included and can be removed as a requirement from '%s'",
+					proj_module->getName().c_str(), projectInfo.mTitle.c_str());
 		}
 
 		// Move modules
