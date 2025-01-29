@@ -36,10 +36,10 @@ namespace nap
 		ModuleManager& operator=(ModuleManager&&) = delete;
 
 		/**
-		 * Load all modules that are required by the project
-		 * @param projectInfo The descriptor providing the module dependencies
-		 * @param error Any errors will be stored here
-		 * @return True on success, false otherwise
+		 * Load all modules required by the project
+		 * @param projectInfo project descriptor that provides top level module dependencies
+		 * @param error contains the error if loading fails
+		 * @return if loading succeeded
 		 */
 		bool loadModules(const ProjectInfo& projectInfo, utility::ErrorState& error);
 
