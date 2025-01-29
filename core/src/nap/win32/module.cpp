@@ -45,15 +45,15 @@ namespace nap
 	// Add dll search paths such that when we load a module, it's dependencies can be resolved by Windows
 	std::vector<DLL_DIRECTORY_COOKIE> addDLLSearchPaths(const std::vector<std::string>& paths)
 	{
-		std::vector<DLL_DIRECTORY_COOKIE> dllDirCookies;
-		for (const auto& searchPath : paths)
+		std::vector<DLL_DIRECTORY_COOKIE> all_cookies;
+		for (const auto& path : paths)
 		{
-			auto abspath = utility::getAbsolutePath(searchPath);
+			auto abspath = utility::getAbsolutePath(path);
 			auto abspathw = toWStr(abspath);
 
 			if (!utility::fileExists(abspath))
 			{
-				nap::Logger::fine("Path does not exist: %s (resolved from: %s)", abspath.c_str(), searchPath.c_str());
+				nap::Logger::fine("Path does not exist: %s (resolved from: %s)", abspath.c_str(), path.c_str());
 				continue;
 			}
 
@@ -63,9 +63,9 @@ namespace nap
 				nap::Logger::error("Failed to add dll path: %s (%s)", abspath.c_str(), getLastErrorStr().c_str());
 				continue;
 			}
-			dllDirCookies.emplace_back(cookie);
+			all_cookies.emplace_back(cookie);
 		}
-		return dllDirCookies;
+		return all_cookies;
 	}
 
 
@@ -87,32 +87,17 @@ namespace nap
 	}
 
 
-	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& modulePath, std::string& errorString)
+	void* loadModule(const nap::ModuleInfo& modInfo, const std::string& library, std::string& outLocation, std::string& errorString)
 	{
-		auto modulefile = utility::getAbsolutePath(modulePath);
-		if (!utility::fileExists(modulefile))
-		{
-			errorString = nap::utility::stringFormat("Library doesn't exist: %s", modulefile.c_str());
-			return nullptr;
-		}
-
-		// Construct library search path
-		std::vector search_paths = { nap::utility::getFileDir(modulefile) };
-		search_paths.reserve(search_paths.size() + modInfo.mLibSearchPaths.size());
-
-		// Add module search paths for dependencies
-		std::vector<DLL_DIRECTORY_COOKIE> searchPathCookies;
-		if (modInfo.getProjectInfo().isEditorMode())
-			search_paths.insert(search_paths.end(), modInfo.mLibSearchPaths.begin(), modInfo.mLibSearchPaths.end());
-
-		// Temporarily set search paths for this module's dependencies
-		searchPathCookies = addDLLSearchPaths(search_paths);
+		// Add library search paths to resolve library location when using napkin
+		std::vector<DLL_DIRECTORY_COOKIE> search_cookies;
+		if(modInfo.getProjectInfo().isEditorMode())
+			search_cookies = addDLLSearchPaths(modInfo.mLibSearchPaths);
 
 		// Load our module -> note that we search on file name instead of full path.
 		// This allows the loader to return an already loaded module, speeding up the entire sourcing process
 		// for both applications, the editor and applets.
-		auto module_file_name = nap::utility::getFileName(modulefile);
-		void* result = LoadLibraryExA(module_file_name.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
+		HMODULE result = LoadLibraryExA(library.c_str(), 0, LOAD_LIBRARY_SEARCH_DEFAULT_DIRS);
 
 		// If we failed to load the module, get the error string
 		if (result == nullptr)
@@ -122,13 +107,18 @@ namespace nap
 			// However: we know the library exists and the issue is most likely related to a mis-configured dll search path.
 			// Therefore, instead of returning the last error code as a string we attempt to be a bit more verbose. 
 			// errorString = getLastErrorStr();
-			errorString += utility::stringFormat("Library can't be loaded, most likely due to missing or mis-configured DLL search paths or a compiler mis-match", modulefile.c_str());
+			errorString += getLastErrorStr();
+			errorString += utility::stringFormat("\n'%s' can't be loaded, most likely due to missing or mis-configured DLL search paths or a compiler mis-match",
+				library.c_str());
 		}
 
-		// Remove temporarily added search paths
-		if (modInfo.getProjectInfo().isEditorMode())
-			removeDLLSearchPaths(searchPathCookies);
+		// Fetch location
+		std::array<char, 256> loc;
+		if (GetModuleFileNameA(result, loc.data(), loc.size()) > 0)
+			outLocation = loc.data();
 
+		// Remove temporarily added search paths
+		removeDLLSearchPaths(search_cookies);
 		return result;
 	}
 

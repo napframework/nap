@@ -23,32 +23,24 @@ namespace nap
 	 * @param moduleJson The absolute path to the resulting module json descriptor
 	 * @return True if the operation was successful, false otherwise
 	 */
-	static bool findModuleFiles(const ProjectInfo& projectInfo, const std::string& moduleName,
-		std::string& moduleFile, std::string& moduleJson, utility::ErrorState& err)
+	static std::string findModuleJSON(const ProjectInfo& projectInfo, const std::string& moduleName, utility::ErrorState& err)
 	{
 		// Require module directories to be provided
-		auto moduleDirs = projectInfo.getModuleDirectories();
-		if (!err.check(!moduleDirs.empty(), "No module dirs specified in %s", projectInfo.getFilename().c_str()))
-			return false;
+		auto module_dirs = projectInfo.getModuleDirectories();
+		if (!err.check(!module_dirs.empty(), "No module dirs specified in %s", projectInfo.getFilename().c_str()))
+			return std::string();
 
 		// Substitute module name in given directories
-		utility::namedFormat(moduleDirs, { { "MODULE_NAME", moduleName } });
+		utility::namedFormat(module_dirs, { { "MODULE_NAME", moduleName } });
 
 		// Find module json in given directories
-		auto expectedJsonFile = utility::stringFormat("%s.json", moduleName.c_str());
-		moduleJson = utility::findFileInDirectories(expectedJsonFile, moduleDirs);
-		if (!err.check(!moduleJson.empty(), "Module descriptor '%s' not found in any of these dirs:\n%s",
-			expectedJsonFile.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
-			return false;
+		auto search_file = utility::stringFormat("%s.json", moduleName.c_str());
+		auto module_json = utility::findFileInDirectories(search_file, module_dirs);
+		if (!err.check(!module_json.empty(), "Module descriptor '%s' not found in any of these dirs:\n%s",
+			search_file.c_str(), utility::joinString(module_dirs, "\n").c_str()))
+			return std::string();
 
-		// Find module library in given directories
-		auto expectedFilename = utility::stringFormat("%s.%s", moduleName.c_str(), getModuleExtension().c_str());
-		moduleFile = utility::findFileInDirectories(expectedFilename, moduleDirs);
-		if (!err.check(!moduleFile.empty(), "Module library '%s' not found in any of these dirs:\n%s",
-			expectedFilename.c_str(), utility::joinString(moduleDirs, "\n").c_str()))
-			return false;
-
-		return true;
+		return module_json;
 	}
 
 
@@ -76,47 +68,46 @@ namespace nap
 		if (cached_module != nullptr)
 			return cached_module;
 
-		// Attempt to find the module files first
-		std::string moduleFile;
-		std::string moduleJson;
-		if (!findModuleFiles(project, moduleName, moduleFile, moduleJson, err))
+		// Attempt to find the module json descriptor first
+		std::string module_json = findModuleJSON(project, moduleName, err);
+		if(module_json.empty())
 			return nullptr;
 
 		// Load module json
 		nap::rtti::Factory factory;
-		auto modinfo = rtti::getObjectFromJSONFile<nap::ModuleInfo>(
-			moduleJson,
+		auto module_info = rtti::getObjectFromJSONFile<nap::ModuleInfo>(
+			module_json,
 			rtti::EPropertyValidationMode::AllowMissingProperties,
 			factory,
 			err);
 
-		if (!err.check(modinfo != nullptr, "Failed to read %s from %s",
-			RTTI_OF(nap::ModuleInfo).get_name().data(),  moduleJson.c_str()))
+		if (!err.check(module_info != nullptr, "Failed to read %s from %s",
+			RTTI_OF(nap::ModuleInfo).get_name().data(),  module_json.c_str()))
 			return false;
 
 		// Store useful references so we can backtrack if necessary
-		modinfo->mFilename = moduleFile;
-		modinfo->mProjectInfo = &project;
+		module_info->mProjectInfo = &project;
 
 		// Add project directory default search path for modules, used by Windows packaged apps
-		modinfo->mLibSearchPaths.insert(modinfo->mLibSearchPaths.begin(), project.getProjectDir());
+		module_info->mLibSearchPaths.insert(module_info->mLibSearchPaths.begin(),
+			{ project.getProjectDir(), utility::getFileDir(module_json)});
 
 		// Patch library search paths
-		std::string file_dir = utility::getFileDir(moduleFile);
-		project.patchPaths(modinfo->mLibSearchPaths, {{"MODULE_DIR", file_dir}});
+		std::string module_dir = utility::getFileDir(module_json);
+		project.patchPaths(module_info->mLibSearchPaths, {{"MODULE_DIR", module_dir}});
 
 		// Patch library data paths
-		project.patchPaths(modinfo->mDataSearchPaths,
+		project.patchPaths(module_info->mDataSearchPaths,
 			{
 				{"MODULE_NAME", moduleName},
-				{"MODULE_DIR", file_dir}
+				{"MODULE_DIR",  module_dir}
 			});
 
 		// Recursively load module dependencies first
 		std::vector<const nap::Module*> module_deps;
-		for (const auto& modName : modinfo->mRequiredModules)
+		for (const auto& name : module_info->mRequiredModules)
 		{
-			const auto* cached_module = sourceModule(project, modName, err);
+			const auto* cached_module = sourceModule(project, name, err);
 			if (cached_module == nullptr)
 				return nullptr;
 
@@ -132,13 +123,13 @@ namespace nap
 		}
 
 		// Load module binary
-		std::string loadModuleError;
-		void* module_handle = loadModule(*modinfo, moduleFile, loadModuleError);
+		std::string load_error;
+		auto library_name = utility::appendFileExtension(moduleName, getModuleExtension());
+		void* module_handle = loadModule(*module_info, library_name, module_info->mFilename, load_error);
 		if (!module_handle)
 		{
-			auto resolved = utility::getAbsolutePath(moduleFile);
-			err.fail("Failed to load module '%s' (resolved as %s): %s",
-                utility::forceSeparator(moduleFile).c_str(), resolved.c_str(), loadModuleError.c_str());
+			err.fail("Failed to load module '%s' (resolved from %s): %s",
+                moduleName.c_str(), utility::getAbsolutePath(module_json).c_str(), load_error.c_str());
 			return nullptr;
 		}
 
@@ -146,19 +137,13 @@ namespace nap
 		// assume it's not actually a nap module and unload it again.
 		auto descriptor = (ModuleDescriptor*)findSymbolInModule(module_handle, nap::getModuleDescriptorSymbolName(moduleName).c_str());
 		if (!descriptor)
-		{
-			unloadModule(module_handle);
 			return nullptr;
-		}
 
 		// Verify module version
 		if (descriptor->mAPIVersion != nap::moduleAPIVersion)
 		{
 			err.fail("Module %s version mismatch (found %d, expected %d)",
-				moduleFile.c_str(), 
-				descriptor->mAPIVersion,
-				nap::moduleAPIVersion);
-			unloadModule(module_handle);
+				moduleName.c_str(), descriptor->mAPIVersion, nap::moduleAPIVersion);
 			return nullptr;
 		}
 
@@ -169,8 +154,8 @@ namespace nap
 			rtti::TypeInfo stype = rtti::TypeInfo::get_by_name(rttr::string_view(descriptor->mService));
 			if (!stype.is_derived_from(RTTI_OF(Service)))
 			{
-				err.fail("Module %s service descriptor %s is not a service", moduleFile.c_str(), descriptor->mService);
-				unloadModule(module_handle);
+				err.fail("Module '%s' service descriptor '%s' is not a service",
+					moduleName.c_str(), descriptor->mService);
 				return nullptr;
 			}
 			service = stype;
@@ -180,7 +165,7 @@ namespace nap
 		auto module = std::make_unique<Module>();
 		module->mName = moduleName;
 		module->mDescriptor = descriptor;
-		module->mInfo = std::move(modinfo);
+		module->mInfo = std::move(module_info);
 		module->mHandle = module_handle;
 		module->mService = service;
 		module->mDependencies = module_deps;
@@ -190,4 +175,3 @@ namespace nap
 		return it.get();
 	}
 }
-

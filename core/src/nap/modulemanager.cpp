@@ -84,4 +84,3 @@ namespace nap
 		return found_it == mModules.end() ? nullptr : *found_it;
 	}
 }
-
