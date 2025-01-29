@@ -217,7 +217,7 @@ namespace nap
 	std::unordered_map<std::string, std::string> ProjectInfo::getTemplateValues(const std::unordered_map<std::string, std::string>& additionalValues) const
 	{
 		// Default templates
-		static const std::unordered_map<std::string, std::string> default_values(
+		const std::unordered_map<std::string, std::string> default_values(
 		{
 			{"ROOT",			getNAPRootDir()},
 			{"BUILD_ARCH",		sBuildArch},
