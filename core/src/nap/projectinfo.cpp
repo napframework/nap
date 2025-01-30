@@ -177,8 +177,8 @@ namespace nap
 			return false;
 
 		// Load path mapping (relative to the app.json file)
-		auto path_mapping_file_name = utility::forceSeparator(utility::joinPath({ mProjectDir, mPathMappingFile }));
-		nap::Logger::debug("Using path mapping file: %s", path_mapping_file_name.c_str());
+		auto path_mapping_file_name = utility::getAbsolutePath(utility::joinPath({ mProjectDir, mPathMappingFile }));
+		nap::Logger::debug("Loading path mapping: %s", path_mapping_file_name.c_str());
 
 		mPathMapping = nap::rtti::getObjectFromJSONFile<nap::PathMapping>(path_mapping_file_name,
 			nap::rtti::EPropertyValidationMode::DisallowMissingProperties,

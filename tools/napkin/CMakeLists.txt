@@ -168,7 +168,8 @@ if(MSVC)
     install(DIRECTORY ${NAP_ROOT}/packaging_bin/Release-${ARCH}/napkin
             DESTINATION tools/
             CONFIGURATIONS Release 
-            PATTERN "*.pdb" EXCLUDE)
+            PATTERN "*.pdb" EXCLUDE
+            )
 
     if(PACKAGE_PDBS)
         install(FILES $<TARGET_PDB_FILE:${PROJECT_NAME}> 
@@ -190,7 +191,18 @@ if(APPLE)
                                                     Release)
 endif()   
 
-install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources DESTINATION tools/napkin/)
+# Install napkin resources, exlude path mapping -> seperate install
+install(DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/resources 
+    DESTINATION tools/napkin/
+    PATTERN */path_mapping.json EXCLUDE
+    )
+
+# Install path mapping for framework release context
+install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/framework_release.json
+    DESTINATION tools/napkin/resources/applets
+    RENAME path_mapping.json)
+
+# Install module dependencies
 module_list_to_deep_dependencies_cmake("${NAP_MODULES_DEPENDENCIES}")
 set(NAPKIN_QT_INSTALL_FRAMEWORKS QtCore QtGui QtWidgets QtOpenGL)
 set(PATH_TO_THIRDPARTY "../../thirdparty")

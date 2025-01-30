@@ -24,10 +24,11 @@ if(pybind11_FOUND)
 endif()
 
 if(WIN32)
-    add_custom_command(TARGET ${PROJECT_NAME}
-                       POST_BUILD
-                       COMMAND ${CMAKE_COMMAND} -E copy_directory "${NAP_ROOT}/tools/napkin" "$<TARGET_FILE_DIR:${PROJECT_NAME}>/napkin"
-                       COMMENT "Copy Napkin")
+    # Copy napkin directory -> exclude path mapping
+    install(DIRECTORY ${NAP_ROOT}/tools/napkin/
+        DESTINATION napkin
+        PATTERN */path_mapping.json EXCLUDE)
+
 elseif(APPLE)
     list(APPEND NAPKIN_QT_INSTALL_FRAMEWORKS QtDBus)
 
@@ -125,3 +126,8 @@ endif()
 
 # Install Qt licenses into packaged app
 install(DIRECTORY ${THIRDPARTY_DIR}/Qt/licenses/ DESTINATION licenses/Qt)
+
+# Install path mapping for applets running in packaged app context
+install(FILES ${NAP_ROOT}/tools/buildsystem/path_mappings/applet/packaged_app.json
+    DESTINATION napkin/resources/applets
+    RENAME path_mapping.json)
